@@ -1,0 +1,148 @@
+import { motion } from 'framer-motion'
+import { useTheme } from '../providers/ThemeProvider'
+
+function VitalPaths({ side = 1 }) {
+  const paths = Array.from({ length: 28 }, (_, i) => ({
+    id: i,
+    d: `M ${side > 0 ? -150 - i * 7 : 850 + i * 7} ${28 + i * 9}
+        C ${side > 0 ? 110 + i * 3 : 650 - i * 4} ${-20 + i * 4},
+          ${side > 0 ? 210 + i * 7 : 500 - i * 6} ${210 - i * 2},
+          ${side > 0 ? 740 - i * 2 : -30 + i * 4} ${150 + i * 6}`,
+    width: 0.55 + i * 0.025,
+    opacity: 0.08 + i * 0.006,
+    duration: 18 + i * 0.55,
+  }))
+
+  return (
+    <svg className="vital-paths" viewBox="0 0 760 420" preserveAspectRatio="none" aria-hidden="true">
+      {paths.map((path) => (
+        <motion.path
+          key={`${side}-${path.id}`}
+          d={path.d}
+          stroke="currentColor"
+          strokeWidth={path.width}
+          strokeOpacity={path.opacity}
+          fill="none"
+          initial={{ pathLength: 0.18, pathOffset: 0, opacity: 0.35 }}
+          animate={{
+            pathLength: [0.18, 0.86, 0.18],
+            pathOffset: [0, 1, 0],
+            opacity: [0.22, 0.58, 0.22],
+          }}
+          transition={{
+            duration: path.duration,
+            repeat: Infinity,
+            ease: 'linear',
+          }}
+        />
+      ))}
+    </svg>
+  )
+}
+
+function PulseLines() {
+  return (
+    <svg className="vital-pulse-lines" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
+      {[0, 1, 2].map((row) => (
+        <motion.path
+          key={row}
+          d={`M0 ${82 + row * 72}
+              C120 ${72 + row * 18}, 180 ${118 + row * 10}, 260 ${92 + row * 18}
+              C330 ${70 + row * 14}, 390 ${85 + row * 8}, 450 ${85 + row * 8}
+              L492 ${85 + row * 8} L520 ${26 + row * 26} L552 ${160 + row * 14}
+              L584 ${70 + row * 12} L640 ${88 + row * 9}
+              C760 ${126 + row * 10}, 840 ${46 + row * 16}, 960 ${86 + row * 13}
+              C1050 ${116 + row * 7}, 1120 ${82 + row * 10}, 1200 ${98 + row * 10}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={row === 1 ? 1.15 : 0.75}
+          strokeOpacity={row === 1 ? 0.16 : 0.08}
+          initial={{ pathLength: 0, pathOffset: 0.12 }}
+          animate={{ pathLength: [0.08, 1, 0.08], pathOffset: [0, 0.9, 1.8] }}
+          transition={{ duration: 16 + row * 4, repeat: Infinity, ease: 'linear' }}
+        />
+      ))}
+    </svg>
+  )
+}
+
+/* Three independently floating aurora blobs */
+function AuroraBlobs({ theme }) {
+  const isDark = theme === 'dark'
+
+  const blobs = [
+    {
+      cls: 'aurora-blob-1',
+      style: {
+        position: 'absolute',
+        top: '-10%',
+        left: '-5%',
+        width: '55%',
+        height: '55%',
+        borderRadius: '50%',
+        background: isDark
+          ? 'radial-gradient(circle, rgba(45,212,191,0.22) 0%, transparent 70%)'
+          : 'radial-gradient(circle, rgba(13,148,136,0.18) 0%, transparent 70%)',
+        filter: 'blur(var(--aurora-blur, 90px))',
+        pointerEvents: 'none',
+      },
+    },
+    {
+      cls: 'aurora-blob-2',
+      style: {
+        position: 'absolute',
+        top: '-5%',
+        right: '-10%',
+        width: '50%',
+        height: '50%',
+        borderRadius: '50%',
+        background: isDark
+          ? 'radial-gradient(circle, rgba(167,139,250,0.18) 0%, transparent 70%)'
+          : 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)',
+        filter: 'blur(var(--aurora-blur, 90px))',
+        pointerEvents: 'none',
+      },
+    },
+    {
+      cls: 'aurora-blob-3',
+      style: {
+        position: 'absolute',
+        bottom: '-15%',
+        left: '30%',
+        width: '45%',
+        height: '45%',
+        borderRadius: '50%',
+        background: isDark
+          ? 'radial-gradient(circle, rgba(251,146,60,0.12) 0%, transparent 70%)'
+          : 'radial-gradient(circle, rgba(234,88,12,0.08) 0%, transparent 70%)',
+        filter: 'blur(var(--aurora-blur, 90px))',
+        pointerEvents: 'none',
+      },
+    },
+  ]
+
+  return (
+    <>
+      {blobs.map((blob) => (
+        <div key={blob.cls} className={blob.cls} style={blob.style} aria-hidden="true" />
+      ))}
+    </>
+  )
+}
+
+export default function VitalBackground({ density = 'normal' }) {
+  const { theme } = useTheme()
+
+  return (
+    <div className={`vital-bg vital-bg-${theme} vital-bg-${density}`} aria-hidden="true">
+      {/* Independently animated aurora blobs */}
+      <AuroraBlobs theme={theme} />
+      <div className="vital-gradient-field" />
+      <div className="vital-grid-field" />
+      <VitalPaths side={1} />
+      <VitalPaths side={-1} />
+      <PulseLines />
+      <div className="vital-noise-field" />
+    </div>
+  )
+}

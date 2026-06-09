@@ -1,0 +1,6101 @@
+[
+  {
+    "id": "basmati_rice",
+    "name": "Basmati Rice",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 130.0,
+      "protein_g": 2.7,
+      "carbs_g": 28.0,
+      "fat_g": 0.3,
+      "fiber_g": 0.4
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "brown_rice",
+    "name": "Brown Rice",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 111.0,
+      "protein_g": 2.6,
+      "carbs_g": 23.0,
+      "fat_g": 0.9,
+      "fiber_g": 1.8
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "white_rice",
+    "name": "White Rice",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 130.0,
+      "protein_g": 2.7,
+      "carbs_g": 28.0,
+      "fat_g": 0.3,
+      "fiber_g": 0.4
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "roti_whole_wheat",
+    "name": "Roti Whole Wheat",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 297.0,
+      "protein_g": 9.6,
+      "carbs_g": 46.0,
+      "fat_g": 7.8,
+      "fiber_g": 6.8
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "paratha",
+    "name": "Paratha",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 330.0,
+      "protein_g": 7.0,
+      "carbs_g": 42.0,
+      "fat_g": 14.0,
+      "fiber_g": 4.5
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "poha",
+    "name": "Poha",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 6.6,
+      "carbs_g": 77.3,
+      "fat_g": 1.2,
+      "fiber_g": 0.7
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "upma",
+    "name": "Upma",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 10.0,
+      "carbs_g": 70.0,
+      "fat_g": 2.0,
+      "fiber_g": 5.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "oats",
+    "name": "Oats",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 389.0,
+      "protein_g": 17.0,
+      "carbs_g": 66.0,
+      "fat_g": 7.0,
+      "fiber_g": 10.6
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "quinoa",
+    "name": "Quinoa",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 120.0,
+      "protein_g": 4.4,
+      "carbs_g": 21.3,
+      "fat_g": 1.9,
+      "fiber_g": 2.8
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "millet_bajra",
+    "name": "Millet Bajra",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 10.0,
+      "carbs_g": 70.0,
+      "fat_g": 2.0,
+      "fiber_g": 5.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "millet_jowar",
+    "name": "Millet Jowar",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 10.0,
+      "carbs_g": 70.0,
+      "fat_g": 2.0,
+      "fiber_g": 5.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "daliya",
+    "name": "Daliya",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 10.0,
+      "carbs_g": 70.0,
+      "fat_g": 2.0,
+      "fiber_g": 5.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "semolina_rava",
+    "name": "Semolina Rava",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 10.0,
+      "carbs_g": 70.0,
+      "fat_g": 2.0,
+      "fiber_g": 5.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "bread_whole_wheat",
+    "name": "Bread Whole Wheat",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 10.0,
+      "carbs_g": 70.0,
+      "fat_g": 2.0,
+      "fiber_g": 5.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "rice_flakes",
+    "name": "Rice Flakes",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 10.0,
+      "carbs_g": 70.0,
+      "fat_g": 2.0,
+      "fiber_g": 5.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "barley",
+    "name": "Barley",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 10.0,
+      "carbs_g": 70.0,
+      "fat_g": 2.0,
+      "fiber_g": 5.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "amaranth",
+    "name": "Amaranth",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 10.0,
+      "carbs_g": 70.0,
+      "fat_g": 2.0,
+      "fiber_g": 5.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "buckwheat",
+    "name": "Buckwheat",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 10.0,
+      "carbs_g": 70.0,
+      "fat_g": 2.0,
+      "fiber_g": 5.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "corn",
+    "name": "Corn",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 10.0,
+      "carbs_g": 70.0,
+      "fat_g": 2.0,
+      "fiber_g": 5.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "sabudana",
+    "name": "Sabudana",
+    "category": "grain",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 350.0,
+      "protein_g": 10.0,
+      "carbs_g": 70.0,
+      "fat_g": 2.0,
+      "fiber_g": 5.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "moong_dal_yellow",
+    "name": "Moong Dal Yellow",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 105.0,
+      "protein_g": 7.0,
+      "carbs_g": 19.0,
+      "fat_g": 0.4,
+      "fiber_g": 4.1
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": [
+        "digestive_weakness",
+        "fever",
+        "postpartum",
+        "weight_loss"
+      ]
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "moong_dal_green",
+    "name": "Moong Dal Green",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 105.0,
+      "protein_g": 7.0,
+      "carbs_g": 19.0,
+      "fat_g": 0.4,
+      "fiber_g": 4.1
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": [
+        "digestive_weakness",
+        "fever",
+        "postpartum",
+        "weight_loss"
+      ]
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "masoor_dal",
+    "name": "Masoor Dal",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 116.0,
+      "protein_g": 9.0,
+      "carbs_g": 20.0,
+      "fat_g": 0.4,
+      "fiber_g": 8.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "chana_dal",
+    "name": "Chana Dal",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 340.0,
+      "protein_g": 22.0,
+      "carbs_g": 60.0,
+      "fat_g": 1.5,
+      "fiber_g": 15.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "toor_dal",
+    "name": "Toor Dal",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 340.0,
+      "protein_g": 22.0,
+      "carbs_g": 60.0,
+      "fat_g": 1.5,
+      "fiber_g": 15.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "urad_dal",
+    "name": "Urad Dal",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 340.0,
+      "protein_g": 22.0,
+      "carbs_g": 60.0,
+      "fat_g": 1.5,
+      "fiber_g": 15.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "rajma",
+    "name": "Rajma",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 127.0,
+      "protein_g": 8.7,
+      "carbs_g": 22.8,
+      "fat_g": 0.5,
+      "fiber_g": 6.4
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "chhole",
+    "name": "Chhole",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 164.0,
+      "protein_g": 8.9,
+      "carbs_g": 27.4,
+      "fat_g": 2.6,
+      "fiber_g": 7.6
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "black_eyed_peas",
+    "name": "Black Eyed Peas",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 340.0,
+      "protein_g": 22.0,
+      "carbs_g": 60.0,
+      "fat_g": 1.5,
+      "fiber_g": 15.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "sprouted_moong",
+    "name": "Sprouted Moong",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 340.0,
+      "protein_g": 22.0,
+      "carbs_g": 60.0,
+      "fat_g": 1.5,
+      "fiber_g": 15.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": [
+        "digestive_weakness",
+        "fever",
+        "postpartum",
+        "weight_loss"
+      ]
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "lentils_brown",
+    "name": "Lentils Brown",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 340.0,
+      "protein_g": 22.0,
+      "carbs_g": 60.0,
+      "fat_g": 1.5,
+      "fiber_g": 15.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "soya_chunks",
+    "name": "Soya Chunks",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 345.0,
+      "protein_g": 52.0,
+      "carbs_g": 33.0,
+      "fat_g": 0.5,
+      "fiber_g": 13.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "tofu_firm",
+    "name": "Tofu Firm",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 76.0,
+      "protein_g": 8.0,
+      "carbs_g": 2.0,
+      "fat_g": 4.0,
+      "fiber_g": 0.3
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "tempeh",
+    "name": "Tempeh",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 340.0,
+      "protein_g": 22.0,
+      "carbs_g": 60.0,
+      "fat_g": 1.5,
+      "fiber_g": 15.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "edamame",
+    "name": "Edamame",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 340.0,
+      "protein_g": 22.0,
+      "carbs_g": 60.0,
+      "fat_g": 1.5,
+      "fiber_g": 15.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "peanuts",
+    "name": "Peanuts",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 340.0,
+      "protein_g": 22.0,
+      "carbs_g": 60.0,
+      "fat_g": 1.5,
+      "fiber_g": 15.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "chickpea_flour_besan",
+    "name": "Chickpea Flour Besan",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 387.0,
+      "protein_g": 22.0,
+      "carbs_g": 58.0,
+      "fat_g": 6.0,
+      "fiber_g": 10.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "green_peas",
+    "name": "Green Peas",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 340.0,
+      "protein_g": 22.0,
+      "carbs_g": 60.0,
+      "fat_g": 1.5,
+      "fiber_g": 15.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "kidney_beans",
+    "name": "Kidney Beans",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 340.0,
+      "protein_g": 22.0,
+      "carbs_g": 60.0,
+      "fat_g": 1.5,
+      "fiber_g": 15.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "black_beans",
+    "name": "Black Beans",
+    "category": "legume",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 340.0,
+      "protein_g": 22.0,
+      "carbs_g": 60.0,
+      "fat_g": 1.5,
+      "fiber_g": 15.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 30,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "spinach",
+    "name": "Spinach",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 23.0,
+      "protein_g": 2.9,
+      "carbs_g": 3.6,
+      "fat_g": 0.4,
+      "fiber_g": 2.2
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "methi_fenugreek_leaves",
+    "name": "Methi Fenugreek Leaves",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "palak",
+    "name": "Palak",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 23.0,
+      "protein_g": 2.9,
+      "carbs_g": 3.6,
+      "fat_g": 0.4,
+      "fiber_g": 2.2
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "broccoli",
+    "name": "Broccoli",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "cauliflower",
+    "name": "Cauliflower",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "cabbage",
+    "name": "Cabbage",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "carrot",
+    "name": "Carrot",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "beetroot",
+    "name": "Beetroot",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "bottle_gourd",
+    "name": "Bottle Gourd",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "ridge_gourd",
+    "name": "Ridge Gourd",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "bitter_gourd_karela",
+    "name": "Bitter Gourd Karela",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": [
+        "diabetes",
+        "kapha_excess",
+        "skin_conditions"
+      ]
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "drumstick_moringa",
+    "name": "Drumstick Moringa",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "tomato",
+    "name": "Tomato",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 18.0,
+      "protein_g": 0.9,
+      "carbs_g": 3.9,
+      "fat_g": 0.2,
+      "fiber_g": 1.2
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sour"
+      ],
+      "virya": "heating",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": 1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "onion",
+    "name": "Onion",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 40.0,
+      "protein_g": 1.1,
+      "carbs_g": 9.3,
+      "fat_g": 0.1,
+      "fiber_g": 1.7
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "heating",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": 1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "garlic",
+    "name": "Garlic",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 149.0,
+      "protein_g": 6.4,
+      "carbs_g": 33.1,
+      "fat_g": 0.5,
+      "fiber_g": 2.1
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "heating",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": 1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "ginger",
+    "name": "Ginger",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 80.0,
+      "protein_g": 1.8,
+      "carbs_g": 17.8,
+      "fat_g": 0.7,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "heating",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": 1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": [
+        "poor_digestion",
+        "cold",
+        "nausea"
+      ]
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "capsicum_bell_pepper",
+    "name": "Capsicum Bell Pepper",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "potato",
+    "name": "Potato",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 77.0,
+      "protein_g": 2.0,
+      "carbs_g": 17.0,
+      "fat_g": 0.1,
+      "fiber_g": 2.2
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "sweet_potato",
+    "name": "Sweet Potato",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 86.0,
+      "protein_g": 1.6,
+      "carbs_g": 20.1,
+      "fat_g": 0.1,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "yam",
+    "name": "Yam",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "pumpkin",
+    "name": "Pumpkin",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "raw_banana",
+    "name": "Raw Banana",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "jackfruit",
+    "name": "Jackfruit",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "mushroom",
+    "name": "Mushroom",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "corn_sweet",
+    "name": "Corn Sweet",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "french_beans",
+    "name": "French Beans",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "cluster_beans_gavar",
+    "name": "Cluster Beans Gavar",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "ivy_gourd_tindora",
+    "name": "Ivy Gourd Tindora",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "raw_papaya",
+    "name": "Raw Papaya",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "lotus_stem",
+    "name": "Lotus Stem",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "colocasia_arbi",
+    "name": "Colocasia Arbi",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "raw_mango",
+    "name": "Raw Mango",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "cucumber",
+    "name": "Cucumber",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "zucchini",
+    "name": "Zucchini",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "asparagus",
+    "name": "Asparagus",
+    "category": "vegetable",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 30.0,
+      "protein_g": 2.0,
+      "carbs_g": 5.0,
+      "fat_g": 0.2,
+      "fiber_g": 3.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 15,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "milk_full_fat",
+    "name": "Milk Full Fat",
+    "category": "dairy",
+    "dietary_type": [
+      "vegetarian"
+    ],
+    "nutrition_per_100g": {
+      "calories": 61.0,
+      "protein_g": 3.2,
+      "carbs_g": 4.8,
+      "fat_g": 3.3,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": false,
+    "common_allergen": true
+  },
+  {
+    "id": "curd_yogurt",
+    "name": "Curd Yogurt",
+    "category": "dairy",
+    "dietary_type": [
+      "vegetarian"
+    ],
+    "nutrition_per_100g": {
+      "calories": 98.0,
+      "protein_g": 9.0,
+      "carbs_g": 3.4,
+      "fat_g": 4.3,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sour"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": false,
+    "common_allergen": true
+  },
+  {
+    "id": "paneer",
+    "name": "Paneer",
+    "category": "dairy",
+    "dietary_type": [
+      "vegetarian"
+    ],
+    "nutrition_per_100g": {
+      "calories": 265.0,
+      "protein_g": 18.0,
+      "carbs_g": 1.2,
+      "fat_g": 20.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": false,
+    "common_allergen": true
+  },
+  {
+    "id": "ghee",
+    "name": "Ghee",
+    "category": "dairy",
+    "dietary_type": [
+      "vegetarian"
+    ],
+    "nutrition_per_100g": {
+      "calories": 900.0,
+      "protein_g": 0.0,
+      "carbs_g": 0.0,
+      "fat_g": 100.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": [
+        "vata_imbalance",
+        "dry_skin",
+        "constipation",
+        "joint_pain"
+      ]
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": false,
+    "common_allergen": true
+  },
+  {
+    "id": "butter",
+    "name": "Butter",
+    "category": "dairy",
+    "dietary_type": [
+      "vegetarian"
+    ],
+    "nutrition_per_100g": {
+      "calories": 717.0,
+      "protein_g": 0.8,
+      "carbs_g": 0.1,
+      "fat_g": 81.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": false,
+    "common_allergen": true
+  },
+  {
+    "id": "buttermilk_chaas",
+    "name": "Buttermilk Chaas",
+    "category": "dairy",
+    "dietary_type": [
+      "vegetarian"
+    ],
+    "nutrition_per_100g": {
+      "calories": 150.0,
+      "protein_g": 8.0,
+      "carbs_g": 5.0,
+      "fat_g": 10.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": false,
+    "common_allergen": true
+  },
+  {
+    "id": "whey",
+    "name": "Whey",
+    "category": "dairy",
+    "dietary_type": [
+      "vegetarian"
+    ],
+    "nutrition_per_100g": {
+      "calories": 150.0,
+      "protein_g": 8.0,
+      "carbs_g": 5.0,
+      "fat_g": 10.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": false,
+    "common_allergen": true
+  },
+  {
+    "id": "cottage_cheese",
+    "name": "Cottage Cheese",
+    "category": "dairy",
+    "dietary_type": [
+      "vegetarian"
+    ],
+    "nutrition_per_100g": {
+      "calories": 150.0,
+      "protein_g": 8.0,
+      "carbs_g": 5.0,
+      "fat_g": 10.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": false,
+    "common_allergen": true
+  },
+  {
+    "id": "cream",
+    "name": "Cream",
+    "category": "dairy",
+    "dietary_type": [
+      "vegetarian"
+    ],
+    "nutrition_per_100g": {
+      "calories": 150.0,
+      "protein_g": 8.0,
+      "carbs_g": 5.0,
+      "fat_g": 10.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": false,
+    "common_allergen": true
+  },
+  {
+    "id": "lassi",
+    "name": "Lassi",
+    "category": "dairy",
+    "dietary_type": [
+      "vegetarian"
+    ],
+    "nutrition_per_100g": {
+      "calories": 150.0,
+      "protein_g": 8.0,
+      "carbs_g": 5.0,
+      "fat_g": 10.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": false,
+    "common_allergen": true
+  },
+  {
+    "id": "coconut_milk",
+    "name": "Coconut Milk",
+    "category": "vegan_protein",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 230.0,
+      "protein_g": 2.3,
+      "carbs_g": 5.5,
+      "fat_g": 24.0,
+      "fiber_g": 2.2
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": 0,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "almond_milk",
+    "name": "Almond Milk",
+    "category": "vegan_protein",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 3.0,
+      "carbs_g": 4.0,
+      "fat_g": 2.0,
+      "fiber_g": 1.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": 0,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "soy_milk",
+    "name": "Soy Milk",
+    "category": "vegan_protein",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 3.0,
+      "carbs_g": 4.0,
+      "fat_g": 2.0,
+      "fiber_g": 1.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": 0,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "oat_milk",
+    "name": "Oat Milk",
+    "category": "vegan_protein",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 3.0,
+      "carbs_g": 4.0,
+      "fat_g": 2.0,
+      "fiber_g": 1.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": 0,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "coconut_yogurt",
+    "name": "Coconut Yogurt",
+    "category": "vegan_protein",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 3.0,
+      "carbs_g": 4.0,
+      "fat_g": 2.0,
+      "fiber_g": 1.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": 0,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "vegan_paneer_tofu",
+    "name": "Vegan Paneer Tofu",
+    "category": "vegan_protein",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 76.0,
+      "protein_g": 8.0,
+      "carbs_g": 2.0,
+      "fat_g": 4.0,
+      "fiber_g": 0.3
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": 0,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "nutritional_yeast",
+    "name": "Nutritional Yeast",
+    "category": "vegan_protein",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 3.0,
+      "carbs_g": 4.0,
+      "fat_g": 2.0,
+      "fiber_g": 1.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": 0,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "coconut_cream",
+    "name": "Coconut Cream",
+    "category": "vegan_protein",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 3.0,
+      "carbs_g": 4.0,
+      "fat_g": 2.0,
+      "fiber_g": 1.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": 0,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "cashew_cream",
+    "name": "Cashew Cream",
+    "category": "vegan_protein",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 3.0,
+      "carbs_g": 4.0,
+      "fat_g": 2.0,
+      "fiber_g": 1.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": 0,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "flax_milk",
+    "name": "Flax Milk",
+    "category": "vegan_protein",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 3.0,
+      "carbs_g": 4.0,
+      "fat_g": 2.0,
+      "fiber_g": 1.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": 0,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "moderate",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "lunch"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "banana",
+    "name": "Banana",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 89.0,
+      "protein_g": 1.1,
+      "carbs_g": 23.0,
+      "fat_g": 0.3,
+      "fiber_g": 2.6
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "apple",
+    "name": "Apple",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 52.0,
+      "protein_g": 0.3,
+      "carbs_g": 13.8,
+      "fat_g": 0.2,
+      "fiber_g": 2.4
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "mango",
+    "name": "Mango",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 60.0,
+      "protein_g": 0.8,
+      "carbs_g": 15.0,
+      "fat_g": 0.4,
+      "fiber_g": 1.6
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "papaya",
+    "name": "Papaya",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "pomegranate",
+    "name": "Pomegranate",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "amla",
+    "name": "Amla",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": [
+        "pitta_excess",
+        "hair_health",
+        "immunity",
+        "acidity"
+      ]
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "coconut",
+    "name": "Coconut",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "dates",
+    "name": "Dates",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "figs",
+    "name": "Figs",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "guava",
+    "name": "Guava",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "watermelon",
+    "name": "Watermelon",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": 1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "orange",
+    "name": "Orange",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "mosambi_sweet_lime",
+    "name": "Mosambi Sweet Lime",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "pear",
+    "name": "Pear",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "chikoo_sapota",
+    "name": "Chikoo Sapota",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "jamun",
+    "name": "Jamun",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "pineapple",
+    "name": "Pineapple",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "kiwi",
+    "name": "Kiwi",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "strawberry",
+    "name": "Strawberry",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "grapes",
+    "name": "Grapes",
+    "category": "fruit",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 50.0,
+      "protein_g": 0.5,
+      "carbs_g": 13.0,
+      "fat_g": 0.2,
+      "fiber_g": 2.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": 1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "almonds",
+    "name": "Almonds",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 579.0,
+      "protein_g": 21.0,
+      "carbs_g": 22.0,
+      "fat_g": 50.0,
+      "fiber_g": 12.5
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "walnuts",
+    "name": "Walnuts",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 654.0,
+      "protein_g": 15.2,
+      "carbs_g": 13.7,
+      "fat_g": 65.2,
+      "fiber_g": 6.7
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "cashews",
+    "name": "Cashews",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 553.0,
+      "protein_g": 18.2,
+      "carbs_g": 30.2,
+      "fat_g": 43.8,
+      "fiber_g": 3.3
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "pistachios",
+    "name": "Pistachios",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 600.0,
+      "protein_g": 20.0,
+      "carbs_g": 20.0,
+      "fat_g": 50.0,
+      "fiber_g": 10.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "peanuts_roasted",
+    "name": "Peanuts Roasted",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 600.0,
+      "protein_g": 20.0,
+      "carbs_g": 20.0,
+      "fat_g": 50.0,
+      "fiber_g": 10.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "sunflower_seeds",
+    "name": "Sunflower Seeds",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 600.0,
+      "protein_g": 20.0,
+      "carbs_g": 20.0,
+      "fat_g": 50.0,
+      "fiber_g": 10.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "pumpkin_seeds",
+    "name": "Pumpkin Seeds",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 600.0,
+      "protein_g": 20.0,
+      "carbs_g": 20.0,
+      "fat_g": 50.0,
+      "fiber_g": 10.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "chia_seeds",
+    "name": "Chia Seeds",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 486.0,
+      "protein_g": 16.5,
+      "carbs_g": 42.1,
+      "fat_g": 30.7,
+      "fiber_g": 34.4
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "flax_seeds",
+    "name": "Flax Seeds",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 600.0,
+      "protein_g": 20.0,
+      "carbs_g": 20.0,
+      "fat_g": 50.0,
+      "fiber_g": 10.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "sesame_seeds_til",
+    "name": "Sesame Seeds Til",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 600.0,
+      "protein_g": 20.0,
+      "carbs_g": 20.0,
+      "fat_g": 50.0,
+      "fiber_g": 10.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "hemp_seeds",
+    "name": "Hemp Seeds",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 600.0,
+      "protein_g": 20.0,
+      "carbs_g": 20.0,
+      "fat_g": 50.0,
+      "fiber_g": 10.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "melon_seeds_magaz",
+    "name": "Melon Seeds Magaz",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 600.0,
+      "protein_g": 20.0,
+      "carbs_g": 20.0,
+      "fat_g": 50.0,
+      "fiber_g": 10.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "pine_nuts",
+    "name": "Pine Nuts",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 600.0,
+      "protein_g": 20.0,
+      "carbs_g": 20.0,
+      "fat_g": 50.0,
+      "fiber_g": 10.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "fox_nuts_makhana",
+    "name": "Fox Nuts Makhana",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 600.0,
+      "protein_g": 20.0,
+      "carbs_g": 20.0,
+      "fat_g": 50.0,
+      "fiber_g": 10.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "watermelon_seeds",
+    "name": "Watermelon Seeds",
+    "category": "nut_seed",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 600.0,
+      "protein_g": 20.0,
+      "carbs_g": 20.0,
+      "fat_g": 50.0,
+      "fiber_g": 10.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": true
+  },
+  {
+    "id": "turmeric",
+    "name": "Turmeric",
+    "category": "spice",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 300.0,
+      "protein_g": 10.0,
+      "carbs_g": 60.0,
+      "fat_g": 5.0,
+      "fiber_g": 20.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter"
+      ],
+      "virya": "heating",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": [
+        "inflammation",
+        "immunity",
+        "skin_health"
+      ]
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "cumin_jeera",
+    "name": "Cumin Jeera",
+    "category": "spice",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 300.0,
+      "protein_g": 10.0,
+      "carbs_g": 60.0,
+      "fat_g": 5.0,
+      "fiber_g": 20.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "heating",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "coriander_dhania",
+    "name": "Coriander Dhania",
+    "category": "spice",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 300.0,
+      "protein_g": 10.0,
+      "carbs_g": 60.0,
+      "fat_g": 5.0,
+      "fiber_g": 20.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "fennel_saunf",
+    "name": "Fennel Saunf",
+    "category": "spice",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 300.0,
+      "protein_g": 10.0,
+      "carbs_g": 60.0,
+      "fat_g": 5.0,
+      "fiber_g": 20.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "cardamom_elaichi",
+    "name": "Cardamom Elaichi",
+    "category": "spice",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 300.0,
+      "protein_g": 10.0,
+      "carbs_g": 60.0,
+      "fat_g": 5.0,
+      "fiber_g": 20.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "cooling",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "cinnamon_dalchini",
+    "name": "Cinnamon Dalchini",
+    "category": "spice",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 300.0,
+      "protein_g": 10.0,
+      "carbs_g": 60.0,
+      "fat_g": 5.0,
+      "fiber_g": 20.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "heating",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "black_pepper",
+    "name": "Black Pepper",
+    "category": "spice",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 300.0,
+      "protein_g": 10.0,
+      "carbs_g": 60.0,
+      "fat_g": 5.0,
+      "fiber_g": 20.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "heating",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "ginger_dry_saunth",
+    "name": "Ginger Dry Saunth",
+    "category": "spice",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 300.0,
+      "protein_g": 10.0,
+      "carbs_g": 60.0,
+      "fat_g": 5.0,
+      "fiber_g": 20.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "heating",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": [
+        "poor_digestion",
+        "cold",
+        "nausea"
+      ]
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "fenugreek_seeds_methi",
+    "name": "Fenugreek Seeds Methi",
+    "category": "spice",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 300.0,
+      "protein_g": 10.0,
+      "carbs_g": 60.0,
+      "fat_g": 5.0,
+      "fiber_g": 20.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "bitter"
+      ],
+      "virya": "heating",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "ajwain",
+    "name": "Ajwain",
+    "category": "spice",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 300.0,
+      "protein_g": 10.0,
+      "carbs_g": 60.0,
+      "fat_g": 5.0,
+      "fiber_g": 20.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "heating",
+      "vipaka": "pungent",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "sesame_oil",
+    "name": "Sesame Oil",
+    "category": "oil",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 884.0,
+      "protein_g": 0.0,
+      "carbs_g": 0.0,
+      "fat_g": 100.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "coconut_oil",
+    "name": "Coconut Oil",
+    "category": "oil",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 862.0,
+      "protein_g": 0.0,
+      "carbs_g": 0.0,
+      "fat_g": 100.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "ghee_oil",
+    "name": "Ghee Oil",
+    "category": "oil",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 900.0,
+      "protein_g": 0.0,
+      "carbs_g": 0.0,
+      "fat_g": 100.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "mustard_oil",
+    "name": "Mustard Oil",
+    "category": "oil",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 900.0,
+      "protein_g": 0.0,
+      "carbs_g": 0.0,
+      "fat_g": 100.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "olive_oil",
+    "name": "Olive Oil",
+    "category": "oil",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 884.0,
+      "protein_g": 0.0,
+      "carbs_g": 0.0,
+      "fat_g": 100.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": 1
+      },
+      "agni_effect": "heavy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "lunch",
+      "dinner"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "green_tea",
+    "name": "Green Tea",
+    "category": "beverage",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 10.0,
+      "protein_g": 0.0,
+      "carbs_g": 2.0,
+      "fat_g": 0.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "tulsi_tea",
+    "name": "Tulsi Tea",
+    "category": "beverage",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 10.0,
+      "protein_g": 0.0,
+      "carbs_g": 2.0,
+      "fat_g": 0.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "ginger_tea",
+    "name": "Ginger Tea",
+    "category": "beverage",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 10.0,
+      "protein_g": 0.0,
+      "carbs_g": 2.0,
+      "fat_g": 0.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "pungent"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": [
+        "poor_digestion",
+        "cold",
+        "nausea"
+      ]
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "coconut_water",
+    "name": "Coconut Water",
+    "category": "beverage",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 10.0,
+      "protein_g": 0.0,
+      "carbs_g": 2.0,
+      "fat_g": 0.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sweet",
+        "astringent"
+      ],
+      "virya": "cooling",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": -1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  },
+  {
+    "id": "lemon_water",
+    "name": "Lemon Water",
+    "category": "beverage",
+    "dietary_type": [
+      "vegetarian",
+      "vegan"
+    ],
+    "nutrition_per_100g": {
+      "calories": 10.0,
+      "protein_g": 0.0,
+      "carbs_g": 2.0,
+      "fat_g": 0.0,
+      "fiber_g": 0.0
+    },
+    "ayurvedic": {
+      "rasa": [
+        "sour"
+      ],
+      "virya": "heating",
+      "vipaka": "sweet",
+      "dosha_effect": {
+        "vata": -1,
+        "pitta": 1,
+        "kapha": -1
+      },
+      "agni_effect": "easy",
+      "best_for": []
+    },
+    "meal_suitable": [
+      "breakfast",
+      "snack"
+    ],
+    "prep_time_minutes": 0,
+    "season_suitable": [
+      "all"
+    ],
+    "vegan": true,
+    "common_allergen": false
+  }
+]

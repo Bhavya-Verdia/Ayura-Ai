@@ -1,0 +1,408 @@
+/* ─── HEALTH TIMELINE PAGE ──────────────────────────────── */
+.ht-root {
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 80px;
+}
+
+.ht-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 32px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 40px 24px 0;
+}
+.ht-page-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ht-page-title {
+  font-size: 2.5rem;
+}
+.ht-page-sub {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+.ht-refresh-btn {
+  white-space: nowrap;
+}
+
+/* ── Progress Strip ── */
+.ht-progress-strip {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  margin: 0 auto 32px;
+  max-width: 900px;
+  padding: 24px;
+  box-shadow: var(--glass-shadow-light);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.ht-progress-strip-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+.ht-strip-icon {
+  font-size: 1.4rem;
+}
+.ht-strip-date {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-left: auto;
+}
+.ht-progress-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+.ht-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 140px;
+  background: rgba(255,255,255,0.03);
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+}
+.ht-stat-icon {
+  font-size: 1.5rem;
+  background: rgba(255,255,255,0.05);
+  padding: 10px;
+  border-radius: 12px;
+}
+.ht-stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.ht-stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+.ht-trend-improving .ht-stat-value { color: var(--ayura-sage); }
+.ht-trend-declining .ht-stat-value { color: var(--ayura-rose); }
+
+/* ── Filters ── */
+.ht-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 900px;
+  margin: 0 auto 32px;
+  padding: 0 24px;
+}
+.ht-filter-pill {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.ht-filter-pill:hover {
+  background: var(--border-light-hover);
+  color: var(--text-primary);
+}
+.ht-filter-pill.active {
+  background: var(--ayura-teal);
+  color: #000;
+  border-color: var(--ayura-teal);
+}
+
+/* ── Timeline Body ── */
+.ht-body {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+}
+
+.ht-timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-left: 24px;
+}
+
+/* Vertical line */
+.ht-vline {
+  position: absolute;
+  left: 31px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--ayura-teal), var(--ayura-violet));
+  opacity: 0.3;
+  z-index: 0;
+}
+
+/* Date Header */
+.ht-date-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0 16px -24px;
+  position: relative;
+  z-index: 1;
+}
+.ht-date-badge {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.ht-date-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-light);
+}
+
+/* Event Row */
+.ht-event-row {
+  display: flex;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Event Dot */
+.ht-event-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ayura-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  left: -10px; /* offset to center on vline */
+  z-index: 2;
+}
+.ht-dot-icon {
+  font-size: 1.1rem;
+}
+
+/* Event Card */
+.ht-event-card {
+  flex: 1;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.ht-event-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.ht-event-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ht-event-time {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.ht-event-id {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-family: monospace;
+  opacity: 0.5;
+}
+
+.ht-event-title {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+.ht-event-desc {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Event Details (Chips, etc) */
+.ht-event-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  background: rgba(0,0,0,0.1);
+  padding: 16px;
+  border-radius: 12px;
+}
+[data-theme='light'] .ht-event-details {
+  background: rgba(0,0,0,0.03);
+}
+
+.ht-detail-chip {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.ht-chip-amber { background: rgba(245,158,11,0.1); color: #f59e0b; border-color: rgba(245,158,11,0.2); }
+.ht-chip-muted { background: rgba(255,255,255,0.05); color: var(--text-secondary); border-color: var(--border-subtle); }
+.ht-chip-teal { background: rgba(45,212,191,0.1); color: #2dd4bf; border-color: rgba(45,212,191,0.2); }
+.ht-chip-primary { background: rgba(13,148,136,0.1); color: var(--ayura-teal-lt); border-color: rgba(13,148,136,0.2); }
+.ht-chip-sage { background: rgba(16,185,129,0.1); color: #10b981; border-color: rgba(16,185,129,0.2); }
+.ht-chip-rose { background: rgba(244,63,94,0.1); color: #f43f5e; border-color: rgba(244,63,94,0.2); }
+
+.ht-detail-note {
+  width: 100%;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-style: italic;
+  margin-top: 8px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border-light);
+}
+
+/* Adherence Bar */
+.ht-adherence-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+.ht-adherence-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  width: 100px;
+}
+.ht-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--border-light);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ht-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ayura-teal), var(--ayura-emerald));
+  border-radius: 4px;
+}
+.ht-adherence-pct {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  width: 40px;
+  text-align: right;
+}
+
+/* Empty State */
+.ht-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 20px;
+  background: var(--glass-bg);
+  border: 1px dashed var(--border-medium);
+  border-radius: 24px;
+}
+.ht-empty-orb {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+.ht-empty-title {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+.ht-empty-desc {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  max-width: 400px;
+  line-height: 1.6;
+}
+.ht-empty-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Load More & End */
+.ht-load-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 40px 0;
+}
+.ht-timeline-end {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 60px 0;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.ht-end-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-medium);
+}
+
+@media (max-width: 768px) {
+  .ht-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .ht-event-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .ht-event-dot {
+    display: none;
+  }
+  .ht-vline {
+    display: none;
+  }
+  .ht-timeline {
+    padding-left: 0;
+  }
+  .ht-date-header {
+    margin-left: 0;
+  }
+}

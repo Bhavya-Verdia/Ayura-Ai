@@ -1,0 +1,448 @@
+/* ─── REMEDIES PAGE ───────────────────────────────────────── */
+.rem-root {
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 80px;
+  overflow: hidden;
+}
+
+/* Background orbs */
+.rem-bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.6;
+}
+.rem-orb-1 {
+  width: 600px;
+  height: 600px;
+  background: var(--aurora-3);
+  top: -100px;
+  right: -100px;
+}
+.rem-orb-2 {
+  width: 500px;
+  height: 500px;
+  background: var(--aurora-1);
+  bottom: -50px;
+  left: -200px;
+}
+
+.rem-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+/* Header */
+.rem-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+.rem-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rem-back-btn {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rem-back-btn:hover {
+  color: var(--text-primary);
+}
+.rem-page-title {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+.rem-page-sub {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+.rem-header-right {
+  margin-top: 36px;
+}
+.rem-regen-btn {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.rem-regen-btn:hover {
+  background: var(--border-light-hover);
+}
+
+/* Disclaimer */
+.rem-disclaimer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  color: #fb923c;
+  padding: 16px 20px;
+  border-radius: 16px;
+  margin-bottom: 32px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Tabs */
+.rem-tabs-wrapper {
+  margin-bottom: 24px;
+}
+.rem-tabs {
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 6px;
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  width: fit-content;
+}
+[data-theme='light'] .rem-tabs {
+  background: rgba(0, 0, 0, 0.04);
+}
+.rem-tabs .tab {
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rem-tabs .tab:hover {
+  color: var(--text-primary);
+}
+.rem-tabs .tab.active {
+  background: var(--ayura-surface);
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.rem-tab-count {
+  background: var(--primary);
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+/* Filter Bar */
+.rem-filter-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.rem-filter-chip {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.rem-filter-chip:hover {
+  background: var(--border-light-hover);
+  color: var(--text-primary);
+}
+.rem-filter-chip.active {
+  background: var(--ayura-teal);
+  color: #000;
+  border-color: var(--ayura-teal);
+  font-weight: 600;
+}
+
+/* Cards Grid */
+.rem-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+}
+
+/* Remedy Card */
+.rem-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--glass-shadow-light);
+}
+.rem-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--border-left-color, var(--border-light));
+}
+
+.rem-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.rem-card-title-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.rem-card-icon {
+  font-size: 2rem;
+  background: rgba(255,255,255,0.05);
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rem-card-name {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+.rem-card-symptom {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.rem-card-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.rem-type-badge {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.rem-safety-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: fit-content;
+}
+.rem-safety-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.rem-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rem-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.rem-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.rem-chip {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+.rem-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  background: rgba(0,0,0,0.15);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+}
+[data-theme='light'] .rem-info-grid {
+  background: rgba(0,0,0,0.03);
+}
+.rem-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rem-info-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.rem-info-val {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.rem-text {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.rem-expand-btn {
+  background: transparent;
+  color: var(--ayura-teal);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 8px 0;
+  text-align: left;
+  border-top: 1px solid var(--border-light);
+  margin-top: 4px;
+}
+.rem-expand-btn:hover {
+  color: var(--ayura-teal-lt);
+}
+
+.rem-rationale {
+  background: rgba(45,212,191,0.05);
+  border: 1px solid rgba(45,212,191,0.1);
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.rem-warnings-section {
+  background: rgba(244,63,94,0.05);
+  border: 1px solid rgba(244,63,94,0.1);
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 12px;
+}
+.rem-warn-label {
+  color: #f43f5e;
+}
+.rem-warnings {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.rem-warning-item {
+  color: #fda4af;
+  font-size: 0.9rem;
+  position: relative;
+  padding-left: 16px;
+}
+.rem-warning-item::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #f43f5e;
+}
+
+/* Empty State */
+.rem-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 20px;
+  background: var(--glass-bg);
+  border: 1px dashed var(--border-medium);
+  border-radius: 24px;
+  grid-column: 1 / -1;
+}
+.rem-empty-emoji {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.8;
+}
+.rem-empty-title {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+.rem-empty-sub {
+  color: var(--text-secondary);
+  max-width: 400px;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+/* Skeleton */
+.rem-skeleton-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.rem-skeleton-header {
+  display: flex;
+  justify-content: space-between;
+}
+.rem-skel-title { width: 60%; height: 24px; border-radius: 8px; }
+.rem-skel-badge { width: 80px; height: 24px; border-radius: 12px; }
+.rem-skel-sub { width: 40%; height: 16px; border-radius: 6px; }
+.rem-skel-chips { display: flex; gap: 8px; margin: 8px 0; }
+.rem-skel-chip { width: 60px; height: 28px; border-radius: 12px; }
+.rem-skel-body { width: 100%; height: 60px; border-radius: 8px; }
+.rem-skel-body.short { width: 70%; height: 16px; }
+
+@media (max-width: 768px) {
+  .rem-page-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .rem-header-right {
+    margin-top: 0;
+  }
+  .rem-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}

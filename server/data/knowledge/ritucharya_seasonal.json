@@ -1,0 +1,104 @@
+{
+  "seasons": [
+    {
+      "id": "vasanta",
+      "name": "Vasanta (Spring)",
+      "months_india": ["March", "April"],
+      "dominantDosha": "kapha",
+      "description": "Kapha accumulated over winter begins to liquefy and flow. Digestion is weak. Allergens are high.",
+      "dietGuidelines": {
+        "favor": ["bitter_greens", "honey", "barley", "mung_dal", "ginger", "black_pepper", "old_rice"],
+        "avoid": ["dairy_excess", "cold_foods", "sweets", "oily_foods", "wheat_excess"],
+        "notes": "Light diet is essential — avoid heavy meals. Honey can be taken (unheated) to clear Kapha mucus."
+      },
+      "lifestyleGuidelines": ["Wake before sunrise (Brahma Muhurta)", "Vigorous exercise — Kapha needs movement in spring", "Dry brushing (Garshana) to stimulate lymphatics", "Neti pot for nasal allergies"],
+      "yogaFocus": ["Sun Salutations vigorous", "Kapalabhati pranayama", "Twist poses", "Avoid long Savasana"],
+      "herbsRecommended": ["Trikatu", "Triphala", "Neem", "Tulsi"],
+      "warningsForDoshas": {
+        "kapha": "Most vulnerable — follow all guidelines strictly",
+        "pitta": "Moderate risk — spring heat may trigger Pitta. Avoid excess spice.",
+        "vata": "Least risk — can enjoy more varied diet but maintain warmth"
+      }
+    },
+    {
+      "id": "grishma",
+      "name": "Grishma (Summer)",
+      "months_india": ["May", "June"],
+      "dominantDosha": "pitta",
+      "description": "Extreme heat aggravates Pitta. Agni (digestive fire) weakens paradoxically as body diverts energy to cooling. Dehydration risk.",
+      "dietGuidelines": {
+        "favor": ["coconut_water", "cucumber", "watermelon", "sweet_fruits", "rice", "mung_dal", "cooling_herbs", "ghee"],
+        "avoid": ["spicy_food", "fermented_food", "alcohol", "excess_sour", "red_meat", "hot_soups"],
+        "notes": "Cold (but not ice-cold) foods acceptable this season for Pitta types. Lighter meals."
+      },
+      "lifestyleGuidelines": ["Exercise only before 8am or after 6pm", "Moonlight walks in evening", "Apply sandalwood paste or coconut oil on forehead", "Wear white, blue, green colours", "Sleep slightly longer"],
+      "yogaFocus": ["Moon Salutations", "Shitali and Shitkari pranayama", "Restorative poses", "Avoid hot yoga"],
+      "herbsRecommended": ["Shatavari", "Amalaki (Amla)", "Gulkand (rose petal jam)", "Brahmi"],
+      "warningsForDoshas": {
+        "pitta": "Most vulnerable — the most critical season for Pitta types. Follow strictly.",
+        "kapha": "Benefits from summer heat — most active and healthy in summer",
+        "vata": "Vata may enjoy summer but avoid dehydration and excess travel"
+      }
+    },
+    {
+      "id": "varsha",
+      "name": "Varsha (Monsoon)",
+      "months_india": ["July", "August"],
+      "dominantDosha": "vata",
+      "description": "Vata is aggravated by rain, cold, and humidity fluctuations. Agni is weakest. Risk of waterborne disease is high.",
+      "dietGuidelines": {
+        "favor": ["sour_foods", "salty_foods", "sesame_oil", "ginger", "garlic", "turmeric", "warm_soups", "old_wine_small"],
+        "avoid": ["leafy_vegetables_raw", "river_fish", "cold_beverages", "yogurt_at_night", "excess_raw_food"],
+        "notes": "Warm, cooked, easily digestible foods only. Light meals. Boil drinking water."
+      },
+      "lifestyleGuidelines": ["Avoid getting wet in first rain", "Exercise indoors only", "Nasya (nasal oil drops) daily to prevent infection", "Drink only boiled water", "Avoid daytime sleeping"],
+      "yogaFocus": ["Indoor yoga only", "Nadi Shodhana pranayama", "Gentle flow", "Joint rotation exercises"],
+      "herbsRecommended": ["Ashwagandha", "Shatavari", "Ginger fresh", "Tulsi tea daily"],
+      "warningsForDoshas": {
+        "vata": "Most vulnerable — focus on grounding and warmth",
+        "pitta": "Internal heat may feel relief in monsoon — but avoid getting wet and chilled",
+        "kapha": "Risk of congestion and depression — maintain exercise routine"
+      }
+    },
+    {
+      "id": "sharad",
+      "name": "Sharad (Autumn)",
+      "months_india": ["September", "October"],
+      "dominantDosha": "pitta",
+      "description": "Pitta accumulated in summer now manifests. Classic time for Pitta-related diseases: acid reflux, skin issues, fevers.",
+      "dietGuidelines": {
+        "favor": ["sweet_foods", "bitter_foods", "astringent_foods", "amla", "pomegranate", "white_rice", "cow_ghee"],
+        "avoid": ["sour_food", "salt_excess", "oil_excess", "curd_at_night", "non_vegetarian_excess"],
+        "notes": "Virechana (purgation) is traditionally recommended at end of summer/beginning of autumn to clear Pitta. This is the ideal season for panchakarma."
+      },
+      "lifestyleGuidelines": ["Moonlight bath (sit in moonlight) for 15 min", "Wear pearls or silver (cooling in Ayurveda)", "Avoid afternoon naps", "Virechana this season if indicated"],
+      "yogaFocus": ["Cooling yoga continues", "Add twists to cleanse liver (Pitta organ)", "Cooling pranayama"],
+      "herbsRecommended": ["Amalaki", "Shatavari", "Sandalwood", "Yashtimadhu (licorice)"],
+      "warningsForDoshas": {
+        "pitta": "Second vulnerable season — do virechana (panchakarma detox) if possible",
+        "kapha": "Good season — energy improving",
+        "vata": "Vata increasing as days shorten — add warming foods and routine"
+      }
+    },
+    {
+      "id": "hemanta",
+      "name": "Hemanta/Shishira (Winter)",
+      "months_india": ["November", "December", "January", "February"],
+      "dominantDosha": "vata",
+      "description": "Cold increases Vata and Kapha. However, Agni (digestive fire) is strongest in winter — this is actually the best time to build strength and nourishment.",
+      "dietGuidelines": {
+        "favor": ["heavy_nourishing_foods", "wheat", "meat_if_eating", "dairy", "sesame_oil", "ghee", "root_vegetables", "warm_spices"],
+        "avoid": ["cold_foods", "salads_raw", "fruit_excess", "light_meals_only"],
+        "notes": "Winter is the best season to eat well and build Ojas (vital essence). The body can digest heavier foods now."
+      },
+      "lifestyleGuidelines": ["Exercise vigorously — best season for strength training", "Apply warm sesame oil daily", "Maintain warmth in extremities", "Early bedtime, slightly later wake"],
+      "yogaFocus": ["Strong practice with Sun Salutations", "Vigorous Kapha-clearing sequence", "Bhastrika pranayama for warmth"],
+      "herbsRecommended": ["Ashwagandha (best season)", "Chyawanprash", "Shatavari with milk", "Ginger"],
+      "warningsForDoshas": {
+        "vata": "Most vulnerable — prioritize warmth, routine, nourishment",
+        "kapha": "Risk of weight gain and lethargy — keep exercise consistent",
+        "pitta": "Best season — most comfortable and energetic"
+      }
+    }
+  ]
+}

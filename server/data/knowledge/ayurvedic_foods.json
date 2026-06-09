@@ -1,0 +1,227 @@
+[
+  {
+    "name": "Apple (Raw)",
+    "category": "Fruits",
+    "rasa": ["Sweet", "Astringent"],
+    "virya": "Cooling",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": 1, "pitta": -1, "kapha": -1},
+    "notes": "Raw apples can increase Vata (gas/bloating). Best eaten cooked or spiced with cinnamon for Vata."
+  },
+  {
+    "name": "Apple (Cooked)",
+    "category": "Fruits",
+    "rasa": ["Sweet"],
+    "virya": "Warming",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": -1, "kapha": 0},
+    "notes": "Excellent for Vata. Stewed apples are a great Ayurvedic breakfast."
+  },
+  {
+    "name": "Banana (Ripe)",
+    "category": "Fruits",
+    "rasa": ["Sweet"],
+    "virya": "Cooling",
+    "vipaka": "Sour",
+    "dosha_effect": {"vata": -1, "pitta": -1, "kapha": 1},
+    "notes": "Heavy and sticky. Good for Vata, but increases Kapha. Do not mix with milk (incompatible food)."
+  },
+  {
+    "name": "Pomegranate",
+    "category": "Fruits",
+    "rasa": ["Sweet", "Astringent"],
+    "virya": "Cooling",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": -1, "kapha": -1},
+    "notes": "Tridoshic. Excellent for balancing Pitta and cleansing blood."
+  },
+  {
+    "name": "Lemon",
+    "category": "Fruits",
+    "rasa": ["Sour"],
+    "virya": "Warming",
+    "vipaka": "Sour",
+    "dosha_effect": {"vata": -1, "pitta": 1, "kapha": -1},
+    "notes": "Stimulates digestion. Good for Vata and Kapha, but aggravates Pitta in excess."
+  },
+  {
+    "name": "Broccoli",
+    "category": "Vegetables",
+    "rasa": ["Astringent", "Bitter"],
+    "virya": "Cooling",
+    "vipaka": "Pungent",
+    "dosha_effect": {"vata": 1, "pitta": -1, "kapha": -1},
+    "notes": "Can cause gas for Vata. Must be cooked well with oil/ghee and spices (cumin, ginger)."
+  },
+  {
+    "name": "Sweet Potato",
+    "category": "Vegetables",
+    "rasa": ["Sweet"],
+    "virya": "Cooling",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": -1, "kapha": 1},
+    "notes": "Grounding and nourishing. Excellent for Vata and Pitta."
+  },
+  {
+    "name": "Zucchini",
+    "category": "Vegetables",
+    "rasa": ["Sweet"],
+    "virya": "Cooling",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": -1, "kapha": 0},
+    "notes": "Very easy to digest, mild. Great for Pitta."
+  },
+  {
+    "name": "Basmati Rice",
+    "category": "Grains",
+    "rasa": ["Sweet"],
+    "virya": "Cooling",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": -1, "kapha": 1},
+    "notes": "Lightest of all rice. Tridoshic if cooked with a little ghee. Ideal staple."
+  },
+  {
+    "name": "Quinoa",
+    "category": "Grains",
+    "rasa": ["Sweet", "Astringent"],
+    "virya": "Warming",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": 1, "pitta": -1, "kapha": -1},
+    "notes": "Light and dry. Great for Kapha, but Vata needs it cooked with plenty of moisture and oil."
+  },
+  {
+    "name": "Oats (Cooked)",
+    "category": "Grains",
+    "rasa": ["Sweet"],
+    "virya": "Cooling",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": -1, "kapha": 1},
+    "notes": "Moist and grounding. Avoid dry oats (like granola) for Vata."
+  },
+  {
+    "name": "Mung Dal (Split Yellow)",
+    "category": "Legumes",
+    "rasa": ["Sweet", "Astringent"],
+    "virya": "Cooling",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": -1, "kapha": -1},
+    "notes": "The most digestible legume. Tridoshic. Base for Kitchari."
+  },
+  {
+    "name": "Chickpeas (Garbanzo)",
+    "category": "Legumes",
+    "rasa": ["Astringent", "Sweet"],
+    "virya": "Cooling",
+    "vipaka": "Pungent",
+    "dosha_effect": {"vata": 1, "pitta": -1, "kapha": -1},
+    "notes": "Very Vata-aggravating. Must be soaked overnight, cooked very soft with heavy spices and oil."
+  },
+  {
+    "name": "Cow's Ghee",
+    "category": "Dairy/Oils",
+    "rasa": ["Sweet"],
+    "virya": "Cooling",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": -1, "kapha": 1},
+    "notes": "Best fat in Ayurveda. Rejuvenating (Rasayana), improves digestion (Agni) without aggravating Pitta."
+  },
+  {
+    "name": "Cow's Milk",
+    "category": "Dairy",
+    "rasa": ["Sweet"],
+    "virya": "Cooling",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": -1, "kapha": 1},
+    "notes": "Must be boiled, consumed warm, and preferably spiced (cardamom/turmeric). Do not mix with fruit or salt."
+  },
+  {
+    "name": "Yogurt",
+    "category": "Dairy",
+    "rasa": ["Sour", "Sweet"],
+    "virya": "Warming",
+    "vipaka": "Sour",
+    "dosha_effect": {"vata": -1, "pitta": 1, "kapha": 1},
+    "notes": "Heavy, channel-blocking (Abhishyandi). Avoid at night. Best consumed as watered-down buttermilk (Takra)."
+  },
+  {
+    "name": "Almonds",
+    "category": "Nuts/Seeds",
+    "rasa": ["Sweet"],
+    "virya": "Warming",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": 0, "kapha": 1},
+    "notes": "Must be soaked overnight and peeled. Sattvic and highly nourishing for brain and Vata."
+  },
+  {
+    "name": "Sesame Seeds",
+    "category": "Nuts/Seeds",
+    "rasa": ["Sweet", "Bitter", "Astringent"],
+    "virya": "Warming",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": 1, "kapha": -1},
+    "notes": "Best seed for Vata dosha. Deeply nourishing and warming."
+  },
+  {
+    "name": "Turmeric",
+    "category": "Spices",
+    "rasa": ["Bitter", "Astringent", "Pungent"],
+    "virya": "Warming",
+    "vipaka": "Pungent",
+    "dosha_effect": {"vata": 0, "pitta": 0, "kapha": -1},
+    "notes": "Tridoshic in moderation. Anti-inflammatory, blood purifier."
+  },
+  {
+    "name": "Ginger (Fresh)",
+    "category": "Spices",
+    "rasa": ["Pungent", "Sweet"],
+    "virya": "Warming",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": 0, "kapha": -1},
+    "notes": "Better for Pitta than dry ginger. Excellent for digestion and respiratory issues."
+  },
+  {
+    "name": "Ginger (Dry)",
+    "category": "Spices",
+    "rasa": ["Pungent"],
+    "virya": "Warming",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": 1, "kapha": -1},
+    "notes": "Hotter and more penetrating than fresh ginger. Reduces Kapha and Vata."
+  },
+  {
+    "name": "Cumin",
+    "category": "Spices",
+    "rasa": ["Pungent", "Bitter"],
+    "virya": "Warming",
+    "vipaka": "Pungent",
+    "dosha_effect": {"vata": -1, "pitta": 0, "kapha": -1},
+    "notes": "Essential digestive spice. Enhances absorption."
+  },
+  {
+    "name": "Coriander Seeds",
+    "category": "Spices",
+    "rasa": ["Astringent", "Bitter", "Sweet"],
+    "virya": "Cooling",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": -1, "kapha": -1},
+    "notes": "Best spice for Pitta. Cools the digestive tract."
+  },
+  {
+    "name": "Fennel Seeds",
+    "category": "Spices",
+    "rasa": ["Sweet", "Pungent", "Bitter"],
+    "virya": "Slightly Cooling",
+    "vipaka": "Sweet",
+    "dosha_effect": {"vata": -1, "pitta": -1, "kapha": -1},
+    "notes": "Excellent for digestion without aggravating Pitta. Chewed after meals."
+  },
+  {
+    "name": "Black Pepper",
+    "category": "Spices",
+    "rasa": ["Pungent"],
+    "virya": "Warming",
+    "vipaka": "Pungent",
+    "dosha_effect": {"vata": -1, "pitta": 1, "kapha": -1},
+    "notes": "Burns Ama (toxins). Enhances bioavailability of other herbs (like turmeric)."
+  }
+]

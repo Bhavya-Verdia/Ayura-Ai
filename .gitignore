@@ -1,0 +1,51 @@
+# Environment
+.env
+.env.*
+client/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+
+# SQLite dev database
+server/bodysync.db
+*.db
+
+# Uploads (user-generated)
+server/uploads/
+
+# ML Models
+server/ml/models/*.pkl
+server/ml/models/*.joblib
+
+# ChromaDB
+server/data/chromadb/
+
+# Node
+client/node_modules/
+client/dist/
+client/.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+postgres_data/
+mongo_data/
+
+# Logs
+*.log
+logs/

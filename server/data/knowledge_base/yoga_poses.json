@@ -1,0 +1,4003 @@
+[
+  {
+    "id": "boat",
+    "english_name": "Boat",
+    "sanskrit_name": "Navasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Strengthens the abdomen, hip flexors, and spine",
+      "Stimulates the kidneys, thyroid and prostate glands, and intestines",
+      "Helps relieve stress",
+      "Improves digestion"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a seated position the feet are lifted up so that the thighs are angled about 45-50 degrees relative to the earth",
+      "The tailbone is lengthened into the earth and the pubis pulls toward the navel",
+      "The shoulder blades are spread across the back and the hands reach around the back of the calves, with legs pulled towards the body",
+      "The chin is tipped slightly toward the sternum so that the base of the skull lifts lightly away from the back of the neck",
+      "Gaze is forward"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483071/yoga-api/1_txmirf.png"
+  },
+  {
+    "id": "half_boat",
+    "english_name": "Half Boat",
+    "sanskrit_name": "Ardha Navasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Strengthens the abdomen, hip flexors and spine",
+      "Stimulates the kidneys, thyroid, prostate glands and intestines",
+      "Helps relieve stress",
+      "Improves digestion"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a seated position the hands are gripped around the back of the legs and the knees are bent in a 90 degree angle",
+      "Both legs are pulled in towards the abdomen",
+      "The core is engaged to maintain balance on the sits bones (be sure that the back does not round)",
+      "The front of the torso lengthens between the pubis and top of the sternum as the spine extends in both directions reaching up to the sky and rooting down to the earth",
+      "The gaze is forward and Bandhas are engaged"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483073/yoga-api/2_ozh7sv.png"
+  },
+  {
+    "id": "cat",
+    "english_name": "Cat",
+    "sanskrit_name": "Marjaryasana",
+    "category": "standing",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Relieves the spine and neck",
+      "Energizes the body"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From box neutral shift some weight to the palms",
+      "The wrists, elbows and shoulders are in one line",
+      "The abdomen is pulled in and up with the spine arched in a strong Cobra spine",
+      "The crown of the head is towards the earth and the neck is relaxed",
+      "The gaze is between the arms towards the belly"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483075/yoga-api/7_a6aspg.png"
+  },
+  {
+    "id": "chair",
+    "english_name": "Chair",
+    "sanskrit_name": "Utkatasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Strengthens the ankles, thighs, calves, and spine",
+      "Stretches shoulders and chest",
+      "Stimulates the abdominal organs, diaphragm, and heart",
+      "Reduces flat feet",
+      "Energizes the entire body"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a standing position, the feet are together and rooted into the earth with toes actively lifted",
+      "The knees are bent and the weight of the body is on the heels of the feet",
+      "The pelvis is tucked in and the ribcage is lifted",
+      "The neck is a natural extension of the spine",
+      "The arms are lifted up toward the sky with the elbows straight and the biceps by the ears",
+      "The hands can be together or separated and facing each other with the fingers spread wide",
+      "The gaze is forward"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483078/yoga-api/9_ewvoun.png"
+  },
+  {
+    "id": "crow",
+    "english_name": "Crow",
+    "sanskrit_name": "Bakasana",
+    "category": "balancing",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Strengthens arms and wrists",
+      "Stretches the upper back",
+      "Strengthens the abdominal muscles",
+      "Opens the groin",
+      "Tones the abdominal organs"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From an inverted position, with the hips up and the head down, the arms are bent in a 90-degree angle with the knees resting on the elbows",
+      "The palms are firmly rooted into the earth with knuckles pressed firmly into the earth for support",
+      "The belly is pulled up and in towards the spine with the ribcage and chin lifted",
+      "The weight of the body shifts slightly forward as the toes lift up and off the earth into the full expression of the pose",
+      "The gaze is down and slightly forward"
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483083/yoga-api/13_hdjxuz.png"
+  },
+  {
+    "id": "dolphin",
+    "english_name": "Dolphin",
+    "sanskrit_name": "Ardha Pincha Mayurasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Calms the brain and helps relieve stress and mild depression",
+      "Energizes the body",
+      "Stretches the shoulders, hamstrings, calves, arches, and hands",
+      "Strengthens the arms and legs",
+      "Helps relieve the symptoms of menopause",
+      "Relieves menstrual discomfort when done with the head supported",
+      "Helps prevent osteoporosis",
+      "Improves digestion",
+      "Relieves headache, insomnia, back pain, and fatigue",
+      "Therapeutic for high blood pressure, asthma, flat feet, sciatica, and sinusitis",
+      "Warms up the ankles and the toes"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From Downward-Facing Dog, the forearms are planted onto the earth with the elbows narrow and the palms down in a Sphinx position",
+      "The pelvis is tucked",
+      "The ribcage lifted",
+      "The feet are rooted and the legs are straight with the tailbone in dog tilt",
+      "The gaze is down and slightly forward"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483080/yoga-api/14_k9lr9a.png"
+  },
+  {
+    "id": "plank",
+    "english_name": "Plank",
+    "sanskrit_name": "Phalakasana",
+    "category": "balancing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Strengthens the arms, wrists, and spine",
+      "Tones the abdomen"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "The body is parallel to the earth",
+      "The weight of the body is supported by straight arms and active toes",
+      "The abdomen is pulled up towards the spine and the pelvis is tucked in",
+      "The neck is a natural extension of the spine and the chin is slightly tucked",
+      "The palms are flat and the elbows are close to the side body",
+      "The joints are stacked with the wrists, elbows and shoulders in a straight line perpendicular to the earth",
+      "The gaze follows the spine and the eyes are focused down"
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483088/yoga-api/26_mxkzlo.png"
+  },
+  {
+    "id": "side_plank",
+    "english_name": "Side Plank",
+    "sanskrit_name": "Vasisthasana",
+    "category": "balancing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves balancing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "butterfly",
+    "english_name": "Butterfly",
+    "sanskrit_name": "Baddha Konasana",
+    "category": "seated",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves seated strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "seated_forward_bend",
+    "english_name": "Seated Forward Bend",
+    "sanskrit_name": "Paschimottanasana",
+    "category": "forward_fold",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves forward_fold strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "lotus",
+    "english_name": "Lotus",
+    "sanskrit_name": "Padmasana",
+    "category": "seated",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Opens the hips, groin and stretches the knees, ankles and thighs",
+      "Strengthens the back and calms the mind, reduces stress and anxiety",
+      "Improves circulation and blood flow in the pelvis"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Bring the bottom ankle and place it on top of the opposite knee, both ankles will be resting on top of the thighs"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483091/yoga-api/31_ozseum.png"
+  },
+  {
+    "id": "half_lord_of_the_fishes",
+    "english_name": "Half Lord of the Fishes",
+    "sanskrit_name": "Ardha Matsyendrasana",
+    "category": "twist",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves twist strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "spinal_injury"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to lengthen spine, exhale to deepen twist",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "splits",
+    "english_name": "Splits",
+    "sanskrit_name": "Hanumanasana",
+    "category": "forward_fold",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves forward_fold strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "side_splits",
+    "english_name": "Side Splits",
+    "sanskrit_name": "Upavistha Konasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Stretches the insides and backs of the legs",
+      "Stimulates the abdominal organs",
+      "Strengthens the spine",
+      "Calms the brain",
+      "Releases groin"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a wide stance the legs are open and extended sideways to your degree of flexibility",
+      "The outer edges of the feet are rotated and gripping toward the earth",
+      "The weight of the body is supported by the arms",
+      "The palms are rooted into the earth with the fingers pointing towards the body",
+      "There should be no excess weight on the knee or ankle joints as you lower down to your degree of flexibility",
+      "The gaze is down and slightly forward"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483093/yoga-api/40_dkmow6.png"
+  },
+  {
+    "id": "downward_facing_dog",
+    "english_name": "Downward-Facing Dog",
+    "sanskrit_name": "Adho Mukha Svanasana",
+    "category": "standing",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Calms the brain and helps relieve stress and mild depression",
+      "Energizes the body",
+      "Stretches the shoulders, neck, hamstrings, calves, arches, and hands",
+      "Strengthens the arms and legs",
+      "Helps relieve the symptoms of menopause",
+      "Relieves menstrual discomfort when done with the head supported",
+      "Helps prevent osteoporosis",
+      "Improves digestion",
+      "Relieves headache, insomnia, back pain, and fatigue",
+      "Therapeutic for high blood pressure, asthma, flat feet, sciatica, and sinusitis"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From downward_dog",
+      "html the legs are straight with the sits bones tilted up and reaching for the sky",
+      "The feet are flat with the heels firmly rooted",
+      "One palm is flat with the knuckles evenly pressed into the earth",
+      "The other hand reaches under the body and grasps the opposite ankle",
+      "The spine is long and the heart is open toward the sky",
+      "The neck is loose and the crown of the head is relaxed toward the earth",
+      "The gaze is toward the center"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483081/yoga-api/15_vkviqn.png"
+  },
+  {
+    "id": "extended_side_angle",
+    "english_name": "Extended Side Angle",
+    "sanskrit_name": "Utthita Parsvakonasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Strengthens and stretches the legs, knees, and ankles",
+      "Stretches the groin, spine, waist, chest, lungs, and shoulders",
+      "Stimulates abdominal organs",
+      "Increases stamina"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From warrior II the lower body stays static while the upper body is folded forward at the crease of the hip",
+      "One arm is extended toward the front with the bicep by the ear and the fingers spread wide while the other reaches down to the earth on the inside of the thigh",
+      "The upper torso and the gaze twist up towards the sky"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483083/yoga-api/18_aqufak.png"
+  },
+  {
+    "id": "forearm_stand",
+    "english_name": "Forearm Stand",
+    "sanskrit_name": "Pincha Mayurasana",
+    "category": "inversion",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves inversion strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "glaucoma",
+      "high_blood_pressure",
+      "heart_disease",
+      "neck_injury",
+      "hypertension"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe slowly and evenly throughout",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "handstand",
+    "english_name": "Handstand",
+    "sanskrit_name": "Adho Mukha Vrksasana",
+    "category": "inversion",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves inversion strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "glaucoma",
+      "high_blood_pressure",
+      "heart_disease",
+      "neck_injury",
+      "hypertension"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe slowly and evenly throughout",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "pyramid",
+    "english_name": "Pyramid",
+    "sanskrit_name": "Parsvottanasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Calms the brain",
+      "Stretches the spine, the shoulders, the hips and the hamstrings",
+      "Strengthens the legs",
+      "Stimulates the abdominal organs",
+      "Improves posture and sense of balance",
+      "Improves digestion"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a standing position with one leg forward and one back lean the torso forward at the crease of the hip joint",
+      "Stop when the torso is parallel to the floor",
+      "Press the fingertips or flat palms to the floor on either side of the front foot, maintaining a straight elongated spine",
+      "If it isn’t possible to touch the floor, or to maintain a straight spine, support the hands on a pair of blocks",
+      "Press the thighs back and lengthen the torso forward, lifting up through the top of the sternum",
+      "Then, as flexibility allows, bring the front torso closer to the top of the thigh without rounding the spine",
+      "Eventually the long front torso will rest down on the thigh",
+      "The gaze is down"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483089/yoga-api/28_uu58tt.png"
+  },
+  {
+    "id": "triangle",
+    "english_name": "Triangle",
+    "sanskrit_name": "Trikonasana",
+    "category": "standing",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Stretches and strengthens the thighs, knees, and ankles",
+      "Stretches the hips, groin, hamstrings, calves, shoulders, chest, and spine",
+      "Stimulates the abdominal organs",
+      "Helps relieve stress",
+      "Improves digestion",
+      "Helps relieve the symptoms of menopause",
+      "Relieves backache, especially through second trimester of pregnancy",
+      "Therapeutic for anxiety, flat feet, infertility, neck pain, osteoporosis, and sciatica"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a standing position, the legs are straight and separated into a wide stance",
+      "The feet are aligned and flat on the earth with the back foot in a 60-degree angle towards the front",
+      "The inner thighs are rotated externally away from each other",
+      "The pelvis is tucked and the ribcage is lifted",
+      "One arm extends up towards the sky as the other reaches down to the earth",
+      "Both arms are aligned with the shoulders in a straight line",
+      "The fingers reach out as the shoulder blades squeeze together",
+      "The gaze is toward the front"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483096/yoga-api/42_jawxqw.png"
+  },
+  {
+    "id": "warrior_one",
+    "english_name": "Warrior One",
+    "sanskrit_name": "Virabhadrasana One",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Stretches the chest, lungs, shoulders, neck, belly and groin (psoas)",
+      "Strengthens the shoulders, arms and back muscles",
+      "Strengthens and stretches the thighs, calves and ankles"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a standing position, the legs are in a wide stance with the feet aligned and flat on the earth",
+      "The back foot is in a 60-degree angle towards the front",
+      "The hips are squared",
+      "The inner thighs are rotated towards each other",
+      "The front knee is bent in a 90-degree angle directly above the ankle",
+      "The arms extend up to the sky with the biceps by the ears",
+      "The hands can be together or separated and facing each other with the fingers spread wide",
+      "The ribcage is lifted and the pelvis tucked",
+      "The gaze is forward"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483096/yoga-api/44_dqeayo.png"
+  },
+  {
+    "id": "warrior_two",
+    "english_name": "Warrior Two",
+    "sanskrit_name": "Virabhadrasana Two",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Strengthens and stretches the legs and ankles",
+      "Stretches the groin, chest, lungs, and shoulders",
+      "Stimulates abdominal organs",
+      "Increases stamina",
+      "Relieves backaches, especially through second trimester of pregnancy",
+      "Therapeutic for carpal tunnel syndrome, flat feet, infertility, osteoporosis, and sciatica"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a standing position, the legs are separated into a wide stance",
+      "The front knee is bent in a 90-degree angle directly above the ankle",
+      "The back leg is extended and straight with the outside edge of the back foot gripping the earth in a 60-degree angle towards the front",
+      "The inner thighs are externally rotated away from each other",
+      "The pelvis is tucked",
+      "The ribcage is lifted",
+      "The arms are extended out to the sides and are aligned with the shoulders in a straight line with the fingers reaching out as the shoulder blades squeeze together",
+      "The gaze is toward the front fingers"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483096/yoga-api/45_ehimr1.png"
+  },
+  {
+    "id": "warrior_three",
+    "english_name": "Warrior Three",
+    "sanskrit_name": "Virabhadrasana Three",
+    "category": "balancing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Strengthens the ankles and legs",
+      "Strengthens the shoulders and muscles of the back",
+      "Tones the abdomen",
+      "Improves balance and posture"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a standing position, one leg is rooted and perpendicular to the earth while the other leg is raised, extended back and parallel to the earth",
+      "The head of the thighbone of the standing leg presses back towards the heel and is actively rooted into the earth",
+      "The arms and the extended leg lengthen in opposing directions with Bandhas engaged",
+      "The hips are squared and the tailbone presses firmly into the pelvis",
+      "The arms, torso, and extended raised leg should be positioned relatively parallel to the floor",
+      "The gaze is forward or down"
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483097/yoga-api/46_lz6v7i.png"
+  },
+  {
+    "id": "wheel",
+    "english_name": "Wheel",
+    "sanskrit_name": "Urdhva Dhanurasana",
+    "category": "backbend",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Strengthens the arms, wrists, legs, buttocks, abs, and spine",
+      "Stimulates the thyroid and pituitary",
+      "Increases energy and counteracts depression",
+      "Therapeutic for asthma, back pain, infertility, and osteoporosis"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Pressed up from a supine position, lying on your back, the palms are rooted into the earth with the fingers pointed towards the heels",
+      "The feet are grounded",
+      "The hips are pressed up",
+      "The thighs are rotated inward",
+      "The thoracic spine is arched creating a strong crescent arch along the spinal column",
+      "The gaze is forward"
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483097/yoga-api/47_w2jsof.png"
+  },
+  {
+    "id": "bow",
+    "english_name": "Bow",
+    "sanskrit_name": "Dhanurasana",
+    "category": "backbend",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Stretches the entire front of the body, ankles, thighs and groins, abdomen and chest, and throat, and deep hip flexors (psoas)",
+      "Strengthens the back muscles",
+      "Improves posture",
+      "Stimulates the organs of the abdomen and neck"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a prone position with the abdomen on the earth, the hands grip the ankles (but not the tops of the feet) with knees no wider than the width of your hips",
+      "The heels are lifted away from the buttocks and at the same time the thighs are lifted away from the earth working opposing forces as the heart center, hips and back open",
+      "The gaze is forward"
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483072/yoga-api/3_aa0fgk.png"
+  },
+  {
+    "id": "camel",
+    "english_name": "Camel",
+    "sanskrit_name": "Ustrasana",
+    "category": "backbend",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Stretches the entire front of the body, the ankles, thighs and groins, abdomen and chest, and throat",
+      "Stretches the deep hip flexors (psoas)",
+      "Strengthens back muscles",
+      "Improves posture",
+      "Stimulates the organs of the abdomen and neck"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a kneeling position the knees are hip width apart and the thighs are perpendicular to the earth",
+      "The inner thighs are narrowed and rotated slightly inward with the buttocks engaged but not hardened",
+      "The tailbone is tucked under but the hips do not puff forward",
+      "The shins and tops of the feet are pressed firmly into the earth",
+      "The ribcage is open, along with the heart center, but the lower front ribs do not protrude sharply towards the sky",
+      "The lower back lifts the ribs away from the pelvis to keep the lower spine as long as possible",
+      "The base of the palms are pressed firmly against the soles (or heels) of the feet and the fingers are pointed toward the toes",
+      "The arms are extended straight and are turned slightly outward at the shoulder joint so the elbow creases face forward without squeezing the shoulder blades together",
+      "The neck is in a relatively neutral position, neither flexed nor extended, or (for the advanced practitioners only) the head drops back",
+      "Be careful not to strain your neck and harden your throat",
+      "The gaze is either towards the sky or towards the earth, depending upon your flexibility"
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483075/yoga-api/6_ri1w0e.png"
+  },
+  {
+    "id": "cow",
+    "english_name": "Cow",
+    "sanskrit_name": "Bitilasana",
+    "category": "backbend",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Removes fatigue",
+      "Improves breathing and the circulation of blood to the brain",
+      "Rejuvenates the entire body"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From  box neutral the ribcage is lifted with a gentle sway in the low back",
+      "The tailbone lifts up into dog tilt",
+      "The eyes are soft and the gaze is to the sky"
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": false,
+    "goals": [],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483077/yoga-api/8_wi10sn.png"
+  },
+  {
+    "id": "sphinx",
+    "english_name": "Sphinx",
+    "sanskrit_name": "Salamba Bhujangasana",
+    "category": "backbend",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Strengthens the spine",
+      "Stretches the chest, the lungs, the shoulders and the abdomen",
+      "Stimulates the abdominal organs",
+      "Opens the heart and the lungs"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a prone position with the pelvic bowl is firmly contracted interiorly towards the center line of the body while the pubis is tucked under",
+      "The legs are extended back and the tops of the feet are flat",
+      "The palms are flat and the elbows are on the mat, stacked right below the shoulders",
+      "On an inhalation, lift the sternum and extend the neck away from shoulders with the elbows, palms and pelvic bone firmly attached to the mat"
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483092/yoga-api/35_dytwvz.png"
+  },
+  {
+    "id": "upward_facing_dog",
+    "english_name": "Upward-Facing Dog",
+    "sanskrit_name": "Urdhva Mukha Svsnssana",
+    "category": "backbend",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves posture",
+      "Strengthens the spine, arms, and wrists",
+      "Stretches the chest, lungs, shoulders, and abdomen",
+      "Firms the buttocks",
+      "Stimulates abdominal organs",
+      "Helps relieve mild depression, fatigue, and sciatica",
+      "Therapeutic for asthma"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "The body is in a prone position parallel to the earth",
+      "The weight of the body is supported equally by the straight arms and the tops of the feet which press firmly into the earth",
+      "The shoulders are rotated back and down",
+      "The ribcage is lifted and pulled thru to the front in a slight upper thoracic backbend",
+      "The joints are stacked with the wrists, elbows and shoulders in a straight-line",
+      "The neck is a natural extension of the spine and the chin is slightly tucked",
+      "The abdomen is pulled up towards the spine",
+      "The palms are flat and the elbows are close to the side body",
+      "The gaze is forward"
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483096/yoga-api/43_m3nxjk.png"
+  },
+  {
+    "id": "wild_thing",
+    "english_name": "Wild Thing",
+    "sanskrit_name": "Camatkarasana",
+    "category": "balancing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Stretches the chest, shoulders, back, and throat",
+      "Strengthens and opens the hips, hip flexors, and thighs"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From downward dog pose, elevate one leg toward the sky and stack the corresponding hip over the other hip",
+      "Bring the upper heel as close to the buttocks as possible",
+      "The hips remain stacked; then bring the shoulders forward slowly over the hands",
+      "Replace the corresponding hand to the upraised leg with the other hand and flip yourself over and extend the top hand forward",
+      "The bottom foot is now facing toward the front of the mat and you remain on the ball of the top foot and the corresponding knee is bent",
+      "Continue to lift hips up towards the sky and continue reaching the free hand towards the front of the room and slightly downwards",
+      "Allow the head to curl back"
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483097/yoga-api/48_unoav6.png"
+  },
+  {
+    "id": "pigeon",
+    "english_name": "Pigeon",
+    "sanskrit_name": "Supta Kapotasana",
+    "category": "backbend",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Stretches the hamstrings and quads",
+      "If the elbow is used to push the thigh, it opens the hips as well"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Lie on the back in supine position",
+      "Bend the knees, heels close to SI bones and cross one ankle over the opposite knee",
+      "Thread the hands or reach through between the thighs",
+      "Lift the foot off the floor and hold the bent knee behind the thigh or shin to bring it closer to the chest, make sure that the acrum is rooted to the floor"
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483088/yoga-api/24_ulgsjo.png"
+  },
+  {
+    "id": "king_pigeon",
+    "english_name": "King Pigeon",
+    "sanskrit_name": "Eka Pada Rajakapotasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Stretches the thighs, groins (psoas), abdomen, chest, shoulders and neck",
+      "Stimulates the abdominal organs",
+      "Opens the shoulders and chest"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a seated position with the hips squared, one leg is extended forward with the knee bent and parallel to the earth",
+      "The front heel is rooted close to the groin (or extended out in a 90 degree angle if flexibility allows)",
+      "The other leg is extended back with the knee bent and perpendicular to the earth",
+      "The back foot is hooked on the inside of the elbow of the back arm",
+      "The front elbow is bent upward perpendicular to the earth with the bicep by the ear",
+      "The fingers are interlaced to connect the bind behind the body and assist in opening the chest",
+      "The gaze is natural and forward"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483087/yoga-api/25_rssro9.png"
+  },
+  {
+    "id": "childs_pose",
+    "english_name": "Child's Pose",
+    "sanskrit_name": "Balasana",
+    "category": "restorative",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves restorative strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "aggravates"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "healing",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Slow deep belly breathing throughout",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "forward_bend_with_shoulder_opener",
+    "english_name": "Forward Bend with Shoulder Opener",
+    "sanskrit_name": "Uttanasana",
+    "category": "forward_fold",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Calms the brain and helps relieve stress and mild depression",
+      "Stimulates the liver and kidneys",
+      "Stretches the hamstrings, calves, and hips",
+      "Strengthens the thighs and knees",
+      "Improves digestion",
+      "Helps relieve the symptoms of menopause",
+      "Reduces fatigue and anxiety",
+      "Relieves headache and insomnia",
+      "Relieves headache and insomnia",
+      "Opens the shoulders"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a standing position, the body is folded over at the crease of the hip with the spine long",
+      "The neck is relaxed and the crown of the head is towards the earth",
+      "The feet are rooted into the earth",
+      "The toes are actively lifted",
+      "The spine is straight",
+      "The ribcage is lifted",
+      "The chest and the thighs are connected",
+      "The sacrum lifts up toward the sky in dog tilt",
+      "The fingers are interlaced behind the body and the palms are together",
+      "The arms and elbows are straight",
+      "The shoulder blades rotate towards each other as the hands move forward (away from the lower back)",
+      "The gaze is down and inward"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483085/yoga-api/20_uogrfq.png"
+  },
+  {
+    "id": "standing_forward_bend",
+    "english_name": "Standing Forward Bend",
+    "sanskrit_name": "Uttanasana",
+    "category": "forward_fold",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Calms the brain and helps relieve stress and mild depression",
+      "Stimulates the liver and kidneys",
+      "Stretches the hamstrings, calves, and hips",
+      "Strengthens the thighs and knees",
+      "Improves digestion",
+      "Helps relieve the symptoms of menopause",
+      "Reduces fatigue and anxiety",
+      "Relieves headache and insomnia"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a standing position, the body is folded over at the crease of the hip with the spine long",
+      "The neck is relaxed and the crown of the head is towards the earth",
+      "The feet are rooted into the earth with the toes actively lifted",
+      "The spine is straight",
+      "The ribcage is lifted",
+      "The chest and the thighs are connected",
+      "The sacrum lifts up toward the sky in dog tilt",
+      "The fingertips are resting on the earth next to the toes",
+      "The gaze is down or slightly forward"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483093/yoga-api/38_yb3thk.png"
+  },
+  {
+    "id": "eagle",
+    "english_name": "Eagle",
+    "sanskrit_name": "Garudasana",
+    "category": "balancing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Strengthens and stretches the ankles and calves",
+      "Stretches the thighs, hips, shoulders, and upper back",
+      "Improves concentration",
+      "Improves sense of balance"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a standing position the one thigh is crossed over the other with the toes and/or the ankle hooked behind the lower calf",
+      "The weight of the body is balanced on the standing foot",
+      "The arms are crossed in front of the torso so that one arm is crossed above the other arm",
+      "The top arm is tucked into the elbow crook of the bottom arm",
+      "The hands are hooked around each other as well",
+      "Once hooked, the elbows lift up and the fingers stretch towards the ceiling",
+      "The gaze is soft and forward"
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483081/yoga-api/16_g7ueht.png"
+  },
+  {
+    "id": "extended_hand_to_toe",
+    "english_name": "Extended Hand to Toe",
+    "sanskrit_name": "Utthita Hasta Padangusthasana",
+    "category": "balancing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Opens the hips and groins",
+      "Stretches the hamstrings, IT bands and legs",
+      "Improves balance"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From mountain",
+      "html pose, lift one foot",
+      "Bend forward and catch the toes with the fingers",
+      "Place the other hand on the hip to square the hip towards the front",
+      "Slowly straighten the knee and the torso and open the leg to one side",
+      "Use a strap if necessary",
+      "Gaze towards the front or opposite of the extended leg for balance"
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483084/yoga-api/17_l9joyu.png"
+  },
+  {
+    "id": "crescent_lunge",
+    "english_name": "Crescent Lunge",
+    "sanskrit_name": "Alanasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Stretches the rib cage, arms and torso",
+      "Tones the oblique muscles"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From mountain pose, on the inhalation bring the hands up and interlace the fingers together",
+      "Exhale, bend to one side, lengthening the opposite of the rib cage and stretch"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483080/yoga-api/12_pv4p1z.png"
+  },
+  {
+    "id": "half_moon",
+    "english_name": "Half-Moon",
+    "sanskrit_name": "Ardha Chandrasana",
+    "category": "balancing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Strengthens the abdomen, ankles, thighs, buttocks and spine",
+      "Stretches the groins, hamstrings, calves, shoulders, chest and spine",
+      "Improves coordination and sense of balance",
+      "Helps relieve stress",
+      "Improves digestion"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a standing position one leg is straight while the other is extended back parallel to the earth (or a little above parallel) and one hand is on the earth (beyond the little-toe side of the foot, about 12 inches) while the other hand is extended up towards the sky",
+      "The shoulder blades are squeezed together and the fingers move outward in opposing directions",
+      "The weight of the body is supported mostly by the standing leg while the bottom hand has very little weight on it but is used intelligently to regulate balance",
+      "The upper torso is rotated open to the sky",
+      "Both hips are externally rotated",
+      "Energy is extended actively through the flexed toes to keep the raised leg strong",
+      "The inner ankle of the standing foot is lifted strongly upward, as if drawing energy from the earth",
+      "The sacrum and scapulae are firmly pressed against the back torso and lengthen the coccyx toward the raised foot",
+      "The gaze is either up or down, depending on the condition of the neck",
+      "If injured the gaze is down"
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483085/yoga-api/21_etedlp.png"
+  },
+  {
+    "id": "low_lunge",
+    "english_name": "Low Lunge",
+    "sanskrit_name": "Anjaneyasana",
+    "category": "standing",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves standing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "reverse_warrior",
+    "english_name": "Reverse Warrior",
+    "sanskrit_name": "Parsva Virabhadrasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Strengthens and stretches the legs, knees, and ankles",
+      "Stretches the groin, spine, waist, chest, lungs, and shoulders",
+      "Stimulates abdominal organs",
+      "Increases stamina",
+      "Relieves backaches, especially through second trimester of pregnancy",
+      "Therapeutic for carpal tunnel syndrome, flat feet, infertility, osteoporosis, and sciatica"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From warrior II , the lower body stays static while the upper body arches back in a gentle back bend",
+      "The top arm is extended back with the bicep by the ear and the fingers spread wide",
+      "The other arm slides down the back leg resting on the thigh or shin, but not the knee joint",
+      "The gaze is up towards the sky"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483089/yoga-api/29_ww7bot.png"
+  },
+  {
+    "id": "garland_pose",
+    "english_name": "Garland Pose",
+    "sanskrit_name": "Malasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Stretches the ankles, groins and back torso",
+      "Tones the belly"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a squatting position the feet are as close together as possible (keep your heels on the floor if you can; otherwise, support them on a folded mat)",
+      "The thighs are slightly wider than the torso",
+      "The torso is leaning gently forward and tucked snugly between the thighs",
+      "The elbows are pressed against the inner knees and the palms are together in Anjali Mudra (Salutation Seal)",
+      "The knees resist the elbows to help lengthen the front torso",
+      "The gaze is soft and forward"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483093/yoga-api/37_moh7ii.png"
+  },
+  {
+    "id": "crescent_moon",
+    "english_name": "Crescent Moon",
+    "sanskrit_name": "Ashta Chandrasana",
+    "category": "balancing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Stretches the rib cage, arms and torso",
+      "Tones the oblique muscles"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From mountain pose, on the inhalation bring the hands up and interlace the fingers together",
+      "Exhale, bend to one side, lengthening the opposite of the rib cage and stretch"
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483095/yoga-api/39_hqj0sa.png"
+  },
+  {
+    "id": "tree",
+    "english_name": "Tree",
+    "sanskrit_name": "Vrksasana",
+    "category": "balancing",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Strengthens the legs, ankles, and feet",
+      "Improves flexibility in the hips and knees",
+      "Improves balance"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a standing position, one foot is rooted into the earth with the opposite heel rooted into the inner thigh with the toes pointing towards the earth",
+      "The pelvis and the chin are tucked in",
+      "The arms are lifted above the head with the palms together in prayer position",
+      "The gaze is forward"
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483094/yoga-api/41_veknug.png"
+  },
+  {
+    "id": "corpse",
+    "english_name": "Corpse",
+    "sanskrit_name": "Sivasana",
+    "category": "restorative",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Calms the brain and helps relieve stress and mild depression",
+      "Relaxes the body",
+      "Reduces headache, fatigue, and insomnia",
+      "Helps to lower blood pressure"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "The body rests on the earth in a supine position with the arms resting by the side body",
+      "The palms are relaxed and open toward the sky",
+      "The shoulder blades are pulled back, down and rolled under comfortably, resting evenly on the earth",
+      "The legs are extended down and splayed open",
+      "The heels are in and the toes flop out",
+      "The eyes are closed",
+      "Everything is relaxed",
+      "The gaze is inward"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "aggravates"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "healing",
+      "stress_relief"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Slow deep belly breathing throughout",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483078/yoga-api/11_dczyrp.png"
+  },
+  {
+    "id": "shoulder_stand",
+    "english_name": "Shoulder Stand",
+    "sanskrit_name": "Salamba Sarvangasana",
+    "category": "inversion",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Calms the brain and helps relieve stress and mild depression",
+      "Stimulates the thyroid and prostate glands and abdominal organs",
+      "Stretches the shoulders and neck",
+      "Tones the legs and buttocks",
+      "Improves digestion",
+      "Helps relieve the symptoms of menopause",
+      "Reduces fatigue and alleviates insomnia",
+      "Therapeutic for asthma, infertility, and sinusitis"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a supine position, the upper back is resting on the earth with the hips straight up towards the sky",
+      "The torso is perpendicular to the earth",
+      "The legs are fully extended and the toes are active",
+      "The hands are either supporting the lower back or extended up by the side body in matchstick",
+      "The neck is flat on the earth and the chin is tucked in",
+      "The gaze is inward"
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "neck_injury",
+      "glaucoma",
+      "high_blood_pressure"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe slowly and evenly throughout",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483091/yoga-api/33_r7motl.png"
+  },
+  {
+    "id": "plow",
+    "english_name": "Plow",
+    "sanskrit_name": "Halasana",
+    "category": "inversion",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Calms the brain",
+      "Stimulates the abdominal organs and the thyroid glands",
+      "Stretches the shoulders and spine",
+      "Helps relieve the symptoms of menopause",
+      "Reduces stress and fatigue",
+      "Therapeutic for backache, headache, infertility, insomnia,  and sinusitis"
+    ],
+    "body_parts": [],
+    "instructions": [
+      "From a supine position, the upper back rests on the earth with the hips and legs revolved back over the torso above and beyond the head towards the earth",
+      "The torso is perpendicular to the earth",
+      "The legs are fully extended with no bend at the knees as the toes reach for the earth",
+      "The hands are either supporting the lower back or extended behind the back on the earth with extended elbows and fingers interlaced (as flexibility allows), opening the shoulders",
+      "The neck is straight",
+      "The chin tucked",
+      "Do not look to the side as this may injure the neck",
+      "The is gaze inward"
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "neck_injury",
+      "glaucoma",
+      "high_blood_pressure"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe slowly and evenly throughout",
+    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483088/yoga-api/27_m4yux9.png"
+  },
+  {
+    "id": "mountain_pose",
+    "english_name": "Mountain Pose",
+    "sanskrit_name": "Tadasana",
+    "category": "standing",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves standing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "corpse_pose",
+    "english_name": "Corpse Pose",
+    "sanskrit_name": "Savasana",
+    "category": "supine",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves supine strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "aggravates"
+    },
+    "contraindications": [
+      "pregnancy_third_trimester"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Allow breath to expand belly naturally",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "easy_pose",
+    "english_name": "Easy Pose",
+    "sanskrit_name": "Sukhasana",
+    "category": "seated",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves seated strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "cat_pose",
+    "english_name": "Cat Pose",
+    "sanskrit_name": "Marjaryasana",
+    "category": "prone",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves prone strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe naturally",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "cow_pose",
+    "english_name": "Cow Pose",
+    "sanskrit_name": "Bitilasana",
+    "category": "prone",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves prone strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe naturally",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "bridge_pose",
+    "english_name": "Bridge Pose",
+    "sanskrit_name": "Setu Bandha Sarvangasana",
+    "category": "supine",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves supine strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "aggravates"
+    },
+    "contraindications": [
+      "pregnancy_third_trimester"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Allow breath to expand belly naturally",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "staff_pose",
+    "english_name": "Staff Pose",
+    "sanskrit_name": "Dandasana",
+    "category": "seated",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves seated strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "standing_forward_fold",
+    "english_name": "Standing Forward Fold",
+    "sanskrit_name": "Uttanasana",
+    "category": "forward_fold",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves forward_fold strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "legs_up_the_wall",
+    "english_name": "Legs Up The Wall",
+    "sanskrit_name": "Viparita Karani",
+    "category": "inversion",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves inversion strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "neck_injury",
+      "glaucoma",
+      "high_blood_pressure"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe slowly and evenly throughout",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "reclining_butterfly",
+    "english_name": "Reclining Butterfly",
+    "sanskrit_name": "Supta Baddha Konasana",
+    "category": "supine",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves supine strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "aggravates"
+    },
+    "contraindications": [
+      "pregnancy_third_trimester"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Allow breath to expand belly naturally",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "cat_cow_flow",
+    "english_name": "Cat-Cow Flow",
+    "sanskrit_name": "Bidalasana",
+    "category": "prone",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves prone strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe naturally",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "half_standing_forward_fold",
+    "english_name": "Half Standing Forward Fold",
+    "sanskrit_name": "Ardha Uttanasana",
+    "category": "forward_fold",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves forward_fold strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "upward_salute",
+    "english_name": "Upward Salute",
+    "sanskrit_name": "Urdhva Hastasana",
+    "category": "standing",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves standing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "equestrian_pose",
+    "english_name": "Equestrian Pose",
+    "sanskrit_name": "Ashwa Sanchalanasana",
+    "category": "standing",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves standing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "knees_to_chest",
+    "english_name": "Knees to Chest",
+    "sanskrit_name": "Apanasana",
+    "category": "supine",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves supine strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "aggravates"
+    },
+    "contraindications": [
+      "pregnancy_third_trimester"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Allow breath to expand belly naturally",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "supine_twist",
+    "english_name": "Supine Twist",
+    "sanskrit_name": "Supta Matsyendrasana",
+    "category": "twist",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Improves twist strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "spinal_injury"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to lengthen spine, exhale to deepen twist",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "revolved_triangle",
+    "english_name": "Revolved Triangle",
+    "sanskrit_name": "Parivrtta Trikonasana",
+    "category": "twist",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves twist strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "spinal_injury"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to lengthen spine, exhale to deepen twist",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "half_moon_pose",
+    "english_name": "Half Moon Pose",
+    "sanskrit_name": "Ardha Chandrasana",
+    "category": "balancing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves balancing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "camel_pose",
+    "english_name": "Camel Pose",
+    "sanskrit_name": "Ustrasana",
+    "category": "backbend",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves backbend strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "cobra_pose",
+    "english_name": "Cobra Pose",
+    "sanskrit_name": "Bhujangasana",
+    "category": "backbend",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves backbend strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "locust_pose",
+    "english_name": "Locust Pose",
+    "sanskrit_name": "Salabhasana",
+    "category": "prone",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves prone strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe naturally",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "bow_pose",
+    "english_name": "Bow Pose",
+    "sanskrit_name": "Dhanurasana",
+    "category": "backbend",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves backbend strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "cow_face_pose",
+    "english_name": "Cow Face Pose",
+    "sanskrit_name": "Gomukhasana",
+    "category": "seated",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves seated strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "hero_pose",
+    "english_name": "Hero Pose",
+    "sanskrit_name": "Virasana",
+    "category": "seated",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves seated strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "wide_angle_seated_forward_fold",
+    "english_name": "Wide Angle Seated Forward Fold",
+    "sanskrit_name": "Upavistha Konasana",
+    "category": "forward_fold",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves forward_fold strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "head_to_knee_forward_bend",
+    "english_name": "Head to Knee Forward Bend",
+    "sanskrit_name": "Janu Sirsasana",
+    "category": "forward_fold",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves forward_fold strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "revolved_head_to_knee",
+    "english_name": "Revolved Head to Knee",
+    "sanskrit_name": "Parivrtta Janu Sirsasana",
+    "category": "twist",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves twist strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "spinal_injury"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to lengthen spine, exhale to deepen twist",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "dancer_pose",
+    "english_name": "Dancer Pose",
+    "sanskrit_name": "Natarajasana",
+    "category": "balancing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves balancing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "eagle_pose",
+    "english_name": "Eagle Pose",
+    "sanskrit_name": "Garudasana",
+    "category": "balancing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves balancing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "lizard_pose",
+    "english_name": "Lizard Pose",
+    "sanskrit_name": "Utthan Pristhasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves standing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "sleeping_vishnu",
+    "english_name": "Sleeping Vishnu",
+    "sanskrit_name": "Anantasana",
+    "category": "supine",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves supine strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "aggravates"
+    },
+    "contraindications": [
+      "pregnancy_third_trimester"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Allow breath to expand belly naturally",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "upward_plank",
+    "english_name": "Upward Plank",
+    "sanskrit_name": "Purvottanasana",
+    "category": "backbend",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves backbend strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "garland_squat_pose",
+    "english_name": "Garland/Squat Pose",
+    "sanskrit_name": "Malasana",
+    "category": "standing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves standing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to ground, exhale to stabilize",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "fire_log_pose",
+    "english_name": "Fire Log Pose",
+    "sanskrit_name": "Agnistambhasana",
+    "category": "seated",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves seated strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "reclining_hero",
+    "english_name": "Reclining Hero",
+    "sanskrit_name": "Supta Virasana",
+    "category": "supine",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves supine strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "aggravates"
+    },
+    "contraindications": [
+      "pregnancy_third_trimester"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Allow breath to expand belly naturally",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "mountain_in_seated",
+    "english_name": "Mountain in Seated",
+    "sanskrit_name": "Parvatasana",
+    "category": "seated",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves seated strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "side_crow",
+    "english_name": "Side Crow",
+    "sanskrit_name": "Parsva Bakasana",
+    "category": "balancing",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves balancing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "sage_pose",
+    "english_name": "Sage Pose",
+    "sanskrit_name": "Marichyasana",
+    "category": "twist",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves twist strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "spinal_injury"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to lengthen spine, exhale to deepen twist",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "wide_leg_forward_fold",
+    "english_name": "Wide Leg Forward Fold",
+    "sanskrit_name": "Prasarita Padottanasana",
+    "category": "forward_fold",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Improves forward_fold strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "headstand",
+    "english_name": "Headstand",
+    "sanskrit_name": "Sirsasana",
+    "category": "inversion",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves inversion strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "glaucoma",
+      "high_blood_pressure",
+      "heart_disease",
+      "neck_injury",
+      "hypertension"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe slowly and evenly throughout",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "shoulderstand",
+    "english_name": "Shoulderstand",
+    "sanskrit_name": "Sarvangasana",
+    "category": "inversion",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves inversion strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "glaucoma",
+      "high_blood_pressure",
+      "heart_disease",
+      "neck_injury",
+      "hypertension"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe slowly and evenly throughout",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "plow_pose",
+    "english_name": "Plow Pose",
+    "sanskrit_name": "Halasana",
+    "category": "inversion",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves inversion strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "glaucoma",
+      "high_blood_pressure",
+      "heart_disease",
+      "neck_injury",
+      "hypertension"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe slowly and evenly throughout",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "crow_pose",
+    "english_name": "Crow Pose",
+    "sanskrit_name": "Bakasana",
+    "category": "balancing",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves balancing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "eight_angle_pose",
+    "english_name": "Eight Angle Pose",
+    "sanskrit_name": "Astavakrasana",
+    "category": "balancing",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves balancing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "flying_splits",
+    "english_name": "Flying Splits",
+    "sanskrit_name": "Eka Pada Koundinyasana",
+    "category": "balancing",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves balancing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "full_pigeon",
+    "english_name": "Full Pigeon",
+    "sanskrit_name": "Kapotasana",
+    "category": "backbend",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves backbend strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "heart_disease",
+      "herniated_disc",
+      "hypertension"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "scorpion_pose",
+    "english_name": "Scorpion Pose",
+    "sanskrit_name": "Vrschikasana",
+    "category": "inversion",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves inversion strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "glaucoma",
+      "high_blood_pressure",
+      "heart_disease",
+      "neck_injury",
+      "hypertension"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Breathe slowly and evenly throughout",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "wheel_full_backbend",
+    "english_name": "Wheel/Full Backbend",
+    "sanskrit_name": "Urdhva Dhanurasana",
+    "category": "backbend",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves backbend strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "pregnancy_third_trimester",
+      "heart_disease",
+      "herniated_disc",
+      "hypertension"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "firefly_pose",
+    "english_name": "Firefly Pose",
+    "sanskrit_name": "Tittibhasana",
+    "category": "balancing",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves balancing strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "aggravates",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "tortoise_pose",
+    "english_name": "Tortoise Pose",
+    "sanskrit_name": "Kurmasana",
+    "category": "forward_fold",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves forward_fold strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  },
+  {
+    "id": "yoga_sleep_pose",
+    "english_name": "Yoga Sleep Pose",
+    "sanskrit_name": "Yoganidrasana",
+    "category": "supine",
+    "level": "advanced",
+    "duration_seconds": {
+      "beginner": 45,
+      "intermediate": 60,
+      "advanced": 90
+    },
+    "primary_benefits": [
+      "Improves supine strength and flexibility."
+    ],
+    "body_parts": [],
+    "instructions": [
+      "Follow classical alignment.",
+      "Breathe steadily."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "aggravates"
+    },
+    "contraindications": [
+      "pregnancy_third_trimester"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "stress_relief",
+      "flexibility",
+      "spiritual"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Allow breath to expand belly naturally",
+    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "image_url": ""
+  }
+]

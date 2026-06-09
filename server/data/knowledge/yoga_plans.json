@@ -1,0 +1,290 @@
+[
+  {
+    "id": "y001",
+    "name_english": "Downward-Facing Dog",
+    "name_sanskrit": "Adho Mukha Svanasana",
+    "difficulty": "beginner",
+    "benefits": [
+      "calms the brain",
+      "energizes the body",
+      "stretches shoulders and hamstrings"
+    ],
+    "target_muscles": [
+      "hamstrings",
+      "calves",
+      "shoulders",
+      "hands"
+    ],
+    "dosha_pacifying": [
+      "pitta",
+      "kapha"
+    ],
+    "dosha_aggravating": [
+      "vata"
+    ],
+    "contraindications": [
+      "carpal_tunnel",
+      "high_bp",
+      "late_pregnancy"
+    ],
+    "instructions": "Come onto your floor on your hands and knees. Lift knees away from floor.",
+    "pose_type": "inversion"
+  },
+  {
+    "id": "y002",
+    "name_english": "Child's Pose",
+    "name_sanskrit": "Balasana",
+    "difficulty": "beginner",
+    "benefits": [
+      "relieves stress and fatigue",
+      "stretches hips, thighs, and ankles"
+    ],
+    "target_muscles": [
+      "lower_back",
+      "hips",
+      "thighs"
+    ],
+    "dosha_pacifying": [
+      "vata",
+      "pitta"
+    ],
+    "dosha_aggravating": [
+      "kapha"
+    ],
+    "contraindications": [
+      "knee_injury",
+      "pregnancy"
+    ],
+    "instructions": "Kneel on the floor. Touch your big toes together and sit on heels.",
+    "pose_type": "resting"
+  },
+  {
+    "id": "y003",
+    "name_english": "Cobra Pose",
+    "name_sanskrit": "Bhujangasana",
+    "difficulty": "beginner",
+    "benefits": [
+      "strengthens the spine",
+      "stretches chest and lungs",
+      "stimulates abdominal organs"
+    ],
+    "target_muscles": [
+      "spine",
+      "chest",
+      "abdomen"
+    ],
+    "dosha_pacifying": [
+      "kapha",
+      "vata"
+    ],
+    "dosha_aggravating": [
+      "pitta"
+    ],
+    "contraindications": [
+      "back_injury",
+      "pregnancy",
+      "headache"
+    ],
+    "instructions": "Lie on your belly. Place your hands under your shoulders and lift chest.",
+    "pose_type": "backbend"
+  },
+  {
+    "id": "y004",
+    "name_english": "Tree Pose",
+    "name_sanskrit": "Vrksasana",
+    "difficulty": "beginner",
+    "benefits": [
+      "improves balance",
+      "strengthens thighs, calves, and ankles"
+    ],
+    "target_muscles": [
+      "legs",
+      "core"
+    ],
+    "dosha_pacifying": [
+      "kapha",
+      "pitta"
+    ],
+    "dosha_aggravating": [
+      "vata"
+    ],
+    "contraindications": [
+      "headache",
+      "insomnia",
+      "low_bp"
+    ],
+    "instructions": "Stand tall. Shift weight to left foot, place right foot on inner left thigh.",
+    "pose_type": "standing_balance"
+  },
+  {
+    "id": "y005",
+    "name_english": "Corpse Pose",
+    "name_sanskrit": "Savasana",
+    "difficulty": "beginner",
+    "benefits": [
+      "calms the brain",
+      "relaxes the body",
+      "reduces headache"
+    ],
+    "target_muscles": [
+      "full_body"
+    ],
+    "dosha_pacifying": [
+      "vata",
+      "pitta"
+    ],
+    "dosha_aggravating": [
+      "kapha"
+    ],
+    "contraindications": [
+      "back_injury"
+    ],
+    "instructions": "Lie flat on your back. Keep arms at sides, palms facing up.",
+    "pose_type": "resting"
+  },
+  {
+    "id": "y006",
+    "name_english": "Triangle Pose",
+    "name_sanskrit": "Trikonasana",
+    "difficulty": "intermediate",
+    "benefits": [
+      "stretches legs",
+      "opens chest",
+      "relieves backache"
+    ],
+    "target_muscles": [
+      "hamstrings",
+      "groin",
+      "hips"
+    ],
+    "dosha_pacifying": [
+      "kapha"
+    ],
+    "dosha_aggravating": [
+      "vata"
+    ],
+    "contraindications": [
+      "low_bp",
+      "headache",
+      "diarrhea"
+    ],
+    "instructions": "Stand with feet wide apart. Turn right foot out, extend arms, bend down to right.",
+    "pose_type": "standing"
+  },
+  {
+    "id": "y007",
+    "name_english": "Warrior I",
+    "name_sanskrit": "Virabhadrasana I",
+    "difficulty": "intermediate",
+    "benefits": [
+      "strengthens shoulders, arms, legs",
+      "opens chest and lungs"
+    ],
+    "target_muscles": [
+      "shoulders",
+      "arms",
+      "legs"
+    ],
+    "dosha_pacifying": [
+      "kapha",
+      "vata"
+    ],
+    "dosha_aggravating": [
+      "pitta"
+    ],
+    "contraindications": [
+      "high_bp",
+      "heart_problems"
+    ],
+    "instructions": "Step one foot back, bend front knee, raise arms overhead.",
+    "pose_type": "standing"
+  },
+  {
+    "id": "y008",
+    "name_english": "Seated Forward Bend",
+    "name_sanskrit": "Paschimottanasana",
+    "difficulty": "intermediate",
+    "benefits": [
+      "calms brain",
+      "stretches spine and hamstrings",
+      "improves digestion"
+    ],
+    "target_muscles": [
+      "spine",
+      "hamstrings"
+    ],
+    "dosha_pacifying": [
+      "pitta",
+      "vata"
+    ],
+    "dosha_aggravating": [
+      "kapha"
+    ],
+    "contraindications": [
+      "asthma",
+      "diarrhea",
+      "back_injury"
+    ],
+    "instructions": "Sit with legs straight in front. Inhale arms up, exhale fold forward.",
+    "pose_type": "seated_forward_bend"
+  },
+  {
+    "id": "y009",
+    "name_english": "Bow Pose",
+    "name_sanskrit": "Dhanurasana",
+    "difficulty": "intermediate",
+    "benefits": [
+      "stretches entire front of body",
+      "strengthens back",
+      "improves posture"
+    ],
+    "target_muscles": [
+      "chest",
+      "abdomen",
+      "quadriceps"
+    ],
+    "dosha_pacifying": [
+      "kapha",
+      "vata"
+    ],
+    "dosha_aggravating": [
+      "pitta"
+    ],
+    "contraindications": [
+      "high_bp",
+      "low_bp",
+      "hernia",
+      "neck_injury"
+    ],
+    "instructions": "Lie on belly. Bend knees, grab ankles, lift chest and thighs.",
+    "pose_type": "backbend"
+  },
+  {
+    "id": "y010",
+    "name_english": "Bridge Pose",
+    "name_sanskrit": "Setu Bandhasana",
+    "difficulty": "beginner",
+    "benefits": [
+      "stretches chest, neck, spine",
+      "calms brain",
+      "stimulates abdominal organs"
+    ],
+    "target_muscles": [
+      "chest",
+      "neck",
+      "spine"
+    ],
+    "dosha_pacifying": [
+      "vata",
+      "pitta"
+    ],
+    "dosha_aggravating": [
+      "kapha"
+    ],
+    "contraindications": [
+      "neck_injury"
+    ],
+    "instructions": "Lie on back, bend knees. Lift hips towards ceiling.",
+    "pose_type": "backbend"
+  }
+]

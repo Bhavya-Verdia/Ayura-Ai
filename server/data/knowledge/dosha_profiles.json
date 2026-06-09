@@ -1,0 +1,116 @@
+{
+  "doshas": {
+    "vata": {
+      "elements": ["air", "space"],
+      "qualities": ["dry", "light", "cold", "rough", "subtle", "mobile"],
+      "bodyType": "Thin, light frame, prominent joints and veins, dry skin, cold hands/feet",
+      "metabolism": "Variable, irregular appetite, tendency toward gas and bloating",
+      "temperament": "Creative, quick-thinking, enthusiastic, anxious when imbalanced",
+      "physicalTraits": {
+        "frame": "ectomorph, narrow shoulders/hips",
+        "skin": "dry, thin, cool, rough texture",
+        "hair": "dry, thin, frizzy, dark",
+        "eyes": "small, dry, dark brown or black",
+        "weight": "difficulty gaining weight, fluctuates easily"
+      },
+      "commonImbalances": [
+        "anxiety", "insomnia", "constipation", "dry_skin", "joint_pain",
+        "bloating", "irregular_periods", "fatigue", "cold_intolerance",
+        "muscle_cramps", "restlessness", "brain_fog"
+      ],
+      "balancingPrinciples": ["warming", "grounding", "moistening", "routine", "nourishing"],
+      "aggravatingFactors": [
+        "cold_weather", "irregular_schedule", "excess_travel", "raw_foods",
+        "skipping_meals", "excess_caffeine", "loud_noise", "overexertion"
+      ],
+      "balancingTastes": ["sweet", "sour", "salty"],
+      "aggravatingTastes": ["bitter", "pungent", "astringent"],
+      "idealExercise": "gentle, grounding — yoga, walking, swimming, tai chi",
+      "idealDiet": "warm, cooked, oily, mildly spiced, regular meals",
+      "bestSeason": "summer (warm, moist counters cold/dry)",
+      "worstSeason": "autumn/early_winter (cold, dry, windy)"
+    },
+    "pitta": {
+      "elements": ["fire", "water"],
+      "qualities": ["hot", "sharp", "light", "oily", "liquid", "spreading"],
+      "bodyType": "Medium build, good musculature, warm skin, strong digestion",
+      "metabolism": "Strong appetite, fast metabolism, irritable if meals skipped",
+      "temperament": "Focused, ambitious, organized, irritable/angry when imbalanced",
+      "physicalTraits": {
+        "frame": "mesomorph, moderate proportions",
+        "skin": "warm, slightly oily, sensitive, prone to rashes/acne",
+        "hair": "fine, straight, early graying, reddish tint possible",
+        "eyes": "sharp, penetrating, green/hazel/light brown",
+        "weight": "moderate, gains/loses with effort"
+      },
+      "commonImbalances": [
+        "acid_reflux", "heartburn", "skin_rash", "inflammation", "anger",
+        "acne", "excessive_sweating", "diarrhea", "mouth_ulcers",
+        "migraine", "jealousy", "perfectionism", "burnout"
+      ],
+      "balancingPrinciples": ["cooling", "calming", "moderation", "sweet_bitter_astringent"],
+      "aggravatingFactors": [
+        "hot_weather", "spicy_food", "alcohol", "excess_competition",
+        "skipping_meals", "direct_sunlight", "fermented_foods", "overworking"
+      ],
+      "balancingTastes": ["sweet", "bitter", "astringent"],
+      "aggravatingTastes": ["sour", "salty", "pungent"],
+      "idealExercise": "moderate, cooling — swimming, cycling, moonlight walks, non-competitive sports",
+      "idealDiet": "cool/room temp, bitter greens, sweet fruits, coconut, minimal spice",
+      "bestSeason": "winter (cool environment balances internal heat)",
+      "worstSeason": "summer (heat aggravates Pitta)"
+    },
+    "kapha": {
+      "elements": ["earth", "water"],
+      "qualities": ["heavy", "slow", "cool", "oily", "smooth", "dense", "stable", "soft"],
+      "bodyType": "Large, sturdy frame, strong endurance, tendency to gain weight",
+      "metabolism": "Slow but steady, low appetite, gains weight easily",
+      "temperament": "Calm, loving, patient, lethargic/depressed when imbalanced",
+      "physicalTraits": {
+        "frame": "endomorph, broad shoulders and hips",
+        "skin": "thick, cool, pale, smooth, oily",
+        "hair": "thick, wavy, oily, lustrous, dark",
+        "eyes": "large, round, deep brown or blue, thick lashes",
+        "weight": "gains weight easily, difficulty losing"
+      },
+      "commonImbalances": [
+        "weight_gain", "congestion", "lethargy", "depression", "edema",
+        "excess_mucus", "respiratory_issues", "water_retention",
+        "oversleeping", "attachment", "possessiveness", "sluggish_digestion"
+      ],
+      "balancingPrinciples": ["stimulating", "warming", "drying", "light_diet", "variety"],
+      "aggravatingFactors": [
+        "cold_damp_weather", "oversleeping", "overeating", "inactivity",
+        "excess_dairy", "sweet_heavy_foods", "routine_without_change", "napping"
+      ],
+      "balancingTastes": ["pungent", "bitter", "astringent"],
+      "aggravatingTastes": ["sweet", "sour", "salty"],
+      "idealExercise": "vigorous, stimulating — running, HIIT, power yoga, dance, martial arts",
+      "idealDiet": "light, warm, dry, spicy, minimal oil, lots of vegetables",
+      "bestSeason": "summer (warmth and activity counter heaviness)",
+      "worstSeason": "spring/late_winter (cold, wet, heavy)"
+    }
+  },
+  "doshaQuizQuestions": [
+    {"id": 1, "category": "body_frame", "question": "My body frame is best described as:", "options": {"1": "Thin, light, hard to gain weight (V)", "2": "Lean to thin (V-P)", "3": "Medium, athletic build (P)", "4": "Medium to sturdy (P-K)", "5": "Large, broad, gains weight easily (K)"}},
+    {"id": 2, "category": "skin_type", "question": "My skin tends to be:", "options": {"1": "Dry, rough, cool (V)", "2": "Somewhat dry (V-P)", "3": "Warm, sensitive, reddish (P)", "4": "Slightly oily (P-K)", "5": "Thick, oily, smooth, cool (K)"}},
+    {"id": 3, "category": "hair_type", "question": "My hair is naturally:", "options": {"1": "Dry, thin, frizzy (V)", "2": "Somewhat dry (V)", "3": "Fine, straight, early gray (P)", "4": "Medium thickness (P-K)", "5": "Thick, oily, lustrous (K)"}},
+    {"id": 4, "category": "appetite", "question": "My appetite is typically:", "options": {"1": "Irregular, sometimes forget to eat (V)", "2": "Variable day-to-day (V)", "3": "Strong, get irritable if I skip meals (P)", "4": "Moderate and consistent (P-K)", "5": "Slow but steady, can skip meals easily (K)"}},
+    {"id": 5, "category": "digestion", "question": "My digestion is:", "options": {"1": "Irregular, prone to gas/bloating (V)", "2": "Variable (V)", "3": "Fast, prone to acidity/heartburn (P)", "4": "Generally good (P)", "5": "Slow, feel heavy after eating (K)"}},
+    {"id": 6, "category": "body_temperature", "question": "My body temperature tends to be:", "options": {"1": "Cold hands/feet, dislike cold weather (V)", "2": "Cool to normal (V)", "3": "Warm, dislike heat, sweat easily (P)", "4": "Normal to warm (P)", "5": "Cool, tolerant of heat (K)"}},
+    {"id": 7, "category": "sleep", "question": "My sleep pattern is:", "options": {"1": "Light sleeper, difficulty falling asleep (V)", "2": "Somewhat light (V)", "3": "Moderate, wake up alert (P)", "4": "Good quality sleep (P-K)", "5": "Deep, heavy sleeper, hard to wake up (K)"}},
+    {"id": 8, "category": "energy", "question": "My energy levels are:", "options": {"1": "Bursts of energy, tire quickly (V)", "2": "Can be variable (V)", "3": "Moderate, focused energy (P)", "4": "Steady energy (P-K)", "5": "Slow to start but great endurance (K)"}},
+    {"id": 9, "category": "stress_response", "question": "Under stress, I tend to:", "options": {"1": "Become anxious, worried, restless (V)", "2": "Feel nervous (V)", "3": "Become irritable, angry, critical (P)", "4": "Feel frustrated (P)", "5": "Withdraw, become silent, eat more (K)"}},
+    {"id": 10, "category": "learning", "question": "I learn best by:", "options": {"1": "Listening, quick to grasp but quick to forget (V)", "2": "Audio and movement (V)", "3": "Visual, focused study, good retention (P)", "4": "Reading and analyzing (P)", "5": "Experience, slow to learn but never forget (K)"}},
+    {"id": 11, "category": "speech", "question": "My speaking style is:", "options": {"1": "Fast, talkative, may jump topics (V)", "2": "Quick-paced (V)", "3": "Sharp, precise, persuasive (P)", "4": "Clear and direct (P)", "5": "Slow, melodious, thoughtful (K)"}},
+    {"id": 12, "category": "emotions", "question": "My dominant emotional tendency is:", "options": {"1": "Enthusiasm/nervousness (V)", "2": "Creativity/worry (V)", "3": "Passion/anger (P)", "4": "Drive/impatience (P)", "5": "Calmness/attachment (K)"}},
+    {"id": 13, "category": "joints", "question": "My joints are:", "options": {"1": "Cracking, prominent, dry (V)", "2": "Somewhat stiff (V)", "3": "Loose, flexible (P)", "4": "Moderate flexibility (P)", "5": "Large, well-lubricated, padded (K)"}},
+    {"id": 14, "category": "sweat", "question": "My sweating pattern is:", "options": {"1": "Minimal perspiration (V)", "2": "Light sweating (V)", "3": "Profuse, may have strong odor (P)", "4": "Moderate sweating (P)", "5": "Moderate but cool/clammy (K)"}},
+    {"id": 15, "category": "bowel", "question": "My bowel movements tend to be:", "options": {"1": "Dry, hard, constipated (V)", "2": "Irregular (V)", "3": "Loose, frequent, soft (P)", "4": "Regular, soft (P)", "5": "Regular, heavy, sluggish (K)"}},
+    {"id": 16, "category": "weather", "question": "I feel most uncomfortable in:", "options": {"1": "Cold, windy, dry weather (V)", "2": "Autumn/winter (V)", "3": "Hot, humid weather (P)", "4": "Summer heat (P)", "5": "Cold, damp, rainy weather (K)"}},
+    {"id": 17, "category": "mind_activity", "question": "My mind is typically:", "options": {"1": "Restless, many thoughts, creative (V)", "2": "Active and imaginative (V)", "3": "Sharp, analytical, focused (P)", "4": "Organized and goal-oriented (P)", "5": "Calm, steady, contemplative (K)"}},
+    {"id": 18, "category": "walking", "question": "My walking pace is:", "options": {"1": "Fast, light steps (V)", "2": "Quick and variable (V)", "3": "Determined, purposeful (P)", "4": "Moderate and steady (P)", "5": "Slow, graceful, stable (K)"}},
+    {"id": 19, "category": "thirst", "question": "My thirst level is:", "options": {"1": "Variable, often forget to drink water (V)", "2": "Irregular (V)", "3": "Strong, need water frequently (P)", "4": "Regular thirst (P)", "5": "Low, can go without water for long (K)"}},
+    {"id": 20, "category": "resilience", "question": "My physical endurance/stamina is:", "options": {"1": "Low — tire quickly, recover slowly (V)", "2": "Variable (V)", "3": "Moderate — good intensity, needs recovery (P)", "4": "Good overall (P)", "5": "High — strong endurance, slow to tire (K)"}}
+  ]
+}

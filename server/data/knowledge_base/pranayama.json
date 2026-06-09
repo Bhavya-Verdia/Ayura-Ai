@@ -1,0 +1,551 @@
+[
+  {
+    "id": "alternate_nostril",
+    "english_name": "Alternate Nostril",
+    "sanskrit_name": "Nadi Shodhana",
+    "type": "balancing",
+    "level": "beginner",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides balancing effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "ocean_breath",
+    "english_name": "Ocean Breath",
+    "sanskrit_name": "Ujjayi",
+    "type": "grounding",
+    "level": "beginner",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides grounding effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "skull_shining",
+    "english_name": "Skull Shining",
+    "sanskrit_name": "Kapalabhati",
+    "type": "cleansing",
+    "level": "intermediate",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "aggravates",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "best_time": "morning",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides cleansing effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": false
+  },
+  {
+    "id": "bellows_breath",
+    "english_name": "Bellows Breath",
+    "sanskrit_name": "Bhastrika",
+    "type": "energizing",
+    "level": "intermediate",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "aggravates",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "best_time": "morning",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides energizing effects."
+    ],
+    "contraindications": [
+      "heart_disease",
+      "hypertension"
+    ],
+    "pregnancy_safe": false
+  },
+  {
+    "id": "cooling_breath",
+    "english_name": "Cooling Breath",
+    "sanskrit_name": "Sitali",
+    "type": "cooling",
+    "level": "beginner",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides cooling effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "hissing_breath",
+    "english_name": "Hissing Breath",
+    "sanskrit_name": "Sitkari",
+    "type": "cooling",
+    "level": "beginner",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides cooling effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "humming_bee",
+    "english_name": "Humming Bee",
+    "sanskrit_name": "Bhramari",
+    "type": "balancing",
+    "level": "beginner",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides balancing effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "box_equal_breathing",
+    "english_name": "Box/Equal Breathing",
+    "sanskrit_name": "Sama Vritti",
+    "type": "balancing",
+    "level": "beginner",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides balancing effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "unequal_breathing",
+    "english_name": "Unequal Breathing",
+    "sanskrit_name": "Vishama Vritti",
+    "type": "energizing",
+    "level": "intermediate",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "neutral",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "best_time": "morning",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides energizing effects."
+    ],
+    "contraindications": [
+      "heart_disease",
+      "hypertension"
+    ],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "right_nostril",
+    "english_name": "Right Nostril",
+    "sanskrit_name": "Surya Bhedana",
+    "type": "energizing",
+    "level": "intermediate",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "balances",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "best_time": "morning",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides energizing effects."
+    ],
+    "contraindications": [
+      "heart_disease",
+      "hypertension"
+    ],
+    "pregnancy_safe": false
+  },
+  {
+    "id": "left_nostril",
+    "english_name": "Left Nostril",
+    "sanskrit_name": "Chandra Bhedana",
+    "type": "cooling",
+    "level": "intermediate",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "aggravates"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides cooling effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "with_the_grain",
+    "english_name": "With the Grain",
+    "sanskrit_name": "Anuloma",
+    "type": "balancing",
+    "level": "beginner",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "neutral"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides balancing effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "against_the_grain",
+    "english_name": "Against the Grain",
+    "sanskrit_name": "Viloma",
+    "type": "balancing",
+    "level": "beginner",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides balancing effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "three_part_breath",
+    "english_name": "Three Part Breath",
+    "sanskrit_name": "Dirgha",
+    "type": "grounding",
+    "level": "beginner",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides grounding effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "swooning_breath",
+    "english_name": "Swooning Breath",
+    "sanskrit_name": "Murcha",
+    "type": "grounding",
+    "level": "advanced",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides grounding effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": false
+  },
+  {
+    "id": "floating_breath",
+    "english_name": "Floating Breath",
+    "sanskrit_name": "Plavini",
+    "type": "grounding",
+    "level": "advanced",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "neutral"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides grounding effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "breath_retention",
+    "english_name": "Breath Retention",
+    "sanskrit_name": "Kumbhaka",
+    "type": "balancing",
+    "level": "advanced",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "neutral",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides balancing effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": false
+  },
+  {
+    "id": "extended_cooling",
+    "english_name": "Extended Cooling",
+    "sanskrit_name": "Sheetali extended",
+    "type": "cooling",
+    "level": "advanced",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides cooling effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  },
+  {
+    "id": "fire_essence",
+    "english_name": "Fire Essence",
+    "sanskrit_name": "Agni Sara",
+    "type": "cleansing",
+    "level": "intermediate",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "neutral",
+      "pitta": "aggravates",
+      "kapha": "balances"
+    },
+    "best_time": "morning",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides cleansing effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": false
+  },
+  {
+    "id": "root_lock_breath",
+    "english_name": "Root Lock Breath",
+    "sanskrit_name": "Mula Bandha breathing",
+    "type": "grounding",
+    "level": "intermediate",
+    "duration_minutes": {
+      "beginner": 3,
+      "intermediate": 5,
+      "advanced": 10
+    },
+    "dosha_effect": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "neutral"
+    },
+    "best_time": "anytime",
+    "instructions": [
+      "Find a comfortable seat.",
+      "Follow the breath technique."
+    ],
+    "benefits": [
+      "Provides grounding effects."
+    ],
+    "contraindications": [],
+    "pregnancy_safe": true
+  }
+]

@@ -1,0 +1,213 @@
+.plan-viewer-container {
+  padding: 0 0 40px;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+}
+
+.plan-summary-banner {
+  margin-bottom: 24px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.1), rgba(6, 182, 212, 0.05));
+  border-radius: 20px;
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  box-shadow: 0 8px 32px var(--glass-shadow-light);
+  backdrop-filter: blur(10px);
+}
+
+.plan-summary-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ayura-ink);
+  margin-bottom: 8px;
+}
+
+.plan-dosha-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 12px;
+  vertical-align: middle;
+}
+
+.plan-daily-tip {
+  margin-top: 16px;
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: var(--glass-bg-subtle);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 var(--border-subtle);
+}
+
+.plan-section-title {
+  margin-top: 0;
+  margin-bottom: 24px;
+  text-transform: capitalize;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--ayura-teal-lt, #22d3ee);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Card Grids for Lists of Objects */
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.plan-card {
+  background: var(--glass-shadow);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px var(--glass-shadow);
+  border-color: rgba(129, 140, 248, 0.3);
+}
+
+/* Add a subtle glow to cards on hover */
+.plan-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(129, 140, 248, 0.1), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.plan-card:hover::after {
+  opacity: 1;
+}
+
+.plan-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ayura-ink);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-card-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.plan-card-label {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.plan-card-value {
+  color: #e2e8f0;
+  line-height: 1.4;
+}
+
+/* Standard nested object styling */
+.plan-nested-obj {
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 2px solid rgba(129, 140, 248, 0.2);
+  margin-bottom: 16px;
+  margin-top: 12px;
+}
+
+.plan-key-title {
+  text-transform: capitalize;
+  color: #c7d2fe;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: 0.2px;
+}
+
+/* Bullet Lists */
+.plan-list {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.plan-list-item {
+  margin-bottom: 8px;
+  color: #cbd5e1;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.plan-list-item::marker {
+  color: var(--ayura-teal, #06b6d4);
+}
+
+/* String Value */
+.plan-string-val {
+  color: #cbd5e1;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+/* Safety section */
+.plan-safety-box {
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+  border-radius: 16px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  margin-top: 32px;
+}
+
+.plan-safety-title {
+  color: #fbbf24;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-safety-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.plan-safety-list li {
+  color: #fef3c7;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}

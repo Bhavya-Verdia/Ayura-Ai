@@ -1,0 +1,202 @@
+[
+  {
+    "name": "Triphala Churna",
+    "type": "Churna (Powder)",
+    "primary_uses": ["Constipation", "Indigestion", "Eye health", "Detoxification"],
+    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
+    "ingredients": ["Amalaki (Emblica officinalis)", "Bibhitaki (Terminalia bellirica)", "Haritaki (Terminalia chebula)"],
+    "dosage": "3-6g with warm water or ghee before bed",
+    "reference": "Bhavaprakasha Nighantu",
+    "safety_tier": 1
+  },
+  {
+    "name": "Ashwagandha Churna",
+    "type": "Churna (Powder)",
+    "primary_uses": ["Stress", "Anxiety", "Insomnia", "Fatigue", "Muscle weakness"],
+    "dosha_effects": {"vata": -1, "pitta": 1, "kapha": 1},
+    "ingredients": ["Ashwagandha (Withania somnifera) root"],
+    "dosage": "3-5g with warm milk twice daily",
+    "reference": "Charaka Samhita",
+    "safety_tier": 1
+  },
+  {
+    "name": "Sitopaladi Churna",
+    "type": "Churna (Powder)",
+    "primary_uses": ["Cough", "Cold", "Asthma", "Fever", "Loss of appetite"],
+    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
+    "ingredients": ["Sitopala (Sugar candy)", "Vamshalochana", "Pippali (Long pepper)", "Ela (Cardamom)", "Twak (Cinnamon)"],
+    "dosage": "1-3g with honey 3-4 times a day",
+    "reference": "Sharangadhara Samhita",
+    "safety_tier": 1
+  },
+  {
+    "name": "Avipattikar Churna",
+    "type": "Churna (Powder)",
+    "primary_uses": ["Hyperacidity", "Heartburn", "Constipation", "Indigestion"],
+    "dosha_effects": {"vata": 0, "pitta": -1, "kapha": -1},
+    "ingredients": ["Trikatu", "Triphala", "Musta", "Vida Lavana", "Vidanga", "Ela", "Tejpatra", "Lavanga", "Trivrit", "Sita"],
+    "dosage": "3-6g with water or coconut water before meals",
+    "reference": "Bhaishajya Ratnavali",
+    "safety_tier": 1
+  },
+  {
+    "name": "Chyawanprash",
+    "type": "Avaleha (Jam)",
+    "primary_uses": ["Immunity booster", "Respiratory health", "Anti-aging", "Weakness"],
+    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
+    "ingredients": ["Amalaki", "Dashamoola", "Ashwagandha", "Shatavari", "Guduchi", "Honey", "Ghee", "Sesame oil", "Sugar"],
+    "dosage": "10-20g (1-2 tsps) with warm milk in the morning",
+    "reference": "Charaka Samhita",
+    "safety_tier": 1
+  },
+  {
+    "name": "Shatavari Gulam",
+    "type": "Avaleha (Jam)",
+    "primary_uses": ["Women's health", "Hormonal imbalance", "Gastric ulcers", "Weakness"],
+    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": 1},
+    "ingredients": ["Shatavari juice", "Jaggery", "Ghee", "Cardamom", "Pippali"],
+    "dosage": "10-20g once or twice a day",
+    "reference": "Sahasrayogam",
+    "safety_tier": 1
+  },
+  {
+    "name": "Dashamoolarishta",
+    "type": "Arishta (Fermented Decoction)",
+    "primary_uses": ["Post-partum care", "Fatigue", "Vata disorders", "Anorexia"],
+    "dosha_effects": {"vata": -1, "pitta": 1, "kapha": -1},
+    "ingredients": ["Dashamoola (Ten roots)", "Amrita", "Dhatri", "Duralabha", "Jaggery", "Honey", "Spices"],
+    "dosage": "15-30ml with equal quantity of water after meals",
+    "reference": "Bhaishajya Ratnavali",
+    "safety_tier": 2
+  },
+  {
+    "name": "Ashokarishta",
+    "type": "Arishta (Fermented Decoction)",
+    "primary_uses": ["Menstrual disorders", "Dysmenorrhea", "Menorrhagia", "Uterine health"],
+    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
+    "ingredients": ["Ashoka stem bark", "Jaggery", "Dhataki", "Musta", "Ginger", "Daruharidra", "Utpala"],
+    "dosage": "15-30ml with equal water after meals",
+    "reference": "Bhaishajya Ratnavali",
+    "safety_tier": 1
+  },
+  {
+    "name": "Amrutarishta",
+    "type": "Arishta (Fermented Decoction)",
+    "primary_uses": ["Chronic fever", "Immunity", "Fatigue", "Liver spleen disorders"],
+    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
+    "ingredients": ["Amruta (Guduchi)", "Dashamoola", "Jaggery", "Dhataki", "Spices"],
+    "dosage": "15-30ml with equal water after meals",
+    "reference": "Bhaishajya Ratnavali",
+    "safety_tier": 2
+  },
+  {
+    "name": "Brahmi Vati",
+    "type": "Vati (Tablet)",
+    "primary_uses": ["Memory enhancement", "Anxiety", "Stress", "Insomnia"],
+    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
+    "ingredients": ["Brahmi", "Shankhapushpi", "Vacha", "Maricha", "Swarna Bhasma (optional)"],
+    "dosage": "1-2 tablets twice a day with water or milk",
+    "reference": "Bhaishajya Ratnavali",
+    "safety_tier": 2
+  },
+  {
+    "name": "Chandraprabha Vati",
+    "type": "Vati (Tablet)",
+    "primary_uses": ["Urinary tract infections", "Kidney stones", "Diabetes support", "Weakness"],
+    "dosha_effects": {"vata": -1, "pitta": 0, "kapha": -1},
+    "ingredients": ["Karpura", "Vacha", "Musta", "Bhunimba", "Devadaru", "Shilajit", "Guggulu"],
+    "dosage": "1-2 tablets twice daily with water or milk",
+    "reference": "Sharangadhara Samhita",
+    "safety_tier": 2
+  },
+  {
+    "name": "Kanchanara Guggulu",
+    "type": "Vati/Guggulu (Tablet)",
+    "primary_uses": ["Thyroid disorders", "PCOS", "Lymph node enlargement", "Lipoma"],
+    "dosha_effects": {"vata": 0, "pitta": 0, "kapha": -1},
+    "ingredients": ["Kanchanara bark", "Triphala", "Trikatu", "Varuna", "Cardamom", "Cinnamon", "Guggulu"],
+    "dosage": "2 tablets twice or thrice daily with warm water",
+    "reference": "Sharangadhara Samhita",
+    "safety_tier": 2
+  },
+  {
+    "name": "Yogaraj Guggulu",
+    "type": "Vati/Guggulu (Tablet)",
+    "primary_uses": ["Joint pain", "Arthritis", "Vata disorders", "Muscle stiffness"],
+    "dosha_effects": {"vata": -1, "pitta": 1, "kapha": -1},
+    "ingredients": ["Guggulu", "Triphala", "Trikatu", "Chitraka", "Pippalimoola", "Ajmoda"],
+    "dosage": "1-2 tablets twice daily with warm water",
+    "reference": "Bhaishajya Ratnavali",
+    "safety_tier": 2
+  },
+  {
+    "name": "Gandharvahastadi Kashayam",
+    "type": "Kashayam (Decoction)",
+    "primary_uses": ["Constipation", "Bloating", "Vata imbalance", "Back pain"],
+    "dosha_effects": {"vata": -1, "pitta": 0, "kapha": -1},
+    "ingredients": ["Gandharvahasta (Eranda)", "Chirvilva", "Hutasha", "Vishwa", "Pathya"],
+    "dosage": "10-15ml diluted with 45ml warm water before food",
+    "reference": "Sahasrayogam",
+    "safety_tier": 1
+  },
+  {
+    "name": "Maharasnadi Kashayam",
+    "type": "Kashayam (Decoction)",
+    "primary_uses": ["Severe joint pain", "Paralysis", "Sciatica", "Parkinson's"],
+    "dosha_effects": {"vata": -1, "pitta": 0, "kapha": -1},
+    "ingredients": ["Rasna", "Dhanvayasa", "Bala", "Eranda", "Devadaru", "Shati", "Vacha"],
+    "dosage": "10-15ml diluted with 45ml warm water before food",
+    "reference": "Sahasrayogam",
+    "safety_tier": 2
+  },
+  {
+    "name": "Arvindasava",
+    "type": "Asava (Fermented)",
+    "primary_uses": ["Childhood digestive issues", "Rickets", "Low immunity in children", "Cough"],
+    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
+    "ingredients": ["Aravinda (Lotus)", "Ushira", "Kashmari", "Nilotpala", "Manjistha", "Jaggery", "Dhataki"],
+    "dosage": "10-20ml with equal water after meals",
+    "reference": "Bhaishajya Ratnavali",
+    "safety_tier": 1
+  },
+  {
+    "name": "Mahanarayana Taila",
+    "type": "Taila (Oil)",
+    "primary_uses": ["Joint pain", "Arthritis", "Muscle stiffness", "Paralysis"],
+    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": 0},
+    "ingredients": ["Bilva", "Ashwagandha", "Bala", "Shatavari", "Sesame Oil", "Cow's milk"],
+    "dosage": "For external application (massage)",
+    "reference": "Bhaishajya Ratnavali",
+    "safety_tier": 1
+  },
+  {
+    "name": "Ksheerabala Taila",
+    "type": "Taila (Oil)",
+    "primary_uses": ["Neurological disorders", "Insomnia", "Vata imbalance", "Headache"],
+    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": 1},
+    "ingredients": ["Bala (Sida cordifolia)", "Cow's milk", "Sesame oil"],
+    "dosage": "For external application (massage or Shirodhara) or internal use (under guidance)",
+    "reference": "Ashtanga Hridaya",
+    "safety_tier": 1
+  },
+  {
+    "name": "Kumkumadi Taila",
+    "type": "Taila (Oil)",
+    "primary_uses": ["Acne", "Hyperpigmentation", "Skin glow", "Dark circles"],
+    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
+    "ingredients": ["Kumkuma (Saffron)", "Chandana", "Lodhra", "Manjistha", "Sesame oil"],
+    "dosage": "2-3 drops applied externally on face",
+    "reference": "Ashtanga Hridaya",
+    "safety_tier": 1
+  },
+  {
+    "name": "Guduchi Satva",
+    "type": "Satva (Extract)",
+    "primary_uses": ["Fever", "Burning sensation", "Immunity", "Acidity"],
+    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
+    "ingredients": ["Guduchi (Tinospora cordifolia) stem extract"],
+    "dosage": "500mg-1g with water or honey",
+    "reference": "Ayurvedic Pharmacopoeia of India",
+    "safety_tier": 1
+  }
+]

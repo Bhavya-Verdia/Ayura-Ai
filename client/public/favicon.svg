@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <!-- Background radial depth -->
+    <radialGradient id="bgr" cx="35%" cy="28%" r="80%">
+      <stop offset="0%" stop-color="#0e1d2e"/>
+      <stop offset="100%" stop-color="#060a0e"/>
+    </radialGradient>
+
+    <!-- Amber core gradient -->
+    <radialGradient id="ac" cx="38%" cy="32%" r="68%">
+      <stop offset="0%"   stop-color="#fff7e6"/>
+      <stop offset="42%"  stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#fb923c" stop-opacity="0.15"/>
+    </radialGradient>
+
+    <!-- Teal petal fill gradient -->
+    <linearGradient id="tpf" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%"   stop-color="#065f55" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#2dd4bf" stop-opacity="0.4"/>
+    </linearGradient>
+
+    <!-- Violet petal fill gradient -->
+    <linearGradient id="vpf" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%"   stop-color="#3b1a6e" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0.35"/>
+    </linearGradient>
+
+    <!-- Center ambient glow -->
+    <filter id="cg" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Node dot glow -->
+    <filter id="ng" x="-150%" y="-150%" width="400%" height="400%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Soft petal edge glow -->
+    <filter id="pg" x="-15%" y="-15%" width="130%" height="130%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- ── BACKGROUND ── -->
+  <rect width="100" height="100" rx="22" fill="url(#bgr)"/>
+
+  <!-- Subtle outer orbit ring -->
+  <circle cx="50" cy="50" r="42" fill="none" stroke="#2dd4bf" stroke-width="0.3" opacity="0.2"/>
+  <circle cx="50" cy="50" r="33" fill="none" stroke="#a78bfa" stroke-width="0.2" opacity="0.15"/>
+
+  <!-- ── 8 OUTER TEAL PETALS ──
+       Tip at y=13 → radius = 37px from center.
+       Petal: elegant teardrop from (50,50) curving to tip and back. -->
+  <g filter="url(#pg)">
+    <path d="M50,50 C38.5,36.5 40.5,18 50,13 C59.5,18 61.5,36.5 50,50"
+          fill="url(#tpf)" stroke="#2dd4bf" stroke-width="0.6" stroke-opacity="0.9"
+          transform="rotate(0,50,50)"/>
+    <path d="M50,50 C38.5,36.5 40.5,18 50,13 C59.5,18 61.5,36.5 50,50"
+          fill="url(#tpf)" stroke="#2dd4bf" stroke-width="0.6" stroke-opacity="0.9"
+          transform="rotate(45,50,50)"/>
+    <path d="M50,50 C38.5,36.5 40.5,18 50,13 C59.5,18 61.5,36.5 50,50"
+          fill="url(#tpf)" stroke="#2dd4bf" stroke-width="0.6" stroke-opacity="0.9"
+          transform="rotate(90,50,50)"/>
+    <path d="M50,50 C38.5,36.5 40.5,18 50,13 C59.5,18 61.5,36.5 50,50"
+          fill="url(#tpf)" stroke="#2dd4bf" stroke-width="0.6" stroke-opacity="0.9"
+          transform="rotate(135,50,50)"/>
+    <path d="M50,50 C38.5,36.5 40.5,18 50,13 C59.5,18 61.5,36.5 50,50"
+          fill="url(#tpf)" stroke="#2dd4bf" stroke-width="0.6" stroke-opacity="0.9"
+          transform="rotate(180,50,50)"/>
+    <path d="M50,50 C38.5,36.5 40.5,18 50,13 C59.5,18 61.5,36.5 50,50"
+          fill="url(#tpf)" stroke="#2dd4bf" stroke-width="0.6" stroke-opacity="0.9"
+          transform="rotate(225,50,50)"/>
+    <path d="M50,50 C38.5,36.5 40.5,18 50,13 C59.5,18 61.5,36.5 50,50"
+          fill="url(#tpf)" stroke="#2dd4bf" stroke-width="0.6" stroke-opacity="0.9"
+          transform="rotate(270,50,50)"/>
+    <path d="M50,50 C38.5,36.5 40.5,18 50,13 C59.5,18 61.5,36.5 50,50"
+          fill="url(#tpf)" stroke="#2dd4bf" stroke-width="0.6" stroke-opacity="0.9"
+          transform="rotate(315,50,50)"/>
+  </g>
+
+  <!-- ── 8 INNER VIOLET PETALS (offset 22.5°, smaller — tip at y=25, r=25) ── -->
+  <g filter="url(#pg)">
+    <path d="M50,50 C44.5,42 45.5,29 50,25 C54.5,29 55.5,42 50,50"
+          fill="url(#vpf)" stroke="#a78bfa" stroke-width="0.45" stroke-opacity="0.8"
+          transform="rotate(22.5,50,50)"/>
+    <path d="M50,50 C44.5,42 45.5,29 50,25 C54.5,29 55.5,42 50,50"
+          fill="url(#vpf)" stroke="#a78bfa" stroke-width="0.45" stroke-opacity="0.8"
+          transform="rotate(67.5,50,50)"/>
+    <path d="M50,50 C44.5,42 45.5,29 50,25 C54.5,29 55.5,42 50,50"
+          fill="url(#vpf)" stroke="#a78bfa" stroke-width="0.45" stroke-opacity="0.8"
+          transform="rotate(112.5,50,50)"/>
+    <path d="M50,50 C44.5,42 45.5,29 50,25 C54.5,29 55.5,42 50,50"
+          fill="url(#vpf)" stroke="#a78bfa" stroke-width="0.45" stroke-opacity="0.8"
+          transform="rotate(157.5,50,50)"/>
+    <path d="M50,50 C44.5,42 45.5,29 50,25 C54.5,29 55.5,42 50,50"
+          fill="url(#vpf)" stroke="#a78bfa" stroke-width="0.45" stroke-opacity="0.8"
+          transform="rotate(202.5,50,50)"/>
+    <path d="M50,50 C44.5,42 45.5,29 50,25 C54.5,29 55.5,42 50,50"
+          fill="url(#vpf)" stroke="#a78bfa" stroke-width="0.45" stroke-opacity="0.8"
+          transform="rotate(247.5,50,50)"/>
+    <path d="M50,50 C44.5,42 45.5,29 50,25 C54.5,29 55.5,42 50,50"
+          fill="url(#vpf)" stroke="#a78bfa" stroke-width="0.45" stroke-opacity="0.8"
+          transform="rotate(292.5,50,50)"/>
+    <path d="M50,50 C44.5,42 45.5,29 50,25 C54.5,29 55.5,42 50,50"
+          fill="url(#vpf)" stroke="#a78bfa" stroke-width="0.45" stroke-opacity="0.8"
+          transform="rotate(337.5,50,50)"/>
+  </g>
+
+  <!-- ── NEURAL NETWORK LINES center → outer petal tips (r=37) ── -->
+  <!-- Tip positions: 0°(50,13) 45°(76.16,23.84) 90°(87,50) 135°(76.16,76.16)
+       180°(50,87) 225°(23.84,76.16) 270°(13,50) 315°(23.84,23.84) -->
+  <g stroke="#5eead4" stroke-width="0.28" opacity="0.38">
+    <line x1="50" y1="50" x2="50"    y2="13"/>
+    <line x1="50" y1="50" x2="76.16" y2="23.84"/>
+    <line x1="50" y1="50" x2="87"    y2="50"/>
+    <line x1="50" y1="50" x2="76.16" y2="76.16"/>
+    <line x1="50" y1="50" x2="50"    y2="87"/>
+    <line x1="50" y1="50" x2="23.84" y2="76.16"/>
+    <line x1="50" y1="50" x2="13"    y2="50"/>
+    <line x1="50" y1="50" x2="23.84" y2="23.84"/>
+  </g>
+
+  <!-- ── TEAL NODE DOTS at outer petal tips ── -->
+  <g filter="url(#ng)">
+    <circle cx="50"    cy="13"    r="1.7" fill="#2dd4bf"/>
+    <circle cx="76.16" cy="23.84" r="1.7" fill="#2dd4bf"/>
+    <circle cx="87"    cy="50"    r="1.7" fill="#2dd4bf"/>
+    <circle cx="76.16" cy="76.16" r="1.7" fill="#2dd4bf"/>
+    <circle cx="50"    cy="87"    r="1.7" fill="#2dd4bf"/>
+    <circle cx="23.84" cy="76.16" r="1.7" fill="#2dd4bf"/>
+    <circle cx="13"    cy="50"    r="1.7" fill="#2dd4bf"/>
+    <circle cx="23.84" cy="23.84" r="1.7" fill="#2dd4bf"/>
+  </g>
+
+  <!-- ── VIOLET MINI-DOTS at inner petal tips (r=25 at 22.5° offsets) ──
+       22.5°: (59.57,26.84)  67.5°: (73.16,40.43)  112.5°: (73.16,59.57)
+       157.5°: (59.57,73.16) 202.5°: (40.43,73.16) 247.5°: (26.84,59.57)
+       292.5°: (26.84,40.43) 337.5°: (40.43,26.84) -->
+  <g fill="#c4b5fd" opacity="0.7">
+    <circle cx="59.57" cy="26.84" r="1"/>
+    <circle cx="73.16" cy="40.43" r="1"/>
+    <circle cx="73.16" cy="59.57" r="1"/>
+    <circle cx="59.57" cy="73.16" r="1"/>
+    <circle cx="40.43" cy="73.16" r="1"/>
+    <circle cx="26.84" cy="59.57" r="1"/>
+    <circle cx="26.84" cy="40.43" r="1"/>
+    <circle cx="40.43" cy="26.84" r="1"/>
+  </g>
+
+  <!-- Faint octagon connecting inner dots -->
+  <polygon
+    points="59.57,26.84 73.16,40.43 73.16,59.57 59.57,73.16 40.43,73.16 26.84,59.57 26.84,40.43 40.43,26.84"
+    fill="none" stroke="#a78bfa" stroke-width="0.22" opacity="0.22"/>
+
+  <!-- ── AMBER CENTER GLOW ── -->
+  <circle cx="50" cy="50" r="13" fill="#fb923c" opacity="0.05"/>
+  <circle cx="50" cy="50" r="8"  fill="#fb923c" opacity="0.10"/>
+  <circle cx="50" cy="50" r="5"  fill="url(#ac)" filter="url(#cg)"/>
+  <circle cx="50" cy="50" r="2"  fill="#fff9f0"/>
+
+  <!-- Tiny specular glint on core -->
+  <circle cx="48.6" cy="48.4" r="0.7" fill="white" opacity="0.9"/>
+</svg>

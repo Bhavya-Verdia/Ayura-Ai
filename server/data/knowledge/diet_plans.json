@@ -1,0 +1,384 @@
+[
+  {
+    "id": "d001",
+    "name": "Kitchari",
+    "type": "Lunch/Dinner",
+    "dietary_types": [
+      "vegetarian",
+      "vegan",
+      "eggetarian",
+      "non_vegetarian",
+      "pescatarian"
+    ],
+    "macros": {
+      "protein": "moderate",
+      "carbs": "high",
+      "fats": "moderate"
+    },
+    "dosha_effect": "Tridoshic (Balances Vata, Pitta, Kapha)",
+    "gunas": [
+      "light",
+      "soft"
+    ],
+    "allergens": [],
+    "ingredients": [
+      "basmati rice",
+      "mung dal",
+      "ghee/coconut oil",
+      "cumin",
+      "coriander",
+      "turmeric",
+      "ginger"
+    ],
+    "benefits": [
+      "easy to digest",
+      "detoxifying",
+      "nourishing"
+    ],
+    "contraindications": []
+  },
+  {
+    "id": "d002",
+    "name": "Oatmeal with Almonds and Cinnamon",
+    "type": "Breakfast",
+    "dietary_types": [
+      "vegetarian",
+      "vegan",
+      "eggetarian",
+      "non_vegetarian",
+      "pescatarian"
+    ],
+    "macros": {
+      "protein": "low",
+      "carbs": "high",
+      "fats": "moderate"
+    },
+    "dosha_effect": "Balances Vata and Pitta. May increase Kapha if too heavy.",
+    "gunas": [
+      "heavy",
+      "soft",
+      "sweet"
+    ],
+    "allergens": [
+      "nuts_tree"
+    ],
+    "ingredients": [
+      "rolled oats",
+      "almond milk",
+      "almonds",
+      "cinnamon",
+      "maple syrup"
+    ],
+    "benefits": [
+      "sustained energy",
+      "heart healthy",
+      "grounding for vata"
+    ],
+    "contraindications": [
+      "gluten_intolerance_if_not_gf_oats"
+    ]
+  },
+  {
+    "id": "d003",
+    "name": "Spicy Lentil Soup (Dal)",
+    "type": "Lunch/Dinner",
+    "dietary_types": [
+      "vegetarian",
+      "vegan",
+      "eggetarian",
+      "non_vegetarian",
+      "pescatarian"
+    ],
+    "macros": {
+      "protein": "high",
+      "carbs": "moderate",
+      "fats": "low"
+    },
+    "dosha_effect": "Balances Kapha and Vata (with oil). May aggravate Pitta if too spicy.",
+    "gunas": [
+      "hot",
+      "light"
+    ],
+    "allergens": [],
+    "ingredients": [
+      "red lentils",
+      "garlic",
+      "chili",
+      "mustard seeds",
+      "tomato",
+      "cilantro"
+    ],
+    "benefits": [
+      "high protein",
+      "stimulates digestion (agni)"
+    ],
+    "contraindications": [
+      "acidity",
+      "ulcers"
+    ]
+  },
+  {
+    "id": "d004",
+    "name": "Grilled Salmon with Asparagus",
+    "type": "Dinner",
+    "dietary_types": [
+      "pescatarian",
+      "non_vegetarian"
+    ],
+    "macros": {
+      "protein": "high",
+      "carbs": "low",
+      "fats": "high"
+    },
+    "dosha_effect": "Balances Vata. May aggravate Pitta (fish is heating) and Kapha (heavy).",
+    "gunas": [
+      "heavy",
+      "hot"
+    ],
+    "allergens": [
+      "fish"
+    ],
+    "ingredients": [
+      "salmon fillet",
+      "asparagus",
+      "olive oil",
+      "lemon",
+      "black pepper"
+    ],
+    "benefits": [
+      "omega-3 rich",
+      "joint health",
+      "muscle support"
+    ],
+    "contraindications": [
+      "high_cholesterol"
+    ]
+  },
+  {
+    "id": "d005",
+    "name": "Cooling Cucumber and Mint Salad",
+    "type": "Snack",
+    "dietary_types": [
+      "vegetarian",
+      "vegan",
+      "eggetarian",
+      "non_vegetarian",
+      "pescatarian"
+    ],
+    "macros": {
+      "protein": "low",
+      "carbs": "low",
+      "fats": "low"
+    },
+    "dosha_effect": "Pacifies Pitta. Aggravates Vata and Kapha (cold and raw).",
+    "gunas": [
+      "cold",
+      "light",
+      "dry"
+    ],
+    "allergens": [],
+    "ingredients": [
+      "cucumber",
+      "fresh mint",
+      "lime juice",
+      "rock salt"
+    ],
+    "benefits": [
+      "hydrating",
+      "reduces body heat",
+      "clears skin"
+    ],
+    "contraindications": [
+      "cold",
+      "cough",
+      "weak_digestion"
+    ]
+  },
+  {
+    "id": "d006",
+    "name": "Warm Spiced Milk (Golden Milk)",
+    "type": "Snack",
+    "dietary_types": [
+      "vegetarian",
+      "eggetarian",
+      "non_vegetarian",
+      "pescatarian"
+    ],
+    "macros": {
+      "protein": "moderate",
+      "carbs": "low",
+      "fats": "moderate"
+    },
+    "dosha_effect": "Pacifies Vata and Pitta. May increase Kapha if too sweet/heavy.",
+    "gunas": [
+      "heavy",
+      "warm",
+      "liquid"
+    ],
+    "allergens": [
+      "dairy"
+    ],
+    "ingredients": [
+      "cow's milk",
+      "turmeric",
+      "black pepper",
+      "cardamom",
+      "ashwagandha"
+    ],
+    "benefits": [
+      "promotes sleep",
+      "reduces inflammation",
+      "immunity boost"
+    ],
+    "contraindications": [
+      "lactose_intolerance",
+      "excess_mucus"
+    ]
+  },
+  {
+    "id": "d007",
+    "name": "Scrambled Eggs with Spinach",
+    "type": "Breakfast",
+    "dietary_types": [
+      "eggetarian",
+      "non_vegetarian",
+      "pescatarian"
+    ],
+    "macros": {
+      "protein": "high",
+      "carbs": "low",
+      "fats": "high"
+    },
+    "dosha_effect": "Balances Vata. Aggravates Pitta (heating). Moderate for Kapha.",
+    "gunas": [
+      "heavy",
+      "hot"
+    ],
+    "allergens": [
+      "eggs"
+    ],
+    "ingredients": [
+      "eggs",
+      "spinach",
+      "ghee",
+      "black pepper"
+    ],
+    "benefits": [
+      "muscle building",
+      "iron rich"
+    ],
+    "contraindications": []
+  },
+  {
+    "id": "d008",
+    "name": "Quinoa Salad with Roasted Root Vegetables",
+    "type": "Lunch",
+    "dietary_types": [
+      "vegetarian",
+      "vegan",
+      "eggetarian",
+      "non_vegetarian",
+      "pescatarian"
+    ],
+    "macros": {
+      "protein": "moderate",
+      "carbs": "high",
+      "fats": "low"
+    },
+    "dosha_effect": "Balances Pitta and Kapha. Vata should add more dressing/oil.",
+    "gunas": [
+      "light",
+      "dry",
+      "warm"
+    ],
+    "allergens": [],
+    "ingredients": [
+      "quinoa",
+      "sweet potato",
+      "carrots",
+      "beets",
+      "olive oil",
+      "lemon"
+    ],
+    "benefits": [
+      "high fiber",
+      "sustained energy",
+      "blood building"
+    ],
+    "contraindications": []
+  },
+  {
+    "id": "d009",
+    "name": "Chicken Tikka Masala (Lighter Version)",
+    "type": "Dinner",
+    "dietary_types": [
+      "non_vegetarian"
+    ],
+    "macros": {
+      "protein": "high",
+      "carbs": "low",
+      "fats": "moderate"
+    },
+    "dosha_effect": "Balances Vata and Kapha (if not too oily). Aggravates Pitta (spicy/heating).",
+    "gunas": [
+      "hot",
+      "heavy"
+    ],
+    "allergens": [
+      "dairy"
+    ],
+    "ingredients": [
+      "chicken breast",
+      "yogurt",
+      "tomato paste",
+      "garam masala",
+      "ginger",
+      "garlic"
+    ],
+    "benefits": [
+      "high protein",
+      "warming"
+    ],
+    "contraindications": [
+      "acidity",
+      "ulcers"
+    ]
+  },
+  {
+    "id": "d010",
+    "name": "Fresh Fruit Bowl (Papaya, Apple, Berries)",
+    "type": "Snack",
+    "dietary_types": [
+      "vegetarian",
+      "vegan",
+      "eggetarian",
+      "non_vegetarian",
+      "pescatarian"
+    ],
+    "macros": {
+      "protein": "low",
+      "carbs": "high",
+      "fats": "low"
+    },
+    "dosha_effect": "Balances Pitta. Apples balance Kapha. Papaya balances Vata.",
+    "gunas": [
+      "light",
+      "cold",
+      "liquid"
+    ],
+    "allergens": [],
+    "ingredients": [
+      "papaya",
+      "apple",
+      "blueberries"
+    ],
+    "benefits": [
+      "vitamins",
+      "antioxidants",
+      "hydrating"
+    ],
+    "contraindications": [
+      "diabetes_monitor_portions"
+    ]
+  }
+]

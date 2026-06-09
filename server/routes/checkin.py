@@ -1,0 +1,92 @@
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+from typing import Optional, List
+from datetime import datetime, timezone
+import uuid
+import json
+
+from schemas.user_schema import UserDocument
+from routes.profile import get_current_user
+from database.mongodb import get_mongodb
+from ai.llm_client import llm_client
+
+router = APIRouter()
+
+class WeeklyCheckinRequest(BaseModel):
+    energy: int = Field(..., ge=1, le=10)
+    digestion: int = Field(..., ge=1, le=10)
+    sleep: int = Field(..., ge=1, le=10)
+    adherence: int = Field(..., ge=1, le=10)
+    symptoms: List[str] = Field(default_factory=list)
+    what_felt_good: Optional[str] = Field(None, max_length=1000)
+
+class WeeklyCheckinResponse(BaseModel):
+    insight: str
+    adapted_plans: List[str] = []
+
+@router.post("/weekly", response_model=WeeklyCheckinResponse)
+async def submit_weekly_checkin(req: WeeklyCheckinRequest, user: UserDocument = Depends(get_current_user)):
+    db = get_mongodb()
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+
+    # 1. Save checkin to DB
+    checkin_doc = {
+        "user_id": user.id,
+        "energy": req.energy,
+        "digestion": req.digestion,
+        "sleep": req.sleep,
+        "adherence": req.adherence,
+        "symptoms": req.symptoms,
+        "what_felt_good": req.what_felt_good,
+        "timestamp": datetime.now(timezone.utc)
+    }
+    await db.weekly_checkins.insert_one(checkin_doc)
+
+    # 2. Update user symptoms if any are reported
+    if req.symptoms:
+        await db.users.update_one(
+            {"_id": user.id},
+            {"$addToSet": {"current_symptoms": {"$each": req.symptoms}}}
+        )
+
+    # 3. Determine if adaptation is needed and generate insight
+    prompt = f"""
+You are the Ayura AI AI Health Assistant. The user just completed their weekly check-in.
+USER PROFILE: Dosha: {user.dominant_dosha}
+
+CHECK-IN SCORES (1-10, 10 is best):
+- Energy: {req.energy}
+- Digestion: {req.digestion}
+- Sleep: {req.sleep}
+- Plan Adherence: {req.adherence}
+
+NEW SYMPTOMS REPORTED: {req.symptoms}
+WHAT FELT GOOD: {req.what_felt_good}
+
+TASK:
+1. Provide a brief, encouraging "insight" (1-2 sentences) on their progress.
+2. If their scores are low (<= 4) or they reported new symptoms, decide which plans need adaptation (gym, yoga, diet, panchakarma, remedies, medicines).
+
+Respond ONLY with valid JSON:
+{{
+    "insight": "Your insight here",
+    "plans_to_adapt": ["diet", "yoga"]
+}}
+"""
+    try:
+        response = await llm_client.generate(prompt=prompt, system_prompt="You are an Ayurvedic AI. Reply in JSON.", json_mode=True)
+        resp_data = json.loads(response)
+        insight = resp_data.get("insight", "Great job checking in this week!")
+        plans_to_adapt = resp_data.get("plans_to_adapt", [])
+    except Exception as e:
+        insight = "Great job on your weekly check-in!"
+        plans_to_adapt = []
+
+    # 4. Trigger adaptation in background if needed
+    if plans_to_adapt:
+        from routes.chat import _trigger_adaptation
+        import asyncio
+        asyncio.create_task(_trigger_adaptation(db, user.id, plans_to_adapt, f"Weekly checkin: Energy={req.energy}, Digestion={req.digestion}, Sleep={req.sleep}, Symptoms={req.symptoms}"))
+
+    return WeeklyCheckinResponse(insight=insight, adapted_plans=plans_to_adapt)

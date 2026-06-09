@@ -1,0 +1,173 @@
+import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../providers/AuthContext'
+import { Helmet } from 'react-helmet-async'
+import './Auth.css'
+
+const GOOGLE_CLIENT_ID  = import.meta.env.VITE_GOOGLE_CLIENT_ID  || ''
+const REDIRECT_URI      = import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/google/callback`
+const GOOGLE_ENABLED    = Boolean(GOOGLE_CLIENT_ID)
+
+const GITHUB_CLIENT_ID  = import.meta.env.VITE_GITHUB_CLIENT_ID  || ''
+const GITHUB_REDIRECT_URI = `${window.location.origin}/auth/github/callback`
+const GITHUB_ENABLED    = Boolean(GITHUB_CLIENT_ID)
+
+function generateOAuthState() {
+  const state = Math.random().toString(36).substring(2, 15);
+  sessionStorage.setItem('oauth_state', state);
+  return state;
+}
+
+async function getSecureGoogleAuthURL() {
+  const { data } = await import('../api/client').then(m => m.authAPI.getGoogleUrl());
+  return data.url;
+}
+function githubOAuthURL() {
+  const state = generateOAuthState();
+  const p = new URLSearchParams({ client_id: GITHUB_CLIENT_ID, redirect_uri: GITHUB_REDIRECT_URI, scope: 'user:email', state })
+  return `https://github.com/login/oauth/authorize?${p}`
+}
+
+export default function Login() {
+  const [email,    setEmail]    = useState('')
+  const [password, setPassword] = useState('')
+  const [error,    setError]    = useState('')
+  const [loading,  setLoading]  = useState(false)
+  const { login } = useAuth()
+  const navigate = useNavigate()
+
+  async function handleEmailSubmit(e) {
+    e.preventDefault(); setError(''); setLoading(true)
+    try { await login(email, password); navigate('/dashboard') }
+    catch (err) { setError(err.response?.data?.detail || 'Invalid email or password.') }
+    finally { setLoading(false) }
+  }
+
+
+
+  return (
+    <div className="auth-page">
+      <Helmet><title>Sign In | Ayura AI</title></Helmet>
+
+      {/* ── LEFT — brand panel ── */}
+      <div className="auth-left">
+        <div className="auth-left-orb-a" />
+        <div className="auth-left-orb-b" />
+        <div className="auth-left-noise" />
+
+        <Link to="/" className="auth-brand-link">
+          <img src="/favicon.svg" alt="Ayura AI Logo" className="auth-brand-mark" />
+          <span className="auth-brand-text">Ayura AI</span>
+        </Link>
+
+        <div className="auth-left-body">
+          <span className="auth-left-kicker">Welcome back</span>
+          <h2 className="auth-left-title">
+            Your wellness<br />journey <em>continues</em>.
+          </h2>
+          <p className="auth-left-desc">
+            Sign back in to access your personalised Ayurvedic plans, adaptive AI recommendations, and health timeline.
+          </p>
+          <div className="auth-left-pills">
+            <div className="auth-left-pill"><span className="auth-left-pill-icon">🧬</span> Dosha-aware AI plans</div>
+            <div className="auth-left-pill"><span className="auth-left-pill-icon">⚡</span> Adaptive daily recalibration</div>
+            <div className="auth-left-pill"><span className="auth-left-pill-icon">🛡️</span> Safety-screened recommendations</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── RIGHT — form ── */}
+      <div className="auth-right">
+        <motion.div
+          className="auth-form-wrap"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="auth-form-header">
+            <h1 className="auth-form-title">Sign in</h1>
+            <p className="auth-form-subtitle">Enter your credentials to continue your wellness journey.</p>
+          </div>
+
+          {/* Social OAuth */}
+          {(GOOGLE_ENABLED || GITHUB_ENABLED) && (
+            <div className="auth-social-row">
+              {GOOGLE_ENABLED && (
+                <button 
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    try {
+                      const url = await getSecureGoogleAuthURL();
+                      window.location.href = url;
+                    } catch (err) {
+                      console.error("Google login error:", err);
+                      setError("Failed to initialize Google login.");
+                    }
+                  }} 
+                  className="auth-social-btn"
+                  style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'inherit', cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  Continue with Google
+                </button>
+              )}
+              {GITHUB_ENABLED && (
+                <a href={githubOAuthURL()} className="auth-social-btn">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                  </svg>
+                  GitHub
+                </a>
+              )}
+            </div>
+          )}
+
+          {(GOOGLE_ENABLED || GITHUB_ENABLED) && (
+            <div className="auth-or-divider">or continue with</div>
+          )}
+
+
+
+          <AnimatePresence mode="wait">
+            {error && (
+              <motion.div className="auth-error" key="error" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Firebase Recaptcha Container */}
+          <div id="recaptcha-container"></div>
+
+          {/* Email form */}
+          <form className="auth-form" onSubmit={handleEmailSubmit}>
+              <div className="auth-input-group">
+                <label className="auth-label" htmlFor="email">Email address</label>
+                <input id="email" className="auth-input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required />
+              </div>
+              <div className="auth-input-group">
+                <label className="auth-label" htmlFor="password">Password</label>
+                <input id="password" className="auth-input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" required />
+              </div>
+              <motion.button type="submit" className="auth-submit-btn" disabled={loading} whileTap={{ scale: 0.97 }}>
+                {loading ? <span className="spinner" /> : 'Sign In →'}
+              </motion.button>
+          </form>
+
+          <div className="auth-bottom-links">
+            <Link to="/forgot-password" className="auth-forgot-link">Forgot your password?</Link>
+            <p className="auth-bottom-link-text">
+              New to Ayura AI? <Link to="/register" className="auth-link">Create account</Link>
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  )
+}

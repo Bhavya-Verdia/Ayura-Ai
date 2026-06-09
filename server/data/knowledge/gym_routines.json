@@ -1,0 +1,216 @@
+[
+  {
+    "id": "g001",
+    "name": "Barbell Squat",
+    "equipment": "barbell",
+    "mechanics": "compound",
+    "target_muscle": "lower",
+    "secondary_muscles": [
+      "core",
+      "glutes",
+      "hamstrings"
+    ],
+    "dosha_suitability": {
+      "vata": "low_reps_heavy_weight",
+      "pitta": "moderate_reps",
+      "kapha": "high_reps_fast_pace"
+    },
+    "contraindications": [
+      "knee_injury",
+      "lower_back_pain"
+    ],
+    "instructions": "Place barbell on upper back, descend until thighs are parallel to floor."
+  },
+  {
+    "id": "g002",
+    "name": "Push-up",
+    "equipment": "bodyweight",
+    "mechanics": "compound",
+    "target_muscle": "upper",
+    "secondary_muscles": [
+      "core",
+      "triceps",
+      "shoulders"
+    ],
+    "dosha_suitability": {
+      "vata": "moderate_pace",
+      "pitta": "steady_controlled",
+      "kapha": "fast_explosive"
+    },
+    "contraindications": [
+      "wrist_injury",
+      "shoulder_injury"
+    ],
+    "instructions": "Start in plank position. Lower body until chest touches floor. Push up."
+  },
+  {
+    "id": "g003",
+    "name": "Deadlift",
+    "equipment": "barbell",
+    "mechanics": "compound",
+    "target_muscle": "full_body",
+    "secondary_muscles": [
+      "lower_back",
+      "hamstrings",
+      "glutes",
+      "core",
+      "forearms"
+    ],
+    "dosha_suitability": {
+      "vata": "low_reps_heavy_weight",
+      "pitta": "moderate_reps",
+      "kapha": "high_reps"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "hernia"
+    ],
+    "instructions": "Stand with feet shoulder-width apart. Hinge at hips to grip bar. Lift bar."
+  },
+  {
+    "id": "g004",
+    "name": "Dumbbell Lunges",
+    "equipment": "dumbbells",
+    "mechanics": "compound",
+    "target_muscle": "lower",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "core"
+    ],
+    "dosha_suitability": {
+      "vata": "slow_controlled",
+      "pitta": "moderate",
+      "kapha": "walking_lunges_fast"
+    },
+    "contraindications": [
+      "knee_injury"
+    ],
+    "instructions": "Hold dumbbells. Step forward with one leg, lower hips until knees are 90 deg."
+  },
+  {
+    "id": "g005",
+    "name": "Plank",
+    "equipment": "bodyweight",
+    "mechanics": "isolation",
+    "target_muscle": "core",
+    "secondary_muscles": [
+      "shoulders",
+      "glutes"
+    ],
+    "dosha_suitability": {
+      "vata": "short_holds",
+      "pitta": "moderate_holds",
+      "kapha": "long_holds"
+    },
+    "contraindications": [
+      "shoulder_injury",
+      "lower_back_pain"
+    ],
+    "instructions": "Rest on forearms and toes, keeping body straight."
+  },
+  {
+    "id": "g006",
+    "name": "Kettlebell Swing",
+    "equipment": "kettlebell",
+    "mechanics": "compound",
+    "target_muscle": "full_body",
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "core",
+      "shoulders"
+    ],
+    "dosha_suitability": {
+      "vata": "avoid_if_exhausted",
+      "pitta": "moderate_intensity",
+      "kapha": "excellent_high_intensity"
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "shoulder_injury"
+    ],
+    "instructions": "Hinge at hips, swing kettlebell back, then thrust hips forward to swing it up."
+  },
+  {
+    "id": "g007",
+    "name": "Pull-up",
+    "equipment": "full_gym",
+    "mechanics": "compound",
+    "target_muscle": "upper",
+    "secondary_muscles": [
+      "biceps",
+      "core"
+    ],
+    "dosha_suitability": {
+      "vata": "assisted_if_needed",
+      "pitta": "bodyweight_or_weighted",
+      "kapha": "high_volume"
+    },
+    "contraindications": [
+      "shoulder_injury",
+      "elbow_injury"
+    ],
+    "instructions": "Grip bar overhead. Pull body up until chin is over bar. Lower with control."
+  },
+  {
+    "id": "g008",
+    "name": "Cable Row",
+    "equipment": "cables",
+    "mechanics": "compound",
+    "target_muscle": "back",
+    "secondary_muscles": [
+      "biceps",
+      "core"
+    ],
+    "dosha_suitability": {
+      "vata": "moderate_weight_slow",
+      "pitta": "moderate",
+      "kapha": "high_volume_fast"
+    },
+    "contraindications": [
+      "lower_back_pain"
+    ],
+    "instructions": "Sit at cable machine. Pull handle towards chest while squeezing shoulder blades."
+  },
+  {
+    "id": "g009",
+    "name": "Resistance Band Bicep Curls",
+    "equipment": "resistance_bands",
+    "mechanics": "isolation",
+    "target_muscle": "upper",
+    "secondary_muscles": [],
+    "dosha_suitability": {
+      "vata": "slow_reps",
+      "pitta": "moderate_reps",
+      "kapha": "fast_reps"
+    },
+    "contraindications": [
+      "elbow_injury",
+      "wrist_injury"
+    ],
+    "instructions": "Stand on band, hold handles. Curl hands towards shoulders."
+  },
+  {
+    "id": "g010",
+    "name": "High Knees",
+    "equipment": "bodyweight",
+    "mechanics": "compound",
+    "target_muscle": "full_body",
+    "secondary_muscles": [
+      "core",
+      "calves"
+    ],
+    "dosha_suitability": {
+      "vata": "avoid",
+      "pitta": "moderate",
+      "kapha": "excellent"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury",
+      "high_bp"
+    ],
+    "instructions": "Run in place, bringing knees as high as possible."
+  }
+]

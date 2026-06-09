@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0A0A0F" />
+    <meta name="description" content="Ayura AI — Adaptive AI wellness platform combining Ayurveda and modern health science. Get personalized fitness, nutrition, and recovery plans based on your unique dosha profile." />
+    <meta name="keywords" content="wellness, ayurveda, dosha, fitness, nutrition, AI health, ayura, yoga, panchakarma" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Ayura AI" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Ayura AI — AI + Ayurveda Wellness" />
+    <meta property="og:description" content="Build a body plan that feels alive and adapts in real time." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://ayura.app" />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ayura AI — AI + Ayurveda Wellness" />
+    <meta name="twitter:description" content="Personalized fitness, nutrition, and Ayurvedic plans powered by AI." />
+    <meta name="twitter:image" content="/og-image.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <title>Ayura AI — AI + Ayurveda Wellness</title>
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('ayura_theme') || 'dark';
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <!-- Service worker registration handled by VitePWA plugin -->
+  </body>
+</html>

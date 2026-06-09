@@ -1,0 +1,179 @@
+{
+  "constraints": {
+    "diabetes_type2": {
+      "description": "Type 2 Diabetes Mellitus — requires blood sugar management",
+      "gym": {
+        "avoid": ["prolonged_fasting_workouts", "extremely_high_intensity_without_snack"],
+        "prefer": ["moderate_cardio", "resistance_training", "post_meal_walking"],
+        "modifications": ["carry glucose tablets", "monitor blood sugar before/after", "stay hydrated"],
+        "notes": "Resistance training improves insulin sensitivity. Avoid exercising if blood sugar > 250 mg/dL or < 70 mg/dL."
+      },
+      "yoga": {
+        "avoid": ["prolonged_inversions_unsupervised", "extreme_hot_yoga"],
+        "prefer": ["gentle_flow", "restorative", "pranayama", "surya_namaskar_modified"],
+        "modifications": ["keep sessions under 45 min initially"],
+        "beneficial_poses": ["dhanurasana", "ardha_matsyendrasana", "paschimottanasana", "mandukasana"]
+      },
+      "diet": {
+        "avoid": ["high_gi_foods", "excess_fruit_juice", "white_rice_large_portions", "refined_sugar", "processed_foods"],
+        "prefer": ["low_glycemic_meals", "high_fiber", "whole_grains", "bitter_gourd", "fenugreek", "cinnamon"],
+        "modifications": ["small_frequent_meals", "complex_carbs_only", "monitor_portion_sizes"],
+        "calorie_adjustment": "no specific reduction unless also overweight"
+      },
+      "panchakarma": {
+        "avoid": ["vamana_unsupervised", "strong_virechana"],
+        "prefer": ["gentle_basti", "abhyanga_with_sesame_oil", "udwarthana_dry_powder_massage"],
+        "notes": "Panchakarma should be done under supervision. Udwarthana is particularly beneficial for metabolic conditions."
+      },
+      "remedies": {
+        "avoid": ["honey_in_large_amounts_heated", "excessive_sweet_herbs"],
+        "prefer": ["fenugreek_water", "bitter_gourd_juice", "turmeric_milk", "amla", "jamun_seeds"],
+        "herb_interactions": ["fenugreek may enhance blood sugar lowering — monitor closely"]
+      }
+    },
+    "hypertension": {
+      "description": "High Blood Pressure — requires cardiovascular safety",
+      "gym": {
+        "avoid": ["heavy_deadlifts", "max_effort_lifts", "valsalva_maneuver", "isometric_holds"],
+        "prefer": ["moderate_cardio", "light_resistance", "walking", "cycling", "swimming"],
+        "modifications": ["avoid breath holding during lifts", "keep intensity moderate", "monitor heart rate"],
+        "notes": "Target 60-70% max heart rate. Avoid overhead pressing with very heavy weights."
+      },
+      "yoga": {
+        "avoid": ["full_inversions_headstand_shoulderstand", "breath_retention_kumbhaka", "kapalbhati_aggressive"],
+        "prefer": ["gentle_yoga", "savasana", "yoga_nidra", "nadi_shodhana", "meditation"],
+        "beneficial_poses": ["sukhasana", "viparita_karani_legs_up_wall", "balasana", "savasana"]
+      },
+      "diet": {
+        "avoid": ["excess_salt", "processed_foods", "caffeine_excess", "alcohol", "pickles", "papad"],
+        "prefer": ["potassium_rich_foods", "bananas", "leafy_greens", "beetroot", "garlic", "omega3"],
+        "modifications": ["DASH_diet_principles", "reduce_sodium_below_2300mg"],
+        "calorie_adjustment": "reduce if overweight"
+      },
+      "panchakarma": {
+        "avoid": ["vamana", "strong_nasya"],
+        "prefer": ["shirodhara_deeply_calming", "abhyanga_gentle", "takra_dhara"],
+        "notes": "Shirodhara is excellent for stress-related hypertension."
+      },
+      "remedies": {
+        "avoid": ["licorice_root_long_term", "excess_salt_remedies"],
+        "prefer": ["garlic_water_morning", "arjuna_bark_tea", "hibiscus_tea", "ashwagandha_low_dose"],
+        "herb_interactions": ["ashwagandha may enhance BP medication effect — use lower dose"]
+      }
+    },
+    "pcos": {
+      "description": "Polycystic Ovary Syndrome — hormonal and metabolic management",
+      "gym": {
+        "avoid": ["extreme_cardio_only_approach", "overtraining"],
+        "prefer": ["resistance_training", "moderate_cardio", "HIIT_short_bursts", "strength_training"],
+        "modifications": ["focus on insulin sensitivity improvement", "progressive overload"],
+        "notes": "Resistance training is KEY for PCOS — improves insulin sensitivity and hormonal balance."
+      },
+      "yoga": {
+        "avoid": ["extreme_abdominal_pressure_poses_during_pain"],
+        "prefer": ["hip_openers", "gentle_twists", "restorative_yoga", "butterfly_pose"],
+        "beneficial_poses": ["baddha_konasana", "supta_baddha_konasana", "malasana", "bharadvajasana"]
+      },
+      "diet": {
+        "avoid": ["refined_carbs", "excess_dairy", "processed_sugar", "soy_excess"],
+        "prefer": ["anti_inflammatory_foods", "omega3", "turmeric", "cinnamon", "spearmint_tea", "flaxseed"],
+        "modifications": ["low_glycemic_diet", "anti_inflammatory_focus", "adequate_protein"],
+        "calorie_adjustment": "moderate deficit if overweight, never extreme restriction"
+      },
+      "panchakarma": {
+        "avoid": ["harsh_purgation"],
+        "prefer": ["uttara_basti", "abhyanga", "gentle_virechana", "nasya"],
+        "notes": "Focus on hormonal balancing therapies. Shatavari is the primary herb for PCOS in Ayurveda."
+      },
+      "remedies": {
+        "avoid": ["excess_dairy_based_remedies"],
+        "prefer": ["spearmint_tea", "shatavari", "ashoka", "cinnamon_water", "flaxseed_daily"],
+        "herb_interactions": ["shatavari may interact with estrogen-sensitive conditions"]
+      }
+    },
+    "acid_reflux": {
+      "description": "GERD / Acid Reflux — digestive tract sensitivity",
+      "gym": {
+        "avoid": ["exercises_lying_flat_after_meals", "heavy_crunches_after_eating", "running_immediately_after_meals"],
+        "prefer": ["upright_exercises", "walking", "cycling", "strength_training_upright"],
+        "modifications": ["wait 2 hours after eating before exercise", "avoid bending exercises post-meal"]
+      },
+      "yoga": {
+        "avoid": ["full_inversions_after_meals", "intense_abdominal_twists_on_full_stomach"],
+        "prefer": ["gentle_forward_bends", "vajrasana_after_meals", "left_side_lying"],
+        "beneficial_poses": ["vajrasana", "pawanmuktasana_mild", "savasana"]
+      },
+      "diet": {
+        "avoid": ["spicy_food", "citrus", "tomatoes", "coffee", "chocolate", "fried_food", "carbonated_drinks", "raw_onions"],
+        "prefer": ["alkaline_foods", "banana", "oatmeal", "ginger_mild", "fennel", "cold_milk", "aloe_vera_juice"],
+        "modifications": ["eat_smaller_meals", "no_food_3_hours_before_bed", "elevate_head_while_sleeping"]
+      },
+      "panchakarma": {
+        "avoid": ["vamana"],
+        "prefer": ["gentle_virechana", "abhyanga", "cooling_treatments"],
+        "notes": "Vamana (emesis therapy) is contraindicated in active acid reflux."
+      },
+      "remedies": {
+        "avoid": ["apple_cider_vinegar", "lemon_water_on_empty_stomach_if_active_reflux"],
+        "prefer": ["fennel_seed_water", "cold_milk", "licorice_root_DGL", "aloe_vera_juice", "amla_powder"],
+        "herb_interactions": []
+      }
+    },
+    "arthritis": {
+      "description": "Joint inflammation — requires low-impact approach",
+      "gym": {
+        "avoid": ["high_impact_jumping", "heavy_squats_with_knee_issues", "running_on_hard_surfaces"],
+        "prefer": ["swimming", "water_aerobics", "cycling", "elliptical", "resistance_bands"],
+        "modifications": ["full_warm_up_essential", "reduced_range_of_motion_if_painful", "ice_after_exercise"]
+      },
+      "yoga": {
+        "avoid": ["deep_squats_if_knee_arthritis", "weight_bearing_on_affected_joints"],
+        "prefer": ["chair_yoga", "gentle_joint_rotations", "pawanmuktasana_series", "warm_yoga"],
+        "beneficial_poses": ["tadasana", "vrksasana_with_support", "gentle_twists"]
+      },
+      "diet": {
+        "avoid": ["nightshade_vegetables_if_triggering", "excess_sugar", "processed_foods", "red_meat"],
+        "prefer": ["anti_inflammatory_foods", "turmeric", "ginger", "omega3_fatty_fish", "walnuts"],
+        "modifications": ["Mediterranean_diet_principles", "anti_inflammatory_focus"]
+      },
+      "panchakarma": {
+        "avoid": ["harsh_therapies_on_inflamed_joints"],
+        "prefer": ["janu_basti_knee_oil_pool", "abhyanga_warm_oil", "pinda_sweda_herbal_bolus"],
+        "notes": "Warm oil therapies are excellent for joint lubrication and pain relief."
+      },
+      "remedies": {
+        "avoid": ["cooling_remedies_on_joints"],
+        "prefer": ["turmeric_milk_golden_milk", "ginger_tea", "ashwagandha", "guggulu", "sesame_oil_massage"],
+        "herb_interactions": ["guggulu may interact with thyroid medications and blood thinners"]
+      }
+    },
+    "pregnancy": {
+      "description": "Pregnancy — highest safety priority",
+      "gym": {
+        "avoid": ["heavy_lifting", "contact_sports", "exercises_lying_flat_after_first_trimester", "hot_yoga", "HIIT"],
+        "prefer": ["prenatal_modified_exercises", "walking", "swimming", "prenatal_strength"],
+        "modifications": ["consult_OB_GYN_first", "stop_if_any_pain_bleeding_dizziness"]
+      },
+      "yoga": {
+        "avoid": ["deep_twists", "inversions", "prone_poses_after_first_trimester", "intense_backbends", "kapalbhati"],
+        "prefer": ["prenatal_yoga_only", "cat_cow", "gentle_hip_openers", "breathing_exercises"],
+        "beneficial_poses": ["malasana_supported", "baddha_konasana", "cat_cow", "savasana_left_side"]
+      },
+      "diet": {
+        "avoid": ["raw_fish", "unpasteurized_dairy", "excess_caffeine", "alcohol", "papaya", "pineapple_excess"],
+        "prefer": ["folate_rich_foods", "iron_rich_foods", "calcium", "DHA_omega3", "whole_grains"],
+        "modifications": ["increase_calories_by_300_second_trimester", "prenatal_vitamins"]
+      },
+      "panchakarma": {
+        "avoid": ["ALL_panchakarma_during_pregnancy"],
+        "prefer": ["gentle_abhyanga_only_with_practitioner_approval"],
+        "notes": "PANCHAKARMA IS CONTRAINDICATED DURING PREGNANCY. Only gentle oil massage by trained prenatal therapist."
+      },
+      "remedies": {
+        "avoid": ["most_herbal_remedies_without_doctor_approval", "saffron_excess", "aloe_vera_internal"],
+        "prefer": ["ginger_for_nausea_mild", "fennel_tea_mild", "coconut_water"],
+        "herb_interactions": ["ALWAYS consult OB-GYN before any herbal remedy during pregnancy"]
+      }
+    }
+  }
+}

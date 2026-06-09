@@ -1,0 +1,416 @@
+[
+  {
+    "tonic_name": "Amalaki Rasayana",
+    "primary_ingredient": "Amalaki",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Brahma Rasayana",
+    "primary_ingredient": "Brahma",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Chyawanprash",
+    "primary_ingredient": "Chyawanprash",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Agastya Haritaki Rasayana",
+    "primary_ingredient": "Agastya",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Shilajit Rasayana",
+    "primary_ingredient": "Shilajit",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Ashwagandha Rasayana",
+    "primary_ingredient": "Ashwagandha",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Shatavari Rasayana",
+    "primary_ingredient": "Shatavari",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Guduchi Rasayana",
+    "primary_ingredient": "Guduchi",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Pippali Rasayana",
+    "primary_ingredient": "Pippali",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Triphala Rasayana",
+    "primary_ingredient": "Triphala",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Haritaki Rasayana",
+    "primary_ingredient": "Haritaki",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Vardhamana Pippali",
+    "primary_ingredient": "Vardhamana",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Suvarna Prashan",
+    "primary_ingredient": "Suvarna",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Abhrak Bhasma Rasayana",
+    "primary_ingredient": "Abhrak",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Lauha Bhasma Rasayana",
+    "primary_ingredient": "Lauha",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Swarna Bhasma Rasayana",
+    "primary_ingredient": "Swarna",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Makaradhwaja",
+    "primary_ingredient": "Makaradhwaja",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Vasant Kusumakar Ras",
+    "primary_ingredient": "Vasant",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Narasimha Rasayana",
+    "primary_ingredient": "Narasimha",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Medhya Rasayana",
+    "primary_ingredient": "Medhya",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Kushmanda Rasayana",
+    "primary_ingredient": "Kushmanda",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Drakshavaleha",
+    "primary_ingredient": "Drakshavaleha",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  },
+  {
+    "tonic_name": "Chyawanprash Ashtavarg",
+    "primary_ingredient": "Chyawanprash",
+    "benefits": [
+      "Rejuvenation",
+      "Anti-aging",
+      "Immune modulation",
+      "Tissue nourishment (Dhatu Poshana)"
+    ],
+    "season_recommended": "Winter (Hemanta/Shishira) for heavy rasayanas, All seasons for mild ones.",
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "anupana_vehicle": "Warm milk or warm water",
+    "source": "Charaka Samhita, Chikitsa Sthana"
+  }
+]
