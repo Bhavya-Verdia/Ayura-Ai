@@ -23,6 +23,7 @@ from routes.profile import get_current_user
 from services.plan_diff import build_plan_diff
 from services.audit_service import log_plan_generated
 from core.cache import cache_manager
+from core.kb_cache import kb_cache
 
 
 import hashlib
@@ -502,6 +503,7 @@ async def generate_yoga_plan(
         raise HTTPException(status_code=422, detail="Complete yoga preferences first")
         
     yoga_prefs = prefs_doc.get("yoga")
+    is_prenatal = user.pregnancy_or_nursing
     
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "yoga", user_profile, yoga_prefs, force_regenerate)
@@ -509,8 +511,11 @@ async def generate_yoga_plan(
         return cached_plan
         
     # 2. Generate new plan
-        yoga_poses = await db.kb_yoga_poses.find().to_list(None)
-    pranayama_list = await db.kb_pranayama.find().to_list(None)
+    if is_prenatal:
+        yoga_poses = [p for p in kb_cache.yoga_poses if p.get("pregnancy_safe") == True]
+    else:
+        yoga_poses = kb_cache.yoga_poses
+    pranayama_list = kb_cache.pranayama
     raw_plan = engine_generate(user_profile, yoga_prefs, yoga_poses, pranayama_list)
     enriched_plan = await enrich_yoga_plan(raw_plan, user_profile, yoga_prefs)
     
@@ -559,7 +564,7 @@ async def generate_diet_plan(
         return cached_plan
         
     # 2. Generate new plan
-    diet_foods = await db.kb_diet_foods.find().to_list(None)
+    diet_foods = kb_cache.diet_foods
     raw_plan = engine_generate(user_profile, diet_prefs, diet_foods)
     enriched_plan = await enrich_diet_plan(raw_plan, user_profile, diet_prefs)
     
@@ -608,7 +613,7 @@ async def generate_routine_plan(
         return cached_plan
         
     # 2. Generate new plan
-    diet_foods = await db.kb_diet_foods.find().to_list(None)
+    diet_foods = kb_cache.diet_foods
     
     # Sync generation
     raw_plan = engine_generate(user_profile, prefs_to_pass, diet_foods)
@@ -649,6 +654,7 @@ async def generate_gym_plan(
         raise HTTPException(status_code=422, detail="Complete gym preferences first")
         
     gym_prefs = prefs_doc.get("gym")
+    is_prenatal = user.pregnancy_or_nursing
     
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "gym", user_profile, gym_prefs, force_regenerate)
@@ -656,7 +662,10 @@ async def generate_gym_plan(
         return cached_plan
         
     # 2. Generate new plan
-        gym_exercises = await db.kb_gym_exercises.find().to_list(None)
+    if is_prenatal:
+        gym_exercises = [e for e in kb_cache.gym_exercises if e.get("pregnancy_safe") == True]
+    else:
+        gym_exercises = kb_cache.gym_exercises
     raw_plan = engine_generate(user_profile, gym_prefs, gym_exercises)
     enriched_plan = await enrich_gym_plan(raw_plan, user_profile, gym_prefs)
     
@@ -698,6 +707,7 @@ async def generate_panchakarma_plan(
         raise HTTPException(status_code=422, detail="Complete panchakarma preferences first")
         
     panchakarma_prefs = prefs_doc.get("panchakarma")
+    is_prenatal = user.pregnancy_or_nursing
     
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "panchakarma", user_profile, panchakarma_prefs, force_regenerate)
@@ -705,7 +715,10 @@ async def generate_panchakarma_plan(
         return cached_plan
         
     # 2. Generate new plan
-        panchakarma_therapies = await db.kb_panchakarma_therapies.find().to_list(None)
+    if is_prenatal:
+        panchakarma_therapies = [t for t in kb_cache.panchakarma_protocols if t.get("pregnancy_safe") == True]
+    else:
+        panchakarma_therapies = kb_cache.panchakarma_protocols
     raw_plan = engine_generate(user_profile, panchakarma_prefs, panchakarma_therapies)
     enriched_plan = await enrich_panchakarma_plan(raw_plan, user_profile, panchakarma_prefs)
     
@@ -736,29 +749,25 @@ async def generate_remedies_plan(
     user: UserDocument = Depends(get_current_user), 
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
-    from services.remedy_engine import generate_remedies_plan as engine_generate
-    from remedy_enricher import enrich_remedies_plan
+    from services.remedy_engine import filter_remedies, build_remedy_plan
+    from services.remedy_enricher import enrich_remedies_plan
     
-    force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
-    prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
     
-    if not prefs_doc or not prefs_doc.get("remedy"):
-        raise HTTPException(status_code=422, detail="Complete remedies preferences first")
+    if "symptoms" not in req:
+        raise HTTPException(status_code=422, detail="Request body must contain 'symptoms' list")
         
-    remedies_prefs = prefs_doc.get("remedy")
+    # 1. Engine Filter
+    filtered_remedies = filter_remedies(user_profile, req)
     
-    # 1. Check Cache
-    cached_plan, pref_hash = await _check_plan_cache(db, user.id, "remedies", user_profile, remedies_prefs, force_regenerate)
-    if cached_plan:
-        return cached_plan
-        
-    # 2. Generate new plan
-    raw_plan = engine_generate(user_profile, remedies_prefs, 'home_remedy')
-    enriched_plan = await enrich_remedies_plan(raw_plan, user_profile, remedies_prefs)
+    # 2. Engine Build
+    raw_plan = build_remedy_plan(filtered_remedies, user_profile, req)
+    
+    # 3. LLM Enrichment
+    enriched_plan = await enrich_remedies_plan(raw_plan, user_profile)
     
     plan_id = enriched_plan.get("plan_id")
-    model_used = enriched_plan.get("enrichment_model", "services.remedy_engine")
+    model_used = enriched_plan.get("enrichment_model", "rule_based")
     
     history = PlanHistoryDocument(
         _id=plan_id,
@@ -766,14 +775,14 @@ async def generate_remedies_plan(
         plan_type="remedies",
         generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
         model_used=model_used,
-        preference_hash=pref_hash,
-        plan_data={
-            "home_remedies": enriched_plan,
-            "generated_at": datetime.now(timezone.utc).isoformat()
-        },
+        preference_hash=None,
+        plan_data=enriched_plan,
         generated_at=datetime.now(timezone.utc)
     )
     await db.plan_history.insert_one(history.model_dump(by_alias=True))
+    
+    from services.audit_service import log_plan_generated
+    await log_plan_generated(db, user.id, "remedies")
     
     return enriched_plan
 
@@ -795,6 +804,7 @@ async def generate_medicines_plan(
         raise HTTPException(status_code=422, detail="Complete medicines preferences first")
         
     medicines_prefs = prefs_doc.get("remedy")
+    is_prenatal = user.pregnancy_or_nursing
     
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "medicines", user_profile, medicines_prefs, force_regenerate)
@@ -802,7 +812,10 @@ async def generate_medicines_plan(
         return cached_plan
         
     # 2. Generate new plan
-        ayurvedic_remedies = await db.kb_ayurvedic_remedies.find().to_list(None)
+    if is_prenatal:
+        ayurvedic_remedies = [r for r in kb_cache.ayurvedic_remedies if r.get("pregnancy_safe") == True]
+    else:
+        ayurvedic_remedies = kb_cache.ayurvedic_remedies
     raw_plan = engine_generate(user_profile, medicines_prefs, ayurvedic_remedies, 'clinical_medicine')
     enriched_plan = await enrich_medicines_plan(raw_plan, user_profile, medicines_prefs)
     

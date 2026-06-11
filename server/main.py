@@ -55,6 +55,10 @@ async def lifespan(app: FastAPI):
         logger.info("Sentry initialized for error tracking.")
 
     await init_mongodb()
+    from database.mongodb import get_mongodb
+    from core.kb_cache import kb_cache
+    await kb_cache.load(get_mongodb())
+    
     init_chromadb()
     
     logger.info(f"{settings.APP_NAME} is ready!")

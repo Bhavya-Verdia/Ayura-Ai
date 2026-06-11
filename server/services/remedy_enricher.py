@@ -1,88 +1,86 @@
 import json
-from ai.llm_client import llm_client
-from core.logger import logger
+import logging
+from config import settings
+from services.llm_service import get_llm_client
 
-SYSTEM_PROMPT = """
-You are an expert Ayurvedic Doctor (Vaidya). You enrich deterministically selected Ayurvedic remedies/medicines with personalized coaching and clear preparation instructions.
+logger = logging.getLogger(__name__)
 
-You will receive a plan summary containing the selected remedies, along with the user profile.
-Respond ONLY with a valid JSON object. No preamble, no explanation, no markdown fences.
-"""
-
-USER_PROMPT_TEMPLATE = """
-Given this user profile and selected remedies, provide enrichment data in this exact JSON schema:
-
-{
-  "plan_title": "Personalized [Type] Protocol for [name]",
-  "plan_description": "2-3 sentence motivating overview explaining how these remedies will treat their specific symptoms while balancing their dosha",
-  "remedy_instructions": {
-    "remedy_id_1": "Detailed, encouraging explanation on exactly how and when to take this remedy, including the preparation method provided in the summary. Mention the taste and how to mask it if needed.",
-    "remedy_id_2": "..."
-    // Continue for all remedies exactly as provided in the summary
-  },
-  "lifestyle_support": "2-3 sentences of general lifestyle or dietary advice to speed up recovery from their stated symptoms",
-  "safety_note": "A very brief note reminding them to discontinue if symptoms worsen"
-}
-
-User profile and plan:
-{plan_summary_json}
-"""
-
-async def enrich_remedies_plan(raw_plan: dict, user_profile: dict, rem_prefs: dict) -> dict:
-    raw_plan["enriched"] = False
-    
-    if not raw_plan.get("selected_remedies"):
-        # No remedies matched, no need to enrich
-        return raw_plan
-        
+async def enrich_remedies_plan(raw_plan: dict, user_profile: dict, remedies_prefs: dict = None) -> dict:
+    """
+    Enriches the generated remedies plan with Ayurvedic rationale,
+    synergy notes, recovery timeline, and personalized introductions.
+    """
     try:
-        # Build compressed summary for LLM context
-        plan_summary = {
-            "user": {
-                "age": user_profile.get("age"),
-                "dominant_dosha": user_profile.get("dominant_dosha"),
-                "symptoms": raw_plan.get("user_summary", {}).get("reported_symptoms", []),
-                "pregnancy": raw_plan.get("user_summary", {}).get("pregnant", False)
-            },
-            "type": raw_plan.get("type"),
-            "selected_remedies": []
-        }
-        
-        for r in raw_plan.get("selected_remedies", []):
-            plan_summary["selected_remedies"].append({
-                "id": r["id"],
-                "name": r["name"],
-                "preparation_method": r["preparation_method"],
-                "taste": r["taste_profile"]
+        symptoms_addressed = raw_plan.get("symptoms_addressed", [])
+        if not symptoms_addressed:
+            raw_plan["enriched"] = False
+            return raw_plan
+
+        # Compress plan for LLM prompt
+        compressed_symptoms = []
+        for sym in symptoms_addressed:
+            compressed_symptoms.append({
+                "id": sym.get("symptom_id"),
+                "name": sym.get("symptom_display"),
+                "severity": sym.get("severity"),
+                "remedy_name": sym.get("remedy", {}).get("name")
             })
-                
-        prompt = USER_PROMPT_TEMPLATE.replace("{plan_summary_json}", json.dumps(plan_summary, indent=2))
-        
-        response_text = await llm_client.generate(
+
+        prompt = f"""
+You are an expert Ayurvedic practitioner. A home remedies plan has been generated for a user with the following profile:
+- Age: {user_profile.get('age')}
+- Gender: {user_profile.get('gender')}
+- Dominant Dosha: {user_profile.get('dominant_dosha')}
+- Secondary Dosha: {user_profile.get('secondary_dosha')}
+- Medical History: {', '.join(user_profile.get('medical_history', []))}
+- Current Medications: {', '.join(user_profile.get('current_medications', []))}
+- Allergies: {', '.join(user_profile.get('allergies', []))}
+
+Symptoms Addressed:
+{json.dumps(compressed_symptoms, indent=2)}
+
+Provide an enriched context in EXACTLY this JSON format:
+{{
+  "personalized_intro": "2-3 sentences addressing user's specific symptom combination and dosha",
+  "remedy_rationale": {{
+    "symptom_id": "Why this specific remedy works for this dosha - Ayurvedic explanation"
+  }},
+  "synergy_note": "If multiple symptoms, explain how the remedies work together. If single symptom, explain how the remedy balances the entire body.",
+  "recovery_timeline": "What to expect day by day",
+  "prevention_tips": ["tip1", "tip2", "tip3"],
+  "when_to_escalate": "Specific signs that mean stop home treatment and see a doctor"
+}}
+"""
+
+        client = get_llm_client()
+        response = await client.generate(
             prompt=prompt,
-            system_prompt=SYSTEM_PROMPT,
-            json_mode=True
+            system_prompt="You are a clinical Ayurvedic expert. Output strictly valid JSON matching the schema.",
+            response_format={"type": "json_object"}
         )
         
-        # Parse JSON
-        enrichment = json.loads(response_text)
+        enrichment_data = json.loads(response)
         
-        # Merge enrichment
-        raw_plan["plan_title"] = enrichment.get("plan_title", "Personalized Protocol")
-        raw_plan["plan_description"] = enrichment.get("plan_description", "")
+        # Merge enrichment data into the plan
+        raw_plan["personalized_intro"] = enrichment_data.get("personalized_intro", "")
+        raw_plan["synergy_note"] = enrichment_data.get("synergy_note", "")
+        raw_plan["recovery_timeline"] = enrichment_data.get("recovery_timeline", "")
+        raw_plan["prevention_tips"] = enrichment_data.get("prevention_tips", [])
+        raw_plan["when_to_escalate"] = enrichment_data.get("when_to_escalate", "")
         
-        # Attach detailed instructions back to the individual remedies
-        instructions = enrichment.get("remedy_instructions", {})
-        for r in raw_plan["selected_remedies"]:
-            r["detailed_instructions"] = instructions.get(r["id"], r["preparation_method"])
-            
-        raw_plan["lifestyle_support"] = enrichment.get("lifestyle_support", "")
-        raw_plan["safety_note"] = enrichment.get("safety_note", "")
+        # Merge rationales
+        rationales = enrichment_data.get("remedy_rationale", {})
+        for sym in raw_plan.get("symptoms_addressed", []):
+            sym_id = sym.get("symptom_id")
+            if sym_id in rationales:
+                sym["ayurvedic_rationale"] = rationales[sym_id]
+        
         raw_plan["enriched"] = True
-        raw_plan["enrichment_model"] = llm_client.provider
-        
-        logger.info(f"Successfully enriched remedy plan using {llm_client.provider}")
+        raw_plan["enrichment_model"] = settings.LLM_MODEL
+        return raw_plan
+
     except Exception as e:
-        logger.error(f"Failed to enrich remedy plan: {str(e)}")
-        
-    return raw_plan
+        logger.error(f"Failed to enrich remedies plan: {e}")
+        raw_plan["enriched"] = False
+        raw_plan["enrichment_error"] = str(e)
+        return raw_plan
