@@ -6,7 +6,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(BASE_DIR))
 
-from services.gym_plan_engine import generate_gym_plan, filter_exercises
+from services.gym_plan_engine import generate_gym_plan, filter_exercises, gym_exercises
 
 profiles = [
     {
@@ -147,7 +147,7 @@ for idx, p in enumerate(profiles):
     gym_prefs = p["gym_prefs"]
     
     # Check pool size
-    pool = filter_exercises(user_prof, gym_prefs)
+    pool = filter_exercises(user_prof, gym_prefs, gym_exercises)
     print(f"Exercises in filtered pool: {len(pool)}")
     
     # Generate full plan

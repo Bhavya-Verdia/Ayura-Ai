@@ -146,7 +146,7 @@ const Dashboard = () => {
       setGenerating(prev => ({ ...prev, [typeId]: true }))
       toast.loading(`Generating your ${typeId} plan…`, { id: `gen-${typeId}` })
     },
-    onSuccess: (result, { typeId }) => {
+    onSuccess: (result) => {
       const isFirstPlan = Object.keys(plans).length === 0
       queryClient.setQueryData(['plans-history'], old => ({
         ...old,

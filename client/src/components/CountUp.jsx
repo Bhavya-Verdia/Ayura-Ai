@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from 'react'
  *   <CountUp to={10000} suffix="+" prefix="" duration={1800} />
  *   <CountUp to={360} suffix="°" />
  */
-export function useCountUp(target, duration = 1600, start = false) {
+function useCountUp(target, duration = 1600, start = false) {
   const [count, setCount] = useState(0)
   const frameRef = useRef(null)
 

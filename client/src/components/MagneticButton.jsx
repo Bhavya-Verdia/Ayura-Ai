@@ -18,7 +18,6 @@ export default function MagneticButton({
   onClick,
   as: Tag = 'button',
   href,
-  to,
   ...props
 }) {
   const ref = useRef(null)

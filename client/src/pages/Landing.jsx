@@ -176,7 +176,6 @@ export default function Landing() {
   const [scrolled, setScrolled] = useState(false)
   const lenisRef = useRef(null)
   const rafRef   = useRef(null)
-  const heroRef  = useRef(null)
 
   const { scrollY } = useScroll()
   const heroParallaxY       = useTransform(scrollY, [0, 600], [0, -100])

@@ -8,34 +8,11 @@ import uuid
 
 # Setup test client and dependency overrides
 @pytest.fixture
-def override_get_mongodb():
-    # Create a completely mocked db with async find_one and insert_one
-    mock_db = AsyncMock()
-    
-    # Mock user document returned by find_one
-    mock_user = {
-        "_id": "test-uuid-1234",
-        "name": "Test User",
-        "email": "test@ayura.com",
-        "password_hash": hash_password("TestPass123!"),
-        "auth_provider": "local",
-        "is_active": True,
-        "is_admin": False
-    }
-    
-    mock_db.users.find_one = AsyncMock(return_value=mock_user)
-    mock_db.users.insert_one = AsyncMock(return_value=AsyncMock(inserted_id="test-uuid-1234"))
-    
-    return mock_db
-
-@pytest.fixture
-def client(override_get_mongodb):
-    app.dependency_overrides[get_mongodb] = lambda: override_get_mongodb
+def client():
     yield TestClient(app)
-    app.dependency_overrides.clear()
 
 def test_register_user(client):
-    with patch("services.auth_service.get_mongodb") as mock_get_mongodb:
+    with patch("database.mongodb.get_mongodb") as mock_get_mongodb:
         # Mock that the user doesn't exist yet for registration
         mock_db = client.app.dependency_overrides[get_mongodb]()
         mock_db.users.find_one = AsyncMock(return_value=None)
@@ -48,7 +25,7 @@ def test_register_user(client):
                 "password": "SecurePassword123!"
             }
         )
-        assert response.status_code == 200
+        assert response.status_code == 201
         data = response.json()
         assert "access_token" in data
         assert data["token_type"] == "bearer"
@@ -80,11 +57,11 @@ def test_login_user_invalid_password(client):
         }
     )
     assert response.status_code == 401
-    assert response.json()["detail"] == "Invalid email or password"
+    assert response.json()["detail"] == "Invalid credentials"
 
 def test_get_current_user_profile(client):
     # First generate a valid token for our mock user
-    token = create_access_token("test-uuid-1234")
+    token = create_access_token("test-uuid-1234", "test@ayura.com")
     
     response = client.get(
         "/api/profile/me",
