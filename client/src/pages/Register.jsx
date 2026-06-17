@@ -29,17 +29,18 @@ function githubOAuthURL() {
 }
 
 export default function Register() {
-  const [name,     setName]     = useState('')
-  const [email,    setEmail]    = useState('')
-  const [password, setPassword] = useState('')
-  const [error,    setError]    = useState('')
-  const [loading,  setLoading]  = useState(false)
+  const [name,          setName]          = useState('')
+  const [email,         setEmail]         = useState('')
+  const [password,      setPassword]      = useState('')
+  const [consentGiven,  setConsentGiven]  = useState(false)
+  const [error,         setError]         = useState('')
+  const [loading,       setLoading]       = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
 
   async function handleEmailSubmit(e) {
     e.preventDefault(); setError(''); setLoading(true)
-    try { await register(name, email, password); navigate('/dashboard') }
+    try { await register(name, email, password, consentGiven); navigate('/dashboard') }
     catch (err) {
       let msg = err.response?.data?.detail
       if (Array.isArray(msg)) msg = msg.map(m => m.msg).join(', ')
@@ -162,14 +163,32 @@ export default function Register() {
                 <label className="auth-label" htmlFor="password">Password</label>
                 <input id="password" className="auth-input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" required aria-required="true" aria-invalid={!!error} />
               </div>
-              <motion.button type="submit" className="auth-submit-btn" disabled={loading} whileTap={{ scale: 0.97 }}>
+              <div className="auth-input-group" style={{ marginTop: '8px' }}>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', fontSize: '13px', color: 'var(--auth-muted, #94a3b8)', lineHeight: '1.5' }}>
+                  <input
+                    type="checkbox"
+                    checked={consentGiven}
+                    onChange={e => setConsentGiven(e.target.checked)}
+                    required
+                    style={{ marginTop: '2px', flexShrink: 0, accentColor: '#10b981' }}
+                  />
+                  <span>
+                    I agree to the{' '}
+                    <Link to="/terms" className="auth-link" target="_blank" rel="noopener noreferrer">Terms of Service</Link>
+                    {' '}and{' '}
+                    <Link to="/privacy" className="auth-link" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>
+                    , and consent to the processing of my health data for personalised wellness guidance.
+                  </span>
+                </label>
+              </div>
+              <motion.button type="submit" className="auth-submit-btn" disabled={loading || !consentGiven} whileTap={{ scale: 0.97 }}>
                 {loading ? <span className="spinner" /> : 'Create Account →'}
               </motion.button>
           </form>
 
           <div className="auth-bottom-links">
             <p className="auth-disclaimer">
-              By creating an account, you agree to our <Link to="/terms" className="auth-link">Terms of Service</Link> and <Link to="/privacy" className="auth-link">Privacy Policy</Link>. Ayura AI provides wellness guidance and does not replace professional medical care.
+              Ayura AI provides wellness guidance and does not replace professional medical care.
             </p>
             <p className="auth-bottom-link-text">
               Already have an account? <Link to="/login" className="auth-link">Sign in</Link>

@@ -208,6 +208,32 @@ class ConditionFilter:
             
         return sorted(results, key=lambda x: x["score"], reverse=True)
 
+    def filter_by_allergies(self, user_profile: dict, items: list[dict]) -> list[dict]:
+        """
+        Remove items whose ingredients or tags overlap with the user's declared allergies.
+
+        Matching is case-insensitive substring-based so that e.g. "nuts" matches "tree nuts"
+        and "peanut butter" matches "peanuts".
+        """
+        allergies = [a.lower() for a in (user_profile.get("allergies") or [])]
+        if not allergies:
+            return items
+
+        def _is_safe(item: dict) -> bool:
+            # Check both ingredient names and tags
+            candidates = []
+            for ingredient in item.get("ingredients", []):
+                candidates.append(ingredient.lower())
+            for tag in item.get("tags", []):
+                candidates.append(tag.lower())
+            for allergen in allergies:
+                for candidate in candidates:
+                    if allergen in candidate or candidate in allergen:
+                        return False
+            return True
+
+        return [item for item in items if _is_safe(item)]
+
 
 # Singleton instance
 condition_filter = ConditionFilter()

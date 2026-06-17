@@ -57,8 +57,8 @@ export function AuthProvider({ children }) {
     await fetchProfile()
   }
 
-  async function register(name, email, password) {
-    const { data } = await authAPI.register({ name, email, password })
+  async function register(name, email, password, consent_given = false) {
+    const { data } = await authAPI.register({ name, email, password, consent_given })
     setAuthTokens(data.access_token, data.refresh_token)
     await fetchProfile()
   }
