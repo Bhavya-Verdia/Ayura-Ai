@@ -456,14 +456,49 @@ async def resend_verification(req: ResendVerificationRequest, background_tasks: 
     return {"message": "If an account with that email exists, a verification link has been sent."}
 
 
+@router.get("/github/url")
+async def get_github_auth_url(response: Response):
+    """Generate GitHub Auth URL with CSRF state cookie (mirrors /google/url)."""
+    if not getattr(settings, "GITHUB_CLIENT_ID", None):
+        raise HTTPException(status_code=500, detail="GitHub OAuth not configured")
+
+    state = secrets.token_urlsafe(32)
+    response.set_cookie(
+        "oauth_state",
+        state,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite="lax",
+        max_age=600,
+        path="/",
+    )
+    auth_url = (
+        f"https://github.com/login/oauth/authorize?"
+        f"client_id={settings.GITHUB_CLIENT_ID}&"
+        f"scope=user:email&"
+        f"state={state}"
+    )
+    return {"url": auth_url}
+
+
 @router.post("/github", response_model=TokenResponse)
-async def github_auth(req: GithubAuthRequest, response: Response, db: AsyncIOMotorDatabase = Depends(get_mongodb)):
+async def github_auth(
+    req: GithubAuthRequest,
+    response: Response,
+    oauth_state: str | None = Cookie(default=None),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
     """Authenticate with GitHub OAuth authorization code."""
     import httpx
     from config import settings
 
     if not getattr(settings, "GITHUB_CLIENT_ID", None) or not getattr(settings, "GITHUB_CLIENT_SECRET", None):
         raise HTTPException(status_code=500, detail="GitHub OAuth is not configured on this server.")
+
+    if not oauth_state or not req.state or not hmac.compare_digest(oauth_state, req.state):
+        raise HTTPException(status_code=400, detail="Invalid OAuth state (CSRF failure)")
+
+    response.delete_cookie("oauth_state", path="/")
 
     # 1. Exchange code for access token
     try:

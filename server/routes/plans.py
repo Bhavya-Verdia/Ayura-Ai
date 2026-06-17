@@ -28,6 +28,13 @@ from core.kb_cache import kb_cache
 
 import hashlib
 import json
+import re
+
+def _sanitize_prompt_input(text: str, max_len: int = 200) -> str:
+    """Strip common prompt-injection patterns and cap length."""
+    text = re.sub(r'(?i)(system\s*:|assistant\s*:|<<\s*SYS\s*>>|<\|.*?\|>)', '', text)
+    text = re.sub(r'(?i)(ignore\s+(all\s+)?previous\s+instructions?|forget\s+(everything|all)|jailbreak|bypass)', '', text)
+    return text.strip()[:max_len]
 
 async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: str, user_profile: dict, feature_prefs: dict, force_regenerate: bool):
     if force_regenerate:
@@ -493,7 +500,7 @@ async def generate_yoga_plan(
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.yoga_plan_engine import generate_yoga_plan as engine_generate
-    from yoga_plan_enricher import enrich_yoga_plan
+    from services.yoga_plan_enricher import enrich_yoga_plan
     
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
@@ -547,7 +554,7 @@ async def generate_diet_plan(
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.diet_plan_engine import generate_diet_plan as engine_generate
-    from diet_plan_enricher import enrich_diet_plan
+    from services.diet_plan_enricher import enrich_diet_plan
     
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
@@ -644,7 +651,7 @@ async def generate_gym_plan(
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.gym_plan_engine import generate_gym_plan as engine_generate
-    from gym_plan_enricher import enrich_gym_plan
+    from services.gym_plan_enricher import enrich_gym_plan
     
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
@@ -697,7 +704,7 @@ async def generate_panchakarma_plan(
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.panchakarma_engine import generate_panchakarma_plan as engine_generate
-    from panchakarma_enricher import enrich_panchakarma_plan
+    from services.panchakarma_enricher import enrich_panchakarma_plan
     
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
@@ -781,8 +788,14 @@ async def generate_remedies_plan(
     )
     await db.plan_history.insert_one(history.model_dump(by_alias=True))
     
-    from services.audit_service import log_plan_generated
-    await log_plan_generated(db, user.id, "remedies")
+    await log_plan_generated(
+        db=db,
+        user_id=user.id,
+        plan_id=plan_id,
+        plan_type="remedies",
+        model_used=model_used,
+        is_adaptation=False,
+    )
     
     return enriched_plan
 
@@ -794,7 +807,7 @@ async def generate_medicines_plan(
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.remedy_engine import generate_medicines_plan as engine_generate
-    from remedy_enricher import enrich_medicines_plan
+    from services.remedy_enricher import enrich_remedies_plan as enrich_medicines_plan
     
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
@@ -961,7 +974,8 @@ async def get_guided_meditation(
     import json
     
     dosha = user.dominant_dosha or "vata"
-    
+    mood = _sanitize_prompt_input(mood, max_len=50)
+
     # TIER 2: Query RAG
     query = f"meditation script {mood} mood balancing {dosha} dosha"
     docs = await rag_pipeline.query(query, "ayurveda", n_results=2, dosha_filter=dosha)
@@ -1006,6 +1020,7 @@ async def check_interactions(
     from ai.rag_pipeline import rag_pipeline
     from ai.llm_client import llm_client
     
+    herbs = [_sanitize_prompt_input(h, max_len=100) for h in herbs]
     medications = user.current_medications or []
     if not medications:
         return {"status": "safe", "warnings": [], "detailed_explanation": "No current medications reported."}

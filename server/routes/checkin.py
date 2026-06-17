@@ -1,9 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime, timezone
 import asyncio
 import json
+import re
+
+def _sanitize(text: str, max_len: int = 500) -> str:
+    text = re.sub(r'(?i)(system\s*:|assistant\s*:|<<\s*SYS\s*>>|<\|.*?\|>)', '', text)
+    text = re.sub(r'(?i)(ignore\s+(all\s+)?previous\s+instructions?|forget\s+(everything|all)|jailbreak|bypass)', '', text)
+    return text.strip()[:max_len]
 
 from schemas.user_schema import UserDocument
 from routes.profile import get_current_user
@@ -26,7 +32,7 @@ class WeeklyCheckinResponse(BaseModel):
     adapted_plans: List[str] = []
 
 @router.post("/weekly", response_model=WeeklyCheckinResponse)
-async def submit_weekly_checkin(req: WeeklyCheckinRequest, user: UserDocument = Depends(get_current_user)):
+async def submit_weekly_checkin(req: WeeklyCheckinRequest, background_tasks: BackgroundTasks, user: UserDocument = Depends(get_current_user)):
     db = get_mongodb()
     if db is None:
         raise HTTPException(status_code=503, detail="Database unavailable")
@@ -52,6 +58,9 @@ async def submit_weekly_checkin(req: WeeklyCheckinRequest, user: UserDocument = 
         )
 
     # 3. Determine if adaptation is needed and generate insight
+    safe_symptoms = [_sanitize(s, max_len=100) for s in req.symptoms]
+    safe_felt_good = _sanitize(req.what_felt_good or "", max_len=500)
+
     prompt = f"""
 You are the Ayura AI AI Health Assistant. The user just completed their weekly check-in.
 USER PROFILE: Dosha: {user.dominant_dosha}
@@ -62,8 +71,8 @@ CHECK-IN SCORES (1-10, 10 is best):
 - Sleep: {req.sleep}
 - Plan Adherence: {req.adherence}
 
-NEW SYMPTOMS REPORTED: {req.symptoms}
-WHAT FELT GOOD: {req.what_felt_good}
+NEW SYMPTOMS REPORTED: {safe_symptoms}
+WHAT FELT GOOD: {safe_felt_good}
 
 TASK:
 1. Provide a brief, encouraging "insight" (1-2 sentences) on their progress.
@@ -86,9 +95,9 @@ Respond ONLY with valid JSON:
 
     # 4. Trigger adaptation in background if needed
     if plans_to_adapt:
-        feedback_text = f"Weekly checkin: Energy={req.energy}, Digestion={req.digestion}, Sleep={req.sleep}, Symptoms={req.symptoms}"
-        asyncio.create_task(
-            apply_chat_side_effects(db, user.id, [], plans_to_adapt, feedback_text)
+        feedback_text = f"Weekly checkin: Energy={req.energy}, Digestion={req.digestion}, Sleep={req.sleep}, Symptoms={safe_symptoms}"
+        background_tasks.add_task(
+            apply_chat_side_effects, db, user.id, [], plans_to_adapt, feedback_text
         )
 
     return WeeklyCheckinResponse(insight=insight, adapted_plans=plans_to_adapt)

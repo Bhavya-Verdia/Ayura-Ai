@@ -85,6 +85,7 @@ class ResendVerificationRequest(BaseModel):
 class GithubAuthRequest(BaseModel):
     code: str  # Authorization code from GitHub OAuth
     redirect_uri: str | None = Field(default=None, max_length=500)
+    state: str | None = None  # CSRF token state
 
 
 class SendOtpRequest(BaseModel):

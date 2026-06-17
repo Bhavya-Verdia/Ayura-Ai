@@ -1,7 +1,6 @@
 import json
 import logging
-from config import settings
-from services.llm_service import get_llm_client
+from ai.llm_client import llm_client
 
 logger = logging.getLogger(__name__)
 
@@ -52,11 +51,10 @@ Provide an enriched context in EXACTLY this JSON format:
 }}
 """
 
-        client = get_llm_client()
-        response = await client.generate(
+        response = await llm_client.generate(
             prompt=prompt,
             system_prompt="You are a clinical Ayurvedic expert. Output strictly valid JSON matching the schema.",
-            response_format={"type": "json_object"}
+            json_mode=True,
         )
         
         enrichment_data = json.loads(response)
@@ -76,7 +74,7 @@ Provide an enriched context in EXACTLY this JSON format:
                 sym["ayurvedic_rationale"] = rationales[sym_id]
         
         raw_plan["enriched"] = True
-        raw_plan["enrichment_model"] = settings.LLM_MODEL
+        raw_plan["enrichment_model"] = llm_client.provider
         return raw_plan
 
     except Exception as e:

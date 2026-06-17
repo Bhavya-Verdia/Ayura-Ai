@@ -60,11 +60,15 @@ export default function Chat() {
     const activeSession = sessionId || crypto.randomUUID();
     if (!sessionId) setSessionId(activeSession);
 
-    let wsBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-    wsBase = wsBase.replace('http', 'ws');
-    // Auth is via the ayura_access HTTP-only cookie sent automatically by the browser.
-    // Do NOT append a token query param — that exposes JWTs in server logs.
-    const wsUrl = `${wsBase}/chat/ws/${activeSession}`;
+    const apiBase = import.meta.env.VITE_API_URL || '/api';
+    let wsUrl;
+    if (apiBase.startsWith('http')) {
+      wsUrl = `${apiBase.replace(/^http/, 'ws')}/chat/ws/${activeSession}`;
+    } else {
+      // Relative base path — derive ws(s):// from current page origin
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      wsUrl = `${wsProtocol}//${window.location.host}${apiBase}/chat/ws/${activeSession}`;
+    }
 
     const ws = new WebSocket(wsUrl);
     let currentMessage = '';

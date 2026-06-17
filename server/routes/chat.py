@@ -3,7 +3,7 @@ from core.logger import logger
 from datetime import datetime, timezone
 import asyncio
 import uuid
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Query, Cookie
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Cookie
 from pydantic import BaseModel, Field
 
 from schemas.plan_schema import ChatMessage, ChatResponse
@@ -41,7 +41,7 @@ async def send_message(msg: ChatMessage, user: UserDocument = Depends(get_curren
     db = get_mongodb()
     session_id = msg.session_id or str(uuid.uuid4())
     safe_content = _sanitize_prompt_input(msg.content)
-    await save_message(db, user.id, session_id, "user", msg.content)
+    await save_message(db, user.id, session_id, "user", safe_content)
 
     red_flags = detect_red_flags(msg.content, user.current_symptoms or [])
     if red_flags["has_red_flags"]:
@@ -111,10 +111,10 @@ async def get_session_messages(session_id: str, user: UserDocument = Depends(get
 
 
 @router.websocket("/ws/{session_id}")
-async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: str = Cookie(None), token: str = Query(None)):
+async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: str = Cookie(None)):
     await websocket.accept()
-    
-    final_token = token or ayura_access
+
+    final_token = ayura_access
     if not final_token:
         await websocket.close(code=1008)
         return

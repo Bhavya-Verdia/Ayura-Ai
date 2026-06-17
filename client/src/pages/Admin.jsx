@@ -1,5 +1,5 @@
 import { useState, Suspense } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { adminAPI } from '../api/client'
 import { Helmet } from 'react-helmet-async'
 import React from 'react'
