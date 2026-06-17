@@ -11,6 +11,7 @@ import NoiseOverlay from './components/NoiseOverlay'
 import VitalBackground from './components/VitalBackground'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import MainLayout from './layouts/MainLayout'
+import ReloadPrompt from './components/ReloadPrompt'
 import './components/Components.css'
 
 const Landing = React.lazy(() => import('./pages/Landing'))
@@ -27,6 +28,8 @@ const ResetPassword = React.lazy(() => import('./pages/ResetPassword'))
 const VerifyEmail = React.lazy(() => import('./pages/VerifyEmail'))
 const Admin = React.lazy(() => import('./pages/Admin'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
+const Terms = React.lazy(() => import('./pages/Terms'))
+const Privacy = React.lazy(() => import('./pages/Privacy'))
 const Remedies = React.lazy(() => import('./pages/Remedies'))
 const HealthTimeline = React.lazy(() => import('./pages/HealthTimeline'))
 const CheckIn = React.lazy(() => import('./pages/CheckIn'))
@@ -130,6 +133,8 @@ export default function App() {
             <Route path="/forgot-password" element={<PageWrapper><ForgotPassword /></PageWrapper>} />
             <Route path="/reset-password" element={<PageWrapper><ResetPassword /></PageWrapper>} />
             <Route path="/verify-email" element={<PageWrapper><VerifyEmail /></PageWrapper>} />
+            <Route path="/terms" element={<PageWrapper><Terms /></PageWrapper>} />
+            <Route path="/privacy" element={<PageWrapper><Privacy /></PageWrapper>} />
             <Route path="/admin" element={<AdminRoute><PageWrapper><Admin /></PageWrapper></AdminRoute>} />
             <Route path="/auth/google/callback" element={<GoogleCallback />} />
             <Route path="/auth/github/callback" element={<GithubCallback />} />
@@ -154,6 +159,7 @@ export default function App() {
       </ErrorBoundary>
     <ScrollToTop />
     <NoiseOverlay />
+    <ReloadPrompt />
     <Toaster
         position="top-right"
         theme={theme || 'dark'}

@@ -1,0 +1,129 @@
+.feedback-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary-500);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(13,148,136,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 990;
+  padding: 0;
+}
+
+.feedback-fab svg {
+  width: 24px;
+  height: 24px;
+}
+
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+}
+
+@media (min-width: 640px) {
+  .feedback-overlay {
+    align-items: center;
+  }
+}
+
+.feedback-modal {
+  background: var(--surface-800);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  padding: 24px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+}
+
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.feedback-header h3 {
+  margin: 0;
+  font-family: 'Syne', sans-serif;
+  color: var(--text-50);
+}
+
+.feedback-close {
+  background: transparent;
+  border: none;
+  color: var(--text-400);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feedback-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feedback-field label {
+  font-size: 0.85rem;
+  color: var(--text-300);
+  font-weight: 500;
+}
+
+.feedback-field select,
+.feedback-field textarea {
+  background: var(--surface-900);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--text-100);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.feedback-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.feedback-field select:focus,
+.feedback-field textarea:focus {
+  outline: none;
+  border-color: var(--primary-500);
+}
+
+.feedback-context {
+  color: var(--text-400);
+  font-family: monospace;
+  background: var(--surface-900);
+  padding: 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feedback-submit {
+  width: 100%;
+  margin-top: 8px;
+  justify-content: center;
+}

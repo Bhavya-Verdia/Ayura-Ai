@@ -16,6 +16,7 @@ export default function Admin() {
   const [token, setToken] = useState('')
   const [summary, setSummary] = useState(null)
   const [users, setUsers] = useState([])
+  const [feedback, setFeedback] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -23,12 +24,14 @@ export default function Admin() {
     setError('')
     setLoading(true)
     try {
-      const [summaryRes, usersRes] = await Promise.all([
+      const [summaryRes, usersRes, feedbackRes] = await Promise.all([
         adminAPI.summary(token),
         adminAPI.users(token),
+        adminAPI.feedback(token),
       ])
       setSummary(summaryRes.data)
       setUsers(usersRes.data || [])
+      setFeedback(feedbackRes.data || [])
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to load admin data.')
     } finally {
@@ -138,6 +141,55 @@ export default function Admin() {
                     }}>
                       {user.dominant_dosha || 'not set'}
                     </span>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {feedback.length > 0 && (
+            <motion.section
+              className="dash-section"
+              style={{ marginTop: '18px', padding: '24px' }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <h2 style={{ marginTop: 0, fontFamily: "'Syne', sans-serif" }}>📝 Feedback Reports ({feedback.length})</h2>
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {feedback.map((f, i) => (
+                  <motion.div
+                    key={f.id}
+                    style={{
+                      background: 'var(--surface-900)', border: '1px solid var(--border)', 
+                      borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px'
+                    }}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.35 + i * 0.03, duration: 0.3 }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <span style={{ 
+                        fontSize: '.75rem', padding: '4px 10px', borderRadius: '4px',
+                        background: f.type === 'Bug' ? 'rgba(239,68,68,0.1)' : 'rgba(59,130,246,0.1)',
+                        color: f.type === 'Bug' ? '#ef4444' : '#60a5fa',
+                        fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase'
+                      }}>
+                        {f.type}
+                      </span>
+                      <span style={{ fontSize: '.8rem', color: 'var(--text-400)' }}>
+                        {new Date(f.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    <p style={{ margin: '4px 0', color: 'var(--text-50)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                      {f.description}
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.85rem', color: 'var(--text-300)', marginTop: '4px' }}>
+                      <span><strong>User:</strong> {f.user?.email || 'Unknown'}</span>
+                      <span style={{ opacity: 0.7 }}>{f.url}</span>
+                    </div>
                   </motion.div>
                 ))}
               </div>

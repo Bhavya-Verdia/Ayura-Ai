@@ -8,6 +8,7 @@ import React from 'react'
 import CursorGlow from '../components/CursorGlow'
 import MagneticButton from '../components/MagneticButton'
 import CountUp from '../components/CountUp'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 import './Landing.css'
 
 // ─── Animation variants ───────────────────────────────────────
@@ -226,6 +227,7 @@ export default function Landing() {
             </span>
           </Link>
           <div className="lnd-nav-actions">
+            <LanguageSwitcher />
             {user ? (
               <>
                 <Link to="/dashboard" className="lnd-nav-link">Dashboard</Link>
@@ -472,6 +474,13 @@ export default function Landing() {
                 <li><Link to="/register">Get Started</Link></li>
                 <li><Link to="/login">Sign In</Link></li>
                 <li><a href="#features">Features</a></li>
+              </ul>
+            </div>
+            <div>
+              <p className="lnd-footer-links-title">Legal</p>
+              <ul className="lnd-footer-links">
+                <li><Link to="/terms">Terms of Service</Link></li>
+                <li><Link to="/privacy">Privacy Policy</Link></li>
               </ul>
             </div>
             <div>

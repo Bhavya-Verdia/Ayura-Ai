@@ -1,13 +1,18 @@
 import axios from 'axios'
 
-export const ACCESS_TOKEN_KEY = 'access_token'
-export const REFRESH_TOKEN_KEY = 'refresh_token'
+// Internal keys for clearing legacy sessionStorage/localStorage entries
+const ACCESS_TOKEN_KEY = 'access_token'
+const REFRESH_TOKEN_KEY = 'refresh_token'
 
-export function setAuthTokens(accessToken, refreshToken) {
-  if (accessToken) sessionStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
-  if (refreshToken) sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+/**
+ * No-op: auth is now handled exclusively via HTTP-only cookies set by the server.
+ * Kept for API compatibility; does NOT write tokens to any browser storage.
+ */
+export function setAuthTokens(_accessToken, _refreshToken) {
+  // Intentionally empty — cookies are set server-side (httponly, secure)
 }
 
+/** Clear any legacy tokens that may exist in storage from older versions. */
 export function clearAuthTokens() {
   localStorage.removeItem(ACCESS_TOKEN_KEY)
   localStorage.removeItem(REFRESH_TOKEN_KEY)
@@ -18,16 +23,12 @@ export function clearAuthTokens() {
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: { 'Content-Type': 'application/json' },
-  withCredentials: true,
+  withCredentials: true, // HTTP-only cookies are sent automatically
 })
 
-// Attach JWT token to every request
-API.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem(ACCESS_TOKEN_KEY)
-  config.headers = config.headers || {}
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
+// No Authorization header needed — the ayura_access cookie is sent automatically.
+// This interceptor is intentionally removed.
+
 
 let isRefreshing = false
 let refreshSubscribers = []
@@ -41,7 +42,7 @@ function onRefreshed(token) {
   refreshSubscribers = []
 }
 
-// Auto-refresh on 401
+// Auto-refresh on 401 — cookies handle token passing automatically
 API.interceptors.response.use(
   (res) => res,
   async (err) => {
@@ -52,25 +53,18 @@ API.interceptors.response.use(
     if (err.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthRequest) {
       if (isRefreshing) {
         return new Promise((resolve) => {
-          subscribeTokenRefresh((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`
-            resolve(API(originalRequest))
-          })
+          subscribeTokenRefresh(() => resolve(API(originalRequest)))
         })
       }
 
       originalRequest._retry = true
       isRefreshing = true
 
-      const refresh = sessionStorage.getItem(REFRESH_TOKEN_KEY)
       try {
-        const payload = refresh ? { refresh_token: refresh } : null
-        const { data } = await axios.post(`${API.defaults.baseURL}/auth/refresh`, payload, { withCredentials: true })
-        setAuthTokens(data.access_token, data.refresh_token)
+        // Refresh token is in the HTTP-only cookie; just POST with credentials
+        await axios.post(`${API.defaults.baseURL}/auth/refresh`, {}, { withCredentials: true })
         isRefreshing = false
-        onRefreshed(data.access_token)
-        originalRequest.headers = originalRequest.headers || {}
-        originalRequest.headers.Authorization = `Bearer ${data.access_token}`
+        onRefreshed()
         return API(originalRequest)
       } catch (refreshError) {
         isRefreshing = false
@@ -177,9 +171,10 @@ export const privacyAPI = {
 }
 
 export const adminAPI = {
-  summary: (token) => API.get('/admin/summary', { headers: { 'X-Admin-Token': token } }),
-  users:   (token) => API.get('/admin/users', { headers: { 'X-Admin-Token': token } }),
-  metrics: (token) => API.get('/health/metrics', { headers: { 'X-Admin-Token': token } }),
+  summary:  (token) => API.get('/admin/summary', { headers: { 'X-Admin-Token': token } }),
+  users:    (token) => API.get('/admin/users', { headers: { 'X-Admin-Token': token } }),
+  feedback: (token) => API.get('/admin/feedback', { headers: { 'X-Admin-Token': token } }),
+  metrics:  (token) => API.get('/health/metrics', { headers: { 'X-Admin-Token': token } }),
 }
 
 // ── Community Feed ─────────────────────────────
@@ -193,6 +188,11 @@ export const communityAPI = {
 // ── Weather ────────────────────────────────────
 export const weatherAPI = {
   getCurrent: (lat, lon) => API.get('/weather', { params: { lat, lon } }),
+}
+
+// ── Feedback ───────────────────────────────────
+export const feedbackAPI = {
+  submit: (data) => API.post('/feedback', data),
 }
 
 export default API

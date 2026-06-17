@@ -1,0 +1,28 @@
+.language-switcher-container {
+  display: inline-block;
+  margin-left: 12px;
+}
+
+.language-select-dropdown {
+  appearance: none;
+  background-color: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.language-select-dropdown:hover {
+  border-color: var(--ayura-teal);
+  box-shadow: 0 0 8px rgba(45, 212, 191, 0.2);
+}
+
+.language-select-dropdown:focus-visible {
+  border-color: var(--ayura-teal);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ayura-teal);
+}

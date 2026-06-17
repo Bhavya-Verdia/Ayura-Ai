@@ -1,7 +1,8 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useTheme } from '../providers/ThemeProvider'
 
 function VitalPaths({ side = 1 }) {
+  const prefersReducedMotion = useReducedMotion()
   const paths = Array.from({ length: 28 }, (_, i) => ({
     id: i,
     d: `M ${side > 0 ? -150 - i * 7 : 850 + i * 7} ${28 + i * 9}
@@ -24,16 +25,16 @@ function VitalPaths({ side = 1 }) {
           strokeOpacity={path.opacity}
           fill="none"
           initial={{ pathLength: 0.18, pathOffset: 0, opacity: 0.35 }}
-          animate={{
-            pathLength: [0.18, 0.86, 0.18],
-            pathOffset: [0, 1, 0],
-            opacity: [0.22, 0.58, 0.22],
-          }}
-          transition={{
-            duration: path.duration,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
+          animate={
+            prefersReducedMotion
+              ? { pathLength: 0.5, pathOffset: 0, opacity: path.opacity }
+              : { pathLength: [0.18, 0.86, 0.18], pathOffset: [0, 1, 0], opacity: [0.22, 0.58, 0.22] }
+          }
+          transition={
+            prefersReducedMotion
+              ? { duration: 0 }
+              : { duration: path.duration, repeat: Infinity, ease: 'linear' }
+          }
         />
       ))}
     </svg>
@@ -41,6 +42,7 @@ function VitalPaths({ side = 1 }) {
 }
 
 function PulseLines() {
+  const prefersReducedMotion = useReducedMotion()
   return (
     <svg className="vital-pulse-lines" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
       {[0, 1, 2].map((row) => (
@@ -58,8 +60,16 @@ function PulseLines() {
           strokeWidth={row === 1 ? 1.15 : 0.75}
           strokeOpacity={row === 1 ? 0.16 : 0.08}
           initial={{ pathLength: 0, pathOffset: 0.12 }}
-          animate={{ pathLength: [0.08, 1, 0.08], pathOffset: [0, 0.9, 1.8] }}
-          transition={{ duration: 16 + row * 4, repeat: Infinity, ease: 'linear' }}
+          animate={
+            prefersReducedMotion
+              ? { pathLength: 1, pathOffset: 0 }
+              : { pathLength: [0.08, 1, 0.08], pathOffset: [0, 0.9, 1.8] }
+          }
+          transition={
+            prefersReducedMotion
+              ? { duration: 0 }
+              : { duration: 16 + row * 4, repeat: Infinity, ease: 'linear' }
+          }
         />
       ))}
     </svg>

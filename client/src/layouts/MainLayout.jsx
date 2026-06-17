@@ -8,6 +8,8 @@ import {
   LayoutDashboard, MessageCircle, Leaf, Activity, CheckSquare,
   Settings, LogOut, Menu, X, Bell
 } from 'lucide-react'
+import ScrollToTop from '../components/ScrollToTop'
+import FeedbackWidget from '../components/FeedbackWidget'
 import '../pages/Dashboard.css'
 import './MainLayout.css'
 
@@ -134,9 +136,11 @@ export default function MainLayout() {
         )}
 
         <div style={{ flex: 1, overflowY: 'auto', paddingBottom: isMobile ? '72px' : 0 }}>
+          <ScrollToTop />
           <React.Suspense fallback={<LoadingScreen />}>
             <Outlet />
           </React.Suspense>
+          <FeedbackWidget />
         </div>
       </div>
 

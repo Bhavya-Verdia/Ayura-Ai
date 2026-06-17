@@ -62,8 +62,9 @@ export default function Chat() {
 
     let wsBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
     wsBase = wsBase.replace('http', 'ws');
-    const token = sessionStorage.getItem('access_token') || '';
-    const wsUrl = `${wsBase}/chat/ws/${activeSession}?token=${token}`;
+    // Auth is via the ayura_access HTTP-only cookie sent automatically by the browser.
+    // Do NOT append a token query param — that exposes JWTs in server logs.
+    const wsUrl = `${wsBase}/chat/ws/${activeSession}`;
 
     const ws = new WebSocket(wsUrl);
     let currentMessage = '';

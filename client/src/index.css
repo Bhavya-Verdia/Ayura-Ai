@@ -682,3 +682,26 @@ button {
     transform: translate(-50%, -50%) translate3d(18px, 14px, 0) scale(1.08);
   }
 }
+
+/* ─── Accessibility: Reduced Motion ──────────────────────────────────────────
+   Disable all decorative animations for users who have requested reduced
+   motion in their OS/browser settings (WCAG 2.1 SC 2.3.3).               */
+@media (prefers-reduced-motion: reduce) {
+  .particle-dot,
+  .particle-orb,
+  .aurora-blob-1,
+  .aurora-blob-2,
+  .aurora-blob-3,
+  .app-bg-mesh,
+  .vital-noise-field,
+  .vital-paths path,
+  .vital-pulse-lines path {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Keep loading indicators functional (they are not purely decorative) */
+  .loading-bar-inner {
+    animation: loading-bar 1.6s ease infinite !important;
+  }
+}

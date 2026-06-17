@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useReducedMotion } from 'framer-motion'
 import { useTheme } from '../providers/ThemeProvider'
 
 function seededRandom(seed) {
@@ -15,6 +16,7 @@ export default function ParticleField({
   className = '',
 }) {
   const { theme } = useTheme()
+  const prefersReducedMotion = useReducedMotion()
   const particleCount = Math.min(count, 160)
 
   const particles = useMemo(() => {
@@ -71,8 +73,9 @@ export default function ParticleField({
             width: `${orb.size}px`,
             height: `${orb.size}px`,
             background: orb.color,
-            animationDuration: `${orb.duration}s`,
-            animationDelay: `${orb.delay}s`,
+            animationDuration: prefersReducedMotion ? '0s' : `${orb.duration}s`,
+            animationPlayState: prefersReducedMotion ? 'paused' : 'running',
+            animationDelay: prefersReducedMotion ? '0s' : `${orb.delay}s`,
           }}
         />
       ))}
@@ -85,13 +88,14 @@ export default function ParticleField({
             top: `${particle.y}%`,
             width: `${particle.size}px`,
             height: `${particle.size}px`,
-            opacity: particle.opacity,
+            opacity: prefersReducedMotion ? particle.opacity * 0.5 : particle.opacity,
             background: particle.color,
             color: particle.color,
             '--drift-x': `${particle.driftX}px`,
             '--drift-y': `${particle.driftY}px`,
-            animationDuration: `${particle.duration}s`,
-            animationDelay: `${particle.delay}s`,
+            animationDuration: prefersReducedMotion ? '0s' : `${particle.duration}s`,
+            animationPlayState: prefersReducedMotion ? 'paused' : 'running',
+            animationDelay: prefersReducedMotion ? '0s' : `${particle.delay}s`,
           }}
         />
       ))}
