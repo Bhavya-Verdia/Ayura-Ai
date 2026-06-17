@@ -324,6 +324,13 @@ async def _enqueue_plan(
     if not user.onboarding_complete:
         raise HTTPException(status_code=400, detail="Please complete onboarding first")
 
+    # ── Email Verification Gate ───────────────────────────────────────────────
+    if user.auth_provider == "local" and not user.is_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="Please verify your email address before generating plans. Check your inbox for a verification link.",
+        )
+
     # ── Pregnancy Safety Gate ─────────────────────────────────────────────────
     # Block sensitive features BEFORE any LLM call if user is pregnant/nursing
     PREGNANCY_BLOCKED_FEATURES = {"panchakarma", "remedies", "medicines"}

@@ -57,7 +57,7 @@ async def send_message(msg: ChatMessage, user: UserDocument = Depends(get_curren
     safe_content = _sanitize_prompt_input(msg.content)
     await save_message(db, user.id, session_id, "user", safe_content)
 
-    red_flags = detect_red_flags(msg.content, user.current_symptoms or [])
+    red_flags = await detect_red_flags(msg.content, user.current_symptoms or [])
     if red_flags["has_red_flags"]:
         response_text = red_flags["message"]
         sources = [{"source": "Ayura AI safety triage", "red_flags": red_flags["matches"]}]
@@ -185,7 +185,7 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
             await websocket.send_json({"type": "status", "message": "Analyzing..."})
             await save_message(db, user.id, session_id, "user", safe_content)
             
-            red_flags = detect_red_flags(safe_content, user.current_symptoms or [])
+            red_flags = await detect_red_flags(safe_content, user.current_symptoms or [])
             if red_flags["has_red_flags"]:
                 sources = [{"source": "Ayura AI safety triage", "red_flags": red_flags["matches"]}]
                 await websocket.send_json({"type": "chunk", "content": red_flags["message"]})

@@ -60,6 +60,24 @@ async def send_verification_email(to_email: str, token: str):
     """
     await send_email(to_email, subject, html)
 
+async def send_notification_email(to_email: str, title: str, body: str) -> bool:
+    """Send a notification email to a user."""
+    subject = f"Ayura AI: {title}"
+    manage_url = f"{settings.FRONTEND_URL}/settings"
+    html = (
+        f"<html><body style='font-family:Arial,sans-serif;background:#0b1426;color:#e2e8f0;padding:20px'>"
+        f"<div style='max-width:600px;margin:0 auto;background:#0f1c32;padding:30px;border-radius:12px;border:1px solid #1e293b'>"
+        f"<h2 style='color:#6ee7b7'>{title}</h2>"
+        f"<p>{body}</p>"
+        f"<hr style='border-color:#1e293b;margin:20px 0'>"
+        f"<p style='color:#94a3b8;font-size:12px'>You are receiving this because you have notifications enabled in Ayura AI. "
+        f"<a href='{manage_url}' style='color:#6ee7b7'>Manage preferences</a></p>"
+        f"</div></body></html>"
+    )
+    await send_email(to_email, subject, html)
+    return True
+
+
 async def send_password_reset_email(to_email: str, token: str):
     """Send a password reset link."""
     reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}"

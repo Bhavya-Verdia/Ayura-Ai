@@ -128,10 +128,12 @@ async def register(req: RegisterRequest, background_tasks: BackgroundTasks, resp
         name=req.name,
         password_hash=hash_password(req.password),
         auth_provider="local",
+        consent_given=req.consent_given,
+        consent_at=now if req.consent_given else None,
         created_at=now,
         updated_at=now
     )
-    
+
     await db.users.insert_one(user.model_dump(by_alias=True))
 
     # --- Email Verification ---
@@ -648,15 +650,16 @@ async def verify_otp(req: VerifyOtpRequest, response: Response, db: AsyncIOMotor
     now = datetime.now(timezone.utc)
     
     if not user_dict:
-        # Create a new user with a placeholder email since email is currently required by schema
-        placeholder_email = f"phone_{req.phone_number.strip('+')}@ayura.ai"
+        # Sentinel domain that no real user can register — avoids collision with real email accounts
+        placeholder_email = f"phone_{req.phone_number.strip('+')}@phone.internal.ayura"
         user = UserDocument(
             _id=str(uuid.uuid4()),
             email=placeholder_email,
             name="New User",
             auth_provider="phone",
             phone_number=req.phone_number,
-            is_verified=True, # Phone is verified
+            phone_only=True,
+            is_verified=True,
             created_at=now,
             updated_at=now
         )
