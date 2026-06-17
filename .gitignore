@@ -1,6 +1,7 @@
 # Environment
 .env
 .env.*
+!.env.example
 client/.env
 
 # Python
@@ -14,7 +15,7 @@ venv/
 .venv/
 
 # SQLite dev database
-server/bodysync.db
+server/ayura.db
 *.db
 
 # Uploads (user-generated)
@@ -49,3 +50,7 @@ mongo_data/
 # Logs
 *.log
 logs/
+
+# Playwright
+client/playwright-report/
+client/test-results/

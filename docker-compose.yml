@@ -1,156 +1,86 @@
+version: '3.8'
+
 services:
-  # --- Databases ---
-
-  mongodb:
-    image: mongo:7
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-ayura_user}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-ayura_dev_pass}
-      MONGO_INITDB_DATABASE: ${MONGO_DB:-ayura}
-    ports:
-      - "127.0.0.1:27018:27017"
-    networks:
-      - backend
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-    volumes:
-      - mongodata:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok", "--quiet"]
-      interval: 10s
-      timeout: 10s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    command: redis-server --save 60 1 --loglevel warning
-    ports:
-      - "127.0.0.1:6379:6379"
-    networks:
-      - backend
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-    volumes:
-      - redisdata:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  # --- Application ---
   api:
-    # Production: pulls from GHCR using IMAGE_TAG env var
-    # Development: builds from local source
-    image: ${API_IMAGE:-bodysync-api}
     build:
       context: ./server
       dockerfile: Dockerfile
-    restart: unless-stopped
+    container_name: ayura_api
     ports:
       - "8000:8000"
-    networks:
-      - backend
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 2G
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    env_file:
-      - .env
     environment:
-      MONGO_URL: mongodb://${MONGO_USER:-ayura_user}:${MONGO_PASSWORD:-ayura_dev_pass}@mongodb:27017/${MONGO_DB:-ayura}?authSource=admin
-      REDIS_URL: redis://redis:6379/0
-      CHROMA_PERSIST_DIRECTORY: /app/data/chromadb
-    volumes:
-      - uploads:/app/uploads
-      - chromadata:/app/data/chromadb
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  worker:
-    image: ${API_IMAGE:-bodysync-api}
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    command: arq worker.WorkerSettings
+      - APP_ENV=production
+      - MONGO_URL=mongodb://mongodb:27017/ayura
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    depends_on:
+      - mongodb
+      - redis
+      - chromadb
     restart: unless-stopped
-    networks:
-      - backend
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 2G
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    env_file:
-      - .env
-    environment:
-      MONGO_URL: mongodb://${MONGO_USER:-ayura_user}:${MONGO_PASSWORD:-ayura_dev_pass}@mongodb:27017/${MONGO_DB:-ayura}?authSource=admin
-      REDIS_URL: redis://redis:6379/0
-      CHROMA_PERSIST_DIRECTORY: /app/data/chromadb
     volumes:
-      - chromadata:/app/data/chromadb
-
-  init-chroma:
-    image: ${API_IMAGE:-bodysync-api}
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    command: python scripts/init_chroma.py
-    networks:
-      - backend
-    depends_on:
-      api:
-        condition: service_healthy
-    env_file:
-      - .env
-    environment:
-      CHROMA_PERSIST_DIRECTORY: /app/data/chromadb
-    volumes:
-      - chromadata:/app/data/chromadb
+      - ayura_uploads:/app/uploads
 
   web:
-    image: ${WEB_IMAGE:-bodysync-web}
     build:
       context: ./client
       dockerfile: Dockerfile
-    restart: unless-stopped
+    container_name: ayura_web
     ports:
       - "80:80"
-    networks:
-      - backend
     depends_on:
-      api:
-        condition: service_healthy
+      - api
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: ayura_worker
+    command: ["arq", "worker.WorkerSettings"]
+    environment:
+      - APP_ENV=production
+      - MONGO_URL=mongodb://mongodb:27017/ayura
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    depends_on:
+      - mongodb
+      - redis
+      - chromadb
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    container_name: ayura_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - ayura_mongo_data:/data/db
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: ayura_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: ayura_chromadb
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+      - ANONYMIZED_TELEMETRY=FALSE
+    ports:
+      - "8001:8000" # Expose Chroma to host on 8001 to avoid conflict with backend on 8000
+    volumes:
+      - ayura_chroma_data:/chroma/chroma
+    restart: unless-stopped
 
 volumes:
-  mongodata:
-  redisdata:
-  chromadata:
-  uploads:
-
-networks:
-  backend:
-    driver: bridge
+  ayura_mongo_data:
+  ayura_chroma_data:
+  ayura_uploads:
