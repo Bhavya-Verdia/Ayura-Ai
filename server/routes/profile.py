@@ -157,6 +157,22 @@ async def upload_avatar(
     if len(file_bytes) > MAX_AVATAR_BYTES:
         raise HTTPException(status_code=400, detail=f"File too large. Max {MAX_AVATAR_BYTES // (1024*1024)}MB.")
 
+    # Magic-byte MIME verification — extension alone is spoofable
+    _MAGIC = [
+        (b'\xff\xd8\xff', 'image/jpeg'),
+        (b'\x89PNG\r\n\x1a\n', 'image/png'),
+    ]
+    header = file_bytes[:12]
+    detected = None
+    for magic, mime in _MAGIC:
+        if header.startswith(magic):
+            detected = mime
+            break
+    if detected is None and header[:4] == b'RIFF' and header[8:12] == b'WEBP':
+        detected = 'image/webp'
+    if detected is None:
+        raise HTTPException(status_code=400, detail="File content is not a valid image (JPEG, PNG, or WebP).")
+
     # Upload logic (S3/R2 or local fallback)
     filename = f"{user.id}_{uuid_mod.uuid4().hex[:8]}{ext}"
     

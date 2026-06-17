@@ -48,8 +48,11 @@ async def lifespan(app: FastAPI):
     # Initialize Sentry
     if settings.SENTRY_DSN:
         import sentry_sdk
+        from sentry_sdk.integrations.starlette import StarletteIntegration
+        from sentry_sdk.integrations.fastapi import FastApiIntegration
         sentry_sdk.init(
             dsn=settings.SENTRY_DSN,
+            integrations=[StarletteIntegration(), FastApiIntegration()],
             environment=settings.APP_ENV,
             traces_sample_rate=1.0,
             profiles_sample_rate=1.0,

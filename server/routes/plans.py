@@ -433,11 +433,21 @@ async def _enqueue_plan(
     })
 
     # ── Schedule Background Generation ────────────────────────────────────────
-    background_tasks.add_task(
-        _run_plan_job,
-        {}, job_id, plan_type, user.id, req.mode, req.feedback,
-        req.previous_plan_id, user_profile
-    )
+    # Try ARQ (Redis-backed worker) first; fall back to in-process if Redis is unavailable.
+    try:
+        pool = await get_arq_pool()
+        await pool.enqueue_job(
+            "_run_plan_job", job_id, plan_type, user.id, req.mode,
+            req.feedback, req.previous_plan_id, user_profile
+        )
+    except Exception:
+        from core.logger import logger
+        logger.warning("ARQ enqueue failed — running plan job in-process as fallback")
+        background_tasks.add_task(
+            _run_plan_job,
+            {}, job_id, plan_type, user.id, req.mode, req.feedback,
+            req.previous_plan_id, user_profile
+        )
 
     return {"job_id": job_id, "status": "pending", "plan_id": None, "result": None}
 
@@ -1005,7 +1015,12 @@ async def get_guided_meditation(
     
     try:
         response = await llm_client.generate(prompt=prompt, system_prompt="You are a calming Ayurvedic Meditation Guide.", temperature=0.7, json_mode=True)
-        return json.loads(response)
+        # Strip markdown code fences the LLM sometimes wraps the JSON in
+        cleaned = re.sub(r"^```(?:json)?\s*", "", response.strip(), flags=re.IGNORECASE)
+        cleaned = re.sub(r"\s*```$", "", cleaned)
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Meditation script could not be parsed. Please try again.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate meditation script: {str(e)}")
 

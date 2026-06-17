@@ -48,13 +48,16 @@ function getTimeOfDay() {
 }
 
 // ── Dosha Balance Gauge — replaced by DoshaArcRings component ─
-function DoshaGauge({ dosha }) {
+function DoshaGauge({ dosha, doshaScores }) {
   if (!dosha) return null
-  const doshaScores = { vata: 65, pitta: 45, kapha: 30 }
+  const scores = doshaScores && (doshaScores.vata || doshaScores.pitta || doshaScores.kapha)
+    ? doshaScores
+    : null
+  if (!scores) return null
   return (
     <DoshaArcRings
       dominantDosha={dosha.toLowerCase()}
-      scores={doshaScores}
+      scores={scores}
       size={180}
     />
   )
@@ -253,7 +256,7 @@ const Dashboard = () => {
         </div>
 
         <div className="dash-hero-right" style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
-          {user?.dominant_dosha && <DoshaGauge dosha={user.dominant_dosha} />}
+          {user?.dominant_dosha && <DoshaGauge dosha={user.dominant_dosha} doshaScores={user.dosha_scores} />}
           <HealthScoreCard completedCount={completedCount} total={PLAN_TYPES.length} />
         </div>
       </motion.div>

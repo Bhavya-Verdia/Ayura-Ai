@@ -49,14 +49,13 @@ async def save_message(db, user_id: str, session_id: str, role: str, content: st
 
 
 async def fetch_active_plans(db, user_id: str) -> dict:
-    """Return the most recent plan of each type for the user."""
-    active_plans = {}
-    for plan_type in ["gym", "yoga", "diet", "panchakarma", "remedies", "medicines"]:
-        cursor = db.plan_history.find({"user_id": user_id, "plan_type": plan_type}).sort("generated_at", -1).limit(1)
-        plans = await cursor.to_list(length=1)
-        if plans:
-            active_plans[plan_type] = plans[0].get("plan_data", {})
-    return active_plans
+    """Return the most recent plan of each type using a single aggregation query."""
+    pipeline = [
+        {"$match": {"user_id": user_id, "plan_type": {"$in": ["gym", "yoga", "diet", "panchakarma", "remedies", "medicines"]}}},
+        {"$sort": {"generated_at": -1}},
+        {"$group": {"_id": "$plan_type", "plan_data": {"$first": "$plan_data"}}},
+    ]
+    return {doc["_id"]: doc["plan_data"] async for doc in db.plan_history.aggregate(pipeline)}
 
 
 async def build_chat_context(
@@ -211,8 +210,7 @@ async def apply_chat_side_effects(
     if plans_to_adapt:
         valid_plans = [p for p in plans_to_adapt if p in ["gym", "yoga", "diet", "panchakarma", "remedies", "medicines"]]
         if valid_plans:
-            # Trigger plan adaptation asynchronously (non-blocking)
-            asyncio.create_task(_adapt_plans(db, user_id, valid_plans, feedback_text))
+            await _adapt_plans(db, user_id, valid_plans, feedback_text)
 
 
 async def _adapt_plans(db, user_id: str, plan_types: list[str], feedback: str) -> None:

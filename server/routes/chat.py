@@ -2,7 +2,9 @@ from core.logger import logger
 
 from datetime import datetime, timezone
 import asyncio
+import time
 import uuid
+from collections import defaultdict
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Cookie
 from pydantic import BaseModel, Field
 
@@ -24,6 +26,18 @@ from ai.llm_client import llm_client
 import re
 
 router = APIRouter()
+
+_ws_rate: dict[str, list[float]] = defaultdict(list)
+_WS_LIMIT = 10
+_WS_WINDOW = 60
+
+def _check_ws_rate(user_id: str) -> bool:
+    now = time.monotonic()
+    _ws_rate[user_id] = [t for t in _ws_rate[user_id] if now - t < _WS_WINDOW]
+    if len(_ws_rate[user_id]) >= _WS_LIMIT:
+        return False
+    _ws_rate[user_id].append(now)
+    return True
 
 def _sanitize_prompt_input(text: str) -> str:
     text = re.sub(r'(?i)(system\s*:|assistant\s*:|<<\s*SYS\s*>>|<\|.*?\|>)', '', text)
@@ -83,18 +97,40 @@ async def send_message(msg: ChatMessage, user: UserDocument = Depends(get_curren
 @router.get("/sessions")
 async def get_chat_sessions(user: UserDocument = Depends(get_current_user)):
     db = get_mongodb()
-    if db is None: return []
-    cursor = db.chat_sessions.find({"user_id": user.id}, {"_id": 0}).sort("updated_at", -1).limit(50)
-    sessions = []
-    async for doc in cursor:
-        first_msg = await db.chat_messages.find_one({"session_id": doc["session_id"], "role": "user"}, sort=[("timestamp", 1)])
-        sessions.append({
-            "session_id": doc["session_id"],
-            "preview": (first_msg["content"][:80] + "...") if first_msg else "New chat",
-            "message_count": doc.get("message_count", 0),
-            "updated_at": doc.get("updated_at", "").isoformat() if doc.get("updated_at") else None,
-        })
-    return sessions
+    if db is None:
+        return []
+    pipeline = [
+        {"$match": {"user_id": user.id}},
+        {"$sort": {"updated_at": -1}},
+        {"$limit": 50},
+        {"$lookup": {
+            "from": "chat_messages",
+            "let": {"sid": "$session_id"},
+            "pipeline": [
+                {"$match": {"$expr": {"$and": [
+                    {"$eq": ["$session_id", "$$sid"]},
+                    {"$eq": ["$role", "user"]},
+                ]}}},
+                {"$sort": {"timestamp": 1}},
+                {"$limit": 1},
+            ],
+            "as": "first_msgs",
+        }},
+        {"$project": {
+            "session_id": 1, "message_count": 1, "updated_at": 1,
+            "first_msg": {"$arrayElemAt": ["$first_msgs", 0]},
+        }},
+    ]
+    docs = await db.chat_sessions.aggregate(pipeline).to_list(length=50)
+    return [
+        {
+            "session_id": s["session_id"],
+            "preview": (s["first_msg"]["content"][:80] + "...") if s.get("first_msg") else "New chat",
+            "message_count": s.get("message_count", 0),
+            "updated_at": s["updated_at"].isoformat() if s.get("updated_at") else None,
+        }
+        for s in docs
+    ]
 
 @router.get("/sessions/{session_id}")
 async def get_session_messages(session_id: str, user: UserDocument = Depends(get_current_user)):
@@ -138,8 +174,13 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
     try:
         while True:
             data = await websocket.receive_text()
+
+            if not _check_ws_rate(user.id):
+                await websocket.send_json({"type": "error", "message": "Rate limit exceeded. Please wait before sending another message."})
+                continue
+
             safe_content = _sanitize_prompt_input(data)
-            
+
             # Send initial state
             await websocket.send_json({"type": "status", "message": "Analyzing..."})
             await save_message(db, user.id, session_id, "user", safe_content)

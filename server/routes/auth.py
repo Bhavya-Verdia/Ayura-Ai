@@ -3,7 +3,7 @@ Ayura AI - Authentication Routes
 Handles registration, login, Google OAuth, and token refresh.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import hashlib
 import hmac
 import secrets
@@ -592,10 +592,10 @@ async def github_auth(
 async def send_otp(req: SendOtpRequest, background_tasks: BackgroundTasks, db: AsyncIOMotorDatabase = Depends(get_mongodb)):
     """Generate and send an OTP code to a mobile number."""
     otp_code = f"{secrets.randbelow(900000) + 100000}"
-    
-    # Store in DB with 5-minute expiration
-    expires_at = _utc_now().timestamp() + 300
-    
+
+    # Store as a real datetime so MongoDB TTL index can expire it automatically
+    expires_at = _utc_now() + timedelta(seconds=300)
+
     await db.otps.update_one(
         {"phone_number": req.phone_number},
         {"$set": {
@@ -634,7 +634,10 @@ async def verify_otp(req: VerifyOtpRequest, response: Response, db: AsyncIOMotor
     if not is_valid_code:
         raise HTTPException(status_code=400, detail="Invalid OTP code")
         
-    if datetime.now(timezone.utc).timestamp() > otp_doc["expires_at"]:
+    otp_expires = otp_doc["expires_at"]
+    if isinstance(otp_expires, (int, float)):
+        otp_expires = datetime.fromtimestamp(otp_expires, timezone.utc)
+    if datetime.now(timezone.utc) > otp_expires:
         raise HTTPException(status_code=400, detail="OTP code has expired")
         
     # Valid OTP -> Clear it so it can't be reused

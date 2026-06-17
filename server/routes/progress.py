@@ -5,6 +5,7 @@ Ayura AI - Progress Tracking Routes
 from datetime import datetime, timezone, date, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
+import json
 import uuid
 
 from schemas.user_schema import UserDocument
@@ -12,6 +13,9 @@ from schemas.plan_schema import ProgressLogRequest, ProgressResponse
 from routes.profile import get_current_user
 from database.mongodb import get_mongodb
 from ai.llm_client import llm_client
+from core.cache import cache_manager
+
+_SUMMARY_TTL = 14400  # 4 hours
 
 router = APIRouter()
 
@@ -37,6 +41,13 @@ async def log_progress(
         "symptom_updates": req.symptom_updates or {},
     }
     await db.progress_logs.insert_one(log_doc)
+
+    # Invalidate cached summary so next fetch reflects the new entry
+    if cache_manager.redis_client:
+        try:
+            await cache_manager.redis_client.delete(f"ayura:progress_summary:{user.id}")
+        except Exception:
+            pass
 
     # Update user weight if provided
     if req.weight_kg:
@@ -66,6 +77,15 @@ async def get_progress_summary(
     db: AsyncIOMotorDatabase = Depends(get_mongodb),
 ):
     """Get a progress summary with trend analysis."""
+    cache_key = f"ayura:progress_summary:{user.id}"
+    if cache_manager.redis_client:
+        try:
+            cached = await cache_manager.redis_client.get(cache_key)
+            if cached:
+                return ProgressResponse(**json.loads(cached))
+        except Exception:
+            pass
+
     cursor = db.progress_logs.find({"user_id": user.id}).sort("date", -1).limit(30)
     logs = await cursor.to_list(length=30)
 
@@ -136,9 +156,15 @@ async def get_progress_summary(
         except Exception:
             weekly_insight = "Keep up the great work! Consistency is the key to lasting wellness."
 
-    return ProgressResponse(
+    result = ProgressResponse(
         current=current,
         trend=trend,
         weekly_insight=weekly_insight,
         streak_data=streak_data,
     )
+    if cache_manager.redis_client:
+        try:
+            await cache_manager.redis_client.setex(cache_key, _SUMMARY_TTL, result.model_dump_json())
+        except Exception:
+            pass
+    return result
