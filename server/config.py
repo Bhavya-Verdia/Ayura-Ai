@@ -99,7 +99,9 @@ class Settings(BaseSettings):
         return self
 
     # --- ChromaDB ---
-    CHROMA_PERSIST_DIRECTORY: str = "./server/data/chromadb"
+    CHROMA_HOST: Optional[str] = None
+    CHROMA_PORT: int = 8000
+    CHROMA_PERSIST_DIRECTORY: str = str(BASE_DIR / "data" / "chromadb")
 
     # --- Azure OpenAI (Primary LLM) ---
     AZURE_OPENAI_API_KEY: Optional[str] = None
@@ -149,32 +151,14 @@ class Settings(BaseSettings):
             return True
         return value
 
-    @property
-    def RESOLVED_GOOGLE_REDIRECT_URI(self) -> str:
-        """Return the configured redirect URI, or derive from FRONTEND_URL."""
-        if self.GOOGLE_REDIRECT_URI:
-            return self.GOOGLE_REDIRECT_URI
-        return f"{self.FRONTEND_URL}/auth/google/callback"
-
-    # --- JWT ---
-    JWT_SECRET_KEY: str = "change-me-in-production"
-    JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-    ACCESS_TOKEN_COOKIE: str = "ayura_access"
-    REFRESH_TOKEN_COOKIE: str = "ayura_refresh"
-    # Default False so local HTTP dev works; auto-forced True in production via APP_ENV validator
-    COOKIE_SECURE: bool = False
-    COOKIE_SAMESITE: str = "lax"
-
-    @field_validator("COOKIE_SECURE", mode="before")
+    @field_validator("COOKIE_SAMESITE", mode="before")
     @classmethod
-    def auto_secure_cookie(cls, value, info):
-        """Force COOKIE_SECURE=True when APP_ENV=production, regardless of .env setting."""
+    def auto_samesite_strict(cls, value, info):
+        """Force COOKIE_SAMESITE='strict' in production to prevent CSRF via top-level navigations."""
         import os
         app_env = os.environ.get("APP_ENV", "development").strip().lower()
         if app_env == "production":
-            return True
+            return "strict"
         return value
 
     # --- Weather API (OpenWeatherMap - optional, free tier) ---

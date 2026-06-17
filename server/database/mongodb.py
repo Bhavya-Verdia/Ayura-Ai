@@ -7,6 +7,8 @@ Now serves as the PRIMARY database for all application data.
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from config import settings
 import logging
+import ssl
+import certifi
 
 logger = logging.getLogger("ayura.db")
 
@@ -19,9 +21,13 @@ async def init_mongodb():
     """Initialize MongoDB connection on startup. MANDATORY for app operation."""
     global _client, _db, _available
     try:
+        # Build a proper TLS context using certifi's CA bundle
+        # Fixes TLSV1_ALERT_INTERNAL_ERROR on macOS with OpenSSL 3.x
+        tls_ctx = ssl.create_default_context(cafile=certifi.where())
         _client = AsyncIOMotorClient(
             settings.MONGO_URL,
             serverSelectionTimeoutMS=5000,
+            tlsCAFile=certifi.where(),
         )
         # Ping to verify the server is reachable
         await _client.admin.command("ping")
@@ -74,6 +80,8 @@ async def _create_indexes(db):
         await db.audit_log.create_index("event_type")
         # Feature preferences (one document per user)
         await db.user_preferences.create_index("user_id", unique=True)
+        # Feedback
+        await db.feedback.create_index([("created_at", -1)])
     except Exception as e:
         logger.error(f"Failed to create indexes in background: {e}")
 

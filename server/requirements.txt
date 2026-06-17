@@ -55,3 +55,4 @@ motor
 
 aiofiles
 reportlab>=4.2.0
+tenacity==8.3.0

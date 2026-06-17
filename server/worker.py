@@ -53,4 +53,5 @@ class WorkerSettings:
     on_startup = startup
     on_shutdown = shutdown
     max_jobs = 10
+    max_tries = 3
     job_timeout = settings.PLAN_TIMEOUT_SECONDS + 30

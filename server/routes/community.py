@@ -2,10 +2,12 @@
 Ayura AI - Community Feed Routes
 """
 
+import re
+import time
+from collections import defaultdict, deque
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from typing import Optional
 import uuid
 
 from schemas.user_schema import UserDocument
@@ -14,6 +16,61 @@ from database.mongodb import get_mongodb
 
 router = APIRouter()
 
+# ─── Per-User Rate Limiter (5 posts / 60 min) ─────────────────────────────────
+
+_POST_LIMIT = 5          # max posts per window
+_POST_WINDOW = 3600      # 1-hour sliding window (seconds)
+_user_post_times: dict[str, deque] = defaultdict(deque)
+
+
+def _check_post_rate(user_id: str) -> None:
+    """Raise 429 if the user has exceeded the posting rate limit."""
+    now = time.monotonic()
+    bucket = _user_post_times[user_id]
+    # Evict timestamps outside the window
+    while bucket and now - bucket[0] > _POST_WINDOW:
+        bucket.popleft()
+    if len(bucket) >= _POST_LIMIT:
+        retry_after = max(1, int(_POST_WINDOW - (now - bucket[0])))
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many posts. Please wait before posting again.",
+            headers={"Retry-After": str(retry_after)},
+        )
+    bucket.append(now)
+
+
+# ─── Content Moderation ────────────────────────────────────────────────────────
+
+# Minimal pattern-based filter — keeps the platform healthy without an external API.
+_BLOCKED_PATTERNS = re.compile(
+    r"\b("
+    r"buy\s+(now|cheap|online)|"          # spam commerce
+    r"click\s+here|visit\s+my\s+(site|link|profile)|"  # link spam
+    r"make\s+money\s+fast|earn\s+\$|crypto\s+profit|"  # financial spam
+    r"(?:http|ftp)s?://\S+"               # bare URLs (block all links)
+    r")\b",
+    re.IGNORECASE,
+)
+
+_REPEATED_CHARS = re.compile(r"(.)\1{9,}")  # same char repeated 10+ times → spam
+
+
+def _moderate_content(content: str) -> None:
+    """Raise 422 if the content violates community guidelines."""
+    if _BLOCKED_PATTERNS.search(content):
+        raise HTTPException(
+            status_code=422,
+            detail="Post contains content that is not allowed (spam, URLs, or promotional material).",
+        )
+    if _REPEATED_CHARS.search(content):
+        raise HTTPException(
+            status_code=422,
+            detail="Post contains repetitive characters. Please write a meaningful message.",
+        )
+
+
+# ─── Routes ───────────────────────────────────────────────────────────────────
 
 class CreatePostRequest(BaseModel):
     content: str = Field(..., min_length=1, max_length=500)
@@ -49,6 +106,10 @@ async def create_post(
     db=Depends(get_mongodb),
 ):
     """Create a new community post."""
+    # ── Safety gates ──────────────────────────────────────────────────────────
+    _check_post_rate(user.id)   # rate limit: 5 posts / hour per user
+    _moderate_content(req.content)  # content moderation
+
     post_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc)
     doc = {

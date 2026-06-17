@@ -2,13 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime, timezone
-import uuid
+import asyncio
 import json
 
 from schemas.user_schema import UserDocument
 from routes.profile import get_current_user
 from database.mongodb import get_mongodb
 from ai.llm_client import llm_client
+from services.chat_service import apply_chat_side_effects
 
 router = APIRouter()
 
@@ -85,8 +86,9 @@ Respond ONLY with valid JSON:
 
     # 4. Trigger adaptation in background if needed
     if plans_to_adapt:
-        from routes.chat import _trigger_adaptation
-        import asyncio
-        asyncio.create_task(_trigger_adaptation(db, user.id, plans_to_adapt, f"Weekly checkin: Energy={req.energy}, Digestion={req.digestion}, Sleep={req.sleep}, Symptoms={req.symptoms}"))
+        feedback_text = f"Weekly checkin: Energy={req.energy}, Digestion={req.digestion}, Sleep={req.sleep}, Symptoms={req.symptoms}"
+        asyncio.create_task(
+            apply_chat_side_effects(db, user.id, [], plans_to_adapt, feedback_text)
+        )
 
     return WeeklyCheckinResponse(insight=insight, adapted_plans=plans_to_adapt)

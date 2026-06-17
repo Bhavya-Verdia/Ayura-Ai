@@ -63,3 +63,31 @@ async def admin_users(db: AsyncIOMotorDatabase = Depends(get_mongodb)):
         }
         for user in users
     ]
+
+
+@router.get("/feedback")
+async def admin_feedback(db: AsyncIOMotorDatabase = Depends(get_mongodb)):
+    """Retrieve all submitted user feedback."""
+    cursor = db.feedback.find().sort("created_at", -1).limit(200)
+    feedbacks = await cursor.to_list(length=200)
+    
+    # Batch resolve user emails
+    user_ids = list(set(f["user_id"] for f in feedbacks))
+    users_cursor = db.users.find({"_id": {"$in": user_ids}}, {"email": 1, "name": 1})
+    user_map = {str(u["_id"]): u for u in await users_cursor.to_list(length=len(user_ids))}
+    
+    return [
+        {
+            "id": str(f["_id"]),
+            "type": f.get("type"),
+            "description": f.get("description"),
+            "url": f.get("url"),
+            "created_at": f.get("created_at", "").isoformat() if hasattr(f.get("created_at"), 'isoformat') else f.get("created_at"),
+            "user": {
+                "id": str(f["user_id"]),
+                "email": user_map.get(str(f["user_id"]), {}).get("email", "Unknown"),
+                "name": user_map.get(str(f["user_id"]), {}).get("name", "Unknown"),
+            }
+        }
+        for f in feedbacks
+    ]

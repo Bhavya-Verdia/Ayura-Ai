@@ -7,6 +7,8 @@ Uses Azure OpenAI first and falls back to Google Gemini automatically.
 import asyncio
 import time
 
+from tenacity import retry, stop_after_attempt, wait_exponential
+
 from config import settings
 from core.metrics import metrics_registry
 
@@ -139,6 +141,7 @@ class LLMClient:
 
         yield "Error: No LLM provider available for streaming."
 
+    @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
     async def _generate_azure(
         self,
         prompt: str,
@@ -168,6 +171,7 @@ class LLMClient:
             raise RuntimeError("Azure returned empty response content.")
         return content
 
+    @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
     async def _generate_gemini(
         self,
         prompt: str,

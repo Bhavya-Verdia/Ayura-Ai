@@ -17,8 +17,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017/bodysync")
-DB_NAME = os.getenv("MONGO_DB", "bodysync")
+MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017/ayura")
+DB_NAME = os.getenv("MONGO_DB", "ayura")
 KNOWLEDGE_DIR = Path(__file__).parent.parent / "data" / "knowledge"
 
 

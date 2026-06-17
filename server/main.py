@@ -5,6 +5,7 @@ Ayura AI - FastAPI Application Entry Point
 from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
@@ -21,6 +22,7 @@ from routes import (
     chat,
     community,
     export,
+    feedback,
     notifications,
     plans,
     preferences,
@@ -105,6 +107,9 @@ app.add_middleware(
     allowed_hosts=settings.TRUSTED_HOST_LIST,
 )
 
+# --- Compression ---
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
 app.add_middleware(
     InMemoryRateLimitMiddleware,
     default_limit=settings.RATE_LIMIT_PER_MINUTE,
@@ -163,6 +168,7 @@ app.include_router(notifications.router, prefix="/api/notifications", tags=["Not
 app.include_router(reminders.router, prefix="/api/reminders", tags=["Reminders"])
 app.include_router(privacy.router, prefix="/api/privacy", tags=["Privacy"])
 app.include_router(community.router, prefix="/api/community", tags=["Community"])
+app.include_router(feedback.router, prefix="/api/feedback", tags=["Feedback"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 
 

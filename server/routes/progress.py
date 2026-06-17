@@ -2,7 +2,7 @@
 Ayura AI - Progress Tracking Routes
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 import uuid
@@ -102,9 +102,22 @@ async def get_progress_summary(
         else:
             trend = "stable"
 
-    # Weekly streak
+    # Real consecutive-day streak: walk backwards from today counting unbroken logged days
+    def _calc_streak(logs: list) -> int:
+        logged_dates = set()
+        for log in logs:
+            raw = log.get("date")
+            if isinstance(raw, datetime):
+                logged_dates.add(raw.date())
+        streak = 0
+        check = date.today()
+        while check in logged_dates:
+            streak += 1
+            check -= timedelta(days=1)
+        return streak
+
     streak_data = {
-        "current_streak_days": min(len(logs), 7),
+        "current_streak_days": _calc_streak(logs),
         "total_entries": len(logs),
     }
 

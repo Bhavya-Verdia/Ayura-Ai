@@ -22,17 +22,30 @@ COLLECTIONS = {
 
 
 def init_chromadb():
-    """Initialize ChromaDB persistent client and create collections."""
+    """Initialize ChromaDB client and create collections."""
     global _chroma_client, _available
     try:
-        _chroma_client = chromadb.PersistentClient(
-            path=settings.CHROMA_PERSIST_DIRECTORY,
-            settings=ChromaSettings(
-                anonymized_telemetry=False,
-                chroma_product_telemetry_impl="database.chroma_telemetry.NullTelemetry",
-                chroma_telemetry_impl="database.chroma_telemetry.NullTelemetry",
-            ),
-        )
+        if settings.CHROMA_HOST:
+            logger.info(f"Connecting to ChromaDB Server at {settings.CHROMA_HOST}:{settings.CHROMA_PORT}")
+            _chroma_client = chromadb.HttpClient(
+                host=settings.CHROMA_HOST,
+                port=settings.CHROMA_PORT,
+                settings=ChromaSettings(
+                    anonymized_telemetry=False,
+                    chroma_product_telemetry_impl="database.chroma_telemetry.NullTelemetry",
+                    chroma_telemetry_impl="database.chroma_telemetry.NullTelemetry",
+                ),
+            )
+        else:
+            logger.info(f"Connecting to embedded ChromaDB at {settings.CHROMA_PERSIST_DIRECTORY}")
+            _chroma_client = chromadb.PersistentClient(
+                path=settings.CHROMA_PERSIST_DIRECTORY,
+                settings=ChromaSettings(
+                    anonymized_telemetry=False,
+                    chroma_product_telemetry_impl="database.chroma_telemetry.NullTelemetry",
+                    chroma_telemetry_impl="database.chroma_telemetry.NullTelemetry",
+                ),
+            )
 
         # Ensure all collections exist
         for name in COLLECTIONS.values():
