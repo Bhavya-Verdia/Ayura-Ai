@@ -1,3 +1,10 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
+MAX_KB_DOCS = 5000
+
+
 class KnowledgeBaseCache:
     def __init__(self):
         self.gym_exercises: list[dict] = []
@@ -10,21 +17,21 @@ class KnowledgeBaseCache:
         self.loaded: bool = False
 
     async def load(self, db):
-        self.gym_exercises = await db.kb_gym_exercises.find({}, {"_id": 0}).to_list(None)
-        self.yoga_poses = await db.kb_yoga_poses.find({}, {"_id": 0}).to_list(None)
-        self.pranayama = await db.kb_pranayama.find({}, {"_id": 0}).to_list(None)
-        self.diet_foods = await db.kb_diet_foods.find({}, {"_id": 0}).to_list(None)
-        self.panchakarma_protocols = await db.kb_panchakarma_therapies.find({}, {"_id": 0}).to_list(None)
-        self.ayurvedic_remedies = await db.kb_ayurvedic_remedies.find({}, {"_id": 0}).to_list(None)
-        self.ayurvedic_medicines = await db.kb_ayurvedic_medicines.find({}, {"_id": 0}).to_list(None)
+        self.gym_exercises = await db.kb_gym_exercises.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
+        self.yoga_poses = await db.kb_yoga_poses.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
+        self.pranayama = await db.kb_pranayama.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
+        self.diet_foods = await db.kb_diet_foods.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
+        self.panchakarma_protocols = await db.kb_panchakarma_therapies.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
+        self.ayurvedic_remedies = await db.kb_ayurvedic_remedies.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
+        self.ayurvedic_medicines = await db.kb_ayurvedic_medicines.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
         self.loaded = True
-        print(f"KB Cache loaded:\n"
-              f"  {len(self.gym_exercises)} exercises\n"
-              f"  {len(self.yoga_poses)} poses\n"
-              f"  {len(self.pranayama)} pranayama\n"
-              f"  {len(self.diet_foods)} foods\n"
-              f"  {len(self.panchakarma_protocols)} PK protocols\n"
-              f"  {len(self.ayurvedic_remedies)} remedies\n"
-              f"  {len(self.ayurvedic_medicines)} medicines")
+        logger.info(
+            "KB Cache loaded: %d exercises, %d poses, %d pranayama, %d foods, "
+            "%d PK protocols, %d remedies, %d medicines",
+            len(self.gym_exercises), len(self.yoga_poses), len(self.pranayama),
+            len(self.diet_foods), len(self.panchakarma_protocols),
+            len(self.ayurvedic_remedies), len(self.ayurvedic_medicines),
+        )
+
 
 kb_cache = KnowledgeBaseCache()

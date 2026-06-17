@@ -59,6 +59,9 @@ class UserDocument(BaseModel):
     goal: Optional[str] = None
 
     onboarding_complete: bool = False
+    phone_only: bool = False
+    consent_given: bool = False
+    consent_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 
