@@ -1,4 +1,4 @@
-name: BodySync CI
+name: Ayura AI CI
 
 on:
   push:

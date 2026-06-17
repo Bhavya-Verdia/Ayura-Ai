@@ -1,4 +1,4 @@
-name: BodySync Deploy
+name: Ayura AI Deploy
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  API_IMAGE: ${{ github.repository_owner }}/bodysync-api
-  WEB_IMAGE: ${{ github.repository_owner }}/bodysync-web
+  API_IMAGE: ${{ github.repository_owner }}/ayura-api
+  WEB_IMAGE: ${{ github.repository_owner }}/ayura-web
 
 jobs:
   # ─────────────────────────────────────────────────────────────────
@@ -139,7 +139,7 @@ jobs:
             set -e
 
             # Pull latest compose file
-            cd /opt/bodysync
+            cd /opt/ayura
             git pull origin main
 
             # Authenticate with GHCR
