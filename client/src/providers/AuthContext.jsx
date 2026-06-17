@@ -69,8 +69,8 @@ export function AuthProvider({ children }) {
     await fetchProfile()
   }
 
-  async function loginWithGithub(code, redirectUri = `${window.location.origin}/auth/github/callback`) {
-    const { data } = await authAPI.github({ code, redirect_uri: redirectUri })
+  async function loginWithGithub(code, state, redirectUri = `${window.location.origin}/auth/github/callback`) {
+    const { data } = await authAPI.github({ code, state, redirect_uri: redirectUri })
     setAuthTokens(data.access_token, data.refresh_token)
     await fetchProfile()
   }

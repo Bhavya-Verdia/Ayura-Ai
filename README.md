@@ -60,8 +60,8 @@ npm run dev
 
 ### 4. Seed data & build vectors
 ```bash
-cd server/scripts
-python build_vectors.py            # Load JSON knowledge base → ChromaDB
+cd server
+python scripts/build_vectors.py    # Load JSON knowledge base → ChromaDB
 ```
 
 ## 📁 Project Structure

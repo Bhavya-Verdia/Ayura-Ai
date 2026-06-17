@@ -82,6 +82,7 @@ export const authAPI = {
   register:           (data)  => API.post('/auth/register', data),
   login:              (data)  => API.post('/auth/login', data),
   getGoogleUrl:       ()      => API.get('/auth/google/url'),
+  getGithubUrl:       ()      => API.get('/auth/github/url'),
   google:             (data)  => API.post('/auth/google', data),
   github:             (data)  => API.post('/auth/github', data),
   sendOtp:            (data)  => API.post('/auth/send-otp', data),

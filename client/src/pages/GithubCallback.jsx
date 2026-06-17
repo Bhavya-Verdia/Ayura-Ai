@@ -14,14 +14,6 @@ function GithubCallback() {
       const searchParams = new URLSearchParams(location.search);
       const code = searchParams.get('code');
       const state = searchParams.get('state');
-      const savedState = sessionStorage.getItem('oauth_state');
-
-      if (state !== savedState) {
-        setError("Invalid state parameter. Possible CSRF attack.");
-        setTimeout(() => navigate('/login'), 3000);
-        return;
-      }
-      sessionStorage.removeItem('oauth_state');
 
       if (!code) {
         setError("No authorization code found in URL.");
@@ -30,7 +22,7 @@ function GithubCallback() {
       }
 
       try {
-        await loginWithGithub(code);
+        await loginWithGithub(code, state);
         navigate('/dashboard');
       } catch (err) {
         console.error("GitHub Auth Error:", err);

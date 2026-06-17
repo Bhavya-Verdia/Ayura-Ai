@@ -45,7 +45,7 @@ export default function Settings() {
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
-  const isLocal = profile?.auth_provider !== 'google'
+  const isLocal = profile?.auth_provider === 'local'
 
   function handleChange(e) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
