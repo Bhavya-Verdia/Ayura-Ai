@@ -54,8 +54,8 @@ async def lifespan(app: FastAPI):
             dsn=settings.SENTRY_DSN,
             integrations=[StarletteIntegration(), FastApiIntegration()],
             environment=settings.APP_ENV,
-            traces_sample_rate=1.0,
-            profiles_sample_rate=1.0,
+            traces_sample_rate=settings.SENTRY_TRACES_SAMPLE_RATE,
+            profiles_sample_rate=settings.SENTRY_PROFILES_SAMPLE_RATE,
         )
         logger.info("Sentry initialized for error tracking.")
 

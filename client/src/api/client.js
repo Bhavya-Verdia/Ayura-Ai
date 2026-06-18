@@ -116,7 +116,7 @@ export const plansAPI = {
   generate:           (mode = 'agentic') => API.post('/plans/generate', { mode }),
   adapt:              (feedback, previousPlanId = null, mode = 'agentic') => API.post('/plans/generate', { mode, feedback, previous_plan_id: previousPlanId }),
   getLatest:          ()      => API.get('/plans/latest'),
-  getHistory:         (offset = 0, limit = 20) => API.get('/plans/history', { params: { offset, limit } }),
+  getHistory:         (limit = 20, beforeId = null) => API.get('/plans/history', { params: { limit, ...(beforeId ? { before_id: beforeId } : {}) } }),
   rate:               (planId, data) => API.post(`/plans/${planId}/rating`, data),
   getSeasonal:        ()      => API.get('/plans/seasonal'),
   generateMeditation: (params) => API.get('/plans/meditation', { params }),

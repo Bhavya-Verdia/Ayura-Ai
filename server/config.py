@@ -168,6 +168,8 @@ class Settings(BaseSettings):
 
     # --- Sentry Error Tracking ---
     SENTRY_DSN: Optional[str] = None
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.1   # 1.0 is prohibitively expensive in production
+    SENTRY_PROFILES_SAMPLE_RATE: float = 0.1
 
     # --- Uploads (S3 / R2 / Spaces) ---
     UPLOADS_DIR: str = str(BASE_DIR / "uploads") # Fallback for local dev
@@ -206,12 +208,10 @@ class Settings(BaseSettings):
 
     @property
     def CORS_ORIGINS(self) -> list[str]:
-        """Allowed frontend origins for local/dev and configurable deployments."""
-        origins = {
-            self.FRONTEND_URL,
-            "http://localhost:5173",
-            "http://127.0.0.1:5173",
-        }
+        """Allowed frontend origins. In production, localhost is excluded."""
+        origins: set[str] = {self.FRONTEND_URL}
+        if self.APP_ENV != "production":
+            origins.update({"http://localhost:5173", "http://127.0.0.1:5173"})
         if self.FRONTEND_URLS:
             origins.update(
                 origin.strip() for origin in self.FRONTEND_URLS.split(",") if origin.strip()

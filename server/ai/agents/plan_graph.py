@@ -214,7 +214,7 @@ async def ml_analysis_node(state: PlanState) -> dict:
 # TIER 2: RAG RETRIEVAL NODE
 # ─────────────────────────────────────────
 async def rag_retrieval_node(state: PlanState) -> dict:
-    """Retrieve relevant knowledge from ChromaDB for all plan types."""
+    """Retrieve relevant knowledge from ChromaDB for all plan types (parallel queries)."""
     profile = state["user_profile"]
     ml = state["ml_analysis"]
     dosha = ml.get("dosha", {}).get("dominant_dosha", "pitta")
@@ -227,13 +227,25 @@ async def rag_retrieval_node(state: PlanState) -> dict:
     query_base = f"{dosha} dosha {bmi_cat} {goal}"
     symptom_query = " ".join(symptoms[:4]) if symptoms else ""
 
+    async def _empty(): return []
+
+    # Run all ChromaDB queries concurrently instead of sequentially (~6× faster)
+    fitness_q, yoga_q, nutrition_q, panchakarma_q, remedies_q, medicines_q = await asyncio.gather(
+        rag_pipeline.query(f"{query_base} gym workout exercise", "fitness", dosha_filter=dosha),
+        rag_pipeline.query(f"{query_base} yoga asana pranayama", "ayurveda", dosha_filter=dosha),
+        rag_pipeline.query(f"{query_base} diet meal plan food", "nutrition", dosha_filter=dosha),
+        rag_pipeline.query(f"{dosha} panchakarma detox", "panchakarma", dosha_filter=dosha),
+        rag_pipeline.query(f"{symptom_query} remedy {dosha}", "remedy") if symptom_query else _empty(),
+        rag_pipeline.query(f"{symptom_query} medicine churna {dosha}", "ayurveda") if symptom_query else _empty(),
+    )
+
     rag_context = {
-        "fitness": chunk_text(await rag_pipeline.query(f"{query_base} gym workout exercise", "fitness", dosha_filter=dosha)),
-        "yoga": chunk_text(await rag_pipeline.query(f"{query_base} yoga asana pranayama", "ayurveda", dosha_filter=dosha)),
-        "nutrition": chunk_text(await rag_pipeline.query(f"{query_base} diet meal plan food", "nutrition", dosha_filter=dosha)),
-        "panchakarma": chunk_text(await rag_pipeline.query(f"{dosha} panchakarma detox", "panchakarma", dosha_filter=dosha)),
-        "remedies": chunk_text(await rag_pipeline.query(f"{symptom_query} remedy {dosha}", "remedy")) if symptom_query else "",
-        "medicines": chunk_text(await rag_pipeline.query(f"{symptom_query} medicine churna {dosha}", "ayurveda")) if symptom_query else "",
+        "fitness": chunk_text(fitness_q),
+        "yoga": chunk_text(yoga_q),
+        "nutrition": chunk_text(nutrition_q),
+        "panchakarma": chunk_text(panchakarma_q),
+        "remedies": chunk_text(remedies_q) if symptom_query else "",
+        "medicines": chunk_text(medicines_q) if symptom_query else "",
     }
 
     return {"rag_context": rag_context}

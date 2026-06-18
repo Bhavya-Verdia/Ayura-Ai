@@ -5,8 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { AuthContext } from '../providers/AuthContext'
 import { useTheme } from '../providers/ThemeProvider'
-import { plansAPI, preferencesAPI } from '../api/client'
-import API from '../api/client'
+import API, { plansAPI, preferencesAPI, progressAPI } from '../api/client'
 import PlanViewer from '../components/PlanViewer'
 import DoshaArcRings from '../components/DoshaArcRings'
 import PreferencesModal from '../components/PreferencesModal'
@@ -23,6 +22,92 @@ const PLAN_TYPES = [
 ]
 
 const DOSHA_COLOR = { vata: '#818CF8', pitta: '#fb923c', kapha: '#34d399' }
+
+function formatRelativeTime(dateStr) {
+  if (!dateStr) return null
+  const diffMs = Date.now() - new Date(dateStr).getTime()
+  const mins  = Math.floor(diffMs / 60000)
+  const hours = Math.floor(mins  / 60)
+  const days  = Math.floor(hours / 24)
+  if (mins  <  1) return 'just now'
+  if (mins  < 60) return `${mins}m ago`
+  if (hours < 24) return `${hours}h ago`
+  if (days  ===1) return 'yesterday'
+  return `${days}d ago`
+}
+
+function extractPreview(planData, maxLen = 110) {
+  if (!planData) return null
+  const raw = typeof planData === 'string' ? planData : JSON.stringify(planData)
+  const stripped = raw
+    .replace(/#{1,6}\s+/g, '').replace(/\*{1,2}/g, '').replace(/`/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\n+/g, ' ').trim()
+  return stripped.length > maxLen ? stripped.slice(0, maxLen).trimEnd() + '…' : stripped
+}
+
+function StreakCard() {
+  const { data: progress } = useQuery({
+    queryKey: ['progress-summary'],
+    queryFn: () => progressAPI.getSummary().then(r => r.data),
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  })
+
+  const streak = progress?.current_streak ?? progress?.streak ?? 0
+  const checkedInToday = progress?.checked_in_today ?? false
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() - (6 - i))
+    const dateStr = d.toISOString().split('T')[0]
+    const isActive = !!(progress?.recent_dates?.includes(dateStr) || progress?.active_dates?.includes(dateStr))
+    return {
+      label: ['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()],
+      isActive,
+      isToday: i === 6,
+    }
+  })
+
+  const message =
+    streak >= 14 ? 'Incredible streak — keep going!' :
+    streak >= 7  ? 'One full week! Phenomenal.' :
+    streak >= 3  ? 'Great consistency!' :
+    streak >= 1  ? 'Good start — keep it up!' :
+    'Start your streak — check in today!'
+
+  return (
+    <motion.div
+      className="dash-streak-card"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.1 }}
+    >
+      <div className="dash-streak-left">
+        <div className="dash-streak-flame">🔥</div>
+        <div>
+          <div className="dash-streak-count">
+            <span className="dash-streak-num">{streak}</span>
+            <span className="dash-streak-unit">day{streak !== 1 ? 's' : ''}</span>
+          </div>
+          <p className="dash-streak-sub">{message}</p>
+        </div>
+      </div>
+      <div className="dash-streak-right">
+        <div className="dash-streak-dots">
+          {days.map((day, i) => (
+            <div key={i} className="dash-streak-day">
+              <div className={`dash-streak-dot${day.isActive ? ' active' : ''}${day.isToday ? ' today' : ''}`} />
+              <span className="dash-streak-day-lbl">{day.label}</span>
+            </div>
+          ))}
+        </div>
+        <Link to="/checkin" className="dash-streak-cta">
+          {checkedInToday ? '✓ Done for today' : '↗ Check in now'}
+        </Link>
+      </div>
+    </motion.div>
+  )
+}
 
 // Stagger animation variants for plan cards grid
 const gridContainer = {
@@ -120,11 +205,12 @@ const Dashboard = () => {
   const { data: plans = {} } = useQuery({
     queryKey: ['plans-history'],
     queryFn: async () => {
-      const res = await plansAPI.getHistory(0, 50)
+      const res = await plansAPI.getHistory(50)
+      const entries = res.data?.items ?? res.data ?? []
       const latest = {}
-      for (const entry of res.data) {
+      for (const entry of entries) {
         const t = entry.plan_type
-        if (!latest[t] && t !== 'holistic') latest[t] = entry.plan_data
+        if (!latest[t] && t !== 'holistic') latest[t] = { data: entry.plan_data, created_at: entry.created_at }
       }
       return latest
     }
@@ -153,7 +239,7 @@ const Dashboard = () => {
       const isFirstPlan = Object.keys(plans).length === 0
       queryClient.setQueryData(['plans-history'], old => ({
         ...old,
-        [result.typeId]: result.data
+        [result.typeId]: { data: result.data, created_at: new Date().toISOString() }
       }))
       toast.success(`${result.typeId.charAt(0).toUpperCase() + result.typeId.slice(1)} plan ready! ✦`, { id: `gen-${result.typeId}` })
       // 🎉 Confetti on first plan generation
@@ -263,6 +349,9 @@ const Dashboard = () => {
 
 
 
+      {/* ── Streak Card ── */}
+      <StreakCard />
+
       {/* ── Plans section ── */}
       <div className="dash-plans-header">
         <h2 className="dash-plans-title">Your Wellness Plans</h2>
@@ -289,12 +378,19 @@ const Dashboard = () => {
             </div>
 
             <h3 className="dash-plan-name">{type.title}</h3>
-            <p className="dash-plan-desc">{type.desc}</p>
+            {plans[type.id] ? (
+              <p className="dash-plan-preview">{extractPreview(plans[type.id].data) || type.desc}</p>
+            ) : (
+              <p className="dash-plan-desc">{type.desc}</p>
+            )}
+            {plans[type.id]?.created_at && (
+              <span className="dash-plan-timestamp">↻ Updated {formatRelativeTime(plans[type.id].created_at)}</span>
+            )}
 
             <div className="dash-plan-actions">
               {plans[type.id] ? (
                 <div className="dash-plan-action-row">
-                  <button className="dash-plan-view-btn" onClick={() => { setViewingPlan(plans[type.id]); setViewingType(type.id) }}>
+                  <button className="dash-plan-view-btn" onClick={() => { setViewingPlan(plans[type.id].data); setViewingType(type.id) }}>
                     View Plan →
                   </button>
                   <button

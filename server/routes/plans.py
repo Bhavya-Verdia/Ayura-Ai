@@ -497,14 +497,19 @@ async def _get_rating_preferences(db: AsyncIOMotorDatabase, user_id: str) -> dic
 
 
 async def _fetch_other_plans(db: AsyncIOMotorDatabase, user_id: str, current_type: str) -> dict:
-    context = {}
-    types = ["gym", "yoga", "diet", "panchakarma", "remedies", "medicines"]
-    for t in types:
-        if t != current_type:
-            cursor = db.plan_history.find({"user_id": user_id, "plan_type": t}).sort("generated_at", -1).limit(1)
-            plans = await cursor.to_list(length=1)
-            if plans:
-                context[f"{t}_plan"] = plans[0].get("plan_data", {})
+    """Fetch the most recent plan of each type for cross-agent context.
+
+    Uses a single aggregation (one round-trip) instead of N sequential queries.
+    """
+    other_types = [t for t in ["gym", "yoga", "diet", "panchakarma", "remedies", "medicines"] if t != current_type]
+    pipeline = [
+        {"$match": {"user_id": user_id, "plan_type": {"$in": other_types}}},
+        {"$sort": {"generated_at": -1}},
+        {"$group": {"_id": "$plan_type", "plan_data": {"$first": "$plan_data"}}},
+    ]
+    context: dict = {}
+    async for doc in db.plan_history.aggregate(pipeline):
+        context[f"{doc['_id']}_plan"] = doc.get("plan_data", {})
     return context
 
 
@@ -918,13 +923,21 @@ async def get_latest_plan(user: UserDocument = Depends(get_current_user), db: As
 async def get_plan_history(
     user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb),
-    offset: int = 0,
+    before_id: str | None = None,
     limit: int = 20,
 ):
-    limit = min(limit, 100)  # cap at 100
-    cursor = db.plan_history.find({"user_id": user.id}).sort("generated_at", -1).skip(offset).limit(limit)
+    """Return plan history newest-first. Pass `before_id` (a plan _id) for cursor pagination
+    instead of skip-based offset, which is O(N) on large collections."""
+    limit = min(limit, 100)
+    query: dict = {"user_id": user.id}
+    if before_id:
+        # Fetch the cursor document's timestamp so we can range-scan the index
+        anchor = await db.plan_history.find_one({"_id": before_id, "user_id": user.id}, {"generated_at": 1})
+        if anchor:
+            query["generated_at"] = {"$lt": anchor["generated_at"]}
+    cursor = db.plan_history.find(query).sort("generated_at", -1).limit(limit)
     plans = await cursor.to_list(length=limit)
-    return [
+    items = [
         {
             "id": p["_id"],
             "plan_type": p.get("plan_type", "holistic"),
@@ -939,6 +952,10 @@ async def get_plan_history(
         }
         for p in plans
     ]
+    return {
+        "items": items,
+        "next_cursor": items[-1]["id"] if len(items) == limit else None,
+    }
 
 
 @router.post("/{plan_id}/rating")

@@ -26,13 +26,18 @@ async def startup(ctx):
         sentry_sdk.init(
             dsn=settings.SENTRY_DSN,
             environment=settings.APP_ENV,
-            traces_sample_rate=1.0,
-            profiles_sample_rate=1.0,
+            traces_sample_rate=settings.SENTRY_TRACES_SAMPLE_RATE,
+            profiles_sample_rate=settings.SENTRY_PROFILES_SAMPLE_RATE,
         )
         logger.info("Sentry initialized for worker.")
 
     # Init Motor (MongoDB)
     await init_mongodb()
+
+    # Load kb_cache so plan jobs can access yoga poses, exercises, etc.
+    from database.mongodb import get_mongodb
+    from core.kb_cache import kb_cache
+    await kb_cache.load(get_mongodb())
 
     # Init ChromaDB
     init_chromadb()
