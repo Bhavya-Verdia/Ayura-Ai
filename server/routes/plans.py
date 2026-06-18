@@ -101,16 +101,72 @@ async def _release_plan_lock(user_id: str, plan_type: str) -> None:
         pass
 
 
-# ─── ARQ Connection Pool ──────────────────────────────────────────────────────
+# ─── ARQ Connection Pool (double-checked locking to prevent race on startup) ──
 
 _arq_pool = None
+_arq_pool_lock: asyncio.Lock | None = None
+
+
+def _get_arq_lock() -> asyncio.Lock:
+    global _arq_pool_lock
+    if _arq_pool_lock is None:
+        _arq_pool_lock = asyncio.Lock()
+    return _arq_pool_lock
+
 
 async def get_arq_pool():
     """Get or create the ARQ Redis connection pool for background jobs."""
     global _arq_pool
-    if _arq_pool is None:
-        _arq_pool = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL or "redis://localhost:6379"))
+    if _arq_pool is not None:
+        return _arq_pool
+    async with _get_arq_lock():
+        if _arq_pool is None:
+            _arq_pool = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL or "redis://localhost:6379"))
     return _arq_pool
+
+
+# ─── LLM Concurrency Guard ────────────────────────────────────────────────────
+#
+# Individual plan routes call LLM enrichers directly (not via ARQ).
+# Without a cap, 50+ simultaneous requests would spawn 50+ concurrent HTTP
+# calls to Azure OpenAI — exhausting the per-minute rate limit and causing
+# cascading 429 failures for every user.
+#
+# 12 concurrent calls per worker × 4 workers = 48 total ≈ safe headroom
+# under Azure OpenAI standard tier (50 RPM).
+
+_LLM_SEMAPHORE: asyncio.Semaphore | None = None
+
+
+def _get_llm_semaphore() -> asyncio.Semaphore:
+    global _LLM_SEMAPHORE
+    if _LLM_SEMAPHORE is None:
+        _LLM_SEMAPHORE = asyncio.Semaphore(12)
+    return _LLM_SEMAPHORE
+
+
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def _plan_guard(user_id: str, plan_type: str):
+    """Per-user lock + global LLM semaphore for individual (non-ARQ) plan routes.
+
+    Prevents:
+    - A user double-clicking "Generate" from firing two simultaneous LLM calls
+    - The LLM semaphore ensures at most 12 concurrent enrichments per worker
+    """
+    acquired = await _acquire_plan_lock(user_id, plan_type)
+    if not acquired:
+        raise HTTPException(
+            status_code=409,
+            detail=f"A {plan_type} plan is already being generated for your account. Please wait.",
+        )
+    try:
+        async with _get_llm_semaphore():
+            yield
+    finally:
+        await _release_plan_lock(user_id, plan_type)
 
 # ─── Feature Preferences Loader ──────────────────────────────────────────────
 
@@ -539,33 +595,34 @@ async def generate_yoga_plan(
     if cached_plan:
         return cached_plan
         
-    # 2. Generate new plan
-    if is_prenatal:
-        yoga_poses = [p for p in kb_cache.yoga_poses if p.get("pregnancy_safe") == True]
-    else:
-        yoga_poses = kb_cache.yoga_poses
-    pranayama_list = kb_cache.pranayama
-    raw_plan = engine_generate(user_profile, yoga_prefs, yoga_poses, pranayama_list)
-    enriched_plan = await enrich_yoga_plan(raw_plan, user_profile, yoga_prefs)
-    
-    plan_id = enriched_plan.get("plan_id")
-    model_used = enriched_plan.get("enrichment_model", "services.yoga_plan_engine")
-    
-    history = PlanHistoryDocument(
-        _id=plan_id,
-        user_id=user.id,
-        plan_type="yoga",
-        generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
-        model_used=model_used,
-        preference_hash=pref_hash,
-        plan_data={
-            "yoga_plan": enriched_plan,
-            "generated_at": datetime.now(timezone.utc).isoformat()
-        },
-        generated_at=datetime.now(timezone.utc)
-    )
-    await db.plan_history.insert_one(history.model_dump(by_alias=True))
-    
+    # 2. Generate new plan (per-user lock + global LLM semaphore)
+    async with _plan_guard(user.id, "yoga"):
+        if is_prenatal:
+            yoga_poses = [p for p in kb_cache.yoga_poses if p.get("pregnancy_safe") == True]
+        else:
+            yoga_poses = kb_cache.yoga_poses
+        pranayama_list = kb_cache.pranayama
+        raw_plan = engine_generate(user_profile, yoga_prefs, yoga_poses, pranayama_list)
+        enriched_plan = await enrich_yoga_plan(raw_plan, user_profile, yoga_prefs)
+
+        plan_id = enriched_plan.get("plan_id")
+        model_used = enriched_plan.get("enrichment_model", "services.yoga_plan_engine")
+
+        history = PlanHistoryDocument(
+            _id=plan_id,
+            user_id=user.id,
+            plan_type="yoga",
+            generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
+            model_used=model_used,
+            preference_hash=pref_hash,
+            plan_data={
+                "yoga_plan": enriched_plan,
+                "generated_at": datetime.now(timezone.utc).isoformat()
+            },
+            generated_at=datetime.now(timezone.utc)
+        )
+        await db.plan_history.insert_one(history.model_dump(by_alias=True))
+
     return enriched_plan
 
 
@@ -592,29 +649,30 @@ async def generate_diet_plan(
     if cached_plan:
         return cached_plan
         
-    # 2. Generate new plan
-    diet_foods = kb_cache.diet_foods
-    raw_plan = engine_generate(user_profile, diet_prefs, diet_foods)
-    enriched_plan = await enrich_diet_plan(raw_plan, user_profile, diet_prefs)
-    
-    plan_id = enriched_plan.get("plan_id")
-    model_used = enriched_plan.get("enrichment_model", "services.diet_plan_engine")
-    
-    history = PlanHistoryDocument(
-        _id=plan_id,
-        user_id=user.id,
-        plan_type="diet",
-        generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
-        model_used=model_used,
-        preference_hash=pref_hash,
-        plan_data={
-            "diet_plan": enriched_plan,
-            "generated_at": datetime.now(timezone.utc).isoformat()
-        },
-        generated_at=datetime.now(timezone.utc)
-    )
-    await db.plan_history.insert_one(history.model_dump(by_alias=True))
-    
+    # 2. Generate new plan (per-user lock + global LLM semaphore)
+    async with _plan_guard(user.id, "diet"):
+        diet_foods = kb_cache.diet_foods
+        raw_plan = engine_generate(user_profile, diet_prefs, diet_foods)
+        enriched_plan = await enrich_diet_plan(raw_plan, user_profile, diet_prefs)
+
+        plan_id = enriched_plan.get("plan_id")
+        model_used = enriched_plan.get("enrichment_model", "services.diet_plan_engine")
+
+        history = PlanHistoryDocument(
+            _id=plan_id,
+            user_id=user.id,
+            plan_type="diet",
+            generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
+            model_used=model_used,
+            preference_hash=pref_hash,
+            plan_data={
+                "diet_plan": enriched_plan,
+                "generated_at": datetime.now(timezone.utc).isoformat()
+            },
+            generated_at=datetime.now(timezone.utc)
+        )
+        await db.plan_history.insert_one(history.model_dump(by_alias=True))
+
     return enriched_plan
 
 
@@ -641,29 +699,29 @@ async def generate_routine_plan(
     if cached_plan:
         return cached_plan
         
-    # 2. Generate new plan
-    diet_foods = kb_cache.diet_foods
-    
-    # Sync generation
-    raw_plan = engine_generate(user_profile, prefs_to_pass, diet_foods)
-    
-    plan_id = raw_plan.get("plan_id")
-    
-    history = PlanHistoryDocument(
-        _id=plan_id,
-        user_id=user.id,
-        plan_type="routine",
-        generation_method="rule_based",
-        model_used="services.routine_engine",
-        preference_hash=pref_hash,
-        plan_data={
-            "routine_plan": raw_plan,
-            "generated_at": datetime.now(timezone.utc).isoformat()
-        },
-        generated_at=datetime.now(timezone.utc)
-    )
-    await db.plan_history.insert_one(history.model_dump(by_alias=True))
-    
+    # 2. Generate new plan (per-user lock; routine is rule-based so no LLM semaphore needed,
+    #    but the lock still prevents duplicate saves on double-click)
+    async with _plan_guard(user.id, "routine"):
+        diet_foods = kb_cache.diet_foods
+        raw_plan = engine_generate(user_profile, prefs_to_pass, diet_foods)
+
+        plan_id = raw_plan.get("plan_id")
+
+        history = PlanHistoryDocument(
+            _id=plan_id,
+            user_id=user.id,
+            plan_type="routine",
+            generation_method="rule_based",
+            model_used="services.routine_engine",
+            preference_hash=pref_hash,
+            plan_data={
+                "routine_plan": raw_plan,
+                "generated_at": datetime.now(timezone.utc).isoformat()
+            },
+            generated_at=datetime.now(timezone.utc)
+        )
+        await db.plan_history.insert_one(history.model_dump(by_alias=True))
+
     return raw_plan
 
 @router.post("/gym")
@@ -690,32 +748,33 @@ async def generate_gym_plan(
     if cached_plan:
         return cached_plan
         
-    # 2. Generate new plan
-    if is_prenatal:
-        gym_exercises = [e for e in kb_cache.gym_exercises if e.get("pregnancy_safe") == True]
-    else:
-        gym_exercises = kb_cache.gym_exercises
-    raw_plan = engine_generate(user_profile, gym_prefs, gym_exercises)
-    enriched_plan = await enrich_gym_plan(raw_plan, user_profile, gym_prefs)
-    
-    plan_id = enriched_plan.get("plan_id")
-    model_used = enriched_plan.get("enrichment_model", "services.gym_plan_engine")
-    
-    history = PlanHistoryDocument(
-        _id=plan_id,
-        user_id=user.id,
-        plan_type="gym",
-        generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
-        model_used=model_used,
-        preference_hash=pref_hash,
-        plan_data={
-            "gym_plan": enriched_plan,
-            "generated_at": datetime.now(timezone.utc).isoformat()
-        },
-        generated_at=datetime.now(timezone.utc)
-    )
-    await db.plan_history.insert_one(history.model_dump(by_alias=True))
-    
+    # 2. Generate new plan (per-user lock + global LLM semaphore)
+    async with _plan_guard(user.id, "gym"):
+        if is_prenatal:
+            gym_exercises = [e for e in kb_cache.gym_exercises if e.get("pregnancy_safe") == True]
+        else:
+            gym_exercises = kb_cache.gym_exercises
+        raw_plan = engine_generate(user_profile, gym_prefs, gym_exercises)
+        enriched_plan = await enrich_gym_plan(raw_plan, user_profile, gym_prefs)
+
+        plan_id = enriched_plan.get("plan_id")
+        model_used = enriched_plan.get("enrichment_model", "services.gym_plan_engine")
+
+        history = PlanHistoryDocument(
+            _id=plan_id,
+            user_id=user.id,
+            plan_type="gym",
+            generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
+            model_used=model_used,
+            preference_hash=pref_hash,
+            plan_data={
+                "gym_plan": enriched_plan,
+                "generated_at": datetime.now(timezone.utc).isoformat()
+            },
+            generated_at=datetime.now(timezone.utc)
+        )
+        await db.plan_history.insert_one(history.model_dump(by_alias=True))
+
     return enriched_plan
 
 
@@ -743,32 +802,33 @@ async def generate_panchakarma_plan(
     if cached_plan:
         return cached_plan
         
-    # 2. Generate new plan
-    if is_prenatal:
-        panchakarma_therapies = [t for t in kb_cache.panchakarma_protocols if t.get("pregnancy_safe") == True]
-    else:
-        panchakarma_therapies = kb_cache.panchakarma_protocols
-    raw_plan = engine_generate(user_profile, panchakarma_prefs, panchakarma_therapies)
-    enriched_plan = await enrich_panchakarma_plan(raw_plan, user_profile, panchakarma_prefs)
-    
-    plan_id = enriched_plan.get("plan_id")
-    model_used = enriched_plan.get("enrichment_model", "services.panchakarma_engine")
-    
-    history = PlanHistoryDocument(
-        _id=plan_id,
-        user_id=user.id,
-        plan_type="panchakarma",
-        generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
-        model_used=model_used,
-        preference_hash=pref_hash,
-        plan_data={
-            "panchakarma_plan": enriched_plan,
-            "generated_at": datetime.now(timezone.utc).isoformat()
-        },
-        generated_at=datetime.now(timezone.utc)
-    )
-    await db.plan_history.insert_one(history.model_dump(by_alias=True))
-    
+    # 2. Generate new plan (per-user lock + global LLM semaphore)
+    async with _plan_guard(user.id, "panchakarma"):
+        if is_prenatal:
+            panchakarma_therapies = [t for t in kb_cache.panchakarma_protocols if t.get("pregnancy_safe") == True]
+        else:
+            panchakarma_therapies = kb_cache.panchakarma_protocols
+        raw_plan = engine_generate(user_profile, panchakarma_prefs, panchakarma_therapies)
+        enriched_plan = await enrich_panchakarma_plan(raw_plan, user_profile, panchakarma_prefs)
+
+        plan_id = enriched_plan.get("plan_id")
+        model_used = enriched_plan.get("enrichment_model", "services.panchakarma_engine")
+
+        history = PlanHistoryDocument(
+            _id=plan_id,
+            user_id=user.id,
+            plan_type="panchakarma",
+            generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
+            model_used=model_used,
+            preference_hash=pref_hash,
+            plan_data={
+                "panchakarma_plan": enriched_plan,
+                "generated_at": datetime.now(timezone.utc).isoformat()
+            },
+            generated_at=datetime.now(timezone.utc)
+        )
+        await db.plan_history.insert_one(history.model_dump(by_alias=True))
+
     return enriched_plan
 
 
@@ -782,43 +842,45 @@ async def generate_remedies_plan(
     from services.remedy_enricher import enrich_remedies_plan
     
     user_profile = user.model_dump()
-    
+
     if "symptoms" not in req:
         raise HTTPException(status_code=422, detail="Request body must contain 'symptoms' list")
-        
-    # 1. Engine Filter
-    filtered_remedies = filter_remedies(user_profile, req)
-    
-    # 2. Engine Build
-    raw_plan = build_remedy_plan(filtered_remedies, user_profile, req)
-    
-    # 3. LLM Enrichment
-    enriched_plan = await enrich_remedies_plan(raw_plan, user_profile)
-    
-    plan_id = enriched_plan.get("plan_id")
-    model_used = enriched_plan.get("enrichment_model", "rule_based")
-    
-    history = PlanHistoryDocument(
-        _id=plan_id,
-        user_id=user.id,
-        plan_type="remedies",
-        generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
-        model_used=model_used,
-        preference_hash=None,
-        plan_data=enriched_plan,
-        generated_at=datetime.now(timezone.utc)
-    )
-    await db.plan_history.insert_one(history.model_dump(by_alias=True))
-    
-    await log_plan_generated(
-        db=db,
-        user_id=user.id,
-        plan_id=plan_id,
-        plan_type="remedies",
-        model_used=model_used,
-        is_adaptation=False,
-    )
-    
+
+    # Remedies don't have a preference_hash cache, but still need lock + semaphore
+    async with _plan_guard(user.id, "remedies"):
+        # 1. Engine Filter
+        filtered_remedies = filter_remedies(user_profile, req)
+
+        # 2. Engine Build
+        raw_plan = build_remedy_plan(filtered_remedies, user_profile, req)
+
+        # 3. LLM Enrichment
+        enriched_plan = await enrich_remedies_plan(raw_plan, user_profile)
+
+        plan_id = enriched_plan.get("plan_id")
+        model_used = enriched_plan.get("enrichment_model", "rule_based")
+
+        history = PlanHistoryDocument(
+            _id=plan_id,
+            user_id=user.id,
+            plan_type="remedies",
+            generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
+            model_used=model_used,
+            preference_hash=None,
+            plan_data=enriched_plan,
+            generated_at=datetime.now(timezone.utc)
+        )
+        await db.plan_history.insert_one(history.model_dump(by_alias=True))
+
+        await log_plan_generated(
+            db=db,
+            user_id=user.id,
+            plan_id=plan_id,
+            plan_type="remedies",
+            model_used=model_used,
+            is_adaptation=False,
+        )
+
     return enriched_plan
 
 
@@ -846,32 +908,33 @@ async def generate_medicines_plan(
     if cached_plan:
         return cached_plan
         
-    # 2. Generate new plan
-    if is_prenatal:
-        ayurvedic_remedies = [r for r in kb_cache.ayurvedic_remedies if r.get("pregnancy_safe") == True]
-    else:
-        ayurvedic_remedies = kb_cache.ayurvedic_remedies
-    raw_plan = engine_generate(user_profile, medicines_prefs, ayurvedic_remedies, 'clinical_medicine')
-    enriched_plan = await enrich_medicines_plan(raw_plan, user_profile, medicines_prefs)
-    
-    plan_id = enriched_plan.get("plan_id")
-    model_used = enriched_plan.get("enrichment_model", "services.remedy_engine")
-    
-    history = PlanHistoryDocument(
-        _id=plan_id,
-        user_id=user.id,
-        plan_type="medicines",
-        generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
-        model_used=model_used,
-        preference_hash=pref_hash,
-        plan_data={
-            "medicines": enriched_plan,
-            "generated_at": datetime.now(timezone.utc).isoformat()
-        },
-        generated_at=datetime.now(timezone.utc)
-    )
-    await db.plan_history.insert_one(history.model_dump(by_alias=True))
-    
+    # 2. Generate new plan (per-user lock + global LLM semaphore)
+    async with _plan_guard(user.id, "medicines"):
+        if is_prenatal:
+            ayurvedic_remedies = [r for r in kb_cache.ayurvedic_remedies if r.get("pregnancy_safe") == True]
+        else:
+            ayurvedic_remedies = kb_cache.ayurvedic_remedies
+        raw_plan = engine_generate(user_profile, medicines_prefs, ayurvedic_remedies, 'clinical_medicine')
+        enriched_plan = await enrich_medicines_plan(raw_plan, user_profile, medicines_prefs)
+
+        plan_id = enriched_plan.get("plan_id")
+        model_used = enriched_plan.get("enrichment_model", "services.remedy_engine")
+
+        history = PlanHistoryDocument(
+            _id=plan_id,
+            user_id=user.id,
+            plan_type="medicines",
+            generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
+            model_used=model_used,
+            preference_hash=pref_hash,
+            plan_data={
+                "medicines": enriched_plan,
+                "generated_at": datetime.now(timezone.utc).isoformat()
+            },
+            generated_at=datetime.now(timezone.utc)
+        )
+        await db.plan_history.insert_one(history.model_dump(by_alias=True))
+
     return enriched_plan
 
 
@@ -1076,15 +1139,15 @@ async def check_interactions(
             "detailed_explanation": "No known dangerous interactions detected between your medications and these herbs.",
         }
         
-    # TIER 2: RAG Retrieval
-    rag_contexts = []
-    for w in warnings:
-        query = f"{w['herb']} interaction with {w['medication_category']} medication"
-        docs = await rag_pipeline.query(query, "remedy", n_results=1)
-        if docs:
-            rag_contexts.append(docs[0]["content"])
-            
-    context = "\n".join(rag_contexts)
+    # TIER 2: RAG Retrieval (parallel queries — one per warning)
+    rag_results = await asyncio.gather(*[
+        rag_pipeline.query(
+            f"{w['herb']} interaction with {w['medication_category']} medication",
+            "remedy", n_results=1
+        )
+        for w in warnings
+    ])
+    context = "\n".join(docs[0]["content"] for docs in rag_results if docs)
     
     # TIER 3: GenAI Response
     prompt = f"""

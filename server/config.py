@@ -161,6 +161,17 @@ class Settings(BaseSettings):
             return "strict"
         return value
 
+    @field_validator("TRUST_FORWARDED_FOR", mode="before")
+    @classmethod
+    def auto_trust_proxy_headers(cls, value, info):
+        """Auto-enable X-Forwarded-For trust in production (nginx / load-balancer).
+        Without this, rate limiting keys on the nginx container IP and all users
+        share a single bucket — effectively disabling per-user rate limits."""
+        import os
+        if os.environ.get("APP_ENV", "development").strip().lower() == "production":
+            return True
+        return value
+
     # --- Weather API (OpenWeatherMap - optional, free tier) ---
     WEATHER_API_KEY: Optional[str] = None
     DEFAULT_LAT: float = 28.6139  # Default: New Delhi

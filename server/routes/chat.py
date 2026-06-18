@@ -31,7 +31,25 @@ _ws_rate: dict[str, list[float]] = defaultdict(list)
 _WS_LIMIT = 10
 _WS_WINDOW = 60
 
-def _check_ws_rate(user_id: str) -> bool:
+async def _check_ws_rate(user_id: str) -> bool:
+    """Rate-limit WebSocket messages per user.
+
+    Prefers Redis (shared across all gunicorn workers — correct cross-process
+    enforcement). Falls back to per-worker in-memory dict when Redis is absent.
+    Without Redis, each worker tracks its own counter, so the effective limit
+    per user is _WS_LIMIT × worker_count — acceptable as a degraded fallback.
+    """
+    from core.cache import cache_manager
+    try:
+        if cache_manager.redis_client:
+            key = f"ws_rate:{user_id}"
+            count = await cache_manager.redis_client.incr(key)
+            if count == 1:
+                await cache_manager.redis_client.expire(key, _WS_WINDOW)
+            return count <= _WS_LIMIT
+    except Exception:
+        pass
+    # In-memory fallback
     now = time.monotonic()
     _ws_rate[user_id] = [t for t in _ws_rate[user_id] if now - t < _WS_WINDOW]
     if len(_ws_rate[user_id]) >= _WS_LIMIT:
@@ -136,7 +154,7 @@ async def get_chat_sessions(user: UserDocument = Depends(get_current_user)):
 async def get_session_messages(session_id: str, user: UserDocument = Depends(get_current_user)):
     db = get_mongodb()
     if db is None: return []
-    cursor = db.chat_messages.find({"session_id": session_id, "user_id": user.id}, {"_id": 0}).sort("timestamp", 1)
+    cursor = db.chat_messages.find({"session_id": session_id, "user_id": user.id}, {"_id": 0}).sort("timestamp", 1).limit(200)
     messages = []
     async for doc in cursor:
         messages.append({
@@ -175,7 +193,7 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
         while True:
             data = await websocket.receive_text()
 
-            if not _check_ws_rate(user.id):
+            if not await _check_ws_rate(user.id):
                 await websocket.send_json({"type": "error", "message": "Rate limit exceeded. Please wait before sending another message."})
                 continue
 
@@ -204,13 +222,26 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
 
             await websocket.send_json({"type": "status", "message": "Generating..."})
             full_response = ""
-            
-            try:
-                async for chunk in llm_client.generate_stream(prompt=prompt, system_prompt="You are an Ayurvedic AI. Reply in plain text, do NOT use markdown code blocks.", max_tokens=1000):
-                    full_response += chunk
+
+            async def _do_stream() -> str:
+                """Collect LLM stream and forward chunks to WebSocket."""
+                collected = ""
+                async for chunk in llm_client.generate_stream(
+                    prompt=prompt,
+                    system_prompt="You are an Ayurvedic AI. Reply in plain text, do NOT use markdown code blocks.",
+                    max_tokens=1000,
+                ):
+                    collected += chunk
                     await websocket.send_json({"type": "chunk", "content": chunk})
+                return collected
+
+            try:
+                full_response = await asyncio.wait_for(_do_stream(), timeout=90.0)
+            except asyncio.TimeoutError:
+                logger.warning("Chat stream timed out for session %s", session_id)
+                await websocket.send_json({"type": "chunk", "content": "\n(Response timed out — please try again.)"})
             except Exception as e:
-                logger.error(f"Stream error: {e}")
+                logger.error("Stream error: %s", e)
                 await websocket.send_json({"type": "chunk", "content": "\n(Error streaming response)"})
             
             # Post-process for tags
