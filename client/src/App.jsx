@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Toaster } from 'sonner'
 import { useAuth } from './providers/AuthContext'
 import { useTheme } from './providers/ThemeProvider'
@@ -12,6 +12,7 @@ import VitalBackground from './components/VitalBackground'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import MainLayout from './layouts/MainLayout'
 import ReloadPrompt from './components/ReloadPrompt'
+import OfflineBanner from './components/OfflineBanner'
 import './components/Components.css'
 
 const Landing = React.lazy(() => import('./pages/Landing'))
@@ -44,24 +45,29 @@ function FullPageSpinner() {
 }
 
 const pageVariants = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -12 },
+  initial: { opacity: 0, y: 16, filter: 'blur(2px)' },
+  animate: { opacity: 1, y: 0,  filter: 'blur(0px)' },
+  exit:    { opacity: 0, y: -8, filter: 'blur(1px)' },
 }
 
-const pageTransition = {
-  duration: 0.35,
-  ease: [0.16, 1, 0.3, 1],
+const pageVariantsReduced = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit:    { opacity: 0 },
 }
+
+const pageTransition      = { duration: 0.38, ease: [0.16, 1, 0.3, 1] }
+const pageTransitionFast  = { duration: 0.15 }
 
 function PageWrapper({ children }) {
+  const prefersReducedMotion = useReducedMotion()
   return (
     <motion.div
-      variants={pageVariants}
+      variants={prefersReducedMotion ? pageVariantsReduced : pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
-      transition={pageTransition}
+      transition={prefersReducedMotion ? pageTransitionFast : pageTransition}
       style={{ minHeight: '100vh' }}
     >
       <Suspense fallback={<FullPageSpinner />}>
@@ -159,6 +165,7 @@ export default function App() {
       </ErrorBoundary>
     <ScrollToTop />
     <NoiseOverlay />
+    <OfflineBanner />
     <ReloadPrompt />
     <Toaster
         position="top-right"

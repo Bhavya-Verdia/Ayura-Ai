@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { toast } from 'sonner'
 
 // Internal keys for clearing legacy sessionStorage/localStorage entries
 const ACCESS_TOKEN_KEY = 'access_token'
@@ -73,6 +74,16 @@ API.interceptors.response.use(
         return Promise.reject(refreshError)
       }
     }
+
+    // Global error feedback — 5xx server errors and network failures only.
+    // 4xx errors (validation, conflicts, not found) are handled per-component.
+    if (!err.response) {
+      toast.error('Network error — please check your connection.')
+    } else if (err.response.status >= 500) {
+      const detail = err.response.data?.detail || 'Server error. Please try again.'
+      toast.error(detail)
+    }
+
     return Promise.reject(err)
   }
 )

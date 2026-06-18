@@ -66,8 +66,6 @@ async def lifespan(app: FastAPI):
     
     init_chromadb()
     
-    logger.info(f"{settings.APP_NAME} is ready!")
-
     from core.cache import cache_manager
     await cache_manager.connect()
 
@@ -76,6 +74,7 @@ async def lifespan(app: FastAPI):
     # --- Shutdown ---
     logger.info(f"Shutting down {settings.APP_NAME}...")
     await close_mongodb()
+    await cache_manager.disconnect()
     logger.info(f"{settings.APP_NAME} shut down cleanly.")
 
 app = FastAPI(
@@ -135,9 +134,43 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data: https:; "
+            "connect-src 'self' https://accounts.google.com https://api.github.com wss: ws:; "
+            "frame-ancestors 'none'; "
+            "object-src 'none'; "
+            "base-uri 'self';"
+        )
         return response
 
 app.add_middleware(SecurityHeadersMiddleware)
+
+
+class BodySizeLimitMiddleware(BaseHTTPMiddleware):
+    """Reject requests that declare a body larger than max_bytes via Content-Length.
+    Individual routes (avatar upload) enforce their own tighter limits on the
+    actual payload, so 5 MB is intentionally generous here.
+    """
+    MAX_BYTES = 5 * 1024 * 1024  # 5 MB
+
+    async def dispatch(self, request: Request, call_next):
+        content_length = request.headers.get("content-length")
+        if content_length:
+            try:
+                if int(content_length) > self.MAX_BYTES:
+                    return JSONResponse(
+                        status_code=413,
+                        content={"detail": f"Request body too large (max {self.MAX_BYTES // (1024 * 1024)} MB)."},
+                    )
+            except ValueError:
+                pass
+        return await call_next(request)
+
+app.add_middleware(BodySizeLimitMiddleware)
 
 
 # --- Request Logging Middleware ---
@@ -186,13 +219,19 @@ app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 async def health_check():
     from database.mongodb import is_mongodb_available
     from database.chromadb_client import is_chromadb_available
-    return {
-        "status": "healthy",
+    from fastapi.responses import JSONResponse as _JSONResponse
+
+    mongo_ok = is_mongodb_available()
+    chroma_ok = is_chromadb_available()
+    payload = {
+        "status": "healthy" if mongo_ok else "degraded",
         "app": settings.APP_NAME,
         "version": "1.0.0",
-        "mongodb": "connected" if is_mongodb_available() else "unavailable",
-        "chromadb": "connected" if is_chromadb_available() else "unavailable",
+        "mongodb": "connected" if mongo_ok else "unavailable",
+        "chromadb": "connected" if chroma_ok else "unavailable",
     }
+    # Return 503 so load balancers and uptime monitors detect a broken worker
+    return _JSONResponse(status_code=200 if mongo_ok else 503, content=payload)
 
 
 @app.get("/api/weather", tags=["Weather"])

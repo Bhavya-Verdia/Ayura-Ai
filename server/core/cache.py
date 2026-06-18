@@ -73,4 +73,10 @@ class CacheManager:
         except Exception as e:
             logger.error(f"Cache set error: {e}")
 
+    async def disconnect(self):
+        if self.redis_client:
+            await self.redis_client.aclose()
+            self.redis_client = None
+            logger.info("Redis connection closed.")
+
 cache_manager = CacheManager()
