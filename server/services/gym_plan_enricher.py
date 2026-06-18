@@ -85,9 +85,11 @@ async def enrich_gym_plan(raw_plan: dict, user_profile: dict, gym_prefs: dict) -
             json_mode=True
         )
         
-        # Parse JSON
+        # Parse JSON — guard against LLM error response
         enrichment = json.loads(response_text)
-        
+        if "error" in enrichment:
+            raise ValueError(f"LLM provider error: {enrichment['error']}")
+
         # Merge enrichment
         raw_plan["plan_title"] = enrichment.get("plan_title", "Personalized Gym Plan")
         raw_plan["plan_description"] = enrichment.get("plan_description", "")

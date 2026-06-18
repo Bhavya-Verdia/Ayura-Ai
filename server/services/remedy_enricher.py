@@ -58,7 +58,9 @@ Provide an enriched context in EXACTLY this JSON format:
         )
         
         enrichment_data = json.loads(response)
-        
+        if "error" in enrichment_data:
+            raise ValueError(f"LLM provider error: {enrichment_data['error']}")
+
         # Merge enrichment data into the plan
         raw_plan["personalized_intro"] = enrichment_data.get("personalized_intro", "")
         raw_plan["synergy_note"] = enrichment_data.get("synergy_note", "")

@@ -9,6 +9,7 @@ import API, { plansAPI, preferencesAPI, progressAPI } from '../api/client'
 import PlanViewer from '../components/PlanViewer'
 import DoshaArcRings from '../components/DoshaArcRings'
 import PreferencesModal from '../components/PreferencesModal'
+import SectionBoundary from '../components/SectionBoundary'
 import confetti from 'canvas-confetti'
 import './Dashboard.css'
 
@@ -280,7 +281,12 @@ const Dashboard = () => {
             {PLAN_TYPES.find(t => t.id === viewingType)?.icon} {PLAN_TYPES.find(t => t.id === viewingType)?.title}
           </h2>
         </div>
-        <PlanViewer plan={viewingPlan} planType={viewingType} />
+        <SectionBoundary
+          fallbackMessage="This plan couldn't render. The data may be in an unexpected format."
+          onBack={() => { setViewingPlan(null); setViewingType(null) }}
+        >
+          <PlanViewer plan={viewingPlan} planType={viewingType} />
+        </SectionBoundary>
       </div>
     )
   }

@@ -82,9 +82,12 @@ async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict)
             json_mode=True
         )
         
-        # Parse JSON
+        # Parse JSON — guard against the LLM returning {"error": "..."} when
+        # both providers are unavailable (json.loads succeeds but has no schema keys)
         enrichment = json.loads(response_text)
-        
+        if "error" in enrichment:
+            raise ValueError(f"LLM provider error: {enrichment['error']}")
+
         # Merge enrichment
         raw_plan["plan_title"] = enrichment.get("plan_title", "Personalized Yoga Plan")
         raw_plan["plan_description"] = enrichment.get("plan_description", "")

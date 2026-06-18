@@ -244,6 +244,30 @@ async def get_weather(lat: float | None = None, lon: float | None = None):
     return {"available": True, **data}
 
 
+@app.get("/api/ready", tags=["Health Check"])
+async def readiness_check():
+    """Readiness probe — returns 503 until MongoDB is connected AND the
+    KB cache has finished loading.  Use this as the k8s readinessProbe or
+    load-balancer health target so cold workers don't receive traffic while
+    startup is still in progress."""
+    from database.mongodb import is_mongodb_available
+    from core.kb_cache import kb_cache
+    from fastapi.responses import JSONResponse as _JSONResponse
+
+    mongo_ok = is_mongodb_available()
+    kb_ok    = kb_cache.loaded
+    ready    = mongo_ok and kb_ok
+
+    return _JSONResponse(
+        status_code=200 if ready else 503,
+        content={
+            "ready":    ready,
+            "mongodb":  "connected" if mongo_ok else "unavailable",
+            "kb_cache": "loaded"    if kb_ok    else "loading",
+        },
+    )
+
+
 @app.get("/api/health/metrics", tags=["Health Check"], dependencies=[Depends(require_admin_token)])
 async def metrics_check():
     return metrics_registry.snapshot()
