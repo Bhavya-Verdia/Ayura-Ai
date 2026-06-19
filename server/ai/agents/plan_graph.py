@@ -153,6 +153,15 @@ async def ml_analysis_node(state: PlanState) -> dict:
         profile.get("dosha_scores") or {"vata": 33, "pitta": 33, "kapha": 34}
     )
 
+    # Vikriti — current imbalance state (takes priority over Prakriti for plan correction)
+    vikriti_dominant = profile.get("vikriti_dominant") or dosha_result.get("dominant_dosha", "pitta")
+    vikriti_secondary = profile.get("vikriti_secondary")
+    vikriti_scores = profile.get("vikriti_scores") or profile.get("dosha_scores") or {}
+    constitution_type = profile.get("dosha_constitution_type") or dosha_result.get("constitution_type", "")
+    immediate_focus = profile.get("dosha_immediate_focus") or ""
+    key_signals = profile.get("dosha_key_signals") or []
+    checkin_count = profile.get("checkin_count", 0)
+
     # Calorie calculation
     calorie_result = calorie_calculator.calculate(
         gender=profile.get("gender", "female"),
@@ -196,6 +205,15 @@ async def ml_analysis_node(state: PlanState) -> dict:
         "ml_analysis": {
             "bmi": bmi_result,
             "dosha": dosha_result,
+            "vikriti": {
+                "dominant": vikriti_dominant,
+                "secondary": vikriti_secondary,
+                "scores": vikriti_scores,
+                "constitution_type": constitution_type,
+                "immediate_focus": immediate_focus,
+                "key_signals": key_signals,
+                "checkin_count": checkin_count,
+            },
             "calories": calorie_result,
             "health_risks": risk_result,
             "symptom_conditions": symptom_result,
@@ -261,6 +279,11 @@ async def fitness_agent_node(state: PlanState) -> dict:
     rag = state["rag_context"].get("fitness", "")
     constraints = ml.get("medical_constraints", {}).get("gym", {})
     top_exercises = ml.get("exercise_rankings", [])[:5]
+    vikriti = ml.get("vikriti", {})
+    vikriti_dom = vikriti.get("dominant", ml.get("dosha", {}).get("dominant_dosha", "pitta"))
+    vikriti_sec = vikriti.get("secondary")
+    vikriti_focus = vikriti.get("immediate_focus", "")
+    vikriti_signals = vikriti.get("key_signals", [])
 
     prompt = f"""
 Generate a personalised weekly GYM PLAN for this user. Output ONLY valid JSON.
@@ -268,7 +291,11 @@ Generate a personalised weekly GYM PLAN for this user. Output ONLY valid JSON.
 USER PROFILE:
 - Name: {profile.get('name', 'User')}
 - Gender: {profile.get('gender')} | Age: {profile.get('age')} | BMI: {ml.get('bmi', {}).get('bmi')} ({ml.get('bmi', {}).get('category')})
-- Dominant Dosha: {ml.get('dosha', {}).get('dominant_dosha')} | Goal: {profile.get('goal')}
+- Constitutional Dosha (Prakriti): {ml.get('dosha', {}).get('dominant_dosha')} | Goal: {profile.get('goal')}
+- Current Imbalance (Vikriti): {vikriti_dom}{f' + {vikriti_sec}' if vikriti_sec else ''} — THIS is what the plan must correct
+- Constitution Type: {vikriti.get('constitution_type', '')}
+- Immediate Focus: {vikriti_focus}
+- Key Signals: {vikriti_signals[:3]}
 - Fitness Level: {profile.get('fitness_level')} | Activity: {profile.get('activity_level')}
 - Medical History: {profile.get('medical_history', [])}
 - Target Calories: {ml.get('calories', {}).get('target_calories')}
@@ -282,6 +309,8 @@ EXERCISES TO AVOID (Medical Safety):
 
 AYURVEDIC KNOWLEDGE (RAG):
 {rag[:2000] if rag else 'Use dosha-based exercise principles'}
+
+CRITICAL RULE: Design this plan primarily to CORRECT {vikriti_dom} Vikriti imbalance{f' and secondary {vikriti_sec} imbalance' if vikriti_sec else ''}. The Prakriti (constitution) informs the baseline, but Vikriti is what needs active correction now.
 
 OUTPUT JSON FORMAT:
 {{
@@ -327,15 +356,26 @@ async def yoga_agent_node(state: PlanState) -> dict:
     dosha_analysis = ml.get("dosha", {})
     yoga_rag = state["rag_context"].get("yoga", "")
     yoga_constraints = ml.get("medical_constraints", {}).get("yoga", {})
+    vikriti = ml.get("vikriti", {})
+    vikriti_dom = vikriti.get("dominant", dosha_analysis.get("dominant_dosha", "pitta"))
+    vikriti_sec = vikriti.get("secondary")
+    vikriti_focus = vikriti.get("immediate_focus", "")
+    vikriti_signals = vikriti.get("key_signals", [])
 
     prompt = f"""
 Generate a personalised YOGA PLAN. Output ONLY valid JSON.
 
 USER PROFILE:
-- Dosha: {dosha_analysis.get('dominant_dosha')} | Goal: {profile.get('goal')}
+- Constitutional Dosha (Prakriti): {dosha_analysis.get('dominant_dosha')} | Goal: {profile.get('goal')}
+- Current Imbalance (Vikriti): {vikriti_dom}{f' + {vikriti_sec}' if vikriti_sec else ''} — THIS is what the plan must correct
+- Constitution Type: {vikriti.get('constitution_type', '')}
+- Immediate Focus: {vikriti_focus}
+- Key Signals: {vikriti_signals[:3]}
 - Medical History: {profile.get('medical_history', [])}
 YOGA CONTRAINDICATIONS: {yoga_constraints.get('avoid', [])}
 YOGA KNOWLEDGE (RAG): {yoga_rag[:1500] if yoga_rag else 'Use dosha yoga principles'}
+
+CRITICAL RULE: Design this plan primarily to CORRECT {vikriti_dom} Vikriti imbalance{f' and secondary {vikriti_sec} imbalance' if vikriti_sec else ''}. The Prakriti (constitution) informs the baseline, but Vikriti is what needs active correction now.
 
 OUTPUT JSON FORMAT:
 {{
@@ -366,15 +406,26 @@ async def panchakarma_agent_node(state: PlanState) -> dict:
     dosha_analysis = ml.get("dosha", {})
     pk_rag = state["rag_context"].get("panchakarma", "")
     pk_constraints = ml.get("medical_constraints", {}).get("panchakarma", {})
+    vikriti = ml.get("vikriti", {})
+    vikriti_dom = vikriti.get("dominant", dosha_analysis.get("dominant_dosha", "pitta"))
+    vikriti_sec = vikriti.get("secondary")
+    vikriti_focus = vikriti.get("immediate_focus", "")
+    vikriti_signals = vikriti.get("key_signals", [])
 
     prompt = f"""
 Generate a personalised PANCHAKARMA PLAN. Output ONLY valid JSON.
 
 USER PROFILE:
-- Dosha: {dosha_analysis.get('dominant_dosha')}
+- Constitutional Dosha (Prakriti): {dosha_analysis.get('dominant_dosha')}
+- Current Imbalance (Vikriti): {vikriti_dom}{f' + {vikriti_sec}' if vikriti_sec else ''} — THIS is what the plan must correct
+- Constitution Type: {vikriti.get('constitution_type', '')}
+- Immediate Focus: {vikriti_focus}
+- Key Signals: {vikriti_signals[:3]}
 - Medical History: {profile.get('medical_history', [])}
 PANCHAKARMA CONTRAINDICATIONS: {pk_constraints.get('avoid', [])}
 PANCHAKARMA KNOWLEDGE (RAG): {pk_rag[:1000] if pk_rag else 'Use dosha panchakarma principles'}
+
+CRITICAL RULE: Design this plan primarily to CORRECT {vikriti_dom} Vikriti imbalance{f' and secondary {vikriti_sec} imbalance' if vikriti_sec else ''}. The Prakriti (constitution) informs the baseline, but Vikriti is what needs active correction now.
 
 OUTPUT JSON FORMAT:
 {{
@@ -407,6 +458,11 @@ async def nutrition_agent_node(state: PlanState) -> dict:
     rag = state["rag_context"].get("nutrition", "")
     constraints = ml.get("medical_constraints", {}).get("diet", {})
     dosha = ml.get("dosha", {}).get("dominant_dosha", "pitta")
+    vikriti = ml.get("vikriti", {})
+    vikriti_dom = vikriti.get("dominant", dosha)
+    vikriti_sec = vikriti.get("secondary")
+    vikriti_focus = vikriti.get("immediate_focus", "")
+    vikriti_signals = vikriti.get("key_signals", [])
 
     prompt = f"""
 Generate a personalised 7-day DIET PLAN. Output ONLY valid JSON.
@@ -418,8 +474,12 @@ NUTRITIONAL TARGETS:
 - User Rating Preferences: {profile.get('rating_preferences', {})}
 
 AYURVEDIC PROFILE:
-- Dominant Dosha: {dosha} — use {dosha}-balancing foods
-- Six Tastes to FAVOR: {'sweet, bitter, astringent' if dosha == 'pitta' else 'sweet, sour, salty' if dosha == 'vata' else 'pungent, bitter, astringent'}
+- Constitutional Dosha (Prakriti): {dosha}
+- Current Imbalance (Vikriti): {vikriti_dom}{f' + {vikriti_sec}' if vikriti_sec else ''} — THIS is what the diet must correct
+- Constitution Type: {vikriti.get('constitution_type', '')}
+- Immediate Focus: {vikriti_focus}
+- Key Signals: {vikriti_signals[:3]}
+- Six Tastes to FAVOR: {'sweet, bitter, astringent' if vikriti_dom == 'pitta' else 'sweet, sour, salty' if vikriti_dom == 'vata' else 'pungent, bitter, astringent'}
 
 DIETARY RESTRICTIONS (Medical Safety):
 - AVOID: {constraints.get('avoid', [])}
@@ -427,6 +487,8 @@ DIETARY RESTRICTIONS (Medical Safety):
 - MODIFICATIONS: {constraints.get('modifications', [])}
 
 NUTRITION KNOWLEDGE (RAG): {rag[:2000] if rag else 'Use dosha diet principles'}
+
+CRITICAL RULE: Design this diet primarily to CORRECT {vikriti_dom} Vikriti imbalance{f' and secondary {vikriti_sec} imbalance' if vikriti_sec else ''}. The Prakriti (constitution) informs the baseline, but Vikriti is what needs active correction now.
 
 OUTPUT JSON FORMAT:
 {{
@@ -472,6 +534,11 @@ async def remedy_agent_node(state: PlanState) -> dict:
     dosha = ml.get("dosha", {}).get("dominant_dosha", "pitta")
     rag = state["rag_context"].get("remedies", "")
     constraints = ml.get("medical_constraints", {}).get("remedies", {})
+    vikriti = ml.get("vikriti", {})
+    vikriti_dom = vikriti.get("dominant", dosha)
+    vikriti_sec = vikriti.get("secondary")
+    vikriti_focus = vikriti.get("immediate_focus", "")
+    vikriti_signals = vikriti.get("key_signals", [])
 
     if not symptoms:
         return {"home_remedies": []}
@@ -481,7 +548,10 @@ Recommend safe HOME REMEDIES for this user's symptoms. Output ONLY valid JSON.
 
 USER SYMPTOMS: {symptoms}
 AYURVEDIC CONDITIONS DETECTED (ML): {list(ml.get('symptom_conditions', {}).keys())[:3]}
-DOMINANT DOSHA: {dosha}
+CONSTITUTIONAL DOSHA (Prakriti): {dosha}
+CURRENT IMBALANCE (Vikriti): {vikriti_dom}{f' + {vikriti_sec}' if vikriti_sec else ''} — remedies must target this imbalance
+IMMEDIATE FOCUS: {vikriti_focus}
+KEY SIGNALS: {vikriti_signals[:3]}
 MEDICAL HISTORY: {profile.get('medical_history', [])}
 MEDICATIONS: {profile.get('current_medications', [])}
 USER RATING PREFERENCES: {profile.get('rating_preferences', {})}
@@ -490,6 +560,8 @@ HERBS/INGREDIENTS TO AVOID (Medical Safety): {constraints.get('avoid', [])}
 HERB INTERACTIONS TO WARN ABOUT: {constraints.get('herb_interactions', [])}
 
 REMEDY KNOWLEDGE (RAG): {rag[:2500] if rag else 'Use classical Ayurvedic remedies'}
+
+CRITICAL RULE: Prioritize remedies that CORRECT {vikriti_dom} Vikriti imbalance{f' and secondary {vikriti_sec} imbalance' if vikriti_sec else ''}. The Prakriti (constitution) informs the baseline, but Vikriti is what needs active correction now.
 
 OUTPUT JSON FORMAT (array of remedies):
 [{{
@@ -535,6 +607,11 @@ async def medicine_agent_node(state: PlanState) -> dict:
     dosha = ml.get("dosha", {}).get("dominant_dosha", "pitta")
     rag = state["rag_context"].get("medicines", "")
     constraints = ml.get("medical_constraints", {}).get("remedies", {})
+    vikriti = ml.get("vikriti", {})
+    vikriti_dom = vikriti.get("dominant", dosha)
+    vikriti_sec = vikriti.get("secondary")
+    vikriti_focus = vikriti.get("immediate_focus", "")
+    vikriti_signals = vikriti.get("key_signals", [])
 
     if not symptoms:
         return {"medicines": []}
@@ -544,7 +621,10 @@ Recommend safe AYURVEDIC MEDICINES for this user's symptoms. Output ONLY valid J
 
 USER SYMPTOMS: {symptoms}
 AYURVEDIC CONDITIONS DETECTED (ML): {list(ml.get('symptom_conditions', {}).keys())[:3]}
-DOMINANT DOSHA: {dosha}
+CONSTITUTIONAL DOSHA (Prakriti): {dosha}
+CURRENT IMBALANCE (Vikriti): {vikriti_dom}{f' + {vikriti_sec}' if vikriti_sec else ''} — medicines must target this imbalance
+IMMEDIATE FOCUS: {vikriti_focus}
+KEY SIGNALS: {vikriti_signals[:3]}
 MEDICAL HISTORY: {profile.get('medical_history', [])}
 MEDICATIONS: {profile.get('current_medications', [])}
 
@@ -552,6 +632,8 @@ HERBS/INGREDIENTS TO AVOID (Medical Safety): {constraints.get('avoid', [])}
 HERB INTERACTIONS TO WARN ABOUT: {constraints.get('herb_interactions', [])}
 
 MEDICINE KNOWLEDGE (RAG): {rag[:2500] if rag else 'Use classical Ayurvedic formulations'}
+
+CRITICAL RULE: Prioritize medicines that CORRECT {vikriti_dom} Vikriti imbalance{f' and secondary {vikriti_sec} imbalance' if vikriti_sec else ''}. The Prakriti (constitution) informs the baseline, but Vikriti is what needs active correction now.
 
 OUTPUT JSON FORMAT (array of medicines):
 [{{
@@ -579,7 +661,7 @@ OUTPUT JSON FORMAT (array of medicines):
 async def daily_tip_node(state: PlanState) -> dict:
     """Generate a daily tip using RAG + GenAI."""
     profile = state["user_profile"]
-    dosha = state["ml_analysis"].get("dosha", {}).get("dominant_dosha", "pitta")
+    dosha = state["ml_analysis"].get("vikriti", {}).get("dominant") or state["ml_analysis"].get("dosha", {}).get("dominant_dosha", "pitta")
 
     from datetime import date
     import random
@@ -605,7 +687,8 @@ async def daily_tip_node(state: PlanState) -> dict:
 async def seasonal_guidance_node(state: PlanState) -> dict:
     """Generate synchronized seasonal guidance for the holistic plan."""
     dosha = (
-        state.get("ml_analysis", {}).get("dosha", {}).get("dominant_dosha")
+        state.get("ml_analysis", {}).get("vikriti", {}).get("dominant")
+        or state.get("ml_analysis", {}).get("dosha", {}).get("dominant_dosha")
         or state.get("user_profile", {}).get("dominant_dosha")
         or "pitta"
     )

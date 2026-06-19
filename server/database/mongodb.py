@@ -28,6 +28,9 @@ async def init_mongodb():
             settings.MONGO_URL,
             serverSelectionTimeoutMS=5000,
             tlsCAFile=certifi.where(),
+            maxPoolSize=50,       # 50 conns/worker × 4 workers = 200 total — safe for Atlas M0/M2
+            minPoolSize=2,
+            maxIdleTimeMS=30000,  # return idle connections after 30s
         )
         # Ping to verify the server is reachable
         await _client.admin.command("ping")

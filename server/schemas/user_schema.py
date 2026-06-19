@@ -36,6 +36,27 @@ class UserDocument(BaseModel):
     secondary_dosha: Optional[str] = None
     dosha_confidence: Optional[int] = None          # 0-100 — set after quiz
 
+    # ── Vikriti (current imbalance — separate from constitutional Prakriti) ──
+    vikriti_scores: Optional[dict] = None           # {"vata": 70, "pitta": 25, "kapha": 5}
+    vikriti_dominant: Optional[str] = None          # primary current imbalance
+    vikriti_secondary: Optional[str] = None         # second-highest current imbalance (for dual types)
+    dosha_constitution_type: Optional[str] = None   # "vata_pitta", "tridoshic", etc.
+    dosha_explanation: Optional[str] = None         # LLM plain-English explanation
+    dosha_immediate_focus: Optional[str] = None     # what plans should target now
+    dosha_key_signals: Optional[list[str]] = None   # top signals leading to this result
+    last_vikriti_checkin: Optional[datetime] = None  # when the weekly check-in was last submitted
+    last_plan_feedback: Optional[datetime] = None    # when plan feedback was last submitted
+    last_dosha_validation: Optional[datetime] = None # when the 14-day plan validation was last submitted
+    checkin_count: int = 0                           # total weekly check-ins — used to evolve confidence
+    vikriti_history: Optional[list[dict]] = None    # last 12 weekly snapshots [{scores, dominant, ts}]
+    plan_not_working_streak: int = 0                # consecutive "not improving" plan feedbacks
+    dosha_contradictions: Optional[list[str]] = None  # conflicts detected between trait groups
+    primary_gunas: Optional[list[str]] = None          # dominant Gunas (Charaka Sutrasthana 1.59-61)
+    manas_prakriti: Optional[str] = None               # mental constitution with Guna tendency
+    prakriti_classical_type: Optional[str] = None      # one of 7 Sapta Prakriti types
+    prakriti_classical_name: Optional[str] = None      # human-readable classical name
+    ama_indicator: Optional[str] = None                # none | mild | moderate | high
+
     # ── Physical & Activity ────────────────────────────────────────────────────
     fitness_level: Optional[str] = None
     activity_level: Optional[str] = None
@@ -169,6 +190,28 @@ class UserProfileResponse(BaseModel):
     secondary_dosha: Optional[str] = None
     dosha_confidence: Optional[int] = None
 
+    # Vikriti
+    vikriti_scores: Optional[dict] = None
+    vikriti_dominant: Optional[str] = None
+    vikriti_secondary: Optional[str] = None
+    dosha_constitution_type: Optional[str] = None
+    dosha_explanation: Optional[str] = None
+    dosha_immediate_focus: Optional[str] = None
+    dosha_key_signals: Optional[list[str]] = None
+    last_vikriti_checkin: Optional[datetime] = None
+    last_plan_feedback: Optional[datetime] = None
+    last_dosha_validation: Optional[datetime] = None
+    checkin_count: int = 0
+    vikriti_history: Optional[list[dict]] = None
+    plan_not_working_streak: int = 0
+    dosha_contradictions: Optional[list[str]] = None
+    primary_gunas: Optional[list[str]] = None
+    manas_prakriti: Optional[str] = None
+    prakriti_classical_type: Optional[str] = None
+    prakriti_classical_name: Optional[str] = None
+    ama_indicator: Optional[str] = None
+    needs_reassessment: bool = False
+
     # Physical
     fitness_level: Optional[str] = None
     activity_level: Optional[str] = None
@@ -204,6 +247,59 @@ class PlanHistoryDocument(BaseModel):
     plan_data: dict = Field(default_factory=dict)
     preference_hash: Optional[str] = None
     generated_at: datetime
+
+
+class PhysicalTraitAnswers(BaseModel):
+    # Physical traits
+    body_frame: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    skin: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    digestion: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    sleep: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    temperature: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    hair: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    energy: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    # Mental / behavioral traits
+    stress_response: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    memory: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    decision_making: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    speech: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    emotional_nature: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    # Behavioral micro-patterns (optional — won't break existing assessments if absent)
+    eating_habits: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
+    walk_pace: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
+    anger_style: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
+    # Ashtavidha Pareeksha — classical 8-fold examination
+    agni_type: Optional[str] = Field(None, pattern="^(vata|pitta|kapha|sama)$")
+    stool_pattern: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
+    eye_quality: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
+    voice_quality: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
+    nadi_rhythm: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")   # Nadi Pareeksha (self-report approximation)
+    mutra_pattern: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$") # Mutra Pareeksha
+
+
+class DoshaAssessmentRequest(BaseModel):
+    physical_traits: PhysicalTraitAnswers
+    current_symptoms: list[str] = Field(default_factory=list)
+
+
+class VikritiCheckInRequest(BaseModel):
+    current_symptoms: list[str] = Field(default_factory=list, description="Selected symptom cluster IDs")
+    sleep_this_week: Optional[int] = Field(None, ge=1, le=5, description="1=very poor, 5=excellent")
+    stress_this_week: Optional[int] = Field(None, ge=1, le=5, description="1=extreme, 5=none")
+    digestion_this_week: Optional[int] = Field(None, ge=1, le=5, description="1=very poor, 5=strong")
+    menstrual_phase: Optional[bool] = Field(None, description="True if currently menstruating (within 3 days). Female users only.")
+
+
+class PlanFeedbackRequest(BaseModel):
+    plan_type: str = Field(..., pattern="^(yoga|gym|routine|panchakarma|remedies|medicines)$")
+    improved: bool
+    notes: Optional[str] = Field(None, max_length=500)
+
+
+class DoshaValidationRequest(BaseModel):
+    improved: bool
+    improvement_area: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=300)
 
 
 class DoshaQuizAnswers(BaseModel):

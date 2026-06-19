@@ -334,7 +334,10 @@ export default function Onboarding() {
                           key={g.id} type="button"
                           onClick={() => setGoal(g.id)}
                           className={`onb-tile ${goal === g.id ? 'selected' : ''}`}
-                          whileTap={{ scale: 0.95 }}
+                          whileTap={{ scale: 0.94 }}
+                          whileHover={{ scale: 1.02 }}
+                          animate={goal === g.id ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+                          transition={{ type: 'spring', stiffness: 420, damping: 22 }}
                         >
                           <span className="onb-tile-emoji">{g.icon}</span>
                           {g.label}
@@ -351,7 +354,10 @@ export default function Onboarding() {
                           key={key} type="button"
                           onClick={() => setDosha(key)}
                           className={`onb-tile ${dosha === key ? 'selected' : ''}`}
-                          whileTap={{ scale: 0.95 }}
+                          whileTap={{ scale: 0.94 }}
+                          whileHover={{ scale: 1.02 }}
+                          animate={dosha === key ? { scale: [1, 1.07, 1] } : { scale: 1 }}
+                          transition={{ type: 'spring', stiffness: 420, damping: 22 }}
                         >
                           <span className="onb-tile-emoji">{info.emoji}</span>
                           {key.charAt(0).toUpperCase() + key.slice(1)}

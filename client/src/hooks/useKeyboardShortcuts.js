@@ -2,30 +2,21 @@ import { useEffect, useCallback } from 'react'
 
 /**
  * Registers global keyboard shortcuts.
- * - Escape: closes modals/overlays by blurring active element
- * - Ctrl+K / Cmd+K: focuses the first visible search/text input
+ * - Escape: blur active element / close overlays
+ * - Cmd+K / Ctrl+K: open the CommandPalette
  */
 export function useKeyboardShortcuts() {
   const handleKeyDown = useCallback((e) => {
-    // Escape — blur active element / close overlays
+    // Escape — blur active element
     if (e.key === 'Escape') {
       const active = document.activeElement
-      if (active && active !== document.body) {
-        active.blur()
-      }
+      if (active && active !== document.body) active.blur()
     }
 
-    // Ctrl+K or Cmd+K — focus search/chat input
+    // Cmd+K / Ctrl+K — open CommandPalette
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault()
-      // Try chat input first, then any visible text input
-      const chatInput = document.querySelector('.chat-text-input')
-      const searchInput = document.querySelector('input[type="text"]:not([type="hidden"])')
-      const target = chatInput || searchInput
-      if (target) {
-        target.focus()
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
+      window.dispatchEvent(new CustomEvent('ayura:cmdK'))
     }
   }, [])
 

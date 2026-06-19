@@ -213,6 +213,67 @@ class LLMClient:
 
         raise RuntimeError("Gemini returned empty response content.")
 
+    async def generate_vision(
+        self,
+        prompt: str,
+        system_prompt: str = "",
+        image_b64: str = "",
+        mime_type: str = "image/jpeg",
+        max_tokens: int = 1024,
+    ) -> str:
+        """Generate a response grounded in an inline image (vision tasks like tongue analysis).
+        Azure GPT-4o vision first, Gemini vision fallback.
+        """
+        # 1) Azure OpenAI vision
+        if self._azure_client:
+            try:
+                messages = []
+                if system_prompt:
+                    messages.append({"role": "system", "content": system_prompt})
+                messages.append({
+                    "role": "user",
+                    "content": [
+                        {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{image_b64}"}},
+                        {"type": "text", "text": prompt},
+                    ],
+                })
+                response = await self._azure_client.chat.completions.create(
+                    model=settings.AZURE_OPENAI_DEPLOYMENT,
+                    messages=messages,
+                    max_completion_tokens=max_tokens,
+                    response_format={"type": "json_object"},
+                )
+                content = response.choices[0].message.content
+                if content:
+                    return content
+            except Exception as exc:
+                logger.warning(f"Azure vision failed: {exc}. Falling back to Gemini vision.")
+
+        # 2) Gemini vision fallback
+        if self._gemini_model:
+            try:
+                import io
+                import base64 as _b64
+                import PIL.Image
+
+                img_bytes = _b64.b64decode(image_b64)
+                pil_img = PIL.Image.open(io.BytesIO(img_bytes))
+                full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
+                response = await asyncio.wait_for(
+                    self._gemini_model.generate_content_async(
+                        [full_prompt, pil_img],
+                        generation_config={"max_output_tokens": max_tokens, "response_mime_type": "application/json"},
+                    ),
+                    timeout=60.0,
+                )
+                text = getattr(response, "text", None)
+                if text:
+                    return text
+            except Exception as exc:
+                logger.error(f"Gemini vision failed: {exc}")
+
+        return '{"error": "Vision assessment unavailable"}'
+
     async def _generate_azure_stream(self, prompt: str, system_prompt: str, temperature: float, max_tokens: int):
         messages = []
         if system_prompt:

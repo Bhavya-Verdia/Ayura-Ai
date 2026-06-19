@@ -3,7 +3,7 @@ import { useTheme } from '../providers/ThemeProvider'
 
 function VitalPaths({ side = 1 }) {
   const prefersReducedMotion = useReducedMotion()
-  const paths = Array.from({ length: 28 }, (_, i) => ({
+  const paths = Array.from({ length: 12 }, (_, i) => ({
     id: i,
     d: `M ${side > 0 ? -150 - i * 7 : 850 + i * 7} ${28 + i * 9}
         C ${side > 0 ? 110 + i * 3 : 650 - i * 4} ${-20 + i * 4},

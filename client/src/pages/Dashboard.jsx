@@ -1,12 +1,14 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { AuthContext } from '../providers/AuthContext'
 import { useTheme } from '../providers/ThemeProvider'
-import API, { plansAPI, preferencesAPI, progressAPI } from '../api/client'
+import API, { plansAPI, preferencesAPI, progressAPI, profileAPI } from '../api/client'
 import PlanViewer from '../components/PlanViewer'
+import VikritiCheckIn from '../components/VikritiCheckIn'
+import DoshaValidationCard from '../components/DoshaValidationCard'
 import DoshaArcRings from '../components/DoshaArcRings'
 import PreferencesModal from '../components/PreferencesModal'
 import SectionBoundary from '../components/SectionBoundary'
@@ -133,6 +135,53 @@ function getTimeOfDay() {
   return 'evening'
 }
 
+function computeVikritiTrend(history, dominant) {
+  if (!history || history.length < 2 || !dominant) return null
+  const recent = history.slice(-3)
+  const scores = recent.map(h => h.scores?.[dominant] ?? 50)
+  const avg = (a) => a.reduce((s, v) => s + v, 0) / a.length
+  const older = avg(scores.slice(0, Math.ceil(scores.length / 2)))
+  const newer = avg(scores.slice(Math.floor(scores.length / 2)))
+  const delta = newer - older
+  if (delta < -3) return 'improving'
+  if (delta > 3)  return 'worsening'
+  return 'stable'
+}
+
+function VikritiTrendBadge({ trend, confidence, checkinCount }) {
+  if (!trend && !confidence) return null
+  const trendConfig = {
+    improving: { label: '↓ Imbalance easing', color: '#34d399' },
+    worsening: { label: '↑ Imbalance rising', color: '#fb923c' },
+    stable:    { label: '~ Holding steady',   color: '#94a3b8' },
+  }
+  const tc = trendConfig[trend]
+  const confidenceLabel =
+    confidence >= 80 ? 'High confidence' :
+    confidence >= 55 ? 'Medium confidence' :
+    confidence >= 40 ? 'Early reading' : 'Getting started'
+  const confidenceColor =
+    confidence >= 80 ? '#34d399' :
+    confidence >= 55 ? '#fbbf24' : '#94a3b8'
+
+  return (
+    <div className="dash-vikriti-badges">
+      {tc && (
+        <span className="dash-vikriti-badge" style={{ color: tc.color, borderColor: tc.color + '44' }}>
+          {tc.label}
+        </span>
+      )}
+      {confidence != null && (
+        <span className="dash-vikriti-badge" style={{ color: confidenceColor, borderColor: confidenceColor + '44' }}
+          title={checkinCount ? `Based on ${checkinCount} check-in${checkinCount !== 1 ? 's' : ''}` : undefined}
+        >
+          {confidenceLabel} {confidence != null ? `· ${confidence}%` : ''}
+        </span>
+      )}
+    </div>
+  )
+}
+
 // ── Dosha Balance Gauge — replaced by DoshaArcRings component ─
 function DoshaGauge({ dosha, doshaScores }) {
   if (!dosha) return null
@@ -192,6 +241,74 @@ function HealthScoreCard({ completedCount, total }) {
   )
 }
 
+// ── Plan Feedback Card ────────────────────────────────────────
+function PlanFeedbackCard({ planType, onDone }) {
+  const queryClient = useQueryClient()
+  const [status, setStatus] = useState('idle')
+
+  async function submit(improved) {
+    setStatus('submitting')
+    try {
+      const res = await profileAPI.planFeedback({ plan_type: planType, improved })
+      queryClient.setQueryData(['auth-user'], (old) => old ? { ...old, data: res.data } : old)
+      onDone()
+    } catch {
+      setStatus('idle')
+    }
+  }
+
+  return (
+    <motion.div
+      className="dash-feedback-card"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <p className="dash-feedback-q">
+        It's been 2 weeks — is your <strong>{planType}</strong> plan working for you?
+      </p>
+      <div className="dash-feedback-btns">
+        <button
+          type="button"
+          className="btn btn-primary btn-sm"
+          disabled={status === 'submitting'}
+          onClick={() => submit(true)}
+        >
+          Yes, improving
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          disabled={status === 'submitting'}
+          onClick={() => submit(false)}
+        >
+          Not yet
+        </button>
+      </div>
+    </motion.div>
+  )
+}
+
+// ── Re-assessment Trigger Card ─────────────────────────────────
+function ReassessmentCard({ onDismiss }) {
+  return (
+    <motion.div
+      className="dash-reassess-card"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <div className="dash-reassess-icon">🔄</div>
+      <div className="dash-reassess-body">
+        <strong>Your plans haven&apos;t been hitting the mark</strong>
+        <p>Your dosha profile may need updating — this happens when life circumstances, stress levels, or seasons change significantly.</p>
+      </div>
+      <div className="dash-reassess-actions">
+        <Link to="/dosha-quiz" className="btn btn-primary btn-sm">Reassess My Dosha →</Link>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={onDismiss}>Not now</button>
+      </div>
+    </motion.div>
+  )
+}
+
 // ── Main Dashboard ────────────────────────────────────────────
 const Dashboard = () => {
   const { user } = useContext(AuthContext)
@@ -200,6 +317,10 @@ const Dashboard = () => {
   const [viewingType, setViewingType]     = useState(null)
   const [generating,  setGenerating]      = useState({})
   const [prefModalConfig, setPrefModalConfig] = useState({ isOpen: false, typeId: null })
+  const [showCheckin, setShowCheckin]     = useState(true)
+  const [feedbackDone, setFeedbackDone]   = useState(false)
+  const [doshaValidationDismissed, setDoshaValidationDismissed] = useState(false)
+  const [reassessmentDismissed, setReassessmentDismissed] = useState(false)
 
   const queryClient = useQueryClient()
 
@@ -264,6 +385,46 @@ const Dashboard = () => {
   })
 
   const generatePlan = (typeId, forceRegenerate = false) => generateMutation.mutate({ typeId, forceRegenerate })
+
+  const nowMs = new Date().getTime()
+
+  const needsCheckin = useMemo(() => {
+    if (!user?.vikriti_scores) return false
+    if (!user?.last_vikriti_checkin) return true
+    const daysSince = (nowMs - new Date(user.last_vikriti_checkin).getTime()) / (1000 * 60 * 60 * 24)
+    return daysSince >= 7
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.vikriti_scores, user?.last_vikriti_checkin])
+
+  const feedbackTarget = useMemo(() => {
+    if (feedbackDone) return null
+    for (const [type, plan] of Object.entries(plans)) {
+      if (!plan?.created_at) continue
+      const days = (nowMs - new Date(plan.created_at).getTime()) / (1000 * 60 * 60 * 24)
+      if (days >= 14 && !user?.last_plan_feedback) return type
+    }
+    return null
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [feedbackDone, plans, user?.last_plan_feedback])
+
+  const showDoshaValidation = useMemo(() => {
+    if (doshaValidationDismissed) return false
+    if (!user?.vikriti_dominant) return false
+    if (user?.last_dosha_validation) return false
+    const assessedAt = user?.updated_at
+    if (!assessedAt) return false
+    const daysSince = (nowMs - new Date(assessedAt).getTime()) / (1000 * 60 * 60 * 24)
+    return daysSince >= 14
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doshaValidationDismissed, user?.vikriti_dominant, user?.last_dosha_validation, user?.updated_at])
+
+  const showReassessment = useMemo(() =>
+    !reassessmentDismissed && (
+      (user?.plan_not_working_streak || 0) >= 3 ||
+      user?.needs_reassessment === true
+    ),
+  [reassessmentDismissed, user?.plan_not_working_streak, user?.needs_reassessment]
+  )
 
   const doshaBadgeColor = DOSHA_COLOR[user?.dominant_dosha?.toLowerCase()] || '#2dd4bf'
   const initials        = user?.name ? user.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() : 'AY'
@@ -344,6 +505,11 @@ const Dashboard = () => {
                 'Your personalised wellness platform'
               )}
             </p>
+            <VikritiTrendBadge
+              trend={computeVikritiTrend(user?.vikriti_history, user?.vikriti_dominant)}
+              confidence={user?.dosha_confidence}
+              checkinCount={user?.checkin_count}
+            />
           </div>
         </div>
 
@@ -357,6 +523,29 @@ const Dashboard = () => {
 
       {/* ── Streak Card ── */}
       <StreakCard />
+
+      {/* ── Weekly Vikriti Check-in ── */}
+      {needsCheckin && showCheckin && (
+        <VikritiCheckIn onDismiss={() => setShowCheckin(false)} />
+      )}
+
+      {/* ── 14-day plan feedback ── */}
+      {feedbackTarget && (
+        <PlanFeedbackCard planType={feedbackTarget} onDone={() => setFeedbackDone(true)} />
+      )}
+
+      {/* ── 14-day dosha validation ── */}
+      {showDoshaValidation && (
+        <DoshaValidationCard
+          vikritiDominant={user.vikriti_dominant}
+          onDone={() => setDoshaValidationDismissed(true)}
+        />
+      )}
+
+      {/* ── Re-assessment suggestion ── */}
+      {showReassessment && (
+        <ReassessmentCard onDismiss={() => setReassessmentDismissed(true)} />
+      )}
 
       {/* ── Plans section ── */}
       <div className="dash-plans-header">

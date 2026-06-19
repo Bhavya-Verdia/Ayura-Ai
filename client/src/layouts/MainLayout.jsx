@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { AuthContext } from '../providers/AuthContext'
 import LoadingScreen from '../components/LoadingScreen'
+import { SkeletonDashboard, SkeletonChat } from '../components/Skeleton'
 import {
   LayoutDashboard, MessageCircle, Leaf, Activity, CheckSquare,
   Settings, LogOut, Menu, X, Bell
 } from 'lucide-react'
 import ScrollToTop from '../components/ScrollToTop'
 import FeedbackWidget from '../components/FeedbackWidget'
+import CommandPalette from '../components/CommandPalette'
 import '../pages/Dashboard.css'
 import './MainLayout.css'
 
@@ -18,8 +20,9 @@ const NAV_ITEMS = [
   { id: 'chat',      label: 'AI Assistant', Icon: MessageCircle,   path: '/chat',           i18nKey: 'chat' },
   { id: 'remedies',  label: 'Remedies',     Icon: Leaf,            path: '/remedies',       i18nKey: 'home_remedies' },
   { id: 'timeline',  label: 'Timeline',     Icon: Activity,        path: '/timeline',       i18nKey: 'timeline' },
-  { id: 'checkin',   label: 'Check-In',     Icon: CheckSquare,     path: '/checkin',        i18nKey: 'checkin' },
-  { id: 'settings',  label: 'Settings',     Icon: Settings,        path: '/settings',       i18nKey: 'settings' },
+  { id: 'checkin',       label: 'Check-In',      Icon: CheckSquare, path: '/checkin',       i18nKey: 'checkin' },
+  { id: 'notifications', label: 'Notifications', Icon: Bell,        path: '/notifications', i18nKey: 'notifications' },
+  { id: 'settings',      label: 'Settings',      Icon: Settings,    path: '/settings',      i18nKey: 'settings' },
 ]
 
 const BOTTOM_NAV = [
@@ -45,6 +48,8 @@ export default function MainLayout() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
+  const location = useLocation()
+  const prefersReducedMotion = useReducedMotion()
   const doshaBadgeColor = DOSHA_COLOR[user?.dominant_dosha?.toLowerCase()] || '#2DD4BF'
   const initials = user?.name ? user.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() : 'AY'
 
@@ -132,16 +137,34 @@ export default function MainLayout() {
               <img src="/favicon.svg" alt="Ayura AI Logo" className="dash-mobile-brand-mark" />
               <span className="dash-mobile-brand-text">Ayura AI</span>
             </div>
+            <Link to="/notifications" className="dash-mobile-bell" aria-label="Notifications">
+              <Bell size={20} strokeWidth={2} />
+            </Link>
           </div>
         )}
 
-        <div style={{ flex: 1, overflowY: 'auto', paddingBottom: isMobile ? '72px' : 0 }}>
-          <ScrollToTop />
-          <React.Suspense fallback={<LoadingScreen />}>
-            <Outlet />
-          </React.Suspense>
-          <FeedbackWidget />
-        </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={location.pathname}
+            initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={prefersReducedMotion ? {} : { opacity: 0, y: -6 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            style={{ flex: 1, overflowY: 'auto', paddingBottom: isMobile ? '72px' : 0, height: '100%' }}
+          >
+            <ScrollToTop />
+            <React.Suspense fallback={
+              location.pathname.startsWith('/dashboard')
+                ? <SkeletonDashboard />
+                : location.pathname.startsWith('/chat')
+                ? <SkeletonChat />
+                : <LoadingScreen />
+            }>
+              <Outlet />
+            </React.Suspense>
+            <FeedbackWidget />
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* ── MOBILE BOTTOM TAB BAR ── */}
@@ -156,13 +179,25 @@ export default function MainLayout() {
                 className={({ isActive }) => `mobile-bottom-tab${isActive ? ' active' : ''}`}
                 onClick={() => setSidebarOpen(false)}
               >
-                <Icon size={22} strokeWidth={2} />
-                <span>{item.label}</span>
+                {({ isActive }) => (
+                  <>
+                    <motion.div
+                      animate={isActive ? { scale: 1.12, y: -2 } : { scale: 1, y: 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    >
+                      <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                    </motion.div>
+                    <span>{item.label}</span>
+                  </>
+                )}
               </NavLink>
             )
           })}
         </nav>
       )}
+
+      {/* ── COMMAND PALETTE ── */}
+      <CommandPalette />
     </div>
   )
 }

@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite --configLoader native",
     "build": "vite build --configLoader native",
+    "postbuild": "node scripts/prerender.mjs",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "preview": "vite preview --configLoader native",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },

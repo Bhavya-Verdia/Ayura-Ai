@@ -27,6 +27,20 @@
   color: var(--ayura-ink);
 }
 
+.settings-autosave {
+  font-size: 0.8rem; font-weight: 700; padding: 4px 12px;
+  border-radius: 999px; font-family: var(--font-ui);
+  transition: all 0.2s;
+}
+.settings-autosave.saving {
+  color: var(--ayura-muted); background: var(--glass-bg-subtle);
+  border: 1px solid var(--border-subtle);
+}
+.settings-autosave.saved {
+  color: var(--ayura-sage); background: rgba(74,222,128,0.08);
+  border: 1px solid rgba(74,222,128,0.2);
+}
+
 .settings-account-row { display: flex; align-items: center; gap: 28px; }
 .settings-avatar-wrap { position: relative; width: 96px; height: 96px; flex-shrink: 0; }
 .settings-avatar-img, .settings-avatar-placeholder {

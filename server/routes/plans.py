@@ -42,6 +42,7 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
         
     relevant_data = {
         "dosha": user_profile.get("dominant_dosha"),
+        "vikriti": user_profile.get("vikriti_dominant"),
         "pregnancy": user_profile.get("pregnancy_or_nursing"),
         "allergies": user_profile.get("allergies"),
         "symptoms": user_profile.get("current_symptoms"),
@@ -426,6 +427,14 @@ async def _enqueue_plan(
         "dominant_dosha": user.dominant_dosha,
         "secondary_dosha": user.secondary_dosha,
         "dosha_confidence": user.dosha_confidence,
+        # Vikriti (current imbalance) — primary target for plan correction
+        "vikriti_scores": user.vikriti_scores,
+        "vikriti_dominant": user.vikriti_dominant,
+        "vikriti_secondary": user.vikriti_secondary,
+        "dosha_constitution_type": user.dosha_constitution_type,
+        "dosha_immediate_focus": user.dosha_immediate_focus,
+        "dosha_key_signals": user.dosha_key_signals or [],
+        "checkin_count": user.checkin_count or 0,
         "medical_history": user.medical_history or [],
         # Hard-exclusion lists — applied deterministically, never passed to LLM alone
         "allergies": user.allergies or [],

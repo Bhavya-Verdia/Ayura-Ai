@@ -1,4 +1,4 @@
-import { useState, Suspense } from 'react'
+import { useState, useRef, Suspense } from 'react'
 import { useAuth } from '../providers/AuthContext'
 import { privacyAPI, profileAPI } from '../api/client'
 import { useNavigate } from 'react-router-dom'
@@ -42,13 +42,42 @@ export default function Settings() {
   const [saving, setSaving] = useState(false)
   const [savingPw, setSavingPw] = useState(false)
   const [notice, setNotice] = useState({ type: '', message: '' })
+  const [autoSaveStatus, setAutoSaveStatus] = useState('')
+  const autoSaveTimer = useRef(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   const isLocal = profile?.auth_provider === 'local'
 
   function handleChange(e) {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    const updated = { ...form, [e.target.name]: e.target.value }
+    setForm(updated)
+    // Debounced auto-save
+    setAutoSaveStatus('saving')
+    clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(() => autoSave(updated), 1400)
+  }
+
+  async function autoSave(formData) {
+    try {
+      const updates = {
+        age:                formData.age         ? Number(formData.age)         : undefined,
+        height_cm:          formData.height_cm   ? Number(formData.height_cm)   : undefined,
+        weight_kg:          formData.weight_kg   ? Number(formData.weight_kg)   : undefined,
+        fitness_level:      formData.fitness_level   || undefined,
+        activity_level:     formData.activity_level  || undefined,
+        goal:               formData.goal             || undefined,
+        medical_history:    formData.medical_history    ? formData.medical_history.split(',').map(s => s.trim()).filter(Boolean)    : undefined,
+        current_symptoms:   formData.current_symptoms   ? formData.current_symptoms.split(',').map(s => s.trim()).filter(Boolean)   : undefined,
+        current_medications:formData.current_medications? formData.current_medications.split(',').map(s => s.trim()).filter(Boolean): undefined,
+      }
+      Object.keys(updates).forEach(k => updates[k] === undefined && delete updates[k])
+      await updateProfile(updates)
+      setAutoSaveStatus('saved')
+      setTimeout(() => setAutoSaveStatus(''), 2200)
+    } catch {
+      setAutoSaveStatus('')
+    }
   }
 
   async function saveProfile(e) {
@@ -292,7 +321,15 @@ export default function Settings() {
 
         {/* Profile form */}
         <motion.form className="settings-card" onSubmit={saveProfile} variants={staggerItem}>
-          <h2 className="settings-section-title">Health Profile</h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <h2 className="settings-section-title" style={{ margin: 0 }}>Health Profile</h2>
+            {autoSaveStatus === 'saving' && (
+              <span className="settings-autosave saving">Saving…</span>
+            )}
+            {autoSaveStatus === 'saved' && (
+              <span className="settings-autosave saved">✓ Saved</span>
+            )}
+          </div>
           <div className="settings-grid">
             <div className="input-group">
               <label>Age</label>

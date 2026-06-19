@@ -2,16 +2,34 @@ import React, { useState, useEffect, useRef } from 'react';
 import client from '../api/client';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Bot, Send, Sparkles, AlertTriangle, Loader2, Zap } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bot, Send, Sparkles, AlertTriangle, Loader2, Zap, Copy, Check, ChevronDown } from 'lucide-react';
 import './Dashboard.css';
 import './Chat.css';
 
-const SUGGESTIONS = [
-  'What should a Vata dosha eat today?',
-  'Give me a morning yoga routine',
-  'I have joint pain — what remedies help?',
-  'Explain my panchakarma detox plan',
-];
+const SUGGESTION_GROUPS = [
+  {
+    category: 'Wellness', icon: '🌿',
+    prompts: ['What should a Vata dosha eat today?', 'Give me a morning Ayurvedic routine'],
+  },
+  {
+    category: 'Remedies', icon: '🍵',
+    prompts: ['I have joint pain — what helps?', 'Natural remedy for better sleep'],
+  },
+  {
+    category: 'Plans', icon: '📋',
+    prompts: ['Explain my panchakarma detox plan', 'How do I adapt my gym plan?'],
+  },
+  {
+    category: 'Insight', icon: '💡',
+    prompts: ['What is my dominant dosha?', 'How do seasons affect Vata?'],
+  },
+]
+
+function formatMsgTime(ts) {
+  if (!ts) return ''
+  return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
 
 function TypingDots() {
   return (
@@ -22,12 +40,25 @@ function TypingDots() {
 }
 
 export default function Chat() {
-  const [messages, setMessages] = useState([]);
-  const [inputValue, setInputValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [sessionId, setSessionId] = useState(null);
+  const [messages, setMessages]       = useState([]);
+  const [inputValue, setInputValue]   = useState('');
+  const [isLoading, setIsLoading]     = useState(false);
+  const [sessionId, setSessionId]     = useState(null);
+  const [copiedIdx, setCopiedIdx]     = useState(null);
+  const [showScrollFab, setShowScrollFab] = useState(false);
   const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
+  const inputRef       = useRef(null);
+  const historyRef     = useRef(null);
+  const wsRef          = useRef(null);
+
+  // Close any in-flight WebSocket when the component unmounts
+  useEffect(() => {
+    return () => {
+      if (wsRef.current && wsRef.current.readyState < WebSocket.CLOSING) {
+        wsRef.current.close()
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -46,13 +77,36 @@ export default function Chat() {
     fetchSession();
   }, []);
 
+  // Auto-scroll to bottom unless user has scrolled up
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (!showScrollFab) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, showScrollFab]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 180) + 'px';
+    }
+  }, [inputValue]);
+
+  // Scroll FAB visibility
+  useEffect(() => {
+    const el = historyRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+      setShowScrollFab(dist > 120);
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
 
   const handleSend = (content) => {
     if (!content.trim() || isLoading) return;
-    const userMessage = { role: 'user', content };
+    const userMessage = { role: 'user', content, timestamp: Date.now() };
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
@@ -71,9 +125,10 @@ export default function Chat() {
     }
 
     const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
     let currentMessage = '';
 
-    setMessages(prev => [...prev, { role: 'ai', content: '', sources: [], status: 'Thinking…', typing: true }]);
+    setMessages(prev => [...prev, { role: 'ai', content: '', sources: [], status: 'Thinking…', typing: true, timestamp: Date.now() }]);
 
     ws.onopen = () => { ws.send(content); };
 
@@ -139,6 +194,12 @@ export default function Chat() {
   const hasEmergency = (content) => content?.toLowerCase().includes('urgency: emergency') || content?.toLowerCase().includes('consult a doctor');
   const hasAdapted   = (content) => content?.toLowerCase().includes('plan_adapted: true') || content?.toLowerCase().includes('plan updated');
 
+  function copyMessage(content, idx) {
+    navigator.clipboard.writeText(content).catch(() => {});
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 1600);
+  }
+
   return (
     <div className="chat-page-root">
       <header className="chat-header">
@@ -151,24 +212,26 @@ export default function Chat() {
         </div>
       </header>
 
-      <div className="chat-canvas">
-        <div className="chat-history">
+      <div className="chat-canvas" style={{ position: 'relative' }}>
+        <div className="chat-history" ref={historyRef}>
           {messages.length === 0 && (
             <div className="chat-empty-state">
               <div className="chat-empty-icon-wrap">
                 <Sparkles size={40} strokeWidth={1.5} />
               </div>
               <h3 className="chat-empty-title">Ask Ayura anything</h3>
-              <p className="chat-empty-sub">Your personal AI wellness advisor, powered by Ayurvedic wisdom.</p>
-              <div className="chat-suggestions">
-                {SUGGESTIONS.map(s => (
-                  <button
-                    key={s}
-                    className="chat-suggestion-chip"
-                    onClick={() => handleSend(s)}
-                  >
-                    {s}
-                  </button>
+              <p className="chat-empty-sub">Your personal AI wellness advisor — ask about your plans, symptoms, dosha, or daily routine.</p>
+              <div className="chat-suggestion-groups">
+                {SUGGESTION_GROUPS.map(group => (
+                  <div key={group.category} className="chat-suggestion-group">
+                    <div className="chat-suggestion-group-header">
+                      <span>{group.icon}</span>
+                      {group.category}
+                    </div>
+                    {group.prompts.map(p => (
+                      <button key={p} onClick={() => handleSend(p)}>{p}</button>
+                    ))}
+                  </div>
                 ))}
               </div>
             </div>
@@ -220,6 +283,20 @@ export default function Chat() {
                       {msg.status}
                     </div>
                   )}
+                  {!isUser && !msg.typing && msg.content && (
+                    <button
+                      className="chat-copy-btn"
+                      onClick={() => copyMessage(msg.content, idx)}
+                      title="Copy message"
+                    >
+                      {copiedIdx === idx
+                        ? <Check size={12} strokeWidth={2.5} />
+                        : <Copy size={12} strokeWidth={2} />}
+                    </button>
+                  )}
+                  {!msg.typing && msg.timestamp && (
+                    <span className="chat-bubble-time">{formatMsgTime(msg.timestamp)}</span>
+                  )}
                 </div>
               </div>
             );
@@ -228,15 +305,39 @@ export default function Chat() {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Scroll-to-bottom FAB */}
+        <AnimatePresence>
+          {showScrollFab && (
+            <motion.button
+              className="chat-scroll-fab"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => {
+                setShowScrollFab(false);
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              aria-label="Scroll to bottom"
+            >
+              <ChevronDown size={18} strokeWidth={2.5} />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
         <form className="chat-input-area" onSubmit={handleSubmit}>
           <div className="chat-input-wrapper">
-            <input
+            <textarea
               ref={inputRef}
-              type="text"
+              className="chat-text-input"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="How are you feeling today?"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e); }
+              }}
+              placeholder="How are you feeling today? (Shift+Enter for new line)"
               disabled={isLoading}
+              rows={1}
             />
             <button type="submit" className="chat-send-btn" disabled={isLoading || !inputValue.trim()}>
               <Send size={18} strokeWidth={2.5} />

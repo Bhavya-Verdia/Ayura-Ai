@@ -1,95 +1,1011 @@
-/* ─── DOSHA QUIZ STYLES ───────────── */
-.quiz-root {
+/* ─── DOSHA ASSESSMENT (da-) STYLES ──────────────────────────────────────────
+   Prefix: da-  (replaces old dq- / quiz- styles)
+   ────────────────────────────────────────────────────────────────────────── */
+
+.da-root {
   min-height: 100vh;
-  background: var(--ayura-bg);
-  color: var(--ayura-ink);
-  padding: 60px 20px;
+  background: var(--bg-color, #0a0a0f);
+  color: var(--text-color, #f1f5f9);
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.quiz-container {
-  width: 100%;
-  max-width: 800px;
-}
-
-.quiz-progress-bar {
-  width: 100%;
-  height: 6px;
-  background: var(--border-light);
-  border-radius: 999px;
-  margin-bottom: 48px;
+  padding: 56px 20px 80px;
+  position: relative;
   overflow: hidden;
 }
-.quiz-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #06b6d4, #8b5cf6);
+
+/* Background orbs */
+.da-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  opacity: 0.18;
+  z-index: 0;
+}
+.da-orb-a {
+  width: 500px;
+  height: 500px;
+  top: -140px;
+  right: -120px;
+  background: radial-gradient(circle, var(--ayura-teal, #06b6d4), transparent 70%);
+}
+.da-orb-b {
+  width: 400px;
+  height: 400px;
+  bottom: -100px;
+  left: -80px;
+  background: radial-gradient(circle, #818cf8, transparent 70%);
+}
+
+/* Main shell */
+.da-shell {
+  width: 100%;
+  max-width: 680px;
+  position: relative;
+  z-index: 1;
+}
+
+.da-shell-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 2rem;
+  max-width: 400px;
+}
+
+/* ── Phase header ─────────────────────────────────────────────────────────── */
+.da-phase-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.da-back-btn {
+  flex-shrink: 0;
+}
+
+.da-phase-steps {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.da-step {
+  padding: 4px 10px;
   border-radius: 999px;
-  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+.da-step.active {
+  color: var(--ayura-teal, #06b6d4);
+  border-color: var(--ayura-teal, #06b6d4);
+  background: rgba(6, 182, 212, 0.08);
+}
+.da-step.done {
+  color: var(--text-secondary, #94a3b8);
+  text-decoration: line-through;
+}
+.da-step-sep {
+  color: var(--text-secondary, #94a3b8);
+  opacity: 0.5;
 }
 
-.quiz-question-box {
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border);
-  border-radius: 32px;
-  padding: 64px 48px;
-  text-align: center;
-  box-shadow: 0 32px 80px var(--overlay-bg);
+/* ── Progress bar ─────────────────────────────────────────────────────────── */
+.da-progress-track {
+  width: 100%;
+  height: 4px;
+  background: var(--dash-edge, rgba(255,255,255,0.08));
+  border-radius: 999px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+.da-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ayura-teal, #06b6d4), #818cf8);
+  border-radius: 999px;
+}
+.da-progress-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #94a3b8);
+  margin-bottom: 1.75rem;
+  text-align: right;
 }
 
-.quiz-q-title {
-  font-family: var(--font-ui);
-  font-size: 2.2rem;
-  font-weight: 800;
-  margin-bottom: 40px;
-  line-height: 1.3;
+/* ── Trait question area ──────────────────────────────────────────────────── */
+.da-trait-card-area {
+  min-height: 380px;
 }
 
-.quiz-options-grid {
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: 16px;
-}
-
-.quiz-opt {
-  background: var(--glass-bg-subtle);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 24px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: left;
-}
-.quiz-opt:hover {
-  background: var(--border-light);
-  transform: translateY(-4px);
-}
-.quiz-opt.selected {
-  background: rgba(139,92,246,0.15);
-  border-color: rgba(139,92,246,0.5);
-  box-shadow: 0 16px 40px rgba(139,92,246,0.2);
-}
-
-.quiz-opt-title {
-  font-family: var(--font-ui);
-  font-size: 1.15rem;
+.da-question {
+  font-size: 1.45rem;
   font-weight: 700;
-  margin-bottom: 8px;
+  line-height: 1.35;
+  margin-bottom: 0.5rem;
+  color: var(--text-color, #f1f5f9);
 }
-.quiz-opt-desc {
-  font-size: 0.9rem;
-  color: #a1a1aa;
+
+.da-hint {
+  font-size: 0.88rem;
+  color: var(--text-secondary, #94a3b8);
+  margin-bottom: 1.5rem;
   line-height: 1.5;
 }
 
-.quiz-actions {
+.da-trait-options {
   display: flex;
-  justify-content: space-between;
-  margin-top: 48px;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-/* Specific dosha colors for results */
-.dosha-vata { color: #22d3ee; }
-.dosha-pitta { color: #f43f5e; }
-.dosha-kapha { color: #10b981; }
+.da-trait-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: var(--card-bg, rgba(255,255,255,0.04));
+  border: 1px solid var(--dash-edge, rgba(255,255,255,0.08));
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  position: relative;
+  width: 100%;
+}
+.da-trait-card:hover {
+  background: var(--glass-bg, rgba(255,255,255,0.06));
+  border-color: rgba(6, 182, 212, 0.3);
+}
+.da-trait-card.selected {
+  background: rgba(6, 182, 212, 0.07);
+  border-color: var(--ayura-teal, #06b6d4);
+  box-shadow: 0 0 0 1px var(--ayura-teal, #06b6d4), 0 8px 24px rgba(6, 182, 212, 0.12);
+}
+
+.da-trait-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.da-trait-label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color, #f1f5f9);
+  margin-bottom: 3px;
+}
+
+.da-trait-desc {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.5;
+}
+
+.da-trait-check {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 0.9rem;
+  color: var(--ayura-teal, #06b6d4);
+  font-weight: 700;
+}
+
+/* ── Symptom grid ─────────────────────────────────────────────────────────── */
+.da-symptom-intro {
+  margin-bottom: 1.5rem;
+}
+
+.da-symptom-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+  margin-bottom: 1.75rem;
+}
+
+@media (min-width: 520px) {
+  .da-symptom-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.da-symptom-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  background: var(--card-bg, rgba(255,255,255,0.04));
+  border: 1px solid var(--dash-edge, rgba(255,255,255,0.08));
+  border-radius: 12px;
+  padding: 0.75rem 0.875rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  position: relative;
+  width: 100%;
+}
+.da-symptom-chip:hover {
+  background: var(--glass-bg, rgba(255,255,255,0.06));
+  border-color: rgba(129, 140, 248, 0.4);
+}
+.da-symptom-chip.selected {
+  background: rgba(129, 140, 248, 0.09);
+  border-color: #818cf8;
+  box-shadow: 0 0 0 1px #818cf8, 0 4px 16px rgba(129, 140, 248, 0.15);
+}
+
+.da-chip-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.da-chip-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-color, #f1f5f9);
+}
+.da-chip-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.4;
+}
+.da-chip-check {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 0.8rem;
+  color: #818cf8;
+  font-weight: 700;
+}
+
+.da-symptom-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.da-symptom-note {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #94a3b8);
+  text-align: center;
+  max-width: 380px;
+  line-height: 1.5;
+}
+
+/* ── Loading animation ────────────────────────────────────────────────────── */
+.da-loading-orb {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.da-loading-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--ayura-teal, #06b6d4);
+  animation: da-spin 1.4s linear infinite;
+}
+.da-loading-ring-2 {
+  inset: 10px;
+  border-top-color: #818cf8;
+  animation-duration: 1s;
+  animation-direction: reverse;
+}
+
+@keyframes da-spin {
+  to { transform: rotate(360deg); }
+}
+
+.da-loading-icon {
+  font-size: 2rem;
+  z-index: 1;
+}
+
+.da-loading-text {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-color, #f1f5f9);
+  text-align: center;
+}
+
+.da-loading-sub {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #94a3b8);
+  text-align: center;
+}
+
+/* ── Result ───────────────────────────────────────────────────────────────── */
+.da-result-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.da-result-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+.da-constitution-badge {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid var(--ayura-teal, #06b6d4);
+  color: var(--ayura-teal, #06b6d4);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.da-result-dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 520px) {
+  .da-result-dual {
+    grid-template-columns: 1fr;
+  }
+}
+
+.da-spectrum-section {
+  background: var(--card-bg, rgba(255,255,255,0.04));
+  border: 1px solid var(--dash-edge, rgba(255,255,255,0.08));
+  border-radius: 16px;
+  padding: 1.1rem 1.25rem;
+}
+
+.da-spectrum-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-secondary, #94a3b8);
+  margin-bottom: 0.9rem;
+}
+
+.da-dosha-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.55rem;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.da-dosha-bar-row.dominant {
+  background: rgba(255,255,255,0.04);
+}
+
+.da-dosha-bar-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  width: 38px;
+  flex-shrink: 0;
+}
+
+.da-dosha-bar-track {
+  flex: 1;
+  height: 7px;
+  background: var(--dash-edge, rgba(255,255,255,0.08));
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.da-dosha-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.da-dosha-bar-pct {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #94a3b8);
+  text-align: right;
+}
+
+.da-dosha-bar-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 62px;
+  flex-shrink: 0;
+}
+
+.da-dosha-bar-qual {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.da-vikriti-note {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid;
+  background: rgba(255,255,255,0.03);
+  font-size: 0.87rem;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+.da-vikriti-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.da-explanation-box {
+  background: var(--card-bg, rgba(255,255,255,0.04));
+  border: 1px solid var(--dash-edge, rgba(255,255,255,0.08));
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.da-explanation-text {
+  font-size: 0.93rem;
+  line-height: 1.65;
+  color: var(--text-color, #f1f5f9);
+  margin: 0;
+}
+
+.da-focus-box {
+  background: rgba(6, 182, 212, 0.07);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 12px;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1rem;
+}
+.da-focus-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ayura-teal, #06b6d4);
+  margin-bottom: 4px;
+}
+.da-focus-text {
+  font-size: 0.9rem;
+  color: var(--text-color, #f1f5f9);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.da-key-signals {
+  background: var(--card-bg, rgba(255,255,255,0.04));
+  border: 1px solid var(--dash-edge, rgba(255,255,255,0.08));
+  border-radius: 12px;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1rem;
+}
+.da-signals-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-secondary, #94a3b8);
+  margin-bottom: 0.5rem;
+}
+.da-signals-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.da-signals-list li {
+  font-size: 0.84rem;
+  color: var(--text-color, #f1f5f9);
+  padding-left: 1rem;
+  position: relative;
+}
+.da-signals-list li::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: var(--ayura-teal, #06b6d4);
+}
+
+.da-confidence-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding: 0 0.25rem;
+}
+.da-confidence-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #94a3b8);
+}
+.da-confidence-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+}
+.da-confidence-high {
+  color: var(--kapha-color, #34d399);
+  border-color: var(--kapha-color, #34d399);
+  background: rgba(52, 211, 153, 0.1);
+}
+.da-confidence-medium {
+  color: var(--pitta-color, #fb923c);
+  border-color: var(--pitta-color, #fb923c);
+  background: rgba(251, 146, 60, 0.1);
+}
+.da-confidence-low {
+  color: var(--text-secondary, #94a3b8);
+  border-color: var(--dash-edge, rgba(255,255,255,0.15));
+  background: rgba(255,255,255,0.04);
+}
+
+.da-result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Shared ───────────────────────────────────────────────────────────────── */
+.da-disclaimer {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #94a3b8);
+  text-align: center;
+  line-height: 1.5;
+  opacity: 0.7;
+  margin-top: 0.5rem;
+}
+
+.da-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  color: #f87171;
+  padding: 0.7rem 1rem;
+  font-size: 0.88rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* ── Backwards compatibility — keep old .dq-root for any lingering imports ── */
+.dq-root { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+/* ── Confirm phase ────────────────────────────────────────────────────────── */
+.da-confirm-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.da-confirm-icon {
+  font-size: 2.4rem;
+  line-height: 1;
+}
+.da-confirm-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+.da-confirm-sub {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 340px;
+  line-height: 1.5;
+}
+.da-confirm-constitution {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.9rem 1.4rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.da-confirm-imbalance {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem 1.4rem;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid;
+  border-radius: 14px;
+  margin-bottom: 1.2rem;
+}
+.da-confirm-signals {
+  padding: 1rem 1.2rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  margin-bottom: 1.5rem;
+}
+.da-confirm-signals-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin-bottom: 0.6rem;
+}
+.da-confirm-signals-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.da-confirm-signals-list li {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  padding-left: 1rem;
+  position: relative;
+}
+.da-confirm-signals-list li::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: var(--color-primary, #6366f1);
+}
+.da-confirm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+/* ── Tongue uploader ──────────────────────────────────────────────────────── */
+.da-tongue-uploader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.1rem 1.3rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.12);
+  border-radius: 14px;
+  margin-bottom: 1rem;
+}
+.da-tongue-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.da-tongue-hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.da-tongue-preview-wrap {
+  display: flex;
+  justify-content: center;
+}
+.da-tongue-preview {
+  max-height: 140px;
+  max-width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.da-tongue-done {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--kapha-color, #34d399);
+  padding: 0.8rem 1.2rem;
+  background: rgba(52,211,153,0.06);
+  border: 1px solid rgba(52,211,153,0.2);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+/* ── Confirm chip signal toggles ──────────────────────────────────────────── */
+.da-confirm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.da-confirm-chip {
+  background: var(--glass-bg, rgba(255,255,255,0.06));
+  border: 1px solid var(--ayura-teal, #06b6d4);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.83rem;
+  color: var(--text-color, #f1f5f9);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.da-confirm-chip:hover {
+  background: rgba(6, 182, 212, 0.1);
+}
+
+.da-confirm-chip.rejected {
+  background: rgba(248, 113, 133, 0.08);
+  border-color: var(--ayura-rose, #fb7185);
+  color: var(--text-secondary, #94a3b8);
+  text-decoration: line-through;
+}
+
+.da-confirm-adjust-note {
+  font-size: 0.81rem;
+  color: var(--ayura-teal, #06b6d4);
+  margin: 0;
+}
+
+/* ── Clarify phase ── */
+.da-clarify-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.da-clarify-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 10px;
+}
+.da-clarify-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+.da-clarify-sub {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.55;
+}
+.da-clarify-section {
+  margin-bottom: 32px;
+}
+
+/* ── Trait breakdown (result screen) ── */
+.da-trait-breakdown {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+.da-breakdown-title {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+.da-breakdown-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.da-breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+.da-breakdown-trait {
+  color: var(--text-secondary);
+  width: 120px;
+  flex-shrink: 0;
+}
+.da-breakdown-arrow {
+  color: rgba(255,255,255,0.3);
+  font-size: 0.75rem;
+}
+.da-breakdown-dosha {
+  font-weight: 600;
+  width: 50px;
+}
+.da-breakdown-priority {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.35);
+  margin-left: auto;
+}
+
+/* ── Contradiction note ── */
+.da-contradiction-note {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: rgba(251,191,36,0.06);
+  border: 1px solid rgba(251,191,36,0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  font-size: 0.85rem;
+}
+.da-contradiction-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.da-contradiction-note strong {
+  display: block;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.da-contradiction-note p {
+  color: var(--text-secondary);
+  margin: 0 0 4px;
+  line-height: 1.45;
+}
+.da-contradiction-hint {
+  font-size: 0.77rem !important;
+  opacity: 0.7;
+}
+
+/* ── 4-option variant for Agni type ── */
+.da-trait-options-4 {
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 600px) {
+  .da-trait-options-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ── Guna Profile ── */
+.da-guna-profile {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin: 16px 0;
+}
+.da-guna-title {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.da-guna-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+.da-guna-tag {
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  background: rgba(45,212,191,0.08);
+  border: 1px solid rgba(45,212,191,0.2);
+  border-radius: 20px;
+  color: var(--ayura-teal, #2dd4bf);
+  font-weight: 500;
+}
+.da-guna-ref {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted, rgba(255,255,255,0.35));
+  font-style: italic;
+}
+
+/* ── Manas Prakriti ── */
+.da-manas-box {
+  background: rgba(139,92,246,0.06);
+  border: 1px solid rgba(139,92,246,0.18);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin: 12px 0;
+}
+.da-manas-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(139,92,246,0.8);
+  margin-bottom: 6px;
+}
+.da-manas-text {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Ama Score ── */
+.da-ama-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(251,146,60,0.05);
+  border: 1px solid rgba(251,146,60,0.15);
+  border-radius: 12px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+.da-ama-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-secondary);
+}
+.da-ama-badge {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.da-ama-hint {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/* ── Classical Reference ── */
+.da-classical-ref {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  margin: 10px 0;
+  font-size: 0.75rem;
+  color: var(--text-muted, rgba(255,255,255,0.38));
+  font-style: italic;
+}
+.da-classical-ref-icon {
+  font-size: 1rem;
+  font-style: normal;
+  flex-shrink: 0;
+}
+
+/* ── Disclaimer block ── */
+.da-disclaimer-block {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.da-disclaimer {
+  font-size: 0.72rem;
+  color: var(--text-muted, rgba(255,255,255,0.35));
+  text-align: center;
+  line-height: 1.55;
+  margin: 0;
+}
+.da-disclaimer-nadi {
+  font-size: 0.7rem;
+  color: var(--text-muted, rgba(255,255,255,0.28));
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 8px;
+}

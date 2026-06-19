@@ -1,0 +1,58 @@
+.dvc-card {
+  background: var(--card-bg, rgba(255,255,255,0.04));
+  border: 1px solid var(--dash-edge, rgba(255,255,255,0.08));
+  border-left: 3px solid var(--ayura-violet, #a78bfa);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.dvc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.dvc-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.dvc-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.dvc-question {
+  font-size: 0.93rem;
+  line-height: 1.55;
+  color: var(--text-color, #f1f5f9);
+  margin: 0 0 1rem;
+}
+
+.dvc-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.dvc-later {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  margin-left: auto;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.dvc-later:hover {
+  opacity: 1;
+}
