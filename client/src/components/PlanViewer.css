@@ -1306,6 +1306,140 @@
   border-radius: 9px;
 }
 
+/* ── Week coaching banner ── */
+.gym-week-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: rgba(251, 191, 36, 0.10);
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+.gym-week-banner-icon {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+.gym-week-banner-text {
+  font-size: 0.8rem;
+  color: #fbbf24;
+  line-height: 1.55;
+}
+.gym-week-banner-text strong {
+  color: #fcd34d;
+}
+
+/* ── Weight range ── */
+.gym-weight-range {
+  font-size: 0.72rem;
+  color: var(--ayura-text-secondary);
+  margin-top: 0.22rem;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+.gym-weight-range.kg {
+  color: #22c55e;
+}
+
+/* ── Instructions accordion ── */
+.gym-instructions-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  color: var(--ayura-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 0.35rem;
+  opacity: 0.75;
+  transition: opacity 0.15s;
+}
+.gym-instructions-toggle:hover {
+  opacity: 1;
+  color: #22c55e;
+}
+.gym-instructions-panel {
+  font-size: 0.72rem;
+  line-height: 1.65;
+  color: var(--ayura-text-secondary);
+  padding-left: 1.2rem;
+  margin-top: 0.4rem;
+  border-left: 2px solid rgba(34, 197, 94, 0.2);
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+}
+.gym-instructions-item {
+  margin-bottom: 0.25rem;
+}
+
+/* ── Rich rest day card ── */
+.gym-rest-card.rich {
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  margin-top: 0.3rem;
+}
+.gym-rest-title {
+  font-weight: 700;
+  font-size: 0.84rem;
+  color: #818cf8;
+  margin-bottom: 0.55rem;
+}
+.gym-rest-activities {
+  font-size: 0.74rem;
+  line-height: 1.7;
+  color: var(--ayura-text-secondary);
+  padding-left: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+.gym-rest-meta-row {
+  display: flex;
+  gap: 0.4rem;
+  font-size: 0.71rem;
+  color: var(--ayura-text-secondary);
+  margin-bottom: 0.3rem;
+  line-height: 1.5;
+}
+.gym-rest-meta-label {
+  font-weight: 600;
+  color: #818cf8;
+  flex-shrink: 0;
+}
+.gym-rest-quote {
+  font-style: italic;
+  font-size: 0.71rem;
+  color: var(--ayura-text-secondary);
+  opacity: 0.8;
+  margin-top: 0.55rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(99, 102, 241, 0.12);
+  margin-bottom: 0;
+}
+.gym-show-more {
+  font-size: 0.7rem;
+  color: #818cf8;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 0.2rem;
+  margin-bottom: 0.3rem;
+  display: block;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+}
+.gym-show-more:hover {
+  opacity: 1;
+}
+
 /* ── Mobile ── */
 @media (max-width: 600px) {
   .gym-days-grid { grid-template-columns: 1fr; }

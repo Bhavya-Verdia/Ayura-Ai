@@ -4,7 +4,7 @@ import {
   Sun, PersonStanding, Dumbbell, Leaf, Coffee, Pill,
   Sparkles, FlaskConical, AlertTriangle, ChevronRight, Star,
   Droplets, Calendar, ShieldCheck, Flame, Beaker, ArrowRight,
-  Moon, Timer, Zap, Target, Activity,
+  Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp,
 } from 'lucide-react'
 import './PlanViewer.css'
 
@@ -401,10 +401,15 @@ const WEEK_THEMES = ['Foundation', 'Volume Build', 'Intensity Peak', 'Deload']
 
 function GymView({ plan }) {
   const [activeWeek, setActiveWeek] = useState(0)
+  const [expandedEx, setExpandedEx] = useState(new Set())
+  const [showAllActivities, setShowAllActivities] = useState(new Set())
+
   const us = plan.user_summary || {}
   const fourWeekPlan = plan.four_week_plan || []
   const fallbackDays = plan.weekly_schedule || []
-  const weekDays = fourWeekPlan[activeWeek]?.days || (activeWeek === 0 ? fallbackDays : [])
+  const activeWeekData = fourWeekPlan[activeWeek] || null
+  const weekDays = activeWeekData?.days || (activeWeek === 0 ? fallbackDays : [])
+  const weekPrescription = activeWeekData?.prescription || null
   const tips = plan.ayurvedic_tips || {}
   const overload = plan.progressive_overload_guide || plan.progressive_overload_note || null
   const nutrition = plan.nutrition_sync || {}
@@ -412,6 +417,22 @@ function GymView({ plan }) {
 
   const goalLabel = (us.gym_goal || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
   const doshaColor = DOSHA_COLOR[us.dominant_dosha] || DOSHA_COLOR.default
+
+  const toggleEx = (exId) => {
+    setExpandedEx(prev => {
+      const next = new Set(prev)
+      next.has(exId) ? next.delete(exId) : next.add(exId)
+      return next
+    })
+  }
+
+  const toggleActivities = (dayIdx) => {
+    setShowAllActivities(prev => {
+      const next = new Set(prev)
+      next.has(dayIdx) ? next.delete(dayIdx) : next.add(dayIdx)
+      return next
+    })
+  }
 
   return (
     <div className="gym-view">
@@ -448,6 +469,13 @@ function GymView({ plan }) {
             <span className="gym-vital-v">{us.fitness_level.replace(/\b\w/g, c => c.toUpperCase())}</span>
           </div>
         )}
+        {us.strength_level && us.strength_level !== us.fitness_level && (
+          <div className="gym-vital-chip">
+            <Dumbbell size={11} className="gym-vital-icon" />
+            <span className="gym-vital-k">Strength</span>
+            <span className="gym-vital-v">{us.strength_level.replace(/\b\w/g, c => c.toUpperCase())}</span>
+          </div>
+        )}
         {us.workout_days && (
           <div className="gym-vital-chip">
             <Calendar size={11} className="gym-vital-icon" />
@@ -478,12 +506,25 @@ function GymView({ plan }) {
         ))}
       </div>
 
+      {/* ── Week coaching banner ── */}
+      {weekPrescription?.note && (
+        <div className="gym-week-banner">
+          <span className="gym-week-banner-icon">💡</span>
+          <span className="gym-week-banner-text">
+            <strong>Week {activeWeek + 1} · {WEEK_THEMES[activeWeek]}:</strong> {weekPrescription.note}
+          </span>
+        </div>
+      )}
+
       {/* ── Day cards ── */}
       <div className="gym-days-grid">
-        {weekDays.map((day, i) => {
+        {weekDays.map((day, dayIdx) => {
           const isRest = day.type === 'recovery' || !day.main_workout?.length
+          const restRecovery = day.rest_day_recovery || null
+          const showAllActs = showAllActivities.has(dayIdx)
+
           return (
-            <div key={i} className={`gym-day-card${isRest ? ' rest' : ''}`}>
+            <div key={dayIdx} className={`gym-day-card${isRest ? ' rest' : ''}`}>
               <div className="gym-day-header">
                 <div className="gym-day-name">
                   {isRest ? <Moon size={13} className="gym-rest-icon" /> : <Dumbbell size={13} className="gym-work-icon" />}
@@ -493,7 +534,37 @@ function GymView({ plan }) {
               </div>
 
               {isRest ? (
-                <p className="gym-rest-label">Rest & active recovery — let your body rebuild.</p>
+                restRecovery ? (
+                  <div className="gym-rest-card rich">
+                    <div className="gym-rest-title">{restRecovery.title}</div>
+                    <ul className="gym-rest-activities">
+                      {(showAllActs ? restRecovery.activities : restRecovery.activities?.slice(0, 3))
+                        ?.map((act, k) => <li key={k}>{act}</li>)}
+                    </ul>
+                    {restRecovery.activities?.length > 3 && (
+                      <button className="gym-show-more" onClick={() => toggleActivities(dayIdx)}>
+                        {showAllActs ? '▲ Show less' : `▼ +${restRecovery.activities.length - 3} more`}
+                      </button>
+                    )}
+                    {restRecovery.nutrition_note && (
+                      <div className="gym-rest-meta-row">
+                        <span className="gym-rest-meta-label">Nutrition:</span>
+                        <span>{restRecovery.nutrition_note}</span>
+                      </div>
+                    )}
+                    {restRecovery.sleep_note && (
+                      <div className="gym-rest-meta-row">
+                        <span className="gym-rest-meta-label">Sleep:</span>
+                        <span>{restRecovery.sleep_note}</span>
+                      </div>
+                    )}
+                    {restRecovery.ayurvedic_note && (
+                      <p className="gym-rest-quote">{restRecovery.ayurvedic_note}</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="gym-rest-label">Rest & active recovery — let your body rebuild.</p>
+                )
               ) : (
                 <>
                   <div className="gym-day-meta">
@@ -520,21 +591,47 @@ function GymView({ plan }) {
                     <div className="gym-sub-section">
                       <div className="gym-section-label">Exercises</div>
                       <div className="gym-exercise-list">
-                        {day.main_workout.map((ex, j) => (
-                          <div key={j} className="gym-exercise-row">
-                            <div className="gym-ex-top">
-                              <span className="gym-ex-name">{ex.exercise_name || ex.name}</span>
-                              <div className="gym-ex-chips">
-                                <span className="gym-ex-badge">{ex.sets} × {ex.reps}</span>
-                                {ex.rest_seconds && <span className="gym-ex-rest">{ex.rest_seconds}s rest</span>}
-                                {ex.equipment && ex.equipment !== 'bodyweight' && (
-                                  <span className="gym-ex-equip">{ex.equipment}</span>
-                                )}
+                        {day.main_workout.map((ex, j) => {
+                          const exId = `${dayIdx}-${j}`
+                          const isExpanded = expandedEx.has(exId)
+                          const isBodyweight = (ex.weight_range || '').startsWith('Bodyweight') || (ex.weight_range || '').startsWith('Effort')
+                          return (
+                            <div key={j} className="gym-exercise-row">
+                              <div className="gym-ex-top">
+                                <span className="gym-ex-name">{ex.exercise_name || ex.name}</span>
+                                <div className="gym-ex-chips">
+                                  <span className="gym-ex-badge">{ex.sets} × {ex.reps}</span>
+                                  {ex.rest_seconds && <span className="gym-ex-rest">{ex.rest_seconds}s rest</span>}
+                                  {ex.equipment && ex.equipment !== 'bodyweight' && (
+                                    <span className="gym-ex-equip">{ex.equipment}</span>
+                                  )}
+                                </div>
                               </div>
+                              {ex.weight_range && (
+                                <div className={`gym-weight-range${isBodyweight ? '' : ' kg'}`}>
+                                  <Dumbbell size={10} style={{ display: 'inline', marginRight: '0.25rem', verticalAlign: 'middle' }} />
+                                  {ex.weight_range}
+                                </div>
+                              )}
+                              {ex.notes && <p className="gym-ex-notes">{ex.notes}</p>}
+                              {ex.instructions?.length > 0 && (
+                                <>
+                                  <button className="gym-instructions-toggle" onClick={() => toggleEx(exId)}>
+                                    {isExpanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                                    {isExpanded ? 'Hide instructions' : 'How to perform'}
+                                  </button>
+                                  {isExpanded && (
+                                    <ol className="gym-instructions-panel">
+                                      {ex.instructions.map((step, s) => (
+                                        <li key={s} className="gym-instructions-item">{step}</li>
+                                      ))}
+                                    </ol>
+                                  )}
+                                </>
+                              )}
                             </div>
-                            {ex.notes && <p className="gym-ex-notes">{ex.notes}</p>}
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     </div>
                   )}

@@ -176,15 +176,26 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                 </select>
               </div>
             </div>
-            <div className="pref-input-group">
-              <label>Muscle Focus</label>
-              <select name="target_muscle_focus" value={form.target_muscle_focus || ''} onChange={handleChange} required>
-                <option value="full_body">Full Body</option>
-                <option value="upper">Upper Body</option>
-                <option value="lower">Lower Body</option>
-                <option value="core">Core</option>
-                <option value="back">Back</option>
-              </select>
+            <div className="pref-row">
+              <div className="pref-input-group">
+                <label>Muscle Focus</label>
+                <select name="target_muscle_focus" value={form.target_muscle_focus || ''} onChange={handleChange} required>
+                  <option value="full_body">Full Body</option>
+                  <option value="upper">Upper Body</option>
+                  <option value="lower">Lower Body</option>
+                  <option value="core">Core</option>
+                  <option value="back">Back</option>
+                </select>
+              </div>
+              <div className="pref-input-group">
+                <label>Lifting Strength Level</label>
+                <select name="strength_level" value={form.strength_level || 'beginner'} onChange={handleChange}>
+                  <option value="untrained">Untrained — never lifted weights</option>
+                  <option value="beginner">Beginner — under 1 year lifting</option>
+                  <option value="intermediate">Intermediate — 1–3 years, consistent</option>
+                  <option value="advanced">Advanced — 3+ years, near max lifts</option>
+                </select>
+              </div>
             </div>
           </>
         );

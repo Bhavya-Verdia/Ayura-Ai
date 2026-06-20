@@ -114,9 +114,7 @@ def _cooldown_for(focus: str) -> list:
     return _COOLDOWN.get(_FOCUS_WARMUP_TYPE.get(focus, "full"), _COOLDOWN["full"])
 
 
-# ── Goal-based prescription (Fix 2) ──────────────────────────────────────────
-# Each goal prescribes its own sets/reps/rest per week.
-# This is what makes a strength plan feel different from a fat-loss plan.
+# ── Goal-based prescription ───────────────────────────────────────────────────
 
 _GOAL_WEEKS = {
     "strength": [
@@ -126,35 +124,270 @@ _GOAL_WEEKS = {
         {"sets": 2, "reps": "3-5",  "rest_seconds": 180, "note": "Deload — reduce weight 20%, focus on perfect technique."},
     ],
     "muscle_gain": [
-        {"sets": 3, "reps": "8-10",  "rest_seconds": 90,  "note": "Foundation — last 2 reps of each set should feel challenging."},
-        {"sets": 3, "reps": "10-12", "rest_seconds": 75,  "note": "Volume build — same weight as W1, push for extra reps."},
-        {"sets": 4, "reps": "10-12", "rest_seconds": 60,  "note": "Peak volume — highest workload week, add weight if form is solid."},
-        {"sets": 2, "reps": "8-10",  "rest_seconds": 90,  "note": "Deload — reduce weight 15%, prioritise mind-muscle connection."},
+        {"sets": 3, "reps": "8-10",  "rest_seconds": 90, "note": "Foundation — last 2 reps of each set should feel challenging."},
+        {"sets": 3, "reps": "10-12", "rest_seconds": 75, "note": "Volume build — same weight as W1, push for extra reps."},
+        {"sets": 4, "reps": "10-12", "rest_seconds": 60, "note": "Peak volume — highest workload week, add weight if form is solid."},
+        {"sets": 2, "reps": "8-10",  "rest_seconds": 90, "note": "Deload — reduce weight 15%, prioritise mind-muscle connection."},
     ],
     "fat_loss": [
-        {"sets": 3, "reps": "15-20", "rest_seconds": 45,  "note": "Keep rest short to maintain elevated heart rate. Moderate weight."},
-        {"sets": 3, "reps": "15-20", "rest_seconds": 35,  "note": "Cut rest by 10 sec vs Week 1 to increase metabolic demand."},
-        {"sets": 4, "reps": "15-20", "rest_seconds": 30,  "note": "Peak metabolic week — minimum rest, circuit style if possible."},
-        {"sets": 3, "reps": "12-15", "rest_seconds": 45,  "note": "Deload — slightly fewer reps, full rest, let connective tissue recover."},
+        {"sets": 3, "reps": "15-20", "rest_seconds": 45, "note": "Keep rest short to maintain elevated heart rate. Moderate weight."},
+        {"sets": 3, "reps": "15-20", "rest_seconds": 35, "note": "Cut rest by 10 sec vs Week 1 to increase metabolic demand."},
+        {"sets": 4, "reps": "15-20", "rest_seconds": 30, "note": "Peak metabolic week — minimum rest, circuit style if possible."},
+        {"sets": 3, "reps": "12-15", "rest_seconds": 45, "note": "Deload — slightly fewer reps, full rest, let connective tissue recover."},
     ],
     "endurance": [
-        {"sets": 3, "reps": "15-20", "rest_seconds": 30,  "note": "Light weight, high reps. Focus on breathing rhythm throughout."},
-        {"sets": 4, "reps": "15-20", "rest_seconds": 25,  "note": "Add 1 set vs Week 1. Cut rest to challenge aerobic capacity."},
-        {"sets": 4, "reps": "18-22", "rest_seconds": 20,  "note": "Peak endurance week — go to near-failure on each set."},
-        {"sets": 3, "reps": "12-15", "rest_seconds": 30,  "note": "Deload — reduce volume, maintain movement quality."},
+        {"sets": 3, "reps": "15-20", "rest_seconds": 30, "note": "Light weight, high reps. Focus on breathing rhythm throughout."},
+        {"sets": 4, "reps": "15-20", "rest_seconds": 25, "note": "Add 1 set vs Week 1. Cut rest to challenge aerobic capacity."},
+        {"sets": 4, "reps": "18-22", "rest_seconds": 20, "note": "Peak endurance week — go to near-failure on each set."},
+        {"sets": 3, "reps": "12-15", "rest_seconds": 30, "note": "Deload — reduce volume, maintain movement quality."},
     ],
     "general_fitness": [
-        {"sets": 3, "reps": "10-12", "rest_seconds": 60,  "note": "Balanced foundation. Should feel moderately challenging by last rep."},
-        {"sets": 3, "reps": "12-15", "rest_seconds": 50,  "note": "Increase reps or reduce rest slightly vs Week 1."},
-        {"sets": 4, "reps": "12-15", "rest_seconds": 45,  "note": "Peak week — add 1 set to all exercises."},
-        {"sets": 2, "reps": "10-12", "rest_seconds": 60,  "note": "Deload — back to Week 1 volume, let the body consolidate gains."},
+        {"sets": 3, "reps": "10-12", "rest_seconds": 60, "note": "Balanced foundation. Should feel moderately challenging by last rep."},
+        {"sets": 3, "reps": "12-15", "rest_seconds": 50, "note": "Increase reps or reduce rest slightly vs Week 1."},
+        {"sets": 4, "reps": "12-15", "rest_seconds": 45, "note": "Peak week — add 1 set to all exercises."},
+        {"sets": 2, "reps": "10-12", "rest_seconds": 60, "note": "Deload — back to Week 1 volume, let the body consolidate gains."},
     ],
 }
 
 
 def _get_goal_prescription(goal: str, week: int) -> dict:
-    prescriptions = _GOAL_WEEKS.get(goal, _GOAL_WEEKS["general_fitness"])
-    return prescriptions[min(week - 1, 3)]
+    return _GOAL_WEEKS.get(goal, _GOAL_WEEKS["general_fitness"])[min(week - 1, 3)]
+
+
+# ── Weight / Load Guidance ────────────────────────────────────────────────────
+# (lo, hi) in kg. Dumbbell = per-hand weight. Cable/machine = stack weight.
+# Female ranges are ~60-65% of male — reflects average population, not a ceiling.
+
+_WEIGHT_GUIDE = {
+    "barbell": {
+        "chest":     {"untrained": {"male": (20,35),  "female": (10,20)},
+                      "beginner":  {"male": (35,55),  "female": (20,35)},
+                      "intermediate": {"male": (55,90), "female": (35,55)},
+                      "advanced":  {"male": (90,140), "female": (55,85)}},
+        "back":      {"untrained": {"male": (30,50),  "female": (20,35)},
+                      "beginner":  {"male": (50,80),  "female": (30,50)},
+                      "intermediate": {"male": (80,130), "female": (50,80)},
+                      "advanced":  {"male": (130,200),"female": (80,120)}},
+        "legs":      {"untrained": {"male": (30,50),  "female": (20,35)},
+                      "beginner":  {"male": (50,80),  "female": (30,55)},
+                      "intermediate": {"male": (80,130), "female": (50,85)},
+                      "advanced":  {"male": (130,200),"female": (80,130)}},
+        "shoulders": {"untrained": {"male": (15,30),  "female": (8,18)},
+                      "beginner":  {"male": (28,48),  "female": (15,30)},
+                      "intermediate": {"male": (46,72), "female": (28,46)},
+                      "advanced":  {"male": (70,100), "female": (44,68)}},
+        "core":      {"untrained": {"male": (20,35),  "female": (10,20)},
+                      "beginner":  {"male": (30,50),  "female": (15,30)},
+                      "intermediate": {"male": (50,80), "female": (28,48)},
+                      "advanced":  {"male": (80,120), "female": (46,72)}},
+    },
+    "dumbbell": {
+        "chest":     {"untrained": {"male": (6,10),  "female": (3,6)},
+                      "beginner":  {"male": (10,16), "female": (5,10)},
+                      "intermediate": {"male": (16,26), "female": (8,16)},
+                      "advanced":  {"male": (26,40), "female": (14,24)}},
+        "back":      {"untrained": {"male": (8,12),  "female": (4,8)},
+                      "beginner":  {"male": (12,20), "female": (6,12)},
+                      "intermediate": {"male": (18,30), "female": (10,18)},
+                      "advanced":  {"male": (28,44), "female": (16,28)}},
+        "legs":      {"untrained": {"male": (8,14),  "female": (6,10)},
+                      "beginner":  {"male": (12,20), "female": (8,14)},
+                      "intermediate": {"male": (20,32), "female": (12,22)},
+                      "advanced":  {"male": (30,50), "female": (18,34)}},
+        "shoulders": {"untrained": {"male": (4,8),   "female": (2,5)},
+                      "beginner":  {"male": (6,12),  "female": (3,8)},
+                      "intermediate": {"male": (10,18), "female": (6,12)},
+                      "advanced":  {"male": (18,28), "female": (10,18)}},
+        "biceps":    {"untrained": {"male": (5,8),   "female": (2,5)},
+                      "beginner":  {"male": (8,14),  "female": (4,8)},
+                      "intermediate": {"male": (12,20), "female": (6,12)},
+                      "advanced":  {"male": (18,30), "female": (10,18)}},
+        "triceps":   {"untrained": {"male": (5,8),   "female": (2,5)},
+                      "beginner":  {"male": (7,12),  "female": (3,7)},
+                      "intermediate": {"male": (10,18), "female": (5,11)},
+                      "advanced":  {"male": (16,26), "female": (9,17)}},
+        "core":      {"untrained": {"male": (4,8),   "female": (2,5)},
+                      "beginner":  {"male": (6,12),  "female": (3,7)},
+                      "intermediate": {"male": (10,18), "female": (5,11)},
+                      "advanced":  {"male": (16,26), "female": (9,17)}},
+        "full_body": {"untrained": {"male": (6,10),  "female": (3,6)},
+                      "beginner":  {"male": (8,14),  "female": (4,8)},
+                      "intermediate": {"male": (12,22), "female": (6,14)},
+                      "advanced":  {"male": (20,34), "female": (12,22)}},
+    },
+    "machine": {
+        "chest":     {"untrained": {"male": (20,35),  "female": (10,20)},
+                      "beginner":  {"male": (30,50),  "female": (15,28)},
+                      "intermediate": {"male": (48,78), "female": (26,48)},
+                      "advanced":  {"male": (76,120), "female": (44,72)}},
+        "back":      {"untrained": {"male": (25,40),  "female": (14,24)},
+                      "beginner":  {"male": (36,56),  "female": (20,36)},
+                      "intermediate": {"male": (54,84), "female": (30,54)},
+                      "advanced":  {"male": (82,130), "female": (50,82)}},
+        "legs":      {"untrained": {"male": (30,55),  "female": (20,38)},
+                      "beginner":  {"male": (50,85),  "female": (30,56)},
+                      "intermediate": {"male": (82,130), "female": (52,86)},
+                      "advanced":  {"male": (128,200),"female": (76,128)}},
+        "shoulders": {"untrained": {"male": (14,28),  "female": (8,16)},
+                      "beginner":  {"male": (24,44),  "female": (12,26)},
+                      "intermediate": {"male": (40,68), "female": (22,42)},
+                      "advanced":  {"male": (64,100), "female": (36,66)}},
+    },
+    "cable": {
+        "chest":     {"untrained": {"male": (10,20),  "female": (5,12)},
+                      "beginner":  {"male": (16,30),  "female": (8,18)},
+                      "intermediate": {"male": (26,44), "female": (14,28)},
+                      "advanced":  {"male": (40,64),  "female": (24,42)}},
+        "back":      {"untrained": {"male": (15,26),  "female": (8,16)},
+                      "beginner":  {"male": (22,38),  "female": (12,24)},
+                      "intermediate": {"male": (34,56), "female": (18,36)},
+                      "advanced":  {"male": (54,86),  "female": (32,56)}},
+        "shoulders": {"untrained": {"male": (8,16),   "female": (4,9)},
+                      "beginner":  {"male": (12,22),  "female": (6,13)},
+                      "intermediate": {"male": (18,32), "female": (10,20)},
+                      "advanced":  {"male": (30,50),  "female": (18,32)}},
+        "biceps":    {"untrained": {"male": (8,16),   "female": (4,9)},
+                      "beginner":  {"male": (12,22),  "female": (6,13)},
+                      "intermediate": {"male": (18,32), "female": (10,20)},
+                      "advanced":  {"male": (28,46),  "female": (16,30)}},
+        "triceps":   {"untrained": {"male": (8,14),   "female": (4,8)},
+                      "beginner":  {"male": (12,20),  "female": (6,12)},
+                      "intermediate": {"male": (16,28), "female": (9,18)},
+                      "advanced":  {"male": (24,40),  "female": (14,26)}},
+        "core":      {"untrained": {"male": (8,16),   "female": (4,9)},
+                      "beginner":  {"male": (12,22),  "female": (6,13)},
+                      "intermediate": {"male": (18,32), "female": (10,20)},
+                      "advanced":  {"male": (28,46),  "female": (16,30)}},
+        "legs":      {"untrained": {"male": (15,30),  "female": (10,20)},
+                      "beginner":  {"male": (26,46),  "female": (16,30)},
+                      "intermediate": {"male": (40,68), "female": (24,44)},
+                      "advanced":  {"male": (64,100), "female": (38,66)}},
+    },
+    "kettlebell": {
+        "full_body": {"untrained": {"male": (8,12),  "female": (4,8)},
+                      "beginner":  {"male": (12,20), "female": (6,12)},
+                      "intermediate": {"male": (20,32), "female": (10,20)},
+                      "advanced":  {"male": (28,48), "female": (16,32)}},
+        "legs":      {"untrained": {"male": (8,16),  "female": (6,10)},
+                      "beginner":  {"male": (14,24), "female": (8,16)},
+                      "intermediate": {"male": (22,36), "female": (14,24)},
+                      "advanced":  {"male": (32,56), "female": (20,36)}},
+    },
+}
+
+_BODYWEIGHT_PROGRESSIONS = {
+    "chest":     "Bodyweight · Progress: easier (incline) → standard → decline → archer push-up → single-arm",
+    "back":      "Bodyweight · Progress: band-assisted → negative → full pull-up/chin-up → weighted",
+    "legs":      "Bodyweight · Progress: squat → split squat → Bulgarian split squat → pistol squat",
+    "core":      "Bodyweight · Increase difficulty by slowing tempo or adding pauses",
+    "shoulders": "Bodyweight · Add resistance band or light dumbbell when movement feels easy",
+    "biceps":    "Bodyweight (band or towel row) · Add resistance band to increase difficulty",
+    "triceps":   "Bodyweight · Progress: incline → flat → decline dips / push-up variations",
+    "full_body": "Bodyweight · Increase reps first, then add load (weighted vest / resistance band)",
+    "cardio":    "Effort-based · Increase duration or intensity (speed, incline) each week",
+}
+
+
+def _primary_muscle_group(ex: dict) -> str:
+    """Map an exercise's primary muscle to a weight-guide key."""
+    primary = [m.lower() for m in ex.get("primary_muscles", [])]
+    for m in primary:
+        if "chest" in m or "pectoral" in m:    return "chest"
+        if "lat" in m or "back" in m or "trap" in m: return "back"
+        if "quad" in m or "hamstring" in m or "glute" in m or "calf" in m or "leg" in m: return "legs"
+        if "shoulder" in m or "deltoid" in m:  return "shoulders"
+        if "bicep" in m:                        return "biceps"
+        if "tricep" in m:                       return "triceps"
+        if "abdominal" in m or "core" in m or "abs" in m: return "core"
+    return "full_body"
+
+
+def _get_weight_range(ex: dict, strength_level: str, gender: str) -> str:
+    """Return a starter weight range string or bodyweight progression note."""
+    eq = ex.get("equipment", "bodyweight").lower()
+    cat = ex.get("category", "strength").lower()
+
+    # Cardio and timed exercises don't need weight
+    if cat == "cardio":
+        return "Effort-based — see intensity note"
+
+    # Bodyweight exercises: return progression ladder
+    if eq in ("bodyweight", "other"):
+        muscle = _primary_muscle_group(ex)
+        return _BODYWEIGHT_PROGRESSIONS.get(muscle, "Bodyweight · Add band/vest to progress")
+
+    # Map equipment aliases
+    eq_key = eq
+    if eq in ("dumbbells", "dumbbell"):      eq_key = "dumbbell"
+    elif eq in ("barbell",):                  eq_key = "barbell"
+    elif eq in ("machine",):                  eq_key = "machine"
+    elif eq in ("cable", "cables"):           eq_key = "cable"
+    elif eq in ("kettlebell", "kettlebells"): eq_key = "kettlebell"
+    elif eq in ("bands", "resistance_bands"): return "Light–heavy band · choose resistance that makes last 2 reps challenging"
+    else:                                     return "Moderate resistance · adjust to feel challenging by last rep"
+
+    muscle = _primary_muscle_group(ex)
+    gender_key = "female" if str(gender).lower() in ("female", "f", "woman") else "male"
+    lvl = strength_level if strength_level in ("untrained", "beginner", "intermediate", "advanced") else "beginner"
+
+    equip_data = _WEIGHT_GUIDE.get(eq_key, {})
+    # Try exact muscle, then fall back to full_body or chest
+    muscle_data = equip_data.get(muscle) or equip_data.get("full_body") or equip_data.get("chest")
+    if not muscle_data:
+        return "Moderate weight · adjust so last 2 reps are challenging"
+
+    level_data = muscle_data.get(lvl, {})
+    lo, hi = level_data.get(gender_key, (0, 0))
+    if lo == 0:
+        return "Moderate weight · adjust so last 2 reps are challenging"
+
+    unit_note = " per hand" if eq_key == "dumbbell" else ""
+    return f"{lo}–{hi} kg{unit_note} · adjust so last 2 reps are hard but form stays perfect"
+
+
+# ── Ayurvedic Rest Day Recovery ───────────────────────────────────────────────
+
+_REST_DAY_RECOVERY = {
+    "vata": {
+        "title": "Vata Rest Day — Ground & Restore",
+        "activities": [
+            "Abhyanga (warm sesame oil self-massage) — 15–20 min, long slow strokes toward the heart",
+            "Restorative yoga — Child's Pose, Supta Baddha Konasana, Legs-Up-The-Wall (5 min each)",
+            "Nadi Shodhana pranayama — 10 min alternate nostril breathing to calm the nervous system",
+            "Warm herbal bath with calming herbs (Ashwagandha, Brahmi, or Jatamansi)",
+            "Light walk (20–30 min) in nature, preferably midday when Vata is naturally pacified",
+        ],
+        "nutrition_note": "Warm, oily, nourishing foods. Ghee, warm milk, root vegetables. Avoid cold, raw, or dry foods on rest days.",
+        "sleep_note": "Aim for 8–9 hrs. Apply warm oil to feet (Padabhyanga) before bed. Asleep by 10pm.",
+        "ayurvedic_note": "Vata recovers through stillness and warmth — resist the urge to stay active on rest days.",
+    },
+    "pitta": {
+        "title": "Pitta Rest Day — Cool & Release",
+        "activities": [
+            "Moon salutation sequence — 3–5 rounds, slow and cooling (opposite of Sun Salutation's heat)",
+            "Coconut oil self-massage — focus on scalp and soles of feet to dissipate excess heat",
+            "Sheetali pranayama (cooling breath through rolled tongue) — 10 min",
+            "Swimming or gentle water activity — Pitta is cooled by water",
+            "Evening walk at sunset — avoid direct midday sun on rest days",
+        ],
+        "nutrition_note": "Cooling, sweet, bitter foods. Coconut water, pomegranate, fresh coriander, mint. Avoid spicy, sour, salty foods.",
+        "sleep_note": "Aim for 7–8 hrs. Keep bedroom cool (below 22°C). Avoid screen heat before bed.",
+        "ayurvedic_note": "Pitta's drive to push harder on rest days is the enemy — active recovery should feel cooling, not challenging.",
+    },
+    "kapha": {
+        "title": "Kapha Rest Day — Energise & Stimulate",
+        "activities": [
+            "Brisk walk — minimum 30 min at vigorous pace (Kapha needs movement even on rest days)",
+            "Dry brushing (Garshana with raw silk gloves) — stimulates lymphatic circulation",
+            "Kapalabhati pranayama — 5–10 min energising breath (fires up Agni and reduces Ama)",
+            "Sun salutations — 5 rounds at moderate pace to maintain metabolic rate",
+            "Avoid all napping — daytime sleep strongly aggravates Kapha",
+        ],
+        "nutrition_note": "Light, warm, spiced foods. Ginger-lemon tea, light dal, steamed vegetables. Avoid heavy, oily, cold, or sweet foods.",
+        "sleep_note": "7 hrs maximum. Wake before 6am — the Kapha period (6-10am) brings heaviness if you sleep through it.",
+        "ayurvedic_note": "Kapha's rest day is still active — complete stillness leads to lethargy and weight gain for this type.",
+    },
+}
 
 
 # ── Exercise filtering ────────────────────────────────────────────────────────
@@ -198,13 +431,9 @@ def filter_exercises(user_profile, gym_prefs, exercises):
 
         score = 0
         dosha_suit = ex.get("dosha_suitability", {}).get(dominant_dosha, "moderate")
-        if dosha_suit == "good":
-            score += 2
-        elif dosha_suit == "moderate":
-            score += 1
-        elif dosha_suit == "avoid":
-            score -= 2
-        # Prefer true-beginner exercises for beginners
+        if dosha_suit == "good":     score += 2
+        elif dosha_suit == "moderate": score += 1
+        elif dosha_suit == "avoid":  score -= 2
         if user_level == "beginner" and ex.get("level") == "beginner":
             score += 1
         scored.append((score, ex))
@@ -246,8 +475,6 @@ def split_by_muscle_group(exercises):
 # ── Weekly schedule builder ───────────────────────────────────────────────────
 
 def _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level):
-    """Detect equipment/level constraints and pick the right split (Fix 3)."""
-    # Beginners with bodyweight only → always full-body; split days lead to empty pools
     if is_bodyweight_only and fitness_level == "beginner":
         if workout_days <= 2:
             return ["full_body", "rest", "full_body", "rest", "rest", "rest", "rest"]
@@ -298,24 +525,27 @@ def _deterministic_select(pool, n, seed_key):
 
 
 def _target_count(duration, goal):
-    """Volume cap: max 5 exercises/day (Fix 3). Strength gets fewer, heavier."""
     if duration <= 20:   base = 3
     elif duration <= 30: base = 4
-    else:                base = 5  # Hard cap — prevents 40-set weeks
+    else:                base = 5
     if goal == "strength":
-        base = min(base, 4)  # Strength: fewer movements, heavier weight
+        base = min(base, 4)
     return base
 
 
 # ── Day plan builder ──────────────────────────────────────────────────────────
 
-def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profile, week=1, user_id="default"):
+def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profile,
+                   week=1, user_id="default", strength_level="beginner", gender="male",
+                   dosha="vata"):
     if focus == "rest":
+        recovery = _REST_DAY_RECOVERY.get(dosha, _REST_DAY_RECOVERY["vata"])
         return {
             "day": day_num, "day_name": day_name,
             "focus": "Rest & Recovery", "type": "recovery",
             "warmup": [], "main_workout": [], "cooldown": [],
             "estimated_duration_minutes": 0, "calories_burned_estimate": 0,
+            "rest_day_recovery": recovery,
         }
 
     duration = gym_prefs.get("workout_duration_minutes", 45)
@@ -325,18 +555,15 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         level = "beginner"
 
     target = _target_count(duration, goal)
-    rx = _get_goal_prescription(goal, week)  # goal-specific sets/reps/rest
+    rx = _get_goal_prescription(goal, week)
 
-    # Build pool from focus keys
     pool = []
     for k in _focus_to_keys(focus):
         pool.extend(muscle_split.get(k, []))
 
-    # Fix 1: Fallback for thin pools (Fix 3) ──────────────────────────────────
     if len(pool) < 3:
         pool = muscle_split.get("full_body", [])
     if len(pool) < 3:
-        # Last resort: everything available
         pool = [ex for group in muscle_split.values() for ex in group]
 
     seed_key = f"{user_id}-{focus}-d{day_num}-w{week}"
@@ -345,7 +572,6 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     main_workout = []
     total_cals = 0
     for ex in selected:
-        is_timed = any(c.isalpha() for c in str(rx["reps"]))
         sets = rx["sets"]
         reps = rx["reps"]
         rest = rx["rest_seconds"]
@@ -369,6 +595,7 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
             "sets": sets,
             "reps": reps,
             "rest_seconds": rest,
+            "weight_range": _get_weight_range(ex, strength_level, gender),
             "week_note": rx.get("note", ""),
             "notes": ex.get("modification", ""),
             "instructions": ex.get("instructions", []),
@@ -425,6 +652,8 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None):
     available_eq.add("bodyweight")
     is_bodyweight_only = available_eq <= {"bodyweight", "bands", "jump_rope"}
     fitness_level = user_profile.get("fitness_level", "beginner") or "beginner"
+    strength_level = gym_prefs.get("strength_level", fitness_level)
+    gender = user_profile.get("gender", "male") or "male"
 
     schedule_focus = _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level)
     days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -436,7 +665,11 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None):
     four_week_plan = []
     for week in range(1, 5):
         week_days = [
-            build_day_plan(i + 1, days_of_week[i], focus, muscle_split, gym_prefs, user_profile, week, user_id)
+            build_day_plan(
+                i + 1, days_of_week[i], focus, muscle_split, gym_prefs, user_profile,
+                week=week, user_id=user_id, strength_level=strength_level,
+                gender=gender, dosha=dominant_dosha,
+            )
             for i, focus in enumerate(schedule_focus)
         ]
         four_week_plan.append({
@@ -460,6 +693,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None):
             "dominant_dosha": dominant_dosha,
             "bmi_category": user_profile.get("bmi_category", "unknown"),
             "fitness_level": fitness_level,
+            "strength_level": strength_level,
             "gym_goal": goal,
             "workout_days": workout_days,
             "duration_per_session": gym_prefs.get("workout_duration_minutes", 45),

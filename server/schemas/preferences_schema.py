@@ -66,6 +66,12 @@ class GymPreferences(BaseModel):
         description="Specific muscle focus if any"
     )
 
+    strength_level: str = Field(
+        "beginner",
+        pattern="^(untrained|beginner|intermediate|advanced)$",
+        description="Self-assessed lifting strength: untrained | beginner | intermediate | advanced"
+    )
+
     @field_validator("gym_goal")
     @classmethod
     def validate_gym_goal(cls, v: str) -> str:
