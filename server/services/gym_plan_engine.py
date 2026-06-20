@@ -13,6 +13,8 @@ if EXERCISES_PATH.exists():
         gym_exercises = json.load(f)
 
 
+# ── Warmup / Cooldown libraries ───────────────────────────────────────────────
+
 _WARMUP = {
     "upper": [
         "Arm circles — 10 forward, 10 backward",
@@ -99,32 +101,81 @@ _FOCUS_WARMUP_TYPE = {
     "chest_triceps": "upper", "back_biceps": "upper",
     "chest": "upper", "back": "upper", "shoulders": "upper",
     "shoulders_core": "upper", "arms": "upper",
-    "legs": "lower", "legs_core": "lower", "legs_cardio": "lower",
+    "legs": "lower", "legs_core": "lower",
     "shoulders_arms": "upper", "core_cardio": "cardio",
 }
 
 
 def _warmup_for(focus: str) -> list:
-    wtype = _FOCUS_WARMUP_TYPE.get(focus, "full")
-    return _WARMUP.get(wtype, _WARMUP["full"])
+    return _WARMUP.get(_FOCUS_WARMUP_TYPE.get(focus, "full"), _WARMUP["full"])
 
 
 def _cooldown_for(focus: str) -> list:
-    wtype = _FOCUS_WARMUP_TYPE.get(focus, "full")
-    return _COOLDOWN.get(wtype, _COOLDOWN["full"])
+    return _COOLDOWN.get(_FOCUS_WARMUP_TYPE.get(focus, "full"), _COOLDOWN["full"])
 
+
+# ── Goal-based prescription (Fix 2) ──────────────────────────────────────────
+# Each goal prescribes its own sets/reps/rest per week.
+# This is what makes a strength plan feel different from a fat-loss plan.
+
+_GOAL_WEEKS = {
+    "strength": [
+        {"sets": 3, "reps": "3-5",  "rest_seconds": 180, "note": "Focus on form. Choose a weight you can barely complete 5 clean reps with."},
+        {"sets": 4, "reps": "3-5",  "rest_seconds": 180, "note": "Add 2.5–5 kg vs Week 1 on main lifts if all reps were clean."},
+        {"sets": 4, "reps": "4-5",  "rest_seconds": 180, "note": "Peak intensity week — push for personal bests on compound lifts."},
+        {"sets": 2, "reps": "3-5",  "rest_seconds": 180, "note": "Deload — reduce weight 20%, focus on perfect technique."},
+    ],
+    "muscle_gain": [
+        {"sets": 3, "reps": "8-10",  "rest_seconds": 90,  "note": "Foundation — last 2 reps of each set should feel challenging."},
+        {"sets": 3, "reps": "10-12", "rest_seconds": 75,  "note": "Volume build — same weight as W1, push for extra reps."},
+        {"sets": 4, "reps": "10-12", "rest_seconds": 60,  "note": "Peak volume — highest workload week, add weight if form is solid."},
+        {"sets": 2, "reps": "8-10",  "rest_seconds": 90,  "note": "Deload — reduce weight 15%, prioritise mind-muscle connection."},
+    ],
+    "fat_loss": [
+        {"sets": 3, "reps": "15-20", "rest_seconds": 45,  "note": "Keep rest short to maintain elevated heart rate. Moderate weight."},
+        {"sets": 3, "reps": "15-20", "rest_seconds": 35,  "note": "Cut rest by 10 sec vs Week 1 to increase metabolic demand."},
+        {"sets": 4, "reps": "15-20", "rest_seconds": 30,  "note": "Peak metabolic week — minimum rest, circuit style if possible."},
+        {"sets": 3, "reps": "12-15", "rest_seconds": 45,  "note": "Deload — slightly fewer reps, full rest, let connective tissue recover."},
+    ],
+    "endurance": [
+        {"sets": 3, "reps": "15-20", "rest_seconds": 30,  "note": "Light weight, high reps. Focus on breathing rhythm throughout."},
+        {"sets": 4, "reps": "15-20", "rest_seconds": 25,  "note": "Add 1 set vs Week 1. Cut rest to challenge aerobic capacity."},
+        {"sets": 4, "reps": "18-22", "rest_seconds": 20,  "note": "Peak endurance week — go to near-failure on each set."},
+        {"sets": 3, "reps": "12-15", "rest_seconds": 30,  "note": "Deload — reduce volume, maintain movement quality."},
+    ],
+    "general_fitness": [
+        {"sets": 3, "reps": "10-12", "rest_seconds": 60,  "note": "Balanced foundation. Should feel moderately challenging by last rep."},
+        {"sets": 3, "reps": "12-15", "rest_seconds": 50,  "note": "Increase reps or reduce rest slightly vs Week 1."},
+        {"sets": 4, "reps": "12-15", "rest_seconds": 45,  "note": "Peak week — add 1 set to all exercises."},
+        {"sets": 2, "reps": "10-12", "rest_seconds": 60,  "note": "Deload — back to Week 1 volume, let the body consolidate gains."},
+    ],
+}
+
+
+def _get_goal_prescription(goal: str, week: int) -> dict:
+    prescriptions = _GOAL_WEEKS.get(goal, _GOAL_WEEKS["general_fitness"])
+    return prescriptions[min(week - 1, 3)]
+
+
+# ── Exercise filtering ────────────────────────────────────────────────────────
 
 def filter_exercises(user_profile, gym_prefs, exercises):
     available_eq = {eq.lower() for eq in gym_prefs.get("available_equipment", ["bodyweight"])}
     available_eq.add("bodyweight")
+    is_bodyweight_only = available_eq <= {"bodyweight", "bands", "jump_rope"}
 
     level_map = {
-        "beginner": ["beginner"],
+        "beginner":     ["beginner"],
         "intermediate": ["beginner", "intermediate"],
-        "advanced": ["beginner", "intermediate", "advanced"],
+        "advanced":     ["beginner", "intermediate", "advanced"],
     }
     user_level = user_profile.get("fitness_level", "beginner") or "beginner"
     allowed_levels = level_map.get(user_level, ["beginner"])
+
+    # Beginners doing bodyweight-only: also allow intermediate bodyweight exercises
+    # so pull/push days don't end up empty (chin-ups, rows are marked intermediate)
+    if user_level == "beginner" and is_bodyweight_only:
+        allowed_levels = ["beginner", "intermediate"]
 
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
     gym_goal = gym_prefs.get("gym_goal", "general_fitness")
@@ -153,11 +204,16 @@ def filter_exercises(user_profile, gym_prefs, exercises):
             score += 1
         elif dosha_suit == "avoid":
             score -= 2
+        # Prefer true-beginner exercises for beginners
+        if user_level == "beginner" and ex.get("level") == "beginner":
+            score += 1
         scored.append((score, ex))
 
     scored.sort(key=lambda x: x[0], reverse=True)
     return [ex for _, ex in scored[:200]]
 
+
+# ── Muscle group split ────────────────────────────────────────────────────────
 
 def split_by_muscle_group(exercises):
     split = {k: [] for k in ["chest", "triceps", "biceps", "back", "shoulders", "legs", "core", "full_body", "cardio"]}
@@ -187,7 +243,19 @@ def split_by_muscle_group(exercises):
     return split
 
 
-def build_weekly_schedule(workout_days):
+# ── Weekly schedule builder ───────────────────────────────────────────────────
+
+def _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level):
+    """Detect equipment/level constraints and pick the right split (Fix 3)."""
+    # Beginners with bodyweight only → always full-body; split days lead to empty pools
+    if is_bodyweight_only and fitness_level == "beginner":
+        if workout_days <= 2:
+            return ["full_body", "rest", "full_body", "rest", "rest", "rest", "rest"]
+        elif workout_days == 3:
+            return ["full_body", "rest", "full_body", "rest", "full_body", "rest", "rest"]
+        else:
+            return ["full_body", "rest", "full_body", "rest", "full_body", "core_cardio", "rest"]
+
     if workout_days == 2:
         return ["full_body", "rest", "full_body", "rest", "rest", "rest", "rest"]
     elif workout_days == 3:
@@ -198,8 +266,7 @@ def build_weekly_schedule(workout_days):
         return ["chest", "back", "rest", "legs", "shoulders_arms", "core_cardio", "rest"]
     elif workout_days == 6:
         return ["chest_triceps", "back_biceps", "legs", "shoulders", "arms", "core_cardio", "rest"]
-    else:
-        return ["full_body", "full_body", "full_body", "rest", "rest", "rest", "rest"]
+    return ["full_body", "full_body", "full_body", "rest", "rest", "rest", "rest"]
 
 
 def _focus_to_keys(focus):
@@ -220,8 +287,9 @@ def _focus_to_keys(focus):
     return ["full_body"]
 
 
+# ── Exercise selection ────────────────────────────────────────────────────────
+
 def _deterministic_select(pool, n, seed_key):
-    """Pick n exercises deterministically from pool using a hash seed."""
     seed = int(hashlib.md5(seed_key.encode()).hexdigest(), 16) % (2**31)
     rng = random.Random(seed)
     unique_pool = list({ex["id"]: ex for ex in pool}.values())
@@ -229,36 +297,17 @@ def _deterministic_select(pool, n, seed_key):
     return unique_pool[:n]
 
 
-def _target_count(duration):
-    if duration <= 20:   return 3
-    elif duration <= 30: return 4
-    elif duration <= 45: return 6
-    elif duration <= 60: return 8
-    return 10
+def _target_count(duration, goal):
+    """Volume cap: max 5 exercises/day (Fix 3). Strength gets fewer, heavier."""
+    if duration <= 20:   base = 3
+    elif duration <= 30: base = 4
+    else:                base = 5  # Hard cap — prevents 40-set weeks
+    if goal == "strength":
+        base = min(base, 4)  # Strength: fewer movements, heavier weight
+    return base
 
 
-def _week_progression(base_sets, base_reps_str, week):
-    """Apply 4-week progressive overload to sets and reps."""
-    try:
-        parts = base_reps_str.split("-")
-        lo = int(parts[0])
-        hi = int(parts[-1])
-    except Exception:
-        lo = hi = 10
-
-    if week == 1:
-        return base_sets, f"{lo}-{hi}"
-    elif week == 2:
-        return base_sets, f"{lo+2}-{hi+2}"
-    elif week == 3:
-        return base_sets + 1, f"{lo+2}-{hi+2}"
-    else:  # week 4 deload
-        return max(2, base_sets - 1), f"{lo}-{hi}"
-
-
-def _week_theme(week):
-    return {1: "Foundation", 2: "Volume Build", 3: "Intensity Peak", 4: "Deload & Reset"}[week]
-
+# ── Day plan builder ──────────────────────────────────────────────────────────
 
 def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profile, week=1, user_id="default"):
     if focus == "rest":
@@ -270,41 +319,46 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         }
 
     duration = gym_prefs.get("workout_duration_minutes", 45)
-    target = _target_count(duration)
+    goal = gym_prefs.get("gym_goal", "general_fitness")
     level = user_profile.get("fitness_level", "beginner") or "beginner"
     if level not in ["beginner", "intermediate", "advanced"]:
         level = "beginner"
 
+    target = _target_count(duration, goal)
+    rx = _get_goal_prescription(goal, week)  # goal-specific sets/reps/rest
+
+    # Build pool from focus keys
     pool = []
     for k in _focus_to_keys(focus):
         pool.extend(muscle_split.get(k, []))
 
-    seed_key = f"{user_id}-{focus}-w{week}"
+    # Fix 1: Fallback for thin pools (Fix 3) ──────────────────────────────────
+    if len(pool) < 3:
+        pool = muscle_split.get("full_body", [])
+    if len(pool) < 3:
+        # Last resort: everything available
+        pool = [ex for group in muscle_split.values() for ex in group]
+
+    seed_key = f"{user_id}-{focus}-d{day_num}-w{week}"
     selected = _deterministic_select(pool, target, seed_key)
 
     main_workout = []
     total_cals = 0
     for ex in selected:
-        sr = ex.get("sets_reps", {}).get(level, {"sets": 3, "reps": "10-12", "rest_seconds": 90})
-        base_sets = sr.get("sets", 3)
-        base_reps = str(sr.get("reps", "10-12"))
-
-        is_timed = any(c.isalpha() for c in base_reps)
-        if is_timed:
-            sets, reps = base_sets, base_reps
-        else:
-            sets, reps = _week_progression(base_sets, base_reps, week)
+        is_timed = any(c.isalpha() for c in str(rx["reps"]))
+        sets = rx["sets"]
+        reps = rx["reps"]
+        rest = rx["rest_seconds"]
 
         try:
-            parts = base_reps.split("-")
-            reps_val = sum(map(int, [p for p in parts if p.isdigit()])) / max(len(parts), 1)
+            parts = str(reps).split("-")
+            reps_val = sum(int(p) for p in parts if p.isdigit()) / max(len(parts), 1)
         except Exception:
             reps_val = 10
 
         cpm = ex.get("calories_per_minute", 5.0)
         time_per_rep = 2 if ex.get("category") == "cardio" else 4
-        exercise_mins = (sets * reps_val * time_per_rep) / 60.0
-        total_cals += exercise_mins * cpm
+        total_cals += (sets * reps_val * time_per_rep / 60.0) * cpm
 
         main_workout.append({
             "exercise_id": ex.get("id"),
@@ -314,7 +368,8 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
             "equipment": ex.get("equipment", "bodyweight"),
             "sets": sets,
             "reps": reps,
-            "rest_seconds": sr.get("rest_seconds", 90),
+            "rest_seconds": rest,
+            "week_note": rx.get("note", ""),
             "notes": ex.get("modification", ""),
             "instructions": ex.get("instructions", []),
         })
@@ -328,9 +383,11 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         "main_workout": main_workout,
         "cooldown": _cooldown_for(focus),
         "estimated_duration_minutes": duration,
-        "calories_burned_estimate": int(total_cals + 15 + 5),
+        "calories_burned_estimate": int(total_cals + 20),
     }
 
+
+# ── Ayurvedic tips ────────────────────────────────────────────────────────────
 
 def get_ayurvedic_tips(dosha):
     if dosha == "pitta":
@@ -356,28 +413,36 @@ def get_ayurvedic_tips(dosha):
         }
 
 
+# ── Main entry point ──────────────────────────────────────────────────────────
+
 def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None):
     ge = gym_exercises_db if gym_exercises_db is not None else gym_exercises
     filtered = filter_exercises(user_profile, gym_prefs, ge)
     muscle_split = split_by_muscle_group(filtered)
 
     workout_days = gym_prefs.get("workout_days_per_week", 4)
-    schedule_focus = build_weekly_schedule(workout_days)
+    available_eq = {eq.lower() for eq in gym_prefs.get("available_equipment", ["bodyweight"])}
+    available_eq.add("bodyweight")
+    is_bodyweight_only = available_eq <= {"bodyweight", "bands", "jump_rope"}
+    fitness_level = user_profile.get("fitness_level", "beginner") or "beginner"
+
+    schedule_focus = _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level)
     days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     user_id = str(user_profile.get("id") or user_profile.get("_id") or "default")
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
     is_pregnant = user_profile.get("pregnancy_or_nursing", False)
+    goal = gym_prefs.get("gym_goal", "general_fitness")
 
     four_week_plan = []
     for week in range(1, 5):
-        week_days = []
-        for i, focus in enumerate(schedule_focus):
-            week_days.append(
-                build_day_plan(i + 1, days_of_week[i], focus, muscle_split, gym_prefs, user_profile, week, user_id)
-            )
+        week_days = [
+            build_day_plan(i + 1, days_of_week[i], focus, muscle_split, gym_prefs, user_profile, week, user_id)
+            for i, focus in enumerate(schedule_focus)
+        ]
         four_week_plan.append({
             "week": week,
-            "theme": _week_theme(week),
+            "theme": {1: "Foundation", 2: "Volume Build", 3: "Intensity Peak", 4: "Deload & Reset"}[week],
+            "prescription": _get_goal_prescription(goal, week),
             "days": week_days,
         })
 
@@ -394,19 +459,19 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None):
         "user_summary": {
             "dominant_dosha": dominant_dosha,
             "bmi_category": user_profile.get("bmi_category", "unknown"),
-            "fitness_level": user_profile.get("fitness_level", "beginner"),
-            "gym_goal": gym_prefs.get("gym_goal", "general_fitness"),
+            "fitness_level": fitness_level,
+            "gym_goal": goal,
             "workout_days": workout_days,
             "duration_per_session": gym_prefs.get("workout_duration_minutes", 45),
         },
-        "weekly_schedule": four_week_plan[0]["days"],  # week 1 for backwards compat
+        "weekly_schedule": four_week_plan[0]["days"],
         "four_week_plan": four_week_plan,
         "ayurvedic_tips": get_ayurvedic_tips(dominant_dosha),
         "progressive_overload_guide": {
-            "week_1": "Foundation — learn the movements, focus on form, moderate weight.",
-            "week_2": "+2 reps per set — same weight, higher rep range to build volume.",
-            "week_3": "+1 set per exercise — highest volume week, push for progressive overload.",
-            "week_4": "Deload — reduce sets by 1, return to week 1 rep range. Let muscles recover.",
+            "week_1": _GOAL_WEEKS[goal][0]["note"] if goal in _GOAL_WEEKS else "",
+            "week_2": _GOAL_WEEKS[goal][1]["note"] if goal in _GOAL_WEEKS else "",
+            "week_3": _GOAL_WEEKS[goal][2]["note"] if goal in _GOAL_WEEKS else "",
+            "week_4": _GOAL_WEEKS[goal][3]["note"] if goal in _GOAL_WEEKS else "",
         },
         "disclaimer": disclaimer,
     }
