@@ -509,7 +509,7 @@ export default function DoshaQuiz() {
   const [error, setError] = useState('')
   const [rejectedSignals, setRejectedSignals] = useState([])
   const [clarifyAnswers, setClarifyAnswers] = useState({})
-  const { updateProfile } = useAuth()
+  const { updateProfile, user } = useAuth()
   const navigate = useNavigate()
 
   const currentTraitQ = TRAIT_QUESTIONS[traitIndex]
@@ -862,6 +862,11 @@ export default function DoshaQuiz() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
+          {user?.prakriti_locked && (
+            <div className="da-prakriti-lock-notice">
+              <strong>Prakriti already determined.</strong> Your constitutional type is set for life — only your Vikriti (current imbalance) has been updated from this session.
+            </div>
+          )}
           <div className="da-result-header">
             <h1 className="da-result-title">Your Ayurvedic Profile</h1>
             <span className="da-constitution-badge">

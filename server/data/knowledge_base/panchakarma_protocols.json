@@ -1,0 +1,949 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "sources": [
+      "Charaka Samhita (Kalpa Sthana, Siddhi Sthana, Chikitsa Sthana, Sutrasthana)",
+      "Sushruta Samhita (Sutrasthana, Chikitsa Sthana)",
+      "Ashtanga Hridayam (Sutrasthana, Chikitsa Sthana)",
+      "CCRAS Clinical Protocol Guidelines",
+      "Sahasrayogam (Kerala tradition)"
+    ],
+    "disclaimer": "For AI-assisted educational recommendation only. Clinical application requires a qualified Vaidya (BAMS/MD Ayurveda)."
+  },
+
+  "ritu_shodhana_calendar": {
+    "vasanta": {
+      "months": [3, 4],
+      "ritu_name": "Vasanta Ritu (Spring)",
+      "dosha_state": "Kapha Prakopa — winter-accumulated Kapha is liquefied by spring warmth",
+      "primary_shodhana": "vamana",
+      "secondary_shodhana": "nasya",
+      "avoid": ["basti_aggressive", "raktamokshana"],
+      "reason": "Kapha is in Prakopa (aggravation) in Vasanta. Vamana expels liquefied Kapha from Amashaya (stomach). Classical: 'Vasante Kapha Kopah' (AH Sutrasthana 3.7)",
+      "purvakarma_note": "Snehana 3 days only (Kapha is already heavy). Bashpa Sweda before Vamana."
+    },
+    "grishma": {
+      "months": [5, 6],
+      "ritu_name": "Grishma Ritu (Summer)",
+      "dosha_state": "Pitta Sanchaya (accumulation) begins; Vata aggravated by summer dryness and heat",
+      "primary_shodhana": "raktamokshana",
+      "secondary_shodhana": "mild_virechana",
+      "avoid": ["vamana", "vigorous_swedana"],
+      "reason": "Pitta begins accumulating but Bala (strength) is reduced in summer heat. Mild Raktamokshana for blood purification. Vigorous Shodhana contraindicated — use Shamana instead.",
+      "purvakarma_note": "Only mild Snehana (Ghrita internally). Avoid vigorous Swedana in summer heat."
+    },
+    "varsha": {
+      "months": [7, 8],
+      "ritu_name": "Varsha Ritu (Monsoon)",
+      "dosha_state": "Vata Prakopa peak — cold, moist air, irregular food weakens Agni and aggravates Vata",
+      "primary_shodhana": "basti",
+      "secondary_shodhana": "nasya",
+      "avoid": ["vamana", "vigorous_virechana"],
+      "reason": "Basti is the supreme Vata therapy and Varsha is the peak Vata season. 'Varshashu Bastayah Prashastah' (CS Siddhi 1). Agni is weakest in monsoon — Vamana/Virechana risk Atiyoga.",
+      "purvakarma_note": "Warm Abhyanga (Bala Taila or Dashamoola Taila) + gentle Nadi Sweda. Avoid exposure to rain/cold post-Swedana."
+    },
+    "sharad": {
+      "months": [9, 10],
+      "ritu_name": "Sharad Ritu (Autumn)",
+      "dosha_state": "Pitta Prakopa peak — accumulated Pitta erupts in autumn heat. Rakta also vitiated.",
+      "primary_shodhana": "virechana",
+      "secondary_shodhana": "raktamokshana",
+      "avoid": ["vamana"],
+      "reason": "Sharad is the ideal Virechana season. Pitta is at peak aggravation. Virechana removes excess Pitta from Pakvashaya (colon) via Pachana Srotas. 'Sharade Pittam' (CS Sutrasthana 6.22)",
+      "purvakarma_note": "Snehana 5 days with cooling ghee (Tikta Ghrita, Chandanadi Ghrita). Mild Swedana only — avoid overheating Pitta."
+    },
+    "hemanta": {
+      "months": [11, 12],
+      "ritu_name": "Hemanta Ritu (Early Winter)",
+      "dosha_state": "Kapha Sanchaya begins; Agni is strongest in winter — body tolerates Shodhana well",
+      "primary_shodhana": "basti",
+      "secondary_shodhana": "nasya",
+      "avoid": [],
+      "reason": "Agni is at its strongest in Hemanta — ideal for Snehana and gentle Basti. Body has maximum tolerance for oleation.",
+      "purvakarma_note": "Intensive Snehana is well-tolerated. Abhyanga with Mahanarayana Taila or Bala Taila."
+    },
+    "shishira": {
+      "months": [1, 2],
+      "ritu_name": "Shishira Ritu (Late Winter)",
+      "dosha_state": "Vata Prakopa — cold, dry winds aggravate Vata; Kapha accumulates",
+      "primary_shodhana": "basti",
+      "secondary_shodhana": "nasya",
+      "avoid": ["raktamokshana"],
+      "reason": "Basti for Vata; warming Nasya for Kapha in head. Raktamokshana contraindicated in cold — blood thickens and leech therapy is ineffective.",
+      "purvakarma_note": "Heavy Snehana 7 days (Vata dominant season). Bashpa Sweda or Pinda Sweda to counter cold."
+    }
+  },
+
+  "shodhana_eligibility": {
+    "description": "Classical assessment before deciding Shodhana (purification) vs Shamana (pacification). Ref: CS Sutrasthana 15, AH Chikitsa 1.",
+    "shodhana_candidate_criteria": [
+      "Bala (strength): Medium to High — can withstand Shodhana stress",
+      "Agni: Sama or improving (Dipana-Pachana done if Manda Agni)",
+      "Ama: None or mild (Ama must be cleared by Deepana-Pachana first)",
+      "Kriya Kala: Prasara, Sthana, or Vyakti stage — disease has manifested enough for expulsion",
+      "Season: Ritu-Shodhana calendar alignment recommended",
+      "Age: 7-70 years (outside this range — only Shamana)"
+    ],
+    "shamana_only_criteria": [
+      "Atidurbala (very weak/emaciated) — Shodhana would cause Dhatu Kshaya",
+      "Very old (>70) or very young (<7)",
+      "Pregnancy or nursing",
+      "Active fever (Jwara) — Shodhana during fever causes complications",
+      "Active diarrhea or dysentery — Virechana/Basti contraindicated",
+      "Severe bleeding disorders (Raktapitta) — except mild Raktamokshana for local conditions",
+      "High Ama without prior Deepana-Pachana — Shodhana drives Ama deeper into Srotas",
+      "Manda Agni without correction — purification cannot occur if Agni cannot process the dislodged doshas",
+      "Active menstruation (delay Shodhana 2-3 days)",
+      "Immediately post-surgery or severe trauma"
+    ],
+    "ama_correction_first": {
+      "herbs": ["Trikatu (Ginger + Black Pepper + Pippali)", "Chitrakadi Vati", "Hingashtak Churna", "Panchakola Churna"],
+      "duration_days": "3-7 days of Deepana-Pachana herbs before starting Snehana",
+      "signs_ama_cleared": ["Tongue coating clears", "Appetite returns", "Body feels lighter", "Bowels become regular"],
+      "diet_during": "Light, warm, easily digestible food. Moong dal khichdi, soups. Avoid heavy, cold, raw, fermented."
+    }
+  },
+
+  "purvakarma_protocols": {
+    "description": "Preparatory procedures mandatory before Pradhana Karma. Ref: CS Sutrasthana 22, AH Sutrasthana 2.",
+    "snehana": {
+      "name": "Snehana (Oleation Therapy)",
+      "types": {
+        "internal": {
+          "name": "Abhyantara Snehana (Internal Oleation)",
+          "description": "Progressive ghee/oil intake over 3-7 days to saturate tissues, loosen adhered Doshas from Srotas",
+          "duration_by_prakriti": {
+            "vata": 7,
+            "pitta": 5,
+            "kapha": 3,
+            "vata_pitta": 6,
+            "pitta_kapha": 4,
+            "vata_kapha": 5,
+            "sama": 5
+          },
+          "dose_schedule": [
+            {"day": 1, "dose_ml": 30, "time": "Empty stomach at sunrise", "vehicle": "Warm water"},
+            {"day": 2, "dose_ml": 60, "time": "Empty stomach at sunrise", "vehicle": "Warm water"},
+            {"day": 3, "dose_ml": 90, "time": "Empty stomach at sunrise", "vehicle": "Warm water"},
+            {"day": 4, "dose_ml": 120, "time": "Empty stomach at sunrise", "vehicle": "Warm water"},
+            {"day": 5, "dose_ml": 120, "time": "Empty stomach at sunrise", "vehicle": "Warm water"},
+            {"day": 6, "dose_ml": 120, "time": "Empty stomach at sunrise", "vehicle": "Warm water"},
+            {"day": 7, "dose_ml": 60, "time": "Reduce dose on final day", "vehicle": "Warm water"}
+          ],
+          "oleation_agents_by_dosha": {
+            "vata": {
+              "primary": "Mahatiktaka Ghrita or plain Ghrita (cow's ghee)",
+              "alternative": "Bala Taila internally (small dose)",
+              "rationale": "Ghrita builds Ojas, nourishes Asthi-Majja, lubricates dry Vata channels"
+            },
+            "pitta": {
+              "primary": "Tikta Ghrita (bitter ghee) or Shatavari Ghrita",
+              "alternative": "Chandanadi Ghrita — cooling, reduces Pitta",
+              "rationale": "Tikta Rasa ghee cools Pitta while oleating; avoids heating Pitta further"
+            },
+            "kapha": {
+              "primary": "Trikatu-infused Ghrita or Vacha Ghrita",
+              "alternative": "Sarshapa Taila (mustard oil) — warming, reduces Kapha",
+              "rationale": "Kapha needs stimulating oleation — warming herbs prevent Kapha aggravation from heavy ghee"
+            }
+          },
+          "signs_adequate_snehana": [
+            "Skin becomes soft and lustrous (Tvak Snigdha)",
+            "Stools become oily (Sneha in Mala)",
+            "No hunger sensation at usual meal time",
+            "Body feels light despite oiliness",
+            "Face appears slightly oily"
+          ],
+          "diet_during_snehana": "Only warm, light, easily digestible food. Rice gruel (Peya), moong dal soup. No cold, heavy, or dry food. No snacking."
+        },
+        "external": {
+          "name": "Bahya Snehana (Abhyanga — External Oleation)",
+          "description": "Full-body warm oil massage performed daily throughout Purvakarma",
+          "duration_minutes": 45,
+          "oils_by_dosha": {
+            "vata": {
+              "primary": "Sesame oil (Tila Taila) — warm, heavy, nourishing",
+              "medicated": "Bala Taila, Ksheerabala Taila, Mahanarayana Taila",
+              "temperature": "Warm (38-40°C)",
+              "pressure": "Medium to firm — Vata needs grounding"
+            },
+            "pitta": {
+              "primary": "Coconut oil (Narikela Taila) — cooling, light",
+              "medicated": "Chandanadi Taila, Brahmi Taila",
+              "temperature": "Room temperature or slightly warm (35-37°C)",
+              "pressure": "Light to medium — avoid excess heat"
+            },
+            "kapha": {
+              "primary": "Mustard oil (Sarshapa Taila) — light, penetrating, warming",
+              "medicated": "Narayan Taila, Dhanvantara Taila",
+              "temperature": "Hot (40-42°C) — stimulates sluggish Kapha",
+              "pressure": "Firm, brisk strokes — stimulating"
+            }
+          },
+          "technique": "Always stroke towards the heart on limbs. Circular motion on joints. Clockwise on abdomen. Special focus on Marma points: Kshipra (between thumb and index), Talahridaya (palm/sole centre), Adhipati (crown of head)."
+        }
+      }
+    },
+    "swedana": {
+      "name": "Swedana (Sudation / Steam Therapy)",
+      "description": "Applied after Abhyanga to open Srotas, increase circulation, and loosen adhered Doshas further. Ref: CS Sutrasthana 14.",
+      "types": {
+        "bashpa_sweda": {
+          "name": "Bashpa Sweda (Full-body Steam)",
+          "setting": "clinic",
+          "duration_minutes": 15,
+          "herbs_in_steam": "Dashamoola (10-root decoction), Nirgundi leaves, Eucalyptus",
+          "dosha_suitability": {"vata": true, "pitta": false, "kapha": true},
+          "note": "Avoid face in steam. Keep head cool with wet cloth."
+        },
+        "nadi_sweda": {
+          "name": "Nadi Sweda (Localised Steam Pipe)",
+          "setting": "clinic",
+          "duration_minutes": 10,
+          "herbs_in_steam": "Dashamoola, Nirgundi, Eranda leaves",
+          "dosha_suitability": {"vata": true, "pitta": false, "kapha": true},
+          "note": "Applied to specific painful joints or Srotas. Common in Vata disorders."
+        },
+        "pinda_sweda": {
+          "name": "Pinda Sweda (Navarakizhi / Bolus Fomentation)",
+          "setting": "clinic",
+          "duration_minutes": 45,
+          "materials": "Navara rice cooked in milk + Dashamoola decoction, tied in cloth boluses (Kizhi), applied warm",
+          "dosha_suitability": {"vata": true, "pitta": false, "kapha": false},
+          "note": "Ideal for Vata neurological disorders, muscle wasting (Mamsa Kshaya), paralysis"
+        },
+        "home_steam": {
+          "name": "Home Steam Inhalation (Avagaha or towel steam)",
+          "setting": "home",
+          "duration_minutes": 10,
+          "method": "Boil water with Ajwain, Eucalyptus, or Dashamoola powder. Drape towel over head. Or use steam room/hot shower.",
+          "dosha_suitability": {"vata": true, "pitta": false, "kapha": true}
+        }
+      },
+      "contraindications": ["Pitta high — may aggravate", "Pregnancy", "Active fever", "Bleeding disorders", "Extreme emaciation"],
+      "signs_adequate_swedana": "Skin perspires uniformly. Body feels light and warm. Joints become supple. Doshas are ready for expulsion."
+    }
+  },
+
+  "pradhana_karma": {
+    "vamana": {
+      "id": "vamana",
+      "name": "Vamana (Therapeutic Emesis)",
+      "sanskrit": "वमन",
+      "primary_dosha": "kapha",
+      "secondary_dosha": "pitta",
+      "srotas_affected": "Amashaya (stomach), Pranavaha, Annavaha",
+      "ideal_ritu": ["vasanta"],
+      "acceptable_ritu": ["sharad", "hemanta"],
+      "contraindicated_ritu": ["grishma", "varsha"],
+      "setting": "clinic",
+      "shodhana_or_shamana": "shodhana",
+      "bala_required": "medium",
+      "experience_required": "experienced_practitioner",
+      "herb_requirement": "specific_ayurvedic",
+      "purvakarma_days": {"vata": 7, "pitta": 5, "kapha": 3, "default": 5},
+      "pradhana_procedure": {
+        "timing": "Morning, post-Purvakarma, empty stomach",
+        "pre_procedure": [
+          "Day before: give Kapha-aggravating diet (curd, sesame, heavy sweets)",
+          "Morning of Vamana: apply Abhyanga on chest/back, give Bashpa Sweda",
+          "Have Vamana drugs ready and a trained Vaidya present"
+        ],
+        "primary_aushadha": "Madanaphala (Randia spinosa) — classical emetic",
+        "aushadha_formula": "Madanaphala Phanta: 1-2 Madanaphala fruits pounded, soaked in hot water, mixed with Yashtimadhu (liquorice) decoction, Pippali, Saindhava, Madhu (honey)",
+        "alternative_aushadha": [
+          "Neem bark decoction (Nimba Kvatha) — milder",
+          "Vacha (Acorus calamus) with warm water",
+          "Kutaja (Holarrhena antidysenterica) decoction"
+        ],
+        "procedure_steps": [
+          "Have patient drink 6-8 glasses of warm milk or sugarcane juice to fill stomach",
+          "Administer Vamana drug with Madhu and warm water",
+          "Patient sits on waist-height chair, supported by attendant",
+          "Mechanical stimulation of uvula if needed (with finger) to initiate reflex",
+          "Count Vega (episodes): note number and quality",
+          "After completion: wash mouth with warm water, rest lying on back",
+          "Dhumapana (medicated smoke inhalation) to clear Kapha from head"
+        ],
+        "samyak_yoga_signs": {
+          "vegashata": "8-12 episodes of emesis for adequate purification",
+          "quality": "Clear emesis at end (Kapha expelled completely)",
+          "subjective": "Patient feels light, clear mind, appetite returning, Kapha symptoms reduced"
+        },
+        "atiyoga_signs": "More than 12 episodes, bleeding in emesis, extreme weakness, fainting — STOP immediately, give Ghrita + warm milk",
+        "ayoga_signs": "Only 1-2 episodes, heaviness persists, Kapha not cleared — can repeat next day"
+      },
+      "indications": [
+        "Kaphaja disorders: obesity, chronic respiratory (bronchitis, asthma), sinusitis, allergic rhinitis",
+        "Skin diseases (Kushtha) with Kapha involvement: psoriasis, eczema",
+        "Nausea, anorexia from Kapha excess",
+        "Diabetes (Prameha) — Kaphaja type",
+        "Thyroid disorders — Kaphaja",
+        "Schizophrenia (Unmada) with Kapha predominance",
+        "Seasonal Vasanta detox"
+      ],
+      "contraindications": {
+        "absolute": [
+          "Pregnancy", "Children under 12", "Very elderly (>70)", "Severe cardiac disease",
+          "Atidurbala (extreme emaciation)", "Bleeding disorders (Raktapitta)",
+          "Hypertension (severe)", "Hiatal hernia or esophageal disorders",
+          "Active epilepsy", "Recent abdominal surgery"
+        ],
+        "relative": [
+          "Vata-dominant Prakriti (use very mild dose, ensure Snehana first)",
+          "Menstruation (delay 2-3 days)",
+          "Severe anxiety or psychological fragility"
+        ]
+      },
+      "paschat_karma": {
+        "immediate_rest": "24 hours complete rest. No talking unnecessarily. No exertion.",
+        "dhumapana": "Medicated smoke (Yasthimadhu, Haridra) for 30 minutes post-Vamana to clear remaining Kapha from head",
+        "samsarjana_krama": "post_vamana",
+        "duration_samsarjana_days": 7,
+        "pathya": [
+          "Warm, light, easily digestible food throughout Samsarjana Krama",
+          "Complete rest for 24 hours",
+          "Avoid cold, heavy, oily food for 7 days",
+          "Avoid exertion, sex, long travel for 7 days",
+          "Avoid suppression of natural urges",
+          "Gentle walks only after 2 days"
+        ],
+        "apathya": [
+          "Cold food or drinks", "Heavy meals", "Excessive talking", "Mental stress",
+          "Physical exertion", "Bathing in cold water", "Sunbathing", "Sleeping during day"
+        ]
+      },
+      "classical_references": [
+        "Charaka Kalpa Sthana 1-7 (Vamana Kalpa)",
+        "Charaka Siddhi Sthana 1 (Kalpana Siddhi)",
+        "AH Kalpa Sthana 1-4",
+        "Sushruta Chikitsa Sthana 33"
+      ]
+    },
+
+    "virechana": {
+      "id": "virechana",
+      "name": "Virechana (Therapeutic Purgation)",
+      "sanskrit": "विरेचन",
+      "primary_dosha": "pitta",
+      "secondary_dosha": "kapha",
+      "srotas_affected": "Pakvashaya (colon), Raktavaha, Pittavaha",
+      "ideal_ritu": ["sharad"],
+      "acceptable_ritu": ["grishma", "hemanta"],
+      "contraindicated_ritu": ["varsha"],
+      "setting": "clinic",
+      "shodhana_or_shamana": "shodhana",
+      "bala_required": "medium",
+      "experience_required": "practitioner_supervision",
+      "herb_requirement": "specific_ayurvedic",
+      "purvakarma_days": {"vata": 7, "pitta": 5, "kapha": 3, "default": 5},
+      "pradhana_procedure": {
+        "timing": "Morning, 2-3 hours after sunrise, empty stomach, after completing Snehana + Swedana Purvakarma",
+        "pre_procedure": [
+          "Complete 5-7 days Snehana",
+          "Last day of Snehana: light diet (rice, moong dal)",
+          "Morning of Virechana: mild Abhyanga on abdomen + Swedana"
+        ],
+        "primary_aushadha": "Trivrit (Operculina turpethum) — classical Pitta-Virechaka",
+        "aushadha_options": {
+          "strong_clinical": {
+            "name": "Trivrit Lehyam",
+            "dose": "20-30g with warm water",
+            "onset": "3-5 hours",
+            "note": "Clinical use; requires monitoring"
+          },
+          "moderate": {
+            "name": "Eranda (Castor oil)",
+            "dose": "30-60ml with warm milk at night",
+            "onset": "6-8 hours (next morning)",
+            "note": "Ideal for Vata-Pitta. Most commonly used in current practice."
+          },
+          "mild_home": {
+            "name": "Triphala Churna",
+            "dose": "5-10g with warm water at night",
+            "onset": "6-10 hours",
+            "note": "Very mild; home-safe; suitable for mild Virechana needs"
+          },
+          "pitta_specific": {
+            "name": "Avipattikara Churna",
+            "dose": "5g with cool water",
+            "onset": "4-6 hours",
+            "note": "Excellent for hyperacidity, GERD, Pitta disorders"
+          }
+        },
+        "procedure_steps": [
+          "Administer drug after confirming Snehana is complete (signs of adequate Snehana present)",
+          "Patient lies down or sits quietly, avoid exertion",
+          "First purgation usually begins in 2-4 hours",
+          "Count Vegas (episodes) — record timing and nature",
+          "After purging: wash perineum with warm water, rest in supine position",
+          "Give warm water or Yashtimadhu decoction sips if thirsty"
+        ],
+        "samyak_yoga_signs": {
+          "vegashata": "20-30 episodes for full clinical Virechana; 5-10 for mild",
+          "quality": "Clear, non-mucoid stool at end — Pitta expelled",
+          "subjective": "Lightness, reduced burning sensations, mental clarity, improved appetite"
+        },
+        "atiyoga_signs": "More than 30 episodes, blood in stool, extreme weakness, rectal prolapse — STOP, give Yashtimadhu + Ghrita",
+        "ayoga_signs": "Fewer than 5 episodes, heaviness persists, Pitta symptoms unchanged"
+      },
+      "indications": [
+        "All Pittaja disorders: acidity, GERD, gastritis, liver disorders",
+        "Skin diseases: psoriasis, eczema, acne, urticaria",
+        "Inflammatory joint disorders (Pitta component)",
+        "Migraine (Pittaja Shiroroga)",
+        "Menstrual disorders — Pitta type (Asrigdara)",
+        "Eye disorders (Pittaja Netra Roga)",
+        "Diabetes with Pitta dominance",
+        "Seasonal Sharad detox"
+      ],
+      "contraindications": {
+        "absolute": [
+          "Pregnancy", "Active diarrhea or dysentery", "Rectal prolapse",
+          "Bleeding per rectum", "Very old or very young",
+          "Extreme emaciation (Atidurbala)", "Manda Agni without correction",
+          "Rajayakshma (tuberculosis)", "Active hemorrhoids (relative)"
+        ],
+        "relative": [
+          "Vata-dominant (use Eranda in milk — gentler)", "Menstruation (delay)",
+          "Hypertension (avoid strong purgatives)"
+        ]
+      },
+      "paschat_karma": {
+        "immediate_rest": "Rest for remainder of day. Light walking acceptable after 2 hours.",
+        "samsarjana_krama": "post_virechana",
+        "duration_samsarjana_days": 5,
+        "pathya": [
+          "Samsarjana Krama diet strictly",
+          "Warm water for hydration throughout",
+          "Avoid cold, heavy, dry food for 5 days",
+          "Gentle lifestyle — no strenuous work for 3 days"
+        ],
+        "apathya": [
+          "Cold food/drinks", "Sour, pungent, salty taste excess (aggravates Pitta)",
+          "Physical exertion", "Mental stress", "Alcohol"
+        ]
+      },
+      "classical_references": [
+        "Charaka Kalpa Sthana 8-12 (Virechana Dravya)",
+        "Charaka Siddhi Sthana 2",
+        "AH Kalpa Sthana 2",
+        "Sushruta Chikitsa Sthana 34"
+      ]
+    },
+
+    "basti": {
+      "id": "basti",
+      "name": "Basti (Medicated Enema)",
+      "sanskrit": "बस्ति",
+      "primary_dosha": "vata",
+      "secondary_dosha": "pitta",
+      "srotas_affected": "Pakvashaya (colon), Asthivaha, Majjavaha, Mutravaha",
+      "ideal_ritu": ["varsha", "hemanta", "shishira"],
+      "acceptable_ritu": ["vasanta", "sharad"],
+      "contraindicated_ritu": [],
+      "setting": ["home_mild", "clinic_full"],
+      "shodhana_or_shamana": "both",
+      "bala_required": "low_to_medium",
+      "experience_required": "some",
+      "herb_requirement": "specific_ayurvedic",
+      "note": "Basti is the MOST IMPORTANT PK therapy — 'Ardha Chikitsa' (half of all treatment) for Vata. 'Basti is to Vata as Virechana is to Pitta.' (CS Siddhi 1)",
+      "subtypes": {
+        "yoga_basti": {
+          "name": "Yoga Basti (8-Basti Schedule)",
+          "description": "8 Basties: 5 Anuvasana (oil) + 3 Niruha (decoction). Mild, suitable for most patients.",
+          "schedule": [
+            {"day": 1, "type": "anuvasana", "note": "Start with oil — lubricates and prepares"},
+            {"day": 2, "type": "niruha", "note": "Decoction expels Doshas"},
+            {"day": 3, "type": "anuvasana"},
+            {"day": 4, "type": "niruha"},
+            {"day": 5, "type": "anuvasana"},
+            {"day": 6, "type": "niruha"},
+            {"day": 7, "type": "anuvasana"},
+            {"day": 8, "type": "anuvasana", "note": "End with oil — soothes and nourishes"}
+          ],
+          "total_days": 8,
+          "suitable_for": "Most Vata conditions; home or clinic; mild to moderate disease"
+        },
+        "kala_basti": {
+          "name": "Kala Basti (16-Basti Schedule)",
+          "description": "16 Basties: 6 Niruha + 10 Anuvasana. Moderate intensity.",
+          "total_days": 16,
+          "suitable_for": "Moderate Vata disorders; chronic joint diseases; clinic setting"
+        },
+        "karma_basti": {
+          "name": "Karma Basti (30-Basti Schedule)",
+          "description": "30 Basties: 12 Niruha + 18 Anuvasana. Intensive Vata purification.",
+          "total_days": 30,
+          "suitable_for": "Severe chronic Vata disorders (hemiplegia, paraplegia, severe AS); clinic only"
+        },
+        "matra_basti": {
+          "name": "Matra Basti (Small Oil Enema — Home Adaptable)",
+          "description": "50-80ml warm medicated oil retained overnight. No expulsion forced. Daily or alternate days.",
+          "oil": "Sesame oil, Bala Taila, or Dashamoola Taila",
+          "dose": "50-80ml",
+          "timing": "Night, after light dinner",
+          "retention": "Retain overnight if possible",
+          "total_days": "8-16 days",
+          "suitable_for": "Home use. Vata conditions, dryness, constipation, lower back pain, insomnia.",
+          "note": "Safest home Basti. No Vega (expulsion) needed — oil is absorbed."
+        }
+      },
+      "niruha_basti": {
+        "name": "Niruha Basti (Decoction/Kashaya Basti — Shodhana)",
+        "description": "Combination of Kashayam (decoction), Taila (oil), Kalka (herbal paste), Madhu (honey), Saindhava (rock salt). Expels Vata from Pakvashaya.",
+        "classical_formula": {
+          "ingredients": [
+            {"item": "Madhu (honey)", "quantity": "120ml", "note": "Acts as Yogavahi — carrier"},
+            {"item": "Saindhava (rock salt)", "quantity": "10g"},
+            {"item": "Sneha (Tila Taila or Bala Taila)", "quantity": "60ml"},
+            {"item": "Kalka (Bilva + Agnimantha paste)", "quantity": "40g"},
+            {"item": "Kashayam (Dashamoola decoction)", "quantity": "320ml"}
+          ],
+          "total_volume": "550ml",
+          "temperature": "Warm — Snehapana temperature (38°C)",
+          "preparation_note": "Mix in sequence: Madhu → Saindhava → Sneha → Kalka → Kashayam. Never heat after mixing."
+        },
+        "aushadha_by_condition": {
+          "vata_general": "Dashamoola Kashayam + Tila Taila",
+          "joint_disorders": "Rasna + Bala Kashayam + Mahanarayana Taila",
+          "neurological": "Ksheerabala Taila + Brahmi Kashayam",
+          "ankylosing_spondylitis": "Dashamoola + Bala + Rasna Kashayam + Ksheerabala Taila",
+          "sciatica": "Nirgundi + Rasna Kashayam + Mahanarayana Taila",
+          "constipation": "Triphala Kashayam + Tila Taila"
+        },
+        "procedure": "Patient lies on left side. Nozzle (Netra) lubricated and inserted gently. Enema administered slowly in 1-2 minutes. Patient remains in left-side position 15-30 min. Expulsion occurs naturally within 30-60 minutes.",
+        "retention_time": "30-60 minutes ideally before expulsion",
+        "samyak_yoga": "Expulsion of flatus, stool, Kapha together. Patient feels lightness. Vata disorders improve.",
+        "setting": "clinic"
+      },
+      "anuvasana_basti": {
+        "name": "Anuvasana Basti (Oil/Sneha Basti — Brimhana)",
+        "description": "Small volume medicated oil enema. Retained overnight. Nourishes and lubricates.",
+        "formula": "60-120ml warm medicated oil",
+        "oils_by_condition": {
+          "vata_general": "Tila Taila or Bala Taila",
+          "joint_disorders": "Mahanarayana Taila or Ksheerabala Taila",
+          "neurological": "Ksheerabala Taila 101 Avartita",
+          "reproductive": "Shatavari Ghrita for female; Ashwagandha Ghrita for male"
+        },
+        "retention": "Retained until next morning or until urge to defecate",
+        "setting": "clinic or home (Matra Basti version)"
+      },
+      "indications": [
+        "All Vata disorders — primary treatment ('Ardhachikitsa' — half of all treatment)",
+        "Ankylosing Spondylitis (Asthi-Majja Gata Vata)",
+        "Osteoarthritis (Sandhivata)",
+        "Sciatica (Gridhrasi)",
+        "Parkinson's disease (Kampavata)",
+        "Multiple Sclerosis (Vata in Majja Dhatu)",
+        "Peripheral neuropathy",
+        "Chronic constipation",
+        "Lower back pain (Kati Shoola)",
+        "Infertility (Aprajata) — Uttara Basti for female",
+        "Dryness disorders — skin, joints, bowels"
+      ],
+      "contraindications": {
+        "absolute": [
+          "Active diarrhea or dysentery", "Acute fever", "Rectal bleeding",
+          "Rectal prolapse", "Severe ascites", "Extreme emaciation",
+          "First trimester of pregnancy"
+        ],
+        "relative": [
+          "Diabetes (insulin-dependent) — monitor carefully",
+          "Inflammatory bowel disease in flare — use gentle Anuvasana only"
+        ]
+      },
+      "paschat_karma": {
+        "post_niruha_immediate": "Rest 1-2 hours. Light warm meal after expulsion. Anuvasana Basti same evening.",
+        "post_anuvasana_immediate": "No specific action — oil retained and absorbed.",
+        "samsarjana_krama": "post_basti",
+        "pathya": [
+          "Continue light Vata-pacifying diet throughout Basti course",
+          "Warm, oily, easily digestible foods",
+          "Avoid cold, dry, raw food",
+          "Avoid exertion after Niruha Basti day",
+          "Warm Abhyanga daily during Basti course"
+        ]
+      },
+      "classical_references": [
+        "Charaka Siddhi Sthana 3-12 (Basti Siddhi)",
+        "AH Chikitsa 19 (Basti Vidhi)",
+        "Sushruta Chikitsa 35-38"
+      ]
+    },
+
+    "nasya": {
+      "id": "nasya",
+      "name": "Nasya (Nasal Administration)",
+      "sanskrit": "नस्य",
+      "primary_dosha": "kapha",
+      "secondary_dosha": "vata",
+      "srotas_affected": "Pranavaha, Manovaha (head/neck Srotas)",
+      "ideal_ritu": ["all — different types for different seasons"],
+      "acceptable_ritu": ["all"],
+      "contraindicated_ritu": [],
+      "setting": ["home_pratimarsha", "clinic_marsha"],
+      "shodhana_or_shamana": "both",
+      "bala_required": "low",
+      "experience_required": "none",
+      "herb_requirement": "specific_ayurvedic",
+      "note": "Nasa (nose) is the gateway to the head — Nasya reaches all organs of the head through Sringataka Marma. 'Nasam Hi Shiraso Dwaram' (CS Siddhi 9.89)",
+      "subtypes": {
+        "pratimarsha_nasya": {
+          "name": "Pratimarsha Nasya (Daily Preventive — Home)",
+          "description": "2 drops of medicated oil in each nostril daily. Safe for everyone. Preventive and mild therapeutic.",
+          "dose": "2 drops per nostril",
+          "timing": "Morning after brushing, before sunrise ideally",
+          "frequency": "Daily",
+          "oils": {
+            "vata": "Anu Taila or plain Sesame oil — lubricates and warms",
+            "pitta": "Brahmi Ghrita or Ghrita (plain cow's ghee) — cooling",
+            "kapha": "Shadbindu Taila or Vacha Taila — stimulating, clears Kapha"
+          },
+          "home_safe": true,
+          "duration_minutes": 5,
+          "procedure": "Tilt head back slightly. Administer 2 drops. Sniff gently. Massage nasal bridge. Remain supine 1-2 minutes. Do not eat immediately after."
+        },
+        "navana_nasya": {
+          "name": "Navana Nasya (Oily Drops — Therapeutic)",
+          "description": "6-8 drops medicated oil or ghee in each nostril. Therapeutic for head disorders.",
+          "dose": "6-8 drops per nostril",
+          "timing": "Morning, 30 minutes after local Abhyanga + steam on face/neck",
+          "frequency": "Daily for 7 days (one course)",
+          "setting": "clinic or home with guidance",
+          "primary_aushadha": {
+            "vata_head_disorders": "Ksheerabala Taila 101 — for migraine, facial palsy, Vata in head",
+            "kapha_disorders": "Shadbindu Taila — sinusitis, allergic rhinitis, nasal polyps",
+            "pitta_disorders": "Brahmi Ghrita or Shatavari Ghrita — cooling, for inflammatory head disorders",
+            "neurological": "Brahmi Taila or Maha Panchagavya Ghrita — memory, mental clarity",
+            "general": "Anu Taila — universal, well-tolerated, preventive + mild therapeutic"
+          },
+          "indications": ["Migraine", "Sinusitis", "Allergic rhinitis", "Facial palsy", "Mental fatigue", "Hair loss (Khalitya)"]
+        },
+        "virechana_nasya": {
+          "name": "Virechana Nasya (Purgative Nasya — Shodhana)",
+          "description": "Pungent powders or liquids to expel Kapha from head and sinuses. Strong — clinic only.",
+          "dose": "Medicated powder or 4 drops strong decoction",
+          "setting": "clinic only",
+          "primary_aushadha": "Apamarga (Achyranthes aspera) powder, Vacha powder, Pippali powder",
+          "indications": ["Chronic sinusitis with thick discharge", "Nasal polyps", "Chronic headache from Kapha", "Epilepsy (Kapha type)"],
+          "contraindications": ["Pitta disorders", "Dry nasal mucosa", "Bleeding from nose"]
+        },
+        "shiro_basti": {
+          "name": "Shiro Basti (Oil Retention on Head)",
+          "description": "Warm medicated oil retained on scalp in a leather cap for 15-45 minutes. Deep Vata-Pitta therapy.",
+          "setting": "clinic",
+          "duration_minutes": 30,
+          "oils": "Ksheerabala Taila 101, Brahmi Taila, or plain Sesame oil",
+          "indications": ["Severe migraine", "Insomnia", "Anxiety", "Depression", "Hair loss", "Facial palsy"]
+        },
+        "shirodhara": {
+          "name": "Shirodhara (Continuous Oil Stream on Forehead)",
+          "description": "Continuous stream of warm oil on Ajna Chakra (third eye/Sthapani Marma) for 30-45 minutes. Profound psycho-neurological effect.",
+          "setting": "clinic",
+          "duration_minutes": 45,
+          "oils": {
+            "vata": "Tila Taila or Ksheerabala Taila — warm, grounding",
+            "pitta": "Chandanadi Taila or Brahmi Coconut oil — cooling",
+            "kapha": "Karpasasthyadi Taila — stimulating, clears mental Kapha"
+          },
+          "indications": ["Insomnia", "Anxiety", "PTSD", "Depression", "Migraine", "Hypertension", "Mental fatigue"],
+          "contraindications": ["Acute fever", "Neck injury", "Open wounds on scalp"]
+        }
+      },
+      "general_contraindications": [
+        "Acute cough or cold (wait for it to resolve first)",
+        "Just after meals (wait 30+ minutes)",
+        "Immediately after bathing in cold water",
+        "During menstruation (Pratimarsha is fine; Virechana Nasya — avoid)",
+        "Severe headache from Pitta (avoid stimulating Nasya)"
+      ],
+      "classical_references": [
+        "Charaka Sutrasthana 5 (Matrashitiya Adhyaya)",
+        "AH Sutrasthana 20 (Nasya Vidhi)",
+        "Sushruta Chikitsa 40"
+      ]
+    },
+
+    "raktamokshana": {
+      "id": "raktamokshana",
+      "name": "Raktamokshana (Blood Purification Therapy)",
+      "sanskrit": "रक्तमोक्षण",
+      "primary_dosha": "pitta",
+      "secondary_dosha": "rakta",
+      "srotas_affected": "Raktavaha Srotas",
+      "ideal_ritu": ["sharad"],
+      "acceptable_ritu": ["grishma", "vasanta"],
+      "contraindicated_ritu": ["shishira", "hemanta"],
+      "setting": "clinic",
+      "shodhana_or_shamana": "shodhana",
+      "bala_required": "medium",
+      "experience_required": "experienced_practitioner",
+      "herb_requirement": "none_to_specific",
+      "note": "Raktamokshana is the 5th Panchakarma. Modern practice primarily uses Jalaukavacharana (leech therapy) and Shringa (cupping). Siravyadha (venesection) is rarely used in modern settings.",
+      "subtypes": {
+        "jalaukavacharana": {
+          "name": "Jalaukavacharana (Leech Therapy)",
+          "description": "Medicinal leeches (Hirudo medicinalis) applied to affected area for blood purification",
+          "setting": "clinic (licensed practitioner only)",
+          "duration_minutes": 30,
+          "indications": ["Psoriasis", "Eczema", "Varicose veins", "Non-healing wounds", "Gout (Vatarakta)", "Local abscess"],
+          "contraindications": ["Anemia", "Pregnancy", "Blood thinning medications", "Hemophilia"]
+        },
+        "shringa": {
+          "name": "Shringa / Cupping (Horn/Cup Therapy)",
+          "description": "Traditional or modern cups applied to create suction, drawing Rakta to surface. Home-adaptable with modern cups.",
+          "setting": "home with dry cupping; clinic for wet cupping",
+          "duration_minutes": 15,
+          "indications": ["Muscle tension", "Cervical spondylosis", "Sciatica", "Respiratory congestion"],
+          "home_adaptable": true
+        },
+        "pracchana": {
+          "name": "Pracchana (Scarification)",
+          "description": "Multiple small incisions on affected area to release vitiated Rakta",
+          "setting": "clinic only",
+          "indications": ["Localized skin disorders", "Erysipelas", "Inflammatory swellings"]
+        }
+      },
+      "indications": [
+        "All Rakta-Pitta disorders: acne, psoriasis, eczema, urticaria",
+        "Vatarakta (Gout) — Rakta + Vata vitiation",
+        "Varicose veins, thrombophlebitis",
+        "Enlarged spleen or liver (Pleeha-Yakrit Shotha)",
+        "Eye disorders (Pitta-Rakta — inflammation)",
+        "Poisoning (Visha)"
+      ],
+      "contraindications": {
+        "absolute": [
+          "Anemia (Pandu)", "Pregnancy", "Very old or young", "Winter season (Shishira)",
+          "Severe cardiac weakness", "Hemophilia or bleeding disorders",
+          "On anticoagulant medications"
+        ]
+      },
+      "classical_references": [
+        "Sushruta Sutrasthana 13-14 (Jalaukavacharana, Siravyadha)",
+        "Charaka Chikitsa 16 (Raktapitta Chikitsa)"
+      ]
+    }
+  },
+
+  "paschat_karma": {
+    "samsarjana_krama": {
+      "description": "Systematic dietary re-introduction after Pradhana Karma. Critical to prevent Dhatu Kshaya post-Shodhana. Ref: CS Siddhi 1, AH Chikitsa 1.",
+      "note": "Duration and stages depend on the strength (Bala) of Shodhana: Pravara (strong) = more stages, Madhyama = medium, Avara (weak) = fewer stages.",
+      "post_vamana": {
+        "description": "After Vamana — re-entry over 7 days (Pravara Shuddhi)",
+        "stages": [
+          {"stage": 1, "duration_meals": 1, "food": "Peya (thin rice water)", "recipe": "1 part rice : 14 parts water, boiled. Strain and drink warm.", "note": "Agni is lowest — only liquid rice water"},
+          {"stage": 2, "duration_meals": 1, "food": "Vilepi (thick rice gruel)", "recipe": "1:6 rice:water ratio. Thick, semi-liquid.", "note": "Slightly more substance"},
+          {"stage": 3, "duration_meals": 1, "food": "Akrita Yusha (unseasoned dal soup)", "recipe": "Moong dal boiled to soup. No salt, no spices, no oil.", "note": "Protein introduced without stimulating Agni"},
+          {"stage": 4, "duration_meals": 1, "food": "Krita Yusha (lightly seasoned dal soup)", "recipe": "Moong dal with mild spices: cumin, coriander, a pinch of saindhava salt, ghee.", "note": "Spices kindle Agni gently"},
+          {"stage": 5, "duration_meals": 1, "food": "Akrita Mamsa Rasa / Shakas (plain vegetables or lentil broth)", "recipe": "Plain boiled soft vegetables or lentil broth without heavy spices.", "note": "Solid foods begin"},
+          {"stage": 6, "duration_meals": 2, "food": "Krita Mamsa / Krita Shakas (normal light cooked food)", "recipe": "Khichdi (rice + moong dal), soft cooked vegetables, ghee.", "note": "Normal light Pathya diet"},
+          {"stage": 7, "duration_meals": "ongoing", "food": "Normal Pathya diet", "recipe": "Regular Ayurvedic diet appropriate for Prakriti/Vikriti.", "note": "Re-established normal eating"}
+        ]
+      },
+      "post_virechana": {
+        "description": "After Virechana — re-entry over 5-7 days depending on strength",
+        "stages": [
+          {"stage": 1, "duration_meals": 1, "food": "Laja Peya (parched rice water)", "recipe": "Puffed/parched rice soaked in warm water. Strain. Add saindhava.", "note": "Coolant; replaces fluids lost in purgation"},
+          {"stage": 2, "duration_meals": 1, "food": "Vilepi (rice gruel)", "recipe": "Same as Vamana Samsarjana — 1:6 rice:water."},
+          {"stage": 3, "duration_meals": 1, "food": "Krita Yusha (seasoned moong dal)", "recipe": "Moong dal with ghee, cumin, coriander, saindhava."},
+          {"stage": 4, "duration_meals": 1, "food": "Khichdi", "recipe": "Equal rice + moong dal, well-cooked, with ghee and mild spices."},
+          {"stage": 5, "duration_meals": "ongoing", "food": "Normal Pathya — Pitta-pacifying diet", "recipe": "Avoid sour, pungent, oily, heavy food. Continue Pitta-pacifying diet for 30 days."}
+        ]
+      },
+      "post_basti": {
+        "description": "After each Niruha Basti day — light diet. After full Basti course — 3-day re-entry.",
+        "during_basti_course": "Warm, light, easily digestible food on all Basti days. Khichdi, moong dal, warm soups. No cold, heavy, raw, dry food. No carbonated drinks.",
+        "post_course": [
+          {"stage": 1, "duration_days": 1, "food": "Vilepi or Khichdi only"},
+          {"stage": 2, "duration_days": 1, "food": "Krita Yusha + small Khichdi"},
+          {"stage": 3, "duration_days": "ongoing", "food": "Normal Vata-pacifying Pathya diet"}
+        ]
+      }
+    },
+    "rasayana_integration": {
+      "description": "After Shodhana, Dhatus are clean and receptive — ideal time for Rasayana (rejuvenation). Rasayana absorption is maximum post-Shodhana.",
+      "timing": "Begin Rasayana on day 3-5 after Pradhana Karma",
+      "rasayana_by_condition": {
+        "general_immunity": {"herb": "Chyawanprash", "dose": "1 tsp twice daily with warm milk", "duration": "3-6 months"},
+        "vata_neurological": {"herb": "Ashwagandha Churna", "dose": "5g with warm milk at night", "duration": "3 months"},
+        "pitta_inflammatory": {"herb": "Amalaki (Indian Gooseberry)", "dose": "5g with honey + ghee", "duration": "3 months"},
+        "kapha_metabolic": {"herb": "Shilajit + Guggulu", "dose": "250mg Shilajit + 500mg Guggulu twice daily", "duration": "3 months"},
+        "reproductive_female": {"herb": "Shatavari Churna", "dose": "5g with warm milk", "duration": "3 months"},
+        "reproductive_male": {"herb": "Ashwagandha + Kapikacchu", "dose": "5g each with warm milk at night", "duration": "3 months"},
+        "bone_joint": {"herb": "Laksha Guggulu", "dose": "2 tablets twice daily with warm water", "duration": "3 months"},
+        "medhya_brain": {"herb": "Brahmi Ghrita", "dose": "5ml with warm milk", "duration": "3 months"}
+      }
+    }
+  },
+
+  "dosha_pradhana_karma_mapping": {
+    "description": "Classical mapping of dominant dosha to primary Pradhana Karma. Ref: CS Sutrasthana 15, AH Sutrasthana 14.",
+    "vata": {
+      "primary": "basti",
+      "secondary": "nasya",
+      "reason": "Basti directly reaches Pakvashaya — the seat of Vata. Niruha expels; Anuvasana nourishes. Basti is 'Ardhachikitsa' for Vata.",
+      "avoid": ["vamana_alone"],
+      "clinical_note": "Never do Virechana alone for Vata — it further dries. Always follow with Basti."
+    },
+    "pitta": {
+      "primary": "virechana",
+      "secondary": "raktamokshana",
+      "reason": "Virechana expels Pitta from Pakvashaya through its natural downward channel (Adho Marga). Raktamokshana for blood-level Pitta vitiation.",
+      "avoid": ["vamana_for_pitta_alone"],
+      "clinical_note": "Virechana before Basti if both Vata and Pitta are high."
+    },
+    "kapha": {
+      "primary": "vamana",
+      "secondary": "nasya",
+      "reason": "Vamana expels Kapha from Amashaya (stomach) — the seat of Kapha. Nasya clears Kapha from Urdhvanga (head/neck).",
+      "avoid": ["basti_only_without_vamana"],
+      "clinical_note": "Udvartana (dry powder massage) as Purvakarma instead of heavy Snehana — Kapha doesn't need excessive oil."
+    },
+    "vata_pitta": {
+      "primary": "virechana",
+      "secondary": "basti",
+      "reason": "Address Pitta first (Virechana), then Vata (Basti). Treating Vata first with Basti while Pitta is high may aggravate.",
+      "sequence": "Virechana → Basti (Yoga Basti)"
+    },
+    "pitta_kapha": {
+      "primary": "virechana",
+      "secondary": "vamana",
+      "reason": "Virechana addresses both Pitta and reduces Kapha from below. Vamana for residual Kapha if needed.",
+      "sequence": "Vamana → Virechana (or Virechana alone for mild cases)"
+    },
+    "vata_kapha": {
+      "primary": "basti",
+      "secondary": "vamana",
+      "reason": "Basti for Vata. Vamana for Kapha. Sequence depends on which is more aggravated.",
+      "sequence": "Vamana (spring) → Basti (monsoon/winter) in seasonal protocol"
+    },
+    "sama": {
+      "primary": "virechana",
+      "secondary": "basti",
+      "reason": "Virechana is the safest universal Shodhana for Sama Prakriti. Follow with Yoga Basti for comprehensive treatment.",
+      "sequence": "Virechana → Yoga Basti"
+    }
+  },
+
+  "home_panchakarma_protocol": {
+    "description": "A safe, effective home Panchakarma protocol for users without clinic access. Based on Shamana and mild Shodhana principles.",
+    "disclaimer": "Home protocol is Shamana (palliative), not full Shodhana. For Shodhana (Vamana, clinical Virechana, Niruha Basti), consult a Vaidya.",
+    "7_day_protocol": {
+      "days_1_3": {
+        "name": "Purvakarma (Preparation)",
+        "morning": "Deepana-Pachana herbs on empty stomach (Trikatu Churna 1g + warm water OR Hingashtak Churna 2g)",
+        "self_abhyanga": {
+          "oil_vata": "Warm sesame oil — 45 minutes full body",
+          "oil_pitta": "Coconut oil — light massage",
+          "oil_kapha": "Warm mustard oil — brisk stimulating massage"
+        },
+        "steam": "Hot shower or steam room for 10 minutes after Abhyanga",
+        "diet": "Light, warm, freshly cooked food only. No cold, heavy, processed food.",
+        "sleep": "By 10pm. Wake by 6am."
+      },
+      "days_4_5": {
+        "name": "Mild Pradhana (Internal Oleation + Mild Purgation)",
+        "morning": "Internal Snehana — Ghrita 30ml with warm water on empty stomach (skip if Kapha dominant — use Sarshapa Taila 15ml instead)",
+        "evening_day4": "Triphala Churna 5g with warm water (mild laxative effect overnight)",
+        "evening_day5": "Castor oil 15-20ml with warm milk at night (stronger purgation if needed — optional, skip if loose stools already)",
+        "home_basti": {
+          "option": "Matra Basti — 50ml warm sesame oil at night via enema bulb. Retain as long as possible.",
+          "suitable_for": "Vata conditions, constipation, lower back pain",
+          "note": "Home Matra Basti is safe. Avoid if active diarrhea or rectal issues."
+        },
+        "nasya": "Pratimarsha Nasya — 2 drops Anu Taila or Sesame oil per nostril in morning",
+        "diet": "Kitchari (moong dal + rice) mono-diet. Nothing else. Warm ginger tea."
+      },
+      "days_6_7": {
+        "name": "Paschat Karma (Recovery)",
+        "diet": "Samsarjana Krama — begin with Peya, progress to normal light food",
+        "rasayana": "Begin Chyawanprash 1 tsp twice daily or appropriate Rasayana",
+        "gentle_yoga": "Gentle Pavanamuktasana series, Savasana, Yoga Nidra",
+        "pranayama": "Anulom Vilom 10 minutes, Bhramari 5 minutes"
+      }
+    },
+    "21_day_intensive_home": {
+      "note": "For users with 21 days and strict adherence. Combines all elements with Kitchari mono-diet for 7 days.",
+      "structure": {
+        "days_1_7": "Purvakarma — daily Abhyanga, progressive internal Snehana (ghee), diet cleansing",
+        "days_8_14": "Pradhana phase — mild Virechana (Castor oil), daily Matra Basti, Pratimarsha Nasya, Kitchari mono-diet",
+        "days_15_21": "Paschat Karma — Samsarjana Krama dietary re-entry, Rasayana herbs, gentle Yoga/Pranayama, gradual return to normal life"
+      }
+    }
+  },
+
+  "aushadha_compendium": {
+    "description": "Classical formulations used in Panchakarma. For reference and LLM recommendation grounding.",
+    "oils_external": [
+      {"name": "Tila Taila (Sesame oil)", "dosha": "vata", "use": "Universal Abhyanga base for Vata. Brimhana, warming."},
+      {"name": "Ksheerabala Taila", "dosha": "vata", "use": "Neurological disorders, Asthi-Majja Vata, Basti for joint/neurological"},
+      {"name": "Mahanarayana Taila", "dosha": "vata", "use": "Joint disorders, muscle disorders, Kati Basti, Greeva Basti"},
+      {"name": "Bala Taila", "dosha": "vata", "use": "General Vata, muscle strength, Brimhana Basti"},
+      {"name": "Dashamoola Taila", "dosha": "vata", "use": "Respiratory Vata, general Vata pacification"},
+      {"name": "Chandanadi Taila", "dosha": "pitta", "use": "Cooling Abhyanga for Pitta, skin inflammation"},
+      {"name": "Brahmi Taila", "dosha": "pitta_vata", "use": "Shirodhara, Shiro Basti — neurological, mental health"},
+      {"name": "Dhanvantara Taila", "dosha": "vata", "use": "Postnatal care, Vata disorders, Greeva Basti"},
+      {"name": "Sarshapa Taila (Mustard)", "dosha": "kapha", "use": "Kapha Abhyanga, Udvartana base"},
+      {"name": "Anu Taila", "dosha": "all", "use": "Universal Navana Nasya. Most commonly used nasal oil."},
+      {"name": "Shadbindu Taila", "dosha": "kapha", "use": "Sinusitis, allergic rhinitis, nasal polyps"}
+    ],
+    "ghrita_internal": [
+      {"name": "Tikta Ghrita", "dosha": "pitta", "use": "Internal Snehana for Pitta. Virechana preparation."},
+      {"name": "Mahatiktaka Ghrita", "dosha": "pitta_rakta", "use": "Skin diseases, liver disorders, Pitta-Rakta. Virechana preparation."},
+      {"name": "Shatavari Ghrita", "dosha": "pitta_vata", "use": "Female reproductive, Pitta-Vata Snehana"},
+      {"name": "Brahmi Ghrita", "dosha": "all", "use": "Medhya Rasayana, mental health, Nasya, Shirodhara"},
+      {"name": "Triphala Ghrita", "dosha": "all", "use": "Eye disorders, gentle Virechana, antioxidant"},
+      {"name": "Ashwagandha Ghrita", "dosha": "vata", "use": "Brimhana Snehana, debility, Vata disorders"}
+    ],
+    "kashayam_basti": [
+      {"name": "Dashamoola Kashayam", "dosha": "vata", "use": "Most commonly used Niruha Basti base. Universal Vata."},
+      {"name": "Rasna Saptak Kashayam", "dosha": "vata", "use": "Joint disorders, AS, RA — Niruha Basti"},
+      {"name": "Bala Kashayam", "dosha": "vata", "use": "Neurological disorders, weakness — Niruha Basti"},
+      {"name": "Triphala Kashayam", "dosha": "all", "use": "Mild Niruha for general detox, constipation"}
+    ],
+    "virechana_drugs": [
+      {"name": "Trivrit Churna / Trivrit Lehyam", "strength": "strong", "dose": "20-30g", "use": "Clinical Virechana for Pitta"},
+      {"name": "Eranda (Castor Oil)", "strength": "moderate", "dose": "30-60ml with warm milk", "use": "Vata-Pitta Virechana, most commonly used"},
+      {"name": "Avipattikara Churna", "strength": "moderate", "dose": "5-10g with cool water", "use": "Pitta, acidity, liver"},
+      {"name": "Triphala Churna", "strength": "mild", "dose": "5-10g with warm water at night", "use": "Gentle daily purgation, mild Virechana"}
+    ],
+    "vamana_drugs": [
+      {"name": "Madanaphala Phanta", "strength": "strong", "use": "Classical primary Vamana drug"},
+      {"name": "Vacha Churna", "strength": "moderate", "use": "With warm water — secondary emetic"},
+      {"name": "Neem bark decoction", "strength": "mild", "use": "Mild Vamana for mild Kapha conditions"}
+    ]
+  },
+
+  "contraindication_matrix": {
+    "description": "Quick-lookup contraindication matrix for safety checks in the engine.",
+    "pregnancy": {
+      "blocked": ["vamana", "virechana_strong", "raktamokshana", "vigorous_swedana"],
+      "allowed": ["pratimarsha_nasya", "matra_basti_gentle", "abhyanga_mild", "shirodhara"]
+    },
+    "menstruation": {
+      "blocked": ["vamana", "virechana_strong", "raktamokshana"],
+      "allowed": ["pratimarsha_nasya", "abhyanga", "shirodhara"],
+      "delay": "Wait 2-3 days after menstruation ends for Shodhana"
+    },
+    "high_ama": {
+      "blocked": ["all_pradhana_without_deepana_pachana_first"],
+      "required_first": "Deepana-Pachana for 3-7 days until tongue clears and appetite returns"
+    },
+    "manda_agni": {
+      "blocked": ["virechana_strong", "basti_niruha_early"],
+      "required_first": "Dipana (Agni kindling): Trikatu, Chitrakadi Vati for 5-7 days"
+    },
+    "atidurbala": {
+      "blocked": ["vamana", "virechana_strong", "niruha_basti"],
+      "allowed": ["matra_basti", "pratimarsha_nasya", "abhyanga", "shamana_only"]
+    },
+    "acute_fever": {
+      "blocked": ["all_shodhana"],
+      "allowed": ["nothing — wait for fever to resolve completely"]
+    }
+  }
+}

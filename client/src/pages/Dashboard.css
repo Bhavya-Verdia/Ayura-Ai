@@ -565,3 +565,14 @@
   flex-shrink: 0;
   flex-wrap: wrap;
 }
+
+/* ─── Ojas Pill ────────────────────────────────────────────── */
+.dash-ojas-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 999px; margin-top: 8px;
+  font-size: 0.78rem; font-weight: 600; font-family: var(--font-ui);
+}
+.dash-ojas-icon { font-size: 0.9rem; }
+.ojas-high   { background: rgba(74,222,128,0.12); color: var(--ayura-sage); border: 1px solid rgba(74,222,128,0.25); }
+.ojas-medium { background: rgba(251,191,36,0.12); color: #d97706; border: 1px solid rgba(251,191,36,0.25); }
+.ojas-low    { background: rgba(251,113,133,0.12); color: var(--ayura-rose); border: 1px solid rgba(251,113,133,0.25); }

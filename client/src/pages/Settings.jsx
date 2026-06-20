@@ -11,6 +11,130 @@ import './Settings.css'
 
 const LazyParticleField = React.lazy(() => import('../components/ParticleField'))
 
+const CONDITION_CATEGORIES = [
+  {
+    label: 'Musculoskeletal',
+    items: [
+      { id: 'arthritis', label: 'Arthritis' },
+      { id: 'osteoarthritis', label: 'Osteoarthritis' },
+      { id: 'rheumatoid_arthritis', label: 'Rheumatoid Arthritis' },
+      { id: 'ankylosing_spondylitis', label: 'Ankylosing Spondylitis' },
+      { id: 'gout', label: 'Gout' },
+      { id: 'fibromyalgia', label: 'Fibromyalgia' },
+      { id: 'osteoporosis', label: 'Osteoporosis' },
+      { id: 'sciatica', label: 'Sciatica' },
+      { id: 'cervical_spondylosis', label: 'Cervical Spondylosis' },
+      { id: 'lumbar_spondylosis', label: 'Lumbar Spondylosis' },
+    ],
+  },
+  {
+    label: 'Neurological',
+    items: [
+      { id: 'migraine', label: 'Migraine' },
+      { id: 'epilepsy', label: 'Epilepsy' },
+      { id: 'parkinson', label: "Parkinson's" },
+      { id: 'multiple_sclerosis', label: 'Multiple Sclerosis' },
+      { id: 'tinnitus', label: 'Tinnitus' },
+      { id: 'vertigo', label: 'Vertigo' },
+      { id: 'chronic_fatigue_syndrome', label: 'Chronic Fatigue' },
+      { id: 'peripheral_neuropathy', label: 'Peripheral Neuropathy' },
+    ],
+  },
+  {
+    label: 'Mental Health',
+    items: [
+      { id: 'anxiety', label: 'Anxiety Disorder' },
+      { id: 'depression', label: 'Depression' },
+      { id: 'bipolar', label: 'Bipolar Disorder' },
+      { id: 'ocd', label: 'OCD' },
+      { id: 'ptsd', label: 'PTSD' },
+      { id: 'adhd', label: 'ADHD' },
+      { id: 'insomnia', label: 'Chronic Insomnia' },
+    ],
+  },
+  {
+    label: 'Cardiovascular',
+    items: [
+      { id: 'hypertension', label: 'Hypertension' },
+      { id: 'heart_disease', label: 'Heart Disease' },
+      { id: 'atrial_fibrillation', label: 'Atrial Fibrillation' },
+      { id: 'anemia', label: 'Anaemia' },
+      { id: 'varicose_veins', label: 'Varicose Veins' },
+      { id: 'low_blood_pressure', label: 'Low Blood Pressure' },
+    ],
+  },
+  {
+    label: 'Respiratory',
+    items: [
+      { id: 'asthma', label: 'Asthma' },
+      { id: 'copd', label: 'COPD' },
+      { id: 'allergic_rhinitis', label: 'Allergic Rhinitis' },
+      { id: 'sinusitis', label: 'Chronic Sinusitis' },
+      { id: 'sleep_apnea', label: 'Sleep Apnea' },
+      { id: 'chronic_bronchitis', label: 'Chronic Bronchitis' },
+    ],
+  },
+  {
+    label: 'Digestive',
+    items: [
+      { id: 'acid_reflux', label: 'Acid Reflux / GERD' },
+      { id: 'ibs', label: 'IBS' },
+      { id: 'ibd_crohns', label: "Crohn's Disease" },
+      { id: 'ulcerative_colitis', label: 'Ulcerative Colitis' },
+      { id: 'fatty_liver', label: 'Fatty Liver' },
+      { id: 'gallstones', label: 'Gallstones' },
+      { id: 'constipation_chronic', label: 'Chronic Constipation' },
+      { id: 'celiac', label: 'Celiac Disease' },
+      { id: 'hemorrhoids', label: 'Haemorrhoids' },
+    ],
+  },
+  {
+    label: 'Endocrine & Metabolic',
+    items: [
+      { id: 'diabetes_type2', label: 'Type 2 Diabetes' },
+      { id: 'diabetes_type1', label: 'Type 1 Diabetes' },
+      { id: 'hypothyroidism', label: 'Hypothyroidism' },
+      { id: 'hyperthyroidism', label: 'Hyperthyroidism' },
+      { id: 'pcos', label: 'PCOS' },
+      { id: 'high_cholesterol', label: 'High Cholesterol' },
+      { id: 'obesity', label: 'Obesity (BMI > 30)' },
+      { id: 'metabolic_syndrome', label: 'Metabolic Syndrome' },
+      { id: 'hashimoto', label: "Hashimoto's" },
+    ],
+  },
+  {
+    label: 'Skin',
+    items: [
+      { id: 'psoriasis', label: 'Psoriasis' },
+      { id: 'eczema', label: 'Eczema' },
+      { id: 'acne_severe', label: 'Severe Acne' },
+      { id: 'vitiligo', label: 'Vitiligo' },
+      { id: 'rosacea', label: 'Rosacea' },
+      { id: 'urticaria', label: 'Urticaria / Hives' },
+      { id: 'alopecia', label: 'Alopecia' },
+    ],
+  },
+  {
+    label: 'Urological & Reproductive',
+    items: [
+      { id: 'kidney_stones', label: 'Kidney Stones' },
+      { id: 'recurrent_uti', label: 'Recurrent UTIs' },
+      { id: 'endometriosis', label: 'Endometriosis' },
+      { id: 'uterine_fibroids', label: 'Uterine Fibroids' },
+      { id: 'dysmenorrhea', label: 'Painful Periods' },
+      { id: 'menorrhagia', label: 'Heavy Periods' },
+    ],
+  },
+  {
+    label: 'Autoimmune',
+    items: [
+      { id: 'lupus', label: 'Lupus (SLE)' },
+      { id: 'scleroderma', label: 'Scleroderma' },
+      { id: 'rheumatoid_arthritis', label: 'Rheumatoid Arthritis' },
+    ],
+  },
+]
+
 const staggerContainer = {
   animate: { transition: { staggerChildren: 0.06 } },
 }
@@ -26,6 +150,18 @@ export default function Settings() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
+  const [selectedConditions, setSelectedConditions] = useState(
+    (profile?.medical_history || []).filter(id =>
+      CONDITION_CATEGORIES.some(cat => cat.items.some(item => item.id === id))
+    )
+  )
+  const [conditionSearch, setConditionSearch] = useState('')
+  const [otherCondition, setOtherCondition] = useState(
+    (profile?.medical_history || [])
+      .filter(id => !CONDITION_CATEGORIES.some(cat => cat.items.some(item => item.id === id)))
+      .join(', ')
+  )
+
   const [form, setForm] = useState({
     age: profile?.age || '',
     height_cm: profile?.height_cm || '',
@@ -33,10 +169,17 @@ export default function Settings() {
     fitness_level: profile?.fitness_level || '',
     activity_level: profile?.activity_level || '',
     goal: profile?.goal || '',
-    medical_history: (profile?.medical_history || []).join(', '),
+    satmya: profile?.satmya || '',
+    koshtha: profile?.koshtha || '',
     current_symptoms: (profile?.current_symptoms || []).join(', '),
     current_medications: (profile?.current_medications || []).join(', '),
   })
+
+  function toggleCondition(id) {
+    setSelectedConditions(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+  }
 
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' })
   const [saving, setSaving] = useState(false)
@@ -67,7 +210,12 @@ export default function Settings() {
         fitness_level:      formData.fitness_level   || undefined,
         activity_level:     formData.activity_level  || undefined,
         goal:               formData.goal             || undefined,
-        medical_history:    formData.medical_history    ? formData.medical_history.split(',').map(s => s.trim()).filter(Boolean)    : undefined,
+        satmya:             formData.satmya           || undefined,
+        koshtha:            formData.koshtha          || undefined,
+        medical_history: [
+          ...selectedConditions,
+          ...otherCondition.split(',').map(s => s.trim().toLowerCase().replace(/\s+/g, '_')).filter(Boolean),
+        ].filter(Boolean) || undefined,
         current_symptoms:   formData.current_symptoms   ? formData.current_symptoms.split(',').map(s => s.trim()).filter(Boolean)   : undefined,
         current_medications:formData.current_medications? formData.current_medications.split(',').map(s => s.trim()).filter(Boolean): undefined,
       }
@@ -92,7 +240,12 @@ export default function Settings() {
         fitness_level: form.fitness_level || undefined,
         activity_level: form.activity_level || undefined,
         goal: form.goal || undefined,
-        medical_history: form.medical_history ? form.medical_history.split(',').map(s => s.trim()).filter(Boolean) : undefined,
+        satmya: form.satmya || undefined,
+        koshtha: form.koshtha || undefined,
+        medical_history: [
+          ...selectedConditions,
+          ...otherCondition.split(',').map(s => s.trim().toLowerCase().replace(/\s+/g, '_')).filter(Boolean),
+        ].filter(Boolean) || undefined,
         current_symptoms: form.current_symptoms ? form.current_symptoms.split(',').map(s => s.trim()).filter(Boolean) : undefined,
         current_medications: form.current_medications ? form.current_medications.split(',').map(s => s.trim()).filter(Boolean) : undefined,
       }
@@ -377,10 +530,71 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="input-group" style={{ marginTop: '16px' }}>
-            <label>Medical History (comma-separated)</label>
-            <input name="medical_history" value={form.medical_history} onChange={handleChange} placeholder="e.g. diabetes, hypertension" />
+          <div style={{ marginTop: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '10px', fontWeight: 600, fontSize: '0.9rem' }}>Medical Conditions</label>
+            <input
+              className="onb-condition-search"
+              type="text"
+              placeholder="Search conditions…"
+              value={conditionSearch}
+              onChange={e => setConditionSearch(e.target.value)}
+            />
+            {CONDITION_CATEGORIES.map(cat => {
+              const q = conditionSearch.trim().toLowerCase()
+              const visible = q
+                ? cat.items.filter(({ label }) => label.toLowerCase().includes(q))
+                : cat.items
+              if (visible.length === 0) return null
+              return (
+                <div key={cat.label} className="onb-condition-category">
+                  <span className="onb-condition-cat-label">{cat.label}</span>
+                  <div className="onb-chip-wrap">
+                    {visible.map(({ id, label }) => (
+                      <button
+                        key={id} type="button"
+                        onClick={() => toggleCondition(id)}
+                        className={`onb-chip ${selectedConditions.includes(id) ? 'selected' : ''}`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+            <div className="onb-other-condition">
+              <span className="onb-condition-cat-label" style={{ display: 'block', marginTop: 10 }}>
+                Not listed? Add here (comma-separated)
+              </span>
+              <input
+                className="onb-condition-search"
+                type="text"
+                placeholder="e.g. sarcoidosis, hemophilia"
+                value={otherCondition}
+                onChange={e => setOtherCondition(e.target.value)}
+              />
+            </div>
           </div>
+          <div className="input-group">
+            <label>How long have you followed your current diet &amp; lifestyle? (Satmya)</label>
+            <select name="satmya" value={form.satmya} onChange={handleChange}>
+              <option value="">Select…</option>
+              <option value="less_than_1y">Less than 1 year</option>
+              <option value="1_to_5y">1–5 years</option>
+              <option value="over_5y">More than 5 years</option>
+            </select>
+          </div>
+
+          <div className="input-group">
+            <label>Bowel Tendency (Koshtha) — used for Panchakarma personalisation</label>
+            <select name="koshtha" value={form.koshtha} onChange={handleChange}>
+              <option value="">Select…</option>
+              <option value="sama">Sama — Regular once daily</option>
+              <option value="krura">Krura — Hard / infrequent (tends toward constipation)</option>
+              <option value="mridu">Mridu — Loose / frequent (tends toward loose stools)</option>
+            </select>
+          </div>
+
           <div className="input-group">
             <label>Current Symptoms (comma-separated)</label>
             <input name="current_symptoms" value={form.current_symptoms} onChange={handleChange} placeholder="e.g. fatigue, bloating, insomnia" />

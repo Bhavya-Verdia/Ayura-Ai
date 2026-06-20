@@ -35,6 +35,7 @@ class UserDocument(BaseModel):
     dominant_dosha: Optional[str] = None
     secondary_dosha: Optional[str] = None
     dosha_confidence: Optional[int] = None          # 0-100 — set after quiz
+    prakriti_locked: bool = False                   # True after first Prakriti assessment — Prakriti is lifelong per Charaka
 
     # ── Vikriti (current imbalance — separate from constitutional Prakriti) ──
     vikriti_scores: Optional[dict] = None           # {"vata": 70, "pitta": 25, "kapha": 5}
@@ -56,6 +57,11 @@ class UserDocument(BaseModel):
     prakriti_classical_type: Optional[str] = None      # one of 7 Sapta Prakriti types
     prakriti_classical_name: Optional[str] = None      # human-readable classical name
     ama_indicator: Optional[str] = None                # none | mild | moderate | high
+    agni_type: Optional[str] = None                    # sama | vata (vishama) | pitta (tikshna) | kapha (manda)
+    ojas_score: Optional[int] = None                   # 0-100 — Ojas vitality score (Charaka Chikitsa 24)
+    ojas_level: Optional[str] = None                   # high | medium | low
+    disease_stages: Optional[dict] = None              # {condition_id: {duration, trajectory, kriya_kala}}
+    koshtha: Optional[str] = None                      # krura | sama | mridu — bowel tendency (CS Kalpa 1); determines Virechana drug strength
 
     # ── Physical & Activity ────────────────────────────────────────────────────
     fitness_level: Optional[str] = None
@@ -64,6 +70,7 @@ class UserDocument(BaseModel):
 
     # ── Health Profile ─────────────────────────────────────────────────────────
     medical_history: Optional[list[str]] = None
+    satmya: Optional[str] = None                       # "less_than_1y" | "1_to_5y" | "over_5y" — habitual diet/lifestyle duration
     allergies: Optional[list[str]] = None                  # NEW — gluten / dairy / nuts / etc.
     current_symptoms: Optional[list[str]] = None
     current_medications: Optional[list[str]] = None
@@ -152,6 +159,9 @@ class UserProfileUpdate(BaseModel):
         description="Current sleep quality"
     )
 
+    satmya: Optional[str] = Field(None, pattern="^(less_than_1y|1_to_5y|over_5y)$", description="Duration of current habitual diet/lifestyle pattern (Satmya)")
+    koshtha: Optional[str] = Field(None, pattern="^(krura|sama|mridu)$", description="Bowel tendency — Krura (hard/infrequent), Sama (normal), Mridu (loose/frequent). Determines Virechana drug strength.")
+
     # ── Dosha (set by quiz endpoint, but allow direct update too) ─────────────
     dominant_dosha: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
     dosha_scores: Optional[dict] = None
@@ -189,6 +199,7 @@ class UserProfileResponse(BaseModel):
     dominant_dosha: Optional[str] = None
     secondary_dosha: Optional[str] = None
     dosha_confidence: Optional[int] = None
+    prakriti_locked: bool = False
 
     # Vikriti
     vikriti_scores: Optional[dict] = None
@@ -210,6 +221,11 @@ class UserProfileResponse(BaseModel):
     prakriti_classical_type: Optional[str] = None
     prakriti_classical_name: Optional[str] = None
     ama_indicator: Optional[str] = None
+    ojas_score: Optional[int] = None
+    ojas_level: Optional[str] = None
+    disease_stages: Optional[dict] = None
+    koshtha: Optional[str] = None
+
     needs_reassessment: bool = False
 
     # Physical
@@ -219,6 +235,7 @@ class UserProfileResponse(BaseModel):
 
     # Health
     medical_history: Optional[list[str]] = None
+    satmya: Optional[str] = None
     allergies: Optional[list[str]] = None
     current_symptoms: Optional[list[str]] = None
     current_medications: Optional[list[str]] = None
@@ -288,6 +305,7 @@ class VikritiCheckInRequest(BaseModel):
     stress_this_week: Optional[int] = Field(None, ge=1, le=5, description="1=extreme, 5=none")
     digestion_this_week: Optional[int] = Field(None, ge=1, le=5, description="1=very poor, 5=strong")
     menstrual_phase: Optional[bool] = Field(None, description="True if currently menstruating (within 3 days). Female users only.")
+    disease_stage_updates: Optional[dict] = Field(None, description="Per-condition stage update: {condition_id: {duration, trajectory}}")
 
 
 class PlanFeedbackRequest(BaseModel):

@@ -367,26 +367,38 @@ async def submit_dosha_assessment(
 
     from engine.dosha_analyzer import _vikriti_secondary as _vs_da
     now = datetime.now(timezone.utc)
-    update_fields = {
-        "dosha_scores": result["prakriti"],
-        "dominant_dosha": result["prakriti_dominant"],
-        "secondary_dosha": result["prakriti_secondary"],
-        "dosha_confidence": result["confidence_score"],
+
+    vikriti_only_update = {
         "vikriti_scores": result["vikriti"],
         "vikriti_dominant": result["vikriti_dominant"],
         "vikriti_secondary": _vs_da(result["vikriti"]),
-        "dosha_constitution_type": result["constitution_type"],
-        "dosha_explanation": result["explanation"],
         "dosha_immediate_focus": result["immediate_focus"],
         "dosha_key_signals": result["key_signals"],
         "dosha_contradictions": result.get("contradictions", []),
-        "primary_gunas": result.get("primary_gunas", []),
-        "manas_prakriti": result.get("manas_prakriti"),
-        "prakriti_classical_type": result.get("prakriti_classical_type"),
-        "prakriti_classical_name": result.get("prakriti_classical_name"),
         "ama_indicator": result.get("ama_indicator", "none"),
+        "agni_type": result.get("agni_type"),
+        "ojas_score": (result.get("ojas") or {}).get("score"),
+        "ojas_level": (result.get("ojas") or {}).get("level"),
         "updated_at": now,
     }
+
+    if user.prakriti_locked:
+        update_fields = vikriti_only_update
+    else:
+        update_fields = {
+            **vikriti_only_update,
+            "dosha_scores": result["prakriti"],
+            "dominant_dosha": result["prakriti_dominant"],
+            "secondary_dosha": result["prakriti_secondary"],
+            "dosha_confidence": result["confidence_score"],
+            "dosha_constitution_type": result["constitution_type"],
+            "dosha_explanation": result["explanation"],
+            "primary_gunas": result.get("primary_gunas", []),
+            "manas_prakriti": result.get("manas_prakriti"),
+            "prakriti_classical_type": result.get("prakriti_classical_type"),
+            "prakriti_classical_name": result.get("prakriti_classical_name"),
+            "prakriti_locked": True,
+        }
 
     for key, value in update_fields.items():
         setattr(user, key, value)
@@ -412,6 +424,7 @@ async def vikriti_checkin(
         _compute_symptom_signal,
         _confidence_from_checkins,
         _lifestyle_pulse_signal,
+        _medical_history_vikriti_signal,
         _symptom_persistence_weights,
         _vikriti_secondary,
     )
@@ -434,6 +447,21 @@ async def vikriti_checkin(
     )
     blended = _apply_seasonal_correction(blended)
 
+    # Medical history — persistent disease channel involvement biases Vikriti (15% slot at check-in)
+    if user.medical_history:
+        _med_sig, _ = _medical_history_vikriti_signal(user.medical_history)
+        if _med_sig:
+            MEDICAL_SLOT = 0.15
+            blended = {
+                d: round((1 - MEDICAL_SLOT) * blended.get(d, 33) + MEDICAL_SLOT * _med_sig.get(d, 33))
+                for d in ["vata", "pitta", "kapha"]
+            }
+            _bmt = sum(blended.values()) or 1
+            blended = {d: round(v / _bmt * 100) for d, v in blended.items()}
+            _bmd = 100 - sum(blended.values())
+            if _bmd != 0:
+                blended[max(blended, key=blended.get)] += _bmd
+
     # Menstrual phase: Pitta naturally elevates during menstruation (classical artava teaching)
     if req.menstrual_phase and user.gender == "female":
         blended["pitta"] = min(68, round(blended.get("pitta", 33) * 1.12))
@@ -442,6 +470,32 @@ async def vikriti_checkin(
         _diff = 100 - sum(blended.values())
         if _diff != 0:
             blended[max(blended, key=blended.get)] += _diff
+
+    # Kriya Kala stage update — maps (duration, trajectory) to classical disease stage
+    existing_stages = dict(user.disease_stages or {})
+    if req.disease_stage_updates:
+        _KRIYA_KALA_MAP = {
+            ("months", "worsening"):  "prakopa",
+            ("months", "stable"):     "sanchaya",
+            ("months", "improving"):  "sanchaya",
+            ("1-3y",   "worsening"):  "prasara",
+            ("1-3y",   "stable"):     "sthana",
+            ("1-3y",   "improving"):  "prakopa",
+            ("3-5y",   "worsening"):  "vyakti",
+            ("3-5y",   "stable"):     "sthana",
+            ("3-5y",   "improving"):  "prasara",
+            ("5y+",    "worsening"):  "bheda",
+            ("5y+",    "stable"):     "vyakti",
+            ("5y+",    "improving"):  "sthana",
+        }
+        for cid, stage_data in req.disease_stage_updates.items():
+            duration = stage_data.get("duration", "months")
+            trajectory = stage_data.get("trajectory", "stable")
+            existing_stages[cid] = {
+                "duration": duration,
+                "trajectory": trajectory,
+                "kriya_kala": _KRIYA_KALA_MAP.get((duration, trajectory), "vyakti"),
+            }
 
     new_checkin_count = (user.checkin_count or 0) + 1
     new_confidence = _confidence_from_checkins(
@@ -476,6 +530,7 @@ async def vikriti_checkin(
         "vikriti_history": updated_history,
         "last_vikriti_checkin": now,
         "updated_at": now,
+        "disease_stages": existing_stages,
     }
     await db.users.update_one({"_id": user.id}, {"$set": update})
     for k, v in update.items():

@@ -318,15 +318,32 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
             </div>
             <div className="pref-row">
               <div className="pref-input-group">
-                <label>Available Days (3-21)</label>
-                <input type="number" name="available_time_days" min={3} max={21} value={form.available_time_days || ''} onChange={handleChange} required />
+                <label>Available Days (3–30)</label>
+                <input type="number" name="available_time_days" min={3} max={30} value={form.available_time_days || ''} onChange={handleChange} required />
               </div>
               <div className="pref-input-group">
                 <label>Setting</label>
                 <select name="setting" value={form.setting || ''} onChange={handleChange} required>
-                  <option value="home">Home Therapies</option>
-                  <option value="clinic">Clinic Full Detox</option>
-                  <option value="both">Both</option>
+                  <option value="home">Home Therapies (Shamana)</option>
+                  <option value="clinic">Clinical Reference Plan (Vaidya-Assisted)</option>
+                </select>
+              </div>
+            </div>
+            <div className="pref-row">
+              <div className="pref-input-group">
+                <label>Prior PK Experience</label>
+                <select name="detox_experience" value={form.detox_experience || ''} onChange={handleChange} required>
+                  <option value="none">First time</option>
+                  <option value="some">Done 1–2 courses</option>
+                  <option value="experienced">Experienced (3+ courses)</option>
+                </select>
+              </div>
+              <div className="pref-input-group">
+                <label>Koshtha (Bowel Tendency)</label>
+                <select name="koshtha" value={form.koshtha || ''} onChange={handleChange} required>
+                  <option value="sama">Sama — Regular (once daily)</option>
+                  <option value="krura">Krura — Hard / infrequent (constipated)</option>
+                  <option value="mridu">Mridu — Loose / frequent</option>
                 </select>
               </div>
             </div>
@@ -340,6 +357,8 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                   <option value="2+ hours">2+ hours</option>
                 </select>
               </div>
+            </div>
+            <div className="pref-row">
               <div className="pref-input-group">
                 <label>Herb Access</label>
                 <select name="access_to_ayurvedic_herbs" value={form.access_to_ayurvedic_herbs || ''} onChange={handleChange} required>
@@ -348,14 +367,14 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                   <option value="no">Kitchen spices only</option>
                 </select>
               </div>
-            </div>
-            <div className="pref-input-group">
-              <label>Diet Adherence</label>
-              <select name="diet_adherence_ability" value={form.diet_adherence_ability || ''} onChange={handleChange} required>
-                <option value="partial">Partial</option>
-                <option value="strict">Strict (Kitchari Only)</option>
-                <option value="lifestyle_only">Lifestyle Only</option>
-              </select>
+              <div className="pref-input-group">
+                <label>Diet Adherence</label>
+                <select name="diet_adherence_ability" value={form.diet_adherence_ability || ''} onChange={handleChange} required>
+                  <option value="partial">Partial</option>
+                  <option value="strict">Strict (Kitchari Only)</option>
+                  <option value="lifestyle_only">Lifestyle Only</option>
+                </select>
+              </div>
             </div>
           </>
         );

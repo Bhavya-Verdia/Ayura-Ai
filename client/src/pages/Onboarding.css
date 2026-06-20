@@ -150,6 +150,22 @@
   color: #000; font-weight: 600;
 }
 
+.onb-condition-category { margin-bottom: 16px; }
+.onb-condition-cat-label {
+  display: block; font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.09em;
+  color: var(--ayura-muted); margin-bottom: 8px;
+}
+.onb-condition-search {
+  width: 100%; box-sizing: border-box;
+  background: var(--border-subtle); border: 1px solid var(--border-light-hover);
+  color: var(--ayura-ink); border-radius: 10px;
+  padding: 9px 14px; font-size: 0.85rem; margin-bottom: 14px;
+  font-family: var(--font-ui);
+}
+.onb-condition-search:focus { outline: none; border-color: var(--ayura-teal); }
+.onb-other-condition { margin-top: 4px; }
+
 /* BMI */
 .onb-bmi {
   background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.25);

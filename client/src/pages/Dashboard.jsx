@@ -510,6 +510,12 @@ const Dashboard = () => {
               confidence={user?.dosha_confidence}
               checkinCount={user?.checkin_count}
             />
+            {user?.ojas_level && (
+              <div className={`dash-ojas-pill ojas-${user.ojas_level}`}>
+                <span className="dash-ojas-icon">✦</span>
+                <span>Ojas: {user.ojas_level === 'high' ? 'High — Strong Immunity' : user.ojas_level === 'medium' ? 'Medium — Fair Vitality' : 'Low — Depleted'}{user.ojas_score != null ? ` (${user.ojas_score}/100)` : ''}</span>
+              </div>
+            )}
           </div>
         </div>
 

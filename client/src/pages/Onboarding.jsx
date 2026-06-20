@@ -9,9 +9,128 @@ const LazyParticleField = React.lazy(() => import('../components/ParticleField')
 
 const STEPS = ['Basics', 'Physical', 'Goals & Dosha']
 
-const CONDITIONS = [
-  'diabetes_type2', 'hypertension', 'pcos', 'acid_reflux', 'arthritis',
-  'hypothyroidism', 'heart_disease', 'asthma', 'anxiety', 'depression'
+const CONDITION_CATEGORIES = [
+  {
+    label: 'Musculoskeletal',
+    items: [
+      { id: 'arthritis', label: 'Arthritis' },
+      { id: 'osteoarthritis', label: 'Osteoarthritis' },
+      { id: 'rheumatoid_arthritis', label: 'Rheumatoid Arthritis' },
+      { id: 'ankylosing_spondylitis', label: 'Ankylosing Spondylitis' },
+      { id: 'gout', label: 'Gout' },
+      { id: 'fibromyalgia', label: 'Fibromyalgia' },
+      { id: 'osteoporosis', label: 'Osteoporosis' },
+      { id: 'sciatica', label: 'Sciatica' },
+      { id: 'cervical_spondylosis', label: 'Cervical Spondylosis' },
+      { id: 'lumbar_spondylosis', label: 'Lumbar Spondylosis' },
+    ],
+  },
+  {
+    label: 'Neurological',
+    items: [
+      { id: 'migraine', label: 'Migraine' },
+      { id: 'epilepsy', label: 'Epilepsy' },
+      { id: 'parkinson', label: "Parkinson's" },
+      { id: 'multiple_sclerosis', label: 'Multiple Sclerosis' },
+      { id: 'tinnitus', label: 'Tinnitus' },
+      { id: 'vertigo', label: 'Vertigo' },
+      { id: 'chronic_fatigue_syndrome', label: 'Chronic Fatigue' },
+      { id: 'peripheral_neuropathy', label: 'Peripheral Neuropathy' },
+    ],
+  },
+  {
+    label: 'Mental Health',
+    items: [
+      { id: 'anxiety', label: 'Anxiety Disorder' },
+      { id: 'depression', label: 'Depression' },
+      { id: 'bipolar', label: 'Bipolar Disorder' },
+      { id: 'ocd', label: 'OCD' },
+      { id: 'ptsd', label: 'PTSD' },
+      { id: 'adhd', label: 'ADHD' },
+      { id: 'insomnia', label: 'Chronic Insomnia' },
+    ],
+  },
+  {
+    label: 'Cardiovascular',
+    items: [
+      { id: 'hypertension', label: 'Hypertension' },
+      { id: 'heart_disease', label: 'Heart Disease' },
+      { id: 'atrial_fibrillation', label: 'Atrial Fibrillation' },
+      { id: 'anemia', label: 'Anaemia' },
+      { id: 'varicose_veins', label: 'Varicose Veins' },
+      { id: 'low_blood_pressure', label: 'Low Blood Pressure' },
+    ],
+  },
+  {
+    label: 'Respiratory',
+    items: [
+      { id: 'asthma', label: 'Asthma' },
+      { id: 'copd', label: 'COPD' },
+      { id: 'allergic_rhinitis', label: 'Allergic Rhinitis' },
+      { id: 'sinusitis', label: 'Chronic Sinusitis' },
+      { id: 'sleep_apnea', label: 'Sleep Apnea' },
+      { id: 'chronic_bronchitis', label: 'Chronic Bronchitis' },
+    ],
+  },
+  {
+    label: 'Digestive',
+    items: [
+      { id: 'acid_reflux', label: 'Acid Reflux / GERD' },
+      { id: 'ibs', label: 'IBS' },
+      { id: 'ibd_crohns', label: "Crohn's Disease" },
+      { id: 'ulcerative_colitis', label: 'Ulcerative Colitis' },
+      { id: 'fatty_liver', label: 'Fatty Liver' },
+      { id: 'gallstones', label: 'Gallstones' },
+      { id: 'constipation_chronic', label: 'Chronic Constipation' },
+      { id: 'celiac', label: 'Celiac Disease' },
+      { id: 'hemorrhoids', label: 'Haemorrhoids' },
+    ],
+  },
+  {
+    label: 'Endocrine & Metabolic',
+    items: [
+      { id: 'diabetes_type2', label: 'Type 2 Diabetes' },
+      { id: 'diabetes_type1', label: 'Type 1 Diabetes' },
+      { id: 'hypothyroidism', label: 'Hypothyroidism' },
+      { id: 'hyperthyroidism', label: 'Hyperthyroidism' },
+      { id: 'pcos', label: 'PCOS' },
+      { id: 'high_cholesterol', label: 'High Cholesterol' },
+      { id: 'obesity', label: 'Obesity (BMI > 30)' },
+      { id: 'metabolic_syndrome', label: 'Metabolic Syndrome' },
+      { id: 'hashimoto', label: "Hashimoto's Thyroiditis" },
+    ],
+  },
+  {
+    label: 'Skin',
+    items: [
+      { id: 'psoriasis', label: 'Psoriasis' },
+      { id: 'eczema', label: 'Eczema' },
+      { id: 'acne_severe', label: 'Severe Acne' },
+      { id: 'vitiligo', label: 'Vitiligo' },
+      { id: 'rosacea', label: 'Rosacea' },
+      { id: 'urticaria', label: 'Urticaria / Hives' },
+      { id: 'alopecia', label: 'Alopecia' },
+    ],
+  },
+  {
+    label: 'Urological & Reproductive',
+    items: [
+      { id: 'kidney_stones', label: 'Kidney Stones' },
+      { id: 'recurrent_uti', label: 'Recurrent UTIs' },
+      { id: 'endometriosis', label: 'Endometriosis' },
+      { id: 'uterine_fibroids', label: 'Uterine Fibroids' },
+      { id: 'dysmenorrhea', label: 'Painful Periods' },
+      { id: 'menorrhagia', label: 'Heavy Periods' },
+    ],
+  },
+  {
+    label: 'Autoimmune',
+    items: [
+      { id: 'lupus', label: 'Lupus (SLE)' },
+      { id: 'scleroderma', label: 'Scleroderma' },
+      { id: 'rheumatoid_arthritis', label: 'Rheumatoid Arthritis' },
+    ],
+  },
 ]
 
 const SYMPTOMS = [
@@ -59,6 +178,9 @@ export default function Onboarding() {
   const [height, setHeight]               = useState('')
   const [weight, setWeight]               = useState('')
   const [conditions, setConditions]       = useState([])
+  const [conditionSearch, setConditionSearch] = useState('')
+  const [otherCondition, setOtherCondition]   = useState('')
+  const [satmya, setSatmya]               = useState('')
   const [symptoms, setSymptoms]           = useState([])
   const [medications, setMedications]     = useState('')
   const [fitnessLevel, setFitnessLevel]   = useState('')
@@ -91,13 +213,18 @@ export default function Onboarding() {
     try {
       await updateProfile({
         name, gender, age: parsedAge, height_cm: parsedHeight, weight_kg: parsedWeight,
-        medical_history: conditions, current_symptoms: symptoms,
+        medical_history: [
+          ...conditions,
+          ...otherCondition.split(',').map(s => s.trim().toLowerCase().replace(/\s+/g, '_')).filter(Boolean),
+        ],
+        current_symptoms: symptoms,
         current_medications: medications
           ? medications.split(',').map(e => e.trim()).filter(Boolean)
           : [],
         goal, dominant_dosha: dosha,
         fitness_level:  fitnessLevel  || 'beginner',
         activity_level: 'moderate',
+        satmya: satmya || undefined,
       })
       navigate('/dashboard')
     } catch (err) {
@@ -289,16 +416,47 @@ export default function Onboarding() {
                   </div>
                   <div>
                     <label>Medical Conditions (optional)</label>
-                    <div className="onb-chip-wrap">
-                      {CONDITIONS.map(cond => (
-                        <button
-                          key={cond} type="button"
-                          onClick={() => toggleItem(conditions, setConditions, cond)}
-                          className={`onb-chip ${conditions.includes(cond) ? 'selected' : ''}`}
-                        >
-                          {titleCaseSlug(cond)}
-                        </button>
-                      ))}
+                    <input
+                      className="onb-condition-search"
+                      type="text"
+                      placeholder="Search conditions…"
+                      value={conditionSearch}
+                      onChange={e => setConditionSearch(e.target.value)}
+                    />
+                    {CONDITION_CATEGORIES.map(cat => {
+                      const q = conditionSearch.trim().toLowerCase()
+                      const visible = q
+                        ? cat.items.filter(({ label }) => label.toLowerCase().includes(q))
+                        : cat.items
+                      if (visible.length === 0) return null
+                      return (
+                        <div key={cat.label} className="onb-condition-category">
+                          <span className="onb-condition-cat-label">{cat.label}</span>
+                          <div className="onb-chip-wrap">
+                            {visible.map(({ id, label }) => (
+                              <button
+                                key={id} type="button"
+                                onClick={() => toggleItem(conditions, setConditions, id)}
+                                className={`onb-chip ${conditions.includes(id) ? 'selected' : ''}`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}
+                    <div className="onb-other-condition">
+                      <label className="onb-condition-cat-label" style={{ marginTop: 10 }}>
+                        Not listed? Add here (comma-separated)
+                      </label>
+                      <input
+                        className="onb-condition-search"
+                        type="text"
+                        placeholder="e.g. sarcoidosis, hemophilia"
+                        value={otherCondition}
+                        onChange={e => setOtherCondition(e.target.value)}
+                      />
                     </div>
                   </div>
                   <div>
@@ -312,6 +470,21 @@ export default function Onboarding() {
                         >
                           {titleCaseSlug(sym)}
                         </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="input-group">
+                    <label>How long have you followed your current diet &amp; lifestyle? (Satmya)</label>
+                    <div className="onb-chip-wrap">
+                      {[
+                        { id: 'less_than_1y', label: 'Less than 1 year' },
+                        { id: '1_to_5y', label: '1–5 years' },
+                        { id: 'over_5y', label: 'More than 5 years' },
+                      ].map(({ id, label }) => (
+                        <button key={id} type="button"
+                          onClick={() => setSatmya(id)}
+                          className={`onb-chip ${satmya === id ? 'selected' : ''}`}
+                        >{label}</button>
                       ))}
                     </div>
                   </div>

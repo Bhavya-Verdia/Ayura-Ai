@@ -45,6 +45,7 @@ export default function VikritiCheckIn({ onDismiss }) {
   const [pulse, setPulse] = useState({ sleep_this_week: null, stress_this_week: null, digestion_this_week: null })
   const [status, setStatus] = useState('idle')
   const [menstrualPhase, setMenstrualPhase] = useState(false)
+  const [stageUpdates, setStageUpdates] = useState({})
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const isFemale = user?.gender === 'female'
@@ -68,6 +69,7 @@ export default function VikritiCheckIn({ onDismiss }) {
         current_symptoms: selected,
         ...pulse,
         ...(isFemale ? { menstrual_phase: menstrualPhase } : {}),
+        ...(Object.keys(stageUpdates).length > 0 ? { disease_stage_updates: stageUpdates } : {}),
       })
       queryClient.setQueryData(['auth-user'], (old) => old ? { ...old, data: res.data } : old)
       setStatus('done')
@@ -150,6 +152,41 @@ export default function VikritiCheckIn({ onDismiss }) {
           </motion.button>
         ))}
       </div>
+
+      {user?.medical_history?.length > 0 && (
+        <div className="vci-disease-stage-section">
+          <h4 className="vci-section-title">Disease Progress Check</h4>
+          <p className="vci-sub">Help us understand how your conditions are evolving</p>
+          {user.medical_history.slice(0, 5).map(cid => (
+            <div key={cid} className="vci-stage-row">
+              <span className="vci-stage-label">{cid.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+              <div className="vci-stage-selects">
+                <select
+                  className="vci-stage-select"
+                  value={stageUpdates[cid]?.duration || ''}
+                  onChange={e => setStageUpdates(p => ({ ...p, [cid]: { ...p[cid], duration: e.target.value } }))}
+                >
+                  <option value="">Duration…</option>
+                  <option value="months">Less than 1 year</option>
+                  <option value="1-3y">1–3 years</option>
+                  <option value="3-5y">3–5 years</option>
+                  <option value="5y+">5+ years</option>
+                </select>
+                <select
+                  className="vci-stage-select"
+                  value={stageUpdates[cid]?.trajectory || ''}
+                  onChange={e => setStageUpdates(p => ({ ...p, [cid]: { ...p[cid], trajectory: e.target.value } }))}
+                >
+                  <option value="">Trend…</option>
+                  <option value="worsening">Getting worse</option>
+                  <option value="stable">Stable</option>
+                  <option value="improving">Improving</option>
+                </select>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="vci-footer">
         <motion.button

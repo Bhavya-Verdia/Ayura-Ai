@@ -277,3 +277,576 @@
   line-height: 1.6;
   margin: 0;
 }
+
+/* ── Panchakarma View ──────────────────────────────────── */
+.pk-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Decision header */
+.pk-vaidya-banner {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  background: color-mix(in srgb, #6366f1 8%, var(--ayura-card-bg) 92%);
+  border: 1.5px solid color-mix(in srgb, #6366f1 35%, transparent);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+.pk-vaidya-icon {
+  color: #818cf8;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.pk-vaidya-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.pk-vaidya-text strong {
+  color: #a5b4fc;
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+}
+.pk-vaidya-text p {
+  color: var(--ayura-text-secondary);
+  font-size: 0.76rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.pk-decision-header {
+  background: color-mix(in srgb, var(--ayura-card-bg) 90%, var(--ayura-accent) 10%);
+  border: 1px solid var(--ayura-border);
+  border-radius: 14px;
+  padding: 1.1rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pk-header-top-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.pk-vitals-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.2rem;
+}
+
+.pk-vital-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ayura-card-bg) 80%, var(--ayura-surface));
+  border: 1px solid var(--ayura-border);
+  font-size: 0.7rem;
+}
+
+.pk-vital-chip.pk-vital-warn {
+  border-color: rgba(249,115,22,0.3);
+  background: rgba(249,115,22,0.07);
+}
+
+.pk-vital-k {
+  color: var(--ayura-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pk-vital-v {
+  color: var(--ayura-text);
+  font-weight: 500;
+}
+
+.pk-dosha-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  width: fit-content;
+}
+
+.pk-eligibility-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: fit-content;
+}
+.pk-shodhana { color: #34d399; }
+.pk-shamana  { color: #fbbf24; }
+
+.pk-shamana-reason {
+  font-size: 0.8rem;
+  color: var(--ayura-muted);
+  margin: 0;
+  font-style: italic;
+}
+
+.pk-safety-sub {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: #ef4444;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  font-weight: 500;
+}
+
+.pk-ama-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: #f97316;
+  background: rgba(249,115,22,0.08);
+  border: 1px solid rgba(249,115,22,0.2);
+  border-radius: 8px;
+  padding: 0.45rem 0.65rem;
+  margin-top: 0.2rem;
+}
+
+/* Info row */
+.pk-info-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.pk-info-card {
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--ayura-border);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pk-info-label {
+  font-size: 0.7rem;
+  color: var(--ayura-muted);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  text-transform: uppercase;
+}
+
+.pk-info-value {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--ayura-text);
+}
+
+.pk-info-sub {
+  font-size: 0.72rem;
+  color: var(--ayura-muted);
+}
+
+.pk-ritu-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: #f97316;
+  padding: 0.5rem 0.8rem;
+  background: rgba(249,115,22,0.07);
+  border: 1px solid rgba(249,115,22,0.18);
+  border-radius: 8px;
+}
+
+.pk-rationale {
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--ayura-border);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+}
+
+.pk-rationale-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--ayura-muted);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.pk-rationale p {
+  font-size: 0.84rem;
+  color: var(--ayura-text);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Phase timeline */
+.pk-phases {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--ayura-border);
+  border-radius: 14px;
+  padding: 1.1rem 1.3rem;
+  overflow-x: auto;
+}
+
+.pk-phase-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.pk-phase-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ayura-accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ayura-accent) 30%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ayura-accent);
+}
+
+.pk-phase-days {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ayura-text);
+  line-height: 1.1;
+}
+
+.pk-phase-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ayura-text);
+}
+
+.pk-phase-sub {
+  font-size: 0.67rem;
+  color: var(--ayura-muted);
+  text-transform: capitalize;
+}
+
+.pk-phase-arrow {
+  color: var(--ayura-muted);
+  flex-shrink: 0;
+}
+
+/* Shared section wrapper */
+.pk-section {
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--ayura-border);
+  border-radius: 14px;
+  padding: 1.1rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pk-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ayura-text);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Aushadha grid */
+.pk-aus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.6rem;
+}
+
+.pk-aus-card {
+  background: color-mix(in srgb, var(--ayura-card-bg) 80%, var(--ayura-surface));
+  border: 1px solid var(--ayura-border);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.pk-aus-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 700;
+  color: var(--ayura-muted);
+}
+
+.pk-aus-name {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ayura-text);
+}
+
+.pk-aus-sub {
+  font-size: 0.72rem;
+  color: var(--ayura-muted);
+}
+
+/* Snehana signs */
+.pk-signs {
+  background: color-mix(in srgb, var(--ayura-card-bg) 80%, var(--ayura-surface));
+  border: 1px solid var(--ayura-border);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+}
+
+.pk-signs-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ayura-muted);
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+.pk-signs-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pk-signs-list li {
+  font-size: 0.8rem;
+  color: var(--ayura-text);
+}
+
+/* Samsarjana Krama */
+.pk-sk-intro {
+  font-size: 0.8rem;
+  color: var(--ayura-muted);
+  margin: 0;
+  font-style: italic;
+}
+
+.pk-sk-stages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pk-sk-stage {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: color-mix(in srgb, var(--ayura-card-bg) 80%, var(--ayura-surface));
+  border: 1px solid var(--ayura-border);
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+}
+
+.pk-sk-num {
+  min-width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ayura-accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ayura-accent) 30%, transparent);
+  color: var(--ayura-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pk-sk-body { flex: 1; min-width: 0; }
+
+.pk-sk-food {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ayura-text);
+}
+
+.pk-sk-recipe, .pk-sk-note {
+  font-size: 0.75rem;
+  color: var(--ayura-muted);
+  margin-top: 0.15rem;
+}
+
+/* Daily schedule */
+.pk-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.pk-day-row {
+  display: grid;
+  grid-template-columns: 54px 100px 1fr;
+  gap: 0.6rem;
+  align-items: center;
+  background: color-mix(in srgb, var(--ayura-card-bg) 80%, var(--ayura-surface));
+  border: 1px solid var(--ayura-border);
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+}
+
+.pk-day-num {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ayura-accent);
+}
+
+.pk-day-phase {
+  font-size: 0.72rem;
+  color: var(--ayura-muted);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pk-day-therapies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.pk-therapy-chip {
+  background: color-mix(in srgb, var(--ayura-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ayura-accent) 25%, transparent);
+  color: var(--ayura-accent);
+  font-size: 0.67rem;
+  font-weight: 600;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+}
+
+/* Unmapped conditions banner */
+.pk-unmapped-banner {
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.22);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.pk-unmapped-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+.pk-unmapped-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.pk-unmapped-chip {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.25);
+  color: #ef4444;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+}
+
+.pk-unmapped-note {
+  font-size: 0.75rem;
+  color: var(--ayura-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Rare disease assessment */
+.pk-rare-section {
+  border-color: rgba(168,85,247,0.25) !important;
+  background: color-mix(in srgb, var(--ayura-card-bg) 90%, rgba(168,85,247,0.05)) !important;
+}
+
+.pk-rare-card {
+  background: color-mix(in srgb, var(--ayura-card-bg) 80%, var(--ayura-surface));
+  border: 1px solid var(--ayura-border);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pk-rare-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ayura-text);
+  margin-bottom: 0.25rem;
+}
+
+.pk-rare-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.pk-rare-k {
+  font-weight: 600;
+  color: var(--ayura-muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-top: 0.05rem;
+}
+
+.pk-rare-warn .pk-rare-k {
+  color: #f97316;
+}
+
+.pk-rare-warn span:last-child {
+  color: #f97316;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .pk-info-row { grid-template-columns: 1fr; }
+  .pk-phases { flex-direction: column; align-items: flex-start; }
+  .pk-phase-arrow { transform: rotate(90deg); }
+  .pk-day-row { grid-template-columns: 40px 80px 1fr; }
+  .pk-rare-row { grid-template-columns: 1fr; }
+}

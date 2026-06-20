@@ -449,6 +449,10 @@ async def _enqueue_plan(
         "sleep_quality": user.sleep_quality,
         # Safety flags
         "pregnancy_or_nursing": user.pregnancy_or_nursing or False,
+        # Classical Ayurvedic fields
+        "satmya": user.satmya,
+        "disease_stages": user.disease_stages,
+        "koshtha": user.koshtha,
         # Deprecated global goal — kept for cache compatibility
         "goal": user.goal,
         # Per-feature goal (primary driver for this plan type)

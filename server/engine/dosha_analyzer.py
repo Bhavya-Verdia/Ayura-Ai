@@ -424,6 +424,246 @@ def _get_primary_gunas(prakriti_dominant: str, prakriti_secondary: str | None = 
     return gunas[:5]
 
 
+# ── Disease → Dosha signal map (classical Ayurvedic etiology) ────────────────
+# Source: Charaka Samhita Nidana Sthana, Ashtanga Hridayam Nidana Sthana.
+# Each entry: p=primary dosha, w=weight 1-3, s2=secondary dosha, w2=secondary weight,
+#             s=affected Srotas, c=classical Ayurvedic name
+_DISEASE_DOSHA_SIGNAL: dict[str, dict] = {
+    # ── Musculoskeletal ──────────────────────────────────────────────────────
+    "ankylosing_spondylitis":  {"p": "vata", "w": 3.0, "s": "Asthivaha Srotas",    "c": "Asthi-Majja Gata Vata",             "d": "asthi_majja"},
+    "osteoarthritis":          {"p": "vata", "w": 2.5, "s": "Asthivaha Srotas",    "c": "Sandhivata",                         "d": "asthi"},
+    "rheumatoid_arthritis":    {"p": "vata", "w": 2.0, "s2": "kapha", "w2": 1.5,   "s": "Asthivaha Srotas",    "c": "Amavata (Vata + Kapha)",            "d": "mamsa_rakta"},
+    "arthritis":               {"p": "vata", "w": 2.0, "s": "Asthivaha Srotas",    "c": "Sandhivata / Amavata",               "d": "asthi"},
+    "gout":                    {"p": "pitta","w": 2.5, "s2": "vata", "w2": 1.0,    "s": "Raktavaha Srotas",    "c": "Vatarakta (Pitta + Vata)",          "d": "asthi"},
+    "fibromyalgia":            {"p": "vata", "w": 2.5, "s": "Mamsavaha Srotas",    "c": "Mamsagata Vata",                     "d": "mamsa"},
+    "sciatica":                {"p": "vata", "w": 2.5, "s": "Majjavaha Srotas",    "c": "Gridhrasi (Vata)",                   "d": "asthi_majja"},
+    "osteoporosis":            {"p": "vata", "w": 2.5, "s": "Asthivaha Srotas",    "c": "Asthi Kshaya (Vata)",                "d": "asthi"},
+    "cervical_spondylosis":    {"p": "vata", "w": 2.0, "s": "Asthivaha Srotas",    "c": "Griva Shoola (Vata)",                "d": "asthi_majja"},
+    "lumbar_spondylosis":      {"p": "vata", "w": 2.0, "s": "Asthivaha Srotas",    "c": "Kati Shoola (Vata)",                 "d": "asthi_majja"},
+    "frozen_shoulder":         {"p": "vata", "w": 1.8, "s": "Mamsavaha Srotas",    "c": "Avabahuka (Vata)",                   "d": "mamsa"},
+    "carpal_tunnel":           {"p": "vata", "w": 1.5, "s": "Mamsavaha Srotas",    "c": "Vataja Shoola",                      "d": "mamsa"},
+    # ── Neurological ─────────────────────────────────────────────────────────
+    "parkinson":               {"p": "vata", "w": 3.0, "s": "Majjavaha Srotas",    "c": "Kampavata",                          "d": "majja"},
+    "multiple_sclerosis":      {"p": "vata", "w": 2.5, "s2": "pitta", "w2": 1.5,  "s": "Majjavaha Srotas",    "c": "Avrita Vata (Vata + Pitta)",        "d": "majja"},
+    "epilepsy":                {"p": "vata", "w": 2.5, "s": "Manovaha Srotas",     "c": "Apasmara (Vata)",                    "d": "majja"},
+    "migraine":                {"p": "pitta","w": 2.5, "s2": "vata", "w2": 1.0,    "s": "Manovaha Srotas",     "c": "Ardha Avabhedaka (Pitta)",          "d": "majja"},
+    "peripheral_neuropathy":   {"p": "vata", "w": 2.0, "s": "Majjavaha Srotas",    "c": "Vataja Shoola (Majja)",              "d": "majja"},
+    "tinnitus":                {"p": "vata", "w": 2.0, "s": "Manovaha Srotas",     "c": "Karnanada (Vata)",                   "d": "majja"},
+    "vertigo":                 {"p": "vata", "w": 2.0, "s": "Manovaha Srotas",     "c": "Bhrama (Vata)",                      "d": "majja"},
+    "chronic_fatigue_syndrome":{"p": "vata", "w": 2.0, "s2": "kapha", "w2": 1.5,  "s": "Rasavaha Srotas",     "c": "Bala Kshaya (Vata + Kapha)",        "d": "rasa"},
+    "bells_palsy":             {"p": "vata", "w": 2.5, "s": "Majjavaha Srotas",    "c": "Ardita (Vata)",                      "d": "majja"},
+    "restless_leg_syndrome":   {"p": "vata", "w": 2.0, "s": "Mamsavaha Srotas",    "c": "Vataja Shoola",                      "d": "mamsa"},
+    # ── Psychiatric / Mental Health ───────────────────────────────────────────
+    "anxiety":                 {"p": "vata", "w": 2.5, "s": "Manovaha Srotas",     "c": "Vataja Chittodvega",                 "d": "majja"},
+    "depression":              {"p": "kapha","w": 2.0, "s2": "vata", "w2": 1.5,    "s": "Manovaha Srotas",     "c": "Kaphaja / Vataja Vishada",          "d": "majja"},
+    "bipolar":                 {"p": "vata", "w": 2.0, "s2": "pitta", "w2": 1.5,   "s": "Manovaha Srotas",     "c": "Vata-Pittaja Unmada",               "d": "majja"},
+    "ocd":                     {"p": "vata", "w": 2.0, "s2": "pitta", "w2": 1.0,   "s": "Manovaha Srotas",     "c": "Vataja Unmada",                     "d": "majja"},
+    "ptsd":                    {"p": "vata", "w": 2.5, "s": "Manovaha Srotas",     "c": "Vataja Bhaya / Shoka",               "d": "majja"},
+    "adhd":                    {"p": "vata", "w": 2.5, "s": "Manovaha Srotas",     "c": "Vataja Chanchalta",                  "d": "majja"},
+    "insomnia":                {"p": "vata", "w": 2.0, "s": "Manovaha Srotas",     "c": "Anidra (Vata)",                      "d": "majja"},
+    # ── Cardiovascular ────────────────────────────────────────────────────────
+    "hypertension":            {"p": "pitta","w": 2.0, "s2": "vata", "w2": 1.5,    "s": "Raktavaha Srotas",    "c": "Raktagata Vata (Pitta + Vata)",     "d": "rasa_rakta"},
+    "heart_disease":           {"p": "kapha","w": 2.0, "s2": "pitta", "w2": 1.5,   "s": "Raktavaha Srotas",    "c": "Kaphaja Hridroga",                  "d": "rasa_rakta"},
+    "atrial_fibrillation":     {"p": "vata", "w": 2.5, "s": "Raktavaha Srotas",    "c": "Vataja Hridroga",                    "d": "rasa_rakta"},
+    "heart_failure":           {"p": "kapha","w": 2.5, "s": "Raktavaha Srotas",    "c": "Kaphaja Hridroga",                   "d": "rasa_rakta"},
+    "varicose_veins":          {"p": "vata", "w": 1.5, "s2": "pitta", "w2": 1.0,   "s": "Raktavaha Srotas",    "c": "Siragata Vata",                     "d": "rakta"},
+    "anemia":                  {"p": "pitta","w": 2.0, "s": "Raktavaha Srotas",    "c": "Pandu (Pitta / Rakta)",              "d": "rakta"},
+    "low_blood_pressure":      {"p": "vata", "w": 2.0, "s": "Raktavaha Srotas",    "c": "Raktakshaya (Vata)",                 "d": "rasa"},
+    # ── Respiratory ───────────────────────────────────────────────────────────
+    "asthma":                  {"p": "kapha","w": 2.5, "s2": "vata", "w2": 1.5,    "s": "Pranavaha Srotas",    "c": "Tamaka Shwasa (Kapha + Vata)",      "d": "rasa"},
+    "copd":                    {"p": "vata", "w": 2.5, "s2": "kapha", "w2": 1.5,   "s": "Pranavaha Srotas",    "c": "Vataja Shwasa",                     "d": "rasa"},
+    "chronic_bronchitis":      {"p": "kapha","w": 2.5, "s": "Pranavaha Srotas",    "c": "Kaphaja Kasa",                       "d": "rasa"},
+    "allergic_rhinitis":       {"p": "kapha","w": 2.0, "s2": "vata", "w2": 1.0,    "s": "Pranavaha Srotas",    "c": "Kaphaja Pratishyaya",               "d": "rasa"},
+    "sinusitis":               {"p": "kapha","w": 2.0, "s": "Pranavaha Srotas",    "c": "Dushta Pratishyaya (Kapha)",         "d": "rasa"},
+    "sleep_apnea":             {"p": "kapha","w": 2.5, "s": "Pranavaha Srotas",    "c": "Kaphavrita Pranavata",               "d": "meda"},
+    "pulmonary_fibrosis":      {"p": "vata", "w": 2.0, "s2": "kapha", "w2": 1.5,   "s": "Pranavaha Srotas",    "c": "Vataja-Kaphaja Shwasa",             "d": "rasa"},
+    # ── Gastrointestinal ─────────────────────────────────────────────────────
+    "acid_reflux":             {"p": "pitta","w": 2.5, "s": "Annavaha Srotas",     "c": "Amlapitta (Pitta)",                  "d": "rasa"},
+    "peptic_ulcer":            {"p": "pitta","w": 2.5, "s": "Annavaha Srotas",     "c": "Pittaja Shotha (Annavaha)",          "d": "rasa"},
+    "ibd_crohns":              {"p": "pitta","w": 2.5, "s2": "vata", "w2": 1.0,    "s": "Purishavaha Srotas",  "c": "Pittaja Atisara",                   "d": "rasa_mamsa"},
+    "ulcerative_colitis":      {"p": "pitta","w": 2.5, "s2": "vata", "w2": 1.0,    "s": "Purishavaha Srotas",  "c": "Raktaja Atisara (Pitta)",           "d": "rakta"},
+    "ibs":                     {"p": "vata", "w": 2.0, "s2": "pitta", "w2": 1.0,   "s": "Purishavaha Srotas",  "c": "Grahani (Vataja)",                  "d": "rasa"},
+    "liver_disease":           {"p": "pitta","w": 2.5, "s": "Raktavaha Srotas",    "c": "Yakrit Roga (Pitta)",                "d": "rakta"},
+    "fatty_liver":             {"p": "kapha","w": 2.0, "s2": "pitta", "w2": 1.5,   "s": "Medovaha Srotas",     "c": "Medoroga with Yakrit (Kapha + Pitta)","d": "meda"},
+    "gallstones":              {"p": "pitta","w": 2.5, "s2": "kapha", "w2": 1.0,   "s": "Purishavaha Srotas",  "c": "Pittashma (Pitta + Kapha)",         "d": "meda"},
+    "hemorrhoids":             {"p": "vata", "w": 2.0, "s2": "pitta", "w2": 1.5,   "s": "Purishavaha Srotas",  "c": "Arsha (Vataja + Pittaja)",          "d": "rakta"},
+    "constipation_chronic":    {"p": "vata", "w": 2.5, "s": "Purishavaha Srotas",  "c": "Vibandha (Vata)",                    "d": "rasa"},
+    "celiac":                  {"p": "vata", "w": 1.5, "s2": "pitta", "w2": 1.5,   "s": "Annavaha Srotas",     "c": "Grahani (Vata-Pitta)",              "d": "rasa"},
+    "pancreatitis":            {"p": "pitta","w": 2.5, "s": "Annavaha Srotas",     "c": "Pittaja Gulma",                      "d": "rasa"},
+    # ── Endocrine / Metabolic ─────────────────────────────────────────────────
+    "diabetes_type1":          {"p": "pitta","w": 2.0, "s2": "vata", "w2": 1.5,    "s": "Medovaha Srotas",     "c": "Sahaja Prameha (Pitta + Vata)",     "d": "rasa"},
+    "diabetes_type2":          {"p": "kapha","w": 2.5, "s2": "pitta", "w2": 1.0,   "s": "Medovaha Srotas",     "c": "Kaphaja Prameha",                   "d": "meda"},
+    "hypothyroidism":          {"p": "kapha","w": 2.5, "s": "Medovaha Srotas",     "c": "Kaphaja Galaganda",                  "d": "rasa"},
+    "hyperthyroidism":         {"p": "pitta","w": 2.5, "s2": "vata", "w2": 1.0,    "s": "Raktavaha Srotas",    "c": "Pittaja Galaganda",                 "d": "rasa"},
+    "pcos":                    {"p": "kapha","w": 2.0, "s2": "vata", "w2": 1.5,    "s": "Artavavaha Srotas",   "c": "Kaphaja Artava Dushti + Vataja",    "d": "shukra"},
+    "obesity":                 {"p": "kapha","w": 2.5, "s": "Medovaha Srotas",     "c": "Sthoulya (Kapha)",                   "d": "meda"},
+    "high_cholesterol":        {"p": "kapha","w": 2.5, "s": "Medovaha Srotas",     "c": "Medoroga (Kapha)",                   "d": "meda"},
+    "metabolic_syndrome":      {"p": "kapha","w": 2.5, "s2": "pitta", "w2": 1.0,   "s": "Medovaha Srotas",     "c": "Sthoulya + Prameha (Kapha)",        "d": "meda"},
+    "underweight":             {"p": "vata", "w": 2.0, "s": "Rasavaha Srotas",     "c": "Karshya (Vata)",                     "d": "rasa"},
+    "adrenal_fatigue":         {"p": "vata", "w": 2.0, "s": "Rasavaha Srotas",     "c": "Oja Kshaya (Vata)",                  "d": "rasa"},
+    "hashimoto":               {"p": "kapha","w": 2.0, "s2": "pitta", "w2": 1.5,   "s": "Rasavaha Srotas",     "c": "Kaphaja-Pittaja Galaganda",         "d": "rasa_mamsa"},
+    # ── Dermatological ────────────────────────────────────────────────────────
+    "psoriasis":               {"p": "pitta","w": 2.5, "s2": "vata", "w2": 1.5,    "s": "Raktavaha Srotas",    "c": "Eka Kushtha / Kitibha (Pitta + Vata)","d": "rakta"},
+    "eczema":                  {"p": "pitta","w": 2.0, "s2": "kapha", "w2": 1.0,   "s": "Raktavaha Srotas",    "c": "Vicharchika (Pitta)",               "d": "rakta"},
+    "acne_severe":             {"p": "pitta","w": 2.0, "s": "Raktavaha Srotas",    "c": "Pittaja Mukhadushika",                "d": "rakta"},
+    "urticaria":               {"p": "pitta","w": 2.0, "s2": "vata", "w2": 1.0,    "s": "Raktavaha Srotas",    "c": "Udarda (Pitta + Vata)",             "d": "rakta"},
+    "vitiligo":                {"p": "vata", "w": 2.0, "s2": "pitta", "w2": 1.0,   "s": "Raktavaha Srotas",    "c": "Shvitra (Vata + Pitta)",            "d": "rakta"},
+    "rosacea":                 {"p": "pitta","w": 2.5, "s": "Raktavaha Srotas",    "c": "Pittaja Twak Roga",                  "d": "rakta"},
+    "alopecia":                {"p": "vata", "w": 2.0, "s2": "pitta", "w2": 1.5,   "s": "Raktavaha Srotas",    "c": "Khalitya (Vata + Pitta)",           "d": "rakta"},
+    # ── Urological / Renal ────────────────────────────────────────────────────
+    "kidney_stones":           {"p": "vata", "w": 2.0, "s2": "kapha", "w2": 1.5,   "s": "Mutravaha Srotas",    "c": "Mutrasmari (Vata + Kapha)",         "d": "majja"},
+    "recurrent_uti":           {"p": "pitta","w": 2.0, "s": "Mutravaha Srotas",    "c": "Pittaja Mutrakrichra",               "d": "rakta"},
+    "chronic_kidney_disease":  {"p": "vata", "w": 2.0, "s2": "kapha", "w2": 1.5,   "s": "Mutravaha Srotas",    "c": "Mutra Kshaya (Vata + Kapha)",       "d": "majja"},
+    "urinary_incontinence":    {"p": "vata", "w": 2.0, "s": "Mutravaha Srotas",    "c": "Mutragata Vata",                     "d": "majja"},
+    "interstitial_cystitis":   {"p": "pitta","w": 2.5, "s2": "vata", "w2": 1.0,    "s": "Mutravaha Srotas",    "c": "Pittaja Mutrakrichra",              "d": "rakta"},
+    "bph":                     {"p": "kapha","w": 2.0, "s2": "vata", "w2": 1.0,    "s": "Mutravaha Srotas",    "c": "Kaphaja Mutraghata",                "d": "shukra"},
+    # ── Gynecological / Reproductive ─────────────────────────────────────────
+    "endometriosis":           {"p": "vata", "w": 2.5, "s2": "pitta", "w2": 1.5,   "s": "Artavavaha Srotas",   "c": "Vataja Artava Dushti + Raktaja",    "d": "shukra"},
+    "uterine_fibroids":        {"p": "kapha","w": 2.5, "s": "Artavavaha Srotas",   "c": "Kaphaja Granthi",                    "d": "shukra"},
+    "dysmenorrhea":            {"p": "vata", "w": 2.5, "s": "Artavavaha Srotas",   "c": "Vataja Artava Krichra",              "d": "shukra"},
+    "amenorrhea":              {"p": "vata", "w": 2.0, "s": "Artavavaha Srotas",   "c": "Nashta Artava (Vata)",               "d": "shukra"},
+    "menorrhagia":             {"p": "pitta","w": 2.5, "s": "Artavavaha Srotas",   "c": "Raktapradar (Pitta)",                "d": "rakta"},
+    "infertility":             {"p": "vata", "w": 2.0, "s2": "kapha", "w2": 1.5,   "s": "Artavavaha / Shukravaha", "c": "Vandhyatva (Vata + Kapha)",     "d": "shukra"},
+    "erectile_dysfunction":    {"p": "vata", "w": 2.5, "s": "Shukravaha Srotas",   "c": "Klaibya (Vataja)",                   "d": "shukra"},
+    # ── Autoimmune ───────────────────────────────────────────────────────────
+    "lupus":                   {"p": "pitta","w": 2.5, "s2": "vata", "w2": 1.5,    "s": "Raktavaha Srotas",    "c": "Pitta-Vata Janya Shotha",           "d": "rasa_mamsa"},
+    "scleroderma":             {"p": "vata", "w": 2.5, "s2": "pitta", "w2": 1.5,   "s": "Raktavaha Srotas",    "c": "Twak Granthita (Vata + Pitta)",     "d": "rasa_mamsa"},
+    # ── ENT ──────────────────────────────────────────────────────────────────
+    "chronic_tonsillitis":     {"p": "kapha","w": 2.0, "s2": "pitta", "w2": 1.0,   "s": "Annavaha Srotas",     "c": "Tundikeri (Kapha)",                 "d": "rasa"},
+    "nasal_polyps":            {"p": "kapha","w": 2.0, "s": "Pranavaha Srotas",    "c": "Nasa Arsha (Kapha)",                 "d": "rasa"},
+    "hearing_loss":            {"p": "vata", "w": 2.0, "s": "Manovaha Srotas",     "c": "Badhirya (Vata)",                    "d": "majja"},
+    "menieres_disease":        {"p": "vata", "w": 2.5, "s": "Manovaha Srotas",     "c": "Bhrama + Karnanada (Vata)",          "d": "majja"},
+    # ── Ophthalmological ─────────────────────────────────────────────────────
+    "glaucoma":                {"p": "vata", "w": 2.0, "s2": "pitta", "w2": 1.5,   "s": "Drishti Srotas",      "c": "Adhimantha (Vata + Pitta)",         "d": "majja"},
+    "cataracts":               {"p": "kapha","w": 2.0, "s2": "vata", "w2": 1.0,    "s": "Drishti Srotas",      "c": "Linganasha (Kapha)",                "d": "majja"},
+    "dry_eye":                 {"p": "vata", "w": 2.0, "s": "Drishti Srotas",      "c": "Sushkakshipaka (Vata)",              "d": "rasa"},
+    "macular_degeneration":    {"p": "pitta","w": 2.0, "s2": "vata", "w2": 1.5,    "s": "Drishti Srotas",      "c": "Timira (Pitta + Vata)",             "d": "rakta"},
+    # ── Hematological ────────────────────────────────────────────────────────
+    "sickle_cell":             {"p": "pitta","w": 2.0, "s2": "vata", "w2": 2.0,    "s": "Raktavaha Srotas",    "c": "Rakta Dushti (Pitta + Vata)",       "d": "rakta"},
+    "thalassemia":             {"p": "pitta","w": 2.0, "s2": "vata", "w2": 1.5,    "s": "Raktavaha Srotas",    "c": "Rakta Kshaya (Pitta + Vata)",       "d": "rakta"},
+    # ── Chronic Infections ───────────────────────────────────────────────────
+    "long_covid":              {"p": "vata", "w": 2.0, "s2": "kapha", "w2": 1.5,   "s": "Rasavaha Srotas",     "c": "Tridoshaja Bala Kshaya",            "d": "rasa"},
+    "hepatitis_chronic":       {"p": "pitta","w": 2.5, "s": "Raktavaha Srotas",    "c": "Yakrit Shotha (Pitta)",              "d": "rakta"},
+    "hiv":                     {"p": "vata", "w": 2.5, "s": "Rasavaha Srotas",     "c": "Oja Kshaya (Vata)",                  "d": "rasa"},
+}
+
+
+_DHATU_THERAPY: dict[str, dict] = {
+    "rasa":        {"name": "Rasa Dhatu (Plasma/Lymph)",          "kshaya_therapy": "Dipana-Pachana → Brimhana (nourishing plasma)",                                       "vriddhi_therapy": "Langhana (lightening)",                                     "rasayana": "Ashwagandha, Shatavari, Amalaki"},
+    "rakta":       {"name": "Rakta Dhatu (Blood)",                 "kshaya_therapy": "Raktavardhana: iron-rich foods, Punarnava, Manjistha",                                "vriddhi_therapy": "Raktamokshana (bloodletting) if indicated",                 "rasayana": "Manjistha, Guduchi, Amalaki"},
+    "mamsa":       {"name": "Mamsa Dhatu (Muscle)",                "kshaya_therapy": "Brimhana: protein-rich Pathya, Ashwagandha, Bala",                                   "vriddhi_therapy": "Vyayama (exercise) + Langhana",                            "rasayana": "Ashwagandha, Bala, Kapikacchu"},
+    "meda":        {"name": "Meda Dhatu (Adipose)",                "kshaya_therapy": "Brimhana with Ghrita",                                                               "vriddhi_therapy": "Lekhana (reducing): Guggulu, Triphala, exercise, fasting", "rasayana": "Guggulu, Shilajit, Triphala"},
+    "asthi":       {"name": "Asthi Dhatu (Bone)",                  "kshaya_therapy": "Brimhana: Ashwagandha, sesame, ghee, warm milk, calcium-rich Pathya",                "vriddhi_therapy": "Shodhana if excess (rare)",                                 "rasayana": "Laksha Guggulu, Ashwagandha, sesame"},
+    "majja":       {"name": "Majja Dhatu (Bone Marrow/Nerves)",    "kshaya_therapy": "Medhya Rasayana: Brahmi, Shankhapushpi, Ashwagandha, Bala Taila Abhyanga",          "vriddhi_therapy": "Shodhana (Nasya, Basti)",                                  "rasayana": "Brahmi, Shankhapushpi, Jyotishmati"},
+    "shukra":      {"name": "Shukra/Artava Dhatu (Reproductive)",  "kshaya_therapy": "Vajikarna: Shatavari, Kapikacchu, Ashwagandha, warm milk with ghee",                "vriddhi_therapy": "Shodhana if indicated",                                     "rasayana": "Shatavari, Kapikacchu, Ashwagandha"},
+    "asthi_majja": {"name": "Asthi + Majja Dhatu (Bone + Nerves)", "kshaya_therapy": "Brimhana: Ashwagandha, Bala Taila Abhyanga, Dashmoola Basti, sesame ghee",         "vriddhi_therapy": "Shodhana: Kati/Greeva Basti",                              "rasayana": "Mahayogaraj Guggulu, Ashwagandha"},
+    "mamsa_rakta": {"name": "Mamsa + Rakta Dhatu (Muscle + Blood)","kshaya_therapy": "Raktashodhana + Brimhana: Guduchi, Neem, Manjistha, Ashwagandha",                  "vriddhi_therapy": "Shodhana: Virechana, Raktamokshana",                       "rasayana": "Guduchi, Manjistha, Triphala"},
+    "rasa_rakta":  {"name": "Rasa + Rakta Dhatu (Plasma + Blood)", "kshaya_therapy": "Brimhana: Shatavari, Amalaki, Punarnava",                                           "vriddhi_therapy": "Langhana + Raktashodhana",                                 "rasayana": "Arjuna, Punarnava, Amalaki"},
+    "rasa_mamsa":  {"name": "Rasa + Mamsa Dhatu (Plasma + Muscle)","kshaya_therapy": "Shodhana then Rasayana: Guduchi, Ashwagandha, Bala",                               "vriddhi_therapy": "Virechana + Langhana",                                     "rasayana": "Guduchi Satva, Ashwagandha, Bala"},
+    "meda_rakta":  {"name": "Meda + Rakta Dhatu (Fat + Blood)",    "kshaya_therapy": "Brimhana selectively",                                                               "vriddhi_therapy": "Lekhana + Raktashodhana: Guggulu, Manjistha, Triphala",    "rasayana": "Guggulu, Triphala, Arjuna"},
+}
+
+
+def _dhatu_from_conditions(conditions: list[str]) -> list[dict]:
+    """Return unique affected Dhatu entries for a set of medical conditions."""
+    seen: set[str] = set()
+    result: list[dict] = []
+    for cond in conditions:
+        key = cond.lower().strip().replace(" ", "_").replace("-", "_")
+        mapping = _DISEASE_DOSHA_SIGNAL.get(key)
+        if not mapping:
+            continue
+        dhatu_key = mapping.get("d", "rasa")
+        if dhatu_key not in seen:
+            seen.add(dhatu_key)
+            info = _DHATU_THERAPY.get(dhatu_key, _DHATU_THERAPY["rasa"])
+            result.append({"key": dhatu_key, **info})
+    return result
+
+
+def _compute_ojas_score(
+    ama_score: str,
+    disease_count: int,
+    agni_type: str | None,
+) -> dict:
+    """
+    Ojas = essence of all 7 Dhatus formed by perfect Agni + zero Ama.
+    Charaka Chikitsa 24: Ojas depletes via Dhatu Kshaya, Ama, chronic disease,
+    physical/mental overexertion, grief, fasting.
+    """
+    score = 100
+    score -= {"none": 0, "mild": 15, "moderate": 30, "severe": 50}.get(ama_score, 0)
+    score -= min(disease_count * 8, 40)
+    score -= {"sama": 0, "pitta": 10, "vata": 15, "kapha": 12}.get(agni_type or "vata", 10)
+    score = max(0, min(100, score))
+
+    if score >= 70:
+        return {
+            "score": score, "level": "high",
+            "label": "High Ojas — Strong Immunity & Vitality",
+            "description": "Excellent Dhatu quality. Strong natural immunity (Vyadhikshamatva), mental clarity, and resilience. Maintain with Rasayana and Sattvic lifestyle.",
+            "color": "green",
+            "recommendation": "Maintain with Rasayana herbs: Amalaki, Ashwagandha, Shatavari. Continue current lifestyle.",
+        }
+    elif score >= 40:
+        return {
+            "score": score, "level": "medium",
+            "label": "Medium Ojas — Moderate Immunity",
+            "description": "Dhatu quality is fair. Some Ama or Agni imbalance is reducing optimal Ojas formation. Address Agni first, then Rasayana.",
+            "color": "amber",
+            "recommendation": "Prioritise Dipana-Pachana to clear Ama, then Rasayana: Chyawanprash, Guduchi, Ashwagandha.",
+        }
+    else:
+        return {
+            "score": score, "level": "low",
+            "label": "Low Ojas — Depleted Immunity",
+            "description": "Significant Dhatu depletion or Ama burden. Risk of recurrent illness, chronic fatigue, poor healing. Rasayana therapy is primary treatment.",
+            "color": "red",
+            "recommendation": "RASAYANA PRIORITY: Chyawanprash daily, Ashwagandha + warm milk at night, Shatavari if female. Absolute rest, Sattvic food, no fasting.",
+        }
+
+
+def _medical_history_vikriti_signal(medical_conditions: list[str]) -> tuple[dict, list[str]]:
+    """Convert diagnosed diseases into a weighted dosha signal for Vikriti.
+
+    Chronic diagnosed diseases reveal the patient's susceptible dosha channels.
+    Returns (normalised_signal, classical_notes) where signal sums to 100.
+    Source: Charaka Samhita Nidana Sthana (disease etiology chapters).
+    """
+    if not medical_conditions:
+        return {}, []
+
+    raw = {"vata": 0.0, "pitta": 0.0, "kapha": 0.0}
+    total_weight = 0.0
+    classical_notes: list[str] = []
+
+    for condition in medical_conditions:
+        key = condition.lower().strip().replace(" ", "_").replace("-", "_")
+        mapping = _DISEASE_DOSHA_SIGNAL.get(key)
+        if not mapping:
+            continue
+        primary = mapping["p"]
+        weight = mapping["w"]
+        raw[primary] += weight
+        if "s2" in mapping:
+            raw[mapping["s2"]] += mapping.get("w2", weight * 0.5)
+        total_weight += weight
+        classical_notes.append(
+            f"{condition.replace('_', ' ').title()}: {mapping['c']} ({mapping['s']})"
+        )
+
+    if total_weight == 0:
+        return {}, []
+
+    total_raw = sum(raw.values()) or 1
+    signal = {d: round(v / total_raw * 100) for d, v in raw.items()}
+    diff = 100 - sum(signal.values())
+    if diff != 0:
+        signal[max(signal, key=signal.get)] += diff
+
+    return signal, classical_notes
+
+
 def _anchor_to_prakriti(vikriti: dict, prakriti: dict, max_deviation: int = 28) -> dict:
     """Prevent vikriti from drifting implausibly far from prakriti.
 
@@ -651,6 +891,7 @@ def _rule_based_assessment(
     current_symptoms: list[str],
     age: int | None = None,
     history: list[dict] | None = None,
+    medical_history: list[str] | None = None,
 ) -> dict:
     """Weighted trait-count Prakriti + symptom-signal Vikriti (LLM fallback)."""
     prakriti_raw = {"vata": 0.0, "pitta": 0.0, "kapha": 0.0}
@@ -693,6 +934,20 @@ def _rule_based_assessment(
     if age:
         vikriti = _age_adjustment(vikriti, age)
 
+    # Medical history — chronic disease channel involvement biases Vikriti (20% slot)
+    med_signal, med_notes = _medical_history_vikriti_signal(medical_history or [])
+    if med_signal:
+        MEDICAL_SLOT = 0.20
+        vikriti = {
+            d: round((1 - MEDICAL_SLOT) * vikriti.get(d, 33) + MEDICAL_SLOT * med_signal.get(d, 33))
+            for d in ["vata", "pitta", "kapha"]
+        }
+        _mt = sum(vikriti.values()) or 1
+        vikriti = {d: round(v / _mt * 100) for d, v in vikriti.items()}
+        _md = 100 - sum(vikriti.values())
+        if _md != 0:
+            vikriti[max(vikriti, key=vikriti.get)] += _md
+
     sorted_p = sorted(prakriti.items(), key=lambda x: x[1], reverse=True)
     sorted_v = sorted(vikriti.items(), key=lambda x: x[1], reverse=True)
     prakriti_dominant = sorted_p[0][0]
@@ -723,13 +978,21 @@ def _rule_based_assessment(
         "confidence_score": 35,
         "explanation": fallback_explanations.get(prakriti_dominant, "Your constitution has been assessed based on your physical traits."),
         "immediate_focus": f"Your plans will be tuned to address your current {vikriti_dominant} imbalance.",
-        "key_signals": [f"Dominant physical type: {prakriti_dominant}", f"Primary current symptom area: {vikriti_dominant}"],
+        "key_signals": [
+            f"Dominant physical type: {prakriti_dominant}",
+            f"Primary current symptom area: {vikriti_dominant}",
+        ] + med_notes[:2],
         "contradictions": [],
         "primary_gunas": _get_primary_gunas(prakriti_dominant, prakriti_secondary),
         "prakriti_classical_type": _classify_prakriti_7_types(prakriti)["prakriti_classical_type"],
         "prakriti_classical_name": _classify_prakriti_7_types(prakriti)["prakriti_classical_name"],
         "manas_prakriti": None,
         "ama_indicator": _compute_ama_score(current_symptoms),
+        "ojas": _compute_ojas_score(
+            ama_score=_compute_ama_score(current_symptoms),
+            disease_count=len(medical_history or []),
+            agni_type=(physical_traits or {}).get("agni_type"),
+        ),
     }
 
 
@@ -781,10 +1044,22 @@ async def assess_dosha_with_llm(
             parts.append(f"Digestion quality: {user_profile['digestion_quality']}")
         if user_profile.get("fitness_level"):
             parts.append(f"Fitness level: {user_profile['fitness_level']}")
-        if user_profile.get("medical_history"):
-            parts.append(f"Medical history: {', '.join(user_profile['medical_history'])}")
         if parts:
             profile_section = "\n\nUSER PROFILE CONTEXT (use to refine your assessment):\n" + "\n".join(f"- {p}" for p in parts)
+
+    # Medical history → classical Ayurvedic disease names for LLM context
+    medical_section = ""
+    _med_conditions = (user_profile or {}).get("medical_history") or []
+    if _med_conditions:
+        _med_sig, _med_notes = _medical_history_vikriti_signal(_med_conditions)
+        if _med_notes:
+            medical_section = (
+                "\n\nDIAGNOSED MEDICAL CONDITIONS (HIGH-WEIGHT Vikriti evidence — classical Ayurvedic etiology):\n"
+                + "\n".join(f"- {n}" for n in _med_notes)
+                + "\nThese chronic diagnoses indicate dosha channel involvement. Weight them HEAVILY in Vikriti scoring."
+            )
+        else:
+            medical_section = f"\n\nMedical history (unclassified): {', '.join(_med_conditions)}"
 
     system_prompt = (
         "You are an expert Ayurvedic physician (Vaidya) trained in classical Prakriti and Vikriti "
@@ -804,7 +1079,7 @@ SHAREERA PRAKRITI INDICATORS (physical constitution — lifelong, relatively fix
 {chr(10).join(trait_lines)}
 
 CURRENT SYMPTOMS / VIKRITI INDICATORS (present imbalances to correct):
-{symptom_text}{profile_section}
+{symptom_text}{profile_section}{medical_section}
 
 ASSESSMENT GUIDELINES:
 1. Shareera Prakriti = physical constitution. Mental/behavioral traits = Manas Prakriti. Both contribute to overall Prakriti.
@@ -819,6 +1094,10 @@ ASSESSMENT GUIDELINES:
 7. If Agni is Sama, do not use it to bias any dosha — it indicates balance.
 8. Classify into one of the 7 classical Prakriti types (Sapta Prakriti).
 9. List the dominant Gunas (from Vimshatika Guna, Charaka Sutrasthana 1.59-61).
+10. Ojas Assessment (Charaka Chikitsa 24): Ojas = essence of all 7 Dhatus formed by perfect Agni + zero Ama. Score 0-100:
+    - High (70-100): Sama Agni, no/mild Ama, no chronic diseases, strong vitality
+    - Medium (40-69): Some Ama or mild disease burden, moderate Agni impairment
+    - Low (0-39): High Ama, multiple chronic diseases, Vishama/Manda/Tikshna Agni, chronic fatigue, anxiety, poor immunity
 
 First reason through the evidence:
 <reasoning>
@@ -846,7 +1125,8 @@ Then respond with valid JSON only (no markdown, no ```):
   "contradictions": ["<describe any significant conflict, or leave empty array>"],
   "primary_gunas": ["<e.g. Ruksha (dry)>", "<Laghu (light)>", "<Chala (mobile)>"],
   "manas_prakriti": "<e.g. Rajasic Vata-Pitta Manas — quick-thinking but prone to anxiety and sharp reactions>",
-  "ama_indicator": "<none|mild|moderate|high — estimate of Ama based on digestive symptoms and Agni type>"
+  "ama_indicator": "<none|mild|moderate|high — estimate of Ama based on digestive symptoms and Agni type>",
+  "ojas": {{"score": <integer 0-100>, "level": "<high|medium|low>", "label": "<descriptive label>", "description": "<1 sentence>", "recommendation": "<1 sentence Rasayana recommendation>"}}
 }}"""
 
     try:
@@ -949,6 +1229,14 @@ Then respond with valid JSON only (no markdown, no ```):
         if not result.get("ama_indicator"):
             result["ama_indicator"] = _compute_ama_score(current_symptoms or [])
 
+        # Ojas — use LLM estimate or compute from rule-based formula
+        if not result.get("ojas") or not isinstance(result.get("ojas"), dict):
+            result["ojas"] = _compute_ojas_score(
+                ama_score=result["ama_indicator"],
+                disease_count=len((user_profile or {}).get("medical_history") or []),
+                agni_type=(physical_traits or {}).get("agni_type"),
+            )
+
         # Ensure contradictions field is always present and clean
         if "contradictions" not in result:
             result["contradictions"] = []
@@ -958,7 +1246,10 @@ Then respond with valid JSON only (no markdown, no ```):
 
     except Exception as exc:
         logger.warning("LLM dosha assessment failed (%s), using rule-based fallback.", exc)
-        fallback = _rule_based_assessment(physical_traits, current_symptoms)
+        fallback = _rule_based_assessment(
+            physical_traits, current_symptoms,
+            medical_history=(user_profile or {}).get("medical_history") or [],
+        )
         fallback["vikriti"] = _apply_seasonal_correction(fallback["vikriti"])
         fallback["vikriti_dominant"] = max(fallback["vikriti"], key=fallback["vikriti"].get)
         if "contradictions" not in fallback:
