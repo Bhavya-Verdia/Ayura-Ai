@@ -1447,3 +1447,620 @@
   .gym-week-tab { padding: 0.4rem 0.65rem; }
   .gym-tips-grid, .gym-nutrition-grid { grid-template-columns: 1fr; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   YOGA VIEW — dedicated renderer
+   Accent: #8b5cf6 (violet/purple)
+══════════════════════════════════════════════════════════════ */
+.yoga-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.yoga-description {
+  font-size: 0.85rem;
+  color: var(--ayura-text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.yoga-motivational {
+  background: color-mix(in srgb, #8b5cf6 8%, var(--ayura-card-bg) 92%);
+  border: 1.5px solid color-mix(in srgb, #8b5cf6 25%, transparent);
+  border-radius: 10px;
+  padding: 0.85rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #a78bfa;
+  line-height: 1.5;
+}
+
+/* ── Vitals bar ── */
+.yoga-vitals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.yoga-vital-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: color-mix(in srgb, #8b5cf6 8%, var(--ayura-card-bg) 92%);
+  border: 1px solid color-mix(in srgb, #8b5cf6 22%, transparent);
+  border-radius: 20px;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.72rem;
+}
+
+.yoga-vital-chip svg {
+  color: #8b5cf6;
+  flex-shrink: 0;
+}
+
+.yoga-vital-k {
+  color: var(--ayura-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.65rem;
+}
+
+.yoga-vital-v {
+  color: var(--ayura-text);
+  font-weight: 700;
+  font-size: 0.73rem;
+}
+
+/* ── Week tabs ── */
+.yoga-week-tabs {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.yoga-week-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  background: var(--ayura-card-bg);
+  border: 1.5px solid var(--ayura-border);
+  border-radius: 9px;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  color: var(--ayura-text-secondary);
+}
+
+.yoga-week-tab:hover {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
+
+.yoga-week-tab.active {
+  background: color-mix(in srgb, #8b5cf6 12%, var(--ayura-card-bg) 88%);
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
+
+.yoga-tab-num {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.yoga-tab-theme {
+  font-size: 0.67rem;
+  opacity: 0.8;
+}
+
+/* ── Week banner ── */
+.yoga-week-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: rgba(251, 191, 36, 0.10);
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+}
+
+.yoga-week-banner-icon {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+.yoga-week-banner-text {
+  font-size: 0.8rem;
+  color: #fbbf24;
+  line-height: 1.55;
+}
+
+.yoga-week-banner-text strong {
+  color: #fcd34d;
+}
+
+/* ── Days grid ── */
+.yoga-days-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.85rem;
+}
+
+.yoga-day-card {
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--ayura-border);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.yoga-day-card.rest {
+  opacity: 0.65;
+  background: color-mix(in srgb, var(--ayura-surface) 60%, var(--ayura-card-bg));
+}
+
+.yoga-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.yoga-day-name {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ayura-text);
+}
+
+.yoga-day-name svg {
+  color: #8b5cf6;
+}
+
+.yoga-duration-badge-sm {
+  font-size: 0.68rem;
+  color: #8b5cf6;
+  background: color-mix(in srgb, #8b5cf6 10%, transparent);
+  border: 1px solid color-mix(in srgb, #8b5cf6 22%, transparent);
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.yoga-session-theme {
+  font-size: 0.78rem;
+  color: var(--ayura-muted);
+  margin: 0;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.yoga-day-intention {
+  font-size: 0.78rem;
+  color: #a78bfa;
+  font-style: italic;
+  line-height: 1.55;
+  padding-left: 0.7rem;
+  border-left: 2px solid rgba(139, 92, 246, 0.35);
+}
+
+/* ── Rest card ── */
+.yoga-rest-card {
+  background: color-mix(in srgb, #8b5cf6 5%, var(--ayura-card-bg));
+  border: 1px solid color-mix(in srgb, #8b5cf6 15%, transparent);
+  border-radius: 9px;
+  padding: 0.7rem 0.9rem;
+}
+
+.yoga-rest-tip {
+  font-size: 0.78rem;
+  color: var(--ayura-muted);
+  margin: 0;
+  font-style: italic;
+  line-height: 1.55;
+}
+
+/* ── Section blocks ── */
+.yoga-section-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.yoga-section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  width: 100%;
+  background: color-mix(in srgb, var(--ayura-surface) 60%, var(--ayura-card-bg));
+  border: 1px solid var(--ayura-border);
+  border-radius: 6px;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  color: var(--ayura-text-secondary);
+}
+
+.yoga-section-toggle:hover {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
+
+.yoga-section-toggle svg {
+  flex-shrink: 0;
+}
+
+.yoga-section-label {
+  font-size: 0.67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ayura-muted);
+}
+
+.yoga-section-label.standalone {
+  padding: 0.25rem 0;
+  color: var(--ayura-muted);
+}
+
+/* ── Warmup/Cooldown pose list ── */
+.yoga-pose-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.yoga-warmup-pose {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.76rem;
+  color: var(--ayura-text-secondary);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+.yoga-warmup-pose:hover {
+  background: color-mix(in srgb, #8b5cf6 5%, transparent);
+}
+
+.yoga-wp-name {
+  color: var(--ayura-text);
+  font-weight: 500;
+}
+
+.yoga-wp-dur {
+  font-size: 0.68rem;
+  color: var(--ayura-muted);
+  flex-shrink: 0;
+}
+
+/* ── Main sequence ── */
+.yoga-main-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.yoga-pose-row {
+  background: color-mix(in srgb, var(--ayura-surface) 50%, var(--ayura-card-bg));
+  border: 1px solid var(--ayura-border);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.yoga-pose-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.yoga-pose-name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+}
+
+.yoga-pose-name {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--ayura-text);
+}
+
+.yoga-pose-sanskrit {
+  font-size: 0.72rem;
+  color: var(--ayura-muted);
+  font-style: italic;
+}
+
+.yoga-pose-chips {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+
+.yoga-duration-badge {
+  background: color-mix(in srgb, #8b5cf6 15%, transparent);
+  border: 1px solid color-mix(in srgb, #8b5cf6 30%, transparent);
+  color: #8b5cf6;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.yoga-category-chip {
+  font-size: 0.65rem;
+  color: var(--ayura-text-secondary);
+  background: color-mix(in srgb, var(--ayura-accent) 5%, transparent);
+  border: 1px solid var(--ayura-border);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  text-transform: capitalize;
+}
+
+.yoga-pose-benefits {
+  margin: 0;
+  padding-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.yoga-pose-benefits li {
+  font-size: 0.72rem;
+  color: var(--ayura-text-secondary);
+  line-height: 1.45;
+}
+
+.yoga-pose-benefits li::marker {
+  color: #8b5cf6;
+}
+
+.yoga-pose-expand-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  color: var(--ayura-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 0.2rem;
+  opacity: 0.75;
+  transition: opacity 0.15s;
+}
+
+.yoga-pose-expand-toggle:hover {
+  opacity: 1;
+  color: #8b5cf6;
+}
+
+.yoga-pose-expand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid color-mix(in srgb, #8b5cf6 15%, transparent);
+}
+
+.yoga-pose-image {
+  max-height: 60px;
+  border-radius: 6px;
+  object-fit: cover;
+  align-self: flex-start;
+}
+
+.yoga-pose-instructions {
+  font-size: 0.72rem;
+  line-height: 1.65;
+  color: var(--ayura-text-secondary);
+  padding-left: 1.2rem;
+  margin: 0;
+  border-left: 2px solid rgba(139, 92, 246, 0.2);
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+}
+
+.yoga-pose-instructions li {
+  margin-bottom: 0.25rem;
+}
+
+.yoga-pose-modification {
+  font-size: 0.71rem;
+  color: #fbbf24;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.yoga-pose-rationale {
+  font-size: 0.69rem;
+  color: var(--ayura-muted);
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* ── Pranayama card ── */
+.yoga-prana-card {
+  background: rgba(99, 102, 241, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 9px;
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.yoga-prana-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.yoga-prana-icon {
+  color: #818cf8;
+  flex-shrink: 0;
+}
+
+.yoga-prana-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #818cf8;
+  flex: 1;
+}
+
+.yoga-prana-sanskrit {
+  font-weight: 400;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.yoga-prana-dur {
+  font-size: 0.68rem;
+  color: var(--ayura-muted);
+  background: color-mix(in srgb, #818cf8 10%, transparent);
+  border: 1px solid color-mix(in srgb, #818cf8 20%, transparent);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.yoga-prana-dosha-note {
+  font-size: 0.72rem;
+  color: var(--ayura-text-secondary);
+  margin: 0;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+/* ── Ayurvedic tips ── */
+.yoga-tips-section {
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--ayura-border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.yoga-tips-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ayura-text);
+}
+
+.yoga-tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.65rem;
+}
+
+.yoga-tip-card {
+  background: color-mix(in srgb, var(--ayura-surface) 60%, var(--ayura-card-bg));
+  border: 1px solid var(--ayura-border);
+  border-radius: 9px;
+  padding: 0.7rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.yoga-tip-label {
+  font-size: 0.67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8b5cf6;
+}
+
+.yoga-tip-text {
+  font-size: 0.76rem;
+  color: var(--ayura-text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.yoga-dosha-note {
+  font-size: 0.76rem;
+  color: var(--ayura-muted);
+  font-style: italic;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background: color-mix(in srgb, #8b5cf6 5%, transparent);
+  border: 1px solid color-mix(in srgb, #8b5cf6 15%, transparent);
+  border-radius: 7px;
+}
+
+/* ── Enrichment cards ── */
+.yoga-enrichment-card {
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--ayura-border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.yoga-enrichment-label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8b5cf6;
+}
+
+.yoga-enrichment-label svg {
+  color: #8b5cf6;
+}
+
+.yoga-enrichment-text {
+  font-size: 0.8rem;
+  color: var(--ayura-text-secondary);
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .yoga-days-grid { grid-template-columns: 1fr; }
+  .yoga-week-tabs { gap: 0.3rem; }
+  .yoga-week-tab { padding: 0.4rem 0.65rem; }
+  .yoga-tips-grid { grid-template-columns: 1fr; }
+}

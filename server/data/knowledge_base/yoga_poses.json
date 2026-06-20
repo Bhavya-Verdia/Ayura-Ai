@@ -3999,5 +3999,527 @@
     "pranayama_sync": "Allow breath to expand belly naturally",
     "ayurvedic_rationale": "Classical asana for balancing mind and body.",
     "image_url": ""
+  },
+  {
+    "id": "legs_up_wall",
+    "english_name": "Legs Up The Wall",
+    "sanskrit_name": "Viparita Karani",
+    "category": "restorative",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 180,
+      "intermediate": 300,
+      "advanced": 420
+    },
+    "primary_benefits": [
+      "Deeply calms the nervous system and reduces anxiety",
+      "Reverses venous blood flow, reduces leg swelling and fatigue",
+      "Lowers cortisol — one of the most effective restorative inversions",
+      "Relieves lower back tension and sciatica",
+      "Balances Vata and Pitta doshas through passive inversion"
+    ],
+    "body_parts": [
+      "legs",
+      "lower back",
+      "nervous system"
+    ],
+    "instructions": [
+      "Sit sideways next to a wall with your hip touching it.",
+      "Swing your legs up the wall as you lower your back to the floor.",
+      "Adjust your distance from the wall so legs are comfortable — slightly bent is fine.",
+      "Rest arms out to the sides, palms facing up.",
+      "Close eyes and breathe slowly. Let gravity do all the work.",
+      "Stay 3-7 minutes. To exit: bend knees, roll to the side, pause, then sit up slowly."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [
+      "glaucoma",
+      "serious_neck_injury",
+      "pregnancy_third_trimester"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "stress_relief",
+      "healing",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "4-7-8 breath: inhale 4 counts, hold 7, exhale 8",
+    "ayurvedic_rationale": "Viparita Karani is one of the Hatha Yoga Pradipika rejuvenating inversions. It reverses the downward flow of Apana Vata, calms Prana Vata, and cools Pitta. Ideal for evening practice or post-exertion recovery.",
+    "image_url": ""
+  },
+  {
+    "id": "supta_baddha_konasana",
+    "english_name": "Reclined Butterfly",
+    "sanskrit_name": "Supta Baddha Konasana",
+    "category": "restorative",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 120,
+      "intermediate": 240,
+      "advanced": 360
+    },
+    "primary_benefits": [
+      "Opens hips and inner groin passively without muscular effort",
+      "Stimulates abdominal organs — improves digestion and Agni",
+      "Relieves menstrual cramps and menopausal symptoms",
+      "Deeply calming — activates parasympathetic nervous system",
+      "Balances Vata in the lower body (Apana Kshetra)"
+    ],
+    "body_parts": [
+      "hips",
+      "inner thighs",
+      "groin",
+      "abdomen"
+    ],
+    "instructions": [
+      "Lie on your back. Bring the soles of the feet together and let knees fall open.",
+      "Place a folded blanket or block under each knee if the stretch is too intense.",
+      "Rest hands on belly or out to the sides, palms up.",
+      "Close eyes, soften the jaw and let the groin completely release.",
+      "Breathe deeply into the belly. Hold for 2-6 minutes.",
+      "To exit: use hands to press knees together, then hug them to chest."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [
+      "groin_injury",
+      "knee_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "stress_relief",
+      "healing",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Nadi Shodhana — alternate nostril breathing to balance left-right channels",
+    "ayurvedic_rationale": "Stimulates the Muladhara and Svadhisthana chakras. The passive hip opening releases stored Vata in the lower body. Particularly beneficial after standing or strength practices.",
+    "image_url": ""
+  },
+  {
+    "id": "supta_matsyendrasana",
+    "english_name": "Supine Spinal Twist",
+    "sanskrit_name": "Supta Matsyendrasana",
+    "category": "restorative",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 60,
+      "intermediate": 90,
+      "advanced": 120
+    },
+    "primary_benefits": [
+      "Releases tension along the entire spinal column",
+      "Massages abdominal organs — stimulates Agni (digestive fire)",
+      "Stretches the IT band, outer hip, and chest",
+      "Relieves lower back pain and sacroiliac tension",
+      "Wrings out toxins (Ama) from the digestive organs — classical Ayurvedic benefit"
+    ],
+    "body_parts": [
+      "spine",
+      "lower back",
+      "outer hips",
+      "chest",
+      "abdominals"
+    ],
+    "instructions": [
+      "Lie on your back with knees bent, feet flat on the floor.",
+      "Draw the right knee to your chest, then cross it over to the left side.",
+      "Extend the right arm out at shoulder height, gaze right.",
+      "Keep both shoulder blades on the floor. The left hand can rest on the right knee.",
+      "Breathe into the right side of the chest. Hold 1-2 minutes each side.",
+      "Repeat on the other side."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "serious_spinal_injury",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "stress_relief",
+      "healing",
+      "flexibility",
+      "balance"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Exhale into the twist on each breath to release deeper",
+    "ayurvedic_rationale": "Twisting postures are the classical Ayurvedic method to stimulate Samana Vata (digestive wind) and Pachaka Pitta (digestive fire). The supine position makes this accessible even after illness or fatigue.",
+    "image_url": ""
+  },
+  {
+    "id": "happy_baby",
+    "english_name": "Happy Baby",
+    "sanskrit_name": "Ananda Balasana",
+    "category": "restorative",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 60,
+      "intermediate": 90,
+      "advanced": 120
+    },
+    "primary_benefits": [
+      "Gently opens hips and inner groin",
+      "Releases lower back and sacrum",
+      "Calms the mind and reduces fatigue",
+      "Stimulates digestion through gentle compression of abdominal area",
+      "Soothes Vata in the lower body"
+    ],
+    "body_parts": [
+      "hips",
+      "inner groin",
+      "lower back",
+      "sacrum"
+    ],
+    "instructions": [
+      "Lie on your back. On an exhale, bend knees and draw them toward your belly.",
+      "Inhale and grip the outside edges of your feet (or ankles/shins if needed).",
+      "Open knees wider than your torso and bring them toward your armpits.",
+      "Stack each ankle directly over the knee, shins perpendicular to the floor.",
+      "Flex heels and gently pull down with your hands while pressing feet upward.",
+      "Rock gently side to side if comfortable. Hold 1-2 minutes."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "neutral"
+    },
+    "contraindications": [
+      "knee_injury",
+      "pregnancy_third_trimester"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "stress_relief",
+      "healing",
+      "flexibility"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Long exhales — breathe out twice as long as you breathe in",
+    "ayurvedic_rationale": "Ananda Balasana embodies the lightness of Vata in its natural, unobstructed state. It decompresses the sacral region where Apana Vata resides, making it ideal for Vata disorders of the lower body.",
+    "image_url": ""
+  },
+  {
+    "id": "supported_fish",
+    "english_name": "Supported Fish",
+    "sanskrit_name": "Matsyasana (Supported)",
+    "category": "restorative",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 120,
+      "intermediate": 240,
+      "advanced": 360
+    },
+    "primary_benefits": [
+      "Opens the chest, throat, and front of the body",
+      "Counteracts rounded-shoulder posture from desk work",
+      "Stimulates thyroid and parathyroid glands",
+      "Deepens breathing capacity by expanding the thoracic cavity",
+      "Reduces Kapha stagnation in the respiratory system"
+    ],
+    "body_parts": [
+      "chest",
+      "throat",
+      "spine",
+      "shoulders",
+      "respiratory system"
+    ],
+    "instructions": [
+      "Place a yoga block (or rolled blanket) horizontally between your shoulder blades at heart height.",
+      "Lie back over the support so the chest opens and the head rests back gently.",
+      "Extend legs long, or keep knees bent if lower back is sensitive.",
+      "Let arms rest open at your sides, palms facing up.",
+      "Allow the chest to expand with each inhale. Hold 2-6 minutes.",
+      "To exit: use hands to lift head first, then roll to the side."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "serious_neck_injury",
+      "high_blood_pressure",
+      "migraine"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "stress_relief",
+      "healing",
+      "strength",
+      "spiritual"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Ujjayi breath — ocean-sounding breath to fill the expanded chest",
+    "ayurvedic_rationale": "Opens the Anahata (heart) and Vishuddha (throat) chakras. Clears Kapha from the chest and lungs. Classical Matsyasana is prescribed in Charaka Samhita for respiratory conditions.",
+    "image_url": ""
+  },
+  {
+    "id": "constructive_rest",
+    "english_name": "Constructive Rest Position",
+    "sanskrit_name": "Vishranti Sthiti",
+    "category": "restorative",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 300,
+      "intermediate": 600,
+      "advanced": 900
+    },
+    "primary_benefits": [
+      "Neutral spine — completely decompresses all spinal structures",
+      "Allows psoas muscle (Vata holding muscle) to fully release",
+      "Ideal starting position for yoga nidra or body scan meditation",
+      "Lowers cortisol more effectively than seated rest",
+      "Safe for almost all injuries and conditions including pregnancy"
+    ],
+    "body_parts": [
+      "spine",
+      "psoas",
+      "lower back",
+      "nervous system"
+    ],
+    "instructions": [
+      "Lie on your back with knees bent, feet hip-width apart and flat on the floor.",
+      "Let the knees rest against each other — they do not need to be held up.",
+      "Rest arms on the belly or out to the sides at 45 degrees, palms up.",
+      "Allow the entire weight of the body to release into the floor.",
+      "Close eyes. Notice the natural rise and fall of the belly with breath.",
+      "Stay 5-15 minutes. This is the safest, most accessible restorative pose."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "stress_relief",
+      "healing",
+      "spiritual"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Belly breathing (Diaphragmatic breath) — let the belly rise fully on inhale",
+    "ayurvedic_rationale": "Vishranti (rest) is the primary medicine for Vata disorders. The constructive rest position allows Prana to redistribute evenly through all channels (Srotas) without effort.",
+    "image_url": ""
+  },
+  {
+    "id": "reclined_hero",
+    "english_name": "Reclined Hero",
+    "sanskrit_name": "Supta Virasana",
+    "category": "restorative",
+    "level": "intermediate",
+    "duration_seconds": {
+      "beginner": 60,
+      "intermediate": 120,
+      "advanced": 300
+    },
+    "primary_benefits": [
+      "Deep stretch of quadriceps, hip flexors, and psoas",
+      "Improves digestion by stimulating the stomach and intestines",
+      "Relieves tired legs after standing all day",
+      "Stretches the deep abdominal muscles",
+      "Reduces Pitta in the digestive system"
+    ],
+    "body_parts": [
+      "quadriceps",
+      "hip flexors",
+      "psoas",
+      "ankles",
+      "abdomen"
+    ],
+    "instructions": [
+      "Sit in Hero Pose (Virasana) — kneeling with feet outside hips, sitting between them.",
+      "If sitting is painful, place a block or blanket between your feet.",
+      "Place hands behind you on the floor and slowly lean back.",
+      "Lower to forearms, then (if comfortable) to back. Support lower back with a blanket if needed.",
+      "Extend arms overhead or rest them on the belly.",
+      "Hold 1-5 minutes. Exit slowly: come back to forearms, then sitting."
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury",
+      "serious_back_injury"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "flexibility",
+      "healing",
+      "strength"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Breathe into the belly and let each exhale deepen the stretch naturally",
+    "ayurvedic_rationale": "Supta Virasana stimulates Pachaka Pitta in the stomach region and Samana Vata in the navel. Prescribed in Ashtanga Hridayam for digestive disorders and post-meal heaviness.",
+    "image_url": ""
+  },
+  {
+    "id": "supported_bridge",
+    "english_name": "Supported Bridge",
+    "sanskrit_name": "Setu Bandha Sarvangasana (Supported)",
+    "category": "restorative",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 120,
+      "intermediate": 180,
+      "advanced": 300
+    },
+    "primary_benefits": [
+      "Gentle spinal extension without muscular effort",
+      "Opens the chest and stimulates the heart and lungs",
+      "Calms the nervous system while still energising the body",
+      "Relieves lower back fatigue",
+      "Balances all three doshas in a single pose"
+    ],
+    "body_parts": [
+      "spine",
+      "chest",
+      "hips",
+      "lower back",
+      "shoulders"
+    ],
+    "instructions": [
+      "Lie on your back with knees bent, feet hip-width apart close to the hips.",
+      "Press feet firmly into the floor and lift the hips.",
+      "Slide a block under the sacrum (not the lumbar spine) at a comfortable height.",
+      "Let the block support your weight completely — release all muscular effort.",
+      "Arms rest by your sides. Close eyes and breathe into the open chest.",
+      "To exit: press feet to lift hips slightly, remove block, lower spine slowly."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "serious_neck_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "stress_relief",
+      "healing",
+      "flexibility",
+      "strength"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Chest breathing (Thoracic breath) — let the ribcage expand sideways with each inhale",
+    "ayurvedic_rationale": "The supported bridge is the safest restorative inversion — it reverses Apana Vata while remaining accessible. Used in Yoga Chikitsa (yogic therapy) for fatigue, insomnia, and mild depression.",
+    "image_url": ""
+  },
+  {
+    "id": "yin_forward_fold",
+    "english_name": "Yin Seated Forward Fold",
+    "sanskrit_name": "Paschimottanasana (Yin)",
+    "category": "restorative",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 120,
+      "intermediate": 180,
+      "advanced": 300
+    },
+    "primary_benefits": [
+      "Deeply stretches the entire posterior chain — hamstrings, spine, calves",
+      "Stimulates the kidneys and adrenal glands — reduces stress hormones",
+      "Calms the mind and relieves mild depression",
+      "Improves digestion by compressing the abdominal organs",
+      "Pacifies Pitta and Vata through forward folding and surrender"
+    ],
+    "body_parts": [
+      "hamstrings",
+      "spine",
+      "calves",
+      "kidneys",
+      "abdominals"
+    ],
+    "instructions": [
+      "Sit with legs extended straight ahead. Place a folded blanket under sitting bones if hips are tight.",
+      "Rather than forcing the fold, let gravity pull you forward passively.",
+      "Rest hands on legs or on a bolster placed over your shins.",
+      "Round the spine — this is yin, not yang. Let the back release.",
+      "Close eyes, breathe slowly. Hold 2-5 minutes without strain.",
+      "Exit slowly — press hands to floor, unroll spine one vertebra at a time."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [
+      "herniated_disc",
+      "serious_back_injury"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "flexibility",
+      "stress_relief",
+      "healing"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Bhramari (Humming Bee) — hum gently on each exhale to calm the nervous system",
+    "ayurvedic_rationale": "Paschimottanasana is considered the king of forward folds in classical texts. The passive yin version stimulates kidney health as emphasised in Ashtanga Hridayam for Vata disorders.",
+    "image_url": ""
+  },
+  {
+    "id": "yoga_nidra_pose",
+    "english_name": "Yoga Nidra Rest",
+    "sanskrit_name": "Yoga Nidra",
+    "category": "restorative",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 600,
+      "intermediate": 900,
+      "advanced": 1200
+    },
+    "primary_benefits": [
+      "One hour of Yoga Nidra equals 4 hours of sleep for nervous system restoration",
+      "Profoundly reduces stress hormones and restores adrenal function",
+      "Integrates the physical, emotional, and mental effects of the preceding practice",
+      "Balances the autonomic nervous system",
+      "Classical Ayurvedic Nidra (sleep) therapy for Vata and Pitta disorders"
+    ],
+    "body_parts": [
+      "nervous system",
+      "brain",
+      "all systems"
+    ],
+    "instructions": [
+      "Lie in Savasana with eyes closed, a blanket for warmth, and an eye pillow if available.",
+      "Set a Sankalpa (intention) — a short positive statement repeated 3 times mentally.",
+      "Rotate awareness through each body part from toes to crown — simply notice each part.",
+      "Notice any sensations, emotions, or thoughts without reaction. You are the witness.",
+      "Follow the natural breath without controlling it.",
+      "Stay for 10-20 minutes. Return to waking slowly — wiggle fingers, deepen breath, open eyes."
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [],
+    "pregnancy_safe": true,
+    "goals": [
+      "stress_relief",
+      "healing",
+      "spiritual"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Natural, uncontrolled breath — observe it without changing it",
+    "ayurvedic_rationale": "Yoga Nidra is the modern systematization of Pratyahara (sense withdrawal) — the 5th limb of Patanjali Ashtanga Yoga. Charaka Samhita prescribes Nidra as one of the three pillars of health alongside Ahara (diet) and Brahmacharya.",
+    "image_url": ""
   }
 ]

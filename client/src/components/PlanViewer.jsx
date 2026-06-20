@@ -5,6 +5,7 @@ import {
   Sparkles, FlaskConical, AlertTriangle, ChevronRight, Star,
   Droplets, Calendar, ShieldCheck, Flame, Beaker, ArrowRight,
   Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp,
+  Wind, Flower2,
 } from 'lucide-react'
 import './PlanViewer.css'
 
@@ -54,6 +55,8 @@ const SKIP_KEYS = [
   'progressive_overload_guide', 'plan_title', 'plan_description', 'weekly_focus_notes',
   'nutrition_sync', 'recovery_protocol', 'progression_plan', 'ayurvedic_lifestyle_sync',
   'motivational_note',
+  // Yoga raw fields — rendered by YogaView instead
+  'daily_intention', 'breathing_guidance', 'lifestyle_sync',
 ]
 
 // ── Panchakarma dedicated renderer ────────────────────────────────────────────
@@ -748,6 +751,313 @@ function GymView({ plan }) {
   )
 }
 
+
+// ── Yoga dedicated renderer ────────────────────────────────────────────────────
+const YOGA_WEEK_THEMES = ['Foundation', 'Deepen', 'Challenge', 'Integration']
+
+function YogaView({ plan }) {
+  const [activeWeek, setActiveWeek] = useState(0)
+  const [expandedPoses, setExpandedPoses] = useState(new Set())
+  const [expandedWarmup, setExpandedWarmup] = useState(new Set())
+  const [expandedCooldown, setExpandedCooldown] = useState(new Set())
+
+  const us = plan.user_summary || {}
+  const fourWeekPlan = plan.four_week_plan || []
+  const activeWeekData = fourWeekPlan[activeWeek] || null
+  const weekDays = activeWeekData?.days || []
+  const weekNote = activeWeekData?.note || null
+  const tips = plan.ayurvedic_tips || {}
+  const dailyIntention = plan.daily_intention || {}
+
+  const doshaColor = DOSHA_COLOR[us.dominant_dosha] || DOSHA_COLOR.default
+  const goalLabel = (us.yoga_goal || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  const styleLabel = Array.isArray(us.style_preference)
+    ? us.style_preference.join(', ')
+    : (us.style_preference || '')
+
+  const togglePose = (id) => setExpandedPoses(prev => {
+    const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next
+  })
+  const toggleWarmup = (dayIdx) => setExpandedWarmup(prev => {
+    const next = new Set(prev); next.has(dayIdx) ? next.delete(dayIdx) : next.add(dayIdx); return next
+  })
+  const toggleCooldown = (dayIdx) => setExpandedCooldown(prev => {
+    const next = new Set(prev); next.has(dayIdx) ? next.delete(dayIdx) : next.add(dayIdx); return next
+  })
+
+  return (
+    <div className="yoga-view">
+      {plan.plan_description && (
+        <p className="yoga-description">{plan.plan_description}</p>
+      )}
+
+      {/* ── Vitals bar ── */}
+      <div className="yoga-vitals">
+        {goalLabel && (
+          <div className="yoga-vital-chip">
+            <Target size={11} /><span className="yoga-vital-k">Goal</span><span className="yoga-vital-v">{goalLabel}</span>
+          </div>
+        )}
+        {us.dominant_dosha && (
+          <div className="yoga-vital-chip" style={{ borderColor: `${doshaColor}44`, color: doshaColor }}>
+            <span className="yoga-vital-k">Dosha</span><span className="yoga-vital-v">{us.dominant_dosha.toUpperCase()}</span>
+          </div>
+        )}
+        {us.experience && (
+          <div className="yoga-vital-chip">
+            <Activity size={11} /><span className="yoga-vital-k">Level</span>
+            <span className="yoga-vital-v">{us.experience.replace(/\b\w/g, c => c.toUpperCase())}</span>
+          </div>
+        )}
+        {styleLabel && (
+          <div className="yoga-vital-chip">
+            <Flower2 size={11} /><span className="yoga-vital-k">Style</span><span className="yoga-vital-v">{styleLabel}</span>
+          </div>
+        )}
+        {us.time_available && (
+          <div className="yoga-vital-chip">
+            <Timer size={11} /><span className="yoga-vital-k">Duration</span><span className="yoga-vital-v">{us.time_available} min</span>
+          </div>
+        )}
+        {us.time_of_day && (
+          <div className="yoga-vital-chip">
+            <Sun size={11} /><span className="yoga-vital-k">Time</span>
+            <span className="yoga-vital-v">{us.time_of_day.replace(/\b\w/g, c => c.toUpperCase())}</span>
+          </div>
+        )}
+      </div>
+
+      {/* ── Week tabs ── */}
+      <div className="yoga-week-tabs">
+        {YOGA_WEEK_THEMES.map((theme, i) => (
+          <button
+            key={i}
+            className={`yoga-week-tab${activeWeek === i ? ' active' : ''}`}
+            onClick={() => setActiveWeek(i)}
+          >
+            <span className="yoga-tab-num">Week {i + 1}</span>
+            <span className="yoga-tab-theme">{theme}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* ── Week note banner ── */}
+      {weekNote && (
+        <div className="yoga-week-banner">
+          <span className="yoga-week-banner-icon">🌿</span>
+          <span className="yoga-week-banner-text">
+            <strong>Week {activeWeek + 1} · {YOGA_WEEK_THEMES[activeWeek]}:</strong> {weekNote}
+          </span>
+        </div>
+      )}
+
+      {/* ── Day cards ── */}
+      <div className="yoga-days-grid">
+        {weekDays.map((day, dayIdx) => {
+          const isRest = day.rest || !day.session
+          const session = day.session || {}
+          const intention = dailyIntention[day.day_name] || null
+          const warmupOpen = expandedWarmup.has(dayIdx)
+          const cooldownOpen = expandedCooldown.has(dayIdx)
+
+          return (
+            <div key={dayIdx} className={`yoga-day-card${isRest ? ' rest' : ''}`}>
+              <div className="yoga-day-header">
+                <div className="yoga-day-name">
+                  {isRest ? <Moon size={13} /> : <Flower2 size={13} />}
+                  {day.day_name || `Day ${day.day}`}
+                </div>
+                {!isRest && session.total_duration_minutes && (
+                  <span className="yoga-duration-badge-sm">{session.total_duration_minutes} min</span>
+                )}
+              </div>
+
+              {isRest ? (
+                <div className="yoga-rest-card">
+                  <p className="yoga-rest-tip">Let your body absorb the week's practice. Gentle movement and stillness are welcome.</p>
+                </div>
+              ) : (
+                <>
+                  {session.dosha_theme && (
+                    <p className="yoga-session-theme">{session.dosha_theme}</p>
+                  )}
+                  {intention && (
+                    <div className="yoga-day-intention">&ldquo;{intention}&rdquo;</div>
+                  )}
+
+                  {/* Warmup collapsible */}
+                  {session.warmup?.length > 0 && (
+                    <div className="yoga-section-block">
+                      <button className="yoga-section-toggle" onClick={() => toggleWarmup(dayIdx)}>
+                        <span className="yoga-section-label">Warmup ({session.warmup.length})</span>
+                        {warmupOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                      </button>
+                      {warmupOpen && (
+                        <ul className="yoga-pose-list">
+                          {session.warmup.map((p, pi) => (
+                            <li key={pi} className="yoga-warmup-pose">
+                              <span className="yoga-wp-name">{p.pose_name}</span>
+                              {p.duration_seconds && <span className="yoga-wp-dur">{p.duration_seconds}s</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Main sequence */}
+                  {session.main_sequence?.length > 0 && (
+                    <div className="yoga-section-block">
+                      <div className="yoga-section-label standalone">Main Practice ({session.main_sequence.length} poses)</div>
+                      <div className="yoga-main-list">
+                        {session.main_sequence.map((p, pi) => {
+                          const poseId = `${dayIdx}-main-${pi}`
+                          const isOpen = expandedPoses.has(poseId)
+                          const hasValidImg = p.image_url && !p.image_url.startsWith('https://...')
+                          return (
+                            <div key={pi} className="yoga-pose-row">
+                              <div className="yoga-pose-top">
+                                <div className="yoga-pose-name-block">
+                                  <span className="yoga-pose-name">{p.pose_name}</span>
+                                  {p.sanskrit_name && (
+                                    <span className="yoga-pose-sanskrit">{p.sanskrit_name}</span>
+                                  )}
+                                </div>
+                                <div className="yoga-pose-chips">
+                                  {p.duration_seconds && (
+                                    <span className="yoga-duration-badge">{p.duration_seconds}s</span>
+                                  )}
+                                  {p.category && (
+                                    <span className="yoga-category-chip">{p.category}</span>
+                                  )}
+                                </div>
+                              </div>
+                              {p.primary_benefits?.length > 0 && (
+                                <ul className="yoga-pose-benefits">
+                                  {p.primary_benefits.slice(0, 2).map((b, bi) => <li key={bi}>{b}</li>)}
+                                </ul>
+                              )}
+                              {(p.instructions?.length > 0 || p.modification || p.ayurvedic_rationale) && (
+                                <>
+                                  <button className="yoga-pose-expand-toggle" onClick={() => togglePose(poseId)}>
+                                    {isOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                                    {isOpen ? 'Less' : 'Details'}
+                                  </button>
+                                  {isOpen && (
+                                    <div className="yoga-pose-expand">
+                                      {hasValidImg && (
+                                        <img src={p.image_url} alt={p.pose_name} className="yoga-pose-image" />
+                                      )}
+                                      {p.instructions?.length > 0 && (
+                                        <ol className="yoga-pose-instructions">
+                                          {p.instructions.map((step, si) => <li key={si}>{step}</li>)}
+                                        </ol>
+                                      )}
+                                      {p.modification && (
+                                        <p className="yoga-pose-modification">Modification: {p.modification}</p>
+                                      )}
+                                      {p.ayurvedic_rationale && (
+                                        <p className="yoga-pose-rationale">{p.ayurvedic_rationale}</p>
+                                      )}
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cooldown collapsible */}
+                  {session.cooldown?.length > 0 && (
+                    <div className="yoga-section-block">
+                      <button className="yoga-section-toggle" onClick={() => toggleCooldown(dayIdx)}>
+                        <span className="yoga-section-label">Cooldown ({session.cooldown.length})</span>
+                        {cooldownOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                      </button>
+                      {cooldownOpen && (
+                        <ul className="yoga-pose-list">
+                          {session.cooldown.map((p, pi) => (
+                            <li key={pi} className="yoga-warmup-pose">
+                              <span className="yoga-wp-name">{p.pose_name}</span>
+                              {p.duration_seconds && <span className="yoga-wp-dur">{p.duration_seconds}s</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Pranayama */}
+                  {session.pranayama_section?.length > 0 && (
+                    <div className="yoga-prana-card">
+                      <div className="yoga-prana-header">
+                        <Wind size={12} className="yoga-prana-icon" />
+                        <span className="yoga-prana-name">
+                          {session.pranayama_section[0].technique_name}
+                          {session.pranayama_section[0].sanskrit_name && (
+                            <span className="yoga-prana-sanskrit"> · {session.pranayama_section[0].sanskrit_name}</span>
+                          )}
+                        </span>
+                        {session.pranayama_section[0].duration_minutes && (
+                          <span className="yoga-prana-dur">{session.pranayama_section[0].duration_minutes} min</span>
+                        )}
+                      </div>
+                      {session.pranayama_section[0].dosha_note && (
+                        <p className="yoga-prana-dosha-note">{session.pranayama_section[0].dosha_note}</p>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ── Ayurvedic Tips ── */}
+      {Object.keys(tips).length > 0 && (
+        <div className="yoga-tips-section">
+          <div className="yoga-tips-title"><Leaf size={14} /> Ayurvedic Practice Tips</div>
+          <div className="yoga-tips-grid">
+            {[
+              { key: 'best_time', label: 'Best Time' },
+              { key: 'environment', label: 'Environment' },
+              { key: 'what_to_wear', label: 'What to Wear' },
+              { key: 'after_practice', label: 'After Practice' },
+            ].map(({ key, label }) => tips[key] ? (
+              <div key={key} className="yoga-tip-card">
+                <div className="yoga-tip-label">{label}</div>
+                <p className="yoga-tip-text">{tips[key]}</p>
+              </div>
+            ) : null)}
+          </div>
+          {tips.dosha_note && <p className="yoga-dosha-note">{tips.dosha_note}</p>}
+        </div>
+      )}
+
+      {/* ── Enrichment cards ── */}
+      {plan.breathing_guidance && (
+        <div className="yoga-enrichment-card">
+          <div className="yoga-enrichment-label"><Wind size={13} /> Breathing Guidance</div>
+          <p className="yoga-enrichment-text">{plan.breathing_guidance}</p>
+        </div>
+      )}
+      {plan.lifestyle_sync && (
+        <div className="yoga-enrichment-card">
+          <div className="yoga-enrichment-label"><Leaf size={13} /> Lifestyle Sync</div>
+          <p className="yoga-enrichment-text">{plan.lifestyle_sync}</p>
+        </div>
+      )}
+      {plan.motivational_note && (
+        <div className="yoga-motivational">{plan.motivational_note}</div>
+      )}
+    </div>
+  )
+}
+
 function renderValue(val) {
   if (!val) return null
 
@@ -887,6 +1197,17 @@ export default function PlanViewer({ plan, planType }) {
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         >
           <PanchakarmaView plan={plan} />
+        </motion.div>
+      )}
+
+      {/* ── Yoga dedicated view ── */}
+      {planType === 'yoga' && plan.four_week_plan && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <YogaView plan={plan} />
         </motion.div>
       )}
 
