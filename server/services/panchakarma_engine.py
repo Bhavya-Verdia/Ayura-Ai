@@ -549,7 +549,7 @@ def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list,
     return [t for _, t in scored]
 
 
-def _pradhana_day_action(pradhana_karma: str, aushadha: dict, basti_info: dict | None, setting: str) -> dict:
+def _pradhana_day_action(pradhana_karma: str, aushadha: dict, basti_info: dict | None, setting: str, ritu: str = "") -> dict:
     """Builds a pinned 'main karma' action injected as the first therapy on every Pradhana day."""
     pk = pradhana_karma
 
@@ -566,6 +566,8 @@ def _pradhana_day_action(pradhana_karma: str, aushadha: dict, basti_info: dict |
         )
         if kn:
             notes += f" | Koshtha note: {kn}"
+        if ritu == "grishma":
+            notes += " | Grishma Ritu (Summer): Bala is reduced in summer heat — use mild dose only. Trivrit Churna is contraindicated; Eranda (castor oil) or Triphala only. Avoid vigorous Swedana on Virechana day."
         return {
             "id": "virechana_main",
             "name": f"Virechana — {drug_name}",
@@ -841,7 +843,7 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     schedule.extend(assemble_phase(paschat_pool,  paschat_days,  1 + purva_days + pradhana_days, "Paschat Karma (Rejuvenation)"))
 
     # Inject the main Pradhana Karma action as the first entry on every Pradhana day
-    pk_action = _pradhana_day_action(pradhana["primary"], aushadha, basti_info, setting)
+    pk_action = _pradhana_day_action(pradhana["primary"], aushadha, basti_info, setting, ritu_ctx.get("ritu", ""))
     if pk_action:
         for day_entry in schedule:
             if "Pradhana" in day_entry.get("phase", ""):
