@@ -751,6 +751,48 @@
   border-radius: 999px;
 }
 
+.pk-pradhana-action {
+  width: 100%;
+  background: color-mix(in srgb, #f97316 8%, var(--ayura-card-bg) 92%);
+  border: 1.5px solid color-mix(in srgb, #f97316 30%, transparent);
+  border-radius: 9px;
+  padding: 0.65rem 0.8rem;
+  margin-bottom: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.pk-pradhana-action-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.pk-pradhana-flame {
+  color: #f97316;
+  flex-shrink: 0;
+}
+.pk-pradhana-action-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fb923c;
+  flex: 1;
+}
+.pk-pradhana-timing {
+  font-size: 0.67rem;
+  color: var(--ayura-text-secondary);
+  background: color-mix(in srgb, #f97316 10%, transparent);
+  border: 1px solid color-mix(in srgb, #f97316 20%, transparent);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+.pk-pradhana-action-notes {
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--ayura-text-secondary);
+  margin: 0;
+}
+
 /* Unmapped conditions banner */
 .pk-unmapped-banner {
   background: rgba(239,68,68,0.06);

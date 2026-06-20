@@ -334,9 +334,24 @@ function PanchakarmaView({ plan }) {
                 <div className="pk-day-num">Day {day.day}</div>
                 <div className="pk-day-phase">{(day.phase || '').split(' (')[0]}</div>
                 <div className="pk-day-therapies">
-                  {(day.therapies || []).map((t, i) => (
-                    <span key={i} className="pk-therapy-chip">{t.name} · {t.duration_minutes}min</span>
-                  ))}
+                  {(day.therapies || []).map((t, i) =>
+                    t.is_pradhana_karma ? (
+                      <div key={i} className="pk-pradhana-action">
+                        <div className="pk-pradhana-action-header">
+                          <Flame size={12} className="pk-pradhana-flame" />
+                          <span className="pk-pradhana-action-name">{t.name}</span>
+                          {t.timing && <span className="pk-pradhana-timing">{t.timing}</span>}
+                        </div>
+                        {t.pradhana_notes && (
+                          <p className="pk-pradhana-action-notes">{t.pradhana_notes}</p>
+                        )}
+                      </div>
+                    ) : (
+                      <span key={i} className="pk-therapy-chip">
+                        {t.name}{t.duration_minutes ? ` · ${t.duration_minutes}min` : ''}
+                      </span>
+                    )
+                  )}
                 </div>
               </div>
             ))}

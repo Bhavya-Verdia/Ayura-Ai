@@ -549,6 +549,128 @@ def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list,
     return [t for _, t in scored]
 
 
+def _pradhana_day_action(pradhana_karma: str, aushadha: dict, basti_info: dict | None, setting: str) -> dict:
+    """Builds a pinned 'main karma' action injected as the first therapy on every Pradhana day."""
+    pk = pradhana_karma
+
+    if pk == "virechana":
+        drug = aushadha.get("pradhana_aushadha", {})
+        drug_name = drug.get("name", "Virechana drug") if isinstance(drug, dict) else str(drug)
+        dose      = drug.get("dose", "as directed") if isinstance(drug, dict) else ""
+        kn        = aushadha.get("koshtha_virechana_note", "")
+        notes = (
+            f"Take {drug_name} ({dose}) in the evening after a light dinner. "
+            "Stay home — purgation begins in 4–8 hours. Keep warm water available. "
+            "Count Vegas (episodes): 5–10 for mild home Virechana; 20–30 for full clinical. "
+            "After completion rest in supine position; sip warm water if thirsty."
+        )
+        if kn:
+            notes += f" | Koshtha note: {kn}"
+        return {
+            "id": "virechana_main",
+            "name": f"Virechana — {drug_name}",
+            "duration_minutes": None,
+            "benefits": "Expels excess Pitta from Pakvashaya (colon). Clears Raktavaha and Pittavaha Srotas.",
+            "is_pradhana_karma": True,
+            "timing": "Evening — after light dinner",
+            "pradhana_notes": notes,
+        }
+
+    if pk == "vamana":
+        return {
+            "id": "vamana_main",
+            "name": "Vamana — Therapeutic Emesis",
+            "duration_minutes": None,
+            "benefits": "Expels accumulated Kapha from Amashaya (stomach). Clears Pranavaha and Annavaha Srotas.",
+            "is_pradhana_karma": True,
+            "timing": "Morning — under Vaidya supervision (clinic only)",
+            "pradhana_notes": (
+                "Performed by a qualified Vaidya. Morning, empty stomach, after Purvakarma is complete. "
+                "Madanaphala Phanta administered. Patient drinks 6–8 glasses warm milk/sugarcane juice beforehand. "
+                "Count Vegas: 8–12 for Samyak Yoga (adequate purification). "
+                "Atiyoga (>12 Vegas or bleeding): stop immediately — give Ghrita + warm milk. "
+                "Complete rest for 24 hours post-procedure."
+            ),
+        }
+
+    if pk == "nasya":
+        oil = aushadha.get("nasya_oil", "Anu Taila")
+        oil_str = oil if isinstance(oil, str) else oil.get("name", "Anu Taila")
+        return {
+            "id": "nasya_main",
+            "name": f"Navana Nasya — {oil_str}",
+            "duration_minutes": 15,
+            "benefits": "Clears Kapha and Vata from Urdhvanga (head, neck, sinuses). Reaches Manovaha Srotas via Sringataka Marma.",
+            "is_pradhana_karma": True,
+            "timing": "Morning — 30 min after face Abhyanga and steam",
+            "pradhana_notes": (
+                f"Warm face with steam or hot towel for 5 min. Lie supine, head tilted back slightly. "
+                f"Administer 6–8 drops {oil_str} in each nostril. Sniff gently upward. "
+                "Remain supine for 5 min. Spit out any drainage — do not swallow. "
+                "Avoid eating for 30 min after. Repeat daily for all Nasya phase days."
+            ),
+        }
+
+    if pk == "basti_matra":
+        oil = aushadha.get("basti_oil", "Sesame oil (Tila Taila)")
+        oil_str = oil if isinstance(oil, str) else "Sesame oil"
+        return {
+            "id": "basti_matra_main",
+            "name": f"Matra Basti — {oil_str}",
+            "duration_minutes": 10,
+            "benefits": "Lubricates Pakwashaya, nourishes Vata-dominant Srotas. Safest home Basti — no forced expulsion.",
+            "is_pradhana_karma": True,
+            "timing": "Night — after light dinner",
+            "pradhana_notes": (
+                f"Night, after light dinner. Warm 50–80 ml {oil_str} to body temperature (38°C). "
+                "Use enema bulb (Netra). Lie on left side. Administer slowly over 1–2 min. "
+                "Remain lying — retain overnight if possible; oil is absorbed, no Vega (expulsion) needed. "
+                "Repeat nightly for all Basti phase days."
+            ),
+        }
+
+    if pk == "basti":
+        kashayam = aushadha.get("basti_kashayam", {})
+        oil      = aushadha.get("basti_oil", "Tila Taila")
+        kash_name = kashayam.get("name", "Dashamoola Kashayam") if isinstance(kashayam, dict) else str(kashayam)
+        oil_str   = oil if isinstance(oil, str) else "Tila Taila"
+        bs_name   = (basti_info or {}).get("name", "Yoga Basti")
+        bs_note   = (basti_info or {}).get("note", "")
+        return {
+            "id": "basti_main",
+            "name": f"Basti — {bs_name}",
+            "duration_minutes": 60,
+            "benefits": "Vata Shodhana from Pakvashaya — the seat of Vata. Ardhachikitsa (half of all treatment for Vata).",
+            "is_pradhana_karma": True,
+            "timing": "Morning (Niruha) + Evening (Anuvasana) per Basti day schedule",
+            "pradhana_notes": (
+                f"{bs_name} ({bs_note}). "
+                f"Niruha Basti (decoction): {kash_name} + {oil_str} + Madhu + Saindhava per classical formula. "
+                "Administered by Vaidya — patient lies on left side, Netra inserted, enema given slowly. "
+                "Retain 30–60 min; expulsion occurs naturally. Rest 1–2 hours post-Niruha. "
+                f"Anuvasana Basti (oil): {oil_str} 60–120 ml same evening — retained overnight."
+            ),
+        }
+
+    if pk == "raktamokshana":
+        return {
+            "id": "rakta_main",
+            "name": "Raktamokshana — Blood Purification",
+            "duration_minutes": 30,
+            "benefits": "Purifies Rakta Dhatu — removes Pitta-Rakta vitiation from Raktavaha Srotas.",
+            "is_pradhana_karma": True,
+            "timing": "Morning — under Vaidya supervision",
+            "pradhana_notes": (
+                "Performed by qualified Vaidya. Jalaukavacharana (leech therapy) or Shringa (cupping) per indication. "
+                "Morning, light stomach. Leeches applied to affected site; removed when engorged (20–30 min). "
+                "Post-procedure: wash site with Haridra (turmeric) water; monitor 2 hours. "
+                "Avoid sour/pungent food for 3 days post-procedure."
+            ),
+        }
+
+    return {}
+
+
 def assemble_phase(pool, target_days, start_day, phase_name):
     if not pool:
         return []
@@ -717,6 +839,13 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     schedule.extend(assemble_phase(purva_pool,    purva_days,    1,                              "Purvakarma (Preparation)"))
     schedule.extend(assemble_phase(pradhana_pool, pradhana_days, 1 + purva_days,                 "Pradhana Karma (Main Cleanse)"))
     schedule.extend(assemble_phase(paschat_pool,  paschat_days,  1 + purva_days + pradhana_days, "Paschat Karma (Rejuvenation)"))
+
+    # Inject the main Pradhana Karma action as the first entry on every Pradhana day
+    pk_action = _pradhana_day_action(pradhana["primary"], aushadha, basti_info, setting)
+    if pk_action:
+        for day_entry in schedule:
+            if "Pradhana" in day_entry.get("phase", ""):
+                day_entry["therapies"].insert(0, pk_action)
 
     # ── Ritu Compatibility Warning ────────────────────────────────────────────
     pk_primary = pradhana["primary"]
