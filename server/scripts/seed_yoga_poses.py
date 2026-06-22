@@ -342,36 +342,45 @@ def main():
     with open(POSES_FILE, "w", encoding="utf-8") as f:
         json.dump(final_poses, f, indent=2, ensure_ascii=False)
         
-    # 3. GENERATE PRANAYAMA
-    pranayama_items = []
-    for pr in PRANAYAMA:
-        pranayama_items.append({
-            "id": to_snake_case(pr["name"]),
-            "english_name": pr["name"],
-            "sanskrit_name": pr["sanskrit"],
-            "type": pr["type"],
-            "level": pr["lvl"],
-            "duration_minutes": {"beginner": 3, "intermediate": 5, "advanced": 10},
-            "dosha_effect": {
-                "vata": pr["vata"],
-                "pitta": pr["pitta"],
-                "kapha": pr["kapha"]
-            },
-            "best_time": "morning" if pr["type"] in ["energizing", "cleansing"] else "anytime",
-            "instructions": ["Find a comfortable seat.", "Follow the breath technique."],
-            "benefits": [f"Provides {pr['type']} effects."],
-            "contraindications": ["heart_disease", "hypertension"] if pr["type"] == "energizing" else [],
-            "pregnancy_safe": pr["preg_safe"]
-        })
-        
-    with open(PRANAYAMA_FILE, "w", encoding="utf-8") as f:
-        json.dump(pranayama_items, f, indent=2, ensure_ascii=False)
+    # 3. PRANAYAMA — skip overwriting if the curated file already has real instructions
+    pranayama_count = 0
+    skip_pranayama = False
+    if PRANAYAMA_FILE.exists():
+        existing = json.loads(PRANAYAMA_FILE.read_text(encoding="utf-8"))
+        if any(len(p.get("instructions", [])) > 2 for p in existing):
+            skip_pranayama = True
+            pranayama_count = len(existing)
+
+    if not skip_pranayama:
+        pranayama_items = []
+        for pr in PRANAYAMA:
+            pranayama_items.append({
+                "id": to_snake_case(pr["name"]),
+                "english_name": pr["name"],
+                "sanskrit_name": pr["sanskrit"],
+                "type": pr["type"],
+                "level": pr["lvl"],
+                "duration_minutes": {"beginner": 3, "intermediate": 5, "advanced": 10},
+                "dosha_effect": {
+                    "vata": pr["vata"],
+                    "pitta": pr["pitta"],
+                    "kapha": pr["kapha"]
+                },
+                "best_time": "morning" if pr["type"] in ["energizing", "cleansing"] else "anytime",
+                "instructions": ["Find a comfortable seat.", "Follow the breath technique."],
+                "benefits": [f"Provides {pr['type']} effects."],
+                "contraindications": ["heart_disease", "hypertension"] if pr["type"] == "energizing" else [],
+                "pregnancy_safe": pr["preg_safe"]
+            })
+        with open(PRANAYAMA_FILE, "w", encoding="utf-8") as f:
+            json.dump(pranayama_items, f, indent=2, ensure_ascii=False)
+        pranayama_count = len(pranayama_items)
 
     print(f"Total asanas: {len(final_poses)} (target: 100+)")
     print(f"By level: {dict(stats_level)}")
     print(f"By category: {dict(stats_category)}")
     print(f"Pregnancy safe asanas: {stats_pregnancy_safe}")
-    print(f"Pranayama techniques saved: {len(pranayama_items)}")
+    print(f"Pranayama techniques: {pranayama_count} ({'preserved' if skip_pranayama else 'generated'})")
 
 if __name__ == "__main__":
     main()

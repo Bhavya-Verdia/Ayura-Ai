@@ -5,7 +5,10 @@ import {
   Sparkles, FlaskConical, AlertTriangle, ChevronRight, Star,
   Droplets, Calendar, ShieldCheck, Flame, Beaker, ArrowRight,
   Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp,
-  Wind, Flower2,
+  Wind, Flower2, Brain, UtensilsCrossed, Clock, Soup, Apple,
+  Cookie, Salad, CupSoda, BookOpen,
+  Stethoscope, Layers, TestTube, Thermometer, Syringe, ListChecks,
+  TriangleAlert, BadgeCheck, Repeat, HeartPulse,
 } from 'lucide-react'
 import './PlanViewer.css'
 
@@ -57,6 +60,26 @@ const SKIP_KEYS = [
   'motivational_note',
   // Yoga raw fields — rendered by YogaView instead
   'daily_intention', 'breathing_guidance', 'lifestyle_sync',
+  'condition_coaching', 'age_coaching', 'condition_protocols', 'seasonal_note',
+  // Diet raw fields — rendered by DietView instead
+  'meal_timing', 'spice_guide', 'daily_meal_ideas', 'hydration_guidance',
+  'fasting_guidance', 'disclaimer', 'weekly_plan', 'pathya_apathya',
+  'ahar_vidhi', 'condition_coaching', 'diet_weeks',
+  // Remedy raw fields — rendered by RemedyView instead
+  'symptoms_addressed', 'doctor_referrals', 'general_guidelines',
+  'personalized_intro', 'synergy_note', 'recovery_timeline', 'prevention_tips',
+  'when_to_escalate', 'ayurvedic_context', 'follow_up',
+  'user_dosha', 'enrichment_error',
+  // Medicine raw fields — rendered by MedicineView instead
+  'primary_formulations', 'supporting_formulations', 'external_therapies',
+  'dosage_schedule', 'lifestyle_guidance', 'blocked_medicines',
+  'formulation_rationale', 'expected_timeline', 'dietary_guidelines',
+  'when_to_stop', 'active_conditions', 'secondary_dosha',
+  // New medicines fields
+  'chikitsa_sutra', 'chikitsa_approach', 'vikriti_dominant', 'vikriti_secondary',
+  'agni_type', 'ama_level', 'current_season', 'treatment_protocol',
+  'expected_outcomes', 'pathya', 'apathya', 'viruddha_ahara_alerts',
+  'dose_note', 'monitoring_signs', 'synergy_note',
 ]
 
 // ── Panchakarma dedicated renderer ────────────────────────────────────────────
@@ -752,6 +775,89 @@ function GymView({ plan }) {
 }
 
 
+// ── Surya Namaskar card ───────────────────────────────────────────────────────
+const SNS_BREATH_COLOR = { 'Inhale': '#3b82f6', 'Exhale': '#ef4444', 'Natural': '#6b7280', 'Exhale — hold 3-5 breaths': '#ef4444' }
+
+function SuryaNamaskarCard({ sns }) {
+  const [open, setOpen] = useState(false)
+  const pace = (sns.pace || '').replace(/\b\w/g, c => c.toUpperCase())
+  return (
+    <div className="sns-card">
+      <div className="sns-header">
+        <div className="sns-title-row">
+          <Sun size={14} className="sns-sun-icon" />
+          <span className="sns-title">Surya Namaskar</span>
+          <span className="sns-sanskrit">सूर्य नमस्कार</span>
+        </div>
+        <div className="sns-meta">
+          <span className="sns-badge">{sns.rounds} round{sns.rounds > 1 ? 's' : ''}</span>
+          <span className="sns-badge pace">{pace}</span>
+          <span className="sns-badge dur">{sns.duration_minutes} min</span>
+        </div>
+      </div>
+
+      <p className="sns-pace-note">{sns.pace_note}</p>
+
+      {sns.senior_modification && (
+        <div className="sns-senior-note">
+          <ShieldCheck size={11} /> {sns.senior_modification}
+        </div>
+      )}
+
+      {sns.safety_notes?.length > 0 && (
+        <div className="sns-warnings">
+          {sns.safety_notes.map((w, i) => (
+            <div key={i} className="sns-warning-row">
+              <AlertTriangle size={11} className="sns-warn-icon" />
+              <span>{w}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button className="sns-toggle" onClick={() => setOpen(o => !o)}>
+        {open ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+        {open ? 'Hide 12 steps' : 'Show 12 steps'}
+      </button>
+
+      {open && (
+        <div className="sns-steps">
+          {sns.steps.map((step) => {
+            const breathColor = SNS_BREATH_COLOR[step.breath] || '#6b7280'
+            return (
+              <div key={step.step} className="sns-step-row">
+                <div className="sns-step-num">{step.step}</div>
+                <div className="sns-step-body">
+                  <div className="sns-step-names">
+                    <span className="sns-step-sanskrit">{step.sanskrit}</span>
+                    <span className="sns-step-english">{step.english}</span>
+                    {step.breath && step.breath !== 'Natural' && (
+                      <span className="sns-breath-pill" style={{ color: breathColor, borderColor: `${breathColor}44`, background: `${breathColor}12` }}>
+                        {step.breath.replace('Exhale — hold 3-5 breaths', 'Exhale + hold')}
+                      </span>
+                    )}
+                  </div>
+                  <p className="sns-step-cue">{step.cue}</p>
+                  {step.modification && (
+                    <p className="sns-step-mod">{step.modification}</p>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {sns.classical_reference && !open && (
+        <p className="sns-classical-ref">{sns.classical_reference.split('.')[0]}.</p>
+      )}
+      {open && sns.classical_reference && (
+        <p className="sns-classical-ref">{sns.classical_reference}</p>
+      )}
+    </div>
+  )
+}
+
 // ── Yoga dedicated renderer ────────────────────────────────────────────────────
 const YOGA_WEEK_THEMES = ['Foundation', 'Deepen', 'Challenge', 'Integration']
 
@@ -760,6 +866,8 @@ function YogaView({ plan }) {
   const [expandedPoses, setExpandedPoses] = useState(new Set())
   const [expandedWarmup, setExpandedWarmup] = useState(new Set())
   const [expandedCooldown, setExpandedCooldown] = useState(new Set())
+  const [expandedPrana, setExpandedPrana] = useState(new Set())
+  const [expandedDharana, setExpandedDharana] = useState(new Set())
 
   const us = plan.user_summary || {}
   const fourWeekPlan = plan.four_week_plan || []
@@ -784,11 +892,42 @@ function YogaView({ plan }) {
   const toggleCooldown = (dayIdx) => setExpandedCooldown(prev => {
     const next = new Set(prev); next.has(dayIdx) ? next.delete(dayIdx) : next.add(dayIdx); return next
   })
+  const togglePrana = (dayIdx) => setExpandedPrana(prev => {
+    const next = new Set(prev); next.has(dayIdx) ? next.delete(dayIdx) : next.add(dayIdx); return next
+  })
+  const toggleDharana = (dayIdx) => setExpandedDharana(prev => {
+    const next = new Set(prev); next.has(dayIdx) ? next.delete(dayIdx) : next.add(dayIdx); return next
+  })
 
   return (
     <div className="yoga-view">
       {plan.plan_description && (
         <p className="yoga-description">{plan.plan_description}</p>
+      )}
+
+      {/* ── Age group + medical conditions banner ── */}
+      <div className="yoga-banners-row">
+        {us.age_group && us.age_group !== 'adult' && (
+          <div className={`yoga-age-badge ${us.age_group}`}>
+            {us.age_group === 'senior' ? '🌿 Senior-Adapted Practice' : '⚡ Youth Practice'}
+          </div>
+        )}
+        {us.medical_conditions?.length > 0 && (
+          <div className="yoga-medical-banner">
+            <span className="yoga-medical-label">Personalised for:</span>
+            {us.medical_conditions.map(c => (
+              <span key={c} className="yoga-medical-chip">{c.replace(/_/g, ' ')}</span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Seasonal note ── */}
+      {plan.seasonal_note && (
+        <div className="yoga-seasonal-note">
+          <Leaf size={12} />
+          <span>{plan.seasonal_note}</span>
+        </div>
       )}
 
       {/* ── Vitals bar ── */}
@@ -825,7 +964,61 @@ function YogaView({ plan }) {
             <span className="yoga-vital-v">{us.time_of_day.replace(/\b\w/g, c => c.toUpperCase())}</span>
           </div>
         )}
+        {us.agni_type && (
+          <div className="yoga-vital-chip yoga-vital-agni">
+            <Flame size={11} /><span className="yoga-vital-k">Agni</span>
+            <span className="yoga-vital-v">{us.agni_type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+          </div>
+        )}
+        {us.ojas_level && (
+          <div className="yoga-vital-chip yoga-vital-ojas">
+            <Droplets size={11} /><span className="yoga-vital-k">Ojas</span>
+            <span className="yoga-vital-v">{us.ojas_level.replace(/\b\w/g, c => c.toUpperCase())}</span>
+          </div>
+        )}
+        {us.stress_level && us.stress_level !== 'low' && (
+          <div className="yoga-vital-chip yoga-vital-stress">
+            <Zap size={11} /><span className="yoga-vital-k">Stress</span>
+            <span className="yoga-vital-v">{us.stress_level.replace(/\b\w/g, c => c.toUpperCase())}</span>
+          </div>
+        )}
       </div>
+
+      {/* ── Condition protocol cards ── */}
+      {plan.condition_protocols?.length > 0 && (
+        <div className="yoga-protocols">
+          {plan.condition_protocols.map((proto, pi) => (
+            <details key={pi} className="yoga-protocol-card">
+              <summary className="yoga-protocol-summary">
+                <span className="yoga-protocol-condition">{proto.condition.replace(/_/g, ' ')}</span>
+                <span className="yoga-protocol-name">{proto.protocol_name}</span>
+              </summary>
+              <div className="yoga-protocol-body">
+                {proto.sequence_note && <p className="yoga-protocol-seq">{proto.sequence_note}</p>}
+                {proto.lifestyle_note && <p className="yoga-protocol-life">{proto.lifestyle_note}</p>}
+                {proto.research_note && <p className="yoga-protocol-research">{proto.research_note}</p>}
+                {proto.classical_reference && (
+                  <p className="yoga-protocol-ref">{proto.classical_reference}</p>
+                )}
+              </div>
+            </details>
+          ))}
+        </div>
+      )}
+
+      {/* ── Age coaching (LLM-generated for senior/youth) ── */}
+      {plan.age_coaching && (
+        <div className="yoga-age-coaching">
+          <p className="yoga-age-coaching-text">{plan.age_coaching}</p>
+        </div>
+      )}
+
+      {/* ── Condition coaching (LLM-generated, only when user has conditions) ── */}
+      {plan.condition_coaching && (
+        <div className="yoga-condition-coaching">
+          <p className="yoga-condition-coaching-text">{plan.condition_coaching}</p>
+        </div>
+      )}
 
       {/* ── Week tabs ── */}
       <div className="yoga-week-tabs">
@@ -883,6 +1076,11 @@ function YogaView({ plan }) {
                   )}
                   {intention && (
                     <div className="yoga-day-intention">&ldquo;{intention}&rdquo;</div>
+                  )}
+
+                  {/* Surya Namaskar flow */}
+                  {session.surya_namaskar && (
+                    <SuryaNamaskarCard sns={session.surya_namaskar} />
                   )}
 
                   {/* Warmup collapsible */}
@@ -991,25 +1189,86 @@ function YogaView({ plan }) {
                   )}
 
                   {/* Pranayama */}
-                  {session.pranayama_section?.length > 0 && (
-                    <div className="yoga-prana-card">
-                      <div className="yoga-prana-header">
-                        <Wind size={12} className="yoga-prana-icon" />
-                        <span className="yoga-prana-name">
-                          {session.pranayama_section[0].technique_name}
-                          {session.pranayama_section[0].sanskrit_name && (
-                            <span className="yoga-prana-sanskrit"> · {session.pranayama_section[0].sanskrit_name}</span>
+                  {session.pranayama_section?.length > 0 && (() => {
+                    const pr = session.pranayama_section[0]
+                    const pranaOpen = expandedPrana.has(dayIdx)
+                    const hasInstructions = pr.instructions?.length > 0
+                    return (
+                      <div className="yoga-prana-card">
+                        <div className="yoga-prana-header">
+                          <Wind size={12} className="yoga-prana-icon" />
+                          <span className="yoga-prana-name">
+                            {pr.technique_name}
+                            {pr.sanskrit_name && (
+                              <span className="yoga-prana-sanskrit"> · {pr.sanskrit_name}</span>
+                            )}
+                          </span>
+                          {pr.duration_minutes && (
+                            <span className="yoga-prana-dur">{pr.duration_minutes} min</span>
                           )}
-                        </span>
-                        {session.pranayama_section[0].duration_minutes && (
-                          <span className="yoga-prana-dur">{session.pranayama_section[0].duration_minutes} min</span>
+                        </div>
+                        {pr.dosha_note && (
+                          <p className="yoga-prana-dosha-note">{pr.dosha_note}</p>
+                        )}
+                        {hasInstructions && (
+                          <>
+                            <button className="yoga-pose-expand-toggle" onClick={() => togglePrana(dayIdx)}>
+                              {pranaOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                              {pranaOpen ? 'Less' : 'Instructions'}
+                            </button>
+                            {pranaOpen && (
+                              <ol className="yoga-pose-instructions yoga-prana-instructions">
+                                {pr.instructions.map((step, si) => <li key={si}>{step}</li>)}
+                              </ol>
+                            )}
+                          </>
                         )}
                       </div>
-                      {session.pranayama_section[0].dosha_note && (
-                        <p className="yoga-prana-dosha-note">{session.pranayama_section[0].dosha_note}</p>
-                      )}
-                    </div>
-                  )}
+                    )
+                  })()}
+
+                  {/* Dharana / Meditation slot */}
+                  {session.dharana_section && (() => {
+                    const dh = session.dharana_section
+                    const dharanaOpen = expandedDharana.has(dayIdx)
+                    return (
+                      <div className="yoga-dharana-card">
+                        <div className="yoga-dharana-header">
+                          <Brain size={12} className="yoga-dharana-icon" />
+                          <span className="yoga-dharana-name">
+                            {dh.technique}
+                            {dh.sanskrit_name && (
+                              <span className="yoga-dharana-sanskrit"> · {dh.sanskrit_name}</span>
+                            )}
+                          </span>
+                          {dh.duration_minutes && (
+                            <span className="yoga-dharana-dur">{dh.duration_minutes} min</span>
+                          )}
+                        </div>
+                        {dh.dosha_note && (
+                          <p className="yoga-dharana-dosha-note">{dh.dosha_note}</p>
+                        )}
+                        {dh.instructions?.length > 0 && (
+                          <>
+                            <button className="yoga-pose-expand-toggle" onClick={() => toggleDharana(dayIdx)}>
+                              {dharanaOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                              {dharanaOpen ? 'Less' : 'How to practice'}
+                            </button>
+                            {dharanaOpen && (
+                              <>
+                                <ol className="yoga-pose-instructions yoga-dharana-instructions">
+                                  {dh.instructions.map((step, si) => <li key={si}>{step}</li>)}
+                                </ol>
+                                {dh.classical_reference && (
+                                  <p className="yoga-dharana-ref">{dh.classical_reference}</p>
+                                )}
+                              </>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )
+                  })()}
                 </>
               )}
             </div>
@@ -1153,6 +1412,1222 @@ function renderValue(val) {
   return <span className="plan-string-val">{String(val)}</span>
 }
 
+// ── Diet dedicated renderer ───────────────────────────────────────────────────
+const DIET_MEAL_ICONS = {
+  breakfast: Coffee,
+  lunch:     Soup,
+  snack:     Apple,
+  dinner:    UtensilsCrossed,
+}
+const DIET_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const DIET_DAY_FULL   = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+function MacroBar({ macros }) {
+  const cal = macros?.calories || 0
+  const pro = macros?.protein_g || 0
+  const carb = macros?.carbs_g || 0
+  const fat = macros?.fat_g || 0
+  return (
+    <div className="diet-macro-bar">
+      {cal > 0 && <div className="diet-macro-chip cal"><Flame size={10} />{Math.round(cal)} kcal</div>}
+      {pro > 0 && <div className="diet-macro-chip pro"><span>P</span>{pro}g</div>}
+      {carb > 0 && <div className="diet-macro-chip carb"><span>C</span>{carb}g</div>}
+      {fat > 0 && <div className="diet-macro-chip fat"><span>F</span>{fat}g</div>}
+    </div>
+  )
+}
+
+// ── LLM Meal Card (primary — for weekly_plan structure) ───────────────────────
+function LLMMealCard({ mealName, meal }) {
+  const [open, setOpen] = useState(false)
+  const MealIcon = DIET_MEAL_ICONS[mealName] || UtensilsCrossed
+  const label = mealName.charAt(0).toUpperCase() + mealName.slice(1)
+  if (!meal?.meal_name) return null
+  return (
+    <div className={`diet-meal-card llm meal-${mealName}${meal.allergen_warning ? ' has-allergen' : ''}`}>
+      {meal.allergen_warning && (
+        <div className="diet-allergen-warning">
+          Allergen detected: {meal.allergen_terms?.join(', ')}
+        </div>
+      )}
+      <div className="diet-meal-header" onClick={() => setOpen(o => !o)}>
+        <div className="diet-meal-title-row">
+          <MealIcon size={13} className="diet-meal-icon" />
+          <div className="diet-meal-title-stack">
+            <span className="diet-meal-label">{label}</span>
+            <span className="diet-meal-name-llm">{meal.meal_name}</span>
+          </div>
+        </div>
+        <div className="diet-meal-meta">
+          {meal.macros_approx?.calories > 0 && (
+            <span className="diet-meal-cal-badge">{Math.round(meal.macros_approx.calories)} cal</span>
+          )}
+          {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        </div>
+      </div>
+
+      {open && (
+        <div className="diet-llm-body">
+          {meal.description && (
+            <p className="diet-llm-desc">{meal.description}</p>
+          )}
+          {meal.key_ingredients?.length > 0 && (
+            <div className="diet-ing-chips">
+              {meal.key_ingredients.map((ing, i) => (
+                <span key={i} className="diet-ing-chip">{ing}</span>
+              ))}
+            </div>
+          )}
+          {meal.portion && (
+            <div className="diet-llm-portion">
+              <UtensilsCrossed size={11} /> {meal.portion}
+            </div>
+          )}
+          {meal.ayurvedic_note && (
+            <div className="diet-llm-ayur-note">
+              <Leaf size={11} className="diet-llm-ayur-icon" />
+              <p>{meal.ayurvedic_note}</p>
+            </div>
+          )}
+          {meal.macros_approx && (
+            <MacroBar macros={meal.macros_approx} />
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Pathya-Apathya Card ───────────────────────────────────────────────────────
+function PathyaApathyaCard({ pa }) {
+  const [open, setOpen] = useState(false)
+  if (!pa) return null
+  const hasContent = pa.pathya?.length || pa.apathya?.length || pa.viruddha_ahara_warnings?.length
+  if (!hasContent) return null
+  return (
+    <div className="diet-pa-card">
+      <button className="diet-timing-toggle" onClick={() => setOpen(o => !o)}>
+        <ShieldCheck size={13} className="diet-timing-icon" style={{ color: '#16a34a' }} />
+        <span>Pathya-Apathya — Classical Diet Protocol</span>
+        {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+      </button>
+      {open && (
+        <div className="diet-pa-body">
+          {pa.classical_reference && (
+            <div className="diet-pa-ref">
+              <Star size={11} /> {pa.classical_reference}
+            </div>
+          )}
+          {pa.pathya?.length > 0 && (
+            <div className="diet-pa-section">
+              <div className="diet-pa-section-title pathya">Pathya — Recommended</div>
+              <ul className="diet-pa-list">
+                {pa.pathya.map((item, i) => <li key={i}>{item}</li>)}
+              </ul>
+            </div>
+          )}
+          {pa.apathya?.length > 0 && (
+            <div className="diet-pa-section">
+              <div className="diet-pa-section-title apathya">Apathya — Avoid</div>
+              <ul className="diet-pa-list apathya">
+                {pa.apathya.map((item, i) => <li key={i}>{item}</li>)}
+              </ul>
+            </div>
+          )}
+          {pa.viruddha_ahara_warnings?.length > 0 && (
+            <div className="diet-pa-section">
+              <div className="diet-pa-section-title viruddha">Viruddha Ahara Warnings</div>
+              <ul className="diet-pa-list viruddha">
+                {pa.viruddha_ahara_warnings.map((item, i) => (
+                  <li key={i}><AlertTriangle size={10} className="diet-pa-warn-icon" />{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DietView({ plan }) {
+  const [activeDay, setActiveDay] = useState(0)
+  const [activeWeek, setActiveWeek] = useState(0)
+  const [timingOpen, setTimingOpen] = useState(false)
+  const [spiceOpen, setSpiceOpen] = useState(false)
+
+  const us = plan.user_summary || {}
+  const isLLM = !!plan.weekly_plan
+  const doshaColor = DOSHA_COLOR[us.dominant_dosha] || DOSHA_COLOR.default
+  const goalLabel = (us.diet_goal || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  const agniLabel = (us.agni_type || '').replace(/\b\w/g, c => c.toUpperCase())
+
+  // Multi-week LLM path
+  const dietWeeks = plan.diet_weeks || []
+  const isMultiWeek = isLLM && dietWeeks.length > 0
+  const currentWeek = dietWeeks[activeWeek] || null
+
+  // LLM path: weekly_plan = week 1 daily for day-level access
+  const weeklyPlan = isMultiWeek
+    ? (currentWeek?.daily_plan || plan.weekly_plan || {})
+    : (plan.weekly_plan || {})
+  const currentDayName = DIET_DAY_FULL[activeDay] || 'Monday'
+  const dayData = weeklyPlan[currentDayName] || {}
+
+  // Fallback path: four_week_plan array
+  const fallbackDays = (plan.four_week_plan?.[0]?.days) || []
+  const fallbackDay = fallbackDays[activeDay] || {}
+  const timing = plan.meal_timing || {}
+
+  return (
+    <div className="diet-view">
+
+      {/* ── Header ── */}
+      {plan.plan_title && (
+        <h2 className="diet-plan-title">{plan.plan_title}</h2>
+      )}
+      {plan.motivational_note && (
+        <div className="diet-motivational">{plan.motivational_note}</div>
+      )}
+      {plan.plan_description && (
+        <p className="diet-description">{plan.plan_description}</p>
+      )}
+
+      {/* ── Vitals bar ── */}
+      <div className="diet-vitals">
+        {goalLabel && (
+          <div className="diet-vital-chip">
+            <Target size={11} className="diet-vital-icon" />
+            <span className="diet-vital-k">Goal</span>
+            <span className="diet-vital-v">{goalLabel}</span>
+          </div>
+        )}
+        {us.dominant_dosha && (
+          <div className="diet-vital-chip" style={{ borderColor: `${doshaColor}44`, color: doshaColor }}>
+            <span className="diet-vital-k">Dosha</span>
+            <span className="diet-vital-v">{us.dominant_dosha.toUpperCase()}</span>
+          </div>
+        )}
+        {us.agni_type && (
+          <div className="diet-vital-chip">
+            <Flame size={11} className="diet-vital-icon" />
+            <span className="diet-vital-k">Agni</span>
+            <span className="diet-vital-v">{agniLabel}</span>
+          </div>
+        )}
+        {us.dietary_type && (
+          <div className="diet-vital-chip">
+            <Leaf size={11} className="diet-vital-icon" />
+            <span className="diet-vital-v">{us.dietary_type.replace(/\b\w/g, c => c.toUpperCase())}</span>
+          </div>
+        )}
+        {us.gut_issue && us.gut_issue !== 'healthy' && (
+          <div className="diet-vital-chip">
+            <span className="diet-vital-k">Gut</span>
+            <span className="diet-vital-v">{us.gut_issue.replace(/_/g, ' ')}</span>
+          </div>
+        )}
+        {us.intermittent_fasting && us.intermittent_fasting !== 'no' && (
+          <div className="diet-vital-chip">
+            <Timer size={11} className="diet-vital-icon" />
+            <span className="diet-vital-k">IF</span>
+            <span className="diet-vital-v">{us.intermittent_fasting}</span>
+          </div>
+        )}
+        {(us.active_condition_protocols || []).map(c => (
+          <div key={c} className="diet-vital-chip cond">
+            <ShieldCheck size={11} />
+            <span>{c.replace(/_/g, ' ')}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Pathya-Apathya (LLM only) ── */}
+      {isLLM && <PathyaApathyaCard pa={plan.pathya_apathya} />}
+
+      {/* ── Condition coaching ── */}
+      {plan.condition_coaching && (
+        <div className="diet-coaching-card">
+          <ShieldCheck size={13} className="diet-coaching-icon" />
+          <p className="diet-coaching-text">{plan.condition_coaching}</p>
+        </div>
+      )}
+
+      {/* ── Week tabs (LLM 4-week plan) ── */}
+      {isMultiWeek && (
+        <div className="diet-week-tabs">
+          {dietWeeks.map((wk, idx) => (
+            <button
+              key={idx}
+              className={`diet-week-tab${activeWeek === idx ? ' active' : ''}`}
+              onClick={() => { setActiveWeek(idx); setActiveDay(0); }}
+            >
+              <span className="diet-week-num">Week {wk.week_number}</span>
+              <span className="diet-week-phase">{wk.phase}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {isMultiWeek && currentWeek?.phase_description && (
+        <p className="diet-phase-desc">{currentWeek.phase_description}</p>
+      )}
+
+      {/* ── Day selector ── */}
+      <div className="diet-day-strip">
+        {DIET_DAY_LABELS.map((label, i) => {
+          const isFasting = isLLM
+            ? (weeklyPlan[DIET_DAY_FULL[i]]?.is_fasting ?? false)
+            : (fallbackDays[i]?.is_fasting_day || false)
+          const theme = isLLM ? (weeklyPlan[DIET_DAY_FULL[i]]?.theme || '') : ''
+          return (
+            <button key={i}
+              className={`diet-day-btn ${activeDay === i ? 'active' : ''} ${isFasting ? 'fasting' : ''}`}
+              onClick={() => setActiveDay(i)}
+              title={theme || label}>
+              {label}
+              {isFasting && <span className="diet-fast-dot" />}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* ── Day theme badge (LLM) ── */}
+      {isLLM && dayData.theme && (
+        <div className="diet-day-theme-badge">{dayData.theme}</div>
+      )}
+
+      {/* ── LLM Meal cards ── */}
+      {isLLM && (!isMultiWeek || activeWeek === 0) && (
+        <>
+          {dayData.is_fasting && (
+            <div className="diet-fasting-banner">
+              <Moon size={16} />
+              <div>
+                <strong>Fasting Day</strong>
+                <p>Light fruits, dairy, nuts, and herbal beverages only. Rest the digestive fire.</p>
+              </div>
+            </div>
+          )}
+          <div className="diet-meals-section">
+            {['breakfast', 'lunch', 'snack', 'dinner'].map(meal => (
+              dayData[meal] && (
+                <LLMMealCard key={meal} mealName={meal} meal={dayData[meal]} />
+              )
+            ))}
+          </div>
+          {/* Day total macros computed from per-meal macros_approx */}
+          {(() => {
+            const meals = ['breakfast', 'lunch', 'snack', 'dinner']
+            const total = meals.reduce((acc, m) => {
+              const ma = dayData[m]?.macros_approx || {}
+              return {
+                calories: acc.calories + (ma.calories || 0),
+                protein_g: acc.protein_g + (ma.protein_g || 0),
+                carbs_g: acc.carbs_g + (ma.carbs_g || 0),
+                fat_g: acc.fat_g + (ma.fat_g || 0),
+              }
+            }, { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 })
+            return total.calories > 0 ? (
+              <div className="diet-day-macros">
+                <span className="diet-day-macros-label">Day totals (approx.)</span>
+                <MacroBar macros={total} />
+              </div>
+            ) : null
+          })()}
+        </>
+      )}
+
+      {/* ── Compact meals (weeks 2-4) ── */}
+      {isMultiWeek && activeWeek > 0 && (
+        <div className="diet-compact-meals">
+          {['breakfast', 'lunch', 'snack', 'dinner'].map(meal => {
+            const val = dayData[meal]
+            if (!val) return null
+            const MealIcon = DIET_MEAL_ICONS[meal] || UtensilsCrossed
+            const label = meal.charAt(0).toUpperCase() + meal.slice(1)
+            return (
+              <div key={meal} className="diet-compact-meal-row">
+                <MealIcon size={13} className="diet-compact-meal-icon" />
+                <span className="diet-compact-meal-label">{label}</span>
+                <span className="diet-compact-meal-name">{typeof val === 'string' ? val : val.meal_name || ''}</span>
+              </div>
+            )
+          })}
+          {dayData.special_drink && (
+            <div className="diet-compact-meal-row drink">
+              <Droplets size={13} className="diet-compact-meal-icon" />
+              <span className="diet-compact-meal-label">Drink</span>
+              <span className="diet-compact-meal-name">{typeof dayData.special_drink === 'string' ? dayData.special_drink : dayData.special_drink.name || ''}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Fallback meal cards (rule engine) ── */}
+      {!isLLM && (
+        <>
+          {fallbackDay.is_fasting_day && (
+            <div className="diet-fasting-banner">
+              <Moon size={16} />
+              <div>
+                <strong>Fasting Day</strong>
+                <p>Light fruits, dairy, nuts, and herbal beverages only. Rest the digestive fire.</p>
+              </div>
+            </div>
+          )}
+          <div className="diet-meals-section">
+            {['breakfast', 'lunch', 'snack', 'dinner'].map(meal => {
+              const items = fallbackDay.meals?.[meal] || []
+              if (!items.length) return null
+              const MealIcon = DIET_MEAL_ICONS[meal] || UtensilsCrossed
+              return (
+                <div key={meal} className={`diet-meal-card meal-${meal}`}>
+                  <div className="diet-meal-header">
+                    <div className="diet-meal-title-row">
+                      <MealIcon size={13} className="diet-meal-icon" />
+                      <span className="diet-meal-label">{meal.charAt(0).toUpperCase() + meal.slice(1)}</span>
+                    </div>
+                  </div>
+                  <div className="diet-meal-foods">
+                    {items.map((item, i) => (
+                      <div key={i} className="diet-food-row">
+                        <span className="diet-food-name">{item.name}</span>
+                        <span className="diet-food-portion">{item.portion}</span>
+                        {item.macros?.calories > 0 && (
+                          <span className="diet-food-cal">{Math.round(item.macros.calories)} cal</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          {fallbackDay.daily_macros && (
+            <div className="diet-day-macros">
+              <span className="diet-day-macros-label">Day totals (approx.)</span>
+              <MacroBar macros={fallbackDay.daily_macros} />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── Special Ayurvedic drink (LLM, week 1 full detail only) ── */}
+      {isLLM && dayData.special_drink && (!isMultiWeek || activeWeek === 0) && (
+        <div className="diet-drink-card">
+          <div className="diet-drink-header">
+            <CupSoda size={13} className="diet-drink-icon" />
+            <span className="diet-drink-name">{dayData.special_drink.name}</span>
+            <span className="diet-drink-when">{dayData.special_drink.when}</span>
+          </div>
+          {dayData.special_drink.recipe && (
+            <p className="diet-drink-recipe">{dayData.special_drink.recipe}</p>
+          )}
+          {dayData.special_drink.rationale && (
+            <p className="diet-drink-rationale">{dayData.special_drink.rationale}</p>
+          )}
+        </div>
+      )}
+
+      {/* ── Ahar Vidhi (LLM) ── */}
+      {isLLM && plan.ahar_vidhi && (
+        <div className="diet-ahar-vidhi">
+          <div className="diet-ahar-vidhi-title">
+            <BookOpen size={13} /> Ahar Vidhi — Rules of Eating
+          </div>
+          <p>{plan.ahar_vidhi}</p>
+        </div>
+      )}
+
+      {/* ── Meal timing (Dinacharya) — fallback / both ── */}
+      {Object.keys(timing).length > 0 && (
+        <div className="diet-timing-card">
+          <button className="diet-timing-toggle" onClick={() => setTimingOpen(o => !o)}>
+            <Clock size={13} className="diet-timing-icon" />
+            <span>Meal Timing — Dinacharya</span>
+            {timingOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+          </button>
+          {timingOpen && (
+            <div className="diet-timing-body">
+              {timing.general_note && <p className="diet-timing-note">{timing.general_note}</p>}
+              <div className="diet-timing-rows">
+                {['breakfast', 'lunch', 'snack', 'dinner'].map(m => timing[m] && (
+                  <div key={m} className="diet-timing-row">
+                    <span className="diet-timing-meal">{m.charAt(0).toUpperCase() + m.slice(1)}</span>
+                    <span className="diet-timing-time">{timing[m]}</span>
+                  </div>
+                ))}
+                {timing.wake_up_drink && (
+                  <div className="diet-timing-row special">
+                    <CupSoda size={11} />
+                    <span className="diet-timing-meal">Wake-up drink</span>
+                    <span className="diet-timing-time">{timing.wake_up_drink}</span>
+                  </div>
+                )}
+                {timing.bedtime_drink && (
+                  <div className="diet-timing-row special">
+                    <Moon size={11} />
+                    <span className="diet-timing-meal">Bedtime drink</span>
+                    <span className="diet-timing-time">{timing.bedtime_drink}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Spice guide ── */}
+      {plan.spice_guide?.length > 0 && (
+        <div className="diet-spice-guide-card">
+          <button className="diet-timing-toggle" onClick={() => setSpiceOpen(o => !o)}>
+            <Flower2 size={13} className="diet-timing-icon" />
+            <span>Dosha Spice Guide</span>
+            {spiceOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+          </button>
+          {spiceOpen && (
+            <div className="diet-spice-guide-rows">
+              {plan.spice_guide.map((s, i) => (
+                <div key={i} className="diet-spice-guide-row">
+                  <div className="diet-spice-guide-name">
+                    {s.name}
+                    {s.sanskrit && <span className="diet-spice-guide-sk">{s.sanskrit}</span>}
+                  </div>
+                  <p className="diet-spice-guide-use">{s.use}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Hydration + fasting guidance ── */}
+      {(plan.hydration_guidance || plan.fasting_guidance) && (
+        <div className="diet-guidance-row">
+          {plan.hydration_guidance && (
+            <div className="diet-guidance-card">
+              <Droplets size={13} className="diet-guidance-icon hydration" />
+              <div>
+                <div className="diet-guidance-title">Hydration</div>
+                <p className="diet-guidance-text">{plan.hydration_guidance}</p>
+              </div>
+            </div>
+          )}
+          {plan.fasting_guidance && (
+            <div className="diet-guidance-card">
+              <Moon size={13} className="diet-guidance-icon fasting" />
+              <div>
+                <div className="diet-guidance-title">Fasting Protocol</div>
+                <p className="diet-guidance-text">{plan.fasting_guidance}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Seasonal + Ayurvedic tips ── */}
+      {plan.seasonal_note && (
+        <div className="diet-seasonal-note">
+          <Sun size={13} className="diet-seasonal-icon" />
+          <p>{plan.seasonal_note}</p>
+        </div>
+      )}
+      {plan.ayurvedic_tips && (
+        <div className="diet-ayur-tips">
+          <Leaf size={13} className="diet-ayur-icon" />
+          <p>{plan.ayurvedic_tips}</p>
+        </div>
+      )}
+
+      {/* ── Disclaimer ── */}
+      <div className="diet-disclaimer">
+        <ShieldCheck size={11} />
+        <span>
+          {plan.disclaimer ||
+            'AI-generated wellness guidance. Consult a qualified Ayurvedic practitioner before starting a therapeutic diet, especially with existing medical conditions.'}
+        </span>
+      </div>
+
+    </div>
+  )
+}
+
+// ── RemedyView ────────────────────────────────────────────────────────────────
+const DOSHA_COLORS_R = { vata: '#a78bfa', pitta: '#f97316', kapha: '#34d399', universal: '#2dd4bf' }
+const SEV_COLOR  = { mild: '#22c55e', moderate: '#f59e0b', severe: '#ef4444' }
+const SEV_LABEL  = { mild: 'Mild', moderate: 'Moderate', severe: 'Severe' }
+
+function RemedyIngredient({ item }) {
+  return (
+    <div className="rv-ingredient">
+      <span className="rv-ing-dot" />
+      <span className="rv-ing-name">{item.item}</span>
+      {item.amount && <span className="rv-ing-amount">{item.amount}</span>}
+      {item.preparation && <span className="rv-ing-prep">— {item.preparation}</span>}
+    </div>
+  )
+}
+
+function RemedyCard({ result }) {
+  const [open, setOpen] = useState(false)
+  const { remedy, symptom_display, severity, dosha_cause, dosha_used, requires_practitioner, ayurvedic_rationale } = result
+  if (!remedy) return null
+  const doshaColor = DOSHA_COLORS_R[dosha_used] || DOSHA_COLORS_R.universal
+
+  return (
+    <div className="rv-card">
+      <div className="rv-card-header" onClick={() => setOpen(o => !o)} role="button">
+        <div className="rv-card-left">
+          <div className="rv-symptom-name">{symptom_display}</div>
+          <div className="rv-remedy-name">{remedy.name}</div>
+        </div>
+        <div className="rv-card-right">
+          <span className="rv-sev-badge" style={{ background: SEV_COLOR[severity] + '22', color: SEV_COLOR[severity] }}>
+            {SEV_LABEL[severity] || severity}
+          </span>
+          <span className="rv-dosha-chip" style={{ background: doshaColor + '22', color: doshaColor }}>
+            {dosha_used}
+          </span>
+          {open ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+        </div>
+      </div>
+
+      {open && (
+        <div className="rv-card-body">
+          {dosha_cause && (
+            <div className="rv-dosha-cause">
+              <Flame size={13} style={{ color: doshaColor }} />
+              <span>Dosha cause ({dosha_used}): {dosha_cause}</span>
+            </div>
+          )}
+          {ayurvedic_rationale && (
+            <div className="rv-rationale">{ayurvedic_rationale}</div>
+          )}
+          {remedy.ingredients?.length > 0 && (
+            <div className="rv-section">
+              <div className="rv-section-label">Ingredients</div>
+              <div className="rv-ingredients">
+                {remedy.ingredients.map((ing, i) => <RemedyIngredient key={i} item={ing} />)}
+              </div>
+            </div>
+          )}
+          {remedy.preparation && (
+            <div className="rv-section">
+              <div className="rv-section-label">Preparation</div>
+              <p className="rv-preparation">{remedy.preparation}</p>
+            </div>
+          )}
+          <div className="rv-meta-row">
+            {remedy.dosage     && <div className="rv-meta-chip"><Timer size={11} />{remedy.dosage}</div>}
+            {remedy.duration   && <div className="rv-meta-chip"><Calendar size={11} />{remedy.duration}</div>}
+            {remedy.expected_relief && <div className="rv-meta-chip"><Zap size={11} />Relief in {remedy.expected_relief}</div>}
+          </div>
+          {requires_practitioner && (
+            <div className="rv-practitioner-note">
+              <TriangleAlert size={13} />
+              Chronic/long-duration symptom — follow up with an Ayurvedic practitioner
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function RemedyView({ plan }) {
+  const symptoms   = plan.symptoms_addressed || []
+  const referrals  = plan.doctor_referrals || []
+  const guidelines = plan.general_guidelines || {}
+  const prevention = plan.prevention_tips || []
+
+  return (
+    <div className="rv-view">
+
+      {/* Intro */}
+      {plan.personalized_intro && (
+        <div className="rv-intro-card">
+          <HeartPulse size={18} className="rv-intro-icon" />
+          <p>{plan.personalized_intro}</p>
+        </div>
+      )}
+
+      {/* Symptom remedy cards */}
+      {symptoms.length > 0 && (
+        <div className="rv-section-block">
+          <div className="rv-block-title">
+            <Leaf size={16} />
+            Remedies for Your Symptoms
+          </div>
+          {symptoms.map((res, i) => <RemedyCard key={i} result={res} />)}
+        </div>
+      )}
+
+      {/* Doctor referrals */}
+      {referrals.length > 0 && (
+        <div className="rv-section-block rv-referrals">
+          <div className="rv-block-title"><TriangleAlert size={16} style={{ color: '#ef4444' }} />Doctor Referrals</div>
+          {referrals.map((r, i) => (
+            <div key={i} className="rv-referral-card">
+              <span className="rv-referral-sym">{r.symptom_id || r.symptom_display || 'Symptom'}</span>
+              <span className="rv-referral-msg">{r.message}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Recovery timeline */}
+      {plan.recovery_timeline && (
+        <div className="rv-info-card">
+          <div className="rv-info-label"><Calendar size={14} />Recovery Timeline</div>
+          <p className="rv-info-body">{plan.recovery_timeline}</p>
+        </div>
+      )}
+
+      {/* Synergy note */}
+      {plan.synergy_note && (
+        <div className="rv-info-card">
+          <div className="rv-info-label"><Sparkles size={14} />Synergy Note</div>
+          <p className="rv-info-body">{plan.synergy_note}</p>
+        </div>
+      )}
+
+      {/* Prevention tips */}
+      {prevention.length > 0 && (
+        <div className="rv-info-card">
+          <div className="rv-info-label"><BadgeCheck size={14} />Prevention Tips</div>
+          <ul className="rv-tip-list">
+            {prevention.map((tip, i) => <li key={i}>{tip}</li>)}
+          </ul>
+        </div>
+      )}
+
+      {/* When to escalate */}
+      {plan.when_to_escalate && (
+        <div className="rv-info-card rv-escalate">
+          <div className="rv-info-label"><TriangleAlert size={14} />When to See a Doctor</div>
+          <p className="rv-info-body">{plan.when_to_escalate}</p>
+        </div>
+      )}
+
+      {/* General guidelines */}
+      {(guidelines.diet_during_recovery || guidelines.lifestyle_notes || guidelines.what_to_avoid?.length > 0) && (
+        <div className="rv-info-card">
+          <div className="rv-info-label"><Layers size={14} />Recovery Guidelines ({plan.user_dosha} dosha)</div>
+          {guidelines.diet_during_recovery && <p className="rv-info-body">{guidelines.diet_during_recovery}</p>}
+          {guidelines.lifestyle_notes && <p className="rv-info-body" style={{ marginTop: 6 }}>{guidelines.lifestyle_notes}</p>}
+          {guidelines.what_to_avoid?.length > 0 && (
+            <div className="rv-avoid-row">
+              {guidelines.what_to_avoid.map((a, i) => (
+                <span key={i} className="rv-avoid-chip">{a}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Disclaimer */}
+      {plan.disclaimer && (
+        <div className="rv-disclaimer">
+          <ShieldCheck size={12} />
+          <span>{plan.disclaimer}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── MedicineView ──────────────────────────────────────────────────────────────
+// ── MedicineView constants ────────────────────────────────────────────────────
+const TIER_LABEL = { 1: 'OTC Safe', 2: 'Practitioner Advised' }
+const TIER_COLOR = { 1: '#22c55e', 2: '#f59e0b' }
+const TYPE_COLOR = {
+  'churna (powder)':                     '#a78bfa',
+  'avaleha (jam)':                       '#fb923c',
+  'arishta (fermented decoction)':       '#34d399',
+  'asava (fermented)':                   '#34d399',
+  'vati (tablet)':                       '#60a5fa',
+  'vati/guggulu (tablet)':               '#60a5fa',
+  'kashayam (decoction)':                '#2dd4bf',
+  'ghrita (medicated ghee)':             '#fde68a',
+  'taila (oil)':                         '#fbbf24',
+  'satva (extract)':                     '#e879f9',
+  'bhasma (ash)':                        '#94a3b8',
+  'pishti (powder of gems/minerals)':    '#c4b5fd',
+  'pak (confection)':                    '#f97316',
+}
+const RASA_COLOR = {
+  madhura: '#22c55e',
+  amla:    '#f59e0b',
+  lavana:  '#60a5fa',
+  katu:    '#ef4444',
+  tikta:   '#a78bfa',
+  kashaya: '#6b7280',
+}
+const KARMA_COLOR = {
+  'Deepana':     '#f59e0b',
+  'Pachana':     '#fb923c',
+  'Vatahara':    '#60a5fa',
+  'Pittahara':   '#34d399',
+  'Kaphahara':   '#a78bfa',
+  'Tridoshahara':'#e879f9',
+  'Rasayana':    '#22c55e',
+  'Balya':       '#2dd4bf',
+  'Medhya':      '#818cf8',
+  'Brimhana':    '#fde68a',
+  'Shodhana':    '#f97316',
+  'Anulomana':   '#94a3b8',
+}
+
+function MedCard({ med, rationale }) {
+  const [open, setOpen] = useState(false)
+  const typeKey   = (med.type || '').toLowerCase()
+  const color     = TYPE_COLOR[typeKey] || '#94a3b8'
+  const tierColor = TIER_COLOR[med.safety_tier] || '#94a3b8'
+  const isExternal = med.application_type === 'external'
+  const hasRasa    = med.rasa?.length > 0
+  const hasKarma   = med.karma?.length > 0
+  const hasDhatu   = med.dhatu_affected?.length > 0
+  const durMin     = med.duration_min_weeks
+  const durMax     = med.duration_max_weeks
+
+  return (
+    <div className="mv-card" style={{ '--mv-accent': color }}>
+      {/* ── Header ── */}
+      <div className="mv-card-header" onClick={() => setOpen(o => !o)} role="button" tabIndex={0}>
+        <div className="mv-card-left">
+          <div className="mv-med-name">
+            {med.name}
+            {med.previously_tried && <span className="mv-tried-badge">Tried before</span>}
+          </div>
+          <div className="mv-type-chip" style={{ background: color + '22', color }}>{med.type}</div>
+        </div>
+        <div className="mv-card-right">
+          {durMin && <span className="mv-duration-badge">{durMin}–{durMax || durMin} wk</span>}
+          <span className="mv-tier-badge" style={{ background: tierColor + '22', color: tierColor }}>
+            {TIER_LABEL[med.safety_tier] || 'Consult Vaidya'}
+          </span>
+          {isExternal && <span className="mv-external-badge">External</span>}
+          {open ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+        </div>
+      </div>
+
+      {/* ── Panchakosha pharmacology strip (always visible) ── */}
+      {(hasRasa || med.virya || med.vipaka) && (
+        <div className="mv-pharma-strip">
+          {hasRasa && (
+            <div className="mv-pharma-group">
+              <span className="mv-pharma-label">Rasa</span>
+              <div className="mv-rasa-chips">
+                {med.rasa.map((r, i) => (
+                  <span key={i} className="mv-rasa-chip" style={{ background: (RASA_COLOR[r] || '#94a3b8') + '22', color: RASA_COLOR[r] || '#94a3b8' }}>
+                    {r.charAt(0).toUpperCase() + r.slice(1)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {med.virya && (
+            <div className="mv-pharma-group">
+              <span className="mv-pharma-label">Virya</span>
+              <span className={`mv-virya-badge ${med.virya === 'ushna' ? 'ushna' : 'sheeta'}`}>
+                {med.virya === 'ushna' ? '🔥 Heating' : '❄️ Cooling'}
+              </span>
+            </div>
+          )}
+          {med.vipaka && (
+            <div className="mv-pharma-group">
+              <span className="mv-pharma-label">Vipaka</span>
+              <span className="mv-vipaka-badge">{med.vipaka.charAt(0).toUpperCase() + med.vipaka.slice(1)}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Expanded body ── */}
+      {open && (
+        <div className="mv-card-body">
+          {/* Rationale (from enricher) */}
+          {rationale && (
+            <div className="mv-rationale-block">
+              {typeof rationale === 'object' ? (
+                <>
+                  {rationale.rasa_guna_reasoning && <p className="mv-rationale">{rationale.rasa_guna_reasoning}</p>}
+                  {rationale.classical_basis && (
+                    <div className="mv-classical-basis">
+                      <BookOpen size={11} />
+                      <span>{rationale.classical_basis}</span>
+                    </div>
+                  )}
+                  {rationale.anupana_reason && (
+                    <div className="mv-anupana-reason">
+                      <Droplets size={11} />
+                      <span>{rationale.anupana_reason}</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="mv-rationale">{rationale}</p>
+              )}
+            </div>
+          )}
+
+          {/* Classical action */}
+          {med.classical_action && (
+            <div className="mv-action-row">
+              <BookOpen size={12} />
+              <span>{med.classical_action}</span>
+            </div>
+          )}
+
+          {/* Karma pills */}
+          {hasKarma && (
+            <div className="mv-section">
+              <div className="mv-section-label">Karma (Actions)</div>
+              <div className="mv-karma-row">
+                {med.karma.map((k, i) => (
+                  <span key={i} className="mv-karma-pill" style={{
+                    background: (KARMA_COLOR[k] || '#64748b') + '22',
+                    color: KARMA_COLOR[k] || '#94a3b8',
+                  }}>{k}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Dhatu affected */}
+          {hasDhatu && (
+            <div className="mv-section">
+              <div className="mv-section-label">Dhatu Affected</div>
+              <div className="mv-karma-row">
+                {med.dhatu_affected.map((d, i) => (
+                  <span key={i} className="mv-dhatu-chip">{d.charAt(0).toUpperCase() + d.slice(1)}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Guna */}
+          {med.guna?.length > 0 && (
+            <div className="mv-section">
+              <div className="mv-section-label">Guna (Qualities)</div>
+              <div className="mv-karma-row">
+                {med.guna.map((g, i) => (
+                  <span key={i} className="mv-guna-chip">{g.charAt(0).toUpperCase() + g.slice(1)}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Ingredients */}
+          {med.ingredients?.length > 0 && (
+            <div className="mv-section">
+              <div className="mv-section-label">Key Ingredients</div>
+              <div className="mv-ingredients">
+                {med.ingredients.map((ing, i) => (
+                  <span key={i} className="mv-ing-chip">{ing}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Dosage */}
+          <div className="mv-dosage-block">
+            <div className="mv-section-label">Dosage & Administration</div>
+            <p className="mv-dosage-text">{med.dosage}</p>
+            {(med.selected_anupana || med.anupana) && (med.selected_anupana || med.anupana) !== 'External use only' && (
+              <div className="mv-anupana">
+                <Droplets size={12} />
+                <span>Anupana: <strong>{med.selected_anupana || med.anupana}</strong></span>
+              </div>
+            )}
+            {med.dosage_pediatric && (
+              <div className="mv-anupana" style={{ color: '#a78bfa' }}>
+                <span>Paediatric dose: {med.dosage_pediatric}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Contraindications */}
+          {med.contraindications?.length > 0 && (
+            <div className="mv-section">
+              <div className="mv-section-label" style={{ color: '#f97316' }}>Contraindications</div>
+              <div className="mv-contra-chips">
+                {med.contraindications.map((c, i) => (
+                  <span key={i} className="mv-contra-chip">{c.replace(/_/g, ' ')}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* AFI / Classical reference */}
+          {(med.afi_reference || med.classical_text_reference) && (
+            <div className="mv-afi-ref">
+              <BookOpen size={11} />
+              <div>
+                {med.afi_reference && <div><strong>AFI:</strong> {med.afi_reference}</div>}
+                {med.classical_text_reference && <div>{med.classical_text_reference}</div>}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MedicineView({ plan }) {
+  const primary    = plan.primary_formulations || []
+  const supporting = plan.supporting_formulations || []
+  const external   = plan.external_therapies || []
+  const schedule   = plan.dosage_schedule || []
+  const protocol   = plan.treatment_protocol || {}
+  const outcomes   = plan.expected_outcomes || {}
+  const lifestyle  = plan.lifestyle_guidance || {}
+  const blocked    = plan.blocked_medicines || []
+  const rationale  = plan.formulation_rationale || {}
+  const pathya     = plan.pathya || []
+  const apathya    = plan.apathya || []
+  const viruddha   = plan.viruddha_ahara_alerts || []
+
+  const doshaColor = DOSHA_COLORS_R[plan.vikriti_dominant || plan.user_dosha] || DOSHA_COLORS_R.universal
+
+  return (
+    <div className="mv-view">
+
+      {/* ── Intro ── */}
+      {plan.personalized_intro && (
+        <div className="rv-intro-card">
+          <Stethoscope size={18} className="rv-intro-icon" />
+          <p>{plan.personalized_intro}</p>
+        </div>
+      )}
+
+      {/* ── Chikitsa Sutra ── */}
+      {plan.chikitsa_sutra && (
+        <div className="mv-chikitsa-card">
+          <div className="mv-chikitsa-label">
+            <BookOpen size={14} />
+            Chikitsa Sutra
+            <span className="mv-approach-badge" style={{ background: plan.chikitsa_approach === 'Shodhana' ? '#f9731622' : '#22c55e22', color: plan.chikitsa_approach === 'Shodhana' ? '#f97316' : '#22c55e' }}>
+              {plan.chikitsa_approach || 'Shamana'}
+            </span>
+          </div>
+          <p className="mv-chikitsa-text">{plan.chikitsa_sutra}</p>
+          {plan.agni_type && plan.vikriti_dominant && (
+            <div className="mv-vitals-chips">
+              <span className="mv-vital-chip"><Flame size={10} />{plan.vikriti_dominant} vikriti</span>
+              {plan.vikriti_secondary && <span className="mv-vital-chip">{plan.vikriti_secondary} secondary</span>}
+              <span className="mv-vital-chip"><Droplets size={10} />{plan.agni_type} agni</span>
+              {plan.ama_level && plan.ama_level !== 'low' && <span className="mv-vital-chip" style={{ color: '#f59e0b' }}>ama: {plan.ama_level}</span>}
+              {plan.current_season && <span className="mv-vital-chip"><Leaf size={10} />{plan.current_season}</span>}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Conditions banner ── */}
+      {plan.active_conditions?.length > 0 && (
+        <div className="mv-conditions-row">
+          {plan.active_conditions.map((c, i) => (
+            <span key={i} className="mv-cond-chip">{c.replace(/_/g, ' ')}</span>
+          ))}
+        </div>
+      )}
+
+      {/* ── Primary formulations ── */}
+      {primary.length > 0 && (
+        <div className="rv-section-block">
+          <div className="rv-block-title"><Pill size={16} />Primary Formulations</div>
+          {primary.map((med, i) => <MedCard key={i} med={med} rationale={rationale[med.name]} />)}
+        </div>
+      )}
+
+      {/* ── Supporting formulations ── */}
+      {supporting.length > 0 && (
+        <div className="rv-section-block">
+          <div className="rv-block-title"><Layers size={16} />Supporting Formulations</div>
+          {supporting.map((med, i) => <MedCard key={i} med={med} rationale={rationale[med.name]} />)}
+        </div>
+      )}
+
+      {/* ── External therapies ── */}
+      {external.length > 0 && (
+        <div className="rv-section-block">
+          <div className="rv-block-title"><Droplets size={16} />External Therapies (Taila)</div>
+          {external.map((med, i) => <MedCard key={i} med={med} rationale={rationale[med.name]} />)}
+        </div>
+      )}
+
+      {/* ── Daily dosage schedule ── */}
+      {schedule.length > 0 && (
+        <div className="rv-section-block">
+          <div className="rv-block-title"><Clock size={16} />Daily Dosage Schedule</div>
+          {schedule.map((slot, i) => (
+            <div key={i} className="mv-schedule-slot">
+              <div className="mv-schedule-time">{slot.time}</div>
+              {slot.medicines.map((m, j) => (
+                <div key={j} className="mv-schedule-med">{m}</div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Treatment protocol grid ── */}
+      {(protocol.week_1_2 || protocol.week_3_4 || protocol.week_5_plus) && (
+        <div className="mv-protocol-section">
+          <div className="rv-block-title"><Calendar size={16} />Treatment Protocol</div>
+          {protocol.dose_note && (
+            <div className="mv-dose-note"><Flame size={12} />{protocol.dose_note}</div>
+          )}
+          <div className="mv-protocol-grid">
+            {protocol.week_1_2 && (
+              <div className="mv-protocol-col">
+                <div className="mv-protocol-week">Week 1–2</div>
+                <p className="mv-protocol-text">{protocol.week_1_2}</p>
+              </div>
+            )}
+            {protocol.week_3_4 && (
+              <div className="mv-protocol-col">
+                <div className="mv-protocol-week">Week 3–4</div>
+                <p className="mv-protocol-text">{protocol.week_3_4}</p>
+              </div>
+            )}
+            {protocol.week_5_plus && (
+              <div className="mv-protocol-col">
+                <div className="mv-protocol-week">Week 5+</div>
+                <p className="mv-protocol-text">{protocol.week_5_plus}</p>
+              </div>
+            )}
+          </div>
+          {protocol.total_duration && (
+            <div className="mv-total-duration"><Clock size={11} />Total duration: <strong>{protocol.total_duration}</strong></div>
+          )}
+        </div>
+      )}
+
+      {/* ── Expected outcomes timeline ── */}
+      {(outcomes.week_2 || outcomes.week_4 || outcomes.week_8) && (
+        <div className="rv-section-block">
+          <div className="rv-block-title"><Sparkles size={16} />Expected Outcomes</div>
+          <div className="mv-outcomes-timeline">
+            {outcomes.week_2 && (
+              <div className="mv-outcome-milestone">
+                <div className="mv-milestone-marker">Week 2</div>
+                <p className="mv-milestone-text">{outcomes.week_2}</p>
+              </div>
+            )}
+            {outcomes.week_4 && (
+              <div className="mv-outcome-milestone">
+                <div className="mv-milestone-marker">Week 4</div>
+                <p className="mv-milestone-text">{outcomes.week_4}</p>
+              </div>
+            )}
+            {outcomes.week_8 && (
+              <div className="mv-outcome-milestone">
+                <div className="mv-milestone-marker">Week 8</div>
+                <p className="mv-milestone-text">{outcomes.week_8}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Synergy note ── */}
+      {plan.synergy_note && (
+        <div className="rv-info-card">
+          <div className="rv-info-label"><Sparkles size={14} />Synergy of Formulations</div>
+          <p className="rv-info-body">{plan.synergy_note}</p>
+        </div>
+      )}
+
+      {/* ── Pathya-Apathya (structured lists) ── */}
+      {(pathya.length > 0 || apathya.length > 0) && (
+        <div className="mv-pathya-section">
+          <div className="rv-block-title"><UtensilsCrossed size={16} />Pathya & Apathya</div>
+          <div className="mv-pathya-grid">
+            {pathya.length > 0 && (
+              <div className="mv-pathya-col">
+                <div className="mv-pathya-col-label do">✓ Pathya (Do)</div>
+                {pathya.map((p, i) => <div key={i} className="mv-pathya-row do">{p}</div>)}
+              </div>
+            )}
+            {apathya.length > 0 && (
+              <div className="mv-pathya-col">
+                <div className="mv-pathya-col-label dont">✗ Apathya (Avoid)</div>
+                {apathya.map((p, i) => <div key={i} className="mv-pathya-row dont">{p}</div>)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Viruddha Ahara alerts ── */}
+      {viruddha.length > 0 && (
+        <div className="mv-viruddha-card">
+          <div className="mv-viruddha-label"><TriangleAlert size={13} />Viruddha Ahara — Incompatible Combinations</div>
+          {viruddha.map((v, i) => (
+            <div key={i} className="mv-viruddha-row">{v}</div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Lifestyle guidance (Dosha base) ── */}
+      {(lifestyle.dietary_note || lifestyle.routine_note || lifestyle.avoid?.length > 0) && (
+        <div className="rv-info-card">
+          <div className="rv-info-label" style={{ color: doshaColor }}>
+            <Leaf size={14} />Lifestyle — {(plan.vikriti_dominant || plan.user_dosha)?.charAt(0).toUpperCase() + (plan.vikriti_dominant || plan.user_dosha)?.slice(1)} Vikriti
+          </div>
+          {lifestyle.dietary_note && <p className="rv-info-body">{lifestyle.dietary_note}</p>}
+          {lifestyle.routine_note && <p className="rv-info-body" style={{ marginTop: 6 }}>{lifestyle.routine_note}</p>}
+          {lifestyle.avoid?.length > 0 && (
+            <div className="rv-avoid-row">
+              {lifestyle.avoid.map((a, i) => <span key={i} className="rv-avoid-chip">{a}</span>)}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Monitoring signs ── */}
+      {plan.monitoring_signs && (
+        <div className="rv-info-card">
+          <div className="rv-info-label"><Stethoscope size={14} />Monitoring & Follow-Up</div>
+          <p className="rv-info-body">{plan.monitoring_signs}</p>
+        </div>
+      )}
+
+      {/* ── When to stop ── */}
+      {plan.when_to_stop && (
+        <div className="rv-info-card rv-escalate">
+          <div className="rv-info-label"><TriangleAlert size={14} />When to Stop & Consult Immediately</div>
+          <p className="rv-info-body">{plan.when_to_stop}</p>
+        </div>
+      )}
+
+      {/* ── Blocked medicines ── */}
+      {blocked.length > 0 && (
+        <div className="mv-blocked-section">
+          <div className="rv-info-label"><TriangleAlert size={14} style={{ color: '#ef4444' }} />Medicines Excluded for Your Safety</div>
+          {blocked.map((b, i) => (
+            <div key={i} className="mv-blocked-item">
+              <span className="mv-blocked-name">{b.name}</span>
+              <span className="mv-blocked-reason">{b.reason}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Disclaimer ── */}
+      {plan.disclaimer && (
+        <div className="rv-disclaimer">
+          <ShieldCheck size={12} />
+          <span>{plan.disclaimer}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function PlanViewer({ plan, planType }) {
   if (!plan) return <p className="plan-empty">No plan data available.</p>
 
@@ -1219,6 +2694,39 @@ export default function PlanViewer({ plan, planType }) {
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         >
           <GymView plan={plan} />
+        </motion.div>
+      )}
+
+      {/* ── Diet dedicated view ── */}
+      {planType === 'diet' && (plan.four_week_plan || plan.weekly_plan) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <DietView plan={plan} />
+        </motion.div>
+      )}
+
+      {/* ── Remedies dedicated view ── */}
+      {planType === 'remedies' && (plan.symptoms_addressed || plan.doctor_referrals) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <RemedyView plan={plan} />
+        </motion.div>
+      )}
+
+      {/* ── Medicines dedicated view ── */}
+      {planType === 'medicines' && (plan.primary_formulations || plan.supporting_formulations) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <MedicineView plan={plan} />
         </motion.div>
       )}
 

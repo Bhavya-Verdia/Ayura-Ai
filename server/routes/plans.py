@@ -602,20 +602,47 @@ async def generate_yoga_plan(
         
     yoga_prefs = prefs_doc.get("yoga")
     is_prenatal = user.pregnancy_or_nursing
-    
+
+    # Inject current Ayurvedic season so engine can apply Ritucharya pose boosts
+    from engine.seasonal import get_current_season
+    season_info = get_current_season()
+    user_profile["current_season"] = season_info.name.lower()
+
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "yoga", user_profile, yoga_prefs, force_regenerate)
     if cached_plan:
         return cached_plan
-        
+
     # 2. Generate new plan (per-user lock + global LLM semaphore)
     async with _plan_guard(user.id, "yoga"):
         if is_prenatal:
             yoga_poses = [p for p in kb_cache.yoga_poses if p.get("pregnancy_safe") == True]
         else:
             yoga_poses = kb_cache.yoga_poses
-        pranayama_list = kb_cache.pranayama
-        raw_plan = engine_generate(user_profile, yoga_prefs, yoga_poses, pranayama_list)
+        pranayama_list = kb_cache.pranayama or None  # None triggers file-based fallback in engine
+
+        # Dynamic protocol fallback: generate LLM mini-protocols for conditions not in the 30-protocol DB
+        from services.yoga_plan_engine import _PROTOCOL_MAP as _engine_proto_map
+        from services.yoga_plan_engine import yoga_poses as _engine_poses, pranayama_list as _engine_prana
+        user_conditions = user_profile.get("medical_history") or []
+        unknown_conds = [
+            c for c in user_conditions
+            if c.lower() not in _engine_proto_map
+            and c.lower().replace(" ", "_") not in _engine_proto_map
+        ]
+        extra_protocols: dict = {}
+        if unknown_conds:
+            try:
+                from services.yoga_condition_fallback import generate_dynamic_protocols
+                pose_ids = [p["id"] for p in (yoga_poses or _engine_poses)]
+                prana_ids = [p["id"] for p in (pranayama_list or _engine_prana)]
+                extra_protocols = await generate_dynamic_protocols(unknown_conds, pose_ids, prana_ids)
+            except Exception as _dyn_err:
+                from core.logger import logger
+                logger.warning(f"Dynamic protocol generation skipped: {_dyn_err}")
+
+        raw_plan = engine_generate(user_profile, yoga_prefs, yoga_poses or None, pranayama_list,
+                                   extra_protocols=extra_protocols)
         enriched_plan = await enrich_yoga_plan(raw_plan, user_profile, yoga_prefs)
 
         plan_id = enriched_plan.get("plan_id")
@@ -664,9 +691,26 @@ async def generate_diet_plan(
         
     # 2. Generate new plan (per-user lock + global LLM semaphore)
     async with _plan_guard(user.id, "diet"):
-        diet_foods = kb_cache.diet_foods
-        raw_plan = engine_generate(user_profile, diet_prefs, diet_foods)
-        enriched_plan = await enrich_diet_plan(raw_plan, user_profile, diet_prefs)
+        from services.diet_llm_generator import generate_diet_plan_llm
+
+        # Inject season (same as yoga route) so Ritucharya block is populated
+        from engine.seasonal import get_current_season
+        season_info = get_current_season()
+        user_profile["current_season"] = season_info.name.lower()
+
+        # Inject pregnancy flag so LLM brief adds hard constraints
+        user_profile["pregnancy_or_nursing"] = user.pregnancy_or_nursing or False
+
+        # Primary path: LLM-generated clinical plan
+        enriched_plan = await generate_diet_plan_llm(user_profile, diet_prefs)
+
+        # Fallback: rule engine + enricher if LLM fails
+        if enriched_plan is None:
+            from core.logger import logger
+            logger.warning(f"LLM diet generation failed for {user.id}; falling back to rule engine")
+            diet_foods = kb_cache.diet_foods
+            raw_plan = engine_generate(user_profile, diet_prefs, diet_foods)
+            enriched_plan = await enrich_diet_plan(raw_plan, user_profile, diet_prefs)
 
         plan_id = enriched_plan.get("plan_id")
         model_used = enriched_plan.get("enrichment_model", "services.diet_plan_engine")
@@ -764,9 +808,9 @@ async def generate_gym_plan(
     # 2. Generate new plan (per-user lock + global LLM semaphore)
     async with _plan_guard(user.id, "gym"):
         if is_prenatal:
-            gym_exercises = [e for e in kb_cache.gym_exercises if e.get("pregnancy_safe") == True]
+            gym_exercises = [e for e in kb_cache.gym_exercises if e.get("pregnancy_safe") == True] or None
         else:
-            gym_exercises = kb_cache.gym_exercises
+            gym_exercises = kb_cache.gym_exercises or None
         raw_plan = engine_generate(user_profile, gym_prefs, gym_exercises)
         enriched_plan = await enrich_gym_plan(raw_plan, user_profile, gym_prefs)
 
@@ -904,7 +948,7 @@ async def generate_medicines_plan(
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.remedy_engine import generate_medicines_plan as engine_generate
-    from services.remedy_enricher import enrich_remedies_plan as enrich_medicines_plan
+    from services.remedy_enricher import enrich_medicines_plan
     
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()

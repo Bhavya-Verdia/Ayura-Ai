@@ -113,3 +113,57 @@
   padding-top: 24px;
   border-top: 1px solid var(--border-subtle);
 }
+
+/* ── Allergy/intolerance chip UI ── */
+.pref-full {
+  grid-column: 1 / -1;
+}
+
+.pref-label-hint {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ayura-text-primary, #1a1a2e);
+  margin-bottom: 0.4rem;
+  display: block;
+}
+.pref-label-hint span {
+  font-weight: 400;
+  color: var(--ayura-text-secondary, #6b7280);
+  font-size: 0.73rem;
+  margin-left: 0.3rem;
+}
+
+.pref-hint-sub {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--ayura-text-secondary, #6b7280);
+  margin-left: 0.3rem;
+}
+
+.pref-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.pref-chip {
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  border: 1.5px solid var(--border-subtle, #e5e7eb);
+  background: transparent;
+  font-size: 0.76rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--ayura-text-secondary, #6b7280);
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.pref-chip:hover {
+  border-color: var(--ayura-accent, #c4a97d);
+  color: var(--ayura-text-primary, #1a1a2e);
+}
+.pref-chip.active {
+  background: var(--ayura-accent, #c4a97d);
+  border-color: var(--ayura-accent, #c4a97d);
+  color: #fff;
+}

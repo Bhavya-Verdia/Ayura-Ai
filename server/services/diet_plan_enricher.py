@@ -3,108 +3,117 @@ from ai.llm_client import llm_client
 from core.logger import logger
 
 SYSTEM_PROMPT = """
-You are an expert Ayurvedic Nutritionist. You enrich deterministically generated diet plans with personalized recipe ideas and Ayurvedic coaching insights.
+You are an expert Ayurvedic Nutritionist (M.D. Ayurveda, BAMS). You enrich deterministically generated Ayurvedic diet plans with personalised recipe ideas and clinical coaching insights.
 
-You will receive a diet plan summary containing the raw foods chosen for each day, along with the user profile.
-Respond ONLY with a valid JSON object. No preamble, no explanation, no markdown fences.
+You will receive a structured diet plan summary. Respond ONLY with a valid JSON object. No preamble, no explanation, no markdown fences.
 """
 
 USER_PROMPT_TEMPLATE = """
-Given this user profile and generated daily diet plan (raw foods), provide enrichment data in this exact JSON schema:
+Given this user profile and generated 7-day diet plan, provide enrichment data in this exact JSON schema:
 
 {
-  "plan_title": "Personalized [dosha] [goal] Diet Plan for [name]",
-  "plan_description": "2-3 sentence motivating overview specific to this user's profile and dosha",
-  "daily_meals_ideas": {
+  "plan_title": "string — short personalised title (e.g. 'Pitta-Cooling Detox Plan for Ravi')",
+  "plan_description": "string — 2-3 sentences motivating overview specific to this user's dosha + goal + condition protocols",
+  "daily_meal_ideas": {
     "Monday": {
-      "breakfast": "A short, appetizing meal idea using the raw foods provided for breakfast",
-      "lunch": "A short, appetizing meal idea using the raw foods provided for lunch",
-      "snack": "A short, appetizing snack idea",
-      "dinner": "A short, appetizing meal idea using the raw foods provided for dinner"
+      "breakfast": "string — appetising meal idea using the provided breakfast foods",
+      "lunch": "string — appetising meal idea using the provided lunch foods",
+      "snack": "string — appetising snack idea using provided snack foods",
+      "dinner": "string — appetising meal idea using provided dinner foods"
     },
-    "Tuesday": {
-      "breakfast": "...",
-      "lunch": "...",
-      "snack": "...",
-      "dinner": "..."
-    }
-    // Continue for all 7 days exactly as provided in the summary
+    "Tuesday": { "breakfast": "...", "lunch": "...", "snack": "...", "dinner": "..." },
+    "Wednesday": { "breakfast": "...", "lunch": "...", "snack": "...", "dinner": "..." },
+    "Thursday": { "breakfast": "...", "lunch": "...", "snack": "...", "dinner": "..." },
+    "Friday": { "breakfast": "...", "lunch": "...", "snack": "...", "dinner": "..." },
+    "Saturday": { "breakfast": "...", "lunch": "...", "snack": "...", "dinner": "..." },
+    "Sunday": { "breakfast": "...", "lunch": "...", "snack": "...", "dinner": "..." }
   },
-  "hydration_guidance": "Specific hydration advice based on their dosha and stated water intake",
-  "fasting_guidance": "Specific advice on managing their intermittent fasting or specific fasting days according to Ayurveda",
-  "gut_health_sync": "2-3 sentences on how these specific foods will help their stated gut health issue",
-  "motivational_note": "1 personalized sentence addressing their specific diet goal and dosha"
+  "condition_coaching": "string — 2-3 sentences on how this specific diet addresses the user's active conditions (leave empty string if no conditions)",
+  "hydration_guidance": "string — dosha-specific hydration advice tailored to their water intake and current gut issue",
+  "fasting_guidance": "string — Ayurvedic guidance on their intermittent fasting window or fasting days (leave empty string if no fasting)",
+  "seasonal_note": "string — 1-2 sentences on how this plan aligns with the current season's Ritucharya (leave empty string if season not provided)",
+  "motivational_note": "string — 1 personalised sentence addressing their specific diet goal and dosha"
 }
 
 User profile and plan:
 {plan_summary_json}
 """
 
+
 async def enrich_diet_plan(raw_plan: dict, user_profile: dict, diet_prefs: dict) -> dict:
     raw_plan["enriched"] = False
-    
+
     try:
-        # Build compressed summary for LLM context
+        # Use Week 1 for enrichment — food pool is identical across weeks
+        week1 = next(
+            (w for w in raw_plan.get("four_week_plan", []) if w.get("week") == 1),
+            None,
+        )
+        schedule_for_llm: list[dict] = []
+        if week1:
+            for d in week1.get("days", []):
+                day_data: dict = {
+                    "day": d.get("day_name"),
+                    "is_fasting_day": d.get("is_fasting_day"),
+                    "meals": {},
+                    "approx_macros": d.get("daily_macros"),
+                }
+                for meal_name, items in d.get("meals", {}).items():
+                    day_data["meals"][meal_name] = [item.get("name") for item in items]
+                schedule_for_llm.append(day_data)
+
+        us = raw_plan.get("user_summary", {})
         plan_summary = {
             "user": {
+                "name": user_profile.get("name") or user_profile.get("full_name"),
                 "age": user_profile.get("age"),
                 "gender": user_profile.get("gender"),
-                "dominant_dosha": user_profile.get("dominant_dosha"),
-                "diet_goal": diet_prefs.get("diet_goal"),
-                "dietary_type": diet_prefs.get("dietary_type"),
-                "allergies": diet_prefs.get("food_allergies"),
-                "intolerances": diet_prefs.get("food_intolerances"),
-                "gut_issue": diet_prefs.get("gut_health_issue"),
-                "fasting_window": diet_prefs.get("intermittent_fasting"),
+                "dominant_dosha": us.get("dominant_dosha"),
+                "agni_type": us.get("agni_type"),
+                "diet_goal": us.get("diet_goal"),
+                "dietary_type": us.get("dietary_type"),
+                "gut_issue": us.get("gut_issue"),
+                "intermittent_fasting": us.get("intermittent_fasting"),
                 "fasting_days": diet_prefs.get("fasting_days"),
-                "water_intake": diet_prefs.get("water_intake"),
-                "pregnancy": user_profile.get("pregnancy_or_nursing", False)
+                "water_intake": us.get("water_intake"),
+                "current_season": us.get("current_season"),
+                "active_conditions": us.get("active_condition_protocols"),
+                "ama_indicator": user_profile.get("ama_indicator"),
+                "ojas_level": user_profile.get("ojas_level"),
+                "stress_level": user_profile.get("stress_level"),
+                "pregnancy": user_profile.get("pregnancy_or_nursing", False),
             },
-            "generated_schedule": []
+            "week_1_schedule": schedule_for_llm,
         }
-        
-        for d in raw_plan.get("weekly_schedule", []):
-            day_data = {
-                "day": d.get("day_name"),
-                "is_fasting_day": d.get("is_fasting_day"),
-                "meals": {}
-            }
-            
-            for meal_name, items in d.get("meals", {}).items():
-                if meal_name == "daily_macros_approx":
-                    day_data["approx_macros"] = items
-                    continue
-                # Just send the names of the foods to the LLM to inspire the recipes
-                day_data["meals"][meal_name] = [item.get("name") for item in items]
-                
-            plan_summary["generated_schedule"].append(day_data)
-                
-        prompt = USER_PROMPT_TEMPLATE.replace("{plan_summary_json}", json.dumps(plan_summary, indent=2))
-        
+
+        prompt = USER_PROMPT_TEMPLATE.replace(
+            "{plan_summary_json}", json.dumps(plan_summary, indent=2)
+        )
+
         response_text = await llm_client.generate(
             prompt=prompt,
             system_prompt=SYSTEM_PROMPT,
-            json_mode=True
+            json_mode=True,
         )
-        
-        # Parse JSON — guard against LLM error response
+
         enrichment = json.loads(response_text)
         if "error" in enrichment:
             raise ValueError(f"LLM provider error: {enrichment['error']}")
 
-        # Merge enrichment
-        raw_plan["plan_title"] = enrichment.get("plan_title", "Personalized Ayurvedic Diet Plan")
+        raw_plan["plan_title"] = enrichment.get("plan_title", "Personalised Ayurvedic Diet Plan")
         raw_plan["plan_description"] = enrichment.get("plan_description", "")
-        raw_plan["daily_meals_ideas"] = enrichment.get("daily_meals_ideas", {})
+        raw_plan["daily_meal_ideas"] = enrichment.get("daily_meal_ideas", {})
+        raw_plan["condition_coaching"] = enrichment.get("condition_coaching", "")
         raw_plan["hydration_guidance"] = enrichment.get("hydration_guidance", "")
         raw_plan["fasting_guidance"] = enrichment.get("fasting_guidance", "")
-        raw_plan["gut_health_sync"] = enrichment.get("gut_health_sync", "")
+        raw_plan["seasonal_note"] = enrichment.get("seasonal_note", "")
         raw_plan["motivational_note"] = enrichment.get("motivational_note", "")
         raw_plan["enriched"] = True
         raw_plan["enrichment_model"] = llm_client.provider
-        
-        logger.info(f"Successfully enriched diet plan using {llm_client.provider}")
+
+        logger.info(f"Diet plan enriched using {llm_client.provider}")
+
     except Exception as e:
-        logger.error(f"Failed to enrich diet plan: {str(e)}")
-        
+        logger.error(f"Failed to enrich diet plan: {e}")
+
     return raw_plan

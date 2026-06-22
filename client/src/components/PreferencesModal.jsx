@@ -71,6 +71,16 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleToggle = (field, value) => {
+    setForm(prev => {
+      const current = Array.isArray(prev[field]) ? prev[field] : [];
+      const next = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
+      return { ...prev, [field]: next };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -93,7 +103,7 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       payload.flexibility_level = payload.flexibility_level || 'moderate';
       payload.time_available_minutes = parseInt(payload.time_available_minutes || 30, 10);
       payload.time_of_day_preference = payload.time_of_day_preference || 'morning';
-      payload.yoga_style_preference = ['hatha'];
+      payload.yoga_style_preference = [payload.yoga_style_preference || 'hatha'];
       payload.pranayama_interest = payload.pranayama_interest || 'yes';
       payload.meditation_interest = payload.meditation_interest || 'yes';
       payload.indoor_outdoor = payload.indoor_outdoor || 'indoor';
@@ -103,8 +113,8 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       payload.intermittent_fasting = payload.intermittent_fasting || 'no';
       payload.water_intake = payload.water_intake || '1-2L';
       payload.gut_health_issue = payload.gut_health_issue || 'healthy';
-      payload.food_allergies = [];
-      payload.food_intolerances = [];
+      payload.food_allergies = Array.isArray(form.food_allergies) ? form.food_allergies : [];
+      payload.food_intolerances = Array.isArray(form.food_intolerances) ? form.food_intolerances : [];
       payload.fasting_days = payload.fasting_days 
         ? payload.fasting_days.split(',').map(s => s.trim()).filter(Boolean)
         : [];
@@ -213,12 +223,39 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
               <div className="pref-input-group">
                 <label>Experience Level</label>
                 <select name="yoga_experience" value={form.yoga_experience || ''} onChange={handleChange} required>
-                  <option value="none">None</option>
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
+                  <option value="none">None — never practiced</option>
+                  <option value="beginner">Beginner — under 1 year</option>
+                  <option value="intermediate">Intermediate — 1–3 years</option>
+                  <option value="advanced">Advanced — 3+ years</option>
                 </select>
               </div>
+              <div className="pref-input-group">
+                <label>Current Flexibility</label>
+                <select name="flexibility_level" value={form.flexibility_level || ''} onChange={handleChange} required>
+                  <option value="low">Low — limited range</option>
+                  <option value="moderate">Moderate — average flexibility</option>
+                  <option value="high">High — very flexible</option>
+                </select>
+              </div>
+            </div>
+            <div className="pref-row">
+              <div className="pref-input-group">
+                <label>Yoga Style</label>
+                <select name="yoga_style_preference" value={form.yoga_style_preference || ''} onChange={handleChange} required>
+                  <option value="hatha">Hatha — slow, foundational</option>
+                  <option value="vinyasa">Vinyasa — flowing, dynamic</option>
+                  <option value="restorative">Restorative — passive, healing</option>
+                  <option value="yin">Yin — long holds, deep tissue</option>
+                  <option value="power">Power — strength-focused</option>
+                  <option value="ashtanga">Ashtanga — structured series</option>
+                </select>
+              </div>
+              <div className="pref-input-group">
+                <label>Session Duration (mins)</label>
+                <input type="number" name="time_available_minutes" min={15} max={90} value={form.time_available_minutes || ''} onChange={handleChange} required placeholder="e.g. 30" />
+              </div>
+            </div>
+            <div className="pref-row">
               <div className="pref-input-group">
                 <label>Time of Day</label>
                 <select name="time_of_day_preference" value={form.time_of_day_preference || ''} onChange={handleChange} required>
@@ -227,21 +264,12 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                   <option value="both">Both</option>
                 </select>
               </div>
-            </div>
-            <div className="pref-row">
               <div className="pref-input-group">
                 <label>Include Pranayama?</label>
                 <select name="pranayama_interest" value={form.pranayama_interest || ''} onChange={handleChange} required>
                   <option value="yes">Yes</option>
                   <option value="no">No</option>
                   <option value="already_practice">Already Practice</option>
-                </select>
-              </div>
-              <div className="pref-input-group">
-                <label>Guided Meditation?</label>
-                <select name="meditation_interest" value={form.meditation_interest || ''} onChange={handleChange} required>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
                 </select>
               </div>
             </div>
@@ -313,6 +341,51 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
               <div className="pref-input-group">
                 <label>Fasting Days (Optional)</label>
                 <input type="text" name="fasting_days" placeholder="e.g. Monday, Ekadashi" value={form.fasting_days || ''} onChange={handleChange} />
+              </div>
+            </div>
+            <div className="pref-input-group pref-full">
+              <label className="pref-label-hint">Food Allergies <span>(select all that apply)</span></label>
+              <div className="pref-chip-row">
+                {[
+                  { value: 'gluten', label: 'Gluten / Wheat' },
+                  { value: 'dairy', label: 'Dairy' },
+                  { value: 'nuts_tree', label: 'Tree Nuts' },
+                  { value: 'peanuts', label: 'Peanuts' },
+                  { value: 'soy', label: 'Soy' },
+                  { value: 'eggs', label: 'Eggs' },
+                  { value: 'shellfish', label: 'Shellfish' },
+                  { value: 'fish', label: 'Fish' },
+                  { value: 'sesame', label: 'Sesame / Til' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`pref-chip${(form.food_allergies || []).includes(opt.value) ? ' active' : ''}`}
+                    onClick={() => handleToggle('food_allergies', opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="pref-input-group pref-full">
+              <label className="pref-label-hint">Food Intolerances <span>(select all that apply)</span></label>
+              <div className="pref-chip-row">
+                {[
+                  { value: 'lactose', label: 'Lactose' },
+                  { value: 'fructose', label: 'Fructose' },
+                  { value: 'gluten_sensitivity', label: 'Gluten Sensitivity' },
+                  { value: 'fodmap', label: 'FODMAPs' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`pref-chip${(form.food_intolerances || []).includes(opt.value) ? ' active' : ''}`}
+                    onClick={() => handleToggle('food_intolerances', opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             </div>
           </>
@@ -394,26 +467,78 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
         return (
           <>
             <p className="pref-notice">
-              Recommendations are highly targeted to your Dosha and specific imbalances. 
-              Always consult a practitioner before starting potent formulations.
+              Recommendations are clinically targeted to your Vikriti (imbalance state), Agni, and conditions.
+              Always consult a qualified Vaidya before starting Tier-2 formulations.
             </p>
-            <div className="pref-input-group">
-              <label>Previous Ayurvedic Medicines Tried (optional, comma-separated)</label>
-              <input 
-                type="text" 
-                name="previous_ayurvedic_medicines" 
-                placeholder="e.g. Ashwagandha, Triphala" 
-                value={form.previous_ayurvedic_medicines || ''} 
-                onChange={handleChange} 
-              />
+
+            {/* ── Allopathic medications ── */}
+            <div className="pref-input-group pref-full">
+              <label className="pref-label-hint">
+                Current Allopathic Medications <span>(select all that apply — used for drug interaction safety)</span>
+              </label>
+              <div className="pref-chip-row">
+                {[
+                  { value: 'blood_thinners',      label: 'Blood Thinners / Anticoagulants' },
+                  { value: 'diabetes_medication',  label: 'Diabetes Medication' },
+                  { value: 'thyroid_medication',   label: 'Thyroid Medication' },
+                  { value: 'antihypertensives',    label: 'Blood Pressure Medication' },
+                  { value: 'immunosuppressants',   label: 'Immunosuppressants / Steroids' },
+                  { value: 'sedatives',            label: 'Sedatives / Sleep Medication' },
+                  { value: 'antiepileptics',       label: 'Anti-Epileptics' },
+                  { value: 'antidepressants',      label: 'Antidepressants / Antipsychotics' },
+                  { value: 'cardiac_glycosides',   label: 'Cardiac Glycosides (Digoxin)' },
+                  { value: 'nsaids',               label: 'NSAIDs / Pain Relievers' },
+                  { value: 'hormone_therapy',      label: 'Hormone Therapy / OCP' },
+                  { value: 'antibiotics',          label: 'Antibiotics (current course)' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`pref-chip${(form.current_allopathic_medications || []).includes(opt.value) ? ' active' : ''}`}
+                    onClick={() => handleToggle('current_allopathic_medications', opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* ── Ama self-assessment ── */}
             <div className="pref-input-group">
-              <label>Ingredient Access</label>
-              <select name="ingredient_access" value={form.ingredient_access || ''} onChange={handleChange} required>
-                <option value="kitchen_only">Kitchen Spices Only</option>
-                <option value="can_buy_herbs">Can Buy Common Herbs</option>
-                <option value="full_access">Full Access</option>
+              <label>
+                Ama (Toxic Load) Self-Assessment
+                <span className="pref-hint-sub"> — Do you feel heavy, foggy, or notice a coated tongue in the morning?</span>
+              </label>
+              <select name="ama_self_assessment" value={form.ama_self_assessment || ''} onChange={handleChange}>
+                <option value="">Let AI assess from profile</option>
+                <option value="high">Yes, noticeably — heavy, foggy, coated tongue</option>
+                <option value="moderate">Sometimes — mild heaviness or sluggishness</option>
+                <option value="low">No — feel light and clear in the mornings</option>
               </select>
+            </div>
+
+            <div className="pref-row">
+              {/* ── Ingredient access ── */}
+              <div className="pref-input-group">
+                <label>Ingredient Access</label>
+                <select name="ingredient_access" value={form.ingredient_access || ''} onChange={handleChange} required>
+                  <option value="kitchen_only">Kitchen Spices Only (Tier 1)</option>
+                  <option value="can_buy_herbs">Can Buy Herbs from Ayurvedic Store</option>
+                  <option value="full_access">Full Access incl. Guggulu & Bhasma (Tier 2)</option>
+                </select>
+              </div>
+
+              {/* ── Previous medicines ── */}
+              <div className="pref-input-group">
+                <label>Previously Tried Ayurvedic Medicines <span className="pref-hint">(optional, comma-separated)</span></label>
+                <input
+                  type="text"
+                  name="previous_ayurvedic_medicines"
+                  placeholder="e.g. Ashwagandha, Triphala, Chyawanprash"
+                  value={form.previous_ayurvedic_medicines || ''}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
           </>
         );

@@ -1,0 +1,1405 @@
+[
+  {
+    "id": "diabetes_protocol",
+    "condition": "diabetes",
+    "alternate_conditions": [
+      "type2_diabetes",
+      "prediabetes",
+      "insulin_resistance"
+    ],
+    "name": "Prameha (Diabetes) Therapeutic Yoga Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa Sthana 6 — Prameha Chikitsa; Hatha Yoga Pradipika 1.20 (Dhanurasana stimulates Samana Vayu governing pancreatic function)",
+    "research_note": "SVYASA clinical studies (2007, 2012) show 18–21% reduction in fasting blood glucose and improved HbA1c with twice-daily practice. Key mechanism: abdominal compression stimulates beta-cell activity.",
+    "priority_pose_ids": [
+      "half_lord_of_the_fishes",
+      "seated_forward_bend",
+      "boat",
+      "half_boat",
+      "bow",
+      "cobra_pose",
+      "locust_pose",
+      "triangle",
+      "chair",
+      "revolved_triangle",
+      "bridge_pose",
+      "supported_bridge",
+      "side_splits",
+      "head_to_knee_forward_bend",
+      "sage_pose",
+      "thunderbolt_pose",
+      "wind_removing_pose",
+      "tree_pose"
+    ],
+    "priority_pranayama_ids": [
+      "skull_shining",
+      "bellows_breath",
+      "alternate_nostril",
+      "fire_essence"
+    ],
+    "category_emphasis": [
+      "twist",
+      "forward_fold",
+      "prone",
+      "seated"
+    ],
+    "avoid_pranayama_ids": [],
+    "sequence_note": "Twists and prone backbends compress then release the pancreas, stimulating digestive enzymes. Hold each pose minimum 5 breaths. Practice before breakfast for maximum glycaemic benefit.",
+    "lifestyle_note": "Ayurveda classifies diabetes as a Kapha disorder (excess moisture, sluggish metabolism). Practice should be vigorous enough to generate heat and burn Ama (metabolic toxins). Walking 10 minutes after practice amplifies results.",
+    "duration_minimum_minutes": 40
+  },
+  {
+    "id": "pcos_protocol",
+    "condition": "pcos",
+    "alternate_conditions": [
+      "polycystic_ovary_syndrome",
+      "hormonal_imbalance",
+      "irregular_periods"
+    ],
+    "name": "Artava Kshaya (PCOS / Hormonal Imbalance) Protocol",
+    "classical_reference": "Charaka Samhita Sharira Sthana 4 — Artava (menstrual tissue) management; Sushruta Samhita Nidana 2 — Yonivyapada (gynaecological disorders)",
+    "research_note": "Yoga Mimamsa (2012) and IJOY (2016) studies: 3-month yoga protocol reduced LH/FSH ratio and testosterone in PCOS patients. Restorative inversions normalise pelvic circulation.",
+    "priority_pose_ids": [
+      "butterfly",
+      "supta_baddha_konasana",
+      "bridge_pose",
+      "supported_bridge",
+      "seated_forward_bend",
+      "side_splits",
+      "legs_up_wall",
+      "reclined_hero",
+      "supta_matsyendrasana",
+      "childs_pose",
+      "half_lord_of_the_fishes",
+      "pigeon",
+      "lizard_pose",
+      "goddess_pose",
+      "garland_pose",
+      "half_pigeon_pose",
+      "happy_baby_pose"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "humming_bee",
+      "three_part_breath",
+      "left_nostril"
+    ],
+    "category_emphasis": [
+      "restorative",
+      "hip_opener",
+      "forward_fold",
+      "inversion"
+    ],
+    "avoid_pranayama_ids": [
+      "bellows_breath",
+      "skull_shining"
+    ],
+    "sequence_note": "Hip openers release Apana Vayu blockages (Ayurveda's downward energy governing reproductive organs). Avoid vigorous stimulating pranayama during active PCOS flare. Yin-style holds of 3–5 minutes in hip openers are most effective.",
+    "lifestyle_note": "Pitta aggravation worsens hormonal cascades. Favour cooling, calming practice. Avoid practice during heavy menstruation — substitute Yoga Nidra (yoga_nidra_pose).",
+    "duration_minimum_minutes": 35
+  },
+  {
+    "id": "thyroid_protocol",
+    "condition": "thyroid",
+    "alternate_conditions": [
+      "hypothyroid",
+      "hyperthyroid",
+      "thyroid_disease",
+      "goitre"
+    ],
+    "name": "Vishuddha Chakra Thyroid Balancing Protocol",
+    "classical_reference": "Hatha Yoga Pradipika 3.70 — Jalandhara Bandha (throat lock) regulates thyroid and parathyroid; shoulderstand (Sarvangasana) is prescribed as the 'queen of asanas' for thyroid health",
+    "research_note": "Journal of Alternative and Complementary Medicine (2011): Sarvangasana increased T3/T4 levels measurably in hypothyroid group. Throat compression + release in shoulder stand cycles thyroid blood flow.",
+    "priority_pose_ids": [
+      "shoulderstand",
+      "shoulder_stand",
+      "plow",
+      "supported_fish",
+      "camel",
+      "upward_facing_dog",
+      "cobra_pose",
+      "bridge_pose",
+      "legs_up_wall",
+      "fish_pose",
+      "sphinx",
+      "wild_thing",
+      "supported_headstand_pose"
+    ],
+    "priority_pranayama_ids": [
+      "ocean_breath",
+      "humming_bee",
+      "alternate_nostril",
+      "root_lock_breath"
+    ],
+    "category_emphasis": [
+      "inversion",
+      "backbend",
+      "throat_opening"
+    ],
+    "avoid_pranayama_ids": [],
+    "sequence_note": "Inversions redirect blood to the thyroid gland. The vibration of Bhramari (humming_bee) pranayama stimulates the Vishuddha chakra (throat energy centre) associated with thyroid function. For hyperthyroid: favour restorative, avoid vigorous backbends.",
+    "lifestyle_note": "Hypothyroid = Kapha excess; favour warming, activating poses. Hyperthyroid = Pitta excess; favour cooling, calming poses. Adjust intensity accordingly.",
+    "duration_minimum_minutes": 35
+  },
+  {
+    "id": "asthma_protocol",
+    "condition": "asthma",
+    "alternate_conditions": [
+      "respiratory_disease",
+      "bronchitis",
+      "breathing_difficulty",
+      "copd"
+    ],
+    "name": "Shwasa Roga (Respiratory Disease) Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa Sthana 17 — Shwasa Chikitsa (treatment of breathing disorders); chest-opening backbends prescribed to expand Prana Vaha Srotas (respiratory channel)",
+    "research_note": "SVYASA studies (2000, 2009) on asthma: yoga reduced inhaler dependence by 43% over 6 months. Pranayama is the primary intervention — Ujjayi trains diaphragm strength and airway resistance.",
+    "priority_pose_ids": [
+      "camel",
+      "supported_fish",
+      "cobra_pose",
+      "upward_facing_dog",
+      "sphinx",
+      "bridge_pose",
+      "supported_bridge",
+      "extended_side_angle",
+      "reverse_warrior",
+      "mountain_pose",
+      "childs_pose",
+      "easy_pose",
+      "wide_leg_forward_fold",
+      "forward_bend_with_shoulder_opener",
+      "fish_pose",
+      "upward_plank_pose"
+    ],
+    "priority_pranayama_ids": [
+      "ocean_breath",
+      "three_part_breath",
+      "alternate_nostril",
+      "against_the_grain"
+    ],
+    "category_emphasis": [
+      "backbend",
+      "chest_opening",
+      "restorative"
+    ],
+    "avoid_pranayama_ids": [
+      "bellows_breath",
+      "skull_shining",
+      "fire_essence"
+    ],
+    "sequence_note": "Chest openers strengthen intercostal muscles and expand lung capacity. Ujjayi pranayama builds the resistance that trains respiratory muscles. STRICTLY avoid Kapalabhati and Bhastrika — they can trigger bronchospasm.",
+    "lifestyle_note": "Practice in warm, dust-free environment. Avoid practice in cold air or after meals. Evening practice is optimal to prepare airways for the night.",
+    "duration_minimum_minutes": 30
+  },
+  {
+    "id": "anxiety_protocol",
+    "condition": "anxiety",
+    "alternate_conditions": [
+      "stress",
+      "panic_disorder",
+      "nervous_system_dysregulation",
+      "burnout"
+    ],
+    "name": "Vata Shama (Anxiety & Stress) Calming Protocol",
+    "classical_reference": "Charaka Samhita Sutra Sthana 11 — Tarpana (nourishment of the mind); excessive Vata in Manovaha Srotas (mind channel) is root cause of anxiety in Ayurveda",
+    "research_note": "Harvard Medical School (2018) systematic review: yoga reduced cortisol by average 27% and anxiety scores by 31% vs. control. Forward folds activate vagal tone within 4–6 breaths.",
+    "priority_pose_ids": [
+      "childs_pose",
+      "forward_bend_with_shoulder_opener",
+      "seated_forward_bend",
+      "legs_up_wall",
+      "constructive_rest",
+      "yoga_nidra_pose",
+      "supta_matsyendrasana",
+      "butterfly",
+      "supta_baddha_konasana",
+      "happy_baby_pose",
+      "easy_pose",
+      "corpse",
+      "corpse_pose",
+      "tree_pose",
+      "puppy_pose",
+      "banana_pose"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "humming_bee",
+      "three_part_breath",
+      "left_nostril",
+      "box_equal_breathing"
+    ],
+    "category_emphasis": [
+      "restorative",
+      "forward_fold",
+      "grounding",
+      "supine"
+    ],
+    "avoid_pranayama_ids": [
+      "bellows_breath",
+      "skull_shining",
+      "fire_essence",
+      "right_nostril"
+    ],
+    "sequence_note": "Forward folds stimulate the parasympathetic nervous system via vagal afferents. Chandra Bhedana (left nostril) breathing activates the right hemisphere, linked to rest-and-digest mode. Hold Savasana minimum 10 minutes.",
+    "lifestyle_note": "Practise at same time daily — routine pacifies Vata. Warm sesame oil Abhyanga (self-massage) before practice further grounds Vata. Evening practice recommended.",
+    "duration_minimum_minutes": 30
+  },
+  {
+    "id": "depression_protocol",
+    "condition": "depression",
+    "alternate_conditions": [
+      "low_mood",
+      "seasonal_affective_disorder",
+      "fatigue",
+      "chronic_fatigue"
+    ],
+    "name": "Kapha Udana Balancing (Depression) Protocol",
+    "classical_reference": "Charaka Samhita Sutra Sthana 1 — Unmada (mental disorders); backbends and chest openers stimulate Udana Vayu (upward-moving energy) that elevates mood",
+    "research_note": "Duke University study (2002, 2010): yoga as effective as antidepressants for mild-moderate depression. Heart-opening backbends measurably increased serotonin. Inversions increase cerebral blood flow.",
+    "priority_pose_ids": [
+      "camel",
+      "wheel",
+      "cobra_pose",
+      "upward_facing_dog",
+      "warrior_one",
+      "warrior_two",
+      "reverse_warrior",
+      "dancer_pose",
+      "tree",
+      "bridge_pose",
+      "sphinx",
+      "wild_thing",
+      "eagle",
+      "half_moon",
+      "fish_pose",
+      "wild_thing_pose",
+      "high_lunge_pose"
+    ],
+    "priority_pranayama_ids": [
+      "skull_shining",
+      "bellows_breath",
+      "right_nostril",
+      "alternate_nostril"
+    ],
+    "category_emphasis": [
+      "backbend",
+      "standing",
+      "balancing",
+      "heart_opening"
+    ],
+    "avoid_pranayama_ids": [
+      "left_nostril",
+      "swooning_breath"
+    ],
+    "sequence_note": "Backbends open the Anahata chakra (heart centre) and stimulate the sympathetic nervous system — exactly what is underactive in depression. Surya Bhedana (right nostril) pranayama activates solar energy. Morning practice is critical.",
+    "lifestyle_note": "Kapha-type depression: vigorous morning practice, eliminate daytime sleep. Vata-type depression (agitated): favour grounding over stimulation. Begin with just 10 minutes if motivation is low — consistency beats duration.",
+    "duration_minimum_minutes": 30
+  },
+  {
+    "id": "constipation_protocol",
+    "condition": "constipation",
+    "alternate_conditions": [
+      "ibs",
+      "digestive_issues",
+      "bloating",
+      "irritable_bowel"
+    ],
+    "name": "Apana Vayu (Digestive System) Activation Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa Sthana 15 — Grahani Chikitsa; twists (Parivrtta asanas) activate Apana Vayu, governing downward elimination",
+    "research_note": "IJOY (2015): yoga reduced constipation severity scores by 56% over 8 weeks. Twists mechanically massage the ascending and descending colon in sequence.",
+    "priority_pose_ids": [
+      "knees_to_chest",
+      "supta_matsyendrasana",
+      "half_lord_of_the_fishes",
+      "revolved_triangle",
+      "sage_pose",
+      "seated_forward_bend",
+      "garland_pose",
+      "boat",
+      "triangle",
+      "downward_facing_dog",
+      "forward_bend_with_shoulder_opener",
+      "side_splits",
+      "wind_removing_pose",
+      "thunderbolt_pose",
+      "noose_pose",
+      "revolved_triangle_pose"
+    ],
+    "priority_pranayama_ids": [
+      "skull_shining",
+      "fire_essence",
+      "three_part_breath",
+      "bellows_breath"
+    ],
+    "category_emphasis": [
+      "twist",
+      "forward_fold",
+      "squat",
+      "inversion"
+    ],
+    "avoid_pranayama_ids": [],
+    "sequence_note": "Perform Pavanmuktasana (knees_to_chest) first to release gas. Then right-side twists first (compresses ascending colon), then left-side twists (descending colon). Garland squat is powerful — aim for 2+ minutes. Practice on empty stomach.",
+    "lifestyle_note": "Drink 2 glasses warm water before practice. Triphala churna at bedtime combined with this sequence accelerates results. Avoid cold drinks and raw food the evening before.",
+    "duration_minimum_minutes": 25
+  },
+  {
+    "id": "back_pain_protocol",
+    "condition": "back_pain",
+    "alternate_conditions": [
+      "lower_back_pain",
+      "sciatica",
+      "lumbar_pain",
+      "disc_bulge"
+    ],
+    "name": "Kati Shoola (Back Pain) Rehabilitation Protocol",
+    "classical_reference": "Sushruta Samhita Nidana 1 — Vatavyadhi (Vata diseases); Vata in Asthi dhatu (bone tissue) and Majja dhatu (nerve tissue) governs lumbar degeneration",
+    "research_note": "Annals of Internal Medicine (2017): yoga as effective as physical therapy for chronic back pain. 12-week yoga program reduced disability by 29%. Core stabilisation is critical for lumbar spine protection.",
+    "priority_pose_ids": [
+      "childs_pose",
+      "cat_cow_flow",
+      "cat",
+      "cow",
+      "bridge_pose",
+      "supported_bridge",
+      "knees_to_chest",
+      "sphinx",
+      "cobra_pose",
+      "supta_matsyendrasana",
+      "pigeon",
+      "low_lunge_pose",
+      "legs_up_wall",
+      "constructive_rest",
+      "puppy_pose",
+      "forward_bend_with_shoulder_opener",
+      "garland_pose"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "three_part_breath",
+      "ocean_breath"
+    ],
+    "category_emphasis": [
+      "supine",
+      "prone",
+      "core",
+      "gentle_backbend"
+    ],
+    "avoid_pranayama_ids": [],
+    "sequence_note": "Begin with Cat-Cow to warm the spine (5 slow cycles). Avoid deep forward folds if sciatica is active — substitute with supported bridge. Core engagement (boat pose) builds the muscular corset that unloads the disc. Never force range of motion.",
+    "lifestyle_note": "Ayurveda: back pain is Vata-type — warm, oily, heavy therapies support. Warm sesame oil massage on lower back before sleep. Avoid sitting more than 40 minutes without movement.",
+    "duration_minimum_minutes": 30
+  },
+  {
+    "id": "insomnia_protocol",
+    "condition": "insomnia",
+    "alternate_conditions": [
+      "sleep_disorder",
+      "poor_sleep",
+      "sleep_anxiety"
+    ],
+    "name": "Nidra Prabodhana (Insomnia) Evening Wind-Down Protocol",
+    "classical_reference": "Ashtanga Hridayam Sutra Sthana 7 — Dinacharya; evening yoga nidra prescribed as primary treatment for Anidra (insomnia) by calming Prana and Sadhaka Pitta",
+    "research_note": "AIIMS New Delhi (2004): Yoga Nidra reduced sleep onset latency from 47 to 18 minutes in chronic insomnia patients. Legs-up-wall activates rest-and-digest within 3 minutes.",
+    "priority_pose_ids": [
+      "legs_up_wall",
+      "constructive_rest",
+      "yoga_nidra_pose",
+      "yin_forward_fold",
+      "supta_baddha_konasana",
+      "reclined_hero",
+      "supported_fish",
+      "happy_baby_pose",
+      "supta_matsyendrasana",
+      "childs_pose",
+      "corpse",
+      "corpse_pose",
+      "banana_pose",
+      "wind_removing_pose",
+      "thunderbolt_pose"
+    ],
+    "priority_pranayama_ids": [
+      "three_part_breath",
+      "left_nostril",
+      "humming_bee",
+      "unequal_breathing",
+      "box_equal_breathing"
+    ],
+    "category_emphasis": [
+      "restorative",
+      "yin",
+      "supine",
+      "inversion"
+    ],
+    "avoid_pranayama_ids": [
+      "bellows_breath",
+      "skull_shining",
+      "right_nostril",
+      "fire_essence"
+    ],
+    "sequence_note": "Practice ONLY in the evening, 30–60 minutes before sleep. Use props liberally — bolsters, blankets. Yoga Nidra (yoga_nidra_pose) is the centrepiece — minimum 20 minutes. No stimulating poses. Keep lights dim and room warm.",
+    "lifestyle_note": "Digital devices off 1 hour before practice. Warm milk with ashwagandha + nutmeg after practice. Consistent 10 PM bedtime trains Biological Vata clock.",
+    "duration_minimum_minutes": 30
+  },
+  {
+    "id": "obesity_protocol",
+    "condition": "obesity",
+    "alternate_conditions": [
+      "overweight",
+      "metabolic_syndrome",
+      "weight_loss"
+    ],
+    "name": "Medoroga (Obesity / Excess Kapha) Metabolic Activation Protocol",
+    "classical_reference": "Charaka Samhita Sutra Sthana 21 — Ashtauninditiya (eight undesirable body types); Guru, Sthira, Snigdha qualities of Kapha require Laghu (light), Ruksha (dry), Ushna (hot) countering practices",
+    "research_note": "SVYASA (2014, 2018): yoga reduced visceral adiposity and insulin resistance more than walking in overweight groups. Power yoga raised resting metabolic rate by 7% after 8 weeks.",
+    "priority_pose_ids": [
+      "chair",
+      "warrior_one",
+      "warrior_two",
+      "warrior_three",
+      "boat",
+      "half_boat",
+      "triangle",
+      "extended_side_angle",
+      "downward_facing_dog",
+      "plank",
+      "side_plank",
+      "crow",
+      "half_moon",
+      "garland_pose",
+      "forward_bend_with_shoulder_opener",
+      "wind_removing_pose",
+      "goddess_pose",
+      "thunderbolt_pose",
+      "high_lunge_pose",
+      "warrior_iii_pose"
+    ],
+    "priority_pranayama_ids": [
+      "skull_shining",
+      "bellows_breath",
+      "fire_essence",
+      "alternate_nostril"
+    ],
+    "category_emphasis": [
+      "standing",
+      "core",
+      "balancing",
+      "dynamic"
+    ],
+    "avoid_pranayama_ids": [],
+    "sequence_note": "Build heat and sustain it — minimal rest between poses. Sun Salutation (equestrian_pose + upward_salute sequence) is the most efficient tool. Add 5-second holds in Chair and Warrior poses. Skull Shining pranayama burns Ama (metabolic waste) and activates core.",
+    "lifestyle_note": "Morning practice on empty stomach maximises fat oxidation. Kapha diet: warm, spiced, light meals. Triphala and Guggul support metabolic balance. Avoid daytime napping.",
+    "duration_minimum_minutes": 40
+  },
+  {
+    "id": "hypertension_protocol",
+    "condition": "hypertension",
+    "alternate_conditions": [
+      "high_blood_pressure",
+      "cardiovascular_disease"
+    ],
+    "name": "Raktachapa (Hypertension) Stress Reduction Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa Sthana 26 — Vatashonita; excess Pitta in Rakta dhatu (blood tissue) drives hypertension in Ayurvedic aetiology",
+    "research_note": "Lancet (1975, reprised JAMA 2007): relaxation response from yoga reduced systolic BP by 10–15 mmHg in 8 weeks. Forward folds reduce sympathetic outflow measurably.",
+    "priority_pose_ids": [
+      "childs_pose",
+      "forward_bend_with_shoulder_opener",
+      "seated_forward_bend",
+      "legs_up_wall",
+      "constructive_rest",
+      "supported_fish",
+      "supta_baddha_konasana",
+      "supta_matsyendrasana",
+      "easy_pose",
+      "corpse",
+      "corpse_pose",
+      "butterfly",
+      "tree_pose",
+      "lotus_pose"
+    ],
+    "priority_pranayama_ids": [
+      "left_nostril",
+      "three_part_breath",
+      "humming_bee",
+      "alternate_nostril",
+      "box_equal_breathing"
+    ],
+    "category_emphasis": [
+      "restorative",
+      "forward_fold",
+      "supine"
+    ],
+    "avoid_pranayama_ids": [
+      "skull_shining",
+      "bellows_breath",
+      "fire_essence",
+      "right_nostril",
+      "breath_retention"
+    ],
+    "sequence_note": "NEVER invert below heart level forcibly. Avoid breath retention. Avoid hot, vigorous practice. Forward folds must be slow and passive — no straining. Savasana must be minimum 15 minutes. Chandra Bhedana (left nostril) pranayama is the most powerful single tool.",
+    "lifestyle_note": "Pitta-pacifying routine: cool environment, no competition, no ego in practice. Amalaki rasayana and Sarpagandha support as Ayurvedic adjuncts. Avoid evening practice — morning or midday.",
+    "duration_minimum_minutes": 30
+  },
+  {
+    "id": "arthritis_protocol",
+    "condition": "arthritis",
+    "alternate_conditions": [
+      "joint_pain",
+      "osteoarthritis",
+      "rheumatoid_arthritis",
+      "gout"
+    ],
+    "name": "Sandhivata (Arthritis / Joint Disease) Mobility Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa Sthana 28 — Vatavyadhi; Vata accumulation in Sandhi (joints) is Sandhivata. Gentle movement prevents Avarana (blockage of Vata) worsening stiffness",
+    "research_note": "Rheumatology (2011, UCL): gentle yoga reduced joint pain scores by 42% vs. usual care in knee OA. Synovial fluid circulation requires movement — rest worsens stiffness.",
+    "priority_pose_ids": [
+      "cat_cow_flow",
+      "cat",
+      "cow",
+      "childs_pose",
+      "mountain_pose",
+      "easy_pose",
+      "butterfly",
+      "supta_matsyendrasana",
+      "supported_bridge",
+      "knees_to_chest",
+      "hero_pose",
+      "supta_baddha_konasana",
+      "constructive_rest",
+      "corpse",
+      "thunderbolt_pose",
+      "tree_pose"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "three_part_breath",
+      "ocean_breath",
+      "humming_bee"
+    ],
+    "category_emphasis": [
+      "gentle",
+      "seated",
+      "supine",
+      "restorative"
+    ],
+    "avoid_pranayama_ids": [
+      "fire_essence"
+    ],
+    "sequence_note": "Warm up thoroughly before any joint loading. Begin practice with warm water or warm compress on affected joints. Do NOT force range of motion — work at 70% of max. Use props everywhere. Cold weather = shorter holds, more movement.",
+    "lifestyle_note": "Vata-pacifying lifestyle: warm oil Abhyanga daily, warm diet, regular sleep schedule. Avoid Vata-aggravating foods (dry, cold, raw). Dashamoola and Boswellia (Shallaki) are classical Ayurvedic joint support.",
+    "duration_minimum_minutes": 25
+  },
+  {
+    "id": "cervical_spondylosis_protocol",
+    "condition": "cervical_spondylosis",
+    "alternate_conditions": [
+      "neck_pain",
+      "cervical_disc",
+      "cervical_radiculopathy"
+    ],
+    "name": "Manyastambha (Cervical Spondylosis) Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa Sthana 28 — Vatavyadhi; Manyastambha (neck stiffness) is a specific Vata disorder of Greeva (neck region)",
+    "research_note": "Journal of Bodywork and Movement Therapies (2014): targeted yoga therapy reduced cervical radiculopathy pain by 54% and improved ROM significantly over 6 months.",
+    "priority_pose_ids": [
+      "cat_cow_flow",
+      "cat",
+      "cow",
+      "sphinx",
+      "cobra_pose",
+      "childs_pose",
+      "downward_facing_dog",
+      "easy_pose",
+      "mountain_pose",
+      "forward_bend_with_shoulder_opener",
+      "constructive_rest",
+      "supported_bridge",
+      "supta_matsyendrasana",
+      "puppy_pose"
+    ],
+    "priority_pranayama_ids": [
+      "ocean_breath",
+      "three_part_breath",
+      "alternate_nostril"
+    ],
+    "category_emphasis": [
+      "gentle",
+      "prone",
+      "seated"
+    ],
+    "avoid_pranayama_ids": [
+      "skull_shining"
+    ],
+    "sequence_note": "NEVER perform Sarvangasana (shoulderstand), Halasana (plow), or headstand — they axially load the cervical spine. Sphinx and gentle Cobra are safe and traction the cervical vertebrae. Keep neck neutral in all poses. No shoulder rolls faster than 1 rotation/2 seconds.",
+    "lifestyle_note": "Use a firm, low pillow. Never sleep on stomach. Monitor workstation ergonomics. Warm sesame oil applied to neck before sleep significantly reduces Vata in Greeva.",
+    "duration_minimum_minutes": 25
+  },
+  {
+    "id": "menopause_protocol",
+    "condition": "menopause",
+    "alternate_conditions": [
+      "perimenopause",
+      "hot_flashes",
+      "hormonal_transition"
+    ],
+    "name": "Rajonivritti (Menopause Transition) Cooling Protocol",
+    "classical_reference": "Ashtanga Hridayam Sharira Sthana 1 — Artava Kshaya (depletion of menstrual function); increased Pitta and decreased Ojas mark menopause in Ayurveda",
+    "research_note": "Menopause Journal (2012): yoga reduced hot flash frequency by 31% and severity by 34%. Restorative yoga improved sleep quality and reduced night sweats over 10 weeks.",
+    "priority_pose_ids": [
+      "legs_up_wall",
+      "supported_fish",
+      "supta_baddha_konasana",
+      "bridge_pose",
+      "supported_bridge",
+      "seated_forward_bend",
+      "side_splits",
+      "constructive_rest",
+      "butterfly",
+      "childs_pose",
+      "corpse",
+      "goddess_pose",
+      "garland_pose",
+      "happy_baby_pose",
+      "half_pigeon_pose"
+    ],
+    "priority_pranayama_ids": [
+      "left_nostril",
+      "three_part_breath",
+      "humming_bee",
+      "cooling_breath",
+      "hissing_breath"
+    ],
+    "category_emphasis": [
+      "restorative",
+      "cooling",
+      "forward_fold",
+      "supine"
+    ],
+    "avoid_pranayama_ids": [
+      "bellows_breath",
+      "skull_shining",
+      "right_nostril",
+      "fire_essence"
+    ],
+    "sequence_note": "Cooling, receptive practice. Sheetali and Sitkari pranayama (cooling_breath, hissing_breath) directly reduce Pitta and are the most effective single intervention for hot flashes. Hold restorative poses 5+ minutes each. Never overheat.",
+    "lifestyle_note": "Pitta-pacifying diet: avoid spicy, fermented, alcohol. Shatavari rasayana supports Ojas and hormonal transition. Timing: morning practice for energy, evening practice for sleep quality.",
+    "duration_minimum_minutes": 35
+  },
+  {
+    "id": "fatty_liver_protocol",
+    "condition": "fatty_liver",
+    "alternate_conditions": [
+      "nafld",
+      "liver_disease",
+      "hepatitis_recovery"
+    ],
+    "name": "Yakrit Shodhana (Liver Detox) Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa Sthana 14 — Pandu Chikitsa; liver is seat of Ranjaka Pitta. Twists are Shodhana (purifying) procedures for Yakrit (liver) in Ayurveda",
+    "research_note": "Complementary Medicine Research (2019): yoga reduced ALT/AST liver enzymes in NAFLD patients after 12 weeks. Twists increase portal circulation and bile flow.",
+    "priority_pose_ids": [
+      "half_lord_of_the_fishes",
+      "sage_pose",
+      "revolved_triangle",
+      "revolved_head_to_knee",
+      "seated_forward_bend",
+      "boat",
+      "triangle",
+      "downward_facing_dog",
+      "forward_bend_with_shoulder_opener",
+      "side_splits",
+      "head_to_knee_forward_bend",
+      "knees_to_chest",
+      "supta_matsyendrasana",
+      "wind_removing_pose",
+      "thunderbolt_pose",
+      "noose_pose"
+    ],
+    "priority_pranayama_ids": [
+      "skull_shining",
+      "alternate_nostril",
+      "three_part_breath",
+      "fire_essence"
+    ],
+    "category_emphasis": [
+      "twist",
+      "forward_fold",
+      "inversion",
+      "core"
+    ],
+    "avoid_pranayama_ids": [],
+    "sequence_note": "Right-side twists compress, then left-side twists release hepatic circulation — always do them in this order. Inversions redistribute bile. Kapalabhati (skull_shining) stimulates the abdominal organs directly. Practice on empty stomach.",
+    "lifestyle_note": "Liver repair requires Pitta reduction: no alcohol, minimal fatty food. Bhumi Amalaki and Kutki are classical hepatoprotective herbs. Avoid afternoon napping — it increases Kapha in Rasa dhatu and worsens fatty infiltration.",
+    "duration_minimum_minutes": 35
+  },
+  {
+    "id": "fibromyalgia_protocol",
+    "condition": "fibromyalgia",
+    "alternate_conditions": [
+      "fibromyalgia_syndrome",
+      "fms"
+    ],
+    "name": "Fibromyalgia Gentle Recovery Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa Sthana 28 — Vatavyadhi Chikitsa; widespread pain classified under Sarva-Anga Vata imbalance affecting all Dhatus",
+    "research_note": "SVYASA (2014) trials show gentle yoga reduced pain catastrophising by 31% and fatigue by 28% in FMS patients. Key mechanism: parasympathetic activation via slow restorative poses reduces central sensitisation.",
+    "priority_pose_ids": [
+      "childs_pose",
+      "constructive_rest",
+      "yoga_nidra_pose",
+      "supported_bridge",
+      "supta_baddha_konasana",
+      "legs_up_wall",
+      "banana_pose",
+      "sphinx",
+      "easy_pose",
+      "butterfly",
+      "staff_pose",
+      "corpse"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "humming_bee",
+      "three_part_breath",
+      "left_nostril"
+    ],
+    "category_emphasis": [
+      "restorative",
+      "supine",
+      "seated"
+    ],
+    "avoid_pranayama_ids": [
+      "bellows_breath",
+      "skull_shining",
+      "fire_essence",
+      "breath_retention"
+    ],
+    "sequence_note": "Keep practice entirely restorative — hold each pose minimum 3 minutes with bolster support. Never push through pain; sensation of gentle release is the goal, not stretch.",
+    "lifestyle_note": "Practice at the same time daily to regulate circadian rhythm (Vata grounding). Warm sesame oil self-massage (Abhyanga) before practice significantly enhances therapeutic outcomes.",
+    "duration_minimum_minutes": 20
+  },
+  {
+    "id": "parkinsons_protocol",
+    "condition": "parkinson",
+    "alternate_conditions": [
+      "parkinsons_disease",
+      "parkinsons",
+      "pd"
+    ],
+    "name": "Parkinson's Disease — Kampa Vata Therapeutic Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa 28 — Kampa Vata (tremor disorder); Hatha Yoga Pradipika 1.19 — Vrikshasana stabilises the nervous system through sustained single-leg loading",
+    "research_note": "University of Washington (2012) RCT: yoga reduced fall incidence by 22% and improved Unified Parkinson's Disease Rating Scale motor scores. Humming Bee pranayama activates vagal nerve pathways to reduce tremor frequency.",
+    "priority_pose_ids": [
+      "tree_pose",
+      "mountain_pose",
+      "warrior_one",
+      "warrior_two",
+      "eagle",
+      "chair",
+      "easy_pose",
+      "staff_pose",
+      "cat_cow_flow",
+      "supported_bridge",
+      "cat",
+      "cow"
+    ],
+    "priority_pranayama_ids": [
+      "humming_bee",
+      "alternate_nostril",
+      "three_part_breath",
+      "ocean_breath"
+    ],
+    "category_emphasis": [
+      "standing",
+      "balancing",
+      "seated"
+    ],
+    "avoid_pranayama_ids": [
+      "breath_retention",
+      "skull_shining"
+    ],
+    "sequence_note": "Lead every session with Tadasana (Mountain Pose) for 2 minutes — the sustained weight-bearing input resets Proprioception via Golgi tendon organs. Use a wall or chair for all balancing poses.",
+    "lifestyle_note": "Practice in the 'on' medication window (1-2 hours post-dose). Coordinate with neurologist. Humming Bee pranayama for 10 minutes daily has shown independent benefits on voice strength and mood in Parkinson's.",
+    "duration_minimum_minutes": 25
+  },
+  {
+    "id": "multiple_sclerosis_protocol",
+    "condition": "multiple_sclerosis",
+    "alternate_conditions": [
+      "ms",
+      "ms_disease",
+      "relapsing_remitting_ms"
+    ],
+    "name": "Multiple Sclerosis — Cooling Neuro-Restorative Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa 28 — Apatantraka (involuntary spasm disorder); Vata invading Pitta in nervous channels — cooling and oil-nourishing approach prescribed",
+    "research_note": "Oregon Health & Science University (2004): yoga improved fatigue and well-being in MS compared to standard care. Critical finding: overheating (Pitta aggravation) exacerbates symptoms — cooling pranayama is non-negotiable.",
+    "priority_pose_ids": [
+      "corpse",
+      "constructive_rest",
+      "yoga_nidra_pose",
+      "supported_bridge",
+      "childs_pose",
+      "seated_forward_bend",
+      "butterfly",
+      "supta_baddha_konasana",
+      "legs_up_wall",
+      "easy_pose",
+      "snake_pose",
+      "sphinx"
+    ],
+    "priority_pranayama_ids": [
+      "cooling_breath",
+      "left_nostril",
+      "alternate_nostril",
+      "extended_cooling"
+    ],
+    "category_emphasis": [
+      "restorative",
+      "supine",
+      "forward_fold"
+    ],
+    "avoid_pranayama_ids": [
+      "bellows_breath",
+      "skull_shining",
+      "fire_essence",
+      "right_nostril"
+    ],
+    "sequence_note": "Monitor internal heat throughout practice — if any symptom worsens, immediately transition to Savasana. Short sessions (15-20 min) are more therapeutic than long ones during relapse.",
+    "lifestyle_note": "Avoid hot rooms, hot showers within 30 minutes of practice. Cooling foods (coconut water, cucumber, coriander) on practice days. Yoga Nidra (7-10 min daily) shown to significantly reduce MS fatigue scores.",
+    "duration_minimum_minutes": 15
+  },
+  {
+    "id": "osteoporosis_protocol",
+    "condition": "osteoporosis",
+    "alternate_conditions": [
+      "osteopenia",
+      "low_bone_density",
+      "bone_loss"
+    ],
+    "name": "Osteoporosis — Asthi Dhatu Kshaya Strengthening Protocol",
+    "classical_reference": "Charaka Samhita Sutrasthana 28 — Asthi Kshaya Lakshana; bone tissue (Asthi Dhatu) depletion requiring Vata pacification and Asthi-building Rasayana",
+    "research_note": "Journal of Bone and Mineral Research (2016, Fishman): 12 specific yoga poses practised 10 min/day for 2 years showed 0.07% bone density gain in spine and hip — versus 1% loss in controls.",
+    "priority_pose_ids": [
+      "mountain_pose",
+      "warrior_one",
+      "warrior_two",
+      "triangle",
+      "tree",
+      "chair",
+      "downward_facing_dog",
+      "cat",
+      "cow",
+      "cat_cow_flow",
+      "sphinx",
+      "high_lunge_pose"
+    ],
+    "priority_pranayama_ids": [
+      "three_part_breath",
+      "alternate_nostril",
+      "ocean_breath"
+    ],
+    "category_emphasis": [
+      "standing",
+      "balancing",
+      "prone"
+    ],
+    "avoid_pranayama_ids": [
+      "breath_retention"
+    ],
+    "sequence_note": "Prioritise weight-bearing standing poses held for 60+ seconds — the mechanical loading stimulus is the primary bone-building mechanism. Avoid deep spinal flexion forward bends, full inversions, and all twisting under load.",
+    "lifestyle_note": "Vitamin D and calcium intake timing matters: consume within 2 hours of practice for best absorption. Sesame seeds (Tila) — highest plant source of calcium — as a post-practice snack is a classical Asthi-building prescription.",
+    "duration_minimum_minutes": 20
+  },
+  {
+    "id": "post_cardiac_protocol",
+    "condition": "post_cardiac",
+    "alternate_conditions": [
+      "heart_surgery_recovery",
+      "post_heart_attack",
+      "cardiac_rehabilitation",
+      "heart_failure",
+      "heart_disease_recovery"
+    ],
+    "name": "Post-Cardiac Recovery — Hrit Daurbalya Restorative Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa 26 — Rajayakshma Chikitsa (analogous cardiac weakness); strict avoidance of Atiyoga (over-exertion) and Pitta-aggravating practices",
+    "research_note": "European Heart Journal (2012): yoga-based cardiac rehabilitation reduced blood pressure by 6 mmHg, heart rate by 8 bpm, and 6-month MACE events by 22% vs. standard care alone.",
+    "priority_pose_ids": [
+      "constructive_rest",
+      "yoga_nidra_pose",
+      "corpse",
+      "corpse_pose",
+      "supported_bridge",
+      "easy_pose",
+      "mountain_pose",
+      "butterfly",
+      "cat_cow_flow",
+      "sphinx",
+      "supported_fish"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "three_part_breath",
+      "left_nostril",
+      "ocean_breath"
+    ],
+    "category_emphasis": [
+      "restorative",
+      "supine",
+      "seated"
+    ],
+    "avoid_pranayama_ids": [
+      "skull_shining",
+      "bellows_breath",
+      "breath_retention",
+      "fire_essence",
+      "right_nostril",
+      "root_lock_breath"
+    ],
+    "sequence_note": "CRITICAL: No inversions, no held breath, no sustained exertion. Keep heart rate below target zone specified by cardiologist. All poses must remain passive — no muscular engagement beyond what is needed to hold position safely.",
+    "lifestyle_note": "This protocol MUST be cleared by your cardiologist before beginning. Start with Yoga Nidra only (no poses) for the first 2 weeks post-cardiac event, then add seated poses gradually. Weekly cardiac monitoring recommended.",
+    "duration_minimum_minutes": 15
+  },
+  {
+    "id": "scoliosis_protocol",
+    "condition": "scoliosis",
+    "alternate_conditions": [
+      "spinal_curvature",
+      "idiopathic_scoliosis",
+      "adolescent_scoliosis"
+    ],
+    "name": "Scoliosis — Vakra Prishtha Spinal Alignment Protocol",
+    "classical_reference": "Ashtanga Hridayam Nidana 15 — Kativata (spinal Vata disorders); Vakra (crooked) spine treated with lateral elongation and counter-curve poses",
+    "research_note": "Scoliosis Research Society Journal (2014): a single daily yoga pose (Side Plank held to fatigue, on the curve-opening side) reduced Cobb angle (curvature measure) from 49° to 38° over 6-8 months.",
+    "priority_pose_ids": [
+      "cat",
+      "cow",
+      "cat_cow_flow",
+      "triangle",
+      "extended_side_angle",
+      "mountain_pose",
+      "cobra_pose",
+      "sphinx",
+      "supported_bridge",
+      "half_moon",
+      "gate_pose",
+      "downward_facing_dog"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "three_part_breath",
+      "ocean_breath"
+    ],
+    "category_emphasis": [
+      "standing",
+      "prone",
+      "restorative"
+    ],
+    "avoid_pranayama_ids": [
+      "breath_retention"
+    ],
+    "sequence_note": "For scoliosis, work asymmetrically — hold the convex (opening) side longer than the concave side. Side Plank on the curve-concave side is the highest-evidence single pose. Always work with a qualified yoga therapist who can assess your individual curve.",
+    "lifestyle_note": "Avoid sleeping on the concave side of the curve. Core stabilisation (Mula Bandha awareness) during all poses prevents further curvature progression. Contrast heat and cold alternation on the paraspinal muscles enhances muscular re-patterning.",
+    "duration_minimum_minutes": 20
+  },
+  {
+    "id": "frozen_shoulder_protocol",
+    "condition": "frozen_shoulder",
+    "alternate_conditions": [
+      "adhesive_capsulitis",
+      "shoulder_impingement",
+      "shoulder_stiffness",
+      "apabahuka"
+    ],
+    "name": "Frozen Shoulder — Apabahuka Mobilisation Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa 28 — Apabahuka (arm held fixed at side) classified under Vata-dominant Asthi-Sandhi Roga; requires oleation and gentle mobilisation",
+    "research_note": "International Journal of Yoga (2018): 4-week gentle yoga reduced frozen shoulder pain by 41% and improved external rotation range by 18°. Passive shoulder movement through Eagle arms is the safest ROM restoration technique.",
+    "priority_pose_ids": [
+      "eagle",
+      "cat_cow_flow",
+      "cobra_pose",
+      "sphinx",
+      "supported_bridge",
+      "cat",
+      "easy_pose",
+      "gate_pose",
+      "cow",
+      "constructive_rest"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "humming_bee",
+      "ocean_breath",
+      "three_part_breath"
+    ],
+    "category_emphasis": [
+      "prone",
+      "seated",
+      "restorative"
+    ],
+    "avoid_pranayama_ids": [
+      "skull_shining"
+    ],
+    "sequence_note": "Never force shoulder range — work only to the edge of discomfort without entering pain. Eagle arms (Garudasana arm position only, no leg balance) is the single most effective shoulder-opening technique for adhesive capsulitis.",
+    "lifestyle_note": "Warm compress on shoulder joint for 5 minutes before practice significantly increases capsule elasticity. Post-practice warm sesame oil massage (Mardana) on the joint is prescribed in classical Apabahuka Chikitsa.",
+    "duration_minimum_minutes": 15
+  },
+  {
+    "id": "vertigo_protocol",
+    "condition": "vertigo",
+    "alternate_conditions": [
+      "dizziness",
+      "bppv",
+      "labyrinthitis",
+      "vestibular_disorder",
+      "bhrama"
+    ],
+    "name": "Vertigo — Bhrama (Dizziness) Grounding Protocol",
+    "classical_reference": "Charaka Samhita Nidana 6 — Bhrama (dizziness) arises from Vata invading the Tarpaka Kapha channels in the head; treatment is grounding and channel-clearing",
+    "research_note": "Journal of Neurological Sciences (2020): vestibular rehabilitation yoga reduced vertigo handicap inventory scores by 34% over 8 weeks. Grounding poses that reduce head position changes are safest first-line interventions.",
+    "priority_pose_ids": [
+      "mountain_pose",
+      "tree_pose",
+      "warrior_one",
+      "warrior_two",
+      "seated_forward_bend",
+      "easy_pose",
+      "constructive_rest",
+      "corpse",
+      "staff_pose",
+      "supported_bridge"
+    ],
+    "priority_pranayama_ids": [
+      "left_nostril",
+      "three_part_breath",
+      "alternate_nostril",
+      "ocean_breath"
+    ],
+    "category_emphasis": [
+      "standing",
+      "seated",
+      "restorative"
+    ],
+    "avoid_pranayama_ids": [
+      "skull_shining",
+      "bellows_breath",
+      "root_lock_breath"
+    ],
+    "sequence_note": "No rapid transitions between head positions. Change positions slowly with a 5-second pause. Begin seated, move to standing only after 5 minutes. All inversions and forward bends where head is below heart are completely contraindicated.",
+    "lifestyle_note": "Practice near a wall initially for all standing poses. Keep the gaze fixed on a single still point (Drishti) throughout. Nasya (medicated oil nasal drops, e.g., Anu Taila) prescribed daily in classical Bhrama treatment to clear head channels.",
+    "duration_minimum_minutes": 15
+  },
+  {
+    "id": "ptsd_protocol",
+    "condition": "ptsd",
+    "alternate_conditions": [
+      "trauma",
+      "post_traumatic_stress",
+      "complex_ptsd",
+      "c_ptsd",
+      "anxiety_trauma"
+    ],
+    "name": "PTSD / Trauma — Sattvavajaya Grounding Protocol",
+    "classical_reference": "Charaka Samhita Sutrasthana 1.58 — Sattvavajaya Chikitsa (mind-strengthening therapy) for Manasa Vyadhi; yoga as adjunct to psychological counselling",
+    "research_note": "Bessel van der Kolk (2014, Journal of Clinical Psychiatry): trauma-sensitive yoga outperformed standard group therapy for PTSD symptom reduction. Key: choice-based practice, body ownership, and no hands-on adjustments.",
+    "priority_pose_ids": [
+      "mountain_pose",
+      "warrior_one",
+      "warrior_two",
+      "easy_pose",
+      "childs_pose",
+      "constructive_rest",
+      "yoga_nidra_pose",
+      "butterfly",
+      "supta_baddha_konasana",
+      "supported_bridge"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "left_nostril",
+      "three_part_breath",
+      "humming_bee"
+    ],
+    "category_emphasis": [
+      "standing",
+      "restorative",
+      "seated"
+    ],
+    "avoid_pranayama_ids": [
+      "breath_retention",
+      "skull_shining",
+      "bellows_breath"
+    ],
+    "sequence_note": "All poses are invitations, never instructions. Always offer choice ('You might try X') rather than directives. Warrior poses are particularly powerful for reclaiming body agency. Never use physical adjustments — verbal cues only.",
+    "lifestyle_note": "Yoga should complement (never replace) evidence-based trauma therapy. Establish a consistent practice space and time to create predictable safety cues. Yoga Nidra with Sankalpa (positive intention) is especially therapeutic for trauma survivors.",
+    "duration_minimum_minutes": 20
+  },
+  {
+    "id": "migraine_protocol",
+    "condition": "migraine",
+    "alternate_conditions": [
+      "chronic_migraine",
+      "chronic_headache",
+      "migraines",
+      "cluster_headache",
+      "ardhavabhedaka"
+    ],
+    "name": "Migraine — Ardhavabhedaka Cooling Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa 26 — Ardhavabhedaka (half-head pain) treated with Shirovirechana (head-clearing treatments), Nasya, and cooling Pitta-Vata management",
+    "research_note": "International Journal of Yoga (2014): 3-month yoga practice reduced migraine frequency by 46% and intensity by 40%. Left-nostril breathing (Chandra Bhedana) provides fastest acute pain relief by activating parasympathetic NS.",
+    "priority_pose_ids": [
+      "childs_pose",
+      "seated_forward_bend",
+      "constructive_rest",
+      "yoga_nidra_pose",
+      "legs_up_wall",
+      "supta_matsyendrasana",
+      "easy_pose",
+      "supta_baddha_konasana",
+      "supported_fish",
+      "butterfly"
+    ],
+    "priority_pranayama_ids": [
+      "left_nostril",
+      "cooling_breath",
+      "alternate_nostril",
+      "humming_bee"
+    ],
+    "category_emphasis": [
+      "restorative",
+      "forward_fold",
+      "supine"
+    ],
+    "avoid_pranayama_ids": [
+      "skull_shining",
+      "bellows_breath",
+      "right_nostril",
+      "fire_essence"
+    ],
+    "sequence_note": "NEVER practise during active migraine prodrome or attack — rest in a dark, quiet room instead. Practice between attacks for prevention only. Avoid all inversions, which can trigger or worsen episodes.",
+    "lifestyle_note": "Track practice days vs. migraine frequency over 4 weeks — most patients see reduction after week 6. Nasya (Anu Taila nasal drops, 2 drops per nostril, morning) is the most prescribed classical Ayurvedic migraine treatment alongside yoga.",
+    "duration_minimum_minutes": 15
+  },
+  {
+    "id": "pms_protocol",
+    "condition": "pms",
+    "alternate_conditions": [
+      "premenstrual_syndrome",
+      "premenstrual_tension",
+      "pmt",
+      "pmdd",
+      "menstrual_cramps",
+      "dysmenorrhea"
+    ],
+    "name": "PMS / Artava Dushti Menstrual Wellness Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa 30 — Yonivyapad (gynaecological disorders); Artava Dushti (menstrual blood disorders) treated with Vata-Pitta pacification and pelvic circulation",
+    "research_note": "Taiwan study (2012): yoga 30 min three times per week for 3 months reduced PMS symptom severity by 58% including dysmenorrhea and mood symptoms. Butterfly pose increases pelvic blood flow most effectively.",
+    "priority_pose_ids": [
+      "butterfly",
+      "supta_baddha_konasana",
+      "supported_bridge",
+      "childs_pose",
+      "garland_pose",
+      "half_pigeon_pose",
+      "legs_up_wall",
+      "wind_removing_pose",
+      "supta_matsyendrasana",
+      "easy_pose"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "left_nostril",
+      "humming_bee",
+      "three_part_breath"
+    ],
+    "category_emphasis": [
+      "restorative",
+      "seated",
+      "supine"
+    ],
+    "avoid_pranayama_ids": [
+      "skull_shining",
+      "bellows_breath"
+    ],
+    "sequence_note": "Luteal phase (14-28 days): prioritise restorative, pelvic-opening poses. During menstruation: replace all inversions with Viparita Karani (Legs Up Wall). Butterfly and Supta Baddha Konasana are the single most therapeutic poses for dysmenorrhea.",
+    "lifestyle_note": "Shatavari (Asparagus racemosus) taken daily and yoga together show synergistic Artava regulation in Ayurvedic clinical studies. Avoid cold foods, raw vegetables, and excess salt in the week before menstruation to reduce Vata-Pitta aggravation.",
+    "duration_minimum_minutes": 20
+  },
+  {
+    "id": "kidney_disease_protocol",
+    "condition": "kidney_disease",
+    "alternate_conditions": [
+      "ckd",
+      "chronic_kidney_disease",
+      "renal_disease",
+      "kidney_failure",
+      "dialysis",
+      "nephrotic_syndrome",
+      "mutravaha_srotas"
+    ],
+    "name": "Kidney Disease — Mutravaha Srotas Restoration Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa 26 — Mutrakrichra (urinary channel disease) Chikitsa; Mutravaha Srotas Vikara treated with gentle movement, correct hydration, and Vata pacification",
+    "research_note": "Journal of Renal Nutrition (2019): gentle yoga in CKD patients reduced oxidative stress markers by 18% and improved quality of life scores significantly. Critical: avoid inverted abdominal pressure that may affect remaining kidney function.",
+    "priority_pose_ids": [
+      "legs_up_wall",
+      "supported_bridge",
+      "constructive_rest",
+      "easy_pose",
+      "butterfly",
+      "mountain_pose",
+      "tree",
+      "cat",
+      "cow",
+      "seated_forward_bend",
+      "yoga_nidra_pose",
+      "supta_baddha_konasana"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "three_part_breath",
+      "left_nostril",
+      "humming_bee"
+    ],
+    "category_emphasis": [
+      "restorative",
+      "supine",
+      "standing"
+    ],
+    "avoid_pranayama_ids": [
+      "breath_retention",
+      "skull_shining",
+      "bellows_breath"
+    ],
+    "sequence_note": "No compression of the abdomen or kidney region. Avoid deep twists and forward bends with extreme abdominal engagement. Legs-Up-Wall for 10 minutes at the end of every session promotes lymphatic and venous return, reducing lower extremity oedema.",
+    "lifestyle_note": "Adjust hydration based on nephrologist's fluid restriction guidelines — do not over-hydrate on the assumption that yoga requires it. Punarnavadi Mandura (classical kidney Rasayana) as adjunct therapy with medical guidance.",
+    "duration_minimum_minutes": 20
+  },
+  {
+    "id": "rheumatoid_arthritis_specific_protocol",
+    "condition": "rheumatoid_arthritis",
+    "alternate_conditions": [
+      "ra",
+      "autoimmune_arthritis",
+      "inflammatory_arthritis"
+    ],
+    "name": "Rheumatoid Arthritis — Amavata Specific Protocol",
+    "classical_reference": "Madhava Nidana 25 — Amavata: Vata carrying Ama (undigested immunogenic metabolites) into joints causing autoimmune inflammation; requires Ama-pacana before mobilisation",
+    "research_note": "SVYASA (2019): 8-week gentle yoga reduced Disease Activity Score-28 by 18%, C-reactive protein by 14%. Cat-Cow flow lubrication of synovial joints within pain-free range is safest mobilisation technique during active RA.",
+    "priority_pose_ids": [
+      "cat",
+      "cow",
+      "cat_cow_flow",
+      "childs_pose",
+      "sphinx",
+      "easy_pose",
+      "supported_bridge",
+      "constructive_rest",
+      "mountain_pose",
+      "butterfly",
+      "staff_pose",
+      "snake_pose"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "three_part_breath",
+      "humming_bee",
+      "ocean_breath"
+    ],
+    "category_emphasis": [
+      "prone",
+      "restorative",
+      "seated"
+    ],
+    "avoid_pranayama_ids": [
+      "skull_shining",
+      "bellows_breath"
+    ],
+    "sequence_note": "During active flares: Savasana and Yoga Nidra only — no poses. During remission: begin with gentle Cat-Cow (5 minutes) to warm synovial fluid before any static holds. Never work in pain.",
+    "lifestyle_note": "Anti-Ama diet is inseparable from the yoga protocol: light, warm, easily digestible foods; avoid cold, heavy, damp foods. Ginger-turmeric decoction daily. Warm sesame oil Abhyanga before practice significantly reduces morning stiffness.",
+    "duration_minimum_minutes": 20
+  },
+  {
+    "id": "ibs_gerd_specific_protocol",
+    "condition": "irritable_bowel_syndrome",
+    "alternate_conditions": [
+      "ibs_d",
+      "ibs_c",
+      "spastic_colon",
+      "gerd",
+      "acid_reflux",
+      "heartburn"
+    ],
+    "name": "IBS / Grahani Specific Therapeutic Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa 15 — Grahani Roga (intestinal absorption disease); IBS classified under Grahani involving Agni dysfunction with all three dosha imbalance",
+    "research_note": "UCSF (2011): yoga superior to low-FODMAP diet for IBS symptom reduction (26.4% vs 18.3%). Wind-Removing Pose with bilateral leg pull directly massages sigmoid colon, promoting parasympathetic peristalsis.",
+    "priority_pose_ids": [
+      "wind_removing_pose",
+      "half_lord_of_the_fishes",
+      "sage_pose",
+      "seated_forward_bend",
+      "butterfly",
+      "childs_pose",
+      "supta_matsyendrasana",
+      "knees_to_chest",
+      "garland_pose",
+      "easy_pose"
+    ],
+    "priority_pranayama_ids": [
+      "alternate_nostril",
+      "humming_bee",
+      "three_part_breath",
+      "ocean_breath"
+    ],
+    "category_emphasis": [
+      "twist",
+      "forward_fold",
+      "restorative"
+    ],
+    "avoid_pranayama_ids": [
+      "bellows_breath"
+    ],
+    "sequence_note": "Practice 30-60 minutes after a light meal. Wind-Removing Pose (both legs) bookends every session. Pavanamuktasana series (Wind-Removing → Knees to Chest → Supine Twist) is the core sequence. Avoid deep twists during active flares.",
+    "lifestyle_note": "Fixed practice time aligned to your digestive rhythm reduces Vata irregularity (the primary IBS driver). Triphala (1 tsp in warm water, bedtime) plus yoga shows synergistic Grahani improvement in Ayurvedic clinical observation.",
+    "duration_minimum_minutes": 20
+  },
+  {
+    "id": "cfs_specific_protocol",
+    "condition": "chronic_fatigue_syndrome",
+    "alternate_conditions": [
+      "me_cfs",
+      "myalgic_encephalomyelitis",
+      "post_viral_fatigue",
+      "long_covid_fatigue",
+      "cfs_me",
+      "post_covid_syndrome"
+    ],
+    "name": "Chronic Fatigue Syndrome — Ojas Restoration Protocol",
+    "classical_reference": "Charaka Samhita Chikitsa 1 — Ojas Kshaya (vital essence depletion) Chikitsa; Klama (chronic fatigue without exertion) treated with Brinhana (nourishing) Rasayana therapy not Shodhana",
+    "research_note": "Cochrane Review (2017): gentle yoga and mindfulness showed moderate evidence for CFS fatigue reduction without post-exertional malaise worsening. Key principle: 'pacing' — stop before fatigue onset to prevent next-day crashes.",
+    "priority_pose_ids": [
+      "corpse",
+      "yoga_nidra_pose",
+      "constructive_rest",
+      "legs_up_wall",
+      "supported_bridge",
+      "childs_pose",
+      "banana_pose",
+      "supta_baddha_konasana",
+      "easy_pose",
+      "supta_matsyendrasana"
+    ],
+    "priority_pranayama_ids": [
+      "three_part_breath",
+      "alternate_nostril",
+      "left_nostril",
+      "humming_bee"
+    ],
+    "category_emphasis": [
+      "restorative",
+      "supine"
+    ],
+    "avoid_pranayama_ids": [
+      "bellows_breath",
+      "skull_shining",
+      "fire_essence",
+      "breath_retention"
+    ],
+    "sequence_note": "CRITICAL: Stop before you feel tired, not when you are tired. Begin with 5-minute sessions only. Increase by 2 minutes per week ONLY if no post-exertional malaise occurs within 48 hours. Yoga Nidra twice daily is higher priority than asana.",
+    "lifestyle_note": "Energy envelope management: never use more than 70% of available daily energy in one session. Ashwagandha (Withania somnifera) as Ojas-building Rasayana alongside yoga shows synergistic fatigue reduction in Ayurvedic case studies.",
+    "duration_minimum_minutes": 10
+  }
+]
