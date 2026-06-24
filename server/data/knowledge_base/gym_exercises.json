@@ -45,7 +45,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -150,7 +154,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -254,7 +262,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -304,7 +314,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -415,7 +427,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -523,7 +539,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -574,7 +592,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -627,7 +649,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -1022,7 +1046,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -1077,7 +1103,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -1126,7 +1154,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -1175,7 +1205,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle",
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -1223,7 +1256,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -1971,7 +2006,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -2137,7 +2174,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -2242,7 +2281,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -4469,7 +4510,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -4872,7 +4917,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "shoulder_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -5157,7 +5206,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -5208,7 +5259,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -5320,7 +5373,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -5488,7 +5543,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -5591,7 +5650,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -5955,7 +6018,8 @@
     "contraindications": [],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
+    "pregnancy_safe": false,
+    "contraindications_reviewed": true
   },
   {
     "id": "Bradford_Rocky_Presses",
@@ -6062,7 +6126,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -6167,7 +6235,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -6331,7 +6402,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -6443,7 +6518,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -6550,7 +6627,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -6601,7 +6680,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -6709,7 +6790,8 @@
     "contraindications": [],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
+    "pregnancy_safe": false,
+    "contraindications_reviewed": true
   },
   {
     "id": "Cable_Judo_Flip",
@@ -6757,7 +6839,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -6808,7 +6894,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -6860,7 +6948,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -6915,7 +7005,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -7020,7 +7112,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -7071,7 +7167,13 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury",
+      "elbow_injury",
+      "hypertension",
+      "heart_disease"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -7182,7 +7284,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -7233,7 +7339,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -7398,7 +7508,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "cervical_spondylosis",
+      "neck_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -7450,7 +7563,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury",
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -7500,7 +7616,13 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury",
+      "cervical_spondylosis",
+      "neck_injury",
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -7550,7 +7672,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -7601,7 +7725,13 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_knee",
+      "knee_replacement",
+      "bad_ankle",
+      "hypertension",
+      "heart_disease"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -7652,7 +7782,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -7703,7 +7835,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -7752,7 +7886,9 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -7801,7 +7937,9 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -7849,7 +7987,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -8186,7 +8326,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -8794,7 +8936,8 @@
     "contraindications": [],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": true,
+    "contraindications_reviewed": true
   },
   {
     "id": "Childs_Pose",
@@ -8901,7 +9044,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -10041,7 +10186,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -10157,7 +10306,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -10208,7 +10359,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -10260,7 +10415,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -10482,7 +10639,15 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy",
+      "rotator_cuff",
+      "shoulder_injury",
+      "hypertension",
+      "heart_disease"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -10535,7 +10700,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -10587,7 +10756,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -10752,7 +10925,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -11052,7 +11229,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -11161,7 +11342,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -11212,7 +11396,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -11318,7 +11504,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -11425,7 +11615,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -11827,7 +12021,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -12403,7 +12599,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -12568,7 +12766,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -12740,7 +12940,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -13019,7 +13222,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -13125,7 +13330,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -13234,7 +13441,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -13343,7 +13552,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -13621,7 +13832,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -13728,7 +13941,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "cervical_spondylosis",
+      "neck_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -13778,7 +13994,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -14007,7 +14227,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -14058,7 +14280,8 @@
     "contraindications": [],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": true,
+    "contraindications_reviewed": true
   },
   {
     "id": "Dynamic_Chest_Stretch",
@@ -14108,7 +14331,8 @@
     "contraindications": [],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": true,
+    "contraindications_reviewed": true
   },
   {
     "id": "EZ-Bar_Curl",
@@ -14317,7 +14541,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -14485,7 +14713,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -14591,7 +14821,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -14642,7 +14876,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -15135,7 +15373,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -15186,7 +15427,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -15236,7 +15481,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -15288,7 +15537,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -15563,7 +15814,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -15853,7 +16106,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -16702,7 +16959,8 @@
     "contraindications": [],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
+    "pregnancy_safe": false,
+    "contraindications_reviewed": true
   },
   {
     "id": "Glute_Ham_Raise",
@@ -17041,7 +17299,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -17090,7 +17352,9 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -17139,7 +17403,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -17250,7 +17516,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -17849,7 +18117,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -17900,7 +18172,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -18069,7 +18345,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -18120,7 +18398,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -18619,7 +18899,9 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -18668,7 +18950,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle",
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -19061,7 +19346,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -19283,7 +19570,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -19334,7 +19623,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -19889,7 +20180,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -19942,7 +20235,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -20384,7 +20679,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -20434,7 +20733,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -21825,7 +22128,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -21996,7 +22303,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -22049,7 +22360,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -22097,7 +22410,9 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury"
+    ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -22149,7 +22464,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -22315,7 +22632,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -22791,7 +23110,8 @@
     "contraindications": [],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
+    "pregnancy_safe": false,
+    "contraindications_reviewed": true
   },
   {
     "id": "Leg-Over_Floor_Press",
@@ -23112,7 +23432,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -23329,7 +23653,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -23436,7 +23762,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -23543,7 +23871,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "cervical_spondylosis",
+      "neck_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -23839,7 +24170,8 @@
     "contraindications": [],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
+    "pregnancy_safe": false,
+    "contraindications_reviewed": true
   },
   {
     "id": "Looking_At_Ceiling",
@@ -23994,7 +24326,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -24151,7 +24485,12 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy",
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -24315,7 +24654,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -24367,7 +24708,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -24477,7 +24820,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -24635,7 +24980,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -24849,7 +25196,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -25280,7 +25629,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -25335,7 +25686,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -25498,7 +25853,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -25549,7 +25906,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -25655,7 +26014,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -25875,7 +26236,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "cervical_spondylosis",
+      "neck_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -25987,7 +26351,8 @@
     "contraindications": [],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
+    "pregnancy_safe": false,
+    "contraindications_reviewed": true
   },
   {
     "id": "Monster_Walk",
@@ -26033,7 +26398,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -26674,7 +27041,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -26725,7 +27096,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -26999,7 +27374,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -27053,7 +27431,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -27278,7 +27660,8 @@
     "contraindications": [],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
+    "pregnancy_safe": false,
+    "contraindications_reviewed": true
   },
   {
     "id": "One-Arm_Kettlebell_Jerk",
@@ -27550,7 +27933,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -28253,7 +28638,8 @@
     "contraindications": [],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
+    "pregnancy_safe": false,
+    "contraindications_reviewed": true
   },
   {
     "id": "One_Arm_Chin-Up",
@@ -28307,7 +28693,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -28417,7 +28805,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -28531,7 +28921,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -28583,7 +28975,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -28636,7 +29030,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -28745,7 +29141,8 @@
     "contraindications": [],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
+    "pregnancy_safe": false,
+    "contraindications_reviewed": true
   },
   {
     "id": "One_Knee_To_Chest",
@@ -29032,7 +29429,13 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury",
+      "elbow_injury",
+      "hypertension",
+      "heart_disease"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -29083,7 +29486,12 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury",
+      "hypertension",
+      "heart_disease"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -29133,7 +29541,12 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury",
+      "hypertension",
+      "heart_disease"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -29255,7 +29668,15 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy",
+      "rotator_cuff",
+      "shoulder_injury",
+      "hypertension",
+      "heart_disease"
+    ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -29306,7 +29727,13 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury",
+      "elbow_injury",
+      "hypertension",
+      "heart_disease"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -29480,7 +29907,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury",
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -29645,7 +30075,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury",
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -29801,7 +30234,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -29849,7 +30284,9 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -30014,7 +30451,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -30062,7 +30501,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -30113,7 +30556,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -30164,7 +30609,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -30447,7 +30896,9 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -31021,7 +31472,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -31302,7 +31755,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -32855,7 +33310,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -32906,7 +33363,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -33128,7 +33589,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -33291,7 +33754,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -33403,7 +33868,8 @@
     "contraindications": [],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
+    "pregnancy_safe": false,
+    "contraindications_reviewed": true
   },
   {
     "id": "Rickshaw_Carry",
@@ -33984,7 +34450,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -34091,7 +34561,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -34492,7 +34964,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -34543,7 +35017,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -34821,7 +35299,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -34928,7 +35410,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -35148,7 +35634,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -35311,7 +35799,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -35363,7 +35853,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -35416,7 +35908,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury",
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -35469,7 +35964,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury",
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -35576,7 +36074,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -35734,7 +36236,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -36057,7 +36561,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -36109,7 +36617,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury",
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -36161,7 +36672,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury",
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -36217,7 +36731,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -36267,7 +36783,15 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy",
+      "rotator_cuff",
+      "shoulder_injury",
+      "hypertension",
+      "heart_disease"
+    ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -36478,7 +37002,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -36533,7 +37059,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury",
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -36643,7 +37172,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -36903,7 +37434,8 @@
     "contraindications": [],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": true,
+    "contraindications_reviewed": true
   },
   {
     "id": "Side_Bridge",
@@ -37052,7 +37584,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -37211,7 +37747,12 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy",
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -37601,7 +38142,8 @@
     "contraindications": [],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
+    "pregnancy_safe": false,
+    "contraindications_reviewed": true
   },
   {
     "id": "Single-Arm_Linear_Jammer",
@@ -38324,7 +38866,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -38600,7 +39146,13 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury",
+      "elbow_injury",
+      "hypertension",
+      "heart_disease"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -38763,7 +39315,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -39104,7 +39658,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -39333,7 +39889,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -39669,7 +40229,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -40342,7 +40904,13 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury",
+      "elbow_injury",
+      "hypertension",
+      "heart_disease"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -41714,7 +42282,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -41764,7 +42336,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -42102,7 +42676,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -42154,7 +42730,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -42204,7 +42782,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -42310,7 +42890,10 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury",
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -42415,7 +42998,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -42737,7 +43322,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -42841,7 +43428,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -42891,7 +43480,11 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -43230,7 +43823,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -43282,7 +43877,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -43334,7 +43931,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -43722,7 +44321,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -43770,7 +44373,9 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "bad_ankle"
+    ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -43873,7 +44478,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -44333,7 +44940,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -44443,7 +45054,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -45207,7 +45820,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -45259,7 +45876,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -45595,7 +46214,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -45769,7 +46390,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -45817,7 +46442,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -45978,7 +46607,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -46080,7 +46711,13 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury",
+      "elbow_injury",
+      "hypertension",
+      "heart_disease"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -46131,7 +46768,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -46182,7 +46821,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -46233,7 +46874,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -46282,7 +46925,9 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -46334,7 +46979,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -46384,7 +47033,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -46606,7 +47257,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -46773,7 +47426,8 @@
     "contraindications": [],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": true,
+    "contraindications_reviewed": true
   },
   {
     "id": "Upright_Barbell_Row",
@@ -47334,7 +47988,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -47442,7 +48100,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -47557,7 +48219,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -47666,7 +48330,11 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -48303,7 +48971,14 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy",
+      "bad_knee",
+      "bad_ankle",
+      "heart_disease"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -48466,7 +49141,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury"
+    ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": true
@@ -48753,7 +49430,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -48807,7 +49486,9 @@
       "strength": true,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "elbow_injury"
+    ],
     "calories_per_minute": 7.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
     "pregnancy_safe": false
@@ -48926,7 +49607,8 @@
     "contraindications": [],
     "calories_per_minute": 8.0,
     "modification": "Reduce resistance for joint-friendly option.",
-    "pregnancy_safe": true
+    "pregnancy_safe": true,
+    "contraindications_reviewed": true
   },
   {
     "id": "cardio_jump_rope",
@@ -49284,7 +49966,9 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 8.5,
     "modification": "Use no-incline, low resistance for joint issues.",
     "pregnancy_safe": true
@@ -49341,7 +50025,10 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury"
+    ],
     "calories_per_minute": 9.0,
     "modification": "Use kickboard or pull buoy if technique is developing.",
     "pregnancy_safe": true
@@ -49702,7 +50389,9 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 7.5,
     "modification": "Use e-bike or reduce route distance.",
     "pregnancy_safe": false
@@ -49759,7 +50448,9 @@
       "strength": false,
       "general_fitness": true
     },
-    "contraindications": [],
+    "contraindications": [
+      "hip_injury"
+    ],
     "calories_per_minute": 5.5,
     "modification": "Reduce pace; use poles for stability if needed.",
     "pregnancy_safe": true
@@ -49875,7 +50566,8 @@
     "contraindications": [],
     "calories_per_minute": 7.0,
     "modification": "Simplify footwork; reduce range of motion.",
-    "pregnancy_safe": true
+    "pregnancy_safe": true,
+    "contraindications_reviewed": true
   },
   {
     "id": "cardio_kettlebell_swings",

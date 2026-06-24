@@ -21,6 +21,8 @@ export default function LanguageSwitcher() {
       >
         <option value="en">EN</option>
         <option value="hi">HI</option>
+        <option value="kn">ಕನ್ನಡ</option>
+        <option value="ta">தமிழ்</option>
       </select>
     </div>
   );

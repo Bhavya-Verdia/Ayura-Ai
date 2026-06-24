@@ -564,13 +564,30 @@ _DHATU_THERAPY: dict[str, dict] = {
 }
 
 
+def disease_signal(condition: str) -> dict | None:
+    """Look up a condition in the central disease→dosha map, resolving synonyms and
+    classical names via the condition vocabulary — so 'high blood pressure', 'gerd',
+    'vatarakta', 'pandu roga', 'ckd' resolve to their canonical entries instead of
+    being treated as unknown."""
+    if not condition:
+        return None
+    key = condition.lower().strip().replace(" ", "_").replace("-", "_")
+    mapping = _DISEASE_DOSHA_SIGNAL.get(key)
+    if mapping is not None:
+        return mapping
+    from engine.condition_vocab import normalize_condition
+    canon = normalize_condition(condition)
+    if canon and canon != key:
+        return _DISEASE_DOSHA_SIGNAL.get(canon)
+    return None
+
+
 def _dhatu_from_conditions(conditions: list[str]) -> list[dict]:
     """Return unique affected Dhatu entries for a set of medical conditions."""
     seen: set[str] = set()
     result: list[dict] = []
     for cond in conditions:
-        key = cond.lower().strip().replace(" ", "_").replace("-", "_")
-        mapping = _DISEASE_DOSHA_SIGNAL.get(key)
+        mapping = disease_signal(cond)
         if not mapping:
             continue
         dhatu_key = mapping.get("d", "rasa")
@@ -638,8 +655,7 @@ def _medical_history_vikriti_signal(medical_conditions: list[str]) -> tuple[dict
     classical_notes: list[str] = []
 
     for condition in medical_conditions:
-        key = condition.lower().strip().replace(" ", "_").replace("-", "_")
-        mapping = _DISEASE_DOSHA_SIGNAL.get(key)
+        mapping = disease_signal(condition)
         if not mapping:
             continue
         primary = mapping["p"]

@@ -22,6 +22,7 @@ from schemas.preferences_schema import (
 from routes.profile import get_current_user
 from services.plan_diff import build_plan_diff
 from services.audit_service import log_plan_generated
+from services.notification_service import create_and_deliver_notification
 from core.cache import cache_manager
 from core.kb_cache import kb_cache
 
@@ -206,6 +207,105 @@ async def _load_feature_preferences(db: AsyncIOMotorDatabase, user_id: str, plan
     return prefs.model_dump()
 
 
+# ─── Engine-backed feature generation (shared by holistic + agentic paths) ────
+
+async def _generate_feature_via_engine(
+    db: AsyncIOMotorDatabase,
+    user_id: str,
+    plan_type: str,
+    user_profile: dict,
+) -> dict | list:
+    """Generate ONE feature plan through the deterministic engine + LLM enricher —
+    the same KB-grounded path the per-feature endpoints use.
+
+    The holistic and agentic single-plan paths call this so they no longer rely on
+    un-grounded free-text LLM agents (which ignored the KB and could hallucinate
+    formulations / asanas). Returns the enriched plan (dict, or list for
+    remedies/medicines). On failure returns a safe empty value so a single feature
+    failing never aborts a holistic plan.
+    """
+    from engine.seasonal import get_current_season
+    season_info = get_current_season()
+    profile = {**user_profile, "current_season": season_info.name.lower()}
+    is_prenatal = bool(profile.get("pregnancy_or_nursing"))
+    prefs = await _load_feature_preferences(db, user_id, plan_type)
+
+    def _kb(attr):
+        try:
+            if getattr(kb_cache, "loaded", False):
+                return getattr(kb_cache, attr, None) or None
+        except Exception:
+            pass
+        return None  # engines fall back to their bundled JSON when KB is None
+
+    try:
+        if plan_type == "yoga":
+            from services.yoga_plan_engine import generate_yoga_plan, yoga_poses as _ep
+            from services.yoga_plan_enricher import enrich_yoga_plan
+            base_poses = _kb("yoga_poses") or _ep
+            poses = [p for p in base_poses if (not is_prenatal or p.get("pregnancy_safe"))]
+            raw = generate_yoga_plan(profile, prefs, poses or None, _kb("pranayama"))
+            return await enrich_yoga_plan(raw, profile, prefs)
+
+        if plan_type == "gym":
+            from services.gym_plan_engine import generate_gym_plan
+            from services.gym_plan_enricher import enrich_gym_plan
+            ex = _kb("gym_exercises")
+            if is_prenatal and ex:
+                ex = [e for e in ex if e.get("pregnancy_safe")] or None
+            raw = generate_gym_plan(profile, prefs, ex)
+            return await enrich_gym_plan(raw, profile, prefs)
+
+        if plan_type == "diet":
+            from services.diet_llm_generator import generate_diet_plan_llm
+            enriched = await generate_diet_plan_llm(profile, prefs)
+            if enriched is None:
+                from services.diet_plan_engine import generate_diet_plan
+                from services.diet_plan_enricher import enrich_diet_plan
+                from services.ahara_safety import apply_ahara_safety
+                raw = generate_diet_plan(profile, prefs, _kb("diet_foods"))
+                enriched = await enrich_diet_plan(raw, profile, prefs)
+                enriched = apply_ahara_safety(
+                    enriched, prefs.get("food_allergies") or [], prefs.get("food_intolerances") or [])
+            return enriched
+
+        if plan_type == "panchakarma":
+            if is_prenatal:
+                return {"error": "Panchakarma is not available during pregnancy or nursing.", "blocked": True}
+            from services.panchakarma_engine import generate_panchakarma_plan
+            from services.panchakarma_enricher import enrich_panchakarma_plan
+            raw = generate_panchakarma_plan(profile, prefs, _kb("panchakarma_protocols"))
+            return await enrich_panchakarma_plan(raw, profile, prefs)
+
+        if plan_type == "remedies":
+            if is_prenatal:
+                return []
+            symptoms = profile.get("current_symptoms") or []
+            if not symptoms:
+                return []
+            from services.remedy_engine import filter_remedies, build_remedy_plan
+            from services.remedy_enricher import enrich_remedies_plan
+            symptom_input = {"symptoms": symptoms}
+            filtered = filter_remedies(profile, symptom_input)
+            raw = build_remedy_plan(filtered, profile, symptom_input)
+            return await enrich_remedies_plan(raw, profile)
+
+        if plan_type == "medicines":
+            if is_prenatal:
+                return []
+            from services.remedy_engine import generate_medicines_plan as _gen_meds
+            from services.remedy_enricher import enrich_medicines_plan
+            raw = _gen_meds(profile, prefs, [], "clinical_medicine")
+            return await enrich_medicines_plan(raw, profile, prefs)
+
+    except Exception as exc:
+        from core.logger import logger
+        logger.error("Engine generation failed for %s: %s", plan_type, exc)
+        return [] if plan_type in ("remedies", "medicines") else {"error": str(exc)[:200]}
+
+    return {"error": f"Unknown plan type: {plan_type}"}
+
+
 # ─── Background Job Runner ────────────────────────────────────────────────────
 
 async def _run_plan_job(
@@ -238,62 +338,63 @@ async def _run_plan_job(
 
         if req_mode == "agentic":
             if plan_type == "holistic":
-                from ai.agents.plan_graph import plan_graph
+                # Generate every feature through the KB-grounded deterministic engines
+                # (same path as the per-feature endpoints) — NOT the un-grounded LLM
+                # agents. All six run concurrently.
+                feature_types = ["gym", "yoga", "diet", "panchakarma", "remedies", "medicines"]
+                results = await asyncio.wait_for(
+                    asyncio.gather(*[
+                        _generate_feature_via_engine(db, user_id, ft, user_profile)
+                        for ft in feature_types
+                    ]),
+                    timeout=PLAN_TIMEOUT,
+                )
+                by_type = dict(zip(feature_types, results))
+
+                # Seasonal guidance + daily tip are lightweight LLM/service extras
+                seasonal_guidance = None
+                try:
+                    from services.seasonal_service import build_seasonal_guidance
+                    dosha = user_profile.get("vikriti_dominant") or user_profile.get("dominant_dosha") or "vata"
+                    seasonal_guidance = await build_seasonal_guidance(dosha)
+                except Exception:
+                    pass
+
                 previous = await _get_plan_record_for_adaptation(db, user_id, req_previous_plan_id) if req_feedback else None
-                previous_data = previous.get("plan_data", {}) if previous else {}
-                initial_state = {
-                    "user_profile": user_profile,
-                    "ml_analysis": {}, "rag_context": {},
-                    "gym_plan": previous_data.get("gym_plan"),
-                    "yoga_plan": previous_data.get("yoga_plan"),
-                    "diet_plan": previous_data.get("diet_plan"),
-                    "panchakarma_plan": previous_data.get("panchakarma_plan"),
-                    "home_remedies": previous_data.get("home_remedies"),
-                    "medicines": previous_data.get("medicines"),
-                    "seasonal_guidance": previous_data.get("seasonal_guidance"),
-                    "daily_tip": previous_data.get("daily_tip"),
-                    "health_risks": [], "safety_checks": {}, "model_used": None,
-                    "errors": [], "feedback": req_feedback, "is_adaptation": bool(req_feedback),
-                    "adaptation_summary": None, "other_plans_context": None,
-                }
-                final_state = await asyncio.wait_for(plan_graph.ainvoke(initial_state), timeout=PLAN_TIMEOUT)
                 full_plan_data = {
                     "user_summary": {"name": user_profile.get("name"), "dominant_dosha": user_profile.get("dominant_dosha")},
-                    "gym_plan": final_state.get("gym_plan"),
-                    "yoga_plan": final_state.get("yoga_plan"),
-                    "diet_plan": final_state.get("diet_plan"),
-                    "panchakarma_plan": final_state.get("panchakarma_plan"),
-                    "home_remedies": final_state.get("home_remedies"),
-                    "medicines": final_state.get("medicines"),
-                    "seasonal_guidance": final_state.get("seasonal_guidance"),
-                    "daily_tip": final_state.get("daily_tip"),
-                    "health_risks": final_state.get("health_risks", []),
-                    "safety_checks": final_state.get("safety_checks", {}),
-                    "adaptation_summary": final_state.get("adaptation_summary"),
+                    "gym_plan": by_type.get("gym"),
+                    "yoga_plan": by_type.get("yoga"),
+                    "diet_plan": by_type.get("diet"),
+                    "panchakarma_plan": by_type.get("panchakarma"),
+                    "home_remedies": by_type.get("remedies"),
+                    "medicines": by_type.get("medicines"),
+                    "seasonal_guidance": seasonal_guidance,
+                    "daily_tip": None,
+                    "health_risks": [],
+                    "safety_checks": {"generation_mode": "engine_backed"},
                     "generated_at": datetime.now(timezone.utc).isoformat(),
                     "generation_method": req_mode,
-                    "model_used": final_state.get("model_used"),
+                    "model_used": "engine+enricher",
                 }
                 if req_feedback and previous:
                     full_plan_data["source_plan_id"] = previous["_id"]
                     full_plan_data["version_diff"] = build_plan_diff(previous.get("plan_data"), full_plan_data)
             else:
-                from ai.agents.plan_graph import generate_single_plan
-                other_plans_context = await _fetch_other_plans(db, user_id, plan_type)
-                final_state = await asyncio.wait_for(
-                    generate_single_plan(plan_type, user_profile, other_plans_context),
-                    timeout=PLAN_TIMEOUT
+                # Single feature via the deterministic engine + enricher path.
+                enriched = await asyncio.wait_for(
+                    _generate_feature_via_engine(db, user_id, plan_type, user_profile),
+                    timeout=PLAN_TIMEOUT,
                 )
                 plan_data_key = PLAN_DATA_KEYS[plan_type]
                 full_plan_data = {
                     "user_summary": {"name": user_profile.get("name"), "dominant_dosha": user_profile.get("dominant_dosha")},
-                    plan_data_key: final_state.get(plan_data_key),
-                    "health_risks": final_state.get("health_risks", []),
-                    "safety_checks": final_state.get("safety_checks", {}),
-                    "adaptation_summary": final_state.get("adaptation_summary"),
+                    plan_data_key: enriched,
+                    "health_risks": [],
+                    "safety_checks": {"generation_mode": "engine_backed"},
                     "generated_at": datetime.now(timezone.utc).isoformat(),
                     "generation_method": req_mode,
-                    "model_used": final_state.get("model_used"),
+                    "model_used": (enriched.get("enrichment_model") if isinstance(enriched, dict) else None) or "engine+enricher",
                 }
                 if req_feedback:
                     previous = await _get_plan_record_for_adaptation(db, user_id, req_previous_plan_id)
@@ -340,6 +441,22 @@ async def _run_plan_job(
             model_used=full_plan_data.get("model_used"),
             is_adaptation=req_feedback is not None
         )
+
+        # Notify user that their plan is ready
+        plan_label = plan_type.replace("_", " ").title()
+        notif_title = f"Your {plan_label} Plan is Ready" if not req_feedback else f"{plan_label} Plan Adapted"
+        notif_body = (
+            f"Your personalised {plan_label} plan has been generated. Open the Dashboard to view it."
+            if not req_feedback
+            else f"Your {plan_label} plan has been updated based on your feedback. Check the Dashboard."
+        )
+        try:
+            await create_and_deliver_notification(
+                db, user_id, notif_title, notif_body,
+                notif_type="plan_ready" if not req_feedback else "adaptation",
+            )
+        except Exception:
+            pass  # never block plan generation over a notification failure
 
         # Mark job done
         full_plan_data["id"] = plan_id
@@ -708,9 +825,14 @@ async def generate_diet_plan(
         if enriched_plan is None:
             from core.logger import logger
             logger.warning(f"LLM diet generation failed for {user.id}; falling back to rule engine")
-            diet_foods = kb_cache.diet_foods
+            diet_foods = kb_cache.diet_foods or None
             raw_plan = engine_generate(user_profile, diet_prefs, diet_foods)
             enriched_plan = await enrich_diet_plan(raw_plan, user_profile, diet_prefs)
+            # Same deterministic Ahara safety scan the LLM path gets
+            from services.ahara_safety import apply_ahara_safety
+            enriched_plan = apply_ahara_safety(
+                enriched_plan, diet_prefs.get("food_allergies") or [],
+                diet_prefs.get("food_intolerances") or [])
 
         plan_id = enriched_plan.get("plan_id")
         model_used = enriched_plan.get("enrichment_model", "services.diet_plan_engine")
@@ -736,31 +858,57 @@ async def generate_diet_plan(
 @router.post("/routine")
 async def generate_routine_plan(
     req: dict = Body(default={}),
-    user: UserDocument = Depends(get_current_user), 
+    user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.routine_engine import generate_routine_plan as engine_generate
-    
+
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
-    
-    if not prefs_doc or not prefs_doc.get("diet"):
-        raise HTTPException(status_code=422, detail="Complete diet preferences first to build your daily routine")
-        
-    diet_prefs = prefs_doc.get("diet")
-    prefs_to_pass = {"diet": diet_prefs}
-    
+
+    # Routine-specific prefs (Tier C) — fall back to diet prefs for backward compat
+    routine_prefs = (prefs_doc or {}).get("routine") or (prefs_doc or {}).get("diet")
+    if not routine_prefs:
+        raise HTTPException(status_code=422, detail="Complete daily routine preferences first")
+
+    prefs_to_pass = {"routine": routine_prefs, "diet": (prefs_doc or {}).get("diet") or {}}
+
+    # Tier B: fetch gym/yoga plan histories if integration is requested
+    integrate_gym  = routine_prefs.get("integrate_gym_plan", False)
+    integrate_yoga = routine_prefs.get("integrate_yoga_plan", False)
+    gym_plan_data  = None
+    yoga_plan_data = None
+
+    if integrate_gym:
+        gym_hist = await db.plan_history.find_one(
+            {"user_id": user.id, "plan_type": "gym"},
+            sort=[("generated_at", -1)]
+        )
+        if gym_hist:
+            gym_plan_data = gym_hist.get("plan_data", {}).get("gym_plan") or gym_hist.get("plan_data", {})
+
+    if integrate_yoga:
+        yoga_hist = await db.plan_history.find_one(
+            {"user_id": user.id, "plan_type": "yoga"},
+            sort=[("generated_at", -1)]
+        )
+        if yoga_hist:
+            yoga_plan_data = yoga_hist.get("plan_data", {}).get("yoga_plan") or yoga_hist.get("plan_data", {})
+
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "routine", user_profile, prefs_to_pass, force_regenerate)
     if cached_plan:
         return cached_plan
-        
-    # 2. Generate new plan (per-user lock; routine is rule-based so no LLM semaphore needed,
-    #    but the lock still prevents duplicate saves on double-click)
+
+    # 2. Generate new plan (rule-based, no LLM needed; lock prevents duplicate saves)
     async with _plan_guard(user.id, "routine"):
-        diet_foods = kb_cache.diet_foods
-        raw_plan = engine_generate(user_profile, prefs_to_pass, diet_foods)
+        raw_plan = engine_generate(
+            user_profile,
+            prefs_to_pass,
+            gym_plan_data=gym_plan_data,
+            yoga_plan_data=yoga_plan_data,
+        )
 
         plan_id = raw_plan.get("plan_id")
 
@@ -865,7 +1013,9 @@ async def generate_panchakarma_plan(
             panchakarma_therapies = [t for t in kb_cache.panchakarma_protocols if t.get("pregnancy_safe") == True]
         else:
             panchakarma_therapies = kb_cache.panchakarma_protocols
-        raw_plan = engine_generate(user_profile, panchakarma_prefs, panchakarma_therapies)
+        # None triggers the engine's bundled-JSON fallback (kb_* Mongo collections
+        # have no seeder, so kb_cache is empty unless populated externally).
+        raw_plan = engine_generate(user_profile, panchakarma_prefs, panchakarma_therapies or None)
         enriched_plan = await enrich_panchakarma_plan(raw_plan, user_profile, panchakarma_prefs)
 
         plan_id = enriched_plan.get("plan_id")
@@ -954,10 +1104,10 @@ async def generate_medicines_plan(
     user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
     
-    if not prefs_doc or not prefs_doc.get("remedy"):
+    if not prefs_doc or not prefs_doc.get("remedies"):
         raise HTTPException(status_code=422, detail="Complete medicines preferences first")
-        
-    medicines_prefs = prefs_doc.get("remedy")
+
+    medicines_prefs = prefs_doc.get("remedies")
     is_prenatal = user.pregnancy_or_nursing
     
     # 1. Check Cache
@@ -967,11 +1117,7 @@ async def generate_medicines_plan(
         
     # 2. Generate new plan (per-user lock + global LLM semaphore)
     async with _plan_guard(user.id, "medicines"):
-        if is_prenatal:
-            ayurvedic_remedies = [r for r in kb_cache.ayurvedic_remedies if r.get("pregnancy_safe") == True]
-        else:
-            ayurvedic_remedies = kb_cache.ayurvedic_remedies
-        raw_plan = engine_generate(user_profile, medicines_prefs, ayurvedic_remedies, 'clinical_medicine')
+        raw_plan = engine_generate(user_profile, medicines_prefs, [], 'clinical_medicine')
         enriched_plan = await enrich_medicines_plan(raw_plan, user_profile, medicines_prefs)
 
         plan_id = enriched_plan.get("plan_id")

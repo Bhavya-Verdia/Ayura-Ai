@@ -142,6 +142,13 @@ async def enrich_medicines_plan(raw_plan: dict, user_profile: dict, medicines_pr
             "You are a senior Vaidya with M.D. (Ayu) and 20 years of clinical practice. "
             "You write precise Ayurvedic clinical prescriptions anchored in Charaka Samhita, "
             "Ashtanga Hridayam, Sharangadhara Samhita, and Bhaishajya Ratnavali. "
+            "CRITICAL RULE ON CLASSICAL REFERENCES: Never fabricate specific shloka numbers or "
+            "verse numbers (e.g., do NOT write '6/15' or 'verse 42' unless you are certain). "
+            "Instead cite only the Samhita name and Sthana/Adhyaya (chapter division) — "
+            "e.g., 'Charaka Samhita, Chikitsa Sthana' or 'Ashtanga Hridayam, Sutrasthana'. "
+            "A BAMS-qualified reviewer will verify all references. Inaccurate shloka numbers "
+            "destroy credibility. When unsure of the exact shloka, state the principle and the "
+            "classical text it comes from without a specific number. "
             "Output ONLY valid JSON. No markdown. No preamble."
         )
 
@@ -170,7 +177,7 @@ Respond in EXACTLY this JSON format — every field is required:
   "formulation_rationale": {{
     "Medicine Name": {{
       "rasa_guna_reasoning": "How the Rasa-Guna-Virya-Vipaka of this formulation corrects the patient's specific Vikriti. Cite the dominant Rasa and Karma that are most relevant.",
-      "classical_basis": "Specific Samhita reference and the principle behind using this formulation for this condition — e.g., 'Charaka Chikitsa 6/15: Triphala is prescribed as Rasayana for all three Doshas...'",
+      "classical_basis": "Samhita name + Sthana/Adhyaya only (no verse numbers unless certain) + the classical principle — e.g., 'Charaka Samhita, Chikitsa Sthana: Triphala is described as Rasayana for Tridosha.' Never invent shloka numbers.",
       "anupana_reason": "Why the selected Anupana is appropriate for this patient's condition and Agni type"
     }}
   }},
@@ -187,7 +194,7 @@ Respond in EXACTLY this JSON format — every field is required:
     "Specific food or habit to AVOID during this protocol — with brief Ayurvedic reason (5–8 items)"
   ],
   "viruddha_ahara_alerts": [
-    "Specific incompatible food combination to avoid WHILE ON THESE MEDICINES — classical reference if possible (include 2–4 items or empty array if none)"
+    "Specific incompatible food combination to avoid WHILE ON THESE MEDICINES — state the incompatibility and the classical text (Sthana only, no verse numbers unless certain). Include 2–4 real Viruddha Ahara items relevant to these specific medicines, or empty array if none apply."
   ],
   "dose_note": "Agni-specific dosing guidance — how to start, titrate, and maintain based on this patient's Agni type",
   "monitoring_signs": "What the patient should watch for — positive signs of improvement AND early warning signs that indicate the protocol needs adjustment",

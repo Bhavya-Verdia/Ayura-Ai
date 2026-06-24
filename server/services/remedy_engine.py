@@ -1,6 +1,18 @@
 from datetime import datetime, timezone
 import json, os
 from core.kb_cache import kb_cache
+from engine.condition_vocab import term_in_condition, normalize_condition
+
+
+def _med_covers_condition(med: dict, user_cond: str) -> bool:
+    """True if a medicine's `conditions` cover the user's condition — matching by
+    exact string OR shared canonical vocabulary key (so 'diabetes_type2' matches a
+    KB entry tagged 'diabetes')."""
+    med_conds = [x.lower() for x in med.get("conditions", [])]
+    if user_cond.lower() in med_conds:
+        return True
+    ucn = normalize_condition(user_cond)
+    return any(normalize_condition(mc) == ucn for mc in med_conds)
 
 # ── Medicines KB (loaded once at module import) ─────────────────────────────
 _MEDICINES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "knowledge", "ayurvedic_medicines.json")
@@ -448,12 +460,13 @@ def _check_medicine_safety(
     if is_pregnant and not med.get("pregnancy_safe", False):
         return False, "Not safe during pregnancy"
 
-    # Contraindications vs medical history
-    med_contraindications = [c.lower() for c in med.get("contraindications", [])]
+    # Contraindications vs medical history — precise word/phrase matching
+    # (naive substring matched 'heart' inside 'heartburn'; word-boundary does not).
+    med_contraindications = med.get("contraindications", [])
     for hist in medical_history:
-        h = hist.lower().replace(" ", "_")
         for contra in med_contraindications:
-            if contra in h or h in contra:
+            # bidirectional: contra may be broader OR narrower than the user's term
+            if term_in_condition(hist, contra) or term_in_condition(contra, hist):
                 return False, f"Contraindicated: {hist}"
 
     # Drug interactions — structured field + global herb map
@@ -691,9 +704,26 @@ def generate_medicines_plan(
 
     # ── Split into primary / supporting / external ─────────────────────────
     condition_matched = [(s, m) for s, m in scored if any(
-        c in [x.lower() for x in m.get("conditions", [])] for c in normalised_conditions
+        _med_covers_condition(m, c) for c in normalised_conditions
     )]
     general_wellness = [(s, m) for s, m in scored if (s, m) not in condition_matched]
+
+    # ── Condition coverage tier (honesty for rare / unmapped diseases) ─────
+    # Which of the user's conditions actually have a KB-matched formulation?
+    matched_conditions = {
+        c for _, m in condition_matched
+        for c in normalised_conditions
+        if _med_covers_condition(m, c)
+    }
+    uncovered_conditions = [c for c in normalised_conditions if c not in matched_conditions]
+    if not normalised_conditions:
+        condition_coverage = "wellness"      # no conditions — general dosha wellness
+    elif not condition_matched:
+        condition_coverage = "general"       # rare/unmapped — only dosha-based general meds
+    elif uncovered_conditions:
+        condition_coverage = "partial"       # some conditions matched, some not
+    else:
+        condition_coverage = "curated"       # all conditions have KB-matched formulations
 
     primary_formulations    = [m for _, m in condition_matched[:3]]
     supporting_formulations = [m for _, m in (condition_matched[3:5] + general_wellness[:2])]
@@ -728,6 +758,16 @@ def generate_medicines_plan(
         "current_season":        season,
         "chikitsa_approach":     chikitsa_approach,
         "active_conditions":     normalised_conditions,
+        "condition_coverage":    condition_coverage,
+        "uncovered_conditions":  uncovered_conditions,
+        "vaidya_review_required": bool(uncovered_conditions),
+        "coverage_note": (
+            "No formulation in our classical knowledge base specifically matches "
+            f"{', '.join(c.replace('_', ' ') for c in uncovered_conditions)}. "
+            "The medicines below are dosha-balancing general support — a qualified Vaidya "
+            "should prescribe condition-specific formulations for these."
+            if uncovered_conditions else ""
+        ),
         "primary_formulations":  primary_formulations,
         "supporting_formulations": supporting_formulations,
         "external_therapies":    external_oils,

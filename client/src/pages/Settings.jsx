@@ -1,6 +1,6 @@
 import { useState, useRef, Suspense } from 'react'
 import { useAuth } from '../providers/AuthContext'
-import { privacyAPI, profileAPI } from '../api/client'
+import { privacyAPI, profileAPI, exportAPI } from '../api/client'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Helmet } from 'react-helmet-async'
@@ -311,6 +311,49 @@ export default function Settings() {
       setNotice({ type: 'success', message: 'Account data export started.' })
     } catch (err) {
       setNotice({ type: 'error', message: err.response?.data?.detail || 'Failed to export account data.' })
+    }
+  }
+
+  const [exportingPdf, setExportingPdf] = useState(false)
+  const [exportingCsv, setExportingCsv] = useState(false)
+
+  async function downloadPdf() {
+    setExportingPdf(true)
+    try {
+      const { data } = await exportAPI.pdf()
+      const url = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'ayura-wellness-report.pdf'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      setNotice({ type: 'success', message: 'Wellness report downloaded.' })
+    } catch (err) {
+      setNotice({ type: 'error', message: err.response?.data?.detail || 'Failed to export PDF. Generate a plan first.' })
+    } finally {
+      setExportingPdf(false)
+    }
+  }
+
+  async function downloadCsv() {
+    setExportingCsv(true)
+    try {
+      const { data } = await exportAPI.csv()
+      const url = URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'ayura-progress.csv'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      setNotice({ type: 'success', message: 'Progress CSV downloaded.' })
+    } catch (err) {
+      setNotice({ type: 'error', message: err.response?.data?.detail || 'Failed to export CSV.' })
+    } finally {
+      setExportingCsv(false)
     }
   }
 
@@ -637,6 +680,22 @@ export default function Settings() {
             </motion.button>
           </motion.form>
         )}
+
+        {/* Export wellness data */}
+        <motion.div className="settings-card" variants={staggerItem}>
+          <h2 className="settings-section-title">Export Wellness Data</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 20 }}>
+            Download your personalised wellness plan as a PDF report, or export your progress logs as a CSV spreadsheet.
+          </p>
+          <div className="settings-action-row">
+            <motion.button className="btn btn-primary" onClick={downloadPdf} disabled={exportingPdf} whileTap={{ scale: 0.97 }}>
+              {exportingPdf ? '⏳ Generating...' : '📄 Download PDF Report'}
+            </motion.button>
+            <motion.button className="btn btn-secondary" onClick={downloadCsv} disabled={exportingCsv} whileTap={{ scale: 0.97 }}>
+              {exportingCsv ? '⏳ Exporting...' : '📊 Download Progress CSV'}
+            </motion.button>
+          </div>
+        </motion.div>
 
         {/* Danger zone */}
         <motion.div className="settings-card settings-danger" variants={staggerItem}>

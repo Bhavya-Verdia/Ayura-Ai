@@ -161,8 +161,9 @@ export const chatAPI = {
 
 // ── Progress ───────────────────────────────────
 export const progressAPI = {
-  log:        (data) => API.post('/progress/log', data),
-  getSummary: ()     => API.get('/progress/summary'),
+  log:        (data)         => API.post('/progress/log', data),
+  getSummary: ()             => API.get('/progress/summary'),
+  getLogs:    (limit = 30)   => API.get('/progress/logs', { params: { limit } }),
 }
 
 // ── Export ─────────────────────────────────────

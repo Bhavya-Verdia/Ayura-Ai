@@ -2,401 +2,6328 @@
   {
     "id": "triphala_churna",
     "name": "Triphala Churna",
-    "type": "Churna (Powder)",
+    "type": "churna (powder)",
     "application_type": "internal",
-    "primary_uses": ["Constipation", "Indigestion", "Eye health", "Detoxification"],
-    "conditions": ["constipation", "indigestion", "diabetes", "obesity", "fatty_liver", "detox"],
-    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
-    "ingredients": ["Amalaki (Emblica officinalis)", "Bibhitaki (Terminalia bellirica)", "Haritaki (Terminalia chebula)"],
+    "primary_uses": [
+      "Constipation",
+      "Indigestion",
+      "Eye health",
+      "Detoxification"
+    ],
+    "conditions": [
+      "constipation",
+      "indigestion",
+      "diabetes",
+      "obesity",
+      "fatty_liver",
+      "eye_disorders",
+      "skin_disorders"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "madhura",
+      "amla",
+      "katu",
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Deepana",
+      "Pachana",
+      "Anulomana",
+      "Rasayana",
+      "Tridoshahara",
+      "Ama Pachana",
+      "Kusthaghna"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa",
+      "meda"
+    ],
+    "ingredients": [
+      "Amalaki (Emblica officinalis)",
+      "Bibhitaki (Terminalia bellirica)",
+      "Haritaki (Terminalia chebula)"
+    ],
     "dosage": "3–6g with warm water or ghee before bed",
+    "dosage_pediatric": "1–2g with warm water before bed",
     "anupana": "Warm water or ghee",
+    "anupana_by_condition": {
+      "diabetes": "warm water",
+      "constipation": "warm water with rock salt"
+    },
     "timing": "before_bed",
-    "contraindications": ["diarrhea", "severe_dehydration", "pregnancy"],
-    "drug_interactions": ["blood_thinners", "diabetes_medication"],
+    "contraindications": [
+      "diarrhea",
+      "severe_dehydration",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "blood_thinners",
+      "diabetes_medication"
+    ],
     "pregnancy_safe": false,
     "gender_specific": null,
-    "reference": "Bhavaprakasha Nighantu",
     "safety_tier": 1,
-    "classical_action": "Tridosha shamaka, Deepana, Pachana, Rasayana"
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 52,
+    "afi_reference": "API Vol. I, P. 113",
+    "classical_text_reference": "Charaka Samhita, Chikitsa Sthana 1/1 (Rasayana); Ashtanga Hridayam, Uttara Sthana 40",
+    "classical_action": "Tridosha shamaka, Deepana, Pachana, Rasayana, Anulomana"
   },
   {
     "id": "ashwagandha_churna",
     "name": "Ashwagandha Churna",
-    "type": "Churna (Powder)",
+    "type": "churna (powder)",
     "application_type": "internal",
-    "primary_uses": ["Stress", "Anxiety", "Insomnia", "Fatigue", "Muscle weakness"],
-    "conditions": ["anxiety", "stress", "insomnia", "fatigue", "chronic_fatigue_syndrome", "anemia", "muscle_weakness", "low_immunity"],
-    "dosha_effects": {"vata": -1, "pitta": 1, "kapha": 1},
-    "ingredients": ["Ashwagandha (Withania somnifera) root"],
+    "primary_uses": [
+      "Stress",
+      "Anxiety",
+      "Insomnia",
+      "Fatigue",
+      "Muscle weakness"
+    ],
+    "conditions": [
+      "anxiety",
+      "stress",
+      "insomnia",
+      "fatigue",
+      "chronic_fatigue_syndrome",
+      "anemia",
+      "muscle_weakness",
+      "low_immunity",
+      "male_reproductive",
+      "cognitive_decline"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 1,
+      "kapha": 1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "madhura"
+    ],
+    "guna": [
+      "guru",
+      "snigdha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Balya",
+      "Brimhana",
+      "Rasayana",
+      "Vatahara",
+      "Nidrajanana",
+      "Medhya",
+      "Shothahara"
+    ],
+    "dhatu_affected": [
+      "mamsa",
+      "meda",
+      "asthi",
+      "majja",
+      "shukra"
+    ],
+    "ingredients": [
+      "Ashwagandha (Withania somnifera) root"
+    ],
     "dosage": "3–5g with warm milk twice daily",
+    "dosage_pediatric": "1–2g with warm milk at night",
     "anupana": "Warm milk with ghee",
+    "anupana_by_condition": {
+      "insomnia": "warm milk with honey",
+      "male_reproductive": "warm milk with ghee and sugar"
+    },
     "timing": "morning_and_night",
-    "contraindications": ["hyperthyroid", "autoimmune_disease", "pregnancy"],
-    "drug_interactions": ["thyroid_medication", "immunosuppressants", "sedatives"],
+    "contraindications": [
+      "hyperthyroid",
+      "autoimmune_disease",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "thyroid_medication",
+      "immunosuppressants",
+      "sedatives"
+    ],
     "pregnancy_safe": false,
     "gender_specific": null,
-    "reference": "Charaka Samhita",
     "safety_tier": 1,
-    "classical_action": "Balya, Brimhana, Vajikarana, Rasayana"
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. I, P. 9",
+    "classical_text_reference": "Charaka Samhita, Sutra Sthana 4 (Balya Gana); Bhaishajya Ratnavali, Vajikarana Adhikara",
+    "classical_action": "Balya, Brimhana, Vajikarana, Rasayana, Vatahara"
   },
   {
     "id": "sitopaladi_churna",
     "name": "Sitopaladi Churna",
-    "type": "Churna (Powder)",
+    "type": "churna (powder)",
     "application_type": "internal",
-    "primary_uses": ["Cough", "Cold", "Asthma", "Fever", "Loss of appetite"],
-    "conditions": ["cough", "cold", "asthma", "bronchitis", "respiratory_infections", "fever", "loss_of_appetite"],
-    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
-    "ingredients": ["Sitopala (Sugar candy)", "Vamshalochana", "Pippali (Long pepper)", "Ela (Cardamom)", "Twak (Cinnamon)"],
+    "primary_uses": [
+      "Cough",
+      "Cold",
+      "Asthma",
+      "Fever",
+      "Loss of appetite"
+    ],
+    "conditions": [
+      "cough",
+      "cold",
+      "asthma",
+      "bronchitis",
+      "respiratory_infections",
+      "fever",
+      "loss_of_appetite",
+      "allergic_rhinitis"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "madhura",
+      "katu"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Kaphahara",
+      "Vatahara",
+      "Deepana",
+      "Jvarahara",
+      "Shwasahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Sitopala (Sugar candy)",
+      "Vamshalochana (Bamboo manna)",
+      "Pippali (Long pepper)",
+      "Ela (Cardamom)",
+      "Twak (Cinnamon)"
+    ],
     "dosage": "1–3g with honey 3–4 times a day",
+    "dosage_pediatric": "0.5–1g with honey 2–3 times a day",
     "anupana": "Honey",
+    "anupana_by_condition": {
+      "asthma": "honey with warm water",
+      "fever": "honey"
+    },
     "timing": "multiple_times_daily",
-    "contraindications": ["diabetes"],
+    "contraindications": [
+      "diabetes"
+    ],
     "drug_interactions": [],
     "pregnancy_safe": true,
     "gender_specific": null,
-    "reference": "Sharangadhara Samhita",
     "safety_tier": 1,
-    "classical_action": "Kaphahara, Vatahara, Deepana, Shwasahara"
+    "season_avoid": [],
+    "duration_min_weeks": 2,
+    "duration_max_weeks": 6,
+    "afi_reference": "API Vol. II, P. 125",
+    "classical_text_reference": "Sharangadhara Samhita, Madhyama Khanda 6; Bhaishajya Ratnavali, Kasa Rogadhikara",
+    "classical_action": "Kaphahara, Vatahara, Deepana, Shwasahara, Jvarahara"
   },
   {
     "id": "avipattikar_churna",
     "name": "Avipattikar Churna",
-    "type": "Churna (Powder)",
+    "type": "churna (powder)",
     "application_type": "internal",
-    "primary_uses": ["Hyperacidity", "Heartburn", "Constipation", "Indigestion"],
-    "conditions": ["hyperacidity", "heartburn", "gerd", "constipation", "indigestion", "pitta_disorders", "inflammatory_bowel_disease"],
-    "dosha_effects": {"vata": 0, "pitta": -1, "kapha": -1},
-    "ingredients": ["Trikatu", "Triphala", "Musta", "Vida Lavana", "Vidanga", "Ela", "Tejpatra", "Lavanga", "Trivrit", "Sita"],
+    "primary_uses": [
+      "Hyperacidity",
+      "Heartburn",
+      "Constipation",
+      "Indigestion"
+    ],
+    "conditions": [
+      "hyperacidity",
+      "gerd",
+      "constipation",
+      "indigestion",
+      "pitta_disorders",
+      "inflammatory_bowel_disease",
+      "gastric_ulcer"
+    ],
+    "dosha_effects": {
+      "vata": 0,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "katu",
+      "tikta",
+      "madhura",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Pittahara",
+      "Anulomana",
+      "Deepana",
+      "Ama Pachana",
+      "Shulahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Trikatu",
+      "Triphala",
+      "Musta",
+      "Vida Lavana",
+      "Vidanga",
+      "Ela",
+      "Tejpatra",
+      "Lavanga",
+      "Trivrit",
+      "Sita"
+    ],
     "dosage": "3–6g with water or coconut water before meals",
+    "dosage_pediatric": null,
     "anupana": "Cool water or coconut water",
+    "anupana_by_condition": {
+      "hyperacidity": "cold water",
+      "constipation": "warm water"
+    },
     "timing": "before_meals",
-    "contraindications": ["diarrhea", "pregnancy", "ibs_diarrhea_predominant"],
-    "drug_interactions": [],
+    "contraindications": [
+      "diarrhea",
+      "pregnancy",
+      "ibs_diarrhea_predominant"
+    ],
+    "drug_interactions": [
+      "reduces_absorption_of_concurrent_oral_drugs_separate_by_2h"
+    ],
     "pregnancy_safe": false,
     "gender_specific": null,
-    "reference": "Bhaishajya Ratnavali",
     "safety_tier": 1,
-    "classical_action": "Pittahara, Anulomana, Deepana"
+    "season_avoid": [],
+    "duration_min_weeks": 2,
+    "duration_max_weeks": 8,
+    "afi_reference": "API Vol. I, P. 14",
+    "classical_text_reference": "Bhaishajya Ratnavali, Amlapitta Rogadhikara 56/5",
+    "classical_action": "Pittahara, Anulomana, Deepana, Ama Pachana"
   },
   {
     "id": "chyawanprash",
     "name": "Chyawanprash",
-    "type": "Avaleha (Jam)",
+    "type": "avaleha (jam)",
     "application_type": "internal",
-    "primary_uses": ["Immunity booster", "Respiratory health", "Anti-aging", "Weakness"],
-    "conditions": ["low_immunity", "respiratory_weakness", "fatigue", "anemia", "weakness", "chronic_cough", "aging"],
-    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
-    "ingredients": ["Amalaki", "Dashamoola", "Ashwagandha", "Shatavari", "Guduchi", "Honey", "Ghee", "Sesame oil", "Sugar"],
+    "primary_uses": [
+      "Immunity booster",
+      "Respiratory health",
+      "Anti-aging",
+      "Weakness"
+    ],
+    "conditions": [
+      "low_immunity",
+      "respiratory_weakness",
+      "fatigue",
+      "anemia",
+      "weakness",
+      "chronic_cough",
+      "aging",
+      "asthma",
+      "cognitive_decline"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "madhura",
+      "amla",
+      "katu"
+    ],
+    "guna": [
+      "guru",
+      "snigdha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Rasayana",
+      "Balya",
+      "Vayasthapana",
+      "Ojovardhana",
+      "Kaphahara",
+      "Brimhana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa",
+      "asthi",
+      "shukra"
+    ],
+    "ingredients": [
+      "Amalaki",
+      "Dashamoola",
+      "Ashwagandha",
+      "Shatavari",
+      "Guduchi",
+      "Honey",
+      "Ghee",
+      "Sesame oil",
+      "Sugar"
+    ],
     "dosage": "10–20g (1–2 tsp) with warm milk in the morning",
+    "dosage_pediatric": "5–10g with warm milk in the morning",
     "anupana": "Warm milk",
+    "anupana_by_condition": {
+      "diabetes": "warm water (use sugar-free variant)",
+      "anemia": "warm milk"
+    },
     "timing": "morning",
-    "contraindications": ["uncontrolled_diabetes"],
-    "drug_interactions": ["diabetes_medication"],
+    "contraindications": [
+      "uncontrolled_diabetes"
+    ],
+    "drug_interactions": [
+      "diabetes_medication"
+    ],
     "pregnancy_safe": true,
     "gender_specific": null,
-    "reference": "Charaka Samhita",
     "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 52,
+    "afi_reference": "API Vol. I, P. 27",
+    "classical_text_reference": "Charaka Samhita, Chikitsa Sthana 1/1 (Chyawanprasha Rasayana)",
     "classical_action": "Rasayana, Balya, Vayasthapana, Ojovardhana"
   },
   {
     "id": "shatavari_gulam",
     "name": "Shatavari Gulam",
-    "type": "Avaleha (Jam)",
+    "type": "avaleha (jam)",
     "application_type": "internal",
-    "primary_uses": ["Women's health", "Hormonal imbalance", "Gastric ulcers", "Weakness"],
-    "conditions": ["hormonal_imbalance", "menstrual_disorders", "pcos", "menopause", "fertility", "gastric_ulcer", "weakness"],
-    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": 1},
-    "ingredients": ["Shatavari juice", "Jaggery", "Ghee", "Cardamom", "Pippali"],
-    "dosage": "10–20g once or twice a day",
+    "primary_uses": [
+      "Women's health",
+      "Hormonal imbalance",
+      "Gastric ulcers",
+      "Weakness"
+    ],
+    "conditions": [
+      "hormonal_imbalance",
+      "menstrual_disorders",
+      "pcos",
+      "menopause",
+      "fertility",
+      "gastric_ulcer",
+      "weakness",
+      "postpartum_weakness",
+      "leucorrhoea"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 1
+    },
+    "rasa": [
+      "madhura",
+      "tikta"
+    ],
+    "guna": [
+      "guru",
+      "snigdha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Stanya",
+      "Garbhaposhana",
+      "Balya",
+      "Pittahara",
+      "Brimhana",
+      "Rasayana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "artava",
+      "shukra"
+    ],
+    "ingredients": [
+      "Shatavari juice",
+      "Jaggery",
+      "Ghee",
+      "Cardamom",
+      "Pippali"
+    ],
+    "dosage": "10–20g once or twice a day with warm milk",
+    "dosage_pediatric": null,
     "anupana": "Warm milk",
+    "anupana_by_condition": {
+      "menstrual_disorders": "warm milk with honey",
+      "postpartum_weakness": "warm milk with ghee"
+    },
     "timing": "morning_and_night",
-    "contraindications": ["kapha_excess", "obesity"],
-    "drug_interactions": [],
+    "contraindications": [
+      "kapha_excess",
+      "obesity"
+    ],
+    "drug_interactions": [
+      "hormone_therapy",
+      "lithium"
+    ],
     "pregnancy_safe": true,
     "gender_specific": "female",
-    "reference": "Sahasrayogam",
     "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "Not listed in API",
+    "classical_text_reference": "Sahasrayogam, Gulam Prakarana; Ashtanga Hridayam, Uttara Sthana 34",
     "classical_action": "Stanya, Garbhaposhana, Balya, Pittahara"
+  },
+  {
+    "id": "nishamalaki_churna",
+    "name": "Nishamalaki Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Diabetes management",
+      "Eye health",
+      "Liver support",
+      "Pitta disorders"
+    ],
+    "conditions": [
+      "diabetes",
+      "eye_disorders",
+      "liver_disorders",
+      "hyperacidity",
+      "pitta_disorders",
+      "skin_disorders"
+    ],
+    "dosha_effects": {
+      "vata": 0,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "amla",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Pramehaghna",
+      "Deepana",
+      "Pachana",
+      "Rasayana",
+      "Pittahara",
+      "Ama Pachana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "meda"
+    ],
+    "ingredients": [
+      "Nisha (Turmeric / Haridra)",
+      "Amalaki (Indian Gooseberry)"
+    ],
+    "dosage": "3–5g with honey and warm water twice daily",
+    "dosage_pediatric": null,
+    "anupana": "Warm water or honey",
+    "anupana_by_condition": {
+      "diabetes": "warm water",
+      "eye_disorders": "triphala water"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "diarrhea",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "diabetes_medication",
+      "blood_thinners"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. II, P. 82",
+    "classical_text_reference": "Charaka Samhita, Chikitsa Sthana 6 (Prameha Chikitsa); Ashtanga Hridayam, Nidana Sthana 10",
+    "classical_action": "Pramehaghna, Deepana, Pittahara, Rasayana"
+  },
+  {
+    "id": "trikatu_churna",
+    "name": "Trikatu Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Agni kindling",
+      "Weight management",
+      "Kapha disorders",
+      "Respiratory"
+    ],
+    "conditions": [
+      "obesity",
+      "dyslipidemia",
+      "kapha_disorders",
+      "indigestion",
+      "asthma",
+      "allergic_rhinitis",
+      "low_immunity",
+      "ama_accumulation"
+    ],
+    "dosha_effects": {
+      "vata": 0,
+      "pitta": 1,
+      "kapha": -1
+    },
+    "rasa": [
+      "katu"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Deepana",
+      "Pachana",
+      "Kaphahara",
+      "Ama Pachana",
+      "Lekhana",
+      "Shwasahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "meda"
+    ],
+    "ingredients": [
+      "Shunthi (Dry ginger)",
+      "Maricha (Black pepper)",
+      "Pippali (Long pepper)"
+    ],
+    "dosage": "1–3g with honey before meals",
+    "dosage_pediatric": "0.5g with honey",
+    "anupana": "Honey",
+    "anupana_by_condition": {
+      "obesity": "warm water with honey",
+      "asthma": "honey"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "pitta_excess",
+      "hyperacidity",
+      "gastric_ulcer",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "nsaids",
+      "blood_thinners"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [
+      "grishma"
+    ],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 8,
+    "afi_reference": "API Vol. I, P. 117",
+    "classical_text_reference": "Ashtanga Hridayam, Sutra Sthana 6; Charaka Samhita, Sutra Sthana 26",
+    "classical_action": "Deepana, Pachana, Kaphahara, Ama Pachana, Lekhana"
+  },
+  {
+    "id": "yashtimadhu_churna",
+    "name": "Yashtimadhu Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Hyperacidity",
+      "Gastric ulcers",
+      "Respiratory health",
+      "Immunity"
+    ],
+    "conditions": [
+      "hyperacidity",
+      "gastric_ulcer",
+      "gerd",
+      "respiratory_infections",
+      "asthma",
+      "skin_disorders",
+      "low_immunity",
+      "voice_disorders"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 1
+    },
+    "rasa": [
+      "madhura"
+    ],
+    "guna": [
+      "guru",
+      "snigdha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Pittahara",
+      "Kaphahara",
+      "Rasayana",
+      "Balya",
+      "Shothahara",
+      "Kusthaghna"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Yashtimadhu (Glycyrrhiza glabra / Licorice root)"
+    ],
+    "dosage": "3–5g with warm milk or honey twice daily",
+    "dosage_pediatric": "1–2g with honey",
+    "anupana": "Warm milk or honey",
+    "anupana_by_condition": {
+      "hyperacidity": "cold milk",
+      "asthma": "honey with warm water"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "edema",
+      "hypertension",
+      "kidney_disease",
+      "hypokalemia",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "antihypertensives",
+      "diuretics"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 8,
+    "afi_reference": "API Vol. I, P. 74",
+    "classical_text_reference": "Charaka Samhita, Sutra Sthana 25 (Yashtimadhu); Ashtanga Hridayam, Sutra Sthana 6",
+    "classical_action": "Pittahara, Kaphahara, Rasayana, Shothahara"
+  },
+  {
+    "id": "shatavari_churna",
+    "name": "Shatavari Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Female reproductive health",
+      "Hormonal balance",
+      "Immunity",
+      "Lactation"
+    ],
+    "conditions": [
+      "pcos",
+      "hormonal_imbalance",
+      "menstrual_disorders",
+      "menopause",
+      "low_immunity",
+      "postpartum_weakness",
+      "gastric_ulcer",
+      "leucorrhoea"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 1
+    },
+    "rasa": [
+      "tikta",
+      "madhura"
+    ],
+    "guna": [
+      "guru",
+      "snigdha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Stanya",
+      "Brimhana",
+      "Balya",
+      "Pittahara",
+      "Rasayana",
+      "Ojovardhana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa",
+      "artava",
+      "shukra"
+    ],
+    "ingredients": [
+      "Shatavari (Asparagus racemosus) root"
+    ],
+    "dosage": "3–5g with warm milk twice daily",
+    "dosage_pediatric": null,
+    "anupana": "Warm milk with honey",
+    "anupana_by_condition": {
+      "postpartum_weakness": "warm milk with ghee",
+      "pcos": "warm water"
+    },
+    "timing": "morning_and_night",
+    "contraindications": [
+      "kapha_excess",
+      "obesity"
+    ],
+    "drug_interactions": [
+      "hormone_therapy",
+      "lithium"
+    ],
+    "pregnancy_safe": true,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. I, P. 106",
+    "classical_text_reference": "Charaka Samhita, Sutra Sthana 4 (Shatavari); Ashtanga Hridayam, Sutra Sthana 6",
+    "classical_action": "Stanya, Garbhaposhana, Pittahara, Rasayana, Brimhana"
+  },
+  {
+    "id": "brahmi_churna",
+    "name": "Brahmi Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Memory enhancement",
+      "Anxiety",
+      "Cognitive decline",
+      "Insomnia"
+    ],
+    "conditions": [
+      "anxiety",
+      "stress",
+      "cognitive_decline",
+      "memory_impairment",
+      "insomnia",
+      "depression",
+      "adhd",
+      "epilepsy_support"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Medhya",
+      "Nidrajanana",
+      "Vatahara",
+      "Pittahara",
+      "Rasayana",
+      "Balya"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "majja"
+    ],
+    "ingredients": [
+      "Brahmi (Bacopa monnieri) herb"
+    ],
+    "dosage": "3–5g with warm milk or water twice daily",
+    "dosage_pediatric": "1–2g with warm milk",
+    "anupana": "Warm milk",
+    "anupana_by_condition": {
+      "anxiety": "warm milk with honey",
+      "insomnia": "warm milk with cardamom"
+    },
+    "timing": "morning_and_night",
+    "contraindications": [
+      "bradycardia",
+      "peptic_ulcer",
+      "hypothyroidism"
+    ],
+    "drug_interactions": [
+      "sedatives",
+      "antiepileptics"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Vol. I, P. 19",
+    "classical_text_reference": "Charaka Samhita, Sutra Sthana 4 (Medhya Rasayana); Bhaishajya Ratnavali, Unmada Rogadhikara",
+    "classical_action": "Medhya, Nidrajanana, Pittahara, Rasayana, Balya"
+  },
+  {
+    "id": "arjuna_churna",
+    "name": "Arjuna Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Cardiac health",
+      "Hypertension",
+      "Dyslipidemia",
+      "Angina"
+    ],
+    "conditions": [
+      "cardiac_weakness",
+      "hypertension",
+      "dyslipidemia",
+      "angina",
+      "arrhythmia",
+      "edema",
+      "obesity"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "kashaya",
+      "tikta"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Hridya",
+      "Shothahara",
+      "Raktaprasadana",
+      "Pittahara",
+      "Lekhana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Arjuna (Terminalia arjuna) bark"
+    ],
+    "dosage": "3–5g with warm water or milk twice daily",
+    "dosage_pediatric": null,
+    "anupana": "Warm water or milk",
+    "anupana_by_condition": {
+      "cardiac_weakness": "warm milk with ghee",
+      "hypertension": "warm water"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "hypotension",
+      "bradycardia"
+    ],
+    "drug_interactions": [
+      "antihypertensives",
+      "cardiac_glycosides",
+      "blood_thinners",
+      "anticoagulants"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Vol. I, P. 8",
+    "classical_text_reference": "Ashtanga Hridayam, Chikitsa Sthana 6 (Hridroga Chikitsa); Charaka Samhita, Chikitsa Sthana 26",
+    "classical_action": "Hridya, Shothahara, Raktaprasadana, Pittahara, Lekhana"
+  },
+  {
+    "id": "punarnava_churna",
+    "name": "Punarnava Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Kidney support",
+      "Edema",
+      "Anemia",
+      "UTI"
+    ],
+    "conditions": [
+      "kidney_disease",
+      "edema",
+      "anemia",
+      "uti",
+      "liver_disorders",
+      "obesity",
+      "hypertension"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Mutrala",
+      "Shothahara",
+      "Raktaprasadana",
+      "Anulomana",
+      "Vatahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Punarnava (Boerhavia diffusa) root and herb"
+    ],
+    "dosage": "3–5g with warm water twice daily",
+    "dosage_pediatric": "1–2g with warm water",
+    "anupana": "Warm water",
+    "anupana_by_condition": {
+      "kidney_disease": "warm water with a pinch of rock salt",
+      "anemia": "warm water with honey"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "severe_dehydration",
+      "severe_kidney_failure"
+    ],
+    "drug_interactions": [
+      "diuretics",
+      "antihypertensives"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. I, P. 85",
+    "classical_text_reference": "Charaka Samhita, Sutra Sthana 4 (Punarnava); Bhaishajya Ratnavali, Mutraghata Rogadhikara",
+    "classical_action": "Mutrala, Shothahara, Raktaprasadana, Vatahara"
+  },
+  {
+    "id": "guduchi_churna",
+    "name": "Guduchi Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Immunity",
+      "Diabetes",
+      "Fever",
+      "Liver support"
+    ],
+    "conditions": [
+      "low_immunity",
+      "diabetes",
+      "fever",
+      "liver_disorders",
+      "gout",
+      "vatarakta",
+      "hyperacidity",
+      "pitta_disorders"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Jvarahara",
+      "Tridoshahara",
+      "Rasayana",
+      "Deepana",
+      "Ama Pachana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Guduchi (Tinospora cordifolia) stem"
+    ],
+    "dosage": "3–5g with water or honey twice daily",
+    "dosage_pediatric": "1–2g with honey",
+    "anupana": "Water or honey",
+    "anupana_by_condition": {
+      "diabetes": "warm water",
+      "fever": "water with honey"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "immunosuppressants",
+      "diabetes_medication"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. I, P. 40",
+    "classical_text_reference": "Charaka Samhita, Sutra Sthana 4 (Guduchi); Ashtanga Hridayam, Sutra Sthana 6",
+    "classical_action": "Jvarahara, Tridoshahara, Rasayana, Deepana"
+  },
+  {
+    "id": "neem_churna",
+    "name": "Neem Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Blood sugar control",
+      "Skin disorders",
+      "Intestinal worms",
+      "Infections"
+    ],
+    "conditions": [
+      "diabetes",
+      "skin_disorders",
+      "intestinal_worms",
+      "infections",
+      "low_immunity",
+      "fever",
+      "liver_disorders"
+    ],
+    "dosha_effects": {
+      "vata": 1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Kaphahara",
+      "Pittahara",
+      "Krimighna",
+      "Kusthaghna",
+      "Jvarahara",
+      "Deepana"
+    ],
+    "dhatu_affected": [
+      "rakta",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Neem (Azadirachta indica) leaf"
+    ],
+    "dosage": "2–4g with warm water twice daily",
+    "dosage_pediatric": null,
+    "anupana": "Warm water",
+    "anupana_by_condition": {
+      "diabetes": "warm water",
+      "skin_disorders": "warm water with honey"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "pregnancy",
+      "severe_vata_disorders",
+      "emaciation"
+    ],
+    "drug_interactions": [
+      "diabetes_medication",
+      "immunosuppressants"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [
+      "shishira"
+    ],
+    "duration_min_weeks": 2,
+    "duration_max_weeks": 6,
+    "afi_reference": "API Vol. I, P. 76",
+    "classical_text_reference": "Charaka Samhita, Sutra Sthana 4 (Nimba); Ashtanga Hridayam, Chikitsa Sthana 19",
+    "classical_action": "Kaphahara, Pittahara, Krimighna, Kusthaghna"
+  },
+  {
+    "id": "haritaki_churna",
+    "name": "Haritaki Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Constipation",
+      "Vata disorders",
+      "Cognitive health",
+      "Rasayana"
+    ],
+    "conditions": [
+      "constipation",
+      "vata_disorders",
+      "cognitive_decline",
+      "digestive_disorders",
+      "skin_disorders",
+      "eye_disorders",
+      "aging"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "amla",
+      "kashaya",
+      "madhura",
+      "katu",
+      "tikta"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Anulomana",
+      "Deepana",
+      "Rasayana",
+      "Vatahara",
+      "Medhya",
+      "Shothahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa",
+      "meda",
+      "asthi",
+      "majja",
+      "shukra"
+    ],
+    "ingredients": [
+      "Haritaki (Terminalia chebula) fruit"
+    ],
+    "dosage": "3–5g with warm water before bed",
+    "dosage_pediatric": "1g with honey",
+    "anupana": "Warm water or rock salt water",
+    "anupana_by_condition": {
+      "constipation": "warm water with rock salt",
+      "cognitive_decline": "warm milk with ghee"
+    },
+    "timing": "before_bed",
+    "contraindications": [
+      "pregnancy",
+      "diarrhea",
+      "severe_dehydration",
+      "pitta_excess"
+    ],
+    "drug_interactions": [
+      "blood_thinners"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 52,
+    "afi_reference": "API Vol. I, P. 55",
+    "classical_text_reference": "Charaka Samhita, Sutra Sthana 3 (Haritaki); Ashtanga Hridayam, Sutra Sthana 6",
+    "classical_action": "Anulomana, Deepana, Rasayana, Vatahara, Medhya"
+  },
+  {
+    "id": "bhringaraja_churna",
+    "name": "Bhringaraja Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Hair loss",
+      "Liver health",
+      "Skin disorders",
+      "Premature greying"
+    ],
+    "conditions": [
+      "hair_loss",
+      "liver_disorders",
+      "skin_disorders",
+      "jaundice",
+      "anemia",
+      "premature_graying"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 0
+    },
+    "rasa": [
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Keshya",
+      "Rasayana",
+      "Pittahara",
+      "Raktaprasadana",
+      "Kusthaghna"
+    ],
+    "dhatu_affected": [
+      "rakta",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Bhringaraja (Eclipta alba) whole herb"
+    ],
+    "dosage": "3–5g with warm water or sesame oil twice daily",
+    "dosage_pediatric": null,
+    "anupana": "Warm water",
+    "anupana_by_condition": {
+      "hair_loss": "sesame oil for scalp massage or warm water",
+      "liver_disorders": "warm water with honey"
+    },
+    "timing": "morning_and_night",
+    "contraindications": [
+      "hypoglycemia",
+      "chronic_cold_conditions"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": true,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. I, P. 25",
+    "classical_text_reference": "Charaka Samhita, Chikitsa Sthana 26 (Bhringaraja); Bhaishajya Ratnavali, Khalitya Palitya Rogadhikara",
+    "classical_action": "Keshya, Rasayana, Pittahara, Raktaprasadana"
+  },
+  {
+    "id": "vidanga_churna",
+    "name": "Vidanga Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Intestinal worms",
+      "Obesity",
+      "Skin disorders",
+      "Indigestion"
+    ],
+    "conditions": [
+      "intestinal_worms",
+      "obesity",
+      "skin_disorders",
+      "constipation",
+      "indigestion",
+      "grahani"
+    ],
+    "dosha_effects": {
+      "vata": 0,
+      "pitta": 1,
+      "kapha": -1
+    },
+    "rasa": [
+      "katu",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Krimighna",
+      "Deepana",
+      "Pachana",
+      "Lekhana",
+      "Anulomana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "meda"
+    ],
+    "ingredients": [
+      "Vidanga (Embelia ribes) fruit"
+    ],
+    "dosage": "3–5g with warm water before meals",
+    "dosage_pediatric": "1g with honey",
+    "anupana": "Warm water",
+    "anupana_by_condition": {
+      "intestinal_worms": "warm water with honey on empty stomach",
+      "obesity": "warm water"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "pregnancy",
+      "pitta_excess",
+      "hyperacidity",
+      "gastric_ulcer"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [
+      "grishma"
+    ],
+    "duration_min_weeks": 2,
+    "duration_max_weeks": 4,
+    "afi_reference": "API Vol. I, P. 127",
+    "classical_text_reference": "Charaka Samhita, Chikitsa Sthana 7 (Vidanga); Bhaishajya Ratnavali, Krimi Rogadhikara",
+    "classical_action": "Krimighna, Deepana, Pachana, Lekhana"
+  },
+  {
+    "id": "gokshura_churna",
+    "name": "Gokshura Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Kidney support",
+      "UTI",
+      "Male reproductive health",
+      "Kidney stones"
+    ],
+    "conditions": [
+      "kidney_disease",
+      "uti",
+      "male_reproductive",
+      "kidney_stones",
+      "prostate_issues",
+      "sexual_debility"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 0
+    },
+    "rasa": [
+      "madhura",
+      "tikta"
+    ],
+    "guna": [
+      "guru",
+      "snigdha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Mutrala",
+      "Shothahara",
+      "Balya",
+      "Vatahara",
+      "Pittahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "shukra"
+    ],
+    "ingredients": [
+      "Gokshura (Tribulus terrestris) fruit"
+    ],
+    "dosage": "3–5g with warm milk or water twice daily",
+    "dosage_pediatric": null,
+    "anupana": "Warm milk",
+    "anupana_by_condition": {
+      "male_reproductive": "warm milk with ghee and honey",
+      "kidney_disease": "warm water",
+      "uti": "warm water"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "pregnancy",
+      "severe_dehydration"
+    ],
+    "drug_interactions": [
+      "diuretics",
+      "antihypertensives"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. I, P. 41",
+    "classical_text_reference": "Charaka Samhita, Sutra Sthana 4 (Gokshura); Bhaishajya Ratnavali, Mutraghata Rogadhikara",
+    "classical_action": "Mutrala, Shothahara, Balya, Pittahara"
+  },
+  {
+    "id": "talisapathradi_churna",
+    "name": "Talisapathradi Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Asthma",
+      "Chronic cough",
+      "Kapha respiratory disorders",
+      "Loss of appetite"
+    ],
+    "conditions": [
+      "asthma",
+      "chronic_cough",
+      "kapha_respiratory",
+      "bronchitis",
+      "fever",
+      "loss_of_appetite",
+      "allergic_rhinitis"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "madhura",
+      "katu"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Kaphahara",
+      "Vatahara",
+      "Shwasahara",
+      "Kasahara",
+      "Deepana"
+    ],
+    "dhatu_affected": [
+      "rasa"
+    ],
+    "ingredients": [
+      "Talisa (Abies webbiana)",
+      "Maricha (Black pepper)",
+      "Pippali (Long pepper)",
+      "Ela (Cardamom)",
+      "Sita (Sugar candy)"
+    ],
+    "dosage": "1–3g with honey 3 times daily",
+    "dosage_pediatric": "0.5–1g with honey",
+    "anupana": "Honey",
+    "anupana_by_condition": {
+      "asthma": "honey with warm water",
+      "fever": "honey"
+    },
+    "timing": "multiple_times_daily",
+    "contraindications": [
+      "diabetes",
+      "pitta_excess"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": true,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 2,
+    "duration_max_weeks": 6,
+    "afi_reference": "API Vol. I, P. 110",
+    "classical_text_reference": "Sharangadhara Samhita, Madhyama Khanda 6; Bhaishajya Ratnavali, Shwasa Kasa Rogadhikara",
+    "classical_action": "Kaphahara, Shwasahara, Kasahara, Deepana"
+  },
+  {
+    "id": "vidangadi_churna",
+    "name": "Vidangadi Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Intestinal worms",
+      "Grahani",
+      "Digestive disorders",
+      "IBS"
+    ],
+    "conditions": [
+      "intestinal_worms",
+      "grahani",
+      "digestive_disorders",
+      "inflammatory_bowel_disease",
+      "bloating"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 1,
+      "kapha": -1
+    },
+    "rasa": [
+      "katu",
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Krimighna",
+      "Deepana",
+      "Pachana",
+      "Anulomana"
+    ],
+    "dhatu_affected": [
+      "rasa"
+    ],
+    "ingredients": [
+      "Vidanga",
+      "Trikatu (Shunthi, Maricha, Pippali)",
+      "Haritaki",
+      "Ajowan (Ajmoda)",
+      "Rock salt"
+    ],
+    "dosage": "2–4g with warm water before meals",
+    "dosage_pediatric": "0.5–1g with honey",
+    "anupana": "Warm water with rock salt",
+    "anupana_by_condition": {},
+    "timing": "before_meals",
+    "contraindications": [
+      "pregnancy",
+      "gastric_ulcer",
+      "pitta_excess"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 2,
+    "duration_max_weeks": 4,
+    "afi_reference": "Not listed in API",
+    "classical_text_reference": "Bhaishajya Ratnavali, Krimi Rogadhikara",
+    "classical_action": "Krimighna, Deepana, Pachana, Anulomana"
+  },
+  {
+    "id": "sudarshana_churna",
+    "name": "Sudarshana Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Fever",
+      "Malaria recovery",
+      "Liver disorders",
+      "Loss of appetite"
+    ],
+    "conditions": [
+      "fever",
+      "malaria_recovery",
+      "liver_disorders",
+      "pitta_disorders",
+      "indigestion",
+      "loss_of_appetite"
+    ],
+    "dosha_effects": {
+      "vata": 0,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Jvarahara",
+      "Pittahara",
+      "Deepana",
+      "Ama Pachana",
+      "Kaphahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Chirayata (Swertia chirata)",
+      "Triphala",
+      "Trikatu",
+      "Musta",
+      "Kiratatikta",
+      "47 herbs total"
+    ],
+    "dosage": "3–6g with warm water or honey twice daily before meals",
+    "dosage_pediatric": "1g with honey",
+    "anupana": "Warm water or honey",
+    "anupana_by_condition": {
+      "fever": "honey with cool water"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "antidiabetic_drugs"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 2,
+    "duration_max_weeks": 4,
+    "afi_reference": "Not listed in API",
+    "classical_text_reference": "Bhaishajya Ratnavali, Jwara Rogadhikara 5/85",
+    "classical_action": "Jvarahara, Pittahara, Deepana, Kaphahara"
+  },
+  {
+    "id": "pushyanuga_churna",
+    "name": "Pushyanuga Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Leucorrhoea",
+      "Menstrual disorders",
+      "Excessive bleeding",
+      "Uterine weakness"
+    ],
+    "conditions": [
+      "leucorrhoea",
+      "menstrual_disorders",
+      "bleeding_disorders",
+      "menorrhagia",
+      "uterine_weakness"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "kashaya",
+      "tikta",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "sthira"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Stambhana",
+      "Pittahara",
+      "Raktaprasadana",
+      "Grahi",
+      "Vatahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "artava"
+    ],
+    "ingredients": [
+      "Jambu (Syzygium cumini)",
+      "Amra (Mangifera indica)",
+      "Gairika (Red ochre)",
+      "Lodhra",
+      "Patha",
+      "Kutaj",
+      "Musta",
+      "Arjuna",
+      "Mocharasa"
+    ],
+    "dosage": "3–6g with rice water or cold milk twice daily",
+    "dosage_pediatric": null,
+    "anupana": "Rice water (Tandulodaka) or cold milk",
+    "anupana_by_condition": {
+      "leucorrhoea": "rice water",
+      "menorrhagia": "cold water with honey"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "constipation",
+      "pregnancy"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": "female",
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 8,
+    "afi_reference": "API Vol. I, P. 88",
+    "classical_text_reference": "Ashtanga Hridayam, Uttara Sthana 33 (Yonivyapad Chikitsa); Bhaishajya Ratnavali, Pradara Rogadhikara",
+    "classical_action": "Stambhana, Pittahara, Raktaprasadana, Grahi"
+  },
+  {
+    "id": "hingwashtak_churna",
+    "name": "Hingwashtak Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "IBS",
+      "Grahani",
+      "Bloating",
+      "Constipation",
+      "Colic"
+    ],
+    "conditions": [
+      "grahani",
+      "inflammatory_bowel_disease",
+      "constipation",
+      "bloating",
+      "vata_disorders",
+      "indigestion"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 1,
+      "kapha": -1
+    },
+    "rasa": [
+      "katu",
+      "tikta"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Deepana",
+      "Pachana",
+      "Vatanulomana",
+      "Shulahara",
+      "Krimighna",
+      "Ama Pachana"
+    ],
+    "dhatu_affected": [
+      "rasa"
+    ],
+    "ingredients": [
+      "Hingu (Asafoetida)",
+      "Shunthi (Dry ginger)",
+      "Maricha (Black pepper)",
+      "Pippali (Long pepper)",
+      "Ajmoda (Ajowan)",
+      "Saindhava (Rock salt)",
+      "Kala Jeera (Black cumin)",
+      "Shatapushpa (Fennel)"
+    ],
+    "dosage": "1–3g with first morsel of ghee at meals",
+    "dosage_pediatric": "0.25–0.5g with ghee",
+    "anupana": "Ghee",
+    "anupana_by_condition": {
+      "grahani": "ghee with warm water",
+      "constipation": "ghee"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "pitta_excess",
+      "hyperacidity",
+      "gastric_ulcer",
+      "pregnancy"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [
+      "grishma"
+    ],
+    "duration_min_weeks": 2,
+    "duration_max_weeks": 8,
+    "afi_reference": "API Vol. I, P. 48",
+    "classical_text_reference": "Ashtanga Hridayam, Chikitsa Sthana 15 (Grahani Chikitsa); Bhaishajya Ratnavali, Grahani Rogadhikara",
+    "classical_action": "Deepana, Pachana, Vatanulomana, Shulahara"
+  },
+  {
+    "id": "kapikachu_churna",
+    "name": "Kapikachu Churna",
+    "type": "churna (powder)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Male reproductive health",
+      "Parkinson's support",
+      "Neurological disorders",
+      "Sexual debility"
+    ],
+    "conditions": [
+      "male_reproductive",
+      "parkinson",
+      "neurological_disorders",
+      "sexual_debility",
+      "infertility_male",
+      "tremors",
+      "muscle_weakness"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": 0
+    },
+    "rasa": [
+      "tikta",
+      "madhura"
+    ],
+    "guna": [
+      "guru",
+      "snigdha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Vatahara",
+      "Balya",
+      "Vajikarana",
+      "Brimhana",
+      "Rasayana"
+    ],
+    "dhatu_affected": [
+      "mamsa",
+      "asthi",
+      "majja",
+      "shukra"
+    ],
+    "ingredients": [
+      "Kapikachu / Atmagupta (Mucuna pruriens) seed"
+    ],
+    "dosage": "3–5g with warm milk twice daily",
+    "dosage_pediatric": null,
+    "anupana": "Warm milk with ghee",
+    "anupana_by_condition": {
+      "male_reproductive": "warm milk with ghee and honey",
+      "parkinson": "warm milk"
+    },
+    "timing": "morning_and_night",
+    "contraindications": [
+      "pitta_excess",
+      "diabetes_poorly_controlled"
+    ],
+    "drug_interactions": [
+      "antidepressants",
+      "sedatives"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": "male",
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. I, P. 17",
+    "classical_text_reference": "Charaka Samhita, Chikitsa Sthana 2 (Vajikarana); Bhaishajya Ratnavali, Vajikarana Adhikara",
+    "classical_action": "Vatahara, Balya, Vajikarana, Brimhana, Rasayana"
+  },
+  {
+    "id": "vasa_avaleha",
+    "name": "Vasa Avaleha",
+    "type": "avaleha (jam)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Asthma",
+      "Chronic cough",
+      "Hemoptysis",
+      "Bronchitis"
+    ],
+    "conditions": [
+      "asthma",
+      "chronic_cough",
+      "bleeding_disorders",
+      "hemoptysis",
+      "bronchitis",
+      "fever",
+      "respiratory_infections"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Kaphahara",
+      "Shwasahara",
+      "Kasahara",
+      "Raktastambhana",
+      "Jvarahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Vasa (Adhatoda vasica) leaf juice",
+      "Honey",
+      "Ghee",
+      "Sugar",
+      "Pippali",
+      "Shunthi",
+      "Ela",
+      "Tvak"
+    ],
+    "dosage": "10–15g twice daily with warm water",
+    "dosage_pediatric": "5g with warm water",
+    "anupana": "Warm water or honey",
+    "anupana_by_condition": {
+      "asthma": "honey with warm water",
+      "hemoptysis": "cold water"
+    },
+    "timing": "morning_and_night",
+    "contraindications": [
+      "pregnancy"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 2,
+    "duration_max_weeks": 6,
+    "afi_reference": "API Vol. I, P. 122",
+    "classical_text_reference": "Charaka Samhita, Chikitsa Sthana 17 (Shwasa Kasa Chikitsa); Bhaishajya Ratnavali, Shwasa Rogadhikara",
+    "classical_action": "Kaphahara, Shwasahara, Raktastambhana, Jvarahara"
+  },
+  {
+    "id": "agastya_rasayana",
+    "name": "Agastya Rasayana",
+    "type": "avaleha (jam)",
+    "application_type": "internal",
+    "primary_uses": [
+      "Asthma",
+      "Chronic cough",
+      "Constipation",
+      "Kapha respiratory disorders"
+    ],
+    "conditions": [
+      "asthma",
+      "chronic_cough",
+      "constipation",
+      "kapha_respiratory",
+      "vata_disorders",
+      "chronic_fatigue_syndrome",
+      "allergic_rhinitis"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "madhura",
+      "tikta",
+      "katu"
+    ],
+    "guna": [
+      "guru",
+      "snigdha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Kaphahara",
+      "Vatahara",
+      "Shwasahara",
+      "Anulomana",
+      "Balya",
+      "Rasayana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Agastya (Sesbania grandiflora) root",
+      "Dashamoola",
+      "Bala",
+      "Dhatri (Amalaki)",
+      "Ghee",
+      "Honey",
+      "Jaggery",
+      "Trikatu"
+    ],
+    "dosage": "10–15g twice daily with warm water",
+    "dosage_pediatric": "5g with warm water",
+    "anupana": "Warm water",
+    "anupana_by_condition": {
+      "asthma": "warm water with honey",
+      "constipation": "warm water"
+    },
+    "timing": "morning_and_night",
+    "contraindications": [
+      "pitta_excess",
+      "hyperacidity"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "Not listed in API",
+    "classical_text_reference": "Charaka Samhita, Chikitsa Sthana 17 (Shwasa Chikitsa); Bhaishajya Ratnavali, Shwasa Rogadhikara",
+    "classical_action": "Kaphahara, Vatahara, Shwasahara, Anulomana, Rasayana"
   },
   {
     "id": "dashamoolarishta",
     "name": "Dashamoolarishta",
-    "type": "Arishta (Fermented Decoction)",
+    "type": "arishta (fermented decoction)",
     "application_type": "internal",
-    "primary_uses": ["Post-partum care", "Fatigue", "Vata disorders", "Anorexia"],
-    "conditions": ["postpartum_weakness", "vata_disorders", "fatigue", "anorexia", "back_pain", "neurological_weakness"],
-    "dosha_effects": {"vata": -1, "pitta": 1, "kapha": -1},
-    "ingredients": ["Dashamoola (Ten roots)", "Amrita", "Dhatri", "Duralabha", "Jaggery", "Honey", "Spices"],
-    "dosage": "15–30ml with equal quantity of water after meals",
+    "conditions": [
+      "postpartum_weakness",
+      "vata_disorders",
+      "fatigue",
+      "back_pain",
+      "neurological_weakness",
+      "anorexia"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "katu",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Vatahara",
+      "Deepana",
+      "Balya",
+      "Shothahara",
+      "Brimhana",
+      "Vedanasthapana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "mamsa",
+      "asthi",
+      "majja"
+    ],
+    "ingredients": [
+      "Dashamoola (Ten roots)",
+      "Amrita (Guduchi)",
+      "Dhatri (Amalaki)",
+      "Duralabha",
+      "Jaggery",
+      "Honey",
+      "Shunti",
+      "Maricha",
+      "Pippali"
+    ],
+    "dosage": "15–30ml with equal quantity of warm water after meals",
+    "dosage_pediatric": null,
     "anupana": "Equal warm water",
+    "anupana_by_condition": {
+      "vata_disorders": "warm sesame oil decoction water"
+    },
     "timing": "after_meals",
-    "contraindications": ["pitta_excess", "hyperacidity", "liver_disease"],
-    "drug_interactions": [],
+    "contraindications": [
+      "pitta_excess",
+      "hyperacidity",
+      "liver_disease_severe"
+    ],
+    "drug_interactions": [
+      "disulfiram",
+      "metronidazole",
+      "CNS_sedatives"
+    ],
     "pregnancy_safe": false,
     "gender_specific": null,
-    "reference": "Bhaishajya Ratnavali",
     "safety_tier": 2,
-    "classical_action": "Vatahara, Deepana, Balya, Shothahara"
+    "season_avoid": [
+      "grishma"
+    ],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Part II, Vol. I — Dashamoolarishta",
+    "classical_text_reference": "Bhaishajya Ratnavali, Vatavyadhyadhikara 26/147",
+    "classical_action": "Vatahara, Deepana, Balya, Shothahara, Brimhana"
   },
   {
     "id": "ashokarishta",
     "name": "Ashokarishta",
-    "type": "Arishta (Fermented Decoction)",
+    "type": "arishta (fermented decoction)",
     "application_type": "internal",
-    "primary_uses": ["Menstrual disorders", "Dysmenorrhea", "Menorrhagia", "Uterine health"],
-    "conditions": ["menstrual_disorders", "dysmenorrhea", "menorrhagia", "uterine_health", "pcos", "endometriosis"],
-    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
-    "ingredients": ["Ashoka stem bark", "Jaggery", "Dhataki", "Musta", "Ginger", "Daruharidra", "Utpala"],
+    "conditions": [
+      "menstrual_disorders",
+      "dysmenorrhea",
+      "menorrhagia",
+      "pcos",
+      "uterine_health",
+      "leucorrhoea"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Raktaprasadana",
+      "Garbhashaya Shodha",
+      "Shothahara",
+      "Pittahara",
+      "Stambhana",
+      "Vedanasthapana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "artava"
+    ],
+    "ingredients": [
+      "Ashoka stem bark",
+      "Jaggery",
+      "Dhataki",
+      "Musta",
+      "Shunthi",
+      "Daruharidra",
+      "Utpala",
+      "Haritaki",
+      "Bibhitaki",
+      "Amalaki"
+    ],
     "dosage": "15–30ml with equal water after meals",
+    "dosage_pediatric": null,
     "anupana": "Equal warm water",
+    "anupana_by_condition": {
+      "dysmenorrhea": "warm water with rock salt"
+    },
     "timing": "after_meals",
-    "contraindications": ["pregnancy", "liver_disease"],
-    "drug_interactions": [],
+    "contraindications": [
+      "pregnancy",
+      "liver_disease"
+    ],
+    "drug_interactions": [
+      "hormone_therapy"
+    ],
     "pregnancy_safe": false,
     "gender_specific": "female",
-    "reference": "Bhaishajya Ratnavali",
     "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Part II, Vol. I — Ashokarishta",
+    "classical_text_reference": "Bhaishajya Ratnavali, Yonivyapad Chikitsa 67/78",
     "classical_action": "Garbhashaya shodha, Raktaprasadana, Shothahara"
   },
   {
     "id": "amrutarishta",
     "name": "Amrutarishta",
-    "type": "Arishta (Fermented Decoction)",
+    "type": "arishta (fermented decoction)",
     "application_type": "internal",
-    "primary_uses": ["Chronic fever", "Immunity", "Fatigue", "Liver-spleen disorders"],
-    "conditions": ["chronic_fever", "low_immunity", "fatigue", "liver_disorders", "spleen_disorders", "malaria_recovery"],
-    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
-    "ingredients": ["Amruta (Guduchi)", "Dashamoola", "Jaggery", "Dhataki", "Spices"],
+    "conditions": [
+      "chronic_fever",
+      "low_immunity",
+      "fatigue",
+      "liver_disorders",
+      "spleen_disorders",
+      "malaria_recovery"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Jvarahara",
+      "Deepana",
+      "Rasayana",
+      "Tridoshahara",
+      "Yakrituttejaka",
+      "Ama Pachana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Amruta (Guduchi)",
+      "Dashamoola",
+      "Jaggery",
+      "Dhataki",
+      "Shunti",
+      "Maricha",
+      "Pippali",
+      "Patola"
+    ],
     "dosage": "15–30ml with equal water after meals",
+    "dosage_pediatric": "5–10ml with equal water",
     "anupana": "Equal warm water",
+    "anupana_by_condition": {},
     "timing": "after_meals",
-    "contraindications": ["liver_disease_severe"],
-    "drug_interactions": ["immunosuppressants"],
+    "contraindications": [
+      "liver_disease_severe"
+    ],
+    "drug_interactions": [
+      "immunosuppressants"
+    ],
     "pregnancy_safe": false,
     "gender_specific": null,
-    "reference": "Bhaishajya Ratnavali",
     "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 8,
+    "afi_reference": "API Part II, Vol. I — Amrutarishta",
+    "classical_text_reference": "Bhaishajya Ratnavali, Jwararogadhikara 5/243",
     "classical_action": "Jvarahara, Deepana, Rasayana, Yakrituttejaka"
+  },
+  {
+    "id": "arvindasava",
+    "name": "Arvindasava",
+    "type": "asava (fermented)",
+    "application_type": "internal",
+    "conditions": [
+      "low_immunity",
+      "childhood_cough",
+      "pediatric_anemia",
+      "pediatric_digestive",
+      "rickets"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "madhura",
+      "tikta"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Deepana",
+      "Balya",
+      "Brimhana",
+      "Tridoshahara",
+      "Raktaprasadana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Aravinda (Lotus)",
+      "Ushira",
+      "Kashmari",
+      "Nilotpala",
+      "Manjistha",
+      "Jaggery",
+      "Dhataki",
+      "Chandana"
+    ],
+    "dosage": "10–20ml with equal water after meals",
+    "dosage_pediatric": "5–10ml with equal water",
+    "anupana": "Equal warm water",
+    "anupana_by_condition": {},
+    "timing": "after_meals",
+    "contraindications": [
+      "alcohol_dependence",
+      "diabetes",
+      "liver_disease"
+    ],
+    "drug_interactions": [
+      "disulfiram",
+      "metronidazole",
+      "CNS_sedatives"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Part II, Vol. I — Arvindasava",
+    "classical_text_reference": "Bhaishajya Ratnavali, Balarogadhikara 70/49",
+    "classical_action": "Deepana, Balya, Brimhana"
   },
   {
     "id": "brahmi_vati",
     "name": "Brahmi Vati",
-    "type": "Vati (Tablet)",
+    "type": "vati (tablet)",
     "application_type": "internal",
-    "primary_uses": ["Memory enhancement", "Anxiety", "Stress", "Insomnia"],
-    "conditions": ["anxiety", "stress", "insomnia", "memory_impairment", "depression", "adhd", "epilepsy_support"],
-    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
-    "ingredients": ["Brahmi", "Shankhapushpi", "Vacha", "Maricha", "Swarna Bhasma (optional)"],
-    "dosage": "1–2 tablets twice a day with water or milk",
+    "conditions": [
+      "anxiety",
+      "stress",
+      "insomnia",
+      "memory_impairment",
+      "depression",
+      "cognitive_decline",
+      "epilepsy_support"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Medhya",
+      "Nidrajanana",
+      "Unmadahara",
+      "Balya",
+      "Pittahara",
+      "Vedanasthapana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "majja"
+    ],
+    "ingredients": [
+      "Brahmi (Bacopa monnieri)",
+      "Shankhapushpi (Convolvulus pluricaulis)",
+      "Vacha (Acorus calamus)",
+      "Maricha",
+      "Swarna Bhasma (optional in classical)"
+    ],
+    "dosage": "1–2 tablets twice a day with warm milk or water",
+    "dosage_pediatric": "1 tablet once daily with milk",
     "anupana": "Warm milk or water",
+    "anupana_by_condition": {
+      "insomnia": "warm milk with honey",
+      "depression": "Saraswatarishta"
+    },
     "timing": "morning_and_night",
-    "contraindications": [],
-    "drug_interactions": ["sedatives", "antiepileptics"],
+    "contraindications": [
+      "bradycardia",
+      "peptic_ulcer",
+      "hypothyroidism"
+    ],
+    "drug_interactions": [
+      "sedatives",
+      "antiepileptics"
+    ],
     "pregnancy_safe": false,
     "gender_specific": null,
-    "reference": "Bhaishajya Ratnavali",
     "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Part I, Vol. IV — Brahmi Vati",
+    "classical_text_reference": "Bhaishajya Ratnavali, Unmadrogadhikara 26/6",
     "classical_action": "Medhya, Nidrajanana, Unmadahara, Balya"
   },
   {
     "id": "chandraprabha_vati",
     "name": "Chandraprabha Vati",
-    "type": "Vati (Tablet)",
+    "type": "vati (tablet)",
     "application_type": "internal",
-    "primary_uses": ["Urinary tract infections", "Kidney stones", "Diabetes support", "Weakness"],
-    "conditions": ["uti", "kidney_stones", "diabetes", "weakness", "urinary_disorders", "prostate_issues"],
-    "dosha_effects": {"vata": -1, "pitta": 0, "kapha": -1},
-    "ingredients": ["Karpura", "Vacha", "Musta", "Bhunimba", "Devadaru", "Shilajit", "Guggulu"],
-    "dosage": "1–2 tablets twice daily with water or milk",
+    "conditions": [
+      "uti",
+      "kidney_stones",
+      "diabetes",
+      "urinary_disorders",
+      "prostate_issues",
+      "weakness",
+      "vatarakta"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "katu",
+      "madhura",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Mutrala",
+      "Mutrakricchrahara",
+      "Deepana",
+      "Rasayana",
+      "Kaphahara",
+      "Shothahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "meda",
+      "asthi",
+      "shukra"
+    ],
+    "ingredients": [
+      "Karpura",
+      "Vacha",
+      "Musta",
+      "Bhunimba",
+      "Devadaru",
+      "Shilajit",
+      "Guggulu",
+      "Triphala",
+      "Trikatu",
+      "Chitraka",
+      "Dalchini",
+      "Tejpatra",
+      "Ela"
+    ],
+    "dosage": "1–2 tablets twice daily with warm water or milk",
+    "dosage_pediatric": null,
     "anupana": "Warm water",
+    "anupana_by_condition": {
+      "diabetes": "Guduchi decoction",
+      "uti": "Gokshura decoction"
+    },
     "timing": "twice_daily",
-    "contraindications": ["kidney_failure", "pregnancy"],
-    "drug_interactions": ["diabetes_medication", "blood_thinners"],
+    "contraindications": [
+      "kidney_failure",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "diabetes_medication",
+      "blood_thinners"
+    ],
     "pregnancy_safe": false,
     "gender_specific": null,
-    "reference": "Sharangadhara Samhita",
     "safety_tier": 2,
-    "classical_action": "Mutrakricchrahara, Sharkara (stone), Prameha, Rasayana"
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Part I, Vol. I — Chandraprabha Vati",
+    "classical_text_reference": "Sharangadhara Samhita, Madhyamakhanda 7/96",
+    "classical_action": "Mutrakricchrahara, Sharkara nashana, Prameha, Rasayana"
   },
   {
     "id": "kanchanara_guggulu",
     "name": "Kanchanara Guggulu",
-    "type": "Vati/Guggulu (Tablet)",
+    "type": "vati/guggulu (tablet)",
     "application_type": "internal",
-    "primary_uses": ["Thyroid disorders", "PCOS", "Lymph node enlargement", "Lipoma"],
-    "conditions": ["hypothyroid", "thyroid", "pcos", "lymph_enlargement", "lipoma", "obesity", "fibrocystic_breast"],
-    "dosha_effects": {"vata": 0, "pitta": 0, "kapha": -1},
-    "ingredients": ["Kanchanara bark", "Triphala", "Trikatu", "Varuna", "Cardamom", "Cinnamon", "Guggulu"],
+    "conditions": [
+      "hypothyroid",
+      "thyroid",
+      "pcos",
+      "lymph_enlargement",
+      "obesity",
+      "fibrocystic_breast",
+      "lipoma"
+    ],
+    "dosha_effects": {
+      "vata": 0,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "katu"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Kaphahara",
+      "Lekhana",
+      "Shodhana",
+      "Shothahara",
+      "Gandamala Nashana",
+      "Granthihara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "meda",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Kanchanara bark (Bauhinia variegata)",
+      "Triphala",
+      "Trikatu",
+      "Varuna",
+      "Cardamom",
+      "Cinnamon",
+      "Guggulu",
+      "Tejpatra",
+      "Ela"
+    ],
     "dosage": "2 tablets twice or thrice daily with warm water",
+    "dosage_pediatric": null,
     "anupana": "Warm water",
+    "anupana_by_condition": {
+      "hypothyroid": "Guggulu decoction"
+    },
     "timing": "twice_daily",
-    "contraindications": ["hyperthyroid", "pregnancy"],
-    "drug_interactions": ["thyroid_medication", "blood_thinners"],
+    "contraindications": [
+      "hyperthyroid",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "thyroid_medication",
+      "blood_thinners"
+    ],
     "pregnancy_safe": false,
     "gender_specific": null,
-    "reference": "Sharangadhara Samhita",
     "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 8,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Part I, Vol. II — Kanchanara Guggulu",
+    "classical_text_reference": "Sharangadhara Samhita, Madhyamakhanda 7/120; Ashtanga Hridayam Uttara 29",
     "classical_action": "Gandamala, Granthi, Apachi, Kushtha, Kaphahara"
   },
   {
     "id": "yogaraj_guggulu",
     "name": "Yogaraj Guggulu",
-    "type": "Vati/Guggulu (Tablet)",
+    "type": "vati/guggulu (tablet)",
     "application_type": "internal",
-    "primary_uses": ["Joint pain", "Arthritis", "Vata disorders", "Muscle stiffness"],
-    "conditions": ["joint_pain", "arthritis", "rheumatoid_arthritis", "vata_disorders", "muscle_stiffness", "sciatica", "back_pain"],
-    "dosha_effects": {"vata": -1, "pitta": 1, "kapha": -1},
-    "ingredients": ["Guggulu", "Triphala", "Trikatu", "Chitraka", "Pippalimoola", "Ajmoda"],
+    "conditions": [
+      "joint_pain",
+      "arthritis",
+      "rheumatoid_arthritis",
+      "sciatica",
+      "back_pain",
+      "cervical_spondylosis",
+      "vata_disorders",
+      "muscle_stiffness"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "katu",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Vatahara",
+      "Shothahara",
+      "Vedanasthapana",
+      "Deepana",
+      "Shulahara",
+      "Ama Pachana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "mamsa",
+      "asthi",
+      "majja"
+    ],
+    "ingredients": [
+      "Guggulu",
+      "Triphala",
+      "Trikatu",
+      "Chitraka",
+      "Pippalimoola",
+      "Ajmoda",
+      "Saindhava",
+      "Jeeraka",
+      "Devadaru",
+      "Rasna"
+    ],
     "dosage": "1–2 tablets twice daily with warm water",
+    "dosage_pediatric": null,
     "anupana": "Warm water or castor oil decoction",
+    "anupana_by_condition": {
+      "rheumatoid_arthritis": "Maharasnadi Kashayam",
+      "sciatica": "castor oil in warm water"
+    },
     "timing": "twice_daily",
-    "contraindications": ["pitta_excess", "hyperacidity", "pregnancy"],
-    "drug_interactions": ["blood_thinners", "thyroid_medication"],
+    "contraindications": [
+      "pitta_excess",
+      "hyperacidity",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "blood_thinners",
+      "thyroid_medication"
+    ],
     "pregnancy_safe": false,
     "gender_specific": null,
-    "reference": "Bhaishajya Ratnavali",
     "safety_tier": 2,
+    "season_avoid": [
+      "grishma"
+    ],
+    "duration_min_weeks": 6,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Part I, Vol. II — Yogaraj Guggulu",
+    "classical_text_reference": "Bhaishajya Ratnavali, Vatavyadhyadhikara 26/191",
     "classical_action": "Vatahara, Shothahara, Sandhivata, Shulaprashamana"
+  },
+  {
+    "id": "arjunarishta",
+    "name": "Arjunarishta",
+    "type": "arishta (fermented decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "cardiac_weakness",
+      "hypertension",
+      "dyslipidemia",
+      "heart_failure_support",
+      "angina",
+      "palpitations"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "kashaya",
+      "tikta",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Hridya",
+      "Raktaprasadana",
+      "Shothahara",
+      "Balya",
+      "Deepana",
+      "Stambhana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Arjuna bark (Terminalia arjuna)",
+      "Draksha (Vitis vinifera)",
+      "Mahua flowers",
+      "Jaggery",
+      "Honey",
+      "Dhataki flowers"
+    ],
+    "dosage": "15–30ml with equal warm water after meals",
+    "dosage_pediatric": null,
+    "anupana": "Equal warm water",
+    "anupana_by_condition": {
+      "hypertension": "cool water"
+    },
+    "timing": "after_meals",
+    "contraindications": [
+      "severe_hypotension",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "antihypertensives",
+      "cardiac_glycosides",
+      "blood_thinners"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 8,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Part II, Vol. II — Arjunarishta",
+    "classical_text_reference": "Bhaishajya Ratnavali, Hridroga Chikitsa 45/121",
+    "classical_action": "Hridya, Raktaprasadana, Shothahara, Balya"
+  },
+  {
+    "id": "lohasava",
+    "name": "Lohasava",
+    "type": "asava (fermented)",
+    "application_type": "internal",
+    "conditions": [
+      "anemia",
+      "pandu_roga",
+      "liver_disorders",
+      "weakness",
+      "fatigue",
+      "skin_disorders"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "amla",
+      "tikta",
+      "katu"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "amla",
+    "karma": [
+      "Raktaprasadana",
+      "Deepana",
+      "Pachana",
+      "Yakrituttejaka",
+      "Balya",
+      "Lekhana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Loha Bhasma (iron ash)",
+      "Triphala",
+      "Trikatu",
+      "Chitraka",
+      "Vidanga",
+      "Jaggery",
+      "Honey",
+      "Dhataki flowers"
+    ],
+    "dosage": "15–30ml with equal warm water after meals",
+    "dosage_pediatric": null,
+    "anupana": "Equal warm water with honey",
+    "anupana_by_condition": {
+      "anemia": "pomegranate juice"
+    },
+    "timing": "after_meals",
+    "contraindications": [
+      "pitta_excess",
+      "hyperacidity",
+      "hemochromatosis"
+    ],
+    "drug_interactions": [
+      "diabetes_medication",
+      "antacids"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [
+      "grishma"
+    ],
+    "duration_min_weeks": 6,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Part II, Vol. I — Lohasava",
+    "classical_text_reference": "Bhaishajya Ratnavali, Panduroga Chikitsa 40/56",
+    "classical_action": "Raktaprasadana, Deepana, Yakrituttejaka, Balya"
+  },
+  {
+    "id": "saraswatarishta",
+    "name": "Saraswatarishta",
+    "type": "arishta (fermented decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "memory_impairment",
+      "anxiety",
+      "depression",
+      "cognitive_decline",
+      "epilepsy_support",
+      "insomnia",
+      "stress"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 0
+    },
+    "rasa": [
+      "madhura",
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Medhya",
+      "Balya",
+      "Nidrajanana",
+      "Unmadahara",
+      "Vedanasthapana",
+      "Hridya",
+      "Rasayana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "majja"
+    ],
+    "ingredients": [
+      "Shatavari (Asparagus racemosus)",
+      "Brahmi (Bacopa monnieri)",
+      "Vacha (Acorus calamus)",
+      "Shankhapushpi",
+      "Vidanga",
+      "Jaggery",
+      "Honey",
+      "Dhataki",
+      "Haritaki",
+      "Pippali"
+    ],
+    "dosage": "15–30ml with equal warm water after meals",
+    "dosage_pediatric": "5–10ml with equal water",
+    "anupana": "Equal warm water or milk",
+    "anupana_by_condition": {
+      "depression": "warm milk with ashwagandha",
+      "epilepsy_support": "brahmi ghrita"
+    },
+    "timing": "after_meals",
+    "contraindications": [
+      "alcohol_dependence",
+      "diabetes",
+      "peptic_ulcer",
+      "epilepsy"
+    ],
+    "drug_interactions": [
+      "sedatives",
+      "antiepileptics",
+      "antidepressants"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 6,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Part II, Vol. II — Saraswatarishta",
+    "classical_text_reference": "Bhaishajya Ratnavali, Unmadrogadhikara 26/56",
+    "classical_action": "Medhya, Balya, Nidrajanana, Unmadahara"
+  },
+  {
+    "id": "drakshasava",
+    "name": "Drakshasava",
+    "type": "asava (fermented)",
+    "application_type": "internal",
+    "conditions": [
+      "fatigue",
+      "cardiac_weakness",
+      "postpartum_weakness",
+      "anemia",
+      "low_weight",
+      "respiratory_weakness"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 1
+    },
+    "rasa": [
+      "madhura",
+      "amla"
+    ],
+    "guna": [
+      "guru",
+      "snigdha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Brimhana",
+      "Balya",
+      "Hridya",
+      "Raktaprasadana",
+      "Deepana",
+      "Nidrajanana",
+      "Rasayana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa",
+      "shukra"
+    ],
+    "ingredients": [
+      "Draksha (Vitis vinifera/grapes)",
+      "Jaggery",
+      "Honey",
+      "Dhataki",
+      "Shunti",
+      "Maricha",
+      "Pippali",
+      "Ela",
+      "Tejpatra"
+    ],
+    "dosage": "15–30ml with equal warm water after meals",
+    "dosage_pediatric": "5–10ml with equal water",
+    "anupana": "Equal warm water",
+    "anupana_by_condition": {
+      "anemia": "pomegranate juice"
+    },
+    "timing": "after_meals",
+    "contraindications": [
+      "kapha_excess",
+      "obesity",
+      "uncontrolled_diabetes"
+    ],
+    "drug_interactions": [
+      "diabetes_medication"
+    ],
+    "pregnancy_safe": true,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Part II, Vol. I — Drakshasava",
+    "classical_text_reference": "Bhaishajya Ratnavali, Hridroga Chikitsa 45/68",
+    "classical_action": "Brimhana, Balya, Hridya, Raktaprasadana"
+  },
+  {
+    "id": "kutajarishta",
+    "name": "Kutajarishta",
+    "type": "arishta (fermented decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "inflammatory_bowel_disease",
+      "grahani",
+      "dysentery",
+      "diarrhea",
+      "ibs",
+      "chronic_diarrhea"
+    ],
+    "dosha_effects": {
+      "vata": 0,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Stambhana",
+      "Deepana",
+      "Atisarahara",
+      "Krimighna",
+      "Pittahara",
+      "Ama Pachana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Kutaja bark (Holarrhena antidysenterica)",
+      "Musta",
+      "Dhataki",
+      "Jaggery",
+      "Nagakeshara",
+      "Lodhra"
+    ],
+    "dosage": "15–30ml with equal warm water after meals",
+    "dosage_pediatric": "5–10ml with equal water",
+    "anupana": "Equal warm water",
+    "anupana_by_condition": {
+      "dysentery": "buttermilk with rock salt"
+    },
+    "timing": "after_meals",
+    "contraindications": [
+      "constipation",
+      "severe_dehydration"
+    ],
+    "drug_interactions": [
+      "antibiotics"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 2,
+    "duration_max_weeks": 8,
+    "afi_reference": "API Part II, Vol. I — Kutajarishta",
+    "classical_text_reference": "Bhaishajya Ratnavali, Grahani Chikitsa 9/142",
+    "classical_action": "Stambhana, Deepana, Atisarahara, Krimighna"
+  },
+  {
+    "id": "khadirarishta",
+    "name": "Khadirarishta",
+    "type": "arishta (fermented decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "skin_disorders",
+      "diabetes",
+      "vatarakta",
+      "blood_purification",
+      "allergic_skin",
+      "gout"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Kusthaghna",
+      "Raktashodhana",
+      "Krimighna",
+      "Pittahara",
+      "Lekhana",
+      "Deepana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Khadira (Acacia catechu) heartwood",
+      "Dhataki",
+      "Jaggery",
+      "Musta",
+      "Triphala",
+      "Daruharidra"
+    ],
+    "dosage": "15–30ml with equal water after meals",
+    "dosage_pediatric": null,
+    "anupana": "Equal warm water",
+    "anupana_by_condition": {
+      "skin_disorders": "Neem decoction water"
+    },
+    "timing": "after_meals",
+    "contraindications": [
+      "severe_anemia",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "diabetes_medication",
+      "blood_thinners"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Part II, Vol. I — Khadirarishta",
+    "classical_text_reference": "Bhaishajya Ratnavali, Kushtha Chikitsa 54/134",
+    "classical_action": "Kusthaghna, Raktashodhana, Krimighna, Pittahara"
+  },
+  {
+    "id": "kumaryasava",
+    "name": "Kumaryasava",
+    "type": "asava (fermented)",
+    "application_type": "internal",
+    "conditions": [
+      "liver_disorders",
+      "anemia",
+      "menstrual_disorders",
+      "fatty_liver",
+      "constipation",
+      "spleen_disorders"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "madhura",
+      "kashaya"
+    ],
+    "guna": [
+      "guru",
+      "snigdha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Yakrituttejaka",
+      "Raktaprasadana",
+      "Deepana",
+      "Anulomana",
+      "Artavajanana",
+      "Shothahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "artava"
+    ],
+    "ingredients": [
+      "Kumari (Aloe vera) juice",
+      "Jaggery",
+      "Honey",
+      "Dhataki",
+      "Trikatu",
+      "Musta",
+      "Haritaki",
+      "Amalaki"
+    ],
+    "dosage": "15–30ml with equal warm water after meals",
+    "dosage_pediatric": null,
+    "anupana": "Equal warm water",
+    "anupana_by_condition": {
+      "liver_disorders": "Guduchi decoction",
+      "anemia": "pomegranate juice"
+    },
+    "timing": "after_meals",
+    "contraindications": [
+      "pregnancy",
+      "diarrhea",
+      "severe_pitta"
+    ],
+    "drug_interactions": [
+      "diabetes_medication",
+      "blood_thinners"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [
+      "grishma"
+    ],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Part II, Vol. I — Kumaryasava",
+    "classical_text_reference": "Bhaishajya Ratnavali, Yakrit Pleehadhikara 24/34",
+    "classical_action": "Yakrituttejaka, Raktaprasadana, Deepana, Anulomana"
+  },
+  {
+    "id": "pippalyasava",
+    "name": "Pippalyasava",
+    "type": "asava (fermented)",
+    "application_type": "internal",
+    "conditions": [
+      "asthma",
+      "chronic_cough",
+      "fever",
+      "kapha_respiratory",
+      "bronchitis",
+      "loss_of_appetite"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 1,
+      "kapha": -1
+    },
+    "rasa": [
+      "katu",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Kaphahara",
+      "Shwasahara",
+      "Deepana",
+      "Jvarahara",
+      "Vatahara",
+      "Pachana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Pippali (Piper longum)",
+      "Chitraka",
+      "Shunthi",
+      "Jaggery",
+      "Honey",
+      "Dhataki",
+      "Maricha"
+    ],
+    "dosage": "15–30ml with equal warm water after meals",
+    "dosage_pediatric": "5–10ml with honey",
+    "anupana": "Equal warm water or honey",
+    "anupana_by_condition": {
+      "asthma": "honey and ginger juice",
+      "fever": "warm water"
+    },
+    "timing": "after_meals",
+    "contraindications": [
+      "pitta_excess",
+      "hyperacidity",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "nsaids",
+      "antibiotics"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [
+      "grishma",
+      "sharad"
+    ],
+    "duration_min_weeks": 2,
+    "duration_max_weeks": 8,
+    "afi_reference": "API Part II, Vol. I — Pippalyasava",
+    "classical_text_reference": "Bhaishajya Ratnavali, Shwasa Kasa Chikitsa 14/56",
+    "classical_action": "Kaphahara, Shwasahara, Deepana, Jvarahara"
+  },
+  {
+    "id": "abhayarishta",
+    "name": "Abhayarishta",
+    "type": "arishta (fermented decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "hemorrhoids",
+      "constipation",
+      "grahani",
+      "digestive",
+      "piles",
+      "flatulence"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "madhura",
+      "amla",
+      "katu",
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Anulomana",
+      "Vatahara",
+      "Deepana",
+      "Arshahara",
+      "Pachana",
+      "Shulahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "mamsa",
+      "meda"
+    ],
+    "ingredients": [
+      "Abhaya (Haritaki/Terminalia chebula)",
+      "Dhataki",
+      "Jaggery",
+      "Vidanga",
+      "Shunthi",
+      "Chitraka",
+      "Musta",
+      "Mocharasa"
+    ],
+    "dosage": "15–30ml with equal warm water after meals",
+    "dosage_pediatric": "5–10ml with equal water",
+    "anupana": "Equal warm water",
+    "anupana_by_condition": {
+      "hemorrhoids": "buttermilk with rock salt"
+    },
+    "timing": "after_meals",
+    "contraindications": [
+      "diarrhea",
+      "pregnancy",
+      "hyperacidity"
+    ],
+    "drug_interactions": [
+      "disulfiram",
+      "metronidazole",
+      "other_laxatives"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Part II, Vol. II — Abhayarishta",
+    "classical_text_reference": "Bhaishajya Ratnavali, Arsha Chikitsa 9/112",
+    "classical_action": "Anulomana, Vatahara, Deepana, Arshahara"
+  },
+  {
+    "id": "sarivadyasava",
+    "name": "Sarivadyasava",
+    "type": "asava (fermented)",
+    "application_type": "internal",
+    "conditions": [
+      "skin_disorders",
+      "blood_purification",
+      "allergic_skin",
+      "chronic_fever",
+      "venereal_disease_history",
+      "syphilis_history"
+    ],
+    "dosha_effects": {
+      "vata": 0,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "madhura",
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Kusthaghna",
+      "Raktashodhana",
+      "Pittahara",
+      "Varnya",
+      "Tridoshahara",
+      "Shothahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Sariva (Hemidesmus indicus)",
+      "Draksha",
+      "Patola",
+      "Chandana",
+      "Jaggery",
+      "Honey",
+      "Dhataki",
+      "Manjistha"
+    ],
+    "dosage": "15–30ml with equal warm water after meals",
+    "dosage_pediatric": null,
+    "anupana": "Equal warm water",
+    "anupana_by_condition": {
+      "skin_disorders": "Khadirarishta 10ml mixed"
+    },
+    "timing": "after_meals",
+    "contraindications": [
+      "severe_diabetes",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "disulfiram",
+      "metronidazole"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 6,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Part II, Vol. II — Sarivadyasava",
+    "classical_text_reference": "Bhaishajya Ratnavali, Kushtha Chikitsa 54/167",
+    "classical_action": "Kusthaghna, Raktashodhana, Pittahara, Varnya"
+  },
+  {
+    "id": "sarpagandha_vati",
+    "name": "Sarpagandha Vati",
+    "type": "vati (tablet)",
+    "application_type": "internal",
+    "conditions": [
+      "hypertension",
+      "insomnia",
+      "anxiety",
+      "stress",
+      "tachycardia",
+      "palpitations"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Nidrajanana",
+      "Unmadahara",
+      "Rakta Chapa Shamana",
+      "Pittahara",
+      "Vedanasthapana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "majja"
+    ],
+    "ingredients": [
+      "Sarpagandha (Rauwolfia serpentina) root powder",
+      "Jatamansi",
+      "Brahmi"
+    ],
+    "dosage": "1 tablet once or twice daily as prescribed by Vaidya",
+    "dosage_pediatric": null,
+    "anupana": "Water or warm milk",
+    "anupana_by_condition": {
+      "insomnia": "warm milk with honey at bedtime"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "depression",
+      "pregnancy",
+      "peptic_ulcer",
+      "parkinson",
+      "hypotension"
+    ],
+    "drug_interactions": [
+      "antihypertensives",
+      "sedatives",
+      "cardiac_glycosides",
+      "antidepressants"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Part I, Vol. III — Sarpagandha Vati",
+    "classical_text_reference": "Bhaishajya Ratnavali, Unmadrogadhikara 26/34; Yogaratnakara",
+    "classical_action": "Nidrajanana, Unmadahara, Rakta Chapa Shamana, Pittahara"
+  },
+  {
+    "id": "kaishor_guggulu",
+    "name": "Kaishor Guggulu",
+    "type": "vati/guggulu (tablet)",
+    "application_type": "internal",
+    "conditions": [
+      "vatarakta",
+      "gout",
+      "joint_pain",
+      "skin_disorders",
+      "hemorrhoids",
+      "constipation",
+      "chronic_fever"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "katu",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Raktashodhana",
+      "Kusthaghna",
+      "Vatahara",
+      "Shothahara",
+      "Deepana",
+      "Rechana",
+      "Krimighna"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "meda"
+    ],
+    "ingredients": [
+      "Guduchi (Tinospora cordifolia)",
+      "Triphala",
+      "Trikatu",
+      "Danti (Baliospermum montanum)",
+      "Trivrit (Operculina turpethum)",
+      "Guggulu"
+    ],
+    "dosage": "2 tablets twice daily with warm water or Guduchi decoction",
+    "dosage_pediatric": null,
+    "anupana": "Warm water or Guduchi decoction",
+    "anupana_by_condition": {
+      "gout": "Punarnava decoction",
+      "skin_disorders": "Neem water"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "pregnancy",
+      "severe_diarrhea"
+    ],
+    "drug_interactions": [
+      "blood_thinners",
+      "diabetes_medication"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 6,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Part I, Vol. II — Kaishor Guggulu",
+    "classical_text_reference": "Bhaishajya Ratnavali, Vatarakta Chikitsa 29/87",
+    "classical_action": "Raktashodhana, Kusthaghna, Vatahara, Shothahara"
+  },
+  {
+    "id": "triphala_guggulu",
+    "name": "Triphala Guggulu",
+    "type": "vati/guggulu (tablet)",
+    "application_type": "internal",
+    "conditions": [
+      "obesity",
+      "constipation",
+      "skin_disorders",
+      "hemorrhoids",
+      "dyslipidemia",
+      "fatty_liver"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "katu"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Lekhana",
+      "Kaphahara",
+      "Deepana",
+      "Anulomana",
+      "Kusthaghna",
+      "Shothahara",
+      "Ama Pachana"
+    ],
+    "dhatu_affected": [
+      "meda",
+      "mamsa",
+      "rasa"
+    ],
+    "ingredients": [
+      "Triphala (Haritaki, Amalaki, Bibhitaki)",
+      "Guggulu",
+      "Pippali"
+    ],
+    "dosage": "2 tablets twice daily with warm water",
+    "dosage_pediatric": null,
+    "anupana": "Warm water",
+    "anupana_by_condition": {
+      "obesity": "honey in warm water",
+      "constipation": "castor oil in warm milk"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "pregnancy",
+      "severe_emaciation"
+    ],
+    "drug_interactions": [
+      "blood_thinners",
+      "diabetes_medication"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 8,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Part I, Vol. II — Triphala Guggulu",
+    "classical_text_reference": "Sharangadhara Samhita, Madhyamakhanda 7/78; Ashtanga Hridayam",
+    "classical_action": "Lekhana, Kaphahara, Deepana, Anulomana, Kusthaghna"
+  },
+  {
+    "id": "gokshuradi_guggulu",
+    "name": "Gokshuradi Guggulu",
+    "type": "vati/guggulu (tablet)",
+    "application_type": "internal",
+    "conditions": [
+      "uti",
+      "kidney_stones",
+      "male_reproductive",
+      "prostate_issues",
+      "urinary_disorders",
+      "vatarakta",
+      "kidney_disease"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "madhura",
+      "tikta",
+      "katu"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Mutrala",
+      "Mutrakricchrahara",
+      "Balya",
+      "Vajikarana",
+      "Shothahara",
+      "Ashmaribheda"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "meda",
+      "shukra",
+      "asthi"
+    ],
+    "ingredients": [
+      "Gokshura (Tribulus terrestris)",
+      "Guggulu",
+      "Triphala",
+      "Trikatu",
+      "Musta",
+      "Amla"
+    ],
+    "dosage": "2 tablets twice daily with warm water",
+    "dosage_pediatric": null,
+    "anupana": "Warm water or Gokshura decoction",
+    "anupana_by_condition": {
+      "kidney_stones": "Varuna decoction",
+      "uti": "coconut water"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "pregnancy",
+      "severe_kidney_failure",
+      "hyperacidity"
+    ],
+    "drug_interactions": [
+      "diuretics",
+      "antihypertensives"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Part I, Vol. III — Gokshuradi Guggulu",
+    "classical_text_reference": "Sharangadhara Samhita, Madhyamakhanda 7/108",
+    "classical_action": "Mutrala, Mutrakricchrahara, Balya, Vajikarana"
+  },
+  {
+    "id": "punarnavadi_guggulu",
+    "name": "Punarnavadi Guggulu",
+    "type": "vati/guggulu (tablet)",
+    "application_type": "internal",
+    "conditions": [
+      "edema",
+      "kidney_disease",
+      "anemia",
+      "liver_disorders",
+      "obesity",
+      "urinary_disorders"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "katu"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Shothahara",
+      "Mutrala",
+      "Raktaprasadana",
+      "Deepana",
+      "Lekhana",
+      "Kaphahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "meda"
+    ],
+    "ingredients": [
+      "Punarnava (Boerhavia diffusa)",
+      "Guggulu",
+      "Triphala",
+      "Shunthi",
+      "Chitraka",
+      "Devadaru",
+      "Trikatu"
+    ],
+    "dosage": "2 tablets twice daily with warm water",
+    "dosage_pediatric": null,
+    "anupana": "Warm water or Punarnava decoction",
+    "anupana_by_condition": {
+      "edema": "Punarnava decoction",
+      "anemia": "pomegranate juice"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "pregnancy",
+      "severe_kidney_failure"
+    ],
+    "drug_interactions": [
+      "diuretics",
+      "antihypertensives",
+      "diabetes_medication"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 6,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Part I, Vol. III — Punarnavadi Guggulu",
+    "classical_text_reference": "Bhaishajya Ratnavali, Shotha Chikitsa 38/56",
+    "classical_action": "Shothahara, Mutrala, Raktaprasadana, Deepana"
+  },
+  {
+    "id": "arogyavardhini_vati",
+    "name": "Arogyavardhini Vati",
+    "type": "vati (tablet)",
+    "application_type": "internal",
+    "conditions": [
+      "liver_disorders",
+      "fatty_liver",
+      "skin_disorders",
+      "obesity",
+      "fever",
+      "jaundice",
+      "dyslipidemia"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "katu"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Yakrituttejaka",
+      "Deepana",
+      "Pachana",
+      "Kaphahara",
+      "Lekhana",
+      "Jvarahara",
+      "Kusthaghna",
+      "Ama Pachana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "meda",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Kutki (Picrorhiza kurroa)",
+      "Guggulu",
+      "Triphala",
+      "Shilajit",
+      "Abhrak Bhasma",
+      "Lauha Bhasma",
+      "Chitraka",
+      "Katuka",
+      "Neem"
+    ],
+    "dosage": "1–2 tablets twice daily with warm water",
+    "dosage_pediatric": null,
+    "anupana": "Warm water or Guduchi decoction",
+    "anupana_by_condition": {
+      "liver_disorders": "Guduchi decoction",
+      "skin_disorders": "Neem water"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "pregnancy",
+      "severe_emaciation",
+      "kidney_failure"
+    ],
+    "drug_interactions": [
+      "diabetes_medication",
+      "immunosuppressants"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Part I, Vol. II — Arogyavardhini Vati",
+    "classical_text_reference": "Rasa Ratna Samucchaya 18/50; Bhaishajya Ratnavali Kushtha Chikitsa",
+    "classical_action": "Yakrituttejaka, Deepana, Kaphahara, Lekhana, Jvarahara"
+  },
+  {
+    "id": "kankayan_vati",
+    "name": "Kankayan Vati",
+    "type": "vati (tablet)",
+    "application_type": "internal",
+    "conditions": [
+      "hemorrhoids",
+      "constipation",
+      "digestive",
+      "bloating",
+      "flatulence",
+      "abdominal_pain"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "katu",
+      "tikta"
+    ],
+    "guna": [
+      "laghu",
+      "tikshna",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Arshahara",
+      "Deepana",
+      "Pachana",
+      "Vatanulomana",
+      "Shulahara",
+      "Anulomana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Kankayan (Piper species)",
+      "Chitraka (Plumbago zeylanica)",
+      "Shunthi",
+      "Pippali",
+      "Trikatu",
+      "Hingu (Asafoetida)",
+      "Saindhava Lavana"
+    ],
+    "dosage": "1–2 tablets twice daily with warm water or buttermilk",
+    "dosage_pediatric": null,
+    "anupana": "Warm water or buttermilk",
+    "anupana_by_condition": {
+      "hemorrhoids": "buttermilk with rock salt"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "pitta_excess",
+      "hyperacidity",
+      "pregnancy"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [
+      "grishma"
+    ],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Part I, Vol. III — Kankayan Vati",
+    "classical_text_reference": "Bhaishajya Ratnavali, Arsha Chikitsa 9/96",
+    "classical_action": "Arshahara, Deepana, Pachana, Vatanulomana"
+  },
+  {
+    "id": "vatari_guggulu",
+    "name": "Vatari Guggulu",
+    "type": "vati/guggulu (tablet)",
+    "application_type": "internal",
+    "conditions": [
+      "arthritis",
+      "rheumatoid_arthritis",
+      "gout",
+      "vatarakta",
+      "joint_pain",
+      "sciatica",
+      "back_pain"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 1,
+      "kapha": -1
+    },
+    "rasa": [
+      "katu",
+      "tikta"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Vatahara",
+      "Vedanasthapana",
+      "Shothahara",
+      "Shulahara",
+      "Deepana",
+      "Ama Pachana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "mamsa",
+      "asthi",
+      "majja"
+    ],
+    "ingredients": [
+      "Guggulu",
+      "Shunthi",
+      "Maricha",
+      "Pippali",
+      "Shuddha Gandhaka",
+      "Ajmoda",
+      "Saindhava"
+    ],
+    "dosage": "2 tablets twice daily with warm water or castor oil in warm milk",
+    "dosage_pediatric": null,
+    "anupana": "Warm water or Maharasnadi Kashayam",
+    "anupana_by_condition": {
+      "rheumatoid_arthritis": "castor oil in warm water",
+      "gout": "Punarnava decoction"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "pitta_excess",
+      "hyperacidity",
+      "pregnancy",
+      "fever"
+    ],
+    "drug_interactions": [
+      "nsaids",
+      "blood_thinners"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [
+      "grishma"
+    ],
+    "duration_min_weeks": 6,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Part I, Vol. III — Vatari Guggulu",
+    "classical_text_reference": "Bhaishajya Ratnavali, Vatavyadhyadhikara 26/198",
+    "classical_action": "Vatahara, Vedanasthapana, Shothahara, Shulahara"
+  },
+  {
+    "id": "manasamitra_vatakam",
+    "name": "Manasamitra Vatakam",
+    "type": "vati (tablet)",
+    "application_type": "internal",
+    "conditions": [
+      "depression",
+      "anxiety",
+      "epilepsy_support",
+      "cognitive_decline",
+      "insomnia",
+      "memory_impairment",
+      "ptsd"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 0
+    },
+    "rasa": [
+      "madhura",
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Medhya",
+      "Unmadahara",
+      "Balya",
+      "Nidrajanana",
+      "Vedanasthapana",
+      "Hridya",
+      "Rasayana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "majja",
+      "shukra"
+    ],
+    "ingredients": [
+      "Brahmi (Bacopa monnieri)",
+      "Vacha (Acorus calamus)",
+      "Shatavari",
+      "Ashwagandha",
+      "Jatamansi",
+      "Shankhapushpi",
+      "Abhrak Bhasma",
+      "Swarna Bhasma (gold ash — classical Kerala formula)",
+      "Naga Bhasma",
+      "Suvarna Makshika"
+    ],
+    "dosage": "1–2 tablets twice daily with warm milk",
+    "dosage_pediatric": null,
+    "anupana": "Warm milk with ghee",
+    "anupana_by_condition": {
+      "depression": "warm milk with saffron",
+      "epilepsy_support": "Brahmi Ghrita"
+    },
+    "timing": "morning_and_night",
+    "contraindications": [
+      "severe_liver_disease"
+    ],
+    "drug_interactions": [
+      "sedatives",
+      "antiepileptics",
+      "antidepressants"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 8,
+    "duration_max_weeks": 24,
+    "afi_reference": "Not listed in API (classical Kerala formulation)",
+    "classical_text_reference": "Sahasrayogam, Vatavyadhi Prakarana 12/45; Ashtanga Hridayam Uttara 6",
+    "classical_action": "Medhya, Unmadahara, Balya, Nidrajanana, Rasayana"
+  },
+  {
+    "id": "haridra_khanda",
+    "name": "Haridra Khanda",
+    "type": "pak (confection)",
+    "application_type": "internal",
+    "conditions": [
+      "allergic_rhinitis",
+      "allergic_skin",
+      "low_immunity",
+      "skin_disorders",
+      "chronic_urticaria",
+      "hay_fever"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "katu",
+      "tikta",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Kaphahara",
+      "Kusthaghna",
+      "Deepana",
+      "Varnya",
+      "Shothahara",
+      "Ama Pachana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Haridra (Curcuma longa)",
+      "Milk sugar (Mishri)",
+      "Ghee",
+      "Ashwagandha",
+      "Amalaki (Emblica officinalis)",
+      "Shatavari",
+      "Ela (Cardamom)",
+      "Pippali"
+    ],
+    "dosage": "3–6g with warm milk twice daily",
+    "dosage_pediatric": "1–2g with warm milk",
+    "anupana": "Warm milk",
+    "anupana_by_condition": {
+      "allergic_rhinitis": "warm milk with black pepper",
+      "allergic_skin": "neem water"
+    },
+    "timing": "morning_and_night",
+    "contraindications": [
+      "uncontrolled_diabetes",
+      "pregnancy_first_trimester"
+    ],
+    "drug_interactions": [
+      "blood_thinners",
+      "diabetes_medication"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Part I, Vol. III — Haridra Khanda",
+    "classical_text_reference": "Bhaishajya Ratnavali, Kushtha Chikitsa 54/200; Charaka Samhita Chikitsa 7",
+    "classical_action": "Kaphahara, Kusthaghna, Deepana, Varnya"
   },
   {
     "id": "gandharvahastadi_kashayam",
     "name": "Gandharvahastadi Kashayam",
-    "type": "Kashayam (Decoction)",
+    "type": "kashayam (decoction)",
     "application_type": "internal",
-    "primary_uses": ["Constipation", "Bloating", "Vata imbalance", "Back pain"],
-    "conditions": ["constipation", "bloating", "gas", "vata_disorders", "back_pain", "sciatica_mild"],
-    "dosha_effects": {"vata": -1, "pitta": 0, "kapha": -1},
-    "ingredients": ["Gandharvahasta (Eranda)", "Chirvilva", "Hutasha", "Vishwa", "Pathya"],
-    "dosage": "10–15ml diluted with 45ml warm water before food",
-    "anupana": "Warm water (4:1 dilution)",
+    "conditions": [
+      "constipation",
+      "bloating",
+      "gas",
+      "vata_disorders",
+      "back_pain",
+      "sciatica_mild"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "katu",
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Vatanulomana",
+      "Deepana",
+      "Shulahara",
+      "Anulomana",
+      "Ama Pachana"
+    ],
+    "dhatu_affected": [
+      "meda",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Gandharvahasta (Eranda/Castor)",
+      "Chirvilva",
+      "Hutasha",
+      "Vishwa (Shunthi)",
+      "Pathya (Haritaki)"
+    ],
+    "dosage": "10–15ml diluted with 45ml warm water before food in the morning",
+    "dosage_pediatric": null,
+    "anupana": "Warm water (1:4 dilution)",
+    "anupana_by_condition": {
+      "back_pain": "castor oil decoction"
+    },
     "timing": "before_meals_morning",
-    "contraindications": ["diarrhea", "pregnancy", "hyperacidity"],
-    "drug_interactions": [],
+    "contraindications": [
+      "diarrhea",
+      "pregnancy",
+      "hyperacidity"
+    ],
+    "drug_interactions": [
+      "other_laxatives",
+      "reduces_absorption_of_concurrent_oral_drugs"
+    ],
     "pregnancy_safe": false,
     "gender_specific": null,
-    "reference": "Sahasrayogam",
     "safety_tier": 1,
-    "classical_action": "Vatanulomana, Deepana, Shoolahara"
+    "season_avoid": [
+      "grishma"
+    ],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. II, Part I — Gandharvahastadi Kwatha",
+    "classical_text_reference": "Sahasrayogam, Kashaya Yogam 11; Ashtanga Hridayam Chikitsa 3/19",
+    "classical_action": "Vatanulomana, Deepana, Shulahara, Anulomana"
   },
   {
     "id": "maharasnadi_kashayam",
     "name": "Maharasnadi Kashayam",
-    "type": "Kashayam (Decoction)",
+    "type": "kashayam (decoction)",
     "application_type": "internal",
-    "primary_uses": ["Severe joint pain", "Paralysis", "Sciatica", "Parkinson's"],
-    "conditions": ["severe_joint_pain", "paralysis", "sciatica", "parkinson", "neurological_disorders", "vata_vyadhi", "cervical_spondylosis"],
-    "dosha_effects": {"vata": -1, "pitta": 0, "kapha": -1},
-    "ingredients": ["Rasna", "Dhanvayasa", "Bala", "Eranda", "Devadaru", "Shati", "Vacha"],
+    "conditions": [
+      "severe_joint_pain",
+      "paralysis",
+      "sciatica",
+      "parkinson",
+      "neurological_disorders",
+      "cervical_spondylosis",
+      "vata_vyadhi"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "katu"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Vatahara",
+      "Shothahara",
+      "Balya",
+      "Vedanasthapana",
+      "Shulahara"
+    ],
+    "dhatu_affected": [
+      "asthi",
+      "mamsa",
+      "majja"
+    ],
+    "ingredients": [
+      "Rasna",
+      "Dhanvayasa",
+      "Bala",
+      "Eranda",
+      "Devadaru",
+      "Shati",
+      "Vacha",
+      "Punarnava",
+      "Ashwagandha",
+      "Duralabha"
+    ],
     "dosage": "10–15ml diluted with 45ml warm water before food",
-    "anupana": "Warm water (4:1 dilution)",
+    "dosage_pediatric": null,
+    "anupana": "Warm water (1:4 dilution)",
+    "anupana_by_condition": {
+      "parkinson": "warm castor oil in milk (separate)",
+      "sciatica": "castor oil decoction"
+    },
     "timing": "before_meals",
-    "contraindications": ["pitta_excess", "fever", "hyperacidity"],
+    "contraindications": [
+      "pitta_excess",
+      "fever",
+      "hyperacidity",
+      "pregnancy"
+    ],
     "drug_interactions": [],
     "pregnancy_safe": false,
     "gender_specific": null,
-    "reference": "Sahasrayogam",
     "safety_tier": 2,
-    "classical_action": "Vatahara, Shothahara, Balya, Shulaprashamana"
-  },
-  {
-    "id": "arvindasava",
-    "name": "Arvindasava",
-    "type": "Asava (Fermented)",
-    "application_type": "internal",
-    "primary_uses": ["Childhood digestive issues", "Rickets", "Low immunity in children", "Cough"],
-    "conditions": ["pediatric_digestive", "rickets", "low_immunity", "childhood_cough", "pediatric_anemia"],
-    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
-    "ingredients": ["Aravinda (Lotus)", "Ushira", "Kashmari", "Nilotpala", "Manjistha", "Jaggery", "Dhataki"],
-    "dosage": "10–20ml with equal water after meals",
-    "anupana": "Equal warm water",
-    "timing": "after_meals",
-    "contraindications": [],
-    "drug_interactions": [],
-    "pregnancy_safe": false,
-    "gender_specific": null,
-    "reference": "Bhaishajya Ratnavali",
-    "safety_tier": 1,
-    "classical_action": "Deepana, Balya, Brimhana"
+    "season_avoid": [
+      "grishma",
+      "sharad"
+    ],
+    "duration_min_weeks": 8,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Vol. II, Part I — Maharasnadi Kwatha",
+    "classical_text_reference": "Sahasrayogam, Kashaya Yogam 42; Bhaishajya Ratnavali, Vatavyadhyadhikara 26/97",
+    "classical_action": "Vatahara, Shothahara, Balya, Vedanasthapana, Shulaprashamana"
   },
   {
     "id": "mahanarayana_taila",
     "name": "Mahanarayana Taila",
-    "type": "Taila (Oil)",
+    "type": "taila (oil)",
     "application_type": "external",
-    "primary_uses": ["Joint pain", "Arthritis", "Muscle stiffness", "Paralysis"],
-    "conditions": ["joint_pain", "arthritis", "muscle_stiffness", "paralysis", "sciatica", "back_pain", "rheumatoid_arthritis"],
-    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": 0},
-    "ingredients": ["Bilva", "Ashwagandha", "Bala", "Shatavari", "Sesame Oil", "Cow's milk"],
-    "dosage": "Warm oil massage on affected area for 15–20 min, leave for 30 min before bathing",
+    "conditions": [
+      "joint_pain",
+      "arthritis",
+      "muscle_stiffness",
+      "paralysis",
+      "back_pain",
+      "rheumatoid_arthritis",
+      "cervical_spondylosis"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 0
+    },
+    "rasa": [
+      "tikta",
+      "madhura",
+      "kashaya"
+    ],
+    "guna": [
+      "snigdha",
+      "guru",
+      "ushna"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Vatahara",
+      "Shothahara",
+      "Balya",
+      "Brimhana",
+      "Vedanasthapana"
+    ],
+    "dhatu_affected": [
+      "asthi",
+      "mamsa",
+      "majja"
+    ],
+    "ingredients": [
+      "Bilva",
+      "Ashwagandha",
+      "Bala",
+      "Shatavari",
+      "Dashamoola",
+      "Sesame Oil",
+      "Cow's milk"
+    ],
+    "dosage": "Warm oil massage on affected area for 15–20 min; leave for 30 min before bathing",
+    "dosage_pediatric": "Gentle massage for 10 min on children; avoid deep pressure",
     "anupana": "External use only",
+    "anupana_by_condition": {},
     "timing": "morning_before_bath",
-    "contraindications": ["open_wounds", "skin_infections"],
+    "contraindications": [
+      "open_wounds",
+      "skin_infections",
+      "fever"
+    ],
     "drug_interactions": [],
     "pregnancy_safe": true,
     "gender_specific": null,
-    "reference": "Bhaishajya Ratnavali",
     "safety_tier": 1,
-    "classical_action": "Vatahara, Shothahara, Balya, Brimhana (external)"
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Vol. III — Mahanarayana Taila",
+    "classical_text_reference": "Bhaishajya Ratnavali, Vatavyadhyadhikara 26/56; Ashtanga Hridayam Chikitsa 21/67",
+    "classical_action": "Vatahara, Shothahara, Balya, Brimhana (external Snehana)"
   },
   {
     "id": "ksheerabala_taila",
     "name": "Ksheerabala Taila",
-    "type": "Taila (Oil)",
+    "type": "taila (oil)",
     "application_type": "external",
-    "primary_uses": ["Neurological disorders", "Insomnia", "Vata imbalance", "Headache"],
-    "conditions": ["insomnia", "neurological_disorders", "headache", "vata_imbalance", "stress", "anxiety"],
-    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": 1},
-    "ingredients": ["Bala (Sida cordifolia)", "Cow's milk", "Sesame oil"],
+    "conditions": [
+      "insomnia",
+      "neurological_disorders",
+      "headache",
+      "vata_imbalance",
+      "stress",
+      "anxiety",
+      "cervical_spondylosis"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 1
+    },
+    "rasa": [
+      "madhura",
+      "tikta"
+    ],
+    "guna": [
+      "snigdha",
+      "guru",
+      "sheeta",
+      "mridu"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Vatahara",
+      "Nidrajanana",
+      "Balya",
+      "Shothahara",
+      "Brimhana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "mamsa",
+      "majja"
+    ],
+    "ingredients": [
+      "Bala (Sida cordifolia)",
+      "Cow's milk",
+      "Sesame oil"
+    ],
     "dosage": "Apply warm oil to scalp and soles of feet for 10–15 min before bed",
+    "dosage_pediatric": "5 min scalp massage; gentle application on feet",
     "anupana": "External use only",
+    "anupana_by_condition": {},
     "timing": "before_sleep",
-    "contraindications": ["kapha_excess", "hair_loss_with_oily_scalp"],
+    "contraindications": [
+      "kapha_excess",
+      "hair_loss_with_oily_scalp"
+    ],
     "drug_interactions": [],
     "pregnancy_safe": true,
     "gender_specific": null,
-    "reference": "Ashtanga Hridaya",
     "safety_tier": 1,
-    "classical_action": "Vatahara, Nidrajanana, Shirorogahara (external)"
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. III — Ksheerabala Taila",
+    "classical_text_reference": "Ashtanga Hridayam, Chikitsa 21/45; Sahasrayogam, Taila Yogam 8",
+    "classical_action": "Vatahara, Nidrajanana, Shirorogahara, Balya (external)"
   },
   {
     "id": "kumkumadi_taila",
     "name": "Kumkumadi Taila",
-    "type": "Taila (Oil)",
+    "type": "taila (oil)",
     "application_type": "external",
-    "primary_uses": ["Acne", "Hyperpigmentation", "Skin glow", "Dark circles"],
-    "conditions": ["acne", "hyperpigmentation", "skin_dullness", "dark_circles", "blemishes", "skin_disorders"],
-    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
-    "ingredients": ["Kumkuma (Saffron)", "Chandana", "Lodhra", "Manjistha", "Sesame oil"],
+    "conditions": [
+      "acne",
+      "hyperpigmentation",
+      "skin_dullness",
+      "dark_circles",
+      "blemishes",
+      "skin_disorders"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "madhura",
+      "kashaya"
+    ],
+    "guna": [
+      "snigdha",
+      "laghu",
+      "sheeta"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Varnya",
+      "Kusthaghna",
+      "Pittahara",
+      "Raktaprasadana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Kumkuma (Saffron/Crocus sativus)",
+      "Chandana (Sandalwood)",
+      "Lodhra",
+      "Manjistha",
+      "Sesame oil base"
+    ],
     "dosage": "2–3 drops gently massaged into cleansed face at night",
+    "dosage_pediatric": null,
     "anupana": "External use only",
+    "anupana_by_condition": {},
     "timing": "night_application",
-    "contraindications": ["saffron_allergy"],
+    "contraindications": [
+      "saffron_allergy",
+      "active_skin_infection"
+    ],
     "drug_interactions": [],
     "pregnancy_safe": true,
     "gender_specific": null,
-    "reference": "Ashtanga Hridaya",
     "safety_tier": 1,
-    "classical_action": "Varnya, Kusthaghna, Tvak Prasadana (external)"
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Vol. III — Kumkumadi Taila",
+    "classical_text_reference": "Ashtanga Hridayam, Uttara Tantra 32/15",
+    "classical_action": "Varnya, Kusthaghna, Tvak Prasadana (external Snehana)"
   },
   {
     "id": "guduchi_satva",
     "name": "Guduchi Satva",
-    "type": "Satva (Extract)",
+    "type": "satva (extract)",
     "application_type": "internal",
-    "primary_uses": ["Fever", "Burning sensation", "Immunity", "Acidity"],
-    "conditions": ["fever", "burning_sensation", "low_immunity", "hyperacidity", "pitta_disorders", "gout", "liver_disorders"],
-    "dosha_effects": {"vata": -1, "pitta": -1, "kapha": -1},
-    "ingredients": ["Guduchi (Tinospora cordifolia) stem extract"],
-    "dosage": "500mg–1g with water or honey",
+    "conditions": [
+      "fever",
+      "burning_sensation",
+      "low_immunity",
+      "hyperacidity",
+      "pitta_disorders",
+      "gout",
+      "liver_disorders",
+      "vatarakta"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha",
+      "sheeta"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Jvarahara",
+      "Tridoshahara",
+      "Rasayana",
+      "Deepana",
+      "Ama Pachana",
+      "Pittahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Guduchi (Tinospora cordifolia) stem starch extract"
+    ],
+    "dosage": "500mg–1g with water or honey twice daily",
+    "dosage_pediatric": "250mg with honey",
     "anupana": "Water or honey",
+    "anupana_by_condition": {
+      "fever": "water with honey",
+      "hyperacidity": "cold water with mishri"
+    },
     "timing": "twice_daily",
-    "contraindications": ["pregnancy"],
-    "drug_interactions": ["immunosuppressants", "diabetes_medication"],
+    "contraindications": [
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "immunosuppressants",
+      "diabetes_medication"
+    ],
     "pregnancy_safe": false,
     "gender_specific": null,
-    "reference": "Ayurvedic Pharmacopoeia of India",
     "safety_tier": 1,
-    "classical_action": "Jvarahara, Tridoshahara, Rasayana, Deepana"
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. I — Guduchi Satva",
+    "classical_text_reference": "Charaka Samhita, Chikitsa 1/3-4; Ashtanga Hridayam, Sutra 6/158",
+    "classical_action": "Jvarahara, Tridoshahara, Rasayana, Deepana, Sandipana"
+  },
+  {
+    "id": "dhanwantharam_kashayam",
+    "name": "Dhanwantharam Kashayam",
+    "type": "kashayam (decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "postpartum_weakness",
+      "vata_disorders",
+      "joint_pain",
+      "neurological_disorders",
+      "back_pain",
+      "muscle_weakness"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Vatahara",
+      "Balya",
+      "Brimhana",
+      "Shothahara",
+      "Vedanasthapana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "mamsa",
+      "asthi",
+      "majja"
+    ],
+    "ingredients": [
+      "Bala (Sida cordifolia)",
+      "Dashamoola (Ten roots)",
+      "Ashwagandha",
+      "Devadaru",
+      "Shunthi",
+      "Bilva"
+    ],
+    "dosage": "15–20ml diluted with equal warm water before meals twice daily",
+    "dosage_pediatric": null,
+    "anupana": "Equal warm water",
+    "anupana_by_condition": {
+      "postpartum_weakness": "warm milk"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "pitta_excess",
+      "fever",
+      "pregnancy"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [
+      "grishma"
+    ],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Vol. II, Part I — Dhanwantharam Kwatha",
+    "classical_text_reference": "Ashtanga Hridayam, Chikitsa 1/24; Sahasrayogam, Kashaya Yogam 5",
+    "classical_action": "Vatahara, Balya, Brimhana, Prasoota Roga hara"
+  },
+  {
+    "id": "punarnavadi_kashayam",
+    "name": "Punarnavadi Kashayam",
+    "type": "kashayam (decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "kidney_disease",
+      "edema",
+      "uti",
+      "anemia",
+      "liver_disorders",
+      "obesity"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Mutrala",
+      "Shothahara",
+      "Raktaprasadana",
+      "Deepana",
+      "Lekhana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "meda"
+    ],
+    "ingredients": [
+      "Punarnava (Boerhavia diffusa)",
+      "Shunthi",
+      "Devadaru",
+      "Eranda",
+      "Gokshura",
+      "Pippali"
+    ],
+    "dosage": "15–20ml diluted with 45ml warm water before meals",
+    "dosage_pediatric": null,
+    "anupana": "Warm water",
+    "anupana_by_condition": {
+      "kidney_disease": "barley water (Yava jala)",
+      "edema": "hot water"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "pregnancy",
+      "severe_dehydration"
+    ],
+    "drug_interactions": [
+      "diuretics",
+      "antihypertensives"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 6,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Vol. II, Part I — Punarnavadi Kwatha",
+    "classical_text_reference": "Ashtanga Hridayam, Chikitsa 9/15; Sahasrayogam, Kashaya Yogam 26",
+    "classical_action": "Mutrala, Shothahara, Raktaprasadana, Deepana"
+  },
+  {
+    "id": "rasnasaptaka_kashayam",
+    "name": "Rasnasaptaka Kashayam",
+    "type": "kashayam (decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "cervical_spondylosis",
+      "joint_pain",
+      "vata_disorders",
+      "sciatica",
+      "back_pain",
+      "arthritis"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "katu"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Vatahara",
+      "Shothahara",
+      "Vedanasthapana",
+      "Shulahara",
+      "Deepana"
+    ],
+    "dhatu_affected": [
+      "asthi",
+      "mamsa",
+      "majja"
+    ],
+    "ingredients": [
+      "Rasna (Pluchea lanceolata)",
+      "Eranda moola",
+      "Devadaru",
+      "Guduchi",
+      "Punarnava",
+      "Shunthi",
+      "Patola"
+    ],
+    "dosage": "15–20ml diluted with 45ml warm water before meals",
+    "dosage_pediatric": null,
+    "anupana": "Warm water (1:3 dilution)",
+    "anupana_by_condition": {
+      "sciatica": "castor oil decoction (separately)"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "fever",
+      "hyperacidity",
+      "pregnancy",
+      "pitta_excess"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [
+      "grishma",
+      "sharad"
+    ],
+    "duration_min_weeks": 6,
+    "duration_max_weeks": 20,
+    "afi_reference": "API Vol. II, Part I — Rasnasaptaka Kwatha",
+    "classical_text_reference": "Sahasrayogam, Kashaya Yogam 37; Ashtanga Hridayam, Chikitsa 21/62",
+    "classical_action": "Vatahara, Shothahara, Vedanasthapana, Sandhivata hara"
+  },
+  {
+    "id": "patolakaturohinyadi_kashayam",
+    "name": "Patolakaturohinyadi Kashayam",
+    "type": "kashayam (decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "liver_disorders",
+      "fatty_liver",
+      "skin_disorders",
+      "pitta_disorders",
+      "fever",
+      "jaundice"
+    ],
+    "dosha_effects": {
+      "vata": 0,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Pittahara",
+      "Kusthaghna",
+      "Jvarahara",
+      "Deepana",
+      "Raktaprasadana",
+      "Ama Pachana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Patola (Trichosanthes cucumerina)",
+      "Katuka (Picrorhiza kurroa)",
+      "Nimba (Neem)",
+      "Guduchi",
+      "Musta",
+      "Patha",
+      "Vasa"
+    ],
+    "dosage": "15–20ml diluted with 45ml water before meals",
+    "dosage_pediatric": null,
+    "anupana": "Room temperature water",
+    "anupana_by_condition": {
+      "jaundice": "sugarcane juice",
+      "fever": "cold water"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "vata_excess",
+      "pregnancy",
+      "emaciation"
+    ],
+    "drug_interactions": [
+      "diabetes_medication"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [
+      "hemanta",
+      "shishira"
+    ],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. II, Part I — Patolakaturohinyadi Kwatha",
+    "classical_text_reference": "Ashtanga Hridayam, Chikitsa 16/25; Sahasrayogam, Kashaya Yogam 18",
+    "classical_action": "Pittahara, Kusthaghna, Jvarahara, Yakrit uttejaka"
+  },
+  {
+    "id": "varanadi_kashayam",
+    "name": "Varanadi Kashayam",
+    "type": "kashayam (decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "lymph_enlargement",
+      "obesity",
+      "dyslipidemia",
+      "thyroid",
+      "prostate_issues",
+      "fatty_liver"
+    ],
+    "dosha_effects": {
+      "vata": 0,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "katu"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Lekhana",
+      "Kaphahara",
+      "Mutrala",
+      "Shothahara",
+      "Deepana"
+    ],
+    "dhatu_affected": [
+      "meda",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Varuna (Crataeva nurvula)",
+      "Saireyaka",
+      "Bilwa",
+      "Agnimantha",
+      "Shyonaka",
+      "Kashmari"
+    ],
+    "dosage": "15–20ml diluted with 45ml warm water before meals",
+    "dosage_pediatric": null,
+    "anupana": "Warm water",
+    "anupana_by_condition": {
+      "obesity": "warm water with honey (separately)"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "vata_excess",
+      "emaciation",
+      "pregnancy"
+    ],
+    "drug_interactions": [
+      "thyroid_medication"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 8,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Vol. II, Part I — Varanadi Kwatha",
+    "classical_text_reference": "Ashtanga Hridayam, Chikitsa 14/18; Sahasrayogam, Kashaya Yogam 14",
+    "classical_action": "Lekhana, Kaphahara, Granthihara, Medohara"
+  },
+  {
+    "id": "pathyadi_kadha",
+    "name": "Pathyadi Kadha",
+    "type": "kashayam (decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "headache",
+      "migraine",
+      "fever",
+      "allergic_rhinitis",
+      "chronic_cough"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "kashaya",
+      "tikta",
+      "amla"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Shulahara",
+      "Jvarahara",
+      "Vatahara",
+      "Anulomana",
+      "Kaphahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Pathya (Haritaki)",
+      "Shatapushpa (Fennel)",
+      "Amalaki",
+      "Shunthi",
+      "Maricha",
+      "Pippali"
+    ],
+    "dosage": "15–20ml with equal warm water before meals or at onset of headache",
+    "dosage_pediatric": "5–10ml diluted 1:5 for children over 6",
+    "anupana": "Warm water",
+    "anupana_by_condition": {
+      "migraine": "warm water with a pinch of saindhava lavana",
+      "fever": "cold water"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "pregnancy",
+      "diarrhea"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 2,
+    "duration_max_weeks": 8,
+    "afi_reference": "API Vol. II, Part I — Pathyadi Kwatha",
+    "classical_text_reference": "Bhaishajya Ratnavali, Shiroroga Chikitsa 62/21; Sahasrayogam, Kashaya Yogam 3",
+    "classical_action": "Shulahara, Jvarahara, Ardhavabhedaka hara, Vatahara"
+  },
+  {
+    "id": "vasaguduchyadi_kashayam",
+    "name": "Vasaguduchyadi Kashayam",
+    "type": "kashayam (decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "allergic_rhinitis",
+      "asthma",
+      "low_immunity",
+      "fever",
+      "cough",
+      "respiratory_infections"
+    ],
+    "dosha_effects": {
+      "vata": 0,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Kaphahara",
+      "Jvarahara",
+      "Shwasahara",
+      "Raktastambhana",
+      "Tridoshahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta"
+    ],
+    "ingredients": [
+      "Vasa (Adhatoda vasica)",
+      "Guduchi (Tinospora cordifolia)",
+      "Shunthi",
+      "Pippali",
+      "Katuka",
+      "Nimba"
+    ],
+    "dosage": "15–20ml diluted with 45ml water before meals",
+    "dosage_pediatric": "5–10ml diluted 1:5, with honey",
+    "anupana": "Warm water; honey for cough variant",
+    "anupana_by_condition": {
+      "asthma": "warm water with honey",
+      "fever": "cold water"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "pregnancy",
+      "emaciation",
+      "vata_excess"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. II, Part I — Vasaguduchyadi Kwatha",
+    "classical_text_reference": "Sahasrayogam, Kashaya Yogam 22; Charaka Samhita, Chikitsa 17/78",
+    "classical_action": "Kaphahara, Jvarahara, Shwasahara, Pratishyayahara"
+  },
+  {
+    "id": "nimbapatradi_kashayam",
+    "name": "Nimbapatradi Kashayam",
+    "type": "kashayam (decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "skin_disorders",
+      "diabetes",
+      "fever",
+      "blood_purification",
+      "intestinal_worms",
+      "infections"
+    ],
+    "dosha_effects": {
+      "vata": 1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Kusthaghna",
+      "Pittahara",
+      "Krimighna",
+      "Jvarahara",
+      "Deepana",
+      "Raktaprasadana"
+    ],
+    "dhatu_affected": [
+      "rakta",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Nimba (Neem) leaves",
+      "Patola",
+      "Musta",
+      "Katuka",
+      "Chandana",
+      "Vasa"
+    ],
+    "dosage": "15–20ml diluted with 45ml water on an empty stomach",
+    "dosage_pediatric": null,
+    "anupana": "Room temperature water",
+    "anupana_by_condition": {
+      "diabetes": "bitter gourd juice",
+      "skin_disorders": "neem water"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "emaciation",
+      "vata_excess",
+      "pregnancy",
+      "trying_to_conceive_male"
+    ],
+    "drug_interactions": [
+      "diabetes_medication",
+      "immunosuppressants"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "Not listed in API — classical formulation",
+    "classical_text_reference": "Charaka Samhita, Chikitsa 7/100; Ashtanga Hridayam, Chikitsa 19/12",
+    "classical_action": "Kusthaghna, Pittahara, Krimighna, Jvarahara"
+  },
+  {
+    "id": "mahamanjishthadi_kashayam",
+    "name": "Mahamanjishthadi Kashayam",
+    "type": "kashayam (decoction)",
+    "application_type": "internal",
+    "conditions": [
+      "skin_disorders",
+      "allergic_skin",
+      "blood_purification",
+      "vatarakta",
+      "rheumatoid_arthritis",
+      "gout"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Raktaprasadana",
+      "Kusthaghna",
+      "Varnya",
+      "Shothahara",
+      "Vedanasthapana"
+    ],
+    "dhatu_affected": [
+      "rakta",
+      "rasa",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Manjistha (Rubia cordifolia)",
+      "Nimba",
+      "Guduchi",
+      "Triphala",
+      "Katuka",
+      "Vasa",
+      "Chandana",
+      "Shatavari"
+    ],
+    "dosage": "15–20ml diluted with 45ml water before meals twice daily",
+    "dosage_pediatric": null,
+    "anupana": "Room temperature water or butter milk for skin conditions",
+    "anupana_by_condition": {
+      "vatarakta": "warm water",
+      "skin_disorders": "buttermilk (Takra)"
+    },
+    "timing": "before_meals",
+    "contraindications": [
+      "pregnancy",
+      "emaciation"
+    ],
+    "drug_interactions": [
+      "blood_thinners"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 8,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Vol. II, Part I — Mahamanjishthadi Kwatha",
+    "classical_text_reference": "Bhaishajya Ratnavali, Kushtha Chikitsa 54/18; Sahasrayogam, Kashaya Yogam 55",
+    "classical_action": "Raktaprasadana, Kusthaghna, Varnya, Shothahara"
+  },
+  {
+    "id": "brahmi_ghrita",
+    "name": "Brahmi Ghrita",
+    "type": "ghrita (medicated ghee)",
+    "application_type": "internal",
+    "conditions": [
+      "cognitive_decline",
+      "anxiety",
+      "depression",
+      "memory_impairment",
+      "epilepsy_support",
+      "stress",
+      "insomnia"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 1
+    },
+    "rasa": [
+      "tikta",
+      "madhura",
+      "kashaya"
+    ],
+    "guna": [
+      "guru",
+      "snigdha",
+      "mridu"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Medhya",
+      "Nidrajanana",
+      "Balya",
+      "Rasayana",
+      "Unmadahara",
+      "Pittahara"
+    ],
+    "dhatu_affected": [
+      "majja",
+      "rasa",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Brahmi (Bacopa monnieri)",
+      "Shankhapushpi",
+      "Vacha",
+      "Kushmanda",
+      "Ghee (Cow's clarified butter)"
+    ],
+    "dosage": "5–10g with warm milk in the morning on an empty stomach",
+    "dosage_pediatric": "2–3g with warm milk",
+    "anupana": "Warm milk",
+    "anupana_by_condition": {
+      "depression": "warm milk with saffron",
+      "epilepsy_support": "warm water"
+    },
+    "timing": "morning",
+    "contraindications": [
+      "kapha_excess",
+      "obesity",
+      "high_cholesterol"
+    ],
+    "drug_interactions": [
+      "sedatives",
+      "antiepileptics",
+      "antidepressants"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 8,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Vol. IV — Brahmi Ghrita",
+    "classical_text_reference": "Charaka Samhita, Chikitsa 10/25; Ashtanga Hridayam, Uttara 6/12",
+    "classical_action": "Medhya, Rasayana, Unmadahara, Nidrajanana, Balya"
+  },
+  {
+    "id": "phala_ghrita",
+    "name": "Phala Ghrita",
+    "type": "ghrita (medicated ghee)",
+    "application_type": "internal",
+    "conditions": [
+      "female_infertility",
+      "pcos",
+      "menstrual_disorders",
+      "hormonal_imbalance",
+      "menopause",
+      "postpartum_weakness"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 1
+    },
+    "rasa": [
+      "madhura",
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "guru",
+      "snigdha",
+      "mridu"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Garbhaposhana",
+      "Stanya",
+      "Pittahara",
+      "Balya",
+      "Rasayana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "artava",
+      "shukra"
+    ],
+    "ingredients": [
+      "Shatavari",
+      "Ashwagandha",
+      "Bala",
+      "Amalaki",
+      "Manjistha",
+      "Cow's Ghee"
+    ],
+    "dosage": "5–10g with warm milk in the morning on an empty stomach",
+    "dosage_pediatric": null,
+    "anupana": "Warm milk",
+    "anupana_by_condition": {
+      "pcos": "warm milk with cinnamon",
+      "menopause": "warm milk with ashwagandha"
+    },
+    "timing": "morning",
+    "contraindications": [
+      "kapha_excess",
+      "obesity",
+      "uncontrolled_diabetes"
+    ],
+    "drug_interactions": [
+      "hormone_therapy"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": "female",
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 8,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Vol. IV — Phala Ghrita",
+    "classical_text_reference": "Charaka Samhita, Chikitsa 30/135; Ashtanga Hridayam, Uttara 34/15",
+    "classical_action": "Garbhaposhana, Stanyajanana, Artava shodha, Balya"
+  },
+  {
+    "id": "triphala_ghrita",
+    "name": "Triphala Ghrita",
+    "type": "ghrita (medicated ghee)",
+    "application_type": "internal",
+    "conditions": [
+      "eye_disorders",
+      "vision_problems",
+      "cognitive_decline",
+      "skin_disorders"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "kashaya",
+      "amla",
+      "tikta",
+      "madhura",
+      "katu"
+    ],
+    "guna": [
+      "guru",
+      "snigdha",
+      "mridu"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Chaksushya",
+      "Rasayana",
+      "Deepana",
+      "Tridoshahara"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Amalaki (Emblica officinalis)",
+      "Bibhitaki (Terminalia bellirica)",
+      "Haritaki (Terminalia chebula)",
+      "Cow's Ghee"
+    ],
+    "dosage": "5–10g with warm water or warm milk in the morning",
+    "dosage_pediatric": "2–3g with warm water or milk",
+    "anupana": "Warm water or warm milk",
+    "anupana_by_condition": {
+      "eye_disorders": "warm water with triphala wash externally also"
+    },
+    "timing": "morning",
+    "contraindications": [
+      "kapha_excess",
+      "obesity",
+      "diarrhea"
+    ],
+    "drug_interactions": [
+      "blood_thinners"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 8,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Vol. IV — Triphala Ghrita",
+    "classical_text_reference": "Ashtanga Hridayam, Uttara 16/30; Charaka Samhita, Chikitsa 26/116",
+    "classical_action": "Chaksushya, Rasayana, Deepana, Netrya"
+  },
+  {
+    "id": "dhanwantharam_taila_101",
+    "name": "Dhanwantharam Taila 101",
+    "type": "taila (oil)",
+    "application_type": "external",
+    "conditions": [
+      "neurological_disorders",
+      "cervical_spondylosis",
+      "paralysis",
+      "postpartum_weakness",
+      "muscle_weakness"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 0
+    },
+    "rasa": [
+      "tikta",
+      "madhura",
+      "kashaya"
+    ],
+    "guna": [
+      "snigdha",
+      "guru",
+      "ushna"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Vatahara",
+      "Balya",
+      "Brimhana",
+      "Vedanasthapana",
+      "Shothahara"
+    ],
+    "dhatu_affected": [
+      "asthi",
+      "mamsa",
+      "majja",
+      "rasa"
+    ],
+    "ingredients": [
+      "Bala (Sida cordifolia)",
+      "Dashamoola",
+      "Ashwagandha",
+      "Shatavari",
+      "Sesame oil",
+      "Cow's milk (101 processed)"
+    ],
+    "dosage": "Warm oil applied by trained therapist for Abhyanga; self-massage 20 min before bath",
+    "dosage_pediatric": null,
+    "anupana": "External use only",
+    "anupana_by_condition": {},
+    "timing": "morning_before_bath",
+    "contraindications": [
+      "open_wounds",
+      "skin_infection",
+      "fever",
+      "active_inflammation"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Vol. III — Dhanwantharam Taila",
+    "classical_text_reference": "Ashtanga Hridayam, Chikitsa 21/55; Sahasrayogam, Taila Yogam 2",
+    "classical_action": "Vatahara, Balya, Brimhana, Prasoota Roga hara (external Snehana)"
+  },
+  {
+    "id": "bhringaraja_taila",
+    "name": "Bhringaraja Taila",
+    "type": "taila (oil)",
+    "application_type": "external",
+    "conditions": [
+      "hair_loss",
+      "premature_graying",
+      "scalp_disorders",
+      "insomnia"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 0
+    },
+    "rasa": [
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "snigdha",
+      "laghu"
+    ],
+    "virya": "ushna",
+    "vipaka": "madhura",
+    "karma": [
+      "Keshya",
+      "Rasayana",
+      "Nidrajanana",
+      "Balya"
+    ],
+    "dhatu_affected": [
+      "asthi",
+      "majja",
+      "rasa"
+    ],
+    "ingredients": [
+      "Bhringaraja (Eclipta alba) juice",
+      "Sesame oil base",
+      "Coconut oil",
+      "Amalaki"
+    ],
+    "dosage": "Apply warm to scalp and hair roots; massage for 5–10 min; leave 1 hr or overnight; wash",
+    "dosage_pediatric": "Gentle scalp massage 5 min twice weekly",
+    "anupana": "External use only",
+    "anupana_by_condition": {},
+    "timing": "before_sleep",
+    "contraindications": [
+      "scalp_infection",
+      "dandruff_with_weeping_lesions"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": true,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 8,
+    "duration_max_weeks": 24,
+    "afi_reference": "API Vol. III — Bhringaraja Taila",
+    "classical_text_reference": "Charaka Samhita, Sutra 5/71; Sahasrayogam, Taila Yogam 14",
+    "classical_action": "Keshya, Kesharanjana, Nidrajanana, Rasayana (external)"
+  },
+  {
+    "id": "nalpamaradi_taila",
+    "name": "Nalpamaradi Taila",
+    "type": "taila (oil)",
+    "application_type": "external",
+    "conditions": [
+      "skin_disorders",
+      "hyperpigmentation",
+      "acne",
+      "skin_brightening",
+      "allergic_skin",
+      "skin_dullness"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "snigdha",
+      "sheeta"
+    ],
+    "virya": "sheeta",
+    "vipaka": "katu",
+    "karma": [
+      "Varnya",
+      "Kusthaghna",
+      "Tvak Prasadana",
+      "Pittahara",
+      "Raktaprasadana"
+    ],
+    "dhatu_affected": [
+      "rakta",
+      "rasa"
+    ],
+    "ingredients": [
+      "Nal (Ficus species — 4 types)",
+      "Haridra (Turmeric)",
+      "Chandana",
+      "Sesame oil",
+      "Coconut oil"
+    ],
+    "dosage": "Apply gently to face or affected skin twice daily; wash after 20–30 min",
+    "dosage_pediatric": null,
+    "anupana": "External use only",
+    "anupana_by_condition": {},
+    "timing": "morning_before_bath",
+    "contraindications": [
+      "active_open_wounds",
+      "skin_infections"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": true,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 16,
+    "afi_reference": "Not listed in API — classical Keraliya formulation",
+    "classical_text_reference": "Sahasrayogam, Taila Yogam 22 (Kerala tradition); Ashtanga Hridayam, Uttara 32",
+    "classical_action": "Varnya, Kusthaghna, Tvak Prasadana (external Snehana)"
+  },
+  {
+    "id": "karpasasthyadi_taila",
+    "name": "Karpasasthyadi Taila",
+    "type": "taila (oil)",
+    "application_type": "external",
+    "conditions": [
+      "sciatica",
+      "low_back_pain",
+      "cervical_spondylosis",
+      "back_pain",
+      "vata_disorders"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "katu"
+    ],
+    "guna": [
+      "snigdha",
+      "ushna",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Vatahara",
+      "Shulahara",
+      "Shothahara",
+      "Vedanasthapana"
+    ],
+    "dhatu_affected": [
+      "asthi",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Karpasa (Cotton seeds)",
+      "Sesame oil",
+      "Eranda moola",
+      "Devadaru",
+      "Shunthi",
+      "Saindhava Lavana"
+    ],
+    "dosage": "Warm oil massage on lower back and affected area for 20 min; Nadi Sweda (fomentation) after",
+    "dosage_pediatric": null,
+    "anupana": "External use only",
+    "anupana_by_condition": {},
+    "timing": "morning_before_bath",
+    "contraindications": [
+      "open_wounds",
+      "fever",
+      "skin_infection"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 1,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. III — Karpasasthyadi Taila",
+    "classical_text_reference": "Sahasrayogam, Taila Yogam 18; Bhaishajya Ratnavali, Vatavyadhyadhikara",
+    "classical_action": "Vatahara, Shulahara, Katishoolahara (external Snehana)"
+  },
+  {
+    "id": "sahacharadi_taila",
+    "name": "Sahacharadi Taila",
+    "type": "taila (oil)",
+    "application_type": "external",
+    "conditions": [
+      "neurological_disorders",
+      "paralysis",
+      "sciatica",
+      "joint_pain",
+      "cervical_spondylosis",
+      "rheumatoid_arthritis"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "katu"
+    ],
+    "guna": [
+      "snigdha",
+      "tikshna",
+      "ushna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Vatahara",
+      "Shothahara",
+      "Vedanasthapana",
+      "Balya"
+    ],
+    "dhatu_affected": [
+      "asthi",
+      "mamsa",
+      "majja"
+    ],
+    "ingredients": [
+      "Sahachara (Strobilanthes ciliatus)",
+      "Sesame oil",
+      "Devadaru",
+      "Rasna",
+      "Shunthi",
+      "Dashamoola"
+    ],
+    "dosage": "Warm massage to affected areas for 20–30 min by trained therapist; or self-apply before Swedana",
+    "dosage_pediatric": null,
+    "anupana": "External use only",
+    "anupana_by_condition": {},
+    "timing": "morning_before_bath",
+    "contraindications": [
+      "open_wounds",
+      "fever",
+      "skin_infection",
+      "active_inflammation"
+    ],
+    "drug_interactions": [],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Vol. III — Sahacharadi Taila",
+    "classical_text_reference": "Sahasrayogam, Taila Yogam 5; Ashtanga Hridayam, Chikitsa 21/64",
+    "classical_action": "Vatahara, Shothahara, Pakshaghatahara (external Snehana)"
+  },
+  {
+    "id": "praval_pishti",
+    "name": "Praval Pishti",
+    "type": "pishti (powder of gems/minerals)",
+    "application_type": "internal",
+    "conditions": [
+      "hyperacidity",
+      "cardiac_weakness",
+      "calcium_deficiency",
+      "pitta_disorders",
+      "insomnia",
+      "burning_sensation"
+    ],
+    "dosha_effects": {
+      "vata": 0,
+      "pitta": -1,
+      "kapha": 0
+    },
+    "rasa": [
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "sheeta",
+      "mridu"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Pittahara",
+      "Hridya",
+      "Nidrajanana",
+      "Balya",
+      "Raktaprasadana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "asthi"
+    ],
+    "ingredients": [
+      "Praval (Coral/Corallium rubrum) — roasted and triturated in rose water"
+    ],
+    "dosage": "125–250mg with honey, ghee, or mishri twice daily",
+    "dosage_pediatric": "62.5mg with honey",
+    "anupana": "Honey, ghee, or mishri water",
+    "anupana_by_condition": {
+      "hyperacidity": "mishri water (cool)",
+      "cardiac_weakness": "ghee with honey",
+      "insomnia": "warm milk"
+    },
+    "timing": "twice_daily",
+    "contraindications": [
+      "kapha_excess",
+      "hypothyroid"
+    ],
+    "drug_interactions": [
+      "antihypertensives"
+    ],
+    "pregnancy_safe": true,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. II, Part II — Praval Pishti",
+    "classical_text_reference": "Rasa Tarangini 14/45; Bhaishajya Ratnavali, Amlapitta Chikitsa 56/18",
+    "classical_action": "Pittahara, Hridya, Raktaprasadana, Asthiposhaka"
+  },
+  {
+    "id": "mukta_pishti",
+    "name": "Mukta Pishti",
+    "type": "pishti (powder of gems/minerals)",
+    "application_type": "internal",
+    "conditions": [
+      "cardiac_weakness",
+      "insomnia",
+      "pitta_disorders",
+      "anxiety",
+      "stress",
+      "depression",
+      "burning_sensation"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": -1,
+      "kapha": 0
+    },
+    "rasa": [
+      "madhura"
+    ],
+    "guna": [
+      "laghu",
+      "sheeta",
+      "mridu",
+      "snigdha"
+    ],
+    "virya": "sheeta",
+    "vipaka": "madhura",
+    "karma": [
+      "Hridya",
+      "Nidrajanana",
+      "Pittahara",
+      "Balya",
+      "Medhya",
+      "Rasayana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "majja"
+    ],
+    "ingredients": [
+      "Mukta (Pearl) — fine powder triturated in rose water for 30 days"
+    ],
+    "dosage": "62.5–125mg with honey, mishri, or warm milk at night",
+    "dosage_pediatric": "30mg with honey",
+    "anupana": "Honey or warm milk at bedtime",
+    "anupana_by_condition": {
+      "insomnia": "warm milk with saffron",
+      "anxiety": "mishri water",
+      "cardiac_weakness": "arjuna milk"
+    },
+    "timing": "before_sleep",
+    "contraindications": [
+      "hypercalcemia",
+      "kidney_stones",
+      "hyperparathyroidism"
+    ],
+    "drug_interactions": [
+      "antidepressants",
+      "sedatives"
+    ],
+    "pregnancy_safe": true,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. II, Part II — Mukta Pishti",
+    "classical_text_reference": "Rasa Tarangini 14/82; Charaka Samhita, Chikitsa 4/68",
+    "classical_action": "Hridya, Nidrajanana, Pittahara, Balya, Medhya Rasayana"
+  },
+  {
+    "id": "loha_bhasma",
+    "name": "Loha Bhasma",
+    "type": "bhasma (ash)",
+    "application_type": "internal",
+    "conditions": [
+      "anemia",
+      "liver_disorders",
+      "pandu_roga",
+      "low_immunity",
+      "fatigue",
+      "splenomegaly"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya"
+    ],
+    "guna": [
+      "ruksha",
+      "laghu",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Raktaprasadana",
+      "Balya",
+      "Deepana",
+      "Pachana",
+      "Lekhana"
+    ],
+    "dhatu_affected": [
+      "rakta",
+      "rasa",
+      "meda",
+      "mamsa"
+    ],
+    "ingredients": [
+      "Lauha (Iron) — purified and incinerated through classical Shodhana and Marana process"
+    ],
+    "dosage": "125–250mg with honey, ghee, or Triphala decoction twice daily after meals",
+    "dosage_pediatric": "62.5mg with honey",
+    "anupana": "Honey with ghee (equal parts), or Triphala decoction",
+    "anupana_by_condition": {
+      "anemia": "pomegranate juice and honey",
+      "liver_disorders": "Triphala decoction"
+    },
+    "timing": "after_meals",
+    "contraindications": [
+      "hyperacidity",
+      "pregnancy",
+      "constipation_chronic",
+      "fever_active"
+    ],
+    "drug_interactions": [
+      "antibiotics",
+      "antacids"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [],
+    "duration_min_weeks": 4,
+    "duration_max_weeks": 12,
+    "afi_reference": "API Vol. II, Part II — Loha Bhasma",
+    "classical_text_reference": "Rasa Tarangini 19/10; Charaka Samhita, Chikitsa 16/48 (Pandu Roga Chikitsa)",
+    "classical_action": "Raktaprasadana, Pandu hara, Balya, Deepana, Panduroga nashaka"
+  },
+  {
+    "id": "shilajit",
+    "name": "Shilajit",
+    "type": "satva (extract)",
+    "application_type": "internal",
+    "conditions": [
+      "diabetes",
+      "male_reproductive",
+      "anemia",
+      "fatigue",
+      "cognitive_decline",
+      "kidney_disease",
+      "obesity"
+    ],
+    "dosha_effects": {
+      "vata": -1,
+      "pitta": 0,
+      "kapha": -1
+    },
+    "rasa": [
+      "tikta",
+      "kashaya",
+      "amla"
+    ],
+    "guna": [
+      "laghu",
+      "ruksha",
+      "tikshna"
+    ],
+    "virya": "ushna",
+    "vipaka": "katu",
+    "karma": [
+      "Rasayana",
+      "Balya",
+      "Mutrala",
+      "Medhya",
+      "Deepana",
+      "Pachana",
+      "Lekhana"
+    ],
+    "dhatu_affected": [
+      "rasa",
+      "rakta",
+      "mamsa",
+      "meda",
+      "asthi",
+      "majja",
+      "shukra"
+    ],
+    "ingredients": [
+      "Shilajit (purified mineral pitch/asphaltum from Himalayan rocks)"
+    ],
+    "dosage": "250–500mg with warm milk or water twice daily on empty stomach",
+    "dosage_pediatric": null,
+    "anupana": "Warm milk (preferred) or warm water",
+    "anupana_by_condition": {
+      "diabetes": "warm water with triphala",
+      "male_reproductive": "warm milk with ashwagandha",
+      "anemia": "warm milk with iron-rich food"
+    },
+    "timing": "morning_and_night",
+    "contraindications": [
+      "hyperuricemia_severe",
+      "pregnancy",
+      "hemochromatosis"
+    ],
+    "drug_interactions": [
+      "diabetes_medication",
+      "antihypertensives"
+    ],
+    "pregnancy_safe": false,
+    "gender_specific": null,
+    "safety_tier": 2,
+    "season_avoid": [
+      "grishma"
+    ],
+    "duration_min_weeks": 6,
+    "duration_max_weeks": 16,
+    "afi_reference": "API Vol. I — Shilajit (Asphaltum purificatum)",
+    "classical_text_reference": "Charaka Samhita, Chikitsa 1/3-76 (Rasayana); Ashtanga Hridayam, Chikitsa 39/152",
+    "classical_action": "Rasayana, Sarva Dhatu Balya, Mutrala, Prameha hara, Medhya"
   }
 ]

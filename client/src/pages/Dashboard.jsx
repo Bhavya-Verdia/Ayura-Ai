@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { AuthContext } from '../providers/AuthContext'
 import { useTheme } from '../providers/ThemeProvider'
-import API, { plansAPI, preferencesAPI, progressAPI, profileAPI } from '../api/client'
+import API, { plansAPI, preferencesAPI, progressAPI, profileAPI, authAPI } from '../api/client'
 import PlanViewer from '../components/PlanViewer'
 import VikritiCheckIn from '../components/VikritiCheckIn'
 import DoshaValidationCard from '../components/DoshaValidationCard'
@@ -241,6 +241,42 @@ function HealthScoreCard({ completedCount, total }) {
   )
 }
 
+// ── Email Verification Banner ─────────────────────────────────
+function VerifyEmailBanner({ email }) {
+  const [sent, setSent] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
+  if (dismissed) return null
+  async function resend() {
+    try {
+      await authAPI.resendVerification(email)
+      setSent(true)
+    } catch {
+      toast.error('Could not resend. Try again in a moment.')
+    }
+  }
+  return (
+    <motion.div
+      className="dash-verify-banner"
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.3 }}
+    >
+      <span className="dash-verify-icon">✉️</span>
+      <div className="dash-verify-body">
+        <strong>Verify your email to unlock plan generation.</strong>
+        {' '}Check your inbox at <em>{email}</em>.
+      </div>
+      {sent ? (
+        <span className="dash-verify-sent">Sent ✓</span>
+      ) : (
+        <button className="dash-verify-btn" onClick={resend}>Resend</button>
+      )}
+      <button className="dash-verify-dismiss" onClick={() => setDismissed(true)} aria-label="Dismiss">✕</button>
+    </motion.div>
+  )
+}
+
 // ── Plan Feedback Card ────────────────────────────────────────
 function PlanFeedbackCard({ planType, onDone }) {
   const queryClient = useQueryClient()
@@ -465,8 +501,13 @@ const Dashboard = () => {
         }}
       />
 
+      {/* ── Email verification banner ── */}
+      {user?.auth_provider === 'local' && user?.is_verified === false && (
+        <VerifyEmailBanner email={user.email} />
+      )}
+
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-16px', position: 'relative', zIndex: 10 }}>
-        <motion.button 
+        <motion.button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="btn btn-secondary btn-sm"
           style={{ display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '20px', padding: '6px 14px', fontSize: '0.85rem' }}

@@ -17,7 +17,7 @@ from ai.prompts.system_prompts import (
 )
 from engine.bmi_calculator import bmi_calculator
 from engine.calorie_calculator import calorie_calculator
-from engine.dosha_analyzer import dosha_analyzer, _medical_history_vikriti_signal, _DISEASE_DOSHA_SIGNAL, _dhatu_from_conditions, _DHATU_THERAPY
+from engine.dosha_analyzer import dosha_analyzer, _medical_history_vikriti_signal, _DISEASE_DOSHA_SIGNAL, _dhatu_from_conditions, _DHATU_THERAPY, disease_signal
 from engine.condition_filter import condition_filter
 from services.seasonal_service import build_seasonal_guidance
 
@@ -455,8 +455,7 @@ async def ml_analysis_node(state: PlanState) -> dict:
     # Build per-condition detail for agent prompts
     disease_detail: list[dict] = []
     for cond in med_conditions:
-        key = cond.lower().strip().replace(" ", "_").replace("-", "_")
-        mapping = _DISEASE_DOSHA_SIGNAL.get(key)
+        mapping = disease_signal(cond)
         if mapping:
             entry: dict = {
                 "id": cond,

@@ -5,10 +5,10 @@ import { ToastContext } from '../providers/ToastContext'
 export default function ReloadPrompt() {
   const {
     offlineReady: [offlineReady, setOfflineReady],
-    needRefresh: [needRefresh, setNeedRefresh],
+    needRefresh: [needRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegistered(r) {
+    onRegistered() {
       console.log('SW Registered')
     },
     onRegisterError(error) {
@@ -27,7 +27,7 @@ export default function ReloadPrompt() {
 
   useEffect(() => {
     if (needRefresh) {
-      const toastId = toast.info(
+      toast.info(
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <span>A new version is available!</span>
           <button 

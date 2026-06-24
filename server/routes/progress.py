@@ -168,3 +168,25 @@ async def get_progress_summary(
         except Exception:
             pass
     return result
+
+
+@router.get("/logs")
+async def get_progress_logs(
+    limit: int = 30,
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """Return the last N raw progress log entries for the authenticated user."""
+    cursor = db.progress_logs.find({"user_id": user.id}).sort("date", -1).limit(min(limit, 90))
+    logs = []
+    async for doc in cursor:
+        raw_date = doc.get("date")
+        logs.append({
+            "id": doc["_id"],
+            "date": raw_date.isoformat() if isinstance(raw_date, datetime) else str(raw_date),
+            "weight_kg": doc.get("weight_kg"),
+            "adherence_percent": doc.get("adherence_percent"),
+            "mood": doc.get("mood"),
+            "plan_feedback": doc.get("plan_feedback") or "",
+        })
+    return logs

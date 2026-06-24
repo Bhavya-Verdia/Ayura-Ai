@@ -77,30 +77,67 @@ def get_goal_suitability(category, equipment):
         "general_fitness": True
     }
 
-def get_contraindications(target, secondary, equipment, category):
+# Name-based biomechanical contraindication rules (movement pattern → injuries).
+# Keeps the gym KB's contraindications complete so the injury filter works for every
+# exercise — not just those whose muscle tag happened to trigger a rule.
+_NAME_CONTRA_RULES = [
+    (("crunch", "sit-up", "sit up", "situp", "abdominal", "oblique", "russian twist",
+      "v-up", "leg raise", "knee raise", "hollow", "toe touch", "heel touch",
+      "flutter kick", "scissor", "jackknife", "dragon flag", "windshield"),
+     ["herniated_disc", "lower_back_pain", "pregnancy"]),
+    (("plank", "mountain climber", "dead bug", "bird dog"), ["lower_back_pain", "pregnancy"]),
+    (("deadlift", "good morning", "bent over", "bent-over", "t-bar", "rack pull",
+      "hyperextension", "back extension", "romanian", "rdl", "pendlay"),
+     ["herniated_disc", "lower_back_pain"]),
+    (("squat", "lunge", "leg press", "step-up", "step up", "leg extension", "hack",
+      "split squat", "pistol", "wall sit", "sissy", "leg curl"),
+     ["bad_knee", "knee_replacement"]),
+    (("overhead", "shoulder press", "military", "arnold", "upright row", "lateral raise",
+      "front raise", "push press", "snatch", "jerk"), ["rotator_cuff", "shoulder_injury"]),
+    (("bench press", "chest press", "push-up", "push up", "pushup", "dip", "chest fly",
+      "pec deck", "incline press", "decline press", "fly"), ["rotator_cuff", "shoulder_injury"]),
+    (("pull-up", "pull up", "pullup", "chin-up", "chin up", "pulldown", "row", "pullover"),
+     ["shoulder_injury"]),
+    (("jump", "box ", "burpee", "plyo", "sprint", "skater", "hop", "bound",
+      "kettlebell swing", "thruster", "wall ball", "high knee", "jumping"),
+     ["bad_knee", "bad_ankle", "heart_disease", "pregnancy"]),
+    (("neck", "shrug"), ["cervical_spondylosis", "neck_injury"]),
+    (("calf", "calve", "tibia"), ["bad_ankle"]),
+    (("wrist", "forearm", "reverse curl"), ["wrist_injury"]),
+    (("curl", "tricep", "skullcrusher", "skull crusher", "pushdown", "kickback"), ["elbow_injury"]),
+    (("adductor", "abductor", "groin", "hip thrust", "glute"), ["hip_injury"]),
+]
+_VALSALVA_KEYS = ("deadlift", "squat", "leg press", "overhead", "military", "bench press",
+                  "clean", "snatch", "jerk", "thruster")
+
+
+def get_contraindications(name, target, secondary, equipment, category):
     contra = set()
-    muscles = [target] + secondary
-    muscles_str = " ".join(muscles).lower()
-    
+    muscles_str = " ".join([target] + secondary).lower()
+    hay = (name + " " + muscles_str).lower()
+
+    # Muscle-based (original)
     if "lower back" in muscles_str or "spine" in muscles_str or "waist" in muscles_str:
-        contra.update(["herniated_disc", "osteoporosis"])
-        
+        contra.update(["herniated_disc", "lower_back_pain", "osteoporosis"])
     if "quad" in muscles_str or "hamstring" in muscles_str or "knee" in muscles_str:
         contra.update(["bad_knee", "knee_replacement"])
-        
     if "shoulder" in muscles_str or "deltoid" in muscles_str:
         contra.update(["shoulder_injury", "rotator_cuff"])
-        
     if "neck" in muscles_str or "cervical" in muscles_str:
         contra.update(["neck_injury", "cervical_spondylosis"])
-        
-    if equipment == "barbell" and category == "strength":
+
+    # Name-based movement patterns
+    for keys, contras in _NAME_CONTRA_RULES:
+        if any(k in hay for k in keys):
+            contra.update(contras)
+
+    # Valsalva / heavy loading → blood pressure & cardiac
+    if (equipment == "barbell" and category == "strength") or any(k in hay for k in _VALSALVA_KEYS):
         contra.update(["hypertension", "heart_disease"])
-        
     if category == "plyometrics":
         contra.update(["bad_knee", "bad_ankle", "osteoporosis", "pregnancy"])
-        
-    return list(contra)
+
+    return sorted(contra)
 
 def get_cpm(category, equipment):
     if category == "cardio": return 10.0
@@ -180,7 +217,7 @@ def main():
             },
             "dosha_suitability": dosha,
             "goal_suitability": get_goal_suitability(category, equipment),
-            "contraindications": get_contraindications(primary[0] if primary else "", secondary, equipment, category),
+            "contraindications": get_contraindications(ex.get("name", ""), primary[0] if primary else "", secondary, equipment, category),
             "calories_per_minute": get_cpm(category, equipment),
             "modification": "Reduce weight or switch to bodyweight if form breaks down."
         }

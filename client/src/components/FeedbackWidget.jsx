@@ -41,7 +41,7 @@ export default function FeedbackWidget() {
       setIsOpen(false)
       setDescription('')
       setType('General')
-    } catch (err) {
+    } catch {
       toast.error('Failed to submit feedback. Please try again later.')
     } finally {
       setIsSubmitting(false)

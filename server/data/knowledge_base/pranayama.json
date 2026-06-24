@@ -102,7 +102,16 @@
       "Clears mental fog and energises the body",
       "Strengthens the abdominal muscles"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "epilepsy",
+      "glaucoma",
+      "heart_disease",
+      "hernia",
+      "hypertension",
+      "peptic_ulcer",
+      "pregnancy",
+      "recent_surgery"
+    ],
     "pregnancy_safe": false
   },
   {
@@ -537,7 +546,14 @@
       "Calms excessive mental activity and emotional fluctuation",
       "Strengthens the throat and neck through the bandha application"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "epilepsy",
+      "glaucoma",
+      "heart_disease",
+      "hypertension",
+      "pregnancy",
+      "vertigo"
+    ],
     "pregnancy_safe": false
   },
   {
@@ -608,7 +624,13 @@
       "Strengthens the diaphragm and respiratory muscles",
       "Energises and revitalises the entire system when practiced correctly"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "epilepsy",
+      "glaucoma",
+      "heart_disease",
+      "hypertension",
+      "pregnancy"
+    ],
     "pregnancy_safe": false
   },
   {
@@ -680,7 +702,13 @@
       "Detoxifies the lower abdomen and removes Kapha stagnation",
       "Strengthens the core and improves elimination"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "epilepsy",
+      "heart_disease",
+      "hernia",
+      "hypertension",
+      "pregnancy"
+    ],
     "pregnancy_safe": false
   },
   {
@@ -716,7 +744,12 @@
       "Builds energy conservation and reduces energetic dissipation",
       "Prepares the system for advanced pranayama and meditation"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "heart_disease",
+      "hernia",
+      "hypertension",
+      "pregnancy"
+    ],
     "pregnancy_safe": true
   }
 ]

@@ -16,6 +16,7 @@ from routes.profile import get_current_user
 from database.mongodb import get_mongodb
 from ai.llm_client import llm_client
 from services.chat_service import apply_chat_side_effects
+from services.notification_service import create_and_deliver_notification
 
 router = APIRouter()
 
@@ -99,5 +100,39 @@ Respond ONLY with valid JSON:
         background_tasks.add_task(
             apply_chat_side_effects, db, user.id, [], plans_to_adapt, feedback_text
         )
+        # Notify user that plans were adapted
+        plan_names = ", ".join(p.title() for p in plans_to_adapt)
+        background_tasks.add_task(
+            create_and_deliver_notification,
+            db, user.id,
+            "Plans Adapted Based on Check-In",
+            f"Your {plan_names} plan(s) have been updated based on your weekly feedback.",
+            "adaptation",
+        )
 
     return WeeklyCheckinResponse(insight=insight, adapted_plans=plans_to_adapt)
+
+
+@router.get("/history")
+async def get_checkin_history(
+    limit: int = 12,
+    user: UserDocument = Depends(get_current_user),
+):
+    """Return the user's past weekly check-ins, most recent first."""
+    db = get_mongodb()
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    cursor = db.weekly_checkins.find({"user_id": user.id}).sort("timestamp", -1).limit(min(limit, 52))
+    history = []
+    async for doc in cursor:
+        ts = doc.get("timestamp")
+        history.append({
+            "energy":       doc.get("energy"),
+            "digestion":    doc.get("digestion"),
+            "sleep":        doc.get("sleep"),
+            "adherence":    doc.get("adherence"),
+            "symptoms":     doc.get("symptoms", []),
+            "what_felt_good": doc.get("what_felt_good") or "",
+            "timestamp":    ts.isoformat() if isinstance(ts, datetime) else str(ts),
+        })
+    return history

@@ -23,6 +23,7 @@ from schemas.preferences_schema import (
     DietPreferences,
     PanchakarmaPreferences,
     RemedyPreferences,
+    RoutinePreferences,
     PreferencesResponse,
 )
 from routes.profile import get_current_user
@@ -30,7 +31,7 @@ from routes.profile import get_current_user
 router = APIRouter()
 
 # Valid feature names
-FeatureType = Literal["gym", "yoga", "diet", "panchakarma", "remedies", "medicines"]
+FeatureType = Literal["gym", "yoga", "diet", "panchakarma", "remedies", "medicines", "routine"]
 
 # Map feature name to its schema class
 PREFERENCE_SCHEMAS = {
@@ -40,6 +41,7 @@ PREFERENCE_SCHEMAS = {
     "panchakarma": PanchakarmaPreferences,
     "remedies": RemedyPreferences,
     "medicines": RemedyPreferences,   # medicines shares remedy preferences
+    "routine": RoutinePreferences,
 }
 
 
@@ -223,6 +225,28 @@ async def save_remedy_preferences(
         upsert=True,
     )
     return PreferencesResponse(feature="remedies", preferences=prefs_dict, is_set=True)
+
+
+@router.post("/routine", response_model=PreferencesResponse)
+async def save_routine_preferences(
+    prefs: RoutinePreferences,
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """
+    Save or update daily routine (Dinacharya) preferences.
+    Includes wake preference, occupation type, Agni self-report, and gym/yoga integration flags.
+    """
+    prefs_dict = prefs.model_dump()
+    await db.user_preferences.update_one(
+        {"user_id": user.id},
+        {"$set": {
+            "routine": prefs_dict,
+            "updated_at": datetime.now(timezone.utc),
+        }},
+        upsert=True,
+    )
+    return PreferencesResponse(feature="routine", preferences=prefs_dict, is_set=True)
 
 
 @router.post("/medicines", response_model=PreferencesResponse)

@@ -647,7 +647,7 @@ async def generate_diet_plan_llm(
         # weekly_plan alias → week 1 daily for backward-compat with any existing refs
         weekly_plan = week1_daily
 
-        return {
+        result = {
             "plan_id": f"diet_{user_id}_{int(datetime.now(timezone.utc).timestamp())}",
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "generation_method": "llm_primary",
@@ -686,6 +686,13 @@ async def generate_diet_plan_llm(
                 "especially with existing medical conditions."
             ),
         }
+
+        # ── Deterministic Ahara safety layer (Viruddha + allergens, all 4 weeks) ──
+        # Runs after LLM generation so safety never depends on the model self-reporting.
+        from services.ahara_safety import apply_ahara_safety
+        result = apply_ahara_safety(result, allergies, intolerances)
+
+        return result
 
     except Exception as e:
         logger.error(f"LLM diet generation failed: {e}")

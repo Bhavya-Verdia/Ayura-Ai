@@ -648,6 +648,60 @@ def filter_poses(user_profile, yoga_prefs, poses, max_allowed_levels=None, proto
 
 # ── Pranayama selection ───────────────────────────────────────────────────────
 
+# Hard, condition-independent contraindication gate for forceful / breath-holding
+# pranayama. This does NOT depend on protocol_map coverage or on the KB entry
+# having its `contraindications` populated — it is defence-in-depth so a forceful
+# breath (Kapalabhati / Bhastrika / Kumbhaka) can never reach a hypertensive,
+# cardiac, epileptic, glaucoma, hernia, or pregnant user. Over-blocking here is
+# acceptable; a missed block is not.
+_FORCEFUL_PRANAYAMA_CONTRA: dict[str, set[str]] = {
+    # Kapalabhati (skull shining) & Bhastrika (bellows) — rapid forceful exhalation
+    "skull_shining":   {"hypertension", "high_blood_pressure", "heart", "cardiac",
+                        "epilep", "seizure", "hernia", "glaucoma", "retina",
+                        "vertigo", "pregnan", "ulcer", "recent_surgery", "stroke"},
+    "bellows_breath":  {"hypertension", "high_blood_pressure", "heart", "cardiac",
+                        "epilep", "seizure", "hernia", "glaucoma", "retina",
+                        "vertigo", "pregnan", "ulcer", "recent_surgery", "stroke"},
+    "fire_essence":    {"hypertension", "high_blood_pressure", "heart", "cardiac",
+                        "epilep", "seizure", "hernia", "pregnan", "stroke"},
+    # Surya Bhedana (right nostril) — strongly heating
+    "right_nostril":   {"hypertension", "high_blood_pressure", "heart", "cardiac",
+                        "epilep", "seizure", "pregnan"},
+    # Kumbhaka (breath retention) & Bandha (locks)
+    "breath_retention": {"hypertension", "high_blood_pressure", "heart", "cardiac",
+                         "epilep", "seizure", "pregnan", "glaucoma", "retina", "stroke"},
+    "root_lock_breath": {"hypertension", "high_blood_pressure", "heart", "cardiac",
+                         "pregnan", "hernia"},
+    "swooning_breath":  {"hypertension", "high_blood_pressure", "heart", "cardiac",
+                         "epilep", "seizure", "pregnan", "vertigo", "glaucoma"},
+    "unequal_breathing": {"hypertension", "high_blood_pressure", "heart", "cardiac"},
+}
+
+
+def _pranayama_hard_blocked(pr: dict, user_conditions: set[str]) -> bool:
+    """True if this pranayama is contraindicated for any of the user's conditions.
+
+    Checks BOTH the KB entry's own `contraindications` field AND the hardcoded
+    forceful-pranayama safety map. Matching is substring-based in both directions
+    so 'high_blood_pressure' matches 'hypertension'-style tags and vice versa.
+    """
+    if not user_conditions:
+        return False
+    pr_id = pr.get("id", "")
+    contra_tokens: set[str] = set(_FORCEFUL_PRANAYAMA_CONTRA.get(pr_id, set()))
+    for c in (pr.get("contraindications") or []) + (pr.get("medical_conditions_contraindicated") or []):
+        contra_tokens.add(str(c).lower())
+    if not contra_tokens:
+        return False
+    for tok in contra_tokens:
+        if not tok:
+            continue
+        for uc in user_conditions:
+            if tok in uc or uc in tok:
+                return True
+    return False
+
+
 def select_pranayama(user_profile, yoga_prefs, pranayama_db, count=3, protocol_map=None):
     if protocol_map is None:
         protocol_map = _PROTOCOL_MAP
@@ -697,6 +751,9 @@ def select_pranayama(user_profile, yoga_prefs, pranayama_db, count=3, protocol_m
     scored = []
     for pr in pranayama_db:
         if is_pregnant and not pr.get("pregnancy_safe", True):
+            continue
+        # Hard medical contraindication gate (defence-in-depth, condition-independent)
+        if _pranayama_hard_blocked(pr, user_conditions):
             continue
         if pr.get("level", "beginner") not in allowed_levels:
             continue
@@ -1021,6 +1078,32 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
     pranayamas = select_pranayama(user_profile, yoga_prefs, pl, count=3,
                                   protocol_map=effective_proto_map)
 
+    # Safety transparency: which forceful/retention pranayama were excluded for this
+    # user's conditions — surfaced in the UI so the exclusion is visible, not silent.
+    _prana_exclusions = []
+    _uc = set(c.lower() for c in (user_profile.get("medical_history") or []))
+    _is_preg_x = user_profile.get("pregnancy_or_nursing", False)
+    if _uc or _is_preg_x:
+        _PRANA_DISPLAY = {
+            "skull_shining":   "Kapalabhati (Skull-Shining Breath)",
+            "bellows_breath":  "Bhastrika (Bellows Breath)",
+            "breath_retention": "Kumbhaka (Breath Retention)",
+            "right_nostril":   "Surya Bhedana (Right-Nostril Breath)",
+            "fire_essence":    "Agnisara (Fire Essence)",
+            "swooning_breath": "Murccha (Swooning Breath)",
+            "root_lock_breath": "Bandha Pranayama (with locks)",
+        }
+        for _pr in pl:
+            _pid = _pr.get("id")
+            if _pid not in _PRANA_DISPLAY:
+                continue
+            _preg_block = _is_preg_x and not _pr.get("pregnancy_safe", True)
+            if _preg_block or _pranayama_hard_blocked(_pr, _uc):
+                _prana_exclusions.append({
+                    "name": _PRANA_DISPLAY[_pid],
+                    "reason": "Pregnancy / nursing" if _preg_block else "Contraindicated for your health conditions",
+                })
+
     time_of_day = yoga_prefs.get("time_of_day_preference", "morning")
     if time_of_day == "morning":   rest_days = {3, 7}
     elif time_of_day == "evening": rest_days = {4, 7}
@@ -1115,6 +1198,7 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
         "ayurvedic_tips":     get_ayurvedic_tips(dominant_dosha),
         "seasonal_note":      season_cfg.get("note") if season_cfg else None,
         "condition_protocols": active_protocols or None,
+        "pranayama_safety_exclusions": _prana_exclusions or None,
         "disclaimer":         disclaimer,
         "enriched":           False,
     }

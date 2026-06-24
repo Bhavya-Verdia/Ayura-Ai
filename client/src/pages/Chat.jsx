@@ -106,6 +106,7 @@ export default function Chat() {
 
   const handleSend = (content) => {
     if (!content.trim() || isLoading) return;
+    // eslint-disable-next-line react-hooks/purity
     const userMessage = { role: 'user', content, timestamp: Date.now() };
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
