@@ -53,7 +53,8 @@ class UserDocument(BaseModel):
     plan_not_working_streak: int = 0                # consecutive "not improving" plan feedbacks
     dosha_contradictions: Optional[list[str]] = None  # conflicts detected between trait groups
     primary_gunas: Optional[list[str]] = None          # dominant Gunas (Charaka Sutrasthana 1.59-61)
-    manas_prakriti: Optional[str] = None               # mental constitution with Guna tendency
+    manas_prakriti: Optional[str] = None               # mental constitution with Guna tendency (LLM text)
+    manasa_prakriti: Optional[dict] = None             # Triguna scores: {satva,rajas,tamas,dominant_guna,label,description}
     prakriti_classical_type: Optional[str] = None      # one of 7 Sapta Prakriti types
     prakriti_classical_name: Optional[str] = None      # human-readable classical name
     ama_indicator: Optional[str] = None                # none | mild | moderate | high
@@ -218,6 +219,7 @@ class UserProfileResponse(BaseModel):
     dosha_contradictions: Optional[list[str]] = None
     primary_gunas: Optional[list[str]] = None
     manas_prakriti: Optional[str] = None
+    manasa_prakriti: Optional[dict] = None
     prakriti_classical_type: Optional[str] = None
     prakriti_classical_name: Optional[str] = None
     ama_indicator: Optional[str] = None
@@ -297,6 +299,7 @@ class PhysicalTraitAnswers(BaseModel):
 class DoshaAssessmentRequest(BaseModel):
     physical_traits: PhysicalTraitAnswers
     current_symptoms: list[str] = Field(default_factory=list)
+    manasa_traits: Optional[dict] = Field(None, description="Triguna answers: {trait_id: 'satva'|'rajas'|'tamas'}")
 
 
 class VikritiCheckInRequest(BaseModel):

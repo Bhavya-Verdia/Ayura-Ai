@@ -901,8 +901,12 @@ async def generate_routine_plan(
     if cached_plan:
         return cached_plan
 
-    # 2. Generate new plan (rule-based, no LLM needed; lock prevents duplicate saves)
+    # 2. Generate new plan (engine first, then LLM enrichment for coaching rationale)
     async with _plan_guard(user.id, "routine"):
+        from engine.seasonal import get_current_season
+        season_info = get_current_season()
+        user_profile["current_season"] = season_info.name.lower()
+
         raw_plan = engine_generate(
             user_profile,
             prefs_to_pass,
@@ -910,24 +914,28 @@ async def generate_routine_plan(
             yoga_plan_data=yoga_plan_data,
         )
 
-        plan_id = raw_plan.get("plan_id")
+        from services.routine_enricher import enrich_routine_plan
+        enriched_plan = await enrich_routine_plan(raw_plan, user_profile, prefs_to_pass)
+
+        plan_id = enriched_plan.get("plan_id")
+        model_used = enriched_plan.get("enrichment_model", "services.routine_engine")
 
         history = PlanHistoryDocument(
             _id=plan_id,
             user_id=user.id,
             plan_type="routine",
-            generation_method="rule_based",
-            model_used="services.routine_engine",
+            generation_method="agentic" if enriched_plan.get("enriched") else "rule_based",
+            model_used=model_used,
             preference_hash=pref_hash,
             plan_data={
-                "routine_plan": raw_plan,
+                "routine_plan": enriched_plan,
                 "generated_at": datetime.now(timezone.utc).isoformat()
             },
             generated_at=datetime.now(timezone.utc)
         )
         await db.plan_history.insert_one(history.model_dump(by_alias=True))
 
-    return raw_plan
+    return enriched_plan
 
 @router.post("/gym")
 async def generate_gym_plan(
@@ -1144,6 +1152,138 @@ async def generate_medicines_plan(
 @router.post("/generate")
 async def generate_holistic_plan(req: PlanGenerationRequest, background_tasks: BackgroundTasks, user: UserDocument = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_mongodb)):
     return await _enqueue_plan("holistic", req, user, db, background_tasks)
+
+
+@router.post("/stream")
+async def stream_holistic_plan(
+    req: dict = Body(default={}),
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """Stream holistic plan generation via Server-Sent Events.
+
+    Each feature (gym, yoga, diet, panchakarma, remedies, medicines) streams its
+    result as soon as it completes — the client doesn't wait for all 6 to finish.
+
+    SSE event format per feature:
+        event: feature
+        data: {"feature": "gym", "status": "done", "data": {...}}
+
+    Final event:
+        event: complete
+        data: {"plan_id": "...", "generated_at": "..."}
+
+    Error event (per feature failure, non-fatal):
+        event: feature
+        data: {"feature": "yoga", "status": "error", "error": "..."}
+    """
+    from fastapi.responses import StreamingResponse
+    from engine.seasonal import get_current_season
+    import asyncio, json, uuid
+
+    if not user.onboarding_complete:
+        raise HTTPException(status_code=400, detail="Please complete onboarding first")
+    if user.auth_provider == "local" and not user.is_verified:
+        raise HTTPException(status_code=403, detail="Please verify your email before generating plans.")
+
+    season_info = get_current_season()
+    user_profile = {
+        "_user_id": user.id,
+        "name": user.name, "gender": user.gender, "age": user.age,
+        "height_cm": user.height_cm, "weight_kg": user.weight_kg,
+        "bmi": user.bmi, "bmi_category": user.bmi_category,
+        "dosha_scores": user.dosha_scores, "dominant_dosha": user.dominant_dosha,
+        "secondary_dosha": user.secondary_dosha,
+        "vikriti_scores": user.vikriti_scores,
+        "vikriti_dominant": user.vikriti_dominant,
+        "vikriti_secondary": user.vikriti_secondary,
+        "medical_history": user.medical_history or [],
+        "allergies": user.allergies or [],
+        "injuries_or_limitations": user.injuries_or_limitations or [],
+        "current_symptoms": user.current_symptoms or [],
+        "current_medications": user.current_medications or [],
+        "fitness_level": user.fitness_level or "beginner",
+        "activity_level": user.activity_level or "moderate",
+        "pregnancy_or_nursing": user.pregnancy_or_nursing or False,
+        "stress_level": user.stress_level,
+        "digestion_quality": user.digestion_quality,
+        "sleep_quality": user.sleep_quality,
+        "goal": user.goal,
+        "current_season": season_info.name.lower(),
+    }
+
+    # Pregnancy-blocked features
+    PREGNANCY_BLOCKED = {"panchakarma", "remedies", "medicines"}
+    feature_types = [
+        ft for ft in ["gym", "yoga", "diet", "panchakarma", "remedies", "medicines"]
+        if not (user.pregnancy_or_nursing and ft in PREGNANCY_BLOCKED)
+    ]
+
+    async def event_generator():
+        results: dict = {}
+        queue: asyncio.Queue = asyncio.Queue()
+
+        async def run_feature(ft: str):
+            try:
+                result = await _generate_feature_via_engine(db, user.id, ft, user_profile)
+                await queue.put(("done", ft, result))
+            except Exception as exc:
+                await queue.put(("error", ft, str(exc)[:300]))
+
+        # Launch all features concurrently
+        tasks = [asyncio.create_task(run_feature(ft)) for ft in feature_types]
+
+        completed = 0
+        while completed < len(feature_types):
+            status, ft, payload = await queue.get()
+            completed += 1
+            if status == "done":
+                results[ft] = payload
+                event_data = json.dumps({"feature": ft, "status": "done", "data": payload}, default=str)
+            else:
+                event_data = json.dumps({"feature": ft, "status": "error", "error": payload})
+            yield f"event: feature\ndata: {event_data}\n\n"
+
+        # Save holistic plan to history
+        plan_id = str(uuid.uuid4())
+        generated_at = datetime.now(timezone.utc).isoformat()
+        try:
+            full_plan_data = {
+                "user_summary": {"name": user.name, "dominant_dosha": user.dominant_dosha},
+                "gym_plan": results.get("gym"),
+                "yoga_plan": results.get("yoga"),
+                "diet_plan": results.get("diet"),
+                "panchakarma_plan": results.get("panchakarma"),
+                "home_remedies": results.get("remedies"),
+                "medicines": results.get("medicines"),
+                "health_risks": [],
+                "safety_checks": {"generation_mode": "engine_backed", "stream": True},
+                "generated_at": generated_at,
+                "generation_method": "agentic",
+                "model_used": "engine+enricher",
+                "id": plan_id,
+            }
+            history = PlanHistoryDocument(
+                _id=plan_id, user_id=user.id, plan_type="holistic",
+                generation_method="agentic", model_used="engine+enricher",
+                plan_data=full_plan_data, generated_at=datetime.now(timezone.utc)
+            )
+            await db.plan_history.insert_one(history.model_dump(by_alias=True))
+        except Exception as exc:
+            from core.logger import logger
+            logger.error("Stream: failed to save holistic plan: %s", exc)
+
+        complete_data = json.dumps({"plan_id": plan_id, "generated_at": generated_at})
+        yield f"event: complete\ndata: {complete_data}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 @router.get("/job/{job_id}")
 async def get_plan_job_status(

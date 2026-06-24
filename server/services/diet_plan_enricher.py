@@ -1,5 +1,6 @@
 import json
 from ai.llm_client import llm_client
+from ai.rag_pipeline import rag_pipeline
 from core.logger import logger
 
 SYSTEM_PROMPT = """
@@ -86,8 +87,21 @@ async def enrich_diet_plan(raw_plan: dict, user_profile: dict, diet_prefs: dict)
             "week_1_schedule": schedule_for_llm,
         }
 
+        # RAG: pull classical diet passages for this user's dosha + conditions
+        dosha_r = (us.get("dominant_dosha") or user_profile.get("dominant_dosha") or "vata").lower()
+        conds_r = us.get("active_condition_protocols") or []
+        rag_query = f"{dosha_r} dosha Ayurvedic diet Pathya Apathya {us.get('agni_type', 'sama')} Agni"
+        rag_docs = await rag_pipeline.query(rag_query, "nutrition", n_results=4, dosha_filter=dosha_r)
+        if not rag_docs and conds_r:
+            rag_docs = await rag_pipeline.query(f"{conds_r[0]} diet Pathya classical Ayurveda", "nutrition", n_results=3)
+        rag_context = rag_pipeline.format_context(rag_docs, max_chars=1000) if rag_docs else ""
+
+        plan_summary_str = json.dumps(plan_summary, indent=2)
+        if rag_context:
+            plan_summary_str += f"\n\nCLASSICAL KNOWLEDGE BASE:\n{rag_context}"
+
         prompt = USER_PROMPT_TEMPLATE.replace(
-            "{plan_summary_json}", json.dumps(plan_summary, indent=2)
+            "{plan_summary_json}", plan_summary_str
         )
 
         response_text = await llm_client.generate(

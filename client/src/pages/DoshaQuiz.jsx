@@ -222,6 +222,57 @@ const TRAIT_QUESTIONS = [
       { value: 'kapha', icon: '💧', label: 'Pale & copious', desc: 'Pale, large volume, infrequent but heavy. Occasionally turbid or slightly foamy. Rarely burning. Steady and predictable.' },
     ],
   },
+  // ── Manasa Prakriti — Triguna assessment (Charaka Samhita Shareera Sthana 4) ─
+  {
+    id: 'motivation_source',
+    question: 'What primarily drives you to act or make decisions?',
+    hint: 'Your most honest motivation, not your ideal',
+    options: [
+      { value: 'satva', icon: '🌟', label: 'Purpose & wisdom', desc: 'I act from a genuine desire to grow, help others, and do what\'s right — even when hard.' },
+      { value: 'rajas', icon: '🏆', label: 'Goals & recognition', desc: 'I act to achieve, succeed, and be seen for my accomplishments. Winning and status matter to me.' },
+      { value: 'tamas', icon: '💤', label: 'Habit & inertia', desc: 'I often act from routine, comfort, or to avoid discomfort. Hard to change what I know.' },
+    ],
+  },
+  {
+    id: 'mind_clarity',
+    question: 'How would you describe your typical mental state?',
+    hint: 'On a regular day — not when you are at your best',
+    options: [
+      { value: 'satva', icon: '💎', label: 'Clear & focused', desc: 'Generally calm, clear-headed, and able to think through things without much mental noise.' },
+      { value: 'rajas', icon: '⚡', label: 'Active & scattered', desc: 'Mind is usually busy, planning, thinking, evaluating. Hard to completely switch off.' },
+      { value: 'tamas', icon: '🌫️', label: 'Heavy & foggy', desc: 'Often feel mentally dull, cloudy, or unmotivated. Heavy feeling that makes starting things hard.' },
+    ],
+  },
+  {
+    id: 'emotional_quality',
+    question: 'When you feel a strong emotion, what characterises it most?',
+    hint: 'Think of anger, fear, grief, or excitement',
+    options: [
+      { value: 'satva', icon: '🌊', label: 'Felt, processed, released', desc: 'I can feel emotions fully, reflect on them, and let them go without much residue.' },
+      { value: 'rajas', icon: '🔥', label: 'Intense & lingering', desc: 'Emotions tend to be strong, sometimes overwhelming, and I replay situations mentally.' },
+      { value: 'tamas', icon: '🌑', label: 'Suppressed & numb', desc: 'Emotions feel muted or stuck. I tend to avoid confronting them or feel emotionally flat.' },
+    ],
+  },
+  {
+    id: 'daily_discipline',
+    question: 'How consistent are you with daily routines and self-care?',
+    hint: 'Sleep, diet, exercise, spiritual or reflective practice',
+    options: [
+      { value: 'satva', icon: '🌅', label: 'Consistent & disciplined', desc: 'Follow a fairly regular routine. Make time for sleep, meals, and some form of reflection or practice.' },
+      { value: 'rajas', icon: '📱', label: 'Inconsistent & driven', desc: 'Very active but irregular — sometimes extremely disciplined, other times completely off-track due to busyness.' },
+      { value: 'tamas', icon: '🛋️', label: 'Irregular & passive', desc: 'Struggle to maintain routines. Days feel unstructured. Self-care habits are hard to sustain.' },
+    ],
+  },
+  {
+    id: 'conflict_approach',
+    question: 'When you face a conflict or difficult conversation:',
+    hint: 'Your first natural impulse',
+    options: [
+      { value: 'satva', icon: '🕊️', label: 'Seek understanding', desc: 'Try to understand both sides, stay calm, and look for a fair resolution.' },
+      { value: 'rajas', icon: '⚔️', label: 'Assert & argue', desc: 'Feel the urge to defend my position, argue, or ensure I am not wronged.' },
+      { value: 'tamas', icon: '🐚', label: 'Avoid & withdraw', desc: 'Prefer to avoid the conflict entirely, go silent, or delay dealing with it.' },
+    ],
+  },
 ]
 
 // ── Symptom clusters — Vikriti indicators ─────────────────────────────────────
@@ -277,9 +328,12 @@ const DOSHA_COLORS = {
   vata: 'var(--vata-color, #818cf8)',
   pitta: 'var(--pitta-color, #fb923c)',
   kapha: 'var(--kapha-color, #34d399)',
+  satva: '#10b981',
+  rajas: '#f59e0b',
+  tamas: '#6366f1',
 }
 
-const DOSHA_LABELS = { vata: 'Vata', pitta: 'Pitta', kapha: 'Kapha' }
+const DOSHA_LABELS = { vata: 'Vata', pitta: 'Pitta', kapha: 'Kapha', satva: 'Satva', rajas: 'Rajas', tamas: 'Tamas' }
 const DOSHA_EMOJIS = { vata: '💨', pitta: '🔥', kapha: '🌊' }
 
 const DOSHA_GUNAS = {
@@ -361,13 +415,16 @@ function SpectrumSection({ title, scores, highlightDominant }) {
   )
 }
 
+const MANASA_TRAIT_IDS = ['motivation_source', 'mind_clarity', 'emotional_quality', 'daily_discipline', 'conflict_approach']
+
 function detectContradiction(traits) {
   const PHYSICAL_TRAITS = ['body_frame', 'skin', 'digestion', 'sleep', 'temperature', 'hair', 'energy']
   const MENTAL_TRAITS = ['stress_response', 'memory', 'decision_making', 'speech', 'emotional_nature']
+  const doshTraits = Object.fromEntries(Object.entries(traits).filter(([k]) => !MANASA_TRAIT_IDS.includes(k)))
   const physCounts = { vata: 0, pitta: 0, kapha: 0 }
   const mentCounts = { vata: 0, pitta: 0, kapha: 0 }
-  PHYSICAL_TRAITS.forEach(t => { if (traits[t]) physCounts[traits[t]]++ })
-  MENTAL_TRAITS.forEach(t => { if (traits[t]) mentCounts[traits[t]]++ })
+  PHYSICAL_TRAITS.forEach(t => { if (doshTraits[t]) physCounts[doshTraits[t]]++ })
+  MENTAL_TRAITS.forEach(t => { if (doshTraits[t]) mentCounts[doshTraits[t]]++ })
   const physDom = Object.entries(physCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
   const mentDom = Object.entries(mentCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
   return physDom && mentDom && physDom !== mentDom
@@ -382,6 +439,8 @@ const TRAIT_PRIORITY_LABEL = {
   energy: 'Moderate', skin: 'Moderate', eating_habits: 'Moderate', speech: 'Moderate',
   eye_quality: 'Moderate', voice_quality: 'Moderate', mutra_pattern: 'Moderate',
   walk_pace: 'Secondary', hair: 'Secondary',
+  motivation_source: 'Manasa', mind_clarity: 'Manasa', emotional_quality: 'Manasa',
+  daily_discipline: 'Manasa', conflict_approach: 'Manasa',
 }
 
 const TRAIT_DISPLAY_NAMES = {
@@ -393,14 +452,21 @@ const TRAIT_DISPLAY_NAMES = {
   agni_type: 'Agni (Digestive Fire)', stool_pattern: 'Bowel Pattern (Mala)',
   nadi_rhythm: 'Pulse (Nadi)', mutra_pattern: 'Urine (Mutra)',
   eye_quality: 'Eyes (Drik)', voice_quality: 'Voice (Shabda)',
+  motivation_source: 'Motivation (Manasa)', mind_clarity: 'Mental Clarity (Manasa)',
+  emotional_quality: 'Emotions (Manasa)', daily_discipline: 'Discipline (Manasa)',
+  conflict_approach: 'Conflict Style (Manasa)',
 }
 
 function TraitBreakdown({ traits }) {
   if (!traits || Object.keys(traits).length === 0) return null
-  const sortOrder = ['Primary', 'Strong', 'Moderate', 'Secondary']
+  const sortOrder = ['Primary', 'Strong', 'Moderate', 'Manasa', 'Secondary']
   const entries = Object.entries(traits)
     .filter(([, v]) => v)
-    .sort((a, b) => sortOrder.indexOf(TRAIT_PRIORITY_LABEL[a[0]] || 'Secondary') - sortOrder.indexOf(TRAIT_PRIORITY_LABEL[b[0]] || 'Secondary'))
+    .sort((a, b) => {
+      const ai = sortOrder.indexOf(TRAIT_PRIORITY_LABEL[a[0]] || 'Secondary')
+      const bi = sortOrder.indexOf(TRAIT_PRIORITY_LABEL[b[0]] || 'Secondary')
+      return (ai === -1 ? sortOrder.length : ai) - (bi === -1 ? sortOrder.length : bi)
+    })
   return (
     <div className="da-trait-breakdown">
       <span className="da-breakdown-title">What drove your result</span>
@@ -409,8 +475,8 @@ function TraitBreakdown({ traits }) {
           <div key={trait} className="da-breakdown-row">
             <span className="da-breakdown-trait">{TRAIT_DISPLAY_NAMES[trait] || trait}</span>
             <span className="da-breakdown-arrow">→</span>
-            <span className="da-breakdown-dosha" style={{ color: DOSHA_COLORS[dosha] }}>
-              {DOSHA_LABELS[dosha]}
+            <span className="da-breakdown-dosha" style={{ color: DOSHA_COLORS[dosha] || 'var(--text-secondary)' }}>
+              {DOSHA_LABELS[dosha] || dosha}
             </span>
             <span className="da-breakdown-priority">{TRAIT_PRIORITY_LABEL[trait] || ''}</span>
           </div>
@@ -559,9 +625,16 @@ export default function DoshaQuiz() {
     setPhase('loading')
     setLoadingStep(0)
     try {
+      const dehaTraits = {}
+      const manasaTraits = {}
+      for (const [k, v] of Object.entries(traits)) {
+        if (MANASA_TRAIT_IDS.includes(k)) manasaTraits[k] = v
+        else dehaTraits[k] = v
+      }
       const response = await profileAPI.doshaAssessment({
-        physical_traits: traits,
+        physical_traits: dehaTraits,
         current_symptoms: symptoms,
+        manasa_traits: Object.keys(manasaTraits).length > 0 ? manasaTraits : undefined,
       })
       const assessResult = response.data
       setResult(assessResult)
@@ -910,12 +983,38 @@ export default function DoshaQuiz() {
           })()}
 
           {/* ── Manas Prakriti ─────────────────────────────────── */}
-          {result.manas_prakriti && (
+          {result.manasa_prakriti && typeof result.manasa_prakriti === 'object' ? (
+            <div className="da-manas-box">
+              <span className="da-manas-label">Manasa Prakriti — Triguna Balance</span>
+              <span className="da-manas-ref">Charaka Samhita Shareera Sthana 4 — Triguna Prakriti</span>
+              <div className="da-manas-guna-badge" style={{ color: DOSHA_COLORS[result.manasa_prakriti.dominant_guna] }}>
+                {result.manasa_prakriti.label} ({result.manasa_prakriti.dominant_guna?.charAt(0).toUpperCase() + result.manasa_prakriti.dominant_guna?.slice(1)} dominant)
+              </div>
+              {['satva', 'rajas', 'tamas'].map(guna => (
+                <div key={guna} className="da-dosha-bar-row">
+                  <span className="da-dosha-bar-label" style={{ color: DOSHA_COLORS[guna] }}>
+                    {guna.charAt(0).toUpperCase() + guna.slice(1)}
+                  </span>
+                  <div className="da-dosha-bar-track">
+                    <motion.div
+                      className="da-dosha-bar-fill"
+                      style={{ background: DOSHA_COLORS[guna] }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${result.manasa_prakriti[guna] || 0}%` }}
+                      transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                  </div>
+                  <span className="da-dosha-bar-pct">{result.manasa_prakriti[guna] || 0}%</span>
+                </div>
+              ))}
+              <p className="da-manas-text">{result.manasa_prakriti.description}</p>
+            </div>
+          ) : result.manas_prakriti ? (
             <div className="da-manas-box">
               <span className="da-manas-label">Manas Prakriti (Mental Constitution)</span>
               <p className="da-manas-text">{result.manas_prakriti}</p>
             </div>
-          )}
+          ) : null}
 
           {/* ── Ama Score ─────────────────────────────────────────── */}
           {result.ama_indicator && result.ama_indicator !== 'none' && (

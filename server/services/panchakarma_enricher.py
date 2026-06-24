@@ -1,11 +1,20 @@
 import json
 from ai.llm_client import llm_client
+from ai.rag_pipeline import rag_pipeline
 from core.logger import logger
 
 _SYSTEM_PROMPT = """
 You are a senior Vaidya (Ayurvedic physician, MD Ayurveda). You are enriching a clinically generated Panchakarma plan with precise, personalised coaching grounded in classical texts (Charaka Samhita, Ashtanga Hridayam).
 
 You will receive a structured plan summary. Your job is to add daily guidance, explain the WHY behind each therapy in classical terms, and coach the patient through the emotional and physical arc of the detox.
+
+CRITICAL CLASSICAL ACCURACY — never violate these in any coaching text:
+- The 5 Panchakarma (Pradhana Karma) are: Vamana, Virechana, Basti (Anuvasana + Niruha), Nasya, Raktamokshana. These are the only true Panchakarma.
+- Abhyanga and Swedana are Purvakarma (preparatory procedures) — NEVER call them Panchakarma.
+- Shirodhara is Murdha Taila (a Bahya Chikitsa procedure) — NEVER call it Panchakarma.
+- Udvartana is Lekhana Karma (Bahya Chikitsa) — NOT Panchakarma.
+- Kati Basti is a regional Snehana technique (Bahya Chikitsa) — NOT Panchakarma.
+- Calling Abhyanga or Shirodhara "Panchakarma" is a common commercial error — it is classically incorrect and must never appear in your coaching text.
 
 Respond ONLY with valid JSON. No preamble, no markdown fences.
 """
@@ -73,6 +82,17 @@ async def enrich_panchakarma_plan(raw_plan: dict, user_profile: dict, pk_prefs: 
     raw_plan["enriched"] = False
 
     try:
+        cd = raw_plan.get("clinical_decisions", {})
+        pradhana = cd.get("pradhana_karma_selected", {})
+        vikriti = cd.get("vikriti_dominant") or user_profile.get("dominant_dosha") or "vata"
+        pradhana_name = pradhana.get("primary", "panchakarma")
+
+        # Fetch grounding context from panchakarma + ayurveda collections
+        pk_query = f"{pradhana_name} {vikriti} panchakarma shodhana treatment protocol"
+        pk_docs = await rag_pipeline.query(pk_query, "panchakarma", n_results=4)
+        ayur_docs = await rag_pipeline.query(f"{vikriti} vikriti detox Ayurvedic cleansing", "ayurveda", n_results=2, dosha_filter=vikriti)
+        rag_context = rag_pipeline.format_context(pk_docs + ayur_docs, max_chars=1800) or "No specific context retrieved — use classical Charaka Samhita and Ashtanga Hridayam principles."
+
         cd = raw_plan.get("clinical_decisions", {})
         pradhana = cd.get("pradhana_karma_selected", {})
         ritu_ctx = cd.get("ritu_context", {})
@@ -159,7 +179,7 @@ async def enrich_panchakarma_plan(raw_plan: dict, user_profile: dict, pk_prefs: 
             ritu_name=ritu_ctx.get("ritu_name", ritu_ctx.get("ritu", "current season")),
             rare_disease_block=rare_block,
             plan_json=json.dumps(plan_summary, indent=2),
-        )
+        ) + f"\n\nCLASSICAL KNOWLEDGE BASE (ground your response in these references):\n{rag_context}"
 
         response_text = await llm_client.generate(
             prompt=prompt,

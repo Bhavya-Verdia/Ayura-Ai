@@ -310,6 +310,37 @@ async def submit_dosha_quiz(
     return user
 
 
+def _compute_manasa_prakriti(manasa_traits: dict) -> dict:
+    """Score Satva/Rajas/Tamas from the 5 Manasa Prakriti quiz answers."""
+    counts = {'satva': 0, 'rajas': 0, 'tamas': 0}
+    for v in manasa_traits.values():
+        if v in counts:
+            counts[v] += 1
+    total = sum(counts.values()) or 1
+    satva_pct = round(counts['satva'] / total * 100)
+    rajas_pct = round(counts['rajas'] / total * 100)
+    tamas_pct = round(counts['tamas'] / total * 100)
+    # ensure sum = 100
+    diff = 100 - (satva_pct + rajas_pct + tamas_pct)
+    if diff:
+        satva_pct += diff
+    dominant = max(counts, key=lambda k: counts[k])
+    label = {'satva': 'Sattvika', 'rajas': 'Rajasika', 'tamas': 'Tamasika'}[dominant]
+    description = {
+        'satva': 'Your mind naturally inclines toward clarity, wisdom, and equanimity — the ideal state for healing.',
+        'rajas': 'Your mind is active, goal-oriented, and passionate — channel this energy purposefully for best results.',
+        'tamas': 'Your mind tends toward heaviness and inertia — the plan includes grounding practices to gently elevate Satva.',
+    }[dominant]
+    return {
+        'satva': satva_pct,
+        'rajas': rajas_pct,
+        'tamas': tamas_pct,
+        'dominant_guna': dominant,
+        'label': label,
+        'description': description,
+    }
+
+
 @router.post("/dosha-assessment", response_model=UserProfileResponse)
 async def submit_dosha_assessment(
     req: DoshaAssessmentRequest,
@@ -382,8 +413,16 @@ async def submit_dosha_assessment(
         "updated_at": now,
     }
 
+    manasa_prakriti_scores = (
+        _compute_manasa_prakriti(req.manasa_traits)
+        if req.manasa_traits
+        else None
+    )
+
     if user.prakriti_locked:
         update_fields = vikriti_only_update
+        if manasa_prakriti_scores:
+            update_fields["manasa_prakriti"] = manasa_prakriti_scores
     else:
         update_fields = {
             **vikriti_only_update,
@@ -399,6 +438,8 @@ async def submit_dosha_assessment(
             "prakriti_classical_name": result.get("prakriti_classical_name"),
             "prakriti_locked": True,
         }
+        if manasa_prakriti_scores:
+            update_fields["manasa_prakriti"] = manasa_prakriti_scores
 
     for key, value in update_fields.items():
         setattr(user, key, value)

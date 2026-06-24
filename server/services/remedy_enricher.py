@@ -1,6 +1,7 @@
 import json
 import logging
 from ai.llm_client import llm_client
+from ai.rag_pipeline import rag_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,13 @@ async def enrich_remedies_plan(raw_plan: dict, user_profile: dict, remedies_pref
                 "remedy_name": sym.get("remedy", {}).get("name")
             })
 
+        # Fetch grounding context for each symptom from the remedy knowledge base
+        dosha = user_profile.get("dominant_dosha") or "vata"
+        symptom_names = [s.get("symptom_display") or s.get("symptom_id") for s in symptoms_addressed[:3]]
+        rag_query = f"home remedy {' '.join(symptom_names)} {dosha} Ayurvedic treatment"
+        docs = await rag_pipeline.query(rag_query, "remedy", n_results=4)
+        rag_context = rag_pipeline.format_context(docs, max_chars=1200) or "Use classical Ayurvedic home remedy principles."
+
         prompt = f"""
 You are an expert Ayurvedic practitioner. A home remedies plan has been generated for a user with the following profile:
 - Age: {user_profile.get('age')}
@@ -34,6 +42,9 @@ You are an expert Ayurvedic practitioner. A home remedies plan has been generate
 - Medical History: {', '.join(user_profile.get('medical_history', []))}
 - Current Medications: {', '.join(user_profile.get('current_medications', []))}
 - Allergies: {', '.join(user_profile.get('allergies', []))}
+
+CLASSICAL KNOWLEDGE BASE (ground your rationale in these references):
+{rag_context}
 
 Symptoms Addressed:
 {json.dumps(compressed_symptoms, indent=2)}
@@ -101,6 +112,16 @@ async def enrich_medicines_plan(raw_plan: dict, user_profile: dict, medicines_pr
             raw_plan["enriched"] = False
             return raw_plan
 
+        # Fetch grounding context from ayurveda + remedy collections
+        vikriti = raw_plan.get("vikriti_dominant") or user_profile.get("dominant_dosha") or "vata"
+        conditions = raw_plan.get("active_conditions") or user_profile.get("medical_history") or []
+        med_names = [m["name"] for m in all_forms[:3]]
+        rag_query = f"Ayurvedic medicine {' '.join(med_names)} {vikriti} clinical formulation"
+        ayur_docs = await rag_pipeline.query(rag_query, "ayurveda", n_results=3, dosha_filter=vikriti)
+        cond_query = f"{' '.join(conditions[:2])} Ayurvedic treatment herb" if conditions else rag_query
+        remedy_docs = await rag_pipeline.query(cond_query, "remedy", n_results=2)
+        rag_context = rag_pipeline.format_context(ayur_docs + remedy_docs, max_chars=1500) or "Use classical Charaka Samhita and Bhaishajya Ratnavali principles."
+
         # Build compressed pharmacology block for LLM — include all new schema fields
         pharma_data = []
         for m in all_forms:
@@ -154,6 +175,9 @@ async def enrich_medicines_plan(raw_plan: dict, user_profile: dict, medicines_pr
 
         prompt = f"""
 A personalised Ayurvedic medicines plan has been generated. Write a complete clinical enrichment.
+
+CLASSICAL KNOWLEDGE BASE (ground your rationale in these references):
+{rag_context}
 
 PATIENT PROFILE:
 - Name context: Age {user_profile.get('age')}, Gender {user_profile.get('gender')}

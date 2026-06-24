@@ -4,70 +4,305 @@
       "medication": "metformin",
       "medicationClass": "biguanide_antidiabetic",
       "herbs": [
-        { "herb": "fenugreek", "severity": "moderate", "effect": "Both lower blood sugar — combined use may cause hypoglycemia", "recommendation": "Monitor blood glucose closely. Reduce fenugreek dose. Consult doctor.", "alternative": "Bitter gourd (mormodica) is safer" },
-        { "herb": "bitter_gourd", "severity": "moderate", "effect": "Additive blood sugar lowering", "recommendation": "Monitor blood sugar. May need Metformin dose adjustment.", "alternative": null },
-        { "herb": "cinnamon_high_dose", "severity": "mild", "effect": "Enhanced insulin sensitivity", "recommendation": "Culinary amounts (1/2 tsp/day) are safe. Avoid supplements.", "alternative": null },
-        { "herb": "amla", "severity": "safe", "effect": "No significant interaction. Amla may improve insulin sensitivity beneficially.", "recommendation": "Safe to use", "alternative": null },
-        { "herb": "ashwagandha", "severity": "safe", "effect": "No significant interaction known", "recommendation": "Safe to use at normal doses", "alternative": null }
+        { "herb": "fenugreek", "severity": "moderate", "effect": "Both lower blood sugar — combined use may cause hypoglycemia", "recommendation": "Monitor blood glucose closely. Reduce fenugreek dose or use only culinary amounts. Inform doctor.", "alternative": "Karela (bitter gourd) in smaller amounts is slightly safer" },
+        { "herb": "bitter_gourd_karela", "severity": "moderate", "effect": "Additive blood glucose lowering — risk of hypoglycemia, especially if Metformin dose is high", "recommendation": "Monitor blood sugar twice daily. May need Metformin dose reduction by prescriber.", "alternative": null },
+        { "herb": "gymnema_gurmar", "severity": "major", "effect": "Gymnema directly stimulates insulin secretion AND blocks sugar absorption — additive hypoglycemia risk is significant", "recommendation": "AVOID combining without physician supervision. If used, halve Gymnema dose and monitor glucose 2 hrs post-meal.", "alternative": "Berberine (not classical Ayurveda but safer alternative) — inform doctor" },
+        { "herb": "neem_nimba", "severity": "moderate", "effect": "Neem has demonstrated hypoglycemic activity — additive effect with Metformin", "recommendation": "Use only culinary amounts. Avoid Neem capsule/extract supplements on Metformin.", "alternative": null },
+        { "herb": "amla_amalaki", "severity": "mild", "effect": "Amla's high Vitamin C content may affect glucose metabolism and Metformin absorption timing", "recommendation": "Safe in culinary and normal Rasayana doses. Separate high-dose Amla from Metformin by 2 hours.", "alternative": null },
+        { "herb": "cinnamon_high_dose", "severity": "mild", "effect": "High-dose cinnamon supplements enhance insulin sensitivity — additive effect", "recommendation": "Culinary amounts (1/4-1/2 tsp daily) are safe. Avoid cinnamon capsules >1g/day on Metformin.", "alternative": null },
+        { "herb": "ashwagandha", "severity": "safe", "effect": "No significant glucose interaction at standard doses", "recommendation": "Safe to use at 300-600mg. Monitor if unusually high doses used.", "alternative": null }
       ]
     },
     {
-      "medication": "lisinopril",
-      "medicationClass": "ace_inhibitor_antihypertensive",
+      "medication": "insulin",
+      "medicationClass": "insulin_antidiabetic",
       "herbs": [
-        { "herb": "ashwagandha", "severity": "mild", "effect": "May enhance blood pressure lowering — additive hypotensive effect", "recommendation": "Use lower dose (300mg). Monitor BP regularly.", "alternative": null },
-        { "herb": "garlic_high_dose", "severity": "mild", "effect": "Garlic has antihypertensive properties — may enhance effect", "recommendation": "Culinary amounts fine. Avoid high-dose garlic supplements.", "alternative": null },
-        { "herb": "licorice_root", "severity": "significant", "effect": "Licorice raises blood pressure — directly counteracts ACE inhibitor", "recommendation": "AVOID licorice root (Yashtimadhu) while on Lisinopril", "alternative": "DGL (deglycyrrhizinated licorice) is safer" },
-        { "herb": "guggulu", "severity": "mild", "effect": "May interfere with drug absorption", "recommendation": "Take Guggulu 2+ hours away from medication", "alternative": null },
-        { "herb": "brahmi", "severity": "safe", "effect": "No known interaction", "recommendation": "Safe to use", "alternative": null }
+        { "herb": "ashwagandha", "severity": "moderate", "effect": "Ashwagandha may lower blood glucose via cortisol reduction — additive with insulin, risk of hypoglycemia", "recommendation": "Monitor blood glucose more frequently. Inform endocrinologist. May need insulin dose reduction.", "alternative": null },
+        { "herb": "shilajit", "severity": "moderate", "effect": "Shilajit enhances insulin sensitivity and glucose uptake — additive hypoglycemic risk", "recommendation": "Monitor blood sugar closely. Avoid shilajit without informing diabetologist.", "alternative": null },
+        { "herb": "gymnema_gurmar", "severity": "major", "effect": "Gymnema stimulates endogenous insulin secretion — combined with exogenous insulin poses serious hypoglycemia risk", "recommendation": "AVOID. Gymnema + insulin combination requires intensive medical supervision.", "alternative": null },
+        { "herb": "bitter_gourd_karela", "severity": "moderate", "effect": "Additive blood glucose lowering — monitor carefully", "recommendation": "Use only culinary amounts while on insulin. Avoid concentrated juices or supplements.", "alternative": null },
+        { "herb": "fenugreek", "severity": "moderate", "effect": "Galactomannan fiber slows glucose absorption — changes insulin timing requirements", "recommendation": "If using fenugreek seeds with meals, test blood sugar timing carefully. May need pre-meal insulin timing adjustment.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "glipizide",
+      "medicationClass": "sulfonylurea_antidiabetic",
+      "herbs": [
+        { "herb": "tulsi_holy_basil", "severity": "moderate", "effect": "Tulsi has demonstrated hypoglycemic properties — additive with sulfonylureas, hypoglycemia risk", "recommendation": "Use only culinary amounts of fresh Tulsi leaves. Avoid Tulsi extract supplements on Glipizide.", "alternative": null },
+        { "herb": "neem_nimba", "severity": "moderate", "effect": "Additive glucose lowering", "recommendation": "Avoid Neem supplements. Culinary use only.", "alternative": null },
+        { "herb": "fenugreek", "severity": "moderate", "effect": "Additive hypoglycemic effect", "recommendation": "Monitor blood glucose. Inform prescriber.", "alternative": null }
       ]
     },
     {
       "medication": "warfarin",
       "medicationClass": "anticoagulant_blood_thinner",
       "herbs": [
-        { "herb": "turmeric_high_dose", "severity": "significant", "effect": "Turmeric/curcumin has antiplatelet properties — increases bleeding risk", "recommendation": "Culinary amounts OK. AVOID curcumin supplements while on Warfarin.", "alternative": "Continue culinary turmeric (1/4 tsp/day max)" },
-        { "herb": "ginger_high_dose", "severity": "moderate", "effect": "Ginger inhibits platelet aggregation — may enhance anticoagulation", "recommendation": "Use only in cooking. Avoid ginger supplements.", "alternative": null },
-        { "herb": "ashwagandha", "severity": "mild", "effect": "Mild antiplatelet activity reported", "recommendation": "Consult doctor before using on Warfarin", "alternative": null },
-        { "herb": "triphala", "severity": "moderate", "effect": "Haritaki component may interact with coagulation", "recommendation": "Avoid Triphala while on Warfarin", "alternative": "Psyllium husk for constipation instead" },
-        { "herb": "amla", "severity": "moderate", "effect": "Amla has antiplatelet activity", "recommendation": "Avoid high-dose Amla supplements on Warfarin. Dietary amounts OK.", "alternative": null }
+        { "herb": "garlic_lashuna_high_dose", "severity": "major", "effect": "Garlic inhibits platelet aggregation and has anticoagulant properties — significantly increases bleeding risk and raises INR", "recommendation": "AVOID garlic supplements or high-dose garlic while on Warfarin. Culinary amounts (1-2 cloves in cooking) generally safe — monitor INR monthly.", "alternative": "Arjuna for cardiovascular support is safer than garlic on Warfarin" },
+        { "herb": "ginger_shunthi_high_dose", "severity": "major", "effect": "Ginger inhibits thromboxane synthesis and platelet aggregation — increases anticoagulation and bleeding risk", "recommendation": "AVOID ginger supplements or ginger tea exceeding 1g/day on Warfarin. Culinary ginger in cooking is acceptable.", "alternative": null },
+        { "herb": "turmeric_haridra_high_dose", "severity": "major", "effect": "Curcumin inhibits platelet aggregation and potentiates Warfarin — significant INR elevation documented", "recommendation": "AVOID turmeric/curcumin supplements on Warfarin. Culinary turmeric (1/4 tsp in cooking) is generally safe. Monitor INR.", "alternative": "Continue culinary turmeric only — no supplements" },
+        { "herb": "guggulu", "severity": "moderate", "effect": "Guggulsterones affect CYP2C9 enzyme that metabolises Warfarin — unpredictable INR changes", "recommendation": "AVOID Guggulu preparations while on Warfarin without weekly INR monitoring.", "alternative": null },
+        { "herb": "triphala", "severity": "moderate", "effect": "Haritaki component has antiplatelet activity; tannins may affect Warfarin absorption", "recommendation": "Avoid Triphala while on Warfarin. Use psyllium husk for constipation instead.", "alternative": "Psyllium husk (Isabgol) is safe on Warfarin" },
+        { "herb": "amla_amalaki_high_dose", "severity": "moderate", "effect": "Amla has antiplatelet activity and high Vitamin C may affect Warfarin metabolism", "recommendation": "Avoid high-dose Amla supplements. Dietary Amla (1 fruit daily, Chyawanprash) is generally acceptable.", "alternative": null },
+        { "herb": "shatavari", "severity": "safe", "effect": "No significant Warfarin interaction documented", "recommendation": "Safe to use at standard doses. Monitor INR if starting any new herb.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "aspirin",
+      "medicationClass": "antiplatelet_nsaid",
+      "herbs": [
+        { "herb": "garlic_lashuna", "severity": "moderate", "effect": "Additive antiplatelet effect — combined use increases bleeding risk", "recommendation": "Culinary amounts generally safe. Avoid high-dose garlic supplements on Aspirin.", "alternative": null },
+        { "herb": "ginger_shunthi", "severity": "moderate", "effect": "Additive antiplatelet effect", "recommendation": "Culinary ginger acceptable. Avoid ginger supplements > 500mg/day on Aspirin.", "alternative": null },
+        { "herb": "turmeric_haridra", "severity": "moderate", "effect": "Additive antiplatelet activity", "recommendation": "Culinary use safe. Avoid curcumin supplements > 1g/day on low-dose Aspirin therapy.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "clopidogrel",
+      "medicationClass": "antiplatelet",
+      "herbs": [
+        { "herb": "garlic_lashuna", "severity": "major", "effect": "Additive antiplatelet effects — major bleeding risk", "recommendation": "AVOID garlic supplements on Clopidogrel. Inform cardiologist.", "alternative": null },
+        { "herb": "ginger_shunthi", "severity": "major", "effect": "Additive antiplatelet effects", "recommendation": "AVOID ginger supplements. Culinary cooking amounts only.", "alternative": null },
+        { "herb": "turmeric_haridra", "severity": "moderate", "effect": "Additive antiplatelet, may affect CYP2C19 activation of Clopidogrel", "recommendation": "Avoid turmeric supplements. Culinary use acceptable.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "lisinopril",
+      "medicationClass": "ace_inhibitor_antihypertensive",
+      "herbs": [
+        { "herb": "ashwagandha", "severity": "mild", "effect": "May enhance blood pressure lowering — additive hypotensive effect, especially in high doses", "recommendation": "Use lower Ashwagandha dose (300mg). Monitor BP regularly. Generally safe.", "alternative": null },
+        { "herb": "garlic_lashuna_high_dose", "severity": "mild", "effect": "Garlic has antihypertensive properties — additive effect possible", "recommendation": "Culinary amounts fine. Avoid high-dose garlic supplements.", "alternative": null },
+        { "herb": "licorice_yashtimadhu", "severity": "major", "effect": "Licorice contains glycyrrhizin which causes sodium retention and raises blood pressure — directly counteracts ACE inhibitor and worsens hypertension", "recommendation": "STRICTLY AVOID licorice root (Yashtimadhu) while on Lisinopril or any antihypertensive. DGL (deglycyrrhizinated licorice) removes glycyrrhizin and is safer.", "alternative": "DGL (deglycyrrhizinated licorice) removes the BP-raising component" },
+        { "herb": "punarnava", "severity": "moderate", "effect": "Punarnava has diuretic properties — combined with ACE inhibitor may cause additive BP lowering and electrolyte imbalance", "recommendation": "Monitor BP and potassium levels if combining. Reduce Punarnava dose.", "alternative": null },
+        { "herb": "guggulu", "severity": "mild", "effect": "May interfere with drug absorption via CYP interaction", "recommendation": "Take Guggulu 2+ hours away from Lisinopril dose.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "amlodipine",
+      "medicationClass": "calcium_channel_blocker_antihypertensive",
+      "herbs": [
+        { "herb": "arjuna", "severity": "major", "effect": "Arjuna has calcium channel blocking properties and cardiac glycoside-like activity — additive hypotensive and cardiac effects. Narrow therapeutic overlap.", "recommendation": "AVOID Arjuna while on Amlodipine without cardiologist oversight. Monitor BP and heart rate closely if used.", "alternative": null },
+        { "herb": "licorice_yashtimadhu", "severity": "major", "effect": "Glycyrrhizin raises BP and counteracts antihypertensive therapy", "recommendation": "STRICTLY AVOID. Even herbal teas containing licorice.", "alternative": "DGL licorice only" },
+        { "herb": "ashwagandha", "severity": "mild", "effect": "May enhance BP lowering — monitor", "recommendation": "Generally safe. Monitor BP when starting.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "atenolol",
+      "medicationClass": "beta_blocker_antihypertensive",
+      "herbs": [
+        { "herb": "arjuna", "severity": "moderate", "effect": "Arjuna has beta-blocker-like effects on cardiac conduction — additive bradycardia and hypotension risk", "recommendation": "Avoid combining without cardiologist supervision. Monitor resting heart rate (keep > 55 bpm).", "alternative": null },
+        { "herb": "ashwagandha", "severity": "mild", "effect": "Mild additive BP lowering", "recommendation": "Monitor BP. Generally safe at 300mg.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "furosemide",
+      "medicationClass": "loop_diuretic",
+      "herbs": [
+        { "herb": "punarnava", "severity": "moderate", "effect": "Punarnava is a potent Ayurvedic diuretic (Mutrala) — additive diuresis with Furosemide may cause excessive fluid loss and electrolyte imbalance (low potassium, sodium)", "recommendation": "AVOID combining. If used, monitor serum electrolytes weekly and stay well-hydrated.", "alternative": "Reduce Punarnava to very low dose and monitor closely" },
+        { "herb": "gokshura", "severity": "moderate", "effect": "Gokshura has diuretic properties — additive effect with loop diuretic", "recommendation": "Monitor electrolytes. Avoid concentrated Gokshura extracts.", "alternative": null },
+        { "herb": "licorice_yashtimadhu", "severity": "major", "effect": "Licorice causes potassium loss; Furosemide also causes potassium loss — risk of severe hypokalemia (dangerous arrhythmia)", "recommendation": "STRICTLY AVOID this combination. Risk of life-threatening hypokalemia.", "alternative": null }
       ]
     },
     {
       "medication": "levothyroxine",
       "medicationClass": "thyroid_hormone_replacement",
       "herbs": [
-        { "herb": "ashwagandha", "severity": "moderate", "effect": "Ashwagandha may increase thyroid hormone levels — can cause over-medication", "recommendation": "Consult endocrinologist. May need dose adjustment. Monitor thyroid levels.", "alternative": null },
-        { "herb": "guggulu", "severity": "significant", "effect": "Guggulsterone affects thyroid function directly", "recommendation": "AVOID Guggulu while on thyroid medication without doctor supervision", "alternative": null },
-        { "herb": "shatavari", "severity": "safe", "effect": "No significant thyroid interaction known", "recommendation": "Safe to use", "alternative": null },
-        { "herb": "triphala", "severity": "mild", "effect": "Take at least 4 hours apart — may affect absorption", "recommendation": "Separate by 4 hours from Levothyroxine dose", "alternative": null }
+        { "herb": "ashwagandha", "severity": "moderate", "effect": "Ashwagandha may increase T3 and T4 levels — risk of over-medication symptoms (palpitations, sweating, insomnia) in hypothyroid patients on Levothyroxine", "recommendation": "Consult endocrinologist before adding Ashwagandha. Check thyroid function after 6 weeks. May need Levothyroxine dose reduction.", "alternative": null },
+        { "herb": "kanchanar_guggulu", "severity": "moderate", "effect": "Kanchanar Guggulu is the primary Ayurvedic thyroid herb — may alter thyroid function and affect Levothyroxine requirements", "recommendation": "Separate Kanchanar Guggulu from Levothyroxine by at least 4 hours (thyroid meds must be taken on empty stomach). Monitor thyroid levels every 3 months.", "alternative": null },
+        { "herb": "guggulu", "severity": "moderate", "effect": "Guggulsterone directly affects thyroid function — may increase or decrease T3/T4", "recommendation": "AVOID Guggulu while on thyroid medication without endocrinologist supervision.", "alternative": null },
+        { "herb": "triphala", "severity": "mild", "effect": "Tannins in Triphala may reduce Levothyroxine absorption", "recommendation": "Separate by at least 4 hours from morning Levothyroxine dose. Take Triphala at night.", "alternative": null },
+        { "herb": "shatavari", "severity": "safe", "effect": "No significant thyroid interaction documented", "recommendation": "Safe to use.", "alternative": null }
       ]
     },
     {
-      "medication": "ssri_antidepressants",
-      "medicationClass": "selective_serotonin_reuptake_inhibitor",
+      "medication": "fluoxetine",
+      "medicationClass": "ssri_antidepressant",
       "herbs": [
-        { "herb": "ashwagandha", "severity": "mild", "effect": "Both affect serotonin/GABA pathways — potential additive sedation", "recommendation": "Use caution. Start with very low dose. Monitor for excessive drowsiness.", "alternative": null },
-        { "herb": "brahmi", "severity": "moderate", "effect": "Brahmi affects serotonin — may interact with SSRIs", "recommendation": "Consult psychiatrist before combining. Monitor closely.", "alternative": null },
-        { "herb": "valerian", "severity": "moderate", "effect": "Additive CNS depression risk", "recommendation": "Avoid Valerian while on SSRIs", "alternative": "Ashwagandha in very low dose for sleep" },
-        { "herb": "shatavari", "severity": "safe", "effect": "No significant SSRI interaction", "recommendation": "Safe to use", "alternative": null }
+        { "herb": "ashwagandha", "severity": "moderate", "effect": "Both affect GABAergic and serotonin pathways — potential additive CNS depression and sedation", "recommendation": "Use with caution. Start at low dose (150mg). Monitor for excessive drowsiness, sedation, or mood changes.", "alternative": null },
+        { "herb": "brahmi_bacopa", "severity": "moderate", "effect": "Brahmi affects serotonergic neurotransmission — may potentiate SSRI effects or cause additive side effects", "recommendation": "Consult psychiatrist before combining. Monitor for serotonin syndrome symptoms (restlessness, rapid heart rate, tremor).", "alternative": null },
+        { "herb": "jatamansi_spikenard", "severity": "moderate", "effect": "Jatamansi has serotonin-modulating properties — additive CNS and serotonergic effects possible", "recommendation": "Avoid combining without psychiatric supervision. Jatamansi + SSRI risks serotonin syndrome in susceptible individuals.", "alternative": null },
+        { "herb": "shatavari", "severity": "safe", "effect": "No significant SSRI interaction", "recommendation": "Safe to use.", "alternative": null },
+        { "herb": "shankhapushpi", "severity": "mild", "effect": "Mild CNS activity — monitor for additive sedation", "recommendation": "Generally safe at normal doses. Avoid high doses.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "sertraline",
+      "medicationClass": "ssri_antidepressant",
+      "herbs": [
+        { "herb": "ashwagandha", "severity": "moderate", "effect": "Additive CNS depression — see fluoxetine entry", "recommendation": "Start low, monitor closely. Inform psychiatrist.", "alternative": null },
+        { "herb": "brahmi_bacopa", "severity": "moderate", "effect": "Additive serotonergic effects", "recommendation": "Consult psychiatrist. Monitor for serotonin syndrome symptoms.", "alternative": null },
+        { "herb": "tulsi_holy_basil", "severity": "mild", "effect": "MAO-inhibitory properties of Tulsi — mild interaction with SSRIs possible at very high doses", "recommendation": "Culinary and normal tea amounts are safe. Avoid concentrated Tulsi extract supplements.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "maois_phenelzine_tranylcypromine",
+      "medicationClass": "monoamine_oxidase_inhibitor_antidepressant",
+      "herbs": [
+        { "herb": "pippali_long_pepper", "severity": "major", "effect": "Pippali contains piperine which inhibits MAO — additive MAO inhibition with MAOI drugs risks hypertensive crisis, especially if tyramine-containing foods also consumed", "recommendation": "STRICTLY AVOID piperine-containing herbs (Pippali, Maricha, Trikatu) on MAOI antidepressants.", "alternative": null },
+        { "herb": "ashwagandha", "severity": "moderate", "effect": "Stimulant-like effects of Ashwagandha may interact with MAOIs — risk of hypertensive crisis or serotonin syndrome", "recommendation": "AVOID Ashwagandha on MAOI drugs.", "alternative": null },
+        { "herb": "brahmi_bacopa", "severity": "major", "effect": "Serotonergic and dopaminergic effects of Brahmi may cause serotonin syndrome with MAOIs", "recommendation": "STRICTLY AVOID Brahmi on MAOI antidepressants.", "alternative": null },
+        { "herb": "ginseng_like_stimulants", "severity": "moderate", "effect": "Stimulant herbs can precipitate hypertensive crisis on MAOIs", "recommendation": "AVOID all stimulant Rasayana herbs (Shilajit, Ashwagandha, Kapikachhu) on MAOIs.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "phenobarbital",
+      "medicationClass": "barbiturate_antiepileptic",
+      "herbs": [
+        { "herb": "shankhapushpi", "severity": "major", "effect": "CRITICAL — Documented reduction in Phenobarbital serum levels by Shankhapushpi preparations (case reports). Shankhapushpi induces CYP enzymes, increasing Phenobarbital clearance — risk of seizure breakthrough.", "recommendation": "STRICTLY CONTRAINDICATED. Never use Shankhapushpi (or preparations containing it like Saraswatarishta) while on Phenobarbital. This is the most clinically documented herb-drug interaction in Ayurveda.", "alternative": "Brahmi alone (without Shankhapushpi) has less interaction; use Jatamansi for anxiety" },
+        { "herb": "ashwagandha", "severity": "moderate", "effect": "Additive CNS depression — combined sedation may be excessive", "recommendation": "Avoid or use at very low doses under neurologist guidance.", "alternative": null },
+        { "herb": "brahmi_bacopa", "severity": "moderate", "effect": "Additive CNS depression", "recommendation": "Use with caution under supervision.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "benzodiazepines_diazepam_clonazepam_alprazolam",
+      "medicationClass": "benzodiazepine_anxiolytic_sedative",
+      "herbs": [
+        { "herb": "ashwagandha", "severity": "major", "effect": "Both potentiate GABA — combined use causes excessive CNS depression, respiratory depression risk at high doses", "recommendation": "AVOID combining without psychiatric supervision. If used, Ashwagandha should be very low dose (150mg) and benzodiazepine dose may need reduction.", "alternative": null },
+        { "herb": "brahmi_bacopa", "severity": "moderate", "effect": "Additive sedation and cognitive slowing — may impair driving, concentration", "recommendation": "Avoid combination. If essential, use only at night and do not drive.", "alternative": null },
+        { "herb": "jatamansi_spikenard", "severity": "moderate", "effect": "Additive CNS depression", "recommendation": "Avoid combining. Monitor for excessive sedation.", "alternative": null },
+        { "herb": "valerian_tagara", "severity": "major", "effect": "Tagara (Valeriana wallichii) is the Ayurvedic equivalent of Valerian — additive benzodiazepine-like CNS depression", "recommendation": "AVOID Tagara/Valerian with benzodiazepines — risk of respiratory depression at high doses.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "zolpidem",
+      "medicationClass": "non_benzodiazepine_hypnotic",
+      "herbs": [
+        { "herb": "ashwagandha", "severity": "moderate", "effect": "Additive CNS depression and sedation", "recommendation": "Avoid combining, especially at high doses. If using for sleep, choose one — not both.", "alternative": null },
+        { "herb": "jatamansi_spikenard", "severity": "moderate", "effect": "Additive sedation — Jatamansi affects GABA pathways similar to Zolpidem", "recommendation": "Avoid combination. Use Jatamansi alone for milder insomnia — discuss switching with doctor.", "alternative": "Jatamansi or Ashwagandha alone may suffice without Zolpidem for mild insomnia" },
+        { "herb": "tagara_valerian", "severity": "moderate", "effect": "Additive sedation", "recommendation": "Avoid combining.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "digoxin",
+      "medicationClass": "cardiac_glycoside",
+      "herbs": [
+        { "herb": "arjuna", "severity": "major", "effect": "Arjuna bark contains arjunic acid and other compounds with positive inotropic (cardiac glycoside-like) activity — additive effects with Digoxin risk toxicity. Digoxin has a narrow therapeutic window; small increases cause toxicity.", "recommendation": "STRICTLY AVOID Arjuna in any form while on Digoxin. This combination risks Digoxin toxicity (nausea, visual changes, arrhythmia).", "alternative": null },
+        { "herb": "guggulu", "severity": "moderate", "effect": "Guggulsterones may affect CYP3A4 — alters Digoxin clearance", "recommendation": "Avoid Guggulu on Digoxin. Monitor Digoxin levels if any cardiac herb is added.", "alternative": null },
+        { "herb": "licorice_yashtimadhu", "severity": "major", "effect": "Licorice-induced hypokalemia (low potassium) dramatically increases Digoxin toxicity risk — hypokalemia sensitises the heart to Digoxin", "recommendation": "STRICTLY AVOID licorice in ANY form while on Digoxin.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "amiodarone",
+      "medicationClass": "antiarrhythmic",
+      "herbs": [
+        { "herb": "garlic_lashuna", "severity": "moderate", "effect": "Both garlic and Amiodarone affect thyroid function; Amiodarone contains iodine and can cause thyroid dysfunction — garlic may compound this", "recommendation": "Inform cardiologist about garlic use. Monitor thyroid function regularly on Amiodarone.", "alternative": null },
+        { "herb": "arjuna", "severity": "major", "effect": "Both affect cardiac conduction — combination may cause bradycardia or arrhythmia", "recommendation": "AVOID Arjuna while on Amiodarone without cardiologist supervision.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "statins_atorvastatin_rosuvastatin",
+      "medicationClass": "hmg_coa_reductase_inhibitor",
+      "herbs": [
+        { "herb": "red_yeast_rice", "severity": "major", "effect": "Red yeast rice contains monacolin K which is chemically identical to lovastatin — combined use is essentially double-dosing a statin. Risk of rhabdomyolysis (muscle breakdown) and liver toxicity.", "recommendation": "STRICTLY AVOID red yeast rice supplements while on any statin.", "alternative": "Guggulu for cholesterol with physician oversight" },
+        { "herb": "guggulu", "severity": "moderate", "effect": "Guggulsterones affect CYP3A4 which metabolises most statins — may raise statin blood levels and side effect risk", "recommendation": "Use with caution. Inform prescribing doctor. Monitor for muscle pain (myalgia).", "alternative": null },
+        { "herb": "neem_nimba", "severity": "mild", "effect": "Neem may affect CYP3A4 — monitor for statin side effects", "recommendation": "Culinary use safe. Avoid Neem extract supplements on statins.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "cyclosporine",
+      "medicationClass": "calcineurin_inhibitor_immunosuppressant",
+      "herbs": [
+        { "herb": "piperine_pippali_maricha", "severity": "major", "effect": "Piperine (in Pippali and black pepper) is a potent CYP3A4 and P-glycoprotein inhibitor — substantially increases Cyclosporine bioavailability and blood levels, risking nephrotoxicity and immunosuppressant toxicity", "recommendation": "STRICTLY AVOID all piperine-containing preparations (Trikatu, Pippali, Maricha in medicinal doses) while on Cyclosporine. Culinary pinch of black pepper in cooking generally safe — avoid concentrated supplements.", "alternative": null },
+        { "herb": "ashwagandha", "severity": "moderate", "effect": "Immunomodulatory activity of Ashwagandha may conflict with immunosuppression goal", "recommendation": "AVOID Ashwagandha in post-transplant immunosuppression. Discuss with transplant physician.", "alternative": null },
+        { "herb": "turmeric_haridra_high_dose", "severity": "moderate", "effect": "High-dose curcumin affects CYP3A4 — may alter Cyclosporine levels", "recommendation": "Avoid curcumin supplements. Culinary turmeric (1/4 tsp) is acceptable.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "tacrolimus",
+      "medicationClass": "calcineurin_inhibitor_immunosuppressant",
+      "herbs": [
+        { "herb": "ashwagandha", "severity": "moderate", "effect": "Ashwagandha's immunostimulatory activity directly opposes Tacrolimus immunosuppression", "recommendation": "AVOID Ashwagandha while on Tacrolimus (organ transplant setting). Discuss with transplant physician.", "alternative": null },
+        { "herb": "piperine_pippali_maricha", "severity": "major", "effect": "CYP3A4 inhibition significantly increases Tacrolimus blood levels — nephrotoxicity risk", "recommendation": "STRICTLY AVOID Trikatu and medicinal piperine preparations on Tacrolimus.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "methotrexate",
+      "medicationClass": "dmard_immunosuppressant",
+      "herbs": [
+        { "herb": "turmeric_haridra_high_dose", "severity": "moderate", "effect": "Both turmeric and Methotrexate have hepatotoxic potential — combined hepatotoxicity risk, especially with curcumin supplements > 1g/day", "recommendation": "Avoid curcumin supplements while on Methotrexate. Culinary turmeric acceptable. Monitor liver enzymes.", "alternative": null },
+        { "herb": "andrographis_kalmegh", "severity": "moderate", "effect": "Andrographis has immunomodulatory effects that may conflict with DMARD therapy", "recommendation": "Avoid Andrographis/Kalmegh during Methotrexate therapy.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "any_antibiotic",
+      "medicationClass": "antibiotic_general",
+      "herbs": [
+        { "herb": "probiotic_herbs_yogurt", "severity": "mild", "effect": "Antibiotics kill gut bacteria — probiotics (yogurt, fermented foods, Lactobacillus) help restore microbiome", "recommendation": "SEPARATE probiotics from antibiotic by at least 2 hours. Take probiotic 2 hours AFTER antibiotic. Continue probiotics for 2 weeks after completing antibiotic course.", "alternative": null },
+        { "herb": "garlic_lashuna", "severity": "safe", "effect": "Garlic has synergistic antimicrobial activity — no harmful interaction. May support antibiotic effect.", "recommendation": "Safe to use culinary garlic during antibiotic therapy. Avoid high-dose supplements as they may irritate an antibiotic-stressed gut.", "alternative": null },
+        { "herb": "ashwagandha", "severity": "safe", "effect": "No significant antibiotic interaction. Ashwagandha may support immunity during illness.", "recommendation": "Safe to continue during antibiotic therapy.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "fluconazole",
+      "medicationClass": "azole_antifungal",
+      "herbs": [
+        { "herb": "garlic_lashuna", "severity": "mild", "effect": "Minor CYP2C9 inhibition — may slightly increase Fluconazole blood levels", "recommendation": "Culinary garlic acceptable. Avoid garlic supplements during Fluconazole treatment.", "alternative": null },
+        { "herb": "neem_nimba", "severity": "mild", "effect": "Neem also has antifungal properties — potentially synergistic but interaction profile unclear", "recommendation": "Generally safe in culinary amounts. Avoid Neem extract supplements during antifungal treatment without medical supervision.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "ibuprofen",
+      "medicationClass": "nsaid_analgesic",
+      "herbs": [
+        { "herb": "guggulu", "severity": "mild", "effect": "Both are anti-inflammatory — additive effect may allow reduction of NSAID dose (beneficial) but also additive GI risk", "recommendation": "Monitor for GI symptoms (nausea, stomach pain). With doctor supervision, Guggulu may allow gradual NSAID dose reduction.", "alternative": null },
+        { "herb": "turmeric_haridra", "severity": "moderate", "effect": "Additive anti-inflammatory effect + additive antiplatelet activity. Combined may actually allow NSAID dose reduction.", "recommendation": "Inform prescriber. Culinary turmeric is safe. Curcumin supplements may allow NSAID reduction — discuss with doctor.", "alternative": "Turmeric + Boswellia (Shallaki) combination may reduce NSAID dependency — under medical guidance" },
+        { "herb": "ginger_shunthi", "severity": "mild", "effect": "Ginger is anti-inflammatory + has GI-protective properties — may offset some NSAID GI side effects", "recommendation": "Ginger tea or culinary ginger with NSAID meals may help protect the stomach. Monitor for antiplatelet effects.", "alternative": null },
+        { "herb": "shallaki_boswellia", "severity": "mild", "effect": "Additive anti-inflammatory — may allow NSAID dose reduction in arthritis", "recommendation": "Safe to combine. May reduce NSAID dose requirement over time — discuss with doctor. Monitor for GI effects.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "diclofenac",
+      "medicationClass": "nsaid_analgesic",
+      "herbs": [
+        { "herb": "turmeric_haridra", "severity": "moderate", "effect": "Additive anti-inflammatory and antiplatelet effect", "recommendation": "Culinary amounts safe. Avoid high-dose curcumin supplements with Diclofenac.", "alternative": null },
+        { "herb": "garlic_lashuna", "severity": "mild", "effect": "Additive antiplatelet activity", "recommendation": "Culinary amounts safe. Avoid supplements.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "antiretrovirals_hiv_protease_inhibitors",
+      "medicationClass": "antiretroviral_hiv_medication",
+      "herbs": [
+        { "herb": "garlic_lashuna_high_dose", "severity": "major", "effect": "High-dose garlic supplements significantly reduce Indinavir (protease inhibitor) AUC by up to 50% — major risk of treatment failure and HIV resistance development", "recommendation": "AVOID garlic supplements while on HIV protease inhibitors. Culinary garlic (1-2 cloves in cooking) considered acceptable by most HIV specialists.", "alternative": null },
+        { "herb": "turmeric_haridra_high_dose", "severity": "moderate", "effect": "High-dose curcumin affects CYP3A4 which metabolises many antiretrovirals — may alter drug levels", "recommendation": "Avoid curcumin supplements > 500mg/day while on ARV therapy. Culinary turmeric acceptable.", "alternative": null },
+        { "herb": "ashwagandha", "severity": "safe", "effect": "Ashwagandha may support immunity and reduce fatigue — no major antiretroviral interaction at standard doses", "recommendation": "Generally safe. Inform HIV care team.", "alternative": null }
       ]
     },
     {
       "medication": "oral_contraceptives",
       "medicationClass": "hormonal_contraceptive",
       "herbs": [
-        { "herb": "shatavari", "severity": "mild", "effect": "Both have estrogenic activity — monitor for hormonal effects", "recommendation": "Generally safe at normal doses. Inform gynecologist.", "alternative": null },
-        { "herb": "ashoka", "severity": "mild", "effect": "Uterine tonic — may interact with OCP hormones", "recommendation": "Use with caution. Inform doctor.", "alternative": null },
-        { "herb": "triphala", "severity": "safe", "effect": "No significant OCP interaction", "recommendation": "Safe to use", "alternative": null }
+        { "herb": "shatavari", "severity": "mild", "effect": "Shatavari has phytoestrogenic activity — may interact with hormonal OCP, though evidence is limited", "recommendation": "Inform gynecologist. Generally considered safe at standard Ayurvedic doses. Monitor for breakthrough bleeding.", "alternative": null },
+        { "herb": "ashoka", "severity": "mild", "effect": "Ashoka has uterine tonic and mild estrogenic effects — theoretical interaction with OCPs", "recommendation": "Use with caution. Inform gynecologist.", "alternative": null },
+        { "herb": "triphala", "severity": "safe", "effect": "No significant OCP interaction", "recommendation": "Safe to use.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "lithium",
+      "medicationClass": "mood_stabilizer",
+      "herbs": [
+        { "herb": "gokshura", "severity": "moderate", "effect": "Gokshura has diuretic properties — diuretics can raise Lithium blood levels dangerously (Lithium is excreted by kidneys alongside sodium)", "recommendation": "AVOID diuretic herbs (Punarnava, Gokshura) while on Lithium. Monitor Lithium levels carefully.", "alternative": null },
+        { "herb": "punarnava", "severity": "moderate", "effect": "Diuretic effect raises Lithium levels — toxicity risk", "recommendation": "AVOID while on Lithium.", "alternative": null },
+        { "herb": "ashwagandha", "severity": "safe", "effect": "No significant Lithium interaction", "recommendation": "Safe to use at standard doses.", "alternative": null }
+      ]
+    },
+    {
+      "medication": "proton_pump_inhibitors_omeprazole",
+      "medicationClass": "acid_reducer_ppi",
+      "herbs": [
+        { "herb": "licorice_yashtimadhu_dgl", "severity": "safe", "effect": "DGL (deglycyrrhizinated licorice) is actually synergistic — classical and modern use for gastric protection", "recommendation": "DGL licorice is safe and beneficial with PPIs. Regular licorice (with glycyrrhizin) raises BP — avoid that form.", "alternative": null },
+        { "herb": "amla_amalaki", "severity": "safe", "effect": "Amla is gastroprotective — no adverse interaction with PPIs", "recommendation": "Safe to use. Amla may support gastric mucosal health.", "alternative": null },
+        { "herb": "triphala", "severity": "mild", "effect": "Take Triphala 2+ hours from PPI — tannins may affect absorption", "recommendation": "Separate by 2 hours. Night-time Triphala avoids interaction with morning PPI.", "alternative": null }
       ]
     }
   ],
   "generalWarnings": [
-    "Always inform your doctor about all herbal supplements you are taking",
-    "Herbal remedies can affect drug metabolism via CYP450 liver enzymes",
-    "Interactions can be additive (too much effect) or antagonistic (reduced drug effect)",
-    "Pregnant/breastfeeding women should not take any herbs without medical supervision",
-    "Children's dosages are different — always consult pediatric specialist"
+    "DISCLOSURE RULE: Always inform every treating physician, pharmacologist, and pharmacist about ALL herbal supplements, Ayurvedic formulations, and home remedies you are taking. Many dangerous interactions are preventable with simple disclosure.",
+    "CYP450 ENZYME INTERACTIONS: Many herbs (Pippali, Garlic, Turmeric, Guggulu, Shankhapushpi) affect CYP450 liver enzymes that metabolise most pharmaceutical drugs. This can raise drug blood levels (toxicity risk) or lower them (treatment failure).",
+    "ADDITIVE vs ANTAGONISTIC: Interactions are not always harmful. Some herb-drug combinations are additive (e.g., Turmeric + NSAID may reduce NSAID dose needed). Others are antagonistic (e.g., Licorice counteracts antihypertensives). Severity matters — always check.",
+    "PREGNANCY AND NURSING: Many Ayurvedic herbs (Guggulu, Shankhapushpi, Ashoka, Pippali, Trikatu, concentrated Triphala) are contraindicated in pregnancy. Pregnant or nursing women must consult both their OB/GYN and an Ayurvedic physician before any herbal use.",
+    "KIDNEY AND LIVER DISEASE: Dose adjustments are critical in renal or hepatic impairment. Many herbs are Mutrala (diuretic) or Yakrit-acting (liver-acting) — safe doses in healthy individuals may be toxic in organ-impaired patients. Always disclose renal/liver status.",
+    "TIMING MATTERS: Many interactions are timing-dependent rather than absolute. Levothyroxine must be taken alone on empty stomach — herbs separate by 4+ hours. Probiotics must be separated from antibiotics by 2+ hours. Correct timing prevents most absorption-based interactions.",
+    "ANTICOAGULANT CAUTION — HIGH PRIORITY: Patients on Warfarin, Heparin, Aspirin, or Clopidogrel must avoid antiplatelet herbs (Garlic supplements, Ginger supplements, high-dose Turmeric, Amla supplements) without physician approval. These combinations can cause dangerous bleeding.",
+    "NARROW THERAPEUTIC WINDOW DRUGS: Digoxin, Lithium, Warfarin, Cyclosporine, Tacrolimus, Phenobarbital, and certain antiretrovirals have narrow therapeutic windows — small changes in blood levels cause toxicity or treatment failure. Be especially cautious with ANY herbal addition for patients on these drugs.",
+    "SHANKHAPUSHPI-PHENOBARBITAL INTERACTION: This is the most clinically documented and serious Ayurvedic herb-drug interaction. Shankhapushpi preparations (including Saraswatarishta) significantly reduce Phenobarbital blood levels and can cause seizure breakthrough. Never combine.",
+    "SELF-MEDICATION WARNING: Never add herbal supplements to manage a side effect of a prescription drug without telling your doctor. Example: adding Ashwagandha for fatigue while on SSRIs, or Punarnava for water retention while on diuretics, can create dangerous additive effects."
   ]
 }

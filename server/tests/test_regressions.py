@@ -23,11 +23,6 @@ def test_all_client_routes_are_mounted():
     assert expected.issubset(mounted)
 
 
-def test_plan_graph_imports_and_compiles():
-    from ai.agents.plan_graph import plan_graph
-
-    assert plan_graph is not None
-
 
 def test_plan_response_accepts_medicines_payload():
     from schemas.plan_schema import PlanResponse

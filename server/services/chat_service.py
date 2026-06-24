@@ -214,9 +214,10 @@ async def apply_chat_side_effects(
 
 
 async def _adapt_plans(db, user_id: str, plan_types: list[str], feedback: str) -> None:
-    """Background task: regenerate the specified plans with user feedback."""
-    from ai.agents.plan_graph import generate_single_plan
+    """Background task: regenerate the specified plans using the deterministic engine + enricher path."""
+    from routes.plans import _generate_feature_via_engine, PLAN_DATA_KEYS
     from schemas.user_schema import UserDocument, PlanHistoryDocument
+    from engine.seasonal import get_current_season
     import uuid
 
     user_dict = await db.users.find_one({"_id": user_id})
@@ -224,41 +225,45 @@ async def _adapt_plans(db, user_id: str, plan_types: list[str], feedback: str) -
         return
 
     user = UserDocument(**user_dict)
+    season_info = get_current_season()
     user_profile = {
+        "_user_id": user.id,
         "name": user.name, "gender": user.gender, "age": user.age,
         "height_cm": user.height_cm, "weight_kg": user.weight_kg,
         "bmi": user.bmi, "bmi_category": user.bmi_category,
         "dosha_scores": user.dosha_scores, "dominant_dosha": user.dominant_dosha,
         "secondary_dosha": user.secondary_dosha,
+        "vikriti_dominant": user.vikriti_dominant,
+        "vikriti_secondary": user.vikriti_secondary,
         "medical_history": user.medical_history or [],
         "current_symptoms": user.current_symptoms or [],
         "current_medications": user.current_medications or [],
+        "allergies": user.allergies or [],
+        "injuries_or_limitations": user.injuries_or_limitations or [],
         "fitness_level": user.fitness_level or "beginner",
         "activity_level": user.activity_level or "moderate",
-        "goal": user.goal, "rating_preferences": {},
-    }
-
-    PLAN_DATA_KEYS = {
-        "gym": "gym_plan", "yoga": "yoga_plan", "diet": "diet_plan",
-        "panchakarma": "panchakarma_plan", "remedies": "home_remedies", "medicines": "medicines",
+        "pregnancy_or_nursing": user.pregnancy_or_nursing or False,
+        "goal": user.goal,
+        "current_season": season_info.name.lower(),
+        "rating_preferences": {},
     }
 
     for plan_type in plan_types:
         try:
-            final_state = await asyncio.wait_for(
-                generate_single_plan(plan_type, user_profile, feedback=feedback),
+            enriched = await asyncio.wait_for(
+                _generate_feature_via_engine(db, user_id, plan_type, user_profile),
                 timeout=90,
             )
             plan_data_key = PLAN_DATA_KEYS.get(plan_type, f"{plan_type}_plan")
+            model_used = enriched.get("enrichment_model") if isinstance(enriched, dict) else None
             full_plan_data = {
                 "user_summary": {"name": user.name, "dominant_dosha": user.dominant_dosha},
-                plan_data_key: final_state.get(plan_data_key),
-                "health_risks": final_state.get("health_risks", []),
-                "safety_checks": final_state.get("safety_checks", {}),
-                "adaptation_summary": final_state.get("adaptation_summary"),
+                plan_data_key: enriched,
+                "health_risks": [],
+                "safety_checks": {"generation_mode": "engine_backed", "adaptation_feedback": feedback[:200]},
                 "generated_at": datetime.now(timezone.utc).isoformat(),
                 "generation_method": "agentic",
-                "model_used": final_state.get("model_used"),
+                "model_used": model_used or "engine+enricher",
             }
             plan_id = str(uuid.uuid4())
             history = PlanHistoryDocument(
@@ -267,7 +272,7 @@ async def _adapt_plans(db, user_id: str, plan_types: list[str], feedback: str) -
                 plan_data=full_plan_data, generated_at=datetime.now(timezone.utc)
             )
             await db.plan_history.insert_one(history.model_dump(by_alias=True))
-            logger.info("Adapted %s plan for user %s (via chat)", plan_type, user_id)
+            logger.info("Adapted %s plan for user %s (via chat, engine path)", plan_type, user_id)
         except Exception as exc:
             logger.error("Chat adaptation failed for %s: %s", plan_type, exc)
 
