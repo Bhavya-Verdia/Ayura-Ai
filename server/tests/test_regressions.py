@@ -4,10 +4,11 @@ from datetime import datetime, timezone
 def test_all_client_routes_are_mounted():
     from main import app
 
-    mounted = {
-        getattr(route, "path", "")
-        for route in app.routes
-    }
+    # Use the OpenAPI schema rather than walking app.routes: FastAPI 0.138+
+    # no longer flattens included routers into app.routes (each becomes an
+    # opaque _IncludedRouter wrapper), so route.path introspection misses them.
+    # openapi()["paths"] is the stable public API and lists every mounted path.
+    mounted = set(app.openapi().get("paths", {}).keys())
 
     expected = {
         "/api/progress/log",
