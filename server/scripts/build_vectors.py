@@ -6,6 +6,7 @@ Run: python scripts/build_vectors.py
 
 import asyncio
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -192,12 +193,25 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
 
 def build_vectors():
     print("🔄 Building ChromaDB vector store...")
-    CHROMA_DIR.mkdir(parents=True, exist_ok=True)
 
-    client = chromadb.PersistentClient(
-        path=str(CHROMA_DIR),
-        settings=Settings(anonymized_telemetry=False),
-    )
+    # Seed the same store the app reads from: a remote Chroma server when
+    # CHROMA_HOST is set (Docker/staging/prod), else the embedded persistent dir.
+    chroma_host = os.environ.get("CHROMA_HOST")
+    if chroma_host:
+        chroma_port = int(os.environ.get("CHROMA_PORT", "8000"))
+        print(f"   → Seeding remote ChromaDB at {chroma_host}:{chroma_port}")
+        client = chromadb.HttpClient(
+            host=chroma_host,
+            port=chroma_port,
+            settings=Settings(anonymized_telemetry=False),
+        )
+    else:
+        CHROMA_DIR.mkdir(parents=True, exist_ok=True)
+        print(f"   → Seeding embedded ChromaDB at {CHROMA_DIR}")
+        client = chromadb.PersistentClient(
+            path=str(CHROMA_DIR),
+            settings=Settings(anonymized_telemetry=False),
+        )
     embedder = get_embedder()
 
     collection_map = {
