@@ -65,6 +65,19 @@ async def log_plan_generated(
         source="api",
     )
 
+    # Also surface to the user-facing health timeline feed. The frontend uses
+    # `adaptation_triggered` for re-generated plans and `plan_generated` for new ones.
+    try:
+        await db.timeline.insert_one({
+            "user_id": user_id,
+            "event_type": "adaptation_triggered" if is_adaptation else "plan_generated",
+            "details": {"plan_type": plan_type, "model_used": model_used},
+            "source": "api",
+            "timestamp": datetime.now(timezone.utc),
+        })
+    except Exception as exc:
+        logger.error("Timeline write failed: %s | plan=%s user=%s", exc, plan_id, user_id)
+
 
 async def log_symptom_change(
     db: AsyncIOMotorDatabase,

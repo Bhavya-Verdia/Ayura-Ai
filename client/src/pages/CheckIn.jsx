@@ -3,17 +3,42 @@ import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import API from '../api/client'
+import { useAuth } from '../providers/AuthContext'
 import './CheckIn.css'
+import '../components/VikritiCheckIn.css'
 
-const METRICS = [
-  { id: 'energy',    label: 'Energy Levels',  icon: '⚡', color: 'var(--ayura-amber)' },
-  { id: 'digestion', label: 'Digestion',       icon: '🔥', color: 'var(--ayura-teal)' },
-  { id: 'sleep',     label: 'Sleep Quality',   icon: '🌙', color: 'var(--ayura-violet)' },
-  { id: 'adherence', label: 'Plan Adherence',  icon: '✅', color: 'var(--primary-light)' },
+// 1-5 lifestyle pulse + engagement (sleep/stress/digestion feed the Vikriti engine)
+const PULSE = [
+  { id: 'energy',    label: 'Energy',         icons: ['🔋', '😴', '😐', '😊', '⚡'], hints: ['Drained', 'Low', 'Fair', 'Good', 'High'] },
+  { id: 'sleep',     label: 'Sleep',          icons: ['😫', '😴', '😐', '😊', '✨'], hints: ['Very poor', 'Poor', 'Fair', 'Good', 'Excellent'] },
+  { id: 'stress',    label: 'Stress',         icons: ['🌋', '😰', '😐', '😌', '🧘'], hints: ['Extreme', 'High', 'Moderate', 'Low', 'None'] },
+  { id: 'digestion', label: 'Digestion',      icons: ['💨', '😣', '😐', '😊', '🌿'], hints: ['Very poor', 'Poor', 'Fair', 'Good', 'Strong'] },
+  { id: 'adherence', label: 'Plan Adherence', icons: ['🚫', '🤏', '👍', '💪', '🏆'], hints: ['None', 'A little', 'About half', 'Most', 'All of it'] },
 ]
 
-function MetricMiniBar({ value, color }) {
-  const pct = Math.min(100, ((value - 1) / 9) * 100)
+const QUICK_SYMPTOMS = [
+  { id: 'anxiety_worry', icon: '🌀', label: 'Anxiety or worry' },
+  { id: 'dry_skin_constipation', icon: '🌵', label: 'Dryness or constipation' },
+  { id: 'trouble_sleeping', icon: '🌙', label: 'Trouble sleeping' },
+  { id: 'heartburn_acidity', icon: '🔥', label: 'Acidity or inflammation' },
+  { id: 'irritability', icon: '⚡', label: 'Irritability' },
+  { id: 'weight_gain', icon: '🏔️', label: 'Weight gain or sluggishness' },
+  { id: 'low_energy', icon: '😶', label: 'Low energy' },
+  { id: 'bloating_gas', icon: '💨', label: 'Bloating or gas' },
+  { id: 'coated_tongue_ama', icon: '👅', label: 'Coated tongue' },
+  { id: 'feeling_balanced', icon: '✨', label: 'Feeling balanced' },
+]
+
+const HIST_METRICS = [
+  { id: 'energy', label: 'Energy', icon: '⚡', color: 'var(--ayura-amber)' },
+  { id: 'sleep', label: 'Sleep', icon: '🌙', color: 'var(--ayura-violet)' },
+  { id: 'digestion', label: 'Digestion', icon: '🔥', color: 'var(--ayura-teal)' },
+  { id: 'adherence', label: 'Adherence', icon: '✅', color: 'var(--primary-light)' },
+]
+
+function MiniBar({ value, color }) {
+  const max = value > 5 ? 10 : 5            // tolerate legacy 1-10 records
+  const pct = Math.min(100, ((value - 1) / (max - 1)) * 100)
   return (
     <div className="chk-mini-bar-track">
       <div className="chk-mini-bar-fill" style={{ width: `${pct}%`, background: color }} />
@@ -24,48 +49,44 @@ function MetricMiniBar({ value, color }) {
 function HistoryCard({ entry, index }) {
   const date = new Date(entry.timestamp)
   const dateStr = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-  const avgScore = Math.round((entry.energy + entry.digestion + entry.sleep + entry.adherence) / 4)
   return (
     <motion.div
       className="chk-hist-card"
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: index * 0.05 }}
+      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
     >
-      <div className="chk-hist-header">
-        <span className="chk-hist-date">{dateStr}</span>
-        <span className="chk-hist-avg">avg {avgScore}/10</span>
-      </div>
+      <div className="chk-hist-header"><span className="chk-hist-date">{dateStr}</span></div>
       <div className="chk-hist-metrics">
-        {METRICS.map(m => (
+        {HIST_METRICS.filter(m => entry[m.id] != null).map(m => (
           <div key={m.id} className="chk-hist-metric">
             <div className="chk-hist-metric-row">
-              <span className="chk-hist-metric-icon">{m.icon}</span>
+              <span>{m.icon}</span>
               <span className="chk-hist-metric-label">{m.label}</span>
-              <span className="chk-hist-metric-val" style={{ color: m.color }}>{entry[m.id]}/10</span>
             </div>
-            <MetricMiniBar value={entry[m.id]} color={m.color} />
+            <MiniBar value={entry[m.id]} color={m.color} />
           </div>
         ))}
       </div>
       {entry.symptoms?.length > 0 && (
         <div className="chk-hist-symptoms">
           <span className="chk-hist-tag-label">Symptoms:</span>
-          {entry.symptoms.map((s, i) => <span key={i} className="chk-hist-tag">{s}</span>)}
+          {entry.symptoms.map(s => <span key={s} className="chk-hist-tag">{String(s).replace(/_/g, ' ')}</span>)}
         </div>
       )}
-      {entry.what_felt_good && (
-        <p className="chk-hist-felt-good">"{entry.what_felt_good}"</p>
-      )}
+      {entry.what_felt_good && <p className="chk-hist-felt-good">"{entry.what_felt_good}"</p>}
     </motion.div>
   )
 }
 
 export default function CheckIn() {
-  const [tab, setTab] = useState('checkin') // 'checkin' | 'history'
-  const [formData, setFormData] = useState({
-    energy: 5, digestion: 5, sleep: 5, adherence: 5, symptoms: '', what_felt_good: ''
-  })
+  const { profile } = useAuth()
+  const isFemale = profile?.gender === 'female'
+  const [tab, setTab] = useState('checkin')
+  const [pulse, setPulse] = useState({ energy: 3, sleep: 3, stress: 3, digestion: 3, adherence: 3 })
+  const [symptoms, setSymptoms] = useState([])
+  const [menstrual, setMenstrual] = useState(false)
+  const [stageUpdates, setStageUpdates] = useState({})
+  const [feltGood, setFeltGood] = useState('')
   const [insight, setInsight] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -73,37 +94,41 @@ export default function CheckIn() {
   const { data: history = [], isLoading: histLoading } = useQuery({
     queryKey: ['checkin-history'],
     queryFn: () => API.get('/checkin/history?limit=12').then(r => r.data),
-    enabled: tab === 'history',
-    staleTime: 2 * 60 * 1000,
   })
+
+  function toggleSymptom(id) {
+    setSymptoms(prev => {
+      if (id === 'feeling_balanced') return prev.includes('feeling_balanced') ? [] : ['feeling_balanced']
+      const without = prev.filter(s => s !== 'feeling_balanced')
+      return without.includes(id) ? without.filter(s => s !== id) : [...without, id]
+    })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
-    setError(null)
+    setLoading(true); setError(null)
     try {
       const payload = {
-        ...formData,
-        symptoms: formData.symptoms ? formData.symptoms.split(',').map(s => s.trim()).filter(Boolean) : []
+        ...pulse,
+        symptoms,
+        what_felt_good: feltGood,
+        ...(isFemale ? { menstrual_phase: menstrual } : {}),
+        ...(Object.keys(stageUpdates).length > 0 ? { disease_stage_updates: stageUpdates } : {}),
       }
       const res = await API.post('/checkin/weekly', payload)
       setInsight(res.data)
-    } catch {
-      setError('Failed to submit check-in. Please try again.')
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleSliderChange = (field, val) => {
-    setFormData(prev => ({ ...prev, [field]: parseInt(val, 10) }))
   }
 
   return (
     <>
       <Helmet>
         <title>Weekly Check-In — Ayura AI</title>
-        <meta name="description" content="Log your weekly health check-in to calibrate your Ayura AI wellness plan." />
+        <meta name="description" content="Your weekly Ayurvedic check-in — refines your Vikriti and calibrates your plans." />
       </Helmet>
 
       <div className="chk-root">
@@ -111,165 +136,125 @@ export default function CheckIn() {
         <div className="chk-orb chk-orb-b" aria-hidden="true" />
 
         <div className="chk-container">
-          <motion.div
-            className="chk-header"
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
+          <motion.div className="chk-header" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <h1 className="chk-page-title gradient-text">Weekly Check-In</h1>
-            <p className="chk-page-sub">Calibrate your AI wellness plan with your latest bio-feedback.</p>
+            <p className="chk-page-sub">A quick snapshot of your week — refines your Vikriti and fine-tunes your plans.</p>
           </motion.div>
 
-          {/* Tab switcher */}
           <div className="chk-tabs">
-            <button
-              className={`chk-tab${tab === 'checkin' ? ' active' : ''}`}
-              onClick={() => { setTab('checkin'); setInsight(null) }}
-            >
-              New Check-In
-            </button>
-            <button
-              className={`chk-tab${tab === 'history' ? ' active' : ''}`}
-              onClick={() => setTab('history')}
-            >
-              History
-              {history.length > 0 && <span className="chk-tab-badge">{history.length}</span>}
+            <button className={`chk-tab${tab === 'checkin' ? ' active' : ''}`} onClick={() => { setTab('checkin'); setInsight(null) }}>New Check-In</button>
+            <button className={`chk-tab${tab === 'history' ? ' active' : ''}`} onClick={() => setTab('history')}>
+              History{history.length > 0 && <span className="chk-tab-badge">{history.length}</span>}
             </button>
           </div>
 
           <AnimatePresence mode="wait">
             {tab === 'history' ? (
-              <motion.div
-                key="history"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.3 }}
-              >
+              <motion.div key="history" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3 }}>
                 {histLoading ? (
-                  <div className="chk-hist-loading">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="chk-hist-card skeleton" style={{ height: 160 }} />
-                    ))}
-                  </div>
+                  <div className="chk-hist-loading">{[...Array(3)].map((_, i) => <div key={i} className="chk-hist-card skeleton" style={{ height: 160 }} />)}</div>
                 ) : history.length === 0 ? (
-                  <div className="chk-hist-empty">
-                    <div style={{ fontSize: '3rem' }}>📋</div>
-                    <p>No check-ins yet. Submit your first one!</p>
-                  </div>
+                  <div className="chk-hist-empty"><div style={{ fontSize: '3rem' }}>📋</div><p>No check-ins yet. Submit your first one!</p></div>
                 ) : (
                   history.map((entry, i) => <HistoryCard key={i} entry={entry} index={i} />)
                 )}
               </motion.div>
             ) : insight ? (
-              <motion.div
-                key="insight"
-                className="chk-insight-card"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              >
+              <motion.div key="insight" className="chk-insight-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
                 <div className="chk-insight-icon">✨</div>
-                <h3 className="chk-insight-title">AI Analysis Complete</h3>
+                <h3 className="chk-insight-title">Vikriti Updated</h3>
                 <p className="chk-insight-text">{insight.insight}</p>
-
                 {insight.adapted_plans?.length > 0 && (
                   <div className="chk-adapted-box">
-                    <span className="chk-adapted-label">Plans Updated:</span>
-                    <div className="chk-adapted-tags">
-                      {insight.adapted_plans.map(plan => (
-                        <span key={plan} className="chk-adapted-tag">{plan}</span>
-                      ))}
-                    </div>
+                    <span className="chk-adapted-label">Plans refreshed (your imbalance shifted):</span>
+                    <div className="chk-adapted-tags">{insight.adapted_plans.map(p => <span key={p} className="chk-adapted-tag">{p}</span>)}</div>
                   </div>
                 )}
-
                 <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-                  <button className="btn btn-secondary chk-back-btn" onClick={() => setInsight(null)}>
-                    New Check-In
-                  </button>
-                  <button className="btn btn-secondary chk-back-btn" onClick={() => { setInsight(null); setTab('history') }}>
-                    View History
-                  </button>
+                  <button className="btn btn-secondary chk-back-btn" onClick={() => { setInsight(null); setSymptoms([]); setStageUpdates({}); setFeltGood('') }}>New Check-In</button>
+                  <button className="btn btn-secondary chk-back-btn" onClick={() => { setInsight(null); setTab('history') }}>View History</button>
                 </div>
               </motion.div>
             ) : (
-              <motion.form
-                key="form"
-                className="chk-form"
-                onSubmit={handleSubmit}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-              >
-                {error && (
-                  <div className="chk-error">
-                    ⚠️ {error}
-                  </div>
-                )}
+              <motion.form key="form" className="chk-form" onSubmit={handleSubmit} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
+                {error && <div className="chk-error">⚠️ {error}</div>}
 
-                <div className="chk-metrics-grid">
-                  {METRICS.map(metric => (
-                    <div key={metric.id} className="chk-metric-card">
-                      <div className="chk-metric-header">
-                        <span className="chk-metric-icon">{metric.icon}</span>
-                        <label className="chk-metric-label">{metric.label}</label>
-                        <span className="chk-metric-val" style={{ color: metric.color, background: `${metric.color}18` }}>
-                          {formData[metric.id]}/10
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min="1" max="10"
-                        className="chk-slider"
-                        value={formData[metric.id]}
-                        onChange={e => handleSliderChange(metric.id, e.target.value)}
-                        style={{ '--val': `${((formData[metric.id] - 1) / 9) * 100}%`, '--track-color': metric.color }}
-                      />
-                      <div className="chk-slider-labels">
-                        <span>Low</span>
-                        <span>High</span>
+                {/* ── Lifestyle pulse (1-5 emoji) ── */}
+                <div className="vci-pulse-section" style={{ marginBottom: 20 }}>
+                  {PULSE.map(field => (
+                    <div key={field.id} className="vci-pulse-row">
+                      <span className="vci-pulse-label">{field.label}</span>
+                      <div className="vci-pulse-icons">
+                        {field.icons.map((icon, i) => (
+                          <button key={i} type="button"
+                            className={`vci-pulse-btn${pulse[field.id] === i + 1 ? ' selected' : ''}`}
+                            onClick={() => setPulse(p => ({ ...p, [field.id]: i + 1 }))}
+                            title={field.hints[i]} aria-label={`${field.label}: ${field.hints[i]}`}>
+                            {icon}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   ))}
                 </div>
 
+                {isFemale && (
+                  <div className="vci-menstrual-row">
+                    <button type="button" className={`vci-menstrual-btn${menstrual ? ' active' : ''}`} onClick={() => setMenstrual(p => !p)}>
+                      {menstrual ? '🔴' : '⭕'} On or near my period
+                    </button>
+                    <span className="vci-menstrual-hint">Pitta naturally rises — we factor this in</span>
+                  </div>
+                )}
+
+                <p className="vci-sub" style={{ marginTop: 8 }}>Any symptoms this week?</p>
+                <div className="vci-chips">
+                  {QUICK_SYMPTOMS.map(s => (
+                    <motion.button key={s.id} type="button" whileTap={{ scale: 0.96 }}
+                      className={`vci-chip ${symptoms.includes(s.id) ? 'selected' : ''}`} onClick={() => toggleSymptom(s.id)}>
+                      <span>{s.icon}</span> {s.label}
+                    </motion.button>
+                  ))}
+                </div>
+
+                {profile?.medical_history?.length > 0 && (
+                  <div className="vci-disease-stage-section">
+                    <h4 className="vci-section-title">Disease Progress Check</h4>
+                    <p className="vci-sub">How are your conditions evolving?</p>
+                    {profile.medical_history.slice(0, 5).map(cid => (
+                      <div key={cid} className="vci-stage-row">
+                        <span className="vci-stage-label">{cid.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+                        <div className="vci-stage-selects">
+                          <select className="vci-stage-select" value={stageUpdates[cid]?.duration || ''}
+                            onChange={e => setStageUpdates(p => ({ ...p, [cid]: { ...p[cid], duration: e.target.value } }))}>
+                            <option value="">Duration…</option>
+                            <option value="months">Less than 1 year</option>
+                            <option value="1-3y">1–3 years</option>
+                            <option value="3-5y">3–5 years</option>
+                            <option value="5y+">5+ years</option>
+                          </select>
+                          <select className="vci-stage-select" value={stageUpdates[cid]?.trajectory || ''}
+                            onChange={e => setStageUpdates(p => ({ ...p, [cid]: { ...p[cid], trajectory: e.target.value } }))}>
+                            <option value="">Trend…</option>
+                            <option value="worsening">Getting worse</option>
+                            <option value="stable">Stable</option>
+                            <option value="improving">Improving</option>
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="chk-text-inputs">
                   <div className="input-group">
-                    <label>Any new symptoms? (comma separated)</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. slight headache, bloating..."
-                      value={formData.symptoms}
-                      onChange={e => setFormData({...formData, symptoms: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="input-group">
                     <label>What felt good this week?</label>
-                    <textarea
-                      placeholder="Share your wins, big or small..."
-                      rows={3}
-                      value={formData.what_felt_good}
-                      onChange={e => setFormData({...formData, what_felt_good: e.target.value})}
-                    />
+                    <textarea placeholder="Share your wins, big or small..." rows={3} value={feltGood} onChange={e => setFeltGood(e.target.value)} />
                   </div>
                 </div>
 
-                <motion.button
-                  type="submit"
-                  className="btn btn-primary chk-submit-btn"
-                  disabled={loading}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {loading ? (
-                    <><span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Analyzing...</>
-                  ) : (
-                    'Submit & Calibrate Plan'
-                  )}
+                <motion.button type="submit" className="btn btn-primary chk-submit-btn" disabled={loading} whileTap={{ scale: 0.98 }}>
+                  {loading ? (<><span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Analyzing…</>) : 'Submit & Refine My Vikriti'}
                 </motion.button>
               </motion.form>
             )}

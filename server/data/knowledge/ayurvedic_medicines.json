@@ -7993,7 +7993,9 @@
       "urinary_disorders": "coconut water"
     },
     "timing": "after_meals",
-    "contraindications": [],
+    "contraindications": [
+      "gallstones_active"
+    ],
     "drug_interactions": [],
     "pregnancy_safe": true,
     "gender_specific": null,
@@ -10055,7 +10057,10 @@
       "nausea": "cold water sip"
     },
     "timing": "as_needed",
-    "contraindications": [],
+    "contraindications": [
+      "epilepsy",
+      "pregnancy_high_doses"
+    ],
     "drug_interactions": [],
     "pregnancy_safe": true,
     "gender_specific": null,

@@ -38,6 +38,38 @@ const EMPTY_FORM = {
   description: '',
 }
 
+// ── Frontend ⇄ API shape adapters ────────────────────────────
+// The API speaks {id, reminder_type, days:[names], timezone}; the UI uses
+// {_id, type, days_of_week:[ISO nums]}. Reminders fire in the user's timezone,
+// so we send the browser's IANA zone with every create/edit.
+const DAY_NUM_TO_NAME = { 0: 'sunday', 1: 'monday', 2: 'tuesday', 3: 'wednesday', 4: 'thursday', 5: 'friday', 6: 'saturday' }
+const DAY_NAME_TO_NUM = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 }
+const BROWSER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+
+function fromApiShape(r) {
+  return {
+    _id: r.id ?? r._id,
+    title: r.title ?? '',
+    time: r.time ?? '08:00',
+    type: r.reminder_type ?? 'custom',
+    days_of_week: (r.days ?? []).map(d => DAY_NAME_TO_NUM[String(d).toLowerCase()]).filter(n => n !== undefined),
+    description: r.description ?? '',
+    is_active: r.is_active ?? true,
+    timezone: r.timezone ?? BROWSER_TZ,
+  }
+}
+
+function toApiShape(form) {
+  return {
+    title: form.title,
+    time: form.time,
+    reminder_type: form.type,
+    days: (form.days_of_week ?? []).map(n => DAY_NUM_TO_NAME[n]).filter(Boolean),
+    description: form.description ?? '',
+    timezone: BROWSER_TZ,
+  }
+}
+
 // ── DayChips ─────────────────────────────────────────────────
 function DayChips({ selected, onChange, compact = false }) {
   const toggleDay = (val) => {
@@ -357,7 +389,7 @@ export default function Reminders() {
       setError(null)
       const res = await remindersAPI.list()
       const data = Array.isArray(res.data) ? res.data : (res.data?.reminders ?? [])
-      setReminders(data)
+      setReminders(data.map(fromApiShape))
     } catch (err) {
       console.error('Failed to load reminders:', err)
       setError('Could not load reminders. Please try again.')
@@ -372,8 +404,8 @@ export default function Reminders() {
     setSaving(true)
     setError(null)
     try {
-      const res = await remindersAPI.create(formData)
-      setReminders(prev => [res.data, ...prev])
+      const res = await remindersAPI.create(toApiShape(formData))
+      setReminders(prev => [fromApiShape(res.data), ...prev])
       setShowForm(false)
       showSuccess('Reminder created! ✨')
     } catch (err) {
@@ -396,8 +428,8 @@ export default function Reminders() {
   const handleEdit = async (id, formData) => {
     setError(null)
     try {
-      const res = await remindersAPI.update(id, formData)
-      setReminders(prev => prev.map(r => r._id === id ? res.data : r))
+      const res = await remindersAPI.update(id, toApiShape(formData))
+      setReminders(prev => prev.map(r => r._id === id ? fromApiShape(res.data) : r))
       showSuccess('Reminder updated!')
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to update reminder.')

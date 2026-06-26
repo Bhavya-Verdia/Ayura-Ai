@@ -639,8 +639,14 @@ export default function DoshaQuiz() {
       const assessResult = response.data
       setResult(assessResult)
       await updateProfile({})
-      const hasContradiction = detectContradiction(traits) || (assessResult.contradictions?.length > 0)
-      if (hasContradiction && assessResult.confidence === 'low') {
+      // The API returns dosha_confidence as a 0-100 score and dosha_contradictions
+      // as a list — derive the qualitative state from those (not the non-existent
+      // `confidence`/`contradictions` fields). When the read is shaky — conflicting
+      // trait groups or low confidence — we ask two clarifying follow-ups rather
+      // than commit to an uncertain constitution.
+      const isLowConfidence = (assessResult.dosha_confidence ?? 0) < 45
+      const hasContradiction = detectContradiction(traits) || (assessResult.dosha_contradictions?.length > 0)
+      if (hasContradiction || isLowConfidence) {
         setPhase('clarify')
       } else {
         setPhase('confirm')
@@ -778,7 +784,7 @@ export default function DoshaQuiz() {
               {LOADING_STEPS[loadingStep]}
             </motion.p>
           </AnimatePresence>
-          <p className="da-loading-sub">GPT-4o is consulting classical Ayurvedic texts…</p>
+          <p className="da-loading-sub">Scoring your constitution with a deterministic Ashtavidha Pareeksha engine — AI writes the explanation.</p>
         </div>
       </div>
     )
@@ -1036,12 +1042,12 @@ export default function DoshaQuiz() {
             </div>
           )}
 
-          {result.contradictions?.length > 0 && (
+          {result.dosha_contradictions?.length > 0 && (
             <div className="da-contradiction-note">
               <span className="da-contradiction-icon">⚡</span>
               <div>
                 <strong>Mixed signals detected</strong>
-                <p>{result.contradictions[0]}</p>
+                <p>{result.dosha_contradictions[0]}</p>
                 <p className="da-contradiction-hint">Weekly check-ins will resolve this over time as more data accumulates.</p>
               </div>
             </div>
@@ -1195,7 +1201,7 @@ export default function DoshaQuiz() {
             >
               Assess My Dosha →
             </motion.button>
-            <p className="da-symptom-note">Your selection will be processed by GPT-4o for a personalised Ayurvedic assessment.</p>
+            <p className="da-symptom-note">Your answers are scored by a deterministic classical Ayurvedic engine — AI only writes your personalised explanation.</p>
           </div>
         </motion.div>
       </div>

@@ -61,6 +61,16 @@ const EVENT_CONFIG = {
     badgeClass: 'badge-primary',
     filterKey: 'adaptations',
   },
+  reminder_set: {
+    icon: '⏰',
+    label: 'Reminder Set',
+    colorVar: '--ayura-violet',
+    glowColor: 'rgba(139,92,246,0.45)',
+    bgColor: 'rgba(139,92,246,0.07)',
+    borderColor: 'rgba(139,92,246,0.2)',
+    badgeClass: '',
+    filterKey: 'all',
+  },
   default: {
     icon: '📝',
     label: 'Health Event',
@@ -147,17 +157,15 @@ function renderDetails(event) {
     case 'progress_logged':
       return (
         <div className="ht-event-details">
-          {data.weight && <span className="ht-detail-chip ht-chip-teal">⚖️ {data.weight} kg</span>}
-          {data.mood && <span className="ht-detail-chip ht-chip-teal">😊 Mood: {data.mood}/10</span>}
-          {data.energy && <span className="ht-detail-chip ht-chip-muted">⚡ Energy: {data.energy}/10</span>}
-          {data.sleep && <span className="ht-detail-chip ht-chip-muted">😴 Sleep: {data.sleep}h</span>}
-          {data.adherence != null && (
+          {data.weight_kg && <span className="ht-detail-chip ht-chip-teal">⚖️ {data.weight_kg} kg</span>}
+          {data.mood && <span className="ht-detail-chip ht-chip-teal">😊 Mood: {data.mood}</span>}
+          {data.adherence_percent != null && (
             <div className="ht-adherence-bar">
               <span className="ht-adherence-label">Plan adherence</span>
               <div className="ht-bar-track">
-                <div className="ht-bar-fill" style={{ width: `${data.adherence}%` }} />
+                <div className="ht-bar-fill" style={{ width: `${data.adherence_percent}%` }} />
               </div>
-              <span className="ht-adherence-pct">{data.adherence}%</span>
+              <span className="ht-adherence-pct">{data.adherence_percent}%</span>
             </div>
           )}
         </div>
@@ -166,15 +174,20 @@ function renderDetails(event) {
       return (
         <div className="ht-event-details">
           {data.plan_type && <span className="ht-detail-chip ht-chip-primary">📋 {data.plan_type}</span>}
-          {data.mode && <span className="ht-detail-chip ht-chip-muted">Mode: {data.mode}</span>}
-          {data.summary && <p className="ht-detail-note">{data.summary}</p>}
+          {data.model_used && <span className="ht-detail-chip ht-chip-muted">{data.model_used}</span>}
         </div>
       )
     case 'adaptation_triggered':
       return (
         <div className="ht-event-details">
-          {data.reason && <span className="ht-detail-chip ht-chip-sage">🔄 {data.reason}</span>}
-          {data.changes_made && <p className="ht-detail-note">{data.changes_made}</p>}
+          {data.plan_type && <span className="ht-detail-chip ht-chip-sage">🔄 {data.plan_type}</span>}
+          {data.model_used && <span className="ht-detail-chip ht-chip-muted">{data.model_used}</span>}
+        </div>
+      )
+    case 'reminder_set':
+      return (
+        <div className="ht-event-details">
+          {data.reminder && <span className="ht-detail-chip ht-chip-muted">⏰ {data.reminder}</span>}
         </div>
       )
     case 'adaptation_failed':
@@ -218,18 +231,26 @@ function TimelineSkeleton() {
 
 /* ─── Progress Summary Card ──────────────────────────── */
 function ProgressSummary({ summary }) {
-  if (!summary) return null
+  if (!summary || !summary.current) return null
+
+  const c = summary.current
+  const TREND_LABELS = {
+    losing_weight:  { label: '↓ Losing', icon: '📉', special: 'declining' },
+    gaining_weight: { label: '↑ Gaining', icon: '📈', special: 'improving' },
+    stable:         { label: '→ Stable', icon: '➡️', special: 'stable' },
+  }
+  const trendInfo = TREND_LABELS[summary.trend] || { label: '→ Stable', icon: '➡️', special: 'stable' }
 
   const stats = [
-    { label: 'Weight', value: summary.weight ? `${summary.weight} kg` : '—', icon: '⚖️' },
-    { label: 'BMI', value: summary.bmi ? summary.bmi.toFixed(1) : '—', icon: '📐' },
-    { label: 'Mood', value: summary.mood ? `${summary.mood}/10` : '—', icon: '😊' },
-    { label: 'Adherence', value: summary.adherence ? `${summary.adherence}%` : '—', icon: '✅' },
+    { label: 'Weight', value: c.weight_kg ? `${c.weight_kg} kg` : '—', icon: '⚖️' },
+    { label: 'BMI', value: c.bmi ? c.bmi.toFixed(1) : '—', icon: '📐' },
+    { label: 'Mood', value: c.mood || '—', icon: '😊' },
+    { label: 'Adherence', value: c.adherence_percent != null ? `${c.adherence_percent}%` : '—', icon: '✅' },
     {
       label: 'Trend',
-      value: summary.trend === 'improving' ? '↑ Improving' : summary.trend === 'declining' ? '↓ Declining' : '→ Stable',
-      icon: summary.trend === 'improving' ? '📈' : summary.trend === 'declining' ? '📉' : '➡️',
-      special: summary.trend,
+      value: trendInfo.label,
+      icon: trendInfo.icon,
+      special: trendInfo.special,
     },
   ]
 
@@ -243,8 +264,8 @@ function ProgressSummary({ summary }) {
       <div className="ht-progress-strip-label">
         <span className="ht-strip-icon">📊</span>
         <span>Progress Snapshot</span>
-        {summary.last_updated && (
-          <span className="ht-strip-date">Updated {formatDateTime(summary.last_updated)}</span>
+        {c.last_logged && (
+          <span className="ht-strip-date">Updated {formatDateTime(c.last_logged)}</span>
         )}
       </div>
       <div className="ht-progress-stats">

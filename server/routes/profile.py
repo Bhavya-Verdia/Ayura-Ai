@@ -105,6 +105,15 @@ async def update_profile(
         else:
             update_data["bmi_category"] = "obese"
 
+    # Normalize free-text / aliased medical conditions to the canonical vocabulary
+    # at the write boundary, so every downstream consumer (condition_filter safety
+    # constraints, disease→dosha Vikriti signal, yoga protocol map) receives keys it
+    # can match. Onboarding's free-text "other" field ("high blood pressure", "sugar",
+    # "gerd") otherwise stores slugs that silently miss their safety constraints.
+    if "medical_history" in update_data and update_data["medical_history"]:
+        from engine.condition_vocab import normalize_conditions
+        update_data["medical_history"] = normalize_conditions(update_data["medical_history"])
+
     # Determine dominant dosha if scores provided
     if "dosha_scores" in update_data and update_data["dosha_scores"]:
         scores = update_data["dosha_scores"]
@@ -458,121 +467,20 @@ async def vikriti_checkin(
     user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb),
 ):
-    """Weekly Vikriti update with adaptive blending, prakriti anchoring, and history tracking."""
-    from engine.dosha_analyzer import (
-        _apply_seasonal_correction,
-        _blend_vikriti,
-        _compute_symptom_signal,
-        _confidence_from_checkins,
-        _lifestyle_pulse_signal,
-        _medical_history_vikriti_signal,
-        _symptom_persistence_weights,
-        _vikriti_secondary,
+    """Weekly Vikriti update — adaptive blending, Prakriti anchoring, seasonal/
+    medical/menstrual correction, Kriya Kala staging, confidence growth, Ama
+    refresh, and rolling history. Shared with the /checkin/weekly page."""
+    from services.vikriti_service import compute_vikriti_update
+
+    update, _old = compute_vikriti_update(
+        user,
+        symptoms=req.current_symptoms,
+        sleep=req.sleep_this_week,
+        stress=req.stress_this_week,
+        digestion=req.digestion_this_week,
+        menstrual_phase=req.menstrual_phase,
+        disease_stage_updates=req.disease_stage_updates,
     )
-
-    old_vikriti = user.vikriti_scores or {"vata": 33, "pitta": 33, "kapha": 34}
-    prakriti = user.dosha_scores
-    existing_history: list = user.vikriti_history or []
-
-    meaningful = [s for s in req.current_symptoms if s != "feeling_balanced"]
-    persistence_weights = _symptom_persistence_weights(meaningful, existing_history) if meaningful else None
-    symptom_signal = _compute_symptom_signal(meaningful, persistence_weights) if meaningful else {}
-    lifestyle_signal = _lifestyle_pulse_signal(
-        req.sleep_this_week,
-        req.stress_this_week,
-        req.digestion_this_week,
-    )
-
-    blended = _blend_vikriti(
-        old_vikriti, symptom_signal, len(meaningful), prakriti, lifestyle_signal or None
-    )
-    blended = _apply_seasonal_correction(blended)
-
-    # Medical history — persistent disease channel involvement biases Vikriti (15% slot at check-in)
-    if user.medical_history:
-        _med_sig, _ = _medical_history_vikriti_signal(user.medical_history)
-        if _med_sig:
-            MEDICAL_SLOT = 0.15
-            blended = {
-                d: round((1 - MEDICAL_SLOT) * blended.get(d, 33) + MEDICAL_SLOT * _med_sig.get(d, 33))
-                for d in ["vata", "pitta", "kapha"]
-            }
-            _bmt = sum(blended.values()) or 1
-            blended = {d: round(v / _bmt * 100) for d, v in blended.items()}
-            _bmd = 100 - sum(blended.values())
-            if _bmd != 0:
-                blended[max(blended, key=blended.get)] += _bmd
-
-    # Menstrual phase: Pitta naturally elevates during menstruation (classical artava teaching)
-    if req.menstrual_phase and user.gender == "female":
-        blended["pitta"] = min(68, round(blended.get("pitta", 33) * 1.12))
-        _menses_total = sum(blended.values()) or 1
-        blended = {d: round(v / _menses_total * 100) for d, v in blended.items()}
-        _diff = 100 - sum(blended.values())
-        if _diff != 0:
-            blended[max(blended, key=blended.get)] += _diff
-
-    # Kriya Kala stage update — maps (duration, trajectory) to classical disease stage
-    existing_stages = dict(user.disease_stages or {})
-    if req.disease_stage_updates:
-        _KRIYA_KALA_MAP = {
-            ("months", "worsening"):  "prakopa",
-            ("months", "stable"):     "sanchaya",
-            ("months", "improving"):  "sanchaya",
-            ("1-3y",   "worsening"):  "prasara",
-            ("1-3y",   "stable"):     "sthana",
-            ("1-3y",   "improving"):  "prakopa",
-            ("3-5y",   "worsening"):  "vyakti",
-            ("3-5y",   "stable"):     "sthana",
-            ("3-5y",   "improving"):  "prasara",
-            ("5y+",    "worsening"):  "bheda",
-            ("5y+",    "stable"):     "vyakti",
-            ("5y+",    "improving"):  "sthana",
-        }
-        for cid, stage_data in req.disease_stage_updates.items():
-            duration = stage_data.get("duration", "months")
-            trajectory = stage_data.get("trajectory", "stable")
-            existing_stages[cid] = {
-                "duration": duration,
-                "trajectory": trajectory,
-                "kriya_kala": _KRIYA_KALA_MAP.get((duration, trajectory), "vyakti"),
-            }
-
-    new_checkin_count = (user.checkin_count or 0) + 1
-    new_confidence = _confidence_from_checkins(
-        user.dosha_confidence or 35, new_checkin_count
-    )
-
-    now = datetime.now(timezone.utc)
-    vikriti_dominant = max(blended, key=blended.get)
-    vikriti_sec = _vikriti_secondary(blended)
-
-    # Rolling 12-week history — store symptoms and pulse values for persistence tracking
-    history_entry = {
-        "scores": blended,
-        "dominant": vikriti_dominant,
-        "symptom_count": len(meaningful),
-        "symptoms": meaningful,
-        "pulse": {
-            "sleep": req.sleep_this_week,
-            "stress": req.stress_this_week,
-            "digestion": req.digestion_this_week,
-        },
-        "ts": now.isoformat(),
-    }
-    updated_history = (existing_history + [history_entry])[-12:]
-
-    update = {
-        "vikriti_scores": blended,
-        "vikriti_dominant": vikriti_dominant,
-        "vikriti_secondary": vikriti_sec,
-        "dosha_confidence": new_confidence,
-        "checkin_count": new_checkin_count,
-        "vikriti_history": updated_history,
-        "last_vikriti_checkin": now,
-        "updated_at": now,
-        "disease_stages": existing_stages,
-    }
     await db.users.update_one({"_id": user.id}, {"$set": update})
     for k, v in update.items():
         setattr(user, k, v)

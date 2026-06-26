@@ -59,12 +59,14 @@ The Vite dev server proxies `/api` and `/uploads` to `http://127.0.0.1:8000`. In
 ### Authentication
 JWT tokens are stored exclusively in **HTTP-only cookies** (`ayura_access`, `ayura_refresh`) — never localStorage. The frontend axios client in `client/src/api/client.js` sends `withCredentials: true` and auto-refreshes on 401 via `/api/auth/refresh`. Google and GitHub OAuth are supported alongside email/password.
 
-### AI Plan Generation Pipeline (3-tier)
-1. **Tier 1 — Rule engines** (`server/engine/`): BMI, calorie, dosha analysis, seasonal adjustments, condition filtering
-2. **Tier 2 — RAG** (`server/ai/rag_pipeline.py`): ChromaDB semantic search over 5 knowledge collections (`ayurveda`, `fitness`, `nutrition`, `remedy`, `panchakarma`)
-3. **Tier 3 — LangGraph agents** (`server/ai/agents/plan_graph.py`): 4-agent LangGraph pipeline — Supervisor routes to Fitness, Ayurveda, Nutrition, and Remedy specialist agents, each calling the shared `llm_client`
+### AI Plan Generation Pipeline (engine-backed + LLM enrichment)
+Each feature is produced by a **deterministic, KB-grounded engine**, then optionally enriched with LLM-generated narrative. There is no free-text LLM agent that authors plans (an earlier 4-agent LangGraph pipeline was removed because it ignored the KB and could hallucinate formulations/asanas).
 
-Plan generation is offloaded to an **ARQ background worker** (`server/worker.py`) via Redis to avoid blocking the FastAPI event loop. The API returns a `job_id` immediately; clients poll `/api/plans/job/{jobId}`.
+1. **Tier 1 — Core rule engines** (`server/engine/`): BMI, calorie, dosha analysis, seasonal adjustments, condition filtering.
+2. **Tier 2 — Per-feature engines** (`server/services/`): `gym_plan_engine`, `yoga_plan_engine`, `diet_plan_engine`, `panchakarma_engine`, `routine_engine`, `remedy_engine` (medicines + home remedies). Each builds a structured plan from the bundled JSON knowledge bases. Diet is **LLM-primary** (`diet_llm_generator`) with the rule engine as a fallback.
+3. **Tier 3 — LLM enrichers** (`server/services/*_enricher.py`): add narrative/coaching on top of the deterministic plan via the shared `llm_client`. RAG (`server/ai/rag_pipeline.py`) provides ChromaDB semantic context.
+
+`routes/plans._generate_feature_via_engine` is the single entry point both the holistic and per-feature paths use — it runs the engine + enricher and applies pregnancy/safety gating. The per-feature endpoints (`POST /api/plans/{gym,yoga,diet,routine,panchakarma,remedies,medicines}`) return the plan **synchronously**. The holistic `POST /api/plans/generate` is offloaded to an **ARQ background worker** (`server/worker.py`) via Redis and returns a `job_id` to poll at `/api/plans/job/{jobId}`; if Redis/ARQ is unavailable it falls back to running the job in-process via FastAPI `BackgroundTasks`.
 
 ### LLM Client (`server/ai/llm_client.py`)
 Singleton `llm_client` wraps Azure OpenAI (primary) and Google Gemini (fallback) with automatic failover and tenacity retry. Both `generate()` (batch) and `generate_stream()` (SSE) are supported. Metrics are recorded via `core/metrics.py`.

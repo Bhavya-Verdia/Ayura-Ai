@@ -184,7 +184,15 @@
       "Soothes the digestive system and reduces acidity",
       "Excellent for hot climates or after vigorous practice"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "low_blood_pressure",
+      "hypotension",
+      "asthma",
+      "chronic_cough",
+      "respiratory_congestion",
+      "common_cold",
+      "chronic_constipation"
+    ],
     "pregnancy_safe": true
   },
   {
@@ -219,7 +227,15 @@
       "Reduces excess Pitta without requiring tongue-rolling",
       "Useful before sleep or in hot weather"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "low_blood_pressure",
+      "hypotension",
+      "asthma",
+      "chronic_cough",
+      "respiratory_congestion",
+      "common_cold",
+      "sensitive_teeth"
+    ],
     "pregnancy_safe": true
   },
   {
@@ -404,7 +420,14 @@
       "Promotes introspection and prepares for sleep",
       "Balances the nervous system after stressful activity"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "low_blood_pressure",
+      "hypotension",
+      "depression",
+      "asthma",
+      "respiratory_congestion",
+      "common_cold"
+    ],
     "pregnancy_safe": true
   },
   {
@@ -666,8 +689,19 @@
       "Combines the cooling of Sitali with the stillness of Kumbhaka",
       "Excellent for reducing inflammation and emotional heat"
     ],
-    "contraindications": [],
-    "pregnancy_safe": true
+    "contraindications": [
+      "low_blood_pressure",
+      "hypotension",
+      "asthma",
+      "chronic_cough",
+      "respiratory_congestion",
+      "heart_disease",
+      "hypertension",
+      "glaucoma",
+      "epilepsy",
+      "pregnancy"
+    ],
+    "pregnancy_safe": false
   },
   {
     "id": "fire_essence",

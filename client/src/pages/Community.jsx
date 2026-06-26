@@ -84,11 +84,11 @@ function PostSkeleton() {
 }
 
 // ─── Post Card ─────────────────────────────────────────────────────────────────
-function PostCard({ post, currentUserName, onLike, onDelete, index }) {
+function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) {
   const [likeAnimating, setLikeAnimating] = useState(false)
   const tags = detectTags(post.content)
   const avatarColor = hashColor(post.author_name)
-  const isOwner = post.author_name === currentUserName
+  const isOwner = post.is_mine ?? (post.author_name === currentUserName)
 
   const handleLike = async () => {
     setLikeAnimating(true)
@@ -101,6 +101,8 @@ function PostCard({ post, currentUserName, onLike, onDelete, index }) {
       onDelete(post.id)
     }
   }
+
+  const handleReport = () => onReport?.(post.id)
 
   return (
     <motion.div
@@ -126,7 +128,7 @@ function PostCard({ post, currentUserName, onLike, onDelete, index }) {
           <span className="comm-post-author">{post.author_name}</span>
           <span className="comm-post-time">{timeAgo(post.created_at)}</span>
         </div>
-        {isOwner && (
+        {isOwner ? (
           <button
             className="comm-post-delete-btn"
             onClick={handleDelete}
@@ -138,6 +140,19 @@ function PostCard({ post, currentUserName, onLike, onDelete, index }) {
               <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
               <path d="M10 11v6M14 11v6" />
               <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+            </svg>
+          </button>
+        ) : (
+          <button
+            className="comm-post-delete-btn"
+            onClick={handleReport}
+            disabled={post.reported_by_me}
+            title={post.reported_by_me ? 'Reported' : 'Report post'}
+            aria-label={post.reported_by_me ? 'Already reported' : 'Report post'}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill={post.reported_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+              <line x1="4" y1="22" x2="4" y2="15" />
             </svg>
           </button>
         )}
@@ -323,6 +338,36 @@ export default function Community() {
 
   const handleDelete = (postId) => deleteMutation.mutate(postId)
 
+  // ── Report ───────────────────────────────────
+  const reportMutation = useMutation({
+    mutationFn: (postId) => communityAPI.report(postId),
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: ['community-posts'] })
+      const previous = queryClient.getQueryData(['community-posts'])
+      queryClient.setQueryData(['community-posts'], (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          pages: old.pages.map(page => ({
+            ...page,
+            posts: page.posts.map(p => p.id === postId ? { ...p, reported_by_me: true } : p),
+          })),
+        }
+      })
+      return { previous }
+    },
+    onError: (err, postId, context) => {
+      if (context?.previous) queryClient.setQueryData(['community-posts'], context.previous)
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['community-posts'] }),
+  })
+
+  const handleReport = (postId) => {
+    if (window.confirm('Report this post to moderators? Posts flagged by several members are hidden pending review.')) {
+      reportMutation.mutate(postId)
+    }
+  }
+
   const charCount = newContent.length
   const charOverLimit = charCount > MAX_CHARS
   const charNearLimit = charCount > WARN_CHARS && !charOverLimit
@@ -479,6 +524,7 @@ export default function Community() {
                     currentUserName={user?.name}
                     onLike={handleLike}
                     onDelete={handleDelete}
+                    onReport={handleReport}
                     index={i}
                   />
                 ))}

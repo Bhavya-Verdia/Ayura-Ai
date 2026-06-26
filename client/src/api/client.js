@@ -204,6 +204,7 @@ export const communityAPI = {
   list:       (offset = 0, limit = 20) => API.get('/community', { params: { offset, limit } }),
   create:     (content) => API.post('/community', { content }),
   toggleLike: (postId) => API.post(`/community/${postId}/like`),
+  report:     (postId, reason = '') => API.post(`/community/${postId}/report`, { reason }),
   remove:     (postId) => API.delete(`/community/${postId}`),
 }
 

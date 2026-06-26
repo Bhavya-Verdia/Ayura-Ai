@@ -5,17 +5,17 @@
 | Feature | Entries | Conditions w/ curated depth | Data-quality issues |
 |---|---|---|---|
 | Central disease→dosha map | 101 | 101 | ✓ none |
-| Medicines | 82 | 146 | ✓ none |
-| Yoga | 124 poses / 20 pranayama | 146 | 8/20 pranayama have contraindications |
-| Gym | 893 | n/a (contraindication-filtered) | 18/893 exercises have NO contraindications listed |
+| Medicines | 157 | 185 | ✓ none |
+| Yoga | 124 poses / 20 pranayama | 146 | 119/124 poses have contraindications (rest are neutral restoratives); 12/20 pranayama have contraindications; 63 poses flagged pregnancy-unsafe |
+| Gym | 893 | n/a (contraindication-filtered) | 3/893 exercises have NO contraindications (low-risk SMR/stretch — intentional); level mix: 46 beginner / 774 intermediate / 73 advanced (beginners get beginner+intermediate; advanced excluded) |
 | Diet | 150 foods | 39 | LLM-primary: unmapped conditions handled by AI reasoning |
 
 ## Cross-feature condition coverage
 
 - Central disease→dosha map: **101** conditions (drives PK + disease-aware prompts)
-- Medicines KB covers **146** conditions; **25** overlap the central map
+- Medicines KB covers **185** conditions; **30** overlap the central map
 - Yoga protocols cover **146** conditions
-- Medicine conditions NOT in central map (medicine-only): ['abdominal_pain', 'acne', 'aging', 'allergic_skin', 'ama_accumulation', 'angina', 'anorexia', 'arrhythmia', 'back_pain', 'bleeding_disorders', 'blemishes', 'bloating', 'blood_purification', 'bronchitis', 'burning_sensation', 'calcium_deficiency', 'cardiac_weakness', 'childhood_cough', 'chronic_cough', 'chronic_diarrhea'] ...
+- Medicine conditions NOT in central map (medicine-only): ['abdominal_pain', 'acne', 'aging', 'allergic_skin', 'ama_accumulation', 'angina', 'anorexia', 'arrhythmia', 'ascites', 'back_pain', 'benign_prostatic_hyperplasia', 'bleeding_disorders', 'blemishes', 'bloating', 'blood_purification', 'bronchitis', 'burning_sensation', 'calcium_deficiency', 'cardiac_disorders', 'cardiac_weakness'] ...
 
 ## Rare / unmapped disease handling (the honest answer)
 

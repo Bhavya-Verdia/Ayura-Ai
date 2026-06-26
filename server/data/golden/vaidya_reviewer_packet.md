@@ -6,7 +6,7 @@ _For a BAMS-qualified Ayurvedic practitioner. Estimated effort: ~2 days._
 Ayura AI's engine logic and data hygiene are independently tested. What only you can certify is **classical accuracy**: that the references are real, the dosages are correct, the formulations fit their indications, and the safety flags are right. Your sign-off is what lets the team say *“validated against N BAMS practitioners.”*
 
 ## Part 1 — Medicines (highest priority)
-Open **`vaidya_medicine_review.csv`** (82 formulations). For each row, tick:
+Open **`vaidya_medicine_review.csv`** (157 formulations). For each row, tick:
 
 - **reference_ok** — is the AFI / classical-text reference real and correct for THIS formulation? (This is the #1 credibility risk — a single fabricated reference discredits the whole KB.)
 - **dosage_ok** — is the dose + Anupana clinically correct?
@@ -56,7 +56,7 @@ Below are 30 synthetic patient cases run through the engines (deterministic, no 
 
 - Reviewer (name, BAMS/MD reg. no.): ____________________
 - Date: ____________  
-- Overall: medicines reviewed ___/82 · cases reviewed ___/30
+- Overall: medicines reviewed ___/157 · cases reviewed ___/30
 - Summary judgement (1–5) on classical accuracy of: Medicines __ · Panchakarma __ · Diet __ · Yoga __ · Routine __
 
 > Return the filled CSV + this page; corrections are folded back into the knowledge base.

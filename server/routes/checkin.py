@@ -21,16 +21,39 @@ from services.notification_service import create_and_deliver_notification
 router = APIRouter()
 
 class WeeklyCheckinRequest(BaseModel):
-    energy: int = Field(..., ge=1, le=10)
-    digestion: int = Field(..., ge=1, le=10)
-    sleep: int = Field(..., ge=1, le=10)
-    adherence: int = Field(..., ge=1, le=10)
+    # Unified weekly check-in — 1-5 scale (1 = poor/low, 5 = excellent/high)
+    energy: int = Field(..., ge=1, le=5)
+    digestion: int = Field(..., ge=1, le=5)
+    sleep: int = Field(..., ge=1, le=5)
+    stress: Optional[int] = Field(None, ge=1, le=5)
+    adherence: int = Field(..., ge=1, le=5)
     symptoms: List[str] = Field(default_factory=list)
+    menstrual_phase: Optional[bool] = None
+    disease_stage_updates: Optional[dict] = None
     what_felt_good: Optional[str] = Field(None, max_length=1000)
 
 class WeeklyCheckinResponse(BaseModel):
     insight: str
     adapted_plans: List[str] = []
+
+async def _grounded_insight(user, req, old_vikriti, new_vikriti, old_dom, new_dom, shifted, safe_felt_good) -> str:
+    trend = f"shifted toward {new_dom}" if shifted else "held steady"
+    prompt = f"""You are the Ayura AI Health Assistant reviewing a user's weekly check-in.
+Constitution (Prakriti): {user.dominant_dosha}
+Last week's imbalance (Vikriti): {old_vikriti}, dominant {old_dom}
+This week's imbalance (Vikriti): {new_vikriti}, dominant {new_dom} — it {trend}
+This week's self-ratings (1-10): energy {req.energy}, digestion {req.digestion}, sleep {req.sleep}, plan adherence {req.adherence}
+What felt good: {safe_felt_good}
+
+Write a brief (1-2 sentence), warm, SPECIFIC insight grounded in this ACTUAL data — reference their real trend and ratings, not generic praise.
+Respond ONLY with valid JSON: {{"insight": "..."}}"""
+    try:
+        resp = await llm_client.generate(
+            prompt=prompt, system_prompt="You are an Ayurvedic AI. Reply in JSON.", json_mode=True, max_tokens=200)
+        return json.loads(resp).get("insight") or "Thanks for checking in — your plans stay tuned to your latest reading."
+    except Exception:
+        return "Thanks for checking in — your plans stay tuned to your latest reading."
+
 
 @router.post("/weekly", response_model=WeeklyCheckinResponse)
 async def submit_weekly_checkin(req: WeeklyCheckinRequest, background_tasks: BackgroundTasks, user: UserDocument = Depends(get_current_user)):
@@ -38,78 +61,60 @@ async def submit_weekly_checkin(req: WeeklyCheckinRequest, background_tasks: Bac
     if db is None:
         raise HTTPException(status_code=503, detail="Database unavailable")
 
-    # 1. Save checkin to DB
-    checkin_doc = {
-        "user_id": user.id,
-        "energy": req.energy,
-        "digestion": req.digestion,
-        "sleep": req.sleep,
-        "adherence": req.adherence,
-        "symptoms": req.symptoms,
-        "what_felt_good": req.what_felt_good,
-        "timestamp": datetime.now(timezone.utc)
-    }
-    await db.weekly_checkins.insert_one(checkin_doc)
-
-    # 2. Update user symptoms if any are reported
-    if req.symptoms:
-        await db.users.update_one(
-            {"_id": user.id},
-            {"$addToSet": {"current_symptoms": {"$each": req.symptoms}}}
-        )
-
-    # 3. Determine if adaptation is needed and generate insight
+    now = datetime.now(timezone.utc)
     safe_symptoms = [_sanitize(s, max_len=100) for s in req.symptoms]
     safe_felt_good = _sanitize(req.what_felt_good or "", max_len=500)
 
-    prompt = f"""
-You are the Ayura AI AI Health Assistant. The user just completed their weekly check-in.
-USER PROFILE: Dosha: {user.dominant_dosha}
+    # 1. Save the raw weekly check-in
+    await db.weekly_checkins.insert_one({
+        "user_id": user.id, "energy": req.energy, "digestion": req.digestion,
+        "sleep": req.sleep, "stress": req.stress, "adherence": req.adherence,
+        "symptoms": req.symptoms, "what_felt_good": req.what_felt_good, "timestamp": now,
+    })
 
-CHECK-IN SCORES (1-10, 10 is best):
-- Energy: {req.energy}
-- Digestion: {req.digestion}
-- Sleep: {req.sleep}
-- Plan Adherence: {req.adherence}
+    # 2. Record reported symptoms (so plan regeneration reflects them)
+    if req.symptoms:
+        await db.users.update_one(
+            {"_id": user.id}, {"$addToSet": {"current_symptoms": {"$each": req.symptoms}}})
+        user.current_symptoms = list({*(user.current_symptoms or []), *req.symptoms})
 
-NEW SYMPTOMS REPORTED: {safe_symptoms}
-WHAT FELT GOOD: {safe_felt_good}
+    # 3. Run the SAME Vikriti refinement as /profile/vikriti-checkin (unified loop)
+    from services.vikriti_service import compute_vikriti_update, vikriti_shifted
+    update, old_vikriti = compute_vikriti_update(
+        user, symptoms=req.symptoms, sleep=req.sleep, digestion=req.digestion,
+        stress=req.stress, menstrual_phase=req.menstrual_phase,
+        disease_stage_updates=req.disease_stage_updates,
+    )
+    await db.users.update_one({"_id": user.id}, {"$set": update})
+    for k, v in update.items():
+        setattr(user, k, v)
 
-TASK:
-1. Provide a brief, encouraging "insight" (1-2 sentences) on their progress.
-2. If their scores are low (<= 4) or they reported new symptoms, decide which plans need adaptation (gym, yoga, diet, panchakarma, remedies, medicines).
+    new_vikriti = update["vikriti_scores"]
+    old_dom = max(old_vikriti, key=old_vikriti.get) if old_vikriti else None
+    new_dom = update["vikriti_dominant"]
+    shifted = vikriti_shifted(old_vikriti, new_vikriti)
 
-Respond ONLY with valid JSON:
-{{
-    "insight": "Your insight here",
-    "plans_to_adapt": ["diet", "yoga"]
-}}
-"""
-    try:
-        response = await llm_client.generate(prompt=prompt, system_prompt="You are an Ayurvedic AI. Reply in JSON.", json_mode=True)
-        resp_data = json.loads(response)
-        insight = resp_data.get("insight", "Great job checking in this week!")
-        plans_to_adapt = resp_data.get("plans_to_adapt", [])
-    except Exception as e:
-        insight = "Great job on your weekly check-in!"
-        plans_to_adapt = []
+    # 4. GROUNDED adaptation — regenerate only when the imbalance actually moved,
+    #    and only plans the user already has. No shift → no (misleading) "adapted".
+    plans_to_adapt: list[str] = []
+    if shifted:
+        from services.chat_service import fetch_active_plans
+        existing = await fetch_active_plans(db, user.id)
+        plans_to_adapt = [p for p in ("diet", "yoga", "medicines", "panchakarma") if p in existing]
+        if plans_to_adapt:
+            feedback = (f"Weekly check-in — Vikriti shifted {old_dom}→{new_dom}. "
+                        f"Energy={req.energy}, Digestion={req.digestion}, Sleep={req.sleep}, Symptoms={safe_symptoms}")
+            background_tasks.add_task(apply_chat_side_effects, db, user.id, [], plans_to_adapt, feedback)
+            plan_names = ", ".join(p.title() for p in plans_to_adapt)
+            background_tasks.add_task(
+                create_and_deliver_notification, db, user.id,
+                "Your plans were refreshed",
+                f"Your imbalance moved toward {new_dom.title()}, so your {plan_names} plan(s) were updated.",
+                "adaptation",
+            )
 
-    # 4. Trigger adaptation in background if needed
-    if plans_to_adapt:
-        feedback_text = f"Weekly checkin: Energy={req.energy}, Digestion={req.digestion}, Sleep={req.sleep}, Symptoms={safe_symptoms}"
-        background_tasks.add_task(
-            apply_chat_side_effects, db, user.id, [], plans_to_adapt, feedback_text
-        )
-        # Notify user that plans were adapted
-        plan_names = ", ".join(p.title() for p in plans_to_adapt)
-        background_tasks.add_task(
-            create_and_deliver_notification,
-            db, user.id,
-            "Plans Adapted Based on Check-In",
-            f"Your {plan_names} plan(s) have been updated based on your weekly feedback.",
-            "adaptation",
-        )
-
+    # 5. Insight grounded in the REAL trend
+    insight = await _grounded_insight(user, req, old_vikriti, new_vikriti, old_dom, new_dom, shifted, safe_felt_good)
     return WeeklyCheckinResponse(insight=insight, adapted_plans=plans_to_adapt)
 
 

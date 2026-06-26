@@ -7,7 +7,7 @@ import { AuthContext } from '../providers/AuthContext'
 import { useTheme } from '../providers/ThemeProvider'
 import API, { plansAPI, preferencesAPI, progressAPI, profileAPI, authAPI } from '../api/client'
 import PlanViewer from '../components/PlanViewer'
-import VikritiCheckIn from '../components/VikritiCheckIn'
+import '../components/VikritiCheckIn.css'
 import DoshaValidationCard from '../components/DoshaValidationCard'
 import DoshaArcRings from '../components/DoshaArcRings'
 import PreferencesModal from '../components/PreferencesModal'
@@ -16,7 +16,8 @@ import confetti from 'canvas-confetti'
 import './Dashboard.css'
 
 const PLAN_TYPES = [
-  { id: 'routine',     title: 'Daily Routine & Diet', icon: '🌅',   desc: 'Chronological Dinacharya timeline with meals.', color: 'var(--ayura-amber)',  bg: 'rgba(251,146,60,0.08)' },
+  { id: 'routine',     title: 'Daily Routine',       icon: '🌅',   desc: 'Chronological Dinacharya timeline with meal timing.', color: 'var(--ayura-amber)',  bg: 'rgba(251,146,60,0.08)' },
+  { id: 'diet',        title: 'Diet & Nutrition',    icon: '🥗',   desc: '4-week Ayurvedic meal plans with Pathya-Apathya.', color: 'var(--ayura-sage)',  bg: 'rgba(74,222,128,0.08)' },
   { id: 'yoga',        title: 'Yoga & Pranayama',   icon: '🧘‍♀️', desc: 'Dosha-balanced morning/evening routines.',    color: 'var(--ayura-teal)',   bg: 'rgba(45,212,191,0.08)' },
   { id: 'gym',         title: 'Fitness & Gym',       icon: '🏋️',   desc: 'Workout splits with progressive intensity.',  color: 'var(--vata-color)',   bg: 'rgba(129,140,248,0.08)' },
   { id: 'panchakarma', title: 'Panchakarma Detox',   icon: '🌿',   desc: 'Seasonal cleanses tailored to your prakriti.', color: 'var(--ayura-sage)',   bg: 'rgba(74,222,128,0.08)' },
@@ -56,14 +57,15 @@ function StreakCard() {
     retry: 1,
   })
 
-  const streak = progress?.current_streak ?? progress?.streak ?? 0
-  const checkedInToday = progress?.checked_in_today ?? false
+  const sd = progress?.streak_data
+  const streak = sd?.current_streak_days ?? sd?.current_streak ?? 0
+  const checkedInToday = sd?.checked_in_today ?? false
 
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() - (6 - i))
     const dateStr = d.toISOString().split('T')[0]
-    const isActive = !!(progress?.recent_dates?.includes(dateStr) || progress?.active_dates?.includes(dateStr))
+    const isActive = !!sd?.active_dates?.includes(dateStr)
     return {
       label: ['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()],
       isActive,
@@ -76,7 +78,7 @@ function StreakCard() {
     streak >= 7  ? 'One full week! Phenomenal.' :
     streak >= 3  ? 'Great consistency!' :
     streak >= 1  ? 'Good start — keep it up!' :
-    'Start your streak — check in today!'
+    'Start your streak — log today!'
 
   return (
     <motion.div
@@ -104,8 +106,8 @@ function StreakCard() {
             </div>
           ))}
         </div>
-        <Link to="/checkin" className="dash-streak-cta">
-          {checkedInToday ? '✓ Done for today' : '↗ Check in now'}
+        <Link to="/progress" className="dash-streak-cta">
+          {checkedInToday ? '✓ Logged today' : '↗ Log today'}
         </Link>
       </div>
     </motion.div>
@@ -571,9 +573,17 @@ const Dashboard = () => {
       {/* ── Streak Card ── */}
       <StreakCard />
 
-      {/* ── Weekly Vikriti Check-in ── */}
+      {/* ── Weekly check-in prompt → the unified Check-In screen ── */}
       {needsCheckin && showCheckin && (
-        <VikritiCheckIn onDismiss={() => setShowCheckin(false)} />
+        <div className="vci-card" style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          <span className="vci-pulse" />
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div className="vci-title">Time for your weekly check-in</div>
+            <p className="vci-sub" style={{ margin: '2px 0 0' }}>A quick snapshot refines your Vikriti and fine-tunes your plans.</p>
+          </div>
+          <Link to="/checkin" className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>Check in now →</Link>
+          <button type="button" className="vci-dismiss" onClick={() => setShowCheckin(false)} aria-label="Dismiss">✕</button>
+        </div>
       )}
 
       {/* ── 14-day plan feedback ── */}

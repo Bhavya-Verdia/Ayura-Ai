@@ -114,6 +114,14 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: Optional[str] = None
     GEMINI_MODEL: str = "gemini-2.0-flash"
 
+    # --- LangSmith tracing (observability for the LangGraph health agent) ---
+    # When LANGSMITH_API_KEY is set, agent runs are traced to LangSmith. No-op
+    # (and zero overhead) when unset, so it's safe to leave off in production.
+    LANGSMITH_API_KEY: Optional[str] = None
+    LANGSMITH_PROJECT: str = "ayura-health-agent"
+    LANGSMITH_ENDPOINT: str = "https://api.smith.langchain.com"
+    LANGSMITH_TRACING: bool = True  # only takes effect if LANGSMITH_API_KEY is set
+
     # --- Google OAuth ---
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None

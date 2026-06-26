@@ -22,6 +22,45 @@ try:
 except Exception:
     _MEDICINES_KB = []
 
+# ── Home-remedies fallback (loaded once at module import) ────────────────────
+# Remedies are normally served from Mongo (kb_ayurvedic_remedies, seeded by
+# scripts/seed_remedies.py). Unlike the other features, the remedy engine had no
+# offline fallback — so if that collection is unseeded, filter_remedies silently
+# returned nothing. This bundled JSON (same shape, regenerated from the seed)
+# keeps remedies working when kb_cache is empty. Mirrors the medicines KB above.
+_REMEDIES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "knowledge", "home_remedies.json")
+try:
+    with open(_REMEDIES_PATH, "r") as _f:
+        _REMEDIES_FALLBACK: list[dict] = json.load(_f)
+except Exception:
+    _REMEDIES_FALLBACK = []
+
+# Onboarding symptom labels → remedy KB `symptom_id`. The onboarding picker uses
+# plain-language values (acidity, cough, cold, hair_loss…) that don't exactly
+# match the KB's clinical ids (acid_reflux, cough_wet, common_cold, hair_fall…),
+# so ~half of selectable symptoms silently matched no remedy. This map bridges
+# them; matching also falls through to the raw id, so KB-native ids still work.
+_SYMPTOM_ALIASES: dict[str, str] = {
+    "acidity": "acid_reflux",
+    "acid": "acid_reflux",
+    "heartburn": "acid_reflux",
+    "skin_rash": "urticaria_hives",
+    "rash": "urticaria_hives",
+    "hives": "urticaria_hives",
+    "weight_gain": "seasonal_detox",
+    "hair_loss": "hair_fall",
+    "hairfall": "hair_fall",
+    "irregular_periods": "pcos_support",
+    "irregular_menstruation": "pcos_support",
+    "cough": "cough_wet",
+    "wet_cough": "cough_wet",
+    "cold": "common_cold",
+    "common_cold_cough": "common_cold",
+    "indigestion": "loss_of_appetite",
+    "stress": "stress_burnout",
+    "burnout": "stress_burnout",
+}
+
 # Condition aliases to normalise user profile conditions to KB ids
 _CONDITION_ALIAS: dict[str, str] = {
     "insulin_resistance": "diabetes",
@@ -67,7 +106,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
     dominant_dosha = user_profile.get("dominant_dosha", "vata").lower()
     secondary_dosha = user_profile.get("secondary_dosha", "pitta").lower()
     
-    all_remedies = kb_cache.ayurvedic_remedies
+    all_remedies = kb_cache.ayurvedic_remedies or _REMEDIES_FALLBACK
     
     for sym_id in symptoms:
         sym_sev = severity.get(sym_id, "mild")
@@ -82,8 +121,9 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
             })
             continue
             
-        # Find remedy in KB
-        remedy_kb = next((r for r in all_remedies if r.get("symptom_id") == sym_id), None)
+        # Find remedy in KB (resolve onboarding labels to KB ids; fall back to raw)
+        _sid = _SYMPTOM_ALIASES.get(str(sym_id).lower(), str(sym_id).lower())
+        remedy_kb = next((r for r in all_remedies if r.get("symptom_id") == _sid), None)
         if not remedy_kb:
             continue
             

@@ -685,11 +685,11 @@ export default function Settings() {
         <motion.div className="settings-card" variants={staggerItem}>
           <h2 className="settings-section-title">Export Wellness Data</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 20 }}>
-            Download your personalised wellness plan as a PDF report, or export your progress logs as a CSV spreadsheet.
+            Download a Vaidya-handoff PDF — your Prakriti &amp; Vikriti assessment, Agni, Ama, Ojas, conditions, and plans in one summary to share with your Ayurvedic physician — or export your progress logs as a CSV spreadsheet.
           </p>
           <div className="settings-action-row">
             <motion.button className="btn btn-primary" onClick={downloadPdf} disabled={exportingPdf} whileTap={{ scale: 0.97 }}>
-              {exportingPdf ? '⏳ Generating...' : '📄 Download PDF Report'}
+              {exportingPdf ? '⏳ Generating...' : '📄 Download Vaidya Report (PDF)'}
             </motion.button>
             <motion.button className="btn btn-secondary" onClick={downloadCsv} disabled={exportingCsv} whileTap={{ scale: 0.97 }}>
               {exportingCsv ? '⏳ Exporting...' : '📊 Download Progress CSV'}

@@ -2448,7 +2448,7 @@ function MedCard({ med, rationale }) {
             </div>
           )}
 
-          {med.drug_interactions?.length > 0 && (
+          {med.drug_interactions?.length > 0 ? (
             <div className="mv-section">
               <div className="mv-section-label" style={{ color: '#c0392b' }}>
                 <TriangleAlert size={11} /> Drug–herb interactions — check with your doctor
@@ -2457,6 +2457,12 @@ function MedCard({ med, rationale }) {
                 {med.drug_interactions.map((d, i) => (
                   <span key={i} className="mv-interaction-chip">{String(d).replace(/_/g, ' ')}</span>
                 ))}
+              </div>
+            </div>
+          ) : (
+            <div className="mv-section">
+              <div className="mv-section-label mv-no-interactions">
+                <ShieldCheck size={11} /> No known drug–herb interactions documented
               </div>
             </div>
           )}

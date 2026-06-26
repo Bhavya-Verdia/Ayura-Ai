@@ -198,10 +198,15 @@ async def generate_diet_plan_llm(
 
         prompt = USER_PROMPT_TEMPLATE.replace("{brief}", brief)
 
+        # A full 4-week plan (Week 1 detailed + Weeks 2-4 compact) exceeds the
+        # 4096-token default — that truncated the JSON mid-string, so json.loads
+        # always failed and diet silently fell back to the rule engine. Use the
+        # model's max output budget so the "LLM-primary" path actually runs.
         response_text = await llm_client.generate(
             prompt=prompt,
             system_prompt=SYSTEM_PROMPT,
             json_mode=True,
+            max_tokens=16384,
         )
 
         data = json.loads(response_text)

@@ -98,7 +98,7 @@ def _build_pdf(user: UserDocument, plan_data: dict, generated_at: str) -> bytes:
         story.append(Spacer(1, 0.4 * cm))
 
         # ── Subtitle ──────────────────────────────────────
-        story.append(Paragraph("Personalised Wellness Report", ParagraphStyle("Sub", parent=styles["Normal"], textColor=TEAL_LIGHT, fontSize=12, alignment=TA_CENTER)))
+        story.append(Paragraph("Personalised Wellness & Vaidya Handoff Summary", ParagraphStyle("Sub", parent=styles["Normal"], textColor=TEAL_LIGHT, fontSize=12, alignment=TA_CENTER)))
         story.append(Spacer(1, 0.5 * cm))
 
         # ── User Summary Card ─────────────────────────────
@@ -121,6 +121,101 @@ def _build_pdf(user: UserDocument, plan_data: dict, generated_at: str) -> bytes:
         ]))
         story.append(summary_tbl)
         story.append(Spacer(1, 0.6 * cm))
+
+        # ── Ayurvedic Clinical Profile (Vaidya Handoff) ───
+        # The constitutional + current-state assessment is what a registered Vaidya
+        # actually needs — far more than a plan dump. Sourced from the user document.
+        def _fmt_scores(scores):
+            if not isinstance(scores, dict) or not scores:
+                return None
+            ordered = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
+            return ",   ".join(f"{d.title()} {v}%" for d, v in ordered)
+
+        _AGNI_DISPLAY = {
+            "sama": "Sama — balanced",
+            "vishama": "Vishama — irregular (Vata)",
+            "tikshna": "Tikshna — sharp (Pitta)",
+            "manda": "Manda — slow (Kapha)",
+            "vata": "Vishama — irregular (Vata)",
+            "pitta": "Tikshna — sharp (Pitta)",
+            "kapha": "Manda — slow (Kapha)",
+        }
+
+        if getattr(user, "dosha_scores", None) or getattr(user, "vikriti_scores", None):
+            story.append(HRFlowable(width="100%", thickness=0.5, color=dosha_color, spaceAfter=4))
+            story.append(Paragraph("🩺  Ayurvedic Clinical Profile (Vaidya Handoff)", H2))
+
+            clinical_rows = []
+
+            def _row(label, value):
+                if value:
+                    clinical_rows.append([Paragraph(label, LABEL), Paragraph(str(value), BODY)])
+
+            _row("Prakriti (Constitution)",
+                 getattr(user, "prakriti_classical_name", None)
+                 or (getattr(user, "dosha_constitution_type", "") or "").replace("_", "-").title() or None)
+            _row("Prakriti Scores", _fmt_scores(getattr(user, "dosha_scores", None)))
+            vik = (getattr(user, "vikriti_dominant", "") or "").title()
+            if getattr(user, "vikriti_secondary", None):
+                vik += f"  (secondary: {user.vikriti_secondary.title()})"
+            _row("Vikriti (Current Imbalance)", vik or None)
+            _row("Vikriti Scores", _fmt_scores(getattr(user, "vikriti_scores", None)))
+            if getattr(user, "dosha_confidence", None) is not None:
+                _row("Assessment Confidence", f"{user.dosha_confidence}%")
+            _row("Agni (Digestive Fire)", _AGNI_DISPLAY.get((getattr(user, "agni_type", "") or "").lower()))
+            if getattr(user, "ama_indicator", None) and user.ama_indicator != "none":
+                _row("Ama (Metabolic Toxins)", user.ama_indicator.title())
+            if getattr(user, "ojas_level", None):
+                ojas = user.ojas_level.title()
+                if getattr(user, "ojas_score", None) is not None:
+                    ojas += f"  ({user.ojas_score}/100)"
+                _row("Ojas (Vitality)", ojas)
+            mp = getattr(user, "manasa_prakriti", None)
+            if isinstance(mp, dict) and mp:
+                _row("Manasa Prakriti (Triguna)",
+                     f"{mp.get('label', '')} — Satva {mp.get('satva', 0)}%, "
+                     f"Rajas {mp.get('rajas', 0)}%, Tamas {mp.get('tamas', 0)}%")
+            if getattr(user, "primary_gunas", None):
+                _row("Dominant Gunas", ", ".join(user.primary_gunas))
+            if getattr(user, "medical_history", None):
+                _row("Diagnosed Conditions",
+                     ", ".join(c.replace("_", " ").title() for c in user.medical_history))
+            if getattr(user, "current_medications", None):
+                _row("Current Medications", ", ".join(user.current_medications))
+            if getattr(user, "allergies", None):
+                _row("Allergies", ", ".join(user.allergies))
+
+            if clinical_rows:
+                ctbl = Table(clinical_rows, colWidths=[5 * cm, None])
+                ctbl.setStyle(TableStyle([
+                    ("BACKGROUND",    (0, 0), (-1, -1), CARD_BG),
+                    ("TOPPADDING",    (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                    ("LEFTPADDING",   (0, 0), (-1, -1), 8),
+                    ("RIGHTPADDING",  (0, 0), (-1, -1), 8),
+                    ("LINEAFTER",     (0, 0), (0, -1), 0.5, TEAL),
+                    ("BOX",           (0, 0), (-1, -1), 1, dosha_color),
+                ]))
+                story.append(ctbl)
+                story.append(Spacer(1, 0.4 * cm))
+
+            # Recent Vikriti trend — last up to 6 weekly check-in snapshots
+            hist = getattr(user, "vikriti_history", None) or []
+            if hist:
+                story.append(Paragraph("Recent Vikriti Trend (weekly check-ins)", H3))
+                for entry in hist[-6:]:
+                    if not isinstance(entry, dict):
+                        continue
+                    ts = entry.get("ts") or entry.get("date") or ""
+                    if isinstance(ts, datetime):
+                        ts = ts.strftime("%d %b %Y")
+                    dom = (entry.get("dominant") or "").title()
+                    sc = _fmt_scores(entry.get("scores")) or "—"
+                    syms = entry.get("symptoms") or []
+                    sym_txt = (f"  ·  symptoms: {', '.join(s.replace('_', ' ') for s in syms[:4])}"
+                               if syms else "")
+                    story.append(Paragraph(f"<b>{ts}</b> — {dom}: {sc}{sym_txt}", SMALL))
+                story.append(Spacer(1, 0.5 * cm))
 
         # ── Plan Sections ─────────────────────────────────
         PLAN_SECTIONS = [
@@ -195,9 +290,11 @@ def _build_pdf(user: UserDocument, plan_data: dict, generated_at: str) -> bytes:
         story.append(Spacer(1, 1 * cm))
         story.append(HRFlowable(width="100%", thickness=0.5, color=AMBER, spaceAfter=6))
         story.append(Paragraph(
-            "⚠️  This report is generated by AI for informational purposes only. "
-            "It does not constitute medical advice, diagnosis, or treatment. "
-            "Always consult a qualified healthcare professional before making health decisions.",
+            "⚠️  This summary is generated by AI from self-reported data and a deterministic "
+            "Ayurvedic assessment engine. It is intended to be shared with a registered "
+            "Ayurvedic physician (Vaidya) or qualified healthcare professional — it does not "
+            "constitute medical advice, diagnosis, or treatment. Prakriti and Vikriti are screening "
+            "estimates; definitive determination requires in-person examination (including Nadi Pareeksha).",
             DISCLAIMER_STYLE
         ))
 

@@ -395,20 +395,21 @@ _REST_DAY_RECOVERY = {
 def filter_exercises(user_profile, gym_prefs, exercises):
     available_eq = {eq.lower() for eq in gym_prefs.get("available_equipment", ["bodyweight"])}
     available_eq.add("bodyweight")
-    is_bodyweight_only = available_eq <= {"bodyweight", "bands", "jump_rope"}
 
+    # Beginners get beginner + intermediate exercises. The source dataset labels
+    # only ~5% of exercises 'beginner' (almost all foundational lifts — bench
+    # press, rows, shoulder press — are tagged 'intermediate'), so a beginner-only
+    # gate leaves push/pull days with zero chest/back/shoulder options. Genuinely
+    # advanced movements (Olympic lifts, plyometrics, elite gymnastics) are tagged
+    # 'advanced' in the KB and stay excluded; the scoring pass below still prefers
+    # beginner-level exercises so the simplest movements surface first.
     level_map = {
-        "beginner":     ["beginner"],
+        "beginner":     ["beginner", "intermediate"],
         "intermediate": ["beginner", "intermediate"],
         "advanced":     ["beginner", "intermediate", "advanced"],
     }
     user_level = user_profile.get("fitness_level", "beginner") or "beginner"
-    allowed_levels = level_map.get(user_level, ["beginner"])
-
-    # Beginners doing bodyweight-only: also allow intermediate bodyweight exercises
-    # so pull/push days don't end up empty (chin-ups, rows are marked intermediate)
-    if user_level == "beginner" and is_bodyweight_only:
-        allowed_levels = ["beginner", "intermediate"]
+    allowed_levels = level_map.get(user_level, ["beginner", "intermediate"])
 
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
     gym_goal = gym_prefs.get("gym_goal", "general_fitness")

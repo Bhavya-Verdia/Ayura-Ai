@@ -76,6 +76,14 @@ class CreatePostRequest(BaseModel):
     content: str = Field(..., min_length=1, max_length=500)
 
 
+class ReportRequest(BaseModel):
+    reason: str = Field(default="", max_length=300)
+
+
+# Posts hit by this many distinct reporters are auto-hidden pending review.
+_REPORT_HIDE_THRESHOLD = 3
+
+
 @router.get("")
 async def list_community_posts(
     offset: int = 0,
@@ -83,9 +91,9 @@ async def list_community_posts(
     user: UserDocument = Depends(get_current_user),
     db=Depends(get_mongodb),
 ):
-    """List community posts, newest first."""
+    """List visible community posts, newest first (auto-hidden posts excluded)."""
     limit = min(limit, 50)
-    cursor = db.community_posts.find({}).sort("created_at", -1).skip(offset).limit(limit)
+    cursor = db.community_posts.find({"hidden": {"$ne": True}}).sort("created_at", -1).skip(offset).limit(limit)
     posts = []
     async for doc in cursor:
         posts.append({
@@ -94,6 +102,8 @@ async def list_community_posts(
             "content": doc["content"],
             "like_count": len(doc.get("likes", [])),
             "liked_by_me": user.id in doc.get("likes", []),
+            "is_mine": doc.get("user_id") == user.id,
+            "reported_by_me": user.id in doc.get("reported_by", []),
             "created_at": doc["created_at"].isoformat() if isinstance(doc["created_at"], datetime) else doc["created_at"],
         })
     return posts
@@ -127,6 +137,8 @@ async def create_post(
         "content": req.content,
         "like_count": 0,
         "liked_by_me": False,
+        "is_mine": True,
+        "reported_by_me": False,
         "created_at": now.isoformat(),
     }
 
@@ -153,6 +165,39 @@ async def toggle_like(
         like_count = len(likes) + 1
 
     return {"liked": liked, "like_count": like_count}
+
+
+@router.post("/{post_id}/report")
+async def report_post(
+    post_id: str,
+    req: ReportRequest,
+    user: UserDocument = Depends(get_current_user),
+    db=Depends(get_mongodb),
+):
+    """Flag a post. Once distinct reporters reach the threshold, it is auto-hidden."""
+    post = await db.community_posts.find_one({"_id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post["user_id"] == user.id:
+        raise HTTPException(status_code=400, detail="You cannot report your own post")
+
+    reported_by = post.get("reported_by", [])
+    if user.id in reported_by:
+        return {"reported": True, "already_reported": True}
+
+    new_count = len(reported_by) + 1
+    update = {
+        "$addToSet": {"reported_by": user.id},
+        "$push": {"reports": {
+            "user_id": user.id, "reason": req.reason[:300],
+            "ts": datetime.now(timezone.utc),
+        }},
+    }
+    hidden = new_count >= _REPORT_HIDE_THRESHOLD
+    if hidden:
+        update["$set"] = {"hidden": True}
+    await db.community_posts.update_one({"_id": post_id}, update)
+    return {"reported": True, "hidden": hidden}
 
 
 @router.delete("/{post_id}", status_code=204)

@@ -57,28 +57,41 @@ def audit_yoga():
     if poses_contra < len(yoga_poses) * 0.5:
         issues.append(f"only {poses_contra}/{len(yoga_poses)} poses have contraindications")
     prana_contra = sum(1 for p in pranayama_list if p.get("contraindications"))
+    preg_unsafe = sum(1 for p in yoga_poses if p.get("pregnancy_safe") is False)
     return {"name": "Yoga", "count": f"{len(yoga_poses)} poses / {len(pranayama_list)} pranayama",
             "conditions": len(_PROTOCOL_MAP), "condition_set": set(_PROTOCOL_MAP.keys()),
-            "issues": issues + [f"{prana_contra}/{len(pranayama_list)} pranayama have contraindications"]}
+            "issues": issues + [
+                f"{poses_contra}/{len(yoga_poses)} poses have contraindications "
+                f"(rest are neutral restoratives)",
+                f"{prana_contra}/{len(pranayama_list)} pranayama have contraindications",
+                f"{preg_unsafe} poses flagged pregnancy-unsafe"]}
 
 
 def audit_gym():
     ge, _ = _load("knowledge_base", "gym_exercises.json")
     contra = sum(1 for e in ge if e.get("contraindications"))
+    no_instr = [e["id"] for e in ge if not (e.get("instructions") or [])]
+    levels = Counter(e.get("level") for e in ge)
     issues = []
     if contra < len(ge):
-        issues.append(f"{len(ge) - contra}/{len(ge)} exercises have NO contraindications listed")
+        issues.append(f"{len(ge) - contra}/{len(ge)} exercises have NO contraindications "
+                      f"(low-risk SMR/stretch — intentional)")
+    if no_instr:
+        issues.append(f"{len(no_instr)} exercises have empty instructions e.g. {no_instr[:3]}")
+    issues.append(f"level mix: {levels.get('beginner',0)} beginner / "
+                  f"{levels.get('intermediate',0)} intermediate / {levels.get('advanced',0)} advanced "
+                  f"(beginners get beginner+intermediate; advanced excluded)")
     return {"name": "Gym", "count": len(ge), "conditions": "n/a (contraindication-filtered)",
             "condition_set": set(), "issues": issues}
 
 
 def audit_diet():
     cp, _ = _load("knowledge_base", "condition_protocols.json")
-    from services.diet_llm_generator import _PATHYA_APATHYA_HINTS
+    from services.diet_brief_builder import PATHYA_APATHYA_HINTS
     foods, _ = _load("knowledge_base", "diet_foods.json")
     cp_conds = {(c.get("condition") or c.get("id") or "").lower() for c in cp} if isinstance(cp, list) else set()
-    return {"name": "Diet", "count": f"{len(foods)} foods", "conditions": len(cp_conds | set(_PATHYA_APATHYA_HINTS)),
-            "condition_set": cp_conds | set(_PATHYA_APATHYA_HINTS),
+    return {"name": "Diet", "count": f"{len(foods)} foods", "conditions": len(cp_conds | set(PATHYA_APATHYA_HINTS)),
+            "condition_set": cp_conds | set(PATHYA_APATHYA_HINTS),
             "issues": ["LLM-primary: unmapped conditions handled by AI reasoning"]}
 
 

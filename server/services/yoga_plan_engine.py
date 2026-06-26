@@ -426,6 +426,22 @@ _SYMPTOM_CATEGORY_BOOST: dict[str, list[str]] = {
     "nausea":        ["restorative", "supine"],
     "depression":    ["standing", "backbend"],
     "low_energy":    ["standing", "backbend"],
+    # Canonical Vikriti symptom clusters — unified vocabulary shared by onboarding,
+    # the weekly check-in, and the dosha quiz (the lay terms above are kept for
+    # backward-compat with any symptoms stored before unification).
+    "anxiety_worry":          ["restorative", "forward_fold"],
+    "trouble_sleeping":       ["restorative", "supine"],
+    "bloating_gas":           ["twist", "forward_fold"],
+    "dry_skin_constipation":  ["twist", "forward_fold"],
+    "joint_stiffness":        ["restorative", "supine"],
+    "heartburn_acidity":      ["forward_fold", "restorative"],
+    "irritability":           ["restorative", "forward_fold"],
+    "skin_rashes":            ["restorative", "forward_fold"],
+    "weight_gain":            ["standing", "backbend"],
+    "congestion":             ["standing", "backbend"],
+    "brain_fog":              ["standing", "backbend"],
+    "morning_heaviness":      ["standing", "backbend"],
+    "coated_tongue_ama":      ["twist", "forward_fold"],
 }
 
 
@@ -677,18 +693,42 @@ _FORCEFUL_PRANAYAMA_CONTRA: dict[str, set[str]] = {
     "unequal_breathing": {"hypertension", "high_blood_pressure", "heart", "cardiac"},
 }
 
+# Defence-in-depth gate for cooling / sedating pranayama (Sitali, Sitkari,
+# Chandra Bhedana, Sheetali Kumbhaka). These are calming and Pitta-reducing but
+# are classically contraindicated in low blood pressure (further drops it),
+# asthma / respiratory congestion (cold air aggravates), and cold/Kapha
+# conditions. Like the forceful map above, this is independent of whether the KB
+# entry's `contraindications` field is populated — over-blocking is acceptable.
+_COOLING_PRANAYAMA_CONTRA: dict[str, set[str]] = {
+    "cooling_breath":   {"low_blood_pressure", "hypotension", "low_bp",
+                        "asthma", "respiratory", "chronic_cough"},
+    "hissing_breath":   {"low_blood_pressure", "hypotension", "low_bp",
+                        "asthma", "respiratory", "chronic_cough"},
+    # Chandra Bhedana — lunar/sedating: also avoid in clinical depression
+    "left_nostril":     {"low_blood_pressure", "hypotension", "low_bp",
+                        "asthma", "respiratory", "depression"},
+    # Sheetali Kumbhaka — cooling PLUS breath retention + chin lock, so it also
+    # carries the Kumbhaka cardiac/intracranial-pressure contraindications.
+    "extended_cooling": {"low_blood_pressure", "hypotension", "low_bp",
+                        "asthma", "respiratory", "chronic_cough",
+                        "hypertension", "high_blood_pressure", "heart", "cardiac",
+                        "glaucoma", "retina", "epilep", "seizure", "pregnan"},
+}
+
 
 def _pranayama_hard_blocked(pr: dict, user_conditions: set[str]) -> bool:
     """True if this pranayama is contraindicated for any of the user's conditions.
 
     Checks BOTH the KB entry's own `contraindications` field AND the hardcoded
-    forceful-pranayama safety map. Matching is substring-based in both directions
-    so 'high_blood_pressure' matches 'hypertension'-style tags and vice versa.
+    forceful- and cooling-pranayama safety maps. Matching is substring-based in
+    both directions so 'high_blood_pressure' matches 'hypertension'-style tags
+    and vice versa.
     """
     if not user_conditions:
         return False
     pr_id = pr.get("id", "")
     contra_tokens: set[str] = set(_FORCEFUL_PRANAYAMA_CONTRA.get(pr_id, set()))
+    contra_tokens |= set(_COOLING_PRANAYAMA_CONTRA.get(pr_id, set()))
     for c in (pr.get("contraindications") or []) + (pr.get("medical_conditions_contraindicated") or []):
         contra_tokens.add(str(c).lower())
     if not contra_tokens:

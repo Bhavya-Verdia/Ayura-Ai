@@ -149,6 +149,18 @@ export default function Chat() {
             arr[arr.length - 1] = { ...arr[arr.length - 1], content: currentMessage, status: null, typing: false };
             return arr;
           });
+        } else if (data.type === 'actions') {
+          setMessages(prev => {
+            const arr = [...prev];
+            arr[arr.length - 1] = {
+              ...arr[arr.length - 1],
+              actions: {
+                reminders: data.reminders_set || [],
+                plansAdapting: data.plans_adapting || [],
+              },
+            };
+            return arr;
+          });
         } else if (data.type === 'done') {
           setMessages(prev => {
             const arr = [...prev];
@@ -294,6 +306,20 @@ export default function Chat() {
                         ? <Check size={12} strokeWidth={2.5} />
                         : <Copy size={12} strokeWidth={2} />}
                     </button>
+                  )}
+                  {!isUser && msg.actions && (msg.actions.reminders?.length > 0 || msg.actions.plansAdapting?.length > 0) && (
+                    <div className="chat-action-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                      {msg.actions.reminders?.map((r, i) => (
+                        <span key={`rem-${i}`} style={{ fontSize: '0.72rem', fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: 'rgba(74,222,128,0.12)', color: '#34d399', border: '1px solid rgba(74,222,128,0.3)' }}>
+                          ⏰ Reminder set — {r.title} at {r.time}
+                        </span>
+                      ))}
+                      {msg.actions.plansAdapting?.map((p, i) => (
+                        <span key={`pln-${i}`} style={{ fontSize: '0.72rem', fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)' }}>
+                          ✨ Regenerating your {p} plan…
+                        </span>
+                      ))}
+                    </div>
                   )}
                   {!msg.typing && msg.timestamp && (
                     <span className="chat-bubble-time">{formatMsgTime(msg.timestamp)}</span>

@@ -64,10 +64,10 @@ function NotificationCard({ notif, onMarkRead, index }) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0 }}
       transition={{ duration: 0.35, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
-      onClick={() => !notif.is_read && onMarkRead(notif._id)}
+      onClick={() => !notif.is_read && onMarkRead(notif.id)}
       role="button"
       tabIndex={0}
-      onKeyDown={e => e.key === 'Enter' && !notif.is_read && onMarkRead(notif._id)}
+      onKeyDown={e => e.key === 'Enter' && !notif.is_read && onMarkRead(notif.id)}
       aria-label={`${notif.title}${notif.is_read ? '' : ' — click to mark as read'}`}
     >
       {/* Left border accent */}
@@ -129,14 +129,14 @@ export default function Notifications() {
   const handleMarkRead = useCallback(async (id) => {
     // Optimistic update
     setNotifications(prev =>
-      prev.map(n => n._id === id ? { ...n, is_read: true } : n)
+      prev.map(n => n.id === id ? { ...n, is_read: true } : n)
     )
     try {
       await notificationsAPI.markRead(id)
     } catch {
       // Revert on failure
       setNotifications(prev =>
-        prev.map(n => n._id === id ? { ...n, is_read: false } : n)
+        prev.map(n => n.id === id ? { ...n, is_read: false } : n)
       )
     }
   }, [])
@@ -240,7 +240,7 @@ export default function Notifications() {
               <AnimatePresence mode="popLayout">
                 {notifications.map((notif, i) => (
                   <NotificationCard
-                    key={notif._id}
+                    key={notif.id}
                     notif={notif}
                     onMarkRead={handleMarkRead}
                     index={i}
