@@ -58,6 +58,20 @@ docker compose -f docker-compose.staging.yml down
 docker compose -f docker-compose.staging.yml down -v
 ```
 
+## Known: RAG seeding needs an embedding provider
+The `vector-seed` container populates ChromaDB for RAG (chat context, plan enrichment,
+citations context). It needs embeddings from **either**:
+- a valid Azure embeddings deployment (`AZURE_OPENAI_EMBEDDING_DEPLOYMENT` must exist on
+  your Azure resource — a 404 there means the deployment name is wrong), **or**
+- the local `sentence-transformers` model (not in the image by default — it pulls torch).
+
+Without one, the app still runs fully; RAG just returns empty results (plans are
+engine + LLM generated regardless). To enable RAG in staging, fix the Azure embedding
+deployment name in `.env.staging`, then: `docker compose -f docker-compose.staging.yml run --rm vector-seed`.
+
+> ChromaDB image is pinned to `0.6.3` to match the `chromadb` python client. Using
+> `chroma:latest` causes `('_type')` protocol errors and "chromadb: unavailable".
+
 ## Notes
 - `APP_ENV=staging` keeps cookies non-secure so it works over plain HTTP locally. To rehearse
   true production behaviour (secure/strict cookies, secret validation), set `APP_ENV=production`

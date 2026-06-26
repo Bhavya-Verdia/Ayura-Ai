@@ -68,7 +68,7 @@ services:
     restart: unless-stopped
 
   chromadb:
-    image: chromadb/chroma:latest
+    image: chromadb/chroma:0.6.3   # MUST match the pinned chromadb client (server/requirements.txt)
     container_name: ayura_chromadb
     environment:
       - IS_PERSISTENT=TRUE

@@ -34,15 +34,19 @@ const server = await preview({
 })
 
 console.log('🌐  Launching Chromium…')
-const browser = await chromium.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] })
-const page    = await browser.newPage()
-
-// Abort API calls → auth check throws immediately → user = null → landing renders
-await page.route('**/api/**', route => route.abort())
-// Also abort CDN requests that might slow networkidle
-await page.route('https://fonts.googleapis.com/**', route => route.continue())
-
+let browser
 try {
+  // Browser launch is inside the try so a missing/broken Chromium (e.g. in a
+  // Docker build image without Playwright browsers) degrades gracefully instead
+  // of failing the whole `npm run build`.
+  browser = await chromium.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+  const page = await browser.newPage()
+
+  // Abort API calls → auth check throws immediately → user = null → landing renders
+  await page.route('**/api/**', route => route.abort())
+  // Also abort CDN requests that might slow networkidle
+  await page.route('https://fonts.googleapis.com/**', route => route.continue())
+
   await page.goto('http://localhost:4174/', {
     waitUntil: 'networkidle',
     timeout: 25000,
@@ -63,10 +67,10 @@ try {
   console.log(`✅  dist/index.html updated (${kB} kB) — landing page pre-rendered`)
   console.log('    Crawlers now receive full HTML. React hydrates on top.')
 } catch (err) {
-  console.warn('⚠  Prerender failed (non-fatal):', err.message)
-  console.warn('   Build is still valid — just without pre-rendered HTML.')
+  console.warn('⚠  Prerender skipped (non-fatal):', err.message)
+  console.warn('   Build is still valid — the SPA serves index.html and React renders normally.')
 } finally {
-  await browser.close()
+  if (browser) await browser.close().catch(() => {})
   server.httpServer.close()
   process.exit(0)
 }

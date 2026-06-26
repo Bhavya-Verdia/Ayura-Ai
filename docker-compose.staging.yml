@@ -93,7 +93,7 @@ services:
     restart: unless-stopped
 
   chromadb:
-    image: chromadb/chroma:latest
+    image: chromadb/chroma:0.6.3   # MUST match the pinned chromadb client (server/requirements.txt) — latest causes "('_type')" protocol errors
     container_name: ayura_stg_chroma
     environment:
       IS_PERSISTENT: "TRUE"
