@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   LayoutDashboard, MessageCircle, Leaf, Activity,
-  CheckSquare, Bell, Settings, Search, ChevronRight,
+  CheckSquare, Bell, Settings, Search, ChevronRight, ShieldCheck,
 } from 'lucide-react'
 import './CommandPalette.css'
 
@@ -13,6 +13,7 @@ const COMMANDS = [
   { id: 'remedies',      label: 'View Remedies',     Icon: Leaf,            path: '/remedies',       shortcut: 'G R' },
   { id: 'timeline',      label: 'Health Timeline',   Icon: Activity,        path: '/timeline',       shortcut: 'G T' },
   { id: 'checkin',       label: 'Weekly Check-In',   Icon: CheckSquare,     path: '/checkin',        shortcut: 'G K' },
+  { id: 'interaction',   label: 'Herb Safety Checker', Icon: ShieldCheck,   path: '/interaction-check', shortcut: 'G H' },
   { id: 'notifications', label: 'Notifications',     Icon: Bell,            path: '/notifications',  shortcut: 'G N' },
   { id: 'settings',      label: 'Settings',          Icon: Settings,        path: '/settings',       shortcut: 'G S' },
 ]

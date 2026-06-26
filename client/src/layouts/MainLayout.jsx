@@ -7,7 +7,7 @@ import LoadingScreen from '../components/LoadingScreen'
 import { SkeletonDashboard, SkeletonChat } from '../components/Skeleton'
 import {
   LayoutDashboard, MessageCircle, Leaf, Activity, CheckSquare,
-  Settings, LogOut, Menu, X, Bell, TrendingUp, Users, AlarmClock, Brain
+  Settings, LogOut, Menu, X, Bell, TrendingUp, Users, AlarmClock, Brain, ShieldCheck
 } from 'lucide-react'
 import ScrollToTop from '../components/ScrollToTop'
 import FeedbackWidget from '../components/FeedbackWidget'
@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { id: 'timeline',     label: 'Timeline',     Icon: Activity,        path: '/timeline',       i18nKey: 'timeline' },
   { id: 'community',    label: 'Community',    Icon: Users,           path: '/community',      i18nKey: 'community' },
   { id: 'reminders',    label: 'Reminders',    Icon: AlarmClock,      path: '/reminders',      i18nKey: 'reminders' },
+  { id: 'interaction',  label: 'Herb Safety',  Icon: ShieldCheck,     path: '/interaction-check', i18nKey: 'interaction_check' },
   { id: 'dosha-quiz',   label: 'Dosha Quiz',   Icon: Brain,           path: '/dosha-quiz',     i18nKey: 'dosha_quiz' },
   { id: 'notifications',label: 'Notifications',Icon: Bell,            path: '/notifications',  i18nKey: 'notifications' },
   { id: 'settings',     label: 'Settings',     Icon: Settings,        path: '/settings',       i18nKey: 'settings' },

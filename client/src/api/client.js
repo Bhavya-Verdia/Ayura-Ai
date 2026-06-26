@@ -140,7 +140,7 @@ export const plansAPI = {
   rate:               (planId, data) => API.post(`/plans/${planId}/rating`, data),
   getSeasonal:        ()      => API.get('/plans/seasonal'),
   generateMeditation: (params) => API.get('/plans/meditation', { params }),
-  checkInteractions:  (herbs) => API.post('/plans/interaction-check', herbs),
+  checkInteractions:  (herbs, medications = null) => API.post('/plans/interaction-check', { herbs, ...(medications !== null ? { medications } : {}) }),
   getJobStatus:       (jobId) => API.get(`/plans/job/${jobId}`),
 }
 

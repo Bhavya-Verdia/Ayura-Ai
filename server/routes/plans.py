@@ -1457,18 +1457,32 @@ async def get_guided_meditation(
 
 @router.post("/interaction-check")
 async def check_interactions(
-    herbs: list[str] = Body(...),
+    herbs: list[str] = Body(..., embed=True),
+    medications: list[str] | None = Body(default=None, embed=True),
     user: UserDocument = Depends(get_current_user)
 ):
-    """Feature 12: Drug-Herb Interaction Checker."""
+    """Drug-Herb Interaction Checker.
+
+    `herbs` is the proposed Ayurvedic herb/formulation list. `medications` is
+    optional — when omitted the user's stored `current_medications` are used, so
+    the standalone "Ask before you take" tool can either rely on the saved profile
+    or check against an ad-hoc medication list.
+    """
     from engine.condition_filter import condition_filter
     from ai.rag_pipeline import rag_pipeline
     from ai.llm_client import llm_client
-    
-    herbs = [_sanitize_prompt_input(h, max_len=100) for h in herbs]
-    medications = user.current_medications or []
+
+    herbs = [_sanitize_prompt_input(h, max_len=100) for h in (herbs or []) if h and h.strip()]
+    if medications is None:
+        medications = user.current_medications or []
+    medications = [_sanitize_prompt_input(m, max_len=100) for m in (medications or []) if m and m.strip()]
+
+    if not herbs:
+        return {"status": "safe", "warnings": [], "general_warnings": [],
+                "detailed_explanation": "Enter at least one herb or formulation to check."}
     if not medications:
-        return {"status": "safe", "warnings": [], "detailed_explanation": "No current medications reported."}
+        return {"status": "safe", "warnings": [], "general_warnings": [],
+                "detailed_explanation": "No medications to cross-check. Add your current medications (or your saved profile) — and always confirm with your physician before combining."}
         
     # TIER 1: Deterministic check
     interaction_result = condition_filter.check_drug_herb_interactions(medications, herbs)
