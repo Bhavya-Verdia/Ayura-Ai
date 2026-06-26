@@ -4,36 +4,37 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import API from '../api/client'
 import { useAuth } from '../providers/AuthContext'
+import { Zap, Moon, Flame, CircleCheck, ClipboardList, Sparkles, TriangleAlert, CircleDot, Circle } from 'lucide-react'
 import './CheckIn.css'
 import '../components/VikritiCheckIn.css'
 
 // 1-5 lifestyle pulse + engagement (sleep/stress/digestion feed the Vikriti engine)
 const PULSE = [
-  { id: 'energy',    label: 'Energy',         icons: ['🔋', '😴', '😐', '😊', '⚡'], hints: ['Drained', 'Low', 'Fair', 'Good', 'High'] },
-  { id: 'sleep',     label: 'Sleep',          icons: ['😫', '😴', '😐', '😊', '✨'], hints: ['Very poor', 'Poor', 'Fair', 'Good', 'Excellent'] },
-  { id: 'stress',    label: 'Stress',         icons: ['🌋', '😰', '😐', '😌', '🧘'], hints: ['Extreme', 'High', 'Moderate', 'Low', 'None'] },
-  { id: 'digestion', label: 'Digestion',      icons: ['💨', '😣', '😐', '😊', '🌿'], hints: ['Very poor', 'Poor', 'Fair', 'Good', 'Strong'] },
-  { id: 'adherence', label: 'Plan Adherence', icons: ['🚫', '🤏', '👍', '💪', '🏆'], hints: ['None', 'A little', 'About half', 'Most', 'All of it'] },
+  { id: 'energy',    label: 'Energy',         hints: ['Drained', 'Low', 'Fair', 'Good', 'High'] },
+  { id: 'sleep',     label: 'Sleep',          hints: ['Very poor', 'Poor', 'Fair', 'Good', 'Excellent'] },
+  { id: 'stress',    label: 'Stress',         hints: ['Extreme', 'High', 'Moderate', 'Low', 'None'] },
+  { id: 'digestion', label: 'Digestion',      hints: ['Very poor', 'Poor', 'Fair', 'Good', 'Strong'] },
+  { id: 'adherence', label: 'Plan Adherence', hints: ['None', 'A little', 'About half', 'Most', 'All of it'] },
 ]
 
 const QUICK_SYMPTOMS = [
-  { id: 'anxiety_worry', icon: '🌀', label: 'Anxiety or worry' },
-  { id: 'dry_skin_constipation', icon: '🌵', label: 'Dryness or constipation' },
-  { id: 'trouble_sleeping', icon: '🌙', label: 'Trouble sleeping' },
-  { id: 'heartburn_acidity', icon: '🔥', label: 'Acidity or inflammation' },
-  { id: 'irritability', icon: '⚡', label: 'Irritability' },
-  { id: 'weight_gain', icon: '🏔️', label: 'Weight gain or sluggishness' },
-  { id: 'low_energy', icon: '😶', label: 'Low energy' },
-  { id: 'bloating_gas', icon: '💨', label: 'Bloating or gas' },
-  { id: 'coated_tongue_ama', icon: '👅', label: 'Coated tongue' },
-  { id: 'feeling_balanced', icon: '✨', label: 'Feeling balanced' },
+  { id: 'anxiety_worry', label: 'Anxiety or worry' },
+  { id: 'dry_skin_constipation', label: 'Dryness or constipation' },
+  { id: 'trouble_sleeping', label: 'Trouble sleeping' },
+  { id: 'heartburn_acidity', label: 'Acidity or inflammation' },
+  { id: 'irritability', label: 'Irritability' },
+  { id: 'weight_gain', label: 'Weight gain or sluggishness' },
+  { id: 'low_energy', label: 'Low energy' },
+  { id: 'bloating_gas', label: 'Bloating or gas' },
+  { id: 'coated_tongue_ama', label: 'Coated tongue' },
+  { id: 'feeling_balanced', label: 'Feeling balanced' },
 ]
 
 const HIST_METRICS = [
-  { id: 'energy', label: 'Energy', icon: '⚡', color: 'var(--ayura-amber)' },
-  { id: 'sleep', label: 'Sleep', icon: '🌙', color: 'var(--ayura-violet)' },
-  { id: 'digestion', label: 'Digestion', icon: '🔥', color: 'var(--ayura-teal)' },
-  { id: 'adherence', label: 'Adherence', icon: '✅', color: 'var(--primary-light)' },
+  { id: 'energy', label: 'Energy', Icon: Zap, color: 'var(--ayura-amber)' },
+  { id: 'sleep', label: 'Sleep', Icon: Moon, color: 'var(--ayura-violet)' },
+  { id: 'digestion', label: 'Digestion', Icon: Flame, color: 'var(--ayura-teal)' },
+  { id: 'adherence', label: 'Adherence', Icon: CircleCheck, color: 'var(--primary-light)' },
 ]
 
 function MiniBar({ value, color }) {
@@ -60,7 +61,7 @@ function HistoryCard({ entry, index }) {
         {HIST_METRICS.filter(m => entry[m.id] != null).map(m => (
           <div key={m.id} className="chk-hist-metric">
             <div className="chk-hist-metric-row">
-              <span>{m.icon}</span>
+              <span style={{ display: 'inline-flex', color: m.color }}><m.Icon size={15} strokeWidth={2} /></span>
               <span className="chk-hist-metric-label">{m.label}</span>
             </div>
             <MiniBar value={entry[m.id]} color={m.color} />
@@ -154,14 +155,14 @@ export default function CheckIn() {
                 {histLoading ? (
                   <div className="chk-hist-loading">{[...Array(3)].map((_, i) => <div key={i} className="chk-hist-card skeleton" style={{ height: 160 }} />)}</div>
                 ) : history.length === 0 ? (
-                  <div className="chk-hist-empty"><div style={{ fontSize: '3rem' }}>📋</div><p>No check-ins yet. Submit your first one!</p></div>
+                  <div className="chk-hist-empty"><div style={{ display: 'flex', justifyContent: 'center', color: 'var(--ayura-teal)', marginBottom: 8 }}><ClipboardList size={34} strokeWidth={1.6} /></div><p>No check-ins yet. Submit your first one!</p></div>
                 ) : (
                   history.map((entry, i) => <HistoryCard key={i} entry={entry} index={i} />)
                 )}
               </motion.div>
             ) : insight ? (
               <motion.div key="insight" className="chk-insight-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
-                <div className="chk-insight-icon">✨</div>
+                <div className="chk-insight-icon"><Sparkles size={22} strokeWidth={1.8} /></div>
                 <h3 className="chk-insight-title">Vikriti Updated</h3>
                 <p className="chk-insight-text">{insight.insight}</p>
                 {insight.adapted_plans?.length > 0 && (
@@ -177,7 +178,7 @@ export default function CheckIn() {
               </motion.div>
             ) : (
               <motion.form key="form" className="chk-form" onSubmit={handleSubmit} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
-                {error && <div className="chk-error">⚠️ {error}</div>}
+                {error && <div className="chk-error" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><TriangleAlert size={15} strokeWidth={2} /> {error}</div>}
 
                 {/* ── Lifestyle pulse (1-5 emoji) ── */}
                 <div className="vci-pulse-section" style={{ marginBottom: 20 }}>
@@ -185,12 +186,12 @@ export default function CheckIn() {
                     <div key={field.id} className="vci-pulse-row">
                       <span className="vci-pulse-label">{field.label}</span>
                       <div className="vci-pulse-icons">
-                        {field.icons.map((icon, i) => (
+                        {field.hints.map((hint, i) => (
                           <button key={i} type="button"
                             className={`vci-pulse-btn${pulse[field.id] === i + 1 ? ' selected' : ''}`}
                             onClick={() => setPulse(p => ({ ...p, [field.id]: i + 1 }))}
-                            title={field.hints[i]} aria-label={`${field.label}: ${field.hints[i]}`}>
-                            {icon}
+                            title={hint} aria-label={`${field.label}: ${hint}`}>
+                            {i + 1}
                           </button>
                         ))}
                       </div>
@@ -201,7 +202,7 @@ export default function CheckIn() {
                 {isFemale && (
                   <div className="vci-menstrual-row">
                     <button type="button" className={`vci-menstrual-btn${menstrual ? ' active' : ''}`} onClick={() => setMenstrual(p => !p)}>
-                      {menstrual ? '🔴' : '⭕'} On or near my period
+                      <span style={{ display: 'inline-flex', verticalAlign: '-2px', color: menstrual ? 'var(--ayura-rose)' : 'inherit' }}>{menstrual ? <CircleDot size={15} strokeWidth={2} /> : <Circle size={15} strokeWidth={2} />}</span> On or near my period
                     </button>
                     <span className="vci-menstrual-hint">Pitta naturally rises — we factor this in</span>
                   </div>
@@ -212,7 +213,7 @@ export default function CheckIn() {
                   {QUICK_SYMPTOMS.map(s => (
                     <motion.button key={s.id} type="button" whileTap={{ scale: 0.96 }}
                       className={`vci-chip ${symptoms.includes(s.id) ? 'selected' : ''}`} onClick={() => toggleSymptom(s.id)}>
-                      <span>{s.icon}</span> {s.label}
+                      {s.label}
                     </motion.button>
                   ))}
                 </div>

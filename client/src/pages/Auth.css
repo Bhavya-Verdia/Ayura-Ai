@@ -53,7 +53,7 @@
   color: var(--ayura-ink);
 }
 [data-theme='light'] .auth-left-pill { background: rgba(255,255,255,0.6); }
-.auth-left-pill-icon { font-size: 1.1rem; }
+.auth-left-pill-icon { display: inline-flex; align-items: center; color: var(--ayura-teal); }
 
 /* Right Panel (Form) */
 .auth-right {

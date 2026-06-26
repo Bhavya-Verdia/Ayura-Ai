@@ -13,16 +13,21 @@ import DoshaArcRings from '../components/DoshaArcRings'
 import PreferencesModal from '../components/PreferencesModal'
 import SectionBoundary from '../components/SectionBoundary'
 import confetti from 'canvas-confetti'
+import {
+  Sunrise, Salad, Flower2, Dumbbell, Leaf, Soup, Pill,
+  Flame, Snowflake, Sun, CloudRain, Moon, Mail, RefreshCw,
+  TriangleAlert, MessageCircle, TrendingUp, CircleCheck,
+} from 'lucide-react'
 import './Dashboard.css'
 
 const PLAN_TYPES = [
-  { id: 'routine',     title: 'Daily Routine',       icon: '🌅',   desc: 'Chronological Dinacharya timeline with meal timing.', color: 'var(--ayura-amber)',  bg: 'rgba(251,146,60,0.08)' },
-  { id: 'diet',        title: 'Diet & Nutrition',    icon: '🥗',   desc: '4-week Ayurvedic meal plans with Pathya-Apathya.', color: 'var(--ayura-sage)',  bg: 'rgba(74,222,128,0.08)' },
-  { id: 'yoga',        title: 'Yoga & Pranayama',   icon: '🧘‍♀️', desc: 'Dosha-balanced morning/evening routines.',    color: 'var(--ayura-teal)',   bg: 'rgba(45,212,191,0.08)' },
-  { id: 'gym',         title: 'Fitness & Gym',       icon: '🏋️',   desc: 'Workout splits with progressive intensity.',  color: 'var(--vata-color)',   bg: 'rgba(129,140,248,0.08)' },
-  { id: 'panchakarma', title: 'Panchakarma Detox',   icon: '🌿',   desc: 'Seasonal cleanses tailored to your prakriti.', color: 'var(--ayura-sage)',   bg: 'rgba(74,222,128,0.08)' },
-  { id: 'remedies',    title: 'Home Remedies',       icon: '🍵',   desc: 'Kitchen medicine for common ailments.',        color: 'var(--ayura-rose)',   bg: 'rgba(251,113,133,0.08)' },
-  { id: 'medicines',   title: 'Ayurvedic Medicines', icon: '💊',   desc: 'Classical formulations for deep healing.',     color: 'var(--ayura-violet)', bg: 'rgba(167,139,250,0.08)' },
+  { id: 'routine',     title: 'Daily Routine',       Icon: Sunrise,  desc: 'Chronological Dinacharya timeline with meal timing.', color: 'var(--ayura-amber)',  bg: 'rgba(251,146,60,0.10)' },
+  { id: 'diet',        title: 'Diet & Nutrition',    Icon: Salad,    desc: '4-week Ayurvedic meal plans with Pathya-Apathya.', color: 'var(--ayura-sage)',  bg: 'rgba(74,222,128,0.10)' },
+  { id: 'yoga',        title: 'Yoga & Pranayama',   Icon: Flower2,  desc: 'Dosha-balanced morning/evening routines.',    color: 'var(--ayura-teal)',   bg: 'rgba(45,212,191,0.10)' },
+  { id: 'gym',         title: 'Fitness & Gym',       Icon: Dumbbell, desc: 'Workout splits with progressive intensity.',  color: 'var(--vata-color)',   bg: 'rgba(129,140,248,0.10)' },
+  { id: 'panchakarma', title: 'Panchakarma Detox',   Icon: Leaf,     desc: 'Seasonal cleanses tailored to your prakriti.', color: 'var(--ayura-sage)',   bg: 'rgba(74,222,128,0.10)' },
+  { id: 'remedies',    title: 'Home Remedies',       Icon: Soup,     desc: 'Kitchen medicine for common ailments.',        color: 'var(--ayura-rose)',   bg: 'rgba(251,113,133,0.10)' },
+  { id: 'medicines',   title: 'Ayurvedic Medicines', Icon: Pill,     desc: 'Classical formulations for deep healing.',     color: 'var(--ayura-violet)', bg: 'rgba(167,139,250,0.10)' },
 ]
 
 const DOSHA_COLOR = { vata: '#818CF8', pitta: '#fb923c', kapha: '#34d399' }
@@ -88,7 +93,7 @@ function StreakCard() {
       transition={{ duration: 0.4, delay: 0.1 }}
     >
       <div className="dash-streak-left">
-        <div className="dash-streak-flame">🔥</div>
+        <div className="dash-streak-flame"><Flame size={26} strokeWidth={2} /></div>
         <div>
           <div className="dash-streak-count">
             <span className="dash-streak-num">{streak}</span>
@@ -115,7 +120,7 @@ function StreakCard() {
 }
 
 // ── Ritucharya (seasonal) Card ─────────────────────────────────
-const SEASON_EMOJI = { Shishir: '❄️', Vasant: '🌸', Grishma: '☀️', Varsha: '🌧️', Sharad: '🍂', Hemant: '🌙' }
+const SEASON_ICON = { Shishir: Snowflake, Vasant: Flower2, Grishma: Sun, Varsha: CloudRain, Sharad: Leaf, Hemant: Moon }
 
 function RitucharyaCard() {
   const { data, isLoading, isError } = useQuery({
@@ -130,7 +135,7 @@ function RitucharyaCard() {
 
   const favour = (data.diet_adjustments || []).slice(0, 3)
   const avoid = (data.avoid || []).slice(0, 3)
-  const emoji = SEASON_EMOJI[data.season] || '🌿'
+  const SeasonIcon = SEASON_ICON[data.season] || Leaf
 
   return (
     <motion.div
@@ -140,7 +145,7 @@ function RitucharyaCard() {
       transition={{ duration: 0.4, delay: 0.15 }}
     >
       <div className="dash-ritu-head">
-        <span className="dash-ritu-emoji">{emoji}</span>
+        <span className="dash-ritu-emoji"><SeasonIcon size={22} strokeWidth={2} /></span>
         <div className="dash-ritu-head-text">
           <div className="dash-ritu-title">{data.english_name} · {data.season} Ritu</div>
           {data.focus && <div className="dash-ritu-sub">{data.focus}</div>}
@@ -321,7 +326,7 @@ function VerifyEmailBanner({ email }) {
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.3 }}
     >
-      <span className="dash-verify-icon">✉️</span>
+      <span className="dash-verify-icon"><Mail size={18} strokeWidth={2} /></span>
       <div className="dash-verify-body">
         <strong>Verify your email to unlock plan generation.</strong>
         {' '}Check your inbox at <em>{email}</em>.
@@ -391,7 +396,7 @@ function ReassessmentCard({ onDismiss }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <div className="dash-reassess-icon">🔄</div>
+      <div className="dash-reassess-icon"><RefreshCw size={20} strokeWidth={2} /></div>
       <div className="dash-reassess-body">
         <strong>Your plans haven&apos;t been hitting the mark</strong>
         <p>Your dosha profile may need updating — this happens when life circumstances, stress levels, or seasons change significantly.</p>
@@ -520,7 +525,7 @@ const Dashboard = () => {
         [result.typeId]: { data: result.data, created_at: new Date().toISOString() }
       }))
       toast.success(`${result.typeId.charAt(0).toUpperCase() + result.typeId.slice(1)} plan ready! ✦`, { id: `gen-${result.typeId}` })
-      // 🎉 Confetti on first plan generation
+      // Confetti on first plan generation
       if (isFirstPlan) fireConfetti()
     },
     onError: (err, { typeId }) => {
@@ -595,7 +600,12 @@ const Dashboard = () => {
             ← Back to Dashboard
           </button>
           <h2 className="dash-viewer-title">
-            {PLAN_TYPES.find(t => t.id === viewingType)?.icon} {PLAN_TYPES.find(t => t.id === viewingType)?.title}
+            {PLAN_TYPES.filter(t => t.id === viewingType).map(T => (
+              <React.Fragment key={T.id}>
+                <T.Icon size={20} strokeWidth={1.8} style={{ color: T.color, verticalAlign: '-3px', marginRight: 8 }} />
+                {T.title}
+              </React.Fragment>
+            ))}
           </h2>
         </div>
         <SectionBoundary
@@ -639,7 +649,7 @@ const Dashboard = () => {
           style={{ display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '20px', padding: '6px 14px', fontSize: '0.85rem' }}
           whileTap={{ scale: 0.95 }}
         >
-          {theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
+          {theme === 'dark' ? <><Sun size={15} strokeWidth={2} /> Light Mode</> : <><Moon size={15} strokeWidth={2} /> Dark Mode</>}
         </motion.button>
       </div>
 
@@ -752,7 +762,9 @@ const Dashboard = () => {
             whileHover={{ y: -5, transition: { duration: 0.2 } }}
           >
             <div className="dash-plan-card-header">
-              <div className="dash-plan-icon-wrap">{type.icon}</div>
+              <div className="dash-plan-icon-wrap" style={{ color: type.color, background: type.bg }}>
+                <type.Icon size={22} strokeWidth={1.7} />
+              </div>
               {plans[type.id] && <span className="dash-plan-ready-badge">✦ Ready</span>}
             </div>
 
@@ -786,7 +798,7 @@ const Dashboard = () => {
                     title="Report a reaction"
                     aria-label="Report a reaction"
                   >
-                    ⚠
+                    <TriangleAlert size={15} strokeWidth={2} />
                   </button>
                 </div>
               ) : (
@@ -808,13 +820,13 @@ const Dashboard = () => {
       {/* ── Quick nav cards ── */}
       <div className="dash-quick-nav">
         {[
-          { label: 'AI Chat',   icon: '💬', path: '/chat',     desc: 'Ask your wellness advisor anything' },
-          { label: 'Timeline',  icon: '📈', path: '/timeline', desc: 'Track your health progress' },
-          { label: 'Check-In',  icon: '✅', path: '/checkin',  desc: "Log today's energy & mood" },
+          { label: 'AI Chat',   Icon: MessageCircle, path: '/chat',     desc: 'Ask your wellness advisor anything' },
+          { label: 'Timeline',  Icon: TrendingUp,    path: '/timeline', desc: 'Track your health progress' },
+          { label: 'Check-In',  Icon: CircleCheck,   path: '/checkin',  desc: "Log today's energy & mood" },
         ].map((item, i) => (
           <motion.div key={item.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.3 + i * 0.1 }}>
             <Link to={item.path} className="dash-quick-card">
-              <span className="dash-quick-icon">{item.icon}</span>
+              <span className="dash-quick-icon"><item.Icon size={20} strokeWidth={2} /></span>
               <div className="dash-quick-info">
                 <div className="dash-quick-label">{item.label}</div>
                 <div className="dash-quick-desc">{item.desc}</div>

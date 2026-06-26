@@ -15,7 +15,9 @@
 }
 
 .dvc-icon {
-  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ayura-violet, #a78bfa);
   line-height: 1;
 }
 

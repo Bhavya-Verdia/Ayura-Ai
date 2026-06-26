@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { CalendarCheck } from 'lucide-react'
 import { profileAPI } from '../api/client'
 import './DoshaValidationCard.css'
 
@@ -45,7 +46,7 @@ export default function DoshaValidationCard({ vikritiDominant, onDone }) {
       transition={{ duration: 0.4 }}
     >
       <div className="dvc-header">
-        <span className="dvc-icon">📅</span>
+        <span className="dvc-icon"><CalendarCheck size={18} strokeWidth={2} /></span>
         <span className="dvc-label">2-Week Check-In</span>
       </div>
       <p className="dvc-question">{question}</p>

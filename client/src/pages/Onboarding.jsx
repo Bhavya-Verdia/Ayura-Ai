@@ -2,6 +2,10 @@ import { useState, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '../providers/AuthContext'
+import {
+  Scale, Dumbbell, PersonStanding, FlaskConical, Sparkles, Orbit,
+  Wind, Flame, Waves, Mars, Venus, Transgender, Ban, Baby, Sprout, Zap, Lock,
+} from 'lucide-react'
 import React from 'react'
 import './Onboarding.css'
 
@@ -151,18 +155,18 @@ const SYMPTOMS = [
 ]
 
 const GOALS = [
-  { id: 'weight_loss',     label: 'Weight Loss',      icon: '⚖️' },
-  { id: 'muscle_gain',     label: 'Muscle Gain',       icon: '💪' },
-  { id: 'flexibility',     label: 'Flexibility',       icon: '🤸' },
-  { id: 'detox',           label: 'Detox and Cleanse', icon: '🧪' },
-  { id: 'general_wellness',label: 'General Wellness',  icon: '✨' },
-  { id: 'balance',         label: 'Dosha Balance',     icon: '☯️' }
+  { id: 'weight_loss',     label: 'Weight Loss',      Icon: Scale },
+  { id: 'muscle_gain',     label: 'Muscle Gain',       Icon: Dumbbell },
+  { id: 'flexibility',     label: 'Flexibility',       Icon: PersonStanding },
+  { id: 'detox',           label: 'Detox and Cleanse', Icon: FlaskConical },
+  { id: 'general_wellness',label: 'General Wellness',  Icon: Sparkles },
+  { id: 'balance',         label: 'Dosha Balance',     Icon: Orbit }
 ]
 
 const DOSHA_INFO = {
-  vata:  { emoji: '💨', desc: 'Air & Space · Creative, energetic, variable' },
-  pitta: { emoji: '🔥', desc: 'Fire & Water · Sharp, intense, goal-driven' },
-  kapha: { emoji: '🌊', desc: 'Earth & Water · Calm, steady, nurturing' },
+  vata:  { Icon: Wind,  desc: 'Air & Space · Creative, energetic, variable' },
+  pitta: { Icon: Flame, desc: 'Fire & Water · Sharp, intense, goal-driven' },
+  kapha: { Icon: Waves, desc: 'Earth & Water · Calm, steady, nurturing' },
 }
 
 const stepVariants = {
@@ -372,7 +376,7 @@ export default function Onboarding() {
                           whileTap={{ scale: 0.95 }}
                         >
                           <span className="onb-tile-emoji">
-                            {entry === 'male' ? '♂️' : entry === 'female' ? '♀️' : '⚧️'}
+                            {entry === 'male' ? <Mars size={22} strokeWidth={2} /> : entry === 'female' ? <Venus size={22} strokeWidth={2} /> : <Transgender size={22} strokeWidth={2} />}
                           </span>
                           {entry.charAt(0).toUpperCase() + entry.slice(1)}
                         </motion.button>
@@ -385,14 +389,14 @@ export default function Onboarding() {
                       <label>Are you currently pregnant or nursing?</label>
                       <p className="onb-help">Important for your safety — several therapies, medicines, and poses are adjusted or excluded during this time.</p>
                       <div className="onb-grid-2">
-                        {[{ v: false, l: 'No', e: '🚫' }, { v: true, l: 'Yes', e: '🤰' }].map(opt => (
+                        {[{ v: false, l: 'No', E: Ban }, { v: true, l: 'Yes', E: Baby }].map(opt => (
                           <motion.button
                             key={String(opt.v)} type="button"
                             onClick={() => setPregnancyOrNursing(opt.v)}
                             className={`onb-tile ${pregnancyOrNursing === opt.v ? 'selected' : ''}`}
                             whileTap={{ scale: 0.95 }}
                           >
-                            <span className="onb-tile-emoji">{opt.e}</span>
+                            <span className="onb-tile-emoji"><opt.E size={22} strokeWidth={2} /></span>
                             {opt.l}
                           </motion.button>
                         ))}
@@ -429,9 +433,9 @@ export default function Onboarding() {
                     <label>Fitness Level</label>
                     <div className="onb-grid-3" style={{ marginTop: 8 }}>
                       {[
-                        { id: 'beginner',  label: 'Beginner',     emoji: '🌱' },
-                        { id: 'intermediate', label: 'Intermediate', emoji: '💪' },
-                        { id: 'advanced',  label: 'Advanced',     emoji: '⚡' },
+                        { id: 'beginner',  label: 'Beginner',     Icon: Sprout },
+                        { id: 'intermediate', label: 'Intermediate', Icon: Dumbbell },
+                        { id: 'advanced',  label: 'Advanced',     Icon: Zap },
                       ].map(f => (
                         <motion.button
                           key={f.id} type="button"
@@ -439,7 +443,7 @@ export default function Onboarding() {
                           className={`onb-tile ${fitnessLevel === f.id ? 'selected' : ''}`}
                           whileTap={{ scale: 0.95 }}
                         >
-                          <span className="onb-tile-emoji">{f.emoji}</span>
+                          <span className="onb-tile-emoji"><f.Icon size={22} strokeWidth={2} /></span>
                           {f.label}
                         </motion.button>
                       ))}
@@ -543,7 +547,7 @@ export default function Onboarding() {
                           animate={goal === g.id ? { scale: [1, 1.06, 1] } : { scale: 1 }}
                           transition={{ type: 'spring', stiffness: 420, damping: 22 }}
                         >
-                          <span className="onb-tile-emoji">{g.icon}</span>
+                          <span className="onb-tile-emoji"><g.Icon size={22} strokeWidth={2} /></span>
                           {g.label}
                         </motion.button>
                       ))}
@@ -563,15 +567,15 @@ export default function Onboarding() {
                           animate={dosha === key ? { scale: [1, 1.07, 1] } : { scale: 1 }}
                           transition={{ type: 'spring', stiffness: 420, damping: 22 }}
                         >
-                          <span className="onb-tile-emoji">{info.emoji}</span>
+                          <span className="onb-tile-emoji"><info.Icon size={22} strokeWidth={2} /></span>
                           {key.charAt(0).toUpperCase() + key.slice(1)}
                           <span className="onb-tile-desc">{info.desc}</span>
                         </motion.button>
                       ))}
                     </div>
                   </div>
-                  <p className="onb-help" style={{ fontSize: '0.78rem', marginTop: 4 }}>
-                    🔒 We take your privacy seriously — your health data is encrypted and never sold.
+                  <p className="onb-help" style={{ fontSize: '0.78rem', marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <Lock size={13} strokeWidth={2} /> We take your privacy seriously — your health data is encrypted and never sold.
                   </p>
                 </div>
               ) : null}

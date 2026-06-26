@@ -1,13 +1,13 @@
 {
-  "name": "Ayura AI AI",
+  "name": "Ayura AI — Adaptive Ayurvedic Wellness",
   "short_name": "Ayura AI",
   "description": "AI-Powered Holistic Wellness Platform — Gym, Yoga, Diet, Ayurveda, Remedies",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0A0A0F",
-  "theme_color": "#7C3AED",
+  "background_color": "#060A0E",
+  "theme_color": "#060A0E",
   "categories": ["health", "fitness", "lifestyle"],
   "icons": [
     {
@@ -21,10 +21,10 @@
       "type": "image/png"
     },
     {
-      "src": "/pwa-512x512.png",
+      "src": "/pwa-512x512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
       "src": "/apple-touch-icon.png",

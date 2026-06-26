@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { authAPI } from '../api/client'
 import { Helmet } from 'react-helmet-async'
+import { MailCheck } from 'lucide-react'
 import './Auth.css'
 
 export default function ForgotPassword() {
@@ -71,7 +72,7 @@ export default function ForgotPassword() {
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 style={{ textAlign: 'center', padding: '12px 0' }}
               >
-                <div style={{ fontSize: '3rem', marginBottom: '12px' }}>✅</div>
+                <div style={{ color: '#0D9488', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><MailCheck size={46} strokeWidth={1.6} /></div>
                 <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.4rem', color: '#0A1F1C', marginBottom: '8px' }}>Check your email</h3>
                 <p style={{ color: '#4A7C76', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.6 }}>
                   We sent a password reset link to <strong style={{ color: '#0D9488' }}>{email}</strong>

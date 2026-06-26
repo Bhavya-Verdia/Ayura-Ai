@@ -2,15 +2,16 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { notificationsAPI } from '../api/client'
+import { Leaf, RefreshCw, AlarmClock, AlertTriangle, Bell, Sparkles, CheckCheck, Trash2 } from 'lucide-react'
 import './Notifications.css'
 
 // ── Type config ──────────────────────────────────────────────
 const TYPE_CONFIG = {
-  plan_ready:        { icon: '🌿', label: 'Plan Ready',      borderColor: 'var(--primary)',       glowColor: 'rgba(13,148,136,0.35)' },
-  adaptation:        { icon: '🔄', label: 'Adaptation',      borderColor: 'var(--accent)',         glowColor: 'rgba(245,158,11,0.35)' },
-  checkin_reminder:  { icon: '⏰', label: 'Check-In',        borderColor: 'var(--primary-light)',  glowColor: 'rgba(45,212,191,0.35)' },
-  safety_alert:      { icon: '⚠️', label: 'Safety Alert',    borderColor: 'var(--rose)',           glowColor: 'rgba(244,63,94,0.35)'  },
-  default:           { icon: '🔔', label: 'Notification',    borderColor: 'var(--text-muted)',     glowColor: 'rgba(94,138,133,0.25)' },
+  plan_ready:        { Icon: Leaf,          label: 'Plan Ready',      borderColor: 'var(--primary)',       glowColor: 'rgba(13,148,136,0.35)' },
+  adaptation:        { Icon: RefreshCw,     label: 'Adaptation',      borderColor: 'var(--accent)',         glowColor: 'rgba(245,158,11,0.35)' },
+  checkin_reminder:  { Icon: AlarmClock,    label: 'Check-In',        borderColor: 'var(--primary-light)',  glowColor: 'rgba(45,212,191,0.35)' },
+  safety_alert:      { Icon: AlertTriangle, label: 'Safety Alert',    borderColor: 'var(--rose)',           glowColor: 'rgba(244,63,94,0.35)'  },
+  default:           { Icon: Bell,          label: 'Notification',    borderColor: 'var(--text-muted)',     glowColor: 'rgba(94,138,133,0.25)' },
 }
 
 function getTypeConfig(type) {
@@ -75,8 +76,8 @@ function NotificationCard({ notif, onMarkRead, onDelete, index }) {
 
       {/* Icon */}
       <div className="notif-card-icon-wrap">
-        <span className="notif-card-icon" role="img" aria-label={cfg.label}>
-          {cfg.icon}
+        <span className="notif-card-icon" aria-label={cfg.label} style={{ color: cfg.borderColor }}>
+          <cfg.Icon size={18} strokeWidth={2} />
         </span>
         {!notif.is_read && <span className="notif-unread-dot" aria-label="Unread" />}
       </div>
@@ -231,7 +232,7 @@ export default function Notifications() {
                 {markingAll ? (
                   <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Marking…</>
                 ) : (
-                  '✓ Mark all read'
+                  <><CheckCheck size={14} strokeWidth={2.2} /> Mark all read</>
                 )}
               </motion.button>
               {notifications.length > 0 && (
@@ -240,7 +241,7 @@ export default function Notifications() {
                   onClick={handleClearAll}
                   whileTap={{ scale: 0.95 }}
                 >
-                  🗑 Clear all
+                  <Trash2 size={14} strokeWidth={2} /> Clear all
                 </motion.button>
               )}
             </div>
@@ -255,7 +256,7 @@ export default function Notifications() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
               >
-                <span>⚠️ {error}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><AlertTriangle size={15} strokeWidth={2} /> {error}</span>
                 <button onClick={fetchNotifications} className="notif-retry-btn">Retry</button>
               </motion.div>
             )}
@@ -271,7 +272,7 @@ export default function Notifications() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="notif-empty-icon">✨</div>
+              <div className="notif-empty-icon"><Sparkles size={30} strokeWidth={1.6} /></div>
               <h2 className="notif-empty-title">You're all caught up!</h2>
               <p className="notif-empty-sub">No notifications right now. Check back later.</p>
             </motion.div>

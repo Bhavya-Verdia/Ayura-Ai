@@ -2,16 +2,20 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { remindersAPI } from '../api/client'
+import {
+  Pill, Flower2, Brain, Salad, ClipboardCheck, AlarmClock,
+  Bell, Pencil, X, Plus, Clock, TriangleAlert,
+} from 'lucide-react'
 import './Reminders.css'
 
 // ── Constants ────────────────────────────────────────────────
 const TYPE_OPTIONS = [
-  { value: 'medication',  label: 'Medication',  icon: '💊' },
-  { value: 'yoga',        label: 'Yoga',         icon: '🧘' },
-  { value: 'meditation',  label: 'Meditation',   icon: '🧠' },
-  { value: 'diet',        label: 'Diet',         icon: '🥗' },
-  { value: 'checkin',     label: 'Check-In',     icon: '📊' },
-  { value: 'custom',      label: 'Custom',       icon: '⏰' },
+  { value: 'medication',  label: 'Medication',  Icon: Pill },
+  { value: 'yoga',        label: 'Yoga',         Icon: Flower2 },
+  { value: 'meditation',  label: 'Meditation',   Icon: Brain },
+  { value: 'diet',        label: 'Diet',         Icon: Salad },
+  { value: 'checkin',     label: 'Check-In',     Icon: ClipboardCheck },
+  { value: 'custom',      label: 'Custom',       Icon: AlarmClock },
 ]
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const DAY_VALUES = [1, 2, 3, 4, 5, 6, 0] // ISO weekday, Sun=0
@@ -167,7 +171,7 @@ function ReminderForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
           >
             {TYPE_OPTIONS.map(t => (
               <option key={t.value} value={t.value}>
-                {t.icon} {t.label}
+                {t.label}
               </option>
             ))}
           </select>
@@ -279,8 +283,8 @@ function ReminderCard({ reminder, onToggle, onDelete, onEdit, index }) {
       <div className="rem-card-main">
         {/* Icon */}
         <div className="rem-card-icon-wrap">
-          <span className="rem-card-icon" role="img" aria-label={typeInfo.label}>
-            {typeInfo.icon}
+          <span className="rem-card-icon" aria-label={typeInfo.label}>
+            <typeInfo.Icon size={18} strokeWidth={2} />
           </span>
         </div>
 
@@ -288,7 +292,7 @@ function ReminderCard({ reminder, onToggle, onDelete, onEdit, index }) {
         <div className="rem-card-info">
           <div className="rem-card-top">
             <span className="rem-card-title">{reminder.title}</span>
-            <span className="rem-card-time">⏰ {formatTime(reminder.time)}</span>
+            <span className="rem-card-time"><Clock size={13} strokeWidth={2} /> {formatTime(reminder.time)}</span>
           </div>
           {reminder.description && (
             <p className="rem-card-desc">{reminder.description}</p>
@@ -313,7 +317,7 @@ function ReminderCard({ reminder, onToggle, onDelete, onEdit, index }) {
             title="Edit"
             aria-label="Edit reminder"
           >
-            ✎
+            <Pencil size={14} strokeWidth={2} />
           </button>
           <button
             className="rem-icon-btn rem-icon-btn--delete"
@@ -321,7 +325,7 @@ function ReminderCard({ reminder, onToggle, onDelete, onEdit, index }) {
             title="Delete"
             aria-label="Delete reminder"
           >
-            ✕
+            <X size={15} strokeWidth={2} />
           </button>
         </div>
       </div>
@@ -407,7 +411,7 @@ export default function Reminders() {
       const res = await remindersAPI.create(toApiShape(formData))
       setReminders(prev => [fromApiShape(res.data), ...prev])
       setShowForm(false)
-      showSuccess('Reminder created! ✨')
+      showSuccess('Reminder created!')
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to create reminder.')
     } finally {
@@ -483,7 +487,7 @@ export default function Reminders() {
               whileTap={{ scale: 0.96 }}
               aria-expanded={showForm}
             >
-              <span className="rem-add-icon">{showForm ? '✕' : '+'}</span>
+              <span className="rem-add-icon">{showForm ? <X size={16} strokeWidth={2.2} /> : <Plus size={16} strokeWidth={2.2} />}</span>
               {showForm ? 'Cancel' : 'New Reminder'}
             </motion.button>
           </motion.div>
@@ -497,8 +501,8 @@ export default function Reminders() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
               >
-                ⚠️ {error}
-                <button onClick={() => setError(null)} className="rem-toast-close">✕</button>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><TriangleAlert size={15} strokeWidth={2} /> {error}</span>
+                <button onClick={() => setError(null)} className="rem-toast-close"><X size={14} strokeWidth={2} /></button>
               </motion.div>
             )}
             {success && (
@@ -545,7 +549,7 @@ export default function Reminders() {
           >
             {TYPE_OPTIONS.map(t => (
               <span key={t.value} className="rem-legend-item">
-                <span>{t.icon}</span>
+                <span className="rem-legend-icon"><t.Icon size={14} strokeWidth={2} /></span>
                 <span>{t.label}</span>
               </span>
             ))}
@@ -561,7 +565,7 @@ export default function Reminders() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="rem-empty-icon">🔔</div>
+              <div className="rem-empty-icon"><Bell size={28} strokeWidth={1.8} /></div>
               <h2 className="rem-empty-title">No reminders yet</h2>
               <p className="rem-empty-sub">Create your first reminder to stay on track with your wellness routine.</p>
               <button

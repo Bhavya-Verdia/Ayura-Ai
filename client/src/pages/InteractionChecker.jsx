@@ -3,13 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { useAuth } from '../providers/AuthContext'
 import { plansAPI } from '../api/client'
+import { ShieldCheck, ShieldAlert, TriangleAlert, CircleCheckBig } from 'lucide-react'
 import './InteractionChecker.css'
 
 const SEVERITY = {
-  high:     { label: 'High',     color: '#f87171', bg: 'rgba(248,113,113,0.1)', icon: '⛔' },
-  moderate: { label: 'Moderate', color: '#fb923c', bg: 'rgba(251,146,60,0.1)',  icon: '⚠️' },
-  medium:   { label: 'Moderate', color: '#fb923c', bg: 'rgba(251,146,60,0.1)',  icon: '⚠️' },
-  low:      { label: 'Low',      color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  icon: '⚠️' },
+  high:     { label: 'High',     color: '#f87171', bg: 'rgba(248,113,113,0.1)', Icon: ShieldAlert },
+  moderate: { label: 'Moderate', color: '#fb923c', bg: 'rgba(251,146,60,0.1)',  Icon: TriangleAlert },
+  medium:   { label: 'Moderate', color: '#fb923c', bg: 'rgba(251,146,60,0.1)',  Icon: TriangleAlert },
+  low:      { label: 'Low',      color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  Icon: TriangleAlert },
 }
 
 function sev(s) {
@@ -122,7 +123,7 @@ export default function InteractionChecker() {
             >
               {loading
                 ? <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Checking…</>
-                : '🛡 Check safety'}
+                : <><ShieldCheck size={16} strokeWidth={2} /> Check safety</>}
             </motion.button>
             {herbs.length === 0 && <p className="ic-need-herb">Add at least one herb to check.</p>}
           </motion.div>
@@ -130,7 +131,7 @@ export default function InteractionChecker() {
           <AnimatePresence>
             {error && (
               <motion.div className="ic-error" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                ⚠️ {error}
+                <TriangleAlert size={15} strokeWidth={2} /> {error}
               </motion.div>
             )}
           </AnimatePresence>
@@ -147,7 +148,7 @@ export default function InteractionChecker() {
               >
                 {isSafe ? (
                   <div className="ic-safe-card">
-                    <span className="ic-safe-icon">✅</span>
+                    <span className="ic-safe-icon"><CircleCheckBig size={26} strokeWidth={2} /></span>
                     <div>
                       <div className="ic-safe-title">No known interactions detected</div>
                       <p className="ic-safe-text">{result.detailed_explanation}</p>
@@ -156,7 +157,7 @@ export default function InteractionChecker() {
                 ) : (
                   <>
                     <div className="ic-warn-banner">
-                      <span>⚠️</span>
+                      <span style={{ display: 'inline-flex' }}><TriangleAlert size={18} strokeWidth={2} /></span>
                       <span>{warnings.length} potential interaction{warnings.length !== 1 ? 's' : ''} found — review carefully and consult your physician.</span>
                     </div>
 
@@ -173,7 +174,7 @@ export default function InteractionChecker() {
                             transition={{ delay: 0.05 + i * 0.06 }}
                           >
                             <div className="ic-warn-top">
-                              <span className="ic-warn-herb">{s.icon} {w.herb}</span>
+                              <span className="ic-warn-herb" style={{ color: s.color }}><s.Icon size={15} strokeWidth={2} /> {w.herb}</span>
                               <span className="ic-warn-x">×</span>
                               <span className="ic-warn-med">{String(w.medication_category || '').replace(/_/g, ' ')}</span>
                               <span className="ic-sev-badge" style={{ color: s.color, borderColor: s.color + '66' }}>{s.label}</span>

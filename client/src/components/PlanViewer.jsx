@@ -8,7 +8,7 @@ import {
   Wind, Flower2, Brain, UtensilsCrossed, Clock, Soup, Apple,
   Cookie, Salad, CupSoda, BookOpen,
   Stethoscope, Layers, TestTube, Thermometer, Syringe, ListChecks,
-  TriangleAlert, BadgeCheck, Repeat, HeartPulse,
+  TriangleAlert, BadgeCheck, Repeat, HeartPulse, Lightbulb, Snowflake,
 } from 'lucide-react'
 import './PlanViewer.css'
 
@@ -537,7 +537,7 @@ function GymView({ plan }) {
       {/* ── Week coaching banner ── */}
       {weekPrescription?.note && (
         <div className="gym-week-banner">
-          <span className="gym-week-banner-icon">💡</span>
+          <span className="gym-week-banner-icon"><Lightbulb size={16} strokeWidth={2} /></span>
           <span className="gym-week-banner-text">
             <strong>Week {activeWeek + 1} · {WEEK_THEMES[activeWeek]}:</strong> {weekPrescription.note}
           </span>
@@ -932,8 +932,8 @@ function YogaView({ plan }) {
       {/* ── Age group + medical conditions banner ── */}
       <div className="yoga-banners-row">
         {us.age_group && us.age_group !== 'adult' && (
-          <div className={`yoga-age-badge ${us.age_group}`}>
-            {us.age_group === 'senior' ? '🌿 Senior-Adapted Practice' : '⚡ Youth Practice'}
+          <div className={`yoga-age-badge ${us.age_group}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            {us.age_group === 'senior' ? <><Leaf size={14} strokeWidth={2} /> Senior-Adapted Practice</> : <><Zap size={14} strokeWidth={2} /> Youth Practice</>}
           </div>
         )}
         {us.medical_conditions?.length > 0 && (
@@ -1075,7 +1075,7 @@ function YogaView({ plan }) {
       {/* ── Week note banner ── */}
       {weekNote && (
         <div className="yoga-week-banner">
-          <span className="yoga-week-banner-icon">🌿</span>
+          <span className="yoga-week-banner-icon"><Leaf size={16} strokeWidth={2} /></span>
           <span className="yoga-week-banner-text">
             <strong>Week {activeWeek + 1} · {YOGA_WEEK_THEMES[activeWeek]}:</strong> {weekNote}
           </span>
@@ -2318,8 +2318,8 @@ function MedCard({ med, rationale }) {
           {med.virya && (
             <div className="mv-pharma-group">
               <span className="mv-pharma-label">Virya</span>
-              <span className={`mv-virya-badge ${med.virya === 'ushna' ? 'ushna' : 'sheeta'}`}>
-                {med.virya === 'ushna' ? '🔥 Heating' : '❄️ Cooling'}
+              <span className={`mv-virya-badge ${med.virya === 'ushna' ? 'ushna' : 'sheeta'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                {med.virya === 'ushna' ? <><Flame size={13} strokeWidth={2} /> Heating</> : <><Snowflake size={13} strokeWidth={2} /> Cooling</>}
               </span>
             </div>
           )}

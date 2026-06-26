@@ -199,7 +199,10 @@
 [data-theme='light'] .chk-insight-card { background: rgba(255,255,255,0.8); }
 
 .chk-insight-icon {
-  font-size: 4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ayura-teal);
 }
 .chk-insight-title {
   font-family: var(--font-display);

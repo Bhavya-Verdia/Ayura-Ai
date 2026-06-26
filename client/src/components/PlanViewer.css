@@ -1318,7 +1318,9 @@
   margin-bottom: 1rem;
 }
 .gym-week-banner-icon {
-  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ayura-teal);
   flex-shrink: 0;
   margin-top: 0.05rem;
 }
@@ -1707,7 +1709,9 @@
 }
 
 .yoga-week-banner-icon {
-  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ayura-teal);
   flex-shrink: 0;
   margin-top: 0.05rem;
 }

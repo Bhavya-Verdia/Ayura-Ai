@@ -72,6 +72,7 @@
 .ic-need-herb { text-align: center; color: var(--text-muted); font-size: 0.8rem; margin: 8px 0 0; }
 
 .ic-error {
+  display: flex; align-items: center; gap: 8px;
   background: rgba(248,113,113,0.1);
   border: 1px solid rgba(248,113,113,0.3);
   color: #f87171;
@@ -90,7 +91,7 @@
   border-radius: 16px;
   padding: 20px;
 }
-.ic-safe-icon { font-size: 1.6rem; }
+.ic-safe-icon { display: inline-flex; align-items: center; color: var(--ayura-sage, #4ade80); flex-shrink: 0; }
 .ic-safe-title { font-weight: 700; color: var(--ayura-sage, #4ade80); margin-bottom: 4px; }
 .ic-safe-text { color: var(--text-secondary); font-size: 0.9rem; margin: 0; line-height: 1.5; }
 
@@ -107,7 +108,7 @@
 .ic-warn-list { display: flex; flex-direction: column; gap: 12px; }
 .ic-warn-card { border: 1px solid; border-radius: 14px; padding: 16px; }
 .ic-warn-top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
-.ic-warn-herb { font-weight: 700; }
+.ic-warn-herb { font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
 .ic-warn-x { color: var(--text-muted); }
 .ic-warn-med { font-weight: 600; text-transform: capitalize; }
 .ic-sev-badge { margin-left: auto; font-size: 0.72rem; font-weight: 700; border: 1px solid; border-radius: 999px; padding: 2px 9px; text-transform: uppercase; letter-spacing: 0.04em; }

@@ -160,7 +160,9 @@
 [data-theme='light'] .notif-card-icon-wrap { background: rgba(0,0,0,0.04); }
 
 .notif-card-icon {
-  font-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .notif-unread-dot {
   position: absolute;
@@ -241,7 +243,8 @@
   border-radius: 24px;
 }
 .notif-empty-icon {
-  font-size: 3rem;
+  display: inline-flex;
+  color: var(--ayura-teal, var(--primary));
   margin-bottom: 20px;
 }
 .notif-empty-title {
@@ -298,3 +301,4 @@
 .notif-card:hover .notif-delete-btn { opacity: 1; }
 .notif-delete-btn:hover { color: var(--rose, #f87171); }
 .notif-clear-all-btn { margin-left: 8px; }
+.notif-mark-all-btn, .notif-clear-all-btn { display: inline-flex; align-items: center; gap: 6px; }

@@ -6,6 +6,10 @@ import { useTranslation } from 'react-i18next'
 import { Helmet } from 'react-helmet-async'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../providers/ThemeProvider'
+import {
+  Camera, Save, Brain, KeyRound, FileText, Table2,
+  Package, LogOut, Trash2,
+} from 'lucide-react'
 import React from 'react'
 import './Settings.css'
 
@@ -424,7 +428,7 @@ export default function Settings() {
                 </div>
               )}
               <label className="settings-avatar-btn" title="Upload avatar">
-                📷
+                <Camera size={15} strokeWidth={2} />
                 <input type="file" accept="image/*" onChange={handleAvatarUpload} hidden />
               </label>
               {uploadingAvatar && <div className="spinner" style={{ width: '16px', height: '16px', position: 'absolute', bottom: 0, right: 0 }} />}
@@ -649,10 +653,10 @@ export default function Settings() {
 
           <div className="settings-action-row">
             <motion.button className="btn btn-primary" type="submit" disabled={saving} whileTap={{ scale: 0.97 }}>
-              {saving ? 'Saving...' : '💾 Save Profile'}
+              {saving ? 'Saving…' : <><Save size={16} strokeWidth={2} /> Save Profile</>}
             </motion.button>
             <motion.button className="btn btn-secondary" type="button" onClick={() => navigate('/onboarding?retake=true')} whileTap={{ scale: 0.97 }}>
-              🧬 Retake Dosha Quiz
+              <Brain size={16} strokeWidth={2} /> Retake Dosha Quiz
             </motion.button>
           </div>
         </motion.form>
@@ -676,7 +680,7 @@ export default function Settings() {
               </div>
             </div>
             <motion.button className="btn btn-primary" type="submit" disabled={savingPw} style={{ marginTop: '16px' }} whileTap={{ scale: 0.97 }}>
-              {savingPw ? 'Changing...' : '🔒 Change Password'}
+              {savingPw ? 'Changing…' : <><KeyRound size={16} strokeWidth={2} /> Change Password</>}
             </motion.button>
           </motion.form>
         )}
@@ -689,10 +693,10 @@ export default function Settings() {
           </p>
           <div className="settings-action-row">
             <motion.button className="btn btn-primary" onClick={downloadPdf} disabled={exportingPdf} whileTap={{ scale: 0.97 }}>
-              {exportingPdf ? '⏳ Generating...' : '📄 Download Vaidya Report (PDF)'}
+              {exportingPdf ? 'Generating…' : <><FileText size={16} strokeWidth={2} /> Download Vaidya Report (PDF)</>}
             </motion.button>
             <motion.button className="btn btn-secondary" onClick={downloadCsv} disabled={exportingCsv} whileTap={{ scale: 0.97 }}>
-              {exportingCsv ? '⏳ Exporting...' : '📊 Download Progress CSV'}
+              {exportingCsv ? 'Exporting…' : <><Table2 size={16} strokeWidth={2} /> Download Progress CSV</>}
             </motion.button>
           </div>
         </motion.div>
@@ -702,13 +706,13 @@ export default function Settings() {
           <h2 className="settings-section-title settings-danger-title">Account Actions</h2>
           <div className="settings-action-row">
             <motion.button className="btn btn-secondary" onClick={exportAccountData} whileTap={{ scale: 0.97 }}>
-              📦 Export Data
+              <Package size={16} strokeWidth={2} /> Export Data
             </motion.button>
             <motion.button className="btn btn-secondary" onClick={() => { logout(); navigate('/login') }} whileTap={{ scale: 0.97 }}>
-              🚪 Log Out
+              <LogOut size={16} strokeWidth={2} /> Log Out
             </motion.button>
             <motion.button className="btn btn-secondary settings-btn-danger" onClick={deleteAccount} whileTap={{ scale: 0.97 }}>
-              🗑️ Delete Account
+              <Trash2 size={16} strokeWidth={2} /> Delete Account
             </motion.button>
           </div>
         </motion.div>

@@ -26,7 +26,7 @@
 }
 .comm-header-left { display: flex; align-items: center; gap: 16px; }
 .comm-header-icon {
-  font-size: 2rem; width: 64px; height: 64px;
+  color: var(--ayura-teal); width: 64px; height: 64px;
   background: var(--glass-bg-subtle); border: 1px solid var(--glass-border);
   border-radius: 20px; display: flex; align-items: center; justify-content: center;
 }
@@ -55,7 +55,8 @@
 .comm-textarea:focus { outline: none; }
 .comm-create-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
 .comm-create-tips { display: flex; gap: 8px; }
-.comm-tip-pill { background: var(--border-subtle); padding: 6px 12px; border-radius: 999px; font-size: 0.75rem; color: #a1a1aa; }
+.comm-tip-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--border-subtle); padding: 6px 12px; border-radius: 999px; font-size: 0.75rem; color: #a1a1aa; }
+.comm-empty-icon { display: inline-flex; align-items: center; justify-content: center; color: var(--ayura-teal); margin-bottom: 16px; }
 .comm-post-btn {
   background: #06b6d4; color: #000; font-family: var(--font-ui); font-weight: 700;
   padding: 10px 24px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s;

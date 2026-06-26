@@ -168,10 +168,26 @@
 }
 
 .da-trait-icon {
-  font-size: 1.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--glass-bg-subtle, rgba(255,255,255,0.05));
+  border: 1px solid var(--dash-edge, rgba(255,255,255,0.1));
+  color: var(--text-secondary, #94a3b8);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
   line-height: 1;
   flex-shrink: 0;
   margin-top: 2px;
+}
+.da-trait-card.selected .da-trait-icon {
+  background: var(--ayura-teal);
+  border-color: var(--ayura-teal);
+  color: #04110e;
 }
 
 .da-trait-label {
@@ -309,7 +325,9 @@
 }
 
 .da-loading-icon {
-  font-size: 2rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ayura-teal);
   z-index: 1;
 }
 
@@ -446,7 +464,8 @@
   margin-bottom: 1.25rem;
 }
 .da-vikriti-icon {
-  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
 }
 
@@ -599,7 +618,9 @@
   margin-bottom: 1.5rem;
 }
 .da-confirm-icon {
-  font-size: 2.4rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ayura-teal);
   line-height: 1;
 }
 .da-confirm-title {
@@ -768,8 +789,10 @@
   margin-bottom: 32px;
 }
 .da-clarify-icon {
-  font-size: 2rem;
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ayura-teal);
   margin-bottom: 10px;
 }
 .da-clarify-title {
@@ -849,7 +872,9 @@
   font-size: 0.85rem;
 }
 .da-contradiction-icon {
-  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ayura-amber, #fb923c);
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -984,8 +1009,9 @@
   font-style: italic;
 }
 .da-classical-ref-icon {
-  font-size: 1rem;
-  font-style: normal;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ayura-teal);
   flex-shrink: 0;
 }
 

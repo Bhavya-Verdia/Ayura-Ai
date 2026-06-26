@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
 import { feedbackAPI } from '../api/client'
 import { ToastContext } from '../providers/ToastContext'
+import { X } from 'lucide-react'
 import './FeedbackWidget.css'
 
 export default function FeedbackWidget() {
@@ -77,17 +78,17 @@ export default function FeedbackWidget() {
             >
               <div className="feedback-header">
                 <h3>Share Feedback</h3>
-                <button className="feedback-close" onClick={() => setIsOpen(false)}>✕</button>
+                <button className="feedback-close" onClick={() => setIsOpen(false)} aria-label="Close"><X size={16} strokeWidth={2} /></button>
               </div>
               
               <form onSubmit={handleSubmit} className="feedback-form">
                 <div className="feedback-field">
                   <label>Type of Feedback</label>
                   <select value={type} onChange={e => setType(e.target.value)}>
-                    <option value="Bug">🐞 Report a Bug</option>
-                    <option value="Content Error">📝 Medical/Content Error</option>
-                    <option value="Feature Request">✨ Feature Request</option>
-                    <option value="General">💬 General Feedback</option>
+                    <option value="Bug">Report a Bug</option>
+                    <option value="Content Error">Medical/Content Error</option>
+                    <option value="Feature Request">Feature Request</option>
+                    <option value="General">General Feedback</option>
                   </select>
                 </div>
 

@@ -53,7 +53,9 @@
   font-size: 1.1rem;
 }
 .ht-strip-icon {
-  font-size: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ayura-teal);
 }
 .ht-strip-date {
   font-size: 0.85rem;
@@ -78,7 +80,10 @@
   border: 1px solid var(--border-subtle);
 }
 .ht-stat-icon {
-  font-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ayura-teal);
   background: rgba(255,255,255,0.05);
   padding: 10px;
   border-radius: 12px;
@@ -208,7 +213,9 @@
   z-index: 2;
 }
 .ht-dot-icon {
-  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-primary);
 }
 
 /* Event Card */
@@ -274,6 +281,9 @@
 }
 
 .ht-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 6px 12px;
   border-radius: 12px;
   font-size: 0.85rem;
@@ -344,7 +354,10 @@
   border-radius: 24px;
 }
 .ht-empty-orb {
-  font-size: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ayura-teal);
   margin-bottom: 20px;
 }
 .ht-empty-title {

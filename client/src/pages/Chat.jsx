@@ -3,25 +3,25 @@ import client from '../api/client';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Send, Sparkles, AlertTriangle, Loader2, Zap, Copy, Check, ChevronDown } from 'lucide-react';
+import { Bot, Send, Sparkles, AlertTriangle, Loader2, Zap, Copy, Check, ChevronDown, Leaf, Soup, ClipboardList, Lightbulb, AlarmClock } from 'lucide-react';
 import './Dashboard.css';
 import './Chat.css';
 
 const SUGGESTION_GROUPS = [
   {
-    category: 'Wellness', icon: '🌿',
+    category: 'Wellness', Icon: Leaf,
     prompts: ['What should a Vata dosha eat today?', 'Give me a morning Ayurvedic routine'],
   },
   {
-    category: 'Remedies', icon: '🍵',
+    category: 'Remedies', Icon: Soup,
     prompts: ['I have joint pain — what helps?', 'Natural remedy for better sleep'],
   },
   {
-    category: 'Plans', icon: '📋',
+    category: 'Plans', Icon: ClipboardList,
     prompts: ['Explain my panchakarma detox plan', 'How do I adapt my gym plan?'],
   },
   {
-    category: 'Insight', icon: '💡',
+    category: 'Insight', Icon: Lightbulb,
     prompts: ['What is my dominant dosha?', 'How do seasons affect Vata?'],
   },
 ]
@@ -238,7 +238,7 @@ export default function Chat() {
                 {SUGGESTION_GROUPS.map(group => (
                   <div key={group.category} className="chat-suggestion-group">
                     <div className="chat-suggestion-group-header">
-                      <span>{group.icon}</span>
+                      <span style={{ display: 'inline-flex', color: 'var(--ayura-teal)' }}><group.Icon size={15} strokeWidth={2} /></span>
                       {group.category}
                     </div>
                     {group.prompts.map(p => (
@@ -310,13 +310,13 @@ export default function Chat() {
                   {!isUser && msg.actions && (msg.actions.reminders?.length > 0 || msg.actions.plansAdapting?.length > 0) && (
                     <div className="chat-action-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                       {msg.actions.reminders?.map((r, i) => (
-                        <span key={`rem-${i}`} style={{ fontSize: '0.72rem', fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: 'rgba(74,222,128,0.12)', color: '#34d399', border: '1px solid rgba(74,222,128,0.3)' }}>
-                          ⏰ Reminder set — {r.title} at {r.time}
+                        <span key={`rem-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: 'rgba(74,222,128,0.12)', color: '#34d399', border: '1px solid rgba(74,222,128,0.3)' }}>
+                          <AlarmClock size={12} strokeWidth={2} /> Reminder set — {r.title} at {r.time}
                         </span>
                       ))}
                       {msg.actions.plansAdapting?.map((p, i) => (
-                        <span key={`pln-${i}`} style={{ fontSize: '0.72rem', fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)' }}>
-                          ✨ Regenerating your {p} plan…
+                        <span key={`pln-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)' }}>
+                          <Sparkles size={12} strokeWidth={2} /> Regenerating your {p} plan…
                         </span>
                       ))}
                     </div>

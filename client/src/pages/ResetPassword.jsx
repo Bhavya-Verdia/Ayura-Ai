@@ -3,6 +3,7 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { authAPI } from '../api/client'
 import { Helmet } from 'react-helmet-async'
+import { CircleCheck } from 'lucide-react'
 import './Auth.css'
 
 export default function ResetPassword() {
@@ -100,7 +101,7 @@ export default function ResetPassword() {
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 style={{ textAlign: 'center', padding: '12px 0' }}
               >
-                <div style={{ fontSize: '3rem', marginBottom: '12px' }}>🎉</div>
+                <div style={{ color: '#0D9488', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><CircleCheck size={46} strokeWidth={1.6} /></div>
                 <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.4rem', color: '#0A1F1C', marginBottom: '8px' }}>Password updated</h3>
                 <p style={{ color: '#4A7C76', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.6 }}>
                   Your password has been changed successfully. Redirecting to login...

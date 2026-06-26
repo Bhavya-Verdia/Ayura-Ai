@@ -3,6 +3,10 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { communityAPI } from '../api/client'
+import {
+  Flower2, Salad, Brain, Moon, Leaf, Dumbbell, Sparkles, Droplets,
+  MessageCircle, Sprout, Lightbulb, X,
+} from 'lucide-react'
 import { useAuth } from '../providers/AuthContext'
 import { SkeletonCircle, SkeletonLine } from '../components/Skeleton'
 import './Community.css'
@@ -24,14 +28,14 @@ const DOSHA_COLORS = [
 ]
 
 const WELLNESS_TAGS = [
-  { keyword: /yoga|pranayam|stretch|breath/i, tag: '🧘 Yoga', color: 'var(--primary)' },
-  { keyword: /diet|nutrition|food|eat|meal|recipe/i, tag: '🥗 Nutrition', color: 'var(--accent)' },
-  { keyword: /meditat|mindful|calm|peace|zen/i, tag: '🧠 Mindfulness', color: '#818CF8' },
-  { keyword: /sleep|rest|recover|insomn/i, tag: '😴 Sleep', color: '#60A5FA' },
-  { keyword: /remedy|herb|ayurved|detox|cleanse/i, tag: '🌿 Ayurveda', color: 'var(--sage)' },
-  { keyword: /gym|workout|exercise|fitness|run|cardio/i, tag: '🏋️ Fitness', color: 'var(--rose)' },
-  { keyword: /stress|anxiety|relax|mood/i, tag: '💆 Wellness', color: '#A78BFA' },
-  { keyword: /water|hydrat/i, tag: '💧 Hydration', color: '#38BDF8' },
+  { keyword: /yoga|pranayam|stretch|breath/i, label: 'Yoga', Icon: Flower2, color: 'var(--primary)' },
+  { keyword: /diet|nutrition|food|eat|meal|recipe/i, label: 'Nutrition', Icon: Salad, color: 'var(--accent)' },
+  { keyword: /meditat|mindful|calm|peace|zen/i, label: 'Mindfulness', Icon: Brain, color: '#818CF8' },
+  { keyword: /sleep|rest|recover|insomn/i, label: 'Sleep', Icon: Moon, color: '#60A5FA' },
+  { keyword: /remedy|herb|ayurved|detox|cleanse/i, label: 'Ayurveda', Icon: Leaf, color: 'var(--sage)' },
+  { keyword: /gym|workout|exercise|fitness|run|cardio/i, label: 'Fitness', Icon: Dumbbell, color: 'var(--rose)' },
+  { keyword: /stress|anxiety|relax|mood/i, label: 'Wellness', Icon: Sparkles, color: '#A78BFA' },
+  { keyword: /water|hydrat/i, label: 'Hydration', Icon: Droplets, color: '#38BDF8' },
 ]
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -141,8 +145,8 @@ function CommentsSection({ postId, initialCount }) {
 
   return (
     <div className="comm-comments">
-      <button className="comm-comments-toggle" onClick={toggle} aria-expanded={open}>
-        💬 {count} comment{count !== 1 ? 's' : ''}
+      <button className="comm-comments-toggle" onClick={toggle} aria-expanded={open} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <MessageCircle size={15} strokeWidth={2} /> {count} comment{count !== 1 ? 's' : ''}
       </button>
       <AnimatePresence>
         {open && (
@@ -162,7 +166,7 @@ function CommentsSection({ postId, initialCount }) {
                     <span className="comm-comment-author">{c.author_name}</span>
                     <span className="comm-comment-text">{c.content}</span>
                     {c.is_mine && (
-                      <button className="comm-comment-del" onClick={() => remove(c.id)} aria-label="Delete comment">✕</button>
+                      <button className="comm-comment-del" onClick={() => remove(c.id)} aria-label="Delete comment"><X size={13} strokeWidth={2} /></button>
                     )}
                   </div>
                 ))}
@@ -271,9 +275,9 @@ function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) 
       {/* Wellness tags */}
       {tags.length > 0 && (
         <div className="comm-post-tags">
-          {tags.map(({ tag, color }) => (
-            <span key={tag} className="comm-post-tag" style={{ '--tag-color': color }}>
-              {tag}
+          {tags.map(({ label, Icon, color }) => (
+            <span key={label} className="comm-post-tag" style={{ '--tag-color': color, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <Icon size={12} strokeWidth={2} /> {label}
             </span>
           ))}
         </div>
@@ -504,7 +508,7 @@ export default function Community() {
             transition={{ duration: 0.5 }}
           >
             <div className="comm-header-left">
-              <div className="comm-header-icon">🌿</div>
+              <div className="comm-header-icon"><Leaf size={22} strokeWidth={2} /></div>
               <div>
                 <h1 className="comm-title">
                   Wellness <span className="gradient-text">Community</span>
@@ -576,9 +580,9 @@ export default function Community() {
 
             <div className="comm-create-footer">
               <div className="comm-create-tips">
-                <span className="comm-tip-pill">🧘 Yoga</span>
-                <span className="comm-tip-pill">🌿 Remedies</span>
-                <span className="comm-tip-pill">💡 Tips</span>
+                <span className="comm-tip-pill"><Flower2 size={12} strokeWidth={2} /> Yoga</span>
+                <span className="comm-tip-pill"><Leaf size={12} strokeWidth={2} /> Remedies</span>
+                <span className="comm-tip-pill"><Lightbulb size={12} strokeWidth={2} /> Tips</span>
               </div>
               <button
                 className="comm-post-btn"
@@ -618,7 +622,7 @@ export default function Community() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4 }}
               >
-                <div className="comm-empty-icon">🌱</div>
+                <div className="comm-empty-icon"><Sprout size={30} strokeWidth={1.8} /></div>
                 <h3 className="comm-empty-title">Be the first to share your wellness journey!</h3>
                 <p className="comm-empty-sub">
                   The community is waiting. Share a remedy, yoga tip, or healing experience above.
