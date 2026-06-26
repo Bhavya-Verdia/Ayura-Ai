@@ -225,7 +225,7 @@ def test_poll_other_users_job_returns_404(auth_cookies, verified_mock_db):
 
 # ── Plan generation — enqueues job (ARQ mocked) ───────────────────────────────
 
-@patch("routes.plans.create_pool")
+@patch("routes.plan_runner.create_pool")
 def test_generate_gym_plan_enqueues_job(mock_pool, auth_cookies, verified_mock_db):
     """POST /plans/gym by a verified user must NOT return 401 or 403."""
     mock_arq = AsyncMock()
@@ -241,7 +241,7 @@ def test_generate_gym_plan_enqueues_job(mock_pool, auth_cookies, verified_mock_d
     assert resp.status_code not in (401, 403)
 
 
-@patch("routes.plans.create_pool")
+@patch("routes.plan_runner.create_pool")
 def test_generate_yoga_plan_enqueues_job(mock_pool, auth_cookies, verified_mock_db):
     """POST /plans/yoga by a verified user must NOT return 401 or 403."""
     mock_arq = AsyncMock()

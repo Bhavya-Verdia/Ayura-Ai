@@ -12,7 +12,7 @@ from arq import cron
 from config import settings
 from database.mongodb import init_mongodb, close_mongodb
 from database.chromadb_client import init_chromadb
-from routes.plans import _run_plan_job
+from routes.plan_runner import _run_plan_job
 
 logger = logging.getLogger("ayura.worker")
 

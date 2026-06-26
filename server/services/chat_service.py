@@ -467,7 +467,7 @@ async def apply_chat_side_effects(
 
 async def _adapt_plans(db, user_id: str, plan_types: list[str], feedback: str) -> None:
     """Background task: regenerate the specified plans using the deterministic engine + enricher path."""
-    from routes.plans import _generate_feature_via_engine, PLAN_DATA_KEYS
+    from routes.plan_runner import _generate_feature_via_engine, PLAN_DATA_KEYS
     from schemas.user_schema import UserDocument, PlanHistoryDocument
     from engine.seasonal import get_current_season
     import uuid
