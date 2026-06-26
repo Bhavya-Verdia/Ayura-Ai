@@ -3089,6 +3089,40 @@ function RoutineView({ plan }) {
   )
 }
 
+// ── Classical basis — governing texts per plan type (BAMS credibility) ──
+const PLAN_CITATIONS = {
+  gym:         ['Charaka Samhita, Sutrasthana 7 — Vyayama (exercise)', 'Ashtanga Hridayam, Sutrasthana 2'],
+  yoga:        ['Hatha Yoga Pradipika', 'Patanjali Yoga Sutras', 'Gheranda Samhita'],
+  diet:        ['Charaka Samhita, Sutrasthana 5 & 27 — Aharavidhi & Annapanavidhi', 'Ashtanga Hridayam, Sutrasthana 8'],
+  routine:     ['Ashtanga Hridayam, Sutrasthana 2 — Dinacharya', 'Charaka Samhita, Sutrasthana 5 — Matrashitiya'],
+  panchakarma: ['Charaka Samhita, Kalpa & Siddhi Sthana', 'Sushruta Samhita, Chikitsa Sthana'],
+  remedies:    ['Bhavaprakasha Nighantu', 'Charaka Samhita, Chikitsa Sthana'],
+  medicines:   ['Ayurvedic Formulary of India (AFI)', 'Bhaishajya Ratnavali', 'Sharangdhara Samhita'],
+}
+
+function ClassicalBasis({ planType }) {
+  const refs = PLAN_CITATIONS[planType]
+  if (!refs) return null
+  return (
+    <motion.div
+      className="plan-classical-basis"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.35 }}
+    >
+      <div className="plan-classical-title">
+        <BookOpen size={14} strokeWidth={2} /> Classical basis
+      </div>
+      <ul className="plan-classical-list">
+        {refs.map((r, i) => <li key={i}>{r}</li>)}
+      </ul>
+      <p className="plan-classical-note">
+        Recommendations are grounded in these classical Ayurvedic texts; individual items may cite a specific shloka. Wellness guidance, not a substitute for examination by a registered Vaidya.
+      </p>
+    </motion.div>
+  )
+}
+
 export default function PlanViewer({ plan, planType }) {
   if (!plan) return <p className="plan-empty">No plan data available.</p>
 
@@ -3248,6 +3282,9 @@ export default function PlanViewer({ plan, planType }) {
           )}
         </motion.div>
       )}
+
+      {/* ── Classical basis (citations) ── */}
+      <ClassicalBasis planType={planType} />
     </div>
   )
 }

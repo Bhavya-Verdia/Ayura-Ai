@@ -4951,3 +4951,23 @@
   line-height: 1.45;
 }
 .din-slot-occ-note svg { color: #94a3b8; flex-shrink: 0; margin-top: 2px; }
+
+/* ── Classical basis (citations) ── */
+.plan-classical-basis {
+  margin-top: 20px;
+  background: rgba(167,139,250,0.06);
+  border: 1px solid rgba(167,139,250,0.2);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+.plan-classical-title {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 0.9rem;
+  color: var(--ayura-violet, #a78bfa);
+  margin-bottom: 8px;
+}
+.plan-classical-list { margin: 0 0 8px; padding-left: 20px; }
+.plan-classical-list li {
+  color: var(--text-secondary); font-size: 0.84rem; line-height: 1.5; margin-bottom: 2px;
+}
+.plan-classical-note { color: var(--text-muted); font-size: 0.76rem; line-height: 1.5; margin: 0; }
