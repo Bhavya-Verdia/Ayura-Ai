@@ -649,3 +649,57 @@
 .dash-ritu-avoid { color: #fb923c; }
 .dash-ritu-col ul { margin: 6px 0 0; padding-left: 16px; }
 .dash-ritu-col li { color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5; margin-bottom: 2px; }
+
+/* ── Reaction report ── */
+.dash-plan-react-btn {
+  background: rgba(251,146,60,0.1);
+  border: 1px solid rgba(251,146,60,0.3);
+  color: #fb923c;
+  border-radius: 8px;
+  width: 38px; flex-shrink: 0;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.15s;
+}
+.dash-plan-react-btn:hover { background: rgba(251,146,60,0.2); }
+
+.dash-reaction-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px;
+}
+.dash-reaction-modal {
+  background: var(--bg-elevated, #141f1e);
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+  border-radius: 18px;
+  padding: 24px;
+  width: 100%; max-width: 440px;
+  max-height: 90vh; overflow-y: auto;
+}
+.dash-reaction-title { margin: 0 0 6px; font-size: 1.1rem; text-transform: capitalize; }
+.dash-reaction-sub { color: var(--text-secondary); font-size: 0.84rem; line-height: 1.5; margin: 0 0 16px; }
+.dash-reaction-modal label { display: block; font-weight: 600; font-size: 0.85rem; margin: 12px 0 6px; }
+.dash-reaction-modal input,
+.dash-reaction-modal textarea {
+  width: 100%;
+  background: var(--bg-input, rgba(255,255,255,0.04));
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+  border-radius: 10px; padding: 10px 12px;
+  color: var(--text-primary); font-size: 0.9rem; font-family: inherit;
+  resize: vertical;
+}
+.dash-reaction-modal input:focus,
+.dash-reaction-modal textarea:focus { outline: none; border-color: var(--ayura-teal); }
+.dash-reaction-sev { display: flex; gap: 8px; }
+.dash-reaction-sev-btn {
+  flex: 1; padding: 8px; border-radius: 9px;
+  background: var(--bg-input, rgba(255,255,255,0.04));
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+  color: var(--text-secondary); cursor: pointer; text-transform: capitalize;
+  font-size: 0.85rem; transition: all 0.15s;
+}
+.dash-reaction-sev-btn.active { border-color: #fb923c; color: #fb923c; background: rgba(251,146,60,0.1); }
+.dash-reaction-actions { display: flex; gap: 10px; margin-top: 20px; }
+.dash-reaction-actions .btn { flex: 1; }

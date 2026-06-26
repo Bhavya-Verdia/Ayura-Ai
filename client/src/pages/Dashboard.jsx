@@ -404,6 +404,66 @@ function ReassessmentCard({ onDismiss }) {
   )
 }
 
+// ── Adverse-reaction report modal ─────────────────────────────
+function ReactionModal({ planType, onClose }) {
+  const [item, setItem] = useState('')
+  const [reaction, setReaction] = useState('')
+  const [severity, setSeverity] = useState('moderate')
+  const [submitting, setSubmitting] = useState(false)
+
+  async function submit(e) {
+    e.preventDefault()
+    if (!item.trim() || !reaction.trim()) return
+    setSubmitting(true)
+    try {
+      await plansAPI.reportReaction(planType, { item: item.trim(), reaction: reaction.trim(), severity })
+      toast.success('Reaction logged to your health timeline.')
+      onClose()
+    } catch {
+      toast.error('Could not log the reaction. Please try again.')
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="dash-reaction-overlay" onClick={onClose}>
+      <motion.form
+        className="dash-reaction-modal"
+        onClick={e => e.stopPropagation()}
+        onSubmit={submit}
+        initial={{ opacity: 0, scale: 0.96, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+      >
+        <h3 className="dash-reaction-title">Report a reaction — {planType}</h3>
+        <p className="dash-reaction-sub">Tell us what you took or did and what you noticed. This is logged to your health timeline; a severe reaction prompts a profile re-assessment.</p>
+
+        <label>What did you take or do?</label>
+        <input value={item} onChange={e => setItem(e.target.value)} placeholder="e.g. Triphala at night" maxLength={200} />
+
+        <label>What reaction did you notice?</label>
+        <textarea rows={3} value={reaction} onChange={e => setReaction(e.target.value)} placeholder="e.g. mild stomach cramps the next morning" maxLength={500} />
+
+        <label>Severity</label>
+        <div className="dash-reaction-sev">
+          {['mild', 'moderate', 'severe'].map(s => (
+            <button type="button" key={s} className={`dash-reaction-sev-btn${severity === s ? ' active' : ''}`} onClick={() => setSeverity(s)}>
+              {s}
+            </button>
+          ))}
+        </div>
+
+        <div className="dash-reaction-actions">
+          <button type="submit" className="btn btn-primary" disabled={submitting || !item.trim() || !reaction.trim()}>
+            {submitting ? 'Logging…' : 'Log reaction'}
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+        </div>
+      </motion.form>
+    </div>
+  )
+}
+
 // ── Main Dashboard ────────────────────────────────────────────
 const Dashboard = () => {
   const { user } = useContext(AuthContext)
@@ -416,6 +476,7 @@ const Dashboard = () => {
   const [feedbackDone, setFeedbackDone]   = useState(false)
   const [doshaValidationDismissed, setDoshaValidationDismissed] = useState(false)
   const [reassessmentDismissed, setReassessmentDismissed] = useState(false)
+  const [reactionFor, setReactionFor] = useState(null)
 
   const queryClient = useQueryClient()
 
@@ -559,6 +620,12 @@ const Dashboard = () => {
           generatePlan(tId)
         }}
       />
+
+      <AnimatePresence>
+        {reactionFor && (
+          <ReactionModal planType={reactionFor} onClose={() => setReactionFor(null)} />
+        )}
+      </AnimatePresence>
 
       {/* ── Email verification banner ── */}
       {user?.auth_provider === 'local' && user?.is_verified === false && (
@@ -712,6 +779,14 @@ const Dashboard = () => {
                     title="Regenerate"
                   >
                     {generating[type.id] ? '…' : '↻'}
+                  </button>
+                  <button
+                    className="dash-plan-react-btn"
+                    onClick={() => setReactionFor(type.id)}
+                    title="Report a reaction"
+                    aria-label="Report a reaction"
+                  >
+                    ⚠
                   </button>
                 </div>
               ) : (

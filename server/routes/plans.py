@@ -1531,3 +1531,53 @@ async def check_interactions(
         "general_warnings": interaction_result.get("general_warnings", []),
         "detailed_explanation": warning_text
     }
+
+
+_REACTION_PLAN_TYPES = {"gym", "yoga", "diet", "routine", "panchakarma", "remedies", "medicines", "general"}
+_REACTION_SEVERITIES = {"mild", "moderate", "severe"}
+
+
+@router.post("/{plan_type}/report-reaction", status_code=201)
+async def report_reaction(
+    plan_type: str,
+    item: str = Body(..., embed=True),
+    reaction: str = Body(..., embed=True),
+    severity: str = Body("moderate", embed=True),
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """Adverse-reaction loop: a user reports a reaction/flare to a plan item.
+
+    Records it, writes a Health Timeline event + audit entry, and nudges
+    re-assessment so the dashboard can prompt the user to refine their profile.
+    """
+    if plan_type not in _REACTION_PLAN_TYPES:
+        raise HTTPException(status_code=400, detail="Unknown plan type")
+    item = _sanitize_prompt_input(item, max_len=200)
+    reaction = _sanitize_prompt_input(reaction, max_len=500)
+    severity = severity.lower() if severity.lower() in _REACTION_SEVERITIES else "moderate"
+    if not item or not reaction:
+        raise HTTPException(status_code=422, detail="Both item and reaction are required")
+
+    now = datetime.now(timezone.utc)
+    details = {"plan_type": plan_type, "item": item, "reaction": reaction, "severity": severity}
+
+    await db.plan_reactions.insert_one({"_id": str(uuid.uuid4()), "user_id": user.id, **details, "created_at": now})
+    try:
+        await db.timeline.insert_one({
+            "user_id": user.id, "event_type": "reaction_reported",
+            "details": details, "source": "user", "timestamp": now,
+        })
+    except Exception:
+        pass
+    try:
+        from services.audit_service import log_health_event
+        await log_health_event(db, user.id, "reaction_reported", details, source="user")
+    except Exception:
+        pass
+    # A severe reaction is a strong signal the plan/profile needs revisiting.
+    if severity == "severe":
+        await db.users.update_one({"_id": user.id}, {"$set": {"needs_reassessment": True}})
+
+    return {"status": "recorded", "severity": severity,
+            "message": "Reaction logged. We've added it to your timeline — please consult a physician if symptoms persist or worsen."}

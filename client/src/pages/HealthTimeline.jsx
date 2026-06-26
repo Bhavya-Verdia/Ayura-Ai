@@ -71,6 +71,16 @@ const EVENT_CONFIG = {
     badgeClass: '',
     filterKey: 'all',
   },
+  reaction_reported: {
+    icon: '🚨',
+    label: 'Reaction Reported',
+    colorVar: '--rose',
+    glowColor: 'rgba(244,63,94,0.45)',
+    bgColor: 'rgba(244,63,94,0.08)',
+    borderColor: 'rgba(244,63,94,0.25)',
+    badgeClass: 'badge-rose',
+    filterKey: 'all',
+  },
   default: {
     icon: '📝',
     label: 'Health Event',
@@ -188,6 +198,15 @@ function renderDetails(event) {
       return (
         <div className="ht-event-details">
           {data.reminder && <span className="ht-detail-chip ht-chip-muted">⏰ {data.reminder}</span>}
+        </div>
+      )
+    case 'reaction_reported':
+      return (
+        <div className="ht-event-details">
+          {data.item && <span className="ht-detail-chip ht-chip-amber">🚨 {data.item}</span>}
+          {data.severity && <span className="ht-detail-chip ht-chip-muted">Severity: {data.severity}</span>}
+          {data.plan_type && <span className="ht-detail-chip ht-chip-muted">{data.plan_type}</span>}
+          {data.reaction && <p className="ht-detail-note">"{data.reaction}"</p>}
         </div>
       )
     case 'adaptation_failed':

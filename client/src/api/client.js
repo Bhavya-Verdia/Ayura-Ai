@@ -141,6 +141,7 @@ export const plansAPI = {
   getSeasonal:        ()      => API.get('/plans/seasonal'),
   generateMeditation: (params) => API.get('/plans/meditation', { params }),
   checkInteractions:  (herbs, medications = null) => API.post('/plans/interaction-check', { herbs, ...(medications !== null ? { medications } : {}) }),
+  reportReaction:     (planType, { item, reaction, severity = 'moderate' }) => API.post(`/plans/${planType}/report-reaction`, { item, reaction, severity }),
   getJobStatus:       (jobId) => API.get(`/plans/job/${jobId}`),
 }
 
