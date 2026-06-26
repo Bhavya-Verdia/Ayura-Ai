@@ -223,6 +223,7 @@ class UserProfileResponse(BaseModel):
     prakriti_classical_type: Optional[str] = None
     prakriti_classical_name: Optional[str] = None
     ama_indicator: Optional[str] = None
+    agni_type: Optional[str] = None
     ojas_score: Optional[int] = None
     ojas_level: Optional[str] = None
     disease_stages: Optional[dict] = None
