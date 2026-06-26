@@ -13,7 +13,7 @@ OUTPUT_FILE = OUTPUT_DIR / "gym_exercises.json"
 def get_category(exercise):
     body_part = exercise.get("bodyPart", "").lower()
     name = exercise.get("name", "").lower()
-    
+
     if body_part == "cardio":
         return "cardio"
     if "stretch" in name or "yoga" in name:
@@ -41,7 +41,7 @@ def map_equipment(eq):
 def get_dosha_suitability(category, equipment):
     dosha = {"vata": "moderate", "pitta": "moderate", "kapha": "moderate"}
     is_powerlifting = (equipment == "barbell" and category == "strength")
-    
+
     # VATA (needs grounding, warmth, avoid excessive movement)
     if category in ["plyometrics", "cardio"]:
         dosha["vata"] = "avoid"
@@ -49,7 +49,7 @@ def get_dosha_suitability(category, equipment):
         dosha["vata"] = "moderate"
     elif category in ["strength", "stretching"]:
         dosha["vata"] = "good"
-        
+
     # PITTA (needs cooling, non-competitive, moderate intensity)
     if is_powerlifting:
         dosha["pitta"] = "avoid"
@@ -57,7 +57,7 @@ def get_dosha_suitability(category, equipment):
         dosha["pitta"] = "moderate"
     elif category in ["stretching", "cardio", "strength"]:
         dosha["pitta"] = "good"
-        
+
     # KAPHA (needs energizing, high intensity, dynamic)
     if category == "stretching":
         dosha["kapha"] = "avoid"
@@ -65,7 +65,7 @@ def get_dosha_suitability(category, equipment):
         dosha["kapha"] = "good"
     elif category == "strength":
         dosha["kapha"] = "good"
-        
+
     return dosha
 
 def get_goal_suitability(category, equipment):
@@ -151,7 +151,7 @@ def get_cpm(category, equipment):
 
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    
+
     print(f"Downloading exercises from {URL}...")
     req = urllib.request.Request(URL, headers={'User-Agent': 'Mozilla/5.0'})
     try:
@@ -160,21 +160,21 @@ def main():
     except Exception as e:
         print(f"Failed to download: {e}")
         return
-        
+
     print(f"Downloaded {len(data)} exercises. Transforming to Ayurvedic schema...")
-    
+
     transformed = []
-    
+
     # Stats
     stats_equipment = defaultdict(int)
     stats_level = defaultdict(int)
     stats_category = defaultdict(int)
     stats_dosha = {"vata": 0, "pitta": 0, "kapha": 0}
-    
+
     for ex in data:
         category = get_category(ex)
         equipment = map_equipment(ex.get("equipment", ""))
-        
+
         name = ex.get("name", "").lower()
         if "beginner" in name:
             level = "beginner"
@@ -182,10 +182,10 @@ def main():
             level = "advanced"
         else:
             level = "intermediate"
-            
+
         raw_eq = str(ex.get("equipment") or "").lower()
         raw_mech = str(ex.get("mechanic") or "").lower()
-        
+
         if raw_eq == "body only":
             if category == "strength" and raw_mech == "compound":
                 pass
@@ -195,12 +195,12 @@ def main():
                 level = "beginner"
             elif category == "strength" and raw_mech == "isolation":
                 level = "beginner"
-            
+
         dosha = get_dosha_suitability(category, equipment)
-        
+
         primary = ex.get("primaryMuscles", [])
         secondary = ex.get("secondaryMuscles", [])
-        
+
         item = {
             "id": ex.get("id"),
             "name": ex.get("name", "").title(),
@@ -221,9 +221,9 @@ def main():
             "calories_per_minute": get_cpm(category, equipment),
             "modification": "Reduce weight or switch to bodyweight if form breaks down."
         }
-        
+
         transformed.append(item)
-        
+
         # Update stats
         stats_equipment[equipment] += 1
         stats_level[level] += 1
@@ -235,7 +235,7 @@ def main():
     # Save
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(transformed, f, indent=2, ensure_ascii=False)
-        
+
     print("\n--- SEEDING COMPLETE ---")
     print(f"Total exercises seeded: {len(transformed)}")
     print(f"By equipment: {dict(stats_equipment)}")

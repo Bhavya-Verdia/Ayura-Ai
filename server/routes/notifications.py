@@ -2,9 +2,8 @@
 Ayura AI - Notifications Routes
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
-import uuid
 
 from schemas.user_schema import UserDocument
 from routes.profile import get_current_user

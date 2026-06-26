@@ -2,19 +2,12 @@
 Ayura AI - Test Configuration and Fixtures (MongoDB Mocked)
 """
 
-import asyncio
 import pytest
 import sys
 import os
 from unittest.mock import AsyncMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-@pytest.fixture(scope="session")
-def event_loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 from database.mongodb import get_mongodb
 from main import app
@@ -39,11 +32,11 @@ def mock_db():
     db.users = AsyncMock()
     db.users.find_one = AsyncMock(return_value=mock_user)
     db.users.insert_one = AsyncMock(return_value=AsyncMock(inserted_id="test-uuid-1234"))
-    
+
     db.plan_history = AsyncMock()
     db.chat_sessions = AsyncMock()
     db.chat_messages = AsyncMock()
-    
+
     app.dependency_overrides[get_mongodb] = lambda: db
     yield db
     app.dependency_overrides.clear()

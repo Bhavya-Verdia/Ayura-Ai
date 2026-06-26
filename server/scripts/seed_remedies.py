@@ -208,7 +208,7 @@ REMEDIES_DATA = [
         },
         "universal_remedy": None, "contraindications": [], "pregnancy_safe": True, "pregnancy_alternative": "", "drug_interactions": [], "severity_gate": "moderate", "consult_doctor_if": "Consult dentist immediately if there is a visible cavity, abscess, or swelling in the jaw.", "source": "Traditional", "safety_tier": "home_safe"
     },
-    
+
     # ── DIGESTIVE (12) ───────────────────
     {
         "id": "bloating", "symptom_id": "bloating", "symptom_display": "Bloating", "symptom_category": "digestive",
@@ -285,7 +285,7 @@ REMEDIES_DATA = [
         },
         "universal_remedy": None, "contraindications": ["diarrhea"], "pregnancy_safe": False, "pregnancy_alternative": "Soak 5 raisins in water overnight and eat them in the morning.", "drug_interactions": ["blood_thinners", "diabetes_medication"], "severity_gate": "moderate", "consult_doctor_if": "Consult doctor if constipated for more than 4 days or if there is severe abdominal pain.", "source": "Classical", "safety_tier": "use_with_caution"
     },
-    
+
     # ── ENERGY AND SLEEP (8) ─────────────
     {
         "id": "insomnia", "symptom_id": "insomnia", "symptom_display": "Insomnia", "symptom_category": "energy",
@@ -1555,7 +1555,7 @@ async def seed_remedies():
 
     logger.info(f"Seeding {len(REMEDIES_DATA)} comprehensive remedy entries...")
     result = await collection.insert_many(REMEDIES_DATA)
-    
+
     # Validation summary
     total = len(result.inserted_ids)
     categories = {}
@@ -1566,14 +1566,14 @@ async def seed_remedies():
     for item in REMEDIES_DATA:
         cat = item.get("symptom_category", "unknown")
         categories[cat] = categories.get(cat, 0) + 1
-        
+
         if item.get("pregnancy_safe"):
             pregnancy_safe += 1
-            
+
         tier = item.get("safety_tier", "unknown")
         if tier == "home_safe":
             home_safe += 1
-            
+
         src = item.get("source", "unknown")
         sources[src] = sources.get(src, 0) + 1
 

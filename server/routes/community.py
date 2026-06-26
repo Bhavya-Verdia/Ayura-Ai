@@ -34,7 +34,7 @@ def _check_post_rate(user_id: str) -> None:
         retry_after = max(1, int(_POST_WINDOW - (now - bucket[0])))
         raise HTTPException(
             status_code=429,
-            detail=f"Too many posts. Please wait before posting again.",
+            detail="Too many posts. Please wait before posting again.",
             headers={"Retry-After": str(retry_after)},
         )
     bucket.append(now)

@@ -64,9 +64,9 @@ async def lifespan(app: FastAPI):
     from database.mongodb import get_mongodb
     from core.kb_cache import kb_cache
     await kb_cache.load(get_mongodb())
-    
+
     init_chromadb()
-    
+
     from core.cache import cache_manager
     await cache_manager.connect()
 

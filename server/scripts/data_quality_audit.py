@@ -32,7 +32,7 @@ def _load(*parts):
 
 
 def audit_medicines():
-    meds, _ = _load("knowledge", "ayurvedic_medicines.json")
+    meds, _ = _load("knowledge_base", "ayurvedic_medicines.json")
     issues, fields = [], ["contraindications", "dosage", "anupana", "rasa", "virya",
                           "vipaka", "afi_reference", "classical_text_reference", "safety_tier"]
     ids = [m.get("id") for m in meds]
@@ -104,7 +104,7 @@ def audit_central():
 
 def audit_stale_files():
     issues = []
-    legacy = os.path.join(DATA, "knowledge", "home_remedies.json")
+    legacy = os.path.join(DATA, "knowledge_base", "home_remedies.json")
     seed = os.path.abspath(os.path.join(os.path.dirname(__file__), "seed_remedies.py"))
     if os.path.exists(legacy):
         d = json.load(open(legacy))
@@ -114,7 +114,7 @@ def audit_stale_files():
             # crude count of remedy dicts in seed
             seed_n = txt.count('"symptom_id"')
             if seed_n > n:
-                issues.append(f"data/knowledge/home_remedies.json has {n} entries but seed_remedies.py "
+                issues.append(f"data/knowledge_base/home_remedies.json has {n} entries but seed_remedies.py "
                               f"defines ~{seed_n} — the JSON is stale/legacy; DB is seeded from the script.")
     return issues
 

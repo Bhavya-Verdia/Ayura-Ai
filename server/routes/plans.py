@@ -37,19 +37,19 @@ router = APIRouter()
 @router.post("/yoga")
 async def generate_yoga_plan(
     req: dict = Body(default={}),
-    user: UserDocument = Depends(get_current_user), 
+    user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.yoga_plan_engine import generate_yoga_plan as engine_generate
     from services.yoga_plan_enricher import enrich_yoga_plan
-    
+
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
-    
+
     if not prefs_doc or not prefs_doc.get("yoga"):
         raise HTTPException(status_code=422, detail="Complete yoga preferences first")
-        
+
     yoga_prefs = prefs_doc.get("yoga")
     is_prenatal = user.pregnancy_or_nursing
 
@@ -66,7 +66,7 @@ async def generate_yoga_plan(
     # 2. Generate new plan (per-user lock + global LLM semaphore)
     async with _plan_guard(user.id, "yoga"):
         if is_prenatal:
-            yoga_poses = [p for p in kb_cache.yoga_poses if p.get("pregnancy_safe") == True]
+            yoga_poses = [p for p in kb_cache.yoga_poses if p.get("pregnancy_safe") is True]
         else:
             yoga_poses = kb_cache.yoga_poses
         pranayama_list = kb_cache.pranayama or None  # None triggers file-based fallback in engine
@@ -119,26 +119,26 @@ async def generate_yoga_plan(
 @router.post("/diet")
 async def generate_diet_plan(
     req: dict = Body(default={}),
-    user: UserDocument = Depends(get_current_user), 
+    user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.diet_plan_engine import generate_diet_plan as engine_generate
     from services.diet_plan_enricher import enrich_diet_plan
-    
+
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
-    
+
     if not prefs_doc or not prefs_doc.get("diet"):
         raise HTTPException(status_code=422, detail="Complete diet preferences first")
-        
+
     diet_prefs = prefs_doc.get("diet")
-    
+
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "diet", user_profile, diet_prefs, force_regenerate)
     if cached_plan:
         return cached_plan
-        
+
     # 2. Generate new plan (per-user lock + global LLM semaphore)
     async with _plan_guard(user.id, "diet"):
         from services.diet_llm_generator import generate_diet_plan_llm
@@ -273,31 +273,31 @@ async def generate_routine_plan(
 @router.post("/gym")
 async def generate_gym_plan(
     req: dict = Body(default={}),
-    user: UserDocument = Depends(get_current_user), 
+    user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.gym_plan_engine import generate_gym_plan as engine_generate
     from services.gym_plan_enricher import enrich_gym_plan
-    
+
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
-    
+
     if not prefs_doc or not prefs_doc.get("gym"):
         raise HTTPException(status_code=422, detail="Complete gym preferences first")
-        
+
     gym_prefs = prefs_doc.get("gym")
     is_prenatal = user.pregnancy_or_nursing
-    
+
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "gym", user_profile, gym_prefs, force_regenerate)
     if cached_plan:
         return cached_plan
-        
+
     # 2. Generate new plan (per-user lock + global LLM semaphore)
     async with _plan_guard(user.id, "gym"):
         if is_prenatal:
-            gym_exercises = [e for e in kb_cache.gym_exercises if e.get("pregnancy_safe") == True] or None
+            gym_exercises = [e for e in kb_cache.gym_exercises if e.get("pregnancy_safe") is True] or None
         else:
             gym_exercises = kb_cache.gym_exercises or None
         raw_plan = engine_generate(user_profile, gym_prefs, gym_exercises)
@@ -327,31 +327,31 @@ async def generate_gym_plan(
 @router.post("/panchakarma")
 async def generate_panchakarma_plan(
     req: dict = Body(default={}),
-    user: UserDocument = Depends(get_current_user), 
+    user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.panchakarma_engine import generate_panchakarma_plan as engine_generate
     from services.panchakarma_enricher import enrich_panchakarma_plan
-    
+
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
-    
+
     if not prefs_doc or not prefs_doc.get("panchakarma"):
         raise HTTPException(status_code=422, detail="Complete panchakarma preferences first")
-        
+
     panchakarma_prefs = prefs_doc.get("panchakarma")
     is_prenatal = user.pregnancy_or_nursing
-    
+
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "panchakarma", user_profile, panchakarma_prefs, force_regenerate)
     if cached_plan:
         return cached_plan
-        
+
     # 2. Generate new plan (per-user lock + global LLM semaphore)
     async with _plan_guard(user.id, "panchakarma"):
         if is_prenatal:
-            panchakarma_therapies = [t for t in kb_cache.panchakarma_protocols if t.get("pregnancy_safe") == True]
+            panchakarma_therapies = [t for t in kb_cache.panchakarma_protocols if t.get("pregnancy_safe") is True]
         else:
             panchakarma_therapies = kb_cache.panchakarma_protocols
         # None triggers the engine's bundled-JSON fallback (kb_* Mongo collections
@@ -383,12 +383,12 @@ async def generate_panchakarma_plan(
 @router.post("/remedies")
 async def generate_remedies_plan(
     req: dict = Body(default={}),
-    user: UserDocument = Depends(get_current_user), 
+    user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.remedy_engine import filter_remedies, build_remedy_plan
     from services.remedy_enricher import enrich_remedies_plan
-    
+
     user_profile = user.model_dump()
 
     if "symptoms" not in req:
@@ -435,16 +435,16 @@ async def generate_remedies_plan(
 @router.post("/medicines")
 async def generate_medicines_plan(
     req: dict = Body(default={}),
-    user: UserDocument = Depends(get_current_user), 
+    user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     from services.remedy_engine import generate_medicines_plan as engine_generate
     from services.remedy_enricher import enrich_medicines_plan
-    
+
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
-    
+
     if not prefs_doc or not prefs_doc.get("remedies"):
         raise HTTPException(status_code=422, detail="Complete medicines preferences first")
 
@@ -454,7 +454,7 @@ async def generate_medicines_plan(
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "medicines", user_profile, medicines_prefs, force_regenerate)
     if cached_plan:
         return cached_plan
-        
+
     # 2. Generate new plan (per-user lock + global LLM semaphore)
     async with _plan_guard(user.id, "medicines"):
         raw_plan = engine_generate(user_profile, medicines_prefs, [], 'clinical_medicine')
@@ -511,7 +511,8 @@ async def stream_holistic_plan(
     """
     from fastapi.responses import StreamingResponse
     from engine.seasonal import get_current_season
-    import asyncio, uuid
+    import asyncio
+    import uuid
 
     if not user.onboarding_complete:
         raise HTTPException(status_code=400, detail="Please complete onboarding first")
@@ -716,7 +717,7 @@ async def rate_plan(
         "note": req.note,
         "rated_at": datetime.now(timezone.utc).isoformat(),
     }
-    
+
     await db.plan_history.update_one(
         {"_id": plan_id},
         {"$set": {"plan_data.ratings": ratings}}
@@ -738,14 +739,14 @@ async def get_seasonal_guidance(user: UserDocument = Depends(get_current_user)):
 
 @router.get("/meditation")
 async def get_guided_meditation(
-    mood: str = "anxious", 
+    mood: str = "anxious",
     duration_minutes: int = 5,
     user: UserDocument = Depends(get_current_user)
 ):
     """Feature 14: Guided Meditation Script Generation."""
     from ai.rag_pipeline import rag_pipeline
     from ai.llm_client import llm_client
-    
+
     dosha = user.dominant_dosha or "vata"
     mood = _sanitize_prompt_input(mood, max_len=50)
 
@@ -753,17 +754,17 @@ async def get_guided_meditation(
     query = f"meditation script {mood} mood balancing {dosha} dosha"
     docs = await rag_pipeline.query(query, "ayurveda", n_results=2, dosha_filter=dosha)
     context = rag_pipeline.format_context(docs, max_chars=1000)
-    
+
     # TIER 3: GenAI Response
     prompt = f"""
     You are an Ayurvedic Meditation Guide. Generate a {duration_minutes}-minute meditation script.
-    
+
     USER DOSHA: {dosha}
     CURRENT MOOD/STATE: {mood}
-    
+
     AYURVEDIC KNOWLEDGE:
     {context if context else 'Use standard dosha balancing meditation techniques.'}
-    
+
     Return ONLY valid JSON in this exact format:
     {{
         "title": "Meditation Title",
@@ -775,7 +776,7 @@ async def get_guided_meditation(
         ]
     }}
     """
-    
+
     try:
         response = await llm_client.generate(prompt=prompt, system_prompt="You are a calming Ayurvedic Meditation Guide.", temperature=0.7, json_mode=True)
         # Strip markdown code fences the LLM sometimes wraps the JSON in
@@ -816,11 +817,11 @@ async def check_interactions(
     if not medications:
         return {"status": "safe", "warnings": [], "general_warnings": [],
                 "detailed_explanation": "No medications to cross-check. Add your current medications (or your saved profile) — and always confirm with your physician before combining."}
-        
+
     # TIER 1: Deterministic check
     interaction_result = condition_filter.check_drug_herb_interactions(medications, herbs)
     warnings = interaction_result["warnings"]
-    
+
     if not warnings:
         return {
             "status": "safe",
@@ -828,7 +829,7 @@ async def check_interactions(
             "general_warnings": interaction_result.get("general_warnings", []),
             "detailed_explanation": "No known dangerous interactions detected between your medications and these herbs.",
         }
-        
+
     # TIER 2: RAG Retrieval (parallel queries — one per warning)
     rag_results = await asyncio.gather(*[
         rag_pipeline.query(
@@ -838,26 +839,26 @@ async def check_interactions(
         for w in warnings
     ])
     context = "\n".join(docs[0]["content"] for docs in rag_results if docs)
-    
+
     # TIER 3: GenAI Response
     prompt = f"""
     You are an Ayurvedic Safety Assistant. Explain the following drug-herb interactions.
-    
+
     USER MEDICATIONS: {medications}
     PROPOSED HERBS: {herbs}
     DETECTED RISKS: {warnings}
-    
+
     MEDICAL CONTEXT: {context}
-    
-    Write a clear, professional warning about these interactions. 
+
+    Write a clear, professional warning about these interactions.
     State explicitly that they must consult their doctor before proceeding.
     """
-    
+
     try:
         warning_text = await llm_client.generate(prompt=prompt, system_prompt="You are a medical safety assistant.", temperature=0.3)
     except Exception:
         warning_text = "There are potential interactions between your medications and these herbs. Please consult your doctor immediately."
-    
+
     return {
         "status": "warning",
         "warnings": warnings,

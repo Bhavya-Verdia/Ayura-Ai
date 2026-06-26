@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-import json, os
+import json
+import os
 from core.kb_cache import kb_cache
 from engine.condition_vocab import term_in_condition, normalize_condition
 
@@ -15,7 +16,7 @@ def _med_covers_condition(med: dict, user_cond: str) -> bool:
     return any(normalize_condition(mc) == ucn for mc in med_conds)
 
 # ── Medicines KB (loaded once at module import) ─────────────────────────────
-_MEDICINES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "knowledge", "ayurvedic_medicines.json")
+_MEDICINES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "knowledge_base", "ayurvedic_medicines.json")
 try:
     with open(_MEDICINES_PATH, "r") as _f:
         _MEDICINES_KB: list[dict] = json.load(_f)
@@ -28,7 +29,7 @@ except Exception:
 # offline fallback — so if that collection is unseeded, filter_remedies silently
 # returned nothing. This bundled JSON (same shape, regenerated from the seed)
 # keeps remedies working when kb_cache is empty. Mirrors the medicines KB above.
-_REMEDIES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "knowledge", "home_remedies.json")
+_REMEDIES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "knowledge_base", "home_remedies.json")
 try:
     with open(_REMEDIES_PATH, "r") as _f:
         _REMEDIES_FALLBACK: list[dict] = json.load(_f)
@@ -94,24 +95,24 @@ _DRUG_HERB_MAP: dict[str, list[str]] = {
 
 def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
     filtered_results = []
-    
+
     symptoms = symptom_input.get("symptoms", [])
     severity = symptom_input.get("severity", {})
     duration = symptom_input.get("duration", {})
-    
+
     pregnancy_or_nursing = user_profile.get("pregnancy_or_nursing", False)
     current_meds = user_profile.get("current_medications", [])
     medical_history = user_profile.get("medical_history", [])
     allergies = user_profile.get("allergies", [])
     dominant_dosha = user_profile.get("dominant_dosha", "vata").lower()
     secondary_dosha = user_profile.get("secondary_dosha", "pitta").lower()
-    
+
     all_remedies = kb_cache.ayurvedic_remedies or _REMEDIES_FALLBACK
-    
+
     for sym_id in symptoms:
         sym_sev = severity.get(sym_id, "mild")
         sym_dur = duration.get(sym_id, "recent")
-        
+
         # a) Severity gate
         if sym_sev == "severe":
             filtered_results.append({
@@ -120,16 +121,16 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                 "message": "This symptom requires immediate medical attention. Please consult a doctor."
             })
             continue
-            
+
         # Find remedy in KB (resolve onboarding labels to KB ids; fall back to raw)
         _sid = _SYMPTOM_ALIASES.get(str(sym_id).lower(), str(sym_id).lower())
         remedy_kb = next((r for r in all_remedies if r.get("symptom_id") == _sid), None)
         if not remedy_kb:
             continue
-            
+
         # b) Duration gate
         requires_practitioner = (sym_dur in ["chronic", "months"])
-        
+
         # c) Pregnancy filter
         if pregnancy_or_nursing and not remedy_kb.get("pregnancy_safe", False):
             filtered_results.append({
@@ -138,16 +139,16 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                 "message": "Safe remedy not available during pregnancy. Please consult your Ayurvedic practitioner."
             })
             continue
-            
+
         # dosha selection helper
         def is_safe(cand_remedy):
-            if not cand_remedy: 
+            if not cand_remedy:
                 return False, None
-            
+
             # Extract text to search for ingredients
             ingredients_list = cand_remedy.get("ingredients", [])
             ingredients_text = " ".join([i.get("item", "").lower() for i in ingredients_list])
-            
+
             # e) Medical contraindication
             blocks = {
                 "diabetes": ["guggulu", "honey"],
@@ -155,7 +156,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                 "thyroid": ["ashwagandha"],
                 "ibs": ["pippali", "trikatu"]
             }
-            
+
             for cond in medical_history:
                 cond_l = cond.lower()
                 for key, blocked_items in blocks.items():
@@ -166,7 +167,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                                     cand_remedy["caution_note"] = "Use Ashwagandha with caution due to thyroid history."
                                 else:
                                     return False, f"Contraindicated for {cond}"
-            
+
             # d) Drug interaction
             drug_interaction_map = {
                 "ashwagandha": ["thyroid_medication", "immunosuppressants"],
@@ -178,7 +179,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                 "aloe_vera": ["diabetes_medication", "blood_thinners"],
                 "tulsi": ["blood_thinners"]
             }
-            
+
             for med in current_meds:
                 med_l = med.lower().replace(" ", "_")
                 for herb, interactions in drug_interaction_map.items():
@@ -186,20 +187,20 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                         for interaction in interactions:
                             if interaction in med_l:
                                 return False, {"interaction_found": True, "medication": med, "herb": herb}
-            
+
             # f) Allergy filter
             for allergy in allergies:
                 if allergy.lower() in ingredients_text:
                     return False, f"Allergen {allergy} found"
-                    
+
             return True, None
 
         selected_remedy = None
         dosha_used = dominant_dosha
         candidate = remedy_kb.get("remedies", {}).get(dominant_dosha)
-        
+
         interaction_warning = None
-        
+
         safe, reason = is_safe(candidate)
         if not safe:
             if isinstance(reason, dict) and reason.get("interaction_found"):
@@ -221,11 +222,11 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                         msg.update(interaction_warning)
                     filtered_results.append(msg)
                     continue
-                    
+
         selected_remedy = candidate
         if not selected_remedy:
             continue
-            
+
         # Build result for this symptom
         filtered_results.append({
             "symptom_id": sym_id,
@@ -239,22 +240,22 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
             "source": remedy_kb.get("source", "Traditional"),
             "dosha_used": dosha_used
         })
-        
+
     return filtered_results
 
 def build_remedy_plan(filtered_remedies: list, user_profile: dict, symptom_input: dict) -> dict:
     plan_id = f"remedy_{user_profile.get('id', 'usr')}_{int(datetime.now(timezone.utc).timestamp())}"
     dominant_dosha = user_profile.get("dominant_dosha", "vata").lower()
-    
+
     symptoms_addressed = []
     doctor_referrals = []
-    
+
     for res in filtered_remedies:
         if res.get("action") in ["see_doctor", "consult_doctor"]:
             doctor_referrals.append(res)
         else:
             symptoms_addressed.append(res)
-            
+
     guidelines = {}
     if dominant_dosha == "vata":
         guidelines = {

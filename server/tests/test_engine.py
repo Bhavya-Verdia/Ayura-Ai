@@ -1,4 +1,3 @@
-import pytest
 from engine.bmi_calculator import bmi_calculator
 from engine.calorie_calculator import calorie_calculator
 

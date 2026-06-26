@@ -1,4 +1,3 @@
-import pytest
 from engine.condition_filter import condition_filter
 
 def test_check_drug_herb_interactions():
@@ -6,10 +5,10 @@ def test_check_drug_herb_interactions():
     herbs = ["garlic", "ginseng", "ashwagandha"]
 
     result = condition_filter.check_drug_herb_interactions(medications, herbs)
-    
+
     assert result["status"] == "warning"
     assert len(result["warnings"]) > 0
-    
+
     # Blood thinner (warfarin) and garlic is high severity
     war_garlic_warning = next((w for w in result["warnings"] if w["medication_category"] == "blood_thinners" and w["herb"] == "garlic"), None)
     assert war_garlic_warning is not None
@@ -47,6 +46,6 @@ def test_recommend_exercises_impact():
     top_exercise = res[0]
     # Brisk Walking or Swimming should be at the top, HIIT should be lower due to impact
     assert top_exercise["name"] in ["Brisk Walking", "Swimming"]
-    
+
     hiit = next((e for e in res if e["name"] == "HIIT"), None)
     assert hiit["score"] < top_exercise["score"]

@@ -44,7 +44,7 @@ def _sanitize_prompt_input(text: str, max_len: int = 200) -> str:
 async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: str, user_profile: dict, feature_prefs: dict, force_regenerate: bool):
     if force_regenerate:
         return None, None
-        
+
     relevant_data = {
         "dosha": user_profile.get("dominant_dosha"),
         "vikriti": user_profile.get("vikriti_dominant"),
@@ -55,7 +55,7 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
         "feature_prefs": feature_prefs
     }
     pref_hash = hashlib.sha256(json.dumps(relevant_data, sort_keys=True).encode()).hexdigest()
-    
+
     latest_plan = await db.plan_history.find_one(
         {"user_id": user_id, "plan_type": plan_type, "preference_hash": pref_hash},
         sort=[("generated_at", -1)]
@@ -319,7 +319,7 @@ async def _run_plan_job(
     user_profile: dict,
 ) -> None:
     """Background worker: runs AI plan generation and writes result to plan_jobs.
-    
+
     Called via ARQ worker.
     Stores job status (pending → running → done | failed) in plan_jobs collection.
     """
@@ -430,7 +430,7 @@ async def _run_plan_job(
             generated_at=datetime.now(timezone.utc)
         )
         await db.plan_history.insert_one(history.model_dump(by_alias=True))
-        
+
         # Audit logging for ALL plans (especially medicines/remedies)
         await log_plan_generated(
             db=db,

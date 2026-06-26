@@ -32,7 +32,7 @@ def _build_pdf(user: UserDocument, plan_data: dict, generated_at: str) -> bytes:
         from reportlab.lib.pagesizes import A4
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.lib.units import cm
-        from reportlab.lib.colors import HexColor, white, black
+        from reportlab.lib.colors import HexColor, white
         from reportlab.platypus import (
             SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
             HRFlowable,

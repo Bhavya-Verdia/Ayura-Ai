@@ -35,7 +35,7 @@ NUTRITION_DB = {
     "vegan_paneer_tofu": (76, 8.0, 2.0, 4.0, 0.3),
     "oats": (389, 17.0, 66.0, 7.0, 10.6),
     "chickpea_flour_besan": (387, 22.0, 58.0, 6.0, 10.0),
-    
+
     # Other common values (approximations for 100g raw/standard)
     "brown_rice": (111, 2.6, 23, 0.9, 1.8),
     "white_rice": (130, 2.7, 28, 0.3, 0.4),
@@ -92,7 +92,7 @@ def get_ayurvedic_props(item_id, category):
     vata, pitta, kapha = 0, 0, 0
     agni = "moderate"
     best_for = []
-    
+
     # Base V/P/K mapping by category
     if category == "grain":
         vata, pitta, kapha = -1, -1, 1
@@ -147,17 +147,17 @@ def get_ayurvedic_props(item_id, category):
         rasa = ["sweet", "astringent"]
         virya = "cooling"
         agni = "easy"
-        
+
     # Specific Overrides
     name = item_id.lower()
-    
+
     # VATA PACIFYING OVERRIDES (warm, oily, sweet, sour, salty, heavy, cooked)
     if name in ["ghee", "sesame_oil", "basmati_rice", "moong_dal_yellow", "moong_dal_green", "sweet_potato", "carrot", "beetroot", "banana", "dates", "mango", "almonds", "walnuts", "cashews"]:
         vata = -1
     # VATA AGGRAVATING
     if name in ["cabbage", "broccoli", "cauliflower", "bitter_gourd_karela", "watermelon", "kidney_beans", "rajma", "chhole"]:
         vata = 1
-        
+
     # PITTA PACIFYING
     if name in ["coconut", "cucumber", "spinach", "palak", "basmati_rice", "moong_dal_yellow", "moong_dal_green", "apple", "pear", "coriander_dhania", "fennel_saunf", "cardamom_elaichi", "coconut_milk", "ghee", "coconut_water"]:
         pitta = -1
@@ -166,14 +166,14 @@ def get_ayurvedic_props(item_id, category):
     if name in ["garlic", "onion", "tomato", "mustard_oil", "sesame_oil", "lemon_water", "ginger", "black_pepper", "curd_yogurt", "buttermilk_chaas"]:
         pitta = 1
         virya = "heating"
-        
+
     # KAPHA PACIFYING
     if name in ["millet_bajra", "millet_jowar", "barley", "moong_dal_yellow", "moong_dal_green", "bitter_gourd_karela", "bottle_gourd", "ridge_gourd", "ginger", "black_pepper", "turmeric", "apple", "pomegranate", "honey"]:
         kapha = -1
     # KAPHA AGGRAVATING
     if name in ["wheat", "bread_whole_wheat", "curd_yogurt", "paneer", "cheese", "avocado", "banana", "dates", "coconut_milk", "sweet_potato"]:
         kapha = 1
-        
+
     # RASA
     if "lemon" in name or "tamarind" in name or "tomato" in name or "curd" in name:
         rasa = ["sour"]
@@ -181,19 +181,19 @@ def get_ayurvedic_props(item_id, category):
         rasa = ["pungent"]
     elif "bitter" in name or "turmeric" in name or "methi" in name or "spinach" in name or "palak" in name:
         rasa = ["bitter"]
-        
+
     # VIRYA
     if name in ["ginger", "garlic", "onion", "mustard_oil", "sesame_oil", "turmeric", "black_pepper", "cumin_jeera", "walnuts", "almonds", "honey"]:
         virya = "heating"
     if name in ["coconut", "cucumber", "spinach", "palak", "apple", "pear", "milk_full_fat", "ghee", "fennel_saunf", "coriander_dhania", "cardamom_elaichi", "watermelon"]:
         virya = "cooling"
-        
+
     # AGNI
     if name in ["moong_dal_yellow", "moong_dal_green", "basmati_rice", "ghee", "coconut_water", "apple", "papaya"]:
         agni = "easy"
     if name in ["urad_dal", "rajma", "chhole", "paneer", "soya_chunks", "cheese", "butter"]:
         agni = "heavy"
-        
+
     # BEST FOR
     if "moong" in name: best_for = ["digestive_weakness", "fever", "postpartum", "weight_loss"]
     if name == "ghee": best_for = ["vata_imbalance", "dry_skin", "constipation", "joint_pain"]
@@ -201,7 +201,7 @@ def get_ayurvedic_props(item_id, category):
     if name == "amla": best_for = ["pitta_excess", "hair_health", "immunity", "acidity"]
     if "ginger" in name: best_for = ["poor_digestion", "cold", "nausea"]
     if "turmeric" in name: best_for = ["inflammation", "immunity", "skin_health"]
-    
+
     return {
         "rasa": rasa,
         "virya": virya,
@@ -214,19 +214,19 @@ def get_ayurvedic_props(item_id, category):
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     foods = []
-    
+
     for category, items in CATEGORIES.items():
         for item_id in items:
             name = get_name(item_id)
-            
+
             vegan = category != "dairy"
             dietary_type = ["vegetarian"]
             if vegan: dietary_type.append("vegan")
-            
+
             cal, pro, carbs, fat, fib = NUTRITION_DB.get(item_id, CATEGORY_MACROS[category])
-            
+
             ayurvedic = get_ayurvedic_props(item_id, category)
-            
+
             # Meal suitability
             meals = []
             if category in ["grain", "fruit", "dairy", "beverage", "vegan_protein"]: meals.append("breakfast")
@@ -234,12 +234,12 @@ def main():
             if category in ["grain", "vegetable", "legume"]: meals.append("dinner")
             if category in ["fruit", "nut_seed", "beverage", "dairy"] or item_id in ["fox_nuts_makhana"]: meals.append("snack")
             if not meals: meals = ["lunch", "dinner"]
-            
+
             # Allergens
             allergen = False
             if category in ["dairy", "nut_seed"]: allergen = True
             if "soya" in item_id or "tofu" in item_id or "soy" in item_id or "peanuts" in item_id or "wheat" in item_id: allergen = True
-            
+
             food_doc = {
                 "id": item_id,
                 "name": name,
@@ -260,13 +260,13 @@ def main():
                 "common_allergen": allergen
             }
             foods.append(food_doc)
-            
+
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(foods, f, indent=2, ensure_ascii=False)
-        
+
     stats_cat = defaultdict(int)
     vata_pac = pitta_pac = kapha_pac = easy_digest = veg_only = vegan_count = 0
-    
+
     for f in foods:
         stats_cat[f["category"]] += 1
         if f["ayurvedic"]["dosha_effect"]["vata"] == -1: vata_pac += 1
@@ -275,12 +275,12 @@ def main():
         if f["ayurvedic"]["agni_effect"] == "easy": easy_digest += 1
         if f["vegan"]: vegan_count += 1
         else: veg_only += 1
-        
+
     print(f"Total foods seeded: {len(foods)} (target: 150)")
     print(f"By category: {dict(stats_cat)}")
     print(f"Vegetarian only (dairy): {veg_only}")
     print(f"Vegan suitable: {vegan_count}")
-    print(f"Dosha pacifying count:")
+    print("Dosha pacifying count:")
     print(f"  vata_pacifying: {vata_pac}")
     print(f"  pitta_pacifying: {pitta_pac}")
     print(f"  kapha_pacifying: {kapha_pac}")

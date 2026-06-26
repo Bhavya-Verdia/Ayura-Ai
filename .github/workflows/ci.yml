@@ -35,7 +35,12 @@ jobs:
           pip install ruff
 
       - name: Lint (ruff)
-        run: ruff check . --select E,F,W --ignore E501
+        # E501 (line length) and intentional style choices are ignored: E701/E702
+        # (one-line if/compound stmts — used in dense KB data dicts), E402
+        # (module imports after sys.path bootstrap in scripts/tests), E741
+        # (single-letter loop vars), E731 (lambda assignment). F-codes (unused
+        # imports/vars, undefined names) and whitespace (W) stay enforced.
+        run: ruff check . --select E,F,W --ignore E501,E701,E702,E402,E741,E731
 
       - name: Run tests
         run: python -m pytest -q --tb=short

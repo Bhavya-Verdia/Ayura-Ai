@@ -22,14 +22,14 @@ class RAGPipeline:
     ) -> list[dict]:
         """
         Search the vector store for relevant knowledge chunks.
-        
+
         Args:
             query_text: Natural language query
             domain: Knowledge domain (ayurveda, fitness, nutrition, remedy, panchakarma)
             n_results: Number of results to return
             dosha_filter: Filter by dosha type
             symptom_filter: Filter by symptom
-        
+
         Returns:
             List of relevant document chunks with metadata
         """
@@ -116,18 +116,18 @@ class RAGPipeline:
             content = doc["content"]
             if total_chars + len(content) > max_chars:
                 break
-            
+
             meta = doc.get("metadata", {})
             source = meta.get("source", "knowledge_base")
             credibility = meta.get("source_credibility", "")
             pmid = meta.get("pmid", "")
-            
+
             header = f"[Source: {source}]"
             if credibility == "peer_reviewed":
                 header += " [CREDIBILITY: PEER-REVIEWED SCIENTIFIC STUDY]"
                 if pmid:
                     header += f" [PMID: {pmid}]"
-                    
+
             context_parts.append(f"{header}\n{content}")
             total_chars += len(content)
 

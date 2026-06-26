@@ -6,7 +6,6 @@ endpoint (POST /chat/message) and the WebSocket handler (/chat/ws/{session_id}).
 
 from __future__ import annotations
 
-import json
 import re
 import asyncio
 from datetime import datetime, timezone

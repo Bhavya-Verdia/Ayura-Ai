@@ -4,7 +4,6 @@ Embeds knowledge base documents into ChromaDB for RAG retrieval.
 Run: python scripts/build_vectors.py
 """
 
-import asyncio
 import json
 import os
 import sys
@@ -15,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "server"))
 import chromadb
 from chromadb.config import Settings
 
-KNOWLEDGE_DIR = Path(__file__).parent.parent / "data" / "knowledge"
+KNOWLEDGE_DIR = Path(__file__).parent.parent / "data" / "knowledge_base"
 CHROMA_DIR = Path(__file__).parent.parent / "data" / "chromadb"
 
 
@@ -239,11 +238,11 @@ def build_vectors():
         texts = [d["text"] for d in docs]
         metadatas = [
             {
-                "dosha": d.get("dosha", ""), 
+                "dosha": d.get("dosha", ""),
                 "source": d.get("source", ""),
                 "source_credibility": d.get("source_credibility", "general"),
                 "pmid": d.get("pmid", "")
-            } 
+            }
             for d in docs
         ]
         ids = [f"{domain}_{i}" for i in range(len(docs))]

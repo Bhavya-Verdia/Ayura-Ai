@@ -542,7 +542,6 @@ def filter_poses(user_profile, yoga_prefs, poses, max_allowed_levels=None, proto
     ama_indicator = (user_profile.get("ama_indicator") or "").lower()
     ojas_level    = (user_profile.get("ojas_level") or "").lower()
     bmi_category  = (user_profile.get("bmi_category") or "").lower()
-    fitness_level = (user_profile.get("fitness_level") or "").lower()
 
     # Current symptoms → category boosts
     raw_symptoms = user_profile.get("current_symptoms") or []

@@ -67,7 +67,7 @@ Provide an enriched context in EXACTLY this JSON format:
             system_prompt="You are a clinical Ayurvedic expert. Output strictly valid JSON matching the schema.",
             json_mode=True,
         )
-        
+
         enrichment_data = json.loads(response)
         if "error" in enrichment_data:
             raise ValueError(f"LLM provider error: {enrichment_data['error']}")
@@ -78,14 +78,14 @@ Provide an enriched context in EXACTLY this JSON format:
         raw_plan["recovery_timeline"] = enrichment_data.get("recovery_timeline", "")
         raw_plan["prevention_tips"] = enrichment_data.get("prevention_tips", [])
         raw_plan["when_to_escalate"] = enrichment_data.get("when_to_escalate", "")
-        
+
         # Merge rationales
         rationales = enrichment_data.get("remedy_rationale", {})
         for sym in raw_plan.get("symptoms_addressed", []):
             sym_id = sym.get("symptom_id")
             if sym_id in rationales:
                 sym["ayurvedic_rationale"] = rationales[sym_id]
-        
+
         raw_plan["enriched"] = True
         raw_plan["enrichment_model"] = llm_client.provider
         return raw_plan

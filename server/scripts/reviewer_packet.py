@@ -33,7 +33,7 @@ def _fmt_list(v):
 
 
 def build_medicine_csv():
-    meds = json.load(open(os.path.join(DATA, "knowledge", "ayurvedic_medicines.json"), encoding="utf-8"))
+    meds = json.load(open(os.path.join(DATA, "knowledge_base", "ayurvedic_medicines.json"), encoding="utf-8"))
     meds = sorted(meds, key=lambda m: m.get("name", ""))
     cols = [
         "id", "name", "type", "indications", "rasa", "guna", "virya", "vipaka",
@@ -124,7 +124,7 @@ def build_packet_md(n_meds):
 def main():
     csv_path, n = build_medicine_csv()
     md_path = build_packet_md(n)
-    print(f"Vaidya reviewer packet generated:")
+    print("Vaidya reviewer packet generated:")
     print(f"  {csv_path}  ({n} medicines)")
     print(f"  {md_path}")
     print("\nGive both to a BAMS Vaidya. Filled CSV corrections fold straight back into the KB.")

@@ -15,7 +15,6 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import AsyncMock, MagicMock, patch
 from main import app
-from database.mongodb import get_mongodb
 from services.auth_service import create_access_token
 import uuid
 
@@ -213,7 +212,6 @@ def test_poll_failed_job_returns_failed(auth_cookies, verified_mock_db):
 
 def test_poll_other_users_job_returns_404(auth_cookies, verified_mock_db):
     """A user cannot poll a job belonging to a different user."""
-    from datetime import datetime, timezone
     job_id = str(uuid.uuid4())
     verified_mock_db.plan_jobs = AsyncMock()
     # Job exists but belongs to a different user

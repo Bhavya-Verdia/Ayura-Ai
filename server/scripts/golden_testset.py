@@ -352,7 +352,6 @@ def _prefs():
 def run_case(case: dict) -> dict:
     profile = case["profile"]
     prefs = _prefs()
-    is_pregnant = bool(profile.get("pregnancy_or_nursing"))
     out: dict = {"id": case["id"], "label": case["label"], "conditions": profile.get("medical_history", [])}
 
     # Panchakarma

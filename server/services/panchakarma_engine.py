@@ -115,7 +115,7 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
     bala_type, bala_note = _FITNESS_TO_BALA.get(fitness, ("madhyama", "Madhyama Bala"))
     if bala_type == "manda" and experience == "none":
         reasons_shamana.append(
-            f"Manda Bala (beginner fitness) without prior PK experience — "
+            "Manda Bala (beginner fitness) without prior PK experience — "
             "Shodhana risk of Ativyapada. Brimhana + Shamana recommended first."
         )
 
@@ -241,7 +241,6 @@ def _validate_karma_safety(pradhana: dict, medical_history: list[str]) -> dict:
     soft_flagged = [m for m in medical_history if any(term_in_condition(m, k) for k in soft_set)]
 
     warnings: list[str] = []
-    substituted = False
 
     if hard_flagged:
         fallback = contra.get("fallback", "nasya")
@@ -257,7 +256,6 @@ def _validate_karma_safety(pradhana: dict, medical_history: list[str]) -> dict:
             "safety_substitution": True,
             "original_karma": old_primary,
         }
-        substituted = True
         warnings.append(
             f"SAFETY SUBSTITUTION: {old_primary} → {fallback} "
             f"(contraindicated by: {', '.join(hard_flagged)})"

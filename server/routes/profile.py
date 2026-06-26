@@ -19,7 +19,7 @@ from schemas.user_schema import (
     DoshaValidationRequest,
 )
 from schemas.auth_schema import ChangePasswordRequest
-from services.auth_service import get_current_user_id, get_token_claims, hash_password, verify_password
+from services.auth_service import get_current_user_id, hash_password, verify_password
 from config import settings
 from engine.dosha_analyzer import score_dosha_quiz
 
@@ -67,11 +67,11 @@ async def get_current_user(
         user_id = get_current_user_id(token)
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
-    
+
     user_dict = await db.users.find_one({"_id": user_id})
     if not user_dict:
         raise HTTPException(status_code=404, detail="User not found")
-        
+
     return UserDocument(**user_dict)
 
 
@@ -137,15 +137,15 @@ async def update_profile(
             user.onboarding_complete = True
 
     user.updated_at = datetime.now(timezone.utc)
-    
+
     update_dict = {}
     for key in update_data.keys():
         update_dict[key] = getattr(user, key)
-    
+
     update_dict["updated_at"] = user.updated_at
     if getattr(user, "onboarding_complete", False):
         update_dict["onboarding_complete"] = True
-        
+
     await db.users.update_one(
         {"_id": user.id},
         {"$set": update_dict}
@@ -192,12 +192,12 @@ async def upload_avatar(
 
     # Upload logic (S3/R2 or local fallback)
     filename = f"{user.id}_{uuid_mod.uuid4().hex[:8]}{ext}"
-    
+
     if settings.S3_BUCKET_NAME and settings.AWS_ACCESS_KEY_ID:
         import boto3
         import io
         from botocore.exceptions import ClientError
-        
+
         s3_client = boto3.client(
             "s3",
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
@@ -205,13 +205,13 @@ async def upload_avatar(
             region_name=settings.S3_REGION_NAME,
             endpoint_url=settings.S3_ENDPOINT_URL,
         )
-        
+
         # Delete old avatar from S3 if it exists and is an S3 URL
         if user.avatar_url and settings.S3_BUCKET_NAME in user.avatar_url:
             try:
                 old_key = user.avatar_url.split("/")[-1]
                 s3_client.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=f"avatars/{old_key}")
-            except Exception as e:
+            except Exception:
                 pass # Non-fatal
 
         # Upload new avatar
@@ -223,7 +223,7 @@ async def upload_avatar(
                 object_key,
                 ExtraArgs={"ContentType": file.content_type or "image/jpeg"}
             )
-            
+
             # Construct public URL (assuming public-read or CDN is configured)
             # For R2/S3, typically it's https://<bucket>.s3.<region>.amazonaws.com/<key>
             # Or if custom domain: https://assets.yourdomain.com/<key>
@@ -233,9 +233,9 @@ async def upload_avatar(
             else:
                 region = settings.S3_REGION_NAME or "us-east-1"
                 avatar_url = f"https://{settings.S3_BUCKET_NAME}.s3.{region}.amazonaws.com/{object_key}"
-        except ClientError as e:
+        except ClientError:
             raise HTTPException(status_code=500, detail="Failed to upload image to cloud storage")
-            
+
     else:
         # Fallback: Delete old avatar file if it was a local upload
         if user.avatar_url and user.avatar_url.startswith("/uploads/"):
@@ -278,7 +278,7 @@ async def change_password(
 
     user.password_hash = hash_password(req.new_password)
     user.updated_at = datetime.now(timezone.utc)
-    
+
     await db.users.update_one(
         {"_id": user.id},
         {"$set": {"password_hash": user.password_hash, "updated_at": user.updated_at}}

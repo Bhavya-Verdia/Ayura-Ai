@@ -33,7 +33,7 @@ def test_dosha_quiz_answers_too_many():
 
 def test_dosha_quiz_answers_invalid_values():
     data = {f"q{i}": 3 for i in range(10)}
-    
+
     data_bad_val = data.copy()
     data_bad_val["q1"] = 6
     with pytest.raises(ValidationError) as exc:

@@ -98,7 +98,7 @@ async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict)
             ] or None,
             "generated_schedule": []
         }
-        
+
         for d in raw_plan.get("weekly_schedule", []):
             if d.get("rest"):
                 plan_summary["generated_schedule"].append({
@@ -116,19 +116,19 @@ async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict)
                     "pranayama": prana,
                     "theme": session.get("dosha_theme")
                 })
-                
+
         prompt = (
             USER_PROMPT_TEMPLATE
             .replace("{rag_context}", rag_context)
             .replace("{plan_summary_json}", json.dumps(plan_summary, indent=2))
         )
-        
+
         response_text = await llm_client.generate(
             prompt=prompt,
             system_prompt=SYSTEM_PROMPT,
             json_mode=True
         )
-        
+
         # Parse JSON — guard against the LLM returning {"error": "..."} when
         # both providers are unavailable (json.loads succeeds but has no schema keys)
         enrichment = json.loads(response_text)
@@ -149,9 +149,9 @@ async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict)
         raw_plan["motivational_note"] = enrichment.get("motivational_note", "")
         raw_plan["enriched"] = True
         raw_plan["enrichment_model"] = llm_client.provider
-        
+
         logger.info(f"Successfully enriched yoga plan using {llm_client.provider}")
     except Exception as e:
         logger.error(f"Failed to enrich yoga plan: {str(e)}")
-        
+
     return raw_plan

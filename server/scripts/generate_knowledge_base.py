@@ -1,10 +1,9 @@
 import json
-import os
 from pathlib import Path
 
 # Setup paths
 BASE_DIR = Path(__file__).resolve().parent.parent
-KNOWLEDGE_DIR = BASE_DIR / "data" / "knowledge"
+KNOWLEDGE_DIR = BASE_DIR / "data" / "knowledge_base"
 KNOWLEDGE_DIR.mkdir(parents=True, exist_ok=True)
 
 # 1. YOGA POSES (High quality Ayurvedic tagging)
@@ -17,7 +16,7 @@ YOGA_POSES = [
         "benefits": ["calms the brain", "energizes the body", "stretches shoulders and hamstrings"],
         "target_muscles": ["hamstrings", "calves", "shoulders", "hands"],
         "dosha_pacifying": ["pitta", "kapha"],
-        "dosha_aggravating": ["vata"], 
+        "dosha_aggravating": ["vata"],
         "contraindications": ["carpal_tunnel", "high_bp", "late_pregnancy"],
         "instructions": "Come onto your floor on your hands and knees. Lift knees away from floor.",
         "pose_type": "inversion"
@@ -30,7 +29,7 @@ YOGA_POSES = [
         "benefits": ["relieves stress and fatigue", "stretches hips, thighs, and ankles"],
         "target_muscles": ["lower_back", "hips", "thighs"],
         "dosha_pacifying": ["vata", "pitta"],
-        "dosha_aggravating": ["kapha"], 
+        "dosha_aggravating": ["kapha"],
         "contraindications": ["knee_injury", "pregnancy"],
         "instructions": "Kneel on the floor. Touch your big toes together and sit on heels.",
         "pose_type": "resting"
@@ -43,7 +42,7 @@ YOGA_POSES = [
         "benefits": ["strengthens the spine", "stretches chest and lungs", "stimulates abdominal organs"],
         "target_muscles": ["spine", "chest", "abdomen"],
         "dosha_pacifying": ["kapha", "vata"],
-        "dosha_aggravating": ["pitta"], 
+        "dosha_aggravating": ["pitta"],
         "contraindications": ["back_injury", "pregnancy", "headache"],
         "instructions": "Lie on your belly. Place your hands under your shoulders and lift chest.",
         "pose_type": "backbend"
@@ -69,8 +68,8 @@ YOGA_POSES = [
         "benefits": ["calms the brain", "relaxes the body", "reduces headache"],
         "target_muscles": ["full_body"],
         "dosha_pacifying": ["vata", "pitta"],
-        "dosha_aggravating": ["kapha"], 
-        "contraindications": ["back_injury"], 
+        "dosha_aggravating": ["kapha"],
+        "contraindications": ["back_injury"],
         "instructions": "Lie flat on your back. Keep arms at sides, palms facing up.",
         "pose_type": "resting"
     },
@@ -148,7 +147,7 @@ PRANAYAMA = [
         "name_english": "Alternate Nostril Breathing",
         "name_sanskrit": "Nadi Shodhana",
         "benefits": ["balances left and right brain", "calms nervous system", "reduces anxiety"],
-        "dosha_pacifying": ["vata", "pitta", "kapha"], 
+        "dosha_pacifying": ["vata", "pitta", "kapha"],
         "dosha_aggravating": [],
         "contraindications": ["severe_cold", "blocked_sinuses"],
         "instructions": "Close right nostril, inhale left. Close left, exhale right."
@@ -159,7 +158,7 @@ PRANAYAMA = [
         "name_sanskrit": "Kapalabhati",
         "benefits": ["clears respiratory tract", "energizes nervous system", "improves digestion"],
         "dosha_pacifying": ["kapha"],
-        "dosha_aggravating": ["vata", "pitta"], 
+        "dosha_aggravating": ["vata", "pitta"],
         "contraindications": ["high_bp", "heart_disease", "hernia", "pregnancy"],
         "instructions": "Forceful exhalations through nose, passive inhalations."
     },
@@ -169,7 +168,7 @@ PRANAYAMA = [
         "name_sanskrit": "Sheetali",
         "benefits": ["cools the body", "quenches thirst", "reduces acidity"],
         "dosha_pacifying": ["pitta"],
-        "dosha_aggravating": ["vata", "kapha"], 
+        "dosha_aggravating": ["vata", "kapha"],
         "contraindications": ["asthma", "cold", "low_bp"],
         "instructions": "Roll tongue into a tube, inhale through it, exhale nose."
     },
@@ -205,9 +204,9 @@ GYM_EXERCISES = [
         "target_muscle": "lower",
         "secondary_muscles": ["core", "glutes", "hamstrings"],
         "dosha_suitability": {
-            "vata": "low_reps_heavy_weight", 
+            "vata": "low_reps_heavy_weight",
             "pitta": "moderate_reps",
-            "kapha": "high_reps_fast_pace" 
+            "kapha": "high_reps_fast_pace"
         },
         "contraindications": ["knee_injury", "lower_back_pain"],
         "instructions": "Place barbell on upper back, descend until thighs are parallel to floor."
@@ -220,9 +219,9 @@ GYM_EXERCISES = [
         "target_muscle": "upper",
         "secondary_muscles": ["core", "triceps", "shoulders"],
         "dosha_suitability": {
-            "vata": "moderate_pace", 
+            "vata": "moderate_pace",
             "pitta": "steady_controlled",
-            "kapha": "fast_explosive" 
+            "kapha": "fast_explosive"
         },
         "contraindications": ["wrist_injury", "shoulder_injury"],
         "instructions": "Start in plank position. Lower body until chest touches floor. Push up."
@@ -261,7 +260,7 @@ GYM_EXERCISES = [
         "id": "g005",
         "name": "Plank",
         "equipment": "bodyweight",
-        "mechanics": "isolation", 
+        "mechanics": "isolation",
         "target_muscle": "core",
         "secondary_muscles": ["shoulders", "glutes"],
         "dosha_suitability": {
@@ -290,7 +289,7 @@ GYM_EXERCISES = [
     {
         "id": "g007",
         "name": "Pull-up",
-        "equipment": "full_gym", 
+        "equipment": "full_gym",
         "mechanics": "compound",
         "target_muscle": "upper",
         "secondary_muscles": ["biceps", "core"],
@@ -340,9 +339,9 @@ GYM_EXERCISES = [
         "target_muscle": "full_body",
         "secondary_muscles": ["core", "calves"],
         "dosha_suitability": {
-            "vata": "avoid", 
+            "vata": "avoid",
             "pitta": "moderate",
-            "kapha": "excellent" 
+            "kapha": "excellent"
         },
         "contraindications": ["knee_injury", "ankle_injury", "high_bp"],
         "instructions": "Run in place, bringing knees as high as possible."
@@ -362,7 +361,7 @@ DIET_ITEMS = [
         "allergens": [],
         "ingredients": ["basmati rice", "mung dal", "ghee/coconut oil", "cumin", "coriander", "turmeric", "ginger"],
         "benefits": ["easy to digest", "detoxifying", "nourishing"],
-        "contraindications": [] 
+        "contraindications": []
     },
     {
         "id": "d002",
@@ -609,27 +608,28 @@ PANCHAKARMA_THERAPIES = [
 
 def generate_all():
     print("Generating Knowledge Base...")
-    
+
     with open(KNOWLEDGE_DIR / "yoga_plans.json", "w") as f:
         json.dump(YOGA_POSES, f, indent=2)
     print(f"Generated yoga_plans.json ({len(YOGA_POSES)} items)")
-    
-    with open(KNOWLEDGE_DIR / "pranayama.json", "w") as f:
-        json.dump(PRANAYAMA, f, indent=2)
-    print(f"Generated pranayama.json ({len(PRANAYAMA)} items)")
-    
+
+    # NOTE: pranayama.json is intentionally NOT generated here. This file's
+    # PRANAYAMA payload is the legacy/stale set; the live pranayama KB
+    # (data/knowledge_base/pranayama.json) is produced by the yoga seeders.
+    # Regenerating it here would clobber the current file.
+
     with open(KNOWLEDGE_DIR / "gym_routines.json", "w") as f:
         json.dump(GYM_EXERCISES, f, indent=2)
     print(f"Generated gym_routines.json ({len(GYM_EXERCISES)} items)")
-    
+
     with open(KNOWLEDGE_DIR / "diet_plans.json", "w") as f:
         json.dump(DIET_ITEMS, f, indent=2)
     print(f"Generated diet_plans.json ({len(DIET_ITEMS)} items)")
-    
+
     with open(KNOWLEDGE_DIR / "panchakarma_plans.json", "w") as f:
         json.dump(PANCHAKARMA_THERAPIES, f, indent=2)
     print(f"Generated panchakarma_plans.json ({len(PANCHAKARMA_THERAPIES)} items)")
-    
+
     print("\nKnowledge Base Generation Complete!")
 
 if __name__ == "__main__":

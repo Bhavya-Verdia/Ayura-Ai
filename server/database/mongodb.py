@@ -74,13 +74,13 @@ async def _create_indexes(db):
         await db.refresh_tokens.create_index([("user_id", 1), ("expires_at", -1)])
         await db.otps.create_index("phone_number", unique=True)
         await db.otps.create_index("expires_at", expireAfterSeconds=0)
-        
+
         # Plan History
         await db.plan_history.create_index([("user_id", 1), ("generated_at", -1)])
-        
+
         # Progress Logs
         await db.progress_logs.create_index([("user_id", 1), ("date", -1)])
-        
+
         # Chat
         await db.chat_messages.create_index([("user_id", 1), ("session_id", 1)])
         await db.chat_messages.create_index([("session_id", 1), ("timestamp", 1)])

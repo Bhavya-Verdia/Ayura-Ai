@@ -1,6 +1,5 @@
 from core.logger import logger
 
-from datetime import datetime, timezone
 import asyncio
 import time
 import uuid
@@ -199,23 +198,23 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
     if not final_token:
         await websocket.close(code=1008)
         return
-        
+
     from services.auth_service import get_current_user_id
     try:
         user_id = get_current_user_id(final_token)
     except Exception:
         await websocket.close(code=1008)
         return
-        
+
     db = get_mongodb()
     user_dict = await db.users.find_one({"_id": user_id})
     if not user_dict:
         await websocket.close(code=1008)
         return
-        
+
     from schemas.user_schema import UserDocument
     user = UserDocument(**user_dict)
-    
+
     try:
         while True:
             data = await websocket.receive_text()
@@ -229,7 +228,7 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
             # Send initial state
             await websocket.send_json({"type": "status", "message": "Analyzing..."})
             await save_message(db, user.id, session_id, "user", safe_content)
-            
+
             red_flags = await detect_red_flags(safe_content, user.current_symptoms or [])
             if red_flags["has_red_flags"]:
                 sources = [{"source": "Ayura AI safety triage", "red_flags": red_flags["matches"]}]
@@ -237,7 +236,7 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
                 await websocket.send_json({"type": "done", "sources": sources})
                 await save_message(db, user.id, session_id, "ai", red_flags["message"], sources)
                 continue
-                
+
             active_plans = await fetch_active_plans(db, user.id)
             history_str, docs, context_text, top_conditions, dosha = await build_chat_context(
                 db, user, session_id, safe_content
@@ -336,6 +335,6 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
             # plan adaptation is executed here, for both paths.)
             if plans_adapting:
                 await apply_chat_side_effects(db, user.id, [], plans_adapting, safe_content)
-                
+
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected for {session_id}")

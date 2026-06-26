@@ -3,7 +3,7 @@ Ayura AI - Progress Tracking Routes
 """
 
 from datetime import datetime, timezone, date, timedelta
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 import json
 import uuid

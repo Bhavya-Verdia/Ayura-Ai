@@ -3,7 +3,6 @@ Tests for community comments + notification delete/clear-all.
 """
 
 import pytest
-from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock
 from fastapi.testclient import TestClient
 

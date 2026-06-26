@@ -5,7 +5,6 @@ Processes AI plan generations asynchronously to avoid starving the main FastAPI 
 Run with: `arq worker.WorkerSettings`
 """
 
-import asyncio
 import logging
 from arq.connections import RedisSettings
 from arq import cron

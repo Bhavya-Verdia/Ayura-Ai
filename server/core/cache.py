@@ -1,7 +1,7 @@
 import json
 import logging
 import hashlib
-from typing import Optional, Any
+from typing import Optional
 from config import settings
 import redis.asyncio as redis
 
@@ -19,8 +19,8 @@ class CacheManager:
                 return
             try:
                 self.redis_client = redis.from_url(
-                    settings.REDIS_URL, 
-                    encoding="utf-8", 
+                    settings.REDIS_URL,
+                    encoding="utf-8",
                     decode_responses=True
                 )
                 await self.redis_client.ping()
@@ -39,13 +39,13 @@ class CacheManager:
     async def get_plan(self, prefix: str, params: dict) -> Optional[dict]:
         if not self.enabled:
             return None
-            
+
         if not self.redis_client:
             await self.connect()
-        
+
         if not self.redis_client:
             return None
-            
+
         key = self._generate_key(prefix, params)
         try:
             cached = await self.redis_client.get(key)
@@ -59,13 +59,13 @@ class CacheManager:
     async def set_plan(self, prefix: str, params: dict, result: dict, expire: int = 86400):
         if not self.enabled:
             return
-            
+
         if not self.redis_client:
             await self.connect()
-            
+
         if not self.redis_client:
             return
-            
+
         key = self._generate_key(prefix, params)
         try:
             await self.redis_client.set(key, json.dumps(result), ex=expire)

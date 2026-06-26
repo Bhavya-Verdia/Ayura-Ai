@@ -1,5 +1,4 @@
 """Integration test: allergy exclusion in plan generation engines."""
-import pytest
 import sys
 import os
 

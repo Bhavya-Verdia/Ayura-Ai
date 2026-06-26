@@ -3,8 +3,7 @@ from fastapi.testclient import TestClient
 from unittest.mock import AsyncMock, patch
 from main import app
 from database.mongodb import get_mongodb
-from services.auth_service import hash_password, create_access_token
-import uuid
+from services.auth_service import create_access_token
 
 # Setup test client and dependency overrides
 @pytest.fixture
@@ -12,11 +11,11 @@ def client():
     yield TestClient(app)
 
 def test_register_user(client):
-    with patch("database.mongodb.get_mongodb") as mock_get_mongodb:
+    with patch("database.mongodb.get_mongodb"):
         # Mock that the user doesn't exist yet for registration
         mock_db = client.app.dependency_overrides[get_mongodb]()
         mock_db.users.find_one = AsyncMock(return_value=None)
-        
+
         response = client.post(
             "/api/auth/register",
             json={
@@ -29,7 +28,7 @@ def test_register_user(client):
         data = response.json()
         assert "access_token" in data
         assert data["token_type"] == "bearer"
-        
+
         # Verify db insert was called
         mock_db.users.insert_one.assert_called_once()
 
@@ -62,7 +61,7 @@ def test_login_user_invalid_password(client):
 def test_get_current_user_profile(client):
     # First generate a valid token for our mock user
     token = create_access_token("test-uuid-1234", "test@ayura.com")
-    
+
     response = client.get(
         "/api/profile/me",
         headers={"Authorization": f"Bearer {token}"}
