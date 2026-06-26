@@ -44,11 +44,14 @@ def get_embedder():
             print(f"  ✅ Using Azure OpenAI embeddings ({embed_deployment})")
             return fn
         except Exception as e:
-            print(f"  ⚠️  Azure embedding deployment not available ({e}), falling back to local model")
+            print(f"  ⚠️  Azure embedding deployment not available ({e}), using ChromaDB default")
 
-    from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
-    print("  ℹ️  Using local SentenceTransformer (all-MiniLM-L6-v2)")
-    return SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
+    # Default: ChromaDB's bundled ONNX all-MiniLM-L6-v2 — the SAME embedder the app
+    # uses at query time (collections are read without an explicit embedding_function),
+    # so seed and query stay consistent. No Azure, no torch, no extra deps.
+    from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
+    print("  ℹ️  Using ChromaDB default embeddings (ONNX all-MiniLM-L6-v2)")
+    return DefaultEmbeddingFunction()
 
 
 def chunk_text(text: str, max_chars: int = 800) -> list[str]:

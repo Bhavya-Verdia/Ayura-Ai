@@ -5,5 +5,5 @@ venv/
 .env
 .pytest_cache/
 uploads/
-data/
+data/chromadb/
 out.txt

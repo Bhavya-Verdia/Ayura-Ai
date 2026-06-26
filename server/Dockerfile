@@ -32,6 +32,11 @@ COPY . .
 RUN mkdir -p uploads/avatars data/chromadb && \
     chown -R appuser:appuser /app
 
+# appuser is a system user with no home dir; point HOME at the (writable) app dir
+# so libraries that cache under ~/.cache (e.g. ChromaDB's ONNX embedding model)
+# have a writable location instead of failing on /home/appuser.
+ENV HOME=/app
+
 USER appuser
 
 EXPOSE 8000
