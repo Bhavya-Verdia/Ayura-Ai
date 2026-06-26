@@ -241,6 +241,10 @@ def _to_lc_history(history: list[dict]):
 async def run_health_agent(db, user, active_plans: dict, user_message: str,
                            history: list[dict] | None = None, knowledge: str = "") -> tuple[str, dict]:
     """Run the agent to completion (non-streaming). Returns (reply_text, actions)."""
+    # NOTE: langgraph 1.x deprecates this in favour of `langchain.agents.create_agent`,
+    # but that path is currently broken against the published langgraph-prebuilt
+    # (missing ToolCallTransformer). create_react_agent still works on the pinned
+    # set; migrate when create_agent's deps are coherent. Removal is slated for V2.0.
     from langgraph.prebuilt import create_react_agent
 
     actions: dict = {}
@@ -266,6 +270,7 @@ async def stream_health_agent(db, user, active_plans: dict, user_message: str,
                               history: list[dict] | None = None, knowledge: str = ""):
     """Stream the agent. Yields ('status', text) when a tool is used and
     ('token', text) for final-answer tokens, then ('done', {text, actions})."""
+    # See run_health_agent for why this deprecated import is retained.
     from langgraph.prebuilt import create_react_agent
     from langchain_core.messages import AIMessageChunk
 
