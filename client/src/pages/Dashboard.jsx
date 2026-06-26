@@ -114,6 +114,63 @@ function StreakCard() {
   )
 }
 
+// ── Ritucharya (seasonal) Card ─────────────────────────────────
+const SEASON_EMOJI = { Shishir: '❄️', Vasant: '🌸', Grishma: '☀️', Varsha: '🌧️', Sharad: '🍂', Hemant: '🌙' }
+
+function RitucharyaCard() {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['seasonal-guidance'],
+    queryFn: () => plansAPI.getSeasonal().then(r => r.data),
+    staleTime: 6 * 60 * 60 * 1000,
+    retry: 1,
+  })
+
+  if (isError || (!isLoading && !data)) return null
+  if (isLoading) return <div className="dash-ritu-card skeleton" style={{ height: 130 }} />
+
+  const favour = (data.diet_adjustments || []).slice(0, 3)
+  const avoid = (data.avoid || []).slice(0, 3)
+  const emoji = SEASON_EMOJI[data.season] || '🌿'
+
+  return (
+    <motion.div
+      className="dash-ritu-card"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.15 }}
+    >
+      <div className="dash-ritu-head">
+        <span className="dash-ritu-emoji">{emoji}</span>
+        <div className="dash-ritu-head-text">
+          <div className="dash-ritu-title">{data.english_name} · {data.season} Ritu</div>
+          {data.focus && <div className="dash-ritu-sub">{data.focus}</div>}
+        </div>
+        {data.risk_level && (
+          <span className={`dash-ritu-risk dash-ritu-risk--${data.risk_level}`}>
+            {data.dominant_dosha ? `${data.dominant_dosha} season` : `${data.risk_level} risk`}
+          </span>
+        )}
+      </div>
+      {(favour.length > 0 || avoid.length > 0) && (
+        <div className="dash-ritu-cols">
+          {favour.length > 0 && (
+            <div className="dash-ritu-col">
+              <span className="dash-ritu-col-label dash-ritu-favour">✓ Favour</span>
+              <ul>{favour.map((f, i) => <li key={i}>{f}</li>)}</ul>
+            </div>
+          )}
+          {avoid.length > 0 && (
+            <div className="dash-ritu-col">
+              <span className="dash-ritu-col-label dash-ritu-avoid">✕ Avoid</span>
+              <ul>{avoid.map((f, i) => <li key={i}>{f}</li>)}</ul>
+            </div>
+          )}
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
 // Stagger animation variants for plan cards grid
 const gridContainer = {
   hidden: {},
@@ -572,6 +629,9 @@ const Dashboard = () => {
 
       {/* ── Streak Card ── */}
       <StreakCard />
+
+      {/* ── Ritucharya (seasonal) Card ── */}
+      <RitucharyaCard />
 
       {/* ── Weekly check-in prompt → the unified Check-In screen ── */}
       {needsCheckin && showCheckin && (
