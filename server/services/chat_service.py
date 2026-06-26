@@ -451,8 +451,8 @@ async def apply_chat_side_effects(
         try:
             from services.audit_service import log_symptom_change
             await log_symptom_change(db, user_id, "added", symptoms_to_log, source="chat")
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Symptom audit-log write failed: %s", exc)
 
     if plans_to_adapt:
         # routine is intentionally excluded — it's not regenerable via the shared

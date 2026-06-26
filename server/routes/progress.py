@@ -14,6 +14,7 @@ from routes.profile import get_current_user
 from database.mongodb import get_mongodb
 from ai.llm_client import llm_client
 from core.cache import cache_manager
+from core.logger import logger
 
 _SUMMARY_TTL = 14400  # 4 hours
 
@@ -46,8 +47,8 @@ async def log_progress(
     if cache_manager.redis_client:
         try:
             await cache_manager.redis_client.delete(f"ayura:progress_summary:{user.id}")
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Progress summary cache invalidation failed: %s", exc)
 
     # Update user weight if provided
     if req.weight_kg:
@@ -83,8 +84,8 @@ async def get_progress_summary(
             cached = await cache_manager.redis_client.get(cache_key)
             if cached:
                 return ProgressResponse(**json.loads(cached))
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Progress summary cache read failed: %s", exc)
 
     cursor = db.progress_logs.find({"user_id": user.id}).sort("date", -1).limit(30)
     logs = await cursor.to_list(length=30)
@@ -176,8 +177,8 @@ async def get_progress_summary(
     if cache_manager.redis_client:
         try:
             await cache_manager.redis_client.setex(cache_key, _SUMMARY_TTL, result.model_dump_json())
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Progress summary cache write failed: %s", exc)
     return result
 
 

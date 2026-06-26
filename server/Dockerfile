@@ -41,4 +41,16 @@ USER appuser
 
 EXPOSE 8000
 
-CMD ["gunicorn", "main:app", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
+# Worker count is env-driven so it can be tuned per host (gunicorn reads
+# WEB_CONCURRENCY natively). Default 4; override at runtime, e.g.
+#   docker run -e WEB_CONCURRENCY=$(nproc) ...
+ENV WEB_CONCURRENCY=4
+
+# Self-reported health for orchestrators / `docker ps`. Uses Python (curl is
+# not installed in the runtime stage); urllib raises on non-2xx, so a degraded
+# 503 from /api/health correctly marks the container unhealthy. start-period
+# allows for MongoDB connect + KB cache load on cold start.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=4)"]
+
+CMD ["gunicorn", "main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
