@@ -73,6 +73,7 @@ async def _create_indexes(db):
         await db.reminders.create_index([("user_id", 1), ("created_at", -1)])
         await db.notifications.create_index([("user_id", 1), ("is_read", 1), ("created_at", -1)])
         await db.community_posts.create_index("created_at")
+        await db.community_comments.create_index([("post_id", 1), ("created_at", 1)])
         await db.weekly_checkins.create_index([("user_id", 1), ("timestamp", -1)])
         await db.timeline.create_index([("user_id", 1), ("timestamp", -1)])
         # Plan jobs (background task tracking)

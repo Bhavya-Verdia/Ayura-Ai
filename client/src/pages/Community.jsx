@@ -83,6 +83,113 @@ function PostSkeleton() {
   )
 }
 
+// ─── Comments ──────────────────────────────────────────────────────────────────
+function CommentsSection({ postId, initialCount }) {
+  const [open, setOpen] = useState(false)
+  const [comments, setComments] = useState(null)
+  const [count, setCount] = useState(initialCount || 0)
+  const [draft, setDraft] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [posting, setPosting] = useState(false)
+  const [err, setErr] = useState('')
+
+  const toggle = async () => {
+    const next = !open
+    setOpen(next)
+    if (next && comments === null) {
+      setLoading(true)
+      try {
+        const res = await communityAPI.listComments(postId)
+        setComments(res.data || [])
+      } catch {
+        setComments([])
+      } finally {
+        setLoading(false)
+      }
+    }
+  }
+
+  const submit = async (e) => {
+    e.preventDefault()
+    const text = draft.trim()
+    if (!text || posting) return
+    setPosting(true)
+    setErr('')
+    try {
+      const res = await communityAPI.addComment(postId, text)
+      setComments(prev => [...(prev || []), res.data])
+      setCount(c => c + 1)
+      setDraft('')
+    } catch (e2) {
+      setErr(e2.response?.data?.detail || 'Could not post comment.')
+    } finally {
+      setPosting(false)
+    }
+  }
+
+  const remove = async (id) => {
+    const prev = comments
+    setComments(c => c.filter(x => x.id !== id))
+    setCount(c => Math.max(0, c - 1))
+    try {
+      await communityAPI.removeComment(id)
+    } catch {
+      setComments(prev)
+      setCount(c => c + 1)
+    }
+  }
+
+  return (
+    <div className="comm-comments">
+      <button className="comm-comments-toggle" onClick={toggle} aria-expanded={open}>
+        💬 {count} comment{count !== 1 ? 's' : ''}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="comm-comments-body"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            {loading ? (
+              <div className="comm-comments-loading">Loading…</div>
+            ) : (
+              <>
+                {(comments || []).map(c => (
+                  <div key={c.id} className="comm-comment">
+                    <span className="comm-comment-author">{c.author_name}</span>
+                    <span className="comm-comment-text">{c.content}</span>
+                    {c.is_mine && (
+                      <button className="comm-comment-del" onClick={() => remove(c.id)} aria-label="Delete comment">✕</button>
+                    )}
+                  </div>
+                ))}
+                {comments && comments.length === 0 && (
+                  <div className="comm-comments-empty">No comments yet — be the first.</div>
+                )}
+              </>
+            )}
+            {err && <div className="comm-comment-err">{err}</div>}
+            <form className="comm-comment-form" onSubmit={submit}>
+              <input
+                value={draft}
+                onChange={e => setDraft(e.target.value)}
+                placeholder="Add a supportive comment…"
+                maxLength={400}
+              />
+              <button type="submit" className="btn btn-secondary btn-sm" disabled={!draft.trim() || posting}>
+                {posting ? '…' : 'Post'}
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 // ─── Post Card ─────────────────────────────────────────────────────────────────
 function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) {
   const [likeAnimating, setLikeAnimating] = useState(false)
@@ -195,6 +302,8 @@ function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) 
           <span className="comm-like-count">{post.like_count}</span>
         </button>
       </div>
+
+      <CommentsSection postId={post.id} initialCount={post.comment_count} />
     </motion.div>
   )
 }

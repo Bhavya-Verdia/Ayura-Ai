@@ -179,6 +179,8 @@ export const notificationsAPI = {
   unreadCount: ()   => API.get('/notifications/unread-count'),
   markRead:    (id) => API.put(`/notifications/${id}/read`),
   markAllRead: ()   => API.post('/notifications/mark-all-read'),
+  remove:      (id) => API.delete(`/notifications/${id}`),
+  clearAll:    ()   => API.delete('/notifications'),
 }
 
 export const remindersAPI = {
@@ -207,6 +209,9 @@ export const communityAPI = {
   toggleLike: (postId) => API.post(`/community/${postId}/like`),
   report:     (postId, reason = '') => API.post(`/community/${postId}/report`, { reason }),
   remove:     (postId) => API.delete(`/community/${postId}`),
+  listComments:  (postId) => API.get(`/community/${postId}/comments`),
+  addComment:    (postId, content) => API.post(`/community/${postId}/comments`, { content }),
+  removeComment: (commentId) => API.delete(`/community/comments/${commentId}`),
 }
 
 // ── Weather ────────────────────────────────────

@@ -49,7 +49,7 @@ function NotificationSkeleton() {
 }
 
 // ── Notification card ────────────────────────────────────────
-function NotificationCard({ notif, onMarkRead, index }) {
+function NotificationCard({ notif, onMarkRead, onDelete, index }) {
   const cfg = getTypeConfig(notif.type)
 
   return (
@@ -95,6 +95,15 @@ function NotificationCard({ notif, onMarkRead, index }) {
       {!notif.is_read && (
         <div className="notif-read-hint">Tap to mark read</div>
       )}
+
+      <button
+        className="notif-delete-btn"
+        onClick={(e) => { e.stopPropagation(); onDelete(notif.id) }}
+        title="Delete notification"
+        aria-label="Delete notification"
+      >
+        ✕
+      </button>
     </motion.div>
   )
 }
@@ -140,6 +149,28 @@ export default function Notifications() {
       )
     }
   }, [])
+
+  const handleDelete = useCallback(async (id) => {
+    const prev = notifications
+    setNotifications(cur => cur.filter(n => n.id !== id))
+    try {
+      await notificationsAPI.remove(id)
+    } catch {
+      setNotifications(prev)
+    }
+  }, [notifications])
+
+  const handleClearAll = useCallback(async () => {
+    if (notifications.length === 0) return
+    if (!window.confirm('Clear all notifications? This cannot be undone.')) return
+    const prev = notifications
+    setNotifications([])
+    try {
+      await notificationsAPI.clearAll()
+    } catch {
+      setNotifications(prev)
+    }
+  }, [notifications])
 
   const handleMarkAllRead = useCallback(async () => {
     if (markingAll || unreadCount === 0) return
@@ -203,6 +234,15 @@ export default function Notifications() {
                   '✓ Mark all read'
                 )}
               </motion.button>
+              {notifications.length > 0 && (
+                <motion.button
+                  className="btn btn-secondary btn-sm notif-clear-all-btn"
+                  onClick={handleClearAll}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  🗑 Clear all
+                </motion.button>
+              )}
             </div>
           </motion.div>
 
@@ -243,6 +283,7 @@ export default function Notifications() {
                     key={notif.id}
                     notif={notif}
                     onMarkRead={handleMarkRead}
+                    onDelete={handleDelete}
                     index={i}
                   />
                 ))}

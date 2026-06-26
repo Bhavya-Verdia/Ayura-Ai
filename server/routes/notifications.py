@@ -73,3 +73,25 @@ async def mark_all_notifications_read(
         {"$set": {"is_read": True}}
     )
     return {"message": "All notifications marked as read"}
+
+
+@router.delete("/{notification_id}", status_code=204)
+async def delete_notification(
+    notification_id: str,
+    user: UserDocument = Depends(get_current_user),
+    db=Depends(get_mongodb),
+):
+    """Delete a single notification."""
+    result = await db.notifications.delete_one({"_id": notification_id, "user_id": user.id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Notification not found")
+
+
+@router.delete("", status_code=200)
+async def clear_notifications(
+    user: UserDocument = Depends(get_current_user),
+    db=Depends(get_mongodb),
+):
+    """Clear all of the user's notifications."""
+    result = await db.notifications.delete_many({"user_id": user.id})
+    return {"deleted": result.deleted_count}

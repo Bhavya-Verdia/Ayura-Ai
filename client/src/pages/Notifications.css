@@ -283,3 +283,18 @@
     flex-direction: row-reverse;
   }
 }
+
+/* Delete button on notification cards */
+.notif-card { position: relative; }
+.notif-delete-btn {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: none; border: none;
+  color: var(--text-muted, #94a3b8);
+  cursor: pointer; font-size: 0.85rem;
+  opacity: 0; transition: opacity 0.15s, color 0.15s;
+  padding: 4px; line-height: 1;
+}
+.notif-card:hover .notif-delete-btn { opacity: 1; }
+.notif-delete-btn:hover { color: var(--rose, #f87171); }
+.notif-clear-all-btn { margin-left: 8px; }
