@@ -35,6 +35,25 @@ from services.notification_service import create_and_deliver_notification
 from core.cache import cache_manager
 from core.kb_cache import kb_cache
 
+# ── Pregnancy Safety Gate (single source of truth) ───────────────────────────
+# Features whose deterministic plans are contraindicated during pregnancy/nursing.
+# Used by every plan entry point (_enqueue_plan, /stream, the per-feature routes,
+# and _generate_feature_via_engine) so the safety posture can never diverge.
+PREGNANCY_BLOCKED_FEATURES = frozenset({"panchakarma", "remedies", "medicines"})
+
+
+def assert_not_pregnancy_blocked(user: UserDocument, plan_type: str) -> None:
+    """Raise 403 if the user is pregnant/nursing and the feature is contraindicated."""
+    if user.pregnancy_or_nursing and plan_type in PREGNANCY_BLOCKED_FEATURES:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                f"The {plan_type} feature is not available during pregnancy or nursing. "
+                "Please consult your healthcare provider for personalised guidance."
+            ),
+        )
+
+
 def _sanitize_prompt_input(text: str, max_len: int = 200) -> str:
     """Strip common prompt-injection patterns and cap length."""
     text = re.sub(r'(?i)(system\s*:|assistant\s*:|<<\s*SYS\s*>>|<\|.*?\|>)', '', text)
@@ -506,15 +525,7 @@ async def _enqueue_plan(
 
     # ── Pregnancy Safety Gate ─────────────────────────────────────────────────
     # Block sensitive features BEFORE any LLM call if user is pregnant/nursing
-    PREGNANCY_BLOCKED_FEATURES = {"panchakarma", "remedies", "medicines"}
-    if user.pregnancy_or_nursing and plan_type in PREGNANCY_BLOCKED_FEATURES:
-        raise HTTPException(
-            status_code=403,
-            detail=(
-                f"The {plan_type} feature is not available during pregnancy or nursing. "
-                "Please consult your healthcare provider for personalised guidance."
-            )
-        )
+    assert_not_pregnancy_blocked(user, plan_type)
 
     # ── Load Feature-Specific Preferences ────────────────────────────────────
     feature_prefs = await _load_feature_preferences(db, user.id, plan_type)
@@ -569,6 +580,10 @@ async def _enqueue_plan(
         "satmya": user.satmya,
         "disease_stages": user.disease_stages,
         "koshtha": user.koshtha,
+        # Shodhana-contraindication signals (panchakarma engine reads these to
+        # force Shamana when Ama is high or Ojas is low — must reach every path)
+        "ama_indicator": user.ama_indicator,
+        "ojas_level": user.ojas_level,
         # Deprecated global goal — kept for cache compatibility
         "goal": user.goal,
         # Per-feature goal (primary driver for this plan type)

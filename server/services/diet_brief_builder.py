@@ -5,6 +5,8 @@ allergen-scanning utilities.  Extracted from diet_llm_generator.py so the
 knowledge constants and brief logic are independently testable and importable.
 """
 
+from services.ahara_safety import _term_in_text
+
 # ── Dosha-based meal timing ────────────────────────────────────────────────────
 MEAL_TIMING: dict[str, dict] = {
     "vata": {
@@ -416,8 +418,9 @@ TARGET CALORIES: approximately {cal} kcal/day"""
 def flag_allergens(weekly_plan: dict, allergies: list[str], intolerances: list[str]) -> dict:
     """Scan key_ingredients and meal_name for allergen terms and flag meals."""
     allergen_terms: set[str] = set()
-    for a in (allergies or []):
-        allergen_terms.update(ALLERGEN_TERMS.get(a, [a.lower()]))
+    for a in (allergies or []) + (intolerances or []):
+        key = str(a).lower()
+        allergen_terms.update(ALLERGEN_TERMS.get(key, [key]))
     if not allergen_terms:
         return weekly_plan
     for day_data in weekly_plan.values():
@@ -428,7 +431,7 @@ def flag_allergens(weekly_plan: dict, allergies: list[str], intolerances: list[s
             if not isinstance(meal, dict):
                 continue
             text = (meal.get("meal_name", "") + " " + " ".join(meal.get("key_ingredients", []))).lower()
-            found = [t for t in allergen_terms if t in text]
+            found = [t for t in allergen_terms if _term_in_text(t, text)]
             if found:
                 meal["allergen_warning"] = True
                 meal["allergen_terms"] = found

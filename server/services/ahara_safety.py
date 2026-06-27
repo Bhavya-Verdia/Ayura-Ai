@@ -18,6 +18,31 @@ raise — a safety layer must not be able to break plan generation.
 """
 from __future__ import annotations
 
+import re
+from functools import lru_cache
+
+# Words that merely START with a short allergen term but are NOT that allergen.
+# Prefix matching alone would flag an egg allergy on "eggplant"/"eggless" or a
+# mustard ("rai") allergy on "raita"/"raisin"; these are dropped explicitly.
+_ALLERGEN_FALSE_FRIENDS: dict[str, frozenset[str]] = {
+    "egg": frozenset({"eggplant", "eggplants", "eggless"}),
+    "rai": frozenset({"raita", "raisin", "raisins"}),
+}
+
+
+@lru_cache(maxsize=512)
+def _term_regex(term: str) -> "re.Pattern":
+    # Left word-boundary, suffix allowed: "milk" matches "milk" AND "milkshake"
+    # (a real dairy compound — missing it would be an unsafe false negative), while
+    # "til" still won't match "lentil" (no boundary before "til" there). Residual
+    # collisions are removed via _ALLERGEN_FALSE_FRIENDS so safe foods aren't flagged.
+    return re.compile(rf"\b{re.escape(term)}\w*")
+
+
+def _term_in_text(term: str, text: str) -> bool:
+    friends = _ALLERGEN_FALSE_FRIENDS.get(term, frozenset())
+    return any(m.group(0) not in friends for m in _term_regex(term).finditer(text))
+
 # ── Allergen term lookup ──────────────────────────────────────────────────────
 # Maps a declared allergy key → the ingredient/dish terms that imply it.
 ALLERGEN_TERMS: dict[str, list[str]] = {
@@ -220,7 +245,7 @@ def apply_ahara_safety(plan: dict, allergies: list[str], intolerances: list[str]
             # Allergen scan
             if allergen_terms:
                 text = _meal_text(meal)
-                found = sorted({t for t in allergen_terms if t in text})
+                found = sorted({t for t in allergen_terms if _term_in_text(t, text)})
                 if found:
                     if isinstance(meal, dict):
                         meal["allergen_warning"] = True
@@ -228,7 +253,8 @@ def apply_ahara_safety(plan: dict, allergies: list[str], intolerances: list[str]
                         meal["requires_substitution"] = True
                     elif isinstance(meal, list):
                         for item in meal:
-                            if isinstance(item, dict) and any(t in _meal_text(item) for t in found):
+                            item_text = _meal_text(item)
+                            if isinstance(item, dict) and any(_term_in_text(t, item_text) for t in found):
                                 item["allergen_warning"] = True
                     allergen_alerts.append({
                         "week": week_label,

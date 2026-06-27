@@ -254,6 +254,51 @@ def test_generate_yoga_plan_enqueues_job(mock_pool, auth_cookies, verified_mock_
     assert resp.status_code not in (401, 403)
 
 
+# ── Pregnant user blocked from contraindicated per-feature endpoints ──────────
+
+@pytest.mark.parametrize("feature,body", [
+    ("panchakarma", {}),
+    ("remedies", {"symptoms": ["fatigue"]}),
+    ("medicines", {}),
+])
+def test_pregnant_user_blocked_from_sensitive_per_feature_endpoints(feature, body, client, mock_db):
+    """A pregnant/nursing user must get 403 from the per-feature panchakarma/
+    remedies/medicines endpoints — same gate the holistic & worker paths enforce.
+    Regression: these per-feature routes previously generated a plan instead."""
+    from services.auth_service import hash_password
+    from datetime import datetime, timezone
+    mock_db.users.find_one = AsyncMock(return_value={
+        "_id": "preg-user",
+        "name": "Pregnant User",
+        "email": "preg@ayura.com",
+        "password_hash": hash_password("pass"),
+        "auth_provider": "local",
+        "is_active": True,
+        "is_admin": False,
+        "is_verified": True,
+        "onboarding_complete": True,
+        "dominant_dosha": "pitta",
+        "goal": "general_wellness",
+        "pregnancy_or_nursing": True,
+        "age": 30,
+        "height_cm": 165.0,
+        "weight_kg": 62.0,
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc),
+    })
+    # Prefs present so the gate (not a 422) is what blocks the request.
+    mock_db.user_preferences = AsyncMock()
+    mock_db.user_preferences.find_one = AsyncMock(return_value={
+        "user_id": "preg-user", "panchakarma": {"goal": "detox"}, "remedies": {"goal": "relief"},
+    })
+    token = create_access_token("preg-user", "preg@ayura.com")
+    resp = client.post(
+        f"/api/plans/{feature}", json=body,
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 403
+
+
 # ── Unverified user blocked from plan generation ──────────────────────────────
 
 def test_unverified_user_cannot_generate_plan(client, mock_db):

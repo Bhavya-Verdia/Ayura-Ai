@@ -41,7 +41,7 @@ async def _grounded_insight(user, req, old_vikriti, new_vikriti, old_dom, new_do
 Constitution (Prakriti): {user.dominant_dosha}
 Last week's imbalance (Vikriti): {old_vikriti}, dominant {old_dom}
 This week's imbalance (Vikriti): {new_vikriti}, dominant {new_dom} — it {trend}
-This week's self-ratings (1-10): energy {req.energy}, digestion {req.digestion}, sleep {req.sleep}, plan adherence {req.adherence}
+This week's self-ratings (1-5 scale, 1=poor 5=excellent): energy {req.energy}, digestion {req.digestion}, sleep {req.sleep}, plan adherence {req.adherence}
 What felt good: {safe_felt_good}
 
 Write a brief (1-2 sentence), warm, SPECIFIC insight grounded in this ACTUAL data — reference their real trend and ratings, not generic praise.

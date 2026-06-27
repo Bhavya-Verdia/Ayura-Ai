@@ -25,6 +25,8 @@ from routes.plan_runner import (
     _generate_feature_via_engine,
     _enqueue_plan,
     _plan_guard,
+    PREGNANCY_BLOCKED_FEATURES,
+    assert_not_pregnancy_blocked,
 )
 
 import json
@@ -333,6 +335,9 @@ async def generate_panchakarma_plan(
     from services.panchakarma_engine import generate_panchakarma_plan as engine_generate
     from services.panchakarma_enricher import enrich_panchakarma_plan
 
+    # Pregnancy gate — contraindicated; matches the holistic/worker paths (403, not a filtered plan)
+    assert_not_pregnancy_blocked(user, "panchakarma")
+
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
@@ -341,7 +346,6 @@ async def generate_panchakarma_plan(
         raise HTTPException(status_code=422, detail="Complete panchakarma preferences first")
 
     panchakarma_prefs = prefs_doc.get("panchakarma")
-    is_prenatal = user.pregnancy_or_nursing
 
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "panchakarma", user_profile, panchakarma_prefs, force_regenerate)
@@ -350,10 +354,7 @@ async def generate_panchakarma_plan(
 
     # 2. Generate new plan (per-user lock + global LLM semaphore)
     async with _plan_guard(user.id, "panchakarma"):
-        if is_prenatal:
-            panchakarma_therapies = [t for t in kb_cache.panchakarma_protocols if t.get("pregnancy_safe") is True]
-        else:
-            panchakarma_therapies = kb_cache.panchakarma_protocols
+        panchakarma_therapies = kb_cache.panchakarma_protocols
         # None triggers the engine's bundled-JSON fallback (kb_* Mongo collections
         # have no seeder, so kb_cache is empty unless populated externally).
         raw_plan = engine_generate(user_profile, panchakarma_prefs, panchakarma_therapies or None)
@@ -388,6 +389,9 @@ async def generate_remedies_plan(
 ):
     from services.remedy_engine import filter_remedies, build_remedy_plan
     from services.remedy_enricher import enrich_remedies_plan
+
+    # Pregnancy gate — contraindicated; matches the holistic/worker paths
+    assert_not_pregnancy_blocked(user, "remedies")
 
     user_profile = user.model_dump()
 
@@ -440,6 +444,9 @@ async def generate_medicines_plan(
 ):
     from services.remedy_engine import generate_medicines_plan as engine_generate
     from services.remedy_enricher import enrich_medicines_plan
+
+    # Pregnancy gate — contraindicated; matches the holistic/worker paths
+    assert_not_pregnancy_blocked(user, "medicines")
 
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
@@ -520,36 +527,17 @@ async def stream_holistic_plan(
         raise HTTPException(status_code=403, detail="Please verify your email before generating plans.")
 
     season_info = get_current_season()
-    user_profile = {
-        "_user_id": user.id,
-        "name": user.name, "gender": user.gender, "age": user.age,
-        "height_cm": user.height_cm, "weight_kg": user.weight_kg,
-        "bmi": user.bmi, "bmi_category": user.bmi_category,
-        "dosha_scores": user.dosha_scores, "dominant_dosha": user.dominant_dosha,
-        "secondary_dosha": user.secondary_dosha,
-        "vikriti_scores": user.vikriti_scores,
-        "vikriti_dominant": user.vikriti_dominant,
-        "vikriti_secondary": user.vikriti_secondary,
-        "medical_history": user.medical_history or [],
-        "allergies": user.allergies or [],
-        "injuries_or_limitations": user.injuries_or_limitations or [],
-        "current_symptoms": user.current_symptoms or [],
-        "current_medications": user.current_medications or [],
-        "fitness_level": user.fitness_level or "beginner",
-        "activity_level": user.activity_level or "moderate",
-        "pregnancy_or_nursing": user.pregnancy_or_nursing or False,
-        "stress_level": user.stress_level,
-        "digestion_quality": user.digestion_quality,
-        "sleep_quality": user.sleep_quality,
-        "goal": user.goal,
-        "current_season": season_info.name.lower(),
-    }
+    # Build the profile from the full user document so every safety/personalisation
+    # field (ama_indicator, ojas_level, koshtha, disease_stages, satmya, ...) reaches
+    # the engines — the same dict shape the per-feature routes and worker path use.
+    user_profile = user.model_dump()
+    user_profile["_user_id"] = user.id
+    user_profile["current_season"] = season_info.name.lower()
 
-    # Pregnancy-blocked features
-    PREGNANCY_BLOCKED = {"panchakarma", "remedies", "medicines"}
+    # Pregnancy-blocked features (shared source of truth)
     feature_types = [
         ft for ft in ["gym", "yoga", "diet", "panchakarma", "remedies", "medicines"]
-        if not (user.pregnancy_or_nursing and ft in PREGNANCY_BLOCKED)
+        if not (user.pregnancy_or_nursing and ft in PREGNANCY_BLOCKED_FEATURES)
     ]
 
     async def event_generator():
