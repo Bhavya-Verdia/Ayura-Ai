@@ -6,26 +6,87 @@
     <meta name="color-scheme" content="dark light" />
     <meta name="theme-color" content="#060A0E" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#f9fafb" media="(prefers-color-scheme: light)" />
-    <link rel="canonical" href="https://ayura.app" />
-    <meta name="description" content="Ayura AI — Adaptive AI wellness platform combining Ayurveda and modern health science. Get personalized fitness, nutrition, and recovery plans based on your unique dosha profile." />
-    <meta name="keywords" content="wellness, ayurveda, dosha, fitness, nutrition, AI health, ayura, yoga, panchakarma" />
+
+    <!-- Primary SEO -->
+    <title>Ayura AI — AI-Powered Ayurvedic Wellness Platform</title>
+    <link rel="canonical" href="https://ayuraai.in" />
+    <meta name="description" content="Ayura AI is India's AI-powered Ayurvedic wellness platform. Get personalized diet plans, yoga routines, Panchakarma therapies, and herbal remedies based on your unique Prakriti (dosha profile)." />
+    <meta name="keywords" content="Ayura AI, ayuraai, Ayurvedic AI, Ayurveda app India, dosha test, Prakriti analysis, personalized wellness, AI health app, yoga planner, panchakarma, herbal remedies, diet plan Ayurveda" />
     <meta name="robots" content="index, follow" />
     <meta name="author" content="Ayura AI" />
+    <meta name="geo.region" content="IN" />
+    <meta name="geo.placename" content="India" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Ayura AI — AI + Ayurveda Wellness" />
-    <meta property="og:description" content="Build a body plan that feels alive and adapts in real time." />
+    <meta property="og:title" content="Ayura AI — AI-Powered Ayurvedic Wellness" />
+    <meta property="og:description" content="India's first AI wellness platform rooted in Ayurveda. Personalized plans for diet, yoga, Panchakarma, and herbal medicine based on your dosha." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://ayura.app" />
-    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:url" content="https://ayuraai.in" />
+    <meta property="og:image" content="https://ayuraai.in/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Ayura AI — AI-Powered Ayurvedic Wellness Platform" />
+    <meta property="og:site_name" content="Ayura AI" />
+    <meta property="og:locale" content="en_IN" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Ayura AI — AI + Ayurveda Wellness" />
-    <meta name="twitter:description" content="Personalized fitness, nutrition, and Ayurvedic plans powered by AI." />
-    <meta name="twitter:image" content="/og-image.png" />
+    <meta name="twitter:title" content="Ayura AI — AI-Powered Ayurvedic Wellness" />
+    <meta name="twitter:description" content="Personalized Ayurvedic diet, yoga, and herbal plans powered by AI. Know your dosha. Live in balance." />
+    <meta name="twitter:image" content="https://ayuraai.in/og-image.png" />
+    <meta name="twitter:site" content="@ayuraai" />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://ayuraai.in/#website",
+          "url": "https://ayuraai.in",
+          "name": "Ayura AI",
+          "description": "AI-Powered Ayurvedic Wellness Platform",
+          "publisher": { "@id": "https://ayuraai.in/#organization" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://ayuraai.in/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://ayuraai.in/#organization",
+          "name": "Ayura AI",
+          "url": "https://ayuraai.in",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://ayuraai.in/pwa-512x512.png",
+            "width": 512,
+            "height": 512
+          },
+          "description": "India's AI-powered Ayurvedic wellness platform providing personalized dosha-based plans for diet, yoga, Panchakarma, and herbal medicine.",
+          "foundingLocation": { "@type": "Place", "name": "India" },
+          "sameAs": []
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://ayuraai.in/#app",
+          "name": "Ayura AI",
+          "url": "https://ayuraai.in",
+          "applicationCategory": "HealthApplication",
+          "operatingSystem": "Web, iOS, Android",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR"
+          },
+          "description": "AI-powered Ayurvedic wellness platform for personalized health plans based on Prakriti analysis.",
+          "screenshot": "https://ayuraai.in/og-image.png"
+        }
+      ]
+    }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -36,7 +97,6 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
-    <title>Ayura AI — AI + Ayurveda Wellness</title>
     <script>
       (function() {
         try {
@@ -49,6 +109,5 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <!-- Service worker registration handled by VitePWA plugin -->
   </body>
 </html>
