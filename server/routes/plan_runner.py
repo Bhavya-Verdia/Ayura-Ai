@@ -234,14 +234,28 @@ async def _generate_feature_via_engine(
     plan_type: str,
     user_profile: dict,
 ) -> dict | list:
-    """Generate ONE feature plan through the deterministic engine + LLM enricher —
-    the same KB-grounded path the per-feature endpoints use.
+    """Generate ONE feature plan through the deterministic engine + LLM enricher.
 
-    The holistic and agentic single-plan paths call this so they no longer rely on
-    un-grounded free-text LLM agents (which ignored the KB and could hallucinate
-    formulations / asanas). Returns the enriched plan (dict, or list for
-    remedies/medicines). On failure returns a safe empty value so a single feature
-    failing never aborts a holistic plan.
+    Acquires the global LLM semaphore so EVERY caller is rate-capped — the holistic
+    worker gather, the single-feature worker, and the /stream fan-out all run their
+    enrichment through here and would otherwise issue uncapped concurrent Azure
+    calls (the per-feature sync routes get the same cap via _plan_guard). No caller
+    of this function holds the semaphore already, so there is no nested acquire.
+    """
+    async with _get_llm_semaphore():
+        return await _generate_feature_via_engine_impl(db, user_id, plan_type, user_profile)
+
+
+async def _generate_feature_via_engine_impl(
+    db: AsyncIOMotorDatabase,
+    user_id: str,
+    plan_type: str,
+    user_profile: dict,
+) -> dict | list:
+    """Engine + enricher for ONE feature (the same KB-grounded path the per-feature
+    endpoints use). Returns the enriched plan (dict, or list for remedies/medicines).
+    On failure returns a safe empty value so one feature failing never aborts a
+    holistic plan.
     """
     from engine.seasonal import get_current_season
     season_info = get_current_season()

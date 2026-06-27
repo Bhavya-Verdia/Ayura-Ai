@@ -465,14 +465,25 @@ def _build_meal_guidance(dosha: str, season: str, agni_type: str) -> dict:
 
 
 # ── Extract gym/yoga schedule from plan history ───────────────────────────────
+_WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+
+
+def _weekday_index(day: dict) -> int | None:
+    """Map a plan day's name to a 0–6 index, or None if it isn't a known weekday.
+    Returning None (vs raising) lets one malformed day be skipped without the bare
+    except below discarding the ENTIRE week's schedule."""
+    name = str(day.get("day_name", "")).strip().lower()
+    return _WEEKDAYS.index(name) if name in _WEEKDAYS else None
+
+
 def _extract_gym_schedule(gym_plan_data: dict) -> dict:
     try:
         week1 = (gym_plan_data.get("four_week_plan") or [{}])[0]
-        days  = week1.get("days", [])
-        dn = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
         result = {}
-        for d in days:
-            idx = dn.index(d.get("day_name","").lower())
+        for d in week1.get("days", []) or []:
+            idx = _weekday_index(d)
+            if idx is None:
+                continue
             is_rest = (d.get("type") == "rest") or d.get("is_rest_day", False)
             focus   = d.get("focus", "Workout")
             result[idx] = {
@@ -490,14 +501,16 @@ def _extract_gym_schedule(gym_plan_data: dict) -> dict:
 def _extract_yoga_schedule(yoga_plan_data: dict) -> dict:
     try:
         week1 = (yoga_plan_data.get("four_week_plan") or [{}])[0]
-        days  = week1.get("days", [])
-        dn = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
         result = {}
-        for d in days:
-            idx = dn.index(d.get("day_name","").lower())
+        for d in week1.get("days", []) or []:
+            idx = _weekday_index(d)
+            if idx is None:
+                continue
             is_rest = d.get("rest", False)
-            theme   = (d.get("session") or {}).get("dosha_theme", "Yoga Practice")
-            dur     = (d.get("session") or {}).get("total_duration_minutes", 30)
+            session = d.get("session") or {}
+            theme   = session.get("dosha_theme", "Yoga Practice")
+            # `or 30` (not .get default) so an explicit null duration doesn't crash int()
+            dur     = session.get("total_duration_minutes") or 30
             result[idx] = {
                 "ex_type":  "rest" if is_rest else "yoga",
                 "ex_label": "Yoga Rest Day" if is_rest else f"Yoga — {theme}",

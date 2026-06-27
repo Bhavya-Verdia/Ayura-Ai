@@ -284,4 +284,9 @@ async def delete_comment(
     if comment["user_id"] != user.id and not user.is_admin:
         raise HTTPException(status_code=403, detail="Not authorized")
     await db.community_comments.delete_one({"_id": comment_id})
-    await db.community_posts.update_one({"_id": comment["post_id"]}, {"$inc": {"comment_count": -1}})
+    # Only decrement when positive so a retried/raced delete (or a legacy post whose
+    # count drifted) can't drive comment_count negative.
+    await db.community_posts.update_one(
+        {"_id": comment["post_id"], "comment_count": {"$gt": 0}},
+        {"$inc": {"comment_count": -1}},
+    )

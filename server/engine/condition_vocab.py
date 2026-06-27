@@ -99,6 +99,19 @@ def _norm_text(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", (value or "").lower()).strip()
 
 
+def _singularize(text: str) -> str:
+    """Naive depluralization so 'bleeding disorders' and 'bleeding disorder' match.
+
+    Strips a trailing 's' only from tokens long enough to plausibly be plural (so
+    'as'/'is'/'ibs' are left alone) and not ending in 'ss'. Applied symmetrically to
+    both sides of a comparison, so words like 'diabetes' transform consistently and
+    still match — it only ever ADDS singular/plural matches (safe-biased)."""
+    return " ".join(
+        tok[:-1] if len(tok) > 3 and tok.endswith("s") and not tok.endswith("ss") else tok
+        for tok in text.split()
+    )
+
+
 def normalize_condition(raw: str) -> str:
     """Return the canonical key for a free-text/aliased condition, or a cleaned
     underscore form if it is not in the vocabulary (never returns empty for input)."""
@@ -139,7 +152,11 @@ def term_in_condition(condition: str, term: str) -> bool:
     t_norm = _norm_text(t)
     if not t_norm:
         return False
-    return re.search(r"\b" + re.escape(t_norm) + r"\b", c) is not None
+    # Plural-tolerant whole-phrase match so 'bleeding_disorders' (medicine contra)
+    # still matches a user's 'bleeding disorder' — a missed contraindication is the
+    # dangerous direction. Singularize both sides consistently before matching.
+    c_s, t_s = _singularize(c), _singularize(t_norm)
+    return re.search(r"\b" + re.escape(t_s) + r"\b", c_s) is not None
 
 
 def any_term_in_condition(condition: str, terms) -> bool:

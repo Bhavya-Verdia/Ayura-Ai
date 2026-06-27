@@ -34,6 +34,16 @@ class TestTermInCondition:
         assert not term_in_condition("", "heart")
         assert not term_in_condition("heart_disease", "")
 
+    def test_plural_singular_contraindication_matches(self):
+        # Safety regression: a medicine contra 'bleeding_disorders' must still match a
+        # user history 'bleeding disorder' (and vice versa) — a missed contraindication
+        # is the dangerous direction.
+        assert term_in_condition("bleeding disorder", "bleeding_disorders")
+        assert term_in_condition("bleeding_disorders", "bleeding disorder")
+        assert term_in_condition("kidney stones", "kidney_stone")
+        # depluralization must not resurrect the heartburn false-positive
+        assert not term_in_condition("heartburn", "heart")
+
 
 class TestNormalize:
     def test_aliases_map_to_canonical(self):
