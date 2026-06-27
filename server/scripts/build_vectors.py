@@ -19,27 +19,37 @@ CHROMA_DIR = Path(__file__).parent.parent / "data" / "chromadb"
 
 
 def get_embedder():
-    """Try Azure OpenAI embeddings, fall back to sentence-transformers."""
+    """Try Azure OpenAI embeddings, fall back to ChromaDB default ONNX."""
     from dotenv import load_dotenv
-    import os
     load_dotenv()
 
     azure_key = os.getenv("AZURE_OPENAI_API_KEY")
     azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    api_version = os.getenv("AZURE_OPENAI_EMBEDDING_API_VERSION", "2024-02-01")
     embed_deployment = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small")
 
     if azure_key and azure_endpoint:
         try:
-            from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
-            fn = OpenAIEmbeddingFunction(
+            from openai import AzureOpenAI
+            from chromadb.api.types import Documents, Embeddings
+            import chromadb.utils.embedding_functions as ef
+
+            client = AzureOpenAI(
                 api_key=azure_key,
-                api_base=azure_endpoint,
-                api_type="azure",
-                api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
-                model_name=embed_deployment,
+                azure_endpoint=azure_endpoint,
+                api_version=api_version,
             )
-            # Probe the deployment before committing to it
-            fn(["test"])
+
+            class AzureEmbeddingFunction(ef.EmbeddingFunction):
+                def __call__(self, input: Documents) -> Embeddings:
+                    response = client.embeddings.create(
+                        input=input,
+                        model=embed_deployment,
+                    )
+                    return [item.embedding for item in response.data]
+
+            fn = AzureEmbeddingFunction()
+            fn(["test"])  # probe before committing
             print(f"  ✅ Using Azure OpenAI embeddings ({embed_deployment})")
             return fn
         except Exception as e:
@@ -232,8 +242,11 @@ def build_vectors():
             print(f"  ⚠️ No docs for {domain}")
             continue
 
-        col = client.get_or_create_collection(name=coll_name, embedding_function=embedder, metadata={"hnsw:space": "cosine"})
-        col.delete(where={"source": {"$ne": ""}})  # Clear existing
+        try:
+            client.delete_collection(name=coll_name)
+        except Exception:
+            pass
+        col = client.create_collection(name=coll_name, embedding_function=embedder, metadata={"hnsw:space": "cosine"})
 
         texts = [d["text"] for d in docs]
         metadatas = [
