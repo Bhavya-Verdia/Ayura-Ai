@@ -65,7 +65,7 @@ async def _store_refresh_token(db: AsyncIOMotorDatabase, token: str, replaced_by
     payload = decode_token(token)
     if payload.get("type") != "refresh":
         raise ValueError("Not a refresh token")
-    
+
     await db.refresh_tokens.insert_one({
         "user_id": payload["sub"],
         "jti": payload["jti"],
@@ -114,12 +114,33 @@ async def _issue_tokens(user: UserDocument, response: Response, db: AsyncIOMotor
     )
 
 
-@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(req: RegisterRequest, background_tasks: BackgroundTasks, response: Response, db: AsyncIOMotorDatabase = Depends(get_mongodb)):
-    """Register a new user with email/password."""
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+async def register(req: RegisterRequest, background_tasks: BackgroundTasks, db: AsyncIOMotorDatabase = Depends(get_mongodb)):
+    """Register a new user with email/password.
+
+    To prevent account enumeration, the response is identical whether or not the
+    email is already registered. No session is issued here — the user must verify
+    their email (POST /verify-email) and then log in (POST /login).
+    """
+    # Identical payload for both the new-account and already-exists paths.
+    generic_response = {
+        "message": "Account created. Check your email for a verification link to activate your account.",
+        "requires_verification": True,
+    }
+
     existing_user = await db.users.find_one({"email": req.email})
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        # Don't reveal that the email exists. If it's an unverified local account,
+        # resend the verification link so a legitimate re-attempt still works.
+        try:
+            existing = UserDocument(**existing_user)
+            if existing.auth_provider == "local" and not existing.is_verified:
+                token = create_verification_token(existing.email)
+                background_tasks.add_task(send_verification_email, existing.email, token)
+        except Exception:
+            pass
+        logger.info("Registration attempt for an existing email (generic response returned)")
+        return generic_response
 
     now = datetime.now(timezone.utc)
     user = UserDocument(
@@ -141,7 +162,7 @@ async def register(req: RegisterRequest, background_tasks: BackgroundTasks, resp
     background_tasks.add_task(send_verification_email, user.email, token)
     logger.info(f"Verification email scheduled for {user.email}")
 
-    return await _issue_tokens(user, response, db)
+    return generic_response
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -156,6 +177,15 @@ async def login(req: LoginRequest, response: Response, db: AsyncIOMotorDatabase 
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     user = UserDocument(**user_dict)
+
+    # Email-verification gate for password accounts. OAuth/phone users are
+    # implicitly verified by their provider, so this only applies to "local".
+    if user.auth_provider == "local" and not user.is_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="Please verify your email before logging in. Check your inbox for the verification link.",
+        )
+
     return await _issue_tokens(user, response, db)
 
 
@@ -165,7 +195,7 @@ async def get_google_auth_url(response: Response):
     from config import settings
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=500, detail="Google OAuth not configured")
-        
+
     state = secrets.token_urlsafe(32)
     response.set_cookie(
         "oauth_state",
@@ -176,7 +206,7 @@ async def get_google_auth_url(response: Response):
         max_age=600,
         path="/"
     )
-    
+
     auth_url = (
         f"https://accounts.google.com/o/oauth2/v2/auth?"
         f"response_type=code&"
@@ -190,7 +220,7 @@ async def get_google_auth_url(response: Response):
 
 @router.post("/google", response_model=TokenResponse)
 async def google_auth(
-    req: GoogleAuthRequest, 
+    req: GoogleAuthRequest,
     response: Response,
     oauth_state: str | None = Cookie(default=None),
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
@@ -250,7 +280,7 @@ async def google_auth(
     })
 
     now = datetime.now(timezone.utc)
-    
+
     if not user_dict:
         user = UserDocument(
             _id=str(uuid.uuid4()),
@@ -320,7 +350,7 @@ async def refresh_token(
     )
     new_refresh = create_refresh_token(user.id)
     new_payload = await _store_refresh_token(db, new_refresh)
-    
+
     await db.refresh_tokens.update_one(
         {"_id": stored_token["_id"]},
         {"$set": {
@@ -328,7 +358,7 @@ async def refresh_token(
             "replaced_by_jti": new_payload["jti"]
         }}
     )
-    
+
     _set_auth_cookies(response, new_access, new_refresh)
     return TokenResponse(
         access_token=new_access,
@@ -375,7 +405,7 @@ async def forgot_password(req: ForgotPasswordRequest, background_tasks: Backgrou
         return {"message": "If an account with that email exists, a reset link has been sent."}
 
     token = create_reset_token(user.id, user.email, user.password_hash or "")
-    
+
     # Send email in background
     background_tasks.add_task(send_password_reset_email, user.email, token)
     logger.info(f"Password reset email scheduled for {user.email}")
@@ -397,14 +427,14 @@ async def reset_password(req: ResetPasswordRequest, db: AsyncIOMotorDatabase = D
         "_id": payload["sub"],
         "email": payload["email"],
     })
-    
+
     if not user_dict:
         raise HTTPException(status_code=404, detail="User not found")
-        
+
     current_hash_digest = hashlib.sha256((user_dict.get("password_hash") or "").encode("utf-8")).hexdigest()
     if payload.get("pwh") != current_hash_digest:
         raise HTTPException(status_code=400, detail="Password reset token has already been used or is invalid")
-        
+
     await db.users.update_one(
         {"_id": payload["sub"]},
         {"$set": {
@@ -412,7 +442,7 @@ async def reset_password(req: ResetPasswordRequest, db: AsyncIOMotorDatabase = D
             "updated_at": datetime.now(timezone.utc)
         }}
     )
-    
+
     return {"message": "Password reset successfully"}
 
 
@@ -423,12 +453,12 @@ async def verify_email(req: VerifyEmailRequest, db: AsyncIOMotorDatabase = Depen
         email = verify_verification_token(req.token)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-        
+
     user_dict = await db.users.find_one({"email": email})
-    
+
     if not user_dict:
         raise HTTPException(status_code=404, detail="User not found")
-        
+
     await db.users.update_one(
         {"_id": user_dict["_id"]},
         {"$set": {
@@ -436,25 +466,25 @@ async def verify_email(req: VerifyEmailRequest, db: AsyncIOMotorDatabase = Depen
             "updated_at": datetime.now(timezone.utc)
         }}
     )
-    
+
     return {"message": "Email verified successfully. You can now log in."}
 
 @router.post("/resend-verification")
 async def resend_verification(req: ResendVerificationRequest, background_tasks: BackgroundTasks, db: AsyncIOMotorDatabase = Depends(get_mongodb)):
     """Resend the email verification link."""
     user_dict = await db.users.find_one({"email": req.email})
-    
+
     if not user_dict:
         return {"message": "If an account with that email exists, a verification link has been sent."}
-        
+
     user = UserDocument(**user_dict)
     if user.is_verified:
         return {"message": "This email is already verified."}
-        
+
     token = create_verification_token(user.email)
     background_tasks.add_task(send_verification_email, user.email, token)
     logger.info(f"Verification email re-scheduled for {user.email}")
-    
+
     return {"message": "If an account with that email exists, a verification link has been sent."}
 
 
@@ -518,7 +548,7 @@ async def github_auth(
 
             if "error" in token_data:
                 raise HTTPException(status_code=400, detail=f"GitHub auth failed: {token_data.get('error_description', token_data['error'])}")
-            
+
             access_token = token_data.get("access_token")
             if not access_token:
                 raise HTTPException(status_code=400, detail="Failed to retrieve access token from GitHub")
@@ -529,7 +559,7 @@ async def github_auth(
                 headers={"Authorization": f"Bearer {access_token}"},
             )
             github_user = user_resp.json()
-            
+
             if "id" not in github_user:
                 raise HTTPException(status_code=400, detail="Failed to retrieve GitHub profile")
 
@@ -560,7 +590,7 @@ async def github_auth(
     })
 
     now = datetime.now(timezone.utc)
-    
+
     if not user_dict:
         user = UserDocument(
             _id=str(uuid.uuid4()),
@@ -607,13 +637,13 @@ async def send_otp(req: SendOtpRequest, background_tasks: BackgroundTasks, db: A
         }},
         upsert=True
     )
-    
+
     # Send via background task
     sent = await send_sms_otp(req.phone_number, otp_code)
     if not sent:
         await db.otps.delete_one({"phone_number": req.phone_number})
         raise HTTPException(status_code=503, detail="SMS delivery is not configured.")
-    
+
     return {"message": "OTP sent successfully."}
 
 
@@ -621,10 +651,10 @@ async def send_otp(req: SendOtpRequest, background_tasks: BackgroundTasks, db: A
 async def verify_otp(req: VerifyOtpRequest, response: Response, db: AsyncIOMotorDatabase = Depends(get_mongodb)):
     """Verify an OTP and log the user in (or create an account)."""
     otp_doc = await db.otps.find_one({"phone_number": req.phone_number})
-    
+
     if not otp_doc:
         raise HTTPException(status_code=400, detail="No OTP requested for this number")
-        
+
     expected_hash = otp_doc.get("code_hash")
     provided_hash = _hash_otp(req.phone_number, req.code)
     legacy_code = otp_doc.get("code")
@@ -635,20 +665,20 @@ async def verify_otp(req: VerifyOtpRequest, response: Response, db: AsyncIOMotor
 
     if not is_valid_code:
         raise HTTPException(status_code=400, detail="Invalid OTP code")
-        
+
     otp_expires = otp_doc["expires_at"]
     if isinstance(otp_expires, (int, float)):
         otp_expires = datetime.fromtimestamp(otp_expires, timezone.utc)
     if datetime.now(timezone.utc) > otp_expires:
         raise HTTPException(status_code=400, detail="OTP code has expired")
-        
+
     # Valid OTP -> Clear it so it can't be reused
     await db.otps.delete_one({"_id": otp_doc["_id"]})
-    
+
     # Find or create user
     user_dict = await db.users.find_one({"phone_number": req.phone_number})
     now = datetime.now(timezone.utc)
-    
+
     if not user_dict:
         # Sentinel domain that no real user can register — avoids collision with real email accounts
         placeholder_email = f"phone_{req.phone_number.strip('+')}@phone.internal.ayura"
@@ -666,5 +696,5 @@ async def verify_otp(req: VerifyOtpRequest, response: Response, db: AsyncIOMotor
         await db.users.insert_one(user.model_dump(by_alias=True))
     else:
         user = UserDocument(**user_dict)
-        
+
     return await _issue_tokens(user, response, db)

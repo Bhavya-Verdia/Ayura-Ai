@@ -77,6 +77,23 @@ class Settings(BaseSettings):
                     "SMS_OTP_MOCK must be false in production. Configure a real SMS provider "
                     "or disable phone OTP login."
                 )
+            if self.DEBUG:
+                raise RuntimeError(
+                    "DEBUG must be false in production. It leaks internal error details "
+                    "in 500 responses. Set DEBUG=false (or APP_ENV-aligned 'release')."
+                )
+            if not self.TRUSTED_HOSTS:
+                raise RuntimeError(
+                    "TRUSTED_HOSTS must be set in production (comma-separated host list) "
+                    "to enable Host-header validation. Without it all hosts are accepted, "
+                    "enabling cache-poisoning / reset-link-poisoning attacks."
+                )
+            if self.RATE_LIMIT_ENABLED and not self.REDIS_URL:
+                raise RuntimeError(
+                    "REDIS_URL must be set in production when RATE_LIMIT_ENABLED is true. "
+                    "Without Redis, rate-limit counters are per-worker and the effective "
+                    "limit is multiplied by the worker count."
+                )
 
     # --- MongoDB ---
     MONGO_URL: Optional[str] = None
@@ -113,6 +130,14 @@ class Settings(BaseSettings):
     # --- Google Gemini (Fallback LLM) ---
     GEMINI_API_KEY: Optional[str] = None
     GEMINI_MODEL: str = "gemini-2.0-flash"
+
+    # --- LangSmith tracing (observability for the LangGraph health agent) ---
+    # When LANGSMITH_API_KEY is set, agent runs are traced to LangSmith. No-op
+    # (and zero overhead) when unset, so it's safe to leave off in production.
+    LANGSMITH_API_KEY: Optional[str] = None
+    LANGSMITH_PROJECT: str = "ayura-health-agent"
+    LANGSMITH_ENDPOINT: str = "https://api.smith.langchain.com"
+    LANGSMITH_TRACING: bool = True  # only takes effect if LANGSMITH_API_KEY is set
 
     # --- Google OAuth ---
     GOOGLE_CLIENT_ID: Optional[str] = None

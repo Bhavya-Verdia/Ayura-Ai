@@ -10,6 +10,11 @@ EMAIL_PATTERN = r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
 def validate_password_strength(password: str) -> str:
     if len(password) < 8:
         raise ValueError("Password must be at least 8 characters long")
+    # bcrypt silently truncates input beyond 72 bytes, so characters past that
+    # point would not affect the hash. Reject in bytes (not chars) to also cover
+    # multi-byte passwords that fit in 72 chars but exceed 72 bytes.
+    if len(password.encode("utf-8")) > 72:
+        raise ValueError("Password must be at most 72 bytes long")
     if not any(ch.isalpha() for ch in password):
         raise ValueError("Password must include at least one letter")
     if not any(ch.isdigit() for ch in password):
@@ -20,7 +25,7 @@ def validate_password_strength(password: str) -> str:
 class RegisterRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
     email: str = Field(..., pattern=EMAIL_PATTERN, max_length=255)
-    password: str = Field(..., min_length=8, max_length=128)
+    password: str = Field(..., min_length=8, max_length=72)
     consent_given: bool = False
 
     @field_validator("password")
@@ -59,7 +64,7 @@ class ForgotPasswordRequest(BaseModel):
 
 class ResetPasswordRequest(BaseModel):
     token: str
-    new_password: str = Field(..., min_length=8, max_length=128)
+    new_password: str = Field(..., min_length=8, max_length=72)
 
     @field_validator("new_password")
     @classmethod
@@ -69,7 +74,7 @@ class ResetPasswordRequest(BaseModel):
 
 class ChangePasswordRequest(BaseModel):
     current_password: str
-    new_password: str = Field(..., min_length=8, max_length=128)
+    new_password: str = Field(..., min_length=8, max_length=72)
 
     @field_validator("new_password")
     @classmethod
@@ -90,10 +95,10 @@ class GithubAuthRequest(BaseModel):
 
 
 class SendOtpRequest(BaseModel):
-    phone_number: str = Field(..., min_length=7, max_length=20)
+    phone_number: str = Field(..., min_length=7, max_length=20, pattern=r"^\+?[1-9]\d{6,14}$")
 
 
 class VerifyOtpRequest(BaseModel):
-    phone_number: str = Field(..., min_length=7, max_length=20)
+    phone_number: str = Field(..., min_length=7, max_length=20, pattern=r"^\+?[1-9]\d{6,14}$")
     code: str = Field(..., min_length=6, max_length=6)
 

@@ -19,10 +19,10 @@ def get_current_season(current_date: date = None) -> SeasonInfo:
     """Determine the Ayurvedic season (Ritu) based on the date."""
     if current_date is None:
         current_date = date.today()
-    
+
     month = current_date.month
     day = current_date.day
-    
+
     # Simple mapping based on mid-month transitions
     # Note: These are rough approximations for the Northern Hemisphere
     if (month == 1 and day >= 15) or month == 2 or (month == 3 and day < 15):

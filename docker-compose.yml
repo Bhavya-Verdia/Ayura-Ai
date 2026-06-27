@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   api:
     build:
@@ -8,14 +6,23 @@ services:
     container_name: ayura_api
     ports:
       - "8000:8000"
+    # Secrets + MONGO_URL (MongoDB Atlas) are injected from the repo-root .env.
+    # The explicit `environment:` block only overrides REDIS_URL and the ChromaDB
+    # host so they target the compose network. Mongo is managed (Atlas), not a
+    # local container — see note at the bottom of this file.
+    env_file:
+      - .env
     environment:
       - APP_ENV=production
-      - MONGO_URL=mongodb://mongodb:27017/ayura
-      - REDIS_URL=redis://redis:6379/0
+      - DEBUG=false
+      # Phone OTP login is disabled (no SMS provider). The app still boots; the
+      # send-otp endpoint returns 503 until Twilio is configured. Set to false (not
+      # mock) because production refuses to start with SMS_OTP_MOCK=true.
+      - SMS_OTP_MOCK=false
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CHROMA_HOST=chromadb
       - CHROMA_PORT=8000
     depends_on:
-      - mongodb
       - redis
       - chromadb
     restart: unless-stopped
@@ -26,9 +33,24 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL:-/api}
+        - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+        - VITE_GITHUB_CLIENT_ID=${VITE_GITHUB_CLIENT_ID}
+        - VITE_FIREBASE_API_KEY=${VITE_FIREBASE_API_KEY}
+        - VITE_FIREBASE_AUTH_DOMAIN=${VITE_FIREBASE_AUTH_DOMAIN}
+        - VITE_FIREBASE_PROJECT_ID=${VITE_FIREBASE_PROJECT_ID}
+        - VITE_FIREBASE_STORAGE_BUCKET=${VITE_FIREBASE_STORAGE_BUCKET}
+        - VITE_FIREBASE_MESSAGING_SENDER_ID=${VITE_FIREBASE_MESSAGING_SENDER_ID}
+        - VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}
+        - VITE_FIREBASE_MEASUREMENT_ID=${VITE_FIREBASE_MEASUREMENT_ID}
+        - VITE_SENTRY_DSN=${VITE_SENTRY_DSN:-}
     container_name: ayura_web
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - api
     restart: unless-stopped
@@ -39,48 +61,49 @@ services:
       dockerfile: Dockerfile
     container_name: ayura_worker
     command: ["arq", "worker.WorkerSettings"]
+    env_file:
+      - .env
     environment:
       - APP_ENV=production
-      - MONGO_URL=mongodb://mongodb:27017/ayura
-      - REDIS_URL=redis://redis:6379/0
+      - DEBUG=false
+      - SMS_OTP_MOCK=false
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CHROMA_HOST=chromadb
       - CHROMA_PORT=8000
     depends_on:
-      - mongodb
       - redis
       - chromadb
     restart: unless-stopped
 
-  mongodb:
-    image: mongo:latest
-    container_name: ayura_mongodb
-    ports:
-      - "27017:27017"
-    volumes:
-      - ayura_mongo_data:/data/db
-    restart: unless-stopped
+  # NOTE: MongoDB is managed by MongoDB Atlas (cloud) — set MONGO_URL in the root
+  # .env (mongodb+srv://...). There is intentionally NO local mongo container, so
+  # the app always uses Atlas as the single source of truth (with backups/TLS).
+  # To self-host Mongo instead, add a mongo:7.0 service here and point MONGO_URL at it.
 
   redis:
     image: redis:alpine
     container_name: ayura_redis
+    # Password-protected so the cache / rate-limit store isn't openly accessible
+    # on the compose network. Must match REDIS_PASSWORD in the root .env.
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    # Localhost-only (see mongodb note).
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     restart: unless-stopped
 
   chromadb:
-    image: chromadb/chroma:latest
+    image: chromadb/chroma:0.6.3   # MUST match the pinned chromadb client (server/requirements.txt)
     container_name: ayura_chromadb
     environment:
       - IS_PERSISTENT=TRUE
       - PERSIST_DIRECTORY=/chroma/chroma
       - ANONYMIZED_TELEMETRY=FALSE
     ports:
-      - "8001:8000" # Expose Chroma to host on 8001 to avoid conflict with backend on 8000
+      - "127.0.0.1:8001:8000" # Localhost-only; 8001 avoids conflict with backend on 8000
     volumes:
       - ayura_chroma_data:/chroma/chroma
     restart: unless-stopped
 
 volumes:
-  ayura_mongo_data:
   ayura_chroma_data:
   ayura_uploads:

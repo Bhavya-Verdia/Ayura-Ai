@@ -1,16 +1,18 @@
 import json
 from ai.llm_client import llm_client
+from ai.rag_pipeline import rag_pipeline
 from core.logger import logger
 
 SYSTEM_PROMPT = """
 You are an expert Yoga instructor and Ayurvedic wellness advisor. You enrich deterministically generated yoga plans with personalized coaching insights.
 
-You will receive a yoga plan summary and user profile.
+You will receive a yoga plan summary, user profile, and relevant Ayurvedic knowledge retrieved from a classical knowledge base.
+Use the knowledge base context to ground your response in classical Ayurvedic principles.
 Respond ONLY with a valid JSON object. No preamble, no explanation, no markdown fences.
 """
 
 USER_PROMPT_TEMPLATE = """
-Given this user profile and generated yoga plan, provide enrichment data in this exact JSON schema:
+Given this user profile, generated yoga plan, and Ayurvedic knowledge context, provide enrichment data in this exact JSON schema:
 
 {
   "plan_title": "Personalized [dosha] [goal] Yoga Plan for [name]",
@@ -37,14 +39,29 @@ Given this user profile and generated yoga plan, provide enrichment data in this
   "motivational_note": "1 personalized sentence addressing their specific goal and dosha"
 }
 
+AYURVEDIC KNOWLEDGE BASE (use these classical references to ground your response):
+{rag_context}
+
 User profile and plan:
 {plan_summary_json}
 """
 
 async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict) -> dict:
     raw_plan["enriched"] = False
-    
+
     try:
+        dosha = user_profile.get("dominant_dosha") or "vata"
+        conditions = user_profile.get("medical_history") or []
+        goal = yoga_prefs.get("yoga_goal") or "general_wellness"
+
+        # Fetch grounding context from ChromaDB before calling the LLM
+        rag_query = f"{dosha} yoga practice {goal} pranayama Ayurvedic wellness"
+        docs = await rag_pipeline.query(rag_query, "ayurveda", n_results=4, dosha_filter=dosha)
+        if not docs and conditions:
+            cond_query = f"{conditions[0]} yoga therapy Ayurvedic treatment"
+            docs = await rag_pipeline.query(cond_query, "ayurveda", n_results=3)
+        rag_context = rag_pipeline.format_context(docs, max_chars=1500) or "No specific context retrieved — use classical Ayurvedic principles."
+
         # Build compressed summary for LLM context
         plan_summary = {
             "user": {
@@ -81,7 +98,7 @@ async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict)
             ] or None,
             "generated_schedule": []
         }
-        
+
         for d in raw_plan.get("weekly_schedule", []):
             if d.get("rest"):
                 plan_summary["generated_schedule"].append({
@@ -99,15 +116,19 @@ async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict)
                     "pranayama": prana,
                     "theme": session.get("dosha_theme")
                 })
-                
-        prompt = USER_PROMPT_TEMPLATE.replace("{plan_summary_json}", json.dumps(plan_summary, indent=2))
-        
+
+        prompt = (
+            USER_PROMPT_TEMPLATE
+            .replace("{rag_context}", rag_context)
+            .replace("{plan_summary_json}", json.dumps(plan_summary, indent=2))
+        )
+
         response_text = await llm_client.generate(
             prompt=prompt,
             system_prompt=SYSTEM_PROMPT,
             json_mode=True
         )
-        
+
         # Parse JSON — guard against the LLM returning {"error": "..."} when
         # both providers are unavailable (json.loads succeeds but has no schema keys)
         enrichment = json.loads(response_text)
@@ -128,9 +149,9 @@ async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict)
         raw_plan["motivational_note"] = enrichment.get("motivational_note", "")
         raw_plan["enriched"] = True
         raw_plan["enrichment_model"] = llm_client.provider
-        
+
         logger.info(f"Successfully enriched yoga plan using {llm_client.provider}")
     except Exception as e:
         logger.error(f"Failed to enrich yoga plan: {str(e)}")
-        
+
     return raw_plan

@@ -2172,7 +2172,11 @@
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
+    "contraindications": [
+      "lower_back_pain",
+      "herniated_disc",
+      "serious_back_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -2210,7 +2214,12 @@
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
+    "contraindications": [
+      "lower_back_pain",
+      "herniated_disc",
+      "serious_back_injury",
+      "knee_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -2316,7 +2325,11 @@
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
+    "contraindications": [
+      "lower_back_pain",
+      "herniated_disc",
+      "serious_back_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -2362,8 +2375,13 @@
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
-    "pregnancy_safe": true,
+    "contraindications": [
+      "groin_injury",
+      "knee_injury",
+      "serious_back_injury",
+      "hip_injury"
+    ],
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "stress_relief",
@@ -2400,8 +2418,13 @@
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
-    "pregnancy_safe": true,
+    "contraindications": [
+      "lower_back_pain",
+      "herniated_disc",
+      "serious_back_injury",
+      "hip_injury"
+    ],
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "stress_relief",
@@ -2438,7 +2461,12 @@
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
+    "contraindications": [
+      "lower_back_pain",
+      "herniated_disc",
+      "high_blood_pressure",
+      "glaucoma"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -3071,7 +3099,10 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury",
+      "neck_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -3176,8 +3207,13 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
-    "pregnancy_safe": true,
+    "contraindications": [
+      "lower_back_pain",
+      "herniated_disc",
+      "serious_back_injury",
+      "neck_injury"
+    ],
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "flexibility"
@@ -3391,7 +3427,9 @@
       "pitta": "balances",
       "kapha": "aggravates"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4120,7 +4158,11 @@
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury",
+      "groin_injury",
+      "hip_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4164,7 +4206,11 @@
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury",
+      "shoulder_injury",
+      "rotator_cuff"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4202,7 +4248,9 @@
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4246,7 +4294,11 @@
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury",
+      "groin_injury",
+      "hip_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4351,7 +4403,11 @@
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury",
+      "knee_replacement",
+      "ankle_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4549,7 +4605,9 @@
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
+    "contraindications": [
+      "lower_back_pain"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4658,8 +4716,12 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
-    "pregnancy_safe": true,
+    "contraindications": [
+      "lower_back_pain",
+      "herniated_disc",
+      "serious_back_injury"
+    ],
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "stress_relief",
@@ -4705,7 +4767,10 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury",
+      "neck_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4755,7 +4820,10 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury",
+      "lower_back_pain"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4797,7 +4865,10 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury",
+      "lower_back_pain"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4850,7 +4921,12 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "wrist_injury",
+      "shoulder_injury",
+      "high_blood_pressure",
+      "glaucoma"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4894,7 +4970,9 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4936,7 +5014,11 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury",
+      "lower_back_pain",
+      "neck_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4982,7 +5064,11 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury",
+      "ankle_injury",
+      "hip_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -5162,8 +5248,12 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
-    "pregnancy_safe": true,
+    "contraindications": [
+      "lower_back_pain",
+      "herniated_disc",
+      "serious_back_injury"
+    ],
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "stress_relief",
@@ -5274,8 +5364,14 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
-    "pregnancy_safe": true,
+    "contraindications": [
+      "knee_injury",
+      "lower_back_pain",
+      "herniated_disc",
+      "serious_back_injury",
+      "shoulder_injury"
+    ],
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "flexibility",
@@ -5312,7 +5408,11 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury",
+      "groin_injury",
+      "hip_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -5469,7 +5569,11 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "lower_back_pain",
+      "herniated_disc",
+      "serious_back_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -5515,7 +5619,10 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury",
+      "lower_back_pain"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -5624,8 +5731,13 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
-    "pregnancy_safe": true,
+    "contraindications": [
+      "groin_injury",
+      "knee_injury",
+      "serious_back_injury",
+      "hip_injury"
+    ],
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "stress_relief",
@@ -5682,7 +5794,11 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "neck_injury",
+      "lower_back_pain",
+      "herniated_disc"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -5726,7 +5842,9 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -5773,7 +5891,11 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury",
+      "shoulder_injury",
+      "high_blood_pressure"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -5825,7 +5947,10 @@
       "pitta": "balances",
       "kapha": "balances"
     },
-    "contraindications": [],
+    "contraindications": [
+      "knee_injury",
+      "shoulder_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",

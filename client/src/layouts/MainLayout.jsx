@@ -7,7 +7,7 @@ import LoadingScreen from '../components/LoadingScreen'
 import { SkeletonDashboard, SkeletonChat } from '../components/Skeleton'
 import {
   LayoutDashboard, MessageCircle, Leaf, Activity, CheckSquare,
-  Settings, LogOut, Menu, X, Bell
+  Settings, LogOut, Menu, X, Bell, TrendingUp, Users, AlarmClock, Brain, ShieldCheck
 } from 'lucide-react'
 import ScrollToTop from '../components/ScrollToTop'
 import FeedbackWidget from '../components/FeedbackWidget'
@@ -16,20 +16,25 @@ import '../pages/Dashboard.css'
 import './MainLayout.css'
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard',    Icon: LayoutDashboard, path: '/dashboard',     i18nKey: 'dashboard_title' },
-  { id: 'chat',      label: 'AI Assistant', Icon: MessageCircle,   path: '/chat',           i18nKey: 'chat' },
-  { id: 'remedies',  label: 'Remedies',     Icon: Leaf,            path: '/remedies',       i18nKey: 'home_remedies' },
-  { id: 'timeline',  label: 'Timeline',     Icon: Activity,        path: '/timeline',       i18nKey: 'timeline' },
-  { id: 'checkin',       label: 'Check-In',      Icon: CheckSquare, path: '/checkin',       i18nKey: 'checkin' },
-  { id: 'notifications', label: 'Notifications', Icon: Bell,        path: '/notifications', i18nKey: 'notifications' },
-  { id: 'settings',      label: 'Settings',      Icon: Settings,    path: '/settings',      i18nKey: 'settings' },
+  { id: 'dashboard',    label: 'Dashboard',    Icon: LayoutDashboard, path: '/dashboard',     i18nKey: 'dashboard_title' },
+  { id: 'chat',         label: 'AI Assistant', Icon: MessageCircle,   path: '/chat',           i18nKey: 'chat' },
+  { id: 'progress',     label: 'Progress',     Icon: TrendingUp,      path: '/progress',       i18nKey: 'progress' },
+  { id: 'checkin',      label: 'Check-In',     Icon: CheckSquare,     path: '/checkin',        i18nKey: 'checkin' },
+  { id: 'remedies',     label: 'Remedies',     Icon: Leaf,            path: '/remedies',       i18nKey: 'home_remedies' },
+  { id: 'timeline',     label: 'Timeline',     Icon: Activity,        path: '/timeline',       i18nKey: 'timeline' },
+  { id: 'community',    label: 'Community',    Icon: Users,           path: '/community',      i18nKey: 'community' },
+  { id: 'reminders',    label: 'Reminders',    Icon: AlarmClock,      path: '/reminders',      i18nKey: 'reminders' },
+  { id: 'interaction',  label: 'Herb Safety',  Icon: ShieldCheck,     path: '/interaction-check', i18nKey: 'interaction_check' },
+  { id: 'dosha-quiz',   label: 'Dosha Quiz',   Icon: Brain,           path: '/dosha-quiz',     i18nKey: 'dosha_quiz' },
+  { id: 'notifications',label: 'Notifications',Icon: Bell,            path: '/notifications',  i18nKey: 'notifications' },
+  { id: 'settings',     label: 'Settings',     Icon: Settings,        path: '/settings',       i18nKey: 'settings' },
 ]
 
 const BOTTOM_NAV = [
   { id: 'dashboard', label: 'Home',      Icon: LayoutDashboard, path: '/dashboard' },
   { id: 'chat',      label: 'AI Chat',   Icon: MessageCircle,   path: '/chat' },
-  { id: 'checkin',   label: 'Check-In',  Icon: CheckSquare,     path: '/checkin' },
-  { id: 'remedies',  label: 'Remedies',  Icon: Leaf,            path: '/remedies' },
+  { id: 'progress',  label: 'Progress',  Icon: TrendingUp,      path: '/progress' },
+  { id: 'community', label: 'Community', Icon: Users,           path: '/community' },
   { id: 'settings',  label: 'More',      Icon: Settings,        path: '/settings' },
 ]
 

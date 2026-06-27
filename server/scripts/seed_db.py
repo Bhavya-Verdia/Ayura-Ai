@@ -19,17 +19,17 @@ load_dotenv()
 
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017/ayura")
 DB_NAME = os.getenv("MONGO_DB", "ayura")
-KNOWLEDGE_DIR = Path(__file__).parent.parent / "data" / "knowledge"
+KNOWLEDGE_DIR = Path(__file__).parent.parent / "data" / "knowledge_base"
 
 
 async def seed_collection(db, collection_name: str, json_file: str, key: str):
     data = json.loads((KNOWLEDGE_DIR / json_file).read_text(encoding="utf-8"))
-    
+
     if isinstance(data, list):
         docs = data
     else:
         docs = data.get(key, [])
-        
+
     if not docs:
         print(f"  ⚠️  No documents found in {json_file}[{key}]")
         return
@@ -61,7 +61,7 @@ async def seed_all():
     ])
     await db["dosha_quiz_questions"].delete_many({})
     await db["dosha_quiz_questions"].insert_many(dosha_data.get("doshaQuizQuestions", []))
-    print(f"  ✅ dosha_profiles: 3 documents seeded")
+    print("  ✅ dosha_profiles: 3 documents seeded")
     print(f"  ✅ dosha_quiz_questions: {len(dosha_data.get('doshaQuizQuestions', []))} questions seeded")
 
     client.close()

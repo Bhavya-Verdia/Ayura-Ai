@@ -26,6 +26,14 @@ def _llm_bad_json():
 
 # ── Yoga enricher ─────────────────────────────────────────────────────────────
 
+def _mock_rag(module: str):
+    """Return a context-manager that mocks rag_pipeline for the given enricher module."""
+    return patch(f"{module}.rag_pipeline", **{
+        "query": AsyncMock(return_value=[]),
+        "format_context.return_value": "",
+    })
+
+
 @pytest.mark.asyncio
 async def test_yoga_enricher_falls_back_on_llm_error():
     from services.yoga_plan_enricher import enrich_yoga_plan
@@ -34,8 +42,11 @@ async def test_yoga_enricher_falls_back_on_llm_error():
     user_profile = {"dominant_dosha": "vata"}
     yoga_prefs = {}
 
-    with patch("services.yoga_plan_enricher.llm_client") as mock_llm:
+    with patch("services.yoga_plan_enricher.llm_client") as mock_llm, \
+         patch("services.yoga_plan_enricher.rag_pipeline") as mock_rag:
         mock_llm.generate = AsyncMock(return_value=_llm_error_response())
+        mock_rag.query = AsyncMock(return_value=[])
+        mock_rag.format_context = lambda docs, max_chars=None: ""
         result = await enrich_yoga_plan(raw_plan, user_profile, yoga_prefs)
 
     assert result["enriched"] is False
@@ -47,8 +58,11 @@ async def test_yoga_enricher_falls_back_on_bad_json():
     from services.yoga_plan_enricher import enrich_yoga_plan
 
     raw_plan = {"weekly_schedule": [], "plan_id": "test-yoga-2"}
-    with patch("services.yoga_plan_enricher.llm_client") as mock_llm:
+    with patch("services.yoga_plan_enricher.llm_client") as mock_llm, \
+         patch("services.yoga_plan_enricher.rag_pipeline") as mock_rag:
         mock_llm.generate = AsyncMock(return_value=_llm_bad_json())
+        mock_rag.query = AsyncMock(return_value=[])
+        mock_rag.format_context = lambda docs, max_chars=None: ""
         result = await enrich_yoga_plan(raw_plan, {}, {})
 
     assert result["enriched"] is False
@@ -59,8 +73,11 @@ async def test_yoga_enricher_falls_back_on_exception():
     from services.yoga_plan_enricher import enrich_yoga_plan
 
     raw_plan = {"weekly_schedule": [], "plan_id": "test-yoga-3"}
-    with patch("services.yoga_plan_enricher.llm_client") as mock_llm:
+    with patch("services.yoga_plan_enricher.llm_client") as mock_llm, \
+         patch("services.yoga_plan_enricher.rag_pipeline") as mock_rag:
         mock_llm.generate = AsyncMock(side_effect=RuntimeError("Azure timeout"))
+        mock_rag.query = AsyncMock(return_value=[])
+        mock_rag.format_context = lambda docs, max_chars=None: ""
         result = await enrich_yoga_plan(raw_plan, {}, {})
 
     assert result["enriched"] is False
@@ -73,8 +90,11 @@ async def test_gym_enricher_falls_back_on_llm_error():
     from services.gym_plan_enricher import enrich_gym_plan
 
     raw_plan = {"weekly_schedule": [], "plan_id": "test-gym"}
-    with patch("services.gym_plan_enricher.llm_client") as mock_llm:
+    with patch("services.gym_plan_enricher.llm_client") as mock_llm, \
+         patch("services.gym_plan_enricher.rag_pipeline") as mock_rag:
         mock_llm.generate = AsyncMock(return_value=_llm_error_response())
+        mock_rag.query = AsyncMock(return_value=[])
+        mock_rag.format_context = lambda docs, max_chars=None: ""
         result = await enrich_gym_plan(raw_plan, {}, {})
 
     assert result["enriched"] is False
@@ -88,8 +108,11 @@ async def test_diet_enricher_falls_back_on_llm_error():
     from services.diet_plan_enricher import enrich_diet_plan
 
     raw_plan = {"weekly_schedule": [], "plan_id": "test-diet"}
-    with patch("services.diet_plan_enricher.llm_client") as mock_llm:
+    with patch("services.diet_plan_enricher.llm_client") as mock_llm, \
+         patch("services.diet_plan_enricher.rag_pipeline") as mock_rag:
         mock_llm.generate = AsyncMock(return_value=_llm_error_response())
+        mock_rag.query = AsyncMock(return_value=[])
+        mock_rag.format_context = lambda docs, max_chars=None: ""
         result = await enrich_diet_plan(raw_plan, {}, {})
 
     assert result["enriched"] is False
@@ -102,8 +125,11 @@ async def test_panchakarma_enricher_falls_back_on_llm_error():
     from services.panchakarma_enricher import enrich_panchakarma_plan
 
     raw_plan = {"daily_schedule": [], "plan_id": "test-pk"}
-    with patch("services.panchakarma_enricher.llm_client") as mock_llm:
+    with patch("services.panchakarma_enricher.llm_client") as mock_llm, \
+         patch("services.panchakarma_enricher.rag_pipeline") as mock_rag:
         mock_llm.generate = AsyncMock(return_value=_llm_error_response())
+        mock_rag.query = AsyncMock(return_value=[])
+        mock_rag.format_context = lambda docs, max_chars=None: ""
         result = await enrich_panchakarma_plan(raw_plan, {}, {})
 
     assert result["enriched"] is False
@@ -120,8 +146,11 @@ async def test_remedy_enricher_falls_back_on_llm_error():
         "symptoms_addressed": [{"symptom_id": "cold", "symptom_display": "Cold", "severity": "mild", "remedy": {"name": "Ginger tea"}}],
         "plan_id": "test-remedy",
     }
-    with patch("services.remedy_enricher.llm_client") as mock_llm:
+    with patch("services.remedy_enricher.llm_client") as mock_llm, \
+         patch("services.remedy_enricher.rag_pipeline") as mock_rag:
         mock_llm.generate = AsyncMock(return_value=_llm_error_response())
+        mock_rag.query = AsyncMock(return_value=[])
+        mock_rag.format_context = lambda docs, max_chars=None: ""
         result = await enrich_remedies_plan(raw_plan, {})
 
     assert result["enriched"] is False
@@ -156,9 +185,12 @@ async def test_yoga_enricher_merges_valid_llm_response():
     })
 
     raw_plan = {"weekly_schedule": [], "plan_id": "test-yoga-ok"}
-    with patch("services.yoga_plan_enricher.llm_client") as mock_llm:
+    with patch("services.yoga_plan_enricher.llm_client") as mock_llm, \
+         patch("services.yoga_plan_enricher.rag_pipeline") as mock_rag:
         mock_llm.generate = AsyncMock(return_value=valid_response)
         mock_llm.provider = "azure_openai"
+        mock_rag.query = AsyncMock(return_value=[])
+        mock_rag.format_context = lambda docs, max_chars=None: ""
         result = await enrich_yoga_plan(raw_plan, {"dominant_dosha": "vata"}, {})
 
     assert result["enriched"] is True

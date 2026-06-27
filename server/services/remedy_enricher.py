@@ -1,6 +1,7 @@
 import json
 import logging
 from ai.llm_client import llm_client
+from ai.rag_pipeline import rag_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,13 @@ async def enrich_remedies_plan(raw_plan: dict, user_profile: dict, remedies_pref
                 "remedy_name": sym.get("remedy", {}).get("name")
             })
 
+        # Fetch grounding context for each symptom from the remedy knowledge base
+        dosha = user_profile.get("dominant_dosha") or "vata"
+        symptom_names = [s.get("symptom_display") or s.get("symptom_id") for s in symptoms_addressed[:3]]
+        rag_query = f"home remedy {' '.join(symptom_names)} {dosha} Ayurvedic treatment"
+        docs = await rag_pipeline.query(rag_query, "remedy", n_results=4)
+        rag_context = rag_pipeline.format_context(docs, max_chars=1200) or "Use classical Ayurvedic home remedy principles."
+
         prompt = f"""
 You are an expert Ayurvedic practitioner. A home remedies plan has been generated for a user with the following profile:
 - Age: {user_profile.get('age')}
@@ -34,6 +42,9 @@ You are an expert Ayurvedic practitioner. A home remedies plan has been generate
 - Medical History: {', '.join(user_profile.get('medical_history', []))}
 - Current Medications: {', '.join(user_profile.get('current_medications', []))}
 - Allergies: {', '.join(user_profile.get('allergies', []))}
+
+CLASSICAL KNOWLEDGE BASE (ground your rationale in these references):
+{rag_context}
 
 Symptoms Addressed:
 {json.dumps(compressed_symptoms, indent=2)}
@@ -56,7 +67,7 @@ Provide an enriched context in EXACTLY this JSON format:
             system_prompt="You are a clinical Ayurvedic expert. Output strictly valid JSON matching the schema.",
             json_mode=True,
         )
-        
+
         enrichment_data = json.loads(response)
         if "error" in enrichment_data:
             raise ValueError(f"LLM provider error: {enrichment_data['error']}")
@@ -67,14 +78,14 @@ Provide an enriched context in EXACTLY this JSON format:
         raw_plan["recovery_timeline"] = enrichment_data.get("recovery_timeline", "")
         raw_plan["prevention_tips"] = enrichment_data.get("prevention_tips", [])
         raw_plan["when_to_escalate"] = enrichment_data.get("when_to_escalate", "")
-        
+
         # Merge rationales
         rationales = enrichment_data.get("remedy_rationale", {})
         for sym in raw_plan.get("symptoms_addressed", []):
             sym_id = sym.get("symptom_id")
             if sym_id in rationales:
                 sym["ayurvedic_rationale"] = rationales[sym_id]
-        
+
         raw_plan["enriched"] = True
         raw_plan["enrichment_model"] = llm_client.provider
         return raw_plan
@@ -100,6 +111,16 @@ async def enrich_medicines_plan(raw_plan: dict, user_profile: dict, medicines_pr
         if not all_forms:
             raw_plan["enriched"] = False
             return raw_plan
+
+        # Fetch grounding context from ayurveda + remedy collections
+        vikriti = raw_plan.get("vikriti_dominant") or user_profile.get("dominant_dosha") or "vata"
+        conditions = raw_plan.get("active_conditions") or user_profile.get("medical_history") or []
+        med_names = [m["name"] for m in all_forms[:3]]
+        rag_query = f"Ayurvedic medicine {' '.join(med_names)} {vikriti} clinical formulation"
+        ayur_docs = await rag_pipeline.query(rag_query, "ayurveda", n_results=3, dosha_filter=vikriti)
+        cond_query = f"{' '.join(conditions[:2])} Ayurvedic treatment herb" if conditions else rag_query
+        remedy_docs = await rag_pipeline.query(cond_query, "remedy", n_results=2)
+        rag_context = rag_pipeline.format_context(ayur_docs + remedy_docs, max_chars=1500) or "Use classical Charaka Samhita and Bhaishajya Ratnavali principles."
 
         # Build compressed pharmacology block for LLM — include all new schema fields
         pharma_data = []
@@ -142,11 +163,21 @@ async def enrich_medicines_plan(raw_plan: dict, user_profile: dict, medicines_pr
             "You are a senior Vaidya with M.D. (Ayu) and 20 years of clinical practice. "
             "You write precise Ayurvedic clinical prescriptions anchored in Charaka Samhita, "
             "Ashtanga Hridayam, Sharangadhara Samhita, and Bhaishajya Ratnavali. "
+            "CRITICAL RULE ON CLASSICAL REFERENCES: Never fabricate specific shloka numbers or "
+            "verse numbers (e.g., do NOT write '6/15' or 'verse 42' unless you are certain). "
+            "Instead cite only the Samhita name and Sthana/Adhyaya (chapter division) — "
+            "e.g., 'Charaka Samhita, Chikitsa Sthana' or 'Ashtanga Hridayam, Sutrasthana'. "
+            "A BAMS-qualified reviewer will verify all references. Inaccurate shloka numbers "
+            "destroy credibility. When unsure of the exact shloka, state the principle and the "
+            "classical text it comes from without a specific number. "
             "Output ONLY valid JSON. No markdown. No preamble."
         )
 
         prompt = f"""
 A personalised Ayurvedic medicines plan has been generated. Write a complete clinical enrichment.
+
+CLASSICAL KNOWLEDGE BASE (ground your rationale in these references):
+{rag_context}
 
 PATIENT PROFILE:
 - Name context: Age {user_profile.get('age')}, Gender {user_profile.get('gender')}
@@ -170,7 +201,7 @@ Respond in EXACTLY this JSON format — every field is required:
   "formulation_rationale": {{
     "Medicine Name": {{
       "rasa_guna_reasoning": "How the Rasa-Guna-Virya-Vipaka of this formulation corrects the patient's specific Vikriti. Cite the dominant Rasa and Karma that are most relevant.",
-      "classical_basis": "Specific Samhita reference and the principle behind using this formulation for this condition — e.g., 'Charaka Chikitsa 6/15: Triphala is prescribed as Rasayana for all three Doshas...'",
+      "classical_basis": "Samhita name + Sthana/Adhyaya only (no verse numbers unless certain) + the classical principle — e.g., 'Charaka Samhita, Chikitsa Sthana: Triphala is described as Rasayana for Tridosha.' Never invent shloka numbers.",
       "anupana_reason": "Why the selected Anupana is appropriate for this patient's condition and Agni type"
     }}
   }},
@@ -187,7 +218,7 @@ Respond in EXACTLY this JSON format — every field is required:
     "Specific food or habit to AVOID during this protocol — with brief Ayurvedic reason (5–8 items)"
   ],
   "viruddha_ahara_alerts": [
-    "Specific incompatible food combination to avoid WHILE ON THESE MEDICINES — classical reference if possible (include 2–4 items or empty array if none)"
+    "Specific incompatible food combination to avoid WHILE ON THESE MEDICINES — state the incompatibility and the classical text (Sthana only, no verse numbers unless certain). Include 2–4 real Viruddha Ahara items relevant to these specific medicines, or empty array if none apply."
   ],
   "dose_note": "Agni-specific dosing guidance — how to start, titrate, and maintain based on this patient's Agni type",
   "monitoring_signs": "What the patient should watch for — positive signs of improvement AND early warning signs that indicate the protocol needs adjustment",

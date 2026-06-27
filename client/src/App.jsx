@@ -39,6 +39,8 @@ const Community = React.lazy(() => import('./pages/Community'))
 const DoshaQuiz = React.lazy(() => import('./pages/DoshaQuiz'))
 const Notifications = React.lazy(() => import('./pages/Notifications'))
 const Reminders = React.lazy(() => import('./pages/Reminders'))
+const InteractionChecker = React.lazy(() => import('./pages/InteractionChecker'))
+const Progress = React.lazy(() => import('./pages/Progress'))
 
 function FullPageSpinner() {
   return <LoadingScreen />
@@ -148,6 +150,7 @@ export default function App() {
             
             <Route element={<PrivateRoute requireOnboardingComplete><MainLayout /></PrivateRoute>}>
               <Route path="/dashboard/*" element={<PageWrapper><Dashboard /></PageWrapper>} />
+              <Route path="/progress" element={<PageWrapper><Progress /></PageWrapper>} />
               <Route path="/remedies" element={<PageWrapper><Remedies /></PageWrapper>} />
               <Route path="/timeline" element={<PageWrapper><HealthTimeline /></PageWrapper>} />
               <Route path="/checkin" element={<PageWrapper><CheckIn /></PageWrapper>} />
@@ -157,6 +160,7 @@ export default function App() {
               <Route path="/dosha-quiz" element={<PageWrapper><DoshaQuiz /></PageWrapper>} />
               <Route path="/notifications" element={<PageWrapper><Notifications /></PageWrapper>} />
               <Route path="/reminders" element={<PageWrapper><Reminders /></PageWrapper>} />
+              <Route path="/interaction-check" element={<PageWrapper><InteractionChecker /></PageWrapper>} />
             </Route>
             
             <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />

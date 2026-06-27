@@ -4,8 +4,8 @@ Embeds knowledge base documents into ChromaDB for RAG retrieval.
 Run: python scripts/build_vectors.py
 """
 
-import asyncio
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -14,28 +14,53 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "server"))
 import chromadb
 from chromadb.config import Settings
 
-KNOWLEDGE_DIR = Path(__file__).parent.parent / "data" / "knowledge"
+KNOWLEDGE_DIR = Path(__file__).parent.parent / "data" / "knowledge_base"
 CHROMA_DIR = Path(__file__).parent.parent / "data" / "chromadb"
 
 
 def get_embedder():
-    """Try Azure OpenAI embeddings, fall back to sentence-transformers."""
-    try:
-        from dotenv import load_dotenv
-        import os
-        load_dotenv()
-        from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
-        return OpenAIEmbeddingFunction(
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            api_base=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_type="azure",
-            api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
-            model_name=os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small"),
-        )
-    except Exception:
-        from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
-        print("  ℹ️  Using local SentenceTransformer (no Azure key found)")
-        return SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
+    """Try Azure OpenAI embeddings, fall back to ChromaDB default ONNX."""
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    azure_key = os.getenv("AZURE_OPENAI_API_KEY")
+    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    api_version = os.getenv("AZURE_OPENAI_EMBEDDING_API_VERSION", "2024-02-01")
+    embed_deployment = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small")
+
+    if azure_key and azure_endpoint:
+        try:
+            from openai import AzureOpenAI
+            from chromadb.api.types import Documents, Embeddings
+            import chromadb.utils.embedding_functions as ef
+
+            client = AzureOpenAI(
+                api_key=azure_key,
+                azure_endpoint=azure_endpoint,
+                api_version=api_version,
+            )
+
+            class AzureEmbeddingFunction(ef.EmbeddingFunction):
+                def __call__(self, input: Documents) -> Embeddings:
+                    response = client.embeddings.create(
+                        input=input,
+                        model=embed_deployment,
+                    )
+                    return [item.embedding for item in response.data]
+
+            fn = AzureEmbeddingFunction()
+            fn(["test"])  # probe before committing
+            print(f"  ✅ Using Azure OpenAI embeddings ({embed_deployment})")
+            return fn
+        except Exception as e:
+            print(f"  ⚠️  Azure embedding deployment not available ({e}), using ChromaDB default")
+
+    # Default: ChromaDB's bundled ONNX all-MiniLM-L6-v2 — the SAME embedder the app
+    # uses at query time (collections are read without an explicit embedding_function),
+    # so seed and query stay consistent. No Azure, no torch, no extra deps.
+    from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
+    print("  ℹ️  Using ChromaDB default embeddings (ONNX all-MiniLM-L6-v2)")
+    return DefaultEmbeddingFunction()
 
 
 def chunk_text(text: str, max_chars: int = 800) -> list[str]:
@@ -96,16 +121,34 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
 
     # Gym routines → fitness
     gym_data = json.loads((KNOWLEDGE_DIR / "gym_routines.json").read_text(encoding="utf-8"))
-    for routine in gym_data.get("routines", []):
-        dosha = routine.get("dosha", "")
-        text = f"Gym routine for {dosha} dosha, {routine.get('fitnessLevel')} level, {routine.get('bmiCategory')} BMI. Ayurvedic tips: {routine.get('ayurvedicNotes')}. Safety: {routine.get('safetyNotes')}."
-        docs["fitness"].append({"text": text, "dosha": dosha, "source": "gym_routines"})
+    gym_list = gym_data if isinstance(gym_data, list) else gym_data.get("routines", [])
+    for exercise in gym_list:
+        dosha_suit = exercise.get("dosha_suitability", {})
+        contraindications = ", ".join(exercise.get("contraindications", []))
+        text = (
+            f"Exercise: {exercise.get('name')} ({exercise.get('mechanics', '')} movement, "
+            f"targets {exercise.get('target_muscle', '')}). "
+            f"Dosha suitability: Vata={dosha_suit.get('vata', '')}, "
+            f"Pitta={dosha_suit.get('pitta', '')}, Kapha={dosha_suit.get('kapha', '')}. "
+            f"Contraindications: {contraindications or 'none'}. "
+            f"Instructions: {exercise.get('instructions', '')}."
+        )
+        docs["fitness"].append({"text": text, "dosha": "", "source": "gym_routines"})
 
     # Diet plans → nutrition
     diet_data = json.loads((KNOWLEDGE_DIR / "diet_plans.json").read_text(encoding="utf-8"))
-    for plan in diet_data.get("plans", []):
-        dosha = plan.get("dosha", "")
-        text = f"Diet plan for {dosha} dosha, goal {plan.get('goal')}, BMI {plan.get('bmiCategory')}. Favor: {plan.get('foodsToFavor', [])}. Avoid: {plan.get('foodsToAvoid', [])}. Spices: {plan.get('ayurvedicSpices', [])}. Guidelines: {plan.get('mealTimingGuidelines', [])}."
+    diet_list = diet_data if isinstance(diet_data, list) else diet_data.get("plans", [])
+    for plan in diet_list:
+        dosha = plan.get("dosha", plan.get("dosha_effect", ""))
+        name = plan.get("name", "")
+        benefits = ", ".join(plan.get("benefits", []))
+        contraindications = ", ".join(plan.get("contraindications", []))
+        ingredients = ", ".join(plan.get("ingredients", []))
+        text = (
+            f"Ayurvedic diet: {name}. Dosha effect: {plan.get('dosha_effect', dosha)}. "
+            f"Type: {plan.get('type', '')}. Ingredients: {ingredients}. "
+            f"Benefits: {benefits}. Avoid if: {contraindications or 'none'}."
+        )
         docs["nutrition"].append({"text": text, "dosha": dosha, "source": "diet_plans"})
 
     # Ayurvedic Foods → nutrition
@@ -115,11 +158,41 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
             text = f"Ayurvedic Food: {f.get('name')} ({f.get('category')}). Rasa (Taste): {', '.join(f.get('rasa', []))}. Virya (Potency): {f.get('virya')}. Vipaka (Post-digestive): {f.get('vipaka')}. Notes: {f.get('notes')}."
             docs["nutrition"].append({"text": text, "dosha": "", "source": "ayurvedic_foods"})
 
+    # Classical Ayurvedic diet texts → nutrition + ayurveda
+    if (KNOWLEDGE_DIR / "ayurvedic_diet_classical.json").exists():
+        classical_data = json.loads((KNOWLEDGE_DIR / "ayurvedic_diet_classical.json").read_text(encoding="utf-8"))
+        for entry in classical_data:
+            meta = {
+                "text": entry["text"],
+                "dosha": entry.get("dosha", ""),
+                "source": "ayurvedic_classical_texts",
+                "source_credibility": "classical_reference",
+                "pmid": "",
+            }
+            domain = entry.get("domain", "nutrition")
+            docs[domain].append(meta)
+            # Cross-index foundational principles into ayurveda collection too
+            if domain == "nutrition" and entry.get("topic") in ("ahara_principles", "viruddha_ahara", "agni", "ama"):
+                docs["ayurveda"].append(meta)
+
     # Panchakarma → panchakarma
     pk_data = json.loads((KNOWLEDGE_DIR / "panchakarma_plans.json").read_text(encoding="utf-8"))
     for protocol in pk_data:
-        text = f"Panchakarma Protocol: {protocol.get('name')}. Dosha: {protocol.get('primary_dosha')}. Description: {protocol.get('description')}. Steps: {' '.join(protocol.get('steps', []))}. Contraindications: {', '.join(protocol.get('contraindications', []))}."
-        docs["panchakarma"].append({"text": text, "dosha": protocol.get("primary_dosha", ""), "source": "panchakarma_plans"})
+        dosha = protocol.get("target_dosha", protocol.get("primary_dosha", ""))
+        classification = protocol.get("classical_classification", "")
+        text_ref = protocol.get("classical_text_ref", "")
+        benefits = ", ".join(protocol.get("benefits", []))
+        contraindications = ", ".join(protocol.get("contraindications", []))
+        text = (
+            f"Panchakarma Protocol: {protocol.get('name')}. "
+            f"Classification: {classification}. "
+            f"Target Dosha: {dosha}. "
+            f"Classical reference: {text_ref}. "
+            f"Benefits: {benefits}. "
+            f"Contraindications: {contraindications}. "
+            f"Instructions: {protocol.get('instructions', '')}."
+        )
+        docs["panchakarma"].append({"text": text, "dosha": dosha, "source": "panchakarma_plans"})
 
     # Ritucharya → ayurveda
     ritual_data = json.loads((KNOWLEDGE_DIR / "ritucharya_seasonal.json").read_text(encoding="utf-8"))
@@ -132,12 +205,25 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
 
 def build_vectors():
     print("🔄 Building ChromaDB vector store...")
-    CHROMA_DIR.mkdir(parents=True, exist_ok=True)
 
-    client = chromadb.PersistentClient(
-        path=str(CHROMA_DIR),
-        settings=Settings(anonymized_telemetry=False),
-    )
+    # Seed the same store the app reads from: a remote Chroma server when
+    # CHROMA_HOST is set (Docker/staging/prod), else the embedded persistent dir.
+    chroma_host = os.environ.get("CHROMA_HOST")
+    if chroma_host:
+        chroma_port = int(os.environ.get("CHROMA_PORT", "8000"))
+        print(f"   → Seeding remote ChromaDB at {chroma_host}:{chroma_port}")
+        client = chromadb.HttpClient(
+            host=chroma_host,
+            port=chroma_port,
+            settings=Settings(anonymized_telemetry=False),
+        )
+    else:
+        CHROMA_DIR.mkdir(parents=True, exist_ok=True)
+        print(f"   → Seeding embedded ChromaDB at {CHROMA_DIR}")
+        client = chromadb.PersistentClient(
+            path=str(CHROMA_DIR),
+            settings=Settings(anonymized_telemetry=False),
+        )
     embedder = get_embedder()
 
     collection_map = {
@@ -156,17 +242,20 @@ def build_vectors():
             print(f"  ⚠️ No docs for {domain}")
             continue
 
-        col = client.get_or_create_collection(name=coll_name, embedding_function=embedder, metadata={"hnsw:space": "cosine"})
-        col.delete(where={"source": {"$ne": ""}})  # Clear existing
+        try:
+            client.delete_collection(name=coll_name)
+        except Exception:
+            pass
+        col = client.create_collection(name=coll_name, embedding_function=embedder, metadata={"hnsw:space": "cosine"})
 
         texts = [d["text"] for d in docs]
         metadatas = [
             {
-                "dosha": d.get("dosha", ""), 
+                "dosha": d.get("dosha", ""),
                 "source": d.get("source", ""),
                 "source_credibility": d.get("source_credibility", "general"),
                 "pmid": d.get("pmid", "")
-            } 
+            }
             for d in docs
         ]
         ids = [f"{domain}_{i}" for i in range(len(docs))]

@@ -218,7 +218,7 @@
   align-items: flex-start;
 }
 .rem-card-icon {
-  font-size: 2rem;
+  color: var(--ayura-teal);
   background: rgba(255,255,255,0.05);
   padding: 12px;
   border-radius: 16px;
@@ -278,6 +278,9 @@
   gap: 8px;
 }
 .rem-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--text-secondary);
@@ -397,7 +400,10 @@
   grid-column: 1 / -1;
 }
 .rem-empty-emoji {
-  font-size: 4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ayura-teal);
   margin-bottom: 20px;
   opacity: 0.8;
 }

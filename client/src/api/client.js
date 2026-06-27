@@ -140,7 +140,8 @@ export const plansAPI = {
   rate:               (planId, data) => API.post(`/plans/${planId}/rating`, data),
   getSeasonal:        ()      => API.get('/plans/seasonal'),
   generateMeditation: (params) => API.get('/plans/meditation', { params }),
-  checkInteractions:  (herbs) => API.post('/plans/interaction-check', herbs),
+  checkInteractions:  (herbs, medications = null) => API.post('/plans/interaction-check', { herbs, ...(medications !== null ? { medications } : {}) }),
+  reportReaction:     (planType, { item, reaction, severity = 'moderate' }) => API.post(`/plans/${planType}/report-reaction`, { item, reaction, severity }),
   getJobStatus:       (jobId) => API.get(`/plans/job/${jobId}`),
 }
 
@@ -161,8 +162,9 @@ export const chatAPI = {
 
 // ── Progress ───────────────────────────────────
 export const progressAPI = {
-  log:        (data) => API.post('/progress/log', data),
-  getSummary: ()     => API.get('/progress/summary'),
+  log:        (data)         => API.post('/progress/log', data),
+  getSummary: ()             => API.get('/progress/summary'),
+  getLogs:    (limit = 30)   => API.get('/progress/logs', { params: { limit } }),
 }
 
 // ── Export ─────────────────────────────────────
@@ -177,6 +179,8 @@ export const notificationsAPI = {
   unreadCount: ()   => API.get('/notifications/unread-count'),
   markRead:    (id) => API.put(`/notifications/${id}/read`),
   markAllRead: ()   => API.post('/notifications/mark-all-read'),
+  remove:      (id) => API.delete(`/notifications/${id}`),
+  clearAll:    ()   => API.delete('/notifications'),
 }
 
 export const remindersAPI = {
@@ -203,7 +207,11 @@ export const communityAPI = {
   list:       (offset = 0, limit = 20) => API.get('/community', { params: { offset, limit } }),
   create:     (content) => API.post('/community', { content }),
   toggleLike: (postId) => API.post(`/community/${postId}/like`),
+  report:     (postId, reason = '') => API.post(`/community/${postId}/report`, { reason }),
   remove:     (postId) => API.delete(`/community/${postId}`),
+  listComments:  (postId) => API.get(`/community/${postId}/comments`),
+  addComment:    (postId, content) => API.post(`/community/${postId}/comments`, { content }),
+  removeComment: (commentId) => API.delete(`/community/comments/${commentId}`),
 }
 
 // ── Weather ────────────────────────────────────

@@ -11,11 +11,11 @@ class ConditionFilter:
     """Filters plans and recommendations based on medical constraints."""
 
     def __init__(self):
-        constraints_path = Path(__file__).parent.parent / "data" / "knowledge" / "medical_constraints.json"
+        constraints_path = Path(__file__).parent.parent / "data" / "knowledge_base" / "medical_constraints.json"
         with open(constraints_path, "r") as f:
             data = json.load(f)
         self.constraints = data.get("constraints", {})
-        interactions_path = Path(__file__).parent.parent / "data" / "knowledge" / "drug_herb_interactions.json"
+        interactions_path = Path(__file__).parent.parent / "data" / "knowledge_base" / "drug_herb_interactions.json"
         with open(interactions_path, "r", encoding="utf-8") as f:
             interaction_data = json.load(f)
         self.drug_herb_interactions = interaction_data.get("interactions", [])
@@ -24,7 +24,7 @@ class ConditionFilter:
     def get_constraints(self, medical_history: list[str]) -> dict:
         """
         Aggregate all constraints for a user's medical conditions.
-        
+
         Returns unified avoid/prefer/modification rules for each plan type.
         """
         aggregated = {
@@ -73,7 +73,7 @@ class ConditionFilter:
             "ssri_antidepressants": ["ssri", "prozac", "zoloft", "lexapro", "fluoxetine", "sertraline", "escitalopram"],
             "oral_contraceptives": ["oral contraceptive", "birth control", "contraceptive pill"],
         }
-        
+
         user_med_categories = []
         for med in medications:
             med_lower = med.lower()
@@ -85,7 +85,7 @@ class ConditionFilter:
                 user_med_categories.append("blood_pressure_meds")
             if any(term in med_lower for term in ["ssri", "prozac", "zoloft", "lexapro", "antidepressant"]):
                 user_med_categories.append("antidepressants")
-        
+
         warnings = []
         normalized_herbs = {self._normalize_token(herb): herb for herb in herbs}
         for med in medications:
@@ -166,7 +166,7 @@ class ConditionFilter:
             risks["arthritis"] = 0.45
         if dosha == "pitta" and bmi > 25:
             risks["hypertension"] = 0.5
-            
+
         return {k: min(1.0, round(v, 3)) for k, v in risks.items()}
 
     def map_symptoms_to_conditions(self, symptoms: list[str]) -> dict[str, float]:
@@ -191,7 +191,7 @@ class ConditionFilter:
             {"name": "Yoga", "vata_score": 90, "pitta_score": 80, "kapha_score": 70, "intensity": 1, "joint_friendly": 1, "impact": 0},
             {"name": "Strength Training", "vata_score": 70, "pitta_score": 80, "kapha_score": 90, "intensity": 4, "joint_friendly": 0, "impact": 2},
         ]
-        
+
         results = []
         for ex in exercises:
             score = ex[f"{dosha}_score"]
@@ -205,7 +205,7 @@ class ConditionFilter:
             if goal == "weight_loss" and ex["intensity"] >= 3:
                 score += 15
             results.append({"name": ex["name"], "score": min(100, max(0, score))})
-            
+
         return sorted(results, key=lambda x: x["score"], reverse=True)
 
     def filter_by_allergies(self, user_profile: dict, items: list[dict]) -> list[dict]:

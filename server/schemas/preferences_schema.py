@@ -312,6 +312,17 @@ class RemedyPreferences(BaseModel):
         # recent | weeks | months | chronic
     )
 
+    # Medicines-specific safety signals
+    current_allopathic_medications: list[str] = Field(
+        default=[],
+        description="Current allopathic medication categories — used for drug-herb interaction safety gating"
+    )
+    ama_self_assessment: Optional[str] = Field(
+        None,
+        pattern="^(high|moderate|low)$",
+        description="Self-reported Ama level — overrides profile-derived ama_indicator when set"
+    )
+
     # History
     previous_ayurvedic_medicines: list[str] = Field(
         default=[],
@@ -350,6 +361,45 @@ class RemedyPreferences(BaseModel):
         return v
 
 
+# ─── Routine (Dinacharya) Preferences ────────────────────────────────────────
+
+class RoutinePreferences(BaseModel):
+    """Collected on first /api/plans/routine request."""
+
+    # Circadian preference — shifts wake-time window
+    wake_preference: str = Field(
+        "natural",
+        pattern="^(early|natural|late)$",
+        description="early = ~4:30–5:30 AM | natural = ~5:30–6:30 AM | late = ~6:30–7:30 AM",
+    )
+
+    # Occupation type — affects exercise slot intensity + sedentary movement breaks
+    occupation_type: str = Field(
+        "moderately_active",
+        pattern="^(sedentary|moderately_active|very_active)$",
+        description="sedentary (desk work) | moderately_active | very_active (manual labour / athlete)",
+    )
+
+    # Self-reported Agni — used instead of derived Agni for meal timing
+    agni_type_self_report: str = Field(
+        "sama",
+        pattern="^(sama|manda|tikshna|vishama)$",
+        description="sama (balanced) | manda (slow/sluggish) | tikshna (sharp/intense) | vishama (irregular)",
+    )
+
+    # Integration flags — if True, engine fetches latest gym/yoga plan to annotate exercise slots
+    integrate_gym_plan: bool = Field(False, description="Annotate exercise slots with user's gym plan")
+    integrate_yoga_plan: bool = Field(False, description="Annotate exercise slots with user's yoga plan")
+
+    # Carry fasting signals from diet preferences (optional — used if no DietPreferences)
+    fasting_days: list[str] = Field(default=[], description="Days the user fasts (e.g., Monday, Ekadashi)")
+    intermittent_fasting: str = Field(
+        "no",
+        pattern="^(no|12:12|14:10|16:8)$",
+        description="IF window for meal slot adjustment",
+    )
+
+
 # ─── Stored document (in MongoDB user_preferences collection) ─────────────────
 
 class UserPreferencesDocument(BaseModel):
@@ -363,6 +413,7 @@ class UserPreferencesDocument(BaseModel):
     diet: Optional[DietPreferences] = None
     panchakarma: Optional[PanchakarmaPreferences] = None
     remedies: Optional[RemedyPreferences] = None
+    routine: Optional[RoutinePreferences] = None
     updated_at: Optional[datetime] = None
 
 

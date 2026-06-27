@@ -62,9 +62,11 @@
   gap: 8px;
 }
 .rem-add-icon {
-  font-weight: 800;
-  font-size: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
+.rem-legend-icon { display: inline-flex; align-items: center; color: var(--ayura-teal); }
 
 /* Toasts */
 .rem-toast {
@@ -280,7 +282,10 @@
 }
 [data-theme='light'] .rem-card-icon-wrap { background: rgba(0,0,0,0.04); }
 .rem-card-icon {
-  font-size: 1.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ayura-teal);
 }
 
 .rem-card-info {
@@ -301,6 +306,9 @@
   color: var(--text-primary);
 }
 .rem-card-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 800;
@@ -309,6 +317,7 @@
   padding: 4px 10px;
   border-radius: 10px;
 }
+.rem-card-time svg { opacity: 0.85; }
 
 .rem-card-desc {
   color: var(--text-secondary);
@@ -403,7 +412,10 @@
   border-radius: 24px;
 }
 .rem-empty-icon {
-  font-size: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ayura-teal);
   margin-bottom: 20px;
 }
 .rem-empty-title {

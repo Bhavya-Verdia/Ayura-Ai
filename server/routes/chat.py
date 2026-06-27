@@ -1,6 +1,5 @@
 from core.logger import logger
 
-from datetime import datetime, timezone
 import asyncio
 import time
 import uuid
@@ -67,6 +66,7 @@ class ChatLLMResponse(BaseModel):
     response_text: str = Field(default="I'm here to help.")
     symptoms_to_log: list[str] = Field(default_factory=list)
     plans_to_adapt: list[str] = Field(default_factory=list)
+    reminders_to_set: list[dict] = Field(default_factory=list)
 
 @router.post("/message", response_model=ChatResponse)
 async def send_message(msg: ChatMessage, user: UserDocument = Depends(get_current_user)):
@@ -87,29 +87,55 @@ async def send_message(msg: ChatMessage, user: UserDocument = Depends(get_curren
     history_str, docs, context_text, top_conditions, dosha = await build_chat_context(
         db, user, session_id, safe_content
     )
-
-    prompt = build_chat_prompt(
-        user, safe_content, history_str, context_text, top_conditions, dosha, active_plans, stream_mode=False
-    )
-
-    try:
-        response = await llm_client.generate(prompt=prompt, system_prompt="You are an Ayurvedic AI. Reply in JSON.", json_mode=True)
-        resp_data = ChatLLMResponse.model_validate_json(response)
-        response_text = resp_data.response_text
-        symptoms_to_log = resp_data.symptoms_to_log
-        plans_to_adapt = resp_data.plans_to_adapt
-    except Exception as e:
-        logger.error(f"LLM Chat Error: {e}")
-        response_text = "I'm having trouble processing that right now."
-        symptoms_to_log = []
-        plans_to_adapt = []
-
-    # Handle Function Execution
-    await apply_chat_side_effects(db, user.id, symptoms_to_log, plans_to_adapt, safe_content)
-
     sources = [{"source": d.get("metadata", {}).get("source", "Knowledge Base")} for d in docs]
-    await save_message(db, user.id, session_id, "ai", response_text, sources)
 
+    # Recent history as a list, for the agent's conversation memory
+    try:
+        _cur = db.chat_messages.find(
+            {"session_id": session_id, "user_id": user.id}
+        ).sort("timestamp", 1).limit(10)
+        history_list = [{"role": m.get("role"), "content": m.get("content")}
+                        for m in await _cur.to_list(10)]
+    except Exception:
+        history_list = []
+
+    response_text = ""
+    used_agent = False
+
+    # ── PRIMARY: LangGraph ReAct agent (multi-step tools) ──
+    try:
+        from ai.agents.health_agent import run_health_agent
+        response_text, agent_actions = await run_health_agent(
+            db, user, active_plans, safe_content, history_list, knowledge=context_text
+        )
+        if response_text:
+            used_agent = True
+            plans_adapting = [p for p in agent_actions.get("plans_adapting", [])
+                              if p in ("gym", "yoga", "diet", "panchakarma", "remedies", "medicines")]
+            if plans_adapting:
+                await apply_chat_side_effects(db, user.id, [], plans_adapting, safe_content)
+    except Exception as e:
+        logger.warning("HTTP health agent failed (%s) — falling back to direct chat.", e)
+        used_agent = False
+
+    # ── FALLBACK: direct JSON path + tag-based tools ──
+    if not used_agent:
+        prompt = build_chat_prompt(
+            user, safe_content, history_str, context_text, top_conditions, dosha, active_plans, stream_mode=False
+        )
+        try:
+            response = await llm_client.generate(prompt=prompt, system_prompt="You are Ayura, the user's personal Ayurvedic health assistant who knows their full constitution and plans. Reply in JSON.", json_mode=True)
+            resp_data = ChatLLMResponse.model_validate_json(response)
+            response_text = resp_data.response_text
+            await apply_chat_side_effects(
+                db, user.id, resp_data.symptoms_to_log, resp_data.plans_to_adapt,
+                safe_content, reminders=resp_data.reminders_to_set,
+            )
+        except Exception as e:
+            logger.error(f"LLM Chat Error: {e}")
+            response_text = "I'm having trouble processing that right now."
+
+    await save_message(db, user.id, session_id, "ai", response_text, sources)
     return ChatResponse(response=response_text, sources=sources, session_id=session_id)
 
 @router.get("/sessions")
@@ -172,23 +198,23 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
     if not final_token:
         await websocket.close(code=1008)
         return
-        
+
     from services.auth_service import get_current_user_id
     try:
         user_id = get_current_user_id(final_token)
     except Exception:
         await websocket.close(code=1008)
         return
-        
+
     db = get_mongodb()
     user_dict = await db.users.find_one({"_id": user_id})
     if not user_dict:
         await websocket.close(code=1008)
         return
-        
+
     from schemas.user_schema import UserDocument
     user = UserDocument(**user_dict)
-    
+
     try:
         while True:
             data = await websocket.receive_text()
@@ -202,7 +228,7 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
             # Send initial state
             await websocket.send_json({"type": "status", "message": "Analyzing..."})
             await save_message(db, user.id, session_id, "user", safe_content)
-            
+
             red_flags = await detect_red_flags(safe_content, user.current_symptoms or [])
             if red_flags["has_red_flags"]:
                 sources = [{"source": "Ayura AI safety triage", "red_flags": red_flags["matches"]}]
@@ -210,7 +236,7 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
                 await websocket.send_json({"type": "done", "sources": sources})
                 await save_message(db, user.id, session_id, "ai", red_flags["message"], sources)
                 continue
-                
+
             active_plans = await fetch_active_plans(db, user.id)
             history_str, docs, context_text, top_conditions, dosha = await build_chat_context(
                 db, user, session_id, safe_content
@@ -220,38 +246,95 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
                 user, safe_content, history_str, context_text, top_conditions, dosha, active_plans, stream_mode=True
             )
 
-            await websocket.send_json({"type": "status", "message": "Generating..."})
-            full_response = ""
-
-            async def _do_stream() -> str:
-                """Collect LLM stream and forward chunks to WebSocket."""
-                collected = ""
-                async for chunk in llm_client.generate_stream(
-                    prompt=prompt,
-                    system_prompt="You are an Ayurvedic AI. Reply in plain text, do NOT use markdown code blocks.",
-                    max_tokens=1000,
-                ):
-                    collected += chunk
-                    await websocket.send_json({"type": "chunk", "content": chunk})
-                return collected
-
-            try:
-                full_response = await asyncio.wait_for(_do_stream(), timeout=90.0)
-            except asyncio.TimeoutError:
-                logger.warning("Chat stream timed out for session %s", session_id)
-                await websocket.send_json({"type": "chunk", "content": "\n(Response timed out — please try again.)"})
-            except Exception as e:
-                logger.error("Stream error: %s", e)
-                await websocket.send_json({"type": "chunk", "content": "\n(Error streaming response)"})
-            
-            # Post-process for tags
-            response_text, symptoms_to_log, plans_to_adapt = extract_xml_tags(full_response)
             sources = [{"source": d.get("metadata", {}).get("source", "Knowledge Base")} for d in docs]
-            
+            full_response = ""
+            agent_actions: dict = {}
+            used_agent = False
+
+            # Recent history as a list, for the agent's conversation memory
+            try:
+                _cur = db.chat_messages.find(
+                    {"session_id": session_id, "user_id": user.id}
+                ).sort("timestamp", 1).limit(10)
+                history_list = [{"role": m.get("role"), "content": m.get("content")}
+                                for m in await _cur.to_list(10)]
+            except Exception:
+                history_list = []
+
+            # ── PRIMARY: LangGraph ReAct agent (multi-step tools) ──
+            try:
+                from ai.agents.health_agent import stream_health_agent
+                async for kind, payload in stream_health_agent(
+                    db, user, active_plans, safe_content, history_list, knowledge=context_text
+                ):
+                    if kind == "status":
+                        await websocket.send_json({"type": "status", "message": payload})
+                    elif kind == "token":
+                        full_response += payload
+                        await websocket.send_json({"type": "chunk", "content": payload})
+                    elif kind == "done":
+                        full_response = payload.get("text") or full_response
+                        agent_actions = payload.get("actions") or {}
+                used_agent = bool(full_response)
+            except Exception as agent_err:
+                logger.warning("Health agent failed (%s) — falling back to direct chat.", agent_err)
+                used_agent = False
+
+            # ── FALLBACK: direct streaming + tag-based tools ──
+            if not used_agent:
+                await websocket.send_json({"type": "status", "message": "Generating..."})
+                prompt = build_chat_prompt(
+                    user, safe_content, history_str, context_text, top_conditions, dosha, active_plans, stream_mode=True
+                )
+                full_response = ""
+
+                async def _do_stream() -> str:
+                    collected = ""
+                    async for chunk in llm_client.generate_stream(
+                        prompt=prompt,
+                        system_prompt="You are Ayura, the user's personal Ayurvedic health assistant who knows their full constitution and plans. Reply in plain text, do NOT use markdown code blocks.",
+                        max_tokens=1000,
+                    ):
+                        collected += chunk
+                        await websocket.send_json({"type": "chunk", "content": chunk})
+                    return collected
+
+                try:
+                    full_response = await asyncio.wait_for(_do_stream(), timeout=90.0)
+                except asyncio.TimeoutError:
+                    logger.warning("Chat stream timed out for session %s", session_id)
+                    await websocket.send_json({"type": "chunk", "content": "\n(Response timed out — please try again.)"})
+                except Exception as e:
+                    logger.error("Stream error: %s", e)
+                    await websocket.send_json({"type": "chunk", "content": "\n(Error streaming response)"})
+
+                response_text, symptoms_to_log, plans_to_adapt, reminders = extract_xml_tags(full_response)
+                valid_plans = [p for p in plans_to_adapt if p in
+                               ("gym", "yoga", "diet", "panchakarma", "remedies", "medicines")]
+                # tag path: reminders not yet created — create them here
+                created = await apply_chat_side_effects(db, user.id, symptoms_to_log, [], safe_content, reminders=reminders)
+                agent_actions = {"reminders_set": created, "plans_adapting": valid_plans}
+                full_response = response_text
+
+            # ── Confirm actions → done → save → slow plan regen ──
+            reminders_set = agent_actions.get("reminders_set", [])
+            plans_adapting = [p for p in agent_actions.get("plans_adapting", [])
+                              if p in ("gym", "yoga", "diet", "panchakarma", "remedies", "medicines")]
+            if reminders_set or plans_adapting:
+                await websocket.send_json({
+                    "type": "actions",
+                    "reminders_set": reminders_set,
+                    "plans_adapting": plans_adapting,
+                })
+
             await websocket.send_json({"type": "done", "sources": sources})
-            await save_message(db, user.id, session_id, "ai", response_text, sources)
-            
-            await apply_chat_side_effects(db, user.id, symptoms_to_log, plans_to_adapt, safe_content)
-                
+            await save_message(db, user.id, session_id, "ai", full_response, sources)
+
+            # Plan regeneration is slow (engine + LLM enricher) — run after the reply.
+            # (Agent reminders are already created by the set_reminder tool; only
+            # plan adaptation is executed here, for both paths.)
+            if plans_adapting:
+                await apply_chat_side_effects(db, user.id, [], plans_adapting, safe_content)
+
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected for {session_id}")

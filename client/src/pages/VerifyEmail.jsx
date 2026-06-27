@@ -3,6 +3,7 @@ import { useEffect, useState, useRef, Suspense } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { authAPI } from '../api/client'
 import { Helmet } from 'react-helmet-async'
+import { CircleCheck, CircleX } from 'lucide-react'
 import React from 'react'
 import './Auth.css'
 
@@ -74,7 +75,7 @@ export default function VerifyEmail() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div style={{ fontSize: '3.5rem', marginBottom: '12px' }}>✅</div>
+              <div style={{ color: 'var(--ayura-sage, #4ade80)', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><CircleCheck size={52} strokeWidth={1.6} /></div>
               <h3 style={{ fontFamily: "'Syne', sans-serif", marginBottom: '8px' }}>Email Verified!</h3>
               <p style={{ color: 'var(--auth-muted)', fontSize: '0.9rem', marginBottom: '24px' }}>
                 Your account is fully activated.
@@ -91,7 +92,7 @@ export default function VerifyEmail() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <div style={{ fontSize: '3.5rem', marginBottom: '12px' }}>❌</div>
+              <div style={{ color: '#fb7185', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><CircleX size={52} strokeWidth={1.6} /></div>
               <h3 style={{ fontFamily: "'Syne', sans-serif", marginBottom: '8px', color: '#fb7185' }}>Verification Failed</h3>
               <p style={{ color: '#fb7185', marginBottom: '24px', fontSize: '0.9rem' }}>{errorMsg}</p>
               <Link to="/login" className="btn btn-secondary btn-full btn-lg">

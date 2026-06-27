@@ -1318,7 +1318,9 @@
   margin-bottom: 1rem;
 }
 .gym-week-banner-icon {
-  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ayura-teal);
   flex-shrink: 0;
   margin-top: 0.05rem;
 }
@@ -1707,7 +1709,9 @@
 }
 
 .yoga-week-banner-icon {
-  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ayura-teal);
   flex-shrink: 0;
   margin-top: 0.05rem;
 }
@@ -3341,6 +3345,127 @@
   border-color: #e57373;
 }
 
+/* ── Deterministic Ahara safety banner ── */
+.diet-safety-ok {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #1e7d52;
+  background: #e8f6ef;
+  border: 1px solid #b8e2cd;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin: 0.75rem 0;
+}
+.diet-safety-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0.75rem 0;
+}
+.diet-safety-card {
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid;
+}
+.diet-safety-card.allergen { background: #fdecea; border-color: #e57373; }
+.diet-safety-card.viruddha { background: #fff7e6; border-color: #f0c36d; }
+.diet-safety-title {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+.diet-safety-card.allergen .diet-safety-title { color: #c0392b; }
+.diet-safety-card.viruddha .diet-safety-title { color: #b9770e; }
+.diet-safety-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--ayura-text);
+}
+.diet-safety-list li { margin-bottom: 0.2rem; }
+
+/* ── Yoga pranayama safety exclusions ── */
+.yoga-prana-exclusions {
+  margin: 0.75rem 0;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  /* Theme-safe: translucent green works on both dark and light backgrounds
+     (a hardcoded light fill made the theme-coloured text invisible in dark mode). */
+  background: rgba(74, 222, 128, 0.10);
+  border: 1px solid rgba(74, 222, 128, 0.28);
+}
+.yoga-prana-excl-title {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #34d399;
+  margin-bottom: 0.3rem;
+}
+.yoga-prana-excl-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--ayura-text);
+}
+.yoga-prana-excl-list li { margin-bottom: 0.15rem; }
+
+/* ── Gym Vyayama Shakti ── */
+.gym-vyayama-section {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: var(--ayura-surface);
+  border: 1px solid var(--ayura-border, #e6e1d8);
+}
+.gym-vyayama-principle {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: 0.4rem 0;
+}
+.gym-vyayama-capacity {
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0.4rem 0;
+  color: var(--ayura-text);
+}
+.gym-vyayama-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+.gym-vyayama-card {
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+.gym-vyayama-card.adequate { background: #e8f6ef; border: 1px solid #b8e2cd; }
+.gym-vyayama-card.over { background: #fdecea; border: 1px solid #e9a8b0; }
+.gym-vyayama-label { font-weight: 700; margin-bottom: 0.2rem; }
+.gym-vyayama-card.adequate .gym-vyayama-label { color: #1e7d52; }
+.gym-vyayama-card.over .gym-vyayama-label { color: #c0392b; }
+.gym-vyayama-bala {
+  font-size: 0.7rem;
+  font-style: italic;
+  color: var(--ayura-text-muted, #8a8378);
+  margin-top: 0.5rem;
+}
+@media (max-width: 560px) {
+  .gym-vyayama-grid { grid-template-columns: 1fr; }
+}
+
 /* ── Diet disclaimer footer ── */
 .diet-disclaimer {
   display: flex;
@@ -3786,6 +3911,16 @@
   letter-spacing: 0.07em;
   color: var(--ayura-muted);
 }
+.mv-no-interactions {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #34d399;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  opacity: 0.85;
+}
 .mv-ingredients {
   display: flex;
   flex-wrap: wrap;
@@ -3823,6 +3958,14 @@
   background: rgba(249,115,22,0.1);
   color: #f97316;
   border: 1px solid rgba(249,115,22,0.2);
+}
+.mv-interaction-chip {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  background: rgba(192,57,43,0.1);
+  color: #c0392b;
+  border: 1px solid rgba(192,57,43,0.25);
 }
 .mv-reference {
   display: flex;
@@ -4017,6 +4160,35 @@
   line-height: 1.5;
 }
 .mv-afi-ref svg { flex-shrink: 0; margin-top: 2px; color: #818cf8; }
+
+/* ── Shodhana clinical alert ── */
+.mv-shodhana-alert {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(249,115,22,0.08);
+  border: 1.5px solid rgba(249,115,22,0.35);
+  margin-bottom: 10px;
+}
+.mv-shodhana-alert svg { color: #f97316; flex-shrink: 0; margin-top: 2px; }
+.mv-shodhana-alert strong { display: block; font-size: 0.82rem; color: #f97316; margin-bottom: 4px; }
+.mv-shodhana-alert p { margin: 0; font-size: 0.78rem; color: var(--ayura-text-secondary, #6b7280); line-height: 1.5; }
+
+.mv-coverage-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(59,130,246,0.07);
+  border: 1.5px solid rgba(59,130,246,0.3);
+  margin-bottom: 10px;
+}
+.mv-coverage-note svg { color: #3b82f6; flex-shrink: 0; margin-top: 2px; }
+.mv-coverage-note strong { display: block; font-size: 0.82rem; color: #2563eb; margin-bottom: 4px; }
+.mv-coverage-note p { margin: 0; font-size: 0.78rem; color: var(--ayura-text-secondary, #6b7280); line-height: 1.5; }
 
 /* ── Chikitsa Sutra card ── */
 .mv-chikitsa-card {
@@ -4236,3 +4408,570 @@
   border-left: 2px solid rgba(249,115,22,0.35);
   line-height: 1.45;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   RoutineView — Dinacharya Daily Routine
+   ═══════════════════════════════════════════════════════════════ */
+.din-root {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Principle banner */
+.din-principle-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(129,140,248,0.08), rgba(45,212,191,0.05));
+  border: 1px solid rgba(129,140,248,0.2);
+  border-radius: 14px;
+  font-size: 0.88rem;
+  color: var(--ayura-ink);
+  line-height: 1.5;
+  font-style: italic;
+}
+[data-theme='light'] .din-principle-banner {
+  background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(13,148,136,0.03));
+  border-color: rgba(99,102,241,0.15);
+}
+
+/* Anchor row */
+.din-anchors {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 14px 20px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  flex-wrap: wrap;
+  gap: 0;
+}
+[data-theme='light'] .din-anchors {
+  background: rgba(0,0,0,0.02);
+  border-color: rgba(0,0,0,0.07);
+}
+.din-anchor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  flex: 1;
+  min-width: 90px;
+}
+.din-anchor:first-child { padding-left: 0; }
+.din-anchor-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ayura-muted);
+}
+.din-anchor-val {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ayura-ink);
+  margin-top: 1px;
+}
+.din-anchor-sep {
+  width: 1px;
+  height: 32px;
+  background: rgba(255,255,255,0.1);
+  flex-shrink: 0;
+}
+[data-theme='light'] .din-anchor-sep { background: rgba(0,0,0,0.08); }
+
+/* Season banner */
+.din-season-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(74,222,128,0.08);
+  border: 1px solid rgba(74,222,128,0.2);
+  border-radius: 12px;
+  font-size: 0.83rem;
+  color: var(--ayura-ink);
+  line-height: 1.5;
+}
+[data-theme='light'] .din-season-banner { background: rgba(22,163,74,0.05); border-color: rgba(22,163,74,0.15); }
+.din-season-banner svg { color: #4ade80; flex-shrink: 0; margin-top: 2px; }
+
+/* Two-column layout */
+.din-two-col {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .din-two-col { grid-template-columns: 1fr; }
+}
+
+/* Day tabs */
+.din-day-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.din-day-tab {
+  position: relative;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: var(--ayura-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+[data-theme='light'] .din-day-tab { border-color: rgba(0,0,0,0.08); }
+.din-day-tab:hover { color: var(--ayura-ink); border-color: rgba(255,255,255,0.22); }
+.din-day-tab.active {
+  background: color-mix(in srgb, var(--tab-color, #818cf8) 15%, transparent);
+  border-color: color-mix(in srgb, var(--tab-color, #818cf8) 40%, transparent);
+  color: var(--tab-color, #818cf8);
+}
+.din-day-tab.fasting { opacity: 0.8; }
+.din-fast-dot {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+
+/* Timeline */
+.din-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+/* Slot */
+.din-slot {
+  display: grid;
+  grid-template-columns: 72px 12px 1fr;
+  gap: 0 10px;
+  align-items: stretch;
+  min-height: 60px;
+}
+.din-slot-time-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-top: 14px;
+  gap: 0;
+}
+.din-slot-time {
+  font-size: 0.71rem;
+  font-weight: 700;
+  color: var(--ayura-muted);
+  white-space: nowrap;
+  line-height: 1;
+}
+.din-slot-line {
+  flex: 1;
+  width: 2px;
+  margin-top: 6px;
+  align-self: stretch;
+  opacity: 0.3;
+  min-height: 20px;
+}
+.din-slot:last-child .din-slot-line { display: none; }
+.din-slot-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 18px;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.15);
+  box-shadow: 0 0 6px currentColor;
+  align-self: flex-start;
+}
+.din-slot-body {
+  margin: 6px 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--slot-border, rgba(255,255,255,0.1));
+  background: var(--slot-bg, rgba(255,255,255,0.03));
+}
+.din-slot-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.din-slot-icon-wrap { display: flex; align-items: center; flex-shrink: 0; }
+.din-slot-activity {
+  font-size: 0.84rem;
+  font-weight: 700;
+  flex: 1;
+  line-height: 1.2;
+}
+.din-meal-toggle {
+  background: transparent;
+  border: none;
+  color: var(--ayura-muted);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+}
+.din-slot-desc {
+  font-size: 0.78rem;
+  color: var(--ayura-muted);
+  margin-top: 5px;
+  line-height: 1.5;
+}
+.din-slot-cond-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: rgba(251,191,36,0.08);
+  border: 1px solid rgba(251,191,36,0.25);
+  border-radius: 8px;
+  font-size: 0.76rem;
+  color: #b45309;
+  line-height: 1.45;
+}
+[data-theme='light'] .din-slot-cond-note { background: rgba(234,179,8,0.07); color: #92400e; }
+.din-slot-cond-note svg { flex-shrink: 0; color: #f59e0b; margin-top: 1px; }
+.din-meal-expand {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(251,146,60,0.06);
+  border-radius: 8px;
+  font-size: 0.76rem;
+  color: var(--ayura-muted);
+}
+.din-meal-tag { font-style: italic; }
+
+/* Right panel */
+.din-panel {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 16px;
+}
+[data-theme='light'] .din-panel { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.07); }
+.din-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ayura-ink);
+  margin-bottom: 12px;
+}
+.din-ritual-list { display: flex; flex-direction: column; gap: 6px; }
+.din-ritual-card {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+[data-theme='light'] .din-ritual-card { border-color: rgba(0,0,0,0.07); }
+.din-ritual-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 9px 12px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--ayura-ink);
+}
+.din-ritual-header:hover { background: rgba(255,255,255,0.04); }
+.din-ritual-icon { display: flex; align-items: center; color: var(--ayura-teal); flex-shrink: 0; }
+.din-ritual-name { font-size: 0.82rem; font-weight: 600; flex: 1; }
+.din-ritual-dur {
+  font-size: 0.7rem;
+  color: var(--ayura-muted);
+  background: rgba(255,255,255,0.07);
+  padding: 2px 6px;
+  border-radius: 20px;
+}
+[data-theme='light'] .din-ritual-dur { background: rgba(0,0,0,0.05); }
+.din-ritual-chevron { color: var(--ayura-muted); flex-shrink: 0; }
+.din-ritual-body {
+  font-size: 0.78rem;
+  color: var(--ayura-muted);
+  line-height: 1.55;
+  padding: 0 12px 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 8px;
+  margin: 0;
+}
+[data-theme='light'] .din-ritual-body { border-top-color: rgba(0,0,0,0.06); }
+
+/* Sections */
+.din-section {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+[data-theme='light'] .din-section { background: rgba(0,0,0,0.015); border-color: rgba(0,0,0,0.07); }
+.din-section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ayura-ink);
+  margin-bottom: 12px;
+}
+.din-section-body {
+  font-size: 0.85rem;
+  color: var(--ayura-muted);
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+
+/* Meal guidance panel */
+.din-meal-guide { margin-top: 4px; }
+.din-meal-guide-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.din-mg-tab {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: var(--ayura-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+[data-theme='light'] .din-mg-tab { border-color: rgba(0,0,0,0.1); }
+.din-mg-tab.active {
+  background: rgba(251,146,60,0.12);
+  border-color: rgba(251,146,60,0.35);
+  color: #c2410c;
+}
+[data-theme='light'] .din-mg-tab.active { color: #9a3412; }
+.din-mg-time {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--ayura-muted);
+  margin-bottom: 12px;
+}
+.din-mg-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 600px) { .din-mg-cols { grid-template-columns: 1fr; } }
+.din-mg-col { }
+.din-mg-col-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+.din-mg-col-head.favour { color: #15803d; }
+.din-mg-col-head.avoid  { color: #b91c1c; }
+[data-theme='light'] .din-mg-col-head.favour { color: #166534; }
+[data-theme='light'] .din-mg-col-head.avoid  { color: #991b1b; }
+.din-mg-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.din-mg-col.favour ul li::before { content: '✓ '; color: #4ade80; }
+.din-mg-col.avoid  ul li::before { content: '✕ '; color: #f87171; }
+.din-mg-col ul li { font-size: 0.8rem; color: var(--ayura-ink); line-height: 1.4; }
+.din-mg-season-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(251,191,36,0.07);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: var(--ayura-muted);
+  line-height: 1.45;
+}
+.din-mg-season-note svg { color: #f59e0b; flex-shrink: 0; margin-top: 1px; }
+
+/* Seasonal section */
+.din-seasonal-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+@media (max-width: 600px) { .din-seasonal-cols { grid-template-columns: 1fr; } }
+.din-seas-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.din-seas-col ul li { font-size: 0.8rem; color: var(--ayura-ink); line-height: 1.4; }
+.din-seas-col.favour ul li::before { content: '● '; color: #4ade80; }
+.din-seas-col.avoid  ul li::before { content: '● '; color: #f87171; }
+.din-seas-practice-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.din-seas-practice-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: rgba(45,212,191,0.08);
+  border: 1px solid rgba(45,212,191,0.2);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  color: var(--ayura-ink);
+}
+.din-seas-practices { margin-top: 4px; }
+
+/* ── New Dinacharya elements (Tier A/B/C additions) ─────────────────────────── */
+
+/* Dual-dosha note banner */
+.din-dual-dosha-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: rgba(129,140,248,0.08);
+  border: 1px solid rgba(129,140,248,0.22);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: var(--ayura-ink);
+  line-height: 1.5;
+}
+.din-dual-dosha-note svg { margin-top: 2px; }
+
+/* Day exercise header strip */
+.din-day-ex-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  background: rgba(74,222,128,0.07);
+  border: 1px solid rgba(74,222,128,0.18);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ayura-ink);
+}
+.din-rest-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  background: rgba(167,139,250,0.15);
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #7c3aed;
+  letter-spacing: 0.03em;
+}
+.din-fast-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  background: rgba(251,191,36,0.15);
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #b45309;
+  letter-spacing: 0.03em;
+}
+.din-day-tab.rest-day { opacity: 0.75; }
+
+/* Gym focus badge inside timeline slot */
+.din-gym-focus-badge {
+  margin-left: 6px;
+  padding: 2px 7px;
+  background: rgba(74,222,128,0.12);
+  border: 1px solid rgba(74,222,128,0.28);
+  border-radius: 10px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #15803d;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+[data-theme='light'] .din-gym-focus-badge { color: #166534; }
+
+/* Agni note inside meal slots */
+.din-slot-agni-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 5px 9px;
+  background: rgba(251,146,60,0.08);
+  border-radius: 7px;
+  font-size: 0.75rem;
+  color: var(--ayura-muted);
+  line-height: 1.45;
+}
+.din-slot-agni-note svg { color: #fb923c; flex-shrink: 0; margin-top: 2px; }
+
+/* Occupation note inside exercise slots */
+.din-slot-occ-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 5px 9px;
+  background: rgba(148,163,184,0.08);
+  border-radius: 7px;
+  font-size: 0.75rem;
+  color: var(--ayura-muted);
+  line-height: 1.45;
+}
+.din-slot-occ-note svg { color: #94a3b8; flex-shrink: 0; margin-top: 2px; }
+
+/* ── Classical basis (citations) ── */
+.plan-classical-basis {
+  margin-top: 20px;
+  background: rgba(167,139,250,0.06);
+  border: 1px solid rgba(167,139,250,0.2);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+.plan-classical-title {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 0.9rem;
+  color: var(--ayura-violet, #a78bfa);
+  margin-bottom: 8px;
+}
+.plan-classical-list { margin: 0 0 8px; padding-left: 20px; }
+.plan-classical-list li {
+  color: var(--text-secondary); font-size: 0.84rem; line-height: 1.5; margin-bottom: 2px;
+}
+.plan-classical-note { color: var(--text-muted); font-size: 0.76rem; line-height: 1.5; margin: 0; }

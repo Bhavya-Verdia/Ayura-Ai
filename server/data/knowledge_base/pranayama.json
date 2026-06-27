@@ -102,7 +102,16 @@
       "Clears mental fog and energises the body",
       "Strengthens the abdominal muscles"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "epilepsy",
+      "glaucoma",
+      "heart_disease",
+      "hernia",
+      "hypertension",
+      "peptic_ulcer",
+      "pregnancy",
+      "recent_surgery"
+    ],
     "pregnancy_safe": false
   },
   {
@@ -175,7 +184,15 @@
       "Soothes the digestive system and reduces acidity",
       "Excellent for hot climates or after vigorous practice"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "low_blood_pressure",
+      "hypotension",
+      "asthma",
+      "chronic_cough",
+      "respiratory_congestion",
+      "common_cold",
+      "chronic_constipation"
+    ],
     "pregnancy_safe": true
   },
   {
@@ -210,7 +227,15 @@
       "Reduces excess Pitta without requiring tongue-rolling",
       "Useful before sleep or in hot weather"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "low_blood_pressure",
+      "hypotension",
+      "asthma",
+      "chronic_cough",
+      "respiratory_congestion",
+      "common_cold",
+      "sensitive_teeth"
+    ],
     "pregnancy_safe": true
   },
   {
@@ -395,7 +420,14 @@
       "Promotes introspection and prepares for sleep",
       "Balances the nervous system after stressful activity"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "low_blood_pressure",
+      "hypotension",
+      "depression",
+      "asthma",
+      "respiratory_congestion",
+      "common_cold"
+    ],
     "pregnancy_safe": true
   },
   {
@@ -537,7 +569,14 @@
       "Calms excessive mental activity and emotional fluctuation",
       "Strengthens the throat and neck through the bandha application"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "epilepsy",
+      "glaucoma",
+      "heart_disease",
+      "hypertension",
+      "pregnancy",
+      "vertigo"
+    ],
     "pregnancy_safe": false
   },
   {
@@ -608,7 +647,13 @@
       "Strengthens the diaphragm and respiratory muscles",
       "Energises and revitalises the entire system when practiced correctly"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "epilepsy",
+      "glaucoma",
+      "heart_disease",
+      "hypertension",
+      "pregnancy"
+    ],
     "pregnancy_safe": false
   },
   {
@@ -644,8 +689,19 @@
       "Combines the cooling of Sitali with the stillness of Kumbhaka",
       "Excellent for reducing inflammation and emotional heat"
     ],
-    "contraindications": [],
-    "pregnancy_safe": true
+    "contraindications": [
+      "low_blood_pressure",
+      "hypotension",
+      "asthma",
+      "chronic_cough",
+      "respiratory_congestion",
+      "heart_disease",
+      "hypertension",
+      "glaucoma",
+      "epilepsy",
+      "pregnancy"
+    ],
+    "pregnancy_safe": false
   },
   {
     "id": "fire_essence",
@@ -680,7 +736,13 @@
       "Detoxifies the lower abdomen and removes Kapha stagnation",
       "Strengthens the core and improves elimination"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "epilepsy",
+      "heart_disease",
+      "hernia",
+      "hypertension",
+      "pregnancy"
+    ],
     "pregnancy_safe": false
   },
   {
@@ -716,7 +778,12 @@
       "Builds energy conservation and reduces energetic dissipation",
       "Prepares the system for advanced pranayama and meditation"
     ],
-    "contraindications": [],
+    "contraindications": [
+      "heart_disease",
+      "hernia",
+      "hypertension",
+      "pregnancy"
+    ],
     "pregnancy_safe": true
   }
 ]

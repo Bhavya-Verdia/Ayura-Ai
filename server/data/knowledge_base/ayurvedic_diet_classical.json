@@ -1,0 +1,578 @@
+[
+  {
+    "text": "Charaka Sutrasthana Ch.8 describes eight Ahar Vidhi Visheshayatanas — factors for eating properly: Prakriti (nature of food), Karana (processing method), Samyoga (combination), Rashi (quantity), Desha (place/origin), Kala (timing and season), Upayoga Samstha (rules of use), and Upayokta (the individual consumer). Disregarding these factors causes disease; honoring them strengthens Agni, builds Ojas, and promotes longevity.",
+    "topic": "ahara_principles",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Charaka Sutrasthana Ch.5 (Matrashiteeya) states: the appropriate quantity of food is that which does not disturb the equilibrium of Vata, Pitta, and Kapha, and gets digested in proper time without producing distress. Heavy foods like meat, wheat, and cheese should be taken in half one's Agni capacity; light foods like rice, mung, and barley can be taken to full satisfaction. Overeating above Agni capacity is the primary cause of Ama formation.",
+    "topic": "ahara_principles",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Charaka defines Pathya (wholesome food) as that which is agreeable to the Srotases (body channels), and Apathya as that which creates blockages. A food may be nutritious but if it contradicts the patient's Prakriti, Vikriti, season, age, or Agni state, it becomes Apathya for that individual. Individual context always overrides general nutritional merit in Ayurvedic dietetics — the same food can be medicine for one person and poison for another.",
+    "topic": "ahara_principles",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "The largest meal of the day must be taken at midday (Madhyahna) when Jatharagni is strongest, aligned with the sun at its peak. Morning meals should be light and warm. Evening meals must be taken at least 2-3 hours before sleep, light and easy to digest. Never eat when Agni is not active — signs that Agni is not ready: no appetite, heaviness from the previous meal, coating on the tongue, or mental cloudiness.",
+    "topic": "ahara_principles",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "ashtanga_hridayam"
+  },
+  {
+    "text": "Paryushita Ahara (food cooked yesterday and stored) is explicitly condemned in Charaka Sutrasthana Ch.7 as Ama-producing and disease-promoting. Fresh-cooked food (Sadyo-pakwa) is alive with Prana and digestive qualities. Reheated and refrigerated food loses these qualities and becomes harder to digest. In modern practice: minimize refrigerated leftovers, especially for Vata and Kapha constitutions; Pitta can tolerate fresh same-day leftovers with added ghee and spices.",
+    "topic": "ahara_principles",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "The rule of non-distraction while eating (Atmanat Cha Ahara) is fundamental in Charaka: eat in a calm, seated position, with full attention on the food. Eating while watching screens, reading, or in emotional distress (Chinta, Bhaya, Shoka) suppresses Agni and promotes Ama formation. Eating speed matters: slow eating (Alendriya Graha — using all senses) signals the gut-brain axis to release digestive enzymes optimally.",
+    "topic": "ahara_principles",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Charaka Sutrasthana Ch.26 catalogs 18 types of Viruddha Ahara (incompatible foods): Desha Viruddha (against locale), Kala Viruddha (against season/time), Agni Viruddha (beyond digestive capacity), Matra Viruddha (wrong quantity), Satmya Viruddha (against habitual food), Dosha Viruddha (against current dosha state), Sanskara Viruddha (wrong processing), Virya Viruddha (opposing potencies), Koshtha Viruddha (against bowel type), Avastha Viruddha (against patient state), Krama Viruddha (wrong order), Parihara Viruddha (against contraindications), Upachara Viruddha (against treatment), Paaka Viruddha (wrong cooking), Samyoga Viruddha (wrong combination), Hridaya Viruddha (unpalatable), Sampad Viruddha (poor quality), and Vidhi Viruddha (wrong regimen).",
+    "topic": "viruddha_ahara",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Matsya (fish) and Dugdha (milk) is a classic Viruddha (incompatible) combination documented in both Charaka Samhita and Ashtanga Hridayam. Fish is heating (Ushna Virya) with Madhura-Amla Rasa; milk is cooling (Sheeta Virya) with Madhura Rasa. Their opposing Virya creates confusion in Jatharagni, promotes Ama formation, and has been observed clinically to aggravate Kushtha (skin conditions), allergic rashes, and auto-immune inflammatory states. Avoid this combination strictly.",
+    "topic": "viruddha_ahara",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Heating honey (Madhu) above body temperature is prohibited in Charaka, Sushruta, and Ashtanga Hridayam. Honey in its natural state is cold, dry (Ruksha), and light (Laghu). Heating reverses these qualities to produce subtle toxic byproducts described as 'Ama-like' — sticky, channel-blocking, and nearly indigestible. Madhu must never be added to hot beverages, boiling liquids, or hot food. Use only in warm water below 40°C, or in room-temperature preparations. This is one of the most commonly violated Viruddha rules.",
+    "topic": "viruddha_ahara",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Dadhi (curd/yogurt) at night is explicitly prohibited in Ashtanga Hridayam Sutrasthana Ch.7 by Vagbhata. At night, the body's Kapha naturally increases; curd's heavy, cold, and Abhishyandi (channel-blocking) qualities compound this, producing mucus accumulation and Sroto-avarodha. If curd must be consumed, take only at midday with honey and black pepper, or as diluted Takra (buttermilk with cumin and rock salt). Never consume completely soured or old curd — it simultaneously increases Kapha and Pitta.",
+    "topic": "viruddha_ahara",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "ashtanga_hridayam"
+  },
+  {
+    "text": "Combining milk with sour fruits (citrus, berries, pomegranate juice) is Samyoga Viruddha — incompatible by combination. Milk is sweet and cooling; sour fruits carry Amla Rasa and heating potency. The Amla Rasa curdles milk proteins in the digestive tract before proper digestion, creating heavy, sticky, channel-blocking Ama. Avoid milk in smoothies with sour fruits. Acceptable Ayurvedic combinations with milk: banana (Madhura + Madhura), cardamom, saffron, dry ginger, and Ashwagandha.",
+    "topic": "viruddha_ahara",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Honey and ghee in equal quantities by weight is documented as Virya Viruddha (opposing potency toxicity) in Charaka Samhita, Sushruta Samhita, and Ashtanga Hridayam. Each substance is highly therapeutic individually, but combined in equal amounts they produce Visha-like (poison-like) effects. Honey and ghee may be safely combined in unequal proportions — the classical therapeutic ratio is 2:1 (ghee:honey) or 1:2 depending on the condition being treated.",
+    "topic": "viruddha_ahara",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Cold water immediately after hot or oily food is Kala Viruddha and Virya Viruddha. Cold water quenches Jatharagni, congeals fats in the digestive tract before emulsification, and causes incompletely digested food to become Ama. Charaka recommends warm or room-temperature water during and after meals. Cold water is appropriate only in Grishma (summer), Pittaja conditions, and after vigorous exercise — never immediately after eating a full cooked meal.",
+    "topic": "viruddha_ahara",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Sama Agni (balanced digestive fire) is the ideal state allowing optimal digestion without Ama production. Maintain Sama Agni by: eating at consistent daily times, avoiding overeating, taking light meals when appetite is low, including digestive spices (ginger, cumin, coriander, fennel) in every meal, and having the largest meal at midday. Sama Agni persons can tolerate moderately varied foods; they should avoid extremes — neither fasting nor overeating — to maintain this balance.",
+    "topic": "agni",
+    "condition": "",
+    "dosha": "balanced",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Vishama Agni (erratic/variable digestive fire, Vata-associated) produces alternating constipation and loose stools, gas, bloating, gurgling, and irregular hunger. Dietary management: eat at FIXED times daily — Vata thrives on routine, irregularity worsens Vishama Agni. Favor warm, cooked, oily, and easily digestible foods: moong dal soup, rice kanji, soft root vegetables with ghee. Avoid raw salads, cold foods, carbonated drinks, beans, cruciferous vegetables. Hing (asafoetida) and dry ginger (Shunthi) are the primary Agni-kindling spices.",
+    "topic": "agni",
+    "condition": "",
+    "dosha": "vata",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Tikshna Agni (sharp/intense digestive fire, Pitta-associated) produces excessive hunger, acid reflux, heartburn, loose stools, and heat sensation after eating. Dietary management: never skip meals — hunger with Tikshna Agni causes the digestive fire to 'digest' the gut lining itself (Antradaha). Favor cooling, sweet, bitter, and astringent tastes: coconut water, pomegranate, coriander chutney, fennel tea, ghee, milk, rice. Avoid spicy food, fermented food, alcohol, tomatoes, vinegar, excess citrus. Eat before hunger becomes intense.",
+    "topic": "agni",
+    "condition": "",
+    "dosha": "pitta",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Manda Agni (sluggish digestive fire, Kapha-associated) produces low appetite, heaviness and sleepiness after eating, excess mucus, water retention, and slow metabolism. Dietary management: favor light, dry, warm, and pungent foods. Use aggressive Deepaniya spices: dry ginger, black pepper, long pepper (Pippali), dry mustard seeds, ajwain. Minimize dairy, sweets, wheat, rice, and all fried foods. Trikatu churna (dry ginger + black pepper + pippali, equal parts) taken with warm water before meals is the primary Agni-kindling protocol for Manda Agni.",
+    "topic": "agni",
+    "condition": "",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Ama (metabolic toxin from incomplete digestion) is recognized by: coated tongue (Jihva Lepa), bad morning breath (Mukha Daurgandhya), heaviness and lethargy after eating, joint stiffness especially in the morning, dull appetite or complete anorexia, foul-smelling stools, and foggy mental clarity. Charaka Samhita Sutrasthana Ch.28 describes Ama as the root of all disease. Any therapeutic diet must clear Ama (Ama Pachana) before attempting to nourish (Brimhana) the body.",
+    "topic": "ama",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Deepaniya dravyas (Agni-kindling substances) rekindle digestive fire. Classical Deepaniya herbs: Shunthi (dry ginger) — the most universally applicable, suitable for all Agni types; Pippali (long pepper) — rejuvenates Manda Agni and is Rasayana; Maricha (black pepper) — strongest Deepaniya, use cautiously in Pitta; Hingu (asafoetida) — specific for Vishama Agni and gas; Ajwain (carom seeds) — Deepaniya with added carminative action. CCF tea (Cumin-Coriander-Fennel, equal parts, simmered 10 minutes) is the standard tridoshic Deepaniya home preparation safe year-round.",
+    "topic": "ama",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Pachana (Ama-digesting) dravyas directly break down and eliminate Ama from tissues. Key Pachana foods and preparations: moong dal soup (the single most Pachana food in classical Ayurveda, specifically Laghu-Pachana); Ushna jala (warm water sipped throughout the day — simplest and most effective Pachana measure); Peya (thin rice gruel with ginger) — digests Ama while maintaining nutrition; Trikatu (equal parts dry ginger, black pepper, long pepper); Guduchi kwath — Ama-Pachana plus Rasayana. During high-Ama states: fast on warm water and moong soup for 1-3 days before introducing heavier foods.",
+    "topic": "ama",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "The 4-week Ayurvedic dietary progression follows the classical therapeutic sequence: Week 1 — Ama Pachana: strictly light, Deepaniya-Pachana foods. Moong dal, rice kanji, CCF tea, warm water. No dairy, no wheat, no raw food, no cold food. Week 2 — Agni Deepana: kindle Agni with warming spices; gradually richer meals with cooked vegetables and limited legumes. Week 3 — Brimhana: nourishing Ojas-building foods; ghee, nuts, root vegetables introduced. Week 4 — Rasayana: rejuvenating, seasonal, maintenance; Rasayana herbs (amla, Ashwagandha, Shatavari) added. This sequence prevents the common error of nourishing an Ama-filled body.",
+    "topic": "ahara_principles",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Vata-pacifying (Vatahara) diet principles from Charaka Sutrasthana: favor warm, oily (Snigdha), heavy (Guru), and sweet-sour-salty (Madhura-Amla-Lavana) tastes. Best foods: sesame oil, ghee, warm milk, basmati rice, moong dal, root vegetables (sweet potato, carrot, beet), ripe bananas, dates, warm soups. Therapeutic preparation: all food must be warm and well-cooked — Vata cannot properly digest raw or cold food. Routine is medicine: Vata must eat at the same times daily. The single most important factor for Vata is regularity.",
+    "topic": "dosha_diet",
+    "condition": "",
+    "dosha": "vata",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Vata-aggravating (Vatakara) foods to avoid: dry, cold, light, bitter, pungent, astringent foods. Specific aggravators: raw salads, cruciferous vegetables (cabbage, broccoli, cauliflower — Ruksha and gas-producing), beans and lentils (Vatakara unless well-spiced with hing and ginger), popcorn, rice cakes, crackers, carbonated drinks, cold water, ice cream, dried fruits (raisins soaked overnight are acceptable). Vata aggravation is worsened by: irregular meal times, skipping meals, fasting, and excessive eating of astringent (Kashaya) tastes like raw spinach and unripe fruits.",
+    "topic": "dosha_diet",
+    "condition": "",
+    "dosha": "vata",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Pitta-pacifying (Pittahara) diet principles: favor cool, heavy, sweet, bitter, and astringent tastes (Madhura-Tikta-Kashaya). Best foods: coconut water, ghee (the most important Pitta-pacifying fat), cow's milk with cardamom, basmati rice, moong dal, coriander seed water, fennel tea, pomegranate, sweet fruits (pear, melons, sweet grapes), cucumber, mint chutney, licorice tea, bitter melon, fresh coriander. Key rule: Pitta must eat before hunger becomes intense — delayed meals in Pitta constitution cause the digestive acid to 'burn' without food, creating acidity and irritability.",
+    "topic": "dosha_diet",
+    "condition": "",
+    "dosha": "pitta",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Pitta-aggravating (Pittakara) foods to avoid: sour, pungent, hot, oily, and salty in excess. Specific aggravators: tomatoes (Amla Rasa + heating), vinegar, citrus (especially in excess), fermented foods (curd, alcohol, pickles), red meat, egg yolk, hot chili, garlic in large amounts, sesame in excess, mustard oil, coffee, alcohol, and all heating spices used heavily (excess ginger, black pepper). Emotion note: Charaka identifies Krodha (anger) and Pitta as mutually aggravating — emotional heat and dietary heat compound each other.",
+    "topic": "dosha_diet",
+    "condition": "",
+    "dosha": "pitta",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Kapha-pacifying (Kaphahara) diet principles: favor light, dry, warm, pungent, bitter, and astringent tastes. Best foods: barley, old rice, millet, moong dal (best legume for Kapha), honey in warm water (primary morning drink — the only sweet recommended for Kapha), bitter gourd, spinach, mustard greens, ginger, black pepper, turmeric, garlic, all pungent spices, warm herbal teas. Key principle: Kapha must eat less and move more. Two meals per day (skipping breakfast if appetite is absent) is classical management for heavy Kapha constitution. Light dinner before sunset.",
+    "topic": "dosha_diet",
+    "condition": "",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Kapha-aggravating (Kaphakara) foods: all heavy, sweet, cold, oily, and salty in excess. Primary aggravators: cold milk and cold milk products (ice cream, cold yogurt, paneer in excess), cheese, wheat products, new rice (Navanna), bananas, sweet potatoes, deep-fried foods, refined sugar, jaggery in excess. Behavior aggravators documented in Charaka: Divaswapna (daytime sleeping) is the single most powerful Kapha-aggravating behavior and the primary Nidana cited for obesity, diabetes, and metabolic disease. Even one afternoon nap regularly creates Kapha accumulation.",
+    "topic": "dosha_diet",
+    "condition": "",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Charaka Chikitsa Sthana Ch.6 describes Prameha Pathya (beneficial foods for all types of diabetes and metabolic disease): Yava (barley) is the single most recommended food for all Prameha — light, Lekhana (scraping of excess medas), and Kapha-reducing. Old rice (Purana Shali); Karela (bitter gourd) — Tikta Rasa directly reduces Kapha-medas; Methi (fenugreek) seeds — regulate blood glucose via Galactomannan; Jamun (black plum) seeds powder — classical specific for Madhumeha; Guduchi, Turmeric, Triphala. Pathya vegetables: all bitter-astringent vegetables — drumstick, snake gourd, ridge gourd, cluster beans.",
+    "topic": "condition_diet",
+    "condition": "diabetes",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Prameha Apathya (strict food avoidances for diabetes): New rice (Nava Shali — sticky, heavily Kapha-increasing), wheat in excess, refined sugars and jaggery, sweet fruits (mango, banana, chiku, grapes, jackfruit), curd (Dadhi — increases Kapha and medas together), sesame in excess, black gram (Urad), freshly harvested grains (Navanna), cold beverages, potatoes and root vegetables with high starch. The most important lifestyle Apathya for Prameha: Divaswapna (daytime napping) and Avyayama (physical inactivity) — these two behaviors are cited as the primary causative factors of Sthoulya-Prameha.",
+    "topic": "condition_diet",
+    "condition": "diabetes",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Grahani (IBS/malabsorption/Crohn's disease) follows a four-stage Ayurvedic dietary protocol from Charaka Chikitsa: Stage 1 (acute flare): warm water only or dilute rice gruel (Peya) — complete digestive rest. Stage 2 (recovery): thin moong dal soup (Yusha), dilute rice gruel with ghee (Vilepi), and Takra (buttermilk with cumin and rock salt) — Takra is the primary therapeutic food for Grahani. Stage 3 (consolidation): Khichdi with ghee, pomegranate (Dadima — astringent, binds loose stools), and digestive soups. Stage 4 (maintenance): avoid all raw, cold, spicy, heavy, and fermented foods permanently.",
+    "topic": "condition_diet",
+    "condition": "ibs",
+    "dosha": "vata",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Amlapitta (acid reflux/GERD) Pathya: sweet and bitter tastes pacify the excess Pitta-Amla in the stomach and esophagus. Best foods: old rice, wheat chapati with ghee, coconut water, pomegranate, Amalaki (Indian gooseberry — paradoxically cooling despite Amla Rasa, due to Madhura Vipaka), licorice (Yashtimadhu) decoction, coriander seed water (soak 1 tsp seeds overnight, drink water), cow's milk with cardamom, ghee, ripe bananas, fennel seeds after meals. Shatavari is the primary Rasayana for chronic Amlapitta. Eat small, frequent meals — long gaps worsen acid production.",
+    "topic": "condition_diet",
+    "condition": "acidity",
+    "dosha": "pitta",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Amlapitta (GERD) Apathya — strict avoidances: all fermented foods (pickles, vinegar, alcohol, curd especially), excess sour fruits (citrus, raw mango, tamarind), spicy food and excess chili, tomatoes, coffee, caffeinated tea, refined oil and deep-fried food, excess salt, late-night eating (Ratri Bhojana), sleeping immediately after meals, and consistently skipping breakfast. Emotional Apathya: Krodha (anger) directly increases Pitta and worsens Amlapitta — emotional regulation is therapeutic in itself. Eat seated, calmly, and slowly — eating in distress (Bhaya, Shoka, Krodha) directly aggravates Pitta.",
+    "topic": "condition_diet",
+    "condition": "acidity",
+    "dosha": "pitta",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Pandu (anemia) Pathya from Charaka Chikitsa Ch.16: Pomegranate (Dadima) is the first-choice fruit — builds Rakta Dhatu specifically; Dates (Kharjura), raisins (Draksha), figs (Anjeer) — Ojas and Rakta builders; dark leafy greens (Palak, Methi leaves) with lemon squeeze (Vitamin C doubles iron absorption); sesame seeds (Tila) — high bioavailable iron; beetroot (Shringataka). Classical preparation: water stored overnight in a copper vessel is traditional Pandu management — copper catalyzes iron absorption. Avoid tea and coffee within 1 hour of iron-rich meals (tannins inhibit iron absorption significantly).",
+    "topic": "condition_diet",
+    "condition": "anemia",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Vatavyadhi (arthritis and joint disorders) diet must simultaneously Snehana (lubricate joints), Deepana (kindle Agni), and Pachana (reduce Ama). Pathya: warm sesame oil internally (Tila Taila — 1 tsp in warm milk strengthens joints from inside), ghee liberally in all food, horse gram (Kulthi) soup specifically for Amavata (rheumatoid arthritis — reduces Ama and Kapha), castor oil (1 tsp in warm milk at bedtime for Vata constipation associated with joint pain), Nirgundi (Vitex negundo) preparations. Apathya: dry foods, cold foods, beans without thorough cooking and hing, curd, refrigerated foods, excessive fasting — all severely aggravate Vata.",
+    "topic": "condition_diet",
+    "condition": "arthritis",
+    "dosha": "vata",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Sthoulya (obesity) Pathya from Charaka Sutrasthana Ch.21: all Tikta-Kashaya (bitter-astringent) foods reduce Kapha and medas (fat tissue); Yava (barley) is the single best food for weight reduction; honey in warm water (Madhu Ushna Jala) — the classical morning drink for Sthoulya; old rice (Purana Shali); Triphala at night with warm water reduces Ama and medas gradually; Guggulu preparations for Medo-Shodhana. Key timing: largest meal at noon, nothing after sunset. Charaka specifically recommends Vamana (therapeutic emesis) as the primary Shodhana for severe Sthoulya. No Divaswapna (daytime sleeping) — this is the primary Nidana for obesity.",
+    "topic": "condition_diet",
+    "condition": "obesity",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Hridroga (cardiac conditions) Pathya from Charaka Chikitsa Ch.26: Arjuna (Terminalia arjuna) bark decoction or Arjunarishta is the primary cardiac herb — Hridya (cardiotonic), reduces Kapha-medas accumulation in vessels; Garlic (Lashuna) specifically addresses Shleshma-avruta Vata (Kapha-obstructed Vata) causing atherosclerosis; pomegranate (Dadima) is Hridya and Rakta-shodhaka; coconut water; Punarnava for fluid retention. Avoid: excess salt (Lavana Atiyoga), heavy red meat, deep-fried food, excess sour, fermented foods, alcohol. Stress (Chinta) and grief (Shoka) are primary Nidana for Hridroga in classical texts.",
+    "topic": "condition_diet",
+    "condition": "heart_disease",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Arsha (hemorrhoids/piles) therapeutic diet: Haritaki (Terminalia chebula) is the primary drug taken with warm water at night — reduces constipation and regulates Apana Vata. Pathya: old rice, moong dal, buttermilk (Takra) daily with cumin and rock salt, warm water, ripe papaya, figs, Triphala at night, castor oil (1 tsp in warm milk for constipation). Fiber-rich vegetables cooked with ajwain for carminative effect. Apathya: excess spicy food, pickles, alcohol, curd at night, fish, urad dal, prolonged sitting, straining, dry and cold foods. Sesame seed laddu (Tila Modaka) is a classical Pathya sweet that lubricates the rectal mucosa.",
+    "topic": "condition_diet",
+    "condition": "hemorrhoids",
+    "dosha": "vata",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Mutrakriccha (urinary tract disorders) Pathya: Gokshura (Tribulus terrestris) is the primary herb — taken as decoction or powder with water morning and evening. Best foods: coconut water (most effective natural diuretic in Ayurveda), Yava Jala (barley water sipped throughout the day), cucumber, watermelon, sugarcane juice diluted, coriander seed water (soak 1 tsp seeds overnight, strain and drink), drumstick. Minimum 3L of room-temperature water daily. Apathya: heating foods (chili, garlic excess, alcohol, coffee), excess salt, suppression of urge to urinate (considered a grave Vega Dharana), prolonged sitting, and sexual intercourse during active infection.",
+    "topic": "condition_diet",
+    "condition": "uti",
+    "dosha": "pitta",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Shwasa (asthma and respiratory conditions) Pathya: Pippali (long pepper) with honey is the most specific herb for Shwasa; Vasa (Adhatoda vasica) leaf juice with honey; Tulsi (Ocimum sanctum) tea; Sitopaladi churna with honey for dry cough; Kantakari (Solanum xanthocarpum) decoction. Pathya foods: old rice, warm barley soup, horse gram (Kulthi), garlic in small amounts (specifically Shleshmaghna for respiratory Kapha). Strict Apathya: Dadhi (curd) is the primary Apathya for Shwasa — all classical texts agree. Cold drinks, ice cream, cold water, bananas, sweets, heavy dairy, dust exposure, and smoking severely aggravate Shwasa.",
+    "topic": "condition_diet",
+    "condition": "asthma",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "PCOD and menstrual irregularity (Artava Kshaya) Pathya in Ayurveda: Aloe vera juice (Kumari Swarasa) 30ml on empty stomach regulates Artava and reduces Kapha-medas; Shatavari (Asparagus racemosus) is the primary Stanya-Artava herb; Ashoka (Saraca asoca) bark decoction; black sesame seeds (Tila Krishna) — Artavajanana (menstrual flow-promoting); Guduchi for systemic Kapha-Ama reduction. Avoid all dairy excess, refined sugar, cold foods, processed foods, excessive wheat. For Kapha-dominant PCOD, intermittent fasting helps; for Vata-dominant irregular cycles, consistent meal timing is critical. Warm, cooked, spiced food at regular times is the foundation.",
+    "topic": "condition_diet",
+    "condition": "pcod",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Kushtha (skin diseases — eczema, psoriasis, urticaria, dermatitis) involve Rakta and Pitta Dushti as primary pathology. Pathya: bitter vegetables (karela, neem leaves, drumstick), Neem (Azadirachta indica) decoction, Manjishtha (Rubia cordifolia) — the primary Rakta-shodhaka herb, Turmeric with milk, old rice, barley, moong dal, pomegranate, Amalaki. Pancha Tikta Ghrita (five-bitter-herb medicated ghee) is the primary Shodhana preparation for chronic Kushtha. Strict Apathya: Dadhi (curd) — the primary Apathya for all Pitta-Rakta conditions; fish + milk combination; alcohol; excess salt; sour fermented foods; all Viruddha Ahara combinations that create Ama.",
+    "topic": "condition_diet",
+    "condition": "skin_disorders",
+    "dosha": "pitta",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Constipation (Vibandha/Malabaddha) diet from Charaka: the primary treatment is Anulomana (downward movement of Apana Vata). Therapeutic foods: castor oil (Eranda Taila) 1-2 tsp in warm milk at bedtime — the classical Vata-Anulomana treatment; Haritaki at night with warm water; figs (Anjeer) soaked overnight; Triphala powder with warm water at bedtime. Dietary foundation: warm water throughout the day (minimum 2.5L), ghee in all food (lubricates intestinal walls), well-cooked root vegetables, ripe bananas (not for Kapha-type constipation). Avoid dry, cold, rough foods; beans without hing; and suppression of defecation urge (Mala Vega Dharana — severely aggravates Vata).",
+    "topic": "condition_diet",
+    "condition": "constipation",
+    "dosha": "vata",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Cholesterol and Medoroga (excess fat tissue/dyslipidemia) dietary management: Charaka's Lekhaniya (fat-scraping) drugs and foods reduce excess medas from channels (Srotases). Pathya: barley (primary Lekhaniya grain), honey in warm water morning, Trikatu (ginger-black pepper-pippali) before meals to enhance fat metabolism, Guggulu preparations, Triphala at night, garlic (Lashuna) specifically for Shleshma-avruta Meda reduction, bitter gourd, turmeric. Avoid: excess ghee (ghee is beneficial in small amounts but aggravates Medoroga in large amounts), deep-fried foods, dairy in excess, all heavy Kapha-increasing foods, and Avyayama (sedentary lifestyle).",
+    "topic": "condition_diet",
+    "condition": "cholesterol",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Shira Shula (migraine/chronic headache) diet: most migraines involve Vata-Pitta imbalance in the head and Srotases of Prana. Pathya: regular meal times (skipping meals is a primary migraine trigger — Vata aggravation from empty stomach); warm water, CCF tea, coriander seed water; Brahmi (Bacopa monnieri) for Vatanulomana; Shatavari for Pitta-induced migraines; diluted warm milk with cardamom and saffron. Identify triggers: Viruddha Ahara, fermented foods, sour foods, and cold or irregular meals commonly trigger Shira Shula in classical texts. Apathya: skipping meals, alcohol, excess salt, fermented food, prolonged screen exposure without breaks, irregular sleep.",
+    "topic": "condition_diet",
+    "condition": "migraine",
+    "dosha": "vata",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Vasanta Ritucharya (Spring diet, Chaitra-Vaishakha, March-April): Kapha accumulated in Hemanta-Shishira melts with spring heat, flooding Srotases and causing seasonal colds, allergies, lethargy, and congestion. Pathya: light, dry, Laghu-Ruksha foods; Yava (barley), old wheat, honey (primary Vasanta food — Laghu, Ruksha, Deepaniya, and specifically reduces spring Kapha); bitter vegetables (karela, neem flowers, drumstick leaves); Trikatu decoction in the morning. Apathya: heavy, sweet, sour, oily foods; cold drinks; curd; sweet preparations (Payasam, Kheer) — all increase accumulated Kapha. Therapeutic Vamana (emesis) is prescribed in Vasanta for Kapha Shodhana.",
+    "topic": "seasonal_diet",
+    "condition": "",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "ashtanga_hridayam"
+  },
+  {
+    "text": "Grishma Ritucharya (Summer diet, Jyeshtha-Ashadha, May-June): Ushna (heat) depletes Agni, Bala (strength), and body fluids, causing weakness, heat exhaustion, and Pitta aggravation. Pathya: sweet, cold, liquid, light foods; coconut water (the primary Grishma drink), rose water, fruit juices, Shali rice, sweet fruits, milk with cardamom and rose, Sattu (roasted barley flour) in cold water with raw sugar — classical summer cooling drink. Curd rice (Dadhi Anna) is the exception where Dadhi is Pathya — in summer midday with rock salt and cumin. Apathya: excess sour, salt, pungent, hot, dry food; alcohol; midday exercise; fasting.",
+    "topic": "seasonal_diet",
+    "condition": "",
+    "dosha": "pitta",
+    "domain": "nutrition",
+    "source": "ashtanga_hridayam"
+  },
+  {
+    "text": "Varsha Ritucharya (Monsoon diet, Shravana-Bhadra, July-August): Agni is at its weakest (Mandagni) due to cloud cover reducing solar energy. All three Doshas are simultaneously vitiated. Pathya: old rice, moong dal soup, warm barley soup, light sour (Amla) food in small quantity to stimulate Agni, diluted Takra (buttermilk), honey, Saindhava Lavana (rock salt — the only salt recommended in monsoon). Boil and filter all water. Medicated wine (Arishta, Asava) in small quantities after meals is Pathya for Deepana in Varsha. Apathya: raw vegetables, heavy meat, river water, excessive curd, beans in excess, cold food, daytime sleeping. Never drink unboiled water in monsoon.",
+    "topic": "seasonal_diet",
+    "condition": "",
+    "dosha": "vata",
+    "domain": "nutrition",
+    "source": "ashtanga_hridayam"
+  },
+  {
+    "text": "Sharad Ritucharya (Autumn diet, Ashwina-Kartika, September-October): Pitta accumulated in Varsha is provoked by Sharad heat — this is the peak Pittakopa (Pitta aggravation) season. Pathya: sweet, bitter, astringent foods; Tikta Ghrita (bitter herb ghee) for Pitta purification; Shatavari Kalpa; pomegranate, Amalaki, coriander seed water, tender coconut, Ushira (vetiver) water. Therapeutic Virechana (purgation) is classically prescribed for Sharad to eliminate Pitta. Classical contraindication: avoid direct exposure to sunlight and moonlight in early Sharad morning (Chandra Tapa — the moon's increased heat in Sharad can provoke Pitta). Apathya: sour, pungent heating foods; alcohol; daytime sleeping.",
+    "topic": "seasonal_diet",
+    "condition": "",
+    "dosha": "pitta",
+    "domain": "nutrition",
+    "source": "ashtanga_hridayam"
+  },
+  {
+    "text": "Hemanta Ritucharya (Early Winter diet, Margashirsha-Pausha, November-December): Agni is at its strongest (Balavardhaka Kala) — food digests quickly and intense hunger is natural. The body appropriately demands more nourishment. Pathya: nutritious, sweet, sour, salty foods; cow's milk preparations, sesame (Tila), jaggery, ghee, til-gur (sesame-jaggery) preparations, wheat, urad dal preparations, root vegetables, Chyawanprash. Vimshati Guda (jaggery-based classical preparation) is the primary Hemanta Rasayana. Exercise capacity is at its peak in Hemanta — this is the optimal season for physical training and strength building.",
+    "topic": "seasonal_diet",
+    "condition": "",
+    "dosha": "vata",
+    "domain": "nutrition",
+    "source": "ashtanga_hridayam"
+  },
+  {
+    "text": "Shishira Ritucharya (Late Winter diet, Magha-Phalguna, January-February): Continue Hemanta regimen with increased emphasis on oil and moisture as dryness (Rukshata) increases. Pathya: warm, unctuous (Snigdha), sweet foods; sesame oil internally and externally daily (Abhyanga); milk with ghee and Pippali (Pippali Kshira — specific for respiratory health in winter); Bhallataka preparations for Vata; warm grain soups. Apathya: cold, dry, rough (Rooksha) foods; cold water bathing; outdoor exposure without covering the body; Vata-aggravating diet (raw beans, salads, cold drinks, refrigerated food). This season primes the body for Vasanta Shodhana.",
+    "topic": "seasonal_diet",
+    "condition": "",
+    "dosha": "vata",
+    "domain": "nutrition",
+    "source": "ashtanga_hridayam"
+  },
+  {
+    "text": "Ghee (Sarpi/Ghrita): Ashtanga Hridayam Sutrasthana Ch.5 declares 'Sarvesham Snehanam Ghritam Param' — ghee is supreme among all fats. Ghrita has Madhura Rasa, Sheeta Virya, Madhura Vipaka; it is Vata-Pitta pacifying and enhances all seven Dhatus. Ghee promotes Ojas, sharpens intellect (Medhya), improves memory, lubricates joints, and acts as Yogavahi — a carrier that delivers herbal medicines deep into tissues. Daily therapeutic dose: 1-2 tsp in warm food. Medicated ghees: Tikta Ghrita (Pitta purification), Brahmi Ghrita (nervous system, memory), Ashwagandha Ghrita (strength, Vata). Contraindicated in acute Ama states and immediately before Shodhana.",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "ashtanga_hridayam"
+  },
+  {
+    "text": "Turmeric (Haridra/Curcuma longa): Tikta-Katu Rasa, Ushna Virya, Katu Vipaka — Tridoshahara in moderate quantities. Charaka lists Haridra as Lekhaniya (reduces excess tissue), Krimighna (antimicrobial), Kushtaghna (skin-clearing), Pramehahara, and Shotha-hara (anti-inflammatory). Classical preparation: Haridra Kshira — 1/4 tsp turmeric with warm milk, pinch of black pepper (increases curcumin bioavailability by up to 2000%), and ghee — taken before bed. Note: excess turmeric aggravates Pitta and Vata; use 1/4 to 1/2 tsp daily in cooking. Multi-gram supplementation of isolated curcumin lacks the synergistic context of classical whole-turmeric preparations.",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Dry Ginger (Shunthi/Vishwabheshaja): Charaka calls Shunthi 'Vishwabheshaja' — the universal medicine. Katu Rasa, Ushna Virya, Madhura Vipaka — more Deepaniya, Pachana, and Shothaghna (anti-inflammatory) than fresh ginger. Primary uses: Agni-deepana for all constitution types, Ama-pachana, anti-nausea (Chardi), cold and respiratory congestion. Fresh ginger (Ardrakam) is preferred for nausea and vomiting; Shunthi (dry) is preferred for Deepana-Pachana, joint inflammation, and respiratory conditions. Classical dose: 1/4 to 1/2 tsp dry ginger powder in warm water. Contraindicated in excess: severe Tikshna Agni, pregnancy in large doses, bleeding disorders (reduces platelet aggregation).",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Black Pepper (Maricha/Piper nigrum): Katu Rasa, Ushna Virya, Katu Vipaka — the most potent Deepaniya-Pachana spice. Tridoshic in small quantities — Kapha-Vata pacifying, mildly Pitta-increasing. Key uses: Trikatu preparation (Maricha + Shunthi + Pippali) for Manda Agni, cough, Ama digestion; with honey for Kapha-type conditions; with ghee for Vata joint pain. Note: pinch to 1/4 tsp per meal is therapeutic; excess Maricha severely aggravates Tikshna Agni and Pitta disorders. People with hyperacidity or bleeding conditions should minimize. Black pepper + turmeric is the classical combination for inflammation and bioavailability enhancement.",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Cumin (Jeera/Jiraka) and CCF Tea: Jeera has Katu-Tikta Rasa, Ushna Virya, Katu Vipaka — one of the rare Tridoshahara spices in small quantities. Deepaniya, Pachana, Grahi (absorbs excess moisture). CCF Tea (Cumin-Coriander-Fennel in equal parts, 1/4 tsp each, boiled 10 minutes in 2 cups water) is the classical Tridoshic digestive tea, safe for all constitutions year-round. Jeera is specifically prescribed for post-partum recovery, bloating, IBS, and malabsorption. Jeera Takra (buttermilk with roasted cumin and rock salt) is a classical Grahani preparation. Roasted cumin with rock salt on any meal improves digestibility of legumes and grains.",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Fennel Seeds (Shatapushpa/Foeniculum vulgare): Madhura-Katu Rasa, Sheeta Virya (uniquely a cooling pungent spice), Madhura Vipaka — primarily Pitta-pacifying and carminative. Fennel is the best cooling digestive spice — excellent for Tikshna Agni, Amlapitta, Pitta-type bloating and gas. Chewing 1/2 tsp raw fennel seeds after meals (Mukha Shodhana — oral cleansing) is a classical post-meal digestive practice. Shatapushpa is also Stanyajanana (promotes breast milk) and Artavajanana (regulates menstruation). Fennel water (seeds soaked overnight or simmered) is the primary cooling digestive drink for summer and Pitta conditions.",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "pitta",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Fenugreek (Methi/Trigonella foenum-graecum): Tikta-Katu Rasa, Ushna Virya, Katu Vipaka — Kapha-Vata pacifying, mildly Pitta-increasing in excess. Primary therapeutic uses: Prameha (diabetes) — galactomannan fiber slows glucose absorption and stimulates insulin secretion; Grahani (IBS) — Grahi and Deepaniya; joint inflammation (Shothaghna). Classical preparation: soak 1 tsp methi seeds overnight in water, drink the water and eat the seeds on empty stomach. Methi Laddu (with jaggery and ghee) is prescribed for post-partum strength and milk production. Contraindicated in excess during pregnancy (Garbhashaya-stimulating in large amounts) and in Tikshna Agni.",
+    "topic": "specific_foods",
+    "condition": "diabetes",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Amalaki (Indian Gooseberry/Emblica officinalis): considered the most important Rasayana fruit in Ayurveda. Has five of the six Rasas (all except Lavana), Sheeta Virya, Madhura Vipaka — Tridoshahara. Charaka describes Amalaki as the best Vayasthapana (anti-aging) and Rasayana herb. Daily use: Chyawanprash (Amalaki-based preparation) or fresh Amalaki juice (20-30ml morning). Paradox: Amalaki has Amla (sour) Rasa but due to Madhura Vipaka, it actually pacifies Pitta and is Pathya for Amlapitta, skin conditions, and bleeding disorders. Rich in Vitamin C with synergistic tannins that prevent oxidation. Safe in pregnancy.",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Takra (Ayurvedic Buttermilk): Acharya Charaka states 'Takra pibato naiva rogah sprishanti' — diseases do not touch one who drinks Takra regularly. Fresh buttermilk (diluted 1:4, curd:water, churned and fat removed) with cumin (Jiraka) and rock salt (Saindhava) is the classical Grahani-specific preparation. Takra is Laghu (light), Grahi (absorbs excess moisture), Deepaniya, Pachana — it simultaneously kindles Agni and absorbs the liquid excess from loose stools. Takra is the single most important dietary prescription for IBS, malabsorption, and chronic digestive weakness. Take at midday — never at night. Pitta patients take without salt, Kapha patients take with dry ginger.",
+    "topic": "specific_foods",
+    "condition": "ibs",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Pomegranate (Dadima/Punica granatum): Madhura-Amla-Kashaya Rasa, Sheeta Virya, Madhura Vipaka — Tridoshahara, with special affinity for Pitta and Rakta. Classical uses: Hridya (cardiac tonic), Rakta-shodhaka (blood purifier), Grahi (antidiarrheal — Kashaya Rasa), and Deepaniya (the Amla Rasa in small amounts stimulates Agni). Charaka specifically prescribes Dadima for Pandu (anemia), Grahani (IBS), Hridroga (heart disease), and Hikka (hiccups). Dadima Ghrita (pomegranate medicated ghee) is a classical preparation. Fresh pomegranate juice or arils are preferred; commercial juice concentrates lack the therapeutic potency of fresh fruit.",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Triphala (Three Fruits): Equal parts of Haritaki (Terminalia chebula), Bibhitaki (Terminalia bellirica), and Amalaki (Emblica officinalis). Charaka calls Triphala the best Rasayana that simultaneously reduces Kapha, Pitta, and Vata when taken appropriately. Classical use: 1/2 to 1 tsp Triphala powder in warm water at bedtime — Anulomana (gentle bowel regulation), Ama-pachana, Rakta-shodhana, Netra-hita (beneficial for eyes). Long-term safe. Dosha-specific use: with honey for Kapha conditions (weight, sinus congestion); with ghee for Pitta conditions (acidity, skin); with rock salt or warm water for Vata conditions (constipation, joint pain). The most versatile and safe Ayurvedic formulation for daily home use.",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Barley (Yava/Hordeum vulgare): Charaka identifies Yava as the single best grain for metabolic disease, diabetes (Prameha), and obesity (Sthoulya). Tikta-Kashaya Rasa, Ushna Virya, Katu Vipaka — Lekhaniya (fat-scraping), reduces medas, Kapha, and Ama. Lowers blood glucose (high beta-glucan fiber), reduces cholesterol (LDL-lowering), and is Deepaniya. Barley water (Yava Jala) — roast barley, boil 1 tbsp in 1L water for 20 minutes, strain — is a classical kidney and urinary tract health drink. Barley replaces rice and wheat in therapeutic diets for Prameha, Sthoulya, Mutrakriccha, and high-Kapha conditions.",
+    "topic": "specific_foods",
+    "condition": "diabetes",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Moong Dal (Green Gram/Vigna radiata): Charaka calls Moong (Mudga) the best of all pulses — 'Laghunam Srestha.' Madhura-Kashaya Rasa, Sheeta Virya, Katu Vipaka — Tridoshahara in its split washed form (yellow moong dal). It is the primary therapeutic food for Ama-Pachana, fever recovery, post-illness weakness, and Grahani (IBS). Moong soup (Yusha) with rock salt, cumin, and a touch of ghee is prescribed for almost all acute illness recovery. Whole green moong is heavier and best suited for Pitta-Kapha; split yellow moong is the lightest form, suitable for Vata in illness. Never combine moong with curd (Viruddha Ahara) or hot, spicy preparations during illness.",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Asafoetida (Hingu/Ferula asafoetida): Katu Rasa, Ushna Virya, Katu Vipaka — the most specific Vata-Anulomana spice. Hingu is the primary remedy for Vishama Agni (erratic digestion), intestinal gas, bloating, colic pain, and Apana Vata disorders. Classical preparation: heat a pinch of Hingu in ghee, then add to warm water or dal — this is the standard Vata-soothing tadka. Essential in cooking any legume (Hingu removes the Vatakara/gas-producing quality of beans). Contraindicated in: pregnancy (stimulates uterine contractions), Pitta disorders with inflammation, liver conditions. Safe in small culinary amounts for most people.",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "vata",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Coconut Water (Narikelodaka): Madhura Rasa, Sheeta Virya, Madhura Vipaka — Pitta-Vata pacifying. The most effective natural electrolyte preparation in Ayurveda. Classical uses: primary drink in Grishma (summer), Amlapitta (GERD), Mutrakriccha (urinary disorders), after Virechana (purgation) for electrolyte restoration, and in dehydration-prone diarrheal states. Tender coconut water (green coconut) is preferred — sweet, young, and full of Prana. Bottled or processed coconut water lacks the classical therapeutic quality. A glass of fresh tender coconut water in the morning is one of the simplest and most effective Ayurvedic daily practices for Pitta constitution.",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "pitta",
+    "domain": "nutrition",
+    "source": "ashtanga_hridayam"
+  },
+  {
+    "text": "Cow's Milk (Go Dugdha): Charaka Sutrasthana Ch.27 states cow's milk is 'Jivaneeya' — a life-giving substance. Madhura Rasa, Sheeta Virya, Madhura Vipaka — Vata-Pitta pacifying, mildly Kapha-increasing. Building for all seven Dhatus, promotes Ojas, Bala, and Medhya (intelligence). Classical rules for therapeutic milk: always warm or hot (never cold from refrigerator), boiled once to reduce Kapha properties, ideally with therapeutic spices (cardamom, turmeric, dry ginger, saffron, ashwagandha) for specific purposes. Non-negotiable rule: milk must be taken alone or with complementary foods, never with sour, salt, fish, or meat (Viruddha Ahara). The best food for Pitta and Vata; minimized in Kapha and high-Ama states.",
+    "topic": "specific_foods",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Intermittent Fasting in Ayurveda — Upavasa: Charaka describes Langhana (lightening therapy) as one of the most important treatments — includes fasting (Upavasa), light diet (Laghu Bhojana), and digestive kindling. Classical indication: high-Ama states, Kapha conditions, fever, obesity. Contraindication: Vata constitution (regular fasting severely aggravates Vata), low Bala (strength), pregnancy, active bleeding, and children. For Pitta constitution: intermittent fasting with NO gap beyond 4-5 hours between meals (Tikshna Agni creates acidity and irritability with long fasting windows). For Kapha constitution: 16:8 or even 18:6 intermittent fasting is most beneficial and classically supported. Vata: eat at consistent times, never skip meals.",
+    "topic": "ahara_principles",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Hydration guidelines in Ayurveda: Ushna Jala (warm water) throughout the day is prescribed universally — sipping 1-2 sips of warm water every 30 minutes is the classical maintenance practice. Cold water suppresses Agni; iced water is the strongest Agni-suppressant and is categorically Apathya for most conditions. Exception: Grishma (summer) permits cool (not iced) water. Quantity guidance: roughly 1.5-2.5L per day based on body size, climate, and activity. Signs of adequate hydration: light yellow urine, moist lips, no excessive thirst. Excess water (Ati Jala) also causes Ama — water is a food in Ayurveda and must be consumed with awareness of Agni capacity.",
+    "topic": "ahara_principles",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "ashtanga_hridayam"
+  },
+  {
+    "text": "Liver health (Yakrit Vikara) diet in Ayurveda: the liver corresponds to the Ranjaka Pitta seat. Pathya: Katuki (Picrorhiza kurroa) — the primary Yakrit herb, extremely Tikta and Katu; Bhumi Amalaki (Phyllanthus niruri) — classical hepatoprotective herb; Punarnava for fluid retention from liver weakness; fresh Amalaki juice; Triphala at night. Light diet — avoid all heavy, fried, sour, and fermented foods which directly overload Ranjaka Pitta. Abstinence from alcohol is absolute (Madya is the single most cited cause of Yakrit disease in classical texts). Pathya foods: moong dal, old rice, bitter gourd, pomegranate, warm water. Avoid: heavy meat, excess oil, curd.",
+    "topic": "condition_diet",
+    "condition": "liver",
+    "dosha": "pitta",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Hypothyroid management diet in Ayurvedic framework: treated as a Kapha-Vata disorder causing Dhatvagnimandya (reduced tissue-level metabolism). Pathya: all pungent, dry, bitter, and light foods that kindle Agni at the tissue level; Kanchanar (Bauhinia variegata) — specific herb for thyroid (Gandamala); Guggulu preparations; warm ginger tea daily; horse gram; barley; old rice. Avoid: raw cruciferous vegetables (cabbage, cauliflower, broccoli) in excess as they contain goitrogens — lightly cooking inactivates them; cold water; excessive soy products; excess flaxseed; refined sugar; cold and heavy dairy. Regular physical activity is essential — sedentary lifestyle compounds Kapha-Dhatvagnimandya.",
+    "topic": "condition_diet",
+    "condition": "thyroid",
+    "dosha": "kapha",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Pregnancy (Garbhini) nutrition from Charaka Sharirasthana: diet must build Rasa Dhatu (nutrition), Rakta (blood), and Ojas for both mother and child. Monthly-specific diet: months 1-3 focus on liquids and easily digestible foods — rice gruel, warm milk, fresh fruit juice. Months 4-6 gradually introduce ghee, milk with saffron and cardamom, nourishing grains. Months 7-9: Brimhana (nourishing) diet intensifies — milk with Shatavari, ghee, sesame, dates. Universal rules in pregnancy: avoid Ruksha (dry), Ushna (very hot), Tikshna (sharp/spicy), and Viruddha (incompatible) foods throughout. Shatavari is the primary pregnancy Rasayana. Avoid fasting, irregular meals, and heavy physical exertion.",
+    "topic": "condition_diet",
+    "condition": "pregnancy",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  },
+  {
+    "text": "Post-exercise and athletic nutrition in Ayurveda: after vigorous exercise (Vyayama), Agni is briefly heightened — this is the time to support recovery and tissue building (Mamsa Dhatu Poshana). Pathya immediately post-exercise: warm milk with Ashwagandha and a pinch of turmeric — classical post-exercise Rasayana; dates and sesame for immediate energy restoration; light warm food within 30-60 minutes. Avoid heavy meals immediately post-exercise (wait 1 hour for heavy grains), cold water during exercise (sip warm water), and exercising after meals (minimum 2-3 hours post-meal). Charaka describes the ideal exercise intensity as half-capacity (Ardhashakti) — exercising to moderate fatigue, not exhaustion.",
+    "topic": "ahara_principles",
+    "condition": "",
+    "dosha": "",
+    "domain": "nutrition",
+    "source": "charaka_samhita"
+  }
+]

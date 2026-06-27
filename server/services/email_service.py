@@ -13,7 +13,7 @@ from config import settings
 def _send_email_sync(to_email: str, subject: str, html_body: str):
     """Synchronous function to send email via SMTP."""
     if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
-        logger.warning(f" Email not sent because SMTP credentials are not configured.")
+        logger.warning(" Email not sent because SMTP credentials are not configured.")
         logger.info(f"       To: {to_email} | Subject: {subject}")
         logger.info(f"       Body: {html_body}")
         return
@@ -27,11 +27,17 @@ def _send_email_sync(to_email: str, subject: str, html_body: str):
     msg.attach(part)
 
     try:
-        with smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT) as server:
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.sendmail(settings.FROM_EMAIL, to_email, msg.as_string())
-            logger.info(f"[OK] Email sent to {to_email}")
+        port = settings.SMTP_PORT
+        if port == 465:
+            with smtplib.SMTP_SSL(settings.SMTP_SERVER, port) as server:
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.sendmail(settings.FROM_EMAIL, to_email, msg.as_string())
+        else:
+            with smtplib.SMTP(settings.SMTP_SERVER, port) as server:
+                server.starttls()
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.sendmail(settings.FROM_EMAIL, to_email, msg.as_string())
+        logger.info(f"[OK] Email sent to {to_email}")
     except Exception as e:
         logger.error(f" Failed to send email to {to_email}: {e}")
 
@@ -43,7 +49,7 @@ async def send_verification_email(to_email: str, token: str):
     """Send an email verification link."""
     verify_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
     subject = "Verify your Ayura AI Account"
-    
+
     html = f"""
     <html>
       <body style="font-family: Arial, sans-serif; background-color: #0b1426; color: #e2e8f0; padding: 20px;">
@@ -82,7 +88,7 @@ async def send_password_reset_email(to_email: str, token: str):
     """Send a password reset link."""
     reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
     subject = "Reset Your Ayura AI Password"
-    
+
     html = f"""
     <html>
       <body style="font-family: Arial, sans-serif; background-color: #0b1426; color: #e2e8f0; padding: 20px;">

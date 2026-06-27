@@ -51,7 +51,7 @@ def get_contraindications(category, pose_name=""):
     elif category == "twist": c.extend(["pregnancy", "spinal_injury"])
     elif category == "balancing": c.extend(["ankle_injury", "knee_injury"])
     elif category == "supine": c.extend(["pregnancy_third_trimester"])
-    
+
     name_lower = pose_name.lower()
     if "headstand" in name_lower or "shoulderstand" in name_lower:
         c.extend(["neck_injury", "glaucoma", "high_blood_pressure"])
@@ -83,7 +83,7 @@ def get_sequence_role(category):
 def get_goals(category, benefits):
     goals = set()
     b = benefits.lower()
-    
+
     if category in ["forward_fold", "supine", "seated"] or "flexibility" in b or "stretch" in b:
         goals.add("flexibility")
     if category in ["restorative", "supine", "forward_fold"] or "stress" in b or "relax" in b or "calm" in b:
@@ -96,7 +96,7 @@ def get_goals(category, benefits):
         goals.add("healing")
     if category in ["seated", "supine"] or "mind" in b or "focus" in b:
         goals.add("spiritual")
-        
+
     return list(goals)
 
 def get_duration(level):
@@ -123,15 +123,15 @@ def fix_api_level(name, category):
     n = name.lower()
     beginner_words = ["mountain", "child", "corpse", "savasana", "cat", "cow", "staff", "easy", "seated forward", "butterfly", "bridge", "warrior i", "warrior ii", "triangle", "tree", "downward", "cobra", "sphinx"]
     advanced_words = ["headstand", "shoulderstand", "handstand", "forearm stand", "crow", "eight angle", "flying pigeon", "advanced"]
-    
+
     if category == "restorative": return "beginner"
     if any(w in n for w in advanced_words): return "advanced"
     if any(w in n for w in beginner_words): return "beginner"
     if category == "forward_fold": return "beginner"
-    
+
     if category in ["standing", "twist", "balancing", "backbend", "seated", "prone", "supine", "inversion"]:
         return "intermediate"
-        
+
     return "intermediate"
 
 MANUAL_POSES = [
@@ -156,7 +156,7 @@ MANUAL_POSES = [
     {"name": "Equestrian Pose", "sanskrit": "Ashwa Sanchalanasana", "cat": "standing", "lvl": "beginner"},
     {"name": "Knees to Chest", "sanskrit": "Apanasana", "cat": "supine", "lvl": "beginner"},
     {"name": "Supine Twist", "sanskrit": "Supta Matsyendrasana", "cat": "twist", "lvl": "beginner", "preg_safe": False},
-    
+
     # INTERMEDIATE POSES (25)
     {"name": "Revolved Triangle", "sanskrit": "Parivrtta Trikonasana", "cat": "twist", "lvl": "intermediate"},
     {"name": "Half Moon Pose", "sanskrit": "Ardha Chandrasana", "cat": "balancing", "lvl": "intermediate"},
@@ -183,7 +183,7 @@ MANUAL_POSES = [
     {"name": "Side Crow", "sanskrit": "Parsva Bakasana", "cat": "balancing", "lvl": "intermediate"},
     {"name": "Sage Pose", "sanskrit": "Marichyasana", "cat": "twist", "lvl": "intermediate", "preg_safe": False},
     {"name": "Wide Leg Forward Fold", "sanskrit": "Prasarita Padottanasana", "cat": "forward_fold", "lvl": "intermediate"},
-    
+
     # ADVANCED POSES (15)
     {"name": "Headstand", "sanskrit": "Sirsasana", "cat": "inversion", "lvl": "advanced", "preg_safe": False},
     {"name": "Shoulderstand", "sanskrit": "Sarvangasana", "cat": "inversion", "lvl": "advanced", "preg_safe": False},
@@ -228,43 +228,43 @@ PRANAYAMA = [
 
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    
+
     transformed = []
     stats_category = defaultdict(int)
     stats_level = defaultdict(int)
     stats_dosha = {"vata": 0, "pitta": 0, "kapha": 0}
     stats_pregnancy_safe = 0
-    
+
     # 1. FETCH API
     print(f"Fetching from {URL_CATEGORIES}...")
     req = urllib.request.Request(URL_CATEGORIES, headers={'User-Agent': 'Mozilla/5.0'})
     try:
         with urllib.request.urlopen(req) as response:
             categories_data = json.loads(response.read().decode('utf-8'))
-            
+
         for cat in categories_data:
             cat_name = cat.get("category_name", "")
             mapped_cat = map_category(cat_name)
-            
+
             poses = cat.get("poses", [])
             for pose in poses:
                 english_name = pose.get("english_name", "")
                 sanskrit_name = pose.get("sanskrit_name_adapted", pose.get("sanskrit_name", ""))
                 pose_id = to_snake_case(english_name)
-                
+
                 # PART 1: Use the new level tagging
                 level = fix_api_level(english_name, mapped_cat)
-                
+
                 dosha_balance = get_dosha_balance(mapped_cat)
                 benefits = pose.get("pose_benefits", "Improves flexibility and strength.")
                 goals = get_goals(mapped_cat, benefits)
                 contraindications = get_contraindications(mapped_cat, english_name)
-                
+
                 if "heart_disease" not in contraindications and level == "advanced" and mapped_cat in ["standing", "inversion", "backbend"]:
                     contraindications.extend(["heart_disease", "hypertension"])
-                    
+
                 preg_safe = get_pregnancy_safe(mapped_cat, level)
-                
+
                 item = {
                     "id": pose_id,
                     "english_name": english_name,
@@ -294,17 +294,17 @@ def main():
         cat = mp["cat"]
         lvl = mp["lvl"]
         preg_safe_override = False if mp.get("preg_safe") is False else None
-        
+
         dosha_balance = get_dosha_balance(cat)
         benefits = f"Improves {cat} strength and flexibility."
         goals = get_goals(cat, benefits)
-        
+
         contra = get_contraindications(cat, mp["name"])
         if "heart_disease" not in contra and lvl == "advanced" and cat in ["standing", "inversion", "backbend"]:
             contra.extend(["heart_disease", "hypertension"])
-            
+
         preg_safe = get_pregnancy_safe(cat, lvl, custom_false=(preg_safe_override is False))
-        
+
         item = {
             "id": pose_id,
             "english_name": mp["name"],
@@ -325,11 +325,11 @@ def main():
             "image_url": ""
         }
         transformed.append(item)
-        
+
     # Deduplicate poses by ID
     unique_poses = {p["id"]: p for p in transformed}.values()
     final_poses = list(unique_poses)
-    
+
     # Calc stats
     for p in final_poses:
         stats_category[p["category"]] += 1
@@ -338,10 +338,10 @@ def main():
         if p["dosha_balance"]["pitta"] == "balances": stats_dosha["pitta"] += 1
         if p["dosha_balance"]["kapha"] == "balances": stats_dosha["kapha"] += 1
         if p["pregnancy_safe"]: stats_pregnancy_safe += 1
-        
+
     with open(POSES_FILE, "w", encoding="utf-8") as f:
         json.dump(final_poses, f, indent=2, ensure_ascii=False)
-        
+
     # 3. PRANAYAMA — skip overwriting if the curated file already has real instructions
     pranayama_count = 0
     skip_pranayama = False

@@ -125,7 +125,7 @@
   color: var(--step-accent, var(--ayura-teal));
   box-shadow: 0 8px 24px rgba(45,212,191,0.12);
 }
-.onb-tile-emoji { font-size: 1.8rem; }
+.onb-tile-emoji { display: inline-flex; align-items: center; justify-content: center; color: var(--ayura-teal); }
 
 /* Dosha tile descriptions */
 .onb-tile-desc {

@@ -118,7 +118,7 @@ class LLMClient:
     ):
         """Yield generated text chunks as an asynchronous generator."""
         self._last_used_provider = "none"
-        
+
         # 1) Try Azure OpenAI first
         if self._azure_client:
             try:
@@ -279,7 +279,7 @@ class LLMClient:
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
-        
+
         response = await self._azure_client.chat.completions.create(
             model=settings.AZURE_OPENAI_DEPLOYMENT,
             messages=messages,
@@ -294,7 +294,7 @@ class LLMClient:
     async def _generate_gemini_stream(self, prompt: str, system_prompt: str, temperature: float, max_tokens: int):
         full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
         generation_config = {"temperature": temperature, "max_output_tokens": max_tokens}
-        
+
         response = await self._gemini_model.generate_content_async(
             full_prompt,
             generation_config=generation_config,

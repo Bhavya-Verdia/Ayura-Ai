@@ -5,14 +5,13 @@ Processes AI plan generations asynchronously to avoid starving the main FastAPI 
 Run with: `arq worker.WorkerSettings`
 """
 
-import asyncio
 import logging
 from arq.connections import RedisSettings
 from arq import cron
 from config import settings
 from database.mongodb import init_mongodb, close_mongodb
 from database.chromadb_client import init_chromadb
-from routes.plans import _run_plan_job
+from routes.plan_runner import _run_plan_job
 
 logger = logging.getLogger("ayura.worker")
 
@@ -53,28 +52,26 @@ async def shutdown(ctx):
 
 
 async def dispatch_due_reminders(ctx):
-    """Check for reminders due within the current minute and deliver notifications."""
+    """Deliver reminders whose local (per-reminder timezone) time + day match now.
+
+    The cron runs every minute in UTC; matching is done in each reminder's own
+    timezone so an "08:00" reminder fires at the user's 08:00, not 08:00 UTC. A
+    per-minute fired-token guards against duplicate delivery on cron double-fires.
+    """
     from datetime import datetime, timezone
     from database.mongodb import get_mongodb
     from services.notification_service import create_and_deliver_notification
+    from services.reminder_service import reminder_due, fired_token
 
     db = get_mongodb()
     now = datetime.now(timezone.utc)
-    current_time_str = now.strftime("%H:%M")
-    current_day = now.strftime("%A").lower()  # e.g. "monday"
 
-    # Find active reminders matching current time and day
-    cursor = db.reminders.find({
-        "is_active": True,
-        "time": current_time_str,
-        "$or": [
-            {"days": []},                  # empty = every day
-            {"days": current_day},         # exact string match
-            {"days": {"$in": [current_day]}},  # element in list
-        ],
-    })
-
-    async for reminder in cursor:
+    async for reminder in db.reminders.find({"is_active": True}):
+        if not reminder_due(reminder, now):
+            continue
+        token = fired_token(reminder, now)
+        if reminder.get("last_fired_token") == token:
+            continue  # already delivered this scheduled minute
         try:
             await create_and_deliver_notification(
                 db,
@@ -83,13 +80,12 @@ async def dispatch_due_reminders(ctx):
                 body=f"Time for your {reminder.get('reminder_type', 'wellness')} activity: {reminder.get('title', '')}",
                 notif_type="reminder",
             )
+            await db.reminders.update_one(
+                {"_id": reminder["_id"]},
+                {"$set": {"last_fired_token": token}},
+            )
         except Exception as e:
             logger.error(f"Failed to dispatch reminder {reminder.get('_id')}: {e}")
-
-
-async def _advance_reminder(db, reminder: dict):
-    """Placeholder — reminders use time+days schedule, not a next_due timestamp."""
-    pass
 
 
 class WorkerSettings:

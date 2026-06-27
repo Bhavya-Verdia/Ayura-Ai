@@ -115,7 +115,7 @@ THERAPIES = [
         "herb_requirement": "readily_available",
         "benefits": ["Lymphatic drainage", "Invigorating"]
     },
-    
+
     # PRADHANA KARMA (MAIN CLEANSING)
     {
         "id": "vamana",
@@ -225,7 +225,7 @@ THERAPIES = [
         "herb_requirement": "specific_ayurvedic",
         "benefits": ["Extracts deep Pitta toxins from blood"]
     },
-    
+
     # PASCHAT KARMA (POST/REJUVENATION)
     {
         "id": "samsarjana_krama_strict",
@@ -293,7 +293,7 @@ def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(THERAPIES, f, indent=2, ensure_ascii=False)
-        
+
     print(f"Total therapies seeded: {len(THERAPIES)}")
     for t in ["purvakarma", "pradhana", "paschat"]:
         count = len([x for x in THERAPIES if x["phase"] == t])

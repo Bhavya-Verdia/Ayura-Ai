@@ -3,7 +3,7 @@ Ayura AI - Progress Tracking Routes
 """
 
 from datetime import datetime, timezone, date, timedelta
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 import json
 import uuid
@@ -14,6 +14,7 @@ from routes.profile import get_current_user
 from database.mongodb import get_mongodb
 from ai.llm_client import llm_client
 from core.cache import cache_manager
+from core.logger import logger
 
 _SUMMARY_TTL = 14400  # 4 hours
 
@@ -46,8 +47,8 @@ async def log_progress(
     if cache_manager.redis_client:
         try:
             await cache_manager.redis_client.delete(f"ayura:progress_summary:{user.id}")
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Progress summary cache invalidation failed: %s", exc)
 
     # Update user weight if provided
     if req.weight_kg:
@@ -83,8 +84,8 @@ async def get_progress_summary(
             cached = await cache_manager.redis_client.get(cache_key)
             if cached:
                 return ProgressResponse(**json.loads(cached))
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Progress summary cache read failed: %s", exc)
 
     cursor = db.progress_logs.find({"user_id": user.id}).sort("date", -1).limit(30)
     logs = await cursor.to_list(length=30)
@@ -122,23 +123,34 @@ async def get_progress_summary(
         else:
             trend = "stable"
 
-    # Real consecutive-day streak: walk backwards from today counting unbroken logged days
-    def _calc_streak(logs: list) -> int:
-        logged_dates = set()
-        for log in logs:
-            raw = log.get("date")
-            if isinstance(raw, datetime):
-                logged_dates.add(raw.date())
-        streak = 0
-        check = date.today()
-        while check in logged_dates:
-            streak += 1
-            check -= timedelta(days=1)
-        return streak
+    # Resolve the set of dates the user logged on (once), then derive the
+    # consecutive-day streak, the dashboard's 7-day dot calendar, and whether
+    # today is already logged — all from the same source.
+    logged_dates = set()
+    for log in logs:
+        raw = log.get("date")
+        if isinstance(raw, datetime):
+            logged_dates.add(raw.date())
+
+    today = date.today()
+    streak = 0
+    cursor_day = today
+    while cursor_day in logged_dates:
+        streak += 1
+        cursor_day -= timedelta(days=1)
+
+    active_dates = [
+        (today - timedelta(days=offset)).isoformat()
+        for offset in range(7)
+        if (today - timedelta(days=offset)) in logged_dates
+    ]
 
     streak_data = {
-        "current_streak_days": _calc_streak(logs),
+        "current_streak_days": streak,
+        "current_streak": streak,            # alias consumed by the dashboard StreakCard
         "total_entries": len(logs),
+        "active_dates": active_dates,
+        "checked_in_today": today in logged_dates,
     }
 
     # LLM insight
@@ -165,6 +177,28 @@ async def get_progress_summary(
     if cache_manager.redis_client:
         try:
             await cache_manager.redis_client.setex(cache_key, _SUMMARY_TTL, result.model_dump_json())
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Progress summary cache write failed: %s", exc)
     return result
+
+
+@router.get("/logs")
+async def get_progress_logs(
+    limit: int = 30,
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """Return the last N raw progress log entries for the authenticated user."""
+    cursor = db.progress_logs.find({"user_id": user.id}).sort("date", -1).limit(min(limit, 90))
+    logs = []
+    async for doc in cursor:
+        raw_date = doc.get("date")
+        logs.append({
+            "id": doc["_id"],
+            "date": raw_date.isoformat() if isinstance(raw_date, datetime) else str(raw_date),
+            "weight_kg": doc.get("weight_kg"),
+            "adherence_percent": doc.get("adherence_percent"),
+            "mood": doc.get("mood"),
+            "plan_feedback": doc.get("plan_feedback") or "",
+        })
+    return logs

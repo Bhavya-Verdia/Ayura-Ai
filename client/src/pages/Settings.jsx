@@ -1,11 +1,15 @@
 import { useState, useRef, Suspense } from 'react'
 import { useAuth } from '../providers/AuthContext'
-import { privacyAPI, profileAPI } from '../api/client'
+import { privacyAPI, profileAPI, exportAPI } from '../api/client'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Helmet } from 'react-helmet-async'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../providers/ThemeProvider'
+import {
+  Camera, Save, Brain, KeyRound, FileText, Table2,
+  Package, LogOut, Trash2,
+} from 'lucide-react'
 import React from 'react'
 import './Settings.css'
 
@@ -314,6 +318,49 @@ export default function Settings() {
     }
   }
 
+  const [exportingPdf, setExportingPdf] = useState(false)
+  const [exportingCsv, setExportingCsv] = useState(false)
+
+  async function downloadPdf() {
+    setExportingPdf(true)
+    try {
+      const { data } = await exportAPI.pdf()
+      const url = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'ayura-wellness-report.pdf'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      setNotice({ type: 'success', message: 'Wellness report downloaded.' })
+    } catch (err) {
+      setNotice({ type: 'error', message: err.response?.data?.detail || 'Failed to export PDF. Generate a plan first.' })
+    } finally {
+      setExportingPdf(false)
+    }
+  }
+
+  async function downloadCsv() {
+    setExportingCsv(true)
+    try {
+      const { data } = await exportAPI.csv()
+      const url = URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'ayura-progress.csv'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      setNotice({ type: 'success', message: 'Progress CSV downloaded.' })
+    } catch (err) {
+      setNotice({ type: 'error', message: err.response?.data?.detail || 'Failed to export CSV.' })
+    } finally {
+      setExportingCsv(false)
+    }
+  }
+
   async function deleteAccount() {
     if (!window.confirm('This permanently deletes your Ayura AI account and health data. Continue?')) return
     try {
@@ -381,7 +428,7 @@ export default function Settings() {
                 </div>
               )}
               <label className="settings-avatar-btn" title="Upload avatar">
-                📷
+                <Camera size={15} strokeWidth={2} />
                 <input type="file" accept="image/*" onChange={handleAvatarUpload} hidden />
               </label>
               {uploadingAvatar && <div className="spinner" style={{ width: '16px', height: '16px', position: 'absolute', bottom: 0, right: 0 }} />}
@@ -606,10 +653,10 @@ export default function Settings() {
 
           <div className="settings-action-row">
             <motion.button className="btn btn-primary" type="submit" disabled={saving} whileTap={{ scale: 0.97 }}>
-              {saving ? 'Saving...' : '💾 Save Profile'}
+              {saving ? 'Saving…' : <><Save size={16} strokeWidth={2} /> Save Profile</>}
             </motion.button>
             <motion.button className="btn btn-secondary" type="button" onClick={() => navigate('/onboarding?retake=true')} whileTap={{ scale: 0.97 }}>
-              🧬 Retake Dosha Quiz
+              <Brain size={16} strokeWidth={2} /> Retake Dosha Quiz
             </motion.button>
           </div>
         </motion.form>
@@ -633,23 +680,39 @@ export default function Settings() {
               </div>
             </div>
             <motion.button className="btn btn-primary" type="submit" disabled={savingPw} style={{ marginTop: '16px' }} whileTap={{ scale: 0.97 }}>
-              {savingPw ? 'Changing...' : '🔒 Change Password'}
+              {savingPw ? 'Changing…' : <><KeyRound size={16} strokeWidth={2} /> Change Password</>}
             </motion.button>
           </motion.form>
         )}
+
+        {/* Export wellness data */}
+        <motion.div className="settings-card" variants={staggerItem}>
+          <h2 className="settings-section-title">Export Wellness Data</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 20 }}>
+            Download a Vaidya-handoff PDF — your Prakriti &amp; Vikriti assessment, Agni, Ama, Ojas, conditions, and plans in one summary to share with your Ayurvedic physician — or export your progress logs as a CSV spreadsheet.
+          </p>
+          <div className="settings-action-row">
+            <motion.button className="btn btn-primary" onClick={downloadPdf} disabled={exportingPdf} whileTap={{ scale: 0.97 }}>
+              {exportingPdf ? 'Generating…' : <><FileText size={16} strokeWidth={2} /> Download Vaidya Report (PDF)</>}
+            </motion.button>
+            <motion.button className="btn btn-secondary" onClick={downloadCsv} disabled={exportingCsv} whileTap={{ scale: 0.97 }}>
+              {exportingCsv ? 'Exporting…' : <><Table2 size={16} strokeWidth={2} /> Download Progress CSV</>}
+            </motion.button>
+          </div>
+        </motion.div>
 
         {/* Danger zone */}
         <motion.div className="settings-card settings-danger" variants={staggerItem}>
           <h2 className="settings-section-title settings-danger-title">Account Actions</h2>
           <div className="settings-action-row">
             <motion.button className="btn btn-secondary" onClick={exportAccountData} whileTap={{ scale: 0.97 }}>
-              📦 Export Data
+              <Package size={16} strokeWidth={2} /> Export Data
             </motion.button>
             <motion.button className="btn btn-secondary" onClick={() => { logout(); navigate('/login') }} whileTap={{ scale: 0.97 }}>
-              🚪 Log Out
+              <LogOut size={16} strokeWidth={2} /> Log Out
             </motion.button>
             <motion.button className="btn btn-secondary settings-btn-danger" onClick={deleteAccount} whileTap={{ scale: 0.97 }}>
-              🗑️ Delete Account
+              <Trash2 size={16} strokeWidth={2} /> Delete Account
             </motion.button>
           </div>
         </motion.div>

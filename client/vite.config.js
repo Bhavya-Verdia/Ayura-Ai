@@ -9,13 +9,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'og-image.png'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-512x512-maskable.png', 'og-image.png'],
       manifest: {
-        name: 'Ayura AI',
+        name: 'Ayura AI — Adaptive Ayurvedic Wellness',
         short_name: 'Ayura AI',
         description: 'AI-Powered Holistic Wellness Platform',
-        theme_color: '#080E0D',
-        background_color: '#080E0D',
+        theme_color: '#060A0E',
+        background_color: '#060A0E',
         display: 'standalone',
         start_url: '/',
         icons: [
@@ -30,10 +30,10 @@ export default defineConfig({
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'pwa-512x512-maskable.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
           }
         ]
       }

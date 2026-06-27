@@ -58,9 +58,10 @@ export function AuthProvider({ children }) {
   }
 
   async function register(name, email, password, consent_given = false) {
+    // No session is issued on registration — the user must verify their email and
+    // then log in. Returns { message, requires_verification }.
     const { data } = await authAPI.register({ name, email, password, consent_given })
-    setAuthTokens(data.access_token, data.refresh_token)
-    await fetchProfile()
+    return data
   }
 
   async function loginWithGoogle(code, state, redirectUri = `${window.location.origin}/auth/google/callback`) {

@@ -2,6 +2,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from engine.condition_vocab import term_in_condition
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 THERAPIES_PATH = BASE_DIR / "data" / "knowledge_base" / "panchakarma_therapies.json"
 PROTOCOLS_PATH = BASE_DIR / "data" / "knowledge_base" / "panchakarma_protocols.json"
@@ -44,11 +46,34 @@ _FITNESS_TO_BALA = {
     "advanced":     ("uttama",   "Uttama Bala — strong constitution; full Shodhana well-tolerated"),
 }
 
-_DIGESTION_TO_AGNI = {
-    "weak":     "vata",    # Vishama Agni — irregular
-    "moderate": "sama",    # Sama Agni — balanced
-    "strong":   "pitta",   # Tikshna Agni — sharp/intense
+# Canonical Agni vocabulary. agni_type may be stored either dosha-keyed
+# (vata/pitta/kapha) or classical-keyed (vishama/tikshna/manda); normalise both.
+_AGNI_CANON = {
+    "sama": "sama",
+    "vata": "vishama", "vishama": "vishama",
+    "pitta": "tikshna", "tikshna": "tikshna",
+    "kapha": "manda", "manda": "manda",
 }
+_AGNI_NAME = {
+    "sama": "Sama Agni", "vishama": "Vishama Agni",
+    "tikshna": "Tikshna Agni", "manda": "Manda Agni",
+}
+
+
+def _derive_agni(digestion_quality: str | None, dominant_dosha: str | None) -> str:
+    """Derive canonical Agni from digestion quality, made dosha-aware so that
+    Manda Agni (slow/Kapha — the principal Ama-former) is reachable. Classical
+    ref: Charaka Sutrasthana 15 (four Agni states). Returns a canonical key:
+    sama | vishama | tikshna | manda."""
+    dq = (digestion_quality or "moderate").lower()
+    dosha = (dominant_dosha or "").lower()
+    if dq in ("strong", "sharp", "intense"):
+        return "tikshna"
+    if dq in ("weak", "slow", "sluggish", "poor", "irregular"):
+        # Irregular weak digestion in a Vata person = Vishama; otherwise the
+        # slow/heavy weak digestion of Kapha (and the common Ama-forming case) = Manda.
+        return "vishama" if dosha == "vata" else "manda"
+    return "sama"
 
 
 def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols: dict) -> dict:
@@ -90,7 +115,7 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
     bala_type, bala_note = _FITNESS_TO_BALA.get(fitness, ("madhyama", "Madhyama Bala"))
     if bala_type == "manda" and experience == "none":
         reasons_shamana.append(
-            f"Manda Bala (beginner fitness) without prior PK experience — "
+            "Manda Bala (beginner fitness) without prior PK experience — "
             "Shodhana risk of Ativyapada. Brimhana + Shamana recommended first."
         )
 
@@ -98,8 +123,10 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
         "anemia", "rectal_bleeding", "bleeding_disorder", "hemophilia",
         "severe_cardiac", "heart_failure", "active_fever",
     }
+    # Precise, case-insensitive matching (was `k in c`, which was case-sensitive —
+    # a capitalised "Anemia" silently bypassed this contraindication set).
     flagged = [c for c in (user_profile.get("medical_history") or [])
-               if any(k in c for k in _contra)]
+               if any(term_in_condition(c, k) for k in _contra)]
     if flagged:
         reasons_shamana.append(f"Medical contraindication: {', '.join(flagged)}")
 
@@ -210,13 +237,10 @@ def _validate_karma_safety(pradhana: dict, medical_history: list[str]) -> dict:
     hard_set = contra.get("hard", set())
     soft_set = contra.get("soft", set())
 
-    med_lower = [m.lower().replace(" ", "_") for m in medical_history]
-
-    hard_flagged = [m for m in medical_history if any(k in m.lower() for k in hard_set)]
-    soft_flagged = [m for m in medical_history if any(k in m.lower() for k in soft_set)]
+    hard_flagged = [m for m in medical_history if any(term_in_condition(m, k) for k in hard_set)]
+    soft_flagged = [m for m in medical_history if any(term_in_condition(m, k) for k in soft_set)]
 
     warnings: list[str] = []
-    substituted = False
 
     if hard_flagged:
         fallback = contra.get("fallback", "nasya")
@@ -232,7 +256,6 @@ def _validate_karma_safety(pradhana: dict, medical_history: list[str]) -> dict:
             "safety_substitution": True,
             "original_karma": old_primary,
         }
-        substituted = True
         warnings.append(
             f"SAFETY SUBSTITUTION: {old_primary} → {fallback} "
             f"(contraindicated by: {', '.join(hard_flagged)})"
@@ -714,18 +737,22 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         or user_profile.get("dominant_dosha")
         or "vata"
     )
-    vikriti_sec = (
-        user_profile.get("vikriti_secondary")
-        or user_profile.get("secondary_dosha")
-    )
+    # Vikriti secondary must come ONLY from the current-imbalance assessment — never
+    # fall back to the Prakriti secondary. Conflating them made a Kapha-vikriti patient
+    # with a Pitta *constitution* wrongly resolve to the bidoshic pitta_kapha → Virechana
+    # instead of the correct Kapha → Vamana (CS Sutrasthana 15). Absent a true secondary
+    # Vikriti, treat as single-dosha and use the dominant-dosha Pradhana Karma.
+    vikriti_sec = user_profile.get("vikriti_secondary")
     medical_history = user_profile.get("medical_history") or []
 
     # ── Rare / Unmapped Disease Detection ────────────────────────────────────
     # Any condition not in _DISEASE_DOSHA_SIGNAL is invisible to the rule engine.
     # We detect these, apply conservative safety defaults for severe conditions,
     # and flag them so the LLM enricher can run Nidana-Samprapti reasoning.
-    from engine.dosha_analyzer import _DISEASE_DOSHA_SIGNAL
-    unmapped_conditions = [c for c in medical_history if c not in _DISEASE_DOSHA_SIGNAL]
+    from engine.dosha_analyzer import disease_signal
+    # vocab-aware: a condition is "unmapped" only if it resolves to no central entry
+    # even after synonym/classical-name normalization.
+    unmapped_conditions = [c for c in medical_history if disease_signal(c) is None]
 
     # Severe/systemic disease keywords → force Shamana regardless of other criteria
     _SEVERE_KEYWORDS = {
@@ -740,11 +767,14 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     ]
     vaidya_review_required = len(unmapped_conditions) > 0
 
-    # Derive Agni type if not explicitly stored (from digestion quality — Charaka Sutrasthana 11)
-    agni_type = user_profile.get("agni_type") or _DIGESTION_TO_AGNI.get(
-        user_profile.get("digestion_quality", "moderate"), "sama"
+    # Derive Agni type if not explicitly stored (from digestion quality — Charaka Sutrasthana 15).
+    # Normalise to a canonical key so both dosha-keyed and classical-keyed agni_type values
+    # resolve correctly (previously a stored 'vishama'/'manda'/'tikshna' silently showed as Sama Agni).
+    _raw_agni = user_profile.get("agni_type") or _derive_agni(
+        user_profile.get("digestion_quality"), vikriti_dom
     )
-    agni_name = {"sama": "Sama Agni", "vata": "Vishama Agni", "pitta": "Tikshna Agni", "kapha": "Manda Agni"}.get(agni_type, "Sama Agni")
+    agni_type = _AGNI_CANON.get(str(_raw_agni).lower(), "sama")
+    agni_name = _AGNI_NAME.get(agni_type, "Sama Agni")
 
     # Bala proxy from fitness_level (CS Sutrasthana 15 — Bala Pareeksha)
     fitness = user_profile.get("fitness_level", "intermediate")

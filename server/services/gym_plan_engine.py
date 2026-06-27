@@ -395,20 +395,21 @@ _REST_DAY_RECOVERY = {
 def filter_exercises(user_profile, gym_prefs, exercises):
     available_eq = {eq.lower() for eq in gym_prefs.get("available_equipment", ["bodyweight"])}
     available_eq.add("bodyweight")
-    is_bodyweight_only = available_eq <= {"bodyweight", "bands", "jump_rope"}
 
+    # Beginners get beginner + intermediate exercises. The source dataset labels
+    # only ~5% of exercises 'beginner' (almost all foundational lifts — bench
+    # press, rows, shoulder press — are tagged 'intermediate'), so a beginner-only
+    # gate leaves push/pull days with zero chest/back/shoulder options. Genuinely
+    # advanced movements (Olympic lifts, plyometrics, elite gymnastics) are tagged
+    # 'advanced' in the KB and stay excluded; the scoring pass below still prefers
+    # beginner-level exercises so the simplest movements surface first.
     level_map = {
-        "beginner":     ["beginner"],
+        "beginner":     ["beginner", "intermediate"],
         "intermediate": ["beginner", "intermediate"],
         "advanced":     ["beginner", "intermediate", "advanced"],
     }
     user_level = user_profile.get("fitness_level", "beginner") or "beginner"
-    allowed_levels = level_map.get(user_level, ["beginner"])
-
-    # Beginners doing bodyweight-only: also allow intermediate bodyweight exercises
-    # so pull/push days don't end up empty (chin-ups, rows are marked intermediate)
-    if user_level == "beginner" and is_bodyweight_only:
-        allowed_levels = ["beginner", "intermediate"]
+    allowed_levels = level_map.get(user_level, ["beginner", "intermediate"])
 
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
     gym_goal = gym_prefs.get("gym_goal", "general_fitness")
@@ -640,6 +641,40 @@ def get_ayurvedic_tips(dosha):
         }
 
 
+# ── Vyayama Shakti (classical exercise-capacity principle) ────────────────────
+
+def _vyayama_shakti(dosha: str, age, strength_level: str) -> dict:
+    """Classical Vyayama (exercise) dosage principle — Charaka Sutrasthana 7.
+    Exercise to Ardhabala (half of maximum capacity); the sign to stop is sweating
+    on forehead/nose/joints with onset of mouth-breathing. Over-exercise (Ativyayama)
+    depletes Ojas and aggravates Vata."""
+    try:
+        age_i = int(age or 30)
+    except (TypeError, ValueError):
+        age_i = 30
+    if age_i >= 60 or dosha == "vata" or strength_level == "beginner":
+        capacity = ("Keep intensity well within Ardhabala — work to roughly half capacity and stop "
+                    "at the first forehead sweat. Vata constitution, beginner strength, and older age "
+                    "all lower exercise tolerance; over-exertion here directly depletes Ojas.")
+    elif dosha == "kapha" and strength_level in ("intermediate", "advanced") and age_i < 50:
+        capacity = ("You have higher Vyayama Shakti — you may work up toward the Ardhabala ceiling with "
+                    "good sustained volume. Kapha specifically benefits from exercising until a genuine sweat breaks.")
+    else:
+        capacity = ("Moderate capacity — work to about half-strength. Pitta types must avoid exercising in "
+                    "heat or with a competitive mindset, which pushes past Ardhabala into Pitta aggravation.")
+    return {
+        "principle": ("Exercise should be performed only to Ardhabala — half of one's maximum capacity "
+                      "(Charaka Sutrasthana 7). The classical signal to STOP is sweating on the forehead, "
+                      "nose, and joints together with the onset of mouth-breathing."),
+        "your_capacity": capacity,
+        "signs_adequate": "Sweat on forehead, nose and armpits; lightness in the body; comfortably increased breathing.",
+        "signs_overexertion": ("Breathlessness, dizziness, tremor, excessive thirst, joint pain or cough mark "
+                               "Ativyayama (over-exercise) — reduce intensity immediately."),
+        "bala_note": ("Exercise capacity (Bala) here is estimated from fitness level and age as a practical proxy — "
+                      "not a full classical Bala Pareeksha, which also weighs Sara, Samhanana, Satmya, Sattva, and season."),
+    }
+
+
 # ── Main entry point ──────────────────────────────────────────────────────────
 
 def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None):
@@ -701,6 +736,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None):
         "weekly_schedule": four_week_plan[0]["days"],
         "four_week_plan": four_week_plan,
         "ayurvedic_tips": get_ayurvedic_tips(dominant_dosha),
+        "vyayama_shakti": _vyayama_shakti(dominant_dosha, user_profile.get("age"), strength_level),
         "progressive_overload_guide": {
             "week_1": _GOAL_WEEKS[goal][0]["note"] if goal in _GOAL_WEEKS else "",
             "week_2": _GOAL_WEEKS[goal][1]["note"] if goal in _GOAL_WEEKS else "",

@@ -125,7 +125,8 @@
 .settings-toggle input:checked + .settings-toggle-slider:before { transform: translateX(22px); }
 
 /* Buttons */
-.btn { padding: 13px 22px; border-radius: 12px; font-family: var(--font-ui); font-weight: 700; font-size: 0.925rem; cursor: pointer; border: none; transition: all 0.2s; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 22px; border-radius: 12px; font-family: var(--font-ui); font-weight: 700; font-size: 0.925rem; cursor: pointer; border: none; transition: all 0.2s; }
+.btn svg { flex-shrink: 0; }
 .btn-primary { background: linear-gradient(135deg, var(--ayura-teal), var(--ayura-teal-lt)); color: #000; box-shadow: 0 8px 24px rgba(45,212,191,0.25); }
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(45,212,191,0.38); }
 .btn-secondary { background: var(--border-subtle); color: var(--ayura-ink); border: 1px solid var(--border-light); }

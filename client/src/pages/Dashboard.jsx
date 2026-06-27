@@ -5,23 +5,29 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { AuthContext } from '../providers/AuthContext'
 import { useTheme } from '../providers/ThemeProvider'
-import API, { plansAPI, preferencesAPI, progressAPI, profileAPI } from '../api/client'
+import API, { plansAPI, preferencesAPI, progressAPI, profileAPI, authAPI } from '../api/client'
 import PlanViewer from '../components/PlanViewer'
-import VikritiCheckIn from '../components/VikritiCheckIn'
+import '../components/VikritiCheckIn.css'
 import DoshaValidationCard from '../components/DoshaValidationCard'
 import DoshaArcRings from '../components/DoshaArcRings'
 import PreferencesModal from '../components/PreferencesModal'
 import SectionBoundary from '../components/SectionBoundary'
 import confetti from 'canvas-confetti'
+import {
+  Sunrise, Salad, Flower2, Dumbbell, Leaf, Soup, Pill,
+  Flame, Snowflake, Sun, CloudRain, Moon, Mail, RefreshCw,
+  TriangleAlert, MessageCircle, TrendingUp, CircleCheck,
+} from 'lucide-react'
 import './Dashboard.css'
 
 const PLAN_TYPES = [
-  { id: 'routine',     title: 'Daily Routine & Diet', icon: '🌅',   desc: 'Chronological Dinacharya timeline with meals.', color: 'var(--ayura-amber)',  bg: 'rgba(251,146,60,0.08)' },
-  { id: 'yoga',        title: 'Yoga & Pranayama',   icon: '🧘‍♀️', desc: 'Dosha-balanced morning/evening routines.',    color: 'var(--ayura-teal)',   bg: 'rgba(45,212,191,0.08)' },
-  { id: 'gym',         title: 'Fitness & Gym',       icon: '🏋️',   desc: 'Workout splits with progressive intensity.',  color: 'var(--vata-color)',   bg: 'rgba(129,140,248,0.08)' },
-  { id: 'panchakarma', title: 'Panchakarma Detox',   icon: '🌿',   desc: 'Seasonal cleanses tailored to your prakriti.', color: 'var(--ayura-sage)',   bg: 'rgba(74,222,128,0.08)' },
-  { id: 'remedies',    title: 'Home Remedies',       icon: '🍵',   desc: 'Kitchen medicine for common ailments.',        color: 'var(--ayura-rose)',   bg: 'rgba(251,113,133,0.08)' },
-  { id: 'medicines',   title: 'Ayurvedic Medicines', icon: '💊',   desc: 'Classical formulations for deep healing.',     color: 'var(--ayura-violet)', bg: 'rgba(167,139,250,0.08)' },
+  { id: 'routine',     title: 'Daily Routine',       Icon: Sunrise,  desc: 'Chronological Dinacharya timeline with meal timing.', color: 'var(--ayura-amber)',  bg: 'rgba(251,146,60,0.10)' },
+  { id: 'diet',        title: 'Diet & Nutrition',    Icon: Salad,    desc: '4-week Ayurvedic meal plans with Pathya-Apathya.', color: 'var(--ayura-sage)',  bg: 'rgba(74,222,128,0.10)' },
+  { id: 'yoga',        title: 'Yoga & Pranayama',   Icon: Flower2,  desc: 'Dosha-balanced morning/evening routines.',    color: 'var(--ayura-teal)',   bg: 'rgba(45,212,191,0.10)' },
+  { id: 'gym',         title: 'Fitness & Gym',       Icon: Dumbbell, desc: 'Workout splits with progressive intensity.',  color: 'var(--vata-color)',   bg: 'rgba(129,140,248,0.10)' },
+  { id: 'panchakarma', title: 'Panchakarma Detox',   Icon: Leaf,     desc: 'Seasonal cleanses tailored to your prakriti.', color: 'var(--ayura-sage)',   bg: 'rgba(74,222,128,0.10)' },
+  { id: 'remedies',    title: 'Home Remedies',       Icon: Soup,     desc: 'Kitchen medicine for common ailments.',        color: 'var(--ayura-rose)',   bg: 'rgba(251,113,133,0.10)' },
+  { id: 'medicines',   title: 'Ayurvedic Medicines', Icon: Pill,     desc: 'Classical formulations for deep healing.',     color: 'var(--ayura-violet)', bg: 'rgba(167,139,250,0.10)' },
 ]
 
 const DOSHA_COLOR = { vata: '#818CF8', pitta: '#fb923c', kapha: '#34d399' }
@@ -56,14 +62,15 @@ function StreakCard() {
     retry: 1,
   })
 
-  const streak = progress?.current_streak ?? progress?.streak ?? 0
-  const checkedInToday = progress?.checked_in_today ?? false
+  const sd = progress?.streak_data
+  const streak = sd?.current_streak_days ?? sd?.current_streak ?? 0
+  const checkedInToday = sd?.checked_in_today ?? false
 
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() - (6 - i))
     const dateStr = d.toISOString().split('T')[0]
-    const isActive = !!(progress?.recent_dates?.includes(dateStr) || progress?.active_dates?.includes(dateStr))
+    const isActive = !!sd?.active_dates?.includes(dateStr)
     return {
       label: ['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()],
       isActive,
@@ -76,7 +83,7 @@ function StreakCard() {
     streak >= 7  ? 'One full week! Phenomenal.' :
     streak >= 3  ? 'Great consistency!' :
     streak >= 1  ? 'Good start — keep it up!' :
-    'Start your streak — check in today!'
+    'Start your streak — log today!'
 
   return (
     <motion.div
@@ -86,7 +93,7 @@ function StreakCard() {
       transition={{ duration: 0.4, delay: 0.1 }}
     >
       <div className="dash-streak-left">
-        <div className="dash-streak-flame">🔥</div>
+        <div className="dash-streak-flame"><Flame size={26} strokeWidth={2} /></div>
         <div>
           <div className="dash-streak-count">
             <span className="dash-streak-num">{streak}</span>
@@ -104,10 +111,67 @@ function StreakCard() {
             </div>
           ))}
         </div>
-        <Link to="/checkin" className="dash-streak-cta">
-          {checkedInToday ? '✓ Done for today' : '↗ Check in now'}
+        <Link to="/progress" className="dash-streak-cta">
+          {checkedInToday ? '✓ Logged today' : '↗ Log today'}
         </Link>
       </div>
+    </motion.div>
+  )
+}
+
+// ── Ritucharya (seasonal) Card ─────────────────────────────────
+const SEASON_ICON = { Shishir: Snowflake, Vasant: Flower2, Grishma: Sun, Varsha: CloudRain, Sharad: Leaf, Hemant: Moon }
+
+function RitucharyaCard() {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['seasonal-guidance'],
+    queryFn: () => plansAPI.getSeasonal().then(r => r.data),
+    staleTime: 6 * 60 * 60 * 1000,
+    retry: 1,
+  })
+
+  if (isError || (!isLoading && !data)) return null
+  if (isLoading) return <div className="dash-ritu-card skeleton" style={{ height: 130 }} />
+
+  const favour = (data.diet_adjustments || []).slice(0, 3)
+  const avoid = (data.avoid || []).slice(0, 3)
+  const SeasonIcon = SEASON_ICON[data.season] || Leaf
+
+  return (
+    <motion.div
+      className="dash-ritu-card"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.15 }}
+    >
+      <div className="dash-ritu-head">
+        <span className="dash-ritu-emoji"><SeasonIcon size={22} strokeWidth={2} /></span>
+        <div className="dash-ritu-head-text">
+          <div className="dash-ritu-title">{data.english_name} · {data.season} Ritu</div>
+          {data.focus && <div className="dash-ritu-sub">{data.focus}</div>}
+        </div>
+        {data.risk_level && (
+          <span className={`dash-ritu-risk dash-ritu-risk--${data.risk_level}`}>
+            {data.dominant_dosha ? `${data.dominant_dosha} season` : `${data.risk_level} risk`}
+          </span>
+        )}
+      </div>
+      {(favour.length > 0 || avoid.length > 0) && (
+        <div className="dash-ritu-cols">
+          {favour.length > 0 && (
+            <div className="dash-ritu-col">
+              <span className="dash-ritu-col-label dash-ritu-favour">✓ Favour</span>
+              <ul>{favour.map((f, i) => <li key={i}>{f}</li>)}</ul>
+            </div>
+          )}
+          {avoid.length > 0 && (
+            <div className="dash-ritu-col">
+              <span className="dash-ritu-col-label dash-ritu-avoid">✕ Avoid</span>
+              <ul>{avoid.map((f, i) => <li key={i}>{f}</li>)}</ul>
+            </div>
+          )}
+        </div>
+      )}
     </motion.div>
   )
 }
@@ -241,6 +305,42 @@ function HealthScoreCard({ completedCount, total }) {
   )
 }
 
+// ── Email Verification Banner ─────────────────────────────────
+function VerifyEmailBanner({ email }) {
+  const [sent, setSent] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
+  if (dismissed) return null
+  async function resend() {
+    try {
+      await authAPI.resendVerification(email)
+      setSent(true)
+    } catch {
+      toast.error('Could not resend. Try again in a moment.')
+    }
+  }
+  return (
+    <motion.div
+      className="dash-verify-banner"
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.3 }}
+    >
+      <span className="dash-verify-icon"><Mail size={18} strokeWidth={2} /></span>
+      <div className="dash-verify-body">
+        <strong>Verify your email to unlock plan generation.</strong>
+        {' '}Check your inbox at <em>{email}</em>.
+      </div>
+      {sent ? (
+        <span className="dash-verify-sent">Sent ✓</span>
+      ) : (
+        <button className="dash-verify-btn" onClick={resend}>Resend</button>
+      )}
+      <button className="dash-verify-dismiss" onClick={() => setDismissed(true)} aria-label="Dismiss">✕</button>
+    </motion.div>
+  )
+}
+
 // ── Plan Feedback Card ────────────────────────────────────────
 function PlanFeedbackCard({ planType, onDone }) {
   const queryClient = useQueryClient()
@@ -296,7 +396,7 @@ function ReassessmentCard({ onDismiss }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <div className="dash-reassess-icon">🔄</div>
+      <div className="dash-reassess-icon"><RefreshCw size={20} strokeWidth={2} /></div>
       <div className="dash-reassess-body">
         <strong>Your plans haven&apos;t been hitting the mark</strong>
         <p>Your dosha profile may need updating — this happens when life circumstances, stress levels, or seasons change significantly.</p>
@@ -306,6 +406,66 @@ function ReassessmentCard({ onDismiss }) {
         <button type="button" className="btn btn-secondary btn-sm" onClick={onDismiss}>Not now</button>
       </div>
     </motion.div>
+  )
+}
+
+// ── Adverse-reaction report modal ─────────────────────────────
+function ReactionModal({ planType, onClose }) {
+  const [item, setItem] = useState('')
+  const [reaction, setReaction] = useState('')
+  const [severity, setSeverity] = useState('moderate')
+  const [submitting, setSubmitting] = useState(false)
+
+  async function submit(e) {
+    e.preventDefault()
+    if (!item.trim() || !reaction.trim()) return
+    setSubmitting(true)
+    try {
+      await plansAPI.reportReaction(planType, { item: item.trim(), reaction: reaction.trim(), severity })
+      toast.success('Reaction logged to your health timeline.')
+      onClose()
+    } catch {
+      toast.error('Could not log the reaction. Please try again.')
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="dash-reaction-overlay" onClick={onClose}>
+      <motion.form
+        className="dash-reaction-modal"
+        onClick={e => e.stopPropagation()}
+        onSubmit={submit}
+        initial={{ opacity: 0, scale: 0.96, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+      >
+        <h3 className="dash-reaction-title">Report a reaction — {planType}</h3>
+        <p className="dash-reaction-sub">Tell us what you took or did and what you noticed. This is logged to your health timeline; a severe reaction prompts a profile re-assessment.</p>
+
+        <label>What did you take or do?</label>
+        <input value={item} onChange={e => setItem(e.target.value)} placeholder="e.g. Triphala at night" maxLength={200} />
+
+        <label>What reaction did you notice?</label>
+        <textarea rows={3} value={reaction} onChange={e => setReaction(e.target.value)} placeholder="e.g. mild stomach cramps the next morning" maxLength={500} />
+
+        <label>Severity</label>
+        <div className="dash-reaction-sev">
+          {['mild', 'moderate', 'severe'].map(s => (
+            <button type="button" key={s} className={`dash-reaction-sev-btn${severity === s ? ' active' : ''}`} onClick={() => setSeverity(s)}>
+              {s}
+            </button>
+          ))}
+        </div>
+
+        <div className="dash-reaction-actions">
+          <button type="submit" className="btn btn-primary" disabled={submitting || !item.trim() || !reaction.trim()}>
+            {submitting ? 'Logging…' : 'Log reaction'}
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+        </div>
+      </motion.form>
+    </div>
   )
 }
 
@@ -321,6 +481,7 @@ const Dashboard = () => {
   const [feedbackDone, setFeedbackDone]   = useState(false)
   const [doshaValidationDismissed, setDoshaValidationDismissed] = useState(false)
   const [reassessmentDismissed, setReassessmentDismissed] = useState(false)
+  const [reactionFor, setReactionFor] = useState(null)
 
   const queryClient = useQueryClient()
 
@@ -364,7 +525,7 @@ const Dashboard = () => {
         [result.typeId]: { data: result.data, created_at: new Date().toISOString() }
       }))
       toast.success(`${result.typeId.charAt(0).toUpperCase() + result.typeId.slice(1)} plan ready! ✦`, { id: `gen-${result.typeId}` })
-      // 🎉 Confetti on first plan generation
+      // Confetti on first plan generation
       if (isFirstPlan) fireConfetti()
     },
     onError: (err, { typeId }) => {
@@ -439,7 +600,12 @@ const Dashboard = () => {
             ← Back to Dashboard
           </button>
           <h2 className="dash-viewer-title">
-            {PLAN_TYPES.find(t => t.id === viewingType)?.icon} {PLAN_TYPES.find(t => t.id === viewingType)?.title}
+            {PLAN_TYPES.filter(t => t.id === viewingType).map(T => (
+              <React.Fragment key={T.id}>
+                <T.Icon size={20} strokeWidth={1.8} style={{ color: T.color, verticalAlign: '-3px', marginRight: 8 }} />
+                {T.title}
+              </React.Fragment>
+            ))}
           </h2>
         </div>
         <SectionBoundary
@@ -465,14 +631,25 @@ const Dashboard = () => {
         }}
       />
 
+      <AnimatePresence>
+        {reactionFor && (
+          <ReactionModal planType={reactionFor} onClose={() => setReactionFor(null)} />
+        )}
+      </AnimatePresence>
+
+      {/* ── Email verification banner ── */}
+      {user?.auth_provider === 'local' && user?.is_verified === false && (
+        <VerifyEmailBanner email={user.email} />
+      )}
+
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-16px', position: 'relative', zIndex: 10 }}>
-        <motion.button 
+        <motion.button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="btn btn-secondary btn-sm"
           style={{ display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '20px', padding: '6px 14px', fontSize: '0.85rem' }}
           whileTap={{ scale: 0.95 }}
         >
-          {theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
+          {theme === 'dark' ? <><Sun size={15} strokeWidth={2} /> Light Mode</> : <><Moon size={15} strokeWidth={2} /> Dark Mode</>}
         </motion.button>
       </div>
 
@@ -530,9 +707,20 @@ const Dashboard = () => {
       {/* ── Streak Card ── */}
       <StreakCard />
 
-      {/* ── Weekly Vikriti Check-in ── */}
+      {/* ── Ritucharya (seasonal) Card ── */}
+      <RitucharyaCard />
+
+      {/* ── Weekly check-in prompt → the unified Check-In screen ── */}
       {needsCheckin && showCheckin && (
-        <VikritiCheckIn onDismiss={() => setShowCheckin(false)} />
+        <div className="vci-card" style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          <span className="vci-pulse" />
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div className="vci-title">Time for your weekly check-in</div>
+            <p className="vci-sub" style={{ margin: '2px 0 0' }}>A quick snapshot refines your Vikriti and fine-tunes your plans.</p>
+          </div>
+          <Link to="/checkin" className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>Check in now →</Link>
+          <button type="button" className="vci-dismiss" onClick={() => setShowCheckin(false)} aria-label="Dismiss">✕</button>
+        </div>
       )}
 
       {/* ── 14-day plan feedback ── */}
@@ -574,7 +762,9 @@ const Dashboard = () => {
             whileHover={{ y: -5, transition: { duration: 0.2 } }}
           >
             <div className="dash-plan-card-header">
-              <div className="dash-plan-icon-wrap">{type.icon}</div>
+              <div className="dash-plan-icon-wrap" style={{ color: type.color, background: type.bg }}>
+                <type.Icon size={22} strokeWidth={1.7} />
+              </div>
               {plans[type.id] && <span className="dash-plan-ready-badge">✦ Ready</span>}
             </div>
 
@@ -602,6 +792,14 @@ const Dashboard = () => {
                   >
                     {generating[type.id] ? '…' : '↻'}
                   </button>
+                  <button
+                    className="dash-plan-react-btn"
+                    onClick={() => setReactionFor(type.id)}
+                    title="Report a reaction"
+                    aria-label="Report a reaction"
+                  >
+                    <TriangleAlert size={15} strokeWidth={2} />
+                  </button>
                 </div>
               ) : (
                 <button
@@ -622,13 +820,13 @@ const Dashboard = () => {
       {/* ── Quick nav cards ── */}
       <div className="dash-quick-nav">
         {[
-          { label: 'AI Chat',   icon: '💬', path: '/chat',     desc: 'Ask your wellness advisor anything' },
-          { label: 'Timeline',  icon: '📈', path: '/timeline', desc: 'Track your health progress' },
-          { label: 'Check-In',  icon: '✅', path: '/checkin',  desc: "Log today's energy & mood" },
+          { label: 'AI Chat',   Icon: MessageCircle, path: '/chat',     desc: 'Ask your wellness advisor anything' },
+          { label: 'Timeline',  Icon: TrendingUp,    path: '/timeline', desc: 'Track your health progress' },
+          { label: 'Check-In',  Icon: CircleCheck,   path: '/checkin',  desc: "Log today's energy & mood" },
         ].map((item, i) => (
           <motion.div key={item.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.3 + i * 0.1 }}>
             <Link to={item.path} className="dash-quick-card">
-              <span className="dash-quick-icon">{item.icon}</span>
+              <span className="dash-quick-icon"><item.Icon size={20} strokeWidth={2} /></span>
               <div className="dash-quick-info">
                 <div className="dash-quick-label">{item.label}</div>
                 <div className="dash-quick-desc">{item.desc}</div>

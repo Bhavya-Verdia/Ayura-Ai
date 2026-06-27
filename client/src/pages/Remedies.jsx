@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { plansAPI } from '../api/client'
+import { Soup, Pill, Leaf, TriangleAlert, Stethoscope, X } from 'lucide-react'
 import './Remedies.css'
 
 
@@ -95,7 +96,7 @@ function RemedyCard({ remedy }) {
       {/* Header */}
       <div className="rem-card-header">
         <div className="rem-card-title-row">
-          <span className="rem-card-icon">🍵</span>
+          <span className="rem-card-icon"><Soup size={20} strokeWidth={2} /></span>
           <div>
             <h3 className="rem-card-name">{remedy.remedy_name || 'Unnamed Remedy'}</h3>
             {remedy.symptom_addressed && (
@@ -166,14 +167,14 @@ function RemedyCard({ remedy }) {
           >
             {remedy.ayurvedic_rationale && (
               <div className="rem-section rem-rationale">
-                <p className="rem-label">🌿 Ayurvedic Rationale</p>
+                <p className="rem-label"><Leaf size={14} strokeWidth={2} /> Ayurvedic Rationale</p>
                 <p className="rem-text">{remedy.ayurvedic_rationale}</p>
               </div>
             )}
 
             {warnings.length > 0 && (
               <div className="rem-section rem-warnings-section">
-                <p className="rem-label rem-warn-label">⚠️ Warnings</p>
+                <p className="rem-label rem-warn-label"><TriangleAlert size={14} strokeWidth={2} /> Warnings</p>
                 <ul className="rem-warnings">
                   {warnings.map((w, i) => (
                     <li key={i} className="rem-warning-item">{w}</li>
@@ -204,7 +205,7 @@ function MedicineCard({ medicine }) {
       {/* Header */}
       <div className="rem-card-header">
         <div className="rem-card-title-row">
-          <span className="rem-card-icon">💊</span>
+          <span className="rem-card-icon"><Pill size={20} strokeWidth={2} /></span>
           <div>
             <h3 className="rem-card-name">{medicine.medicine_name || 'Unnamed Medicine'}</h3>
             {medicine.symptom_addressed && (
@@ -268,7 +269,7 @@ function MedicineCard({ medicine }) {
             )}
             {warnings.length > 0 && (
               <div className="rem-section rem-warnings-section">
-                <p className="rem-label rem-warn-label">⚠️ Warnings</p>
+                <p className="rem-label rem-warn-label"><TriangleAlert size={14} strokeWidth={2} /> Warnings</p>
                 <ul className="rem-warnings">
                   {warnings.map((w, i) => (
                     <li key={i} className="rem-warning-item">{w}</li>
@@ -293,7 +294,7 @@ function EmptyState({ tab }) {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="rem-empty-emoji">{tab === 'remedies' ? '🍵' : '💊'}</div>
+      <div className="rem-empty-emoji">{tab === 'remedies' ? <Soup size={34} strokeWidth={1.7} /> : <Pill size={34} strokeWidth={1.7} />}</div>
       <h3 className="rem-empty-title">No {tab === 'remedies' ? 'home remedies' : 'medicines'} generated yet</h3>
       <p className="rem-empty-sub">
         Head to your Dashboard and generate a personalized Ayurvedic plan to unlock your custom remedy cabinet.
@@ -432,7 +433,7 @@ const Remedies = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.35 }}
           >
-            <span>⚕️</span>
+            <span style={{ display: 'inline-flex', flexShrink: 0 }}><Stethoscope size={16} strokeWidth={2} /></span>
             <span>
               These recommendations are AI-generated based on Ayurvedic principles.
               Always consult a qualified healthcare provider before starting any new treatment.
@@ -448,8 +449,8 @@ const Remedies = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
               >
-                <span>⚠️ {error}</span>
-                <button onClick={() => setErrorDismissed(true)}>✕</button>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><TriangleAlert size={15} strokeWidth={2} /> {error}</span>
+                <button onClick={() => setErrorDismissed(true)} aria-label="Dismiss"><X size={14} strokeWidth={2} /></button>
               </motion.div>
             )}
           </AnimatePresence>
@@ -468,7 +469,7 @@ const Remedies = () => {
                 role="tab"
                 aria-selected={activeTab === 'remedies'}
               >
-                🍵 Home Remedies
+                <Soup size={15} strokeWidth={2} /> Home Remedies
                 {!loading && homeRemedies.length > 0 && (
                   <span className="rem-tab-count">{homeRemedies.length}</span>
                 )}
@@ -479,7 +480,7 @@ const Remedies = () => {
                 role="tab"
                 aria-selected={activeTab === 'medicines'}
               >
-                💊 Ayurvedic Medicines
+                <Pill size={15} strokeWidth={2} /> Ayurvedic Medicines
                 {!loading && medicines.length > 0 && (
                   <span className="rem-tab-count">{medicines.length}</span>
                 )}

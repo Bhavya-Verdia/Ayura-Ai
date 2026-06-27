@@ -1,0 +1,310 @@
+/* ─── PROGRESS PAGE ───────────────────────────────────── */
+.prg-root {
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 80px;
+  overflow: hidden;
+}
+
+.prg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.45;
+}
+.prg-orb-a {
+  width: 500px; height: 500px;
+  background: var(--aurora-1);
+  top: -120px; left: -120px;
+}
+.prg-orb-b {
+  width: 600px; height: 600px;
+  background: var(--aurora-2);
+  bottom: -160px; right: -180px;
+}
+
+.prg-container {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.prg-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+.prg-title {
+  font-size: 2.4rem;
+  margin: 0;
+  flex: 1;
+}
+.prg-sub {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin: 0;
+  flex-basis: 100%;
+  order: 1;
+}
+.prg-log-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  border-radius: 14px;
+}
+
+/* ── Quick log form ─────────────────────────────────── */
+.prg-log-form {
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: 24px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden;
+}
+[data-theme='light'] .prg-log-form { background: rgba(255,255,255,0.7); }
+
+.prg-log-form-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+.prg-log-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.prg-mood-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.prg-mood-chip {
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.875rem;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.prg-mood-chip:hover { color: var(--text-primary); border-color: var(--border-light); }
+.prg-mood-chip.active {
+  background: rgba(13,148,136,0.12);
+  border-color: var(--ayura-teal);
+  color: var(--ayura-teal);
+  font-weight: 600;
+}
+
+/* ── Stat cards row ─────────────────────────────────── */
+.prg-stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.prg-stat-card {
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 20px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--glass-shadow-light);
+  transition: border-color 0.2s;
+}
+.prg-stat-card:hover { border-color: var(--stat-color, var(--ayura-teal)); }
+[data-theme='light'] .prg-stat-card { background: rgba(255,255,255,0.7); }
+
+.prg-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: var(--stat-color, var(--ayura-teal));
+  background: color-mix(in srgb, var(--stat-color, var(--ayura-teal)) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--stat-color, var(--ayura-teal)) 24%, transparent);
+  flex-shrink: 0;
+}
+.prg-stat-value {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--stat-color, var(--ayura-teal));
+  line-height: 1;
+}
+.prg-stat-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+.prg-stat-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── AI Insight ─────────────────────────────────────── */
+.prg-insight-card {
+  background: linear-gradient(135deg, rgba(13,148,136,0.06), rgba(45,212,191,0.04));
+  border: 1px solid rgba(45,212,191,0.2);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 24px rgba(45,212,191,0.08);
+}
+[data-theme='light'] .prg-insight-card { background: rgba(13,148,136,0.04); }
+
+.prg-insight-icon { display: inline-flex; align-items: center; color: var(--ayura-teal); flex-shrink: 0; }
+.prg-insight-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ayura-teal);
+  margin-bottom: 6px;
+}
+.prg-insight-text {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* ── Recent Entries ─────────────────────────────────── */
+.prg-logs-section { margin-top: 8px; }
+.prg-logs-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.prg-logs-count {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: rgba(13,148,136,0.12);
+  color: var(--ayura-teal);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.prg-log-entry {
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+}
+[data-theme='light'] .prg-log-entry { background: rgba(255,255,255,0.6); }
+
+.prg-log-date {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+.prg-log-metrics {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.prg-log-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 100px;
+}
+.prg-log-metric-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.prg-log-metric-val {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.prg-mini-bar-track {
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+[data-theme='light'] .prg-mini-bar-track { background: rgba(0,0,0,0.08); }
+.prg-mini-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+.prg-logs-hint {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 16px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: 12px;
+  margin-top: 8px;
+}
+
+/* ── Empty state ────────────────────────────────────── */
+.prg-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-secondary);
+}
+.prg-empty-icon { display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); margin-bottom: 16px; }
+.prg-empty-title { font-family: var(--font-display); font-size: 1.3rem; color: var(--text-primary); margin-bottom: 8px; }
+.prg-empty-sub { font-size: 0.95rem; color: var(--text-muted); }
+
+/* ── Loading skeletons ──────────────────────────────── */
+.prg-loading .prg-stat-row .skeleton {
+  border-radius: 20px;
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 800px) {
+  .prg-stat-row { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 540px) {
+  .prg-stat-row { grid-template-columns: 1fr; }
+  .prg-log-grid { grid-template-columns: 1fr; }
+  .prg-title { font-size: 1.8rem; }
+}

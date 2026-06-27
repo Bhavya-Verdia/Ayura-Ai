@@ -1,14 +1,66 @@
 from datetime import datetime, timezone
-import json, os
+import json
+import os
 from core.kb_cache import kb_cache
+from engine.condition_vocab import term_in_condition, normalize_condition
+
+
+def _med_covers_condition(med: dict, user_cond: str) -> bool:
+    """True if a medicine's `conditions` cover the user's condition — matching by
+    exact string OR shared canonical vocabulary key (so 'diabetes_type2' matches a
+    KB entry tagged 'diabetes')."""
+    med_conds = [x.lower() for x in med.get("conditions", [])]
+    if user_cond.lower() in med_conds:
+        return True
+    ucn = normalize_condition(user_cond)
+    return any(normalize_condition(mc) == ucn for mc in med_conds)
 
 # ── Medicines KB (loaded once at module import) ─────────────────────────────
-_MEDICINES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "knowledge", "ayurvedic_medicines.json")
+_MEDICINES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "knowledge_base", "ayurvedic_medicines.json")
 try:
     with open(_MEDICINES_PATH, "r") as _f:
         _MEDICINES_KB: list[dict] = json.load(_f)
 except Exception:
     _MEDICINES_KB = []
+
+# ── Home-remedies fallback (loaded once at module import) ────────────────────
+# Remedies are normally served from Mongo (kb_ayurvedic_remedies, seeded by
+# scripts/seed_remedies.py). Unlike the other features, the remedy engine had no
+# offline fallback — so if that collection is unseeded, filter_remedies silently
+# returned nothing. This bundled JSON (same shape, regenerated from the seed)
+# keeps remedies working when kb_cache is empty. Mirrors the medicines KB above.
+_REMEDIES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "knowledge_base", "home_remedies.json")
+try:
+    with open(_REMEDIES_PATH, "r") as _f:
+        _REMEDIES_FALLBACK: list[dict] = json.load(_f)
+except Exception:
+    _REMEDIES_FALLBACK = []
+
+# Onboarding symptom labels → remedy KB `symptom_id`. The onboarding picker uses
+# plain-language values (acidity, cough, cold, hair_loss…) that don't exactly
+# match the KB's clinical ids (acid_reflux, cough_wet, common_cold, hair_fall…),
+# so ~half of selectable symptoms silently matched no remedy. This map bridges
+# them; matching also falls through to the raw id, so KB-native ids still work.
+_SYMPTOM_ALIASES: dict[str, str] = {
+    "acidity": "acid_reflux",
+    "acid": "acid_reflux",
+    "heartburn": "acid_reflux",
+    "skin_rash": "urticaria_hives",
+    "rash": "urticaria_hives",
+    "hives": "urticaria_hives",
+    "weight_gain": "seasonal_detox",
+    "hair_loss": "hair_fall",
+    "hairfall": "hair_fall",
+    "irregular_periods": "pcos_support",
+    "irregular_menstruation": "pcos_support",
+    "cough": "cough_wet",
+    "wet_cough": "cough_wet",
+    "cold": "common_cold",
+    "common_cold_cough": "common_cold",
+    "indigestion": "loss_of_appetite",
+    "stress": "stress_burnout",
+    "burnout": "stress_burnout",
+}
 
 # Condition aliases to normalise user profile conditions to KB ids
 _CONDITION_ALIAS: dict[str, str] = {
@@ -43,24 +95,24 @@ _DRUG_HERB_MAP: dict[str, list[str]] = {
 
 def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
     filtered_results = []
-    
+
     symptoms = symptom_input.get("symptoms", [])
     severity = symptom_input.get("severity", {})
     duration = symptom_input.get("duration", {})
-    
+
     pregnancy_or_nursing = user_profile.get("pregnancy_or_nursing", False)
     current_meds = user_profile.get("current_medications", [])
     medical_history = user_profile.get("medical_history", [])
     allergies = user_profile.get("allergies", [])
     dominant_dosha = user_profile.get("dominant_dosha", "vata").lower()
     secondary_dosha = user_profile.get("secondary_dosha", "pitta").lower()
-    
-    all_remedies = kb_cache.ayurvedic_remedies
-    
+
+    all_remedies = kb_cache.ayurvedic_remedies or _REMEDIES_FALLBACK
+
     for sym_id in symptoms:
         sym_sev = severity.get(sym_id, "mild")
         sym_dur = duration.get(sym_id, "recent")
-        
+
         # a) Severity gate
         if sym_sev == "severe":
             filtered_results.append({
@@ -69,15 +121,16 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                 "message": "This symptom requires immediate medical attention. Please consult a doctor."
             })
             continue
-            
-        # Find remedy in KB
-        remedy_kb = next((r for r in all_remedies if r.get("symptom_id") == sym_id), None)
+
+        # Find remedy in KB (resolve onboarding labels to KB ids; fall back to raw)
+        _sid = _SYMPTOM_ALIASES.get(str(sym_id).lower(), str(sym_id).lower())
+        remedy_kb = next((r for r in all_remedies if r.get("symptom_id") == _sid), None)
         if not remedy_kb:
             continue
-            
+
         # b) Duration gate
         requires_practitioner = (sym_dur in ["chronic", "months"])
-        
+
         # c) Pregnancy filter
         if pregnancy_or_nursing and not remedy_kb.get("pregnancy_safe", False):
             filtered_results.append({
@@ -86,16 +139,16 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                 "message": "Safe remedy not available during pregnancy. Please consult your Ayurvedic practitioner."
             })
             continue
-            
+
         # dosha selection helper
         def is_safe(cand_remedy):
-            if not cand_remedy: 
+            if not cand_remedy:
                 return False, None
-            
+
             # Extract text to search for ingredients
             ingredients_list = cand_remedy.get("ingredients", [])
             ingredients_text = " ".join([i.get("item", "").lower() for i in ingredients_list])
-            
+
             # e) Medical contraindication
             blocks = {
                 "diabetes": ["guggulu", "honey"],
@@ -103,7 +156,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                 "thyroid": ["ashwagandha"],
                 "ibs": ["pippali", "trikatu"]
             }
-            
+
             for cond in medical_history:
                 cond_l = cond.lower()
                 for key, blocked_items in blocks.items():
@@ -114,7 +167,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                                     cand_remedy["caution_note"] = "Use Ashwagandha with caution due to thyroid history."
                                 else:
                                     return False, f"Contraindicated for {cond}"
-            
+
             # d) Drug interaction
             drug_interaction_map = {
                 "ashwagandha": ["thyroid_medication", "immunosuppressants"],
@@ -126,7 +179,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                 "aloe_vera": ["diabetes_medication", "blood_thinners"],
                 "tulsi": ["blood_thinners"]
             }
-            
+
             for med in current_meds:
                 med_l = med.lower().replace(" ", "_")
                 for herb, interactions in drug_interaction_map.items():
@@ -134,20 +187,20 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                         for interaction in interactions:
                             if interaction in med_l:
                                 return False, {"interaction_found": True, "medication": med, "herb": herb}
-            
+
             # f) Allergy filter
             for allergy in allergies:
                 if allergy.lower() in ingredients_text:
                     return False, f"Allergen {allergy} found"
-                    
+
             return True, None
 
         selected_remedy = None
         dosha_used = dominant_dosha
         candidate = remedy_kb.get("remedies", {}).get(dominant_dosha)
-        
+
         interaction_warning = None
-        
+
         safe, reason = is_safe(candidate)
         if not safe:
             if isinstance(reason, dict) and reason.get("interaction_found"):
@@ -169,11 +222,11 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                         msg.update(interaction_warning)
                     filtered_results.append(msg)
                     continue
-                    
+
         selected_remedy = candidate
         if not selected_remedy:
             continue
-            
+
         # Build result for this symptom
         filtered_results.append({
             "symptom_id": sym_id,
@@ -187,22 +240,22 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
             "source": remedy_kb.get("source", "Traditional"),
             "dosha_used": dosha_used
         })
-        
+
     return filtered_results
 
 def build_remedy_plan(filtered_remedies: list, user_profile: dict, symptom_input: dict) -> dict:
     plan_id = f"remedy_{user_profile.get('id', 'usr')}_{int(datetime.now(timezone.utc).timestamp())}"
     dominant_dosha = user_profile.get("dominant_dosha", "vata").lower()
-    
+
     symptoms_addressed = []
     doctor_referrals = []
-    
+
     for res in filtered_remedies:
         if res.get("action") in ["see_doctor", "consult_doctor"]:
             doctor_referrals.append(res)
         else:
             symptoms_addressed.append(res)
-            
+
     guidelines = {}
     if dominant_dosha == "vata":
         guidelines = {
@@ -448,12 +501,13 @@ def _check_medicine_safety(
     if is_pregnant and not med.get("pregnancy_safe", False):
         return False, "Not safe during pregnancy"
 
-    # Contraindications vs medical history
-    med_contraindications = [c.lower() for c in med.get("contraindications", [])]
+    # Contraindications vs medical history — precise word/phrase matching
+    # (naive substring matched 'heart' inside 'heartburn'; word-boundary does not).
+    med_contraindications = med.get("contraindications", [])
     for hist in medical_history:
-        h = hist.lower().replace(" ", "_")
         for contra in med_contraindications:
-            if contra in h or h in contra:
+            # bidirectional: contra may be broader OR narrower than the user's term
+            if term_in_condition(hist, contra) or term_in_condition(contra, hist):
                 return False, f"Contraindicated: {hist}"
 
     # Drug interactions — structured field + global herb map
@@ -691,9 +745,26 @@ def generate_medicines_plan(
 
     # ── Split into primary / supporting / external ─────────────────────────
     condition_matched = [(s, m) for s, m in scored if any(
-        c in [x.lower() for x in m.get("conditions", [])] for c in normalised_conditions
+        _med_covers_condition(m, c) for c in normalised_conditions
     )]
     general_wellness = [(s, m) for s, m in scored if (s, m) not in condition_matched]
+
+    # ── Condition coverage tier (honesty for rare / unmapped diseases) ─────
+    # Which of the user's conditions actually have a KB-matched formulation?
+    matched_conditions = {
+        c for _, m in condition_matched
+        for c in normalised_conditions
+        if _med_covers_condition(m, c)
+    }
+    uncovered_conditions = [c for c in normalised_conditions if c not in matched_conditions]
+    if not normalised_conditions:
+        condition_coverage = "wellness"      # no conditions — general dosha wellness
+    elif not condition_matched:
+        condition_coverage = "general"       # rare/unmapped — only dosha-based general meds
+    elif uncovered_conditions:
+        condition_coverage = "partial"       # some conditions matched, some not
+    else:
+        condition_coverage = "curated"       # all conditions have KB-matched formulations
 
     primary_formulations    = [m for _, m in condition_matched[:3]]
     supporting_formulations = [m for _, m in (condition_matched[3:5] + general_wellness[:2])]
@@ -728,6 +799,16 @@ def generate_medicines_plan(
         "current_season":        season,
         "chikitsa_approach":     chikitsa_approach,
         "active_conditions":     normalised_conditions,
+        "condition_coverage":    condition_coverage,
+        "uncovered_conditions":  uncovered_conditions,
+        "vaidya_review_required": bool(uncovered_conditions),
+        "coverage_note": (
+            "No formulation in our classical knowledge base specifically matches "
+            f"{', '.join(c.replace('_', ' ') for c in uncovered_conditions)}. "
+            "The medicines below are dosha-balancing general support — a qualified Vaidya "
+            "should prescribe condition-specific formulations for these."
+            if uncovered_conditions else ""
+        ),
         "primary_formulations":  primary_formulations,
         "supporting_formulations": supporting_formulations,
         "external_therapies":    external_oils,

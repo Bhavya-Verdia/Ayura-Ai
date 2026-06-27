@@ -30,6 +30,7 @@ from routes import (
     profile,
     progress,
     reminders,
+    timeline,
 )
 import os
 import time
@@ -63,9 +64,9 @@ async def lifespan(app: FastAPI):
     from database.mongodb import get_mongodb
     from core.kb_cache import kb_cache
     await kb_cache.load(get_mongodb())
-    
+
     init_chromadb()
-    
+
     from core.cache import cache_manager
     await cache_manager.connect()
 
@@ -199,6 +200,7 @@ app.include_router(plans.router, prefix="/api/plans", tags=["Plan Generation"])
 app.include_router(chat.router, prefix="/api/chat", tags=["AI Chatbot"])
 app.include_router(checkin.router, prefix="/api/checkin", tags=["Weekly Check-in"])
 app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
+app.include_router(timeline.router, prefix="/api/timeline", tags=["Health Timeline"])
 app.include_router(export.router, prefix="/api/export", tags=["Export"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
 app.include_router(reminders.router, prefix="/api/reminders", tags=["Reminders"])

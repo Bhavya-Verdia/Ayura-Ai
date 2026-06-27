@@ -5,6 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import API from '../api/client'
 import { progressAPI } from '../api/client'
+import {
+  Thermometer, ChartColumn, TriangleAlert, Sparkles, RefreshCw, AlarmClock,
+  Siren, FileText, CalendarDays, TrendingDown, TrendingUp, MoveRight,
+  Scale, Ruler, Smile, CircleCheck, MapPin, ClipboardList, Sprout, MessageCircle, X,
+} from 'lucide-react'
 import { SkeletonLine } from '../components/Skeleton'
 import './HealthTimeline.css'
 
@@ -12,7 +17,7 @@ import './HealthTimeline.css'
 /* ─── Event config ───────────────────────────────────── */
 const EVENT_CONFIG = {
   symptom_logged: {
-    icon: '🤒',
+    Icon: Thermometer,
     label: 'Symptom Logged',
     colorVar: '--accent',
     glowColor: 'rgba(245,158,11,0.45)',
@@ -22,7 +27,7 @@ const EVENT_CONFIG = {
     filterKey: 'symptoms',
   },
   progress_logged: {
-    icon: '📊',
+    Icon: ChartColumn,
     label: 'Progress Check-In',
     colorVar: '--primary-light',
     glowColor: 'rgba(45,212,191,0.45)',
@@ -32,7 +37,7 @@ const EVENT_CONFIG = {
     filterKey: 'progress',
   },
   adaptation_failed: {
-    icon: '⚠️',
+    Icon: TriangleAlert,
     label: 'Adaptation Error',
     colorVar: '--rose',
     glowColor: 'rgba(244,63,94,0.45)',
@@ -42,7 +47,7 @@ const EVENT_CONFIG = {
     filterKey: 'adaptations',
   },
   plan_generated: {
-    icon: '✨',
+    Icon: Sparkles,
     label: 'Plan Generated',
     colorVar: '--primary',
     glowColor: 'rgba(13,148,136,0.45)',
@@ -52,7 +57,7 @@ const EVENT_CONFIG = {
     filterKey: 'plans',
   },
   adaptation_triggered: {
-    icon: '🔄',
+    Icon: RefreshCw,
     label: 'Plan Adapted',
     colorVar: '--sage',
     glowColor: 'rgba(16,185,129,0.45)',
@@ -61,8 +66,28 @@ const EVENT_CONFIG = {
     badgeClass: 'badge-primary',
     filterKey: 'adaptations',
   },
+  reminder_set: {
+    Icon: AlarmClock,
+    label: 'Reminder Set',
+    colorVar: '--ayura-violet',
+    glowColor: 'rgba(139,92,246,0.45)',
+    bgColor: 'rgba(139,92,246,0.07)',
+    borderColor: 'rgba(139,92,246,0.2)',
+    badgeClass: '',
+    filterKey: 'all',
+  },
+  reaction_reported: {
+    Icon: Siren,
+    label: 'Reaction Reported',
+    colorVar: '--rose',
+    glowColor: 'rgba(244,63,94,0.45)',
+    bgColor: 'rgba(244,63,94,0.08)',
+    borderColor: 'rgba(244,63,94,0.25)',
+    badgeClass: 'badge-rose',
+    filterKey: 'all',
+  },
   default: {
-    icon: '📝',
+    Icon: FileText,
     label: 'Health Event',
     colorVar: '--text-muted',
     glowColor: 'rgba(94,138,133,0.35)',
@@ -74,11 +99,11 @@ const EVENT_CONFIG = {
 }
 
 const FILTERS = [
-  { id: 'all',         label: 'All Events',    icon: '🗓️' },
-  { id: 'symptoms',    label: 'Symptoms',      icon: '🤒' },
-  { id: 'progress',    label: 'Progress',      icon: '📊' },
-  { id: 'plans',       label: 'Plans',         icon: '✨' },
-  { id: 'adaptations', label: 'Adaptations',   icon: '🔄' },
+  { id: 'all',         label: 'All Events',    Icon: CalendarDays },
+  { id: 'symptoms',    label: 'Symptoms',      Icon: Thermometer },
+  { id: 'progress',    label: 'Progress',      Icon: ChartColumn },
+  { id: 'plans',       label: 'Plans',         Icon: Sparkles },
+  { id: 'adaptations', label: 'Adaptations',   Icon: RefreshCw },
 ]
 
 const PAGE_SIZE = 10
@@ -138,26 +163,24 @@ function renderDetails(event) {
     case 'symptom_logged':
       return (
         <div className="ht-event-details">
-          {data.symptom && <span className="ht-detail-chip ht-chip-amber">🤒 {data.symptom}</span>}
+          {data.symptom && <span className="ht-detail-chip ht-chip-amber"><Thermometer size={13} strokeWidth={2} /> {data.symptom}</span>}
           {data.severity && <span className="ht-detail-chip ht-chip-muted">Severity: {data.severity}/10</span>}
-          {data.body_part && <span className="ht-detail-chip ht-chip-muted">📍 {data.body_part}</span>}
+          {data.body_part && <span className="ht-detail-chip ht-chip-muted"><MapPin size={13} strokeWidth={2} /> {data.body_part}</span>}
           {data.note && <p className="ht-detail-note">"{data.note}"</p>}
         </div>
       )
     case 'progress_logged':
       return (
         <div className="ht-event-details">
-          {data.weight && <span className="ht-detail-chip ht-chip-teal">⚖️ {data.weight} kg</span>}
-          {data.mood && <span className="ht-detail-chip ht-chip-teal">😊 Mood: {data.mood}/10</span>}
-          {data.energy && <span className="ht-detail-chip ht-chip-muted">⚡ Energy: {data.energy}/10</span>}
-          {data.sleep && <span className="ht-detail-chip ht-chip-muted">😴 Sleep: {data.sleep}h</span>}
-          {data.adherence != null && (
+          {data.weight_kg && <span className="ht-detail-chip ht-chip-teal"><Scale size={13} strokeWidth={2} /> {data.weight_kg} kg</span>}
+          {data.mood && <span className="ht-detail-chip ht-chip-teal"><Smile size={13} strokeWidth={2} /> Mood: {data.mood}</span>}
+          {data.adherence_percent != null && (
             <div className="ht-adherence-bar">
               <span className="ht-adherence-label">Plan adherence</span>
               <div className="ht-bar-track">
-                <div className="ht-bar-fill" style={{ width: `${data.adherence}%` }} />
+                <div className="ht-bar-fill" style={{ width: `${data.adherence_percent}%` }} />
               </div>
-              <span className="ht-adherence-pct">{data.adherence}%</span>
+              <span className="ht-adherence-pct">{data.adherence_percent}%</span>
             </div>
           )}
         </div>
@@ -165,22 +188,36 @@ function renderDetails(event) {
     case 'plan_generated':
       return (
         <div className="ht-event-details">
-          {data.plan_type && <span className="ht-detail-chip ht-chip-primary">📋 {data.plan_type}</span>}
-          {data.mode && <span className="ht-detail-chip ht-chip-muted">Mode: {data.mode}</span>}
-          {data.summary && <p className="ht-detail-note">{data.summary}</p>}
+          {data.plan_type && <span className="ht-detail-chip ht-chip-primary"><ClipboardList size={13} strokeWidth={2} /> {data.plan_type}</span>}
+          {data.model_used && <span className="ht-detail-chip ht-chip-muted">{data.model_used}</span>}
         </div>
       )
     case 'adaptation_triggered':
       return (
         <div className="ht-event-details">
-          {data.reason && <span className="ht-detail-chip ht-chip-sage">🔄 {data.reason}</span>}
-          {data.changes_made && <p className="ht-detail-note">{data.changes_made}</p>}
+          {data.plan_type && <span className="ht-detail-chip ht-chip-sage"><RefreshCw size={13} strokeWidth={2} /> {data.plan_type}</span>}
+          {data.model_used && <span className="ht-detail-chip ht-chip-muted">{data.model_used}</span>}
+        </div>
+      )
+    case 'reminder_set':
+      return (
+        <div className="ht-event-details">
+          {data.reminder && <span className="ht-detail-chip ht-chip-muted"><AlarmClock size={13} strokeWidth={2} /> {data.reminder}</span>}
+        </div>
+      )
+    case 'reaction_reported':
+      return (
+        <div className="ht-event-details">
+          {data.item && <span className="ht-detail-chip ht-chip-amber"><Siren size={13} strokeWidth={2} /> {data.item}</span>}
+          {data.severity && <span className="ht-detail-chip ht-chip-muted">Severity: {data.severity}</span>}
+          {data.plan_type && <span className="ht-detail-chip ht-chip-muted">{data.plan_type}</span>}
+          {data.reaction && <p className="ht-detail-note">"{data.reaction}"</p>}
         </div>
       )
     case 'adaptation_failed':
       return (
         <div className="ht-event-details">
-          {data.error && <span className="ht-detail-chip ht-chip-rose">⚠️ {data.error}</span>}
+          {data.error && <span className="ht-detail-chip ht-chip-rose"><TriangleAlert size={13} strokeWidth={2} /> {data.error}</span>}
           {data.reason && <p className="ht-detail-note">{data.reason}</p>}
         </div>
       )
@@ -218,18 +255,26 @@ function TimelineSkeleton() {
 
 /* ─── Progress Summary Card ──────────────────────────── */
 function ProgressSummary({ summary }) {
-  if (!summary) return null
+  if (!summary || !summary.current) return null
+
+  const c = summary.current
+  const TREND_LABELS = {
+    losing_weight:  { label: 'Losing', Icon: TrendingDown, special: 'declining' },
+    gaining_weight: { label: 'Gaining', Icon: TrendingUp, special: 'improving' },
+    stable:         { label: 'Stable', Icon: MoveRight, special: 'stable' },
+  }
+  const trendInfo = TREND_LABELS[summary.trend] || { label: 'Stable', Icon: MoveRight, special: 'stable' }
 
   const stats = [
-    { label: 'Weight', value: summary.weight ? `${summary.weight} kg` : '—', icon: '⚖️' },
-    { label: 'BMI', value: summary.bmi ? summary.bmi.toFixed(1) : '—', icon: '📐' },
-    { label: 'Mood', value: summary.mood ? `${summary.mood}/10` : '—', icon: '😊' },
-    { label: 'Adherence', value: summary.adherence ? `${summary.adherence}%` : '—', icon: '✅' },
+    { label: 'Weight', value: c.weight_kg ? `${c.weight_kg} kg` : '—', Icon: Scale },
+    { label: 'BMI', value: c.bmi ? c.bmi.toFixed(1) : '—', Icon: Ruler },
+    { label: 'Mood', value: c.mood || '—', Icon: Smile },
+    { label: 'Adherence', value: c.adherence_percent != null ? `${c.adherence_percent}%` : '—', Icon: CircleCheck },
     {
       label: 'Trend',
-      value: summary.trend === 'improving' ? '↑ Improving' : summary.trend === 'declining' ? '↓ Declining' : '→ Stable',
-      icon: summary.trend === 'improving' ? '📈' : summary.trend === 'declining' ? '📉' : '➡️',
-      special: summary.trend,
+      value: trendInfo.label,
+      Icon: trendInfo.Icon,
+      special: trendInfo.special,
     },
   ]
 
@@ -241,16 +286,16 @@ function ProgressSummary({ summary }) {
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="ht-progress-strip-label">
-        <span className="ht-strip-icon">📊</span>
+        <span className="ht-strip-icon"><ChartColumn size={16} strokeWidth={2} /></span>
         <span>Progress Snapshot</span>
-        {summary.last_updated && (
-          <span className="ht-strip-date">Updated {formatDateTime(summary.last_updated)}</span>
+        {c.last_logged && (
+          <span className="ht-strip-date">Updated {formatDateTime(c.last_logged)}</span>
         )}
       </div>
       <div className="ht-progress-stats">
         {stats.map(s => (
           <div key={s.label} className={`ht-stat-item${s.special ? ` ht-trend-${s.special}` : ''}`}>
-            <span className="ht-stat-icon">{s.icon}</span>
+            <span className="ht-stat-icon">{s.Icon && <s.Icon size={16} strokeWidth={2} />}</span>
             <div>
               <div className="ht-stat-value">{s.value}</div>
               <div className="ht-stat-label">{s.label}</div>
@@ -281,7 +326,7 @@ function EventCard({ event, index }) {
         style={{ boxShadow: `0 0 0 3px var(--bg-surface), 0 0 12px ${cfg.glowColor}` }}
         aria-hidden="true"
       >
-        <span className="ht-dot-icon">{cfg.icon}</span>
+        <span className="ht-dot-icon">{cfg.Icon && <cfg.Icon size={15} strokeWidth={2} />}</span>
       </div>
 
       {/* Card */}
@@ -333,7 +378,7 @@ function EmptyState({ filtered }) {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="ht-empty-orb" aria-hidden="true">🌱</div>
+      <div className="ht-empty-orb" aria-hidden="true"><Sprout size={34} strokeWidth={1.6} /></div>
       <h3 className="ht-empty-title">
         {filtered ? 'No events in this category' : 'Your health story begins here'}
       </h3>
@@ -345,8 +390,8 @@ function EmptyState({ filtered }) {
       </p>
       {!filtered && (
         <div className="ht-empty-actions">
-          <a href="/checkin" className="btn btn-primary btn-sm">✅ Log Check-In</a>
-          <a href="/chat" className="btn btn-secondary btn-sm">💬 Chat with Ayura</a>
+          <a href="/checkin" className="btn btn-primary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><CircleCheck size={15} strokeWidth={2} /> Log Check-In</a>
+          <a href="/chat" className="btn btn-secondary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><MessageCircle size={15} strokeWidth={2} /> Chat with Ayura</a>
         </div>
       )}
     </motion.div>
@@ -474,7 +519,7 @@ export default function HealthTimeline() {
               onClick={() => setActiveFilter(f.id)}
               aria-pressed={activeFilter === f.id}
             >
-              <span>{f.icon}</span> {f.label}
+              <span style={{display:'inline-flex'}}>{f.Icon && <f.Icon size={14} strokeWidth={2} />}</span> {f.label}
             </button>
           ))}
         </motion.div>
@@ -488,8 +533,8 @@ export default function HealthTimeline() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
             >
-              <span>⚠️ {error}</span>
-              <button onClick={() => {}} aria-label="Dismiss error">✕</button>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><TriangleAlert size={15} strokeWidth={2} /> {error}</span>
+              <button onClick={() => {}} aria-label="Dismiss error"><X size={14} strokeWidth={2} /></button>
             </motion.div>
           )}
         </AnimatePresence>

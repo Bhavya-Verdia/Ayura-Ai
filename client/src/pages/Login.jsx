@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../providers/AuthContext'
 import { Helmet } from 'react-helmet-async'
+import { Dna, Zap, ShieldCheck } from 'lucide-react'
 import './Auth.css'
 
 const GOOGLE_CLIENT_ID  = import.meta.env.VITE_GOOGLE_CLIENT_ID  || ''
@@ -62,9 +63,9 @@ export default function Login() {
             Sign back in to access your personalised Ayurvedic plans, adaptive AI recommendations, and health timeline.
           </p>
           <div className="auth-left-pills">
-            <div className="auth-left-pill"><span className="auth-left-pill-icon">🧬</span> Dosha-aware AI plans</div>
-            <div className="auth-left-pill"><span className="auth-left-pill-icon">⚡</span> Adaptive daily recalibration</div>
-            <div className="auth-left-pill"><span className="auth-left-pill-icon">🛡️</span> Safety-screened recommendations</div>
+            <div className="auth-left-pill"><span className="auth-left-pill-icon"><Dna size={14} strokeWidth={2} /></span> Dosha-aware AI plans</div>
+            <div className="auth-left-pill"><span className="auth-left-pill-icon"><Zap size={14} strokeWidth={2} /></span> Adaptive daily recalibration</div>
+            <div className="auth-left-pill"><span className="auth-left-pill-icon"><ShieldCheck size={14} strokeWidth={2} /></span> Safety-screened recommendations</div>
           </div>
         </div>
       </div>

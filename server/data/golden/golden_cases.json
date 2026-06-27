@@ -1,0 +1,1603 @@
+[
+  {
+    "id": "vata_anxiety_insomnia",
+    "label": "Vata constitution, anxiety + insomnia, young adult",
+    "conditions": [
+      "anxiety",
+      "insomnia"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "basti_matra",
+      "agni_name": "Vishama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "box_equal_breathing",
+        "ocean_breath",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "saraswatarishta",
+        "ashwagandha_churna",
+        "brahmi_churna",
+        "punarnava_churna",
+        "guduchi_churna"
+      ],
+      "selected_names": [
+        "Saraswatarishta",
+        "Ashwagandha Churna",
+        "Brahmi Churna",
+        "Punarnava Churna",
+        "Guduchi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "pitta_acidity_migraine",
+    "label": "Pitta constitution, acid reflux + migraine, adult",
+    "conditions": [
+      "acid_reflux",
+      "migraine"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "virechana",
+      "agni_name": "Tikshna Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "ocean_breath",
+        "cooling_breath",
+        "humming_bee",
+        "hissing_breath"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "yashtimadhu_churna",
+        "guduchi_satva",
+        "avipattikar_churna",
+        "nishamalaki_churna",
+        "triphala_churna",
+        "sitopaladi_churna"
+      ],
+      "selected_names": [
+        "Yashtimadhu Churna",
+        "Guduchi Satva",
+        "Avipattikar Churna",
+        "Nishamalaki Churna",
+        "Triphala Churna",
+        "Sitopaladi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "kapha_obesity_hypothyroid",
+    "label": "Kapha constitution, obesity + hypothyroid, midlife",
+    "conditions": [
+      "obesity",
+      "hypothyroidism"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "nasya",
+      "agni_name": "Manda Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "alternate_nostril",
+        "ocean_breath",
+        "humming_bee",
+        "three_part_breath",
+        "cooling_breath",
+        "hissing_breath"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "triphala_churna",
+        "arjuna_churna",
+        "punarnavadi_kashayam",
+        "trikatu_churna",
+        "punarnava_churna",
+        "sitopaladi_churna",
+        "avipattikar_churna"
+      ],
+      "selected_names": [
+        "Triphala Churna",
+        "Arjuna Churna",
+        "Punarnavadi Kashayam",
+        "Trikatu Churna",
+        "Punarnava Churna",
+        "Sitopaladi Churna",
+        "Avipattikar Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "vatapitta_hypertension_senior",
+    "label": "Vata-Pitta dual, hypertension, senior",
+    "conditions": [
+      "hypertension"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "virechana",
+      "agni_name": "Sama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [
+        "CAUTION: hypertension — modify dose/protocol per Vaidya guidance"
+      ],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "box_equal_breathing",
+        "ocean_breath",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "arjuna_churna",
+        "punarnava_churna",
+        "arjunarishta",
+        "triphala_churna",
+        "sitopaladi_churna"
+      ],
+      "selected_names": [
+        "Arjuna Churna",
+        "Punarnava Churna",
+        "Arjunarishta",
+        "Triphala Churna",
+        "Sitopaladi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "kaphapitta_diabetes_fattyliver",
+    "label": "Kapha-Pitta dual, type-2 diabetes + fatty liver",
+    "conditions": [
+      "diabetes_type2",
+      "fatty_liver"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "virechana",
+      "agni_name": "Manda Agni",
+      "ritu": "grishma",
+      "safety_warnings": [
+        "CAUTION: fatty_liver — modify dose/protocol per Vaidya guidance"
+      ],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "alternate_nostril",
+        "three_part_breath",
+        "ocean_breath",
+        "humming_bee",
+        "cooling_breath",
+        "hissing_breath"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "kumaryasava",
+        "varanadi_kashayam",
+        "triphala_churna",
+        "patolakaturohinyadi_kashayam",
+        "guduchi_churna",
+        "haritaki_churna",
+        "sudarshana_churna"
+      ],
+      "selected_names": [
+        "Kumaryasava",
+        "Varanadi Kashayam",
+        "Triphala Churna",
+        "Patolakaturohinyadi Kashayam",
+        "Guduchi Churna",
+        "Haritaki Churna",
+        "Sudarshana Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "pregnancy_pitta",
+    "label": "Pregnant Pitta woman (safety gating)",
+    "conditions": [],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "virechana",
+      "agni_name": "Sama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "ocean_breath",
+        "cooling_breath",
+        "hissing_breath",
+        "humming_bee"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "sitopaladi_churna",
+        "chyawanprash"
+      ],
+      "selected_names": [
+        "Sitopaladi Churna",
+        "Chyawanprash"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "vata_ankylosing_spondylitis",
+    "label": "Vata, ankylosing spondylitis (Asthi-Majja Vata)",
+    "conditions": [
+      "ankylosing_spondylitis"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "basti_matra",
+      "agni_name": "Vishama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "ocean_breath",
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "box_equal_breathing",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "punarnava_churna",
+        "guduchi_churna"
+      ],
+      "selected_names": [
+        "Punarnava Churna",
+        "Guduchi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "pitta_hypotension_cardiac",
+    "label": "Pitta with hypotension + cardiac history (medicine gating)",
+    "conditions": [
+      "hypotension",
+      "heart_disease"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "virechana",
+      "agni_name": "Sama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "ocean_breath",
+        "cooling_breath",
+        "hissing_breath",
+        "humming_bee"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "drakshasava",
+        "triphala_churna",
+        "sitopaladi_churna"
+      ],
+      "selected_names": [
+        "Drakshasava",
+        "Triphala Churna",
+        "Sitopaladi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "kapha_asthma",
+    "label": "Kapha, bronchial asthma (Tamaka Shwasa)",
+    "conditions": [
+      "asthma"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "nasya",
+      "agni_name": "Manda Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "ocean_breath",
+        "alternate_nostril",
+        "three_part_breath",
+        "against_the_grain",
+        "humming_bee",
+        "cooling_breath"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "talisapathradi_churna",
+        "agastya_rasayana",
+        "pippalyasava",
+        "trikatu_churna",
+        "sitopaladi_churna",
+        "punarnava_churna",
+        "guduchi_churna"
+      ],
+      "selected_names": [
+        "Talisapathradi Churna",
+        "Agastya Rasayana",
+        "Pippalyasava",
+        "Trikatu Churna",
+        "Sitopaladi Churna",
+        "Punarnava Churna",
+        "Guduchi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "vata_child_constipation",
+    "label": "Vata child (Balya Avastha), constipation",
+    "conditions": [
+      "constipation"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "basti_matra",
+      "agni_name": "Vishama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "ocean_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "box_equal_breathing",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "haritaki_churna",
+        "hingwashtak_churna",
+        "agastya_rasayana",
+        "kumaryasava",
+        "abhayarishta",
+        "punarnava_churna",
+        "guduchi_churna"
+      ],
+      "selected_names": [
+        "Haritaki Churna",
+        "Hingwashtak Churna",
+        "Agastya Rasayana",
+        "Kumaryasava",
+        "Abhayarishta",
+        "Punarnava Churna",
+        "Guduchi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "pitta_psoriasis",
+    "label": "Pitta, psoriasis (Kushtha — Rakta-Pitta)",
+    "conditions": [
+      "psoriasis"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "virechana",
+      "agni_name": "Tikshna Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "ocean_breath",
+        "cooling_breath",
+        "hissing_breath",
+        "humming_bee"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "triphala_churna",
+        "nishamalaki_churna",
+        "neem_churna",
+        "khadirarishta",
+        "patolakaturohinyadi_kashayam",
+        "sitopaladi_churna",
+        "avipattikar_churna"
+      ],
+      "selected_names": [
+        "Triphala Churna",
+        "Nishamalaki Churna",
+        "Neem Churna",
+        "Khadirarishta",
+        "Patolakaturohinyadi Kashayam",
+        "Sitopaladi Churna",
+        "Avipattikar Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "vata_sciatica",
+    "label": "Vata, sciatica (Gridhrasi)",
+    "conditions": [
+      "sciatica"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "basti_matra",
+      "agni_name": "Vishama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "ocean_breath",
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "box_equal_breathing",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "rasnasaptaka_kashayam",
+        "punarnava_churna",
+        "guduchi_churna"
+      ],
+      "selected_names": [
+        "Rasnasaptaka Kashayam",
+        "Punarnava Churna",
+        "Guduchi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "vatakapha_fibromyalgia",
+    "label": "Vata-Kapha, fibromyalgia",
+    "conditions": [
+      "fibromyalgia"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "basti_matra",
+      "agni_name": "Manda Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "ocean_breath",
+        "box_equal_breathing",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "punarnava_churna",
+        "guduchi_churna"
+      ],
+      "selected_names": [
+        "Punarnava Churna",
+        "Guduchi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "vata_osteoarthritis_senior",
+    "label": "Vata, osteoarthritis, senior (Sandhivata)",
+    "conditions": [
+      "osteoarthritis"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "basti_matra",
+      "agni_name": "Vishama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "ocean_breath",
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "box_equal_breathing",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "punarnava_churna",
+        "guduchi_churna"
+      ],
+      "selected_names": [
+        "Punarnava Churna",
+        "Guduchi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "pitta_hypertension",
+    "label": "Pitta, essential hypertension",
+    "conditions": [
+      "hypertension"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "virechana",
+      "agni_name": "Tikshna Agni",
+      "ritu": "grishma",
+      "safety_warnings": [
+        "CAUTION: hypertension — modify dose/protocol per Vaidya guidance"
+      ],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "box_equal_breathing",
+        "ocean_breath",
+        "cooling_breath"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "arjuna_churna",
+        "arjunarishta",
+        "punarnava_churna",
+        "triphala_churna",
+        "sitopaladi_churna"
+      ],
+      "selected_names": [
+        "Arjuna Churna",
+        "Arjunarishta",
+        "Punarnava Churna",
+        "Triphala Churna",
+        "Sitopaladi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "kapha_pcos_female",
+    "label": "Kapha, PCOS (Artava Dushti)",
+    "conditions": [
+      "pcos"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "nasya",
+      "agni_name": "Manda Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "alternate_nostril",
+        "humming_bee",
+        "three_part_breath",
+        "ocean_breath",
+        "cooling_breath",
+        "hissing_breath"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "ashokarishta",
+        "shatavari_gulam",
+        "shatavari_churna",
+        "punarnava_churna",
+        "guduchi_churna"
+      ],
+      "selected_names": [
+        "Ashokarishta",
+        "Shatavari Gulam",
+        "Shatavari Churna",
+        "Punarnava Churna",
+        "Guduchi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "vata_ibs",
+    "label": "Vata, IBS (Grahani)",
+    "conditions": [
+      "ibs"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "basti_matra",
+      "agni_name": "Vishama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "ocean_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "box_equal_breathing",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "vidangadi_churna",
+        "hingwashtak_churna",
+        "kutajarishta",
+        "guduchi_churna",
+        "haritaki_churna"
+      ],
+      "selected_names": [
+        "Vidangadi Churna",
+        "Hingwashtak Churna",
+        "Kutajarishta",
+        "Guduchi Churna",
+        "Haritaki Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "kapha_sinusitis",
+    "label": "Kapha, chronic sinusitis (Pratishyaya)",
+    "conditions": [
+      "sinusitis"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "nasya",
+      "agni_name": "Manda Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "ocean_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "three_part_breath",
+        "cooling_breath",
+        "hissing_breath"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "pathyadi_kadha",
+        "trikatu_churna",
+        "talisapathradi_churna",
+        "agastya_rasayana",
+        "haridra_khanda",
+        "punarnava_churna",
+        "guduchi_churna"
+      ],
+      "selected_names": [
+        "Pathyadi Kadha",
+        "Trikatu Churna",
+        "Talisapathradi Churna",
+        "Agastya Rasayana",
+        "Haridra Khanda",
+        "Punarnava Churna",
+        "Guduchi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "vata_parkinsons_senior",
+    "label": "Vata, Parkinson's (Kampavata), senior",
+    "conditions": [
+      "parkinson"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "basti_matra",
+      "agni_name": "Vishama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "ocean_breath",
+        "box_equal_breathing",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "kapikachu_churna",
+        "punarnava_churna",
+        "guduchi_churna"
+      ],
+      "selected_names": [
+        "Kapikachu Churna",
+        "Punarnava Churna",
+        "Guduchi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "kapha_depression",
+    "label": "Kapha, depression (Kaphaja Unmada / Vishada)",
+    "conditions": [
+      "depression"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "nasya",
+      "agni_name": "Manda Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "alternate_nostril",
+        "humming_bee",
+        "three_part_breath",
+        "ocean_breath",
+        "cooling_breath",
+        "hissing_breath"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "brahmi_churna",
+        "saraswatarishta",
+        "punarnava_churna",
+        "guduchi_churna"
+      ],
+      "selected_names": [
+        "Brahmi Churna",
+        "Saraswatarishta",
+        "Punarnava Churna",
+        "Guduchi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "pitta_gout",
+    "label": "Pitta, gout (Vatarakta)",
+    "conditions": [
+      "gout"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "virechana",
+      "agni_name": "Tikshna Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "ocean_breath",
+        "humming_bee",
+        "cooling_breath",
+        "hissing_breath"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "khadirarishta",
+        "guduchi_satva",
+        "guduchi_churna",
+        "triphala_churna",
+        "sitopaladi_churna"
+      ],
+      "selected_names": [
+        "Khadirarishta",
+        "Guduchi Satva",
+        "Guduchi Churna",
+        "Triphala Churna",
+        "Sitopaladi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "vata_epilepsy",
+    "label": "Vata, epilepsy (Apasmara) — pranayama safety",
+    "conditions": [
+      "epilepsy"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "basti_matra",
+      "agni_name": "Vishama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "ocean_breath",
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "box_equal_breathing",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "punarnava_churna",
+        "guduchi_churna"
+      ],
+      "selected_names": [
+        "Punarnava Churna",
+        "Guduchi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "pitta_glaucoma",
+    "label": "Pitta, glaucoma — pranayama safety (no inversions/forceful)",
+    "conditions": [
+      "glaucoma"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "virechana",
+      "agni_name": "Tikshna Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "ocean_breath",
+        "cooling_breath",
+        "hissing_breath",
+        "humming_bee"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "triphala_churna",
+        "sitopaladi_churna"
+      ],
+      "selected_names": [
+        "Triphala Churna",
+        "Sitopaladi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "kapha_fatty_liver",
+    "label": "Kapha, NAFLD fatty liver (Yakrit Vikara)",
+    "conditions": [
+      "fatty_liver"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "nasya",
+      "agni_name": "Manda Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "alternate_nostril",
+        "three_part_breath",
+        "ocean_breath",
+        "humming_bee",
+        "cooling_breath",
+        "hissing_breath"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "kumaryasava",
+        "varanadi_kashayam",
+        "triphala_churna",
+        "patolakaturohinyadi_kashayam",
+        "guduchi_churna",
+        "haritaki_churna"
+      ],
+      "selected_names": [
+        "Kumaryasava",
+        "Varanadi Kashayam",
+        "Triphala Churna",
+        "Patolakaturohinyadi Kashayam",
+        "Guduchi Churna",
+        "Haritaki Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "pregnancy_vata",
+    "label": "Pregnant Vata woman (safety gating)",
+    "conditions": [],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "basti_matra",
+      "agni_name": "Vishama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "ocean_breath",
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "box_equal_breathing",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "bhringaraja_churna",
+        "drakshasava"
+      ],
+      "selected_names": [
+        "Bhringaraja Churna",
+        "Drakshasava"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "vatapitta_anxiety_young",
+    "label": "Vata-Pitta, anxiety + acidity, young professional",
+    "conditions": [
+      "anxiety",
+      "acid_reflux"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "virechana",
+      "agni_name": "Vishama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "ocean_breath",
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "box_equal_breathing",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "guduchi_churna",
+        "saraswatarishta",
+        "ashwagandha_churna",
+        "yashtimadhu_churna",
+        "brahmi_churna",
+        "punarnava_churna",
+        "haritaki_churna"
+      ],
+      "selected_names": [
+        "Guduchi Churna",
+        "Saraswatarishta",
+        "Ashwagandha Churna",
+        "Yashtimadhu Churna",
+        "Brahmi Churna",
+        "Punarnava Churna",
+        "Haritaki Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "kapha_hyperlipidemia",
+    "label": "Kapha, high cholesterol (Medo Dushti)",
+    "conditions": [
+      "cholesterol",
+      "obesity"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "nasya",
+      "agni_name": "Manda Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "alternate_nostril",
+        "ocean_breath",
+        "humming_bee",
+        "three_part_breath",
+        "cooling_breath",
+        "hissing_breath"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "punarnavadi_kashayam",
+        "trikatu_churna",
+        "vidanga_churna",
+        "varanadi_kashayam",
+        "triphala_churna",
+        "guduchi_churna",
+        "haritaki_churna"
+      ],
+      "selected_names": [
+        "Punarnavadi Kashayam",
+        "Trikatu Churna",
+        "Vidanga Churna",
+        "Varanadi Kashayam",
+        "Triphala Churna",
+        "Guduchi Churna",
+        "Haritaki Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "pitta_hyperthyroid",
+    "label": "Pitta, hyperthyroidism (Atyagni / Bhasmaka)",
+    "conditions": [
+      "hyperthyroidism"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "virechana",
+      "agni_name": "Tikshna Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "ocean_breath",
+        "cooling_breath",
+        "hissing_breath"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "triphala_churna",
+        "sitopaladi_churna"
+      ],
+      "selected_names": [
+        "Triphala Churna",
+        "Sitopaladi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "vata_insomnia_athlete",
+    "label": "Vata, healthy active baseline (no conditions)",
+    "conditions": [],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "basti_matra",
+      "agni_name": "Sama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "ocean_breath",
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "box_equal_breathing",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "triphala_churna",
+        "sitopaladi_churna"
+      ],
+      "selected_names": [
+        "Triphala Churna",
+        "Sitopaladi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  },
+  {
+    "id": "tridoshic_senior_multi",
+    "label": "Senior, multiple conditions (HTN + diabetes + arthritis)",
+    "conditions": [
+      "hypertension",
+      "diabetes_type2",
+      "osteoarthritis"
+    ],
+    "panchakarma": {
+      "shodhana_or_shamana": "shamana",
+      "pradhana_karma": "basti_matra",
+      "agni_name": "Vishama Agni",
+      "ritu": "grishma",
+      "safety_warnings": [],
+      "setting": "home"
+    },
+    "yoga": {
+      "plan_id": "yoga_default_1782298994",
+      "pranayama_selected": [
+        "three_part_breath",
+        "alternate_nostril",
+        "humming_bee",
+        "ocean_breath",
+        "box_equal_breathing",
+        "with_the_grain"
+      ],
+      "forceful_included": []
+    },
+    "gym": {
+      "has_schedule": true
+    },
+    "routine": {
+      "has_shaucha": true,
+      "has_brahma_muhurta": true
+    },
+    "medicines": {
+      "selected_ids": [
+        "punarnava_churna",
+        "arjuna_churna",
+        "arjunarishta",
+        "guduchi_churna",
+        "triphala_churna",
+        "haritaki_churna",
+        "vidangadi_churna"
+      ],
+      "selected_names": [
+        "Punarnava Churna",
+        "Arjuna Churna",
+        "Arjunarishta",
+        "Guduchi Churna",
+        "Triphala Churna",
+        "Haritaki Churna",
+        "Vidangadi Churna"
+      ]
+    },
+    "remedies": {
+      "symptoms_addressed": 0
+    },
+    "safety_violations": []
+  }
+]

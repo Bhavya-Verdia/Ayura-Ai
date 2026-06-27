@@ -34,7 +34,7 @@ def _check_post_rate(user_id: str) -> None:
         retry_after = max(1, int(_POST_WINDOW - (now - bucket[0])))
         raise HTTPException(
             status_code=429,
-            detail=f"Too many posts. Please wait before posting again.",
+            detail="Too many posts. Please wait before posting again.",
             headers={"Retry-After": str(retry_after)},
         )
     bucket.append(now)
@@ -76,6 +76,14 @@ class CreatePostRequest(BaseModel):
     content: str = Field(..., min_length=1, max_length=500)
 
 
+class ReportRequest(BaseModel):
+    reason: str = Field(default="", max_length=300)
+
+
+# Posts hit by this many distinct reporters are auto-hidden pending review.
+_REPORT_HIDE_THRESHOLD = 3
+
+
 @router.get("")
 async def list_community_posts(
     offset: int = 0,
@@ -83,9 +91,9 @@ async def list_community_posts(
     user: UserDocument = Depends(get_current_user),
     db=Depends(get_mongodb),
 ):
-    """List community posts, newest first."""
+    """List visible community posts, newest first (auto-hidden posts excluded)."""
     limit = min(limit, 50)
-    cursor = db.community_posts.find({}).sort("created_at", -1).skip(offset).limit(limit)
+    cursor = db.community_posts.find({"hidden": {"$ne": True}}).sort("created_at", -1).skip(offset).limit(limit)
     posts = []
     async for doc in cursor:
         posts.append({
@@ -94,6 +102,9 @@ async def list_community_posts(
             "content": doc["content"],
             "like_count": len(doc.get("likes", [])),
             "liked_by_me": user.id in doc.get("likes", []),
+            "is_mine": doc.get("user_id") == user.id,
+            "reported_by_me": user.id in doc.get("reported_by", []),
+            "comment_count": doc.get("comment_count", 0),
             "created_at": doc["created_at"].isoformat() if isinstance(doc["created_at"], datetime) else doc["created_at"],
         })
     return posts
@@ -127,6 +138,9 @@ async def create_post(
         "content": req.content,
         "like_count": 0,
         "liked_by_me": False,
+        "is_mine": True,
+        "reported_by_me": False,
+        "comment_count": 0,
         "created_at": now.isoformat(),
     }
 
@@ -155,6 +169,39 @@ async def toggle_like(
     return {"liked": liked, "like_count": like_count}
 
 
+@router.post("/{post_id}/report")
+async def report_post(
+    post_id: str,
+    req: ReportRequest,
+    user: UserDocument = Depends(get_current_user),
+    db=Depends(get_mongodb),
+):
+    """Flag a post. Once distinct reporters reach the threshold, it is auto-hidden."""
+    post = await db.community_posts.find_one({"_id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post["user_id"] == user.id:
+        raise HTTPException(status_code=400, detail="You cannot report your own post")
+
+    reported_by = post.get("reported_by", [])
+    if user.id in reported_by:
+        return {"reported": True, "already_reported": True}
+
+    new_count = len(reported_by) + 1
+    update = {
+        "$addToSet": {"reported_by": user.id},
+        "$push": {"reports": {
+            "user_id": user.id, "reason": req.reason[:300],
+            "ts": datetime.now(timezone.utc),
+        }},
+    }
+    hidden = new_count >= _REPORT_HIDE_THRESHOLD
+    if hidden:
+        update["$set"] = {"hidden": True}
+    await db.community_posts.update_one({"_id": post_id}, update)
+    return {"reported": True, "hidden": hidden}
+
+
 @router.delete("/{post_id}", status_code=204)
 async def delete_post(
     post_id: str,
@@ -168,3 +215,78 @@ async def delete_post(
     if post["user_id"] != user.id and not user.is_admin:
         raise HTTPException(status_code=403, detail="Not authorized")
     await db.community_posts.delete_one({"_id": post_id})
+    await db.community_comments.delete_many({"post_id": post_id})
+
+
+class CommentRequest(BaseModel):
+    content: str = Field(..., min_length=1, max_length=400)
+
+
+@router.get("/{post_id}/comments")
+async def list_comments(
+    post_id: str,
+    offset: int = 0,
+    limit: int = 50,
+    user: UserDocument = Depends(get_current_user),
+    db=Depends(get_mongodb),
+):
+    """List comments on a post, oldest first."""
+    limit = min(limit, 100)
+    cursor = db.community_comments.find({"post_id": post_id}).sort("created_at", 1).skip(offset).limit(limit)
+    out = []
+    async for c in cursor:
+        out.append({
+            "id": c["_id"],
+            "author_name": c.get("author_name", "Anonymous"),
+            "content": c["content"],
+            "is_mine": c.get("user_id") == user.id,
+            "created_at": c["created_at"].isoformat() if isinstance(c["created_at"], datetime) else c["created_at"],
+        })
+    return out
+
+
+@router.post("/{post_id}/comments", status_code=201)
+async def add_comment(
+    post_id: str,
+    req: CommentRequest,
+    user: UserDocument = Depends(get_current_user),
+    db=Depends(get_mongodb),
+):
+    """Add a comment to a post (content-moderated)."""
+    post = await db.community_posts.find_one({"_id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    _moderate_content(req.content)
+
+    comment_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc)
+    await db.community_comments.insert_one({
+        "_id": comment_id, "post_id": post_id, "user_id": user.id,
+        "author_name": user.name, "content": req.content, "created_at": now,
+    })
+    await db.community_posts.update_one({"_id": post_id}, {"$inc": {"comment_count": 1}})
+    return {
+        "id": comment_id, "author_name": user.name, "content": req.content,
+        "is_mine": True, "created_at": now.isoformat(),
+    }
+
+
+@router.delete("/comments/{comment_id}", status_code=204)
+async def delete_comment(
+    comment_id: str,
+    user: UserDocument = Depends(get_current_user),
+    db=Depends(get_mongodb),
+):
+    """Delete a comment (author or admin only)."""
+    comment = await db.community_comments.find_one({"_id": comment_id})
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    if comment["user_id"] != user.id and not user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    await db.community_comments.delete_one({"_id": comment_id})
+    # Only decrement when positive so a retried/raced delete (or a legacy post whose
+    # count drifted) can't drive comment_count negative.
+    await db.community_posts.update_one(
+        {"_id": comment["post_id"], "comment_count": {"$gt": 0}},
+        {"$inc": {"comment_count": -1}},
+    )

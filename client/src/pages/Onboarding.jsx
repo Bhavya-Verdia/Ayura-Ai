@@ -2,6 +2,10 @@ import { useState, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '../providers/AuthContext'
+import {
+  Scale, Dumbbell, PersonStanding, FlaskConical, Sparkles, Orbit,
+  Wind, Flame, Waves, Mars, Venus, Transgender, Ban, Baby, Sprout, Zap, Lock,
+} from 'lucide-react'
 import React from 'react'
 import './Onboarding.css'
 
@@ -133,29 +137,36 @@ const CONDITION_CATEGORIES = [
   },
 ]
 
+// Canonical Vikriti symptom clusters — unified with the Dosha Quiz and weekly
+// Check-In so stored current_symptoms always match the dosha engine + yoga boosts.
 const SYMPTOMS = [
-  'acidity', 'bloating', 'constipation', 'insomnia', 'joint_pain', 'fatigue',
-  'anxiety', 'dry_skin', 'skin_rash', 'weight_gain', 'hair_loss',
-  'irregular_periods', 'headache', 'cough', 'cold'
+  { id: 'anxiety_worry',          label: 'Anxiety or worry' },
+  { id: 'trouble_sleeping',       label: 'Trouble sleeping' },
+  { id: 'bloating_gas',           label: 'Bloating or gas' },
+  { id: 'dry_skin_constipation',  label: 'Dryness or constipation' },
+  { id: 'joint_stiffness',        label: 'Joint or body aches' },
+  { id: 'heartburn_acidity',      label: 'Acidity or inflammation' },
+  { id: 'irritability',           label: 'Irritability' },
+  { id: 'skin_rashes',            label: 'Skin flare-ups' },
+  { id: 'weight_gain',            label: 'Weight gain or heaviness' },
+  { id: 'low_energy',             label: 'Low energy or fatigue' },
+  { id: 'congestion',             label: 'Congestion or mucus' },
+  { id: 'brain_fog',              label: 'Brain fog' },
 ]
 
 const GOALS = [
-  { id: 'weight_loss',     label: 'Weight Loss',      icon: '⚖️' },
-  { id: 'muscle_gain',     label: 'Muscle Gain',       icon: '💪' },
-  { id: 'flexibility',     label: 'Flexibility',       icon: '🤸' },
-  { id: 'detox',           label: 'Detox and Cleanse', icon: '🧪' },
-  { id: 'general_wellness',label: 'General Wellness',  icon: '✨' },
-  { id: 'balance',         label: 'Dosha Balance',     icon: '☯️' }
+  { id: 'weight_loss',     label: 'Weight Loss',      Icon: Scale },
+  { id: 'muscle_gain',     label: 'Muscle Gain',       Icon: Dumbbell },
+  { id: 'flexibility',     label: 'Flexibility',       Icon: PersonStanding },
+  { id: 'detox',           label: 'Detox and Cleanse', Icon: FlaskConical },
+  { id: 'general_wellness',label: 'General Wellness',  Icon: Sparkles },
+  { id: 'balance',         label: 'Dosha Balance',     Icon: Orbit }
 ]
 
 const DOSHA_INFO = {
-  vata:  { emoji: '💨', desc: 'Air & Space · Creative, energetic, variable' },
-  pitta: { emoji: '🔥', desc: 'Fire & Water · Sharp, intense, goal-driven' },
-  kapha: { emoji: '🌊', desc: 'Earth & Water · Calm, steady, nurturing' },
-}
-
-function titleCaseSlug(value) {
-  return value.replace(/_/g, ' ')
+  vata:  { Icon: Wind,  desc: 'Air & Space · Creative, energetic, variable' },
+  pitta: { Icon: Flame, desc: 'Fire & Water · Sharp, intense, goal-driven' },
+  kapha: { Icon: Waves, desc: 'Earth & Water · Calm, steady, nurturing' },
 }
 
 const stepVariants = {
@@ -174,6 +185,7 @@ export default function Onboarding() {
 
   const [name, setName]                   = useState('')
   const [gender, setGender]               = useState('')
+  const [pregnancyOrNursing, setPregnancyOrNursing] = useState(false)
   const [age, setAge]                     = useState('')
   const [height, setHeight]               = useState('')
   const [weight, setWeight]               = useState('')
@@ -222,11 +234,14 @@ export default function Onboarding() {
           ? medications.split(',').map(e => e.trim()).filter(Boolean)
           : [],
         goal, dominant_dosha: dosha,
+        pregnancy_or_nursing: gender === 'female' ? pregnancyOrNursing : false,
         fitness_level:  fitnessLevel  || 'beginner',
         activity_level: 'moderate',
         satmya: satmya || undefined,
       })
-      navigate('/dashboard')
+      // Route into the real Prakriti assessment so first plans are built on an
+      // assessed constitution (Vikriti, Agni, dosha %) — not just the quick pick.
+      navigate('/dosha-quiz')
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to save profile. Please try again.')
     } finally {
@@ -361,13 +376,33 @@ export default function Onboarding() {
                           whileTap={{ scale: 0.95 }}
                         >
                           <span className="onb-tile-emoji">
-                            {entry === 'male' ? '♂️' : entry === 'female' ? '♀️' : '⚧️'}
+                            {entry === 'male' ? <Mars size={22} strokeWidth={2} /> : entry === 'female' ? <Venus size={22} strokeWidth={2} /> : <Transgender size={22} strokeWidth={2} />}
                           </span>
                           {entry.charAt(0).toUpperCase() + entry.slice(1)}
                         </motion.button>
                       ))}
                     </div>
                   </div>
+
+                  {gender === 'female' && (
+                    <div className="input-group">
+                      <label>Are you currently pregnant or nursing?</label>
+                      <p className="onb-help">Important for your safety — several therapies, medicines, and poses are adjusted or excluded during this time.</p>
+                      <div className="onb-grid-2">
+                        {[{ v: false, l: 'No', E: Ban }, { v: true, l: 'Yes', E: Baby }].map(opt => (
+                          <motion.button
+                            key={String(opt.v)} type="button"
+                            onClick={() => setPregnancyOrNursing(opt.v)}
+                            className={`onb-tile ${pregnancyOrNursing === opt.v ? 'selected' : ''}`}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <span className="onb-tile-emoji"><opt.E size={22} strokeWidth={2} /></span>
+                            {opt.l}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : null}
 
@@ -398,9 +433,9 @@ export default function Onboarding() {
                     <label>Fitness Level</label>
                     <div className="onb-grid-3" style={{ marginTop: 8 }}>
                       {[
-                        { id: 'beginner',  label: 'Beginner',     emoji: '🌱' },
-                        { id: 'intermediate', label: 'Intermediate', emoji: '💪' },
-                        { id: 'advanced',  label: 'Advanced',     emoji: '⚡' },
+                        { id: 'beginner',  label: 'Beginner',     Icon: Sprout },
+                        { id: 'intermediate', label: 'Intermediate', Icon: Dumbbell },
+                        { id: 'advanced',  label: 'Advanced',     Icon: Zap },
                       ].map(f => (
                         <motion.button
                           key={f.id} type="button"
@@ -408,7 +443,7 @@ export default function Onboarding() {
                           className={`onb-tile ${fitnessLevel === f.id ? 'selected' : ''}`}
                           whileTap={{ scale: 0.95 }}
                         >
-                          <span className="onb-tile-emoji">{f.emoji}</span>
+                          <span className="onb-tile-emoji"><f.Icon size={22} strokeWidth={2} /></span>
                           {f.label}
                         </motion.button>
                       ))}
@@ -462,13 +497,13 @@ export default function Onboarding() {
                   <div>
                     <label>Current Symptoms (optional)</label>
                     <div className="onb-chip-wrap">
-                      {SYMPTOMS.map(sym => (
+                      {SYMPTOMS.map(({ id, label }) => (
                         <button
-                          key={sym} type="button"
-                          onClick={() => toggleItem(symptoms, setSymptoms, sym)}
-                          className={`onb-chip ${symptoms.includes(sym) ? 'selected' : ''}`}
+                          key={id} type="button"
+                          onClick={() => toggleItem(symptoms, setSymptoms, id)}
+                          className={`onb-chip ${symptoms.includes(id) ? 'selected' : ''}`}
                         >
-                          {titleCaseSlug(sym)}
+                          {label}
                         </button>
                       ))}
                     </div>
@@ -512,15 +547,15 @@ export default function Onboarding() {
                           animate={goal === g.id ? { scale: [1, 1.06, 1] } : { scale: 1 }}
                           transition={{ type: 'spring', stiffness: 420, damping: 22 }}
                         >
-                          <span className="onb-tile-emoji">{g.icon}</span>
+                          <span className="onb-tile-emoji"><g.Icon size={22} strokeWidth={2} /></span>
                           {g.label}
                         </motion.button>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <label>Your Dominant Dosha</label>
-                    <p className="onb-help">Hover over a dosha to learn more. Not sure? Pick the one that resonates most.</p>
+                    <label>Your Dominant Dosha — a quick start</label>
+                    <p className="onb-help">Just your best guess for now — right after this, a short Prakriti assessment confirms your true constitution, current imbalance (Vikriti), and Agni.</p>
                     <div className="onb-grid-3" style={{ marginTop: 10 }}>
                       {Object.entries(DOSHA_INFO).map(([key, info]) => (
                         <motion.button
@@ -532,15 +567,15 @@ export default function Onboarding() {
                           animate={dosha === key ? { scale: [1, 1.07, 1] } : { scale: 1 }}
                           transition={{ type: 'spring', stiffness: 420, damping: 22 }}
                         >
-                          <span className="onb-tile-emoji">{info.emoji}</span>
+                          <span className="onb-tile-emoji"><info.Icon size={22} strokeWidth={2} /></span>
                           {key.charAt(0).toUpperCase() + key.slice(1)}
                           <span className="onb-tile-desc">{info.desc}</span>
                         </motion.button>
                       ))}
                     </div>
                   </div>
-                  <p className="onb-help" style={{ fontSize: '0.78rem', marginTop: 4 }}>
-                    🔒 We take your privacy seriously — your health data is encrypted and never sold.
+                  <p className="onb-help" style={{ fontSize: '0.78rem', marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <Lock size={13} strokeWidth={2} /> We take your privacy seriously — your health data is encrypted and never sold.
                   </p>
                 </div>
               ) : null}

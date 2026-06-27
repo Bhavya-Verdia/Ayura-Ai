@@ -18,10 +18,10 @@ async def admin_summary(db: AsyncIOMotorDatabase = Depends(get_mongodb)):
     onboarded = await db.users.count_documents({"onboarding_complete": True})
     plans = await db.plan_history.count_documents({})
     progress_logs = await db.progress_logs.count_documents({}) if "progress_logs" in await db.list_collection_names() else 0
-    
+
     cursor = db.plan_history.find().sort("generated_at", -1).limit(10)
     recent_plans = await cursor.to_list(length=10)
-    
+
     return {
         "counts": {
             "users": users,
@@ -49,7 +49,7 @@ async def admin_summary(db: AsyncIOMotorDatabase = Depends(get_mongodb)):
 async def admin_users(db: AsyncIOMotorDatabase = Depends(get_mongodb)):
     cursor = db.users.find().sort("created_at", -1).limit(100)
     users = await cursor.to_list(length=100)
-    
+
     return [
         {
             "id": str(user["_id"]),
@@ -70,12 +70,12 @@ async def admin_feedback(db: AsyncIOMotorDatabase = Depends(get_mongodb)):
     """Retrieve all submitted user feedback."""
     cursor = db.feedback.find().sort("created_at", -1).limit(200)
     feedbacks = await cursor.to_list(length=200)
-    
+
     # Batch resolve user emails
     user_ids = list(set(f["user_id"] for f in feedbacks))
     users_cursor = db.users.find({"_id": {"$in": user_ids}}, {"email": 1, "name": 1})
     user_map = {str(u["_id"]): u for u in await users_cursor.to_list(length=len(user_ids))}
-    
+
     return [
         {
             "id": str(f["_id"]),

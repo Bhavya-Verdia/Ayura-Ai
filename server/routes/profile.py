@@ -19,7 +19,7 @@ from schemas.user_schema import (
     DoshaValidationRequest,
 )
 from schemas.auth_schema import ChangePasswordRequest
-from services.auth_service import get_current_user_id, get_token_claims, hash_password, verify_password
+from services.auth_service import get_current_user_id, hash_password, verify_password
 from config import settings
 from engine.dosha_analyzer import score_dosha_quiz
 
@@ -67,11 +67,11 @@ async def get_current_user(
         user_id = get_current_user_id(token)
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
-    
+
     user_dict = await db.users.find_one({"_id": user_id})
     if not user_dict:
         raise HTTPException(status_code=404, detail="User not found")
-        
+
     return UserDocument(**user_dict)
 
 
@@ -105,6 +105,15 @@ async def update_profile(
         else:
             update_data["bmi_category"] = "obese"
 
+    # Normalize free-text / aliased medical conditions to the canonical vocabulary
+    # at the write boundary, so every downstream consumer (condition_filter safety
+    # constraints, disease→dosha Vikriti signal, yoga protocol map) receives keys it
+    # can match. Onboarding's free-text "other" field ("high blood pressure", "sugar",
+    # "gerd") otherwise stores slugs that silently miss their safety constraints.
+    if "medical_history" in update_data and update_data["medical_history"]:
+        from engine.condition_vocab import normalize_conditions
+        update_data["medical_history"] = normalize_conditions(update_data["medical_history"])
+
     # Determine dominant dosha if scores provided
     if "dosha_scores" in update_data and update_data["dosha_scores"]:
         scores = update_data["dosha_scores"]
@@ -128,15 +137,15 @@ async def update_profile(
             user.onboarding_complete = True
 
     user.updated_at = datetime.now(timezone.utc)
-    
+
     update_dict = {}
     for key in update_data.keys():
         update_dict[key] = getattr(user, key)
-    
+
     update_dict["updated_at"] = user.updated_at
     if getattr(user, "onboarding_complete", False):
         update_dict["onboarding_complete"] = True
-        
+
     await db.users.update_one(
         {"_id": user.id},
         {"$set": update_dict}
@@ -183,12 +192,12 @@ async def upload_avatar(
 
     # Upload logic (S3/R2 or local fallback)
     filename = f"{user.id}_{uuid_mod.uuid4().hex[:8]}{ext}"
-    
+
     if settings.S3_BUCKET_NAME and settings.AWS_ACCESS_KEY_ID:
         import boto3
         import io
         from botocore.exceptions import ClientError
-        
+
         s3_client = boto3.client(
             "s3",
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
@@ -196,13 +205,13 @@ async def upload_avatar(
             region_name=settings.S3_REGION_NAME,
             endpoint_url=settings.S3_ENDPOINT_URL,
         )
-        
+
         # Delete old avatar from S3 if it exists and is an S3 URL
         if user.avatar_url and settings.S3_BUCKET_NAME in user.avatar_url:
             try:
                 old_key = user.avatar_url.split("/")[-1]
                 s3_client.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=f"avatars/{old_key}")
-            except Exception as e:
+            except Exception:
                 pass # Non-fatal
 
         # Upload new avatar
@@ -214,7 +223,7 @@ async def upload_avatar(
                 object_key,
                 ExtraArgs={"ContentType": file.content_type or "image/jpeg"}
             )
-            
+
             # Construct public URL (assuming public-read or CDN is configured)
             # For R2/S3, typically it's https://<bucket>.s3.<region>.amazonaws.com/<key>
             # Or if custom domain: https://assets.yourdomain.com/<key>
@@ -224,9 +233,9 @@ async def upload_avatar(
             else:
                 region = settings.S3_REGION_NAME or "us-east-1"
                 avatar_url = f"https://{settings.S3_BUCKET_NAME}.s3.{region}.amazonaws.com/{object_key}"
-        except ClientError as e:
+        except ClientError:
             raise HTTPException(status_code=500, detail="Failed to upload image to cloud storage")
-            
+
     else:
         # Fallback: Delete old avatar file if it was a local upload
         if user.avatar_url and user.avatar_url.startswith("/uploads/"):
@@ -269,7 +278,7 @@ async def change_password(
 
     user.password_hash = hash_password(req.new_password)
     user.updated_at = datetime.now(timezone.utc)
-    
+
     await db.users.update_one(
         {"_id": user.id},
         {"$set": {"password_hash": user.password_hash, "updated_at": user.updated_at}}
@@ -308,6 +317,37 @@ async def submit_dosha_quiz(
     user.dosha_confidence = dosha_confidence
     user.updated_at = now
     return user
+
+
+def _compute_manasa_prakriti(manasa_traits: dict) -> dict:
+    """Score Satva/Rajas/Tamas from the 5 Manasa Prakriti quiz answers."""
+    counts = {'satva': 0, 'rajas': 0, 'tamas': 0}
+    for v in manasa_traits.values():
+        if v in counts:
+            counts[v] += 1
+    total = sum(counts.values()) or 1
+    satva_pct = round(counts['satva'] / total * 100)
+    rajas_pct = round(counts['rajas'] / total * 100)
+    tamas_pct = round(counts['tamas'] / total * 100)
+    # ensure sum = 100
+    diff = 100 - (satva_pct + rajas_pct + tamas_pct)
+    if diff:
+        satva_pct += diff
+    dominant = max(counts, key=lambda k: counts[k])
+    label = {'satva': 'Sattvika', 'rajas': 'Rajasika', 'tamas': 'Tamasika'}[dominant]
+    description = {
+        'satva': 'Your mind naturally inclines toward clarity, wisdom, and equanimity — the ideal state for healing.',
+        'rajas': 'Your mind is active, goal-oriented, and passionate — channel this energy purposefully for best results.',
+        'tamas': 'Your mind tends toward heaviness and inertia — the plan includes grounding practices to gently elevate Satva.',
+    }[dominant]
+    return {
+        'satva': satva_pct,
+        'rajas': rajas_pct,
+        'tamas': tamas_pct,
+        'dominant_guna': dominant,
+        'label': label,
+        'description': description,
+    }
 
 
 @router.post("/dosha-assessment", response_model=UserProfileResponse)
@@ -382,8 +422,16 @@ async def submit_dosha_assessment(
         "updated_at": now,
     }
 
+    manasa_prakriti_scores = (
+        _compute_manasa_prakriti(req.manasa_traits)
+        if req.manasa_traits
+        else None
+    )
+
     if user.prakriti_locked:
         update_fields = vikriti_only_update
+        if manasa_prakriti_scores:
+            update_fields["manasa_prakriti"] = manasa_prakriti_scores
     else:
         update_fields = {
             **vikriti_only_update,
@@ -399,6 +447,8 @@ async def submit_dosha_assessment(
             "prakriti_classical_name": result.get("prakriti_classical_name"),
             "prakriti_locked": True,
         }
+        if manasa_prakriti_scores:
+            update_fields["manasa_prakriti"] = manasa_prakriti_scores
 
     for key, value in update_fields.items():
         setattr(user, key, value)
@@ -417,121 +467,20 @@ async def vikriti_checkin(
     user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb),
 ):
-    """Weekly Vikriti update with adaptive blending, prakriti anchoring, and history tracking."""
-    from engine.dosha_analyzer import (
-        _apply_seasonal_correction,
-        _blend_vikriti,
-        _compute_symptom_signal,
-        _confidence_from_checkins,
-        _lifestyle_pulse_signal,
-        _medical_history_vikriti_signal,
-        _symptom_persistence_weights,
-        _vikriti_secondary,
+    """Weekly Vikriti update — adaptive blending, Prakriti anchoring, seasonal/
+    medical/menstrual correction, Kriya Kala staging, confidence growth, Ama
+    refresh, and rolling history. Shared with the /checkin/weekly page."""
+    from services.vikriti_service import compute_vikriti_update
+
+    update, _old = compute_vikriti_update(
+        user,
+        symptoms=req.current_symptoms,
+        sleep=req.sleep_this_week,
+        stress=req.stress_this_week,
+        digestion=req.digestion_this_week,
+        menstrual_phase=req.menstrual_phase,
+        disease_stage_updates=req.disease_stage_updates,
     )
-
-    old_vikriti = user.vikriti_scores or {"vata": 33, "pitta": 33, "kapha": 34}
-    prakriti = user.dosha_scores
-    existing_history: list = user.vikriti_history or []
-
-    meaningful = [s for s in req.current_symptoms if s != "feeling_balanced"]
-    persistence_weights = _symptom_persistence_weights(meaningful, existing_history) if meaningful else None
-    symptom_signal = _compute_symptom_signal(meaningful, persistence_weights) if meaningful else {}
-    lifestyle_signal = _lifestyle_pulse_signal(
-        req.sleep_this_week,
-        req.stress_this_week,
-        req.digestion_this_week,
-    )
-
-    blended = _blend_vikriti(
-        old_vikriti, symptom_signal, len(meaningful), prakriti, lifestyle_signal or None
-    )
-    blended = _apply_seasonal_correction(blended)
-
-    # Medical history — persistent disease channel involvement biases Vikriti (15% slot at check-in)
-    if user.medical_history:
-        _med_sig, _ = _medical_history_vikriti_signal(user.medical_history)
-        if _med_sig:
-            MEDICAL_SLOT = 0.15
-            blended = {
-                d: round((1 - MEDICAL_SLOT) * blended.get(d, 33) + MEDICAL_SLOT * _med_sig.get(d, 33))
-                for d in ["vata", "pitta", "kapha"]
-            }
-            _bmt = sum(blended.values()) or 1
-            blended = {d: round(v / _bmt * 100) for d, v in blended.items()}
-            _bmd = 100 - sum(blended.values())
-            if _bmd != 0:
-                blended[max(blended, key=blended.get)] += _bmd
-
-    # Menstrual phase: Pitta naturally elevates during menstruation (classical artava teaching)
-    if req.menstrual_phase and user.gender == "female":
-        blended["pitta"] = min(68, round(blended.get("pitta", 33) * 1.12))
-        _menses_total = sum(blended.values()) or 1
-        blended = {d: round(v / _menses_total * 100) for d, v in blended.items()}
-        _diff = 100 - sum(blended.values())
-        if _diff != 0:
-            blended[max(blended, key=blended.get)] += _diff
-
-    # Kriya Kala stage update — maps (duration, trajectory) to classical disease stage
-    existing_stages = dict(user.disease_stages or {})
-    if req.disease_stage_updates:
-        _KRIYA_KALA_MAP = {
-            ("months", "worsening"):  "prakopa",
-            ("months", "stable"):     "sanchaya",
-            ("months", "improving"):  "sanchaya",
-            ("1-3y",   "worsening"):  "prasara",
-            ("1-3y",   "stable"):     "sthana",
-            ("1-3y",   "improving"):  "prakopa",
-            ("3-5y",   "worsening"):  "vyakti",
-            ("3-5y",   "stable"):     "sthana",
-            ("3-5y",   "improving"):  "prasara",
-            ("5y+",    "worsening"):  "bheda",
-            ("5y+",    "stable"):     "vyakti",
-            ("5y+",    "improving"):  "sthana",
-        }
-        for cid, stage_data in req.disease_stage_updates.items():
-            duration = stage_data.get("duration", "months")
-            trajectory = stage_data.get("trajectory", "stable")
-            existing_stages[cid] = {
-                "duration": duration,
-                "trajectory": trajectory,
-                "kriya_kala": _KRIYA_KALA_MAP.get((duration, trajectory), "vyakti"),
-            }
-
-    new_checkin_count = (user.checkin_count or 0) + 1
-    new_confidence = _confidence_from_checkins(
-        user.dosha_confidence or 35, new_checkin_count
-    )
-
-    now = datetime.now(timezone.utc)
-    vikriti_dominant = max(blended, key=blended.get)
-    vikriti_sec = _vikriti_secondary(blended)
-
-    # Rolling 12-week history — store symptoms and pulse values for persistence tracking
-    history_entry = {
-        "scores": blended,
-        "dominant": vikriti_dominant,
-        "symptom_count": len(meaningful),
-        "symptoms": meaningful,
-        "pulse": {
-            "sleep": req.sleep_this_week,
-            "stress": req.stress_this_week,
-            "digestion": req.digestion_this_week,
-        },
-        "ts": now.isoformat(),
-    }
-    updated_history = (existing_history + [history_entry])[-12:]
-
-    update = {
-        "vikriti_scores": blended,
-        "vikriti_dominant": vikriti_dominant,
-        "vikriti_secondary": vikriti_sec,
-        "dosha_confidence": new_confidence,
-        "checkin_count": new_checkin_count,
-        "vikriti_history": updated_history,
-        "last_vikriti_checkin": now,
-        "updated_at": now,
-        "disease_stages": existing_stages,
-    }
     await db.users.update_one({"_id": user.id}, {"$set": update})
     for k, v in update.items():
         setattr(user, k, v)

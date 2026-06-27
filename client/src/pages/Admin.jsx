@@ -2,6 +2,7 @@ import { useState, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { adminAPI } from '../api/client'
 import { Helmet } from 'react-helmet-async'
+import { Lock, Rocket, Users, FileText } from 'lucide-react'
 import React from 'react'
 import './Dashboard.css'
 
@@ -55,7 +56,7 @@ export default function Admin() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h1 style={{ margin: 0, fontFamily: "'Syne', sans-serif", fontSize: '1.6rem' }}>🔐 Ayura AI Admin</h1>
+          <h1 style={{ margin: 0, fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', display: 'flex', alignItems: 'center', gap: 10 }}><Lock size={22} strokeWidth={2} /> Ayura AI Admin</h1>
           <div className="input-group">
             <label htmlFor="admin-token">Admin Token</label>
             <input id="admin-token" type="password" value={token} onChange={e => setToken(e.target.value)} placeholder="Enter admin token..." />
@@ -71,7 +72,7 @@ export default function Admin() {
                 <span className="spinner" style={{ width: '18px', height: '18px', borderWidth: '2px' }} />
                 Loading...
               </span>
-            ) : '🚀 Load Dashboard'}
+            ) : <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><Rocket size={16} strokeWidth={2} /> Load Dashboard</span>}
           </motion.button>
           <AnimatePresence>
             {error && (
@@ -117,7 +118,7 @@ export default function Admin() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <h2 style={{ marginTop: 0, fontFamily: "'Syne', sans-serif" }}>👥 Users ({users.length})</h2>
+              <h2 style={{ marginTop: 0, fontFamily: "'Syne', sans-serif", display: 'flex', alignItems: 'center', gap: 8 }}><Users size={18} strokeWidth={2} /> Users ({users.length})</h2>
               <div style={{ display: 'grid', gap: '4px' }}>
                 {users.map((user, i) => (
                   <motion.div
@@ -157,7 +158,7 @@ export default function Admin() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
-              <h2 style={{ marginTop: 0, fontFamily: "'Syne', sans-serif" }}>📝 Feedback Reports ({feedback.length})</h2>
+              <h2 style={{ marginTop: 0, fontFamily: "'Syne', sans-serif", display: 'flex', alignItems: 'center', gap: 8 }}><FileText size={18} strokeWidth={2} /> Feedback Reports ({feedback.length})</h2>
               <div style={{ display: 'grid', gap: '12px' }}>
                 {feedback.map((f, i) => (
                   <motion.div

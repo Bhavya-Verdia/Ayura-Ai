@@ -564,13 +564,30 @@ _DHATU_THERAPY: dict[str, dict] = {
 }
 
 
+def disease_signal(condition: str) -> dict | None:
+    """Look up a condition in the central disease→dosha map, resolving synonyms and
+    classical names via the condition vocabulary — so 'high blood pressure', 'gerd',
+    'vatarakta', 'pandu roga', 'ckd' resolve to their canonical entries instead of
+    being treated as unknown."""
+    if not condition:
+        return None
+    key = condition.lower().strip().replace(" ", "_").replace("-", "_")
+    mapping = _DISEASE_DOSHA_SIGNAL.get(key)
+    if mapping is not None:
+        return mapping
+    from engine.condition_vocab import normalize_condition
+    canon = normalize_condition(condition)
+    if canon and canon != key:
+        return _DISEASE_DOSHA_SIGNAL.get(canon)
+    return None
+
+
 def _dhatu_from_conditions(conditions: list[str]) -> list[dict]:
     """Return unique affected Dhatu entries for a set of medical conditions."""
     seen: set[str] = set()
     result: list[dict] = []
     for cond in conditions:
-        key = cond.lower().strip().replace(" ", "_").replace("-", "_")
-        mapping = _DISEASE_DOSHA_SIGNAL.get(key)
+        mapping = disease_signal(cond)
         if not mapping:
             continue
         dhatu_key = mapping.get("d", "rasa")
@@ -638,8 +655,7 @@ def _medical_history_vikriti_signal(medical_conditions: list[str]) -> tuple[dict
     classical_notes: list[str] = []
 
     for condition in medical_conditions:
-        key = condition.lower().strip().replace(" ", "_").replace("-", "_")
-        mapping = _DISEASE_DOSHA_SIGNAL.get(key)
+        mapping = disease_signal(condition)
         if not mapping:
             continue
         primary = mapping["p"]
@@ -922,6 +938,21 @@ def _rule_based_assessment(
         if diff != 0:
             prakriti[others[0]] += diff
 
+    # Constitution floor: classically everyone carries all three doshas, so never
+    # report an absolute 0% for Prakriti. Raise any trace dosha to 5% and take the
+    # deficit from the dominant. (Vikriti is left alone — a near-zero *imbalance*
+    # in one dosha is a meaningful clinical statement.)
+    _FLOOR = 5
+    _deficit = sum(max(0, _FLOOR - prakriti[d]) for d in prakriti)
+    if _deficit:
+        for d in prakriti:
+            if prakriti[d] < _FLOOR:
+                prakriti[d] = _FLOOR
+        prakriti[max(prakriti, key=prakriti.get)] -= _deficit
+        _fix = 100 - sum(prakriti.values())
+        if _fix != 0:
+            prakriti[max(prakriti, key=prakriti.get)] += _fix
+
     meaningful_count = len([s for s in current_symptoms if s != "feeling_balanced"])
     persistence_weights = _symptom_persistence_weights(current_symptoms, history) if history else None
 
@@ -967,6 +998,17 @@ def _rule_based_assessment(
         "kapha": "Based on your answers, you lean toward a Kapha constitution — naturally stable and resilient. This is an initial estimate that will improve with weekly check-ins.",
     }
 
+    # Deterministic confidence from signal clarity: how many traits were answered
+    # and how cleanly one dosha dominates. Self-report, so we never claim certainty.
+    _answered = len([v for v in physical_traits.values() if v in ("vata", "pitta", "kapha")])
+    _gap = sorted_p[0][1] - sorted_p[1][1]
+    if _answered >= 10 and _gap >= 18:
+        _conf = "high"
+    elif _answered >= 6 and _gap >= 8:
+        _conf = "medium"
+    else:
+        _conf = "low"
+
     return {
         "prakriti": prakriti,
         "vikriti": vikriti,
@@ -974,8 +1016,8 @@ def _rule_based_assessment(
         "prakriti_secondary": prakriti_secondary,
         "vikriti_dominant": vikriti_dominant,
         "constitution_type": constitution_type,
-        "confidence": "low",
-        "confidence_score": 35,
+        "confidence": _conf,
+        "confidence_score": _confidence_score(_conf),
         "explanation": fallback_explanations.get(prakriti_dominant, "Your constitution has been assessed based on your physical traits."),
         "immediate_focus": f"Your plans will be tuned to address your current {vikriti_dominant} imbalance.",
         "key_signals": [
@@ -1014,6 +1056,19 @@ async def assess_dosha_with_llm(
     from ai.llm_client import llm_client
 
     logger = logging.getLogger(__name__)
+
+    # Agni is self-reported in the quiz (Vishama/Tikshna/Manda/Sama) and is a
+    # PRIMARY classical indicator — carry it through deterministically rather than
+    # leaving the LLM to (not) emit it. Downstream engines (diet, routine, PK)
+    # expect the classical names and default to "sama" when missing, which silently
+    # disabled the agni-aware adaptations because result["agni_type"] was never set.
+    _AGNI_CANON = {
+        "sama": "sama",
+        "vata": "vishama", "vishama": "vishama",
+        "pitta": "tikshna", "tikshna": "tikshna",
+        "kapha": "manda", "manda": "manda",
+    }
+    _agni_self = _AGNI_CANON.get(str((physical_traits or {}).get("agni_type", "")).lower())
 
     # Weighted trait summary for LLM prompt — highlight primary indicators
     trait_lines = []
@@ -1061,204 +1116,100 @@ async def assess_dosha_with_llm(
         else:
             medical_section = f"\n\nMedical history (unclassified): {', '.join(_med_conditions)}"
 
-    system_prompt = (
-        "You are an expert Ayurvedic physician (Vaidya) trained in classical Prakriti and Vikriti "
-        "assessment from Charaka Samhita, Sushruta Samhita, and Ashtanga Hridayam. "
-        "You assess Shareera Prakriti (physical constitution) and Manas Prakriti (mental constitution) separately, "
-        "and distinguish these from Vikriti (current imbalance). "
-        "You use the Ashtavidha Pareeksha framework: Nadi, Mala, Mutra, Jihva, Shabda, Sparsha, Drik, Akriti. "
-        "You are familiar with the 7 Prakriti types (Sapta Prakriti) and the 20 Gunas (Vimshatika Guna). "
-        "Body frame, digestion/Agni, and stool pattern [PRIMARY] are most diagnostically reliable. "
-        "Mental traits indicate Manas Prakriti — classify using Sattva/Rajas/Tamas tendency alongside dosha. "
-        "Always reason step-by-step in the <reasoning> block before producing scores."
+    # ── AUTHORITATIVE NUMBERS (deterministic — the engine owns the scores) ──
+    # Prakriti/Vikriti come from a transparent weighted trait tally, so identical
+    # answers always yield an identical, vaidya-auditable constitution. The LLM
+    # below writes ONLY the narrative for these fixed numbers (engine+enricher).
+    result = _rule_based_assessment(
+        physical_traits,
+        current_symptoms,
+        age=(user_profile or {}).get("age"),
+        medical_history=(user_profile or {}).get("medical_history") or [],
+    )
+    result["vikriti"] = _apply_seasonal_correction(result["vikriti"])
+    result["vikriti_dominant"] = max(result["vikriti"], key=result["vikriti"].get)
+    if _agni_self:
+        result["agni_type"] = _agni_self
+
+    _p, _v = result["prakriti"], result["vikriti"]
+    numbers_summary = (
+        f"Prakriti (lifelong constitution): Vata {_p['vata']}%, Pitta {_p['pitta']}%, Kapha {_p['kapha']}% "
+        f"— {result.get('prakriti_classical_name') or result['prakriti_dominant']}.\n"
+        f"Vikriti (current imbalance): Vata {_v['vata']}%, Pitta {_v['pitta']}%, Kapha {_v['kapha']}% "
+        f"— dominant {result['vikriti_dominant']}.\n"
+        f"Agni: {result.get('agni_type') or 'sama'}. Ama: {result.get('ama_indicator') or 'none'}."
     )
 
-    user_prompt = f"""Perform a holistic Ayurvedic constitution assessment following the classical Ashtavidha Pareeksha framework.
+    system_prompt = (
+        "You are an expert Ayurvedic physician (Vaidya) trained in Charaka, Sushruta, and "
+        "Ashtanga Hridayam. The patient's Prakriti and Vikriti have ALREADY been scored from a "
+        "classical weighted Ashtavidha Pareeksha assessment — do NOT recompute or change the "
+        "numbers. Your job is to explain them warmly and accurately, flag any genuine cross-trait "
+        "contradictions, and read the Manas (mental) Prakriti from the behavioural traits. Stay "
+        "consistent with the given scores and address the patient as 'you'."
+    )
 
-SHAREERA PRAKRITI INDICATORS (physical constitution — lifelong, relatively fixed):
+    user_prompt = f"""A patient's Ayurvedic constitution has been scored from the classical Ashtavidha Pareeksha framework:
+
+{numbers_summary}
+
+SHAREERA PRAKRITI INDICATORS (their answers):
 {chr(10).join(trait_lines)}
 
-CURRENT SYMPTOMS / VIKRITI INDICATORS (present imbalances to correct):
+CURRENT SYMPTOMS / VIKRITI INDICATORS:
 {symptom_text}{profile_section}{medical_section}
 
-ASSESSMENT GUIDELINES:
-1. Shareera Prakriti = physical constitution. Mental/behavioral traits = Manas Prakriti. Both contribute to overall Prakriti.
-2. Agni type [PRIMARY INDICATOR] is as diagnostically important as body frame — Vishama=Vata, Tikshna=Pitta, Manda=Kapha, Sama=balanced.
-3. Stool pattern (Mala Pareeksha), eye quality (Drik), voice (Shabda) are Ashtavidha indicators — weight them accordingly.
-4. Manas Prakriti: classify mental tendency as Sattvic/Rajasic/Tamasic with dominant dosha.
-   - Vata mental traits → Rajasic tendency (fear, anxiety, variability)
-   - Pitta mental traits → Rajasic tendency (anger, ambition, competitiveness)
-   - Kapha mental traits → Sattvic tendency (stability, patience, nurturing)
-5. Vikriti must not deviate more than 28 points from any Prakriti value.
-6. Both prakriti and vikriti scores must sum to exactly 100.
-7. If Agni is Sama, do not use it to bias any dosha — it indicates balance.
-8. Classify into one of the 7 classical Prakriti types (Sapta Prakriti).
-9. List the dominant Gunas (from Vimshatika Guna, Charaka Sutrasthana 1.59-61).
-10. Ojas Assessment (Charaka Chikitsa 24): Ojas = essence of all 7 Dhatus formed by perfect Agni + zero Ama. Score 0-100:
-    - High (70-100): Sama Agni, no/mild Ama, no chronic diseases, strong vitality
-    - Medium (40-69): Some Ama or mild disease burden, moderate Agni impairment
-    - Low (0-39): High Ama, multiple chronic diseases, Vishama/Manda/Tikshna Agni, chronic fatigue, anxiety, poor immunity
-
-First reason through the evidence:
-<reasoning>
-- What do PRIMARY indicators (body frame, Agni/digestion, stool pattern) suggest?
-- What do mental/behavioral traits suggest for Manas Prakriti type and Guna tendency?
-- What Ashtavidha signals (eye, voice) confirm or refine this?
-- Do symptoms show Vikriti divergence from Prakriti?
-- Which of the 7 Prakriti types does this person belong to?
-- Are there contradictions? What Guna language best describes this person?
-</reasoning>
-
-Then respond with valid JSON only (no markdown, no ```):
+Write ONLY the narrative for these already-fixed scores — do not output any numbers. Respond with valid JSON only (no markdown, no ```):
 {{
-  "prakriti": {{"vata": <integer 0-100>, "pitta": <integer 0-100>, "kapha": <integer 0-100>}},
-  "vikriti": {{"vata": <integer 0-100>, "pitta": <integer 0-100>, "kapha": <integer 0-100>}},
-  "prakriti_dominant": "<vata|pitta|kapha>",
-  "prakriti_secondary": "<vata|pitta|kapha>",
-  "vikriti_dominant": "<vata|pitta|kapha>",
-  "constitution_type": "<one of: vata, pitta, kapha, vata_pitta, pitta_kapha, kapha_vata, pitta_vata, kapha_pitta, vata_kapha, tridoshic>",
-  "prakriti_classical_type": "<same format as constitution_type>",
-  "confidence": "<low|medium|high>",
-  "explanation": "<2-3 sentences explaining this person's constitution and current state in plain English, speaking directly to them using 'you'. Include the Guna character.>",
-  "immediate_focus": "<1 sentence on what their wellness plans should prioritize RIGHT NOW>",
-  "key_signals": ["<top signal 1>", "<signal 2>", "<signal 3>"],
-  "contradictions": ["<describe any significant conflict, or leave empty array>"],
-  "primary_gunas": ["<e.g. Ruksha (dry)>", "<Laghu (light)>", "<Chala (mobile)>"],
-  "manas_prakriti": "<e.g. Rajasic Vata-Pitta Manas — quick-thinking but prone to anxiety and sharp reactions>",
-  "ama_indicator": "<none|mild|moderate|high — estimate of Ama based on digestive symptoms and Agni type>",
-  "ojas": {{"score": <integer 0-100>, "level": "<high|medium|low>", "label": "<descriptive label>", "description": "<1 sentence>", "recommendation": "<1 sentence Rasayana recommendation>"}}
+  "explanation": "<2-3 sentences, plain English, addressing them as 'you'. Describe their {result['prakriti_dominant']}-dominant constitution and current {result['vikriti_dominant']} state, including the Guna character.>",
+  "key_signals": ["<top diagnostic signal>", "<signal 2>", "<signal 3>"],
+  "contradictions": ["<a genuine conflict between traits, e.g. 'Kapha frame but sharp Pitta digestion', or leave the array empty>"],
+  "manas_prakriti": "<e.g. Rajasic Vata-Pitta Manas — quick-thinking but prone to anxiety and sharp reactions>"
 }}"""
 
     try:
         response_text = await llm_client.generate(
             prompt=user_prompt,
             system_prompt=system_prompt,
-            max_tokens=1200,
-            temperature=0.1,
+            max_tokens=700,
+            temperature=0.3,
             json_mode=False,
         )
-
-        # Strip chain-of-thought reasoning block before extracting JSON
+        # Extract the JSON object (tolerate markdown fences / stray prose)
         text = response_text.strip()
-        if "<reasoning>" in text and "</reasoning>" in text:
-            text = text[text.index("</reasoning>") + len("</reasoning>"):].strip()
-        # Strip markdown fences if present
         if text.startswith("```"):
             text = text.split("```")[1]
             if text.startswith("json"):
                 text = text[4:]
             text = text.strip()
-        # Find the JSON object boundaries
         start = text.find("{")
         end = text.rfind("}") + 1
         if start != -1 and end > start:
             text = text[start:end]
+        narrative = json.loads(text)
 
-        result = json.loads(text)
-
-        if "error" in result:
-            raise ValueError(f"LLM provider error: {result['error']}")
-
-        # Normalise scores to sum to 100
-        for key in ("prakriti", "vikriti"):
-            scores = result[key]
-            total = sum(scores.values())
-            if total > 0 and total != 100:
-                factor = 100 / total
-                corrected = {d: round(v * factor) for d, v in scores.items()}
-                diff = 100 - sum(corrected.values())
-                dominant = max(corrected, key=corrected.get)
-                corrected[dominant] += diff
-                result[key] = corrected
-
-        result["confidence_score"] = _confidence_score(result.get("confidence", "low"))
-
-        # Cap dominant dosha by confidence tier
-        _max_dominant = {"high": 70, "medium": 60, "low": 50}
-        confidence = result.get("confidence", "low")
-        cap = _max_dominant.get(confidence, 50)
-        for key in ("prakriti", "vikriti"):
-            scores = result[key]
-            dominant = max(scores, key=scores.get)
-            if scores[dominant] > cap:
-                excess = scores[dominant] - cap
-                scores[dominant] = cap
-                others = [d for d in scores if d != dominant]
-                other_total = sum(scores[d] for d in others) or 1
-                for d in others:
-                    scores[d] += round(excess * scores[d] / other_total)
-                diff = 100 - sum(scores.values())
-                if diff != 0:
-                    sec = sorted(others, key=lambda d: scores[d], reverse=True)[0]
-                    scores[sec] += diff
-                result[key] = scores
-
-        # Enforce prakriti anchoring on vikriti even for LLM output
-        result["vikriti"] = _anchor_to_prakriti(result["vikriti"], result["prakriti"])
-
-        if result.get("confidence") == "low":
-            existing = result.get("explanation", "")
-            if existing and not existing.endswith("check-ins."):
-                result["explanation"] = (
-                    existing.rstrip(".") +
-                    ". Your signals are balanced, so this is an initial estimate — "
-                    "it will refine automatically with each weekly check-in."
-                )
-            result["immediate_focus"] = (
-                (result.get("immediate_focus") or "") +
-                " (Low confidence — complete more check-ins for a refined reading.)"
-            ).strip()
-
-        result["vikriti"] = _apply_seasonal_correction(result["vikriti"])
-        result["vikriti_dominant"] = max(result["vikriti"], key=result["vikriti"].get)
-
-        # 7-type classical Prakriti classification
-        prakriti_7type = _classify_prakriti_7_types(result["prakriti"])
-        if not result.get("prakriti_classical_type"):
-            result["prakriti_classical_type"] = prakriti_7type["prakriti_classical_type"]
-        result["prakriti_classical_name"] = prakriti_7type["prakriti_classical_name"]
-
-        # Guna profile — use LLM output or compute from dominant
-        if not result.get("primary_gunas"):
-            result["primary_gunas"] = _get_primary_gunas(
-                result.get("prakriti_dominant", "vata"),
-                result.get("prakriti_secondary"),
-            )
-
-        # Ama indicator — use LLM estimate or compute from symptoms
-        if not result.get("ama_indicator"):
-            result["ama_indicator"] = _compute_ama_score(current_symptoms or [])
-
-        # Ojas — use LLM estimate or compute from rule-based formula
-        if not result.get("ojas") or not isinstance(result.get("ojas"), dict):
-            result["ojas"] = _compute_ojas_score(
-                ama_score=result["ama_indicator"],
-                disease_count=len((user_profile or {}).get("medical_history") or []),
-                agni_type=(physical_traits or {}).get("agni_type"),
-            )
-
-        # Ensure contradictions field is always present and clean
-        if "contradictions" not in result:
-            result["contradictions"] = []
-        result["contradictions"] = [c for c in result["contradictions"] if c and c.strip()]
-
-        return result
-
+        # Overlay ONLY narrative fields — numbers stay deterministic
+        if isinstance(narrative, dict) and "error" not in narrative:
+            if narrative.get("explanation"):
+                result["explanation"] = narrative["explanation"]
+            if narrative.get("key_signals"):
+                result["key_signals"] = narrative["key_signals"]
+            if narrative.get("manas_prakriti"):
+                result["manas_prakriti"] = narrative["manas_prakriti"]
+            _contra = narrative.get("contradictions")
+            if isinstance(_contra, list):
+                result["contradictions"] = [c for c in _contra if c and str(c).strip()]
     except Exception as exc:
-        logger.warning("LLM dosha assessment failed (%s), using rule-based fallback.", exc)
-        fallback = _rule_based_assessment(
-            physical_traits, current_symptoms,
-            medical_history=(user_profile or {}).get("medical_history") or [],
-        )
-        fallback["vikriti"] = _apply_seasonal_correction(fallback["vikriti"])
-        fallback["vikriti_dominant"] = max(fallback["vikriti"], key=fallback["vikriti"].get)
-        if "contradictions" not in fallback:
-            fallback["contradictions"] = []
-        if "primary_gunas" not in fallback:
-            fallback["primary_gunas"] = _get_primary_gunas(fallback.get("prakriti_dominant", "vata"))
-        if "ama_indicator" not in fallback:
-            fallback["ama_indicator"] = _compute_ama_score(current_symptoms or [])
-        return fallback
+        logger.warning("LLM dosha narrative enrichment failed (%s); using deterministic narrative.", exc)
+
+    # Low-confidence reads get a gentle hedge (refines with weekly check-ins)
+    if result.get("confidence") == "low":
+        result["immediate_focus"] = (
+            (result.get("immediate_focus") or "").rstrip(". ") +
+            ". (Low confidence — a few weekly check-ins will refine this reading.)"
+        ).strip()
+
+    return result
 
 
 def score_dosha_quiz(answers: dict) -> dict:

@@ -6,7 +6,10 @@ Run from the server/ directory:
     python scripts/generate_new_poses.py
 """
 
-import asyncio, json, re, sys
+import asyncio
+import json
+import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
