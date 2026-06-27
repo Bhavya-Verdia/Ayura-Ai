@@ -12,6 +12,17 @@ import { get, set, del } from 'idb-keyval'
 import './index.css'
 import './i18n'
 
+// Silence non-error console output in production so internal logs don't leak to
+// the browser console. console.error is kept (Sentry captures it; it aids triage).
+// Done at runtime because Vite 8 / rolldown doesn't expose a build-time console drop.
+if (import.meta.env.PROD) {
+  const noop = () => {}
+  console.log = noop
+  console.debug = noop
+  console.info = noop
+  console.warn = noop
+}
+
 // Lazy-load Sentry ONLY when a real DSN is configured. A top-level static import
 // would pull the whole SDK (~100KB+) into the entry chunk and block first paint
 // even for users with no Sentry. The dynamic import makes it a separate async

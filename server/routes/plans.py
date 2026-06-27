@@ -13,6 +13,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from fastapi import BackgroundTasks
 
 from database.mongodb import get_mongodb
+from core.logger import logger
 from schemas.user_schema import UserDocument, PlanHistoryDocument
 from schemas.plan_schema import PlanGenerationRequest, PlanRatingRequest, PlanResponse
 from routes.profile import get_current_user
@@ -722,7 +723,8 @@ async def get_seasonal_guidance(user: UserDocument = Depends(get_current_user)):
     try:
         return await build_seasonal_guidance(dosha)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate seasonal guidance: {str(e)}")
+        logger.error("Failed to generate seasonal guidance: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to generate seasonal guidance. Please try again.")
 
 
 @router.get("/meditation")
@@ -774,7 +776,8 @@ async def get_guided_meditation(
     except json.JSONDecodeError:
         raise HTTPException(status_code=500, detail="Meditation script could not be parsed. Please try again.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate meditation script: {str(e)}")
+        logger.error("Failed to generate meditation script: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to generate meditation script. Please try again.")
 
 
 @router.post("/interaction-check")

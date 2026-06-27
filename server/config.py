@@ -77,6 +77,23 @@ class Settings(BaseSettings):
                     "SMS_OTP_MOCK must be false in production. Configure a real SMS provider "
                     "or disable phone OTP login."
                 )
+            if self.DEBUG:
+                raise RuntimeError(
+                    "DEBUG must be false in production. It leaks internal error details "
+                    "in 500 responses. Set DEBUG=false (or APP_ENV-aligned 'release')."
+                )
+            if not self.TRUSTED_HOSTS:
+                raise RuntimeError(
+                    "TRUSTED_HOSTS must be set in production (comma-separated host list) "
+                    "to enable Host-header validation. Without it all hosts are accepted, "
+                    "enabling cache-poisoning / reset-link-poisoning attacks."
+                )
+            if self.RATE_LIMIT_ENABLED and not self.REDIS_URL:
+                raise RuntimeError(
+                    "REDIS_URL must be set in production when RATE_LIMIT_ENABLED is true. "
+                    "Without Redis, rate-limit counters are per-worker and the effective "
+                    "limit is multiplied by the worker count."
+                )
 
     # --- MongoDB ---
     MONGO_URL: Optional[str] = None

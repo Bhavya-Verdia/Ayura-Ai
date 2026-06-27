@@ -64,7 +64,8 @@ async def delete_account(
     """Permanently delete all user data (GDPR Article 17 - Right to Erasure)."""
     user_id = user.id
 
-    # Delete all user-related data
+    # Delete all user-related data. (audit_log is intentionally retained for
+    # compliance — it is pseudonymous event metadata, not user content.)
     await db.users.delete_one({"_id": user_id})
     await db.plan_history.delete_many({"user_id": user_id})
     await db.chat_messages.delete_many({"user_id": user_id})
@@ -74,7 +75,13 @@ async def delete_account(
     await db.reminders.delete_many({"user_id": user_id})
     await db.notifications.delete_many({"user_id": user_id})
     await db.community_posts.delete_many({"user_id": user_id})
+    await db.community_comments.delete_many({"user_id": user_id})
     await db.timeline.delete_many({"user_id": user_id})
     await db.refresh_tokens.delete_many({"user_id": user_id})
+    await db.user_preferences.delete_many({"user_id": user_id})
+    await db.plan_jobs.delete_many({"user_id": user_id})
+    # OTP records are keyed by phone number, not user_id
+    if getattr(user, "phone_number", None):
+        await db.otps.delete_many({"phone_number": user.phone_number})
 
     return {"message": "Your account and all associated data have been permanently deleted."}

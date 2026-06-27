@@ -26,6 +26,7 @@ def mock_db():
         "auth_provider": "local",
         "is_active": True,
         "is_admin": False,
+        "is_verified": True,
         "created_at": datetime.now(timezone.utc),
         "updated_at": datetime.now(timezone.utc)
     }

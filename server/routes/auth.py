@@ -114,12 +114,33 @@ async def _issue_tokens(user: UserDocument, response: Response, db: AsyncIOMotor
     )
 
 
-@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(req: RegisterRequest, background_tasks: BackgroundTasks, response: Response, db: AsyncIOMotorDatabase = Depends(get_mongodb)):
-    """Register a new user with email/password."""
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+async def register(req: RegisterRequest, background_tasks: BackgroundTasks, db: AsyncIOMotorDatabase = Depends(get_mongodb)):
+    """Register a new user with email/password.
+
+    To prevent account enumeration, the response is identical whether or not the
+    email is already registered. No session is issued here — the user must verify
+    their email (POST /verify-email) and then log in (POST /login).
+    """
+    # Identical payload for both the new-account and already-exists paths.
+    generic_response = {
+        "message": "Account created. Check your email for a verification link to activate your account.",
+        "requires_verification": True,
+    }
+
     existing_user = await db.users.find_one({"email": req.email})
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        # Don't reveal that the email exists. If it's an unverified local account,
+        # resend the verification link so a legitimate re-attempt still works.
+        try:
+            existing = UserDocument(**existing_user)
+            if existing.auth_provider == "local" and not existing.is_verified:
+                token = create_verification_token(existing.email)
+                background_tasks.add_task(send_verification_email, existing.email, token)
+        except Exception:
+            pass
+        logger.info("Registration attempt for an existing email (generic response returned)")
+        return generic_response
 
     now = datetime.now(timezone.utc)
     user = UserDocument(
@@ -141,7 +162,7 @@ async def register(req: RegisterRequest, background_tasks: BackgroundTasks, resp
     background_tasks.add_task(send_verification_email, user.email, token)
     logger.info(f"Verification email scheduled for {user.email}")
 
-    return await _issue_tokens(user, response, db)
+    return generic_response
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -156,6 +177,15 @@ async def login(req: LoginRequest, response: Response, db: AsyncIOMotorDatabase 
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     user = UserDocument(**user_dict)
+
+    # Email-verification gate for password accounts. OAuth/phone users are
+    # implicitly verified by their provider, so this only applies to "local".
+    if user.auth_provider == "local" and not user.is_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="Please verify your email before logging in. Check your inbox for the verification link.",
+        )
+
     return await _issue_tokens(user, response, db)
 
 

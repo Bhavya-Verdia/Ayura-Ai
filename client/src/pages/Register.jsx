@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../providers/AuthContext'
 import { Helmet } from 'react-helmet-async'
 import { Dna, Leaf, MessageCircle } from 'lucide-react'
@@ -36,12 +36,14 @@ export default function Register() {
   const [consentGiven,  setConsentGiven]  = useState(false)
   const [error,         setError]         = useState('')
   const [loading,       setLoading]       = useState(false)
+  const [submitted,     setSubmitted]     = useState(false)
   const { register } = useAuth()
-  const navigate = useNavigate()
 
   async function handleEmailSubmit(e) {
     e.preventDefault(); setError(''); setLoading(true)
-    try { await register(name, email, password, consentGiven); navigate('/dashboard') }
+    // Registration no longer logs the user in — it sends a verification email.
+    // Show a "check your inbox" confirmation instead of navigating to the app.
+    try { await register(name, email, password, consentGiven); setSubmitted(true) }
     catch (err) {
       let msg = err.response?.data?.detail
       if (Array.isArray(msg)) msg = msg.map(m => m.msg).join(', ')
@@ -90,10 +92,22 @@ export default function Register() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="auth-form-header">
-            <h1 className="auth-form-title">Create account</h1>
-            <p className="auth-form-subtitle">Start your adaptive wellness journey with Ayura AI.</p>
+            <h1 className="auth-form-title">{submitted ? 'Check your inbox' : 'Create account'}</h1>
+            <p className="auth-form-subtitle">
+              {submitted
+                ? `We sent a verification link to ${email}. Click it to activate your account, then sign in.`
+                : 'Start your adaptive wellness journey with Ayura AI.'}
+            </p>
           </div>
 
+          {submitted ? (
+            <div className="auth-bottom-links" style={{ marginTop: '8px' }}>
+              <p className="auth-bottom-link-text">
+                Already verified? <Link to="/login" className="auth-link">Sign in</Link>
+              </p>
+            </div>
+          ) : (
+          <>
           {/* Social OAuth */}
           {(GOOGLE_ENABLED || GITHUB_ENABLED) && (
             <div className="auth-social-row">
@@ -195,6 +209,8 @@ export default function Register() {
               Already have an account? <Link to="/login" className="auth-link">Sign in</Link>
             </p>
           </div>
+          </>
+          )}
         </motion.div>
       </div>
     </div>
