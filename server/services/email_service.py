@@ -27,11 +27,17 @@ def _send_email_sync(to_email: str, subject: str, html_body: str):
     msg.attach(part)
 
     try:
-        with smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT) as server:
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.sendmail(settings.FROM_EMAIL, to_email, msg.as_string())
-            logger.info(f"[OK] Email sent to {to_email}")
+        port = settings.SMTP_PORT
+        if port == 465:
+            with smtplib.SMTP_SSL(settings.SMTP_SERVER, port) as server:
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.sendmail(settings.FROM_EMAIL, to_email, msg.as_string())
+        else:
+            with smtplib.SMTP(settings.SMTP_SERVER, port) as server:
+                server.starttls()
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.sendmail(settings.FROM_EMAIL, to_email, msg.as_string())
+        logger.info(f"[OK] Email sent to {to_email}")
     except Exception as e:
         logger.error(f" Failed to send email to {to_email}: {e}")
 
