@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../providers/AuthContext';
 import LoadingScreen from '../components/LoadingScreen';
@@ -8,8 +8,15 @@ function GithubCallback() {
   const navigate = useNavigate();
   const location = useLocation();
   const { loginWithGithub } = useAuth();
+  // OAuth code + state are single-use; loginWithGithub isn't memoized so a
+  // successful exchange re-fires this effect with the consumed code, which then
+  // 400s on CSRF. Guard so we exchange exactly once.
+  const exchangedRef = useRef(false);
 
   useEffect(() => {
+    if (exchangedRef.current) return;
+    exchangedRef.current = true;
+
     const processGithubAuth = async () => {
       const searchParams = new URLSearchParams(location.search);
       const code = searchParams.get('code');
