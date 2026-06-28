@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { useTheme } from '../providers/ThemeProvider'
+import useLowPowerMode from '../hooks/useLowPowerMode'
 
 function VitalPaths({ side = 1 }) {
   const prefersReducedMotion = useReducedMotion()
@@ -142,6 +143,15 @@ function AuroraBlobs({ theme }) {
 
 export default function VitalBackground({ density = 'normal' }) {
   const { theme } = useTheme()
+  const lowPower = useLowPowerMode()
+
+  // Mobile / touch / reduced-motion: render only the cheap static CSS gradient
+  // base. The animated layers below (27 motion paths, a rotating blur(28px)
+  // conic field, 3 blur(90px) aurora blobs) saturate mobile GPUs and hang the
+  // page, and framer-motion keeps animating them even when off-screen.
+  if (lowPower) {
+    return <div className={`vital-bg vital-bg-${theme} vital-bg-${density}`} aria-hidden="true" />
+  }
 
   return (
     <div className={`vital-bg vital-bg-${theme} vital-bg-${density}`} aria-hidden="true">

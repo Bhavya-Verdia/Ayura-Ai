@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { useTheme } from '../providers/ThemeProvider'
+import useLowPowerMode from '../hooks/useLowPowerMode'
 
 function seededRandom(seed) {
   const value = Math.sin(seed * 12.9898) * 43758.5453
@@ -17,7 +18,10 @@ export default function ParticleField({
 }) {
   const { theme } = useTheme()
   const prefersReducedMotion = useReducedMotion()
-  const particleCount = Math.min(count, 160)
+  const lowPower = useLowPowerMode()
+  // Mobile/touch: a fraction of the particles and no blurred mix-blend orbs —
+  // 127 animated nodes with box-shadows + blur(34px) orbs hang mobile GPUs.
+  const particleCount = lowPower ? Math.min(count, 22) : Math.min(count, 160)
 
   const particles = useMemo(() => {
     return Array.from({ length: particleCount }, (_, index) => {
@@ -39,6 +43,7 @@ export default function ParticleField({
   }, [color1, color2, particleCount, spread, theme])
 
   const orbs = useMemo(() => {
+    if (lowPower) return []
     return Array.from({ length: 7 }, (_, index) => ({
       id: index,
       x: seededRandom(index + 901) * 100,
@@ -48,7 +53,7 @@ export default function ParticleField({
       delay: seededRandom(index + 1301) * -18,
       color: seededRandom(index + 1401) > 0.5 ? color1 : color2,
     }))
-  }, [color1, color2])
+  }, [color1, color2, lowPower])
 
   return (
     <div
