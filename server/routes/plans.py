@@ -646,6 +646,14 @@ async def get_latest_plan(user: UserDocument = Depends(get_current_user), db: As
         raise HTTPException(status_code=404, detail="No plans generated yet")
     plan = plans[0]
     plan_data = {**plan["plan_data"], "id": plan["_id"]}
+    # Per-feature plans (saved by the synchronous /plans/{feature} endpoints) store
+    # only their feature payload under plan_data — they lack the holistic-shaped
+    # required fields (user_summary, generation_method). Those live on the history
+    # doc itself, so backfill them here; otherwise PlanResponse 500s whenever the
+    # newest plan happens to be a per-feature one.
+    plan_data.setdefault("user_summary", {})
+    plan_data.setdefault("generation_method", plan.get("generation_method", "rule_based"))
+    plan_data.setdefault("generated_at", plan.get("generated_at"))
     return PlanResponse(**plan_data)
 
 

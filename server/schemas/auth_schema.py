@@ -55,7 +55,10 @@ class TokenResponse(BaseModel):
 
 
 class RefreshRequest(BaseModel):
-    refresh_token: str
+    # Optional: the refresh token is normally read from the HTTP-only cookie.
+    # Requiring it here made the frontend's cookie-based `POST /auth/refresh {}`
+    # fail validation with 422 instead of falling through to the cookie.
+    refresh_token: str | None = None
 
 
 class ForgotPasswordRequest(BaseModel):
