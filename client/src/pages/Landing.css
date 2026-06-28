@@ -150,10 +150,6 @@
 }
 .lnd-hero-title em {
   font-style: normal;
-  background: linear-gradient(135deg, var(--ayura-teal), var(--ayura-violet));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .lnd-hero-subtitle {
@@ -365,7 +361,14 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  flex: 1;
+}
+
+/* Insight caption — gives the tall tile substance instead of empty space */
+.lnd-bento-dosha-note {
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--ayura-muted);
+  margin-top: 10px;
 }
 .lnd-bento-dosha-row {
   display: flex;
@@ -1018,6 +1021,71 @@
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes lnd-shimmer {
+  0%   { background-position: -300% center; }
+  100% { background-position:  300% center; }
+}
+@keyframes lnd-dot-ping {
+  0%   { transform: scale(1);   box-shadow: 0 0 0 0   rgba(45,212,191,0.55); }
+  60%  { transform: scale(1.35); box-shadow: 0 0 0 8px rgba(45,212,191,0);  }
+  100% { transform: scale(1);   box-shadow: 0 0 0 0   rgba(45,212,191,0);  }
+}
+@keyframes lnd-border-spin {
+  to { --angle: 360deg; }
+}
+@keyframes lnd-ring-expand {
+  0%   { transform: scale(0.85); opacity: 0.55; }
+  100% { transform: scale(1.55); opacity: 0;    }
+}
+
+/* ─── SHIMMER HERO TITLE ───────────────────────────────────── */
+.shimmer-text {
+  font-style: normal;
+  background: linear-gradient(
+    90deg,
+    var(--ayura-teal)   0%,
+    var(--ayura-violet) 30%,
+    var(--ayura-amber)  55%,
+    var(--ayura-teal)   80%,
+    var(--ayura-violet) 100%
+  );
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: lnd-shimmer 4s linear infinite;
+}
+
+/* ─── KICKER DOT PING ──────────────────────────────────────── */
+.lnd-hero-kicker-dot {
+  animation: lnd-dot-ping 2.4s ease-in-out infinite !important;
+}
+
+/* ─── ANIMATED CTA BORDER ──────────────────────────────────── */
+.lnd-cta-main::before {
+  animation: lnd-border-spin 3s linear infinite;
+  opacity: 0.55;
+}
+.lnd-cta-main:hover::before { opacity: 1; }
+
+/* ─── HERO ECHO RINGS (behind hero copy) ───────────────────── */
+.lnd-hero-echo {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 380px; height: 380px;
+  margin: -190px 0 0 -190px;
+  pointer-events: none;
+  z-index: 0;
+}
+.lnd-hero-echo-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(45,212,191,0.18);
+  animation: lnd-ring-expand 4s ease-out infinite;
+}
+.lnd-hero-echo-ring:nth-child(2) { animation-delay: 1.3s; border-color: rgba(167,139,250,0.14); }
+.lnd-hero-echo-ring:nth-child(3) { animation-delay: 2.6s; border-color: rgba(251,146,60,0.10); }
 
 /* ─── RESPONSIVE ──────────────────────────────────────────── */
 @media (max-width: 1024px) {

@@ -67,6 +67,17 @@
   font-size: 0.9rem;
 }
 .ic-add-row input:focus { outline: none; border-color: var(--ayura-teal); }
+/* Add buttons — give the inline affordance a clear, on-brand surface */
+.ic-add-row .btn {
+  flex-shrink: 0;
+  background: rgba(45,212,191,0.12);
+  border: 1px solid rgba(45,212,191,0.32);
+  color: var(--ayura-teal);
+}
+.ic-add-row .btn:hover {
+  background: rgba(45,212,191,0.2);
+  border-color: rgba(45,212,191,0.5);
+}
 
 .ic-check-btn { width: 100%; margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .ic-need-herb { text-align: center; color: var(--text-muted); font-size: 0.8rem; margin: 8px 0 0; }

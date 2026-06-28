@@ -87,6 +87,30 @@
   gap: 16px;
 }
 
+/* ── Form fields (were unstyled → default white boxes) ── */
+.prg-log-form .input-group { display: flex; flex-direction: column; gap: 7px; }
+.prg-log-form label {
+  font-size: 0.82rem; font-weight: 600; font-family: var(--font-ui);
+  color: var(--text-secondary); letter-spacing: 0.01em;
+}
+.prg-log-form input,
+.prg-log-form textarea {
+  width: 100%; box-sizing: border-box;
+  background: var(--bg-input); border: 1px solid var(--border-light);
+  border-radius: 11px; padding: 11px 14px;
+  color: var(--text-primary); font-family: inherit; font-size: 0.92rem;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.prg-log-form textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+.prg-log-form input::placeholder,
+.prg-log-form textarea::placeholder { color: var(--text-secondary); opacity: 0.7; }
+.prg-log-form input:focus,
+.prg-log-form textarea:focus {
+  outline: none; border-color: var(--ayura-teal);
+  box-shadow: 0 0 0 3px rgba(45,212,191,0.12);
+  background: rgba(45,212,191,0.03);
+}
+
 .prg-mood-chips {
   display: flex;
   gap: 8px;

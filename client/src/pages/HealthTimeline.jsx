@@ -446,8 +446,10 @@ export default function HealthTimeline() {
   const hasMore = hasNextPage
   const loadingMore = isFetchingNextPage
 
-  const error = queryError?.response?.status !== 404 && queryError?.code !== 'ERR_NETWORK' 
-    ? 'Could not load your health timeline. Please try again.' 
+  const error = queryError
+    && queryError?.response?.status !== 404
+    && queryError?.code !== 'ERR_NETWORK'
+    ? 'Could not load your health timeline. Please try again.'
     : null
 
   const handleLoadMore = () => fetchNextPage()

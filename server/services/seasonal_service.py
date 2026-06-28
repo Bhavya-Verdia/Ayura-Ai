@@ -10,6 +10,8 @@ from datetime import date
 
 from ai.llm_client import llm_client
 from ai.rag_pipeline import rag_pipeline
+from core.logger import logger
+from database.chromadb_client import is_chromadb_available
 from engine.seasonal import get_current_season
 from services.weather_service import fetch_weather
 
@@ -68,8 +70,13 @@ async def build_seasonal_guidance(
         f"Ritucharya {season_info.name} {season_info.english_name} "
         f"diet lifestyle avoid guidance for {user_dosha} dosha"
     )
-    docs = await rag_pipeline.query(query, "ayurveda", n_results=3, dosha_filter=user_dosha)
-    context = rag_pipeline.format_context(docs, max_chars=1800)
+    context = ""
+    try:
+        if is_chromadb_available():
+            docs = await rag_pipeline.query(query, "ayurveda", n_results=3, dosha_filter=user_dosha)
+            context = rag_pipeline.format_context(docs, max_chars=1800)
+    except Exception as rag_err:
+        logger.warning("RAG query failed for seasonal guidance (using fallback): %s", rag_err)
 
     fallback = _fallback_recommendations(
         user_dosha=user_dosha,

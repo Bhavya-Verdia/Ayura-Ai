@@ -1,6 +1,6 @@
 .vci-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: var(--card-bg);
+  border: 1px solid var(--dash-edge);
   border-radius: 18px;
   padding: 1.2rem 1.4rem;
   display: flex;
@@ -68,8 +68,8 @@
   gap: 0.35rem;
   padding: 0.38rem 0.75rem;
   border-radius: 99px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--dash-edge);
+  background: var(--card-bg);
   color: var(--text-secondary);
   font-size: 0.82rem;
   cursor: pointer;
@@ -77,7 +77,7 @@
   white-space: nowrap;
 }
 .vci-chip:hover {
-  border-color: rgba(255, 255, 255, 0.22);
+  border-color: var(--border-medium);
   color: var(--text-primary);
 }
 .vci-chip.selected {
@@ -135,8 +135,8 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--dash-edge);
+  background: var(--card-bg);
   font-family: var(--font-display);
   font-size: 0.95rem;
   font-weight: 700;
@@ -148,7 +148,7 @@
   justify-content: center;
 }
 .vci-pulse-btn:hover {
-  background: rgba(255,255,255,0.1);
+  background: var(--card-bg);
   transform: scale(1.08);
 }
 .vci-pulse-btn.selected {
@@ -169,8 +169,8 @@
   font-size: 0.8rem;
   padding: 5px 12px;
   border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--dash-edge);
+  background: var(--card-bg);
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s;
@@ -182,17 +182,17 @@
 }
 .vci-menstrual-hint {
   font-size: 0.72rem;
-  color: rgba(255,255,255,0.35);
+  color: var(--text-muted);
 }
 
 /* ── Disease staging section ── */
-.vci-disease-stage-section { margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.09); padding-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+.vci-disease-stage-section { margin-top: 24px; border-top: 1px solid var(--dash-edge); padding-top: 20px; display: flex; flex-direction: column; gap: 10px; }
 .vci-section-title { font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin: 0 0 2px; }
 .vci-stage-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .vci-stage-label { font-size: 0.82rem; color: var(--text-secondary); font-weight: 500; flex: 1; min-width: 130px; }
 .vci-stage-selects { display: flex; gap: 6px; }
 .vci-stage-select {
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  background: var(--card-bg); border: 1px solid var(--dash-edge);
   color: var(--text-primary); border-radius: 8px; padding: 5px 9px;
   font-size: 0.78rem; cursor: pointer;
 }

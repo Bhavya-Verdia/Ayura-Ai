@@ -1,4 +1,4 @@
-import React, { useState, useContext, useMemo } from 'react'
+import React, { useState, useContext, useMemo, Suspense, lazy } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -6,7 +6,10 @@ import { toast } from 'sonner'
 import { AuthContext } from '../providers/AuthContext'
 import { useTheme } from '../providers/ThemeProvider'
 import API, { plansAPI, preferencesAPI, progressAPI, profileAPI, authAPI } from '../api/client'
-import PlanViewer from '../components/PlanViewer'
+// Lazy-loaded: PlanViewer pulls in all 7 heavy plan-view components (~3k LOC),
+// but only renders when a user opens a generated plan. Keeps the Dashboard
+// landing chunk light.
+const PlanViewer = lazy(() => import('../components/PlanViewer'))
 import '../components/VikritiCheckIn.css'
 import DoshaValidationCard from '../components/DoshaValidationCard'
 import DoshaArcRings from '../components/DoshaArcRings'
@@ -133,8 +136,9 @@ function RitucharyaCard() {
   if (isError || (!isLoading && !data)) return null
   if (isLoading) return <div className="dash-ritu-card skeleton" style={{ height: 130 }} />
 
-  const favour = (data.diet_adjustments || []).slice(0, 3)
-  const avoid = (data.avoid || []).slice(0, 3)
+  const rec = data.recommendations || data
+  const favour = (rec.diet_adjustments || []).slice(0, 3)
+  const avoid = (rec.avoid || []).slice(0, 3)
   const SeasonIcon = SEASON_ICON[data.season] || Leaf
 
   return (
@@ -612,7 +616,9 @@ const Dashboard = () => {
           fallbackMessage="This plan couldn't render. The data may be in an unexpected format."
           onBack={() => { setViewingPlan(null); setViewingType(null) }}
         >
-          <PlanViewer plan={viewingPlan} planType={viewingType} />
+          <Suspense fallback={<div className="skeleton-plan-card" style={{ minHeight: 320 }} />}>
+            <PlanViewer plan={viewingPlan} planType={viewingType} />
+          </Suspense>
         </SectionBoundary>
       </div>
     )

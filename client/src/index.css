@@ -71,6 +71,23 @@ body,
   --glass-border:      rgba(255,255,255,0.095);
   --overlay-bg:        rgba(0,0,0,0.40);
 
+  /* ── Surface tokens (consumed by page CSS via var(--token, fallback)) ──
+     These were referenced across pages but never defined, so they fell back
+     to white literals in BOTH themes — the root cause of broken light mode.
+     Dark values match the old fallbacks so dark mode is unchanged.        */
+  --card-bg:    rgba(255,255,255,0.04);
+  --dash-edge:  rgba(255,255,255,0.09);
+  --text-muted: rgba(243,251,248,0.46);
+  --bg-surface:     rgba(255,255,255,0.03);
+  --bg-input:       rgba(255,255,255,0.04);
+  --glass-bg-hover: rgba(255,255,255,0.08);
+  --slot-bg:        rgba(255,255,255,0.03);
+  --slot-border:    rgba(255,255,255,0.10);
+  /* Adaptive aliases — resolve to the theme-flipping ink/bg tokens, so the
+     many `var(--text-color, <light fallback>)` usages stop being light-on-light. */
+  --text-color: var(--ayura-ink);
+  --bg-color:   var(--ayura-bg);
+
   /* ── Borders ── */
   --border-subtle:      rgba(255,255,255,0.05);
   --border-light:       rgba(255,255,255,0.10);
@@ -136,6 +153,16 @@ body,
   --glass-bg-subtle:   rgba(255,255,255,0.60);
   --glass-border:      rgba(15,23,42,0.09);
   --overlay-bg:        rgba(255,255,255,0.60);
+
+  /* Light-mode surfaces — fixes the white-on-white breakage */
+  --card-bg:    rgba(255,255,255,0.72);
+  --dash-edge:  rgba(15,23,42,0.10);
+  --text-muted: rgba(15,23,42,0.52);
+  --bg-surface:     rgba(15,23,42,0.025);
+  --bg-input:       rgba(255,255,255,0.85);
+  --glass-bg-hover: rgba(15,23,42,0.05);
+  --slot-bg:        rgba(15,23,42,0.025);
+  --slot-border:    rgba(15,23,42,0.10);
 
   --border-subtle:      rgba(15,23,42,0.06);
   --border-light:       rgba(15,23,42,0.10);
@@ -310,6 +337,60 @@ button {
   border: none;
   background: none;
   cursor: pointer;
+}
+
+/* Form controls inherit the app font — browsers default <textarea>/<input>
+   to monospace/system, which made textarea placeholders render in Courier. */
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* ─── GLOBAL BUTTON SYSTEM ────────────────────────────────────
+   Used by 20+ surfaces via `btn btn-primary|secondary|danger [btn-sm]`.
+   MUST live here (global, always loaded) — previously trapped in
+   Settings.css, so these styles only applied after visiting Settings,
+   leaving buttons unstyled on direct loads of Remedies/Herb Safety/etc. */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 22px; border-radius: 12px; font-family: var(--font-ui); font-weight: 700; font-size: 0.925rem; cursor: pointer; border: none; transition: all 0.2s; }
+.btn svg { flex-shrink: 0; }
+.btn-primary { background: linear-gradient(135deg, var(--ayura-teal), var(--ayura-teal-lt)); color: #000; box-shadow: 0 8px 24px rgba(45,212,191,0.25); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(45,212,191,0.38); }
+.btn-secondary { background: var(--border-light); color: var(--ayura-ink); border: 1px solid var(--border-light); }
+.btn-secondary:hover {
+  background: color-mix(in srgb, var(--ayura-teal) 10%, var(--border-light));
+  border-color: color-mix(in srgb, var(--ayura-teal) 32%, var(--border-light));
+}
+.btn-danger { background: rgba(251,113,133,0.08); color: var(--ayura-rose); border: 1px solid rgba(251,113,133,0.25); }
+.btn-danger:hover { background: rgba(251,113,133,0.14); }
+/* Small variant — was referenced on 9 surfaces but never defined (fell back to full size) */
+.btn-sm { padding: 8px 15px; font-size: 0.85rem; border-radius: 10px; }
+/* Tactile press feedback — snappy on the way down, eased on release */
+.btn:active { transform: translateY(0) scale(0.97); transition-duration: 0.07s; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ─── BRANDED TEXT SELECTION ──────────────────────────────── */
+::selection {
+  background: rgba(45,212,191,0.28);
+  color: var(--ayura-ink);
+}
+[data-theme='light'] ::selection {
+  background: rgba(13,148,136,0.22);
+}
+
+/* ─── KEYBOARD FOCUS RING (a11y) ──────────────────────────────
+   Only shows for keyboard navigation, never on mouse click, so it
+   adds accessibility without disrupting the pointer UX.            */
+:focus-visible {
+  outline: 2px solid var(--ayura-teal);
+  outline-offset: 2px;
+  border-radius: 5px;
+}
+/* Components with their own rich focus treatment opt out of the ring. */
+.auth-input:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline-offset: 1px;
 }
 
 /* ─── GLOBAL UTILITIES ────────────────────────────────────── */
@@ -546,13 +627,20 @@ button {
 }
 
 /* ─── SCROLLBAR ───────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-light);
+  background: linear-gradient(180deg, var(--ayura-teal), var(--ayura-violet));
   border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
-::-webkit-scrollbar-thumb:hover { background: var(--border-medium); }
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--ayura-teal-lt), var(--ayura-violet));
+  background-clip: padding-box;
+}
+/* Firefox */
+html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
 
 /* ─── SPINNER ─────────────────────────────────────────────── */
 .spinner {

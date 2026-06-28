@@ -9,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop'
 import ErrorBoundary from './components/ErrorBoundary'
 import NoiseOverlay from './components/NoiseOverlay'
 import VitalBackground from './components/VitalBackground'
+import MeditationCanvas from './components/MeditationCanvas'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import MainLayout from './layouts/MainLayout'
 import ReloadPrompt from './components/ReloadPrompt'
@@ -45,6 +46,12 @@ const Progress = React.lazy(() => import('./pages/Progress'))
 function FullPageSpinner() {
   return <LoadingScreen />
 }
+
+// Calm, meditative pages where the rising yoga/ॐ field belongs.
+// Kept off data-dense app pages (dashboard, chat, settings…) for clarity + perf.
+const CALM_BG_ROUTES = new Set([
+  '/', '/login', '/register', '/forgot-password', '/reset-password', '/verify-email',
+])
 
 const pageVariants = {
   initial: { opacity: 0, y: 16, filter: 'blur(2px)' },
@@ -132,6 +139,7 @@ export default function App() {
   return (
     <>
       <VitalBackground />
+      {CALM_BG_ROUTES.has(location.pathname) && <MeditationCanvas />}
       <ErrorBoundary>
         <AnimatePresence mode="wait">
           <Routes location={location}>

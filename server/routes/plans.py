@@ -719,12 +719,35 @@ async def get_seasonal_guidance(user: UserDocument = Depends(get_current_user)):
     """Feature 8: Ritucharya - Get seasonal Ayurvedic guidance."""
     from services.seasonal_service import build_seasonal_guidance
 
+    from services.seasonal_service import _fallback_recommendations
+    from engine.seasonal import get_current_season
+
     dosha = user.dominant_dosha or "pitta"
     try:
         return await build_seasonal_guidance(dosha)
     except Exception as e:
-        logger.error("Failed to generate seasonal guidance: %s", e)
-        raise HTTPException(status_code=500, detail="Failed to generate seasonal guidance. Please try again.")
+        logger.error("Failed to generate seasonal guidance, returning static fallback: %s", e)
+        season = get_current_season()
+        fb = _fallback_recommendations(dosha, season.english_name, season.description)
+        return {
+            "season": season.name,
+            "english_name": season.english_name,
+            "focus": fb["focus"],
+            "risk_level": "medium",
+            "primary_concern": season.dominant_dosha,
+            "dominant_dosha": season.dominant_dosha,
+            "accumulating_dosha": season.accumulating_dosha,
+            "pacifying_dosha": season.pacifying_dosha,
+            "description": season.description,
+            "dosha_impact": fb["dosha_impact"],
+            "recommendations": {
+                "diet_adjustments": fb["diet_adjustments"],
+                "lifestyle_changes": fb["lifestyle_changes"],
+                "avoid": fb["avoid"],
+            },
+            "weather": None,
+            "context_source": {"weather_context": "not_available", "generated_from": "static_fallback"},
+        }
 
 
 @router.get("/meditation")

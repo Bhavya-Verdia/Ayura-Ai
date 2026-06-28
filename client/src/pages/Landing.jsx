@@ -8,7 +8,6 @@ import React from 'react'
 import CursorGlow from '../components/CursorGlow'
 import MagneticButton from '../components/MagneticButton'
 import CountUp from '../components/CountUp'
-import LanguageSwitcher from '../components/LanguageSwitcher'
 import {
   ShieldCheck, Sparkles, Leaf, Zap, Dna, Dumbbell,
   Salad, Pill, Flower2, Soup, HeartPulse, TriangleAlert, Check,
@@ -277,6 +276,7 @@ function BentoHeroGrid() {
               </div>
             ))}
           </div>
+          <p className="lnd-bento-dosha-note">Vata leads your constitution — lean into warm, grounding routines to stay balanced.</p>
           <div className="lnd-bento-badge">✦ Vata Dominant</div>
         </motion.div>
         <motion.div
@@ -372,7 +372,6 @@ export default function Landing() {
             </span>
           </Link>
           <div className="lnd-nav-actions">
-            <LanguageSwitcher />
             {user ? (
               <>
                 <Link to="/dashboard" className="lnd-nav-link">Dashboard</Link>
@@ -394,6 +393,12 @@ export default function Landing() {
           className="lnd-hero"
           style={{ y: heroParallaxY, opacity: heroParallaxOpacity }}
         >
+          {/* Echo rings behind hero */}
+          <div className="lnd-hero-echo" aria-hidden="true">
+            <div className="lnd-hero-echo-ring" />
+            <div className="lnd-hero-echo-ring" />
+            <div className="lnd-hero-echo-ring" />
+          </div>
           {/* Left copy */}
           <div className="lnd-hero-copy">
             <motion.span
