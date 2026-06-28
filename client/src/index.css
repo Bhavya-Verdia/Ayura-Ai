@@ -87,6 +87,14 @@ body,
      many `var(--text-color, <light fallback>)` usages stop being light-on-light. */
   --text-color: var(--ayura-ink);
   --bg-color:   var(--ayura-bg);
+  /* Plan-view aliases — PlanViewer.css (all plan renderers: yoga/diet/gym/etc.)
+     was authored against an older token scheme (--ayura-card-bg/-border/-text)
+     that was never defined → every plan card rendered with no surface, no border
+     colour and fallback text, so plans looked flat/"messy". Alias to the existing
+     theme-aware tokens (206 usages, both themes fixed in one place). */
+  --ayura-card-bg: var(--card-bg);
+  --ayura-border:  var(--border-light);
+  --ayura-text:    var(--ayura-ink);
 
   /* ── Borders ── */
   --border-subtle:      rgba(255,255,255,0.05);

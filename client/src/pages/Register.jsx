@@ -13,15 +13,12 @@ async function googleUrl() {
   const { data } = await import('../api/client').then(m => m.authAPI.getGoogleUrl())
   return data.url
 }
-function githubUrl() {
-  const state = Math.random().toString(36).slice(2)
-  sessionStorage.setItem('oauth_state', state)
-  const p = new URLSearchParams({
-    client_id:    import.meta.env.VITE_GITHUB_CLIENT_ID,
-    redirect_uri: `${window.location.origin}/auth/github/callback`,
-    scope: 'user:email', state,
-  })
-  return `https://github.com/login/oauth/authorize?${p}`
+async function githubUrl() {
+  // Hit the server so it sets the httponly `oauth_state` cookie that
+  // POST /auth/github validates against (mirrors googleUrl()). Building the
+  // URL client-side left the cookie unset → every callback 400'd on CSRF.
+  const { data } = await import('../api/client').then(m => m.authAPI.getGithubUrl())
+  return data.url
 }
 
 export default function Register() {
@@ -102,12 +99,14 @@ export default function Register() {
                     </button>
                   )}
                   {GITHUB_ENABLED && (
-                    <a className="auth-social-btn" href={githubUrl()} aria-label="Sign up with GitHub">
+                    <button className="auth-social-btn"
+                      onClick={async e => { e.preventDefault(); try { window.location.href = await githubUrl() } catch { setError('GitHub sign-up failed.') } }}
+                      aria-label="Sign up with GitHub">
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.23c-3.34.73-4.03-1.42-4.03-1.42-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.30 3.49 1.00.11-.78.42-1.31.76-1.61-2.67-.30-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.30-.54-1.52.12-3.18 0 0 1.01-.32 3.30 1.23a11.5 11.5 0 0 1 3.00-.40c1.02.005 2.05.14 3.00.40 2.29-1.55 3.30-1.23 3.30-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.82 1.10.82 2.22v3.29c0 .32.19.69.80.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/>
                       </svg>
                       GitHub
-                    </a>
+                    </button>
                   )}
                 </div>
               )}

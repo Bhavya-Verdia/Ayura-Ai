@@ -45,7 +45,13 @@
   box-shadow: 0 20px 40px var(--overlay-bg);
 }
 .comm-create-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.comm-create-avatar { width: 40px; height: 40px; border-radius: 12px; background: #27272a; object-fit: cover; }
+.comm-create-avatar {
+  width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+  background: var(--avatar-color, #27272a);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 0.9rem;
+  color: #fff; letter-spacing: 0.02em;
+}
 .comm-create-prompt { font-weight: 500; color: #e4e4e7; }
 .comm-textarea-wrap { background: var(--glass-shadow); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; }
 .comm-textarea {
@@ -79,7 +85,13 @@
 .comm-post-card:hover .comm-post-top-border { opacity: 1; }
 
 .comm-post-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.comm-post-avatar { width: 44px; height: 44px; border-radius: 14px; background: #27272a; object-fit: cover; margin-right: 12px; }
+.comm-post-avatar {
+  width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0; margin-right: 12px;
+  background: var(--avatar-color, #27272a);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+  color: #fff; letter-spacing: 0.02em;
+}
 .comm-post-meta { display: flex; flex-direction: column; }
 .comm-post-author { font-family: var(--font-ui); font-weight: 700; font-size: 1.05rem; }
 .comm-post-time { font-size: 0.8rem; color: #71717a; }
