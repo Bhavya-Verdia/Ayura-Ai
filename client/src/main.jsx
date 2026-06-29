@@ -6,9 +6,8 @@ import App from './App'
 import { AuthProvider } from './providers/AuthContext'
 import { ToastProvider } from './providers/ToastProvider'
 import { ThemeProvider } from './providers/ThemeProvider'
-import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
-import { get, set, del } from 'idb-keyval'
+import { queryClient, idbPersister } from './queryClient'
 import './index.css'
 import './i18n'
 
@@ -43,29 +42,6 @@ if (SENTRY_DSN && !SENTRY_DSN.includes('sentry.example.com')) {
     })
   })
 }
-
-const IDB_KEY = 'ayura_react_query_cache'
-
-const idbPersister = {
-  persistClient: async (client) => {
-    await set(IDB_KEY, client)
-  },
-  restoreClient: async () => {
-    return await get(IDB_KEY)
-  },
-  removeClient: async () => {
-    await del(IDB_KEY)
-  },
-}
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      gcTime: 1000 * 60 * 60 * 24 * 7, // Keep cache for 7 days
-      staleTime: 1000 * 60 * 5, // Data is fresh for 5 mins
-    },
-  },
-})
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

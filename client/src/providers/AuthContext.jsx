@@ -6,6 +6,7 @@ import {
   clearAuthTokens,
   setAuthTokens,
 } from '../api/client'
+import { resetQueryCache } from '../queryClient'
 
 export const AuthContext = createContext(null)
 
@@ -31,6 +32,7 @@ export function AuthProvider({ children }) {
       clearAuthTokens()
       setUser(null)
       setProfile(null)
+      resetQueryCache()
     }
     window.addEventListener('auth-expired', handleAuthExpired)
     fetchProfile()
@@ -53,6 +55,9 @@ export function AuthProvider({ children }) {
 
   async function login(email, password) {
     const { data } = await authAPI.login({ email, password })
+    // Wipe any cache left by a previous account on this browser before loading
+    // the new identity, so plans/profile/etc. never bleed across accounts.
+    await resetQueryCache()
     setAuthTokens(data.access_token, data.refresh_token)
     await fetchProfile()
   }
@@ -66,18 +71,21 @@ export function AuthProvider({ children }) {
 
   async function loginWithGoogle(code, state, redirectUri = `${window.location.origin}/auth/google/callback`) {
     const { data } = await authAPI.google({ code, state, redirect_uri: redirectUri })
+    await resetQueryCache()
     setAuthTokens(data.access_token, data.refresh_token)
     await fetchProfile()
   }
 
   async function loginWithGithub(code, state, redirectUri = `${window.location.origin}/auth/github/callback`) {
     const { data } = await authAPI.github({ code, state, redirect_uri: redirectUri })
+    await resetQueryCache()
     setAuthTokens(data.access_token, data.refresh_token)
     await fetchProfile()
   }
 
   async function loginWithOtp(phone_number, code) {
     const { data } = await authAPI.verifyOtp({ phone_number, code })
+    await resetQueryCache()
     setAuthTokens(data.access_token, data.refresh_token)
     await fetchProfile()
   }
@@ -98,6 +106,7 @@ export function AuthProvider({ children }) {
     clearAuthTokens()
     setUser(null)
     setProfile(null)
+    await resetQueryCache()
   }
   return (
     <AuthContext.Provider value={{
