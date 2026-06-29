@@ -1,7 +1,6 @@
 /* ─── COMMUNITY FEED (Cyber-Ayurveda) ───────────── */
 .comm-root {
   min-height: 100vh;
-  background: var(--ayura-bg);
   color: var(--ayura-ink);
   padding: 40px 20px;
   position: relative;
@@ -9,7 +8,7 @@
 }
 
 /* Background glows */
-.comm-bg-glow { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+.comm-bg-glow { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
 .comm-bg-glow-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: rgba(6,182,212,0.06); }
 .comm-bg-glow-2 { bottom: -20%; right: -10%; width: 40vw; height: 40vw; background: rgba(139,92,246,0.05); }
 
