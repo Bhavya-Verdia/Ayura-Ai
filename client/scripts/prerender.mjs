@@ -33,7 +33,7 @@ if (!existsSync(resolve(root, 'dist'))) {
 // serves dist/<route>/index.html directly for these paths.
 const ROUTES = [
   { path: '/',           selector: '.lnd-hero-title', out: 'dist/index.html' },
-  { path: '/dosha-test', selector: '.dt-hero-title',  out: 'dist/dosha-test/index.html' },
+  { path: '/dosha-test', selector: '.dt-hero-title',  out: 'dist/dosha-test.html' },
 ]
 
 console.log('🔧  Starting Vite preview server…')
