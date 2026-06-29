@@ -1,0 +1,226 @@
+/* ─── DOSHA TEST (public SEO landing) ─────────────────────────── */
+
+/* Hero — extra top padding to clear the fixed navbar */
+.dt-hero {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 160px 32px 64px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.dt-hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: var(--ayura-ink);
+  margin: 14px 0 18px;
+}
+.dt-grad {
+  background: linear-gradient(135deg, var(--ayura-teal), #818cf8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.dt-hero-sub {
+  font-size: 1.1rem;
+  line-height: 1.75;
+  color: var(--ayura-muted);
+  max-width: 60ch;
+  margin: 0 auto 28px;
+}
+.dt-hero-sub strong { color: var(--ayura-ink); font-weight: 700; }
+.dt-hero-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.dt-hero-note {
+  margin-top: 18px;
+  font-size: 0.85rem;
+  color: var(--ayura-muted);
+  opacity: 0.85;
+}
+
+.dt-intro { padding-top: 60px; text-align: center; }
+.dt-intro .lnd-section-desc { margin: 0 auto; max-width: 68ch; }
+
+/* ── Three doshas ── */
+.dt-dosha-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.dt-dosha-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--border-subtle);
+  border-top: 3px solid var(--dosha, var(--ayura-teal));
+  border-radius: 16px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dt-dosha-head { display: flex; align-items: center; gap: 12px; }
+.dt-dosha-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px; height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  color: var(--dosha);
+  background: color-mix(in srgb, var(--dosha) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dosha) 30%, transparent);
+}
+.dt-dosha-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ayura-ink);
+  margin: 0;
+}
+.dt-dosha-sanskrit { font-weight: 500; color: var(--dosha); font-size: 1rem; margin-left: 4px; }
+.dt-dosha-elements { font-size: 0.78rem; color: var(--ayura-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.dt-dosha-summary { font-size: 0.92rem; line-height: 1.6; color: var(--ayura-muted); margin: 0; }
+.dt-dosha-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--ayura-ink);
+}
+.dt-dosha-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.dt-dosha-label.balanced { color: #34d399; }
+.dt-dosha-label.imbalanced { color: #fb7185; }
+.dt-dosha-traits {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dt-dosha-traits li { font-size: 0.85rem; color: var(--ayura-muted); line-height: 1.45; }
+.dt-dosha-traits li::marker { color: var(--dosha); }
+
+/* ── Steps ── */
+.dt-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+.dt-step-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 24px 20px;
+  position: relative;
+}
+.dt-step-num {
+  position: absolute;
+  top: 16px; right: 18px;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--border-subtle);
+}
+.dt-step-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  color: var(--ayura-teal);
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.28);
+  margin-bottom: 14px;
+}
+.dt-step-title { font-size: 1rem; font-weight: 700; color: var(--ayura-ink); margin: 0 0 8px; line-height: 1.35; }
+.dt-step-desc { font-size: 0.88rem; line-height: 1.6; color: var(--ayura-muted); margin: 0; }
+
+/* ── Benefits ── */
+.dt-benefit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.dt-benefit-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--glass-bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 22px;
+}
+.dt-benefit-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  color: var(--ayura-teal);
+  background: rgba(45, 212, 191, 0.12);
+}
+.dt-benefit-title { font-size: 1rem; font-weight: 700; color: var(--ayura-ink); margin: 0; }
+.dt-benefit-desc { font-size: 0.9rem; line-height: 1.6; color: var(--ayura-muted); margin: 0; }
+
+/* ── Footer ── */
+.dt-footer {
+  border-top: 1px solid var(--border-subtle);
+  padding: 40px 32px;
+  position: relative;
+  z-index: 1;
+}
+.dt-footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+.dt-footer-links {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.dt-footer-links a {
+  font-size: 0.9rem;
+  color: var(--ayura-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.dt-footer-links a:hover { color: var(--ayura-teal); }
+.dt-footer-copy {
+  font-size: 0.8rem;
+  color: var(--ayura-muted);
+  opacity: 0.8;
+  max-width: 70ch;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .dt-dosha-grid { grid-template-columns: 1fr; }
+  .dt-steps-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .dt-hero { padding: 130px 20px 48px; }
+  .dt-steps-grid { grid-template-columns: 1fr; }
+  .dt-benefit-grid { grid-template-columns: 1fr; }
+}

@@ -16,8 +16,8 @@
 
 import { chromium } from '@playwright/test'
 import { preview } from 'vite'
-import { writeFileSync, existsSync } from 'fs'
-import { resolve } from 'path'
+import { writeFileSync, existsSync, mkdirSync } from 'fs'
+import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
@@ -26,6 +26,15 @@ if (!existsSync(resolve(root, 'dist'))) {
   console.error('❌  dist/ not found — run npm run build first')
   process.exit(1)
 }
+
+// Public, content-rich routes worth snapshotting to static HTML. Each gets its
+// OWN file so crawlers (and no-JS clients) receive route-correct <head> tags —
+// critically a single self-referencing canonical. nginx `try_files $uri/`
+// serves dist/<route>/index.html directly for these paths.
+const ROUTES = [
+  { path: '/',           selector: '.lnd-hero-title', out: 'dist/index.html' },
+  { path: '/dosha-test', selector: '.dt-hero-title',  out: 'dist/dosha-test/index.html' },
+]
 
 console.log('🔧  Starting Vite preview server…')
 const server = await preview({
@@ -42,29 +51,33 @@ try {
   browser = await chromium.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] })
   const page = await browser.newPage()
 
-  // Abort API calls → auth check throws immediately → user = null → landing renders
+  // Abort API calls → auth check throws immediately → user = null → public page renders
   await page.route('**/api/**', route => route.abort())
   // Also abort CDN requests that might slow networkidle
   await page.route('https://fonts.googleapis.com/**', route => route.continue())
 
-  await page.goto('http://localhost:4174/', {
-    waitUntil: 'networkidle',
-    timeout: 25000,
-  })
+  for (const { path, selector, out } of ROUTES) {
+    await page.goto(`http://localhost:4174${path}`, {
+      waitUntil: 'networkidle',
+      timeout: 25000,
+    })
 
-  // Wait for the hero title to confirm landing rendered
-  await page.waitForSelector('.lnd-hero-title', { timeout: 10000 }).catch(() => {
-    console.warn('⚠  Hero title not found — prerendering whatever rendered')
-  })
+    // Wait for a route-specific element to confirm the page rendered
+    await page.waitForSelector(selector, { timeout: 10000 }).catch(() => {
+      console.warn(`⚠  ${selector} not found for ${path} — prerendering whatever rendered`)
+    })
 
-  // Brief pause for any remaining paint
-  await page.waitForTimeout(800)
+    // Brief pause for any remaining paint
+    await page.waitForTimeout(800)
 
-  const html = await page.content()
-  writeFileSync(resolve(root, 'dist/index.html'), html, 'utf8')
+    const html = await page.content()
+    const outPath = resolve(root, out)
+    mkdirSync(dirname(outPath), { recursive: true })
+    writeFileSync(outPath, html, 'utf8')
 
-  const kB = (html.length / 1024).toFixed(1)
-  console.log(`✅  dist/index.html updated (${kB} kB) — landing page pre-rendered`)
+    const kB = (html.length / 1024).toFixed(1)
+    console.log(`✅  ${out} updated (${kB} kB) — ${path} pre-rendered`)
+  }
   console.log('    Crawlers now receive full HTML. React hydrates on top.')
 } catch (err) {
   console.warn('⚠  Prerender skipped (non-fatal):', err.message)

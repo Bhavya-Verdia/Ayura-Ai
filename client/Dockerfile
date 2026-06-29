@@ -1,10 +1,16 @@
-# Build stage
-FROM node:20-alpine AS build
+# Build stage — Debian (not alpine) so Playwright's Chromium can run the
+# prerender step. Final runtime image is still nginx:alpine (see below).
+FROM node:20-bookworm-slim AS build
 
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+
+# Chromium for the prerender (postbuild) step that snapshots public routes to
+# static HTML for crawlers. Non-fatal: if install fails, prerender.mjs degrades
+# gracefully and the SPA still renders client-side.
+RUN npx playwright install --with-deps chromium || true
 
 # Vite bakes VITE_* vars at build time — inject them via --build-arg
 ARG VITE_API_URL=/api

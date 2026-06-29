@@ -316,6 +316,34 @@ Coverage</div>
   )
 }
 
+// ─── FAQ (visible content + must stay in sync with FAQPage JSON-LD in index.html) ───
+const FAQS = [
+  {
+    q: 'What is Ayura AI?',
+    a: 'Ayura AI is an AI-powered Ayurvedic wellness platform. It analyses your unique Prakriti (dosha constitution) and builds personalised plans for diet, yoga, Panchakarma, daily routine, and herbal remedies — combining classical Ayurveda with modern AI.',
+  },
+  {
+    q: 'Is Ayura AI free to use?',
+    a: 'Yes. You can create an account, take the dosha assessment, and generate personalised wellness plans for free — no credit card required.',
+  },
+  {
+    q: 'What is a dosha or Prakriti?',
+    a: 'In Ayurveda your Prakriti is your natural mind-body constitution, made up of three doshas — Vata, Pitta, and Kapha. Ayura AI determines your dominant dosha through a guided assessment and tailors every recommendation to it.',
+  },
+  {
+    q: 'How does Ayura AI personalise my plans?',
+    a: 'Ayura AI grounds every plan in a curated Ayurvedic knowledge base and your profile — dosha, age, agni (digestion), season, and any health conditions — then uses AI to turn that into clear, day-by-day guidance for diet, yoga, fitness, detox, and remedies.',
+  },
+  {
+    q: 'Is Ayura AI a substitute for medical advice?',
+    a: 'No. Ayura AI provides Ayurvedic wellness guidance for informational and educational purposes only. It does not diagnose, treat, or replace professional medical advice — always consult a qualified practitioner for medical concerns.',
+  },
+  {
+    q: 'Is Ayura AI available in India?',
+    a: 'Yes. Ayura AI is built for India and works in any modern web browser on desktop and mobile, with installable progressive web app (PWA) support.',
+  },
+]
+
 // ─── Main Component ───────────────────────────────────────────
 export default function Landing() {
   const { user, logout } = useAuth()
@@ -351,11 +379,76 @@ export default function Landing() {
     return () => obs.disconnect()
   }, [])
 
+  // Site-wide structured data lives here (not in index.html) so it only renders
+  // on the homepage and never leaks onto other prerendered routes like /dosha-test.
+  // FAQPage is built from the FAQS array above → schema always matches visible content.
+  const siteJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': 'https://ayuraai.in/#website',
+        url: 'https://ayuraai.in',
+        name: 'Ayura AI',
+        alternateName: ['AyuraAI', 'Ayura', 'Ayura AI App', 'Ayur AI'],
+        inLanguage: 'en-IN',
+        description: 'AI-Powered Ayurvedic Wellness Platform',
+        publisher: { '@id': 'https://ayuraai.in/#organization' },
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: 'https://ayuraai.in/?q={search_term_string}',
+          'query-input': 'required name=search_term_string',
+        },
+      },
+      {
+        '@type': 'Organization',
+        '@id': 'https://ayuraai.in/#organization',
+        name: 'Ayura AI',
+        alternateName: ['AyuraAI', 'Ayura', 'Ayur AI'],
+        url: 'https://ayuraai.in',
+        logo: { '@type': 'ImageObject', url: 'https://ayuraai.in/pwa-512x512.png', width: 512, height: 512 },
+        image: 'https://ayuraai.in/og-image.png',
+        slogan: 'Your wellness, finally in sync — AI + Ayurveda.',
+        description: "India's AI-powered Ayurvedic wellness platform providing personalized dosha-based plans for diet, yoga, Panchakarma, and herbal medicine.",
+        foundingLocation: { '@type': 'Place', name: 'India' },
+        areaServed: { '@type': 'Country', name: 'India' },
+        sameAs: [],
+      },
+      {
+        '@type': 'SoftwareApplication',
+        '@id': 'https://ayuraai.in/#app',
+        name: 'Ayura AI',
+        url: 'https://ayuraai.in',
+        applicationCategory: 'HealthApplication',
+        operatingSystem: 'Web, iOS, Android',
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+        description: 'AI-powered Ayurvedic wellness platform for personalized health plans based on Prakriti analysis.',
+        screenshot: 'https://ayuraai.in/og-image.png',
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': 'https://ayuraai.in/#faq',
+        mainEntity: FAQS.map(f => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      },
+    ],
+  }
+
   return (
     <div className="landing-root">
       <Helmet>
         <title>Ayura AI — AI + Ayurveda Wellness Platform</title>
         <meta name="description" content="Ayura AI blends ancient Ayurvedic wisdom with modern AI to deliver adaptive, personalised wellness plans across fitness, nutrition, detox, and mindfulness." />
+        <link rel="canonical" href="https://ayuraai.in" />
+        <meta property="og:title" content="Ayura AI — AI-Powered Ayurvedic Wellness" />
+        <meta property="og:description" content="India's AI wellness platform rooted in Ayurveda. Personalized plans for diet, yoga, Panchakarma, and herbal medicine based on your dosha." />
+        <meta property="og:url" content="https://ayuraai.in" />
+        <meta name="twitter:title" content="Ayura AI — AI-Powered Ayurvedic Wellness" />
+        <meta name="twitter:description" content="Personalized Ayurvedic diet, yoga, and herbal plans powered by AI. Know your dosha. Live in balance." />
+        <script type="application/ld+json">{JSON.stringify(siteJsonLd)}</script>
       </Helmet>
 
       <CursorGlow />
@@ -401,6 +494,10 @@ export default function Landing() {
           </div>
           {/* Left copy */}
           <div className="lnd-hero-copy">
+            {/* True page H1 for SEO — keyword/brand-rich, visually hidden so the
+                animated tagline below remains the visual focus. */}
+            <h1 className="sr-only">Ayura AI — AI-Powered Ayurvedic Wellness Platform</h1>
+
             <motion.span
               className="lnd-hero-kicker"
               initial={{ opacity: 0, y: 16 }}
@@ -411,8 +508,8 @@ export default function Landing() {
               AI + Ayurveda, reimagined
             </motion.span>
 
-            {/* Word-by-word stagger */}
-            <motion.h1
+            {/* Word-by-word stagger (visual tagline, demoted from H1 → H2) */}
+            <motion.h2
               className="lnd-hero-title"
               variants={stagger}
               initial="hidden"
@@ -431,7 +528,7 @@ export default function Landing() {
                   {word === 'sync.' ? <em className="shimmer-text">sync.</em> : word}
                 </motion.span>
               ))}
-            </motion.h1>
+            </motion.h2>
 
             <motion.p
               className="lnd-hero-subtitle"
@@ -627,6 +724,25 @@ export default function Landing() {
           </div>
         </div>
 
+        {/* ── FAQ ──────────────────────────────────────── */}
+        <div id="faq" className="lnd-section" style={{ paddingTop: 0 }}>
+          <div className="reveal" style={{ textAlign: 'center', marginBottom: 40 }}>
+            <span className="lnd-section-kicker">Questions</span>
+            <h2 className="lnd-section-title">Frequently asked questions</h2>
+          </div>
+          <div className="lnd-faq-list reveal">
+            {FAQS.map((item, i) => (
+              <details key={i} className="lnd-faq-item">
+                <summary className="lnd-faq-q">
+                  <span>{item.q}</span>
+                  <span className="lnd-faq-icon" aria-hidden="true">+</span>
+                </summary>
+                <p className="lnd-faq-a">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+
         {/* ── CTA BLOCK ──────────────────────────────── */}
         <div className="lnd-cta-section">
           <motion.div
@@ -673,6 +789,7 @@ export default function Landing() {
               <ul className="lnd-footer-links">
                 <li><Link to="/register">Get Started</Link></li>
                 <li><Link to="/login">Sign In</Link></li>
+                <li><Link to="/dosha-test">Free Dosha Test</Link></li>
                 <li><a href="#features">Features</a></li>
               </ul>
             </div>
@@ -686,6 +803,7 @@ export default function Landing() {
             <div>
               <p className="lnd-footer-links-title">Wellness</p>
               <ul className="lnd-footer-links">
+                <li><Link to="/dosha-test">Dosha Test (Vata/Pitta/Kapha)</Link></li>
                 <li><a href="#features">Yoga & Fitness</a></li>
                 <li><a href="#features">Nutrition Plans</a></li>
                 <li><a href="#features">Detox & Remedies</a></li>

@@ -42,6 +42,7 @@ const Notifications = React.lazy(() => import('./pages/Notifications'))
 const Reminders = React.lazy(() => import('./pages/Reminders'))
 const InteractionChecker = React.lazy(() => import('./pages/InteractionChecker'))
 const Progress = React.lazy(() => import('./pages/Progress'))
+const DoshaTest = React.lazy(() => import('./pages/DoshaTest'))
 
 function FullPageSpinner() {
   return <LoadingScreen />
@@ -50,7 +51,7 @@ function FullPageSpinner() {
 // Calm, meditative pages where the rising yoga/ॐ field belongs.
 // Kept off data-dense app pages (dashboard, chat, settings…) for clarity + perf.
 const CALM_BG_ROUTES = new Set([
-  '/', '/login', '/register', '/forgot-password', '/reset-password', '/verify-email',
+  '/', '/dosha-test', '/login', '/register', '/forgot-password', '/reset-password', '/verify-email',
 ])
 
 const pageVariants = {
@@ -149,6 +150,7 @@ export default function App() {
             <Route path="/forgot-password" element={<PageWrapper><ForgotPassword /></PageWrapper>} />
             <Route path="/reset-password" element={<PageWrapper><ResetPassword /></PageWrapper>} />
             <Route path="/verify-email" element={<PageWrapper><VerifyEmail /></PageWrapper>} />
+            <Route path="/dosha-test" element={<PageWrapper><DoshaTest /></PageWrapper>} />
             <Route path="/terms" element={<PageWrapper><Terms /></PageWrapper>} />
             <Route path="/privacy" element={<PageWrapper><Privacy /></PageWrapper>} />
             <Route path="/admin" element={<AdminRoute><PageWrapper><Admin /></PageWrapper></AdminRoute>} />
