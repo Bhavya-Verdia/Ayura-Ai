@@ -129,6 +129,21 @@ export default function PlanViewer({ plan: rawPlan, planType }) {
     ? { [sectionKey]: plan[sectionKey] }
     : Object.fromEntries(Object.entries(plan).filter(([k]) => !SKIP_KEYS.includes(k) && plan[k]))
 
+  // When a dedicated view fully renders the plan, the generic section map below is
+  // redundant — and would leak any inner field not in SKIP_KEYS as a raw duplicate
+  // section (e.g. diet allergen_safe/safety_alerts, medicine coverage_note). Gate
+  // it on the same guards the dedicated views use, so we don't have to keep
+  // SKIP_KEYS perfectly in sync with every enricher field.
+  const hasDedicatedView = !!(
+    (planType === 'panchakarma' && plan.clinical_decisions) ||
+    (planType === 'yoga'        && plan.four_week_plan) ||
+    (planType === 'gym'         && (plan.weekly_schedule || plan.four_week_plan)) ||
+    (planType === 'diet'        && (plan.four_week_plan || plan.weekly_plan)) ||
+    (planType === 'remedies'    && (plan.symptoms_addressed || plan.doctor_referrals)) ||
+    (planType === 'medicines'   && (plan.primary_formulations || plan.supporting_formulations)) ||
+    (planType === 'routine'     && plan.weekly_routine)
+  )
+
   return (
     <div className="plan-viewer-container">
       {/* ── Summary banner ── */}
@@ -236,8 +251,8 @@ export default function PlanViewer({ plan: rawPlan, planType }) {
         </m.div>
       )}
 
-      {/* ── Plan sections ── */}
-      {Object.entries(sections).map(([key, value], idx) => {
+      {/* ── Plan sections (only when no dedicated view handled the plan) ── */}
+      {!hasDedicatedView && Object.entries(sections).map(([key, value], idx) => {
         const IconComponent = SECTION_ICONS[key] || Sparkles
         return value ? (
           <m.div
