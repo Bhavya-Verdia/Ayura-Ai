@@ -73,13 +73,32 @@ def get_chroma_client():
     return _chroma_client
 
 
+_embedding_fn = None
+
+
+def get_embedding_function():
+    """The ONE embedding function used for BOTH seeding (scripts/build_vectors.py)
+    and querying (get_collection) so they can never diverge. A seed/query mismatch —
+    collections seeded with Azure embeddings (1536-dim) but queried with the default
+    (384-dim) — silently took production RAG down once; sharing a single function
+    makes that impossible. Uses ChromaDB's bundled default ONNX all-MiniLM-L6-v2
+    (384-dim): no external API, deterministic, identical on every environment. Cached
+    so the ONNX model loads once."""
+    global _embedding_fn
+    if _embedding_fn is None:
+        from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
+        _embedding_fn = DefaultEmbeddingFunction()
+    return _embedding_fn
+
+
 def get_collection(domain: str) -> chromadb.Collection:
-    """Get a specific ChromaDB collection by domain name."""
+    """Get a specific ChromaDB collection by domain name, bound to the shared
+    embedding function so query-time embeddings match how the collection was seeded."""
     client = get_chroma_client()
     collection_name = COLLECTIONS.get(domain)
     if not collection_name:
         raise ValueError(f"Unknown collection domain: {domain}. Use one of: {list(COLLECTIONS.keys())}")
-    return client.get_collection(collection_name)
+    return client.get_collection(collection_name, embedding_function=get_embedding_function())
 
 
 def warm_embeddings() -> None:

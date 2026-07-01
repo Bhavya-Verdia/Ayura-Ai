@@ -74,6 +74,16 @@ services:
       - redis
       - chromadb
     restart: unless-stopped
+    # The worker runs arq, not the web server, so it must NOT inherit the image's
+    # HTTP healthcheck (curl :8000/api/health) — that can never pass and shows the
+    # container as "unhealthy". A meaningful check for arq is that its broker (Redis)
+    # is reachable.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os,redis; redis.from_url(os.environ['REDIS_URL']).ping()"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
 
   # NOTE: MongoDB is managed by MongoDB Atlas (cloud) — set MONGO_URL in the root
   # .env (mongodb+srv://...). There is intentionally NO local mongo container, so

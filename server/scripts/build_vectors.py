@@ -9,7 +9,7 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "server"))
+sys.path.insert(0, str(Path(__file__).parent.parent))  # the server/ root, so app modules import
 
 import chromadb
 from chromadb.config import Settings
@@ -19,48 +19,15 @@ CHROMA_DIR = Path(__file__).parent.parent / "data" / "chromadb"
 
 
 def get_embedder():
-    """Try Azure OpenAI embeddings, fall back to ChromaDB default ONNX."""
-    from dotenv import load_dotenv
-    load_dotenv()
-
-    azure_key = os.getenv("AZURE_OPENAI_API_KEY")
-    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-    api_version = os.getenv("AZURE_OPENAI_EMBEDDING_API_VERSION", "2024-02-01")
-    embed_deployment = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small")
-
-    if azure_key and azure_endpoint:
-        try:
-            from openai import AzureOpenAI
-            from chromadb.api.types import Documents, Embeddings
-            import chromadb.utils.embedding_functions as ef
-
-            client = AzureOpenAI(
-                api_key=azure_key,
-                azure_endpoint=azure_endpoint,
-                api_version=api_version,
-            )
-
-            class AzureEmbeddingFunction(ef.EmbeddingFunction):
-                def __call__(self, input: Documents) -> Embeddings:
-                    response = client.embeddings.create(
-                        input=input,
-                        model=embed_deployment,
-                    )
-                    return [item.embedding for item in response.data]
-
-            fn = AzureEmbeddingFunction()
-            fn(["test"])  # probe before committing
-            print(f"  ✅ Using Azure OpenAI embeddings ({embed_deployment})")
-            return fn
-        except Exception as e:
-            print(f"  ⚠️  Azure embedding deployment not available ({e}), using ChromaDB default")
-
-    # Default: ChromaDB's bundled ONNX all-MiniLM-L6-v2 — the SAME embedder the app
-    # uses at query time (collections are read without an explicit embedding_function),
-    # so seed and query stay consistent. No Azure, no torch, no extra deps.
-    from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
-    print("  ℹ️  Using ChromaDB default embeddings (ONNX all-MiniLM-L6-v2)")
-    return DefaultEmbeddingFunction()
+    """Return the SINGLE shared embedder that the app also queries with, so seeding
+    and querying can never diverge. Previously this could pick Azure embeddings
+    (1536-dim) while the app queried with the default (384-dim) — that silent
+    mismatch took production RAG down. Now both sides go through the same
+    database.chromadb_client.get_embedding_function() (default ONNX all-MiniLM-L6-v2,
+    384-dim; no external API, deterministic, identical everywhere)."""
+    from database.chromadb_client import get_embedding_function
+    print("  ℹ️  Using shared ChromaDB embedder (ONNX all-MiniLM-L6-v2, 384-dim)")
+    return get_embedding_function()
 
 
 def chunk_text(text: str, max_chars: int = 800) -> list[str]:
