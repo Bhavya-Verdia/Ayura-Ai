@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { communityAPI } from '../api/client'
 import {
@@ -150,7 +150,7 @@ function CommentsSection({ postId, initialCount }) {
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             className="comm-comments-body"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -187,7 +187,7 @@ function CommentsSection({ postId, initialCount }) {
                 {posting ? '…' : 'Post'}
               </button>
             </form>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>
@@ -216,7 +216,7 @@ function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) 
   const handleReport = () => onReport?.(post.id)
 
   return (
-    <motion.div
+    <m.div
       className="comm-post-card"
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
@@ -308,7 +308,7 @@ function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) 
       </div>
 
       <CommentsSection postId={post.id} initialCount={post.comment_count} />
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -501,7 +501,7 @@ export default function Community() {
         <div className="comm-container">
 
           {/* ── Page Header ── */}
-          <motion.div
+          <m.div
             className="comm-header"
             initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -524,10 +524,10 @@ export default function Community() {
                 <span className="comm-count-label">posts</span>
               </div>
             )}
-          </motion.div>
+          </m.div>
 
           {/* ── Create Post ── */}
-          <motion.div
+          <m.div
             className="comm-create-card"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -567,14 +567,14 @@ export default function Community() {
 
             <AnimatePresence>
               {postError && (
-                <motion.div
+                <m.div
                   className="comm-post-error"
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                 >
                   {postError}
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
 
@@ -605,7 +605,7 @@ export default function Community() {
                 )}
               </button>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* ── Feed ── */}
           <div className="comm-feed">
@@ -616,7 +616,7 @@ export default function Community() {
                 <PostSkeleton />
               </>
             ) : posts.length === 0 ? (
-              <motion.div
+              <m.div
                 className="comm-empty-state"
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -627,7 +627,7 @@ export default function Community() {
                 <p className="comm-empty-sub">
                   The community is waiting. Share a remedy, yoga tip, or healing experience above.
                 </p>
-              </motion.div>
+              </m.div>
             ) : (
               <AnimatePresence mode="popLayout">
                 {posts.map((post, i) => (
@@ -646,7 +646,7 @@ export default function Community() {
 
             {/* Load More */}
             {!loading && hasNextPage && posts.length > 0 && (
-              <motion.div
+              <m.div
                 className="comm-load-more-wrap"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -666,7 +666,7 @@ export default function Community() {
                     'Load more posts ↓'
                   )}
                 </button>
-              </motion.div>
+              </m.div>
             )}
 
             {!loading && !hasNextPage && posts.length > 0 && (

@@ -3162,9 +3162,11 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.diet-pa-section-title.pathya  { color: #16a34a; }
-.diet-pa-section-title.apathya { color: #dc2626; }
-.diet-pa-section-title.viruddha { color: #d97706; }
+/* Theme-aware tokens (flip bright↔dark per theme) — the old hardcoded tones were
+   only readable on the light-theme card; on dark they were near-invisible. */
+.diet-pa-section-title.pathya  { color: var(--ayura-sage); }
+.diet-pa-section-title.apathya { color: var(--ayura-rose); }
+.diet-pa-section-title.viruddha { color: var(--ayura-amber); }
 .diet-pa-list {
   margin: 0;
   padding-left: 1rem;
@@ -3177,7 +3179,7 @@
   color: var(--ayura-text-secondary);
   line-height: 1.5;
 }
-.diet-pa-list.apathya li { color: #b91c1c; }
+.diet-pa-list.apathya li { color: var(--ayura-rose); }
 .diet-pa-list.viruddha {
   list-style: none;
   padding-left: 0;
@@ -3186,9 +3188,9 @@
   display: flex;
   align-items: flex-start;
   gap: 0.4rem;
-  color: #92400e;
+  color: var(--ayura-amber);
 }
-.diet-pa-warn-icon { flex-shrink: 0; margin-top: 0.15rem; color: #d97706; }
+.diet-pa-warn-icon { flex-shrink: 0; margin-top: 0.15rem; color: var(--ayura-amber); }
 
 /* ── Day theme badge ── */
 .diet-day-theme-badge {
@@ -3360,9 +3362,11 @@
   gap: 0.4rem;
   font-size: 0.74rem;
   font-weight: 600;
-  color: #1e7d52;
-  background: #e8f6ef;
-  border: 1px solid #b8e2cd;
+  /* Theme-safe translucent tint + token text (a hardcoded light fill made the
+     text unreadable in dark mode). */
+  color: var(--ayura-sage);
+  background: rgba(74, 222, 128, 0.10);
+  border: 1px solid rgba(74, 222, 128, 0.28);
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
   margin: 0.75rem 0;
@@ -3378,8 +3382,10 @@
   padding: 0.6rem 0.85rem;
   border: 1px solid;
 }
-.diet-safety-card.allergen { background: #fdecea; border-color: #e57373; }
-.diet-safety-card.viruddha { background: #fff7e6; border-color: #f0c36d; }
+/* Theme-safe translucent tints so the list text (var(--ayura-text)) stays
+   readable in BOTH themes — the old solid cream/pink fills were light-only. */
+.diet-safety-card.allergen { background: rgba(229, 115, 115, 0.12); border-color: rgba(229, 115, 115, 0.42); }
+.diet-safety-card.viruddha { background: rgba(240, 180, 90, 0.14); border-color: rgba(240, 180, 90, 0.45); }
 .diet-safety-title {
   display: flex;
   align-items: center;
@@ -3388,8 +3394,8 @@
   font-weight: 700;
   margin-bottom: 0.35rem;
 }
-.diet-safety-card.allergen .diet-safety-title { color: #c0392b; }
-.diet-safety-card.viruddha .diet-safety-title { color: #b9770e; }
+.diet-safety-card.allergen .diet-safety-title { color: var(--ayura-rose); }
+.diet-safety-card.viruddha .diet-safety-title { color: var(--ayura-amber); }
 .diet-safety-list {
   margin: 0;
   padding-left: 1.1rem;

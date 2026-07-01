@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import {
   ChevronRight,
 } from 'lucide-react'
@@ -36,7 +36,7 @@ export function renderValue(val) {
             const title = getCardTitle(item)
             const otherEntries = Object.entries(item).filter(([, v]) => v !== title)
             return (
-              <motion.div
+              <m.div
                 key={i}
                 className="plan-card"
                 initial={{ opacity: 0, y: 12 }}
@@ -85,7 +85,7 @@ export function renderValue(val) {
                     </div>
                   )
                 })}
-              </motion.div>
+              </m.div>
             )
           })}
         </div>
@@ -117,7 +117,3 @@ export function renderValue(val) {
 }
 
 // ── Diet dedicated renderer ───────────────────────────────────────────────────
-
-export const DOSHA_COLOR = { vata: '#a78bfa', pitta: '#f97316', kapha: '#34d399', default: '#2dd4bf' }
-
-export const DOSHA_COLORS_R = { vata: '#a78bfa', pitta: '#f97316', kapha: '#34d399', universal: '#2dd4bf' }

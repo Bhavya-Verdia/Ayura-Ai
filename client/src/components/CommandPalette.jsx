@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import {
   LayoutDashboard, MessageCircle, Leaf, Activity,
   CheckSquare, Bell, Settings, Search, ChevronRight, ShieldCheck,
@@ -62,7 +62,7 @@ export default function CommandPalette() {
     <AnimatePresence>
       {open && (
         <>
-          <motion.div
+          <m.div
             className="cmd-backdrop"
             onClick={close}
             initial={{ opacity: 0 }}
@@ -70,7 +70,7 @@ export default function CommandPalette() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
           />
-          <motion.div
+          <m.div
             className="cmd-panel"
             role="dialog"
             aria-modal="true"
@@ -131,7 +131,7 @@ export default function CommandPalette() {
               <span className="cmd-hint"><kbd>↵</kbd> open</span>
               <span className="cmd-hint"><kbd>⌘K</kbd> close</span>
             </div>
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

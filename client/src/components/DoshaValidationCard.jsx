@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { CalendarCheck } from 'lucide-react'
 import { profileAPI } from '../api/client'
+import { DOSHA_COLOR } from '../constants/dosha'
 import './DoshaValidationCard.css'
 
 const DOSHA_QUESTIONS = {
@@ -10,18 +11,12 @@ const DOSHA_QUESTIONS = {
   kapha: 'Have you felt more energised, lighter, or less congested over the past 2 weeks?',
 }
 
-const DOSHA_COLORS = {
-  vata: '#818cf8',
-  pitta: '#fb923c',
-  kapha: '#34d399',
-}
-
 export default function DoshaValidationCard({ vikritiDominant, onDone }) {
   const [status, setStatus] = useState('idle') // idle | submitting | done
 
   const question = DOSHA_QUESTIONS[vikritiDominant] ||
     'Have your wellness plans helped you feel more balanced over the past 2 weeks?'
-  const color = DOSHA_COLORS[vikritiDominant] || 'var(--ayura-teal)'
+  const color = DOSHA_COLOR[vikritiDominant] || DOSHA_COLOR.default
 
   async function submit(improved) {
     setStatus('submitting')
@@ -38,7 +33,7 @@ export default function DoshaValidationCard({ vikritiDominant, onDone }) {
   if (status === 'done') return null
 
   return (
-    <motion.div
+    <m.div
       className="dvc-card"
       style={{ borderLeftColor: color }}
       initial={{ opacity: 0, y: 12 }}
@@ -76,6 +71,6 @@ export default function DoshaValidationCard({ vikritiDominant, onDone }) {
           Remind me later
         </button>
       </div>
-    </motion.div>
+    </m.div>
   )
 }

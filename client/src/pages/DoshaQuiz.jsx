@@ -1,5 +1,5 @@
 import { useState, useEffect, Suspense, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../providers/AuthContext'
 import { profileAPI } from '../api/client'
@@ -397,7 +397,7 @@ function SpectrumSection({ title, scores, highlightDominant }) {
               {DOSHA_LABELS[dosha]}
             </span>
             <div className="da-dosha-bar-track">
-              <motion.div
+              <m.div
                 className="da-dosha-bar-fill"
                 style={{ background: DOSHA_COLORS[dosha] }}
                 initial={{ width: 0 }}
@@ -678,7 +678,7 @@ export default function DoshaQuiz() {
         <Helmet><title>Clarify Your Profile | Ayura AI</title></Helmet>
         <div className="da-orb da-orb-a" />
         <div className="da-orb da-orb-b" />
-        <motion.div
+        <m.div
           className="da-shell"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -700,7 +700,7 @@ export default function DoshaQuiz() {
                 {q.options.map((opt, optIdx) => {
                   const selected = clarifyAnswers[q.id] === opt.value
                   return (
-                    <motion.button
+                    <m.button
                       key={opt.value}
                       type="button"
                       className={`da-trait-card ${selected ? 'selected' : ''}`}
@@ -712,7 +712,7 @@ export default function DoshaQuiz() {
                       <span className="da-trait-label">{opt.label}</span>
                       <span className="da-trait-desc">{opt.desc}</span>
                       {selected && <span className="da-trait-check">✓</span>}
-                    </motion.button>
+                    </m.button>
                   )
                 })}
               </div>
@@ -720,7 +720,7 @@ export default function DoshaQuiz() {
           ))}
 
           <div className="da-confirm-actions" style={{ marginTop: 24 }}>
-            <motion.button
+            <m.button
               className="btn btn-primary btn-lg"
               disabled={!allAnswered}
               onClick={() => {
@@ -747,16 +747,16 @@ export default function DoshaQuiz() {
               whileTap={{ scale: 0.97 }}
             >
               Continue →
-            </motion.button>
-            <motion.button
+            </m.button>
+            <m.button
               className="btn btn-secondary"
               onClick={() => setPhase('confirm')}
               whileTap={{ scale: 0.97 }}
             >
               Skip — use initial result
-            </motion.button>
+            </m.button>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     )
   }
@@ -774,7 +774,7 @@ export default function DoshaQuiz() {
             <span className="da-loading-icon"><Leaf size={20} strokeWidth={2} /></span>
           </div>
           <AnimatePresence mode="wait">
-            <motion.p
+            <m.p
               key={loadingStep}
               className="da-loading-text"
               initial={{ opacity: 0, y: 8 }}
@@ -783,7 +783,7 @@ export default function DoshaQuiz() {
               transition={{ duration: 0.4 }}
             >
               {LOADING_STEPS[loadingStep]}
-            </motion.p>
+            </m.p>
           </AnimatePresence>
           <p className="da-loading-sub">Scoring your constitution with a deterministic Ashtavidha Pareeksha engine — AI writes the explanation.</p>
         </div>
@@ -802,7 +802,7 @@ export default function DoshaQuiz() {
         <Helmet><title>Confirm Your Results | Ayura AI</title></Helmet>
         <div className="da-orb da-orb-a" />
         <Suspense fallback={null}><LazyParticleField count={30} spread={18} style={{ opacity: 0.2 }} /></Suspense>
-        <motion.div
+        <m.div
           className="da-shell"
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -844,7 +844,7 @@ export default function DoshaQuiz() {
                 {keySignals.slice(0, 6).map((sig, i) => {
                   const rejected = rejectedSignals.includes(sig)
                   return (
-                    <motion.button
+                    <m.button
                       key={i}
                       type="button"
                       className={`da-confirm-chip${rejected ? ' rejected' : ''}`}
@@ -856,7 +856,7 @@ export default function DoshaQuiz() {
                       transition={{ delay: 0.05 + i * 0.06 }}
                     >
                       {rejected ? '✕' : '✓'} {sig}
-                    </motion.button>
+                    </m.button>
                   )
                 })}
               </div>
@@ -869,7 +869,7 @@ export default function DoshaQuiz() {
           )}
 
           <div className="da-confirm-actions">
-            <motion.button
+            <m.button
               className="btn btn-primary btn-lg"
               onClick={() => {
                 if (rejectedSignals.length > 0 && result) {
@@ -898,16 +898,16 @@ export default function DoshaQuiz() {
               whileTap={{ scale: 0.97 }}
             >
               Yes, this looks right →
-            </motion.button>
-            <motion.button
+            </m.button>
+            <m.button
               className="btn btn-secondary"
               onClick={retake}
               whileTap={{ scale: 0.97 }}
             >
               Not quite — retake
-            </motion.button>
+            </m.button>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     )
   }
@@ -938,7 +938,7 @@ export default function DoshaQuiz() {
         <div className="da-orb da-orb-b" />
         <Suspense fallback={null}><LazyParticleField count={40} spread={18} style={{ opacity: 0.25 }} /></Suspense>
 
-        <motion.div
+        <m.div
           className="da-shell"
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -1005,7 +1005,7 @@ export default function DoshaQuiz() {
                     {guna.charAt(0).toUpperCase() + guna.slice(1)}
                   </span>
                   <div className="da-dosha-bar-track">
-                    <motion.div
+                    <m.div
                       className="da-dosha-bar-fill"
                       style={{ background: DOSHA_COLORS[guna] }}
                       initial={{ width: 0 }}
@@ -1081,14 +1081,14 @@ export default function DoshaQuiz() {
               <span className="da-signals-label">Key signals from your assessment</span>
               <ul className="da-signals-list">
                 {keySignals.map((sig, i) => (
-                  <motion.li
+                  <m.li
                     key={i}
                     initial={{ opacity: 0, x: -12 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.4 + i * 0.1 }}
                   >
                     {sig}
-                  </motion.li>
+                  </m.li>
                 ))}
               </ul>
             </div>
@@ -1111,20 +1111,20 @@ export default function DoshaQuiz() {
           </div>
 
           <div className="da-result-actions">
-            <motion.button
+            <m.button
               className="btn btn-primary btn-lg"
               onClick={() => navigate('/dashboard')}
               whileTap={{ scale: 0.97 }}
             >
               Generate My Plans →
-            </motion.button>
-            <motion.button
+            </m.button>
+            <m.button
               className="btn btn-secondary"
               onClick={retake}
               whileTap={{ scale: 0.97 }}
             >
               Retake Assessment
-            </motion.button>
+            </m.button>
           </div>
 
           <div className="da-disclaimer-block">
@@ -1135,7 +1135,7 @@ export default function DoshaQuiz() {
               Note: Classical Nadi Pareeksha (pulse examination) requires physical assessment by a qualified Ayurvedic practitioner and cannot be fully replicated through self-report. For definitive Prakriti determination, consult a trained Vaidya.
             </p>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     )
   }
@@ -1148,7 +1148,7 @@ export default function DoshaQuiz() {
         <div className="da-orb da-orb-a" />
         <Suspense fallback={null}><LazyParticleField count={25} spread={20} style={{ opacity: 0.2 }} /></Suspense>
 
-        <motion.div
+        <m.div
           className="da-shell"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1172,7 +1172,7 @@ export default function DoshaQuiz() {
             {SYMPTOM_CLUSTERS.map((cluster) => {
               const selected = symptoms.includes(cluster.id)
               return (
-                <motion.button
+                <m.button
                   key={cluster.id}
                   type="button"
                   className={`da-symptom-chip ${selected ? 'selected' : ''}`}
@@ -1183,29 +1183,29 @@ export default function DoshaQuiz() {
                   <span className="da-chip-label">{cluster.label}</span>
                   <span className="da-chip-desc">{cluster.desc}</span>
                   {selected && <span className="da-chip-check">✓</span>}
-                </motion.button>
+                </m.button>
               )
             })}
           </div>
 
           {error && (
-            <motion.div className="da-error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <m.div className="da-error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               {error}
-            </motion.div>
+            </m.div>
           )}
 
           <div className="da-symptom-footer">
-            <motion.button
+            <m.button
               type="button"
               className="btn btn-primary btn-lg"
               onClick={runAssessment}
               whileTap={{ scale: 0.97 }}
             >
               Assess My Dosha →
-            </motion.button>
+            </m.button>
             <p className="da-symptom-note">Your answers are scored by a deterministic classical Ayurvedic engine — AI only writes your personalised explanation.</p>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     )
   }
@@ -1218,7 +1218,7 @@ export default function DoshaQuiz() {
       <div className="da-orb da-orb-b" />
       <Suspense fallback={null}><LazyParticleField count={25} spread={20} style={{ opacity: 0.2 }} /></Suspense>
 
-      <motion.div
+      <m.div
         className="da-shell"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1240,7 +1240,7 @@ export default function DoshaQuiz() {
         </div>
 
         <div className="da-progress-track">
-          <motion.div
+          <m.div
             className="da-progress-fill"
             animate={{ width: `${traitProgress}%` }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -1251,7 +1251,7 @@ export default function DoshaQuiz() {
 
         <div className="da-trait-card-area">
           <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
+            <m.div
               key={traitIndex}
               custom={direction}
               variants={stepVariants}
@@ -1266,7 +1266,7 @@ export default function DoshaQuiz() {
                 {currentTraitQ.options.map((opt, optIdx) => {
                   const selected = traits[currentTraitQ.id] === opt.value
                   return (
-                    <motion.button
+                    <m.button
                       key={opt.value}
                       type="button"
                       className={`da-trait-card ${selected ? 'selected' : ''}`}
@@ -1278,18 +1278,18 @@ export default function DoshaQuiz() {
                       <span className="da-trait-label">{opt.label}</span>
                       <span className="da-trait-desc">{opt.desc}</span>
                       {selected && <span className="da-trait-check">✓</span>}
-                    </motion.button>
+                    </m.button>
                   )
                 })}
               </div>
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </div>
 
         <p className="da-disclaimer">
           Answer honestly based on your lifelong patterns — not what you wish were true. This helps build an accurate Ayurvedic profile.
         </p>
-      </motion.div>
+      </m.div>
     </div>
   )
 }

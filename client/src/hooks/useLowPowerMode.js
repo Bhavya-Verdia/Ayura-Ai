@@ -14,8 +14,11 @@ export default function useLowPowerMode() {
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return
+    // 900px matches MainLayout's isMobile breakpoint so the stripped-down
+    // background and the mobile layout switch at the same width (no dead zone
+    // where you'd get the desktop sidebar with the low-power background).
     const mq = window.matchMedia(
-      '(max-width: 820px), (pointer: coarse), (prefers-reduced-motion: reduce)'
+      '(max-width: 900px), (pointer: coarse), (prefers-reduced-motion: reduce)'
     )
     const update = () => setLow(mq.matches)
     update()

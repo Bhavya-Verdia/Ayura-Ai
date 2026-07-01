@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 
 export default function ScrollToTop() {
   const [visible, setVisible] = useState(false)
@@ -19,7 +19,7 @@ export default function ScrollToTop() {
   return (
     <AnimatePresence>
       {visible && (
-        <motion.button
+        <m.button
           className="scroll-to-top"
           onClick={scrollUp}
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
@@ -32,7 +32,7 @@ export default function ScrollToTop() {
           title="Back to top"
         >
           ↑
-        </motion.button>
+        </m.button>
       )}
     </AnimatePresence>
   )

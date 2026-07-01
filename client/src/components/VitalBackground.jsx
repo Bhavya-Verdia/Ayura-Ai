@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { useTheme } from '../providers/ThemeProvider'
 import useLowPowerMode from '../hooks/useLowPowerMode'
 
@@ -18,7 +18,7 @@ function VitalPaths({ side = 1 }) {
   return (
     <svg className="vital-paths" viewBox="0 0 760 420" preserveAspectRatio="none" aria-hidden="true">
       {paths.map((path) => (
-        <motion.path
+        <m.path
           key={`${side}-${path.id}`}
           d={path.d}
           stroke="currentColor"
@@ -47,7 +47,7 @@ function PulseLines() {
   return (
     <svg className="vital-pulse-lines" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
       {[0, 1, 2].map((row) => (
-        <motion.path
+        <m.path
           key={row}
           d={`M0 ${82 + row * 72}
               C120 ${72 + row * 18}, 180 ${118 + row * 10}, 260 ${92 + row * 18}

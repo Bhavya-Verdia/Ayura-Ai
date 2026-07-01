@@ -12,8 +12,9 @@ test.describe('Landing Page', () => {
   test('should display the main hero headline', async ({ page }) => {
     await page.goto('/');
 
-    // Look for the main headline
-    const headline = page.locator('h1').first();
+    // Look for the main headline. The visible hero is an <h2 class="lnd-hero-title">
+    // (a keyword-rich <h1 class="sr-only"> exists separately for SEO).
+    const headline = page.locator('.lnd-hero-title');
     await expect(headline).toBeVisible();
     await expect(headline).toContainText(/Your.*wellness/i);
   });
@@ -29,6 +30,6 @@ test.describe('Landing Page', () => {
 
     // Verify we navigated to the login page
     await expect(page).toHaveURL(/.*\/login/);
-    await expect(page.locator('h1').filter({ hasText: 'Sign in' })).toBeVisible();
+    await expect(page.locator('.auth-card-title')).toContainText('Welcome');
   });
 });

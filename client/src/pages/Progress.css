@@ -42,7 +42,7 @@
   margin-bottom: 36px;
 }
 .prg-title {
-  font-size: 2.4rem;
+  font-size: var(--fs-h1);
   margin: 0;
   flex: 1;
 }
@@ -330,5 +330,4 @@
 @media (max-width: 540px) {
   .prg-stat-row { grid-template-columns: 1fr; }
   .prg-log-grid { grid-template-columns: 1fr; }
-  .prg-title { font-size: 1.8rem; }
 }

@@ -2,7 +2,7 @@ import React from 'react'
 import {
   Sun, Leaf, Sparkles, AlertTriangle, Droplets, Calendar, ShieldCheck, Flame, Beaker, ArrowRight,
 } from 'lucide-react'
-import { DOSHA_COLOR } from './shared'
+import { DOSHA_COLOR } from '../../constants/dosha'
 
 const PHASE_ICON  = { purvakarma: Droplets, pradhana: Flame, paschat: Sparkles }
 

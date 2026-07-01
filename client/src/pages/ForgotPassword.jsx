@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { authAPI } from '../api/client'
@@ -52,7 +52,7 @@ export default function ForgotPassword() {
 
       {/* ── RIGHT — form ── */}
       <div className="auth-right">
-        <motion.div
+        <m.div
           className="auth-form-wrap"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -65,7 +65,7 @@ export default function ForgotPassword() {
 
           <AnimatePresence mode="wait">
             {status === 'success' ? (
-              <motion.div
+              <m.div
                 key="success"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -80,9 +80,9 @@ export default function ForgotPassword() {
                 <Link to="/login" className="auth-submit-btn" style={{ textDecoration: 'none' }}>
                   Return to Sign In
                 </Link>
-              </motion.div>
+              </m.div>
             ) : (
-              <motion.form
+              <m.form
                 key="form"
                 className="auth-form"
                 onSubmit={handleSubmit}
@@ -91,14 +91,14 @@ export default function ForgotPassword() {
               >
                 <AnimatePresence>
                   {status === 'error' && (
-                    <motion.div
+                    <m.div
                       className="auth-error"
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
                     >
                       {errorMsg}
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
 
@@ -108,6 +108,7 @@ export default function ForgotPassword() {
                     id="email"
                     className="auth-input"
                     type="email"
+                    autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
@@ -116,7 +117,7 @@ export default function ForgotPassword() {
                   />
                 </div>
 
-                <motion.button
+                <m.button
                   type="submit"
                   className="auth-submit-btn"
                   disabled={status === 'loading'}
@@ -127,8 +128,8 @@ export default function ForgotPassword() {
                   ) : (
                     'Send Reset Link →'
                   )}
-                </motion.button>
-              </motion.form>
+                </m.button>
+              </m.form>
             )}
           </AnimatePresence>
 
@@ -137,7 +138,7 @@ export default function ForgotPassword() {
               Remember your password? <Link to="/login" className="auth-link">Sign in</Link>
             </p>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </div>
   )

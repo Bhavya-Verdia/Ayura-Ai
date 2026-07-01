@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   Sun, Leaf, Coffee, AlertTriangle, Star, Droplets, ShieldCheck, Flame, Moon, Timer, Target, ChevronDown, ChevronUp, Flower2, UtensilsCrossed, Clock, Soup, Apple, CupSoda, BookOpen, TriangleAlert,
 } from 'lucide-react'
-import { DOSHA_COLOR } from './shared'
+import { DOSHA_COLOR } from '../../constants/dosha'
 import { RemedyView } from './RemedyView'
 
 const DIET_MEAL_ICONS = {

@@ -96,14 +96,18 @@ _DRUG_HERB_MAP: dict[str, list[str]] = {
 def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
     filtered_results = []
 
-    symptoms = symptom_input.get("symptoms", [])
-    severity = symptom_input.get("severity", {})
-    duration = symptom_input.get("duration", {})
+    # Use `or <default>` (not the .get default) so a present-but-null field —
+    # e.g. current_medications: None on a user who never set meds — coerces to an
+    # empty collection instead of None, which would blow up the `for … in` loops
+    # below with "'NoneType' object is not iterable".
+    symptoms = symptom_input.get("symptoms") or []
+    severity = symptom_input.get("severity") or {}
+    duration = symptom_input.get("duration") or {}
 
     pregnancy_or_nursing = user_profile.get("pregnancy_or_nursing", False)
-    current_meds = user_profile.get("current_medications", [])
-    medical_history = user_profile.get("medical_history", [])
-    allergies = user_profile.get("allergies", [])
+    current_meds = user_profile.get("current_medications") or []
+    medical_history = user_profile.get("medical_history") or []
+    allergies = user_profile.get("allergies") or []
     dominant_dosha = user_profile.get("dominant_dosha", "vata").lower()
     secondary_dosha = user_profile.get("secondary_dosha", "pitta").lower()
 
@@ -146,7 +150,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                 return False, None
 
             # Extract text to search for ingredients
-            ingredients_list = cand_remedy.get("ingredients", [])
+            ingredients_list = cand_remedy.get("ingredients") or []
             ingredients_text = " ".join([i.get("item", "").lower() for i in ingredients_list])
 
             # e) Medical contraindication

@@ -5,14 +5,20 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Single deploy method, mirroring deploy.sh: sync source to the droplet and build
+# the images from source there (docker-compose.yml uses `build:`, not prebuilt
+# images — the previous GHCR pull approach could never match it, and it also
+# targeted the wrong path /opt/ayura instead of /opt/ayuraai).
+#
+# Requires one repo secret: DEPLOY_SSH_KEY = the private SSH key for the droplet.
+# Host/dir are not secret (already committed in deploy.sh).
 env:
-  REGISTRY: ghcr.io
-  API_IMAGE: ${{ github.repository_owner }}/ayura-api
-  WEB_IMAGE: ${{ github.repository_owner }}/ayura-web
+  DEPLOY_HOST: 64.227.191.87
+  REMOTE_DIR: /opt/ayuraai
 
 jobs:
   # ─────────────────────────────────────────────────────────────────
-  # 1. Run existing CI checks first
+  # 1. CI gates — deploy only runs if these pass
   # ─────────────────────────────────────────────────────────────────
   ci-backend:
     runs-on: ubuntu-latest
@@ -46,114 +52,43 @@ jobs:
       - run: npm run build
 
   # ─────────────────────────────────────────────────────────────────
-  # 2. Build and push Docker images (only if CI passes)
-  # ─────────────────────────────────────────────────────────────────
-  build-and-push:
-    needs: [ci-backend, ci-frontend]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Extract metadata for API image
-        id: api-meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.API_IMAGE }}
-          tags: |
-            type=sha,prefix=,format=short
-            type=raw,value=latest
-
-      - name: Build and push API image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./server
-          file: ./server/Dockerfile
-          push: true
-          tags: ${{ steps.api-meta.outputs.tags }}
-          labels: ${{ steps.api-meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Extract metadata for Web image
-        id: web-meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.WEB_IMAGE }}
-          tags: |
-            type=sha,prefix=,format=short
-            type=raw,value=latest
-
-      - name: Build and push Web image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./client
-          file: ./client/Dockerfile
-          push: true
-          tags: ${{ steps.web-meta.outputs.tags }}
-          labels: ${{ steps.web-meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # Expose the short SHA tag for the deploy job
-      - name: Output image tag
-        id: image-tag
-        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-
-    outputs:
-      sha: ${{ steps.image-tag.outputs.sha }}
-
-  # ─────────────────────────────────────────────────────────────────
-  # 3. Deploy to production server via SSH
+  # 2. Deploy: rsync source → droplet, build + restart there
   # ─────────────────────────────────────────────────────────────────
   deploy:
-    needs: build-and-push
+    needs: [ci-backend, ci-frontend]
     runs-on: ubuntu-latest
     environment: production
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT || 22 }}
-          envs: REGISTRY,API_IMAGE,WEB_IMAGE
-          script: |
-            set -e
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
 
-            # Pull latest compose file
-            cd /opt/ayura
-            git pull origin main
+      - name: Sync source to server
+        # No --delete, and .env is never in the CI checkout, so the droplet keeps
+        # its own runtime state (.env, server/uploads, seeded server/data/chromadb).
+        run: |
+          rsync -az \
+            --exclude='.git' \
+            --exclude='.env' \
+            --exclude='**/.env' \
+            --exclude='client/node_modules' \
+            --exclude='server/venv' \
+            --exclude='server/data/chromadb' \
+            --exclude='**/__pycache__' \
+            --exclude='*.pyc' \
+            -e "ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=accept-new" \
+            ./ "root@$DEPLOY_HOST:$REMOTE_DIR/"
 
-            # Authenticate with GHCR
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            # Pull new images
-            docker pull ${{ env.REGISTRY }}/${{ env.API_IMAGE }}:latest
-            docker pull ${{ env.REGISTRY }}/${{ env.WEB_IMAGE }}:latest
-
-            # Restart services with zero-downtime rolling update
-            docker compose up -d --no-build --pull=never api web
-
-            # Health check
-            sleep 10
-            curl --fail http://localhost:8000/api/health || (docker compose logs api --tail=50 && exit 1)
-
-            echo "✅ Deployment complete"
+      - name: Build & restart on server
+        run: |
+          ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=accept-new "root@$DEPLOY_HOST" \
+            "cd $REMOTE_DIR \
+             && docker compose build api web worker \
+             && docker compose up -d --force-recreate api web worker \
+             && sleep 10 \
+             && curl --fail http://localhost:8000/api/health"

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   Leaf, Pill, Sparkles, Droplets, Calendar, ShieldCheck, Flame, ChevronDown, ChevronUp, UtensilsCrossed, Clock, BookOpen, Stethoscope, Layers, TriangleAlert, Snowflake,
 } from 'lucide-react'
-import { DOSHA_COLORS_R } from './shared'
+import { DOSHA_COLORS_R } from '../../constants/dosha'
 import { RoutineView } from './RoutineView'
 
 const TIER_LABEL = { 1: 'OTC Safe', 2: 'Practitioner Advised' }

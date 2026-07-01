@@ -4,7 +4,7 @@ import { privacyAPI, profileAPI, exportAPI } from '../api/client'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Helmet } from 'react-helmet-async'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../providers/ThemeProvider'
 import {
   Camera, Save, Brain, KeyRound, FileText, Table2,
@@ -385,25 +385,25 @@ export default function Settings() {
       <div className="settings-bg-orb settings-bg-orb-a" />
       <div className="settings-bg-orb settings-bg-orb-b" />
 
-      <motion.div
+      <m.div
         className="settings-container"
         variants={staggerContainer}
         initial="initial"
         animate="animate"
       >
-        <motion.div variants={staggerItem} className="settings-header">
+        <m.div variants={staggerItem} className="settings-header">
           <div>
             <h1 className="settings-page-title">Settings</h1>
             <p className="settings-page-sub">Manage your profile, health data, and account</p>
           </div>
-          <motion.button className="btn btn-secondary" onClick={() => navigate('/dashboard')} whileTap={{ scale: 0.97 }}>
+          <m.button className="btn btn-secondary" onClick={() => navigate('/dashboard')} whileTap={{ scale: 0.97 }}>
             ← Back to Dashboard
-          </motion.button>
-        </motion.div>
+          </m.button>
+        </m.div>
 
         <AnimatePresence>
           {notice.message && (
-            <motion.div
+            <m.div
               className={`settings-notice ${notice.type}`}
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -411,17 +411,17 @@ export default function Settings() {
               transition={{ duration: 0.3 }}
             >
               {notice.message}
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
         {/* Account Info */}
-        <motion.div className="settings-card" variants={staggerItem}>
+        <m.div className="settings-card" variants={staggerItem}>
           <h2 className="settings-section-title">Account</h2>
           <div className="settings-account-row">
             <div className="settings-avatar-wrap">
               {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="settings-avatar-img" />
+                <img src={avatarUrl} alt="Avatar" className="settings-avatar-img" loading="lazy" decoding="async" />
               ) : (
                 <div className="settings-avatar-placeholder">
                   {profile?.name?.charAt(0)?.toUpperCase() || '?'}
@@ -441,10 +441,10 @@ export default function Settings() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Theme Settings */}
-        <motion.div className="settings-card" variants={staggerItem}>
+        <m.div className="settings-card" variants={staggerItem}>
           <h2 className="settings-section-title">Preferences</h2>
           <div className="settings-pref-row">
             <div>
@@ -517,10 +517,10 @@ export default function Settings() {
               <option value="hi">हिंदी (Hindi)</option>
             </select>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Profile form */}
-        <motion.form className="settings-card" onSubmit={saveProfile} variants={staggerItem}>
+        <m.form className="settings-card" onSubmit={saveProfile} variants={staggerItem}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
             <h2 className="settings-section-title" style={{ margin: 0 }}>Health Profile</h2>
             {autoSaveStatus === 'saving' && (
@@ -652,18 +652,18 @@ export default function Settings() {
           </div>
 
           <div className="settings-action-row">
-            <motion.button className="btn btn-primary" type="submit" disabled={saving} whileTap={{ scale: 0.97 }}>
+            <m.button className="btn btn-primary" type="submit" disabled={saving} whileTap={{ scale: 0.97 }}>
               {saving ? 'Saving…' : <><Save size={16} strokeWidth={2} /> Save Profile</>}
-            </motion.button>
-            <motion.button className="btn btn-secondary" type="button" onClick={() => navigate('/onboarding?retake=true')} whileTap={{ scale: 0.97 }}>
+            </m.button>
+            <m.button className="btn btn-secondary" type="button" onClick={() => navigate('/onboarding?retake=true')} whileTap={{ scale: 0.97 }}>
               <Brain size={16} strokeWidth={2} /> Retake Dosha Quiz
-            </motion.button>
+            </m.button>
           </div>
-        </motion.form>
+        </m.form>
 
         {/* Password Change (local auth only) */}
         {isLocal && (
-          <motion.form className="settings-card" onSubmit={changePassword} variants={staggerItem}>
+          <m.form className="settings-card" onSubmit={changePassword} variants={staggerItem}>
             <h2 className="settings-section-title">Change Password</h2>
             <div className="settings-grid">
               <div className="input-group">
@@ -679,44 +679,44 @@ export default function Settings() {
                 <input type="password" value={passwords.confirm} onChange={e => setPasswords(p => ({ ...p, confirm: e.target.value }))} required />
               </div>
             </div>
-            <motion.button className="btn btn-primary" type="submit" disabled={savingPw} style={{ marginTop: '16px' }} whileTap={{ scale: 0.97 }}>
+            <m.button className="btn btn-primary" type="submit" disabled={savingPw} style={{ marginTop: '16px' }} whileTap={{ scale: 0.97 }}>
               {savingPw ? 'Changing…' : <><KeyRound size={16} strokeWidth={2} /> Change Password</>}
-            </motion.button>
-          </motion.form>
+            </m.button>
+          </m.form>
         )}
 
         {/* Export wellness data */}
-        <motion.div className="settings-card" variants={staggerItem}>
+        <m.div className="settings-card" variants={staggerItem}>
           <h2 className="settings-section-title">Export Wellness Data</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 20 }}>
             Download a Vaidya-handoff PDF — your Prakriti &amp; Vikriti assessment, Agni, Ama, Ojas, conditions, and plans in one summary to share with your Ayurvedic physician — or export your progress logs as a CSV spreadsheet.
           </p>
           <div className="settings-action-row">
-            <motion.button className="btn btn-primary" onClick={downloadPdf} disabled={exportingPdf} whileTap={{ scale: 0.97 }}>
+            <m.button className="btn btn-primary" onClick={downloadPdf} disabled={exportingPdf} whileTap={{ scale: 0.97 }}>
               {exportingPdf ? 'Generating…' : <><FileText size={16} strokeWidth={2} /> Download Vaidya Report (PDF)</>}
-            </motion.button>
-            <motion.button className="btn btn-secondary" onClick={downloadCsv} disabled={exportingCsv} whileTap={{ scale: 0.97 }}>
+            </m.button>
+            <m.button className="btn btn-secondary" onClick={downloadCsv} disabled={exportingCsv} whileTap={{ scale: 0.97 }}>
               {exportingCsv ? 'Exporting…' : <><Table2 size={16} strokeWidth={2} /> Download Progress CSV</>}
-            </motion.button>
+            </m.button>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Danger zone */}
-        <motion.div className="settings-card settings-danger" variants={staggerItem}>
+        <m.div className="settings-card settings-danger" variants={staggerItem}>
           <h2 className="settings-section-title settings-danger-title">Account Actions</h2>
           <div className="settings-action-row">
-            <motion.button className="btn btn-secondary" onClick={exportAccountData} whileTap={{ scale: 0.97 }}>
+            <m.button className="btn btn-secondary" onClick={exportAccountData} whileTap={{ scale: 0.97 }}>
               <Package size={16} strokeWidth={2} /> Export Data
-            </motion.button>
-            <motion.button className="btn btn-secondary" onClick={() => { logout(); navigate('/login') }} whileTap={{ scale: 0.97 }}>
+            </m.button>
+            <m.button className="btn btn-secondary" onClick={() => { logout(); navigate('/login') }} whileTap={{ scale: 0.97 }}>
               <LogOut size={16} strokeWidth={2} /> Log Out
-            </motion.button>
-            <motion.button className="btn btn-secondary settings-btn-danger" onClick={deleteAccount} whileTap={{ scale: 0.97 }}>
+            </m.button>
+            <m.button className="btn btn-secondary settings-btn-danger" onClick={deleteAccount} whileTap={{ scale: 0.97 }}>
               <Trash2 size={16} strokeWidth={2} /> Delete Account
-            </motion.button>
+            </m.button>
           </div>
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
     </div>
     </>
   )

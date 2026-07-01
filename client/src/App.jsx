@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { Toaster } from 'sonner'
 import { useAuth } from './providers/AuthContext'
 import { useTheme } from './providers/ThemeProvider'
@@ -72,18 +72,20 @@ const pageTransitionFast  = { duration: 0.15 }
 function PageWrapper({ children }) {
   const prefersReducedMotion = useReducedMotion()
   return (
-    <motion.div
+    <m.div
       variants={prefersReducedMotion ? pageVariantsReduced : pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
       transition={prefersReducedMotion ? pageTransitionFast : pageTransition}
-      style={{ minHeight: '100vh' }}
+      style={{ minHeight: '100dvh' }}
+      id="main-content"
+      tabIndex={-1}
     >
       <Suspense fallback={<FullPageSpinner />}>
         {children}
       </Suspense>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -139,6 +141,7 @@ export default function App() {
 
   return (
     <>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <VitalBackground />
       {CALM_BG_ROUTES.has(location.pathname) && <MeditationCanvas />}
       <ErrorBoundary>

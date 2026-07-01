@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   Sun, Leaf, AlertTriangle, Droplets, ShieldCheck, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain,
 } from 'lucide-react'
-import { DOSHA_COLOR } from './shared'
+import { DOSHA_COLOR } from '../../constants/dosha'
 
 const SNS_BREATH_COLOR = { 'Inhale': '#3b82f6', 'Exhale': '#ef4444', 'Natural': '#6b7280', 'Exhale — hold 3-5 breaths': '#ef4444' }
 
@@ -389,7 +389,7 @@ export function YogaView({ plan }) {
                                   {isOpen && (
                                     <div className="yoga-pose-expand">
                                       {hasValidImg && (
-                                        <img src={p.image_url} alt={p.pose_name} className="yoga-pose-image" />
+                                        <img src={p.image_url} alt={p.pose_name} className="yoga-pose-image" loading="lazy" decoding="async" />
                                       )}
                                       {p.instructions?.length > 0 && (
                                         <ol className="yoga-pose-instructions">

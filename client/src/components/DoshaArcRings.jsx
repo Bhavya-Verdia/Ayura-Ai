@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 const DOSHA_CONFIG = {
   vata:  { color: '#818CF8', label: 'Vata',  score: 65 },
@@ -67,7 +67,7 @@ export default function DoshaArcRings({
                   strokeWidth={strokeWidth}
                 />
                 {/* Animated fill arc */}
-                <motion.circle
+                <m.circle
                   cx={cx} cy={cy} r={radius}
                   fill="none"
                   stroke={cfg.color}

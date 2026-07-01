@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import client from '../api/client';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Bot, Send, Sparkles, AlertTriangle, Loader2, Zap, Copy, Check, ChevronDown, Leaf, Soup, ClipboardList, Lightbulb, AlarmClock } from 'lucide-react';
 import './Dashboard.css';
 import './Chat.css';
@@ -301,6 +301,7 @@ export default function Chat() {
                       className="chat-copy-btn"
                       onClick={() => copyMessage(msg.content, idx)}
                       title="Copy message"
+                      aria-label="Copy message"
                     >
                       {copiedIdx === idx
                         ? <Check size={12} strokeWidth={2.5} />
@@ -335,7 +336,7 @@ export default function Chat() {
         {/* Scroll-to-bottom FAB */}
         <AnimatePresence>
           {showScrollFab && (
-            <motion.button
+            <m.button
               className="chat-scroll-fab"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -348,7 +349,7 @@ export default function Chat() {
               aria-label="Scroll to bottom"
             >
               <ChevronDown size={18} strokeWidth={2.5} />
-            </motion.button>
+            </m.button>
           )}
         </AnimatePresence>
 
@@ -366,7 +367,7 @@ export default function Chat() {
               disabled={isLoading}
               rows={1}
             />
-            <button type="submit" className="chat-send-btn" disabled={isLoading || !inputValue.trim()}>
+            <button type="submit" className="chat-send-btn" disabled={isLoading || !inputValue.trim()} aria-label="Send message">
               <Send size={18} strokeWidth={2.5} />
             </button>
           </div>

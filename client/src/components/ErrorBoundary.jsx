@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
 import './ErrorBoundary.css'
 
@@ -27,7 +27,7 @@ class ErrorBoundaryInner extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="error-boundary-page">
-          <motion.div
+          <m.div
             className="error-boundary-card"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -47,7 +47,7 @@ class ErrorBoundaryInner extends React.Component {
                 Go to Dashboard
               </a>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       )
     }

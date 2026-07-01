@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { AuthContext } from '../providers/AuthContext'
 import LoadingScreen from '../components/LoadingScreen'
@@ -12,6 +12,7 @@ import {
 import ScrollToTop from '../components/ScrollToTop'
 import FeedbackWidget from '../components/FeedbackWidget'
 import CommandPalette from '../components/CommandPalette'
+import { DOSHA_COLOR } from '../constants/dosha'
 import '../pages/Dashboard.css'
 import './MainLayout.css'
 
@@ -44,13 +45,17 @@ const BOTTOM_NAV = [
   { id: 'settings',  label: 'More',      Icon: Settings,        path: '/settings' },
 ]
 
-const DOSHA_COLOR = { vata: '#818CF8', pitta: '#FB923C', kapha: '#2DD4BF' }
-
 export default function MainLayout() {
   const { user, logout } = useContext(AuthContext)
   const { t } = useTranslation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  // Initialise synchronously from the real viewport so the first paint already
+  // matches the device — avoids the flash where the desktop sidebar renders for
+  // one frame on a phone before JS measures. (MainLayout is auth-only and never
+  // prerendered, so `window` is always available here; guarded anyway.)
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 900
+  )
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 900)
@@ -61,14 +66,14 @@ export default function MainLayout() {
 
   const location = useLocation()
   const prefersReducedMotion = useReducedMotion()
-  const doshaBadgeColor = DOSHA_COLOR[user?.dominant_dosha?.toLowerCase()] || '#2DD4BF'
+  const doshaBadgeColor = DOSHA_COLOR[user?.dominant_dosha?.toLowerCase()] || DOSHA_COLOR.default
   const initials = user?.name ? user.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() : 'AY'
 
   return (
     <div className="dash-root">
       {/* Mobile sidebar overlay */}
       {isMobile && sidebarOpen && (
-        <motion.button
+        <m.button
           className="dash-overlay"
           onClick={() => setSidebarOpen(false)}
           aria-label="Close menu"
@@ -119,7 +124,14 @@ export default function MainLayout() {
                   <>
                     <Icon size={18} strokeWidth={isActive ? 2.5 : 2} className="dash-nav-icon-svg" />
                     <span className="dash-nav-label">{t(item.i18nKey) || item.label}</span>
-                    {isActive && <motion.div className="dash-nav-indicator" layoutId="navIndicator" />}
+                    {isActive && (
+                      <m.div
+                        className="dash-nav-indicator"
+                        initial={{ opacity: 0, scaleY: 0.4 }}
+                        animate={{ opacity: 1, scaleY: 1 }}
+                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                      />
+                    )}
                   </>
                 )}
               </NavLink>
@@ -136,7 +148,9 @@ export default function MainLayout() {
       {/* ── MAIN CONTENT ── */}
       <div
         className={`dash-main-container${isMobile ? ' mobile' : ''}`}
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}
+        /* 100dvh (dynamic viewport) tracks Android/iOS URL-bar show/hide so the
+           shell doesn't overflow or leave a gap when the bar animates. */
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}
       >
         {/* Mobile topbar */}
         {isMobile && (
@@ -155,13 +169,13 @@ export default function MainLayout() {
         )}
 
         <AnimatePresence mode="wait" initial={false}>
-          <motion.div
+          <m.div
             key={location.pathname}
             initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={prefersReducedMotion ? {} : { opacity: 0, y: -6 }}
             transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            style={{ flex: 1, overflowY: 'auto', paddingBottom: isMobile ? '72px' : 0, height: '100%' }}
+            style={{ flex: 1, overflowY: 'auto', paddingBottom: isMobile ? 'calc(72px + env(safe-area-inset-bottom))' : 0, height: '100%' }}
           >
             <ScrollToTop />
             <React.Suspense fallback={
@@ -174,7 +188,7 @@ export default function MainLayout() {
               <Outlet />
             </React.Suspense>
             <FeedbackWidget />
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </div>
 
@@ -192,12 +206,12 @@ export default function MainLayout() {
               >
                 {({ isActive }) => (
                   <>
-                    <motion.div
+                    <m.div
                       animate={isActive ? { scale: 1.12, y: -2 } : { scale: 1, y: 0 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                     >
                       <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                    </motion.div>
+                    </m.div>
                     <span>{item.label}</span>
                   </>
                 )}

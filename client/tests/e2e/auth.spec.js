@@ -5,7 +5,7 @@ test.describe('Authentication Flow', () => {
     await page.goto('/login');
 
     // Make sure we are on the login page
-    await expect(page.locator('h1').filter({ hasText: 'Sign in' })).toBeVisible();
+    await expect(page.locator('.auth-card-title')).toContainText('Welcome');
 
     // Click the submit button without filling in fields
     const submitButton = page.getByRole('button', { name: 'Sign In →' });
@@ -47,6 +47,6 @@ test.describe('Authentication Flow', () => {
     await createAccountLink.click();
 
     await expect(page).toHaveURL(/.*\/register/);
-    await expect(page.locator('h1').filter({ hasText: 'Create account' })).toBeVisible();
+    await expect(page.locator('.auth-card-title')).toContainText('Begin your journey');
   });
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { preferencesAPI } from '../api/client';
 import './PreferencesModal.css';
@@ -637,7 +637,7 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
   return (
     <AnimatePresence>
       <div className="pref-modal-overlay">
-        <motion.div 
+        <m.div 
           className="pref-modal-content"
           initial={{ opacity: 0, y: 30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -663,7 +663,7 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
               </button>
             </div>
           </form>
-        </motion.div>
+        </m.div>
       </div>
     </AnimatePresence>
   );

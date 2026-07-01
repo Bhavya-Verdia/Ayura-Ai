@@ -36,10 +36,13 @@ const ROUTES = [
   { path: '/dosha-test', selector: '.dt-hero-title',  out: 'dist/dosha-test.html' },
 ]
 
+const PORT = 4174
+const PREVIEW_ORIGIN = `http://localhost:${PORT}`
+
 console.log('🔧  Starting Vite preview server…')
 const server = await preview({
   root,
-  preview: { port: 4174, host: false, open: false },
+  preview: { port: PORT, host: false, open: false },
 })
 
 console.log('🌐  Launching Chromium…')
@@ -57,7 +60,7 @@ try {
   await page.route('https://fonts.googleapis.com/**', route => route.continue())
 
   for (const { path, selector, out } of ROUTES) {
-    await page.goto(`http://localhost:4174${path}`, {
+    await page.goto(`${PREVIEW_ORIGIN}${path}`, {
       waitUntil: 'networkidle',
       timeout: 25000,
     })
@@ -70,7 +73,11 @@ try {
     // Brief pause for any remaining paint
     await page.waitForTimeout(800)
 
-    const html = await page.content()
+    // React.lazy chunks trigger runtime-injected <link rel="modulepreload"> whose
+    // href resolves to the preview server's absolute origin. Rewrite that origin to
+    // root-relative so the saved HTML doesn't ship dead http://localhost:4174/…
+    // preloads to production.
+    const html = (await page.content()).split(PREVIEW_ORIGIN).join('')
     const outPath = resolve(root, out)
     mkdirSync(dirname(outPath), { recursive: true })
     writeFileSync(outPath, html, 'utf8')

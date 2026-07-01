@@ -1,0 +1,145 @@
+# Ayura AI — Frontend Review (2026-07-01)
+
+## ✅ Implementation status (updated 2026-07-01)
+
+**Done & verified (ESLint clean, prod build + prerender pass):**
+- **P0-1 Dosha colors unified** → new `src/constants/dosha.js` is the single source of truth;
+  removed 6 conflicting local maps (MainLayout, Dashboard, RoutineView, shared.jsx,
+  DoshaValidationCard). Kapha/vata/pitta now render identically everywhere.
+- **P0-2 Toast consolidated to sonner** → migrated `ReloadPrompt` (now uses sonner's action
+  button) + `FeedbackWidget`; deleted `ToastProvider.jsx` + `ToastContext.js` and the wrapper
+  in `main.jsx`.
+- **Dead files removed** → `LanguageSwitcher.jsx/.css` (unused), `public/manifest.json`
+  (unreferenced; PWA plugin generates its own). No dangling refs.
+- **z-index scale** → added `--z-sticky/-sidebar/-overlay/-popover/-modal/-top` and tokenized
+  every offender across the CSS (value-preserving, zero visual change).
+- **Perf** → `loading="lazy" decoding="async"` on the yoga pose images + Settings avatar.
+- **a11y** → skip-to-content link (App + index.css); aria-labels on Chat send/copy + Reminders
+  toast close.
+- **Breakpoint scale documented** in index.css (canonical set for new media queries).
+
+**LazyMotion conversion — DONE (lint + build + prerender green):**
+- Converted `motion.*` → `m.*` across all 36 files + wrapped the app in
+  `<LazyMotion features={domAnimation}>` (main.jsx). Rollup now tree-shakes the layout/drag
+  feature code the full `motion` proxy force-bundled.
+- **vendor-motion: 141.33 KB → 96.48 KB (gzip 46.59 → 33.91, −27%).**
+- Updated eslint `varsIgnorePattern` (`motion$`→`m$`) since this config has no jsx-uses-vars.
+- **One intentional visual change:** the sidebar active-nav indicator no longer *slides*
+  between items (that needed the `layoutId` layout-animation feature, excluded from
+  `domAnimation`); it now fades/scales in on the active item. If you want the slide back,
+  switch the feature set to `domMax` (costs ~part of the bundle saving).
+
+**Deferred (deliberately — high churn / regression risk right before launch):**
+- **Bulk breakpoint rewrite**: 40 tuned values across 32 files; documented the standard instead.
+- **Inline-style → class migration** (333 instances): incremental cleanup, no user-facing gain.
+- **og-image compression**: already correctly sized (1200×630), crawler-only/off critical path;
+  re-encoding would risk brand quality for no user-facing benefit.
+
+---
+
+
+Scope: 98 source files (~30,840 LOC), all pages/components, design system, build config.
+Method: full structural scan + automated dead-code/dup/a11y/perf checks + deep read of the
+highest-impact files (App, main, MainLayout, Dashboard, index.css design tokens).
+
+**Verdict: this is already a strong, mature 8/10 frontend.** Excellent foundations —
+design tokens, lazy routes, code-split vendor chunks, reduced-motion support, synchronous
+mobile init, lazy Sentry, prod console silencing, clean ESLint (0 errors). The gap to 10/10
+is *consistency and polish*, not rewrites.
+
+---
+
+## P0 — Do before launch (correctness / brand consistency)
+
+### 1. Dosha colors are inconsistent across the app
+`DOSHA_COLOR` is hardcoded in **7+ files with conflicting hex values**:
+- kapha = `#2DD4BF` (MainLayout, RoutineView) **vs** `#34d399` (Dashboard, shared.jsx, DoshaValidationCard, DoshaArcRings)
+- vata = `#818CF8` (MainLayout, Dashboard) **vs** `#a78bfa` (shared.jsx)
+- pitta = `#FB923C` vs `#f97316` vs `#f97316`
+
+Result: the same dosha renders teal in the sidebar but green on the dashboard. For a wellness
+brand where dosha color IS the visual language, this reads as a bug.
+**Fix:** single source of truth. You already define `--vata-color / --pitta-color / --kapha-color`
+in `index.css` (and they theme-flip for light mode). Export one JS map that reads them, or
+reference the CSS vars everywhere. Delete the 7 local copies.
+
+### 2. Two parallel toast systems
+- `sonner` — used by pages (Dashboard, Progress, PreferencesModal, api/client)
+- custom `ToastProvider` + `ToastContext` — used only by `ReloadPrompt` + `FeedbackWidget`
+
+Two systems = two visual styles for the same concept, plus ~80 LOC of redundant provider.
+**Fix:** migrate `ReloadPrompt` and `FeedbackWidget` to `sonner`, delete `ToastProvider.jsx`
+and `ToastContext.js`, drop the `<ToastProvider>` wrapper in `main.jsx`.
+
+---
+
+## P1 — Cleanliness (dead / orphaned files you asked about)
+
+- **`LanguageSwitcher.jsx` + `LanguageSwitcher.css` — fully unused** (only self-imports; not
+  referenced anywhere). Either wire it into Settings (you have i18n set up) or delete both.
+- **`VikritiCheckIn.css`** has no matching `VikritiCheckIn.jsx` — the CSS *is* used (imported by
+  CheckIn + Dashboard) but the name is misleading. Rename to match its real consumer, or fold
+  into `CheckIn.css`.
+- **`public/manifest.json`** likely duplicates the manifest generated by `vite-plugin-pwa`
+  (`manifest.webmanifest`). Confirm which one `index.html` links; remove the stale one.
+- ESLint is clean and there are **0 TODO/FIXME** — genuinely tidy. No other dead files found.
+
+---
+
+## P1 — Design-system consistency (the real "10/10 polish" work)
+
+1. **Breakpoints are ad hoc — 40+ distinct values** (600/680/700/720/760/768/800/860/900/1000/1024…).
+   Responsive behavior is currently guesswork per-file. Define a scale
+   (`--bp-sm 480 / --bp-md 768 / --bp-lg 900 / --bp-xl 1200`) and normalize media queries to it.
+2. **333 inline `style={{…}}`** — bypasses the token system, hurts consistency and re-render perf.
+   Move recurring/layout-critical ones (esp. MainLayout's flex containers, dosha gradient badges)
+   into CSS classes. Keep only truly dynamic values (e.g. computed color) inline.
+3. **z-index is unscaled (1 → 9999)** — scattered magic numbers invite stacking bugs (modals,
+   command palette, toasts, mobile nav, overlays). Add a z-index token scale (base/dropdown/
+   sticky/overlay/modal/toast) and use it.
+4. **15 `!important`** — usually a specificity smell; audit and remove where a class reorder fixes it.
+
+---
+
+## P1 — Performance / speed
+
+- **No `loading="lazy"` on any of 15 `<img>`** — add it to below-the-fold and OG/decorative images.
+- **`og-image.png` 282K, `pwa-512.png` 310K** — fine as PWA assets but compress the OG image
+  (target <100K) since it's fetched by every social crawler.
+- **framer-motion is imported in 39 files.** It's already isolated into `vendor-motion` (good),
+  but switching to `LazyMotion` + the `m` component can cut ~30–40KB from that chunk. High value
+  since motion is on nearly every page.
+- **`PlanViewer.css` = 4,985 lines** in one file. It's lazy-loaded (good), but consider splitting
+  per-view (diet/gym/yoga…) so each plan type only ships its own CSS.
+- Fonts are loaded correctly (non-blocking preload → stylesheet, preconnect). No change needed.
+
+---
+
+## P2 — Accessibility (needed for a credible launch)
+
+- Add a **skip-to-content link** (you have `.sr-only` already — reuse it).
+- Icon-only buttons: `aria-label` coverage is decent (42 uses) but audit each `lucide` icon
+  button (hamburger/bell are labeled; verify plan-card and modal-close buttons).
+- Global `prefers-reduced-motion` reset exists (good) — but only 2 CSS files add motion-specific
+  handling; verify heavy canvas effects (MeditationCanvas, ParticleField, VitalBackground) also
+  respect it (they partially do via `useLowPowerMode`).
+- Verify focus-visible rings survive on the glass/dark surfaces (you have a focus ring token).
+
+---
+
+## What's already excellent (keep as-is)
+- Token architecture in `index.css` with documented light-mode fixes and plan-view aliases.
+- Route-level code splitting + vendor chunking + lazy PlanViewer.
+- Auth guards, cross-account cache reset, HTTP-only cookie auth.
+- Lazy Sentry, prod console silencing, IDB-persisted React Query.
+- Per-page SEO/prerender architecture.
+
+---
+
+## Suggested execution order
+1. Dosha color unification (P0-1)
+2. Toast consolidation + delete dead files (P0-2, P1 cleanup)
+3. Breakpoint + z-index token scales (P1)
+4. img lazy-loading + og-image compression + LazyMotion (P1 perf)
+5. a11y pass: skip link + icon-button audit (P2)
+6. Inline-style → class migration (P1, incremental)

@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react'
-import { motion, useMotionValue, useSpring } from 'framer-motion'
+import { m, useMotionValue, useSpring } from 'framer-motion'
 
 /**
  * MagneticButton — wraps any element with a magnetic cursor attraction.
@@ -42,7 +42,7 @@ export default function MagneticButton({
     rawY.set(0)
   }, [rawX, rawY])
 
-  const MotionTag = motion[Tag] || motion.button
+  const MotionTag = m[Tag] || m.button
 
   return (
     <MotionTag

@@ -14,7 +14,7 @@
 .lnd-nav-wrap {
   position: fixed;
   top: 0; left: 0; right: 0;
-  z-index: 100;
+  z-index: var(--z-sticky);
   padding: 14px 0;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -141,9 +141,12 @@
 
 .lnd-hero-title {
   font-family: var(--font-display);
-  font-size: clamp(3rem, 5.5vw, 5.5rem);
+  /* Fluid from small phones (2.4rem) up to desktop (5.5rem) — the wide vw
+     term lets it scale continuously so no hard per-breakpoint override is
+     needed (the old 480px 2.6rem rule is now redundant). */
+  font-size: clamp(2.4rem, 7vw, 5.5rem);
   font-weight: 800;
-  line-height: 1.0;
+  line-height: 1.03;
   letter-spacing: 0;
   color: var(--ayura-ink);
   margin-bottom: 24px;
@@ -620,7 +623,9 @@
 .lnd-section {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 100px 32px;
+  /* Fluid block/inline padding — scales smoothly instead of snapping
+     100px→60px at 768px, so the awkward tablet range looks intentional. */
+  padding: clamp(56px, 8vw, 100px) clamp(20px, 4vw, 32px);
   position: relative; z-index: 1;
 }
 .lnd-section-kicker {
@@ -815,7 +820,12 @@
 
 /* ─── PLANS GRID ──────────────────────────────────────────── */
 .lnd-plans-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 48px;
+  /* auto-fit reflows 3→2→1 columns fluidly by available width; no need for
+     per-breakpoint column overrides. min(260px,100%) prevents overflow on
+     screens narrower than a single track. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 16px; margin-top: 48px;
 }
 .lnd-plan-card {
   padding: 28px; border-radius: 24px;
@@ -1094,13 +1104,10 @@
   .lnd-hero-subtitle { max-width: 56ch; }
   .lnd-hero-visual { display: none; }
   .lnd-feature { gap: 48px; }
-  .lnd-plans-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
   .lnd-hero { padding: 100px 20px 60px; }
-  .lnd-section { padding: 60px 20px; }
   .lnd-feature, .lnd-feature.reverse { flex-direction: column; gap: 32px; padding: 48px 0; }
-  .lnd-plans-grid { grid-template-columns: 1fr; }
   .lnd-cards-row { flex-direction: column; }
   .lnd-stats-bar { padding: 16px 24px; }
   .lnd-stat { padding: 12px 20px; }
@@ -1109,9 +1116,6 @@
   .lnd-footer-top { flex-direction: column; }
   .lnd-footer-disclaimer { text-align: left; }
   .lnd-nav { padding: 0 20px; }
-}
-@media (max-width: 480px) {
-  .lnd-hero-title { font-size: 2.6rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal-left, .reveal-right { opacity: 1; transform: none; transition: none; }

@@ -89,15 +89,18 @@
 .mobile-bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  z-index: 200;
+  z-index: var(--z-sidebar);
   display: flex;
   align-items: stretch;
   background: var(--glass-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid var(--border-subtle);
-  padding: 0;
-  height: 64px;
+  /* Add the gesture-bar / home-indicator inset (needs viewport-fit=cover) so the
+     tabs sit above the Android/iOS system bar instead of under it. Falls back to
+     0 on phones without an inset. */
+  padding: 0 0 env(safe-area-inset-bottom);
+  height: calc(64px + env(safe-area-inset-bottom));
   box-shadow: 0 -8px 32px rgba(0,0,0,0.2);
 }
 [data-theme='light'] .mobile-bottom-nav {

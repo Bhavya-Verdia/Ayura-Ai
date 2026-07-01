@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   Leaf, Sparkles, Calendar, ShieldCheck, Flame, Timer, Zap, ChevronDown, ChevronUp, Layers, TriangleAlert, BadgeCheck, HeartPulse,
 } from 'lucide-react'
-import { DOSHA_COLORS_R } from './shared'
+import { DOSHA_COLORS_R } from '../../constants/dosha'
 import { MedicineView } from './MedicineView'
 
 const SEV_COLOR  = { mild: '#22c55e', moderate: '#f59e0b', severe: '#ef4444' }

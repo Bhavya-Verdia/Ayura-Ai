@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useEffect, useState, useRef, Suspense } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { authAPI } from '../api/client'
@@ -44,7 +44,7 @@ export default function VerifyEmail() {
       <div className="auth-orb auth-orb-a" />
       <div className="auth-orb auth-orb-b" />
 
-      <motion.div
+      <m.div
         className="auth-shell"
         initial={{ opacity: 0, y: 24, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -59,18 +59,18 @@ export default function VerifyEmail() {
 
         <div className="auth-card" style={{ textAlign: 'center', padding: '32px 26px' }}>
           {status === 'loading' && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
               <div className="spinner" style={{ margin: '0 auto 20px', width: '40px', height: '40px' }} />
               <h3 style={{ fontFamily: "'Syne', sans-serif" }}>Verifying your email...</h3>
               <p style={{ color: 'var(--auth-muted)', fontSize: '0.9rem' }}>Please wait a moment.</p>
-            </motion.div>
+            </m.div>
           )}
 
           {status === 'success' && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -83,11 +83,11 @@ export default function VerifyEmail() {
               <Link to="/dashboard" className="btn btn-primary btn-full btn-lg">
                 Go to Dashboard
               </Link>
-            </motion.div>
+            </m.div>
           )}
 
           {status === 'error' && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
@@ -98,10 +98,10 @@ export default function VerifyEmail() {
               <Link to="/login" className="btn btn-secondary btn-full btn-lg">
                 Back to Login
               </Link>
-            </motion.div>
+            </m.div>
           )}
         </div>
-      </motion.div>
+      </m.div>
     </div>
     </>
   )

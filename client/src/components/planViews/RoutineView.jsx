@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import {
   Sun, PersonStanding, Dumbbell, Leaf, Sparkles, Star, Droplets, ShieldCheck, Flame, ArrowRight, Moon, Zap, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain, UtensilsCrossed, Clock, CupSoda, BookOpen, TriangleAlert, BadgeCheck,
 } from 'lucide-react'
-import { DOSHA_COLOR } from './shared'
+import { DOSHA_COLOR } from '../../constants/dosha'
 
 const SLOT_COLORS = {
   morning_routine: { bg: 'rgba(251,191,36,0.12)',  border: 'rgba(251,191,36,0.35)',  dot: '#f59e0b', label: '#b45309' },
@@ -37,7 +37,7 @@ function RitualCard({ ritual, idx }) {
   const [open, setOpen] = useState(false)
   const Icon = RITUAL_ICON_MAP[ritual.icon] || Sparkles
   return (
-    <motion.div
+    <m.div
       className="din-ritual-card"
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
@@ -50,7 +50,7 @@ function RitualCard({ ritual, idx }) {
         {open ? <ChevronUp size={13} className="din-ritual-chevron" /> : <ChevronDown size={13} className="din-ritual-chevron" />}
       </button>
       {open && <p className="din-ritual-body">{ritual.instruction}</p>}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -61,7 +61,7 @@ function TimelineSlot({ slot, idx }) {
   const Icon = SLOT_ICON_MAP[slot.icon] || Sparkles
 
   return (
-    <motion.div
+    <m.div
       className="din-slot"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -109,7 +109,7 @@ function TimelineSlot({ slot, idx }) {
           </div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -160,21 +160,20 @@ export function RoutineView({ plan }) {
   const timeline = currentDay.timeline || []
   const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   const dosha = (plan.user_summary?.dominant_dosha || 'vata').toLowerCase()
-  const DOSHA_COLOR = { vata: '#818cf8', pitta: '#fb923c', kapha: '#2dd4bf' }
-  const dcolor = DOSHA_COLOR[dosha] || '#818cf8'
+  const dcolor = DOSHA_COLOR[dosha] || DOSHA_COLOR.default
 
   return (
     <div className="din-root">
       {/* ── Key principle banner ── */}
       {din.key_principle && (
-        <motion.div className="din-principle-banner" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+        <m.div className="din-principle-banner" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
           <Star size={13} style={{ color: dcolor, flexShrink: 0 }} />
           <span>{din.key_principle}</span>
-        </motion.div>
+        </m.div>
       )}
 
       {/* ── Time anchors row ── */}
-      <motion.div className="din-anchors" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+      <m.div className="din-anchors" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
         <div className="din-anchor">
           <Sun size={14} style={{ color: '#f59e0b' }} />
           <div><div className="din-anchor-label">Wake</div><div className="din-anchor-val">{din.wake_time}</div></div>
@@ -212,22 +211,22 @@ export function RoutineView({ plan }) {
             </div>
           </>
         )}
-      </motion.div>
+      </m.div>
 
       {/* ── Dual-dosha note ── */}
       {din.dual_dosha_note && (
-        <motion.div className="din-dual-dosha-note" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.13 }}>
+        <m.div className="din-dual-dosha-note" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.13 }}>
           <Sparkles size={12} style={{ color: dcolor, flexShrink: 0 }} />
           <span>{din.dual_dosha_note}</span>
-        </motion.div>
+        </m.div>
       )}
 
       {/* ── Seasonal banner ── */}
       {din.season_practice_note && (
-        <motion.div className="din-season-banner" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.12 }}>
+        <m.div className="din-season-banner" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.12 }}>
           <Leaf size={12} />
           <span>{din.season_practice_note}</span>
-        </motion.div>
+        </m.div>
       )}
 
       <div className="din-two-col">
@@ -294,16 +293,16 @@ export function RoutineView({ plan }) {
 
       {/* ── Meal Guidance ── */}
       {Object.keys(mealGuide).length > 0 && (
-        <motion.div className="din-section" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <m.div className="din-section" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <div className="din-section-head"><UtensilsCrossed size={14} />Dosha Meal Guidance</div>
           {mealGuide.general && <p className="din-section-body">{mealGuide.general}</p>}
           <MealGuidancePanel guidance={mealGuide} />
-        </motion.div>
+        </m.div>
       )}
 
       {/* ── Seasonal Ritucharya ── */}
       {seasonal.season && (
-        <motion.div className="din-section" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+        <m.div className="din-section" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <div className="din-section-head"><Leaf size={14} />Seasonal Ritucharya — {seasonal.season}</div>
           <div className="din-seasonal-cols">
             {seasonal.recommended_foods?.length > 0 && (
@@ -329,7 +328,7 @@ export function RoutineView({ plan }) {
               </div>
             </div>
           )}
-        </motion.div>
+        </m.div>
       )}
 
       {plan.disclaimer && (
