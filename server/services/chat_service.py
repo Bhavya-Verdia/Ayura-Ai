@@ -248,6 +248,72 @@ async def save_message(db, user_id: str, session_id: str, role: str, content: st
     )
 
 
+# --- Rolling conversation summary (long-session memory) ----------------------
+# The agent only ever sees the last ~10 messages verbatim. For long sessions we keep
+# a compact, durable summary of everything OLDER than that window in the session doc,
+# so context isn't lost as the chat grows. It's refreshed lazily/off the reply path.
+_SUMMARY_WINDOW = 10      # messages kept verbatim (matches the agent's history window)
+_SUMMARY_MIN_TOTAL = 12   # don't bother summarizing very short sessions
+_SUMMARY_REGEN_EVERY = 6  # regenerate at most once per this many new messages
+
+
+async def get_session_summary(db, session_id: str, user_id: str) -> str:
+    """Return the stored rolling summary of earlier turns, or '' if none."""
+    if db is None:
+        return ""
+    try:
+        sess = await db.chat_sessions.find_one(
+            {"session_id": session_id, "user_id": user_id}, {"rolling_summary": 1}
+        )
+        return (sess or {}).get("rolling_summary", "") or ""
+    except Exception:
+        return ""
+
+
+async def maybe_update_session_summary(db, session_id: str, user_id: str) -> None:
+    """Refresh the session's rolling summary if it has grown enough since last time.
+    Best-effort and safe to fire-and-forget after the reply — never raises."""
+    if db is None:
+        return
+    try:
+        sess = await db.chat_sessions.find_one({"session_id": session_id, "user_id": user_id})
+        if not sess:
+            return
+        total = sess.get("message_count", 0)
+        if total <= _SUMMARY_MIN_TOTAL:
+            return
+        if total - sess.get("summary_msg_count", 0) < _SUMMARY_REGEN_EVERY:
+            return  # throttle: not enough new messages to warrant an LLM call
+
+        msgs = await db.chat_messages.find(
+            {"session_id": session_id, "user_id": user_id}
+        ).sort("timestamp", 1).to_list(length=1000)
+        older = msgs[:-_SUMMARY_WINDOW]  # everything outside the verbatim window
+        if not older:
+            return
+        convo = "\n".join(f"{m.get('role', '?').upper()}: {m.get('content', '')}" for m in older)[:6000]
+        existing = sess.get("rolling_summary", "")
+        prompt = (
+            "Compress the earlier part of this Ayurvedic health-assistant conversation into durable "
+            "context that helps continue it: the user's stated concerns/symptoms, goals, decisions, "
+            "reminders set, and any plan changes. Omit pleasantries. Max 8 short bullet points.\n\n"
+            + (f"Existing summary to update:\n{existing}\n\n" if existing else "")
+            + f"Conversation:\n{convo}"
+        )
+        from ai.llm_client import llm_client
+        summary = await llm_client.generate(
+            prompt=prompt,
+            system_prompt="You compress conversation history into durable, factual context.",
+            max_tokens=350,
+        )
+        await db.chat_sessions.update_one(
+            {"session_id": session_id, "user_id": user_id},
+            {"$set": {"rolling_summary": (summary or "").strip()[:2000], "summary_msg_count": total}},
+        )
+    except Exception as exc:
+        logger.warning("session summary update failed for %s: %s", session_id, exc)
+
+
 async def fetch_active_plans(db, user_id: str) -> dict:
     """Return the most recent plan of each type using a single aggregation query."""
     pipeline = [

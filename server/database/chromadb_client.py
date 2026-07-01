@@ -81,3 +81,20 @@ def get_collection(domain: str) -> chromadb.Collection:
         raise ValueError(f"Unknown collection domain: {domain}. Use one of: {list(COLLECTIONS.keys())}")
     return client.get_collection(collection_name)
 
+
+def warm_embeddings() -> None:
+    """Force ChromaDB's default embedding model (MiniLM ONNX) to load now.
+
+    The model is loaded lazily on the first `collection.query(query_texts=...)`,
+    which otherwise adds several seconds to the first user's chat request. Running
+    one throwaway query at startup pays that cost up front. Synchronous and safe to
+    call in a background thread; failures are non-fatal (RAG still degrades gracefully).
+    """
+    if not _available:
+        return
+    try:
+        get_collection("ayurveda").query(query_texts=["warmup"], n_results=1)
+        logger.info("  ChromaDB embedding model warmed up")
+    except Exception as exc:
+        logger.warning(f"ChromaDB embedding warm-up skipped ({exc}).")
+

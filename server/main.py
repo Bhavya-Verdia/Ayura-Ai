@@ -66,6 +66,11 @@ async def lifespan(app: FastAPI):
     await kb_cache.load(get_mongodb())
 
     init_chromadb()
+    # Warm the embedding model off the event loop so the first chat request
+    # doesn't pay the cold ONNX model load. Non-blocking; failures are harmless.
+    import asyncio as _asyncio
+    from database.chromadb_client import warm_embeddings
+    _asyncio.create_task(_asyncio.to_thread(warm_embeddings))
 
     from core.cache import cache_manager
     await cache_manager.connect()

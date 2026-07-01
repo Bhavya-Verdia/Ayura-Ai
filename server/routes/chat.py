@@ -19,12 +19,23 @@ from services.chat_service import (
     build_chat_context,
     build_chat_prompt,
     apply_chat_side_effects,
-    extract_xml_tags
+    extract_xml_tags,
+    get_session_summary,
+    maybe_update_session_summary,
 )
 from ai.llm_client import llm_client
 import re
 
 router = APIRouter()
+
+# Keep strong references to fire-and-forget background tasks so the event loop
+# doesn't garbage-collect them mid-flight (a real hazard on Python 3.11+).
+_bg_tasks: set = set()
+
+def _spawn_bg(coro) -> None:
+    task = asyncio.create_task(coro)
+    _bg_tasks.add(task)
+    task.add_done_callback(_bg_tasks.discard)
 
 _ws_rate: dict[str, list[float]] = defaultdict(list)
 _WS_LIMIT = 10
@@ -56,10 +67,29 @@ async def _check_ws_rate(user_id: str) -> bool:
     _ws_rate[user_id].append(now)
     return True
 
+async def _fetch_recent_history(db, session_id: str, user_id: str) -> list[dict]:
+    """Recent messages as a list, for the agent's conversation memory."""
+    try:
+        cur = db.chat_messages.find(
+            {"session_id": session_id, "user_id": user_id}
+        ).sort("timestamp", 1).limit(10)
+        return [{"role": m.get("role"), "content": m.get("content")}
+                for m in await cur.to_list(10)]
+    except Exception:
+        return []
+
+# Chat-template / role control tokens that are never legitimate user content and
+# could be used to break out of the prompt. We strip THESE, but deliberately leave
+# ordinary language and pasted code intact — the agent's system-prompt SAFETY RULES
+# and the provider content filter are the real injection defense, and deleting words
+# corrupts genuine messages (e.g. "help me forget everything stressful") or destroys
+# a symptom log pasted in a code block.
+_CONTROL_TOKENS = re.compile(r'<\|[^|]*\|>|<<\s*/?SYS\s*>>|\[/?INST\]', re.IGNORECASE)
+_ROLE_PREFIX = re.compile(r'(?im)^\s*(system|assistant)\s*:\s*')
+
 def _sanitize_prompt_input(text: str) -> str:
-    text = re.sub(r'(?i)(system\s*:|assistant\s*:|<<\s*SYS\s*>>|<\|.*?\|>)', '', text)
-    text = re.sub(r'```[\s\S]*?```', '[code removed]', text)
-    text = re.sub(r'(?i)(ignore\s+(all\s+)?previous\s+instructions?|forget\s+(everything|all)|jailbreak|bypass)', '', text)
+    text = _CONTROL_TOKENS.sub('', text or '')
+    text = _ROLE_PREFIX.sub('', text)
     return text.strip()[:2000]
 
 class ChatLLMResponse(BaseModel):
@@ -82,31 +112,28 @@ async def send_message(msg: ChatMessage, user: UserDocument = Depends(get_curren
         await save_message(db, user.id, session_id, "ai", response_text, sources)
         return ChatResponse(response=response_text, sources=sources, session_id=session_id)
 
-    # Context gathering
-    active_plans = await fetch_active_plans(db, user.id)
-    history_str, docs, context_text, top_conditions, dosha = await build_chat_context(
-        db, user, session_id, safe_content
+    # Context gathering — these reads are independent, so run them concurrently.
+    _t0 = time.perf_counter()
+    active_plans, chat_ctx, history_list, history_summary = await asyncio.gather(
+        fetch_active_plans(db, user.id),
+        build_chat_context(db, user, session_id, safe_content),
+        _fetch_recent_history(db, session_id, user.id),
+        get_session_summary(db, session_id, user.id),
     )
+    _ctx_ms = round((time.perf_counter() - _t0) * 1000)
+    history_str, docs, context_text, top_conditions, dosha = chat_ctx
     sources = [{"source": d.get("metadata", {}).get("source", "Knowledge Base")} for d in docs]
-
-    # Recent history as a list, for the agent's conversation memory
-    try:
-        _cur = db.chat_messages.find(
-            {"session_id": session_id, "user_id": user.id}
-        ).sort("timestamp", 1).limit(10)
-        history_list = [{"role": m.get("role"), "content": m.get("content")}
-                        for m in await _cur.to_list(10)]
-    except Exception:
-        history_list = []
 
     response_text = ""
     used_agent = False
+    _t_gen = time.perf_counter()
 
     # ── PRIMARY: LangGraph ReAct agent (multi-step tools) ──
     try:
         from ai.agents.health_agent import run_health_agent
         response_text, agent_actions = await run_health_agent(
-            db, user, active_plans, safe_content, history_list, knowledge=context_text
+            db, user, active_plans, safe_content, history_list,
+            knowledge=context_text, history_summary=history_summary,
         )
         if response_text:
             used_agent = True
@@ -136,6 +163,10 @@ async def send_message(msg: ChatMessage, user: UserDocument = Depends(get_curren
             response_text = "I'm having trouble processing that right now."
 
     await save_message(db, user.id, session_id, "ai", response_text, sources)
+    logger.info("chat.http timing user=%s ctx=%dms gen=%dms agent=%s",
+                user.id, _ctx_ms, round((time.perf_counter() - _t_gen) * 1000), used_agent)
+    # Refresh the long-session rolling summary off the reply path (best-effort).
+    _spawn_bg(maybe_update_session_summary(db, session_id, user.id))
     return ChatResponse(response=response_text, sources=sources, session_id=session_id)
 
 @router.get("/sessions")
@@ -225,11 +256,23 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
 
             safe_content = _sanitize_prompt_input(data)
 
+            # Refresh the user doc: a WS session is long-lived, and the profile,
+            # medications, or vikriti_history can change mid-session (e.g. after an
+            # in-chat plan adaptation). Tools read from `user`, so keep it current.
+            try:
+                fresh = await db.users.find_one({"_id": user.id})
+                if fresh:
+                    user = UserDocument(**fresh)
+            except Exception:
+                pass  # keep the last-known-good user on any refresh error
+
             # Send initial state
             await websocket.send_json({"type": "status", "message": "Analyzing..."})
             await save_message(db, user.id, session_id, "user", safe_content)
 
-            red_flags = await detect_red_flags(safe_content, user.current_symptoms or [])
+            # Run red-flag detection on the RAW message (like the HTTP path) so input
+            # sanitization can never strip a term that signals a medical emergency.
+            red_flags = await detect_red_flags(data, user.current_symptoms or [])
             if red_flags["has_red_flags"]:
                 sources = [{"source": "Ayura AI safety triage", "red_flags": red_flags["matches"]}]
                 await websocket.send_json({"type": "chunk", "content": red_flags["message"]})
@@ -237,37 +280,33 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
                 await save_message(db, user.id, session_id, "ai", red_flags["message"], sources)
                 continue
 
-            active_plans = await fetch_active_plans(db, user.id)
-            history_str, docs, context_text, top_conditions, dosha = await build_chat_context(
-                db, user, session_id, safe_content
+            # These reads are independent, so run them concurrently.
+            _t0 = time.perf_counter()
+            active_plans, chat_ctx, history_list, history_summary = await asyncio.gather(
+                fetch_active_plans(db, user.id),
+                build_chat_context(db, user, session_id, safe_content),
+                _fetch_recent_history(db, session_id, user.id),
+                get_session_summary(db, session_id, user.id),
             )
-
-            prompt = build_chat_prompt(
-                user, safe_content, history_str, context_text, top_conditions, dosha, active_plans, stream_mode=True
-            )
+            _ctx_ms = round((time.perf_counter() - _t0) * 1000)
+            history_str, docs, context_text, top_conditions, dosha = chat_ctx
 
             sources = [{"source": d.get("metadata", {}).get("source", "Knowledge Base")} for d in docs]
             full_response = ""
             agent_actions: dict = {}
             used_agent = False
-
-            # Recent history as a list, for the agent's conversation memory
-            try:
-                _cur = db.chat_messages.find(
-                    {"session_id": session_id, "user_id": user.id}
-                ).sort("timestamp", 1).limit(10)
-                history_list = [{"role": m.get("role"), "content": m.get("content")}
-                                for m in await _cur.to_list(10)]
-            except Exception:
-                history_list = []
+            _tool_count = 0
+            _t_gen = time.perf_counter()
 
             # ── PRIMARY: LangGraph ReAct agent (multi-step tools) ──
             try:
                 from ai.agents.health_agent import stream_health_agent
                 async for kind, payload in stream_health_agent(
-                    db, user, active_plans, safe_content, history_list, knowledge=context_text
+                    db, user, active_plans, safe_content, history_list,
+                    knowledge=context_text, history_summary=history_summary,
                 ):
                     if kind == "status":
+                        _tool_count += 1
                         await websocket.send_json({"type": "status", "message": payload})
                     elif kind == "token":
                         full_response += payload
@@ -329,6 +368,11 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
 
             await websocket.send_json({"type": "done", "sources": sources})
             await save_message(db, user.id, session_id, "ai", full_response, sources)
+            logger.info("chat.ws timing user=%s ctx=%dms gen=%dms agent=%s tools=%d",
+                        user.id, _ctx_ms, round((time.perf_counter() - _t_gen) * 1000),
+                        used_agent, _tool_count)
+            # Refresh the long-session rolling summary off the reply path (best-effort).
+            _spawn_bg(maybe_update_session_summary(db, session_id, user.id))
 
             # Plan regeneration is slow (engine + LLM enricher) — run after the reply.
             # (Agent reminders are already created by the set_reminder tool; only

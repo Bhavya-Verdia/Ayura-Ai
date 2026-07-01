@@ -5,8 +5,36 @@ Uses ChromaDB for vector search over Ayurvedic knowledge base.
 """
 
 import asyncio
+import time
 
 from database.chromadb_client import get_collection, COLLECTIONS
+
+# --- Query result cache (in-process, TTL + size bounded) ---------------------
+# Embedding + vector search is pure CPU and identical for identical inputs, so we
+# memoize by the full query signature. In-process (not Redis) keeps it dependency
+# free and correct per worker; the short TTL bounds staleness if the KB is rebuilt.
+_QUERY_CACHE: dict[tuple, tuple[float, list[dict]]] = {}
+_CACHE_TTL = 300      # seconds
+_CACHE_MAX = 256      # entries
+
+
+def _cache_get(key: tuple) -> list[dict] | None:
+    hit = _QUERY_CACHE.get(key)
+    if not hit:
+        return None
+    ts, data = hit
+    if time.time() - ts > _CACHE_TTL:
+        _QUERY_CACHE.pop(key, None)
+        return None
+    return data
+
+
+def _cache_put(key: tuple, data: list[dict]) -> None:
+    if len(_QUERY_CACHE) >= _CACHE_MAX:
+        # evict the oldest entry (approximate LRU by insertion timestamp)
+        oldest = min(_QUERY_CACHE, key=lambda k: _QUERY_CACHE[k][0])
+        _QUERY_CACHE.pop(oldest, None)
+    _QUERY_CACHE[key] = (time.time(), data)
 
 
 class RAGPipeline:
@@ -33,6 +61,13 @@ class RAGPipeline:
         Returns:
             List of relevant document chunks with metadata
         """
+        # Serve identical queries from the short-lived cache (embedding + search
+        # is deterministic for the same inputs).
+        cache_key = (domain, query_text, n_results, dosha_filter, symptom_filter)
+        cached = _cache_get(cache_key)
+        if cached is not None:
+            return cached
+
         collection = get_collection(domain)
 
         # Build metadata filter
@@ -84,6 +119,7 @@ class RAGPipeline:
                         "id": fallback_results["ids"][0][i] if fallback_results["ids"] else "",
                     })
 
+        _cache_put(cache_key, documents)
         return documents
 
     async def multi_domain_query(
