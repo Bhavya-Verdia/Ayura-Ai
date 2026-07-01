@@ -7,6 +7,7 @@ Uses ChromaDB for vector search over Ayurvedic knowledge base.
 import asyncio
 import time
 
+from core.logger import logger
 from database.chromadb_client import get_collection, COLLECTIONS
 
 # --- Query result cache (in-process, TTL + size bounded) ---------------------
@@ -85,8 +86,15 @@ class RAGPipeline:
         if where_filter:
             query_params["where"] = where_filter
 
-        # Run the synchronous ChromaDB query in a thread pool to avoid blocking the event loop
-        results = await asyncio.to_thread(collection.query, **query_params)
+        # Run the synchronous ChromaDB query in a thread pool to avoid blocking the
+        # event loop. RAG is ENRICHMENT, never essential — if the vector store errors
+        # (e.g. an embedding-dimension mismatch, or the server being down), degrade to
+        # no context rather than breaking the caller (chat, plans, …).
+        try:
+            results = await asyncio.to_thread(collection.query, **query_params)
+        except Exception as exc:
+            logger.warning("RAG query failed for domain '%s' — returning no context: %s", domain, exc)
+            return []
 
         # Format results with relevance threshold
         MAX_DISTANCE = 1.5  # cosine distance > 1.5 = likely irrelevant
@@ -106,7 +114,11 @@ class RAGPipeline:
         # If dosha filter returned nothing, retry without filter
         if not documents and where_filter:
             fallback_params = {"query_texts": [query_text], "n_results": n_results}
-            fallback_results = await asyncio.to_thread(collection.query, **fallback_params)
+            try:
+                fallback_results = await asyncio.to_thread(collection.query, **fallback_params)
+            except Exception as exc:
+                logger.warning("RAG fallback query failed for domain '%s': %s", domain, exc)
+                fallback_results = None
             if fallback_results and fallback_results["documents"]:
                 for i, doc in enumerate(fallback_results["documents"][0]):
                     distance = fallback_results["distances"][0][i] if fallback_results["distances"] else 0
