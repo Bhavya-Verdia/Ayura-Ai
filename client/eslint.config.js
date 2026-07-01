@@ -25,9 +25,12 @@ export default defineConfig([
       },
     },
     rules: {
+      // No jsx-uses-vars rule here, so JSX-only identifiers look "unused".
+      // Capitalized names (all components) are ignored; `m` is the framer-motion
+      // LazyMotion component used app-wide as <m.div> etc. (replaced `motion`).
       'no-unused-vars': ['error', {
-        varsIgnorePattern: '^([A-Z_]|motion$)',
-        argsIgnorePattern: '^([A-Z_]|motion$)',
+        varsIgnorePattern: '^([A-Z_]|m$)',
+        argsIgnorePattern: '^([A-Z_]|m$)',
       }],
     },
   },

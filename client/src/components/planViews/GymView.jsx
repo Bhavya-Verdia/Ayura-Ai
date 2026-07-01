@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   Dumbbell, Leaf, Calendar, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Lightbulb,
 } from 'lucide-react'
-import { DOSHA_COLOR } from './shared'
+import { DOSHA_COLOR } from '../../constants/dosha'
 
 const WEEK_THEMES = ['Foundation', 'Volume Build', 'Intensity Peak', 'Deload']
 

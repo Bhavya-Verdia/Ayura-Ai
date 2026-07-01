@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { Compass, LayoutDashboard, Home } from 'lucide-react'
@@ -12,19 +12,19 @@ export default function NotFound() {
         <div className="notfound-orb notfound-orb-a" />
         <div className="notfound-orb notfound-orb-b" />
 
-        <motion.div
+        <m.div
           className="notfound-content"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          <motion.div
+          <m.div
             className="notfound-icon-wrap"
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 3.2, ease: 'easeInOut', repeat: Infinity }}
           >
             <Compass size={52} strokeWidth={1.5} />
-          </motion.div>
+          </m.div>
 
           <h1 className="notfound-heading">404</h1>
 
@@ -42,7 +42,7 @@ export default function NotFound() {
               Dashboard
             </Link>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </>
   )

@@ -17,7 +17,7 @@
   flex-direction: column;
   padding: 24px 16px;
   flex-shrink: 0;
-  z-index: 100;
+  z-index: var(--z-sticky);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-y: auto;
 }
@@ -86,7 +86,9 @@
   .dash-sidebar.mobile.open { transform: translateX(0); box-shadow: 24px 0 64px var(--glass-shadow-strong); }
   .dash-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 90; border: none; cursor: pointer; }
   .dash-mobile-bar {
-    display: flex; align-items: center; gap: 16px; padding: 14px 20px;
+    display: flex; align-items: center; gap: 16px;
+    /* Top inset (viewport-fit=cover) keeps the bar below the status bar/notch. */
+    padding: calc(14px + env(safe-area-inset-top)) 20px 14px;
     background: var(--glass-bg); backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border-subtle);
   }
@@ -141,7 +143,7 @@
   flex-shrink: 0;
 }
 .dash-hero-greeting {
-  font-family: var(--font-display); font-size: 2rem; font-weight: 800;
+  font-family: var(--font-display); font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 800;
   margin: 0 0 4px; letter-spacing: 0; color: var(--ayura-ink);
 }
 .dash-hero-name {
@@ -176,7 +178,7 @@
 .dash-plans-title { font-family: var(--font-display); font-size: 1.7rem; font-weight: 800; margin: 0 0 4px; letter-spacing: 0; color: var(--ayura-ink); }
 .dash-plans-sub { color: var(--ayura-muted); font-size: 0.9rem; margin: 0; }
 
-.dash-plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.dash-plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 16px; }
 
 .dash-plan-card {
   background:
@@ -365,11 +367,9 @@
 }
 .dash-mobile-bell:hover { color: var(--ayura-ink); background: var(--glass-bg-subtle); }
 
-@media (max-width: 1024px) { .dash-plans-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) {
   .dash-hero-card { flex-direction: column; text-align: center; gap: 20px; padding: 24px 20px; }
   .dash-hero-left { flex-direction: column; }
-  .dash-plans-grid { grid-template-columns: 1fr; }
   .dash-quick-nav { grid-template-columns: 1fr; }
   .dash-content-container { padding: 20px; gap: 20px; }
 }
@@ -687,7 +687,7 @@
   background: rgba(0,0,0,0.55);
   backdrop-filter: blur(4px);
   display: flex; align-items: center; justify-content: center;
-  z-index: 1000; padding: 20px;
+  z-index: var(--z-modal); padding: 20px;
 }
 .dash-reaction-modal {
   background: var(--bg-elevated, #141f1e);

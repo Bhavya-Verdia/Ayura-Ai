@@ -1,7 +1,7 @@
 /* ─── COMMAND PALETTE ─────────────────────────────────────── */
 
 .cmd-backdrop {
-  position: fixed; inset: 0; z-index: 900;
+  position: fixed; inset: 0; z-index: var(--z-overlay);
   background: rgba(0, 0, 0, 0.52);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -12,7 +12,7 @@
   top: 18%;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 901;
+  z-index: var(--z-popover);
   width: min(580px, 94vw);
   background: var(--glass-bg);
   border: 1px solid var(--border-light);

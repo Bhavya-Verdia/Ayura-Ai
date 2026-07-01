@@ -1,5 +1,5 @@
 import { useState, Suspense } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { adminAPI } from '../api/client'
 import { Helmet } from 'react-helmet-async'
 import { Lock, Rocket, Users, FileText } from 'lucide-react'
@@ -49,7 +49,7 @@ export default function Admin() {
       </Suspense>
 
       <main className="dash-main" style={{ margin: '0 auto', maxWidth: '1100px', position: 'relative', zIndex: 2 }}>
-        <motion.section
+        <m.section
           className="dash-section"
           style={{ display: 'grid', gap: '14px', padding: '24px' }}
           initial={{ opacity: 0, y: 16 }}
@@ -61,7 +61,7 @@ export default function Admin() {
             <label htmlFor="admin-token">Admin Token</label>
             <input id="admin-token" type="password" value={token} onChange={e => setToken(e.target.value)} placeholder="Enter admin token..." />
           </div>
-          <motion.button
+          <m.button
             className="btn btn-primary"
             disabled={!token || loading}
             onClick={loadAdmin}
@@ -73,19 +73,19 @@ export default function Admin() {
                 Loading...
               </span>
             ) : <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><Rocket size={16} strokeWidth={2} /> Load Dashboard</span>}
-          </motion.button>
+          </m.button>
           <AnimatePresence>
             {error && (
-              <motion.div className="dash-notice error" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <m.div className="dash-notice error" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 {error}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
-        </motion.section>
+        </m.section>
 
         <AnimatePresence>
           {summary && (
-            <motion.section
+            <m.section
               className="dash-meta-grid"
               style={{ marginTop: '18px' }}
               initial={{ opacity: 0, y: 12 }}
@@ -93,7 +93,7 @@ export default function Admin() {
               transition={{ delay: 0.1, duration: 0.5 }}
             >
               {Object.entries(summary.counts || {}).map(([key, value], i) => (
-                <motion.article
+                <m.article
                   className="dash-meta-card ready"
                   key={key}
                   custom={i}
@@ -103,15 +103,15 @@ export default function Admin() {
                 >
                   <div className="dash-meta-title">{key.replace(/_/g, ' ')}</div>
                   <div className="dash-meta-state ready">{value}</div>
-                </motion.article>
+                </m.article>
               ))}
-            </motion.section>
+            </m.section>
           )}
         </AnimatePresence>
 
         <AnimatePresence>
           {users.length > 0 && (
-            <motion.section
+            <m.section
               className="dash-section"
               style={{ marginTop: '18px', padding: '24px' }}
               initial={{ opacity: 0, y: 12 }}
@@ -121,7 +121,7 @@ export default function Admin() {
               <h2 style={{ marginTop: 0, fontFamily: "'Syne', sans-serif", display: 'flex', alignItems: 'center', gap: 8 }}><Users size={18} strokeWidth={2} /> Users ({users.length})</h2>
               <div style={{ display: 'grid', gap: '4px' }}>
                 {users.map((user, i) => (
-                  <motion.div
+                  <m.div
                     key={user.id}
                     style={{
                       display: 'flex', justifyContent: 'space-between', gap: '10px',
@@ -142,16 +142,16 @@ export default function Admin() {
                     }}>
                       {user.dominant_dosha || 'not set'}
                     </span>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
-            </motion.section>
+            </m.section>
           )}
         </AnimatePresence>
 
         <AnimatePresence>
           {feedback.length > 0 && (
-            <motion.section
+            <m.section
               className="dash-section"
               style={{ marginTop: '18px', padding: '24px' }}
               initial={{ opacity: 0, y: 12 }}
@@ -161,7 +161,7 @@ export default function Admin() {
               <h2 style={{ marginTop: 0, fontFamily: "'Syne', sans-serif", display: 'flex', alignItems: 'center', gap: 8 }}><FileText size={18} strokeWidth={2} /> Feedback Reports ({feedback.length})</h2>
               <div style={{ display: 'grid', gap: '12px' }}>
                 {feedback.map((f, i) => (
-                  <motion.div
+                  <m.div
                     key={f.id}
                     style={{
                       background: 'var(--surface-900)', border: '1px solid var(--border)', 
@@ -191,10 +191,10 @@ export default function Admin() {
                       <span><strong>User:</strong> {f.user?.email || 'Unknown'}</span>
                       <span style={{ opacity: 0.7 }}>{f.url}</span>
                     </div>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
-            </motion.section>
+            </m.section>
           )}
         </AnimatePresence>
       </main>

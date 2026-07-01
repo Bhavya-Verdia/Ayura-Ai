@@ -141,8 +141,11 @@ export default function MeditationCanvas() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       const area = W * H
 
-      // 70 % yoga, 30 % Om
-      const total    = Math.round(area / 30000)
+      // 70 % yoga, 30 % Om. Counts scale with viewport area but are kept sparse
+      // for an elegant, breathable field (denser read as busy/cluttered) and
+      // capped so large/4K displays don't spawn hundreds of shadow-blurred
+      // sprites (shadowBlur is the single most expensive canvas op per frame).
+      const total    = Math.min(Math.round(area / 46000), 60)
       const yogaCount = Math.round(total * 0.70)
       const omCount   = total - yogaCount
 
@@ -150,7 +153,7 @@ export default function MeditationCanvas() {
         ...Array.from({ length: yogaCount }, () => spawnYoga(W, H)),
         ...Array.from({ length: omCount   }, () => spawnOm(W, H)),
       ]
-      sparkles = Array.from({ length: Math.round(area / 9500) }, () => spawnSparkle(W, H))
+      sparkles = Array.from({ length: Math.min(Math.round(area / 13000), 120) }, () => spawnSparkle(W, H))
     }
 
     function frame(now) {

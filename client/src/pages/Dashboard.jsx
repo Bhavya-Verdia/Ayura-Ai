@@ -1,7 +1,7 @@
 import React, { useState, useContext, useMemo, Suspense, lazy } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { AuthContext } from '../providers/AuthContext'
 import { useTheme } from '../providers/ThemeProvider'
@@ -15,6 +15,7 @@ import DoshaValidationCard from '../components/DoshaValidationCard'
 import DoshaArcRings from '../components/DoshaArcRings'
 import PreferencesModal from '../components/PreferencesModal'
 import SectionBoundary from '../components/SectionBoundary'
+import { DOSHA_COLOR } from '../constants/dosha'
 import confetti from 'canvas-confetti'
 import {
   Sunrise, Salad, Flower2, Dumbbell, Leaf, Soup, Pill,
@@ -33,7 +34,6 @@ const PLAN_TYPES = [
   { id: 'medicines',   title: 'Ayurvedic Medicines', Icon: Pill,     desc: 'Classical formulations for deep healing.',     color: 'var(--ayura-violet)', bg: 'rgba(167,139,250,0.10)' },
 ]
 
-const DOSHA_COLOR = { vata: '#818CF8', pitta: '#fb923c', kapha: '#34d399' }
 
 function formatRelativeTime(dateStr) {
   if (!dateStr) return null
@@ -89,7 +89,7 @@ function StreakCard() {
     'Start your streak — log today!'
 
   return (
-    <motion.div
+    <m.div
       className="dash-streak-card"
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
@@ -118,7 +118,7 @@ function StreakCard() {
           {checkedInToday ? '✓ Logged today' : '↗ Log today'}
         </Link>
       </div>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -142,7 +142,7 @@ function RitucharyaCard() {
   const SeasonIcon = SEASON_ICON[data.season] || Leaf
 
   return (
-    <motion.div
+    <m.div
       className="dash-ritu-card"
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
@@ -176,7 +176,7 @@ function RitucharyaCard() {
           )}
         </div>
       )}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -277,7 +277,7 @@ function HealthScoreCard({ completedCount, total }) {
       <div className="dash-health-score-ring-wrap">
         <svg width="96" height="96" viewBox="0 0 96 96">
           <circle cx="48" cy="48" r="38" fill="none" stroke="var(--border-subtle)" strokeWidth="6" />
-          <motion.circle
+          <m.circle
             cx="48" cy="48" r="38" fill="none"
             stroke="url(#hgGrad)" strokeWidth="6"
             strokeLinecap="round"
@@ -323,7 +323,7 @@ function VerifyEmailBanner({ email }) {
     }
   }
   return (
-    <motion.div
+    <m.div
       className="dash-verify-banner"
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -341,7 +341,7 @@ function VerifyEmailBanner({ email }) {
         <button className="dash-verify-btn" onClick={resend}>Resend</button>
       )}
       <button className="dash-verify-dismiss" onClick={() => setDismissed(true)} aria-label="Dismiss">✕</button>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -362,7 +362,7 @@ function PlanFeedbackCard({ planType, onDone }) {
   }
 
   return (
-    <motion.div
+    <m.div
       className="dash-feedback-card"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -388,14 +388,14 @@ function PlanFeedbackCard({ planType, onDone }) {
           Not yet
         </button>
       </div>
-    </motion.div>
+    </m.div>
   )
 }
 
 // ── Re-assessment Trigger Card ─────────────────────────────────
 function ReassessmentCard({ onDismiss }) {
   return (
-    <motion.div
+    <m.div
       className="dash-reassess-card"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -409,7 +409,7 @@ function ReassessmentCard({ onDismiss }) {
         <Link to="/dosha-quiz" className="btn btn-primary btn-sm">Reassess My Dosha →</Link>
         <button type="button" className="btn btn-secondary btn-sm" onClick={onDismiss}>Not now</button>
       </div>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -436,7 +436,7 @@ function ReactionModal({ planType, onClose }) {
 
   return (
     <div className="dash-reaction-overlay" onClick={onClose}>
-      <motion.form
+      <m.form
         className="dash-reaction-modal"
         onClick={e => e.stopPropagation()}
         onSubmit={submit}
@@ -468,7 +468,7 @@ function ReactionModal({ planType, onClose }) {
           </button>
           <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
         </div>
-      </motion.form>
+      </m.form>
     </div>
   )
 }
@@ -591,7 +591,7 @@ const Dashboard = () => {
   [reassessmentDismissed, user?.plan_not_working_streak, user?.needs_reassessment]
   )
 
-  const doshaBadgeColor = DOSHA_COLOR[user?.dominant_dosha?.toLowerCase()] || '#2dd4bf'
+  const doshaBadgeColor = DOSHA_COLOR[user?.dominant_dosha?.toLowerCase()] || DOSHA_COLOR.default
   const initials        = user?.name ? user.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() : 'AY'
   const completedCount  = Object.keys(plans).length
 
@@ -649,18 +649,18 @@ const Dashboard = () => {
       )}
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-16px', position: 'relative', zIndex: 10 }}>
-        <motion.button
+        <m.button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="btn btn-secondary btn-sm"
           style={{ display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '20px', padding: '6px 14px', fontSize: '0.85rem' }}
           whileTap={{ scale: 0.95 }}
         >
           {theme === 'dark' ? <><Sun size={15} strokeWidth={2} /> Light Mode</> : <><Moon size={15} strokeWidth={2} /> Dark Mode</>}
-        </motion.button>
+        </m.button>
       </div>
 
       {/* ── Hero Card ── */}
-      <motion.div
+      <m.div
         className="dash-hero-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -706,7 +706,7 @@ const Dashboard = () => {
           {user?.dominant_dosha && <DoshaGauge dosha={user.dominant_dosha} doshaScores={user.dosha_scores} />}
           <HealthScoreCard completedCount={completedCount} total={PLAN_TYPES.length} />
         </div>
-      </motion.div>
+      </m.div>
 
 
 
@@ -754,14 +754,14 @@ const Dashboard = () => {
       </div>
 
       {/* Staggered card grid */}
-      <motion.div
+      <m.div
         className="dash-plans-grid"
         variants={gridContainer}
         initial="hidden"
         animate="show"
       >
         {PLAN_TYPES.map((type) => (
-          <motion.div
+          <m.div
             key={type.id}
             className={`dash-plan-card${plans[type.id] ? ' has-plan' : ''}`}
             variants={gridItem}
@@ -819,9 +819,9 @@ const Dashboard = () => {
                 </button>
               )}
             </div>
-          </motion.div>
+          </m.div>
         ))}
-      </motion.div>
+      </m.div>
 
       {/* ── Quick nav cards ── */}
       <div className="dash-quick-nav">
@@ -830,7 +830,7 @@ const Dashboard = () => {
           { label: 'Timeline',  Icon: TrendingUp,    path: '/timeline', desc: 'Track your health progress' },
           { label: 'Check-In',  Icon: CircleCheck,   path: '/checkin',  desc: "Log today's energy & mood" },
         ].map((item, i) => (
-          <motion.div key={item.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.3 + i * 0.1 }}>
+          <m.div key={item.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.3 + i * 0.1 }}>
             <Link to={item.path} className="dash-quick-card">
               <span className="dash-quick-icon"><item.Icon size={20} strokeWidth={2} /></span>
               <div className="dash-quick-info">
@@ -839,7 +839,7 @@ const Dashboard = () => {
               </div>
               <span className="dash-quick-arrow">→</span>
             </Link>
-          </motion.div>
+          </m.div>
         ))}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import {
   Sun, PersonStanding, Dumbbell, Leaf, Coffee, Pill, Sparkles, FlaskConical, AlertTriangle, Star, BookOpen,
 } from 'lucide-react'
@@ -90,7 +90,7 @@ function ClassicalBasis({ planType }) {
   const refs = PLAN_CITATIONS[planType]
   if (!refs) return null
   return (
-    <motion.div
+    <m.div
       className="plan-classical-basis"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -105,15 +105,26 @@ function ClassicalBasis({ planType }) {
       <p className="plan-classical-note">
         Recommendations are grounded in these classical Ayurvedic texts; individual items may cite a specific shloka. Wellness guidance, not a substitute for examination by a registered Vaidya.
       </p>
-    </motion.div>
+    </m.div>
   )
 }
 
 
-export default function PlanViewer({ plan, planType }) {
-  if (!plan) return <p className="plan-empty">No plan data available.</p>
+export default function PlanViewer({ plan: rawPlan, planType }) {
+  if (!rawPlan) return <p className="plan-empty">No plan data available.</p>
 
   const sectionKey = planType ? SECTION_KEY_MAP[planType] : null
+
+  // The per-feature endpoints wrap the plan in a `{feature}_plan` envelope
+  // (e.g. { routine_plan: {…}, generated_at, id }). The dedicated views and the
+  // section logic below expect the INNER plan object, so unwrap it when present —
+  // otherwise plan.weekly_routine / four_week_plan / clinical_decisions never
+  // resolve and every plan falls back to the raw key-value dump.
+  const plan = (
+    sectionKey && rawPlan[sectionKey] &&
+    typeof rawPlan[sectionKey] === 'object' && !Array.isArray(rawPlan[sectionKey])
+  ) ? rawPlan[sectionKey] : rawPlan
+
   const sections = sectionKey && plan[sectionKey]
     ? { [sectionKey]: plan[sectionKey] }
     : Object.fromEntries(Object.entries(plan).filter(([k]) => !SKIP_KEYS.includes(k) && plan[k]))
@@ -122,14 +133,16 @@ export default function PlanViewer({ plan, planType }) {
     <div className="plan-viewer-container">
       {/* ── Summary banner ── */}
       {plan.user_summary && (
-        <motion.div
+        <m.div
           className="plan-summary-banner"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="plan-summary-name">
-            Good morning, {plan.user_summary.name?.split(' ')[0]}
+            {plan.user_summary.name
+              ? `Good morning, ${plan.user_summary.name.split(' ')[0]}`
+              : 'Good morning'}
           </div>
           {plan.user_summary.dominant_dosha && (
             <div className="plan-summary-dosha-row">
@@ -143,91 +156,91 @@ export default function PlanViewer({ plan, planType }) {
               <span>{plan.daily_tip}</span>
             </div>
           )}
-        </motion.div>
+        </m.div>
       )}
 
       {/* ── Panchakarma dedicated view ── */}
       {planType === 'panchakarma' && plan.clinical_decisions && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         >
           <PanchakarmaView plan={plan} />
-        </motion.div>
+        </m.div>
       )}
 
       {/* ── Yoga dedicated view ── */}
       {planType === 'yoga' && plan.four_week_plan && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         >
           <YogaView plan={plan} />
-        </motion.div>
+        </m.div>
       )}
 
       {/* ── Gym dedicated view ── */}
       {planType === 'gym' && (plan.weekly_schedule || plan.four_week_plan) && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         >
           <GymView plan={plan} />
-        </motion.div>
+        </m.div>
       )}
 
       {/* ── Diet dedicated view ── */}
       {planType === 'diet' && (plan.four_week_plan || plan.weekly_plan) && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         >
           <DietView plan={plan} />
-        </motion.div>
+        </m.div>
       )}
 
       {/* ── Remedies dedicated view ── */}
       {planType === 'remedies' && (plan.symptoms_addressed || plan.doctor_referrals) && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         >
           <RemedyView plan={plan} />
-        </motion.div>
+        </m.div>
       )}
 
       {/* ── Medicines dedicated view ── */}
       {planType === 'medicines' && (plan.primary_formulations || plan.supporting_formulations) && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         >
           <MedicineView plan={plan} />
-        </motion.div>
+        </m.div>
       )}
 
       {/* ── Routine dedicated view ── */}
       {planType === 'routine' && plan.weekly_routine && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         >
           <RoutineView plan={plan} />
-        </motion.div>
+        </m.div>
       )}
 
       {/* ── Plan sections ── */}
       {Object.entries(sections).map(([key, value], idx) => {
         const IconComponent = SECTION_ICONS[key] || Sparkles
         return value ? (
-          <motion.div
+          <m.div
             key={key}
             className="plan-section"
             initial={{ opacity: 0, y: 20 }}
@@ -241,13 +254,13 @@ export default function PlanViewer({ plan, planType }) {
               {key.replace(/_/g, ' ')}
             </h3>
             {renderValue(value)}
-          </motion.div>
+          </m.div>
         ) : null
       })}
 
       {/* ── Safety & disclaimers ── */}
       {(plan.safety_checks?.warnings?.length > 0 || plan.disclaimer || plan.medical_disclaimer) && (
-        <motion.div
+        <m.div
           className="plan-safety-box"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -267,7 +280,7 @@ export default function PlanViewer({ plan, planType }) {
               {plan.disclaimer || plan.medical_disclaimer}
             </p>
           )}
-        </motion.div>
+        </m.div>
       )}
 
       {/* ── Classical basis (citations) ── */}

@@ -29,7 +29,7 @@
   background: var(--glass-bg-subtle); border: 1px solid var(--glass-border);
   border-radius: 20px; display: flex; align-items: center; justify-content: center;
 }
-.comm-title { font-family: var(--font-display); font-size: 2.4rem; font-weight: 800; margin: 0 0 4px; }
+.comm-title { font-family: var(--font-display); font-size: var(--fs-h1); font-weight: 800; margin: 0 0 4px; }
 .comm-subtitle { color: #a1a1aa; font-size: 0.95rem; margin: 0; }
 .gradient-text { background: linear-gradient(135deg, #06b6d4, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .comm-post-count-badge { display: flex; flex-direction: column; align-items: flex-end; }

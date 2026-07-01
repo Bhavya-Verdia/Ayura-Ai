@@ -13,6 +13,29 @@
   border: 0;
 }
 
+/* Skip-to-content link — off-screen until keyboard-focused, then slides in.
+   Lets keyboard/screen-reader users jump past the nav straight to the page. */
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: var(--z-top);
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: var(--ayura-teal);
+  color: #04080b;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: var(--glass-shadow-strong);
+  transition: top 0.2s ease;
+}
+.skip-link:focus-visible {
+  top: 16px;
+  outline: 2px solid var(--ayura-ink);
+  outline-offset: 2px;
+}
+
 /* ─── SMOOTH THEME TRANSITION ────────────────────────────── */
 html,
 body,
@@ -125,6 +148,19 @@ body,
   --font-ui:      'Manrope', sans-serif;
   --font-body:    'Manrope', sans-serif;
 
+  /* ── Fluid type scale ──
+     clamp(min, preferred-vw, max): sizes scale continuously with the viewport
+     between phone (min) and desktop (max), so headings never snap at a
+     breakpoint. Consume via `font-size: var(--fs-h1)` etc.               */
+  --fs-hero:    clamp(2.4rem, 7vw,   5.5rem);   /* landing hero */
+  --fs-display: clamp(2rem,   4vw,   3rem);     /* big section titles */
+  --fs-h1:      clamp(1.9rem, 3.2vw, 2.5rem);   /* page titles */
+  --fs-h2:      clamp(1.5rem, 2.4vw, 2rem);
+  --fs-h3:      clamp(1.2rem, 1.8vw, 1.5rem);
+  --fs-body:    1rem;
+  --fs-sm:      0.9rem;
+  --fs-caption: 0.8rem;
+
   /* ── Semantic Spacing Scale ── */
   --space-1: 4px;
   --space-2: 8px;
@@ -138,6 +174,28 @@ body,
 
   /* ── Aurora Blobs ── */
   --aurora-blur: 90px;
+
+  /* ── Z-index scale ──
+     One ordered ladder so stacking is predictable. Prefer these tokens over raw
+     numbers in new CSS. Order: content < sticky headers < sidebar < overlays <
+     popovers < modals < toasts < top-most (offline/critical banners).
+     (sonner manages its own toast z-index above the app.)                    */
+  --z-sticky:  100;
+  --z-sidebar: 200;
+  --z-overlay: 900;
+  --z-popover: 950;
+  --z-modal:   1000;
+  --z-top:     9999;
+
+  /* ── Breakpoint scale (reference) ──
+     CSS @media can't read custom properties, so these can't be consumed as
+     var()s — they're the canonical set. Author NEW media queries against these
+     values only, so responsive behavior stays consistent across the app:
+       --bp-xs 480px  (large phone)
+       --bp-sm 640px  (small tablet / landscape phone)
+       --bp-md 768px  (tablet)
+       --bp-lg 900px  (small laptop — matches the JS isMobile cutoff)
+       --bp-xl 1200px (desktop)                                              */
 }
 
 /* ─── LIGHT MODE ──────────────────────────────────────────── */
@@ -238,6 +296,12 @@ h1, h2, h3 {
   line-height: 1.08;
   letter-spacing: 0;
 }
+/* Fluid defaults for bare headings. Components with an explicit font-size
+   still win (equal specificity, but their declaration comes later / is scoped),
+   so this only sizes headings that would otherwise inherit 1em. */
+h1 { font-size: var(--fs-h1); }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h3); }
 
 h4, h5, h6 {
   font-family: var(--font-ui);
@@ -685,7 +749,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
 .loading-screen {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: var(--z-modal);
   display: grid;
   place-items: center;
   align-content: center;
@@ -856,8 +920,9 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
    backdrop-filter is one of the most expensive things to repaint during
    scroll on mobile GPUs. The decorative always-on background layers are
    already skipped on small screens (see useLowPowerMode), and here we also
-   halve the shared glass blur radius so scrolling stays smooth.            */
-@media (max-width: 820px) {
+   halve the shared glass blur radius so scrolling stays smooth.
+   (900px matches MainLayout's isMobile + useLowPowerMode breakpoints.)      */
+@media (max-width: 900px) {
   .glass-card,
   .bg-blur {
     backdrop-filter: blur(10px);

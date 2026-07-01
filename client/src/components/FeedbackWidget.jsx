@@ -1,8 +1,8 @@
-import { useState, useEffect, useContext } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { m, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
+import { toast } from 'sonner'
 import { feedbackAPI } from '../api/client'
-import { ToastContext } from '../providers/ToastContext'
 import { X } from 'lucide-react'
 import './FeedbackWidget.css'
 
@@ -13,7 +13,6 @@ export default function FeedbackWidget() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const location = useLocation()
-  const toast = useContext(ToastContext)
 
   // Close on Escape key
   useEffect(() => {
@@ -51,7 +50,7 @@ export default function FeedbackWidget() {
 
   return (
     <>
-      <motion.button
+      <m.button
         className="feedback-fab"
         onClick={() => setIsOpen(true)}
         initial={{ scale: 0, opacity: 0 }}
@@ -63,12 +62,12 @@ export default function FeedbackWidget() {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
-      </motion.button>
+      </m.button>
 
       <AnimatePresence>
         {isOpen && (
           <div className="feedback-overlay" onClick={() => setIsOpen(false)}>
-            <motion.div 
+            <m.div 
               className="feedback-modal"
               onClick={e => e.stopPropagation()}
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -115,7 +114,7 @@ export default function FeedbackWidget() {
                   {isSubmitting ? 'Sending...' : 'Send to Team'}
                 </button>
               </form>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>

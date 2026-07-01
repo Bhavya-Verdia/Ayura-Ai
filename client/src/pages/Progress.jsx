@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { progressAPI } from '../api/client'
 import { toast } from 'sonner'
@@ -28,7 +28,7 @@ const TREND_CONFIG = {
 
 function StatCard({ icon, label, value, sub, color }) {
   return (
-    <motion.div
+    <m.div
       className="prg-stat-card"
       style={{ '--stat-color': color || 'var(--ayura-teal)' }}
       initial={{ opacity: 0, y: 16 }}
@@ -41,7 +41,7 @@ function StatCard({ icon, label, value, sub, color }) {
         <div className="prg-stat-label">{label}</div>
         {sub && <div className="prg-stat-sub">{sub}</div>}
       </div>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -59,7 +59,7 @@ function LogEntry({ log, index }) {
   const date = new Date(log.date)
   const dateStr = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
   return (
-    <motion.div
+    <m.div
       className="prg-log-entry"
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
@@ -87,7 +87,7 @@ function LogEntry({ log, index }) {
           </div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -149,22 +149,22 @@ export default function Progress() {
 
         <div className="prg-container">
           {/* Header */}
-          <motion.div className="prg-header" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <m.div className="prg-header" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <h1 className="prg-title gradient-text">Progress</h1>
             <p className="prg-sub">Track your wellness journey day by day.</p>
-            <motion.button
+            <m.button
               className="btn btn-primary prg-log-btn"
               onClick={() => setShowLogForm(v => !v)}
               whileTap={{ scale: 0.97 }}
             >
               {showLogForm ? <><X size={16} strokeWidth={2.2} /> Cancel</> : <><Plus size={16} strokeWidth={2.2} /> Log Today</>}
-            </motion.button>
-          </motion.div>
+            </m.button>
+          </m.div>
 
           {/* Quick log form */}
           <AnimatePresence>
             {showLogForm && (
-              <motion.form
+              <m.form
                 className="prg-log-form"
                 onSubmit={handleLog}
                 initial={{ opacity: 0, height: 0, marginBottom: 0 }}
@@ -221,15 +221,15 @@ export default function Progress() {
                   />
                 </div>
 
-                <motion.button
+                <m.button
                   type="submit"
                   className="btn btn-primary"
                   disabled={logMutation.isPending}
                   whileTap={{ scale: 0.97 }}
                 >
                   {logMutation.isPending ? 'Saving...' : 'Save Entry'}
-                </motion.button>
-              </motion.form>
+                </m.button>
+              </m.form>
             )}
           </AnimatePresence>
 
@@ -262,7 +262,7 @@ export default function Progress() {
 
               {/* LLM Insight */}
               {insight && (
-                <motion.div
+                <m.div
                   className="prg-insight-card"
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -273,7 +273,7 @@ export default function Progress() {
                     <div className="prg-insight-label">AI Weekly Insight</div>
                     <p className="prg-insight-text">{insight}</p>
                   </div>
-                </motion.div>
+                </m.div>
               )}
 
               {/* Recent entries */}

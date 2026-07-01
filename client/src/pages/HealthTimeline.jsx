@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import API from '../api/client'
 import { progressAPI } from '../api/client'
@@ -279,7 +279,7 @@ function ProgressSummary({ summary }) {
   ]
 
   return (
-    <motion.div
+    <m.div
       className="ht-progress-strip"
       initial={{ opacity: 0, y: -16 }}
       animate={{ opacity: 1, y: 0 }}
@@ -303,7 +303,7 @@ function ProgressSummary({ summary }) {
           </div>
         ))}
       </div>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -313,7 +313,7 @@ function EventCard({ event, index }) {
   const ts = event.created_at || event.timestamp
 
   return (
-    <motion.div
+    <m.div
       className="ht-event-row"
       initial={{ opacity: 0, x: 40 }}
       animate={{ opacity: 1, x: 0 }}
@@ -350,14 +350,14 @@ function EventCard({ event, index }) {
 
         {renderDetails(event)}
       </div>
-    </motion.div>
+    </m.div>
   )
 }
 
 /* ─── Date Group Header ──────────────────────────────── */
 function DateGroupHeader({ label }) {
   return (
-    <motion.div
+    <m.div
       className="ht-date-header"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -365,14 +365,14 @@ function DateGroupHeader({ label }) {
     >
       <span className="ht-date-badge">{label}</span>
       <div className="ht-date-line" />
-    </motion.div>
+    </m.div>
   )
 }
 
 /* ─── Empty State ────────────────────────────────────── */
 function EmptyState({ filtered }) {
   return (
-    <motion.div
+    <m.div
       className="ht-empty"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -394,7 +394,7 @@ function EmptyState({ filtered }) {
           <a href="/chat" className="btn btn-secondary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><MessageCircle size={15} strokeWidth={2} /> Chat with Ayura</a>
         </div>
       )}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -478,7 +478,7 @@ export default function HealthTimeline() {
 
       <div className="ht-root">
         {/* ── Page Header ── */}
-        <motion.div
+        <m.div
           className="ht-page-header"
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -500,13 +500,13 @@ export default function HealthTimeline() {
           >
             ↻ Refresh
           </button>
-        </motion.div>
+        </m.div>
 
         {/* ── Progress Summary Strip ── */}
         <ProgressSummary summary={summary} />
 
         {/* ── Filter Pills ── */}
-        <motion.div
+        <m.div
           className="ht-filters"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -524,12 +524,12 @@ export default function HealthTimeline() {
               <span style={{display:'inline-flex'}}>{f.Icon && <f.Icon size={14} strokeWidth={2} />}</span> {f.label}
             </button>
           ))}
-        </motion.div>
+        </m.div>
 
         {/* ── Error Banner ── */}
         <AnimatePresence>
           {error && (
-            <motion.div
+            <m.div
               className="ht-error-bar"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -537,7 +537,7 @@ export default function HealthTimeline() {
             >
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><TriangleAlert size={15} strokeWidth={2} /> {error}</span>
               <button onClick={() => {}} aria-label="Dismiss error"><X size={14} strokeWidth={2} /></button>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
@@ -567,7 +567,7 @@ export default function HealthTimeline() {
 
           {/* ── Load More ── */}
           {!loading && hasMore && filteredEvents.length > 0 && (
-            <motion.div
+            <m.div
               className="ht-load-more-wrap"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -584,12 +584,12 @@ export default function HealthTimeline() {
                   '↓ Load More'
                 )}
               </button>
-            </motion.div>
+            </m.div>
           )}
 
           {/* ── End of timeline indicator ── */}
           {!loading && !hasMore && filteredEvents.length > 0 && (
-            <motion.div
+            <m.div
               className="ht-timeline-end"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -597,7 +597,7 @@ export default function HealthTimeline() {
             >
               <div className="ht-end-dot" />
               <span>You're all caught up ✦</span>
-            </motion.div>
+            </m.div>
           )}
         </div>
       </div>

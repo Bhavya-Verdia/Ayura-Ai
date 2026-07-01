@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { notificationsAPI } from '../api/client'
 import { Leaf, RefreshCw, AlarmClock, AlertTriangle, Bell, Sparkles, CheckCheck, Trash2 } from 'lucide-react'
@@ -54,7 +54,7 @@ function NotificationCard({ notif, onMarkRead, onDelete, index }) {
   const cfg = getTypeConfig(notif.type)
 
   return (
-    <motion.div
+    <m.div
       layout
       className={`notif-card${notif.is_read ? '' : ' notif-card--unread'}`}
       style={{
@@ -105,7 +105,7 @@ function NotificationCard({ notif, onMarkRead, onDelete, index }) {
       >
         ✕
       </button>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -202,7 +202,7 @@ export default function Notifications() {
 
         <div className="notif-container">
           {/* Header */}
-          <motion.div
+          <m.div
             className="notif-header"
             initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -214,16 +214,16 @@ export default function Notifications() {
             </div>
             <div className="notif-header-right">
               {unreadCount > 0 && (
-                <motion.span
+                <m.span
                   className="notif-count-badge"
                   key={unreadCount}
                   initial={{ scale: 0.7, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                 >
                   {unreadCount} unread
-                </motion.span>
+                </m.span>
               )}
-              <motion.button
+              <m.button
                 className="btn btn-secondary btn-sm notif-mark-all-btn"
                 onClick={handleMarkAllRead}
                 disabled={markingAll || unreadCount === 0}
@@ -234,23 +234,23 @@ export default function Notifications() {
                 ) : (
                   <><CheckCheck size={14} strokeWidth={2.2} /> Mark all read</>
                 )}
-              </motion.button>
+              </m.button>
               {notifications.length > 0 && (
-                <motion.button
+                <m.button
                   className="btn btn-secondary btn-sm notif-clear-all-btn"
                   onClick={handleClearAll}
                   whileTap={{ scale: 0.95 }}
                 >
                   <Trash2 size={14} strokeWidth={2} /> Clear all
-                </motion.button>
+                </m.button>
               )}
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Error */}
           <AnimatePresence>
             {error && (
-              <motion.div
+              <m.div
                 className="notif-error"
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -258,7 +258,7 @@ export default function Notifications() {
               >
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><AlertTriangle size={15} strokeWidth={2} /> {error}</span>
                 <button onClick={fetchNotifications} className="notif-retry-btn">Retry</button>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
@@ -266,7 +266,7 @@ export default function Notifications() {
           {loading ? (
             <NotificationSkeleton />
           ) : notifications.length === 0 ? (
-            <motion.div
+            <m.div
               className="notif-empty"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -275,7 +275,7 @@ export default function Notifications() {
               <div className="notif-empty-icon"><Sparkles size={30} strokeWidth={1.6} /></div>
               <h2 className="notif-empty-title">You're all caught up!</h2>
               <p className="notif-empty-sub">No notifications right now. Check back later.</p>
-            </motion.div>
+            </m.div>
           ) : (
             <div className="notif-list">
               <AnimatePresence mode="popLayout">

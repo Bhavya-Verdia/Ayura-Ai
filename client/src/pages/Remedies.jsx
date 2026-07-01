@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { plansAPI } from '../api/client'
 import { Soup, Pill, Leaf, TriangleAlert, Stethoscope, X } from 'lucide-react'
@@ -87,7 +87,7 @@ function RemedyCard({ remedy }) {
   const warnings = Array.isArray(remedy.warnings) ? remedy.warnings : []
 
   return (
-    <motion.div
+    <m.div
       className="rem-card"
       variants={cardVariants}
       style={{ '--border-left-color': safety.borderLeft }}
@@ -157,7 +157,7 @@ function RemedyCard({ remedy }) {
 
       <AnimatePresence>
         {expanded && (
-          <motion.div
+          <m.div
             key="details"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -182,10 +182,10 @@ function RemedyCard({ remedy }) {
                 </ul>
               </div>
             )}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -196,7 +196,7 @@ function MedicineCard({ medicine }) {
   const warnings = Array.isArray(medicine.warnings) ? medicine.warnings : []
 
   return (
-    <motion.div
+    <m.div
       className="rem-card rem-medicine-card"
       variants={cardVariants}
       style={{ '--border-left-color': safety.borderLeft }}
@@ -253,7 +253,7 @@ function MedicineCard({ medicine }) {
 
       <AnimatePresence>
         {expanded && (
-          <motion.div
+          <m.div
             key="med-details"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -277,10 +277,10 @@ function MedicineCard({ medicine }) {
                 </ul>
               </div>
             )}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -288,7 +288,7 @@ function MedicineCard({ medicine }) {
 function EmptyState({ tab }) {
   const navigate = useNavigate()
   return (
-    <motion.div
+    <m.div
       className="rem-empty"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -299,15 +299,15 @@ function EmptyState({ tab }) {
       <p className="rem-empty-sub">
         Head to your Dashboard and generate a personalized Ayurvedic plan to unlock your custom remedy cabinet.
       </p>
-      <motion.button
+      <m.button
         className="btn btn-primary"
         onClick={() => navigate('/dashboard')}
         whileHover={{ scale: 1.04, y: -2 }}
         whileTap={{ scale: 0.97 }}
       >
         ✦ Go to Dashboard
-      </motion.button>
-    </motion.div>
+      </m.button>
+    </m.div>
   )
 }
 
@@ -398,7 +398,7 @@ const Remedies = () => {
         <div className="rem-container">
 
           {/* ── Page header ─────────────────────── */}
-          <motion.div
+          <m.div
             className="rem-page-header"
             initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -424,10 +424,10 @@ const Remedies = () => {
                 ↻ Regenerate from Dashboard
               </Link>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* ── Disclaimer banner ───────────────── */}
-          <motion.div
+          <m.div
             className="disclaimer rem-disclaimer"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -438,12 +438,12 @@ const Remedies = () => {
               These recommendations are AI-generated based on Ayurvedic principles.
               Always consult a qualified healthcare provider before starting any new treatment.
             </span>
-          </motion.div>
+          </m.div>
 
           {/* ── Error bar ───────────────────────── */}
           <AnimatePresence>
             {error && (
-              <motion.div
+              <m.div
                 className="rem-error-bar"
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -451,12 +451,12 @@ const Remedies = () => {
               >
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><TriangleAlert size={15} strokeWidth={2} /> {error}</span>
                 <button onClick={() => setErrorDismissed(true)} aria-label="Dismiss"><X size={14} strokeWidth={2} /></button>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
           {/* ── Tabs ────────────────────────────── */}
-          <motion.div
+          <m.div
             className="rem-tabs-wrapper"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -486,12 +486,12 @@ const Remedies = () => {
                 )}
               </button>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* ── Filter bar ──────────────────────── */}
           <AnimatePresence mode="wait">
             {!loading && currentSymptoms.length > 0 && (
-              <motion.div
+              <m.div
                 key={activeTab + '-filters'}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -503,14 +503,14 @@ const Remedies = () => {
                   activeFilter={filter}
                   onFilter={setFilter}
                 />
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
           {/* ── Content area ────────────────────── */}
           <AnimatePresence mode="wait">
             {loading ? (
-              <motion.div
+              <m.div
                 key="skeletons"
                 className="rem-cards-grid"
                 initial={{ opacity: 0 }}
@@ -519,18 +519,18 @@ const Remedies = () => {
                 transition={{ duration: 0.2 }}
               >
                 {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
-              </motion.div>
+              </m.div>
             ) : totalItems === 0 ? (
-              <motion.div
+              <m.div
                 key="empty"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
                 <EmptyState tab={activeTab} />
-              </motion.div>
+              </m.div>
             ) : (
-              <motion.div
+              <m.div
                 key={activeTab + '-' + filter}
                 className="rem-cards-grid"
                 variants={containerVariants}
@@ -551,7 +551,7 @@ const Remedies = () => {
 
                 {/* No results for filter */}
                 {currentItems.length === 0 && filter && (
-                  <motion.div
+                  <m.div
                     className="rem-no-filter-results"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -560,9 +560,9 @@ const Remedies = () => {
                     <button className="rem-filter-chip active" onClick={() => setFilter('')}>
                       Clear filter
                     </button>
-                  </motion.div>
+                  </m.div>
                 )}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>

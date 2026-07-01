@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { authAPI } from '../api/client'
 import { Helmet } from 'react-helmet-async'
 import { CircleCheck } from 'lucide-react'
@@ -81,7 +81,7 @@ export default function ResetPassword() {
 
       {/* ── RIGHT — form ── */}
       <div className="auth-right">
-        <motion.div
+        <m.div
           className="auth-form-wrap"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -94,7 +94,7 @@ export default function ResetPassword() {
 
           <AnimatePresence mode="wait">
             {status === 'success' ? (
-              <motion.div
+              <m.div
                 key="success"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -109,9 +109,9 @@ export default function ResetPassword() {
                 <Link to="/login" className="auth-submit-btn" style={{ textDecoration: 'none' }}>
                   Go to Sign In
                 </Link>
-              </motion.div>
+              </m.div>
             ) : (
-              <motion.form
+              <m.form
                 key="form"
                 className="auth-form"
                 onSubmit={handleSubmit}
@@ -120,14 +120,14 @@ export default function ResetPassword() {
               >
                 <AnimatePresence>
                   {status === 'error' && (
-                    <motion.div
+                    <m.div
                       className="auth-error"
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
                     >
                       {errorMsg}
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
 
@@ -137,6 +137,7 @@ export default function ResetPassword() {
                     id="password"
                     className="auth-input"
                     type="password"
+                    autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="At least 8 characters"
@@ -151,6 +152,7 @@ export default function ResetPassword() {
                     id="confirmPassword"
                     className="auth-input"
                     type="password"
+                    autoComplete="new-password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Type your new password again"
@@ -159,7 +161,7 @@ export default function ResetPassword() {
                   />
                 </div>
 
-                <motion.button
+                <m.button
                   type="submit"
                   className="auth-submit-btn"
                   disabled={status === 'loading'}
@@ -170,12 +172,12 @@ export default function ResetPassword() {
                   ) : (
                     'Reset Password →'
                   )}
-                </motion.button>
-              </motion.form>
+                </m.button>
+              </m.form>
             )}
           </AnimatePresence>
 
-        </motion.div>
+        </m.div>
       </div>
     </div>
   )

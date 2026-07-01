@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import API from '../api/client'
 import { useAuth } from '../providers/AuthContext'
@@ -51,7 +51,7 @@ function HistoryCard({ entry, index }) {
   const date = new Date(entry.timestamp)
   const dateStr = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
   return (
-    <motion.div
+    <m.div
       className="chk-hist-card"
       initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
@@ -75,7 +75,7 @@ function HistoryCard({ entry, index }) {
         </div>
       )}
       {entry.what_felt_good && <p className="chk-hist-felt-good">"{entry.what_felt_good}"</p>}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -137,10 +137,10 @@ export default function CheckIn() {
         <div className="chk-orb chk-orb-b" aria-hidden="true" />
 
         <div className="chk-container">
-          <motion.div className="chk-header" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <m.div className="chk-header" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <h1 className="chk-page-title gradient-text">Weekly Check-In</h1>
             <p className="chk-page-sub">A quick snapshot of your week — refines your Vikriti and fine-tunes your plans.</p>
-          </motion.div>
+          </m.div>
 
           <div className="chk-tabs">
             <button className={`chk-tab${tab === 'checkin' ? ' active' : ''}`} onClick={() => { setTab('checkin'); setInsight(null) }}>New Check-In</button>
@@ -151,7 +151,7 @@ export default function CheckIn() {
 
           <AnimatePresence mode="wait">
             {tab === 'history' ? (
-              <motion.div key="history" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3 }}>
+              <m.div key="history" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3 }}>
                 {histLoading ? (
                   <div className="chk-hist-loading">{[...Array(3)].map((_, i) => <div key={i} className="chk-hist-card skeleton" style={{ height: 160 }} />)}</div>
                 ) : history.length === 0 ? (
@@ -159,9 +159,9 @@ export default function CheckIn() {
                 ) : (
                   history.map((entry, i) => <HistoryCard key={i} entry={entry} index={i} />)
                 )}
-              </motion.div>
+              </m.div>
             ) : insight ? (
-              <motion.div key="insight" className="chk-insight-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+              <m.div key="insight" className="chk-insight-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
                 <div className="chk-insight-icon"><Sparkles size={22} strokeWidth={1.8} /></div>
                 <h3 className="chk-insight-title">Vikriti Updated</h3>
                 <p className="chk-insight-text">{insight.insight}</p>
@@ -175,9 +175,9 @@ export default function CheckIn() {
                   <button className="btn btn-secondary chk-back-btn" onClick={() => { setInsight(null); setSymptoms([]); setStageUpdates({}); setFeltGood('') }}>New Check-In</button>
                   <button className="btn btn-secondary chk-back-btn" onClick={() => { setInsight(null); setTab('history') }}>View History</button>
                 </div>
-              </motion.div>
+              </m.div>
             ) : (
-              <motion.form key="form" className="chk-form" onSubmit={handleSubmit} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
+              <m.form key="form" className="chk-form" onSubmit={handleSubmit} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
                 {error && <div className="chk-error" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><TriangleAlert size={15} strokeWidth={2} /> {error}</div>}
 
                 {/* ── Lifestyle pulse (1-5 emoji) ── */}
@@ -211,10 +211,10 @@ export default function CheckIn() {
                 <p className="vci-sub" style={{ marginTop: 8 }}>Any symptoms this week?</p>
                 <div className="vci-chips">
                   {QUICK_SYMPTOMS.map(s => (
-                    <motion.button key={s.id} type="button" whileTap={{ scale: 0.96 }}
+                    <m.button key={s.id} type="button" whileTap={{ scale: 0.96 }}
                       className={`vci-chip ${symptoms.includes(s.id) ? 'selected' : ''}`} onClick={() => toggleSymptom(s.id)}>
                       {s.label}
-                    </motion.button>
+                    </m.button>
                   ))}
                 </div>
 
@@ -254,10 +254,10 @@ export default function CheckIn() {
                   </div>
                 </div>
 
-                <motion.button type="submit" className="btn btn-primary chk-submit-btn" disabled={loading} whileTap={{ scale: 0.98 }}>
+                <m.button type="submit" className="btn btn-primary chk-submit-btn" disabled={loading} whileTap={{ scale: 0.98 }}>
                   {loading ? (<><span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Analyzing…</>) : 'Submit & Refine My Vikriti'}
-                </motion.button>
-              </motion.form>
+                </m.button>
+              </m.form>
             )}
           </AnimatePresence>
         </div>

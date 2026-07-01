@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { useAuth } from '../providers/AuthContext'
 import { plansAPI } from '../api/client'
@@ -94,12 +94,12 @@ export default function InteractionChecker() {
         <div className="ic-orb ic-orb-b" aria-hidden="true" />
 
         <div className="ic-container">
-          <motion.div className="ic-header" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <m.div className="ic-header" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <h1 className="ic-title gradient-text">Interaction Checker</h1>
             <p className="ic-sub">Before you take an Ayurvedic herb or formulation, check it against your medications for known drug–herb interactions.</p>
-          </motion.div>
+          </m.div>
 
-          <motion.div className="ic-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 }}>
+          <m.div className="ic-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 }}>
             <ChipInput
               label="Your medications"
               hint="Prefilled from your profile — edit as needed. Allopathic drug names work best (e.g. metformin, warfarin)."
@@ -115,7 +115,7 @@ export default function InteractionChecker() {
               setItems={setHerbs}
             />
 
-            <motion.button
+            <m.button
               className="btn btn-primary ic-check-btn"
               onClick={runCheck}
               disabled={!canCheck}
@@ -124,21 +124,21 @@ export default function InteractionChecker() {
               {loading
                 ? <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Checking…</>
                 : <><ShieldCheck size={16} strokeWidth={2} /> Check safety</>}
-            </motion.button>
+            </m.button>
             {herbs.length === 0 && <p className="ic-need-herb">Add at least one herb to check.</p>}
-          </motion.div>
+          </m.div>
 
           <AnimatePresence>
             {error && (
-              <motion.div className="ic-error" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <m.div className="ic-error" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 <TriangleAlert size={15} strokeWidth={2} /> {error}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
           <AnimatePresence mode="wait">
             {result && (
-              <motion.div
+              <m.div
                 key={result.status + warnings.length}
                 className="ic-result"
                 initial={{ opacity: 0, y: 16 }}
@@ -165,7 +165,7 @@ export default function InteractionChecker() {
                       {warnings.map((w, i) => {
                         const s = sev(w.severity)
                         return (
-                          <motion.div
+                          <m.div
                             key={i}
                             className="ic-warn-card"
                             style={{ borderColor: s.color + '55', background: s.bg }}
@@ -182,7 +182,7 @@ export default function InteractionChecker() {
                             {w.effect && <p className="ic-warn-effect">{w.effect}</p>}
                             {w.recommendation && <p className="ic-warn-rec"><strong>Recommendation:</strong> {w.recommendation}</p>}
                             {w.alternative && <p className="ic-warn-alt"><strong>Safer alternative:</strong> {w.alternative}</p>}
-                          </motion.div>
+                          </m.div>
                         )
                       })}
                     </div>
@@ -208,7 +208,7 @@ export default function InteractionChecker() {
                 <p className="ic-disclaimer">
                   This deterministic screen covers documented drug–herb interactions only — absence of a warning is not a guarantee of safety. Always consult a qualified physician or registered Vaidya before combining medications with Ayurvedic herbs.
                 </p>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>

@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../providers/AuthContext'
@@ -94,11 +94,11 @@ export default function Login() {
           {/* Error */}
           <AnimatePresence mode="wait">
             {error && (
-              <motion.div className="auth-error" key="err"
+              <m.div className="auth-error" key="err"
                 initial={{ opacity:0, y:-6 }} animate={{ opacity:1, y:0 }}
                 exit={{ opacity:0 }} transition={{ duration:0.20 }}>
                 {error}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
@@ -107,6 +107,7 @@ export default function Login() {
             <div className="auth-field">
               <label className="auth-label" htmlFor="email">Email address</label>
               <input id="email" className="auth-input" type="email"
+                autoComplete="email"
                 value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com" required />
             </div>
@@ -116,6 +117,7 @@ export default function Login() {
               <div className="auth-pw-row">
                 <input id="password" className="auth-input"
                   type={showPw ? 'text' : 'password'}
+                  autoComplete="current-password"
                   value={password} onChange={e => setPassword(e.target.value)}
                   placeholder="Your password" required />
                 <button type="button" className="auth-pw-eye"
@@ -125,10 +127,10 @@ export default function Login() {
               </div>
             </div>
 
-            <motion.button type="submit" className="auth-submit"
+            <m.button type="submit" className="auth-submit"
               disabled={loading} whileTap={{ scale: 0.97 }}>
               {loading ? <span className="auth-spinner" /> : 'Sign In →'}
-            </motion.button>
+            </m.button>
           </form>
 
           {/* Links */}

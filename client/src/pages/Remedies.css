@@ -63,7 +63,7 @@
   color: var(--text-primary);
 }
 .rem-page-title {
-  font-size: 2.5rem;
+  font-size: var(--fs-h1);
   margin-bottom: 8px;
 }
 .rem-page-sub {

@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import Lenis from 'lenis'
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import { m, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { useAuth } from '../providers/AuthContext'
 import { Helmet } from 'react-helmet-async'
 import React from 'react'
@@ -146,7 +146,7 @@ function DoshaFeatureVisual() {
           <div key={d.label} className="lnd-dosha-row">
             <span className="lnd-dosha-label" style={{ color: d.color }}>{d.label}</span>
             <div className="lnd-dosha-bar-track">
-              <motion.div
+              <m.div
                 className={`lnd-dosha-bar-fill ${d.cls}`}
                 initial={{ width: 0 }}
                 whileInView={{ width: d.pct }}
@@ -220,7 +220,7 @@ function SafetyFeatureVisual() {
       </div>
       <div className="fmv-check-list">
         {SAFETY_CHECKS.map((item, i) => (
-          <motion.div
+          <m.div
             key={item.herb}
             className="fmv-check-row"
             initial={{ opacity: 0, x: -10 }}
@@ -235,7 +235,7 @@ function SafetyFeatureVisual() {
               <span className="fmv-check-name">{item.herb}</span>
               <span className="fmv-check-note">{item.note}</span>
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
       <div className="fmv-all-clear-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><ShieldCheck size={15} strokeWidth={2} /> 0 contraindications detected</div>
@@ -247,13 +247,13 @@ function SafetyFeatureVisual() {
 function BentoHeroGrid() {
   return (
     <div className="lnd-hero-visual">
-      <motion.div
+      <m.div
         className="lnd-bento-grid"
         initial={{ opacity: 0, x: 60 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.9, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
-        <motion.div
+        <m.div
           className="lnd-bento-tile lnd-bento-tile--tall"
           whileHover={{ scale: 1.02, y: -3 }}
           transition={{ type: 'spring', stiffness: 200, damping: 20 }}
@@ -264,7 +264,7 @@ function BentoHeroGrid() {
               <div key={name} className="lnd-bento-dosha-row">
                 <span style={{ color, fontWeight: 700, fontSize: '0.78rem', width: 40 }}>{name}</span>
                 <div className="lnd-bento-dosha-track">
-                  <motion.div
+                  <m.div
                     className="lnd-bento-dosha-fill"
                     style={{ background: color }}
                     initial={{ width: 0 }}
@@ -278,8 +278,8 @@ function BentoHeroGrid() {
           </div>
           <p className="lnd-bento-dosha-note">Vata leads your constitution — lean into warm, grounding routines to stay balanced.</p>
           <div className="lnd-bento-badge">✦ Vata Dominant</div>
-        </motion.div>
-        <motion.div
+        </m.div>
+        <m.div
           className="lnd-bento-tile lnd-bento-tile--accent"
           whileHover={{ scale: 1.03, y: -3 }}
           transition={{ type: 'spring', stiffness: 200, damping: 20 }}
@@ -288,8 +288,8 @@ function BentoHeroGrid() {
           <div className="lnd-bento-tile-label">Yoga Plan</div>
           <div className="lnd-bento-tile-sub">Ready — updated today</div>
           <div className="lnd-bento-status-dot" />
-        </motion.div>
-        <motion.div
+        </m.div>
+        <m.div
           className="lnd-bento-tile lnd-bento-tile--chat"
           whileHover={{ scale: 1.02, y: -3 }}
           transition={{ type: 'spring', stiffness: 200, damping: 20 }}
@@ -301,8 +301,8 @@ function BentoHeroGrid() {
             Warm, grounding foods — try ghee, sesame & root vegetables.
           </div>
           <div className="lnd-bento-tile-kicker" style={{ marginTop: 8 }}>AI Wellness Advisor</div>
-        </motion.div>
-        <motion.div
+        </m.div>
+        <m.div
           className="lnd-bento-tile lnd-bento-tile--stat"
           whileHover={{ scale: 1.03, y: -3 }}
           transition={{ type: 'spring', stiffness: 200, damping: 20 }}
@@ -310,8 +310,8 @@ function BentoHeroGrid() {
           <div className="lnd-bento-stat-num">360°</div>
           <div className="lnd-bento-stat-lbl">Holistic
 Coverage</div>
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
     </div>
   )
 }
@@ -482,7 +482,7 @@ export default function Landing() {
 
       <main>
         {/* ── HERO ────────────────────────────────────────── */}
-        <motion.section
+        <m.section
           className="lnd-hero"
           style={{ y: heroParallaxY, opacity: heroParallaxOpacity }}
         >
@@ -498,7 +498,7 @@ export default function Landing() {
                 animated tagline below remains the visual focus. */}
             <h1 className="sr-only">Ayura AI — AI-Powered Ayurvedic Wellness Platform</h1>
 
-            <motion.span
+            <m.span
               className="lnd-hero-kicker"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -506,17 +506,17 @@ export default function Landing() {
             >
               <span className="lnd-hero-kicker-dot" />
               AI + Ayurveda, reimagined
-            </motion.span>
+            </m.span>
 
             {/* Word-by-word stagger (visual tagline, demoted from H1 → H2) */}
-            <motion.h2
+            <m.h2
               className="lnd-hero-title"
               variants={stagger}
               initial="hidden"
               animate="visible"
             >
               {HERO_WORDS.map((word, i) => (
-                <motion.span
+                <m.span
                   key={i}
                   variants={wordVariants}
                   transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -526,20 +526,20 @@ export default function Landing() {
                   }}
                 >
                   {word === 'sync.' ? <em className="shimmer-text">sync.</em> : word}
-                </motion.span>
+                </m.span>
               ))}
-            </motion.h2>
+            </m.h2>
 
-            <motion.p
+            <m.p
               className="lnd-hero-subtitle"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.55 }}
             >
               Ayura AI fuses your unique Ayurvedic constitution with real-time AI to craft adaptive plans across fitness, nutrition, detox, and mindfulness — that evolve with you daily.
-            </motion.p>
+            </m.p>
 
-            <motion.div
+            <m.div
               className="lnd-hero-cta-row"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -556,10 +556,10 @@ export default function Landing() {
                   <MagneticButton as="a" href="#features" className="lnd-cta-secondary">Explore Features</MagneticButton>
                 </>
               )}
-            </motion.div>
+            </m.div>
 
             {/* Trust bar */}
-            <motion.div
+            <m.div
               className="lnd-trust-bar"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -571,12 +571,12 @@ export default function Landing() {
                   {item.label}
                 </div>
               ))}
-            </motion.div>
+            </m.div>
           </div>
 
           {/* Right visual — Bento grid */}
           <BentoHeroGrid />
-        </motion.section>
+        </m.section>
 
         {/* ── HOW IT WORKS ──────────────────────────────── */}
         <div className="lnd-section">
@@ -626,7 +626,7 @@ export default function Landing() {
         <div id="features" className="lnd-section" style={{ paddingTop: 0 }}>
           {FEATURES.map((f) => (
             <div key={f.tag} className={`lnd-feature${f.reversed ? ' reverse' : ''}`}>
-              <motion.div
+              <m.div
                 className="lnd-feature-copy"
                 variants={f.reversed ? fadeRight : fadeLeft}
                 initial="hidden"
@@ -641,9 +641,9 @@ export default function Landing() {
                 <ul className="lnd-feature-list">
                   {f.list.map(item => <li key={item}>{item}</li>)}
                 </ul>
-              </motion.div>
+              </m.div>
 
-              <motion.div
+              <m.div
                 className="lnd-feature-visual"
                 variants={f.reversed ? fadeLeft : fadeRight}
                 initial="hidden"
@@ -654,7 +654,7 @@ export default function Landing() {
                 <div className="lnd-feature-img-frame">
                   <f.Visual />
                 </div>
-              </motion.div>
+              </m.div>
             </div>
           ))}
         </div>
@@ -671,7 +671,7 @@ export default function Landing() {
 
           <div className="lnd-plans-grid reveal">
             {PLAN_SHOWCASE.map((plan) => (
-              <motion.div
+              <m.div
                 key={plan.id}
                 className="lnd-plan-card"
                 style={{ '--plan-clr': plan.clr, '--plan-tint': plan.tint }}
@@ -683,7 +683,7 @@ export default function Landing() {
                 </span>
                 <h3 className="lnd-plan-title">{plan.title}</h3>
                 <p className="lnd-plan-desc">{plan.desc}</p>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
@@ -696,7 +696,7 @@ export default function Landing() {
           </div>
           <div className="lnd-testimonials-grid reveal">
             {TESTIMONIALS.map(t => (
-              <motion.div
+              <m.div
                 key={t.name}
                 className="lnd-testimonial-card"
                 whileHover={{ y: -4, transition: { duration: 0.2 } }}
@@ -719,7 +719,7 @@ export default function Landing() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
@@ -745,7 +745,7 @@ export default function Landing() {
 
         {/* ── CTA BLOCK ──────────────────────────────── */}
         <div className="lnd-cta-section">
-          <motion.div
+          <m.div
             className="lnd-cta-box"
             variants={fadeUp}
             initial="hidden"
@@ -767,7 +767,7 @@ export default function Landing() {
                 </>
               )}
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </main>
 

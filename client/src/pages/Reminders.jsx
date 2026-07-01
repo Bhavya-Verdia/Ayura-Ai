@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { remindersAPI } from '../api/client'
 import {
@@ -137,7 +137,7 @@ function ReminderForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
   }
 
   return (
-    <motion.form
+    <m.form
       className="rem-form"
       onSubmit={handleSubmit}
       initial={{ opacity: 0, y: 30 }}
@@ -215,7 +215,7 @@ function ReminderForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
         <button type="button" className="btn btn-secondary btn-sm" onClick={onCancel} disabled={saving}>
           Cancel
         </button>
-        <motion.button
+        <m.button
           type="submit"
           className="btn btn-primary btn-sm"
           disabled={saving || !form.title.trim()}
@@ -226,16 +226,16 @@ function ReminderForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
           ) : (
             initial === EMPTY_FORM ? '+ Add Reminder' : '✓ Save Changes'
           )}
-        </motion.button>
+        </m.button>
       </div>
-    </motion.form>
+    </m.form>
   )
 }
 
 // ── Delete Confirmation ───────────────────────────────────────
 function DeleteConfirm({ onConfirm, onCancel }) {
   return (
-    <motion.div
+    <m.div
       className="rem-delete-confirm"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -247,7 +247,7 @@ function DeleteConfirm({ onConfirm, onCancel }) {
         <button className="btn btn-secondary btn-sm" onClick={onCancel}>No</button>
         <button className="btn btn-sm rem-btn-danger" onClick={onConfirm}>Yes, delete</button>
       </div>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -271,7 +271,7 @@ function ReminderCard({ reminder, onToggle, onDelete, onEdit, index }) {
   }
 
   return (
-    <motion.div
+    <m.div
       layout
       className={`rem-card${reminder.is_active ? '' : ' rem-card--inactive'}`}
       initial={{ opacity: 0, y: 20 }}
@@ -351,7 +351,7 @@ function ReminderCard({ reminder, onToggle, onDelete, onEdit, index }) {
           />
         )}
       </AnimatePresence>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -467,7 +467,7 @@ export default function Reminders() {
 
         <div className="rem-container">
           {/* Header */}
-          <motion.div
+          <m.div
             className="rem-header"
             initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -481,7 +481,7 @@ export default function Reminders() {
                   : `${activeCount} active · ${inactiveCount} paused`}
               </p>
             </div>
-            <motion.button
+            <m.button
               className="btn btn-primary rem-add-btn"
               onClick={() => setShowForm(f => !f)}
               whileTap={{ scale: 0.96 }}
@@ -489,38 +489,38 @@ export default function Reminders() {
             >
               <span className="rem-add-icon">{showForm ? <X size={16} strokeWidth={2.2} /> : <Plus size={16} strokeWidth={2.2} />}</span>
               {showForm ? 'Cancel' : 'New Reminder'}
-            </motion.button>
-          </motion.div>
+            </m.button>
+          </m.div>
 
           {/* Toasts */}
           <AnimatePresence>
             {error && (
-              <motion.div
+              <m.div
                 className="rem-toast rem-toast--error"
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
               >
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><TriangleAlert size={15} strokeWidth={2} /> {error}</span>
-                <button onClick={() => setError(null)} className="rem-toast-close"><X size={14} strokeWidth={2} /></button>
-              </motion.div>
+                <button onClick={() => setError(null)} className="rem-toast-close" aria-label="Dismiss"><X size={14} strokeWidth={2} /></button>
+              </m.div>
             )}
             {success && (
-              <motion.div
+              <m.div
                 className="rem-toast rem-toast--success"
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
               >
                 {success}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
           {/* Add form slide-in */}
           <AnimatePresence>
             {showForm && (
-              <motion.div
+              <m.div
                 className="rem-form-panel"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -536,12 +536,12 @@ export default function Reminders() {
                     saving={saving}
                   />
                 </div>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
           {/* Type legend */}
-          <motion.div
+          <m.div
             className="rem-legend"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -553,13 +553,13 @@ export default function Reminders() {
                 <span>{t.label}</span>
               </span>
             ))}
-          </motion.div>
+          </m.div>
 
           {/* List */}
           {loading ? (
             <ReminderSkeleton />
           ) : reminders.length === 0 ? (
-            <motion.div
+            <m.div
               className="rem-empty"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -574,7 +574,7 @@ export default function Reminders() {
               >
                 + Add Reminder
               </button>
-            </motion.div>
+            </m.div>
           ) : (
             <div className="rem-list">
               <AnimatePresence mode="popLayout">

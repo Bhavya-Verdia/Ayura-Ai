@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../providers/AuthContext'
@@ -117,11 +117,11 @@ export default function Register() {
               {/* Error */}
               <AnimatePresence mode="wait">
                 {error && (
-                  <motion.div className="auth-error" key="err"
+                  <m.div className="auth-error" key="err"
                     initial={{ opacity:0, y:-6 }} animate={{ opacity:1, y:0 }}
                     exit={{ opacity:0 }} transition={{ duration:0.20 }}>
                     {error}
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
 
@@ -132,6 +132,7 @@ export default function Register() {
                 <div className="auth-field">
                   <label className="auth-label" htmlFor="name">Full name</label>
                   <input id="name" className="auth-input" type="text"
+                    autoComplete="name"
                     value={name} onChange={e => setName(e.target.value)}
                     placeholder="Jane Doe" required />
                 </div>
@@ -139,6 +140,7 @@ export default function Register() {
                 <div className="auth-field">
                   <label className="auth-label" htmlFor="reg-email">Email address</label>
                   <input id="reg-email" className="auth-input" type="email"
+                    autoComplete="email"
                     value={email} onChange={e => setEmail(e.target.value)}
                     placeholder="you@example.com" required />
                 </div>
@@ -148,6 +150,7 @@ export default function Register() {
                   <div className="auth-pw-row">
                     <input id="reg-password" className="auth-input"
                       type={showPw ? 'text' : 'password'}
+                      autoComplete="new-password"
                       value={password} onChange={e => setPassword(e.target.value)}
                       placeholder="At least 8 characters" required />
                     <button type="button" className="auth-pw-eye"
@@ -169,10 +172,10 @@ export default function Register() {
                   </span>
                 </label>
 
-                <motion.button type="submit" className="auth-submit"
+                <m.button type="submit" className="auth-submit"
                   disabled={loading || !consentGiven} whileTap={{ scale: 0.97 }}>
                   {loading ? <span className="auth-spinner" /> : 'Create Account →'}
-                </motion.button>
+                </m.button>
               </form>
 
               <div className="auth-links">

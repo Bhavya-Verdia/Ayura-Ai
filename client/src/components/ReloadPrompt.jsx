@@ -1,6 +1,6 @@
-import { useEffect, useContext } from 'react'
+import { useEffect } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
-import { ToastContext } from '../providers/ToastContext'
+import { toast } from 'sonner'
 
 export default function ReloadPrompt() {
   const {
@@ -13,41 +13,24 @@ export default function ReloadPrompt() {
     },
   })
 
-  const toast = useContext(ToastContext)
-
   useEffect(() => {
     if (offlineReady) {
       toast.success('App is ready to work offline.')
       setOfflineReady(false)
     }
-  }, [offlineReady, toast, setOfflineReady])
+  }, [offlineReady, setOfflineReady])
 
   useEffect(() => {
     if (needRefresh) {
-      toast.info(
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span>A new version is available!</span>
-          <button 
-            onClick={() => updateServiceWorker(true)}
-            style={{
-              padding: '6px 12px',
-              background: 'var(--primary-500)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '0.85rem'
-            }}
-          >
-            Reload to Update
-          </button>
-        </div>,
-        { duration: 0 } // Don't auto-dismiss
-      )
-      
-      // Cleanup happens manually via the button triggering a full page reload
+      toast.info('A new version is available!', {
+        duration: Infinity,
+        action: {
+          label: 'Reload',
+          onClick: () => updateServiceWorker(true),
+        },
+      })
     }
-  }, [needRefresh, toast, updateServiceWorker])
+  }, [needRefresh, updateServiceWorker])
 
   return null // Renderless component, handles logic only
 }

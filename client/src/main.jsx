@@ -2,9 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
+import { LazyMotion, domAnimation } from 'framer-motion'
 import App from './App'
 import { AuthProvider } from './providers/AuthContext'
-import { ToastProvider } from './providers/ToastProvider'
 import { ThemeProvider } from './providers/ThemeProvider'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { queryClient, idbPersister } from './queryClient'
@@ -49,11 +49,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <PersistQueryClientProvider client={queryClient} persistOptions={{ persister: idbPersister, maxAge: 1000 * 60 * 60 * 24 * 7 }}>
           <AuthProvider>
-            <ToastProvider>
-              <ThemeProvider>
+            <ThemeProvider>
+              {/* LazyMotion + the `m` component (used app-wide instead of `motion`)
+                  ships only the `domAnimation` feature set and lets Rollup tree-shake
+                  out the heavier layout/drag projection code that the full `motion`
+                  proxy would force-bundle. */}
+              <LazyMotion features={domAnimation}>
                 <App />
-              </ThemeProvider>
-            </ToastProvider>
+              </LazyMotion>
+            </ThemeProvider>
           </AuthProvider>
         </PersistQueryClientProvider>
       </BrowserRouter>

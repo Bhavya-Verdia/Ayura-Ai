@@ -1,6 +1,6 @@
 import { useState, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import { useAuth } from '../providers/AuthContext'
 import {
   Scale, Dumbbell, PersonStanding, FlaskConical, Sparkles, Orbit,
@@ -287,7 +287,7 @@ export default function Onboarding() {
       <div className="onb-orb onb-orb-a" />
       <div className="onb-orb onb-orb-b" />
 
-      <motion.div
+      <m.div
         className="onb-shell"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -309,7 +309,7 @@ export default function Onboarding() {
 
         <div className="onb-steps">
           {STEPS.map((label, index) => (
-            <motion.div
+            <m.div
               key={label}
               className={`onb-step ${index === step ? 'active' : ''} ${index < step ? 'done' : ''}`}
               title={label}
@@ -320,7 +320,7 @@ export default function Onboarding() {
         </div>
 
         <div className="onb-progress-track">
-          <motion.div
+          <m.div
             className="onb-progress-fill"
             animate={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -330,7 +330,7 @@ export default function Onboarding() {
         <section className="onb-card">
           <AnimatePresence mode="wait">
             {error ? (
-              <motion.div
+              <m.div
                 className="onb-error"
                 key="error"
                 initial={{ opacity: 0, y: -8 }}
@@ -338,12 +338,12 @@ export default function Onboarding() {
                 exit={{ opacity: 0 }}
               >
                 {error}
-              </motion.div>
+              </m.div>
             ) : null}
           </AnimatePresence>
 
           <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
+            <m.div
               key={step}
               custom={direction}
               variants={stepVariants}
@@ -369,7 +369,7 @@ export default function Onboarding() {
                     <p className="onb-help">This helps with baseline calorie estimation.</p>
                     <div className="onb-grid-3">
                       {['male', 'female', 'other'].map(entry => (
-                        <motion.button
+                        <m.button
                           key={entry} type="button"
                           onClick={() => setGender(entry)}
                           className={`onb-tile ${gender === entry ? 'selected' : ''}`}
@@ -379,7 +379,7 @@ export default function Onboarding() {
                             {entry === 'male' ? <Mars size={22} strokeWidth={2} /> : entry === 'female' ? <Venus size={22} strokeWidth={2} /> : <Transgender size={22} strokeWidth={2} />}
                           </span>
                           {entry.charAt(0).toUpperCase() + entry.slice(1)}
-                        </motion.button>
+                        </m.button>
                       ))}
                     </div>
                   </div>
@@ -390,7 +390,7 @@ export default function Onboarding() {
                       <p className="onb-help">Important for your safety — several therapies, medicines, and poses are adjusted or excluded during this time.</p>
                       <div className="onb-grid-2">
                         {[{ v: false, l: 'No', E: Ban }, { v: true, l: 'Yes', E: Baby }].map(opt => (
-                          <motion.button
+                          <m.button
                             key={String(opt.v)} type="button"
                             onClick={() => setPregnancyOrNursing(opt.v)}
                             className={`onb-tile ${pregnancyOrNursing === opt.v ? 'selected' : ''}`}
@@ -398,7 +398,7 @@ export default function Onboarding() {
                           >
                             <span className="onb-tile-emoji"><opt.E size={22} strokeWidth={2} /></span>
                             {opt.l}
-                          </motion.button>
+                          </m.button>
                         ))}
                       </div>
                     </div>
@@ -437,7 +437,7 @@ export default function Onboarding() {
                         { id: 'intermediate', label: 'Intermediate', Icon: Dumbbell },
                         { id: 'advanced',  label: 'Advanced',     Icon: Zap },
                       ].map(f => (
-                        <motion.button
+                        <m.button
                           key={f.id} type="button"
                           onClick={() => setFitnessLevel(f.id)}
                           className={`onb-tile ${fitnessLevel === f.id ? 'selected' : ''}`}
@@ -445,7 +445,7 @@ export default function Onboarding() {
                         >
                           <span className="onb-tile-emoji"><f.Icon size={22} strokeWidth={2} /></span>
                           {f.label}
-                        </motion.button>
+                        </m.button>
                       ))}
                     </div>
                   </div>
@@ -538,7 +538,7 @@ export default function Onboarding() {
                     <label>Primary Wellness Goal</label>
                     <div className="onb-grid-2" style={{ marginTop: 10 }}>
                       {GOALS.map(g => (
-                        <motion.button
+                        <m.button
                           key={g.id} type="button"
                           onClick={() => setGoal(g.id)}
                           className={`onb-tile ${goal === g.id ? 'selected' : ''}`}
@@ -549,7 +549,7 @@ export default function Onboarding() {
                         >
                           <span className="onb-tile-emoji"><g.Icon size={22} strokeWidth={2} /></span>
                           {g.label}
-                        </motion.button>
+                        </m.button>
                       ))}
                     </div>
                   </div>
@@ -558,7 +558,7 @@ export default function Onboarding() {
                     <p className="onb-help">Just your best guess for now — right after this, a short Prakriti assessment confirms your true constitution, current imbalance (Vikriti), and Agni.</p>
                     <div className="onb-grid-3" style={{ marginTop: 10 }}>
                       {Object.entries(DOSHA_INFO).map(([key, info]) => (
-                        <motion.button
+                        <m.button
                           key={key} type="button"
                           onClick={() => setDosha(key)}
                           className={`onb-tile ${dosha === key ? 'selected' : ''}`}
@@ -570,7 +570,7 @@ export default function Onboarding() {
                           <span className="onb-tile-emoji"><info.Icon size={22} strokeWidth={2} /></span>
                           {key.charAt(0).toUpperCase() + key.slice(1)}
                           <span className="onb-tile-desc">{info.desc}</span>
-                        </motion.button>
+                        </m.button>
                       ))}
                     </div>
                   </div>
@@ -579,7 +579,7 @@ export default function Onboarding() {
                   </p>
                 </div>
               ) : null}
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </section>
 
@@ -618,7 +618,7 @@ export default function Onboarding() {
         <p className="onb-disclaimer">
           By continuing, you agree to our Terms of Service. Ayura AI provides wellness guidance for informational purposes only and does not replace professional medical advice.
         </p>
-      </motion.div>
+      </m.div>
     </div>
   )
 }
