@@ -36,7 +36,16 @@ echo "▶ Building containers on server..."
 ssh "$SERVER" "cd $REMOTE_DIR && docker compose build --no-cache api web worker 2>&1 | tail -6"
 
 echo "▶ Restarting services..."
-ssh "$SERVER" "cd $REMOTE_DIR && docker compose up -d --force-recreate api web worker"
+# `up --force-recreate` intermittently races with its own container teardown
+# ("Error response from daemon: removal of container … is already in progress")
+# when a prior run left an orphaned/renamed container behind — leaving the OLD
+# containers running and the new build un-applied. Deterministically stop+remove
+# the three app services first, then a plain `up -d` recreates them fresh from the
+# new images: no --force-recreate, no race. Retried once in case teardown is slow.
+_recreate() {
+  ssh "$SERVER" "cd $REMOTE_DIR && docker compose rm -fs api web worker && docker compose up -d --remove-orphans api web worker"
+}
+_recreate || { echo "⚠️  restart raced — settling 6s and retrying once..."; sleep 6; _recreate; }
 
 # ── 3. Health check ──────────────────────────────────────────────────────────
 echo "▶ Waiting for API to come up..."
