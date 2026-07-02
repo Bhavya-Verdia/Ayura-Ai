@@ -107,8 +107,8 @@
 .prg-log-form input:focus,
 .prg-log-form textarea:focus {
   outline: none; border-color: var(--ayura-teal);
-  box-shadow: 0 0 0 3px rgba(45,212,191,0.12);
-  background: rgba(45,212,191,0.03);
+  box-shadow: 0 0 0 3px rgba(92,171,116,0.12);
+  background: rgba(92,171,116,0.03);
 }
 
 .prg-mood-chips {
@@ -172,9 +172,11 @@
 .prg-stat-value {
   font-family: var(--font-display);
   font-size: 1.4rem;
-  font-weight: 800;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--stat-color, var(--ayura-teal));
-  line-height: 1;
+  line-height: 1.12;
+  text-wrap: balance;
 }
 .prg-stat-label {
   font-size: 0.8rem;
@@ -192,15 +194,15 @@
 
 /* ── AI Insight ─────────────────────────────────────── */
 .prg-insight-card {
-  background: linear-gradient(135deg, rgba(13,148,136,0.06), rgba(45,212,191,0.04));
-  border: 1px solid rgba(45,212,191,0.2);
+  background: linear-gradient(135deg, rgba(13,148,136,0.06), rgba(92,171,116,0.04));
+  border: 1px solid rgba(92,171,116,0.2);
   border-radius: 20px;
   padding: 24px;
   display: flex;
   align-items: flex-start;
   gap: 16px;
   margin-bottom: 32px;
-  box-shadow: 0 4px 24px rgba(45,212,191,0.08);
+  box-shadow: 0 4px 24px rgba(92,171,116,0.08);
 }
 [data-theme='light'] .prg-insight-card { background: rgba(13,148,136,0.04); }
 

@@ -326,9 +326,9 @@ const CLARIFY_QUESTIONS = [
 ]
 
 const DOSHA_COLORS = {
-  vata: 'var(--vata-color, #818cf8)',
+  vata: 'var(--vata-color, #a08cf0)',
   pitta: 'var(--pitta-color, #fb923c)',
-  kapha: 'var(--kapha-color, #34d399)',
+  kapha: 'var(--kapha-color, #5cab74)',
   satva: '#10b981',
   rajas: '#f59e0b',
   tamas: '#6366f1',
@@ -364,8 +364,8 @@ const CLASSICAL_TYPE_DISPLAY = {
 }
 
 const AMA_COLORS = {
-  none:     'var(--ayura-teal, #2dd4bf)',
-  low:      'var(--ayura-teal, #2dd4bf)',
+  none:     'var(--ayura-teal, #5cab74)',
+  low:      'var(--ayura-teal, #5cab74)',
   mild:     'var(--ayura-amber, #f59e0b)',
   moderate: '#fb923c',
   high:     '#f87171',

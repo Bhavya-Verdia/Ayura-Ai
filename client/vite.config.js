@@ -14,8 +14,8 @@ export default defineConfig({
         name: 'Ayura AI — Adaptive Ayurvedic Wellness',
         short_name: 'Ayura AI',
         description: 'AI-Powered Holistic Wellness Platform',
-        theme_color: '#060A0E',
-        background_color: '#060A0E',
+        theme_color: '#100D09',
+        background_color: '#100D09',
         display: 'standalone',
         start_url: '/',
         icons: [
@@ -46,9 +46,18 @@ export default defineConfig({
           if (!id.includes('node_modules')) return
           if (id.includes('framer-motion'))                return 'vendor-motion'
           if (id.includes('@tanstack/react-query'))         return 'vendor-query'
-          if (id.includes('lucide-react') ||
-              id.includes('react-markdown') ||
-              id.includes('remark-gfm'))                   return 'vendor-ui'
+          // Markdown parser (react-markdown + its micromark/mdast/unified/hast
+          // tree) is only used by Chat + plan views — keep it OUT of the initial
+          // path (Landing/Dashboard) so first-load JS stays lean.
+          if (id.includes('react-markdown') || id.includes('remark') ||
+              id.includes('micromark') || id.includes('mdast') ||
+              id.includes('/unist') || id.includes('unified') ||
+              id.includes('/hast') || id.includes('/vfile') ||
+              id.includes('/decode-named-character-reference') ||
+              id.includes('/property-information') ||
+              id.includes('/space-separated-tokens') ||
+              id.includes('/comma-separated-tokens'))       return 'vendor-markdown'
+          if (id.includes('lucide-react'))                 return 'vendor-ui'
           if (id.includes('react-dom') ||
               id.includes('react-router') ||
               id.includes('/react/'))                      return 'vendor-react'

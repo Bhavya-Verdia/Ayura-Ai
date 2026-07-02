@@ -9,7 +9,7 @@ import './Notifications.css'
 const TYPE_CONFIG = {
   plan_ready:        { Icon: Leaf,          label: 'Plan Ready',      borderColor: 'var(--primary)',       glowColor: 'rgba(13,148,136,0.35)' },
   adaptation:        { Icon: RefreshCw,     label: 'Adaptation',      borderColor: 'var(--accent)',         glowColor: 'rgba(245,158,11,0.35)' },
-  checkin_reminder:  { Icon: AlarmClock,    label: 'Check-In',        borderColor: 'var(--primary-light)',  glowColor: 'rgba(45,212,191,0.35)' },
+  checkin_reminder:  { Icon: AlarmClock,    label: 'Check-In',        borderColor: 'var(--primary-light)',  glowColor: 'rgba(92,171,116,0.35)' },
   safety_alert:      { Icon: AlertTriangle, label: 'Safety Alert',    borderColor: 'var(--rose)',           glowColor: 'rgba(244,63,94,0.35)'  },
   default:           { Icon: Bell,          label: 'Notification',    borderColor: 'var(--text-muted)',     glowColor: 'rgba(94,138,133,0.25)' },
 }

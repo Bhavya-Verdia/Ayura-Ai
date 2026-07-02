@@ -92,7 +92,7 @@ function AuroraBlobs({ theme }) {
         height: '55%',
         borderRadius: '50%',
         background: isDark
-          ? 'radial-gradient(circle, rgba(45,212,191,0.22) 0%, transparent 70%)'
+          ? 'radial-gradient(circle, rgba(92,171,116,0.22) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(13,148,136,0.18) 0%, transparent 70%)',
         filter: 'blur(var(--aurora-blur, 90px))',
         pointerEvents: 'none',
@@ -108,7 +108,7 @@ function AuroraBlobs({ theme }) {
         height: '50%',
         borderRadius: '50%',
         background: isDark
-          ? 'radial-gradient(circle, rgba(167,139,250,0.18) 0%, transparent 70%)'
+          ? 'radial-gradient(circle, rgba(230,162,60,0.18) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)',
         filter: 'blur(var(--aurora-blur, 90px))',
         pointerEvents: 'none',

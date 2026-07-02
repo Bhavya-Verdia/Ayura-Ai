@@ -30,7 +30,7 @@
 }
 .dash-sidebar-brand-mark {
   width: 36px; height: 36px; border-radius: 8px; object-fit: cover;
-  box-shadow: 0 4px 12px rgba(45,212,191,0.25);
+  box-shadow: 0 4px 12px rgba(92,171,116,0.25);
 }
 .dash-sidebar-brand-text {
   font-family: var(--font-display); font-weight: 800; font-size: 1.1rem;
@@ -120,14 +120,14 @@
 }
 [data-theme='light'] .dash-hero-card {
   background:
-    linear-gradient(135deg, rgba(45,212,191,0.12), rgba(167,139,250,0.07)),
+    linear-gradient(135deg, rgba(92,171,116,0.12), rgba(230,162,60,0.07)),
     rgba(255,255,255,0.78);
   box-shadow: 0 20px 60px rgba(15,23,42,0.10), inset 0 1px 0 rgba(255,255,255,0.6);
 }
 .dash-hero-card::before {
   content: ''; position: absolute; inset: 0;
   background:
-    linear-gradient(110deg, transparent 0%, rgba(45,212,191,0.10) 42%, transparent 58%),
+    linear-gradient(110deg, transparent 0%, rgba(92,171,116,0.10) 42%, transparent 58%),
     linear-gradient(180deg, rgba(255,255,255,0.06), transparent 42%);
   pointer-events: none;
   opacity: 0.7;
@@ -139,7 +139,7 @@
   background: linear-gradient(135deg, var(--ayura-teal), var(--ayura-violet));
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: #000;
-  box-shadow: 0 12px 32px rgba(45,212,191,0.35);
+  box-shadow: 0 12px 32px rgba(92,171,116,0.35);
   flex-shrink: 0;
 }
 .dash-hero-greeting {
@@ -221,15 +221,15 @@
 }
 [data-theme='light'] .dash-plan-card { background: rgba(255,255,255,0.65); }
 .dash-plan-card.has-plan {
-  background: rgba(45,212,191,0.03); border-color: rgba(45,212,191,0.14);
+  background: rgba(92,171,116,0.03); border-color: rgba(92,171,116,0.14);
 }
 .dash-plan-card:hover {
-  transform: translateY(-5px); border-color: rgba(45,212,191,0.28);
-  box-shadow: 0 28px 64px rgba(0,0,0,0.3), 0 0 40px rgba(45,212,191,0.10);
+  transform: translateY(-5px); border-color: rgba(92,171,116,0.28);
+  box-shadow: 0 28px 64px rgba(0,0,0,0.3), 0 0 40px rgba(92,171,116,0.10);
 }
 .dash-plan-card.has-plan:hover {
-  border-color: rgba(45,212,191,0.34);
-  box-shadow: 0 20px 48px rgba(45,212,191,0.15);
+  border-color: rgba(92,171,116,0.34);
+  box-shadow: 0 20px 48px rgba(92,171,116,0.15);
 }
 
 .dash-plan-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
@@ -241,8 +241,8 @@
 }
 .dash-plan-ready-badge {
   font-size: 0.7rem; font-weight: 700; color: var(--ayura-teal);
-  background: rgba(45,212,191,0.10); padding: 4px 10px; border-radius: 999px;
-  border: 1px solid rgba(45,212,191,0.2);
+  background: rgba(92,171,116,0.10); padding: 4px 10px; border-radius: 999px;
+  border: 1px solid rgba(92,171,116,0.2);
 }
 
 .dash-plan-name { font-family: var(--font-ui); font-size: 1.05rem; font-weight: 700; margin: 0 0 6px; color: var(--ayura-ink); }
@@ -251,11 +251,11 @@
 .dash-plan-actions { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
 .dash-plan-action-row { display: flex; gap: 8px; }
 .dash-plan-view-btn {
-  flex: 2; background: rgba(45,212,191,0.10); color: var(--ayura-teal);
-  border: 1px solid rgba(45,212,191,0.2); padding: 10px; border-radius: 10px;
+  flex: 2; background: rgba(92,171,116,0.10); color: var(--ayura-teal);
+  border: 1px solid rgba(92,171,116,0.2); padding: 10px; border-radius: 10px;
   font-family: var(--font-ui); font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.875rem;
 }
-.dash-plan-view-btn:hover { background: rgba(45,212,191,0.18); }
+.dash-plan-view-btn:hover { background: rgba(92,171,116,0.18); }
 .dash-plan-regen-btn {
   flex: 1; background: transparent; color: var(--ayura-muted); border: 1px solid var(--border-light);
   padding: 10px; border-radius: 10px; font-family: var(--font-ui); font-weight: 600;

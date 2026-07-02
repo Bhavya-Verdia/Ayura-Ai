@@ -53,7 +53,7 @@
   position: absolute; bottom: -10px; right: -10px; width: 34px; height: 34px;
   background: var(--ayura-teal); border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: #000; box-shadow: 0 4px 12px rgba(45,212,191,0.4);
+  cursor: pointer; color: #000; box-shadow: 0 4px 12px rgba(92,171,116,0.4);
   border: none;
 }
 .settings-account-info { display: flex; flex-direction: column; }
@@ -75,7 +75,7 @@
 [data-theme='light'] .input-group select,
 [data-theme='light'] .input-group textarea { background: rgba(255,255,255,0.8); }
 .input-group input:focus, .input-group select:focus {
-  outline: none; border-color: var(--ayura-teal); box-shadow: 0 0 0 3px rgba(45,212,191,0.12);
+  outline: none; border-color: var(--ayura-teal); box-shadow: 0 0 0 3px rgba(92,171,116,0.12);
 }
 .input-group select { cursor: pointer; }
 
@@ -124,7 +124,7 @@
 }
 [data-theme='light'] .settings-pref-row select { background-color: rgba(255,255,255,0.8); }
 .settings-pref-row select:focus {
-  outline: none; border-color: var(--ayura-teal); box-shadow: 0 0 0 3px rgba(45,212,191,0.12);
+  outline: none; border-color: var(--ayura-teal); box-shadow: 0 0 0 3px rgba(92,171,116,0.12);
 }
 
 .settings-toggle { position: relative; display: inline-block; width: 48px; height: 26px; }

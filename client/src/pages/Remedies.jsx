@@ -21,10 +21,10 @@ const SAFETY_CONFIG = {
   safe_for_most: {
     label: 'Safe for Most',
     color: 'var(--primary-light)',
-    bg: 'rgba(45,212,191,0.10)',
-    border: 'rgba(45,212,191,0.25)',
-    borderLeft: '#2DD4BF',
-    dot: '#2DD4BF',
+    bg: 'rgba(92,171,116,0.10)',
+    border: 'rgba(92,171,116,0.25)',
+    borderLeft: '#5cab74',
+    dot: '#5cab74',
   },
   generally_safe: {
     label: 'Generally Safe',

@@ -47,7 +47,7 @@
 /* Header */
 .onb-header { margin-bottom: 28px; position: relative; }
 .onb-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
-.onb-brand-mark { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 14px rgba(45,212,191,0.22); }
+.onb-brand-mark { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 14px rgba(92,171,116,0.22); }
 .onb-brand-text { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; color: var(--ayura-ink); letter-spacing: 0; }
 .onb-header-actions { position: absolute; top: 0; right: 0; }
 .onb-switch-account {
@@ -76,7 +76,7 @@
 .onb-step.done { background: var(--step-accent, var(--ayura-teal)); }
 .onb-step.active {
   background: var(--step-accent, var(--ayura-teal));
-  box-shadow: 0 0 8px var(--step-accent, rgba(45,212,191,0.5));
+  box-shadow: 0 0 8px var(--step-accent, rgba(92,171,116,0.5));
 }
 .onb-progress-track { display: none; }
 
@@ -100,8 +100,8 @@
 [data-theme='light'] .input-group input { background: rgba(255,255,255,0.8); }
 .input-group input:focus {
   outline: none; border-color: var(--step-accent, var(--ayura-teal));
-  background: rgba(45,212,191,0.04);
-  box-shadow: 0 0 0 3px rgba(45,212,191,0.10);
+  background: rgba(92,171,116,0.04);
+  box-shadow: 0 0 0 3px rgba(92,171,116,0.10);
 }
 
 .onb-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -120,10 +120,10 @@
 [data-theme='light'] .onb-tile { background: rgba(255,255,255,0.65); }
 .onb-tile:hover { background: var(--border-subtle); color: var(--ayura-ink); border-color: var(--border-light-hover); }
 .onb-tile.selected {
-  background: rgba(45,212,191,0.08);
+  background: rgba(92,171,116,0.08);
   border-color: var(--step-accent, var(--ayura-teal));
   color: var(--step-accent, var(--ayura-teal));
-  box-shadow: 0 8px 24px rgba(45,212,191,0.12);
+  box-shadow: 0 8px 24px rgba(92,171,116,0.12);
 }
 .onb-tile-emoji { display: inline-flex; align-items: center; justify-content: center; color: var(--ayura-teal); }
 
@@ -168,7 +168,7 @@
 
 /* BMI */
 .onb-bmi {
-  background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.25);
+  background: rgba(230,162,60,0.08); border: 1px solid rgba(230,162,60,0.25);
   padding: 16px; border-radius: 12px; text-align: center; margin-top: 4px;
 }
 .onb-bmi-value { color: var(--ayura-violet); font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; }
@@ -182,7 +182,7 @@
 .onb-nav .btn { padding: 13px 22px; font-size: 0.95rem; border-radius: 12px; }
 .btn-accent {
   background: linear-gradient(135deg, var(--step-accent, var(--ayura-teal)), var(--ayura-violet));
-  color: #000; border: none; box-shadow: 0 8px 24px rgba(45,212,191,0.28);
+  color: #000; border: none; box-shadow: 0 8px 24px rgba(92,171,116,0.28);
 }
 .btn-accent:hover { opacity: 0.92; transform: translateY(-1px); }
 .btn-full { width: 100%; }

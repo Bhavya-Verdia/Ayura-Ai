@@ -1,7 +1,7 @@
 .dvc-card {
   background: var(--card-bg, rgba(255,255,255,0.04));
   border: 1px solid var(--dash-edge, rgba(255,255,255,0.08));
-  border-left: 3px solid var(--ayura-violet, #a78bfa);
+  border-left: 3px solid var(--ayura-violet, #e6a23c);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
   margin-bottom: 1.25rem;
@@ -17,7 +17,7 @@
 .dvc-icon {
   display: inline-flex;
   align-items: center;
-  color: var(--ayura-violet, #a78bfa);
+  color: var(--ayura-violet, #e6a23c);
   line-height: 1;
 }
 

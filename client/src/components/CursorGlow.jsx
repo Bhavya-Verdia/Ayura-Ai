@@ -1,51 +1,46 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 /**
- * CursorGlow — A soft radial light that follows the cursor.
- * Uses CSS custom properties (--cx, --cy) set on the body.
- * The actual visual is a ::before pseudo-element injected globally.
+ * CursorGlow — a soft light that trails the cursor.
+ *
+ * Perf: instead of animating a full-viewport gradient's *position* on every
+ * mousemove (a full-screen repaint per frame — the old approach), we translate a
+ * single fixed element with `transform` (compositor-only, no layout/paint) and
+ * coalesce updates through requestAnimationFrame.
+ *
+ * Cross-platform: only mounts the listener on fine-pointer + hover devices and
+ * bails under prefers-reduced-motion, so touch devices pay nothing.
  */
 export default function CursorGlow() {
+  const ref = useRef(null)
+
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)')
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
+    if (!fine.matches || reduce.matches) return
+
+    let raf = 0
+    let x = window.innerWidth / 2
+    let y = window.innerHeight / 2
+
+    const apply = () => {
+      raf = 0
+      const el = ref.current
+      if (el) el.style.transform = `translate3d(${x - 300}px, ${y - 300}px, 0)`
+    }
     const onMove = (e) => {
-      document.body.style.setProperty('--cx', `${e.clientX}px`)
-      document.body.style.setProperty('--cy', `${e.clientY}px`)
+      x = e.clientX
+      y = e.clientY
+      if (!raf) raf = requestAnimationFrame(apply)
     }
 
     window.addEventListener('mousemove', onMove, { passive: true })
-    return () => window.removeEventListener('mousemove', onMove)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      if (raf) cancelAnimationFrame(raf)
+    }
   }, [])
 
-  return (
-    <style>{`
-      body {
-        --cx: 50vw;
-        --cy: 50vh;
-      }
-      body::after {
-        content: '';
-        position: fixed;
-        pointer-events: none;
-        z-index: 9999;
-        top: 0; left: 0;
-        width: 100vw; height: 100vh;
-        background: radial-gradient(
-          400px circle at var(--cx) var(--cy),
-          rgba(45,212,191,0.05) 0%,
-          transparent 70%
-        );
-        transition: background 0.1s ease;
-      }
-      [data-theme='light'] body::after {
-        background: radial-gradient(
-          400px circle at var(--cx) var(--cy),
-          rgba(13,148,136,0.06) 0%,
-          transparent 70%
-        );
-      }
-      @media (prefers-reduced-motion: reduce) {
-        body::after { display: none; }
-      }
-    `}</style>
-  )
+  return <div ref={ref} className="cursor-glow" aria-hidden="true" />
 }

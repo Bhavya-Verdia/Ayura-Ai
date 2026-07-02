@@ -5,11 +5,11 @@ import {
 } from 'lucide-react'
 import '../PlanViewer.css'
 
-export const isObjectArray = (arr) =>
+const isObjectArray = (arr) =>
   Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'object' && arr[0] !== null
 
 
-export const getCardTitle = (obj) => {
+const getCardTitle = (obj) => {
   const titleKeys = ['day_name', 'pose', 'name', 'meal', 'remedy_name', 'medicine_name', 'focus', 'therapy']
   for (const key of titleKeys) {
     if (obj[key]) return obj[key]

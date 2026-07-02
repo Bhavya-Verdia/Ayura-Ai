@@ -8,6 +8,7 @@ import React from 'react'
 import CursorGlow from '../components/CursorGlow'
 import MagneticButton from '../components/MagneticButton'
 import CountUp from '../components/CountUp'
+import { DOSHA_COLOR } from '../constants/dosha'
 import {
   ShieldCheck, Sparkles, Leaf, Zap, Dna, Dumbbell,
   Salad, Pill, Flower2, Soup, HeartPulse, TriangleAlert, Check,
@@ -84,30 +85,31 @@ const FEATURES = [
 // ─── Testimonials ─────────────────────────────────────────────
 const TESTIMONIALS = [
   {
-    name: 'Priya S.', location: 'Mumbai', dosha: 'Pitta', doshaColor: '#fb923c', initials: 'PS',
+    name: 'Priya S.', location: 'Mumbai', dosha: 'Pitta', doshaColor: DOSHA_COLOR.pitta, initials: 'PS',
     quote: 'The dosha quiz completely transformed how I approach eating. My digestion has never been better — I finally understand WHY certain foods affect me the way they do.',
     stars: 5,
   },
   {
-    name: 'Arjun M.', location: 'Bengaluru', dosha: 'Vata', doshaColor: '#818CF8', initials: 'AM',
+    name: 'Arjun M.', location: 'Bengaluru', dosha: 'Vata', doshaColor: DOSHA_COLOR.vata, initials: 'AM',
     quote: 'Ayura AI is the first wellness platform that explains the reasoning behind every recommendation. The adaptive plans saved me months of trial and error.',
     stars: 5,
   },
   {
-    name: 'Neha K.', location: 'Delhi', dosha: 'Kapha', doshaColor: '#34d399', initials: 'NK',
+    name: 'Neha K.', location: 'Delhi', dosha: 'Kapha', doshaColor: DOSHA_COLOR.kapha, initials: 'NK',
     quote: 'The herb safety screening gave me complete peace of mind. As someone on thyroid medication, knowing every recommendation is screened for interactions is invaluable.',
     stars: 5,
   },
 ]
 
 // ─── Plan showcase ────────────────────────────────────────────
+const mix = (v, pct) => `color-mix(in srgb, ${v} ${pct}%, transparent)`
 const PLAN_SHOWCASE = [
-  { id: 'yoga',        Icon: Flower2,  tint: '#2dd4bf', title: 'Yoga & Pranayama',  desc: 'Dosha-balanced morning and evening sequences.', clr: 'rgba(45,212,191,0.10)' },
-  { id: 'gym',         Icon: Dumbbell, tint: '#60a5fa', title: 'Fitness & Gym',      desc: 'Progressive splits with recovery intelligence.', clr: 'rgba(59,130,246,0.10)' },
-  { id: 'diet',        Icon: Salad,    tint: '#fb923c', title: 'Nutrition Plans',    desc: 'Ayurvedic meal timing with macro precision.', clr: 'rgba(251,146,60,0.10)' },
-  { id: 'panchakarma', Icon: Leaf,     tint: '#34d399', title: 'Panchakarma Detox', desc: 'Seasonal cleanses calibrated to your prakriti.', clr: 'rgba(52,211,153,0.10)' },
-  { id: 'remedies',    Icon: Soup,     tint: '#fb7185', title: 'Home Remedies',      desc: 'Kitchen medicine for everyday ailments.', clr: 'rgba(251,113,133,0.08)' },
-  { id: 'medicines',   Icon: Pill,     tint: '#a78bfa', title: 'Herbal Medicines',   desc: 'Classical Ayurvedic formulations mapped to you.', clr: 'rgba(167,139,250,0.10)' },
+  { id: 'yoga',        Icon: Flower2,  tint: 'var(--ayura-teal)',    title: 'Yoga & Pranayama',  desc: 'Dosha-balanced morning and evening sequences.', clr: mix('var(--ayura-teal)', 10) },
+  { id: 'gym',         Icon: Dumbbell, tint: 'var(--vata-color)',    title: 'Fitness & Gym',      desc: 'Progressive splits with recovery intelligence.', clr: mix('var(--vata-color)', 10) },
+  { id: 'diet',        Icon: Salad,    tint: 'var(--ayura-violet)',  title: 'Nutrition Plans',    desc: 'Ayurvedic meal timing with macro precision.', clr: mix('var(--ayura-violet)', 10) },
+  { id: 'panchakarma', Icon: Leaf,     tint: 'var(--ayura-emerald)', title: 'Panchakarma Detox', desc: 'Seasonal cleanses calibrated to your prakriti.', clr: mix('var(--ayura-emerald)', 10) },
+  { id: 'remedies',    Icon: Soup,     tint: 'var(--ayura-rose)',    title: 'Home Remedies',      desc: 'Kitchen medicine for everyday ailments.', clr: mix('var(--ayura-rose)', 9) },
+  { id: 'medicines',   Icon: Pill,     tint: 'var(--ayura-amber)',   title: 'Herbal Medicines',   desc: 'Classical Ayurvedic formulations mapped to you.', clr: mix('var(--ayura-amber)', 10) },
 ]
 
 // ─── Trust bar items ──────────────────────────────────────────
@@ -128,9 +130,9 @@ const STATS = [
 
 // ─── Feature Mini-UI Visual components ───────────────────────
 const DOSHA_BARS = [
-  { label: 'Vata',  cls: 'vata',  color: '#818CF8', pct: '65%', val: 65 },
-  { label: 'Pitta', cls: 'pitta', color: '#fb923c', pct: '45%', val: 45 },
-  { label: 'Kapha', cls: 'kapha', color: '#34d399', pct: '30%', val: 30 },
+  { label: 'Vata',  cls: 'vata',  color: DOSHA_COLOR.vata,  pct: '65%', val: 65 },
+  { label: 'Pitta', cls: 'pitta', color: DOSHA_COLOR.pitta, pct: '45%', val: 45 },
+  { label: 'Kapha', cls: 'kapha', color: DOSHA_COLOR.kapha, pct: '30%', val: 30 },
 ]
 
 function DoshaFeatureVisual() {
@@ -138,7 +140,7 @@ function DoshaFeatureVisual() {
     <div className="lnd-app-preview fmv-fill">
       <div className="lnd-prev-header">
         <span className="lnd-prev-brand">Constitution Analysis</span>
-        <span className="lnd-prev-badge" style={{ color: '#818CF8', background: 'rgba(129,140,248,0.12)', borderColor: 'rgba(129,140,248,0.25)' }}>Vata–Pitta</span>
+        <span className="lnd-prev-badge" style={{ color: 'var(--vata-color)', background: 'color-mix(in srgb, var(--vata-color) 14%, transparent)', borderColor: 'color-mix(in srgb, var(--vata-color) 30%, transparent)' }}>Vata–Pitta</span>
       </div>
       <div className="lnd-dosha-gauge">
         <div className="lnd-dosha-gauge-title">Dosha Balance</div>
@@ -216,7 +218,7 @@ function SafetyFeatureVisual() {
     <div className="lnd-app-preview fmv-fill">
       <div className="lnd-prev-header">
         <span className="lnd-prev-brand">Safety Screening</span>
-        <span className="lnd-prev-badge" style={{ color: '#4ade80', background: 'rgba(74,222,128,0.10)', borderColor: 'rgba(74,222,128,0.25)' }}>All Clear</span>
+        <span className="lnd-prev-badge" style={{ color: 'var(--ayura-sage)', background: 'color-mix(in srgb, var(--ayura-sage) 12%, transparent)', borderColor: 'color-mix(in srgb, var(--ayura-sage) 28%, transparent)' }}>All Clear</span>
       </div>
       <div className="fmv-check-list">
         {SAFETY_CHECKS.map((item, i) => (
@@ -260,7 +262,7 @@ function BentoHeroGrid() {
         >
           <div className="lnd-bento-tile-kicker">Dosha Intelligence</div>
           <div className="lnd-bento-dosha-rings">
-            {[['Vata', '#818CF8', 65], ['Pitta', '#fb923c', 45], ['Kapha', '#34d399', 30]].map(([name, color, val]) => (
+            {[['Vata', DOSHA_COLOR.vata, 65], ['Pitta', DOSHA_COLOR.pitta, 45], ['Kapha', DOSHA_COLOR.kapha, 30]].map(([name, color, val]) => (
               <div key={name} className="lnd-bento-dosha-row">
                 <span style={{ color, fontWeight: 700, fontSize: '0.78rem', width: 40 }}>{name}</span>
                 <div className="lnd-bento-dosha-track">
@@ -362,11 +364,19 @@ export default function Landing() {
   }, [])
 
   useEffect(() => {
+    // Smooth-scroll only on fine-pointer desktops, and never under reduced-motion.
+    // On touch (iOS/Android) Lenis fights native momentum + the URL-bar collapse
+    // and is a known jank source, so we leave native scrolling alone there.
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)')
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
+    if (!fine.matches || reduce.matches) return
+
     const lenis = new Lenis({ duration: 1.2, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true })
     lenisRef.current = lenis
     function raf(time) { lenis.raf(time); rafRef.current = requestAnimationFrame(raf) }
     rafRef.current = requestAnimationFrame(raf)
-    return () => { cancelAnimationFrame(rafRef.current); lenis.destroy() }
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); lenis.destroy() }
   }, [])
 
   useEffect(() => {
@@ -530,11 +540,14 @@ export default function Landing() {
               ))}
             </m.h2>
 
+            {/* Transform-only entrance (opacity stays 1) so this prerendered LCP
+                element counts as painted at first paint instead of waiting for a
+                fade-in after hydration — big LCP win on slow devices. */}
             <m.p
               className="lnd-hero-subtitle"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.55 }}
+              initial={{ y: 18 }}
+              animate={{ y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
             >
               Ayura AI fuses your unique Ayurvedic constitution with real-time AI to craft adaptive plans across fitness, nutrition, detox, and mindfulness — that evolve with you daily.
             </m.p>
@@ -543,7 +556,7 @@ export default function Landing() {
               className="lnd-hero-cta-row"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
+              transition={{ duration: 0.5, delay: 0.28 }}
             >
               {user ? (
                 <>
@@ -563,7 +576,7 @@ export default function Landing() {
               className="lnd-trust-bar"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.9 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
             >
               {TRUST_ITEMS.map(item => (
                 <div key={item.label} className="lnd-trust-item">

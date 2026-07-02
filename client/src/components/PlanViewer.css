@@ -18,9 +18,9 @@
 .plan-summary-banner {
   margin-bottom: 24px;
   padding: 24px;
-  background: linear-gradient(135deg, rgba(129,140,248,0.1), rgba(45,212,191,0.05));
+  background: linear-gradient(135deg, rgba(160,140,240,0.1), rgba(92,171,116,0.05));
   border-radius: 20px;
-  border: 1px solid rgba(129,140,248,0.18);
+  border: 1px solid rgba(160,140,240,0.18);
   box-shadow: 0 8px 32px rgba(0,0,0,0.06);
   backdrop-filter: blur(10px);
 }
@@ -99,8 +99,8 @@
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: rgba(45,212,191,0.1);
-  border: 1px solid rgba(45,212,191,0.16);
+  background: rgba(92,171,116,0.1);
+  border: 1px solid rgba(92,171,116,0.16);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -136,7 +136,7 @@
 
 .plan-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(45,212,191,0.28);
+  border-color: rgba(92,171,116,0.28);
   box-shadow: 0 10px 30px rgba(0,0,0,0.12);
 }
 
@@ -144,7 +144,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(45,212,191,0.06), transparent 70%);
+  background: radial-gradient(circle at 50% 0%, rgba(92,171,116,0.06), transparent 70%);
   opacity: 0;
   transition: opacity 0.3s;
   pointer-events: none;
@@ -204,7 +204,7 @@
 }
 .plan-safety-tier.tier-high   { background: rgba(251,113,133,0.12); color: var(--ayura-rose);   border: 1px solid rgba(251,113,133,0.22); }
 .plan-safety-tier.tier-medium { background: rgba(251,146,60,0.12);  color: var(--ayura-amber);  border: 1px solid rgba(251,146,60,0.22);  }
-.plan-safety-tier.tier-safe   { background: rgba(45,212,191,0.1);   color: var(--ayura-teal);   border: 1px solid rgba(45,212,191,0.2);   }
+.plan-safety-tier.tier-safe   { background: rgba(92,171,116,0.1);   color: var(--ayura-teal);   border: 1px solid rgba(92,171,116,0.2);   }
 
 /* ── Nested objects ── */
 .plan-nested-obj {
@@ -301,7 +301,7 @@
   margin-bottom: 1rem;
 }
 .pk-vaidya-icon {
-  color: #818cf8;
+  color: #a08cf0;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -1396,7 +1396,7 @@
 .gym-rest-title {
   font-weight: 700;
   font-size: 0.84rem;
-  color: #818cf8;
+  color: #a08cf0;
   margin-bottom: 0.55rem;
 }
 .gym-rest-activities {
@@ -1416,7 +1416,7 @@
 }
 .gym-rest-meta-label {
   font-weight: 600;
-  color: #818cf8;
+  color: #a08cf0;
   flex-shrink: 0;
 }
 .gym-rest-quote {
@@ -1431,7 +1431,7 @@
 }
 .gym-show-more {
   font-size: 0.7rem;
-  color: #818cf8;
+  color: #a08cf0;
   background: none;
   border: none;
   cursor: pointer;
@@ -1527,7 +1527,7 @@
   padding: 0.85rem 1.1rem;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #a78bfa;
+  color: #e6a23c;
   line-height: 1.5;
 }
 
@@ -1558,7 +1558,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #818cf8;
+  color: #a08cf0;
   background: color-mix(in srgb, #6366f1 15%, transparent);
   border-radius: 20px;
   padding: 0.12rem 0.55rem;
@@ -1797,7 +1797,7 @@
 
 .yoga-day-intention {
   font-size: 0.85rem;
-  color: #a78bfa;
+  color: #e6a23c;
   font-style: italic;
   line-height: 1.6;
   padding-left: 0.75rem;
@@ -2076,14 +2076,14 @@
 }
 
 .yoga-prana-icon {
-  color: #818cf8;
+  color: #a08cf0;
   flex-shrink: 0;
 }
 
 .yoga-prana-name {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #818cf8;
+  color: #a08cf0;
   flex: 1;
 }
 
@@ -2096,8 +2096,8 @@
 .yoga-prana-dur {
   font-size: 0.68rem;
   color: var(--ayura-muted);
-  background: color-mix(in srgb, #818cf8 10%, transparent);
-  border: 1px solid color-mix(in srgb, #818cf8 20%, transparent);
+  background: color-mix(in srgb, #a08cf0 10%, transparent);
+  border: 1px solid color-mix(in srgb, #a08cf0 20%, transparent);
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
   flex-shrink: 0;
@@ -3517,7 +3517,7 @@
   gap: 14px;
   align-items: flex-start;
   padding: 18px 20px;
-  background: linear-gradient(135deg, rgba(52,211,153,0.08), rgba(167,139,250,0.06));
+  background: linear-gradient(135deg, rgba(52,211,153,0.08), rgba(230,162,60,0.06));
   border-radius: 16px;
   border: 1px solid rgba(52,211,153,0.18);
   font-size: 0.92rem;
@@ -3660,7 +3660,7 @@
 .rv-ing-amount {
   font-size: 0.8rem;
   color: var(--ayura-accent);
-  background: rgba(45,212,191,0.12);
+  background: rgba(92,171,116,0.12);
   padding: 1px 7px;
   border-radius: 10px;
 }
@@ -3816,7 +3816,7 @@
   font-weight: 600;
   text-transform: capitalize;
   background: rgba(99,102,241,0.12);
-  color: #818cf8;
+  color: #a08cf0;
   border: 1px solid rgba(99,102,241,0.2);
 }
 
@@ -3824,7 +3824,7 @@
 .mv-card {
   background: var(--glass-bg-subtle);
   border: 1px solid var(--border-subtle);
-  border-left: 3px solid var(--mv-accent, #818cf8);
+  border-left: 3px solid var(--mv-accent, #a08cf0);
   border-radius: 14px;
   overflow: hidden;
   transition: border-color 0.2s;
@@ -3888,8 +3888,8 @@
   border-radius: 20px;
   font-size: 0.72rem;
   font-weight: 600;
-  background: rgba(45,212,191,0.12);
-  color: #2dd4bf;
+  background: rgba(92,171,116,0.12);
+  color: #5cab74;
 }
 .mv-card-body {
   padding: 0 16px 16px;
@@ -3904,8 +3904,8 @@
   line-height: 1.6;
   color: var(--ayura-ink);
   padding: 10px 12px;
-  background: rgba(129,140,248,0.07);
-  border-left: 3px solid var(--mv-accent, #818cf8);
+  background: rgba(160,140,240,0.07);
+  border-left: 3px solid var(--mv-accent, #a08cf0);
   border-radius: 0 8px 8px 0;
 }
 .mv-action-row {
@@ -4119,9 +4119,9 @@
   font-weight: 500;
   padding: 3px 9px;
   border-radius: 20px;
-  background: rgba(167,139,250,0.1);
-  color: #a78bfa;
-  border: 1px solid rgba(167,139,250,0.2);
+  background: rgba(230,162,60,0.1);
+  color: #e6a23c;
+  border: 1px solid rgba(230,162,60,0.2);
 }
 .mv-guna-chip {
   font-size: 0.72rem;
@@ -4134,8 +4134,8 @@
 
 /* ── Rationale block (structured enricher output) ── */
 .mv-rationale-block {
-  background: rgba(var(--mv-accent-rgb, 167,139,250), 0.04);
-  border-left: 3px solid var(--mv-accent, #a78bfa);
+  background: rgba(var(--mv-accent-rgb, 230,162,60), 0.04);
+  border-left: 3px solid var(--mv-accent, #e6a23c);
   border-radius: 0 8px 8px 0;
   padding: 10px 12px;
   display: flex;
@@ -4170,10 +4170,10 @@
   border: 1px solid rgba(99,102,241,0.12);
   border-radius: 8px;
   font-size: 0.78rem;
-  color: #818cf8;
+  color: #a08cf0;
   line-height: 1.5;
 }
-.mv-afi-ref svg { flex-shrink: 0; margin-top: 2px; color: #818cf8; }
+.mv-afi-ref svg { flex-shrink: 0; margin-top: 2px; color: #a08cf0; }
 
 /* ── Shodhana clinical alert ── */
 .mv-shodhana-alert {
@@ -4253,7 +4253,7 @@
   padding: 2px 8px;
   border-radius: 20px;
   background: rgba(99,102,241,0.1);
-  color: #818cf8;
+  color: #a08cf0;
   text-transform: capitalize;
 }
 
@@ -4438,8 +4438,8 @@
   align-items: flex-start;
   gap: 10px;
   padding: 14px 18px;
-  background: linear-gradient(135deg, rgba(129,140,248,0.08), rgba(45,212,191,0.05));
-  border: 1px solid rgba(129,140,248,0.2);
+  background: linear-gradient(135deg, rgba(160,140,240,0.08), rgba(92,171,116,0.05));
+  border: 1px solid rgba(160,140,240,0.2);
   border-radius: 14px;
   font-size: 0.88rem;
   color: var(--ayura-ink);
@@ -4546,9 +4546,9 @@
 [data-theme='light'] .din-day-tab { border-color: rgba(0,0,0,0.08); }
 .din-day-tab:hover { color: var(--ayura-ink); border-color: rgba(255,255,255,0.22); }
 .din-day-tab.active {
-  background: color-mix(in srgb, var(--tab-color, #818cf8) 15%, transparent);
-  border-color: color-mix(in srgb, var(--tab-color, #818cf8) 40%, transparent);
-  color: var(--tab-color, #818cf8);
+  background: color-mix(in srgb, var(--tab-color, #a08cf0) 15%, transparent);
+  border-color: color-mix(in srgb, var(--tab-color, #a08cf0) 40%, transparent);
+  color: var(--tab-color, #a08cf0);
 }
 .din-day-tab.fasting { opacity: 0.8; }
 .din-fast-dot {
@@ -4863,8 +4863,8 @@
   align-items: center;
   gap: 5px;
   padding: 5px 12px;
-  background: rgba(45,212,191,0.08);
-  border: 1px solid rgba(45,212,191,0.2);
+  background: rgba(92,171,116,0.08);
+  border: 1px solid rgba(92,171,116,0.2);
   border-radius: 20px;
   font-size: 0.78rem;
   color: var(--ayura-ink);
@@ -4880,8 +4880,8 @@
   gap: 8px;
   padding: 10px 14px;
   margin-bottom: 14px;
-  background: rgba(129,140,248,0.08);
-  border: 1px solid rgba(129,140,248,0.22);
+  background: rgba(160,140,240,0.08);
+  border: 1px solid rgba(160,140,240,0.22);
   border-radius: 10px;
   font-size: 0.8rem;
   color: var(--ayura-ink);
@@ -4906,7 +4906,7 @@
 .din-rest-badge {
   margin-left: auto;
   padding: 2px 8px;
-  background: rgba(167,139,250,0.15);
+  background: rgba(230,162,60,0.15);
   border-radius: 12px;
   font-size: 0.7rem;
   font-weight: 600;
@@ -4973,15 +4973,15 @@
 /* ── Classical basis (citations) ── */
 .plan-classical-basis {
   margin-top: 20px;
-  background: rgba(167,139,250,0.06);
-  border: 1px solid rgba(167,139,250,0.2);
+  background: rgba(230,162,60,0.06);
+  border: 1px solid rgba(230,162,60,0.2);
   border-radius: 14px;
   padding: 16px 18px;
 }
 .plan-classical-title {
   display: flex; align-items: center; gap: 8px;
   font-weight: 700; font-size: 0.9rem;
-  color: var(--ayura-violet, #a78bfa);
+  color: var(--ayura-violet, #e6a23c);
   margin-bottom: 8px;
 }
 .plan-classical-list { margin: 0 0 8px; padding-left: 20px; }

@@ -457,7 +457,7 @@ export default function Settings() {
                   style={{ 
                     cursor: 'pointer',
                     borderColor: theme === 'dark' ? 'var(--ayura-teal)' : 'var(--border-light)',
-                    boxShadow: theme === 'dark' ? '0 0 0 2px rgba(45,212,191,0.2)' : 'none',
+                    boxShadow: theme === 'dark' ? '0 0 0 2px rgba(92,171,116,0.2)' : 'none',
                     background: '#0B1121' 
                   }}
                   onClick={() => setTheme('dark')}
@@ -469,7 +469,7 @@ export default function Settings() {
                   <div className="settings-theme-preview-body">
                     <div className="settings-theme-preview-line" style={{ background: '#334155', width: '80%' }} />
                     <div className="settings-theme-preview-line" style={{ background: '#1E293B', width: '60%' }} />
-                    <div className="settings-theme-preview-line" style={{ background: 'linear-gradient(135deg, #2DD4BF, #818CF8)', width: '40%', marginTop: '8px' }} />
+                    <div className="settings-theme-preview-line" style={{ background: 'linear-gradient(135deg, #5cab74, #e6a23c)', width: '40%', marginTop: '8px' }} />
                   </div>
                   <div style={{ padding: '8px', textAlign: 'center', fontSize: '0.8rem', color: '#94A3B8', fontWeight: 600 }}>Dark</div>
                 </div>
@@ -480,7 +480,7 @@ export default function Settings() {
                   style={{ 
                     cursor: 'pointer',
                     borderColor: theme === 'light' ? 'var(--ayura-teal)' : 'var(--border-light)',
-                    boxShadow: theme === 'light' ? '0 0 0 2px rgba(45,212,191,0.2)' : 'none',
+                    boxShadow: theme === 'light' ? '0 0 0 2px rgba(92,171,116,0.2)' : 'none',
                     background: '#F8FAFC' 
                   }}
                   onClick={() => setTheme('light')}
@@ -492,7 +492,7 @@ export default function Settings() {
                   <div className="settings-theme-preview-body">
                     <div className="settings-theme-preview-line" style={{ background: '#CBD5E1', width: '80%' }} />
                     <div className="settings-theme-preview-line" style={{ background: '#E2E8F0', width: '60%' }} />
-                    <div className="settings-theme-preview-line" style={{ background: 'linear-gradient(135deg, #2DD4BF, #818CF8)', width: '40%', marginTop: '8px' }} />
+                    <div className="settings-theme-preview-line" style={{ background: 'linear-gradient(135deg, #5cab74, #e6a23c)', width: '40%', marginTop: '8px' }} />
                   </div>
                   <div style={{ padding: '8px', textAlign: 'center', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>Light</div>
                 </div>

@@ -5,16 +5,27 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--primary-500);
+  background: linear-gradient(135deg, var(--ayura-teal), var(--ayura-teal-lt));
   color: #fff;
   border: none;
-  box-shadow: 0 4px 14px rgba(13,148,136,0.3);
+  box-shadow: 0 6px 18px rgba(92,171,116,0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 990;
   padding: 0;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.feedback-fab:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(92,171,116,0.45); }
+.feedback-fab:active { transform: scale(0.94); }
+
+/* On mobile the bottom tab bar (64px + safe area) owns the bottom edge — lift the
+   FAB above it so it never covers the "More" tab. */
+@media (max-width: 900px) {
+  .feedback-fab {
+    bottom: calc(64px + env(safe-area-inset-bottom) + 18px);
+  }
 }
 
 .feedback-fab svg {

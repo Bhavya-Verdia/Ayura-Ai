@@ -17,24 +17,24 @@ const MAX_CHARS = 500
 const WARN_CHARS = 450
 
 const DOSHA_COLORS = [
-  '#0D9488', // primary teal
-  '#2DD4BF', // primary light
+  '#2f8f5b', // primary teal
+  '#5cab74', // primary light
   '#F59E0B', // accent amber
   '#10B981', // sage
   '#F43F5E', // rose
-  '#818CF8', // indigo
+  '#a08cf0', // indigo
   '#FB923C', // orange
-  '#34D399', // emerald
+  '#5cab74', // emerald
 ]
 
 const WELLNESS_TAGS = [
   { keyword: /yoga|pranayam|stretch|breath/i, label: 'Yoga', Icon: Flower2, color: 'var(--primary)' },
   { keyword: /diet|nutrition|food|eat|meal|recipe/i, label: 'Nutrition', Icon: Salad, color: 'var(--accent)' },
-  { keyword: /meditat|mindful|calm|peace|zen/i, label: 'Mindfulness', Icon: Brain, color: '#818CF8' },
+  { keyword: /meditat|mindful|calm|peace|zen/i, label: 'Mindfulness', Icon: Brain, color: '#a08cf0' },
   { keyword: /sleep|rest|recover|insomn/i, label: 'Sleep', Icon: Moon, color: '#60A5FA' },
   { keyword: /remedy|herb|ayurved|detox|cleanse/i, label: 'Ayurveda', Icon: Leaf, color: 'var(--sage)' },
   { keyword: /gym|workout|exercise|fitness|run|cardio/i, label: 'Fitness', Icon: Dumbbell, color: 'var(--rose)' },
-  { keyword: /stress|anxiety|relax|mood/i, label: 'Wellness', Icon: Sparkles, color: '#A78BFA' },
+  { keyword: /stress|anxiety|relax|mood/i, label: 'Wellness', Icon: Sparkles, color: '#e6a23c' },
   { keyword: /water|hydrat/i, label: 'Hydration', Icon: Droplets, color: '#38BDF8' },
 ]
 

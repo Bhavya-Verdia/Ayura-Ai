@@ -152,14 +152,6 @@ export const preferencesAPI = {
   saveFeature:        (feature, data) => API.post(`/preferences/${feature}`, data),
 }
 
-// ── Chat ───────────────────────────────────────
-export const chatAPI = {
-  sendMessage:  (content, session_id) =>
-    API.post('/chat/message', { content, session_id }),
-  getSessions:  ()           => API.get('/chat/sessions'),
-  getSession:   (sessionId)  => API.get(`/chat/sessions/${sessionId}`),
-}
-
 // ── Progress ───────────────────────────────────
 export const progressAPI = {
   log:        (data)         => API.post('/progress/log', data),
@@ -212,11 +204,6 @@ export const communityAPI = {
   listComments:  (postId) => API.get(`/community/${postId}/comments`),
   addComment:    (postId, content) => API.post(`/community/${postId}/comments`, { content }),
   removeComment: (commentId) => API.delete(`/community/comments/${commentId}`),
-}
-
-// ── Weather ────────────────────────────────────
-export const weatherAPI = {
-  getCurrent: (lat, lon) => API.get('/weather', { params: { lat, lon } }),
 }
 
 // ── Feedback ───────────────────────────────────

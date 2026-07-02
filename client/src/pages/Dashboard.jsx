@@ -27,11 +27,11 @@ import './Dashboard.css'
 const PLAN_TYPES = [
   { id: 'routine',     title: 'Daily Routine',       Icon: Sunrise,  desc: 'Chronological Dinacharya timeline with meal timing.', color: 'var(--ayura-amber)',  bg: 'rgba(251,146,60,0.10)' },
   { id: 'diet',        title: 'Diet & Nutrition',    Icon: Salad,    desc: '4-week Ayurvedic meal plans with Pathya-Apathya.', color: 'var(--ayura-sage)',  bg: 'rgba(74,222,128,0.10)' },
-  { id: 'yoga',        title: 'Yoga & Pranayama',   Icon: Flower2,  desc: 'Dosha-balanced morning/evening routines.',    color: 'var(--ayura-teal)',   bg: 'rgba(45,212,191,0.10)' },
-  { id: 'gym',         title: 'Fitness & Gym',       Icon: Dumbbell, desc: 'Workout splits with progressive intensity.',  color: 'var(--vata-color)',   bg: 'rgba(129,140,248,0.10)' },
+  { id: 'yoga',        title: 'Yoga & Pranayama',   Icon: Flower2,  desc: 'Dosha-balanced morning/evening routines.',    color: 'var(--ayura-teal)',   bg: 'rgba(92,171,116,0.10)' },
+  { id: 'gym',         title: 'Fitness & Gym',       Icon: Dumbbell, desc: 'Workout splits with progressive intensity.',  color: 'var(--vata-color)',   bg: 'rgba(160,140,240,0.10)' },
   { id: 'panchakarma', title: 'Panchakarma Detox',   Icon: Leaf,     desc: 'Seasonal cleanses tailored to your prakriti.', color: 'var(--ayura-sage)',   bg: 'rgba(74,222,128,0.10)' },
   { id: 'remedies',    title: 'Home Remedies',       Icon: Soup,     desc: 'Kitchen medicine for common ailments.',        color: 'var(--ayura-rose)',   bg: 'rgba(251,113,133,0.10)' },
-  { id: 'medicines',   title: 'Ayurvedic Medicines', Icon: Pill,     desc: 'Classical formulations for deep healing.',     color: 'var(--ayura-violet)', bg: 'rgba(167,139,250,0.10)' },
+  { id: 'medicines',   title: 'Ayurvedic Medicines', Icon: Pill,     desc: 'Classical formulations for deep healing.',     color: 'var(--ayura-violet)', bg: 'rgba(230,162,60,0.10)' },
 ]
 
 
@@ -48,13 +48,34 @@ function formatRelativeTime(dateStr) {
   return `${days}d ago`
 }
 
+const clean = (s) => s
+  .replace(/#{1,6}\s+/g, '').replace(/\*{1,2}/g, '').replace(/`/g, '')
+  .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\n+/g, ' ').trim()
+
+// Build a human one-line preview from a plan. Per-feature plans wrap their body
+// in a `{feature}_plan` envelope, so we unwrap it and pull a real summary field —
+// otherwise JSON.stringify would dump `{"routine_plan":{"plan_id":…}}` on the card.
+// Returns null when there's no usable prose so the caller falls back to the static desc.
 function extractPreview(planData, maxLen = 110) {
   if (!planData) return null
-  const raw = typeof planData === 'string' ? planData : JSON.stringify(planData)
-  const stripped = raw
-    .replace(/#{1,6}\s+/g, '').replace(/\*{1,2}/g, '').replace(/`/g, '')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\n+/g, ' ').trim()
-  return stripped.length > maxLen ? stripped.slice(0, maxLen).trimEnd() + '…' : stripped
+  if (typeof planData === 'string') {
+    const s = clean(planData)
+    return s.length > maxLen ? s.slice(0, maxLen).trimEnd() + '…' : s
+  }
+  // user_summary/summary usually sit at the envelope's TOP level, as siblings of
+  // the `{feature}_plan` body — so check both the top level and the unwrapped body.
+  const top = (planData && typeof planData === 'object' && !Array.isArray(planData)) ? planData : {}
+  let body = top
+  const envKey = Object.keys(top).find(k => k.endsWith('_plan'))
+  if (envKey && top[envKey] && typeof top[envKey] === 'object') body = top[envKey]
+  // plan_description is the human prose summary present on most bodies
+  // (diet/gym/yoga/panchakarma/routine); user_summary is skipped as it can be a
+  // structured object. Falls through to the static desc when there's no prose.
+  const pick = (o) => o?.plan_description || o?.summary || o?.overview || o?.introduction || o?.description || o?.general_guidelines
+  const text = pick(body) || pick(top)
+  if (!text || typeof text !== 'string') return null
+  const s = clean(text)
+  return s.length > maxLen ? s.slice(0, maxLen).trimEnd() + '…' : s
 }
 
 function StreakCard() {
@@ -193,7 +214,7 @@ const gridItem = {
 }
 
 function fireConfetti() {
-  confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 }, colors: ['#2dd4bf', '#a78bfa', '#fb923c', '#4ade80'] })
+  confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 }, colors: ['#5cab74', '#e6a23c', '#fb923c', '#4ade80'] })
 }
 
 function getTimeOfDay() {
@@ -219,7 +240,7 @@ function computeVikritiTrend(history, dominant) {
 function VikritiTrendBadge({ trend, confidence, checkinCount }) {
   if (!trend && !confidence) return null
   const trendConfig = {
-    improving: { label: '↓ Imbalance easing', color: '#34d399' },
+    improving: { label: '↓ Imbalance easing', color: '#5cab74' },
     worsening: { label: '↑ Imbalance rising', color: '#fb923c' },
     stable:    { label: '~ Holding steady',   color: '#94a3b8' },
   }
@@ -229,7 +250,7 @@ function VikritiTrendBadge({ trend, confidence, checkinCount }) {
     confidence >= 55 ? 'Medium confidence' :
     confidence >= 40 ? 'Early reading' : 'Getting started'
   const confidenceColor =
-    confidence >= 80 ? '#34d399' :
+    confidence >= 80 ? '#5cab74' :
     confidence >= 55 ? '#fbbf24' : '#94a3b8'
 
   return (
@@ -489,7 +510,7 @@ const Dashboard = () => {
 
   const queryClient = useQueryClient()
 
-  const { data: plans = {} } = useQuery({
+  const { data: plans = {}, isLoading: plansLoading } = useQuery({
     queryKey: ['plans-history'],
     queryFn: async () => {
       const res = await plansAPI.getHistory(50)
@@ -753,7 +774,21 @@ const Dashboard = () => {
         <p className="dash-plans-sub">Generate or view your AI-crafted Ayurvedic plans</p>
       </div>
 
-      {/* Staggered card grid */}
+      {/* Staggered card grid — skeletons while history loads so a returning
+          user never sees their generated plans flash as empty "Generate" cards. */}
+      {plansLoading ? (
+        <div className="dash-plans-grid" aria-hidden="true">
+          {PLAN_TYPES.map((type) => (
+            <div key={type.id} className="skeleton-plan-card" style={{ minHeight: 210, gap: 14 }}>
+              <div className="skeleton" style={{ width: 44, height: 44, borderRadius: 12 }} />
+              <div className="skeleton" style={{ width: '62%', height: 18, borderRadius: 6, marginTop: 4 }} />
+              <div className="skeleton" style={{ width: '100%', height: 12, borderRadius: 6 }} />
+              <div className="skeleton" style={{ width: '80%', height: 12, borderRadius: 6 }} />
+              <div className="skeleton" style={{ width: '100%', height: 40, borderRadius: 12, marginTop: 'auto' }} />
+            </div>
+          ))}
+        </div>
+      ) : (
       <m.div
         className="dash-plans-grid"
         variants={gridContainer}
@@ -822,6 +857,7 @@ const Dashboard = () => {
           </m.div>
         ))}
       </m.div>
+      )}
 
       {/* ── Quick nav cards ── */}
       <div className="dash-quick-nav">

@@ -23,7 +23,7 @@
   height: 480px;
   top: -15%;
   left: -10%;
-  background: radial-gradient(circle, rgba(45,212,191,0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(92,171,116,0.18) 0%, transparent 70%);
 }
 
 .notfound-orb-b {
@@ -31,11 +31,11 @@
   height: 400px;
   bottom: -10%;
   right: -8%;
-  background: radial-gradient(circle, rgba(167,139,250,0.14) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(230,162,60,0.14) 0%, transparent 70%);
 }
 
 [data-theme='light'] .notfound-orb-a {
-  background: radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(79,174,143,0.12) 0%, transparent 70%);
 }
 [data-theme='light'] .notfound-orb-b {
   background: radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%);
@@ -70,9 +70,10 @@
 .notfound-heading {
   font-family: var(--font-display);
   font-size: clamp(3.5rem, 10vw, 6rem);
-  font-weight: 800;
+  font-weight: 600;
+  font-optical-sizing: auto;
   margin: 0;
-  background: linear-gradient(135deg, #8ef8dc, #64e2ff);
+  background: linear-gradient(135deg, #83c896, #e6a23c);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -80,7 +81,7 @@
   letter-spacing: -0.02em;
 }
 [data-theme='light'] .notfound-heading {
-  background: linear-gradient(135deg, #0d9488, #0891b2);
+  background: linear-gradient(135deg, #2f8f5b, #b8791a);
   -webkit-background-clip: text;
   background-clip: text;
 }
@@ -127,7 +128,7 @@
 }
 .btn-glass:hover {
   background: var(--glass-bg-hover, rgba(255,255,255,0.08));
-  border-color: rgba(45,212,191,0.3);
+  border-color: rgba(92,171,116,0.3);
 }
 [data-theme='light'] .btn-glass {
   background: rgba(255,255,255,0.75);

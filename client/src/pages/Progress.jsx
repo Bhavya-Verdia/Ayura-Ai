@@ -23,7 +23,7 @@ const TREND_CONFIG = {
   losing_weight:      { label: 'Losing Weight',  Icon: TrendingDown, color: 'var(--ayura-teal)' },
   gaining_weight:     { label: 'Gaining Weight', Icon: TrendingUp,   color: 'var(--ayura-amber)' },
   stable:             { label: 'Stable',         Icon: MoveRight,    color: 'var(--primary-light)' },
-  insufficient_data:  { label: 'Not enough data',Icon: ChartColumn,  color: 'var(--text-muted)' },
+  insufficient_data:  { label: 'No data yet',    Icon: ChartColumn,  color: 'var(--text-muted)' },
 }
 
 function StatCard({ icon, label, value, sub, color }) {

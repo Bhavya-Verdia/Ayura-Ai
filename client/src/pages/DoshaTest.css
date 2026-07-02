@@ -19,7 +19,7 @@
   margin: 14px 0 18px;
 }
 .dt-grad {
-  background: linear-gradient(135deg, var(--ayura-teal), #818cf8);
+  background: linear-gradient(135deg, var(--ayura-teal), #a08cf0);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -140,8 +140,8 @@
   width: 44px; height: 44px;
   border-radius: 12px;
   color: var(--ayura-teal);
-  background: rgba(45, 212, 191, 0.12);
-  border: 1px solid rgba(45, 212, 191, 0.28);
+  background: rgba(92,171,116, 0.12);
+  border: 1px solid rgba(92,171,116, 0.28);
   margin-bottom: 14px;
 }
 .dt-step-title { font-size: 1rem; font-weight: 700; color: var(--ayura-ink); margin: 0 0 8px; line-height: 1.35; }
@@ -171,7 +171,7 @@
   width: 40px; height: 40px;
   border-radius: 10px;
   color: var(--ayura-teal);
-  background: rgba(45, 212, 191, 0.12);
+  background: rgba(92,171,116, 0.12);
 }
 .dt-benefit-title { font-size: 1rem; font-weight: 700; color: var(--ayura-ink); margin: 0; }
 .dt-benefit-desc { font-size: 0.9rem; line-height: 1.6; color: var(--ayura-muted); margin: 0; }

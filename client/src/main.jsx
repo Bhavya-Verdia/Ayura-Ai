@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
-import { LazyMotion, domAnimation } from 'framer-motion'
+import { LazyMotion, domAnimation, MotionConfig } from 'framer-motion'
 import App from './App'
 import { AuthProvider } from './providers/AuthContext'
 import { ThemeProvider } from './providers/ThemeProvider'
@@ -54,8 +54,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                   ships only the `domAnimation` feature set and lets Rollup tree-shake
                   out the heavier layout/drag projection code that the full `motion`
                   proxy would force-bundle. */}
+              {/* reducedMotion="user" makes ALL framer animations honor the OS
+                  "reduce motion" setting (framer uses JS transforms, which the CSS
+                  reduced-motion reset can't stop) — a11y + faster LCP for those users. */}
               <LazyMotion features={domAnimation}>
-                <App />
+                <MotionConfig reducedMotion="user">
+                  <App />
+                </MotionConfig>
               </LazyMotion>
             </ThemeProvider>
           </AuthProvider>

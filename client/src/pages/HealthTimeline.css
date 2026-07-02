@@ -292,7 +292,7 @@
 }
 .ht-chip-amber { background: rgba(245,158,11,0.1); color: #f59e0b; border-color: rgba(245,158,11,0.2); }
 .ht-chip-muted { background: rgba(255,255,255,0.05); color: var(--text-secondary); border-color: var(--border-subtle); }
-.ht-chip-teal { background: rgba(45,212,191,0.1); color: #2dd4bf; border-color: rgba(45,212,191,0.2); }
+.ht-chip-teal { background: rgba(92,171,116,0.1); color: #5cab74; border-color: rgba(92,171,116,0.2); }
 .ht-chip-primary { background: rgba(13,148,136,0.1); color: var(--ayura-teal-lt); border-color: rgba(13,148,136,0.2); }
 .ht-chip-sage { background: rgba(16,185,129,0.1); color: #10b981; border-color: rgba(16,185,129,0.2); }
 .ht-chip-rose { background: rgba(244,63,94,0.1); color: #f43f5e; border-color: rgba(244,63,94,0.2); }

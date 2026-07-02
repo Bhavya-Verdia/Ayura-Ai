@@ -311,12 +311,12 @@ export default function Chat() {
                   {!isUser && msg.actions && (msg.actions.reminders?.length > 0 || msg.actions.plansAdapting?.length > 0) && (
                     <div className="chat-action-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                       {msg.actions.reminders?.map((r, i) => (
-                        <span key={`rem-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: 'rgba(74,222,128,0.12)', color: '#34d399', border: '1px solid rgba(74,222,128,0.3)' }}>
+                        <span key={`rem-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: 'rgba(74,222,128,0.12)', color: '#5cab74', border: '1px solid rgba(74,222,128,0.3)' }}>
                           <AlarmClock size={12} strokeWidth={2} /> Reminder set — {r.title} at {r.time}
                         </span>
                       ))}
                       {msg.actions.plansAdapting?.map((p, i) => (
-                        <span key={`pln-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)' }}>
+                        <span key={`pln-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: 'rgba(230,162,60,0.12)', color: '#e6a23c', border: '1px solid rgba(230,162,60,0.3)' }}>
                           <Sparkles size={12} strokeWidth={2} /> Regenerating your {p} plan…
                         </span>
                       ))}

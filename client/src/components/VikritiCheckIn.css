@@ -19,14 +19,14 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #2dd4bf;
+  background: #5cab74;
   flex-shrink: 0;
   animation: vci-pulse 1.8s ease-in-out infinite;
 }
 
 @keyframes vci-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.5); }
-  50%       { box-shadow: 0 0 0 6px rgba(45, 212, 191, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(92,171,116, 0.5); }
+  50%       { box-shadow: 0 0 0 6px rgba(92,171,116, 0); }
 }
 
 .vci-title {
@@ -152,7 +152,7 @@
   transform: scale(1.08);
 }
 .vci-pulse-btn.selected {
-  background: rgba(45,212,191,0.18);
+  background: rgba(92,171,116,0.18);
   border-color: var(--ayura-teal);
   transform: scale(1.1);
 }

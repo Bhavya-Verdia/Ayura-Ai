@@ -9,10 +9,10 @@
 // Do NOT redefine these maps locally — every dosha color in the app resolves here
 // so the same dosha always renders the same color across pages.
 export const DOSHA_COLOR = {
-  vata:    '#818cf8',
-  pitta:   '#fb923c',
-  kapha:   '#34d399',
-  default: '#2dd4bf', // teal accent for "tridoshic"/unknown
+  vata:    '#a08cf0', // air/ether — soft lavender
+  pitta:   '#e0863f', // fire — terracotta
+  kapha:   '#5cab74', // earth/water — herbal green
+  default: '#5cab74', // herbal-green accent for "tridoshic"/unknown
 }
 
 // Alias for remedy/medicine views, which key on "universal" instead of "default".

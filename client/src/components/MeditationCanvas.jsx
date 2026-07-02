@@ -2,8 +2,8 @@ import { useRef, useEffect } from 'react'
 import { useReducedMotion } from 'framer-motion'
 
 /* ── Palette ──────────────────────────────────────────────────── */
-const TEAL    = [45,  212, 191]
-const VIOLET  = [167, 139, 250]
+const TEAL    = [92,171,116]
+const VIOLET  = [230,162,60]
 const SKY     = [96,  165, 250]
 const AMBER   = [251, 191,  36]
 

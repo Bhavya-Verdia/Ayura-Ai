@@ -42,8 +42,8 @@
 .ic-chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .ic-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(45,212,191,0.12);
-  border: 1px solid rgba(45,212,191,0.3);
+  background: rgba(92,171,116,0.12);
+  border: 1px solid rgba(92,171,116,0.3);
   color: var(--text-primary);
   border-radius: 999px;
   padding: 5px 10px 5px 12px;
@@ -70,13 +70,13 @@
 /* Add buttons — give the inline affordance a clear, on-brand surface */
 .ic-add-row .btn {
   flex-shrink: 0;
-  background: rgba(45,212,191,0.12);
-  border: 1px solid rgba(45,212,191,0.32);
+  background: rgba(92,171,116,0.12);
+  border: 1px solid rgba(92,171,116,0.32);
   color: var(--ayura-teal);
 }
 .ic-add-row .btn:hover {
-  background: rgba(45,212,191,0.2);
-  border-color: rgba(45,212,191,0.5);
+  background: rgba(92,171,116,0.2);
+  border-color: rgba(92,171,116,0.5);
 }
 
 .ic-check-btn { width: 100%; margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -132,7 +132,7 @@
   border-radius: 14px;
   padding: 16px 18px;
 }
-.ic-explain-label { font-weight: 700; color: var(--ayura-violet, #a78bfa); margin-bottom: 6px; font-size: 0.85rem; }
+.ic-explain-label { font-weight: 700; color: var(--ayura-violet, #e6a23c); margin-bottom: 6px; font-size: 0.85rem; }
 .ic-explain p { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.55; margin: 0; white-space: pre-wrap; }
 
 .ic-general {

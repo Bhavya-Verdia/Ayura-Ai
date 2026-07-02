@@ -43,8 +43,8 @@
   width: min(700px, 90vw); height: min(700px, 90vw);
   border-radius: 50%;
   background: radial-gradient(circle,
-    rgba(45,212,191,0.07) 0%,
-    rgba(167,139,250,0.04) 45%,
+    rgba(92,171,116,0.07) 0%,
+    rgba(230,162,60,0.04) 45%,
     transparent 70%
   );
   pointer-events: none;
@@ -73,9 +73,9 @@
   -webkit-backdrop-filter: blur(40px);
   border-radius: 24px;
   padding: 40px 36px 36px;
-  border: 1px solid rgba(45,212,191,0.14);
+  border: 1px solid rgba(92,171,116,0.14);
   box-shadow:
-    0 0 0 1px rgba(45,212,191,0.05),
+    0 0 0 1px rgba(92,171,116,0.05),
     0 20px 60px rgba(0,0,0,0.55),
     0 8px 24px rgba(0,0,0,0.30);
   position: relative;
@@ -94,8 +94,8 @@
   top: 0; left: 12%; right: 12%; height: 1px;
   background: linear-gradient(90deg,
     transparent,
-    rgba(45,212,191,0.55) 30%,
-    rgba(167,139,250,0.40) 70%,
+    rgba(92,171,116,0.55) 30%,
+    rgba(230,162,60,0.40) 70%,
     transparent
   );
   animation: auth-top-line 5s ease-in-out infinite;
@@ -107,7 +107,7 @@
   bottom: -18px; right: 8px;
   font-size: 140px; line-height: 1;
   font-family: Georgia, "Noto Serif Devanagari", serif;
-  color: rgba(45,212,191,0.042);
+  color: rgba(92,171,116,0.042);
   pointer-events: none; user-select: none;
   letter-spacing: -0.05em;
 }
@@ -120,7 +120,7 @@
 }
 .auth-brand-logo {
   width: 36px; height: 36px; border-radius: 10px;
-  box-shadow: 0 3px 14px rgba(45,212,191,0.30);
+  box-shadow: 0 3px 14px rgba(92,171,116,0.30);
   animation: auth-logo-float 7s ease-in-out infinite;
 }
 .auth-brand-name {
@@ -165,9 +165,9 @@
   background: rgba(255,255,255,0.82); border-color: rgba(15,23,42,0.10);
 }
 .auth-social-btn:hover {
-  background: rgba(45,212,191,0.07); border-color: rgba(45,212,191,0.26);
+  background: rgba(92,171,116,0.07); border-color: rgba(92,171,116,0.26);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(45,212,191,0.12);
+  box-shadow: 0 4px 14px rgba(92,171,116,0.12);
 }
 .auth-social-btn:active { transform: translateY(0) scale(0.98); transition-duration: 0.07s; }
 
@@ -207,9 +207,9 @@
 }
 .auth-input:focus {
   outline: none;
-  border-color: rgba(45,212,191,0.60);
-  background: rgba(45,212,191,0.035);
-  box-shadow: 0 0 0 3px rgba(45,212,191,0.11);
+  border-color: rgba(92,171,116,0.60);
+  background: rgba(92,171,116,0.035);
+  box-shadow: 0 0 0 3px rgba(92,171,116,0.11);
 }
 .auth-input::placeholder { color: rgba(148,163,184,0.40); }
 
@@ -227,12 +227,12 @@
 /* Submit button */
 .auth-submit {
   width: 100%; position: relative; overflow: hidden;
-  background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 55%, #0d9488 100%);
+  background: linear-gradient(135deg, #5cab74 0%, #83c896 55%, #2f8f5b 100%);
   color: #042d29; border: none; border-radius: 11px;
   padding: 14px; margin-top: 4px;
   font-family: var(--font-ui); font-size: 0.97rem; font-weight: 700;
   cursor: pointer; letter-spacing: 0.01em;
-  box-shadow: 0 6px 22px rgba(45,212,191,0.30);
+  box-shadow: 0 6px 22px rgba(92,171,116,0.30);
   transition: transform 0.18s, box-shadow 0.18s;
 }
 .auth-submit::after {
@@ -254,7 +254,7 @@
   100% { left: 135%; opacity: 0; }
 }
 .auth-submit:hover:not(:disabled) {
-  transform: translateY(-2px); box-shadow: 0 12px 32px rgba(45,212,191,0.40);
+  transform: translateY(-2px); box-shadow: 0 12px 32px rgba(92,171,116,0.40);
 }
 .auth-submit:active:not(:disabled) { transform: translateY(0); }
 .auth-submit:disabled { opacity: 0.50; cursor: not-allowed; }
@@ -287,7 +287,7 @@
 .auth-foot-om {
   font-size: 1.8rem;
   font-family: Georgia, "Noto Serif Devanagari", serif;
-  color: rgba(45,212,191,0.25);
+  color: rgba(92,171,116,0.25);
   letter-spacing: 0.02em;
   user-select: none;
 }

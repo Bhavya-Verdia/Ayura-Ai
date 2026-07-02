@@ -106,7 +106,7 @@
   transition: background 0.1s;
 }
 
-.cmd-item.active { background: rgba(45, 212, 191, 0.08); }
+.cmd-item.active { background: rgba(92,171,116, 0.08); }
 [data-theme='light'] .cmd-item.active { background: rgba(13, 148, 136, 0.07); }
 
 .cmd-item-icon-wrap {
@@ -123,7 +123,7 @@
 }
 
 .cmd-item.active .cmd-item-icon-wrap {
-  background: rgba(45, 212, 191, 0.14);
+  background: rgba(92,171,116, 0.14);
   color: var(--ayura-teal);
 }
 

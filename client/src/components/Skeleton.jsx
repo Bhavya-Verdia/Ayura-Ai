@@ -16,7 +16,7 @@ export function SkeletonCircle({ size = '40px', style = {} }) {
   )
 }
 
-export function SkeletonPlanCard() {
+function SkeletonPlanCard() {
   return (
     <div className="skeleton-plan-card" aria-hidden="true">
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
@@ -30,7 +30,7 @@ export function SkeletonPlanCard() {
   )
 }
 
-export function SkeletonHeroCard() {
+function SkeletonHeroCard() {
   return (
     <div className="skeleton-hero-card" aria-hidden="true">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
@@ -60,7 +60,7 @@ export function SkeletonDashboard() {
   )
 }
 
-export function SkeletonChatBubble({ isUser = false }) {
+function SkeletonChatBubble({ isUser = false }) {
   return (
     <div className={`chat-bubble-row ${isUser ? 'user' : 'ai'}`} aria-hidden="true">
       {!isUser && <SkeletonCircle size="32px" />}

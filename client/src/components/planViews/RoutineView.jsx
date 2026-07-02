@@ -5,14 +5,16 @@ import {
 } from 'lucide-react'
 import { DOSHA_COLOR } from '../../constants/dosha'
 
+// Earthy day-part palette — warm gold → herbal greens → terracotta → cool
+// evening/night tones, each hue distinct so adjacent timeline slots read apart.
 const SLOT_COLORS = {
-  morning_routine: { bg: 'rgba(251,191,36,0.12)',  border: 'rgba(251,191,36,0.35)',  dot: '#f59e0b', label: '#b45309' },
-  self_care:       { bg: 'rgba(45,212,191,0.10)',  border: 'rgba(45,212,191,0.32)',  dot: '#2dd4bf', label: '#0f766e' },
-  exercise:        { bg: 'rgba(74,222,128,0.10)',  border: 'rgba(74,222,128,0.30)',  dot: '#4ade80', label: '#15803d' },
-  meal:            { bg: 'rgba(251,146,60,0.10)',  border: 'rgba(251,146,60,0.30)',  dot: '#fb923c', label: '#c2410c' },
-  work:            { bg: 'rgba(148,163,184,0.08)', border: 'rgba(148,163,184,0.22)', dot: '#94a3b8', label: '#475569' },
-  rest:            { bg: 'rgba(167,139,250,0.10)', border: 'rgba(167,139,250,0.28)', dot: '#a78bfa', label: '#7c3aed' },
-  wind_down:       { bg: 'rgba(129,140,248,0.10)', border: 'rgba(129,140,248,0.28)', dot: '#818cf8', label: '#4338ca' },
+  morning_routine: { bg: 'rgba(224,165,60,0.12)',  border: 'rgba(224,165,60,0.35)',  dot: '#e0a53c', label: '#b45309' },
+  self_care:       { bg: 'rgba(79,174,143,0.10)',  border: 'rgba(79,174,143,0.30)',  dot: '#4fae8f', label: '#0f766e' },
+  exercise:        { bg: 'rgba(92,171,116,0.10)',  border: 'rgba(92,171,116,0.30)',  dot: '#5cab74', label: '#15803d' },
+  meal:            { bg: 'rgba(224,138,74,0.10)',  border: 'rgba(224,138,74,0.30)',  dot: '#e08a4a', label: '#c2410c' },
+  work:            { bg: 'rgba(168,157,139,0.10)', border: 'rgba(168,157,139,0.26)', dot: '#a89d8b', label: '#6b5f4f' },
+  rest:            { bg: 'rgba(160,140,240,0.10)', border: 'rgba(160,140,240,0.28)', dot: '#a08cf0', label: '#6d5fd0' },
+  wind_down:       { bg: 'rgba(139,143,224,0.10)', border: 'rgba(139,143,224,0.28)', dot: '#8b8fe0', label: '#4338ca' },
   sleep:           { bg: 'rgba(30,27,75,0.08)',    border: 'rgba(99,102,241,0.22)',  dot: '#4f46e5', label: '#312e81' },
 }
 
@@ -180,7 +182,7 @@ export function RoutineView({ plan }) {
         </div>
         <div className="din-anchor-sep" />
         <div className="din-anchor">
-          <Moon size={14} style={{ color: '#818cf8' }} />
+          <Moon size={14} style={{ color: '#a08cf0' }} />
           <div><div className="din-anchor-label">Sleep</div><div className="din-anchor-val">{din.sleep_time}</div></div>
         </div>
         <div className="din-anchor-sep" />
@@ -282,7 +284,7 @@ export function RoutineView({ plan }) {
           {/* Evening rituals */}
           {(din.evening_rituals || []).length > 0 && (
             <div className="din-panel" style={{ marginTop: 16 }}>
-              <div className="din-panel-head"><Moon size={14} style={{ color: '#818cf8' }} />Evening Wind-Down</div>
+              <div className="din-panel-head"><Moon size={14} style={{ color: '#a08cf0' }} />Evening Wind-Down</div>
               <div className="din-ritual-list">
                 {(din.evening_rituals || []).map((r, i) => <RitualCard key={i} ritual={r} idx={i} />)}
               </div>

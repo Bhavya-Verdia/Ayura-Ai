@@ -1,9 +1,12 @@
 import { m } from 'framer-motion'
+import { DOSHA_COLOR } from '../constants/dosha'
 
+// Colors resolve through the single dosha source of truth (constants/dosha.js);
+// only the placeholder scores/labels live here.
 const DOSHA_CONFIG = {
-  vata:  { color: '#818CF8', label: 'Vata',  score: 65 },
-  pitta: { color: '#fb923c', label: 'Pitta', score: 45 },
-  kapha: { color: '#34d399', label: 'Kapha', score: 30 },
+  vata:  { color: DOSHA_COLOR.vata,  label: 'Vata',  score: 65 },
+  pitta: { color: DOSHA_COLOR.pitta, label: 'Pitta', score: 45 },
+  kapha: { color: DOSHA_COLOR.kapha, label: 'Kapha', score: 30 },
 }
 
 /**
@@ -91,15 +94,15 @@ export default function DoshaArcRings({
           <text
             x={cx} y={cy - 6}
             textAnchor="middle" dominantBaseline="middle"
-            fill={DOSHA_CONFIG[dominantDosha]?.color || '#2dd4bf'}
-            style={{ fontFamily: 'Sora, sans-serif', fontWeight: 800, fontSize: size * 0.11 }}
+            fill={DOSHA_CONFIG[dominantDosha]?.color || DOSHA_COLOR.default}
+            style={{ fontFamily: "'Fraunces', Georgia, serif", fontWeight: 600, fontSize: size * 0.13 }}
           >
             {(scores[dominantDosha] ?? DOSHA_CONFIG[dominantDosha]?.score ?? 65)}
           </text>
           <text
             x={cx} y={cy + size * 0.09}
             textAnchor="middle"
-            fill="rgba(158,170,166,0.8)"
+            fill="rgba(168,157,139,0.85)"
             style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 600, fontSize: size * 0.065, textTransform: 'uppercase', letterSpacing: 1 }}
           >
             {dominantDosha}

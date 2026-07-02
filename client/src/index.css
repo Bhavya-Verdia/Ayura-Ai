@@ -23,7 +23,7 @@
   padding: 10px 18px;
   border-radius: 10px;
   background: var(--ayura-teal);
-  color: #04080b;
+  color: #0c0a07;
   font-family: var(--font-ui);
   font-weight: 700;
   font-size: 0.9rem;
@@ -68,32 +68,34 @@ body,
 
 /* ─── AYURA AI 3.0 — DESIGN TOKENS ───────────────────────── */
 :root {
-  /* ── Core Palette ── */
-  --ayura-bg:       #060a0e;
-  --ayura-surface:  #0b1114;
-  --ayura-surface-2: #10191d;
-  --ayura-ink:      #f3fbf8;
-  --ayura-muted:    #9eaaa6;
+  /* ── Core Palette (warm charcoal / sandstone) ── */
+  --ayura-bg:       #100d09;
+  --ayura-surface:  #17130e;
+  --ayura-surface-2: #201a13;
+  --ayura-ink:      #f7f1e6;
+  --ayura-muted:    #a89d8b;
 
-  /* ── Brand Accents ── */
-  --ayura-teal:     #2dd4bf;
-  --ayura-teal-lt:  #5eead4;
-  --ayura-violet:   #a78bfa;
-  --ayura-rose:     #fb7185;
-  --ayura-amber:    #fb923c;
-  --ayura-sage:     #4ade80;
-  --ayura-emerald:  #34d399;
+  /* ── Brand Accents (herbal green + saffron + terracotta) ──
+     Token NAMES are kept for backward-compat with 30+ stylesheets:
+     --ayura-teal is the PRIMARY herbal green, --ayura-violet the SAFFRON accent. */
+  --ayura-teal:     #5cab74;   /* primary — herbal green */
+  --ayura-teal-lt:  #83c896;
+  --ayura-violet:   #e6a23c;   /* accent — saffron / turmeric */
+  --ayura-rose:     #d9705f;   /* danger / warn — warm clay-rose */
+  --ayura-amber:    #e08a4a;   /* terracotta */
+  --ayura-sage:     #6bbd7f;
+  --ayura-emerald:  #4faf78;
 
   /* ── Aurora Layer Colors ── */
-  --aurora-1: rgba(45,212,191,0.18);
-  --aurora-2: rgba(167,139,250,0.15);
-  --aurora-3: rgba(74,222,128,0.12);
-  --aurora-4: rgba(251,146,60,0.10);
+  --aurora-1: rgba(92,171,116,0.18);
+  --aurora-2: rgba(230,162,60,0.16);
+  --aurora-3: rgba(107,189,127,0.11);
+  --aurora-4: rgba(224,138,74,0.10);
 
-  /* ── Dosha Colors ── */
-  --vata-color:     #818cf8;
-  --pitta-color:    #fb923c;
-  --kapha-color:    #34d399;
+  /* ── Dosha Colors (warm-shifted, hue identity preserved) ── */
+  --vata-color:     #a08cf0;   /* air/ether — soft lavender */
+  --pitta-color:    #e0863f;   /* fire — terracotta */
+  --kapha-color:    #5cab74;   /* earth/water — herbal green */
 
   /* ── Global Aliases ── */
   --primary:        var(--ayura-teal);
@@ -102,10 +104,10 @@ body,
   --text-secondary: var(--ayura-muted);
 
   /* ── Glass & Surface ── */
-  --glass-bg:          rgba(11,17,20,0.74);
-  --glass-bg-subtle:   rgba(255,255,255,0.045);
-  --glass-border:      rgba(255,255,255,0.095);
-  --overlay-bg:        rgba(0,0,0,0.40);
+  --glass-bg:          rgba(23,19,14,0.74);
+  --glass-bg-subtle:   rgba(247,241,230,0.045);
+  --glass-border:      rgba(247,241,230,0.10);
+  --overlay-bg:        rgba(0,0,0,0.44);
 
   /* ── Surface tokens (consumed by page CSS via var(--token, fallback)) ──
      These were referenced across pages but never defined, so they fell back
@@ -143,10 +145,13 @@ body,
   --glass-shadow-strong: 0 26px 80px rgba(0,0,0,0.52);
   --glass-shadow-light:  0 4px 12px rgba(0,0,0,0.12);
 
-  /* ── Typography ── */
-  --font-display: 'Sora', sans-serif;
-  --font-ui:      'Manrope', sans-serif;
-  --font-body:    'Manrope', sans-serif;
+  /* ── Typography ──
+     Display = Fraunces (warm editorial serif, optical-size variable) for headings;
+     UI/body = Manrope. The pairing gives the brand an "editorial wellness" voice
+     rather than the default geometric-sans SaaS look. */
+  --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-ui:      'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-body:    'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   /* ── Fluid type scale ──
      clamp(min, preferred-vw, max): sizes scale continuously with the viewport
@@ -200,28 +205,31 @@ body,
 
 /* ─── LIGHT MODE ──────────────────────────────────────────── */
 [data-theme='light'] {
-  --ayura-bg:       #f5f8f5;
-  --ayura-surface:  #ffffff;
-  --ayura-surface-2: #f2f5fb;
-  --ayura-ink:      #0d1117;
-  --ayura-muted:    #4b5563;
+  --ayura-bg:       #f5f1e8;
+  --ayura-surface:  #fffdf8;
+  --ayura-surface-2: #efe9dc;
+  --ayura-ink:      #241d14;
+  --ayura-muted:    #6b5f4f;
 
-  --ayura-teal:     #0d9488;
-  --ayura-teal-lt:  #14b8a6;
-  --ayura-violet:   #7c3aed;
-  --ayura-rose:     #e11d48;
-  --ayura-amber:    #ea580c;
-  --ayura-sage:     #16a34a;
-  --ayura-emerald:  #059669;
+  /* Light accents are darkened so accent-as-TEXT clears WCAG AA (≥4.5:1) on the
+     sandstone bg/surfaces. Primary buttons get white text in light mode (below),
+     so the deeper green reads premium without failing button contrast. */
+  --ayura-teal:     #237045;   /* primary — deep herbal green (AA as text) */
+  --ayura-teal-lt:  #2f8f5b;
+  --ayura-violet:   #925c12;   /* accent — deep saffron / ochre */
+  --ayura-rose:     #a83e2e;
+  --ayura-amber:    #a85512;   /* terracotta */
+  --ayura-sage:     #237045;
+  --ayura-emerald:  #1c6b3f;
 
-  --aurora-1: rgba(13,148,136,0.14);
-  --aurora-2: rgba(124,58,237,0.10);
-  --aurora-3: rgba(22,163,74,0.10);
-  --aurora-4: rgba(234,88,12,0.08);
+  --aurora-1: rgba(47,143,91,0.13);
+  --aurora-2: rgba(184,121,26,0.11);
+  --aurora-3: rgba(47,143,91,0.09);
+  --aurora-4: rgba(194,105,31,0.08);
 
-  --vata-color:     #6366f1;
-  --pitta-color:    #ea580c;
-  --kapha-color:    #059669;
+  --vata-color:     #6152c0;
+  --pitta-color:    #a85512;
+  --kapha-color:    #237045;
 
   --primary:        var(--ayura-teal);
   --accent:         var(--ayura-violet);
@@ -263,8 +271,8 @@ body,
 html {
   font-family: var(--font-body);
   background:
-    radial-gradient(circle at 18% 0%, rgba(45,212,191,0.12), transparent 34%),
-    radial-gradient(circle at 100% 10%, rgba(167,139,250,0.10), transparent 35%),
+    radial-gradient(circle at 18% 0%, rgba(92,171,116,0.12), transparent 34%),
+    radial-gradient(circle at 100% 10%, rgba(230,162,60,0.10), transparent 35%),
     var(--ayura-bg);
   color: var(--ayura-ink);
   -webkit-font-smoothing: antialiased;
@@ -292,9 +300,10 @@ body {
 
 h1, h2, h3 {
   font-family: var(--font-display);
-  font-weight: 800;
-  line-height: 1.08;
-  letter-spacing: 0;
+  font-weight: 600;               /* Fraunces reads editorial at 600, not 800 */
+  font-optical-sizing: auto;      /* use the opsz axis for display sizes */
+  line-height: 1.1;
+  letter-spacing: -0.01em;
 }
 /* Fluid defaults for bare headings. Components with an explicit font-size
    still win (equal specificity, but their declaration comes later / is scoped),
@@ -316,21 +325,21 @@ h4, h5, h6 {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  color: rgba(45,212,191,0.9);
+  color: rgba(92,171,116,0.9);
   background:
-    radial-gradient(ellipse 90% 70% at 12% 8%, rgba(45,212,191,0.13), transparent 58%),
-    radial-gradient(ellipse 70% 56% at 92% 12%, rgba(167,139,250,0.12), transparent 60%),
-    radial-gradient(ellipse 65% 56% at 56% 104%, rgba(251,146,60,0.08), transparent 62%),
-    linear-gradient(145deg, #04080b 0%, #091014 42%, #101014 100%);
+    radial-gradient(ellipse 90% 70% at 12% 8%, rgba(92,171,116,0.13), transparent 58%),
+    radial-gradient(ellipse 70% 56% at 92% 12%, rgba(230,162,60,0.12), transparent 60%),
+    radial-gradient(ellipse 65% 56% at 56% 104%, rgba(224,138,74,0.08), transparent 62%),
+    linear-gradient(145deg, #0c0a07 0%, #12100b 42%, #16130d 100%);
 }
 
 .vital-bg-light {
-  color: rgba(13,148,136,0.75);
+  color: rgba(47,143,91,0.75);
   background:
-    radial-gradient(ellipse 86% 68% at 10% 4%, rgba(13,148,136,0.16), transparent 60%),
-    radial-gradient(ellipse 66% 52% at 94% 10%, rgba(124,58,237,0.10), transparent 62%),
-    radial-gradient(ellipse 62% 54% at 52% 104%, rgba(234,88,12,0.08), transparent 64%),
-    linear-gradient(145deg, #f8fbf7 0%, #eef5f1 50%, #f7f2eb 100%);
+    radial-gradient(ellipse 86% 68% at 10% 4%, rgba(47,143,91,0.15), transparent 60%),
+    radial-gradient(ellipse 66% 52% at 94% 10%, rgba(184,121,26,0.10), transparent 62%),
+    radial-gradient(ellipse 62% 54% at 52% 104%, rgba(194,105,31,0.08), transparent 64%),
+    linear-gradient(145deg, #f7f2e8 0%, #f1ebde 50%, #f5eee0 100%);
 }
 
 .vital-gradient-field {
@@ -338,7 +347,7 @@ h4, h5, h6 {
   inset: -20%;
   opacity: 0.7;
   background:
-    conic-gradient(from 130deg at 50% 48%, transparent 0deg, rgba(45,212,191,0.12) 52deg, transparent 118deg, rgba(167,139,250,0.12) 188deg, transparent 260deg, rgba(74,222,128,0.08) 318deg, transparent 360deg);
+    conic-gradient(from 130deg at 50% 48%, transparent 0deg, rgba(92,171,116,0.12) 52deg, transparent 118deg, rgba(230,162,60,0.12) 188deg, transparent 260deg, rgba(224,138,74,0.08) 318deg, transparent 360deg);
   filter: blur(28px);
   animation: vital-field-rotate 36s linear infinite;
 }
@@ -392,11 +401,11 @@ h4, h5, h6 {
   min-height: 180px;
   color: rgba(251,146,60,0.9);
   opacity: 0.72;
-  filter: drop-shadow(0 0 18px rgba(45,212,191,0.10));
+  filter: drop-shadow(0 0 18px rgba(92,171,116,0.10));
 }
 
 .vital-bg-light .vital-pulse-lines {
-  color: rgba(13,148,136,0.75);
+  color: rgba(47,143,91,0.75);
   opacity: 0.5;
 }
 
@@ -432,6 +441,16 @@ select {
   font-family: inherit;
 }
 
+/* iOS Safari auto-zooms the viewport when a focused control's font-size is < 16px.
+   Enforce a 16px floor at mobile widths so focusing an input never yanks the zoom. */
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1em);
+  }
+}
+
 /* ─── GLOBAL BUTTON SYSTEM ────────────────────────────────────
    Used by 20+ surfaces via `btn btn-primary|secondary|danger [btn-sm]`.
    MUST live here (global, always loaded) — previously trapped in
@@ -439,8 +458,11 @@ select {
    leaving buttons unstyled on direct loads of Remedies/Herb Safety/etc. */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 22px; border-radius: 12px; font-family: var(--font-ui); font-weight: 700; font-size: 0.925rem; cursor: pointer; border: none; transition: all 0.2s; }
 .btn svg { flex-shrink: 0; }
-.btn-primary { background: linear-gradient(135deg, var(--ayura-teal), var(--ayura-teal-lt)); color: #000; box-shadow: 0 8px 24px rgba(45,212,191,0.25); }
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(45,212,191,0.38); }
+.btn-primary { background: linear-gradient(135deg, var(--ayura-teal), var(--ayura-teal-lt)); color: #000; box-shadow: 0 8px 24px rgba(92,171,116,0.25); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(92,171,116,0.38); }
+/* Light mode: the primary green is dark (for AA text elsewhere), so buttons use
+   white text on a deep-green gradient — white clears AA on both stops. */
+[data-theme='light'] .btn-primary { color: #fff; background: linear-gradient(135deg, #237045, #1c6b3f); box-shadow: 0 8px 24px rgba(28,107,63,0.28); }
 .btn-secondary { background: var(--border-light); color: var(--ayura-ink); border: 1px solid var(--border-light); }
 .btn-secondary:hover {
   background: color-mix(in srgb, var(--ayura-teal) 10%, var(--border-light));
@@ -456,11 +478,35 @@ select {
 
 /* ─── BRANDED TEXT SELECTION ──────────────────────────────── */
 ::selection {
-  background: rgba(45,212,191,0.28);
+  background: rgba(92,171,116,0.28);
   color: var(--ayura-ink);
 }
 [data-theme='light'] ::selection {
-  background: rgba(13,148,136,0.22);
+  background: rgba(47,143,91,0.22);
+}
+
+/* ─── CURSOR GLOW ─────────────────────────────────────────────
+   Follows the cursor via transform only (see CursorGlow.jsx). 600px so the
+   translate math (x-300) keeps it centred. Decorative → pointer-events:none. */
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  will-change: transform;
+  mix-blend-mode: screen;
+  background: radial-gradient(circle, rgba(92,171,116,0.07) 0%, rgba(230,162,60,0.03) 35%, transparent 70%);
+}
+[data-theme='light'] .cursor-glow {
+  mix-blend-mode: multiply;
+  background: radial-gradient(circle, rgba(47,143,91,0.08) 0%, rgba(184,121,26,0.04) 35%, transparent 70%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cursor-glow { display: none; }
 }
 
 /* ─── KEYBOARD FOCUS RING (a11y) ──────────────────────────────
@@ -613,7 +659,7 @@ textarea:focus-visible {
     var(--ayura-teal) 0%,
     var(--ayura-teal-lt) 20%,
     var(--ayura-violet) 40%,
-    #c4b5fd 55%,
+    #f2cf8a 55%,
     var(--ayura-teal) 70%,
     var(--ayura-teal-lt) 100%
   );
@@ -757,9 +803,9 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   min-height: 100vh;
   padding: 32px;
   background:
-    radial-gradient(circle at 50% 42%, rgba(45,212,191,0.16), transparent 28%),
-    radial-gradient(circle at 58% 54%, rgba(167,139,250,0.12), transparent 32%),
-    rgba(6,10,14,0.94);
+    radial-gradient(circle at 50% 42%, rgba(92,171,116,0.16), transparent 28%),
+    radial-gradient(circle at 58% 54%, rgba(230,162,60,0.12), transparent 32%),
+    rgba(16,13,9,0.94);
 }
 
 .loading-mark {
@@ -768,7 +814,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   aspect-ratio: 1;
   display: grid;
   place-items: center;
-  filter: drop-shadow(0 0 28px rgba(45,212,191,0.22));
+  filter: drop-shadow(0 0 28px rgba(92,171,116,0.22));
 }
 
 .loading-mark-ring,
@@ -780,9 +826,9 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
 
 .loading-mark-ring {
   inset: 0;
-  border: 1px solid rgba(94,234,212,0.38);
+  border: 1px solid rgba(131,200,150,0.38);
   background:
-    conic-gradient(from 90deg, transparent 0 18%, rgba(94,234,212,0.95), transparent 42% 100%);
+    conic-gradient(from 90deg, transparent 0 18%, rgba(131,200,150,0.95), transparent 42% 100%);
   mask: radial-gradient(circle, transparent 56%, black 58%);
   animation: spin 1.8s linear infinite;
 }
@@ -791,16 +837,16 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   width: 56px;
   aspect-ratio: 1;
   background:
-    radial-gradient(circle at 35% 30%, #f3fbf8, #5eead4 34%, #0d9488 72%);
+    radial-gradient(circle at 35% 30%, #f7f1e6, #83c896 34%, #2f8f5b 72%);
   box-shadow:
-    0 0 38px rgba(94,234,212,0.45),
-    inset 0 -10px 18px rgba(6,10,14,0.35);
+    0 0 38px rgba(131,200,150,0.45),
+    inset 0 -10px 18px rgba(16,13,9,0.35);
   animation: loading-core 1.9s ease-in-out infinite;
 }
 
 .loading-mark-pulse {
   inset: 24px;
-  border: 1px solid rgba(167,139,250,0.45);
+  border: 1px solid rgba(230,162,60,0.45);
   animation: loading-pulse 1.8s ease-out infinite;
 }
 
@@ -867,7 +913,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
 
 .particle-field-light .particle-dot {
   opacity: min(var(--particle-opacity, 0.34), 0.38);
-  box-shadow: 0 0 10px rgba(13,148,136,0.24);
+  box-shadow: 0 0 10px rgba(47,143,91,0.24);
 }
 
 .particle-field-light .particle-orb {
