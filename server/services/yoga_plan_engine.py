@@ -550,20 +550,29 @@ def filter_poses(user_profile, yoga_prefs, poses, max_allowed_levels=None, proto
     # Seasonal boost config
     season_cfg = _get_season_boost(user_profile.get("current_season"))
 
-    # Protocol priority pose IDs for this user's conditions
+    # Protocol priority + AVOID pose IDs for this user's conditions. avoid_pose_ids
+    # comes from dynamic (LLM) protocols for rare conditions — validated to real
+    # poses — giving rare diseases pose-level contraindication filtering, not just
+    # the static tags. Avoid always wins over priority (safety).
     protocol_priority_ids: set[str] = set()
+    protocol_avoid_ids: set[str] = set()
     for cond in user_conditions:
         if cond in _FEMALE_ONLY_PROTOCOLS and gender in ("male", "m"):
             continue
         proto = protocol_map.get(cond)
         if proto:
             protocol_priority_ids.update(proto.get("priority_pose_ids", []))
+            protocol_avoid_ids.update(proto.get("avoid_pose_ids", []))
+    protocol_priority_ids -= protocol_avoid_ids
 
     scored = []
     for pose in poses:
         if pose.get("level", "intermediate") not in allowed_levels:
             continue
         if is_pregnant and not pose.get("pregnancy_safe", True):
+            continue
+        # Condition-specific pose contraindication (dynamic protocol) — hard exclude.
+        if pose.get("id", "") in protocol_avoid_ids:
             continue
 
         pose_contra = set(pose.get("contraindications", [])) | set(pose.get("medical_conditions_contraindicated", []))

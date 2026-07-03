@@ -108,3 +108,50 @@ def test_cooling_pranayama_gated_for_condition(pid, condition):
 def test_cooling_pranayama_allowed_when_unrelated_condition():
     by_id = {p["id"]: p for p in pranayama_list}
     assert _pranayama_hard_blocked(by_id["cooling_breath"], {"diabetes"}) is False
+
+
+# ── Dynamic (LLM) protocol: pose-level contraindications for rare conditions ──
+import json as _json
+from unittest.mock import AsyncMock, patch
+
+
+@pytest.mark.asyncio
+async def test_dynamic_protocol_validates_and_avoid_wins():
+    """The rare-condition LLM protocol must drop hallucinated pose IDs and never
+    keep a pose in both priority and avoid (avoid wins for safety)."""
+    from services.yoga_condition_fallback import _generate_single_protocol, _CACHE
+    _CACHE.clear()
+    fake = _json.dumps({
+        "condition": "some_rare_myelopathy",
+        "name": "Test Protocol",
+        "priority_pose_ids": ["snake_pose", "tree", "NOT_A_REAL_POSE"],
+        "priority_pranayama_ids": ["ocean_breath"],
+        "avoid_pranayama_ids": [],
+        "avoid_pose_ids": ["tree", "ALSO_FAKE"],   # tree also in priority → avoid wins
+    })
+    with patch("services.yoga_condition_fallback.llm_client") as m:
+        m.generate = AsyncMock(return_value=fake)
+        proto = await _generate_single_protocol("some rare myelopathy",
+                                                ["snake_pose", "tree", "cow"], ["ocean_breath"])
+    assert proto["avoid_pose_ids"] == ["tree"]            # fake dropped
+    assert "NOT_A_REAL_POSE" not in proto["priority_pose_ids"]  # hallucination dropped
+    assert "tree" not in proto["priority_pose_ids"]       # avoid wins over priority
+
+
+def test_avoided_pose_excluded_by_filter():
+    """A dynamic protocol's avoid_pose_ids must hard-exclude that pose from the
+    filtered pool for a user with that condition — verified at pose-id level."""
+    from services.yoga_plan_engine import filter_poses, yoga_poses
+    prof = {
+        "dominant_dosha": "vata", "vikriti_dominant": "vata",
+        "medical_history": ["rare_spinal_condition"],
+        "injuries_or_limitations": [], "age": 35,
+    }
+    prefs = {"yoga_goal": "flexibility", "yoga_experience": "intermediate"}
+    # tiger_pose 'balances' Vata (+3) → normally ranks into the pool.
+    base_ids = {p.get("id") for p in filter_poses(prof, prefs, yoga_poses, protocol_map={})}
+    assert "tiger_pose" in base_ids, "precondition: tiger_pose is normally eligible"
+
+    proto_map = {"rare_spinal_condition": {"priority_pose_ids": [], "avoid_pose_ids": ["tiger_pose"]}}
+    avoided_ids = {p.get("id") for p in filter_poses(prof, prefs, yoga_poses, protocol_map=proto_map)}
+    assert "tiger_pose" not in avoided_ids, "avoid_pose_ids must hard-exclude the pose"

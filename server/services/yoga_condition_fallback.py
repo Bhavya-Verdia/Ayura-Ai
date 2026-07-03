@@ -20,6 +20,7 @@ Respond ONLY with a valid JSON object — no markdown, no explanation:
   "priority_pose_ids": ["id1", "id2"],
   "priority_pranayama_ids": ["id1", "id2"],
   "avoid_pranayama_ids": ["id1"],
+  "avoid_pose_ids": ["id1"],
   "category_emphasis": ["restorative", "seated"],
   "sequence_note": "One actionable sentence about sequencing approach.",
   "lifestyle_note": "One Ayurvedic lifestyle sentence relevant to this condition."
@@ -29,6 +30,10 @@ Selection rules:
 - priority_pose_ids: 6-10 poses most beneficial for this condition
 - priority_pranayama_ids: 2-4 pranayama techniques; prefer balancing/calming unless condition requires energy
 - avoid_pranayama_ids: 0-3 pranayama techniques dangerous for this condition
+- avoid_pose_ids: poses that are UNSAFE or contraindicated for this condition (be thorough — this is a
+  safety gate). E.g. avoid deep backbends/inversions for uncontrolled hypertension, retina/glaucoma,
+  or cervical instability; avoid deep forward folds/twists for acute disc herniation; avoid strong
+  abdominal compression for pregnancy or abdominal surgery. Return [] only if genuinely none apply.
 - For serious conditions (cardiac, neurological): avoid breath_retention, bellows_breath, skull_shining
 - For inflammatory/autoimmune: prefer restorative, seated, prone categories
 - Always include at least 2 restorative poses unless condition clearly benefits from dynamic movement"""
@@ -77,6 +82,14 @@ async def _generate_single_protocol(
         ]
         protocol["avoid_pranayama_ids"] = [
             pid for pid in protocol.get("avoid_pranayama_ids", []) if pid in valid_prana_ids
+        ]
+        # Pose-level contraindications for this (rare) condition — validated to real
+        # pose IDs so the LLM can't invent one. A pose can't be both prioritised and
+        # avoided; the avoid list wins (safety).
+        _avoid_poses = {pid for pid in protocol.get("avoid_pose_ids", []) if pid in valid_pose_ids}
+        protocol["avoid_pose_ids"] = sorted(_avoid_poses)
+        protocol["priority_pose_ids"] = [
+            pid for pid in protocol["priority_pose_ids"] if pid not in _avoid_poses
         ]
 
         # Mark as dynamically generated
