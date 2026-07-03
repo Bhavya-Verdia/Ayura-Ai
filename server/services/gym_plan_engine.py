@@ -390,9 +390,48 @@ _REST_DAY_RECOVERY = {
 }
 
 
+# ── Medical-condition → exercise-contraindication mapping ─────────────────────
+# The exercise KB already tags exercises with condition contraindications
+# (hypertension, heart_disease, osteoporosis, herniated_disc, cervical_spondylosis…),
+# but filter_exercises historically only checked INJURIES — so a hypertensive or
+# cardiac user got no exercise gating. We now expand the user's medical_history into
+# these tags. Most match directly; this map covers stored/lay variants that don't.
+_CONDITION_TO_EXERCISE_CONTRA: dict[str, list[str]] = {
+    "high_blood_pressure": ["hypertension"], "high_bp": ["hypertension"], "bp": ["hypertension"],
+    "raised_bp": ["hypertension"],
+    "coronary_artery_disease": ["heart_disease"], "cad": ["heart_disease"],
+    "cardiac": ["heart_disease"], "cardiovascular_disease": ["heart_disease"],
+    "heart_condition": ["heart_disease", "heart_condition"],
+    "atrial_fibrillation": ["heart_disease"], "arrhythmia": ["heart_disease"],
+    "congestive_heart_failure": ["heart_disease"], "angina": ["heart_disease"],
+    "lumbar_spondylosis": ["lower_back_pain", "herniated_disc"],
+    "ankylosing_spondylitis": ["lower_back_pain"],
+    "sciatica": ["lower_back_pain", "herniated_disc"],
+    "slipped_disc": ["herniated_disc"], "disc_herniation": ["herniated_disc"],
+    "spondylolisthesis": ["lower_back_pain", "herniated_disc"],
+    "cervical_radiculopathy": ["cervical_spondylosis", "neck_injury"],
+    "osteopenia": ["osteoporosis"],
+}
+
+
+def _condition_contra_tags(medical_history) -> set:
+    """Expand a user's medical_history into exercise-contraindication tags.
+
+    A condition contributes its own name (direct KB tags like 'hypertension' match
+    as-is) plus any mapped variants. Used exactly like injury tags in filter_exercises."""
+    tags: set = set()
+    for c in medical_history or []:
+        key = str(c).lower().strip().replace(" ", "_").replace("-", "_")
+        if not key:
+            continue
+        tags.add(key)
+        tags.update(_CONDITION_TO_EXERCISE_CONTRA.get(key, []))
+    return tags
+
+
 # ── Exercise filtering ────────────────────────────────────────────────────────
 
-def filter_exercises(user_profile, gym_prefs, exercises):
+def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
     available_eq = {eq.lower() for eq in gym_prefs.get("available_equipment", ["bodyweight"])}
     available_eq.add("bodyweight")
 
@@ -413,7 +452,13 @@ def filter_exercises(user_profile, gym_prefs, exercises):
 
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
     gym_goal = gym_prefs.get("gym_goal", "general_fitness")
-    injuries = set(user_profile.get("injuries_or_limitations") or [])
+    # Injuries AND medical conditions both gate exercises against the KB's
+    # contraindication tags (heart_disease, hypertension, osteoporosis, herniated_disc…).
+    avoid_tags = set(user_profile.get("injuries_or_limitations") or [])
+    avoid_tags |= _condition_contra_tags(user_profile.get("medical_history") or [])
+    # LLM-supplied contraindication tags for rare conditions (validated to the KB
+    # vocabulary), merged into the same tag gate.
+    avoid_tags |= {str(t).lower() for t in (extra_avoid_tags or [])}
     is_pregnant = user_profile.get("pregnancy_or_nursing", False)
 
     scored = []
@@ -425,7 +470,7 @@ def filter_exercises(user_profile, gym_prefs, exercises):
             continue
         if not ex.get("goal_suitability", {}).get(gym_goal, False):
             continue
-        if injuries.intersection(set(ex.get("contraindications", []))):
+        if avoid_tags.intersection(set(ex.get("contraindications", []))):
             continue
         if is_pregnant and not ex.get("pregnancy_safe", False):
             continue
@@ -677,9 +722,9 @@ def _vyayama_shakti(dosha: str, age, strength_level: str) -> dict:
 
 # ── Main entry point ──────────────────────────────────────────────────────────
 
-def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None):
+def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoid_tags=None):
     ge = gym_exercises_db if gym_exercises_db is not None else gym_exercises
-    filtered = filter_exercises(user_profile, gym_prefs, ge)
+    filtered = filter_exercises(user_profile, gym_prefs, ge, extra_avoid_tags=extra_avoid_tags)
     muscle_split = split_by_muscle_group(filtered)
 
     workout_days = gym_prefs.get("workout_days_per_week", 4)

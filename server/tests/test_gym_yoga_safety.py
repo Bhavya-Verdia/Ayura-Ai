@@ -155,3 +155,44 @@ def test_avoided_pose_excluded_by_filter():
     proto_map = {"rare_spinal_condition": {"priority_pose_ids": [], "avoid_pose_ids": ["tiger_pose"]}}
     avoided_ids = {p.get("id") for p in filter_poses(prof, prefs, yoga_poses, protocol_map=proto_map)}
     assert "tiger_pose" not in avoided_ids, "avoid_pose_ids must hard-exclude the pose"
+
+
+# ── Gym disease-awareness (medical_history gating) ───────────────────────────
+def test_gym_gates_exercises_by_medical_condition():
+    """Hypertension/heart-disease users must not get exercises the KB tags as
+    contraindicated for those conditions (previously only injuries were gated)."""
+    from services.gym_plan_engine import filter_exercises, gym_exercises
+    prefs = {"gym_goal": "strength", "available_equipment": ["barbell", "dumbbell", "bodyweight"]}
+    sick = {"dominant_dosha": "vata", "fitness_level": "intermediate",
+            "medical_history": ["hypertension", "heart disease"], "injuries_or_limitations": []}
+    pool = filter_exercises(sick, prefs, gym_exercises)
+    leaks = [e["id"] for e in pool if {"hypertension", "heart_disease"} & set(e.get("contraindications", []))]
+    assert leaks == [], f"contraindicated exercises leaked: {leaks[:5]}"
+
+
+def test_gym_condition_alias_expansion():
+    from services.gym_plan_engine import _condition_contra_tags
+    assert "hypertension" in _condition_contra_tags(["high blood pressure"])
+    assert "lower_back_pain" in _condition_contra_tags(["ankylosing_spondylitis"])
+    assert "heart_disease" in _condition_contra_tags(["coronary_artery_disease"])
+
+
+@pytest.mark.asyncio
+async def test_gym_rare_condition_fallback_validates():
+    """Rare condition → LLM maps to KB categories only; hallucinated categories dropped."""
+    import services.gym_condition_fallback as f
+    f._CACHE.clear()
+    fake = _json.dumps({"avoid_categories": ["heart_disease", "hypertension", "FAKE_CATEGORY"]})
+    with patch("services.gym_condition_fallback.llm_client") as m:
+        m.generate = AsyncMock(return_value=fake)
+        tags = await f.gym_avoid_tags_for_conditions(["marfan syndrome"])
+    assert tags == {"heart_disease", "hypertension"}
+
+
+@pytest.mark.asyncio
+async def test_gym_fallback_failsafe_on_llm_error():
+    import services.gym_condition_fallback as f
+    f._CACHE.clear()
+    with patch("services.gym_condition_fallback.llm_client") as m:
+        m.generate = AsyncMock(side_effect=RuntimeError("down"))
+        assert await f.gym_avoid_tags_for_conditions(["some rare disease"]) == set()
