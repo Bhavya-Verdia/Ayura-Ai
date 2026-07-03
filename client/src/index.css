@@ -278,6 +278,10 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
+  /* Stop mobile Safari/Chrome from auto-inflating font sizes on rotate/reflow,
+     which silently breaks carefully-tuned layouts. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   /* smooth theme cross-fade */
   transition: background-color 0.4s ease, color 0.4s ease;
 }
@@ -286,6 +290,17 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background: transparent;
+  /* Kill the grey box that flashes on every tap — the biggest reason a mobile
+     UI "feels" unresponsive even when it's fast. */
+  -webkit-tap-highlight-color: transparent;
+  /* Don't let inner scrollers chain into a page rubber-band bounce. */
+  overscroll-behavior-y: none;
+}
+
+/* Remove the 300ms tap delay / double-tap-zoom hesitation on tappables so
+   taps register instantly. */
+a, button, [role='button'], input, select, textarea, label, summary {
+  touch-action: manipulation;
 }
 
 #root {
@@ -963,15 +978,31 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
 }
 
 /* ─── MOBILE PERFORMANCE ──────────────────────────────────────
-   backdrop-filter is one of the most expensive things to repaint during
-   scroll on mobile GPUs. The decorative always-on background layers are
-   already skipped on small screens (see useLowPowerMode), and here we also
-   halve the shared glass blur radius so scrolling stays smooth.
-   (900px matches MainLayout's isMobile + useLowPowerMode breakpoints.)      */
+   backdrop-filter is the single most expensive thing a mobile GPU repaints
+   during scroll: every blurred layer forces the browser to re-sample and
+   re-blur the whole backdrop behind it EVERY frame, and app pages stack many
+   of them (sidebar, hero, plan cards, quick cards, nav bars…). Halving the
+   radius doesn't help — the cost comes from the filter existing at all, not
+   its size. So on small screens we drop backdrop-filter entirely, everywhere.
+
+   To keep glass surfaces legible once the blur is gone, we make the two
+   translucent surface tokens opaque enough to stand on their own. The
+   decorative always-on background layers are already skipped here too (see
+   useLowPowerMode). 900px matches MainLayout's isMobile + useLowPowerMode.   */
 @media (max-width: 900px) {
-  .glass-card,
-  .bg-blur {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+  *,
+  *::before,
+  *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  :root {
+    /* was 0.045 — invisible without blur; firm it up so cards read as cards */
+    --glass-bg-subtle: rgba(28,23,17,0.66);
+  }
+
+  [data-theme='light'] {
+    --glass-bg-subtle: rgba(255,255,255,0.82);
   }
 }

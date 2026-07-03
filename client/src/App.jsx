@@ -11,6 +11,7 @@ import NoiseOverlay from './components/NoiseOverlay'
 import VitalBackground from './components/VitalBackground'
 import MeditationCanvas from './components/MeditationCanvas'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
+import useLowPowerMode from './hooks/useLowPowerMode'
 import MainLayout from './layouts/MainLayout'
 import ReloadPrompt from './components/ReloadPrompt'
 import OfflineBanner from './components/OfflineBanner'
@@ -71,13 +72,18 @@ const pageTransitionFast  = { duration: 0.15 }
 
 function PageWrapper({ children }) {
   const prefersReducedMotion = useReducedMotion()
+  const lowPower = useLowPowerMode()
+  // On mobile/low-power devices, animating filter: blur() on every route change
+  // is GPU-heavy and stutters. Fall back to the cheap opacity-only transition
+  // there too — not just when the OS "reduce motion" flag is set.
+  const cheap = prefersReducedMotion || lowPower
   return (
     <m.div
-      variants={prefersReducedMotion ? pageVariantsReduced : pageVariants}
+      variants={cheap ? pageVariantsReduced : pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
-      transition={prefersReducedMotion ? pageTransitionFast : pageTransition}
+      transition={cheap ? pageTransitionFast : pageTransition}
       style={{ minHeight: '100dvh' }}
       id="main-content"
       tabIndex={-1}
