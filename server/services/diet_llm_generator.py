@@ -297,8 +297,11 @@ async def generate_diet_plan_llm(
         # deterministically instead of trusting the LLM to have honoured it. Rare /
         # uncurated conditions get their Apathya classified by the LLM first, so the
         # floor covers ALL diseases, not just the hardcoded common ones.
+        from services.diet_brief_builder import uncurated_conditions
         _conds = user_profile.get("medical_history") or []
-        _extra_apathya = await classify_condition_apathya_llm(_conds)
+        # Only classify conditions with no curated hint — curated ones are vetted
+        # and must not be overwritten by an LLM guess.
+        _extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(_conds))
         result = apply_condition_food_safety(result, _conds, extra_terms=_extra_apathya)
 
         return result

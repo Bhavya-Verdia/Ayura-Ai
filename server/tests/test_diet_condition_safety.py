@@ -148,3 +148,21 @@ def test_conflict_section_injected_into_brief_and_names_primary():
 def test_conflict_detection_never_needed_below_two_known():
     # Rare/uncurated condition + one known → nothing to compare, no crash
     assert detect_condition_conflicts(["sarcoidosis", "diabetes"]) == []
+
+
+def test_stored_canonical_forms_resolve_and_conflict():
+    """Regression: profile stores condition_vocab canonicals (chronic_kidney_disease,
+    diabetes_type2) — the diet module must map them or kidney guidance silently drops."""
+    from services.diet_brief_builder import (
+        normalize_condition_key, detect_condition_conflicts, uncurated_conditions,
+        PATHYA_APATHYA_HINTS,
+    )
+    assert normalize_condition_key("chronic_kidney_disease") == "kidney_disease"
+    assert normalize_condition_key("diabetes_type2") == "diabetes"
+    stored = ["anemia", "chronic_kidney_disease", "diabetes_type2"]
+    norm = [normalize_condition_key(c) for c in stored]
+    foods = {c["food"] for c in detect_condition_conflicts(norm)}
+    assert "spinach" in foods and "jaggery" in foods
+    # anemia has a curated hint → must NOT be sent to the LLM classifier
+    assert "anemia" not in uncurated_conditions(stored)
+    assert all(normalize_condition_key(c) in PATHYA_APATHYA_HINTS for c in stored)

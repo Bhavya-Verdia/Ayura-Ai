@@ -229,19 +229,22 @@ PATHYA_APATHYA_HINTS: dict[str, dict] = {
 
 COND_ALIASES: dict[str, str] = {
     "type2_diabetes": "diabetes", "prediabetes": "diabetes", "insulin_resistance": "diabetes",
+    # Onboarding / condition_vocab canonical forms (as stored on the profile)
+    "diabetes_type2": "diabetes", "diabetes_type1": "diabetes", "madhumeha": "diabetes",
     "bp": "hypertension", "high_blood_pressure": "hypertension",
     "polycystic_ovary": "pcos", "polycystic_ovarian_syndrome": "pcos",
-    "hypothyroidism": "hypothyroid", "thyroidism": "thyroid",
+    "hypothyroidism": "hypothyroid", "hashimoto": "hypothyroid", "thyroidism": "thyroid",
     "overweight": "obesity", "weight_management": "obesity",
     "liver_disease": "fatty_liver", "nafld": "fatty_liver",
     "cholesterol": "high_cholesterol", "dyslipidemia": "high_cholesterol",
     "hyperlipidemia": "high_cholesterol", "high_lipids": "high_cholesterol",
     "ckd": "kidney_disease", "kidney_failure": "kidney_disease",
+    "chronic_kidney_disease": "kidney_disease",
     "iron_deficiency": "anemia", "iron_deficiency_anemia": "anemia",
-    "ibd": "grahani", "crohns": "grahani", "ulcerative_colitis": "grahani",
+    "ibd": "grahani", "crohns": "grahani", "ibd_crohns": "grahani", "ulcerative_colitis": "grahani",
     "irritable_bowel_syndrome": "ibs",
     "piles": "arsha", "hemorrhoids": "arsha", "haemorrhoids": "arsha",
-    "rheumatoid": "amavata", "ra": "amavata",
+    "rheumatoid": "amavata", "ra": "amavata", "rheumatoid_arthritis": "amavata",
     "acid_reflux": "acidity", "gerd": "acidity", "heartburn": "acidity",
     "skin_disease": "psoriasis", "eczema": "psoriasis",
 }
@@ -315,6 +318,24 @@ _GENERIC_FOOD_WORDS = frozenset({
     "food", "foods", "water", "exercise", "eating", "combinations", "combination",
     "treatment", "drinks", "diet", "meal", "meals", "items",
 })
+
+
+def normalize_condition_key(cond: str) -> str:
+    """Canonical diet key for a stored/free-text condition (double-passed aliases)."""
+    key = str(cond).lower().replace(" ", "_")
+    canon = COND_ALIASES.get(key, key)
+    return COND_ALIASES.get(canon, canon)
+
+
+def uncurated_conditions(conditions: list[str]) -> list[str]:
+    """Conditions with NO curated Pathya/Apathya hint — the only ones that should
+    be sent to the LLM Apathya classifier. Curated conditions are authoritative and
+    must not be overwritten by an LLM guess (which mislabels e.g. sesame for anemia)."""
+    out = []
+    for c in conditions or []:
+        if normalize_condition_key(c) not in PATHYA_APATHYA_HINTS:
+            out.append(c)
+    return out
 
 
 def _food_headword(phrase: str) -> str:

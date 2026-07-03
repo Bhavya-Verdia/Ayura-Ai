@@ -171,8 +171,9 @@ async def generate_diet_plan(
             enriched_plan = apply_ahara_safety(
                 enriched_plan, diet_prefs.get("food_allergies") or [],
                 diet_prefs.get("food_intolerances") or [])
+            from services.diet_brief_builder import uncurated_conditions
             _conds = user_profile.get("medical_history") or []
-            _extra_apathya = await classify_condition_apathya_llm(_conds)
+            _extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(_conds))
             enriched_plan = apply_condition_food_safety(
                 enriched_plan, _conds, extra_terms=_extra_apathya)
 
