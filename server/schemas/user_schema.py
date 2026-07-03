@@ -52,6 +52,7 @@ class UserDocument(BaseModel):
     vikriti_history: Optional[list[dict]] = None    # last 12 weekly snapshots [{scores, dominant, ts}]
     plan_not_working_streak: int = 0                # consecutive "not improving" plan feedbacks
     dosha_contradictions: Optional[list[str]] = None  # conflicts detected between trait groups
+    dosha_unmapped_conditions: Optional[list[str]] = None  # reported conditions with no dosha mapping
     primary_gunas: Optional[list[str]] = None          # dominant Gunas (Charaka Sutrasthana 1.59-61)
     manas_prakriti: Optional[str] = None               # mental constitution with Guna tendency (LLM text)
     manasa_prakriti: Optional[dict] = None             # Triguna scores: {satva,rajas,tamas,dominant_guna,label,description}
@@ -106,7 +107,7 @@ class UserProfileUpdate(BaseModel):
     Sent during onboarding (Step 1 & 3) or any profile edit.
 
     Step 1 — Basic Profile: name, gender, age, height_cm, weight_kg, pregnancy_or_nursing
-    Step 2 — Dosha Quiz:    submitted via POST /api/profile/dosha-quiz (separate endpoint)
+    Step 2 — Prakriti Assessment: submitted via POST /api/profile/dosha-assessment (separate endpoint)
     Step 3 — Health:        medical_history, allergies, current_symptoms, current_medications,
                             fitness_level, activity_level, injuries_or_limitations,
                             stress_level, digestion_quality, sleep_quality
@@ -217,6 +218,7 @@ class UserProfileResponse(BaseModel):
     vikriti_history: Optional[list[dict]] = None
     plan_not_working_streak: int = 0
     dosha_contradictions: Optional[list[str]] = None
+    dosha_unmapped_conditions: Optional[list[str]] = None
     primary_gunas: Optional[list[str]] = None
     manas_prakriti: Optional[str] = None
     manasa_prakriti: Optional[dict] = None
@@ -269,38 +271,51 @@ class PlanHistoryDocument(BaseModel):
     generated_at: datetime
 
 
+# A trait answer is one dosha, optionally blended with a secondary ("vata+pitta")
+# so the quiz can express constitutional duality instead of a forced single pick.
+# The engine (dosha_analyzer._trait_dosha_shares) splits the weight 65/35.
+_DOSHA_ANSWER = r"^(vata|pitta|kapha)(\+(vata|pitta|kapha))?$"
+_AGNI_ANSWER = r"^(vata|pitta|kapha|sama)(\+(vata|pitta|kapha|sama))?$"
+
+
 class PhysicalTraitAnswers(BaseModel):
     # Physical traits
-    body_frame: str = Field(..., pattern="^(vata|pitta|kapha)$")
-    skin: str = Field(..., pattern="^(vata|pitta|kapha)$")
-    digestion: str = Field(..., pattern="^(vata|pitta|kapha)$")
-    sleep: str = Field(..., pattern="^(vata|pitta|kapha)$")
-    temperature: str = Field(..., pattern="^(vata|pitta|kapha)$")
-    hair: str = Field(..., pattern="^(vata|pitta|kapha)$")
-    energy: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    body_frame: str = Field(..., pattern=_DOSHA_ANSWER)
+    skin: str = Field(..., pattern=_DOSHA_ANSWER)
+    digestion: str = Field(..., pattern=_DOSHA_ANSWER)
+    sleep: str = Field(..., pattern=_DOSHA_ANSWER)
+    temperature: str = Field(..., pattern=_DOSHA_ANSWER)
+    hair: str = Field(..., pattern=_DOSHA_ANSWER)
+    energy: str = Field(..., pattern=_DOSHA_ANSWER)
     # Mental / behavioral traits
-    stress_response: str = Field(..., pattern="^(vata|pitta|kapha)$")
-    memory: str = Field(..., pattern="^(vata|pitta|kapha)$")
-    decision_making: str = Field(..., pattern="^(vata|pitta|kapha)$")
-    speech: str = Field(..., pattern="^(vata|pitta|kapha)$")
-    emotional_nature: str = Field(..., pattern="^(vata|pitta|kapha)$")
+    stress_response: str = Field(..., pattern=_DOSHA_ANSWER)
+    memory: str = Field(..., pattern=_DOSHA_ANSWER)
+    decision_making: str = Field(..., pattern=_DOSHA_ANSWER)
+    speech: str = Field(..., pattern=_DOSHA_ANSWER)
+    emotional_nature: str = Field(..., pattern=_DOSHA_ANSWER)
     # Behavioral micro-patterns (optional — won't break existing assessments if absent)
-    eating_habits: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
-    walk_pace: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
-    anger_style: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
+    eating_habits: Optional[str] = Field(None, pattern=_DOSHA_ANSWER)
+    walk_pace: Optional[str] = Field(None, pattern=_DOSHA_ANSWER)
+    anger_style: Optional[str] = Field(None, pattern=_DOSHA_ANSWER)
     # Ashtavidha Pareeksha — classical 8-fold examination
-    agni_type: Optional[str] = Field(None, pattern="^(vata|pitta|kapha|sama)$")
-    stool_pattern: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
-    eye_quality: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
-    voice_quality: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")
-    nadi_rhythm: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$")   # Nadi Pareeksha (self-report approximation)
-    mutra_pattern: Optional[str] = Field(None, pattern="^(vata|pitta|kapha)$") # Mutra Pareeksha
+    agni_type: Optional[str] = Field(None, pattern=_AGNI_ANSWER)
+    stool_pattern: Optional[str] = Field(None, pattern=_DOSHA_ANSWER)
+    eye_quality: Optional[str] = Field(None, pattern=_DOSHA_ANSWER)
+    voice_quality: Optional[str] = Field(None, pattern=_DOSHA_ANSWER)
+    nadi_rhythm: Optional[str] = Field(None, pattern=_DOSHA_ANSWER)   # Nadi Pareeksha (self-report approximation)
+    mutra_pattern: Optional[str] = Field(None, pattern=_DOSHA_ANSWER) # Mutra Pareeksha
 
 
 class DoshaAssessmentRequest(BaseModel):
     physical_traits: PhysicalTraitAnswers
     current_symptoms: list[str] = Field(default_factory=list)
     manasa_traits: Optional[dict] = Field(None, description="Triguna answers: {trait_id: 'satva'|'rajas'|'tamas'}")
+    # Optional edited medical conditions from the quiz (prefilled from the stored
+    # profile, but the user can change them here). When present, this overwrites the
+    # stored medical_history and feeds the assessment. None = leave the profile as-is.
+    medical_history: Optional[list[str]] = Field(
+        None, description="Edited condition list; overrides stored medical_history when provided.", max_length=60,
+    )
 
 
 class VikritiCheckInRequest(BaseModel):
@@ -324,28 +339,3 @@ class DoshaValidationRequest(BaseModel):
     notes: Optional[str] = Field(None, max_length=300)
 
 
-class DoshaQuizAnswers(BaseModel):
-    """
-    Validated payload for the dosha quiz.
-
-    Expects: {"answers": {"1": 3, "2": 5, "3": 1, ...}}
-    Each question ID maps to an integer 1-5 representing the selected option.
-    Scoring uses per-question dosha weights (see DOSHA_QUIZ_SCORING in profile.py).
-    Supports up to 30 questions (25 standard + 5 optional Vikriti questions).
-    """
-    model_config = ConfigDict(populate_by_name=True)
-    answers: dict[str, int]
-
-    @field_validator("answers")
-    @classmethod
-    def validate_answers(cls, v: dict[str, int]) -> dict[str, int]:
-        if not v:
-            raise ValueError("Answers dict cannot be empty")
-        if len(v) < 10:
-            raise ValueError("At least 10 answers required for a valid dosha assessment")
-        if len(v) > 30:
-            raise ValueError("Too many answers — expected at most 30 questions")
-        for q_id, rating in v.items():
-            if not isinstance(rating, int) or not (1 <= rating <= 5):
-                raise ValueError(f"Answer for question '{q_id}' must be an integer between 1 and 5")
-        return v

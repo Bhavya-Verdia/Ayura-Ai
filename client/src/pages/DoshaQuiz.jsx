@@ -6,6 +6,7 @@ import { profileAPI } from '../api/client'
 import { Helmet } from 'react-helmet-async'
 import { Wind, Flame, Waves, CircleCheck, Search, Leaf, Zap, TriangleAlert, ScrollText } from 'lucide-react'
 import React from 'react'
+import { CONDITION_CATEGORIES, conditionLabel } from '../constants/conditions'
 import './DoshaQuiz.css'
 
 const LazyParticleField = React.lazy(() => import('../components/ParticleField'))
@@ -422,10 +423,12 @@ function detectContradiction(traits) {
   const PHYSICAL_TRAITS = ['body_frame', 'skin', 'digestion', 'sleep', 'temperature', 'hair', 'energy']
   const MENTAL_TRAITS = ['stress_response', 'memory', 'decision_making', 'speech', 'emotional_nature']
   const doshTraits = Object.fromEntries(Object.entries(traits).filter(([k]) => !MANASA_TRAIT_IDS.includes(k)))
+  // A trait value may be a blend ("vata+pitta") — count by its primary dosha.
+  const primaryOf = (v) => (v ? v.split('+')[0] : undefined)
   const physCounts = { vata: 0, pitta: 0, kapha: 0 }
   const mentCounts = { vata: 0, pitta: 0, kapha: 0 }
-  PHYSICAL_TRAITS.forEach(t => { if (doshTraits[t]) physCounts[doshTraits[t]]++ })
-  MENTAL_TRAITS.forEach(t => { if (doshTraits[t]) mentCounts[doshTraits[t]]++ })
+  PHYSICAL_TRAITS.forEach(t => { const d = primaryOf(doshTraits[t]); if (d in physCounts) physCounts[d]++ })
+  MENTAL_TRAITS.forEach(t => { const d = primaryOf(doshTraits[t]); if (d in mentCounts) mentCounts[d]++ })
   const physDom = Object.entries(physCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
   const mentDom = Object.entries(mentCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
   return physDom && mentDom && physDom !== mentDom
@@ -472,16 +475,23 @@ function TraitBreakdown({ traits }) {
     <div className="da-trait-breakdown">
       <span className="da-breakdown-title">What drove your result</span>
       <div className="da-breakdown-rows">
-        {entries.map(([trait, dosha]) => (
-          <div key={trait} className="da-breakdown-row">
-            <span className="da-breakdown-trait">{TRAIT_DISPLAY_NAMES[trait] || trait}</span>
-            <span className="da-breakdown-arrow">→</span>
-            <span className="da-breakdown-dosha" style={{ color: DOSHA_COLORS[dosha] || 'var(--text-secondary)' }}>
-              {DOSHA_LABELS[dosha] || dosha}
-            </span>
-            <span className="da-breakdown-priority">{TRAIT_PRIORITY_LABEL[trait] || ''}</span>
-          </div>
-        ))}
+        {entries.map(([trait, dosha]) => {
+          // A blend ("vata+pitta") colours by its primary and labels both parts.
+          const [primary, secondary] = String(dosha).split('+')
+          const label = secondary
+            ? `${DOSHA_LABELS[primary] || primary} + ${DOSHA_LABELS[secondary] || secondary}`
+            : (DOSHA_LABELS[dosha] || dosha)
+          return (
+            <div key={trait} className="da-breakdown-row">
+              <span className="da-breakdown-trait">{TRAIT_DISPLAY_NAMES[trait] || trait}</span>
+              <span className="da-breakdown-arrow">→</span>
+              <span className="da-breakdown-dosha" style={{ color: DOSHA_COLORS[primary] || 'var(--text-secondary)' }}>
+                {label}
+              </span>
+              <span className="da-breakdown-priority">{TRAIT_PRIORITY_LABEL[trait] || ''}</span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
@@ -578,6 +588,39 @@ export default function DoshaQuiz() {
   const [clarifyAnswers, setClarifyAnswers] = useState({})
   const { updateProfile, user } = useAuth()
   const navigate = useNavigate()
+  // Holds the pending auto-advance so a second tap (to add a blend) can cancel it.
+  const advanceTimerRef = useRef(null)
+
+  // Medical conditions — PREFILLED from the stored profile, fully editable here.
+  // They feed the current-imbalance (Vikriti) reading and rare ones are LLM-classified.
+  const [conditions, setConditions] = useState(() => [...(user?.medical_history || [])])
+  const [condSearch, setCondSearch] = useState('')
+  const [otherCond, setOtherCond] = useState('')
+  const [showCondPicker, setShowCondPicker] = useState(false)
+  const condTouched = useRef(false)
+  // If the profile loads after mount, seed the prefill once (unless already edited).
+  useEffect(() => {
+    if (!condTouched.current && user?.medical_history?.length && conditions.length === 0) {
+      setConditions([...user.medical_history])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.medical_history])
+
+  function toggleCondition(id) {
+    condTouched.current = true
+    setConditions((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]))
+  }
+  function addOtherConditions() {
+    const parsed = otherCond
+      .split(',')
+      .map((s) => s.trim().toLowerCase().replace(/\s+/g, '_'))
+      .filter(Boolean)
+    if (parsed.length) {
+      condTouched.current = true
+      setConditions((prev) => [...new Set([...prev, ...parsed])])
+      setOtherCond('')
+    }
+  }
 
   const currentTraitQ = TRAIT_QUESTIONS[traitIndex]
   const traitProgress = (traitIndex / TRAIT_QUESTIONS.length) * 100
@@ -591,20 +634,57 @@ export default function DoshaQuiz() {
     return () => clearInterval(interval)
   }, [phase])
 
-  function selectTrait(value) {
-    const updated = { ...traits, [currentTraitQ.id]: value }
-    setTraits(updated)
-    if (traitIndex < TRAIT_QUESTIONS.length - 1) {
-      setTimeout(() => {
+  // Never let a pending auto-advance fire after the component unmounts.
+  useEffect(() => () => { if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current) }, [])
+
+  const isManasaQ = MANASA_TRAIT_IDS.includes(currentTraitQ.id)
+
+  function scheduleAdvance(delay) {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current)
+    advanceTimerRef.current = setTimeout(() => {
+      if (traitIndex < TRAIT_QUESTIONS.length - 1) {
         setDirection(1)
         setTraitIndex((i) => i + 1)
-      }, 220)
-    } else {
-      setTimeout(() => setPhase('symptoms'), 220)
+      } else {
+        setPhase('symptoms')
+      }
+    }, delay)
+  }
+
+  function selectTrait(value) {
+    // Manasa (Triguna) answers are scored by exact string count — no blending.
+    if (isManasaQ) {
+      setTraits((prev) => ({ ...prev, [currentTraitQ.id]: value }))
+      scheduleAdvance(220)
+      return
     }
+
+    // Deha traits support an optional "primary+secondary" blend: the first tap
+    // sets the primary and opens a short grace window; tapping a *different*
+    // option within it records the blend, tapping the same one confirms a single.
+    const current = traits[currentTraitQ.id] || ''
+    const [primary, secondary] = current.split('+')
+    let next
+    let delay
+    if (!primary) {
+      next = value                     // first pick → primary, wait for optional blend
+      delay = 650
+    } else if (value === primary) {
+      next = primary                   // re-tap primary → confirm single, go now
+      delay = 180
+    } else if (value === secondary) {
+      next = primary                   // re-tap secondary → remove the blend
+      delay = 650
+    } else {
+      next = `${primary}+${value}`     // tap a second → blend, advance shortly
+      delay = 380
+    }
+    setTraits((prev) => ({ ...prev, [currentTraitQ.id]: next }))
+    scheduleAdvance(delay)
   }
 
   function goBackTrait() {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current)
     if (traitIndex > 0) {
       setDirection(-1)
       setTraitIndex((i) => i - 1)
@@ -636,6 +716,8 @@ export default function DoshaQuiz() {
         physical_traits: dehaTraits,
         current_symptoms: symptoms,
         manasa_traits: Object.keys(manasaTraits).length > 0 ? manasaTraits : undefined,
+        // Edited (or prefilled-unchanged) conditions — persisted + fed into Vikriti.
+        medical_history: conditions,
       })
       const assessResult = response.data
       setResult(assessResult)
@@ -1188,6 +1270,83 @@ export default function DoshaQuiz() {
             })}
           </div>
 
+          <div className="da-cond-section">
+            <h3 className="da-cond-title">Medical conditions</h3>
+            <p className="da-hint">
+              Prefilled from your profile — add or remove anything. These sharpen your current-imbalance
+              (Vikriti) reading; conditions we don't recognise are interpreted by AI, never ignored.
+            </p>
+
+            {conditions.length > 0 && (
+              <div className="da-cond-chips">
+                {conditions.map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className="da-cond-chip selected"
+                    onClick={() => toggleCondition(id)}
+                    title="Remove"
+                  >
+                    {conditionLabel(id)} <span className="da-cond-x" aria-hidden="true">×</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="da-cond-toggle"
+              onClick={() => setShowCondPicker((v) => !v)}
+            >
+              {showCondPicker ? 'Done adding' : (conditions.length ? '+ Add / edit conditions' : '+ Add a condition')}
+            </button>
+
+            {showCondPicker && (
+              <div className="da-cond-picker">
+                <input
+                  className="da-cond-search"
+                  type="text"
+                  placeholder="Search conditions…"
+                  value={condSearch}
+                  onChange={(e) => setCondSearch(e.target.value)}
+                />
+                {CONDITION_CATEGORIES.map((cat) => {
+                  const q = condSearch.trim().toLowerCase()
+                  const visible = q ? cat.items.filter(({ label }) => label.toLowerCase().includes(q)) : cat.items
+                  if (visible.length === 0) return null
+                  return (
+                    <div key={cat.label} className="da-cond-cat">
+                      <span className="da-cond-cat-label">{cat.label}</span>
+                      <div className="da-cond-chips">
+                        {visible.map(({ id, label }) => (
+                          <button
+                            key={id}
+                            type="button"
+                            className={`da-cond-chip ${conditions.includes(id) ? 'selected' : ''}`}
+                            onClick={() => toggleCondition(id)}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+                <div className="da-cond-other">
+                  <input
+                    className="da-cond-search"
+                    type="text"
+                    placeholder="Not listed? e.g. sarcoidosis, lyme disease"
+                    value={otherCond}
+                    onChange={(e) => setOtherCond(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addOtherConditions() } }}
+                  />
+                  <button type="button" className="btn btn-secondary" onClick={addOtherConditions}>Add</button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {error && (
             <m.div className="da-error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               {error}
@@ -1262,26 +1421,42 @@ export default function DoshaQuiz() {
             >
               <h2 className="da-question">{currentTraitQ.question}</h2>
               <p className="da-hint">{currentTraitQ.hint}</p>
-              <div className={`da-trait-options${currentTraitQ.options.length === 4 ? ' da-trait-options-4' : ''}`}>
-                {currentTraitQ.options.map((opt, optIdx) => {
-                  const selected = traits[currentTraitQ.id] === opt.value
-                  return (
-                    <m.button
-                      key={opt.value}
-                      type="button"
-                      className={`da-trait-card ${selected ? 'selected' : ''}`}
-                      onClick={() => selectTrait(opt.value)}
-                      whileHover={{ scale: 1.015 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <span className="da-trait-icon" aria-hidden="true">{String.fromCharCode(65 + optIdx)}</span>
-                      <span className="da-trait-label">{opt.label}</span>
-                      <span className="da-trait-desc">{opt.desc}</span>
-                      {selected && <span className="da-trait-check">✓</span>}
-                    </m.button>
-                  )
-                })}
-              </div>
+              {(() => {
+                const [selPrimary, selSecondary] = (traits[currentTraitQ.id] || '').split('+')
+                return (
+                  <>
+                    <div className={`da-trait-options${currentTraitQ.options.length === 4 ? ' da-trait-options-4' : ''}`}>
+                      {currentTraitQ.options.map((opt, optIdx) => {
+                        const isPrimary = selPrimary === opt.value
+                        const isSecondary = selSecondary === opt.value
+                        return (
+                          <m.button
+                            key={opt.value}
+                            type="button"
+                            className={`da-trait-card ${isPrimary ? 'selected' : ''} ${isSecondary ? 'selected-secondary' : ''}`}
+                            onClick={() => selectTrait(opt.value)}
+                            whileHover={{ scale: 1.015 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <span className="da-trait-icon" aria-hidden="true">{String.fromCharCode(65 + optIdx)}</span>
+                            <span className="da-trait-label">{opt.label}</span>
+                            <span className="da-trait-desc">{opt.desc}</span>
+                            {isPrimary && <span className="da-trait-check">✓</span>}
+                            {isSecondary && <span className="da-trait-check da-trait-check-secondary">＋</span>}
+                          </m.button>
+                        )
+                      })}
+                    </div>
+                    {/* Blend affordance — Prakriti is rarely one pure dosha */}
+                    {!isManasaQ && selPrimary && !selSecondary && (
+                      <p className="da-blend-hint">Mostly this — but a blend? Tap a second option (optional).</p>
+                    )}
+                    {!isManasaQ && selPrimary && selSecondary && (
+                      <p className="da-blend-hint da-blend-hint-active">Blend recorded: mostly {selPrimary}, partly {selSecondary}.</p>
+                    )}
+                  </>
+                )
+              })()}
             </m.div>
           </AnimatePresence>
         </div>

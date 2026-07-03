@@ -82,6 +82,21 @@ _EXTRA_ALIASES: dict[str, set[str]] = {
     "psoriasis": {"kitibha", "mandal kushtha"},
     "osteoarthritis": {"sandhivata", "degenerative joint disease"},
     "asthma": {"tamaka shwasa", "bronchial asthma"},
+    # Common lay / colloquial terms that users type free-hand — resolve them to
+    # an existing canonical entry instead of letting them contribute nothing.
+    # "thyroid" alone is ambiguous; hypothyroidism is ~90% of thyroid disease, so
+    # a bare "thyroid" defaults there.
+    "hypothyroidism": {"thyroid", "thyroid disorder", "thyroid problem",
+                       "underactive thyroid", "thyroid issue"},
+    "diabetes_type2": {"sugar", "high sugar", "blood sugar", "sugar problem"},
+    "high_cholesterol": {"cholesterol", "high cholesterol", "dyslipidemia",
+                         "hyperlipidemia", "high lipids"},
+    "acid_reflux": {"acidity", "gerd", "gas", "gastric"},
+    "hypertension": {"bp", "high bp", "high blood pressure", "raised bp"},
+    # New canonical: acute upper-respiratory (Pratishyaya) — see _DISEASE_DOSHA_SIGNAL.
+    "common_cold": {"cold", "common cold", "cough", "sardi", "sardi khansi",
+                    "pratishyaya", "runny nose", "running nose", "flu",
+                    "influenza", "nasal congestion", "kasa"},
 }
 for _ek, _ev in _EXTRA_ALIASES.items():
     CONDITION_ALIASES.setdefault(_ek, set()).update(_ev)

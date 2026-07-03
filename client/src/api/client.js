@@ -110,7 +110,6 @@ export const authAPI = {
 export const profileAPI = {
   getMe:           ()     => API.get('/profile/me'),
   updateMe:        (data) => API.put('/profile/me', data),
-  submitQuiz:      (data) => API.post('/profile/dosha-quiz', data),
   doshaAssessment: (data) => API.post('/profile/dosha-assessment', data),
   vikritiCheckIn:  (data) => API.post('/profile/vikriti-checkin', data),
   planFeedback:    (data) => API.post('/profile/plan-feedback', data),

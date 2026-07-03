@@ -81,7 +81,7 @@ def compute_vikriti_update(
 
     # Medical history — persistent disease channel involvement biases Vikriti (15% slot)
     if user.medical_history:
-        _med_sig, _ = _medical_history_vikriti_signal(user.medical_history)
+        _med_sig, _, _ = _medical_history_vikriti_signal(user.medical_history)
         if _med_sig:
             MEDICAL_SLOT = 0.15
             blended = {d: round((1 - MEDICAL_SLOT) * blended.get(d, 33) + MEDICAL_SLOT * _med_sig.get(d, 33))

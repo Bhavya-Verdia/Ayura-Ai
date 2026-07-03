@@ -2,6 +2,7 @@
 Ayura AI - Dosha Analyzer Engine
 Tier 1: Analyzes dosha scores to detect imbalances and provide Ayurvedic context.
 """
+import re
 from datetime import datetime
 
 
@@ -115,14 +116,126 @@ _TRAIT_WEIGHTS: dict[str, float] = {
     "eating_habits":    1.4,
     "walk_pace":        1.0,
     "anger_style":      1.5,
-    # Ashtavidha Pareeksha — classical 8-fold examination indicators
-    "agni_type":        2.0,   # Agni assessment — core Ayurvedic diagnostic (Agni Pareeksha)
-    "stool_pattern":    1.5,   # Mala Pareeksha — strong digestive channel signal
-    "eye_quality":      1.2,   # Drik Pareeksha — Ashtavidha examination
-    "voice_quality":    1.0,   # Shabda Pareeksha — Ashtavidha examination
-    "nadi_rhythm":      1.8,   # Nadi Pareeksha — foremost Ashtavidha examination (self-report approximation)
-    "mutra_pattern":    1.1,   # Mutra Pareeksha — urine characteristics (Ashtavidha)
+    # Ashtavidha Pareeksha — classical 8-fold examination indicators.
+    # NOTE ON SELF-REPORT: classically these are examined BY a vaidya. In a digital
+    # self-screen the patient rates their own pulse/urine/stool, which is far less
+    # reliable than a trained hand — so their weights are DISCOUNTED from the
+    # classical ideal. Nadi in particular ("does my pulse move like a snake?") is
+    # near-impossible for a layperson to self-assess, so it is weighted low despite
+    # being the foremost clinical sign. Stool and eyes are more observable and keep
+    # moderate weight.
+    "agni_type":        2.0,   # Agni Pareeksha — inferred from appetite/digestion, self-knowable
+    "stool_pattern":    1.1,   # Mala Pareeksha — observable, moderately reliable when self-reported
+    "eye_quality":      1.0,   # Drik Pareeksha — somewhat self-observable
+    "voice_quality":    0.9,   # Shabda Pareeksha — self-perception is unreliable
+    "nadi_rhythm":      0.8,   # Nadi Pareeksha — laypeople cannot reliably self-assess pulse gati
+    "mutra_pattern":    0.7,   # Mutra Pareeksha — low reliability from self-report
 }
+
+_DOSHAS = ("vata", "pitta", "kapha")
+
+# A blended trait answer ("I'm mostly Vata but partly Pitta on this") splits the
+# trait's weight between primary and secondary rather than forcing one dosha.
+_BLEND_PRIMARY_SHARE = 0.65
+_BLEND_SECONDARY_SHARE = 0.35
+
+
+def _trait_dosha_shares(value) -> dict[str, float]:
+    """Normalise a single trait answer into {dosha: fraction} summing to ~1.
+
+    Accepts three forms so the quiz can express constitutional duality instead of
+    a lossy forced-ternary pick:
+      - "vata"            → {"vata": 1.0}
+      - "vata+pitta"      → {"vata": 0.65, "pitta": 0.35}  (primary+secondary)
+      - {"vata": .6, ...} → normalised as given
+    Unknown/blank values yield {} (ignored by the caller).
+    """
+    if isinstance(value, dict):
+        clean = {d: float(w) for d, w in value.items() if d in _DOSHAS and float(w) > 0}
+        tot = sum(clean.values())
+        return {d: w / tot for d, w in clean.items()} if tot else {}
+    if not isinstance(value, str):
+        return {}
+    parts = [p.strip() for p in value.split("+") if p.strip() in _DOSHAS]
+    # de-dupe while preserving order (primary first)
+    seen: list[str] = []
+    for p in parts:
+        if p not in seen:
+            seen.append(p)
+    if not seen:
+        return {}
+    if len(seen) == 1:
+        return {seen[0]: 1.0}
+    return {seen[0]: _BLEND_PRIMARY_SHARE, seen[1]: _BLEND_SECONDARY_SHARE}
+
+
+def _primary_dosha(value) -> str | None:
+    """The dominant dosha of a (possibly blended) trait answer, or None."""
+    shares = _trait_dosha_shares(value)
+    return max(shares, key=shares.get) if shares else None
+
+
+# ── Deterministic cross-trait contradiction detection ─────────────────────────
+# Prakriti/Vikriti numbers are deterministic, so contradiction flags must be too —
+# an LLM surfacing a conflict on some runs but not others is not vaidya-auditable.
+# Trait groups mirror the classical Deha (body) vs Manas (mind) split.
+_PHYSICAL_TRAITS = (
+    "body_frame", "skin", "hair", "temperature", "energy", "sleep",
+    "eye_quality", "voice_quality", "nadi_rhythm", "mutra_pattern",
+    "stool_pattern", "walk_pace",
+)
+_MENTAL_TRAITS = (
+    "stress_response", "memory", "decision_making", "emotional_nature",
+    "speech", "anger_style",
+)
+# Agni self-report maps back to its dosha for the frame-vs-fire check.
+_AGNI_TO_DOSHA = {"vishama": "vata", "tikshna": "pitta", "manda": "kapha", "sama": None}
+
+
+def _group_dominant(traits: dict, group: tuple) -> str | None:
+    counts = {d: 0.0 for d in _DOSHAS}
+    for t in group:
+        for d, share in _trait_dosha_shares(traits.get(t)).items():
+            counts[d] += share
+    if sum(counts.values()) == 0:
+        return None
+    ranked = sorted(counts.items(), key=lambda x: x[1], reverse=True)
+    # Only call a dominant if it's a clear lead (avoids flagging near-ties as conflicts)
+    if len(ranked) > 1 and ranked[0][1] - ranked[1][1] < 0.5:
+        return None
+    return ranked[0][0]
+
+
+def _detect_contradictions(physical_traits: dict) -> list[str]:
+    """Deterministic list of genuine cross-trait conflicts (may be empty)."""
+    if not physical_traits:
+        return []
+    cap = {"vata": "Vata", "pitta": "Pitta", "kapha": "Kapha"}
+    out: list[str] = []
+
+    # 1. Body (Deha) vs mind (Manas) point to different doshas
+    body_dom = _group_dominant(physical_traits, _PHYSICAL_TRAITS)
+    mind_dom = _group_dominant(physical_traits, _MENTAL_TRAITS)
+    if body_dom and mind_dom and body_dom != mind_dom:
+        out.append(
+            f"Your physical traits read {cap[body_dom]}-dominant while your "
+            f"mental/behavioural traits read {cap[mind_dom]} — a mixed Deha–Manas "
+            f"Prakriti, common and worth noting."
+        )
+
+    # 2. Body frame vs digestive fire (Agni) mismatch — e.g. heavy Kapha frame
+    #    with a sharp Pitta Agni, or a light Vata frame with slow Kapha digestion.
+    frame = _primary_dosha(physical_traits.get("body_frame"))
+    agni_raw = str(physical_traits.get("agni_type", "")).lower()
+    fire = _AGNI_TO_DOSHA.get(agni_raw) or _primary_dosha(agni_raw)
+    if frame and fire and frame != fire:
+        out.append(
+            f"A {cap[frame]}-type body frame paired with a {cap[fire]}-type "
+            f"digestive fire (Agni) — your structure and metabolism pull in "
+            f"different directions."
+        )
+
+    return out[:3]
 
 
 # ── Symptom → fractional dosha weights ────────────────────────────────────────
@@ -475,6 +588,9 @@ _DISEASE_DOSHA_SIGNAL: dict[str, dict] = {
     "chronic_bronchitis":      {"p": "kapha","w": 2.5, "s": "Pranavaha Srotas",    "c": "Kaphaja Kasa",                       "d": "rasa"},
     "allergic_rhinitis":       {"p": "kapha","w": 2.0, "s2": "vata", "w2": 1.0,    "s": "Pranavaha Srotas",    "c": "Kaphaja Pratishyaya",               "d": "rasa"},
     "sinusitis":               {"p": "kapha","w": 2.0, "s": "Pranavaha Srotas",    "c": "Dushta Pratishyaya (Kapha)",         "d": "rasa"},
+    # Acute upper-respiratory (cold/cough/flu). Low weight — it's transient, so it
+    # only lightly nudges Vikriti rather than dominating it like a chronic disease.
+    "common_cold":             {"p": "kapha","w": 1.2, "s2": "vata", "w2": 0.8,    "s": "Pranavaha Srotas",    "c": "Pratishyaya (Kapha-Vata)",          "d": "rasa"},
     "sleep_apnea":             {"p": "kapha","w": 2.5, "s": "Pranavaha Srotas",    "c": "Kaphavrita Pranavata",               "d": "meda"},
     "pulmonary_fibrosis":      {"p": "vata", "w": 2.0, "s2": "kapha", "w2": 1.5,   "s": "Pranavaha Srotas",    "c": "Vataja-Kaphaja Shwasa",             "d": "rasa"},
     # ── Gastrointestinal ─────────────────────────────────────────────────────
@@ -640,23 +756,48 @@ def _compute_ojas_score(
         }
 
 
-def _medical_history_vikriti_signal(medical_conditions: list[str]) -> tuple[dict, list[str]]:
+def _prettify_condition(condition: str) -> str:
+    """Human-readable label for a raw/normalised condition id."""
+    return str(condition).replace("_", " ").strip().title()
+
+
+def _medical_history_vikriti_signal(
+    medical_conditions: list[str],
+    extra_signals: dict[str, dict] | None = None,
+) -> tuple[dict, list[str], list[str]]:
     """Convert diagnosed diseases into a weighted dosha signal for Vikriti.
 
     Chronic diagnosed diseases reveal the patient's susceptible dosha channels.
-    Returns (normalised_signal, classical_notes) where signal sums to 100.
+    Returns (normalised_signal, classical_notes, unmapped) where signal sums to
+    100 and `unmapped` lists conditions with no dosha mapping (so callers can
+    surface them instead of silently dropping them).
+
+    `extra_signals` (keyed by the raw condition string) supplies dosha signals for
+    conditions not in the static map — e.g. rare diseases classified on-the-fly by
+    the LLM (see _classify_unmapped_diseases_llm). These are marked AI-inferred.
     Source: Charaka Samhita Nidana Sthana (disease etiology chapters).
     """
     if not medical_conditions:
-        return {}, []
+        return {}, [], []
 
+    extra_signals = extra_signals or {}
     raw = {"vata": 0.0, "pitta": 0.0, "kapha": 0.0}
     total_weight = 0.0
     classical_notes: list[str] = []
+    unmapped: list[str] = []
 
     for condition in medical_conditions:
         mapping = disease_signal(condition)
+        ai_inferred = False
         if not mapping:
+            # Fall back to an LLM-classified signal for this exact condition.
+            mapping = extra_signals.get(condition) or extra_signals.get(str(condition).strip().lower())
+            ai_inferred = mapping is not None
+        if not mapping:
+            # Still nothing — record it so it isn't silently ignored.
+            label = _prettify_condition(condition)
+            if label and label not in unmapped:
+                unmapped.append(label)
             continue
         primary = mapping["p"]
         weight = mapping["w"]
@@ -664,12 +805,13 @@ def _medical_history_vikriti_signal(medical_conditions: list[str]) -> tuple[dict
         if "s2" in mapping:
             raw[mapping["s2"]] += mapping.get("w2", weight * 0.5)
         total_weight += weight
+        _tag = " · AI-inferred" if ai_inferred else ""
         classical_notes.append(
-            f"{condition.replace('_', ' ').title()}: {mapping['c']} ({mapping['s']})"
+            f"{_prettify_condition(condition)}: {mapping.get('c', 'dosha involvement')} ({mapping.get('s', 'Srotas')}){_tag}"
         )
 
     if total_weight == 0:
-        return {}, []
+        return {}, [], unmapped
 
     total_raw = sum(raw.values()) or 1
     signal = {d: round(v / total_raw * 100) for d, v in raw.items()}
@@ -677,7 +819,117 @@ def _medical_history_vikriti_signal(medical_conditions: list[str]) -> tuple[dict
     if diff != 0:
         signal[max(signal, key=signal.get)] += diff
 
-    return signal, classical_notes
+    return signal, classical_notes, unmapped
+
+
+# Per-process cache so a given rare disease is classified by the LLM only once
+# (keeps the 20% medical slot stable across a session, and cheap).
+_DISEASE_CLASSIFY_CACHE: dict[str, dict | None] = {}
+
+
+def _validate_classified_signal(raw: dict) -> dict | None:
+    """Coerce an LLM disease classification into a safe signal dict, or None."""
+    if not isinstance(raw, dict):
+        return None
+    p = str(raw.get("p", "")).lower().strip()
+    if p not in _DOSHAS:
+        return None
+    try:
+        w = float(raw.get("w", 2.0))
+    except (TypeError, ValueError):
+        w = 2.0
+    w = max(0.5, min(3.0, w))          # clamp to the same range as the static map
+    out = {"p": p, "w": w,
+           "s": str(raw.get("s") or "Srotas involvement"),
+           "c": str(raw.get("c") or "AI-inferred dosha involvement"),
+           "d": str(raw.get("d") or "rasa")}
+    s2 = str(raw.get("s2", "")).lower().strip()
+    if s2 in _DOSHAS and s2 != p:
+        try:
+            w2 = float(raw.get("w2", w * 0.5))
+        except (TypeError, ValueError):
+            w2 = w * 0.5
+        out["s2"] = s2
+        out["w2"] = max(0.25, min(w, w2))
+    return out
+
+
+async def _classify_unmapped_diseases_llm(conditions: list[str]) -> dict[str, dict]:
+    """Ask the LLM to classify diseases missing from the static map into a dosha
+    signal (Vata/Pitta/Kapha + Srotas/Dhatu). Returns {condition: signal}. Failures
+    are cached as None so we don't re-ask a genuinely unclassifiable term every time.
+
+    This is the ONLY place the LLM influences the numbers, and only for conditions
+    we couldn't map deterministically — the result is validated, clamped, and cached.
+    """
+    if not conditions:
+        return {}
+    import json
+    import logging
+    from ai.llm_client import llm_client
+
+    logger = logging.getLogger(__name__)
+    out: dict[str, dict] = {}
+    todo: list[str] = []
+    for c in conditions:
+        ck = str(c).strip().lower()
+        if ck in _DISEASE_CLASSIFY_CACHE:
+            cached = _DISEASE_CLASSIFY_CACHE[ck]
+            if cached:
+                out[c] = cached
+        else:
+            todo.append(c)
+    if not todo:
+        return out
+
+    # Present readable labels but remember which original string each maps to.
+    def _match_key(s: str) -> str:
+        return re.sub(r"[^a-z0-9]+", " ", str(s).lower()).strip()
+
+    label_to_original = {_prettify_condition(c): c for c in todo}
+    listing = "\n".join(f"- {lbl}" for lbl in label_to_original)
+    system_prompt = (
+        "You are an Ayurvedic physician (Vaidya) mapping modern diagnoses to classical "
+        "dosha pathology. For each disease, give the PRIMARY aggravated dosha and, if "
+        "clearly dual, a secondary. Base it on the disease's dominant qualities (Guna) and "
+        "the Srotas/Dhatu it afflicts. Respond with valid JSON only."
+    )
+    user_prompt = (
+        f"Classify each condition into its Ayurvedic dosha involvement:\n{listing}\n\n"
+        'Respond with a JSON object keyed by the EXACT condition text, each value:\n'
+        '{"p":"vata|pitta|kapha","w":<0.5-3.0 severity>,'
+        '"s2":"<secondary dosha or omit>","w2":<secondary weight or omit>,'
+        '"s":"<Srotas, e.g. Majjavaha Srotas>","c":"<classical name/pathology>",'
+        '"d":"<primary Dhatu: rasa|rakta|mamsa|meda|asthi|majja|shukra>"}\n'
+        "Only include doshas from vata/pitta/kapha. No prose, JSON only."
+    )
+    try:
+        resp = await llm_client.generate(
+            prompt=user_prompt, system_prompt=system_prompt,
+            max_tokens=600, temperature=0.2, json_mode=False,
+        )
+        text = resp.strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        start, end = text.find("{"), text.rfind("}") + 1
+        if start != -1 and end > start:
+            text = text[start:end]
+        parsed = json.loads(text)
+    except Exception as exc:
+        logger.warning("LLM disease classification failed (%s); leaving %d unmapped.", exc, len(todo))
+        parsed = {}
+
+    # Match the LLM's returned keys back to the requested conditions, tolerant of
+    # underscore/space and case differences (LLM often re-spaces our keys).
+    parsed_norm = {_match_key(k): v for k, v in (parsed or {}).items()} if isinstance(parsed, dict) else {}
+    for c in todo:
+        sig = _validate_classified_signal(parsed_norm.get(_match_key(c)))
+        _DISEASE_CLASSIFY_CACHE[str(c).strip().lower()] = sig  # cache hit OR miss (None)
+        if sig:
+            out[c] = sig
+    return out
 
 
 def _anchor_to_prakriti(vikriti: dict, prakriti: dict, max_deviation: int = 28) -> dict:
@@ -908,16 +1160,19 @@ def _rule_based_assessment(
     age: int | None = None,
     history: list[dict] | None = None,
     medical_history: list[str] | None = None,
+    extra_disease_signals: dict[str, dict] | None = None,
 ) -> dict:
     """Weighted trait-count Prakriti + symptom-signal Vikriti (LLM fallback)."""
     prakriti_raw = {"vata": 0.0, "pitta": 0.0, "kapha": 0.0}
     for trait, val in physical_traits.items():
-        if val == "sama" and trait == "agni_type":
+        if trait == "agni_type" and str(val).lower() in ("sama", "sama+", ""):
             # Sama Agni = balanced fire — does not bias any dosha
             continue
-        if val in prakriti_raw:
-            weight = _TRAIT_WEIGHTS.get(trait, 1.0)
-            prakriti_raw[val] += weight
+        weight = _TRAIT_WEIGHTS.get(trait, 1.0)
+        # A trait answer may be a single dosha or a blend (e.g. "vata+pitta");
+        # split the weight across its doshas rather than forcing one pick.
+        for dosha, share in _trait_dosha_shares(val).items():
+            prakriti_raw[dosha] += weight * share
 
     total_p = sum(prakriti_raw.values()) or 1
     prakriti = {d: round(v / total_p * 100) for d, v in prakriti_raw.items()}
@@ -966,7 +1221,9 @@ def _rule_based_assessment(
         vikriti = _age_adjustment(vikriti, age)
 
     # Medical history — chronic disease channel involvement biases Vikriti (20% slot)
-    med_signal, med_notes = _medical_history_vikriti_signal(medical_history or [])
+    med_signal, med_notes, med_unmapped = _medical_history_vikriti_signal(
+        medical_history or [], extra_signals=extra_disease_signals
+    )
     if med_signal:
         MEDICAL_SLOT = 0.20
         vikriti = {
@@ -1000,7 +1257,7 @@ def _rule_based_assessment(
 
     # Deterministic confidence from signal clarity: how many traits were answered
     # and how cleanly one dosha dominates. Self-report, so we never claim certainty.
-    _answered = len([v for v in physical_traits.values() if v in ("vata", "pitta", "kapha")])
+    _answered = len([v for v in physical_traits.values() if _trait_dosha_shares(v)])
     _gap = sorted_p[0][1] - sorted_p[1][1]
     if _answered >= 10 and _gap >= 18:
         _conf = "high"
@@ -1023,8 +1280,14 @@ def _rule_based_assessment(
         "key_signals": [
             f"Dominant physical type: {prakriti_dominant}",
             f"Primary current symptom area: {vikriti_dominant}",
-        ] + med_notes[:2],
-        "contradictions": [],
+        ] + med_notes[:2] + (
+            # Never drop a condition silently — tell the user we noted it even
+            # though it's outside our classical dosha mapping.
+            [f"Noted (outside dosha mapping): {', '.join(med_unmapped[:4])}"]
+            if med_unmapped else []
+        ),
+        "unmapped_conditions": med_unmapped,
+        "contradictions": _detect_contradictions(physical_traits),
         "primary_gunas": _get_primary_gunas(prakriti_dominant, prakriti_secondary),
         "prakriti_classical_type": _classify_prakriti_7_types(prakriti)["prakriti_classical_type"],
         "prakriti_classical_name": _classify_prakriti_7_types(prakriti)["prakriti_classical_name"],
@@ -1068,12 +1331,21 @@ async def assess_dosha_with_llm(
         "pitta": "tikshna", "tikshna": "tikshna",
         "kapha": "manda", "manda": "manda",
     }
-    _agni_self = _AGNI_CANON.get(str((physical_traits or {}).get("agni_type", "")).lower())
+    _agni_raw = str((physical_traits or {}).get("agni_type", "")).lower()
+    # Tolerate a blended agni answer ("vata+pitta") by taking its primary dosha.
+    _agni_self = _AGNI_CANON.get(_agni_raw) or _AGNI_CANON.get(_primary_dosha(_agni_raw) or "")
 
     # Weighted trait summary for LLM prompt — highlight primary indicators
     trait_lines = []
     for trait, value in physical_traits.items():
-        desc = _TRAIT_DESCRIPTIONS.get(trait, {}).get(value, value)
+        # A blended answer ("vata+pitta") has no single canned description — render
+        # each part's description so the LLM sees the duality.
+        _shares = _trait_dosha_shares(value)
+        if len(_shares) > 1:
+            _descs = _TRAIT_DESCRIPTIONS.get(trait, {})
+            desc = "; ".join(f"{d} — {_descs.get(d, d)}" for d in _shares)
+        else:
+            desc = _TRAIT_DESCRIPTIONS.get(trait, {}).get(value, value)
         weight = _TRAIT_WEIGHTS.get(trait, 1.0)
         priority = " [PRIMARY INDICATOR]" if weight >= 2.0 else (" [STRONG INDICATOR]" if weight >= 1.5 else "")
         trait_lines.append(f"- {trait.replace('_', ' ').title()}{priority}: {desc}")
@@ -1102,18 +1374,33 @@ async def assess_dosha_with_llm(
         if parts:
             profile_section = "\n\nUSER PROFILE CONTEXT (use to refine your assessment):\n" + "\n".join(f"- {p}" for p in parts)
 
+    # Rare diseases missing from the static map get classified by the LLM into a
+    # dosha signal so they actually contribute to Vikriti (not just get noted).
+    _med_conditions = (user_profile or {}).get("medical_history") or []
+    _pre_unmapped = [c for c in _med_conditions if not disease_signal(c)]
+    _extra_signals = await _classify_unmapped_diseases_llm(_pre_unmapped) if _pre_unmapped else {}
+
     # Medical history → classical Ayurvedic disease names for LLM context
     medical_section = ""
-    _med_conditions = (user_profile or {}).get("medical_history") or []
     if _med_conditions:
-        _med_sig, _med_notes = _medical_history_vikriti_signal(_med_conditions)
+        _med_sig, _med_notes, _med_unmapped = _medical_history_vikriti_signal(
+            _med_conditions, extra_signals=_extra_signals
+        )
         if _med_notes:
             medical_section = (
                 "\n\nDIAGNOSED MEDICAL CONDITIONS (HIGH-WEIGHT Vikriti evidence — classical Ayurvedic etiology):\n"
                 + "\n".join(f"- {n}" for n in _med_notes)
-                + "\nThese chronic diagnoses indicate dosha channel involvement. Weight them HEAVILY in Vikriti scoring."
+                + "\nThese diagnoses indicate dosha channel involvement. Weight them HEAVILY in Vikriti scoring."
             )
-        else:
+        if _med_unmapped:
+            # Even the LLM classifier couldn't place these — never drop them silently.
+            medical_section += (
+                "\n\nOTHER REPORTED CONDITIONS (could not be mapped to a dosha — "
+                "acknowledge these in your explanation and note they were flagged, "
+                "but do NOT change the fixed scores):\n"
+                + "\n".join(f"- {c}" for c in _med_unmapped)
+            )
+        if not _med_notes and not _med_unmapped:
             medical_section = f"\n\nMedical history (unclassified): {', '.join(_med_conditions)}"
 
     # ── AUTHORITATIVE NUMBERS (deterministic — the engine owns the scores) ──
@@ -1124,7 +1411,8 @@ async def assess_dosha_with_llm(
         physical_traits,
         current_symptoms,
         age=(user_profile or {}).get("age"),
-        medical_history=(user_profile or {}).get("medical_history") or [],
+        medical_history=_med_conditions,
+        extra_disease_signals=_extra_signals,
     )
     result["vikriti"] = _apply_seasonal_correction(result["vikriti"])
     result["vikriti_dominant"] = max(result["vikriti"], key=result["vikriti"].get)
@@ -1140,11 +1428,24 @@ async def assess_dosha_with_llm(
         f"Agni: {result.get('agni_type') or 'sama'}. Ama: {result.get('ama_indicator') or 'none'}."
     )
 
+    # Contradictions are detected deterministically (see _detect_contradictions)
+    # so the flag is reproducible; the LLM may weave them into prose but does not
+    # decide them.
+    _det_contra = result.get("contradictions") or []
+    contra_section = ""
+    if _det_contra:
+        contra_section = (
+            "\n\nPRE-DETECTED CROSS-TRAIT CONTRADICTIONS (already flagged by the "
+            "engine — acknowledge these naturally in your explanation, do not invent others):\n"
+            + "\n".join(f"- {c}" for c in _det_contra)
+        )
+
     system_prompt = (
         "You are an expert Ayurvedic physician (Vaidya) trained in Charaka, Sushruta, and "
         "Ashtanga Hridayam. The patient's Prakriti and Vikriti have ALREADY been scored from a "
-        "classical weighted Ashtavidha Pareeksha assessment — do NOT recompute or change the "
-        "numbers. Your job is to explain them warmly and accurately, flag any genuine cross-trait "
+        "classical weighted Ashtavidha Pareeksha assessment, and any cross-trait contradictions "
+        "have ALREADY been detected — do NOT recompute the numbers or invent new contradictions. "
+        "Your job is to explain the result warmly and accurately, acknowledge any pre-detected "
         "contradictions, and read the Manas (mental) Prakriti from the behavioural traits. Stay "
         "consistent with the given scores and address the patient as 'you'."
     )
@@ -1157,13 +1458,12 @@ SHAREERA PRAKRITI INDICATORS (their answers):
 {chr(10).join(trait_lines)}
 
 CURRENT SYMPTOMS / VIKRITI INDICATORS:
-{symptom_text}{profile_section}{medical_section}
+{symptom_text}{profile_section}{medical_section}{contra_section}
 
 Write ONLY the narrative for these already-fixed scores — do not output any numbers. Respond with valid JSON only (no markdown, no ```):
 {{
   "explanation": "<2-3 sentences, plain English, addressing them as 'you'. Describe their {result['prakriti_dominant']}-dominant constitution and current {result['vikriti_dominant']} state, including the Guna character.>",
   "key_signals": ["<top diagnostic signal>", "<signal 2>", "<signal 3>"],
-  "contradictions": ["<a genuine conflict between traits, e.g. 'Kapha frame but sharp Pitta digestion', or leave the array empty>"],
   "manas_prakriti": "<e.g. Rajasic Vata-Pitta Manas — quick-thinking but prone to anxiety and sharp reactions>"
 }}"""
 
@@ -1196,9 +1496,9 @@ Write ONLY the narrative for these already-fixed scores — do not output any nu
                 result["key_signals"] = narrative["key_signals"]
             if narrative.get("manas_prakriti"):
                 result["manas_prakriti"] = narrative["manas_prakriti"]
-            _contra = narrative.get("contradictions")
-            if isinstance(_contra, list):
-                result["contradictions"] = [c for c in _contra if c and str(c).strip()]
+            # NOTE: contradictions are intentionally NOT taken from the LLM —
+            # they're set deterministically by _detect_contradictions so the flag
+            # is reproducible and vaidya-auditable.
     except Exception as exc:
         logger.warning("LLM dosha narrative enrichment failed (%s); using deterministic narrative.", exc)
 
@@ -1211,84 +1511,3 @@ Write ONLY the narrative for these already-fixed scores — do not output any nu
 
     return result
 
-
-def score_dosha_quiz(answers: dict) -> dict:
-    """
-    Calculate dosha scores from quiz answers.
-
-    Args:
-        answers: {"1": 3, "2": 5, ...} — question_id -> integer option 1-5
-
-    Returns:
-        {"vata": int, "pitta": int, "kapha": int,
-         "dominant_dosha": str, "secondary_dosha": str, "dosha_confidence": int}
-    """
-    vata_raw = 0.0
-    pitta_raw = 0.0
-    kapha_raw = 0.0
-
-    for q_id, rating in answers.items():
-        try:
-            r = int(rating)
-        except (ValueError, TypeError):
-            continue
-
-        weights = DOSHA_QUIZ_SCORING.get(q_id, {})
-        if not weights:
-            if r <= 2:
-                vata_raw += 1
-            elif r == 3:
-                pitta_raw += 1
-            else:
-                kapha_raw += 1
-        else:
-            option_weights = weights.get(r, {})
-            vata_raw += option_weights.get("vata", 0)
-            pitta_raw += option_weights.get("pitta", 0)
-            kapha_raw += option_weights.get("kapha", 0)
-
-    total = vata_raw + pitta_raw + kapha_raw or 1
-    dosha_scores = {
-        "vata": round(vata_raw / total * 100),
-        "pitta": round(pitta_raw / total * 100),
-        "kapha": round(kapha_raw / total * 100),
-    }
-
-    sorted_doshas = sorted(dosha_scores.items(), key=lambda x: x[1], reverse=True)
-    dominant_dosha = sorted_doshas[0][0]
-    secondary_dosha = sorted_doshas[1][0]
-    top_score = sorted_doshas[0][1]
-    second_score = sorted_doshas[1][1]
-    dosha_confidence = min(100, int((top_score - second_score) * 2))
-
-    return {
-        **dosha_scores,
-        "dominant_dosha": dominant_dosha,
-        "secondary_dosha": secondary_dosha,
-        "dosha_confidence": dosha_confidence,
-    }
-
-
-# Per-question dosha weights for the legacy 20-question quiz (kept for backward compatibility)
-DOSHA_QUIZ_SCORING: dict[str, dict[int, dict[str, float]]] = {
-    "1": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "2": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "3": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "4": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "5": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "6": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "7": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "8": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "9": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "10": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "11": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "12": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "13": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "14": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "15": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "16": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "17": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "18": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "19": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-    "20": {1: {"vata": 2, "pitta": 0, "kapha": 0}, 2: {"vata": 1, "pitta": 1, "kapha": 0}, 3: {"vata": 0, "pitta": 2, "kapha": 0}, 4: {"vata": 0, "pitta": 1, "kapha": 1}, 5: {"vata": 0, "pitta": 0, "kapha": 2}},
-}

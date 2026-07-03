@@ -1,6 +1,6 @@
 import pytest
 from pydantic import ValidationError
-from schemas.user_schema import DoshaQuizAnswers, UserProfileResponse
+from schemas.user_schema import PhysicalTraitAnswers, UserProfileResponse
 
 
 def test_profile_response_exposes_clinical_fields():
@@ -14,40 +14,30 @@ def test_profile_response_exposes_clinical_fields():
     resp = UserProfileResponse(id="u1", email="a@b.com", name="T", agni_type="tikshna")
     assert resp.agni_type == "tikshna"
 
-def test_dosha_quiz_answers_valid():
-    data = {"answers": {f"q{i}": (i%5)+1 for i in range(10)}}
-    quiz = DoshaQuizAnswers(**data)
-    assert quiz.answers["q0"] == 1
-    assert quiz.answers["q1"] == 2
 
-def test_dosha_quiz_answers_empty():
-    with pytest.raises(ValidationError) as exc:
-        DoshaQuizAnswers(answers={})
-    assert "cannot be empty" in str(exc.value)
+def test_physical_traits_accept_single_and_blend():
+    """The Prakriti assessment must accept a single dosha OR a 'primary+secondary'
+    blend so users can express constitutional duality."""
+    base = dict(
+        body_frame="vata", skin="vata", digestion="pitta", sleep="vata",
+        temperature="vata", hair="vata", energy="vata", stress_response="vata",
+        memory="vata", decision_making="vata", speech="vata", emotional_nature="vata",
+    )
+    single = PhysicalTraitAnswers(**base)
+    assert single.body_frame == "vata"
 
-def test_dosha_quiz_answers_too_many():
-    data = {"answers": {f"q{i}": 3 for i in range(35)}}
-    with pytest.raises(ValidationError) as exc:
-        DoshaQuizAnswers(**data)
-    assert "Too many answers" in str(exc.value)
+    blended = PhysicalTraitAnswers(**{**base, "body_frame": "vata+pitta", "agni_type": "kapha+pitta"})
+    assert blended.body_frame == "vata+pitta"
+    assert blended.agni_type == "kapha+pitta"
 
-def test_dosha_quiz_answers_invalid_values():
-    data = {f"q{i}": 3 for i in range(10)}
 
-    data_bad_val = data.copy()
-    data_bad_val["q1"] = 6
-    with pytest.raises(ValidationError) as exc:
-        DoshaQuizAnswers(answers=data_bad_val)
-    assert "integer between 1 and 5" in str(exc.value)
-
-    data_zero = data.copy()
-    data_zero["q1"] = 0
-    with pytest.raises(ValidationError) as exc:
-        DoshaQuizAnswers(answers=data_zero)
-    assert "integer between 1 and 5" in str(exc.value)
-
-    data_str = data.copy()
-    data_str["q1"] = "abc"
-    with pytest.raises(ValidationError) as exc:
-        DoshaQuizAnswers(answers=data_str)
-    assert "Input should be a valid integer" in str(exc.value) or "integer between 1 and 5" in str(exc.value)
+def test_physical_traits_reject_bad_values():
+    base = dict(
+        body_frame="vata", skin="vata", digestion="pitta", sleep="vata",
+        temperature="vata", hair="vata", energy="vata", stress_response="vata",
+        memory="vata", decision_making="vata", speech="vata", emotional_nature="vata",
+    )
+    with pytest.raises(ValidationError):
+        PhysicalTraitAnswers(**{**base, "body_frame": "fire"})
+    with pytest.raises(ValidationError):
+        PhysicalTraitAnswers(**{**base, "body_frame": "vata+pitta+kapha"})

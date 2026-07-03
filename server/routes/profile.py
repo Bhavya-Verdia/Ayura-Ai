@@ -14,14 +14,13 @@ import hashlib
 import json as _json
 
 from schemas.user_schema import (
-    UserProfileUpdate, UserProfileResponse, DoshaQuizAnswers,
+    UserProfileUpdate, UserProfileResponse,
     DoshaAssessmentRequest, VikritiCheckInRequest, PlanFeedbackRequest,
     DoshaValidationRequest,
 )
 from schemas.auth_schema import ChangePasswordRequest
 from services.auth_service import get_current_user_id, hash_password, verify_password
 from config import settings
-from engine.dosha_analyzer import score_dosha_quiz
 
 router = APIRouter()
 
@@ -287,38 +286,6 @@ async def change_password(
     return {"message": "Password changed successfully."}
 
 
-@router.post("/dosha-quiz", response_model=UserProfileResponse)
-async def submit_dosha_quiz(
-    payload: DoshaQuizAnswers,
-    user: UserDocument = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_mongodb),
-):
-    """Score a dosha quiz using per-question weighted scoring (see engine/dosha_analyzer.py)."""
-    result = score_dosha_quiz(payload.answers)
-    dosha_scores = {"vata": result["vata"], "pitta": result["pitta"], "kapha": result["kapha"]}
-    dominant_dosha = result["dominant_dosha"]
-    secondary_dosha = result["secondary_dosha"]
-    dosha_confidence = result["dosha_confidence"]
-
-    now = datetime.now(timezone.utc)
-    await db.users.update_one(
-        {"_id": user.id},
-        {"$set": {
-            "dosha_scores": dosha_scores,
-            "dominant_dosha": dominant_dosha,
-            "secondary_dosha": secondary_dosha,
-            "dosha_confidence": dosha_confidence,
-            "updated_at": now,
-        }}
-    )
-    user.dosha_scores = dosha_scores
-    user.dominant_dosha = dominant_dosha
-    user.secondary_dosha = secondary_dosha
-    user.dosha_confidence = dosha_confidence
-    user.updated_at = now
-    return user
-
-
 def _compute_manasa_prakriti(manasa_traits: dict) -> dict:
     """Score Satva/Rajas/Tamas from the 5 Manasa Prakriti quiz answers."""
     counts = {'satva': 0, 'rajas': 0, 'tamas': 0}
@@ -358,7 +325,13 @@ async def submit_dosha_assessment(
 ):
     """LLM-powered Prakriti + Vikriti assessment from physical traits + current symptoms."""
     from engine.dosha_analyzer import assess_dosha_with_llm
+    from engine.condition_vocab import normalize_conditions
     from core.cache import cache_manager
+
+    # The quiz can send an edited condition list (prefilled from the profile). When
+    # present, it becomes the source of truth and is persisted back to the profile.
+    if req.medical_history is not None:
+        user.medical_history = normalize_conditions(req.medical_history)
 
     user_profile_ctx = {
         "age": user.age,
@@ -378,6 +351,8 @@ async def submit_dosha_assessment(
         "stress": user.stress_level,
         "sleep": user.sleep_quality,
         "digestion": user.digestion_quality,
+        # Conditions change the Vikriti (and the LLM classification) — must bust cache.
+        "medical_history": sorted(user.medical_history or []),
     }
     _cache_key = "dosha_assess:" + hashlib.sha256(
         _json.dumps(_cache_input, sort_keys=True).encode()
@@ -415,12 +390,16 @@ async def submit_dosha_assessment(
         "dosha_immediate_focus": result["immediate_focus"],
         "dosha_key_signals": result["key_signals"],
         "dosha_contradictions": result.get("contradictions", []),
+        "dosha_unmapped_conditions": result.get("unmapped_conditions", []),
         "ama_indicator": result.get("ama_indicator", "none"),
         "agni_type": result.get("agni_type"),
         "ojas_score": (result.get("ojas") or {}).get("score"),
         "ojas_level": (result.get("ojas") or {}).get("level"),
         "updated_at": now,
     }
+    # Persist edited conditions when the quiz sent an override.
+    if req.medical_history is not None:
+        vikriti_only_update["medical_history"] = user.medical_history
 
     manasa_prakriti_scores = (
         _compute_manasa_prakriti(req.manasa_traits)
