@@ -1003,6 +1003,7 @@ export default function DoshaQuiz() {
     const explanation = result.dosha_explanation
     const immediateFocus = result.dosha_immediate_focus
     const keySignals = result.dosha_key_signals || []
+    const unmappedConditions = result.dosha_unmapped_conditions || []
     const confidence = result.dosha_confidence >= 70 ? 'high' : result.dosha_confidence >= 45 ? 'medium' : 'low'
 
     function handleTongueResult(tongueData) {
@@ -1173,6 +1174,20 @@ export default function DoshaQuiz() {
                   </m.li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {unmappedConditions.length > 0 && (
+            <div className="da-unmapped-note">
+              <span className="da-unmapped-icon" aria-hidden="true"><TriangleAlert size={16} strokeWidth={2} /></span>
+              <div className="da-unmapped-body">
+                <span className="da-unmapped-label">Conditions we couldn't classify</span>
+                <p className="da-unmapped-list">{unmappedConditions.join(', ')}</p>
+                <p className="da-unmapped-hint">
+                  These fall outside our classical dosha mapping, so they weren't scored — but they're
+                  noted and factored into your guidance. Share them with a qualified Vaidya for a full reading.
+                </p>
+              </div>
             </div>
           )}
 

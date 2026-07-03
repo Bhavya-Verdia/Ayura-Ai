@@ -1008,6 +1008,46 @@
   opacity: 0.7;
 }
 
+/* ── Unmapped conditions note (couldn't be scored) ── */
+.da-unmapped-note {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: rgba(148,163,184,0.06);
+  border: 1px solid rgba(148,163,184,0.22);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  font-size: 0.85rem;
+}
+.da-unmapped-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-secondary, #94a3b8);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.da-unmapped-body { min-width: 0; }
+.da-unmapped-label {
+  display: block;
+  color: var(--ayura-ink, var(--text-primary));
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.da-unmapped-list {
+  color: var(--ayura-ink, var(--text-primary));
+  margin: 0 0 4px;
+  line-height: 1.45;
+  text-transform: capitalize;
+}
+.da-unmapped-hint {
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.77rem;
+  opacity: 0.8;
+  margin: 0;
+  line-height: 1.45;
+}
+
 /* ── 4-option variant for Agni type ── */
 .da-trait-options-4 {
   grid-template-columns: repeat(2, 1fr);
