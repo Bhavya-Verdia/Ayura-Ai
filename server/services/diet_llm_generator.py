@@ -176,12 +176,14 @@ async def generate_diet_plan_llm(
         if general_docs:
             rag_context_parts.append(rag_pipeline.format_context(general_docs, max_chars=1200))
 
-        # Query 2: condition-specific diet if conditions exist
-        if conditions_q:
-            cond_query = f"{conditions_q[0]} Pathya Apathya diet Ayurvedic classical"
-            cond_docs = await rag_pipeline.query(cond_query, "nutrition", n_results=4)
+        # Query 2: condition-specific diet — retrieve for EACH condition (capped),
+        # not just the first, so multi-condition patients get classical grounding
+        # for every diagnosis rather than only conditions_q[0].
+        for _cond in conditions_q[:3]:
+            cond_query = f"{_cond} Pathya Apathya diet Ayurvedic classical"
+            cond_docs = await rag_pipeline.query(cond_query, "nutrition", n_results=3)
             if cond_docs:
-                rag_context_parts.append(rag_pipeline.format_context(cond_docs, max_chars=800))
+                rag_context_parts.append(rag_pipeline.format_context(cond_docs, max_chars=600))
 
         # Query 3: seasonal diet
         season = (user_profile.get("current_season") or "").lower()
@@ -287,8 +289,17 @@ async def generate_diet_plan_llm(
         }
 
         # Deterministic Ahara safety layer (Viruddha + allergens, all 4 weeks)
-        from services.ahara_safety import apply_ahara_safety
+        from services.ahara_safety import (
+            apply_ahara_safety, apply_condition_food_safety, classify_condition_apathya_llm,
+        )
         result = apply_ahara_safety(result, allergies, intolerances)
+        # Condition-contraindicated food floor — enforce each condition's Apathya
+        # deterministically instead of trusting the LLM to have honoured it. Rare /
+        # uncurated conditions get their Apathya classified by the LLM first, so the
+        # floor covers ALL diseases, not just the hardcoded common ones.
+        _conds = user_profile.get("medical_history") or []
+        _extra_apathya = await classify_condition_apathya_llm(_conds)
+        result = apply_condition_food_safety(result, _conds, extra_terms=_extra_apathya)
 
         return result
 

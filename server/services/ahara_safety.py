@@ -181,6 +181,45 @@ def scan_meal_for_viruddha(meal, slot: str) -> list[dict]:
 _MEAL_SLOTS = ("breakfast", "lunch", "snack", "dinner")
 
 
+def _collect_meal_units(plan: dict) -> list[tuple[str, str, str, object]]:
+    """Flatten every meal across ALL diet plan shapes into
+    (week_label, day_label, slot, meal) tuples — LLM diet_weeks, LLM weekly_plan,
+    and rule-engine four_week_plan. Shared by every deterministic safety check."""
+    units: list[tuple[str, str, str, object]] = []
+
+    def _add_daily(week_label, daily):
+        if not isinstance(daily, dict):
+            return
+        for day_label, day_data in daily.items():
+            if not isinstance(day_data, dict):
+                continue
+            for slot in _MEAL_SLOTS:
+                if day_data.get(slot) is not None:
+                    units.append((week_label, str(day_label), slot, day_data.get(slot)))
+
+    # LLM multi-week
+    for week in plan.get("diet_weeks", []) or []:
+        if isinstance(week, dict):
+            _add_daily(f"Week {week.get('week_number', '?')}", week.get("daily_plan", {}) or {})
+    # LLM single weekly_plan (only if no diet_weeks)
+    if not units and isinstance(plan.get("weekly_plan"), dict):
+        _add_daily("Week 1", plan["weekly_plan"])
+    # Rule-engine four_week_plan: [{week, days:[{day_name, meals:{slot:[items]}}]}]
+    for week in plan.get("four_week_plan", []) or []:
+        if not isinstance(week, dict):
+            continue
+        wk = f"Week {week.get('week', '?')}"
+        for day in week.get("days", []) or []:
+            if not isinstance(day, dict):
+                continue
+            meals = day.get("meals", {}) or {}
+            day_label = str(day.get("day_name", day.get("day", "?")))
+            for slot in _MEAL_SLOTS:
+                if meals.get(slot) is not None:
+                    units.append((wk, day_label, slot, meals.get(slot)))
+    return units
+
+
 def apply_ahara_safety(plan: dict, allergies: list[str], intolerances: list[str]) -> dict:
     """
     Mutates `plan` in place, adding deterministic Viruddha + allergen safety data.
@@ -199,40 +238,7 @@ def apply_ahara_safety(plan: dict, allergies: list[str], intolerances: list[str]
         viruddha_seen: dict[str, dict] = {}
         allergen_alerts: list[dict] = []
 
-        # Collect a uniform list of (week_label, day_label, slot, meal) across ALL diet
-        # structures: LLM diet_weeks, LLM weekly_plan, and rule-engine four_week_plan.
-        units: list[tuple[str, str, str, object]] = []
-
-        def _add_daily(week_label, daily):
-            if not isinstance(daily, dict):
-                return
-            for day_label, day_data in daily.items():
-                if not isinstance(day_data, dict):
-                    continue
-                for slot in _MEAL_SLOTS:
-                    if day_data.get(slot) is not None:
-                        units.append((week_label, str(day_label), slot, day_data.get(slot)))
-
-        # LLM multi-week
-        for week in plan.get("diet_weeks", []) or []:
-            if isinstance(week, dict):
-                _add_daily(f"Week {week.get('week_number', '?')}", week.get("daily_plan", {}) or {})
-        # LLM single weekly_plan (only if no diet_weeks)
-        if not units and isinstance(plan.get("weekly_plan"), dict):
-            _add_daily("Week 1", plan["weekly_plan"])
-        # Rule-engine four_week_plan: [{week, days:[{day_name, meals:{slot:[items]}}]}]
-        for week in plan.get("four_week_plan", []) or []:
-            if not isinstance(week, dict):
-                continue
-            wk = f"Week {week.get('week', '?')}"
-            for day in week.get("days", []) or []:
-                if not isinstance(day, dict):
-                    continue
-                meals = day.get("meals", {}) or {}
-                day_label = str(day.get("day_name", day.get("day", "?")))
-                for slot in _MEAL_SLOTS:
-                    if meals.get(slot) is not None:
-                        units.append((wk, day_label, slot, meals.get(slot)))
+        units = _collect_meal_units(plan)
 
         for week_label, day_label, slot, meal in units:
             # Viruddha scan
@@ -275,4 +281,250 @@ def apply_ahara_safety(plan: dict, allergies: list[str], intolerances: list[str]
     except Exception:
         # Safety layer must never break generation; mark unchecked and move on.
         plan["ahara_safety_checked"] = False
+    return plan
+
+
+# ── Condition-contraindicated food scan (Apathya) ─────────────────────────────
+# On the LLM-primary path the model is *asked* to honour each condition's Apathya,
+# but nothing deterministic enforced it — a high-GI food could slip into a
+# diabetic's plan, or a high-potassium food into a CKD plan, with no catch. This
+# gives the primary path the same food-safety floor the rule engine has, by
+# scanning every generated meal for concrete foods classically forbidden for the
+# user's conditions. High-signal, low-false-positive terms only; we FLAG (not
+# delete) so a spurious match is a harmless warning, never a broken plan.
+_CONDITION_APATHYA_TERMS: dict[str, dict] = {
+    "diabetes": {
+        "name": "Diabetes (Prameha / Madhumeha)",
+        "reason": "High-glycaemic / sweet — Apathya in Prameha.",
+        "terms": ["sugar", "jaggery", "white rice", "maida", "refined flour",
+                  "gulab jamun", "jalebi", "halwa", "laddu", "barfi", "ice cream",
+                  "cold drink", "soft drink", "soda", "mango", "banana", "grapes"],
+    },
+    "hypertension": {
+        "name": "Hypertension (Uchcha Rakta Chapa)",
+        "reason": "High-sodium / heating — raises Rakta Chapa.",
+        "terms": ["pickle", "papad", "processed", "salted", "extra salt",
+                  "red meat", "alcohol", "canned"],
+    },
+    "pcos": {
+        "name": "PCOS (Artava Dushti)",
+        "reason": "Refined carbs worsen insulin resistance.",
+        "terms": ["sugar", "white rice", "maida", "refined flour", "jalebi", "cold drink"],
+    },
+    "hypothyroid": {
+        "name": "Hypothyroidism (Galaganda)",
+        "reason": "Goitrogenic raw crucifers / soy — Apathya in Galaganda.",
+        "terms": ["raw cabbage", "coleslaw", "raw broccoli", "raw cauliflower",
+                  "raw kale", "soy milk", "tofu", "soybean"],
+    },
+    "thyroid": {
+        "name": "Thyroid (Galaganda)",
+        "reason": "Goitrogenic raw crucifers / soy.",
+        "terms": ["raw cabbage", "coleslaw", "raw broccoli", "raw cauliflower", "tofu", "soy milk"],
+    },
+    "kidney_disease": {
+        "name": "Kidney disease (Vrikka Roga)",
+        "reason": "High potassium/phosphorus — restrict in renal disease.",
+        "terms": ["banana", "tomato", "potato", "avocado", "orange", "coconut water", "dry fruits"],
+    },
+    "fatty_liver": {
+        "name": "Fatty liver (Yakrit Roga)",
+        "reason": "Fried / alcohol / refined sugar burden the liver.",
+        "terms": ["fried", "deep fried", "alcohol", "vanaspati", "sugar", "processed"],
+    },
+    "high_cholesterol": {
+        "name": "High cholesterol (Medoroga)",
+        "reason": "Fatty / fried / refined foods increase Meda-Rasa Dushti.",
+        "terms": ["fried", "deep fried", "vanaspati", "dalda", "red meat",
+                  "cheese", "butter", "cream", "sugar", "processed"],
+    },
+    "obesity": {
+        "name": "Obesity (Sthaulya)",
+        "reason": "Kapha-Meda increasing — reduce in Sthaulya.",
+        "terms": ["fried", "deep fried", "sugar", "sweets", "cream", "cheese", "butter"],
+    },
+    "acidity": {
+        "name": "Acidity / GERD (Amlapitta)",
+        "reason": "Sour / pungent / fried aggravate Amlapitta.",
+        "terms": ["deep fried", "pickle", "vinegar", "coffee", "tamarind", "extra chilli"],
+    },
+    "ibs": {
+        "name": "IBS (Grahani)",
+        "reason": "Heavy / gas-forming — aggravate Grahani.",
+        "terms": ["deep fried", "rajma", "chole", "raw salad", "cabbage"],
+    },
+}
+
+# Normalise common variants to the keys above (mirrors diet COND_ALIASES so this
+# module stays self-contained and can't circular-import).
+_COND_CANON: dict[str, str] = {
+    "type2_diabetes": "diabetes", "type_2_diabetes": "diabetes", "diabetes_type2": "diabetes",
+    "diabetes_type1": "diabetes", "prediabetes": "diabetes", "insulin_resistance": "diabetes",
+    "madhumeha": "diabetes", "prameha": "diabetes", "sugar": "diabetes",
+    "bp": "hypertension", "high_blood_pressure": "hypertension", "high_bp": "hypertension",
+    "polycystic_ovary": "pcos", "polycystic_ovarian_syndrome": "pcos",
+    "hypothyroidism": "hypothyroid", "hashimoto": "hypothyroid", "thyroid_disorder": "thyroid",
+    "obese": "obesity", "overweight": "obesity", "weight_management": "obesity",
+    "liver_disease": "fatty_liver", "nafld": "fatty_liver",
+    "cholesterol": "high_cholesterol", "dyslipidemia": "high_cholesterol",
+    "hyperlipidemia": "high_cholesterol", "high_lipids": "high_cholesterol",
+    "ckd": "kidney_disease", "kidney_failure": "kidney_disease", "chronic_kidney_disease": "kidney_disease",
+    "acid_reflux": "acidity", "gerd": "acidity", "heartburn": "acidity", "amlapitta": "acidity",
+    "irritable_bowel_syndrome": "ibs", "grahani": "ibs",
+}
+
+
+def _canon_condition(cond: str) -> str:
+    key = str(cond).strip().lower().replace(" ", "_").replace("-", "_")
+    return _COND_CANON.get(key, key)
+
+
+# ── LLM Apathya classifier for uncurated / rare conditions ────────────────────
+# Gives EVERY condition — including rare ones with no hardcoded entry above — a
+# deterministic food-safety floor, by asking the LLM once (per condition) for its
+# contraindicated foods, then scanning meals for those exactly like the curated
+# conditions. Cached per-condition; validated; fail-safe. Mirrors the dosha
+# feature's rare-disease classifier (engine/dosha_analyzer).
+_CONDITION_APATHYA_CACHE: dict[str, dict | None] = {}
+
+
+def _validate_apathya_classification(raw: dict, cond_label: str) -> dict | None:
+    """Coerce an LLM Apathya classification into a safe scan entry, or None."""
+    if not isinstance(raw, dict):
+        return None
+    terms_in = raw.get("apathya_foods") or raw.get("terms") or []
+    if not isinstance(terms_in, list):
+        return None
+    terms = []
+    for t in terms_in:
+        s = str(t).strip().lower()
+        # Keep only concrete, matchable food words; drop empties and long phrases.
+        if s and len(s) <= 30 and s not in terms:
+            terms.append(s)
+    terms = terms[:20]
+    if not terms:
+        return None
+    name = str(raw.get("name") or cond_label).strip()[:80]
+    reason = str(raw.get("reason") or "Contraindicated for this condition (AI-inferred).").strip()[:160]
+    return {"name": name, "reason": reason, "terms": terms, "ai": True}
+
+
+async def classify_condition_apathya_llm(conditions: list[str]) -> dict[str, dict]:
+    """For conditions NOT in the curated scan map, ask the LLM for their
+    contraindicated foods. Returns {canon_condition: scan_entry}. Failures cached
+    as None so a genuinely unclassifiable term isn't re-asked. Never raises."""
+    if not conditions:
+        return {}
+    import json
+    from ai.llm_client import llm_client
+    from core.logger import logger
+
+    out: dict[str, dict] = {}
+    todo: list[str] = []
+    for c in conditions:
+        canon = _canon_condition(c)
+        if canon in _CONDITION_APATHYA_TERMS:
+            continue  # already has a curated deterministic entry
+        if canon in _CONDITION_APATHYA_CACHE:
+            cached = _CONDITION_APATHYA_CACHE[canon]
+            if cached:
+                out[canon] = cached
+        else:
+            todo.append(c)
+    if not todo:
+        return out
+
+    label_to_canon = {str(c).replace("_", " ").strip().title(): _canon_condition(c) for c in todo}
+    listing = "\n".join(f"- {lbl}" for lbl in label_to_canon)
+    system_prompt = (
+        "You are an Ayurvedic clinical nutritionist. For each disease, list the concrete "
+        "foods that are classically contraindicated (Apathya) — single words or short food "
+        "names that would appear on a menu (e.g. 'sugar', 'white rice', 'fried', 'banana', "
+        "'red meat', 'alcohol'). Respond with valid JSON only."
+    )
+    user_prompt = (
+        f"List contraindicated foods for each condition:\n{listing}\n\n"
+        'Respond as a JSON object keyed by the EXACT condition text, each value:\n'
+        '{"name":"<condition + Ayurvedic name>","reason":"<short why>",'
+        '"apathya_foods":["food1","food2", ...]}\n'
+        "Only concrete food words. No prose outside JSON."
+    )
+    try:
+        resp = await llm_client.generate(
+            prompt=user_prompt, system_prompt=system_prompt,
+            max_tokens=700, temperature=0.2, json_mode=True,
+        )
+        parsed = json.loads(resp) if resp else {}
+    except Exception as exc:
+        logger.warning(f"LLM Apathya classification failed ({exc}); {len(todo)} conditions unscanned.")
+        parsed = {}
+
+    parsed_norm = {_norm(str(k)).replace(" ", "").replace("_", ""): v
+                   for k, v in (parsed or {}).items()} if isinstance(parsed, dict) else {}
+    for lbl, canon in label_to_canon.items():
+        key = _norm(lbl).replace(" ", "").replace("_", "")
+        entry = _validate_apathya_classification(parsed_norm.get(key), lbl)
+        _CONDITION_APATHYA_CACHE[canon] = entry  # cache hit OR miss (None)
+        if entry:
+            out[canon] = entry
+    return out
+
+
+def apply_condition_food_safety(
+    plan: dict, medical_history: list[str], extra_terms: dict | None = None,
+) -> dict:
+    """Flag foods classically contraindicated for the user's conditions.
+
+    `extra_terms` (keyed by canonical condition) supplies scan entries for
+    conditions with no curated map entry — e.g. rare diseases classified by
+    classify_condition_apathya_llm. Marked AI-inferred.
+
+    Adds:
+      plan["condition_safety_alerts"] → plan-level list of {condition, food, week, day, slot}
+      plan["condition_food_safe"]     → bool (False if any contraindicated food found)
+      per-meal: meal["condition_warnings"] = [{condition, food, reason}]
+    Non-destructive: flags only, and never raises (safety layer must not break gen).
+    """
+    try:
+        extra_terms = extra_terms or {}
+        active: dict[str, dict] = {}
+        for cond in (medical_history or []):
+            canon = _canon_condition(cond)
+            proto = _CONDITION_APATHYA_TERMS.get(canon) or extra_terms.get(canon)
+            if proto:
+                active[canon] = proto
+        if not active:
+            plan["condition_food_safe"] = True
+            plan["condition_safety_alerts"] = []
+            plan["condition_safety_checked"] = True
+            return plan
+
+        alerts: list[dict] = []
+        for week_label, day_label, slot, meal in _collect_meal_units(plan):
+            text = _meal_text(meal)
+            if not text:
+                continue
+            meal_hits: list[dict] = []
+            for canon, proto in active.items():
+                _ai = " (AI-inferred)" if proto.get("ai") else ""
+                for term in proto["terms"]:
+                    if _term_in_text(term, text):
+                        meal_hits.append({"condition": proto["name"] + _ai, "food": term, "reason": proto["reason"]})
+                        alerts.append({
+                            "week": week_label, "day": day_label, "meal_slot": slot,
+                            "condition": proto["name"] + _ai, "food": term,
+                            "message": (
+                                f"{week_label} {day_label} {slot}: contains '{term}' — "
+                                f"{proto['reason']} Substitute before following this meal."
+                            ),
+                        })
+            if meal_hits and isinstance(meal, dict):
+                meal["condition_warnings"] = meal_hits
+                meal["requires_substitution"] = True
+
+        plan["condition_safety_alerts"] = alerts
+        plan["condition_food_safe"] = (len(alerts) == 0)
+        plan["condition_safety_checked"] = True
+    except Exception:
+        plan["condition_safety_checked"] = False
     return plan

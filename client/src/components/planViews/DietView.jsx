@@ -155,12 +155,13 @@ function DietSafetyBanner({ plan }) {
   if (!plan?.ahara_safety_checked) return null
   const alerts = plan.safety_alerts || []
   const viruddha = plan.viruddha_ahara_detected || []
+  const condAlerts = plan.condition_safety_alerts || []
 
-  if (!alerts.length && !viruddha.length) {
+  if (!alerts.length && !viruddha.length && !condAlerts.length) {
     return (
       <div className="diet-safety-ok">
         <ShieldCheck size={13} />
-        <span>Checked for allergens &amp; incompatible food combinations (Viruddha Ahara) — none found.</span>
+        <span>Checked for allergens, incompatible combinations (Viruddha Ahara) &amp; condition-contraindicated foods — none found.</span>
       </div>
     )
   }
@@ -175,6 +176,20 @@ function DietSafetyBanner({ plan }) {
             {alerts.map((a, i) => (
               <li key={i}>
                 <strong>{a.week} · {a.day} · {a.meal_slot}</strong>: contains {(a.matched_terms || []).join(', ')}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {condAlerts.length > 0 && (
+        <div className="diet-safety-card allergen">
+          <div className="diet-safety-title">
+            <TriangleAlert size={13} /> Foods not advised for your conditions — substitute before following these meals
+          </div>
+          <ul className="diet-safety-list">
+            {condAlerts.map((c, i) => (
+              <li key={i}>
+                <strong>{c.week} · {c.day} · {c.meal_slot}</strong>: contains {c.food} — {c.condition}
               </li>
             ))}
           </ul>

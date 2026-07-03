@@ -164,11 +164,17 @@ async def generate_diet_plan(
             diet_foods = kb_cache.diet_foods or None
             raw_plan = engine_generate(user_profile, diet_prefs, diet_foods)
             enriched_plan = await enrich_diet_plan(raw_plan, user_profile, diet_prefs)
-            # Same deterministic Ahara safety scan the LLM path gets
-            from services.ahara_safety import apply_ahara_safety
+            # Same deterministic Ahara safety scans the LLM path gets
+            from services.ahara_safety import (
+                apply_ahara_safety, apply_condition_food_safety, classify_condition_apathya_llm,
+            )
             enriched_plan = apply_ahara_safety(
                 enriched_plan, diet_prefs.get("food_allergies") or [],
                 diet_prefs.get("food_intolerances") or [])
+            _conds = user_profile.get("medical_history") or []
+            _extra_apathya = await classify_condition_apathya_llm(_conds)
+            enriched_plan = apply_condition_food_safety(
+                enriched_plan, _conds, extra_terms=_extra_apathya)
 
         plan_id = enriched_plan.get("plan_id")
         model_used = enriched_plan.get("enrichment_model", "services.diet_plan_engine")

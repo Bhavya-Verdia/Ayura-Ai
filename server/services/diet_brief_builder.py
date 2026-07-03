@@ -165,6 +165,12 @@ PATHYA_APATHYA_HINTS: dict[str, dict] = {
         "apathya": ["alcohol (absolute contraindication)", "excess oil and fat", "processed foods", "sugar", "red meat", "cold foods"],
         "classical_ref": "Charaka Chikitsa 18 (Kamala Chikitsa); Sushruta Uttara 44",
     },
+    "high_cholesterol": {
+        "ayurvedic_name": "Medoroga / Rasa-Meda Dushti",
+        "pathya": ["garlic (Lasuna)", "amla", "guggulu-supported foods", "barley (Yava)", "moong dal", "fenugreek (Methi)", "cooked leafy greens", "flaxseeds"],
+        "apathya": ["fried foods", "vanaspati / dalda", "excess ghee and butter", "red meat", "cheese", "refined sugar", "cold heavy foods"],
+        "classical_ref": "Charaka Sutrasthana 21 (Ashtauninditiya); Ashtanga Hridayam Sutrasthana 14 (Medoroga)",
+    },
     "kidney_disease": {
         "ayurvedic_name": "Mutraghata / Mutrakrichra / Vrikkavikara",
         "pathya": ["old rice (Puranashali)", "moong dal (very well cooked)", "barley water (Yava Jala)", "apple", "cooked cabbage (low potassium)"],
@@ -228,6 +234,8 @@ COND_ALIASES: dict[str, str] = {
     "hypothyroidism": "hypothyroid", "thyroidism": "thyroid",
     "overweight": "obesity", "weight_management": "obesity",
     "liver_disease": "fatty_liver", "nafld": "fatty_liver",
+    "cholesterol": "high_cholesterol", "dyslipidemia": "high_cholesterol",
+    "hyperlipidemia": "high_cholesterol", "high_lipids": "high_cholesterol",
     "ckd": "kidney_disease", "kidney_failure": "kidney_disease",
     "iron_deficiency": "anemia", "iron_deficiency_anemia": "anemia",
     "ibd": "grahani", "crohns": "grahani", "ulcerative_colitis": "grahani",
@@ -277,6 +285,125 @@ ALLERGEN_TERMS: dict[str, list[str]] = {
     "sesame": ["sesame", "til", "tahini", "gingelly"],
     "mustard": ["mustard", "sarson", "rai"],
 }
+
+
+# ── Multi-condition conflict resolution ───────────────────────────────────────
+# When a patient has several diseases, a food can be Pathya (recommended) for one
+# and Apathya (contraindicated) for another — e.g. spinach helps anemia but is
+# restricted in kidney disease. Left implicit, the LLM may centre a meal on such a
+# food and then the deterministic safety scan flags it everywhere. We detect these
+# conflicts up front and hand the LLM an explicit resolution rule.
+#
+# Priority: lower number = more restrictive / safety-critical → its "avoid" wins
+# when the whole diet is pulled two ways.
+_CONDITION_PRIORITY: dict[str, int] = {
+    "kidney_disease": 1,
+    "fatty_liver": 2, "diabetes": 2, "hypertension": 2, "high_cholesterol": 2,
+    "pcos": 2, "hypothyroid": 2, "thyroid": 2, "obesity": 2, "acidity": 2,
+    "amavata": 2, "rheumatoid_arthritis": 2, "asthma": 2, "psoriasis": 2,
+    "anemia": 3, "constipation": 3, "grahani": 3, "ibs": 3, "migraine": 3, "arsha": 3,
+}
+
+# Words that qualify a food phrase but aren't the food itself.
+_FOOD_QUALIFIERS = frozenset({
+    "excess", "old", "new", "cold", "hot", "heavy", "raw", "refined", "low", "high",
+    "very", "well", "cooked", "dried", "fresh", "incompatible", "processed", "in",
+    "large", "small", "amounts", "amount",
+})
+# Headwords that are too generic to be a real food-conflict signal.
+_GENERIC_FOOD_WORDS = frozenset({
+    "food", "foods", "water", "exercise", "eating", "combinations", "combination",
+    "treatment", "drinks", "diet", "meal", "meals", "items",
+})
+
+
+def _food_headword(phrase: str) -> str:
+    """Extract the core food word from a Pathya/Apathya phrase.
+
+    'banana (high potassium)' → 'banana'; 'spinach in large amounts' → 'spinach';
+    'jaggery in excess' → 'jaggery'; 'old rice' → 'rice'; 'cold foods' → '' (generic).
+    """
+    import re as _re
+    s = _re.sub(r"\([^)]*\)", " ", str(phrase).lower())   # drop parentheticals
+    s = _re.sub(r"[^a-z\s]", " ", s)                       # keep letters
+    for tok in s.split():
+        if tok in _FOOD_QUALIFIERS:
+            continue
+        if tok in _GENERIC_FOOD_WORDS or len(tok) <= 2:
+            return ""       # generic-led phrase → no reliable food signal
+        return tok
+    return ""
+
+
+def _pretty_cond(canon: str) -> str:
+    label = canon.replace("_", " ").title()
+    ayur = (PATHYA_APATHYA_HINTS.get(canon) or {}).get("ayurvedic_name")
+    return f"{label} ({ayur})" if ayur else label
+
+
+def detect_condition_conflicts(norm_conditions: list[str]) -> list[dict]:
+    """Foods that are beneficial for one of the patient's conditions but
+    contraindicated for another. Returns [{food, beneficial_for, contraindicated_for}]."""
+    conds = [c for c in dict.fromkeys(norm_conditions) if c in PATHYA_APATHYA_HINTS]
+    if len(conds) < 2:
+        return []
+    # Map each condition to its set of Pathya / Apathya headwords.
+    pathya_words: dict[str, dict[str, str]] = {}   # cond -> {headword: original phrase}
+    apathya_words: dict[str, dict[str, str]] = {}
+    for c in conds:
+        h = PATHYA_APATHYA_HINTS[c]
+        pathya_words[c] = {hw: p for p in h.get("pathya", []) if (hw := _food_headword(p))}
+        apathya_words[c] = {hw: a for a in h.get("apathya", []) if (hw := _food_headword(a))}
+
+    conflicts: dict[str, dict] = {}
+    for benefit_c in conds:
+        for hw, phrase in pathya_words[benefit_c].items():
+            for avoid_c in conds:
+                if avoid_c == benefit_c:
+                    continue
+                if hw in apathya_words[avoid_c]:
+                    entry = conflicts.setdefault(hw, {
+                        "food": hw, "beneficial_for": set(), "contraindicated_for": set(),
+                    })
+                    entry["beneficial_for"].add(benefit_c)
+                    entry["contraindicated_for"].add(avoid_c)
+    # Serialise, sorting contraindicating condition by priority (most critical first).
+    out = []
+    for hw, e in conflicts.items():
+        out.append({
+            "food": hw,
+            "beneficial_for": sorted(e["beneficial_for"]),
+            "contraindicated_for": sorted(e["contraindicated_for"],
+                                          key=lambda c: _CONDITION_PRIORITY.get(c, 3)),
+        })
+    return sorted(out, key=lambda x: x["food"])
+
+
+def _conflict_section(norm_conditions: list[str]) -> str:
+    """Brief section instructing the LLM how to resolve multi-condition food conflicts."""
+    conflicts = detect_condition_conflicts(norm_conditions)
+    known = [c for c in dict.fromkeys(norm_conditions) if c in PATHYA_APATHYA_HINTS]
+    if not conflicts:
+        return ""
+    primary = min(known, key=lambda c: _CONDITION_PRIORITY.get(c, 3))
+    lines = [
+        "\n\n⚠️ MULTIPLE CONDITIONS — CONFLICT RESOLUTION (critical, resolve deterministically):",
+        f"  Primary condition (its restrictions win when foods conflict): {_pretty_cond(primary)}",
+        "  Specific food conflicts detected:",
+    ]
+    for c in conflicts:
+        benefit = ", ".join(x.replace("_", " ").title() for x in c["beneficial_for"])
+        avoid = ", ".join(x.replace("_", " ").title() for x in c["contraindicated_for"])
+        lines.append(
+            f"    • {c['food'].title()} — beneficial for {benefit}, but contraindicated for {avoid}. "
+            f"AVOID it and meet the lost benefit with a substitute that is safe for ALL of this "
+            f"patient's conditions."
+        )
+    lines.append(
+        "  RULE: when a food helps one condition but harms another, AVOID it (safety first) and "
+        "replace its benefit with an alternative that is not Apathya for any of this patient's diseases."
+    )
+    return "\n".join(lines)
 
 
 def target_calories(user_profile: dict, diet_prefs: dict) -> int:
@@ -355,6 +482,8 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
         cond_blocks.append(block)
 
     cond_section = "\n".join(cond_blocks) if cond_blocks else "  • None reported"
+    # Multi-condition conflict resolution — appended right after the conditions list.
+    cond_section += _conflict_section(norm_conditions)
     season_guidance = SEASON_GUIDANCE.get(season, "No specific season provided — use general Ayurvedic diet principles.")
 
     hard_constraints = [f"Dietary type: {diet_type} (STRICTLY honour — never recommend non-{diet_type} items)"]
