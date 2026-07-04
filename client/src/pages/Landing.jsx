@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import Lenis from 'lenis'
-import { m, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import { m, AnimatePresence, useScroll, useTransform, MotionConfig } from 'framer-motion'
+import useLowPowerMode from '../hooks/useLowPowerMode'
 import { useAuth } from '../providers/AuthContext'
 import { Helmet } from 'react-helmet-async'
 import React from 'react'
@@ -358,6 +359,12 @@ const FAQS = [
 export default function Landing() {
   const { user, logout } = useAuth()
   const [scrolled, setScrolled] = useState(false)
+  // On phone-class GPUs the framer transform entrances leave text on stale
+  // low-resolution compositor layers — the page LOOKS blurred until something
+  // forces a re-raster (verified live: reduced-motion renders razor sharp,
+  // animations-on renders soft). So on low-power devices disable transform
+  // animations entirely; content simply appears, which also reads faster.
+  const lowPower = useLowPowerMode()
   const lenisRef = useRef(null)
   const rafRef   = useRef(null)
 
@@ -456,6 +463,7 @@ export default function Landing() {
   }
 
   return (
+    <MotionConfig reducedMotion={lowPower ? 'always' : 'user'}>
     <div className="landing-root">
       <Helmet>
         <title>Ayura AI — AI + Ayurveda Wellness Platform</title>
@@ -502,7 +510,9 @@ export default function Landing() {
         {/* ── HERO ────────────────────────────────────────── */}
         <m.section
           className="lnd-hero"
-          style={{ y: heroParallaxY, opacity: heroParallaxOpacity }}
+          // MotionValue styles bypass MotionConfig, so gate the parallax layer
+          // explicitly — it pins the whole hero onto one GPU layer on phones.
+          style={lowPower ? undefined : { y: heroParallaxY, opacity: heroParallaxOpacity }}
         >
           {/* Echo rings behind hero */}
           <div className="lnd-hero-echo" aria-hidden="true">
@@ -840,5 +850,6 @@ export default function Landing() {
         </div>
       </footer>
     </div>
+    </MotionConfig>
   )
 }

@@ -74,11 +74,12 @@ export default function MainLayout() {
     const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 2000))
     const cancel = window.cancelIdleCallback || clearTimeout
     const id = idle(() => {
-      import('../components/PlanViewer')
-      import('../pages/Chat')
-      import('../pages/Progress')
-      import('../pages/Community')
-      import('../pages/Settings')
+      const warm = (p) => p.catch(() => {}) // prefetch failure must stay silent
+      warm(import('../components/PlanViewer'))
+      warm(import('../pages/Chat'))
+      warm(import('../pages/Progress'))
+      warm(import('../pages/Community'))
+      warm(import('../pages/Settings'))
     })
     return () => cancel(id)
   }, [])

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { LazyMotion, domAnimation, MotionConfig } from 'framer-motion'
+import useLowPowerMode from './hooks/useLowPowerMode'
 import App from './App'
 import { AuthProvider } from './providers/AuthContext'
 import { ThemeProvider } from './providers/ThemeProvider'
@@ -54,6 +55,28 @@ if (SENTRY_DSN && !SENTRY_DSN.includes('sentry.example.com')) {
   })
 }
 
+// LazyMotion + the `m` component (used app-wide instead of `motion`) ships only
+// the `domAnimation` feature set and lets Rollup tree-shake out the heavier
+// layout/drag projection code that the full `motion` proxy would force-bundle.
+//
+// reducedMotion: "user" honors the OS reduce-motion setting (framer uses JS
+// transforms, which the CSS reduced-motion reset can't stop). On low-power
+// devices we force "always": phone-class GPUs leave text on stale low-res
+// compositor layers after transform entrances (page looks BLURRED until a
+// re-raster — verified on the live site). "always" keeps opacity/color fades
+// but drops transform animations, which both fixes the blur and cuts jank.
+// eslint-disable-next-line react-refresh/only-export-components -- entry file, not hot-reloaded
+function MotionRoot({ children }) {
+  const lowPower = useLowPowerMode()
+  return (
+    <LazyMotion features={domAnimation}>
+      <MotionConfig reducedMotion={lowPower ? 'always' : 'user'}>
+        {children}
+      </MotionConfig>
+    </LazyMotion>
+  )
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <HelmetProvider>
@@ -61,18 +84,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <PersistQueryClientProvider client={queryClient} persistOptions={{ persister: idbPersister, maxAge: 1000 * 60 * 60 * 24 * 7 }}>
           <AuthProvider>
             <ThemeProvider>
-              {/* LazyMotion + the `m` component (used app-wide instead of `motion`)
-                  ships only the `domAnimation` feature set and lets Rollup tree-shake
-                  out the heavier layout/drag projection code that the full `motion`
-                  proxy would force-bundle. */}
-              {/* reducedMotion="user" makes ALL framer animations honor the OS
-                  "reduce motion" setting (framer uses JS transforms, which the CSS
-                  reduced-motion reset can't stop) — a11y + faster LCP for those users. */}
-              <LazyMotion features={domAnimation}>
-                <MotionConfig reducedMotion="user">
-                  <App />
-                </MotionConfig>
-              </LazyMotion>
+              <MotionRoot>
+                <App />
+              </MotionRoot>
             </ThemeProvider>
           </AuthProvider>
         </PersistQueryClientProvider>
