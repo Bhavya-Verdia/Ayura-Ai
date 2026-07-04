@@ -115,6 +115,14 @@ async def generate_yoga_plan(
             generated_at=datetime.now(timezone.utc)
         )
         await db.plan_history.insert_one(history.model_dump(by_alias=True))
+        await log_plan_generated(
+            db=db,
+            user_id=user.id,
+            plan_id=plan_id,
+            plan_type="yoga",
+            model_used=model_used,
+            is_adaptation=False,
+        )
 
     return enriched_plan
 
@@ -194,6 +202,14 @@ async def generate_diet_plan(
             generated_at=datetime.now(timezone.utc)
         )
         await db.plan_history.insert_one(history.model_dump(by_alias=True))
+        await log_plan_generated(
+            db=db,
+            user_id=user.id,
+            plan_id=plan_id,
+            plan_type="diet",
+            model_used=model_used,
+            is_adaptation=False,
+        )
 
     return enriched_plan
 
@@ -277,6 +293,14 @@ async def generate_routine_plan(
             generated_at=datetime.now(timezone.utc)
         )
         await db.plan_history.insert_one(history.model_dump(by_alias=True))
+        await log_plan_generated(
+            db=db,
+            user_id=user.id,
+            plan_id=plan_id,
+            plan_type="routine",
+            model_used=model_used,
+            is_adaptation=False,
+        )
 
     return enriched_plan
 
@@ -338,6 +362,14 @@ async def generate_gym_plan(
             generated_at=datetime.now(timezone.utc)
         )
         await db.plan_history.insert_one(history.model_dump(by_alias=True))
+        await log_plan_generated(
+            db=db,
+            user_id=user.id,
+            plan_id=plan_id,
+            plan_type="gym",
+            model_used=model_used,
+            is_adaptation=False,
+        )
 
     return enriched_plan
 
@@ -393,6 +425,14 @@ async def generate_panchakarma_plan(
             generated_at=datetime.now(timezone.utc)
         )
         await db.plan_history.insert_one(history.model_dump(by_alias=True))
+        await log_plan_generated(
+            db=db,
+            user_id=user.id,
+            plan_id=plan_id,
+            plan_type="panchakarma",
+            model_used=model_used,
+            is_adaptation=False,
+        )
 
     return enriched_plan
 
@@ -500,6 +540,14 @@ async def generate_medicines_plan(
             generated_at=datetime.now(timezone.utc)
         )
         await db.plan_history.insert_one(history.model_dump(by_alias=True))
+        await log_plan_generated(
+            db=db,
+            user_id=user.id,
+            plan_id=plan_id,
+            plan_type="medicines",
+            model_used=model_used,
+            is_adaptation=False,
+        )
 
     return enriched_plan
 

@@ -110,6 +110,13 @@ function ClassicalBasis({ planType }) {
 }
 
 
+function timeGreeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 17) return 'Good afternoon'
+  return 'Good evening'
+}
+
 export default function PlanViewer({ plan: rawPlan, planType }) {
   if (!rawPlan) return <p className="plan-empty">No plan data available.</p>
 
@@ -156,8 +163,8 @@ export default function PlanViewer({ plan: rawPlan, planType }) {
         >
           <div className="plan-summary-name">
             {plan.user_summary.name
-              ? `Good morning, ${plan.user_summary.name.split(' ')[0]}`
-              : 'Good morning'}
+              ? `${timeGreeting()}, ${plan.user_summary.name.split(' ')[0]}`
+              : timeGreeting()}
           </div>
           {plan.user_summary.dominant_dosha && (
             <div className="plan-summary-dosha-row">

@@ -155,6 +155,14 @@ function groupEvents(events) {
   return groups
 }
 
+// Raw engine identifiers ("rule_based") are not user-facing copy.
+function humanizeMethod(v) {
+  const s = String(v)
+  if (s === 'rule_based') return 'Rule-based engine'
+  if (s === 'llm' || s === 'llm_primary') return 'AI-generated'
+  return s.replace(/_/g, ' ')
+}
+
 function renderDetails(event) {
   const { event_type, details = {}, metadata = {} } = event
   const data = details || metadata || {}
@@ -189,14 +197,14 @@ function renderDetails(event) {
       return (
         <div className="ht-event-details">
           {data.plan_type && <span className="ht-detail-chip ht-chip-primary"><ClipboardList size={13} strokeWidth={2} /> {data.plan_type}</span>}
-          {data.model_used && <span className="ht-detail-chip ht-chip-muted">{data.model_used}</span>}
+          {data.model_used && <span className="ht-detail-chip ht-chip-muted">{humanizeMethod(data.model_used)}</span>}
         </div>
       )
     case 'adaptation_triggered':
       return (
         <div className="ht-event-details">
           {data.plan_type && <span className="ht-detail-chip ht-chip-sage"><RefreshCw size={13} strokeWidth={2} /> {data.plan_type}</span>}
-          {data.model_used && <span className="ht-detail-chip ht-chip-muted">{data.model_used}</span>}
+          {data.model_used && <span className="ht-detail-chip ht-chip-muted">{humanizeMethod(data.model_used)}</span>}
         </div>
       )
     case 'reminder_set':
@@ -552,7 +560,10 @@ export default function HealthTimeline() {
               {/* Vertical Line */}
               <div className="ht-vline" aria-hidden="true" />
 
-              <AnimatePresence mode="popLayout">
+              {/* No popLayout: it force-attaches refs to direct children (our
+                  Fragments can't take refs → React warning) and needs the
+                  layout engine excluded by LazyMotion domAnimation. */}
+              <AnimatePresence>
                 {groupOrder.map(group => (
                   <React.Fragment key={group}>
                     <DateGroupHeader label={group} />

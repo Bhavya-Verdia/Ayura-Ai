@@ -2271,11 +2271,14 @@
   font-size: 0.7rem;
   font-weight: 600;
   background: color-mix(in srgb, #f59e0b 15%, transparent);
-  color: #92400e;
+  color: #fcd34d;
   border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent);
 }
-.sns-badge.pace { background: color-mix(in srgb, #f97316 12%, transparent); color: #7c2d12; }
-.sns-badge.dur  { background: color-mix(in srgb, #22c55e 12%, transparent); color: #14532d; border-color: color-mix(in srgb, #22c55e 28%, transparent); }
+.sns-badge.pace { background: color-mix(in srgb, #f97316 12%, transparent); color: #fdba74; }
+.sns-badge.dur  { background: color-mix(in srgb, #22c55e 12%, transparent); color: #86efac; border-color: color-mix(in srgb, #22c55e 28%, transparent); }
+[data-theme='light'] .sns-badge { color: #92400e; }
+[data-theme='light'] .sns-badge.pace { color: #7c2d12; }
+[data-theme='light'] .sns-badge.dur { color: #14532d; }
 
 .sns-pace-note {
   font-size: 0.77rem;
@@ -2641,8 +2644,10 @@
   border: 1px solid color-mix(in srgb, #22c55e 22%, transparent);
   border-radius: 10px;
 }
-.diet-coaching-icon { color: #16a34a; flex-shrink: 0; margin-top: 0.1rem; }
-.diet-coaching-text { font-size: 0.8rem; color: #15803d; line-height: 1.6; margin: 0; }
+.diet-coaching-icon { color: var(--ayura-sage); flex-shrink: 0; margin-top: 0.1rem; }
+/* Body copy in the theme ink — green-on-green paragraph text was unreadable in
+   dark mode; the tinted card + icon already carry the "safety" signal. */
+.diet-coaching-text { font-size: 0.8rem; color: var(--ayura-ink); opacity: 0.85; line-height: 1.6; margin: 0; }
 
 
 
@@ -3883,6 +3888,19 @@
   font-weight: 700;
   white-space: nowrap;
 }
+/* Hue arrives via --chip (inline style); text is mixed toward the theme's ink
+   so every hue stays readable on both dark and light surfaces. */
+.mv-type-chip, .mv-tier-badge, .mv-rasa-chip, .mv-karma-pill {
+  --chip: #94a3b8;
+  background: color-mix(in srgb, var(--chip) 14%, transparent);
+  color: color-mix(in srgb, var(--chip) 58%, #f4edde);
+}
+[data-theme='light'] .mv-type-chip,
+[data-theme='light'] .mv-tier-badge,
+[data-theme='light'] .mv-rasa-chip,
+[data-theme='light'] .mv-karma-pill {
+  color: color-mix(in srgb, var(--chip) 58%, #262019);
+}
 .mv-external-badge {
   padding: 3px 9px;
   border-radius: 20px;
@@ -4094,8 +4112,10 @@
   border-radius: 20px;
   letter-spacing: 0.02em;
 }
-.mv-virya-badge.ushna { background: rgba(239,68,68,0.12); color: #ef4444; }
-.mv-virya-badge.sheeta { background: rgba(96,165,250,0.12); color: #60a5fa; }
+.mv-virya-badge.ushna { background: rgba(239,68,68,0.12); color: #f87171; }
+.mv-virya-badge.sheeta { background: rgba(96,165,250,0.12); color: #93c5fd; }
+[data-theme='light'] .mv-virya-badge.ushna { color: #b91c1c; }
+[data-theme='light'] .mv-virya-badge.sheeta { color: #1d4ed8; }
 .mv-vipaka-badge {
   font-size: 0.72rem;
   font-weight: 600;

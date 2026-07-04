@@ -71,11 +71,11 @@ function MedCard({ med, rationale }) {
             {med.name}
             {med.previously_tried && <span className="mv-tried-badge">Tried before</span>}
           </div>
-          <div className="mv-type-chip" style={{ background: color + '22', color }}>{med.type}</div>
+          <div className="mv-type-chip" style={{ '--chip': color }}>{med.type}</div>
         </div>
         <div className="mv-card-right">
           {durMin && <span className="mv-duration-badge">{durMin}–{durMax || durMin} wk</span>}
-          <span className="mv-tier-badge" style={{ background: tierColor + '22', color: tierColor }}>
+          <span className="mv-tier-badge" style={{ '--chip': tierColor }}>
             {TIER_LABEL[med.safety_tier] || 'Consult Vaidya'}
           </span>
           {isExternal && <span className="mv-external-badge">External</span>}
@@ -91,7 +91,7 @@ function MedCard({ med, rationale }) {
               <span className="mv-pharma-label">Rasa</span>
               <div className="mv-rasa-chips">
                 {med.rasa.map((r, i) => (
-                  <span key={i} className="mv-rasa-chip" style={{ background: (RASA_COLOR[r] || '#94a3b8') + '22', color: RASA_COLOR[r] || '#94a3b8' }}>
+                  <span key={i} className="mv-rasa-chip" style={{ '--chip': RASA_COLOR[r] || '#94a3b8' }}>
                     {r.charAt(0).toUpperCase() + r.slice(1)}
                   </span>
                 ))}
@@ -157,10 +157,7 @@ function MedCard({ med, rationale }) {
               <div className="mv-section-label">Karma (Actions)</div>
               <div className="mv-karma-row">
                 {med.karma.map((k, i) => (
-                  <span key={i} className="mv-karma-pill" style={{
-                    background: (KARMA_COLOR[k] || '#64748b') + '22',
-                    color: KARMA_COLOR[k] || '#94a3b8',
-                  }}>{k}</span>
+                  <span key={i} className="mv-karma-pill" style={{ '--chip': KARMA_COLOR[k] || '#94a3b8' }}>{k}</span>
                 ))}
               </div>
             </div>
