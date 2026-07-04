@@ -497,7 +497,7 @@ function ReactionModal({ planType, onClose }) {
 // ── Main Dashboard ────────────────────────────────────────────
 const Dashboard = () => {
   const { user } = useContext(AuthContext)
-  const { theme, setTheme } = useTheme()
+  const { theme, setThemeAnimated } = useTheme()
   const [viewingPlan, setViewingPlan]     = useState(null)
   const [viewingType, setViewingType]     = useState(null)
   const [generating,  setGenerating]      = useState({})
@@ -671,7 +671,7 @@ const Dashboard = () => {
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-16px', position: 'relative', zIndex: 10 }}>
         <m.button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          onClick={(e) => setThemeAnimated(theme === 'dark' ? 'light' : 'dark', e)}
           className="btn btn-secondary btn-sm"
           style={{ display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '20px', padding: '6px 14px', fontSize: '0.85rem' }}
           whileTap={{ scale: 0.95 }}

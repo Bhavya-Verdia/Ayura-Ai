@@ -1,4 +1,36 @@
-/* Fonts loaded via index.html <link> for earlier discovery */
+/* Fonts are self-hosted via fontsource (imported in main.jsx); the two
+   critical woff2 files are <link rel=preload>-injected at build time. */
+
+/* ── METRIC-MATCHED FALLBACK FONTS ─────────────────────────────
+   Local fonts overridden to occupy the SAME space as the webfonts, so the
+   swap when Manrope/Fraunces arrive doesn't reflow the page (kills the
+   font-swap LCP re-entry and any swap CLS). Values were MEASURED in-browser
+   (canvas measureText + fontBoundingBox vs the real webfonts) — recompute if
+   fonts ever change. */
+@font-face {
+  font-family: 'Manrope Fallback';
+  src: local('Arial');
+  size-adjust: 104.34%;
+  ascent-override: 102.55%;
+  descent-override: 28.75%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Manrope Fallback Android'; /* Android has Roboto, not Arial */
+  src: local('Roboto');
+  size-adjust: 113.51%;
+  ascent-override: 94.26%;
+  descent-override: 26.43%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia');
+  size-adjust: 84.98%;
+  ascent-override: 115.32%;
+  descent-override: 30.6%;
+  line-gap-override: 0%;
+}
 
 /* Visually hidden, but present for screen readers and crawlers (SEO). */
 .sr-only {
@@ -149,9 +181,9 @@ body,
      Display = Fraunces (warm editorial serif, optical-size variable) for headings;
      UI/body = Manrope. The pairing gives the brand an "editorial wellness" voice
      rather than the default geometric-sans SaaS look. */
-  --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
-  --font-ui:      'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-body:    'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fraunces Variable', 'Fraunces', 'Fraunces Fallback', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-ui:      'Manrope', 'Manrope Fallback', 'Manrope Fallback Android', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-body:    'Manrope', 'Manrope Fallback', 'Manrope Fallback Android', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   /* ── Fluid type scale ──
      clamp(min, preferred-vw, max): sizes scale continuously with the viewport
@@ -490,6 +522,18 @@ select {
 /* Tactile press feedback — snappy on the way down, eased on release */
 .btn:active { transform: translateY(0) scale(0.97); transition-duration: 0.07s; }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ─── THEME SWITCH VIEW TRANSITION ────────────────────────── */
+/* The circular reveal is driven by a JS clip-path animation on
+   ::view-transition-new(root) (ThemeProvider.setThemeAnimated). Disable the
+   default crossfade so old keeps showing until the circle wipes over it. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 2; }
 
 /* ─── BRANDED TEXT SELECTION ──────────────────────────────── */
 ::selection {

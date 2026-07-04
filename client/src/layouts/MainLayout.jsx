@@ -64,6 +64,25 @@ export default function MainLayout() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
+  // Idle prefetch of the lazy chunks a logged-in user is most likely to hit
+  // next (PlanViewer is behind every plan-card tap; the rest are the main
+  // tabs). Vite dedupes by module URL, so these resolve to the same chunks the
+  // router lazy-loads — after this warms the cache, navigation is instant even
+  // on slow mobile connections. requestIdleCallback keeps it off the critical
+  // path; Safari lacks it, so fall back to a timer.
+  useEffect(() => {
+    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 2000))
+    const cancel = window.cancelIdleCallback || clearTimeout
+    const id = idle(() => {
+      import('../components/PlanViewer')
+      import('../pages/Chat')
+      import('../pages/Progress')
+      import('../pages/Community')
+      import('../pages/Settings')
+    })
+    return () => cancel(id)
+  }, [])
+
   const location = useLocation()
   const prefersReducedMotion = useReducedMotion()
   const doshaBadgeColor = DOSHA_COLOR[user?.dominant_dosha?.toLowerCase()] || DOSHA_COLOR.default

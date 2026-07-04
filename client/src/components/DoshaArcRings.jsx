@@ -95,7 +95,7 @@ export default function DoshaArcRings({
             x={cx} y={cy - 6}
             textAnchor="middle" dominantBaseline="middle"
             fill={DOSHA_CONFIG[dominantDosha]?.color || DOSHA_COLOR.default}
-            style={{ fontFamily: "'Fraunces', Georgia, serif", fontWeight: 600, fontSize: size * 0.13 }}
+            style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: size * 0.13 }}
           >
             {(scores[dominantDosha] ?? DOSHA_CONFIG[dominantDosha]?.score ?? 65)}
           </text>

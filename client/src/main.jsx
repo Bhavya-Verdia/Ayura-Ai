@@ -8,6 +8,17 @@ import { AuthProvider } from './providers/AuthContext'
 import { ThemeProvider } from './providers/ThemeProvider'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { queryClient, idbPersister } from './queryClient'
+// Self-hosted fonts (was Google Fonts): same-origin woff2 discovered with the
+// main CSS instead of a late 2-domain chain (googleapis CSS → gstatic font) —
+// the webfont repaint was the mobile LCP bottleneck. Latin subsets only are
+// fetched (unicode-range). font-display: swap comes with fontsource.
+import '@fontsource/manrope/400.css'
+import '@fontsource/manrope/500.css'
+import '@fontsource/manrope/600.css'
+import '@fontsource/manrope/700.css'
+import '@fontsource/manrope/800.css'
+import '@fontsource-variable/fraunces/opsz.css'
+import '@fontsource-variable/fraunces/opsz-italic.css'
 import './index.css'
 import './i18n'
 

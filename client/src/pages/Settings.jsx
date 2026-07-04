@@ -150,7 +150,7 @@ const staggerItem = {
 
 export default function Settings() {
   const { profile, updateProfile, logout } = useAuth()
-  const { theme, setTheme } = useTheme()
+  const { theme, setThemeAnimated } = useTheme()
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
@@ -460,7 +460,7 @@ export default function Settings() {
                     boxShadow: theme === 'dark' ? '0 0 0 2px rgba(92,171,116,0.2)' : 'none',
                     background: '#0B1121' 
                   }}
-                  onClick={() => setTheme('dark')}
+                  onClick={(e) => setThemeAnimated('dark', e)}
                 >
                   <div className="settings-theme-preview-bar" style={{ background: '#1E293B' }}>
                     <span style={{ background: '#334155' }} />
@@ -483,7 +483,7 @@ export default function Settings() {
                     boxShadow: theme === 'light' ? '0 0 0 2px rgba(92,171,116,0.2)' : 'none',
                     background: '#F8FAFC' 
                   }}
-                  onClick={() => setTheme('light')}
+                  onClick={(e) => setThemeAnimated('light', e)}
                 >
                   <div className="settings-theme-preview-bar" style={{ background: '#E2E8F0' }}>
                     <span style={{ background: '#CBD5E1' }} />

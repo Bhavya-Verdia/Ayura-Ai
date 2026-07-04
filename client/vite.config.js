@@ -2,11 +2,35 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Preload the two fonts that gate the first meaningful paint (body Manrope 400
+// = hero subtitle/LCP element, display Fraunces = hero title). Without this
+// they're only discovered after the CSS parses; preloading fetches them in
+// parallel with the JS. Hashed filenames are only known at bundle time, hence
+// a plugin instead of hand-written <link> tags.
+const preloadCriticalFonts = () => ({
+  name: 'preload-critical-fonts',
+  transformIndexHtml: {
+    order: 'post',
+    handler(html, ctx) {
+      if (!ctx.bundle) return
+      const critical = /(?:manrope-latin-400-normal|fraunces-latin-opsz-normal).*\.woff2$/
+      return Object.keys(ctx.bundle)
+        .filter((f) => critical.test(f))
+        .map((f) => ({
+          tag: 'link',
+          attrs: { rel: 'preload', as: 'font', type: 'font/woff2', href: `/${f}`, crossorigin: '' },
+          injectTo: 'head',
+        }))
+    },
+  },
+})
+
 // https://vite.dev/config/
 export default defineConfig({
   envDir: '..',
   plugins: [
     react(),
+    preloadCriticalFonts(),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-512x512-maskable.png', 'og-image.png'],
@@ -76,6 +100,14 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       }
+    }
+  },
+  // Same proxy for `vite preview` so the production build can be exercised
+  // against a local backend (perf measurement, pre-deploy smoke tests).
+  preview: {
+    proxy: {
+      '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true, ws: true },
+      '/uploads': { target: 'http://127.0.0.1:8000', changeOrigin: true },
     }
   }
 })

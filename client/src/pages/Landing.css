@@ -631,6 +631,9 @@
      100px→60px at 768px, so the awkward tablet range looks intentional. */
   padding: clamp(56px, 8vw, 100px) clamp(20px, 4vw, 32px);
   position: relative; z-index: 1;
+  /* NOTE: content-visibility:auto was tried here and REVERTED — it moves the
+     render cost of each section to the moment you scroll near it, which showed
+     up as mid-swipe hitches on throttled mobile (52fps/9 hitches vs 56/5). */
 }
 .lnd-section-kicker {
   font-size: 0.72rem; font-weight: 700;

@@ -29,6 +29,14 @@ const VP       = { once: true, margin: '-60px' }
 // ─── Hero title words ──────────────────────────────────────────
 const HERO_WORDS = ['Your', 'wellness,', 'finally', 'in', 'sync.']
 
+// True when this module loads over PRERENDERED HTML (cold visit to "/"): the
+// hero already exists in the DOM before React hydrates. In that case skip the
+// hero entrance animations — re-animating content the visitor is already
+// reading looks like a glitch, and the re-paint pushes the LCP timestamp from
+// first paint (~1.6s) to post-hydration (~3s) on slow devices. Client-side
+// navigations to "/" (no prerendered DOM at module load) keep the entrance.
+const PRERENDERED = typeof document !== 'undefined' && !!document.querySelector('.lnd-hero-subtitle')
+
 // ─── How it works cards ───────────────────────────────────────
 const HOW_CARDS = [
   {
@@ -510,7 +518,7 @@ export default function Landing() {
 
             <m.span
               className="lnd-hero-kicker"
-              initial={{ opacity: 0, y: 16 }}
+              initial={PRERENDERED ? false : { opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
@@ -522,7 +530,7 @@ export default function Landing() {
             <m.h2
               className="lnd-hero-title"
               variants={stagger}
-              initial="hidden"
+              initial={PRERENDERED ? false : 'hidden'}
               animate="visible"
             >
               {HERO_WORDS.map((word, i) => (
@@ -545,7 +553,7 @@ export default function Landing() {
                 fade-in after hydration — big LCP win on slow devices. */}
             <m.p
               className="lnd-hero-subtitle"
-              initial={{ y: 18 }}
+              initial={PRERENDERED ? false : { y: 18 }}
               animate={{ y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
@@ -554,7 +562,7 @@ export default function Landing() {
 
             <m.div
               className="lnd-hero-cta-row"
-              initial={{ opacity: 0, y: 16 }}
+              initial={PRERENDERED ? false : { opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.28 }}
             >

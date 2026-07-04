@@ -34,15 +34,8 @@
     <meta name="twitter:site" content="@ayuraai" />
 
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Non-blocking font load: fetch as a preload, then flip to a real
-         stylesheet once it arrives so it never blocks first paint.
-         display=swap already renders text in the fallback font meanwhile. -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Manrope:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript>
-      <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    </noscript>
+    <!-- Fonts are self-hosted (fontsource, imported in main.jsx) — same-origin
+         woff2 with unicode-range subsets. No Google Fonts round-trips. -->
 
     <!-- PWA Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
