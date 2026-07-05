@@ -75,13 +75,32 @@ API.interceptors.response.use(
       }
     }
 
+    // Cancelled/aborted requests (unmounts, navigation) are not failures.
+    if (axios.isCancel(err) || err.code === 'ERR_CANCELED') {
+      return Promise.reject(err)
+    }
+
     // Global error feedback — 5xx server errors and network failures only.
     // 4xx errors (validation, conflicts, not found) are handled per-component.
     if (!err.response) {
-      toast.error('Network error — please check your connection.')
+      // On mobile the first requests often fire while the radio is still
+      // waking (doze, Wi-Fi↔data switch); retry idempotent GETs once before
+      // declaring a network problem.
+      if (originalRequest && originalRequest.method === 'get' && !originalRequest._netRetry &&
+          navigator.onLine !== false) {
+        originalRequest._netRetry = true
+        await new Promise((resolve) => setTimeout(resolve, 1200))
+        return API(originalRequest)
+      }
+      // When genuinely offline the OfflineBanner is already visible.
+      if (navigator.onLine !== false) {
+        toast.error('Network error — please check your connection.', { id: 'network-error' })
+      }
     } else if (err.response.status >= 500) {
       const detail = err.response.data?.detail || 'Server error. Please try again.'
-      toast.error(detail)
+      // Keyed by message: identical errors from parallel boot requests collapse
+      // into one toast; distinct messages still show separately.
+      toast.error(detail, { id: `server-error-${detail}` })
     }
 
     return Promise.reject(err)
