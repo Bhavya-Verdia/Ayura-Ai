@@ -29,11 +29,25 @@ const preloadCriticalFonts = () => ({
 export default defineConfig({
   envDir: '..',
   plugins: [
-    react(),
+    // React Compiler auto-memoizes components/hooks at build time — the
+    // equivalent of hand-written React.memo/useMemo/useCallback everywhere,
+    // which cuts re-render work (the main source of interaction jank on
+    // mid-range phones). Components that break the Rules of React are
+    // skipped, not miscompiled.
+    react({ babel: { plugins: ['babel-plugin-react-compiler'] } }),
     preloadCriticalFonts(),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-512x512-maskable.png', 'og-image.png'],
+      workbox: {
+        // Fonts gate first paint, so precache them alongside js/css/html —
+        // repeat visits (and offline) render text with zero network. Latin
+        // subsets only: unicode-range means the browser never requests the
+        // cyrillic/greek/vietnamese files, so precaching them would burn
+        // ~160KB of mobile data for nothing. Images are left to nginx's
+        // immutable HTTP cache.
+        globPatterns: ['**/*.{js,css,html}', '**/*latin*.woff2'],
+      },
       manifest: {
         name: 'Ayura AI — Adaptive Ayurvedic Wellness',
         short_name: 'Ayura AI',
