@@ -84,12 +84,14 @@ API.interceptors.response.use(
     // 4xx errors (validation, conflicts, not found) are handled per-component.
     if (!err.response) {
       // On mobile the first requests often fire while the radio is still
-      // waking (doze, Wi-Fi↔data switch); retry idempotent GETs once before
-      // declaring a network problem.
-      if (originalRequest && originalRequest.method === 'get' && !originalRequest._netRetry &&
+      // waking (doze, Wi-Fi↔data switch), which can take a few seconds;
+      // retry idempotent GETs with backoff before declaring a network problem.
+      const retryDelays = [1200, 2500]
+      const attempt = originalRequest?._netRetries || 0
+      if (originalRequest && originalRequest.method === 'get' && attempt < retryDelays.length &&
           navigator.onLine !== false) {
-        originalRequest._netRetry = true
-        await new Promise((resolve) => setTimeout(resolve, 1200))
+        originalRequest._netRetries = attempt + 1
+        await new Promise((resolve) => setTimeout(resolve, retryDelays[attempt]))
         return API(originalRequest)
       }
       // When genuinely offline the OfflineBanner is already visible.
