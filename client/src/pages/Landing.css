@@ -1115,6 +1115,10 @@
 @media (max-width: 768px) {
   .lnd-hero { padding: 100px 20px 60px; }
   .lnd-feature, .lnd-feature.reverse { flex-direction: column; gap: 32px; padding: 48px 0; }
+  /* Stacked full-width the mini-UI content is shorter than the desktop
+     side-by-side height — a fixed 460px floor leaves a large empty band
+     inside the card. Let it hug its content on phones. */
+  .lnd-feature-img-frame { min-height: 0; }
   .lnd-cards-row { flex-direction: column; }
   .lnd-stats-bar { padding: 16px 24px; }
   .lnd-stat { padding: 12px 20px; }

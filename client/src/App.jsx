@@ -139,6 +139,7 @@ function PublicRoute({ children }) {
 export default function App() {
   const location = useLocation()
   const { theme } = useTheme()
+  const lowPower = useLowPowerMode()
   useKeyboardShortcuts()
 
   useEffect(() => {
@@ -149,7 +150,10 @@ export default function App() {
     <>
       <a href="#main-content" className="skip-link">Skip to content</a>
       <VitalBackground />
-      {CALM_BG_ROUTES.has(location.pathname) && <MeditationCanvas />}
+      {/* Desktop-only ambient art: on phones a lone glowing figure drifting
+          through a content gap reads as a rendering glitch, and the canvas
+          costs battery/jank on phone GPUs. */}
+      {!lowPower && CALM_BG_ROUTES.has(location.pathname) && <MeditationCanvas />}
       <ErrorBoundary>
         <AnimatePresence mode="wait">
           <Routes location={location}>
