@@ -89,7 +89,10 @@
     display: flex; align-items: center; gap: 16px;
     /* Top inset (viewport-fit=cover) keeps the bar below the status bar/notch. */
     padding: calc(14px + env(safe-area-inset-top)) 20px 14px;
-    background: var(--glass-bg); backdrop-filter: blur(16px);
+    /* Solid: backdrop-filter is disabled on mobile (index.css) and a
+       translucent bar lets content ghost through — same fix as the bottom
+       tab bar. */
+    background: color-mix(in srgb, var(--ayura-bg) 96%, #fff);
     border-bottom: 1px solid var(--border-subtle);
   }
   .dash-hamburger { background: transparent; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; }

@@ -1119,6 +1119,21 @@
      side-by-side height — a fixed 460px floor leaves a large empty band
      inside the card. Let it hug its content on phones. */
   .lnd-feature-img-frame { min-height: 0; }
+  /* The frame hugs its content on phones, so the inner scroller is never
+     needed — and a composited overflow layer is a GPU-corruption trigger on
+     some Android drivers (garbled texture seen on a real device). */
+  .lnd-app-preview.fmv-fill { overflow-y: visible; }
+  /* Mobile drops backdrop-filter globally (see index.css), which left the
+     fixed nav translucent — scrolled content read straight through it.
+     Solid surface instead, matching the bottom tab bar. */
+  .lnd-nav-wrap,
+  .lnd-nav-wrap.scrolled {
+    background: color-mix(in srgb, var(--ayura-bg) 96%, #fff);
+  }
+  [data-theme='light'] .lnd-nav-wrap,
+  [data-theme='light'] .lnd-nav-wrap.scrolled {
+    background: color-mix(in srgb, var(--ayura-bg) 97%, #000);
+  }
   .lnd-cards-row { flex-direction: column; }
   .lnd-stats-bar { padding: 16px 24px; }
   .lnd-stat { padding: 12px 20px; }
