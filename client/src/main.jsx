@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { LazyMotion, domAnimation, MotionConfig } from 'framer-motion'
-import useLowPowerMode from './hooks/useLowPowerMode'
 import App from './App'
 import { AuthProvider } from './providers/AuthContext'
 import { ThemeProvider } from './providers/ThemeProvider'
@@ -60,17 +59,20 @@ if (SENTRY_DSN && !SENTRY_DSN.includes('sentry.example.com')) {
 // layout/drag projection code that the full `motion` proxy would force-bundle.
 //
 // reducedMotion: "user" honors the OS reduce-motion setting (framer uses JS
-// transforms, which the CSS reduced-motion reset can't stop). On low-power
-// devices we force "always": phone-class GPUs leave text on stale low-res
-// compositor layers after transform entrances (page looks BLURRED until a
-// re-raster — verified on the live site). "always" keeps opacity/color fades
-// but drops transform animations, which both fixes the blur and cuts jank.
+// transforms, which the CSS reduced-motion reset can't stop).
+//
+// HISTORY: this was briefly `'always'` on low-power devices to fix a "whole
+// page blurred" incident on phones. The actual culprit was the FULL-PAGE route
+// transition (PageWrapper animating filter:blur + transform on a viewport-sized
+// layer — phone GPUs rasterize huge layers at capped resolution). PageWrapper
+// keeps its cheap opacity-only variant on low power, which addresses that
+// directly; small per-component entrances rasterize at native resolution and
+// are safe, so movement stays enabled on mobile.
 // eslint-disable-next-line react-refresh/only-export-components -- entry file, not hot-reloaded
 function MotionRoot({ children }) {
-  const lowPower = useLowPowerMode()
   return (
     <LazyMotion features={domAnimation}>
-      <MotionConfig reducedMotion={lowPower ? 'always' : 'user'}>
+      <MotionConfig reducedMotion="user">
         {children}
       </MotionConfig>
     </LazyMotion>
