@@ -18,13 +18,23 @@ export default function ResetPassword() {
 
   if (!token) {
     return (
-      <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', background: '#F6FAFA' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '2rem', color: '#0A1F1C' }}>Invalid Link</h2>
-          <p style={{ color: '#4A7C76', margin: '16px 0 24px' }}>This password reset link is invalid or missing.</p>
-          <Link to="/forgot-password" className="auth-submit-btn" style={{ textDecoration: 'none', display: 'inline-flex', padding: '0 24px', width: 'auto' }}>
-            Request new link
-          </Link>
+      <div className="auth-page">
+        <Helmet><title>Set New Password · Ayura AI</title></Helmet>
+        <div className="auth-center">
+          <div className="auth-card" style={{ textAlign: 'center' }}>
+            <span className="auth-card-om" aria-hidden="true">ॐ</span>
+            <Link to="/" className="auth-brand">
+              <img src="/favicon.svg" alt="Ayura AI" className="auth-brand-logo" />
+              <span className="auth-brand-name">Ayura <span>AI</span></span>
+            </Link>
+            <div className="auth-card-header">
+              <h1 className="auth-card-title">Invalid <em>link</em></h1>
+              <p className="auth-card-sub">This password reset link is invalid or missing.</p>
+            </div>
+            <Link to="/forgot-password" className="auth-submit" style={{ textDecoration: 'none', display: 'inline-flex', width: 'auto', padding: '0 28px' }}>
+              Request new link
+            </Link>
+          </div>
         </div>
       </div>
     )
@@ -34,10 +44,12 @@ export default function ResetPassword() {
     e.preventDefault()
     if (password !== confirmPassword) {
       setErrorMsg('Passwords do not match')
+      setStatus('error')
       return
     }
     if (password.length < 8) {
       setErrorMsg('Password must be at least 8 characters')
+      setStatus('error')
       return
     }
 
@@ -55,42 +67,16 @@ export default function ResetPassword() {
 
   return (
     <div className="auth-page">
-      <Helmet><title>Set New Password | Ayura AI</title></Helmet>
+      <Helmet><title>Set New Password · Ayura AI</title></Helmet>
 
-      {/* ── LEFT — brand panel ── */}
-      <div className="auth-left">
-        <div className="auth-left-orb-a" />
-        <div className="auth-left-orb-b" />
-        <div className="auth-left-noise" />
+      <div className="auth-center">
+        <div className="auth-card">
+          <span className="auth-card-om" aria-hidden="true">ॐ</span>
 
-        <Link to="/" className="auth-brand-link">
-          <img src="/favicon.svg" alt="Ayura AI Logo" className="auth-brand-mark" />
-          <span className="auth-brand-text">Ayura AI</span>
-        </Link>
-
-        <div className="auth-left-body">
-          <span className="auth-left-kicker">Secure your account</span>
-          <h2 className="auth-left-title">
-            Choose a new<br /><em>password</em>.
-          </h2>
-          <p className="auth-left-desc">
-            Make sure it's at least 8 characters long. A strong password keeps your wellness data secure.
-          </p>
-        </div>
-      </div>
-
-      {/* ── RIGHT — form ── */}
-      <div className="auth-right">
-        <m.div
-          className="auth-form-wrap"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className="auth-form-header">
-            <h1 className="auth-form-title">Set new password</h1>
-            <p className="auth-form-subtitle">Enter your new password below to regain access.</p>
-          </div>
+          <Link to="/" className="auth-brand">
+            <img src="/favicon.svg" alt="Ayura AI" className="auth-brand-logo" />
+            <span className="auth-brand-name">Ayura <span>AI</span></span>
+          </Link>
 
           <AnimatePresence mode="wait">
             {status === 'success' ? (
@@ -101,23 +87,24 @@ export default function ResetPassword() {
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 style={{ textAlign: 'center', padding: '12px 0' }}
               >
-                <div style={{ color: '#2f8f5b', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><CircleCheck size={46} strokeWidth={1.6} /></div>
-                <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.4rem', color: '#0A1F1C', marginBottom: '8px' }}>Password updated</h3>
-                <p style={{ color: '#4A7C76', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.6 }}>
-                  Your password has been changed successfully. Redirecting to login...
+                <div style={{ color: 'var(--ayura-emerald)', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+                  <CircleCheck size={46} strokeWidth={1.6} />
+                </div>
+                <h3 style={{ fontSize: '1.4rem', marginBottom: '8px' }}>Password updated</h3>
+                <p style={{ color: 'var(--ayura-muted)', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.6 }}>
+                  Your password has been changed successfully. Redirecting to login&hellip;
                 </p>
-                <Link to="/login" className="auth-submit-btn" style={{ textDecoration: 'none' }}>
+                <Link to="/login" className="auth-submit" style={{ textDecoration: 'none', display: 'inline-flex', width: 'auto', padding: '0 28px' }}>
                   Go to Sign In
                 </Link>
               </m.div>
             ) : (
-              <m.form
-                key="form"
-                className="auth-form"
-                onSubmit={handleSubmit}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
+              <m.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <div className="auth-card-header">
+                  <h1 className="auth-card-title">Set new <em>password</em></h1>
+                  <p className="auth-card-sub">Make it at least 8 characters to keep your wellness data secure.</p>
+                </div>
+
                 <AnimatePresence>
                   {status === 'error' && (
                     <m.div
@@ -131,53 +118,51 @@ export default function ResetPassword() {
                   )}
                 </AnimatePresence>
 
-                <div className="auth-input-group">
-                  <label className="auth-label" htmlFor="password">New Password</label>
-                  <input
-                    id="password"
-                    className="auth-input"
-                    type="password"
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="At least 8 characters"
-                    required
-                    disabled={status === 'loading'}
-                  />
-                </div>
-                
-                <div className="auth-input-group">
-                  <label className="auth-label" htmlFor="confirmPassword">Confirm Password</label>
-                  <input
-                    id="confirmPassword"
-                    className="auth-input"
-                    type="password"
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Type your new password again"
-                    required
-                    disabled={status === 'loading'}
-                  />
-                </div>
+                <form className="auth-form" onSubmit={handleSubmit}>
+                  <div className="auth-field">
+                    <label className="auth-label" htmlFor="password">New password</label>
+                    <input
+                      id="password"
+                      className="auth-input"
+                      type="password"
+                      autoComplete="new-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="At least 8 characters"
+                      required
+                      disabled={status === 'loading'}
+                    />
+                  </div>
 
-                <m.button
-                  type="submit"
-                  className="auth-submit-btn"
-                  disabled={status === 'loading'}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  {status === 'loading' ? (
-                    <span className="spinner" style={{ width: '20px', height: '20px', borderWidth: '2px', borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} />
-                  ) : (
-                    'Reset Password →'
-                  )}
-                </m.button>
-              </m.form>
+                  <div className="auth-field">
+                    <label className="auth-label" htmlFor="confirmPassword">Confirm password</label>
+                    <input
+                      id="confirmPassword"
+                      className="auth-input"
+                      type="password"
+                      autoComplete="new-password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Type your new password again"
+                      required
+                      disabled={status === 'loading'}
+                    />
+                  </div>
+
+                  <m.button type="submit" className="auth-submit" disabled={status === 'loading'} whileTap={{ scale: 0.97 }}>
+                    {status === 'loading' ? <span className="auth-spinner" /> : 'Reset Password →'}
+                  </m.button>
+                </form>
+              </m.div>
             )}
           </AnimatePresence>
 
-        </m.div>
+          <div className="auth-links">
+            <p className="auth-links-text">
+              Remember your password? <Link to="/login" className="auth-link">Sign in →</Link>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )

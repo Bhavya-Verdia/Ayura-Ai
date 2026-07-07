@@ -328,9 +328,12 @@ export default function Community() {
     queryKey: ['community-posts'],
     queryFn: async ({ pageParam = 0 }) => {
       const res = await communityAPI.list(pageParam, PAGE_LIMIT)
+      // Endpoint returns a bare array; guard against any non-array payload so
+      // a bad response renders the empty state instead of a broken post card.
+      const posts = Array.isArray(res.data) ? res.data : []
       return {
-        posts: res.data || [],
-        nextOffset: (res.data || []).length === PAGE_LIMIT ? pageParam + PAGE_LIMIT : null,
+        posts,
+        nextOffset: posts.length === PAGE_LIMIT ? pageParam + PAGE_LIMIT : null,
         totalCount: res.headers?.['x-total-count'] ? parseInt(res.headers['x-total-count'], 10) : null
       }
     },

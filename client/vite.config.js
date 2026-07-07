@@ -80,25 +80,27 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return
-          if (id.includes('framer-motion'))                return 'vendor-motion'
-          if (id.includes('@tanstack/react-query'))         return 'vendor-query'
-          // Markdown parser (react-markdown + its micromark/mdast/unified/hast
-          // tree) is only used by Chat + plan views — keep it OUT of the initial
-          // path (Landing/Dashboard) so first-load JS stays lean.
-          if (id.includes('react-markdown') || id.includes('remark') ||
-              id.includes('micromark') || id.includes('mdast') ||
-              id.includes('/unist') || id.includes('unified') ||
-              id.includes('/hast') || id.includes('/vfile') ||
-              id.includes('/decode-named-character-reference') ||
-              id.includes('/property-information') ||
-              id.includes('/space-separated-tokens') ||
-              id.includes('/comma-separated-tokens'))       return 'vendor-markdown'
-          if (id.includes('lucide-react'))                 return 'vendor-ui'
-          if (id.includes('react-dom') ||
-              id.includes('react-router') ||
-              id.includes('/react/'))                      return 'vendor-react'
+        // Vite 8 bundles with rolldown, whose native chunking API is
+        // advancedChunks (groups matched in order, first match wins). The old
+        // function-form manualChunks was NOT honored reliably here: rolldown
+        // placed React core itself inside vendor-markdown, which made every
+        // chunk (and the entry) statically depend on the 46KB-gzip markdown
+        // parser — defeating the whole split. Verified fixed via
+        // scripts/check-bundle-size.mjs (initial path dropped ~46KB gzip).
+        advancedChunks: {
+          groups: [
+            // React runtime — every page needs it; claim it FIRST so no other
+            // group (markdown reaches React via hast-util-to-jsx-runtime) can
+            // capture it.
+            { name: 'vendor-react', test: /node_modules\/(?:react|react-dom|react-is|scheduler|react-router|react-router-dom)\// },
+            { name: 'vendor-motion', test: /node_modules\/framer-motion\// },
+            { name: 'vendor-query', test: /node_modules\/@tanstack\// },
+            // Markdown parser (react-markdown + its micromark/mdast/unified/
+            // hast tree) is only used by Chat + plan views — keep it OUT of
+            // the initial path (Landing/Dashboard) so first-load JS stays lean.
+            { name: 'vendor-markdown', test: /node_modules\/(?:react-markdown|remark-|micromark|mdast-|unist-|unified|hast-|vfile|devlop|bail|trough|ccount|markdown-table|longest-streak|escape-string-regexp|is-plain-obj|trim-lines|extend|html-url-attributes|inline-style-parser|style-to-(?:js|object)|estree-util-is-identifier-name|@ungap\/structured-clone|decode-named-character-reference|character-entities|property-information|space-separated-tokens|comma-separated-tokens)/ },
+            { name: 'vendor-ui', test: /node_modules\/lucide-react\// },
+          ],
         },
       },
     },

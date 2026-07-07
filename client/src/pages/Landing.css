@@ -1135,6 +1135,10 @@
     background: color-mix(in srgb, var(--ayura-bg) 97%, #000);
   }
   .lnd-cards-row { flex-direction: column; }
+  /* Stacked full-width the 360px floor (which right-sizes the 3-across
+     desktop grid) leaves a tall empty band between icon and title — let
+     each card hug its content on phones. */
+  .lnd-how-card { min-height: 0; }
   .lnd-stats-bar { padding: 16px 24px; }
   .lnd-stat { padding: 12px 20px; }
   .lnd-stat + .lnd-stat::before { width: 100%; height: 1px; top: 0; left: 0; transform: none; }

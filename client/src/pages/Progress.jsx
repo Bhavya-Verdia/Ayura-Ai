@@ -105,6 +105,10 @@ export default function Progress() {
   const { data: logs = [] } = useQuery({
     queryKey: ['progress-logs'],
     queryFn: () => progressAPI.getLogs(30).then(r => r.data),
+    // The endpoint returns a bare array; guard against any non-array payload
+    // (gateway error bodies, cached junk) so a bad response can't crash the
+    // page into the error boundary.
+    select: (data) => (Array.isArray(data) ? data : []),
     staleTime: 5 * 60 * 1000,
   })
 

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --configLoader native",
     "build": "vite build --configLoader native",
-    "postbuild": "node scripts/prerender.mjs",
+    "postbuild": "node scripts/prerender.mjs && node scripts/check-bundle-size.mjs",
+    "check:size": "node scripts/check-bundle-size.mjs",
     "lint": "eslint .",
     "preview": "vite preview --configLoader native",
     "test:e2e": "playwright test",

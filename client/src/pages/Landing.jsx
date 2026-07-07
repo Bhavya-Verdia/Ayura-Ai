@@ -437,7 +437,9 @@ export default function Landing() {
         description: "India's AI-powered Ayurvedic wellness platform providing personalized dosha-based plans for diet, yoga, Panchakarma, and herbal medicine.",
         foundingLocation: { '@type': 'Place', name: 'India' },
         areaServed: { '@type': 'Country', name: 'India' },
-        sameAs: [],
+        // Keep in sync with the twitter:site meta in index.html; append other
+        // official profiles (Instagram, LinkedIn, YouTube…) as they launch.
+        sameAs: ['https://x.com/ayuraai', 'https://twitter.com/ayuraai'],
       },
       {
         '@type': 'SoftwareApplication',

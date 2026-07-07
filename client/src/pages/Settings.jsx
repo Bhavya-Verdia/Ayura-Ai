@@ -3,6 +3,7 @@ import { useAuth } from '../providers/AuthContext'
 import { privacyAPI, profileAPI, exportAPI } from '../api/client'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { setLanguage, SUPPORTED_LANGUAGES } from '../i18n'
 import { Helmet } from 'react-helmet-async'
 import { m, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../providers/ThemeProvider'
@@ -507,14 +508,12 @@ export default function Settings() {
             </div>
             <select
               value={i18n.language}
-              onChange={(e) => {
-                i18n.changeLanguage(e.target.value);
-                localStorage.setItem('ayura_lang', e.target.value);
-              }}
-              style={{ width: '120px' }}
+              onChange={(e) => setLanguage(e.target.value)}
+              style={{ width: '150px' }}
             >
-              <option value="en">English</option>
-              <option value="hi">हिंदी (Hindi)</option>
+              {SUPPORTED_LANGUAGES.map(({ code, label }) => (
+                <option key={code} value={code}>{label}</option>
+              ))}
             </select>
           </div>
         </m.div>

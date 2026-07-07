@@ -26,6 +26,11 @@
   .feedback-fab {
     bottom: calc(64px + env(safe-area-inset-bottom) + 18px);
   }
+  /* On the Chat page the composer owns that corner — the FAB sat right on top
+     of the send button. Hide it there; feedback stays reachable everywhere else. */
+  #main-content:has(.chat-page-root, .chat-canvas) ~ .feedback-fab {
+    display: none;
+  }
 }
 
 .feedback-fab svg {
@@ -70,8 +75,8 @@
 
 .feedback-header h3 {
   margin: 0;
-  font-family: 'Syne', sans-serif;
-  color: var(--text-50);
+  font-family: var(--font-display);
+  color: var(--ayura-ink);
 }
 
 .feedback-close {

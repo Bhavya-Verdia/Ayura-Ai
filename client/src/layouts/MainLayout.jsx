@@ -92,16 +92,18 @@ export default function MainLayout() {
   return (
     <div className="dash-root">
       {/* Mobile sidebar overlay */}
-      {isMobile && sidebarOpen && (
-        <m.button
-          className="dash-overlay"
-          onClick={() => setSidebarOpen(false)}
-          aria-label="Close menu"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        />
-      )}
+      <AnimatePresence>
+        {isMobile && sidebarOpen && (
+          <m.button
+            className="dash-overlay"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close menu"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ── SIDEBAR ── */}
       <aside className={`dash-sidebar${isMobile ? ` mobile${sidebarOpen ? ' open' : ''}` : ''}`}>

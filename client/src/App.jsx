@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { Toaster } from 'sonner'
 import { useAuth } from './providers/AuthContext'
 import { useTheme } from './providers/ThemeProvider'
@@ -12,11 +12,14 @@ import VitalBackground from './components/VitalBackground'
 import MeditationCanvas from './components/MeditationCanvas'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import useLowPowerMode from './hooks/useLowPowerMode'
-import MainLayout from './layouts/MainLayout'
 import ReloadPrompt from './components/ReloadPrompt'
 import OfflineBanner from './components/OfflineBanner'
-import './components/Components.css'
 
+// Lazy like the pages: the app shell (sidebar, command palette, feedback
+// widget + Dashboard.css) is only for authenticated users — statically
+// importing it shipped ~38KB of render-blocking CSS/JS to every anonymous
+// Landing visitor.
+const MainLayout = React.lazy(() => import('./layouts/MainLayout'))
 const Landing = React.lazy(() => import('./pages/Landing'))
 const Login = React.lazy(() => import('./pages/Login'))
 const Register = React.lazy(() => import('./pages/Register'))
@@ -45,10 +48,6 @@ const InteractionChecker = React.lazy(() => import('./pages/InteractionChecker')
 const Progress = React.lazy(() => import('./pages/Progress'))
 const DoshaTest = React.lazy(() => import('./pages/DoshaTest'))
 
-function FullPageSpinner() {
-  return <LoadingScreen />
-}
-
 // Calm, meditative pages where the rising yoga/ॐ field belongs.
 // Kept off data-dense app pages (dashboard, chat, settings…) for clarity + perf.
 const CALM_BG_ROUTES = new Set([
@@ -58,37 +57,48 @@ const CALM_BG_ROUTES = new Set([
 const pageVariants = {
   initial: { opacity: 0, y: 16, filter: 'blur(2px)' },
   animate: { opacity: 1, y: 0,  filter: 'blur(0px)' },
-  exit:    { opacity: 0, y: -8, filter: 'blur(1px)' },
 }
 
 const pageVariantsReduced = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
-  exit:    { opacity: 0 },
 }
 
 const pageTransition      = { duration: 0.38, ease: [0.16, 1, 0.3, 1] }
 const pageTransitionFast  = { duration: 0.15 }
 
-function PageWrapper({ children }) {
+function PageWrapper({ children, inLayout = false }) {
   const prefersReducedMotion = useReducedMotion()
   const lowPower = useLowPowerMode()
   // On mobile/low-power devices, animating filter: blur() on every route change
   // is GPU-heavy and stutters. Fall back to the cheap opacity-only transition
   // there too — not just when the OS "reduce motion" flag is set.
   const cheap = prefersReducedMotion || lowPower
+
+  // Inside the app shell, MainLayout already animates route changes and owns
+  // the Suspense boundary (with route-aware skeleton fallbacks). A second
+  // motion div + Suspense here would double the entrance animation and steal
+  // the fallback (full-screen spinner instead of skeletons) — so render just
+  // the skip-link landmark.
+  if (inLayout) {
+    return (
+      <div id="main-content" tabIndex={-1}>
+        {children}
+      </div>
+    )
+  }
+
   return (
     <m.div
       variants={cheap ? pageVariantsReduced : pageVariants}
       initial="initial"
       animate="animate"
-      exit="exit"
       transition={cheap ? pageTransitionFast : pageTransition}
       style={{ minHeight: '100dvh' }}
       id="main-content"
       tabIndex={-1}
     >
-      <Suspense fallback={<FullPageSpinner />}>
+      <Suspense fallback={<LoadingScreen />}>
         {children}
       </Suspense>
     </m.div>
@@ -97,7 +107,7 @@ function PageWrapper({ children }) {
 
 function PrivateRoute({ children, requireOnboardingComplete = false }) {
   const { user, loading } = useAuth()
-  if (loading) return <FullPageSpinner />
+  if (loading) return <LoadingScreen />
   if (!user) return <Navigate to="/login" replace />
 
   if (requireOnboardingComplete && !user.onboarding_complete) {
@@ -108,7 +118,7 @@ function PrivateRoute({ children, requireOnboardingComplete = false }) {
 
 function AdminRoute({ children }) {
   const { user, loading } = useAuth()
-  if (loading) return <FullPageSpinner />
+  if (loading) return <LoadingScreen />
   if (!user || !user.is_admin) return <Navigate to="/dashboard" replace />
   return children
 }
@@ -117,7 +127,7 @@ function OnboardingRoute({ children }) {
   const { user, loading } = useAuth()
   const location = useLocation()
 
-  if (loading) return <FullPageSpinner />
+  if (loading) return <LoadingScreen />
   if (!user) return <Navigate to="/login" replace />
   // Allow re-entry if navigated explicitly (Settings page can link here)
   const isRetake = new URLSearchParams(location.search).get('retake') === 'true'
@@ -129,7 +139,7 @@ function OnboardingRoute({ children }) {
 
 function PublicRoute({ children }) {
   const { user, loading } = useAuth()
-  if (loading) return <FullPageSpinner />
+  if (loading) return <LoadingScreen />
   if (user) {
     return user.onboarding_complete ? <Navigate to="/dashboard" replace /> : <Navigate to="/onboarding" replace />
   }
@@ -155,7 +165,9 @@ export default function App() {
           costs battery/jank on phone GPUs. */}
       {!lowPower && CALM_BG_ROUTES.has(location.pathname) && <MeditationCanvas />}
       <ErrorBoundary>
-        <AnimatePresence mode="wait">
+        {/* Catches the lazy MainLayout itself; pages inside it fall to nearer
+            boundaries (MainLayout's skeletons / PageWrapper's spinner). */}
+        <Suspense fallback={<LoadingScreen />}>
           <Routes location={location}>
             <Route path="/" element={<PageWrapper><Landing /></PageWrapper>} />
             <Route path="/login" element={<PublicRoute><PageWrapper><Login /></PageWrapper></PublicRoute>} />
@@ -172,23 +184,23 @@ export default function App() {
             <Route path="/onboarding" element={<OnboardingRoute><PageWrapper><Onboarding /></PageWrapper></OnboardingRoute>} />
             
             <Route element={<PrivateRoute requireOnboardingComplete><MainLayout /></PrivateRoute>}>
-              <Route path="/dashboard/*" element={<PageWrapper><Dashboard /></PageWrapper>} />
-              <Route path="/progress" element={<PageWrapper><Progress /></PageWrapper>} />
-              <Route path="/remedies" element={<PageWrapper><Remedies /></PageWrapper>} />
-              <Route path="/timeline" element={<PageWrapper><HealthTimeline /></PageWrapper>} />
-              <Route path="/checkin" element={<PageWrapper><CheckIn /></PageWrapper>} />
-              <Route path="/chat" element={<PageWrapper><Chat /></PageWrapper>} />
-              <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
-              <Route path="/community" element={<PageWrapper><Community /></PageWrapper>} />
-              <Route path="/dosha-quiz" element={<PageWrapper><DoshaQuiz /></PageWrapper>} />
-              <Route path="/notifications" element={<PageWrapper><Notifications /></PageWrapper>} />
-              <Route path="/reminders" element={<PageWrapper><Reminders /></PageWrapper>} />
-              <Route path="/interaction-check" element={<PageWrapper><InteractionChecker /></PageWrapper>} />
+              <Route path="/dashboard/*" element={<PageWrapper inLayout><Dashboard /></PageWrapper>} />
+              <Route path="/progress" element={<PageWrapper inLayout><Progress /></PageWrapper>} />
+              <Route path="/remedies" element={<PageWrapper inLayout><Remedies /></PageWrapper>} />
+              <Route path="/timeline" element={<PageWrapper inLayout><HealthTimeline /></PageWrapper>} />
+              <Route path="/checkin" element={<PageWrapper inLayout><CheckIn /></PageWrapper>} />
+              <Route path="/chat" element={<PageWrapper inLayout><Chat /></PageWrapper>} />
+              <Route path="/settings" element={<PageWrapper inLayout><Settings /></PageWrapper>} />
+              <Route path="/community" element={<PageWrapper inLayout><Community /></PageWrapper>} />
+              <Route path="/dosha-quiz" element={<PageWrapper inLayout><DoshaQuiz /></PageWrapper>} />
+              <Route path="/notifications" element={<PageWrapper inLayout><Notifications /></PageWrapper>} />
+              <Route path="/reminders" element={<PageWrapper inLayout><Reminders /></PageWrapper>} />
+              <Route path="/interaction-check" element={<PageWrapper inLayout><InteractionChecker /></PageWrapper>} />
             </Route>
             
             <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
           </Routes>
-        </AnimatePresence>
+        </Suspense>
       </ErrorBoundary>
     <ScrollToTop />
     <NoiseOverlay />

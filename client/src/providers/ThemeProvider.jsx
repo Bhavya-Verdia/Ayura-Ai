@@ -38,16 +38,6 @@ export function ThemeProvider({ children }) {
     }).catch(() => {})
   }, [theme])
 
-  // Global mouse tracking for glows
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`)
-      document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
-    }
-    window.addEventListener('mousemove', handleMouseMove, { passive: true })
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
-
   return (
     <ThemeContext.Provider value={{ theme, setTheme, setThemeAnimated }}>
       {children}

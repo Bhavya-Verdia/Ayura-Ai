@@ -165,6 +165,37 @@ body,
   --ayura-card-bg: var(--card-bg);
   --ayura-border:  var(--border-light);
   --ayura-text:    var(--ayura-ink);
+  /* Second alias sweep (2026-07-07 audit): these legacy names were used across
+     PlanViewer / PreferencesModal / FeedbackWidget / Admin / Legal / VerifyEmail
+     but never defined — declarations with no fallback were INVALID (e.g. the
+     feedback panel had a transparent background). Alias to the current
+     theme-aware tokens so every usage resolves in both themes. */
+  --ayura-accent:         var(--ayura-teal);
+  --ayura-accent-soft:    color-mix(in srgb, var(--ayura-teal) 24%, transparent);
+  --ayura-hover:          var(--glass-bg-hover);
+  --ayura-text-primary:   var(--ayura-ink);
+  --ayura-text-secondary: var(--ayura-muted);
+  --ayura-text-muted:     var(--text-muted);
+  --auth-muted:           var(--ayura-muted);
+  --border:               var(--border-light);
+  --surface-2:            var(--ayura-surface);
+  --surface-3:            var(--ayura-surface-2);
+  --surface-800:          var(--ayura-surface-2);
+  --surface-900:          var(--ayura-surface);
+  --surface-bg:           var(--bg-surface);
+  --text-50:              var(--ayura-ink);
+  --text-100:             var(--ayura-ink);
+  --text-300:             var(--ayura-muted);
+  --text-400:             var(--ayura-muted);
+  --primary-500:          var(--ayura-teal);
+  --primary-600:          var(--ayura-teal);
+  --primary-700:          var(--ayura-teal-lt);
+  --primary-light:        var(--ayura-teal-lt);
+  --rose:                 var(--ayura-rose);
+  --sage:                 var(--ayura-sage);
+  --warning-main:         var(--ayura-amber);
+  --color-primary:        var(--ayura-teal);
+  --color-error:          var(--ayura-rose);
 
   /* ── Borders ── */
   --border-subtle:      rgba(255,255,255,0.05);
@@ -831,6 +862,45 @@ textarea:focus-visible {
 }
 /* Firefox */
 html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
+
+/* ─── SCROLL-TO-TOP BUTTON ────────────────────────────────────
+   Floating action button rendered by ScrollToTop.jsx once the page (or the
+   app shell's inner scroller) is scrolled past 400px. Sits above the mobile
+   bottom tab bar via safe-area-aware offset. */
+.scroll-to-top {
+  position: fixed;
+  right: 20px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  z-index: var(--z-popover);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 1.15rem;
+  line-height: 1;
+  color: var(--ayura-ink);
+  background: var(--glass-bg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.scroll-to-top:hover {
+  border-color: color-mix(in srgb, var(--ayura-teal) 45%, var(--border-light));
+  color: var(--ayura-teal);
+}
+/* Inside the app shell the FeedbackWidget owns the bottom-right corner
+   (and on mobile the tab bar owns the bottom edge) — stack above them.
+   Public pages (Landing etc.) keep the low corner position. */
+.dash-root .scroll-to-top {
+  bottom: calc(84px + env(safe-area-inset-bottom));
+}
+@media (max-width: 900px) {
+  .dash-root .scroll-to-top {
+    bottom: calc(146px + env(safe-area-inset-bottom));
+  }
+}
 
 /* ─── SPINNER ─────────────────────────────────────────────── */
 .spinner {
