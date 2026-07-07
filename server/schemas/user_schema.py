@@ -5,7 +5,7 @@ Core user profile fields — collected during onboarding and shared across all f
 Feature-specific goals and preferences live in schemas/preferences_schema.py.
 """
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 from datetime import datetime
 

@@ -56,7 +56,9 @@ CONDITION_ALIASES: dict[str, set[str]] = {
 # below is a REAL entry in engine.dosha_analyzer._DISEASE_DOSHA_SIGNAL, so these
 # aliases make the central disease lookup resolve them (no new classical claims).
 _EXTRA_ALIASES: dict[str, set[str]] = {
-    "acid_reflux": {"hyperacidity", "amlapitta", "acid peptic disease"},
+    # Includes lay / colloquial terms users type free-hand ("gas", "acidity").
+    "acid_reflux": {"hyperacidity", "amlapitta", "acid peptic disease",
+                    "acidity", "gerd", "gas", "gastric"},
     "ibs": {"ibs c", "ibs d", "irritable bowel", "spastic colon"},
     "gout": {"vatarakta", "uric acid", "hyperuricemia"},
     "anemia": {"pandu", "pandu roga"},
@@ -64,7 +66,8 @@ _EXTRA_ALIASES: dict[str, set[str]] = {
     "hemorrhoids": {"piles", "arsha", "bawaseer", "haemorrhoids"},
     "heart_disease": {"cardiovascular disease", "cardiac rehabilitation",
                       "heart surgery recovery", "coronary artery disease"},
-    "diabetes_type2": {"prameha", "madhumeha", "prediabetes", "insulin resistance"},
+    "diabetes_type2": {"prameha", "madhumeha", "prediabetes", "insulin resistance",
+                       "sugar", "high sugar", "blood sugar", "sugar problem"},
     "fibromyalgia": {"fms", "fibromyalgia syndrome"},
     "rheumatoid_arthritis": {"inflammatory arthritis", "autoimmune arthritis"},
     "cervical_spondylosis": {"cervical disc", "cervical radiculopathy", "cervical spondylitis", "neck arthritis"},
@@ -73,7 +76,11 @@ _EXTRA_ALIASES: dict[str, set[str]] = {
     "recurrent_uti": {"uti", "urinary tract infection", "mutrakrichra"},
     "long_covid": {"long covid fatigue", "post covid", "post covid fatigue"},
     "hyperthyroidism": {"hyperthyroid", "thyrotoxicosis"},
-    "hypothyroidism": {"hypothyroid", "hashimotos thyroiditis"},
+    # "thyroid" alone is ambiguous; hypothyroidism is ~90% of thyroid disease,
+    # so a bare "thyroid" defaults there.
+    "hypothyroidism": {"hypothyroid", "hashimotos thyroiditis", "thyroid",
+                       "thyroid disorder", "thyroid problem",
+                       "underactive thyroid", "thyroid issue"},
     "gallstones": {"cholelithiasis", "gallbladder stones"},
     "kidney_stones": {"renal calculi", "nephrolithiasis", "mutrashmari"},
     "eczema": {"atopic dermatitis", "vicharchika"},
@@ -84,14 +91,8 @@ _EXTRA_ALIASES: dict[str, set[str]] = {
     "asthma": {"tamaka shwasa", "bronchial asthma"},
     # Common lay / colloquial terms that users type free-hand — resolve them to
     # an existing canonical entry instead of letting them contribute nothing.
-    # "thyroid" alone is ambiguous; hypothyroidism is ~90% of thyroid disease, so
-    # a bare "thyroid" defaults there.
-    "hypothyroidism": {"thyroid", "thyroid disorder", "thyroid problem",
-                       "underactive thyroid", "thyroid issue"},
-    "diabetes_type2": {"sugar", "high sugar", "blood sugar", "sugar problem"},
     "high_cholesterol": {"cholesterol", "high cholesterol", "dyslipidemia",
                          "hyperlipidemia", "high lipids"},
-    "acid_reflux": {"acidity", "gerd", "gas", "gastric"},
     "hypertension": {"bp", "high bp", "high blood pressure", "raised bp"},
     # New canonical: acute upper-respiratory (Pratishyaya) — see _DISEASE_DOSHA_SIGNAL.
     "common_cold": {"cold", "common cold", "cough", "sardi", "sardi khansi",
