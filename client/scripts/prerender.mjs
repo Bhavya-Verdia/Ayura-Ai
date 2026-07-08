@@ -16,7 +16,7 @@
 
 import { chromium } from '@playwright/test'
 import { preview } from 'vite'
-import { writeFileSync, existsSync, mkdirSync } from 'fs'
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -38,6 +38,15 @@ const ROUTES = [
 
 const PORT = 4174
 const PREVIEW_ORIGIN = `http://localhost:${PORT}`
+
+// The shell's static fallback tags, read BEFORE the loop overwrites
+// dist/index.html — used to strip the shell duplicates that react-helmet-async
+// leaves behind when it adds its per-page <title>/<meta name="description">.
+const shell = readFileSync(resolve(root, 'dist/index.html'), 'utf8')
+const shellFallbacks = {
+  shellTitle: (shell.match(/<title>([^<]*)<\/title>/) || [])[1] ?? null,
+  shellDesc: (shell.match(/<meta name="description" content="([^"]*)"/) || [])[1] ?? null,
+}
 
 console.log('🔧  Starting Vite preview server…')
 const server = await preview({
@@ -72,6 +81,24 @@ try {
 
     // Brief pause for any remaining paint
     await page.waitForTimeout(800)
+
+    // The shell (index.html) carries static fallback <title>/<meta> tags, and
+    // react-helmet-async ADDS its per-page versions without removing (or
+    // marking) the originals — so the captured head ships two different
+    // <title>s and descriptions, and Google picks one unpredictably. Helmet's
+    // insertion position varies by tag type, so the only deterministic rule is
+    // content: drop the tag whose content exactly matches the shell's static
+    // fallback whenever a differing duplicate of the same tag exists.
+    await page.evaluate(({ shellTitle, shellDesc }) => {
+      const titles = [...document.head.querySelectorAll('title')]
+      if (titles.length > 1) {
+        titles.filter((t) => t.textContent === shellTitle).forEach((t) => t.remove())
+      }
+      const descs = [...document.head.querySelectorAll('meta[name="description"]')]
+      if (descs.length > 1) {
+        descs.filter((d) => d.getAttribute('content') === shellDesc).forEach((d) => d.remove())
+      }
+    }, shellFallbacks)
 
     // React.lazy chunks trigger runtime-injected <link rel="modulepreload"> whose
     // href resolves to the preview server's absolute origin. Rewrite that origin to
