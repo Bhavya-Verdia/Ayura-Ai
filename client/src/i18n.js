@@ -2,13 +2,17 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 // English ships in the main bundle (default + fallback language). The other
 // locales live in src/locales/*.json and are code-split — fetched only when a
-// user actually switches to them, so visitors never download all 4 languages.
+// user actually switches to them, so visitors never download all 8 languages.
 import en from './locales/en.json';
 
 const LOCALE_LOADERS = {
   hi: () => import('./locales/hi.json'),
   kn: () => import('./locales/kn.json'),
   ta: () => import('./locales/ta.json'),
+  sa: () => import('./locales/sa.json'),
+  es: () => import('./locales/es.json'),
+  fr: () => import('./locales/fr.json'),
+  zh: () => import('./locales/zh.json'),
 };
 
 export const SUPPORTED_LANGUAGES = [
@@ -16,6 +20,10 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'hi', label: 'हिंदी (Hindi)' },
   { code: 'kn', label: 'ಕನ್ನಡ (Kannada)' },
   { code: 'ta', label: 'தமிழ் (Tamil)' },
+  { code: 'sa', label: 'संस्कृतम् (Sanskrit)' },
+  { code: 'es', label: 'Español (Spanish)' },
+  { code: 'fr', label: 'Français (French)' },
+  { code: 'zh', label: '中文 (Chinese)' },
 ];
 
 i18n
