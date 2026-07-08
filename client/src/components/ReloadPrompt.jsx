@@ -19,6 +19,7 @@ export default function ReloadPrompt() {
   // Pathname at the moment the update was detected — a reload is only safe
   // once the user has navigated AWAY from the view they were on.
   const pendingSincePath = useRef(null)
+  const registrationRef = useRef(null)
 
   const {
     offlineReady: [offlineReady, setOfflineReady],
@@ -27,6 +28,7 @@ export default function ReloadPrompt() {
   } = useRegisterSW({
     onRegisteredSW(_url, registration) {
       if (registration) {
+        registrationRef.current = registration
         setInterval(() => registration.update().catch(() => {}), SW_CHECK_INTERVAL_MS)
       }
     },
@@ -42,21 +44,51 @@ export default function ReloadPrompt() {
     }
   }, [offlineReady, setOfflineReady])
 
-  // Typing means in-progress form state — never insta-reload over it.
-  const hasTypedRef = useRef(false)
+  // "Arrival": a fresh load OR the app coming back to the foreground —
+  // mobile browsers keep tabs alive for days, so returning to the app is the
+  // moment users expect to be on the latest version. On each arrival we
+  // re-check for a new SW and open a short window in which an update applies
+  // immediately (the user just got here, nothing is in progress yet).
+  // Typing closes the window — never insta-reload over form state.
+  const arrivedAtRef = useRef(performance.now())
+  const typedSinceArrivalRef = useRef(false)
+  // Mirror needRefresh into a ref so the mount-only visibility listener sees
+  // the current value (an update found-but-deferred in a previous foreground
+  // session applies the moment the user returns).
+  const needRefreshRef = useRef(false)
+  useEffect(() => { needRefreshRef.current = needRefresh }, [needRefresh])
   useEffect(() => {
-    const mark = () => { hasTypedRef.current = true }
-    window.addEventListener('keydown', mark, { once: true })
-    return () => window.removeEventListener('keydown', mark)
+    const markTyped = () => { typedSinceArrivalRef.current = true }
+    const onVisible = () => {
+      if (document.hidden) return
+      arrivedAtRef.current = performance.now()
+      typedSinceArrivalRef.current = false
+      if (needRefreshRef.current) {
+        updateServiceWorker(true)
+        return
+      }
+      registrationRef.current?.update().catch(() => {})
+    }
+    window.addEventListener('keydown', markTyped)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.removeEventListener('keydown', markTyped)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+    // updateServiceWorker is stable (from useRegisterSW)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Safe moment #0: the update is discovered moments after OPENING the app
-  // (the SW checks for a new version on registration, so a deploy is found
-  // within seconds of a fresh visit). The user just arrived and hasn't typed
-  // anything — reload right away so opening the site always lands on the
-  // latest version, no interaction required.
+  // Safe moment #0: update discovered within the arrival window (fresh open
+  // or foregrounding re-check above) and the user hasn't typed — apply right
+  // away so opening or returning to the app always lands on the latest
+  // version, no interaction required.
   useEffect(() => {
-    if (needRefresh && !hasTypedRef.current && performance.now() < 30_000) {
+    if (
+      needRefresh &&
+      !typedSinceArrivalRef.current &&
+      performance.now() - arrivedAtRef.current < 30_000
+    ) {
       updateServiceWorker(true)
     }
   }, [needRefresh, updateServiceWorker])
