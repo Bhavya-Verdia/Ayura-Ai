@@ -175,8 +175,13 @@
    children don't overlap, so driving them in lockstep is pixel-identical to
    moving the parent. The fade stays on the hero (opacity composites fine).
    Browsers without scroll-timeline (older Safari) simply get a static hero. */
+/* Desktop-layout only (two-column, hero ≈ one viewport tall): on stacked
+   phone layouts the hero is ~2 screens tall, so a fade pinned to the first
+   450px of scroll blanks the bento tiles while they are still on screen and
+   leaves an invisible stretch before the next section. Mobile never had the
+   parallax historically — content simply stays put and visible. */
 @supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
+  @media (min-width: 1025px) and (prefers-reduced-motion: no-preference) {
     .lnd-hero {
       animation: lnd-hero-fade linear both;
       animation-timeline: scroll();
