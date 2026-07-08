@@ -2,9 +2,8 @@ import { m, useReducedMotion } from 'framer-motion'
 import { useTheme } from '../providers/ThemeProvider'
 import useLowPowerMode from '../hooks/useLowPowerMode'
 
-function VitalPaths({ side = 1 }) {
-  const prefersReducedMotion = useReducedMotion()
-  const paths = Array.from({ length: 12 }, (_, i) => ({
+function makeVitalPaths(side) {
+  return Array.from({ length: 12 }, (_, i) => ({
     id: i,
     d: `M ${side > 0 ? -150 - i * 7 : 850 + i * 7} ${28 + i * 9}
         C ${side > 0 ? 110 + i * 3 : 650 - i * 4} ${-20 + i * 4},
@@ -14,6 +13,11 @@ function VitalPaths({ side = 1 }) {
     opacity: 0.08 + i * 0.006,
     duration: 18 + i * 0.55,
   }))
+}
+
+function VitalPaths({ side = 1 }) {
+  const prefersReducedMotion = useReducedMotion()
+  const paths = makeVitalPaths(side)
 
   return (
     <svg className="vital-paths" viewBox="0 0 760 420" preserveAspectRatio="none" aria-hidden="true">
@@ -71,6 +75,59 @@ function PulseLines() {
               ? { duration: 0 }
               : { duration: 16 + row * 4, repeat: Infinity, ease: 'linear' }
           }
+        />
+      ))}
+    </svg>
+  )
+}
+
+/* Frozen (mobile) renders of the desktop path layers: plain SVG, painted once
+   at load and never again — a static layer has zero per-frame cost, unlike the
+   framer-motion originals whose 27 infinite JS animations hang phone GPUs.
+   The dash segment is staggered per path to mimic a mid-flight frame of the
+   desktop animation rather than 12 identical full strokes. */
+function VitalPathsFrozen({ side = 1 }) {
+  const paths = makeVitalPaths(side)
+  return (
+    <svg className="vital-paths" viewBox="0 0 760 420" preserveAspectRatio="none" aria-hidden="true">
+      {paths.map((path, i) => (
+        <path
+          key={`${side}-${path.id}`}
+          d={path.d}
+          stroke="currentColor"
+          strokeWidth={path.width}
+          strokeOpacity={path.opacity}
+          opacity={0.45}
+          fill="none"
+          pathLength="1"
+          strokeDasharray="0.55 0.45"
+          strokeDashoffset={-((i * 0.13) % 1)}
+        />
+      ))}
+    </svg>
+  )
+}
+
+function PulseLinesFrozen() {
+  return (
+    <svg className="vital-pulse-lines" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
+      {[0, 1, 2].map((row) => (
+        <path
+          key={row}
+          d={`M0 ${82 + row * 72}
+              C120 ${72 + row * 18}, 180 ${118 + row * 10}, 260 ${92 + row * 18}
+              C330 ${70 + row * 14}, 390 ${85 + row * 8}, 450 ${85 + row * 8}
+              L492 ${85 + row * 8} L520 ${26 + row * 26} L552 ${160 + row * 14}
+              L584 ${70 + row * 12} L640 ${88 + row * 9}
+              C760 ${126 + row * 10}, 840 ${46 + row * 16}, 960 ${86 + row * 13}
+              C1050 ${116 + row * 7}, 1120 ${82 + row * 10}, 1200 ${98 + row * 10}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={row === 1 ? 1.15 : 0.75}
+          strokeOpacity={row === 1 ? 0.16 : 0.08}
+          pathLength="1"
+          strokeDasharray="0.8 0.2"
+          strokeDashoffset={-(row * 0.33)}
         />
       ))}
     </svg>
@@ -149,7 +206,6 @@ function AuroraBlobs({ theme, lite = false }) {
 export default function VitalBackground({ density = 'normal' }) {
   const { theme } = useTheme()
   const lowPower = useLowPowerMode()
-  const prefersReducedMotion = useReducedMotion()
 
   // Mobile / touch: skip the layers that saturate mobile GPUs and hang the
   // page (27 JS-driven motion paths, a rotating blur(28px) conic field,
@@ -158,11 +214,19 @@ export default function VitalBackground({ density = 'normal' }) {
   // keyframes plus the static grid field. The backdrop element itself stays
   // in document flow (see the max-width:900px rules in index.css) — a fixed
   // full-screen layer corrupts GPU tiles on some Android drivers.
+  // Everything here is either static (painted once: frozen paths, grid,
+  // unblurred conic field — see the max-width:900px overrides in index.css)
+  // or compositor-only (blob keyframes). prefers-reduced-motion freezes the
+  // blobs via the reduced-motion CSS block; the rest doesn't move anyway.
   if (lowPower) {
     return (
       <div className={`vital-bg vital-bg-${theme} vital-bg-${density}`} aria-hidden="true">
-        {!prefersReducedMotion && <AuroraBlobs theme={theme} lite />}
+        <AuroraBlobs theme={theme} lite />
+        <div className="vital-gradient-field" />
         <div className="vital-grid-field" />
+        <VitalPathsFrozen side={1} />
+        <VitalPathsFrozen side={-1} />
+        <PulseLinesFrozen />
       </div>
     )
   }
