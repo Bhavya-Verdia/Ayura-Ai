@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import Lenis from 'lenis'
-import { m, AnimatePresence, useScroll, useTransform, MotionConfig } from 'framer-motion'
+import { m, AnimatePresence, MotionConfig } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import useLowPowerMode from '../hooks/useLowPowerMode'
 import { useAuth } from '../providers/AuthContext'
@@ -398,9 +398,12 @@ export default function Landing() {
   const lenisRef = useRef(null)
   const rafRef   = useRef(null)
 
-  const { scrollY } = useScroll()
-  const heroParallaxY       = useTransform(scrollY, [0, 600], [0, -100])
-  const heroParallaxOpacity = useTransform(scrollY, [0, 450], [1, 0])
+  // Hero parallax is a CSS scroll-driven animation (see .lnd-hero in
+  // Landing.css) — the old framer useScroll/useTransform version wrote
+  // transform+opacity to the 100vh hero on the MAIN THREAD every scroll frame,
+  // which profiled at ~14fps scroll on a 4x-throttled mobile CPU. The CSS
+  // timeline runs entirely on the compositor (measured 51+fps, zero long
+  // tasks) with the identical y/opacity curve.
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30)
@@ -541,12 +544,7 @@ export default function Landing() {
 
       <main>
         {/* ── HERO ────────────────────────────────────────── */}
-        <m.section
-          className="lnd-hero"
-          // MotionValue styles bypass MotionConfig, so gate the parallax layer
-          // explicitly for reduced-motion users.
-          style={lowPower ? undefined : { y: heroParallaxY, opacity: heroParallaxOpacity }}
-        >
+        <m.section className="lnd-hero">
           {/* Echo rings behind hero */}
           <div className="lnd-hero-echo" aria-hidden="true">
             <div className="lnd-hero-echo-ring" />
