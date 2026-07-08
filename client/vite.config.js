@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import browserslist from 'browserslist'
+import { browserslistToTargets } from 'lightningcss'
 
 // Preload the two fonts that gate the first meaningful paint (body Manrope 400
 // = hero subtitle/LCP element, display Fraunces = hero title). Without this
@@ -77,7 +79,18 @@ export default defineConfig({
       }
     })
   ],
+  // Without explicit targets the lightningcss minifier collapses a
+  // `backdrop-filter` + `-webkit-backdrop-filter` pair down to whichever comes
+  // last (the -webkit- one, which Chromium does NOT support) — shipping glass
+  // surfaces with no blur on Chrome/Android. Real targets make it emit the
+  // standard property and keep/add the -webkit- prefix only for Safari.
+  css: {
+    lightningcss: {
+      targets: browserslistToTargets(browserslist('defaults, iOS >= 14, Safari >= 14')),
+    },
+  },
   build: {
+    cssMinify: 'lightningcss',
     rollupOptions: {
       output: {
         // Vite 8 bundles with rolldown, whose native chunking API is

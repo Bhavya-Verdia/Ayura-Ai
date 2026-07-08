@@ -9,10 +9,11 @@
 
 .dash-sidebar {
   width: 260px;
-  background: rgba(6,10,14,0.72);
+  /* Theme-aware: a hardcoded dark rgba here used to win over MainLayout.css
+     (this file's chunk loads later), leaving the sidebar dark in light mode. */
+  background: var(--glass-bg);
   border-right: 1px solid var(--dash-edge);
   backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
   display: flex;
   flex-direction: column;
   padding: 24px 16px;
@@ -82,17 +83,18 @@
 
 /* Mobile sidebar */
 @media (max-width: 900px) {
-  .dash-sidebar.mobile { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); }
+  /* Drawer + its overlay must cover the fixed bottom tab bar (z-sidebar=200),
+     like a native drawer — otherwise the tab bar floats over the open menu. */
+  .dash-sidebar.mobile { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); z-index: calc(var(--z-overlay) + 10); }
   .dash-sidebar.mobile.open { transform: translateX(0); box-shadow: 24px 0 64px var(--glass-shadow-strong); }
-  .dash-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 90; border: none; cursor: pointer; }
+  .dash-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: var(--z-overlay); border: none; cursor: pointer; }
   .dash-mobile-bar {
     display: flex; align-items: center; gap: 16px;
     /* Top inset (viewport-fit=cover) keeps the bar below the status bar/notch. */
     padding: calc(14px + env(safe-area-inset-top)) 20px 14px;
-    /* Same glass surface as the desktop sidebar — full visual parity. */
+    /* Frosted native-style top bar: desktop sidebar's glass + iOS-like saturate. */
     background: var(--glass-bg);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px) saturate(140%);
     border-bottom: 1px solid var(--border-subtle);
   }
   .dash-hamburger { background: transparent; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; }
@@ -115,7 +117,6 @@
     linear-gradient(135deg, rgba(255,255,255,0.105), rgba(255,255,255,0.035)),
     rgba(7,13,16,0.72);
   backdrop-filter: blur(30px) saturate(130%);
-  -webkit-backdrop-filter: blur(30px) saturate(130%);
   border: 1px solid var(--dash-edge);
   border-radius: 24px; padding: 34px;
   box-shadow: 0 30px 90px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.08);
@@ -189,7 +190,6 @@
     rgba(9,15,18,0.58);
   border: 1px solid var(--dash-edge);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border-radius: 18px; padding: 22px; position: relative;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex; flex-direction: column;
@@ -287,7 +287,6 @@
   display: flex; align-items: center; gap: 14px;
   background: var(--card-bg); border: 1px solid var(--dash-edge);
   backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
   padding: 18px; border-radius: 16px; text-decoration: none;
   color: var(--ayura-ink); transition: all 0.25s;
 }

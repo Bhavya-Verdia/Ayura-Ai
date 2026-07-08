@@ -638,13 +638,11 @@ textarea:focus-visible {
 
 .bg-blur {
   backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
 }
 
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   position: relative;
@@ -884,7 +882,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   border: 1px solid var(--border-light);
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
 }
 .scroll-to-top:hover {
   border-color: color-mix(in srgb, var(--ayura-teal) 45%, var(--border-light));

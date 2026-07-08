@@ -4,7 +4,6 @@
   position: fixed; inset: 0; z-index: var(--z-overlay);
   background: rgba(0, 0, 0, 0.52);
   backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
 }
 
 .cmd-panel {

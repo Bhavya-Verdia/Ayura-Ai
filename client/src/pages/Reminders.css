@@ -82,7 +82,6 @@
   gap: 12px;
   box-shadow: var(--glass-shadow-strong);
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 .rem-toast--error {
   background: rgba(244,63,94,0.9);

@@ -35,7 +35,7 @@
 .onb-shell {
   width: 100%; max-width: 700px;
   background: var(--glass-bg);
-  backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(28px);
   border: 1px solid var(--glass-border);
   border-radius: 28px; padding: 44px 52px;
   position: relative; z-index: 10;

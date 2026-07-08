@@ -17,7 +17,6 @@
   z-index: var(--z-sticky);
   padding: 14px 0;
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   background: rgba(5,8,16,0.55);
   border-bottom: 1px solid var(--border-subtle);
   transition: background 0.3s, box-shadow 0.3s;
@@ -315,7 +314,6 @@
 .lnd-bento-tile {
   background: var(--glass-bg);
   backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
   border: 1px solid var(--glass-border);
   border-radius: 22px;
   padding: 22px;
