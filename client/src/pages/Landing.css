@@ -1082,6 +1082,28 @@
   color: var(--ayura-ink);
   letter-spacing: -0.02em;
 }
+/* Brand lockup: an un-sized SVG mark fills its grid column (rendered ~5x too
+   large and floated the wordmark below it) — pin it to icon size beside the
+   wordmark, mirroring the nav brand. */
+.lnd-footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.lnd-footer-brand-mark {
+  width: 34px;
+  height: 34px;
+  display: block;
+  flex-shrink: 0;
+}
+.lnd-footer-brand-text {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ayura-ink);
+}
 .lnd-footer-tagline { color: var(--ayura-muted); font-size: 0.875rem; line-height: 1.65; margin-top: 14px; max-width: 28ch; }
 .lnd-footer-links-title {
   font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
