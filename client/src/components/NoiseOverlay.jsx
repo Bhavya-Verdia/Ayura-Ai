@@ -5,8 +5,7 @@ const NoiseOverlay = () => {
   const lowPower = useLowPowerMode();
 
   // The full-viewport SVG feTurbulence filter with mix-blend-mode: overlay
-  // forces the browser to re-blend the entire screen every frame — a top cause
-  // of mobile jank/hang. Skip the whole overlay on mobile/touch/reduced-motion.
+  // re-blends the entire screen every frame — skip it for reduced-motion users.
   if (lowPower) return null;
 
   return (

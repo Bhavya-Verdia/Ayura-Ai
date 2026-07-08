@@ -392,11 +392,8 @@ export default function Landing() {
   const { user, logout } = useAuth()
   const { t } = useTranslation()
   const [scrolled, setScrolled] = useState(false)
-  // On phone-class GPUs the framer transform entrances leave text on stale
-  // low-resolution compositor layers — the page LOOKS blurred until something
-  // forces a re-raster (verified live: reduced-motion renders razor sharp,
-  // animations-on renders soft). So on low-power devices disable transform
-  // animations entirely; content simply appears, which also reads faster.
+  // Reduced-motion users: disable transform animations entirely; content
+  // simply appears.
   const lowPower = useLowPowerMode()
   const lenisRef = useRef(null)
   const rafRef   = useRef(null)
@@ -547,7 +544,7 @@ export default function Landing() {
         <m.section
           className="lnd-hero"
           // MotionValue styles bypass MotionConfig, so gate the parallax layer
-          // explicitly — it pins the whole hero onto one GPU layer on phones.
+          // explicitly for reduced-motion users.
           style={lowPower ? undefined : { y: heroParallaxY, opacity: heroParallaxOpacity }}
         >
           {/* Echo rings behind hero */}

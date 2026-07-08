@@ -1,24 +1,22 @@
 import { useEffect, useState } from 'react'
 
-// 900px matches MainLayout's isMobile breakpoint so the stripped-down
-// background and the mobile layout switch at the same width (no dead zone
-// where you'd get the desktop sidebar with the low-power background).
-const QUERY = '(max-width: 900px), (pointer: coarse), (prefers-reduced-motion: reduce)'
+// Mobile gets the full desktop visual treatment (per product decision:
+// identical UI/background/colors on every screen size), so the only thing
+// that strips the decorative layers now is an explicit OS-level
+// "reduce motion" accessibility preference.
+const QUERY = '(prefers-reduced-motion: reduce)'
 
 /**
- * True on small/touch screens or when the user prefers reduced motion.
+ * True only when the user prefers reduced motion.
  *
- * Used to skip or shrink expensive always-on decorative effects (full-screen
- * SVG noise, dozens of animated motion paths, large blurred gradient fields,
- * hundreds of animated particles) that saturate the main thread / GPU on mobile
- * and cause the page to hang.
+ * Consumers use this to swap the always-on decorative effects (animated
+ * motion paths, blurred gradient fields, particles, ambient canvases) for
+ * static equivalents — an accessibility fallback, no longer a mobile tier.
  *
  * MUST initialise synchronously (lazy useState, not useEffect): mount-time
  * consumers — e.g. MotionConfig gating entrance animations that START on the
  * first frame — would otherwise see one `false` render and kick off the very
- * work this hook exists to prevent. Prerender-safe: the prerenderer runs a
- * desktop-viewport Chromium, so matchMedia correctly reports false there and
- * the captured HTML keeps the full desktop treatment.
+ * work this hook exists to prevent.
  */
 export default function useLowPowerMode() {
   const [low, setLow] = useState(

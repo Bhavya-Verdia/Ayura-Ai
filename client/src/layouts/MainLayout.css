@@ -92,10 +92,10 @@
   z-index: var(--z-sidebar);
   display: flex;
   align-items: stretch;
-  /* SOLID surface: any translucency lets scrolling content read through the
-     tab labels (verified via device screenshots), and dropping the backdrop
-     blur removes a per-frame compositing cost on every mobile scroll. */
-  background: color-mix(in srgb, var(--ayura-bg) 96%, #fff);
+  /* Same glass surface as the desktop sidebar — full visual parity. */
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid var(--border-light);
   /* Add the gesture-bar / home-indicator inset (needs viewport-fit=cover) so the
      tabs sit above the Android/iOS system bar instead of under it. Falls back to

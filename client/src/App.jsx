@@ -70,9 +70,8 @@ const pageTransitionFast  = { duration: 0.15 }
 function PageWrapper({ children, inLayout = false }) {
   const prefersReducedMotion = useReducedMotion()
   const lowPower = useLowPowerMode()
-  // On mobile/low-power devices, animating filter: blur() on every route change
-  // is GPU-heavy and stutters. Fall back to the cheap opacity-only transition
-  // there too — not just when the OS "reduce motion" flag is set.
+  // Reduced-motion users get the cheap opacity-only transition instead of the
+  // blur entrance.
   const cheap = prefersReducedMotion || lowPower
 
   // Inside the app shell, MainLayout already animates route changes and owns
@@ -160,9 +159,7 @@ export default function App() {
     <>
       <a href="#main-content" className="skip-link">Skip to content</a>
       <VitalBackground />
-      {/* Desktop-only ambient art: on phones a lone glowing figure drifting
-          through a content gap reads as a rendering glitch, and the canvas
-          costs battery/jank on phone GPUs. */}
+      {/* Ambient art on calm routes — skipped only for reduced-motion users. */}
       {!lowPower && CALM_BG_ROUTES.has(location.pathname) && <MeditationCanvas />}
       <ErrorBoundary>
         {/* Catches the lazy MainLayout itself; pages inside it fall to nearer

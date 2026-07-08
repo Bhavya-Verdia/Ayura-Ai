@@ -19,8 +19,7 @@ export default function ParticleField({
   const { theme } = useTheme()
   const prefersReducedMotion = useReducedMotion()
   const lowPower = useLowPowerMode()
-  // Mobile/touch: a fraction of the particles and no blurred mix-blend orbs —
-  // 127 animated nodes with box-shadows + blur(34px) orbs hang mobile GPUs.
+  // Reduced-motion: a fraction of the particles and no blurred mix-blend orbs.
   const particleCount = lowPower ? Math.min(count, 22) : Math.min(count, 160)
 
   const particles = useMemo(() => {

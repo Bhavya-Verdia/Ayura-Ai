@@ -103,8 +103,8 @@
   list-style: none;
   border-radius: 14px;
   border: 1px solid var(--glass-border);
-  /* Solid-leaning surface: floats over page content, and mobile strips
-     backdrop-filter, so it can't rely on blur for legibility. */
+  /* Solid-leaning surface: floats over page content, so it doesn't rely on
+     blur for legibility. */
   background: color-mix(in srgb, var(--ayura-bg) 94%, var(--ayura-ink) 6%);
   box-shadow: var(--glass-shadow);
   z-index: 60;
@@ -1157,7 +1157,6 @@
   .lnd-hero { grid-template-columns: 1fr; padding: 120px 40px 60px; gap: 48px; }
   .lnd-hero-copy { align-items: center; text-align: center; }
   .lnd-hero-subtitle { max-width: 56ch; }
-  .lnd-hero-visual { display: none; }
   .lnd-feature { gap: 48px; }
 }
 @media (max-width: 768px) {
@@ -1171,17 +1170,6 @@
      needed — and a composited overflow layer is a GPU-corruption trigger on
      some Android drivers (garbled texture seen on a real device). */
   .lnd-app-preview.fmv-fill { overflow-y: visible; }
-  /* Mobile drops backdrop-filter globally (see index.css), which left the
-     fixed nav translucent — scrolled content read straight through it.
-     Solid surface instead, matching the bottom tab bar. */
-  .lnd-nav-wrap,
-  .lnd-nav-wrap.scrolled {
-    background: color-mix(in srgb, var(--ayura-bg) 96%, #fff);
-  }
-  [data-theme='light'] .lnd-nav-wrap,
-  [data-theme='light'] .lnd-nav-wrap.scrolled {
-    background: color-mix(in srgb, var(--ayura-bg) 97%, #000);
-  }
   .lnd-cards-row { flex-direction: column; }
   /* Stacked full-width the 360px floor (which right-sizes the 3-across
      desktop grid) leaves a tall empty band between icon and title — let

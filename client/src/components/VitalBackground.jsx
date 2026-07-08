@@ -81,11 +81,10 @@ function PulseLines() {
   )
 }
 
-/* Frozen (mobile) renders of the desktop path layers: plain SVG, painted once
-   at load and never again — a static layer has zero per-frame cost, unlike the
-   framer-motion originals whose 27 infinite JS animations hang phone GPUs.
-   The dash segment is staggered per path to mimic a mid-flight frame of the
-   desktop animation rather than 12 identical full strokes. */
+/* Frozen (reduced-motion) renders of the animated path layers: plain SVG,
+   painted once at load and never again. The dash segment is staggered per
+   path to mimic a mid-flight frame of the animation rather than 12 identical
+   full strokes. */
 function VitalPathsFrozen({ side = 1 }) {
   const paths = makeVitalPaths(side)
   return (
@@ -135,11 +134,9 @@ function PulseLinesFrozen() {
 }
 
 /* Three independently floating aurora blobs.
-   `lite` (mobile): drop the blur filter — a blurred layer is re-sampled by the
-   GPU every frame, which is exactly what hangs phones. The radial gradients
-   are already soft, so we just enlarge them ~25% to fake the blur's spread.
-   The float animation itself is CSS transform/opacity keyframes, which run on
-   the compositor with zero main-thread or paint cost per frame. */
+   `lite` (reduced-motion): drop the blur filter; the radial gradients are
+   already soft, so enlarging them ~25% fakes the blur's spread without a
+   per-frame GPU re-sample. */
 function AuroraBlobs({ theme, lite = false }) {
   const isDark = theme === 'dark'
 
@@ -207,17 +204,9 @@ export default function VitalBackground({ density = 'normal' }) {
   const { theme } = useTheme()
   const lowPower = useLowPowerMode()
 
-  // Mobile / touch: skip the layers that saturate mobile GPUs and hang the
-  // page (27 JS-driven motion paths, a rotating blur(28px) conic field,
-  // blur(90px) on the blobs), but keep the ambience alive with a
-  // compositor-only tier: unblurred aurora blobs on CSS transform/opacity
-  // keyframes plus the static grid field. The backdrop element itself stays
-  // in document flow (see the max-width:900px rules in index.css) — a fixed
-  // full-screen layer corrupts GPU tiles on some Android drivers.
-  // Everything here is either static (painted once: frozen paths, grid,
-  // unblurred conic field — see the max-width:900px overrides in index.css)
-  // or compositor-only (blob keyframes). prefers-reduced-motion freezes the
-  // blobs via the reduced-motion CSS block; the rest doesn't move anyway.
+  // Reduced-motion (OS accessibility preference): swap the animated layers
+  // for static equivalents — frozen paths, unblurred blobs, no noise field.
+  // Every screen size otherwise gets the identical full desktop treatment.
   if (lowPower) {
     return (
       <div className={`vital-bg vital-bg-${theme} vital-bg-${density}`} aria-hidden="true">
