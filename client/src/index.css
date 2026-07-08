@@ -1135,9 +1135,11 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   .aurora-blob-2 { filter: none !important; width: 62% !important; height: 62% !important; }
   .aurora-blob-3 { filter: none !important; width: 56% !important; height: 56% !important; }
 
-  /* Conic field: keep the 36s rotation (compositor transform) but unblurred —
-     its stops span tens of degrees so it is soft by construction. */
-  .vital-gradient-field { filter: none; opacity: 0.6; }
+  /* Conic field: unblurred (its stops span tens of degrees — soft by
+     construction) and frozen at its resting angle: a 36s rotation is
+     imperceptible, but it kept a full-screen layer compositing on every
+     frame of every page. */
+  .vital-gradient-field { filter: none; opacity: 0.6; animation: none; }
 
   /* Particle orbs: the JSX paints them as soft radial gradients, so the
      extra blur(34px) + screen-blend pass adds nothing visible. */
@@ -1145,6 +1147,30 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
 
   /* Grain without the whole-screen re-blend. */
   .noise-overlay { mix-blend-mode: normal; opacity: 0.024; }
+
+  /* Ambient motion discipline: phones keep ONE living background element
+     (the floating aurora blobs — pure compositor transform/opacity). The
+     layered strands freeze into the exact staggered mid-flight pattern of
+     the animation (per-path seed set inline), and the color swirl keeps its
+     angle — every pixel of the composition survives, but the GPU stops
+     re-painting strands and re-compositing a rotating full-screen layer on
+     every frame of every open page. Interaction/entrance animations are
+     untouched — this governs only the permanent background loops. */
+  .vital-path-sweep {
+    animation: none;
+    stroke-dasharray: 0.55 0.45;
+    stroke-dashoffset: var(--sweep-seed, 0);
+    opacity: 0.45;
+  }
+  .vital-pulse-sweep {
+    animation: none;
+    stroke-dasharray: 0.8 0.2;
+    stroke-dashoffset: var(--sweep-seed, 0);
+  }
+
+  /* Below-fold landing sections: skip layout/paint until scrolled near.
+     (Entrance reveals use IntersectionObserver, which still fires.) */
+  .lnd-section { content-visibility: auto; contain-intrinsic-size: auto 900px; }
 
   /* backdrop-filter: every glass layer re-samples its backdrop each frame it
      moves — in a scroller that is every card, every frame. In-flow cards sit

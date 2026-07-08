@@ -47,6 +47,23 @@ function makeOmSprite(nomSize, rgb) {
   return { canvas: off, px: canvasPx }
 }
 
+/* Bake the glow INTO the sprite bitmap (one shadowBlur pass at build time)
+   instead of setting ctx.shadowBlur on every draw — per-draw shadowBlur is
+   the single most expensive canvas op and used to run for every glowing
+   figure on every frame. Scaling the baked sprite scales its glow with it,
+   which is exactly what the live shadow did. */
+function withGlow(sprite, rgb, nomSize) {
+  const pad = Math.ceil(nomSize * 2.6 * 2)
+  const px  = sprite.px + pad * 2
+  const off = document.createElement('canvas')
+  off.width = off.height = px
+  const c = off.getContext('2d')
+  c.shadowBlur  = nomSize * 2.6
+  c.shadowColor = rgba(rgb, 0.70)
+  c.drawImage(sprite.canvas, pad, pad)
+  return { canvas: off, px }
+}
+
 function buildSpriteMap() {
   const yoga = {}, om = {}
   const uniqueYogaColors = [TEAL, VIOLET, SKY]
@@ -54,12 +71,18 @@ function buildSpriteMap() {
   uniqueYogaColors.forEach(rgb => {
     const k = rgb.join(',')
     yoga[k] = {}
-    YOGA_NOM_SIZES.forEach(sz => { yoga[k][sz] = makeEmojiSprite(sz, rgb) })
+    YOGA_NOM_SIZES.forEach(sz => {
+      const plain = makeEmojiSprite(sz, rgb)
+      yoga[k][sz] = { plain, glow: withGlow(plain, rgb, sz) }
+    })
   })
   uniqueOmColors.forEach(rgb => {
     const k = rgb.join(',')
     om[k] = {}
-    OM_NOM_SIZES.forEach(sz => { om[k][sz] = makeOmSprite(sz, rgb) })
+    OM_NOM_SIZES.forEach(sz => {
+      const plain = makeOmSprite(sz, rgb)
+      om[k][sz] = { plain, glow: withGlow(plain, rgb, sz) }
+    })
   })
   return { yoga, om }
 }
@@ -173,17 +196,17 @@ export default function MeditationCanvas() {
 
       ctx.clearRect(0, 0, W, H)
 
-      // sparkles
+      // sparkles — the halo is a second soft low-alpha disc instead of a
+      // per-draw shadowBlur (same tiny glow, none of the blur-pass cost)
       sparkles.forEach(s => {
         const opa = s.baseOpa * (0.5 + 0.5 * Math.sin(t * s.freq + s.phase))
-        ctx.save()
-        ctx.globalAlpha = opa
         ctx.fillStyle   = rgba(s.rgb, 1)
-        ctx.shadowBlur  = 4
-        ctx.shadowColor = rgba(s.rgb, 0.85)
+        ctx.globalAlpha = opa * 0.35
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 2.4, 0, Math.PI * 2); ctx.fill()
+        ctx.globalAlpha = opa
         ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill()
-        ctx.restore()
       })
+      ctx.globalAlpha = 1
 
       // yoga & om figures
       figures.forEach(fig => {
@@ -193,12 +216,12 @@ export default function MeditationCanvas() {
         const map     = fig.kind === 'yoga' ? sprites.yoga : sprites.om
         const nomSzs  = fig.kind === 'yoga' ? YOGA_NOM_SIZES : OM_NOM_SIZES
         const nomSz   = closest(fig.size, nomSzs)
-        const sprite  = map[fig.rgb.join(',')][nomSz]
+        const entry   = map[fig.rgb.join(',')][nomSz]
+        const sprite  = fig.glow ? entry.glow : entry.plain
         const drawPx  = sprite.px * (fig.size / nomSz)
 
         ctx.save()
         ctx.globalAlpha = fig.opacity
-        if (fig.glow) { ctx.shadowBlur = fig.size * 2.6; ctx.shadowColor = rgba(fig.rgb, 0.70) }
         ctx.translate(x, fig.y)
         if (fig.tilt) ctx.rotate(fig.tilt)
         ctx.drawImage(sprite.canvas, -drawPx / 2, -drawPx / 2, drawPx, drawPx)

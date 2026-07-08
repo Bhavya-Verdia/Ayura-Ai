@@ -33,7 +33,13 @@ function VitalPaths({ side = 1 }) {
           fill="none"
           pathLength="1"
           className="vital-path-sweep"
-          style={{ animationDuration: `${path.duration}s`, animationDelay: `${-path.id * 1.7}s` }}
+          style={{
+            animationDuration: `${path.duration}s`,
+            animationDelay: `${-path.id * 1.7}s`,
+            // Mobile freezes the sweep; the seed staggers each path's dash so
+            // the static render reads as a mid-flight frame, not 12 clones.
+            '--sweep-seed': -((path.id * 0.13) % 1),
+          }}
         />
       ))}
     </svg>
@@ -59,7 +65,11 @@ function PulseLines() {
           strokeOpacity={row === 1 ? 0.16 : 0.08}
           pathLength="1"
           className="vital-pulse-sweep"
-          style={{ animationDuration: `${16 + row * 4}s`, animationDelay: `${-row * 5.3}s` }}
+          style={{
+            animationDuration: `${16 + row * 4}s`,
+            animationDelay: `${-row * 5.3}s`,
+            '--sweep-seed': -(row * 0.33),
+          }}
         />
       ))}
     </svg>
