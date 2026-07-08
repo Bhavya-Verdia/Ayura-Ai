@@ -77,8 +77,13 @@ function PulseLines() {
   )
 }
 
-/* Three independently floating aurora blobs */
-function AuroraBlobs({ theme }) {
+/* Three independently floating aurora blobs.
+   `lite` (mobile): drop the blur filter — a blurred layer is re-sampled by the
+   GPU every frame, which is exactly what hangs phones. The radial gradients
+   are already soft, so we just enlarge them ~25% to fake the blur's spread.
+   The float animation itself is CSS transform/opacity keyframes, which run on
+   the compositor with zero main-thread or paint cost per frame. */
+function AuroraBlobs({ theme, lite = false }) {
   const isDark = theme === 'dark'
 
   const blobs = [
@@ -88,13 +93,13 @@ function AuroraBlobs({ theme }) {
         position: 'absolute',
         top: '-10%',
         left: '-5%',
-        width: '55%',
-        height: '55%',
+        width: lite ? '68%' : '55%',
+        height: lite ? '68%' : '55%',
         borderRadius: '50%',
         background: isDark
           ? 'radial-gradient(circle, rgba(92,171,116,0.22) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(13,148,136,0.18) 0%, transparent 70%)',
-        filter: 'blur(var(--aurora-blur, 90px))',
+        filter: lite ? undefined : 'blur(var(--aurora-blur, 90px))',
         pointerEvents: 'none',
       },
     },
@@ -104,13 +109,13 @@ function AuroraBlobs({ theme }) {
         position: 'absolute',
         top: '-5%',
         right: '-10%',
-        width: '50%',
-        height: '50%',
+        width: lite ? '62%' : '50%',
+        height: lite ? '62%' : '50%',
         borderRadius: '50%',
         background: isDark
           ? 'radial-gradient(circle, rgba(230,162,60,0.18) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)',
-        filter: 'blur(var(--aurora-blur, 90px))',
+        filter: lite ? undefined : 'blur(var(--aurora-blur, 90px))',
         pointerEvents: 'none',
       },
     },
@@ -120,13 +125,13 @@ function AuroraBlobs({ theme }) {
         position: 'absolute',
         bottom: '-15%',
         left: '30%',
-        width: '45%',
-        height: '45%',
+        width: lite ? '56%' : '45%',
+        height: lite ? '56%' : '45%',
         borderRadius: '50%',
         background: isDark
           ? 'radial-gradient(circle, rgba(251,146,60,0.12) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(234,88,12,0.08) 0%, transparent 70%)',
-        filter: 'blur(var(--aurora-blur, 90px))',
+        filter: lite ? undefined : 'blur(var(--aurora-blur, 90px))',
         pointerEvents: 'none',
       },
     },
@@ -144,13 +149,22 @@ function AuroraBlobs({ theme }) {
 export default function VitalBackground({ density = 'normal' }) {
   const { theme } = useTheme()
   const lowPower = useLowPowerMode()
+  const prefersReducedMotion = useReducedMotion()
 
-  // Mobile / touch / reduced-motion: render only the cheap static CSS gradient
-  // base. The animated layers below (27 motion paths, a rotating blur(28px)
-  // conic field, 3 blur(90px) aurora blobs) saturate mobile GPUs and hang the
-  // page, and framer-motion keeps animating them even when off-screen.
+  // Mobile / touch: skip the layers that saturate mobile GPUs and hang the
+  // page (27 JS-driven motion paths, a rotating blur(28px) conic field,
+  // blur(90px) on the blobs), but keep the ambience alive with a
+  // compositor-only tier: unblurred aurora blobs on CSS transform/opacity
+  // keyframes plus the static grid field. The backdrop element itself stays
+  // in document flow (see the max-width:900px rules in index.css) — a fixed
+  // full-screen layer corrupts GPU tiles on some Android drivers.
   if (lowPower) {
-    return <div className={`vital-bg vital-bg-${theme} vital-bg-${density}`} aria-hidden="true" />
+    return (
+      <div className={`vital-bg vital-bg-${theme} vital-bg-${density}`} aria-hidden="true">
+        {!prefersReducedMotion && <AuroraBlobs theme={theme} lite />}
+        <div className="vital-grid-field" />
+      </div>
+    )
   }
 
   return (

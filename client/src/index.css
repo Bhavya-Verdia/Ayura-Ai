@@ -1132,10 +1132,24 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   }
   html {
     /* Same grain as .vital-bg::after so the texture is continuous where the
-       scrolling backdrop hands off to the flat base. */
+       scrolling backdrop hands off to the flat base.
+
+       Beneath the grain: two repeat-y aurora washes (green left / amber
+       right) carry the desktop's ambient tint down long pages — the in-flow
+       .vital-bg only covers the first viewport, and everything below it used
+       to be flat. This is plain document paint: no composited layer (nothing
+       for buggy Android drivers to corrupt), no animation, and the grain
+       above dithers the gradients against OLED banding. The washes are
+       positioned to stay ~zero inside the first 100vh so there is no seam at
+       the .vital-bg handoff; different tile heights keep the green/amber
+       rhythm from repeating mechanically. */
     background-color: var(--ayura-bg);
-    background-image: var(--noise-tile);
-    background-size: 64px 64px;
+    background-image:
+      var(--noise-tile),
+      radial-gradient(ellipse 110% 26% at 0% 70%, var(--aurora-3), transparent 62%),
+      radial-gradient(ellipse 100% 24% at 100% 88%, var(--aurora-4), transparent 62%);
+    background-size: 64px 64px, 100% 240vh, 100% 300vh;
+    background-repeat: repeat, repeat-y, repeat-y;
   }
   .vital-bg {
     position: absolute;
