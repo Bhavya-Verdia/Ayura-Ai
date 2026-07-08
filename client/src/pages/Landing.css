@@ -74,6 +74,54 @@
   letter-spacing: -0.01em;
 }
 .lnd-nav-actions { display: flex; align-items: center; gap: 10px; }
+
+/* ── Theme + language switchers ── */
+.lnd-nav-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-subtle);
+  color: var(--ayura-muted);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.lnd-nav-icon-btn:hover,
+.lnd-nav-icon-btn.open {
+  color: var(--ayura-ink);
+  border-color: color-mix(in srgb, var(--ayura-teal) 45%, var(--glass-border));
+  background: color-mix(in srgb, var(--ayura-teal) 8%, transparent);
+}
+.lnd-lang-wrap { position: relative; }
+.lnd-lang-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 200px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  /* Solid-leaning surface: floats over page content, and mobile strips
+     backdrop-filter, so it can't rely on blur for legibility. */
+  background: color-mix(in srgb, var(--ayura-bg) 94%, var(--ayura-ink) 6%);
+  box-shadow: var(--glass-shadow);
+  z-index: 60;
+}
+.lnd-lang-item {
+  display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ayura-muted);
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+.lnd-lang-item:hover { background: var(--glass-bg-hover); color: var(--ayura-ink); }
+.lnd-lang-item.active { color: var(--ayura-teal); font-weight: 650; }
+
 .lnd-nav-link {
   font-size: 0.875rem; color: var(--ayura-muted);
   text-decoration: none; font-weight: 500; transition: color 0.2s;
@@ -1146,6 +1194,16 @@
   .lnd-footer-top { flex-direction: column; }
   .lnd-footer-disclaimer { text-align: left; }
   .lnd-nav { padding: 0 20px; }
+  /* Keep brand + theme + language + auth links on one uncramped row */
+  .lnd-nav-actions { gap: 6px; }
+  .lnd-nav-icon-btn { width: 32px; height: 32px; }
+  .lnd-cta-pill { padding: 8px 14px; }
+  .lnd-nav-link { margin-left: 4px; }
+}
+/* Narrow phones: the icon mark alone identifies the brand; the wordmark's
+   space goes to the four nav actions. */
+@media (max-width: 430px) {
+  .lnd-brand-text { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal-left, .reveal-right { opacity: 1; transform: none; transition: none; }
