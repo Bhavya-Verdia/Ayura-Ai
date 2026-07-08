@@ -1,4 +1,3 @@
-import { m, useReducedMotion } from 'framer-motion'
 import { useTheme } from '../providers/ThemeProvider'
 import useLowPowerMode from '../hooks/useLowPowerMode'
 
@@ -15,31 +14,26 @@ function makeVitalPaths(side) {
   }))
 }
 
+/* The sweep cycles are pure CSS (see vital-path-sweep / vital-pulse-sweep in
+   index.css) on pathLength="1" strokes — they used to be 27 independent
+   framer-motion loops, i.e. permanent main-thread JS on every open page.
+   Reduced-motion never mounts these (the frozen branch below renders instead). */
 function VitalPaths({ side = 1 }) {
-  const prefersReducedMotion = useReducedMotion()
   const paths = makeVitalPaths(side)
 
   return (
     <svg className="vital-paths" viewBox="0 0 760 420" preserveAspectRatio="none" aria-hidden="true">
       {paths.map((path) => (
-        <m.path
+        <path
           key={`${side}-${path.id}`}
           d={path.d}
           stroke="currentColor"
           strokeWidth={path.width}
           strokeOpacity={path.opacity}
           fill="none"
-          initial={{ pathLength: 0.18, pathOffset: 0, opacity: 0.35 }}
-          animate={
-            prefersReducedMotion
-              ? { pathLength: 0.5, pathOffset: 0, opacity: path.opacity }
-              : { pathLength: [0.18, 0.86, 0.18], pathOffset: [0, 1, 0], opacity: [0.22, 0.58, 0.22] }
-          }
-          transition={
-            prefersReducedMotion
-              ? { duration: 0 }
-              : { duration: path.duration, repeat: Infinity, ease: 'linear' }
-          }
+          pathLength="1"
+          className="vital-path-sweep"
+          style={{ animationDuration: `${path.duration}s`, animationDelay: `${-path.id * 1.7}s` }}
         />
       ))}
     </svg>
@@ -47,11 +41,10 @@ function VitalPaths({ side = 1 }) {
 }
 
 function PulseLines() {
-  const prefersReducedMotion = useReducedMotion()
   return (
     <svg className="vital-pulse-lines" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
       {[0, 1, 2].map((row) => (
-        <m.path
+        <path
           key={row}
           d={`M0 ${82 + row * 72}
               C120 ${72 + row * 18}, 180 ${118 + row * 10}, 260 ${92 + row * 18}
@@ -64,17 +57,9 @@ function PulseLines() {
           stroke="currentColor"
           strokeWidth={row === 1 ? 1.15 : 0.75}
           strokeOpacity={row === 1 ? 0.16 : 0.08}
-          initial={{ pathLength: 0, pathOffset: 0.12 }}
-          animate={
-            prefersReducedMotion
-              ? { pathLength: 1, pathOffset: 0 }
-              : { pathLength: [0.08, 1, 0.08], pathOffset: [0, 0.9, 1.8] }
-          }
-          transition={
-            prefersReducedMotion
-              ? { duration: 0 }
-              : { duration: 16 + row * 4, repeat: Infinity, ease: 'linear' }
-          }
+          pathLength="1"
+          className="vital-pulse-sweep"
+          style={{ animationDuration: `${16 + row * 4}s`, animationDelay: `${-row * 5.3}s` }}
         />
       ))}
     </svg>

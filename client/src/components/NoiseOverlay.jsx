@@ -15,8 +15,10 @@ const NoiseOverlay = () => {
 
       {/* SVG Noise Texture for Glassmorphism 2.0 */}
       <svg
-        className="pointer-events-none fixed inset-0 z-50 h-full w-full opacity-[0.03] mix-blend-overlay"
-        style={{ pointerEvents: 'none', position: 'fixed', inset: 0, zIndex: 9999, width: '100%', height: '100%', opacity: 0.03, mixBlendMode: 'overlay' }}
+        className="noise-overlay"
+        /* opacity + blend live in index.css (.noise-overlay) so the mobile GPU
+           tier can swap the whole-screen blend for plain alpha. */
+        style={{ pointerEvents: 'none', position: 'fixed', inset: 0, zIndex: 9999, width: '100%', height: '100%' }}
       >
         <filter id="noiseFilter">
           <feTurbulence

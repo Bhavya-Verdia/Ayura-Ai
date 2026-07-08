@@ -130,10 +130,16 @@ export default function MeditationCanvas() {
 
     let W, H, figures = [], sparkles = [], t = 0, lastTime = null, raf
 
+    // Phones: soft glowy sprites survive a lower backing resolution invisibly,
+    // and the slow drift reads identically at 30fps — half the shadowBlur
+    // passes per second on the GPU that actually struggles with them.
+    const coarse = window.matchMedia('(pointer: coarse), (max-width: 900px)').matches
+    const MIN_FRAME_MS = coarse ? 31 : 0
+
     function resize() {
-      // DPR-aware: render at device resolution (capped at 2 for perf) so the
+      // DPR-aware: render at device resolution (capped for perf) so the
       // sprites stay crisp on retina, then work in CSS pixels via setTransform.
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const dpr = Math.min(window.devicePixelRatio || 1, coarse ? 1.25 : 2)
       W = window.innerWidth
       H = window.innerHeight
       canvas.width  = Math.round(W * dpr)
@@ -157,6 +163,10 @@ export default function MeditationCanvas() {
     }
 
     function frame(now) {
+      if (MIN_FRAME_MS && lastTime && now - lastTime < MIN_FRAME_MS) {
+        raf = requestAnimationFrame(frame)
+        return
+      }
       const dt = lastTime ? Math.min((now - lastTime) / 1000, 0.05) : 0.016
       lastTime  = now
       t        += dt

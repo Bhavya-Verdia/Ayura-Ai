@@ -1088,3 +1088,76 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   }
 }
 
+
+/* ─── VITAL PATH SWEEPS (CSS-driven) ──────────────────────────
+   The living-path layers used to be 27 independent framer-motion loops —
+   permanent main-thread JS on every open page. These keyframes reproduce the
+   exact cycles (pathLength/pathOffset/opacity) as declarative CSS on
+   pathLength="1" strokes: the browser animation engine owns them and the
+   main thread never runs a line of JS for the ambience. */
+@keyframes vital-path-sweep {
+  0%   { stroke-dasharray: 0.18 0.82; stroke-dashoffset: 0;  opacity: 0.22; }
+  50%  { stroke-dasharray: 0.86 0.14; stroke-dashoffset: -1; opacity: 0.58; }
+  100% { stroke-dasharray: 0.18 0.82; stroke-dashoffset: 0;  opacity: 0.22; }
+}
+@keyframes vital-pulse-sweep {
+  0%   { stroke-dasharray: 0.08 0.92; stroke-dashoffset: 0;    }
+  50%  { stroke-dasharray: 1 0.02;    stroke-dashoffset: -0.9; }
+  100% { stroke-dasharray: 0.08 0.92; stroke-dashoffset: -1.8; }
+}
+.vital-path-sweep  { animation: vital-path-sweep  linear infinite; }
+.vital-pulse-sweep { animation: vital-pulse-sweep linear infinite; }
+
+/* Noise grain (rendered by NoiseOverlay): blend/opacity live here so the
+   mobile tier below can swap the blend mode without touching the component. */
+.noise-overlay {
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+}
+
+/* ─── MOBILE GPU TIER ─────────────────────────────────────────
+   Phones keep the identical DESIGN — every color, gradient, layer, and
+   motion — but the physics get cheap twins. Live pixel filters (blur on an
+   animating layer, whole-screen blend modes, per-card backdrop sampling) are
+   re-computed by the GPU every frame and are what actually hangs phone GPUs;
+   a pre-softened gradient or a plain alpha surface is painted once. Rule of
+   thumb applied throughout: the blur of a soft gradient IS a bigger soft
+   gradient, so nothing here changes what the eye sees.
+
+   NOT a reduced tier: animations keep running (they are compositor
+   transform/opacity), glass stays glass wherever sharp content actually
+   scrolls behind it (fixed bars, drawer, floating overlays). */
+@media (max-width: 900px), (pointer: coarse) {
+  /* Aurora blobs: drop the live blur(90px); the radial stops are already
+     soft, enlarging ~25% reproduces the blur's spread. Float keyframes keep
+     running (compositor-only). */
+  .aurora-blob-1 { filter: none !important; width: 68% !important; height: 68% !important; }
+  .aurora-blob-2 { filter: none !important; width: 62% !important; height: 62% !important; }
+  .aurora-blob-3 { filter: none !important; width: 56% !important; height: 56% !important; }
+
+  /* Conic field: keep the 36s rotation (compositor transform) but unblurred —
+     its stops span tens of degrees so it is soft by construction. */
+  .vital-gradient-field { filter: none; opacity: 0.6; }
+
+  /* Particle orbs: the JSX paints them as soft radial gradients, so the
+     extra blur(34px) + screen-blend pass adds nothing visible. */
+  .particle-orb { filter: none; mix-blend-mode: normal; }
+
+  /* Grain without the whole-screen re-blend. */
+  .noise-overlay { mix-blend-mode: normal; opacity: 0.024; }
+
+  /* backdrop-filter: every glass layer re-samples its backdrop each frame it
+     moves — in a scroller that is every card, every frame. In-flow cards sit
+     over the soft ambient background where blur is undetectable, so only the
+     surfaces with sharp content scrolling beneath keep true backdrop blur. */
+  * { backdrop-filter: none !important; }
+  .mobile-bottom-nav,
+  .dash-mobile-bar { backdrop-filter: blur(24px) saturate(140%) !important; }
+  .lnd-nav-wrap { backdrop-filter: blur(20px) !important; }
+  .dash-sidebar.mobile { backdrop-filter: blur(24px) !important; }
+  .dash-overlay,
+  .feedback-overlay,
+  .dash-reaction-overlay { backdrop-filter: blur(4px) !important; }
+  .cmd-backdrop { backdrop-filter: blur(6px) !important; }
+  .pref-modal-overlay { backdrop-filter: blur(8px) !important; }
+}

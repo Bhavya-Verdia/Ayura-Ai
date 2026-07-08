@@ -76,7 +76,10 @@ export default function ParticleField({
             top: `${orb.y}%`,
             width: `${orb.size}px`,
             height: `${orb.size}px`,
-            background: orb.color,
+            /* Soft radial fill: with blur(34px) on top (desktop) it reads the
+               same as a solid disc did, and on mobile the gradient alone IS
+               the blur — the GPU tier drops the filter with no visible step. */
+            background: `radial-gradient(closest-side, ${orb.color} 0%, transparent 88%)`,
             animationDuration: prefersReducedMotion ? '0s' : `${orb.duration}s`,
             animationPlayState: prefersReducedMotion ? 'paused' : 'running',
             animationDelay: prefersReducedMotion ? '0s' : `${orb.delay}s`,
