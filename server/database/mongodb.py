@@ -14,6 +14,9 @@ logger = logging.getLogger("ayura.db")
 _client: AsyncIOMotorClient | None = None
 _db: AsyncIOMotorDatabase | None = None
 _available: bool = False
+# Strong ref: asyncio holds only weak refs to tasks, so the index-creation
+# task could be garbage-collected before it finishes.
+_index_task = None
 
 
 async def init_mongodb():
@@ -40,7 +43,8 @@ async def init_mongodb():
 
         # Spawn index creation in background to avoid blocking startup
         import asyncio
-        asyncio.create_task(_create_indexes(_db))
+        global _index_task
+        _index_task = asyncio.create_task(_create_indexes(_db))
 
         _available = True
         logger.info("MongoDB connected & index creation started. Ready for operations.")

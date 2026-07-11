@@ -3,11 +3,17 @@ Ayura AI - Notification Service
 Creates notification records and delivers them via email.
 """
 
+import asyncio
 import uuid
 import logging
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
+
+# Strong references to fire-and-forget email tasks: asyncio only holds weak
+# refs to running tasks, so an unreferenced task can be garbage-collected
+# mid-flight and the email silently never sends.
+_email_tasks: set = set()
 
 
 async def create_and_deliver_notification(
@@ -34,8 +40,9 @@ async def create_and_deliver_notification(
         background_tasks.add_task(_send_notification_email, db, user_id, title, body)
     else:
         # Fire-and-forget when no BackgroundTasks context is available
-        import asyncio
-        asyncio.create_task(_send_notification_email(db, user_id, title, body))
+        task = asyncio.create_task(_send_notification_email(db, user_id, title, body))
+        _email_tasks.add(task)
+        task.add_done_callback(_email_tasks.discard)
 
     return doc
 
