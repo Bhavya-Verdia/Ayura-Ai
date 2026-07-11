@@ -213,8 +213,8 @@ body,
      UI/body = Manrope. The pairing gives the brand an "editorial wellness" voice
      rather than the default geometric-sans SaaS look. */
   --font-display: 'Fraunces Variable', 'Fraunces', 'Fraunces Fallback', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
-  --font-ui:      'Manrope', 'Manrope Fallback', 'Manrope Fallback Android', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-body:    'Manrope', 'Manrope Fallback', 'Manrope Fallback Android', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-ui:      'Manrope Variable', 'Manrope', 'Manrope Fallback', 'Manrope Fallback Android', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-body:    'Manrope Variable', 'Manrope', 'Manrope Fallback', 'Manrope Fallback Android', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   /* ── Fluid type scale ──
      clamp(min, preferred-vw, max): sizes scale continuously with the viewport
@@ -928,10 +928,13 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   gap: 22px;
   min-height: 100vh;
   padding: 32px;
+  /* Theme-aware base: this was a hardcoded near-black wash, so light-theme
+     users got a full-screen DARK flash (with ink-on-dark = invisible text)
+     on every auth check / lazy-route load. */
   background:
     radial-gradient(circle at 50% 42%, rgba(92,171,116,0.16), transparent 28%),
     radial-gradient(circle at 58% 54%, rgba(230,162,60,0.12), transparent 32%),
-    rgba(16,13,9,0.94);
+    var(--ayura-bg);
 }
 
 .loading-mark {
@@ -990,7 +993,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   height: 4px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(255,255,255,0.08);
+  background: var(--border-light);
 }
 
 .loading-bar-fill {

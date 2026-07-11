@@ -2,7 +2,7 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 120px 24px 80px;
-  font-family: 'Manrope', sans-serif;
+  font-family: var(--font-body);
   color: var(--ayura-ink);
 }
 

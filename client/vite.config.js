@@ -15,7 +15,7 @@ const preloadCriticalFonts = () => ({
     order: 'post',
     handler(html, ctx) {
       if (!ctx.bundle) return
-      const critical = /(?:manrope-latin-400-normal|fraunces-latin-opsz-normal).*\.woff2$/
+      const critical = /(?:manrope-latin-wght-normal|fraunces-latin-opsz-normal).*\.woff2$/
       return Object.keys(ctx.bundle)
         .filter((f) => critical.test(f))
         .map((f) => ({

@@ -215,7 +215,7 @@ export default function App() {
             background: 'var(--glass-bg)',
             border: '1px solid var(--border-light)',
             color: 'var(--ayura-ink)',
-            fontFamily: 'Manrope, sans-serif',
+            fontFamily: 'var(--font-ui)',
             backdropFilter: 'blur(24px)',
           },
           className: 'ayura-toast',

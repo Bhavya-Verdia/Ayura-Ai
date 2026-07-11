@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useRegisterSW } from 'virtual:pwa-register/react'
-import { toast } from 'sonner'
 
 // Long-lived tabs never re-check for a new SW on their own; poll hourly so an
 // update is discovered without requiring a full page navigation.
@@ -37,11 +36,12 @@ export default function ReloadPrompt() {
     },
   })
 
+  // Offline capability is silent by design: the toast fired on every FIRST
+  // visit (SW install), covering the nav's Sign In/Get Started CTAs at the
+  // exact moment a new visitor is forming an impression — and "works offline"
+  // means nothing to someone who hasn't used the app yet.
   useEffect(() => {
-    if (offlineReady) {
-      toast.success('App is ready to work offline.')
-      setOfflineReady(false)
-    }
+    if (offlineReady) setOfflineReady(false)
   }, [offlineReady, setOfflineReady])
 
   // "Arrival": a fresh load OR the app coming back to the foreground —

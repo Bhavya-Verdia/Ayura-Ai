@@ -100,6 +100,17 @@ try {
       }
     }, shellFallbacks)
 
+    // Transient runtime UI must not be baked into the static snapshot: the
+    // service worker registers during the capture and sonner shows its
+    // "App is ready to work offline" toast, which would greet every first-time
+    // visitor (and crawler) as frozen HTML until React hydrates and wipes it.
+    await page.evaluate(() => {
+      document.querySelectorAll('[data-sonner-toaster]').forEach((el) => {
+        const section = el.closest('section')
+        ;(section || el).remove()
+      })
+    })
+
     // React.lazy chunks trigger runtime-injected <link rel="modulepreload"> whose
     // href resolves to the preview server's absolute origin. Rewrite that origin to
     // root-relative so the saved HTML doesn't ship dead http://localhost:4174/…

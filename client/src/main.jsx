@@ -12,11 +12,9 @@ import { queryClient, idbPersister } from './queryClient'
 // main CSS instead of a late 2-domain chain (googleapis CSS → gstatic font) —
 // the webfont repaint was the mobile LCP bottleneck. Latin subsets only are
 // fetched (unicode-range). font-display: swap comes with fontsource.
-import '@fontsource/manrope/400.css'
-import '@fontsource/manrope/500.css'
-import '@fontsource/manrope/600.css'
-import '@fontsource/manrope/700.css'
-import '@fontsource/manrope/800.css'
+// Manrope ships as ONE variable woff2 (wght 200-800, ~25 kB) instead of five
+// static weight files (~70 kB across 5 requests) — same glyphs, smaller critical path.
+import '@fontsource-variable/manrope/wght.css'
 import '@fontsource-variable/fraunces/opsz.css'
 import '@fontsource-variable/fraunces/opsz-italic.css'
 import './index.css'

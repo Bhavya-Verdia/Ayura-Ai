@@ -103,7 +103,7 @@ export default function DoshaArcRings({
             x={cx} y={cy + size * 0.09}
             textAnchor="middle"
             fill="rgba(168,157,139,0.85)"
-            style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 600, fontSize: size * 0.065, textTransform: 'uppercase', letterSpacing: 1 }}
+            style={{ fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: size * 0.065, textTransform: 'uppercase', letterSpacing: 1 }}
           >
             {dominantDosha}
           </text>
