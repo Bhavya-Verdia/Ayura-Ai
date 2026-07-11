@@ -5009,3 +5009,26 @@
   color: var(--text-secondary); font-size: 0.84rem; line-height: 1.5; margin-bottom: 2px;
 }
 .plan-classical-note { color: var(--text-muted); font-size: 0.76rem; line-height: 1.5; margin: 0; }
+
+/* ── Light-mode contrast overrides for hardcoded golden-amber text ──
+   These classes style text with dark-theme amber literals (#fbbf24/#fcd34d/
+   #f59e0b — ~2:1 on cream, unreadable). Same pattern as the .sns-badge
+   overrides above: keep the dark look, swap to AA-dark ambers in light. */
+[data-theme='light'] .yoga-week-banner-text,
+[data-theme='light'] .gym-week-banner-text,
+[data-theme='light'] .mv-tried-badge,
+[data-theme='light'] .yoga-pose-modification { color: #92400e; }
+[data-theme='light'] .yoga-week-banner-text strong,
+[data-theme='light'] .gym-week-banner-text strong { color: #7c2d12; }
+[data-theme='light'] .rv-practitioner-note,
+[data-theme='light'] .mv-dose-note,
+[data-theme='light'] .yoga-seasonal-note { color: #92400e; }
+[data-theme='light'] .pk-shamana { color: #92400e; }
+[data-theme='light'] .pk-shodhana { color: #166534; }
+/* Amber icons: 3:1 graphics floor on cream */
+[data-theme='light'] .sns-sun-icon,
+[data-theme='light'] .yoga-seasonal-note svg,
+[data-theme='light'] .diet-meal-card.meal-breakfast .diet-meal-icon,
+[data-theme='light'] .diet-seasonal-icon,
+[data-theme='light'] .din-slot-cond-note svg,
+[data-theme='light'] .din-mg-season-note svg { color: #b45309; }
