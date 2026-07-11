@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { remindersAPI } from '../api/client'
+import { toast } from 'sonner'
+import { pushStatus, enablePush } from '../lib/push'
 import {
   Pill, Flower2, Brain, Salad, ClipboardCheck, AlarmClock,
   Bell, Pencil, X, Plus, Clock, TriangleAlert,
@@ -412,6 +414,24 @@ export default function Reminders() {
       setReminders(prev => [fromApiShape(res.data), ...prev])
       setShowForm(false)
       showSuccess('Reminder created!')
+      // Contextual push opt-in: the user just asked to be reminded — the one
+      // moment a notification-permission ask is expected rather than hostile.
+      // Only when the device has never been asked (permission 'default').
+      pushStatus().then((status) => {
+        if (status === 'off' && Notification.permission === 'default') {
+          toast('Want this reminder on your phone even when the app is closed?', {
+            id: 'push-optin',
+            duration: 10000,
+            action: {
+              label: 'Enable notifications',
+              onClick: () =>
+                enablePush().then((r) => {
+                  if (r === 'subscribed') toast.success('Push enabled — reminders will reach this device.')
+                }),
+            },
+          })
+        }
+      }).catch(() => {})
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to create reminder.')
     } finally {

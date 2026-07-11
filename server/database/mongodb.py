@@ -91,6 +91,9 @@ async def _create_indexes(db):
         await db.chat_sessions.create_index([("user_id", 1), ("updated_at", -1)])
         await db.reminders.create_index([("user_id", 1), ("created_at", -1)])
         await db.notifications.create_index([("user_id", 1), ("is_read", 1), ("created_at", -1)])
+        # Web push: one row per device endpoint; lookups are per-user fan-out
+        await db.push_subscriptions.create_index("endpoint", unique=True)
+        await db.push_subscriptions.create_index("user_id")
         await db.community_posts.create_index("created_at")
         await db.community_comments.create_index([("post_id", 1), ("created_at", 1)])
         await db.weekly_checkins.create_index([("user_id", 1), ("timestamp", -1)])

@@ -231,6 +231,14 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("FROM_EMAIL", "EMAIL_FROM"),
     )
 
+    # --- Web Push (VAPID) ---
+    # Optional: push delivery is silently disabled when the keypair is unset,
+    # so local dev and tests never need keys. Generate once with
+    # scripts/generate_vapid_keys.py and set in the runtime .env.
+    VAPID_PRIVATE_KEY: Optional[str] = None   # base64url raw EC P-256 private key
+    VAPID_PUBLIC_KEY: Optional[str] = None    # base64url uncompressed public point
+    VAPID_SUBJECT: str = "mailto:noreply@ayuraai.in"
+
     # --- SMS / OTP ---
     SMS_OTP_MOCK: bool = True
     TWILIO_ACCOUNT_SID: Optional[str] = None

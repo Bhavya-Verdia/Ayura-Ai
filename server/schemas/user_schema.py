@@ -5,7 +5,7 @@ Core user profile fields — collected during onboarding and shared across all f
 Feature-specific goals and preferences live in schemas/preferences_schema.py.
 """
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional
 from datetime import datetime
 
@@ -89,6 +89,7 @@ class UserDocument(BaseModel):
     goal: Optional[str] = None
 
     onboarding_complete: bool = False
+    timezone: Optional[str] = None      # IANA tz captured at onboarding (reminder seeding)
     phone_only: bool = False
     consent_given: bool = False
     consent_at: Optional[datetime] = None
@@ -121,6 +122,22 @@ class UserProfileUpdate(BaseModel):
     age: Optional[int] = Field(None, ge=10, le=120)
     height_cm: Optional[float] = Field(None, ge=50, le=300)
     weight_kg: Optional[float] = Field(None, ge=20, le=500)
+
+    # Device IANA timezone (e.g. "Asia/Kolkata"), sent by the onboarding client
+    # so the seeded morning reminder fires at the user's local 07:00.
+    timezone: Optional[str] = None
+
+    @field_validator("timezone")
+    @classmethod
+    def _v_timezone(cls, v):
+        if v is None:
+            return v
+        from zoneinfo import ZoneInfo
+        try:
+            ZoneInfo(v)
+        except Exception:
+            raise ValueError(f"Unknown IANA timezone: {v}")
+        return v
 
     # SAFETY CRITICAL — must be checked before ANY plan generation
     pregnancy_or_nursing: Optional[bool] = Field(

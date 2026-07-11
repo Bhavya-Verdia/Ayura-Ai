@@ -115,6 +115,9 @@ export default function Onboarding() {
         fitness_level:  fitnessLevel  || 'beginner',
         activity_level: 'moderate',
         satmya: satmya || undefined,
+        // Device IANA timezone — lets the backend seed the default morning
+        // reminder at the user's local 07:00 (and future local-time features).
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || undefined,
       })
       // Route into the real Prakriti assessment so first plans are built on an
       // assessed constitution (Vikriti, Agni, dosha %) — not just the quick pick.

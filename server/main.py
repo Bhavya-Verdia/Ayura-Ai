@@ -29,6 +29,7 @@ from routes import (
     privacy,
     profile,
     progress,
+    push,
     reminders,
     timeline,
 )
@@ -213,6 +214,7 @@ app.include_router(privacy.router, prefix="/api/privacy", tags=["Privacy"])
 app.include_router(community.router, prefix="/api/community", tags=["Community"])
 app.include_router(feedback.router, prefix="/api/feedback", tags=["Feedback"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+app.include_router(push.router, prefix="/api/push", tags=["Web Push"])
 
 
 

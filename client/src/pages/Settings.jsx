@@ -1,5 +1,7 @@
-import { useState, useRef, Suspense } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
+import { toast } from 'sonner'
 import { useAuth } from '../providers/AuthContext'
+import { pushStatus, enablePush, disablePush } from '../lib/push'
 import { privacyAPI, profileAPI, exportAPI } from '../api/client'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -191,6 +193,30 @@ export default function Settings() {
   const [savingPw, setSavingPw] = useState(false)
   const [notice, setNotice] = useState({ type: '', message: '' })
   const [autoSaveStatus, setAutoSaveStatus] = useState('')
+  // 'unsupported' | 'denied' | 'subscribed' | 'off' | 'unavailable' | 'busy'
+  const [pushState, setPushState] = useState('off')
+  useEffect(() => { pushStatus().then(setPushState).catch(() => {}) }, [])
+
+  const togglePush = async () => {
+    const prev = pushState
+    setPushState('busy')
+    try {
+      if (prev === 'subscribed') {
+        await disablePush()
+        setPushState('off')
+        toast.success('Push notifications turned off on this device.')
+      } else {
+        const result = await enablePush()
+        setPushState(result === 'subscribed' ? 'subscribed' : result)
+        if (result === 'subscribed') toast.success('Push notifications enabled — reminders now reach this device.')
+        else if (result === 'denied') toast.error('Notifications are blocked for this site in your browser settings.')
+        else if (result === 'unavailable') toast.error('Push is not configured on the server yet.')
+      }
+    } catch {
+      setPushState(prev)
+      toast.error('Could not update push notifications. Please try again.')
+    }
+  }
   const autoSaveTimer = useRef(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
@@ -516,6 +542,29 @@ export default function Settings() {
               ))}
             </select>
           </div>
+
+          {pushState !== 'unsupported' && (
+            <div className="settings-pref-row" style={{ marginTop: '16px' }}>
+              <div>
+                <div className="settings-pref-label">Push Notifications</div>
+                <div className="settings-pref-help">
+                  {pushState === 'subscribed'
+                    ? 'Reminders reach this device even when the app is closed'
+                    : pushState === 'denied'
+                      ? 'Blocked in your browser — allow notifications for ayuraai.in to enable'
+                      : 'Get reminders on this device even when the app is closed'}
+                </div>
+              </div>
+              <button
+                type="button"
+                className={`btn btn-sm ${pushState === 'subscribed' ? 'btn-secondary' : 'btn-primary'}`}
+                onClick={togglePush}
+                disabled={pushState === 'busy' || pushState === 'denied'}
+              >
+                {pushState === 'busy' ? '…' : pushState === 'subscribed' ? 'Turn off' : 'Enable'}
+              </button>
+            </div>
+          )}
         </m.div>
 
         {/* Profile form */}

@@ -49,6 +49,11 @@ export default defineConfig({
         // ~160KB of mobile data for nothing. Images are left to nginx's
         // immutable HTTP cache.
         globPatterns: ['**/*.{js,css,html}', '**/*latin*.woff2'],
+        // Web push + notification-click handlers live in a separate file so
+        // the generated Workbox SW stays plugin-managed. Copied from public/
+        // into dist untouched; not precache-manifested, so it must stay
+        // stable-named (it is content-versioned only through sw.js updates).
+        importScripts: ['push-sw.js'],
       },
       manifest: {
         name: 'Ayura AI — Adaptive Ayurvedic Wellness',

@@ -88,6 +88,7 @@ async def update_profile(
 ):
     """Update user profile (onboarding or edit)."""
     update_data = update.model_dump(exclude_unset=True)
+    was_onboarded = bool(getattr(user, "onboarding_complete", False))
 
     # Calculate BMI if height and weight are provided
     height = update_data.get("height_cm", user.height_cm)
@@ -149,6 +150,29 @@ async def update_profile(
         {"_id": user.id},
         {"$set": update_dict}
     )
+
+    # ── Retention seed: first-ever onboarding completion gets one gentle
+    # default morning reminder (the reminder engine already delivers in-app +
+    # email + push). Only when the device timezone is known — a 07:00 UTC
+    # default would fire mid-day for most of the world — and only if the user
+    # has no reminders, so it never duplicates or overrides their own setup.
+    # It's a normal reminder: visible, toggleable, deletable in /reminders.
+    if not was_onboarded and user.onboarding_complete:
+        tz = update_data.get("timezone") or getattr(user, "timezone", None)
+        if tz and await db.reminders.count_documents({"user_id": user.id}) == 0:
+            import uuid as _uuid
+            await db.reminders.insert_one({
+                "_id": str(_uuid.uuid4()),
+                "user_id": user.id,
+                "title": "Start your morning routine",
+                "time": "07:00",
+                "days": [],  # every day
+                "reminder_type": "general",
+                "is_active": True,
+                "timezone": tz,
+                "description": "A gentle daily nudge from Ayura — tune or turn this off in Reminders.",
+                "created_at": datetime.now(timezone.utc),
+            })
 
     return user
 
