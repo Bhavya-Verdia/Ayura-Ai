@@ -46,10 +46,12 @@ const DOSHA_INFO = {
   kapha: { Icon: Waves, desc: 'Earth & Water · Calm, steady, nurturing' },
 }
 
+// NO filter/blur in step transitions — a lingering blur(0px) keeps the step
+// in a filtered render surface forever, which flashes empty on invalidation.
 const stepVariants = {
-  enter:  (d) => ({ x: d > 0 ? 60 : -60, opacity: 0, filter: 'blur(4px)' }),
-  center: { x: 0, opacity: 1, filter: 'blur(0px)' },
-  exit:   (d) => ({ x: d > 0 ? -60 : 60, opacity: 0, filter: 'blur(4px)' }),
+  enter:  (d) => ({ x: d > 0 ? 60 : -60, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit:   (d) => ({ x: d > 0 ? -60 : 60, opacity: 0 }),
 }
 
 export default function Onboarding() {

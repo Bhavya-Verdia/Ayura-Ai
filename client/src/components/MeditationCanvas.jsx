@@ -153,11 +153,18 @@ export default function MeditationCanvas() {
 
     let W, H, figures = [], sparkles = [], t = 0, lastTime = null, raf
 
-    // Phones: soft glowy sprites survive a lower backing resolution invisibly,
-    // and the slow drift reads identically at 30fps — half the shadowBlur
-    // passes per second on the GPU that actually struggles with them.
+    // Soft glowy sprites survive a lower backing resolution invisibly, and
+    // the slow drift reads identically at 30fps — on EVERY device. At 60fps
+    // this full-viewport redraw + texture upload competed with scroll-tile
+    // rasterization and starved it (content flashed blank mid-fling).
     const coarse = window.matchMedia('(pointer: coarse), (max-width: 900px)').matches
-    const MIN_FRAME_MS = coarse ? 31 : 0
+    const MIN_FRAME_MS = 31
+
+    // Freeze the drift while the page is actively scrolling: the ambience is
+    // imperceptible mid-scroll, and skipping the redraw hands the main thread
+    // back to the compositor exactly when raster is racing the fling.
+    let lastScrollTs = -1e9
+    const onScrollTick = () => { lastScrollTs = performance.now() }
 
     function resize() {
       // DPR-aware: render at device resolution (capped for perf) so the
@@ -187,6 +194,11 @@ export default function MeditationCanvas() {
 
     function frame(now) {
       if (MIN_FRAME_MS && lastTime && now - lastTime < MIN_FRAME_MS) {
+        raf = requestAnimationFrame(frame)
+        return
+      }
+      if (now - lastScrollTs < 140) {
+        lastTime = now // keep dt continuous so drift doesn't jump on resume
         raf = requestAnimationFrame(frame)
         return
       }
@@ -251,11 +263,13 @@ export default function MeditationCanvas() {
 
     resize()
     window.addEventListener('resize', resize)
+    window.addEventListener('scroll', onScrollTick, { passive: true })
     document.addEventListener('visibilitychange', onVisibility)
     raf = requestAnimationFrame(frame)
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', resize)
+      window.removeEventListener('scroll', onScrollTick)
       document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [reducedMotion])

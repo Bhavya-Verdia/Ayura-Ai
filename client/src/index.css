@@ -420,13 +420,16 @@ h4, h5, h6 {
     linear-gradient(145deg, #f7f2e8 0%, #f1ebde 50%, #f5eee0 100%);
 }
 
+/* No live blur: at Retina this was a ~1.4x-viewport filtered GPU texture —
+   the first thing evicted under memory pressure (whole-background flash).
+   The conic's stops span tens of degrees, soft by construction; rotation is
+   compositor-only. Opacity matches the mobile tier's validated twin. */
 .vital-gradient-field {
   position: absolute;
   inset: -20%;
-  opacity: 0.7;
+  opacity: 0.6;
   background:
     conic-gradient(from 130deg at 50% 48%, transparent 0deg, rgba(92,171,116,0.12) 52deg, transparent 118deg, rgba(230,162,60,0.12) 188deg, transparent 260deg, rgba(224,138,74,0.08) 318deg, transparent 360deg);
-  filter: blur(28px);
   animation: vital-field-rotate 36s linear infinite;
 }
 
@@ -453,6 +456,11 @@ h4, h5, h6 {
     linear-gradient(90deg, rgba(15,23,42,0.08) 1px, transparent 1px);
 }
 
+/* The dash sweeps animate stroke-dasharray/offset — paint properties, so these
+   SVGs legitimately repaint every frame. will-change isolates each onto its
+   own compositor layer so that per-frame invalidation stays confined to the
+   strands instead of dirtying the whole fixed .vital-bg (gradients + grid +
+   noise), which under GPU pressure flashed the entire background. */
 .vital-paths {
   position: absolute;
   inset: -8% -2% auto -2%;
@@ -460,6 +468,7 @@ h4, h5, h6 {
   height: 68vh;
   min-height: 460px;
   opacity: 0.8;
+  will-change: transform;
 }
 
 .vital-paths:nth-of-type(2) {
@@ -469,6 +478,9 @@ h4, h5, h6 {
   opacity: 0.44;
 }
 
+/* No filter here: a drop-shadow on strokes whose dash animates re-runs the
+   filter every frame of the sweep — a permanent full-width raster cost for a
+   glow that is invisible at 10% alpha. */
 .vital-pulse-lines {
   position: absolute;
   left: 0;
@@ -479,7 +491,7 @@ h4, h5, h6 {
   min-height: 180px;
   color: rgba(251,146,60,0.9);
   opacity: 0.72;
-  filter: drop-shadow(0 0 18px rgba(92,171,116,0.10));
+  will-change: transform;
 }
 
 .vital-bg-light .vital-pulse-lines {
@@ -578,6 +590,11 @@ select {
 /* ─── CURSOR GLOW ─────────────────────────────────────────────
    Follows the cursor via transform only (see CursorGlow.jsx). 600px so the
    translate math (x-300) keeps it centred. Decorative → pointer-events:none. */
+/* Plain alpha, NOT mix-blend-mode: a blend mode here means every mousemove
+   forces the compositor to re-blend the glow against everything beneath it —
+   on desktop Chromium the content layer would intermittently composite empty,
+   blanking glass cards on hover/scroll. At ≤8% alpha, source-over is visually
+   equivalent to the old screen/multiply blends. */
 .cursor-glow {
   position: fixed;
   top: 0;
@@ -588,11 +605,9 @@ select {
   pointer-events: none;
   z-index: 1;
   will-change: transform;
-  mix-blend-mode: screen;
   background: radial-gradient(circle, rgba(92,171,116,0.07) 0%, rgba(230,162,60,0.03) 35%, transparent 70%);
 }
 [data-theme='light'] .cursor-glow {
-  mix-blend-mode: multiply;
   background: radial-gradient(circle, rgba(47,143,91,0.08) 0%, rgba(184,121,26,0.04) 35%, transparent 70%);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -741,7 +756,11 @@ textarea:focus-visible {
   100% { background-position: 200% center; }
 }
 
+/* background-position animates = permanent per-frame repaint; inline-block +
+   will-change isolate it to the text's own layer (see Landing.css twin). */
 .shimmer-text {
+  display: inline-block;
+  will-change: transform;
   background: linear-gradient(
     90deg,
     var(--ayura-teal) 0%,
@@ -1033,10 +1052,11 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   animation: particle-drift ease-in-out infinite alternate;
 }
 
+/* No blur/blend: the JSX paints orbs as soft radial gradients already — the
+   blur(34px) + screen/multiply pass added nothing visible (mobile tier
+   finding, now applied everywhere). */
 .particle-orb {
   opacity: 0.09;
-  filter: blur(34px);
-  mix-blend-mode: screen;
   animation: particle-orb-float ease-in-out infinite alternate;
 }
 
@@ -1047,7 +1067,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
 
 .particle-field-light .particle-orb {
   opacity: 0.12;
-  mix-blend-mode: multiply;
 }
 
 @keyframes particle-drift {
@@ -1111,11 +1130,12 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
 .vital-path-sweep  { animation: vital-path-sweep  linear infinite; }
 .vital-pulse-sweep { animation: vital-pulse-sweep linear infinite; }
 
-/* Noise grain (rendered by NoiseOverlay): blend/opacity live here so the
-   mobile tier below can swap the blend mode without touching the component. */
+/* Noise grain (rendered by NoiseOverlay as a repeating 220px tile): plain
+   alpha, NOT mix-blend-mode — a blend here forces the compositor to re-blend
+   the whole screen whenever anything beneath repaints. Grain at 2.4% alpha is
+   visually indistinguishable from the old overlay blend. */
 .noise-overlay {
-  opacity: 0.03;
-  mix-blend-mode: overlay;
+  opacity: 0.024;
 }
 
 /* ─── MOBILE GPU TIER ─────────────────────────────────────────
@@ -1147,9 +1167,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   /* Particle orbs: the JSX paints them as soft radial gradients, so the
      extra blur(34px) + screen-blend pass adds nothing visible. */
   .particle-orb { filter: none; mix-blend-mode: normal; }
-
-  /* Grain without the whole-screen re-blend. */
-  .noise-overlay { mix-blend-mode: normal; opacity: 0.024; }
 
   /* Ambient motion discipline: phones keep ONE living background element
      (the floating aurora blobs — pure compositor transform/opacity). The

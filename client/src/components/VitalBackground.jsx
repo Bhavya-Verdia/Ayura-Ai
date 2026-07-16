@@ -129,10 +129,12 @@ function PulseLinesFrozen() {
 }
 
 /* Three independently floating aurora blobs.
-   `lite` (reduced-motion): drop the blur filter; the radial gradients are
-   already soft, so enlarging them ~25% fakes the blur's spread without a
-   per-frame GPU re-sample. */
-function AuroraBlobs({ theme, lite = false }) {
+   No live blur on ANY device: a blur(90px) on a half-viewport element is a
+   massive GPU texture that gets evicted under memory pressure (background
+   flashes). The radial gradients are already soft, so enlarging them ~25%
+   reproduces the blur's spread — the pixel-equivalent twin the mobile tier
+   and reduced-motion mode always used. */
+function AuroraBlobs({ theme }) {
   const isDark = theme === 'dark'
 
   const blobs = [
@@ -142,13 +144,12 @@ function AuroraBlobs({ theme, lite = false }) {
         position: 'absolute',
         top: '-10%',
         left: '-5%',
-        width: lite ? '68%' : '55%',
-        height: lite ? '68%' : '55%',
+        width: '68%',
+        height: '68%',
         borderRadius: '50%',
         background: isDark
           ? 'radial-gradient(circle, rgba(92,171,116,0.22) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(13,148,136,0.18) 0%, transparent 70%)',
-        filter: lite ? undefined : 'blur(var(--aurora-blur, 90px))',
         pointerEvents: 'none',
       },
     },
@@ -158,13 +159,12 @@ function AuroraBlobs({ theme, lite = false }) {
         position: 'absolute',
         top: '-5%',
         right: '-10%',
-        width: lite ? '62%' : '50%',
-        height: lite ? '62%' : '50%',
+        width: '62%',
+        height: '62%',
         borderRadius: '50%',
         background: isDark
           ? 'radial-gradient(circle, rgba(230,162,60,0.18) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)',
-        filter: lite ? undefined : 'blur(var(--aurora-blur, 90px))',
         pointerEvents: 'none',
       },
     },
@@ -174,13 +174,12 @@ function AuroraBlobs({ theme, lite = false }) {
         position: 'absolute',
         bottom: '-15%',
         left: '30%',
-        width: lite ? '56%' : '45%',
-        height: lite ? '56%' : '45%',
+        width: '56%',
+        height: '56%',
         borderRadius: '50%',
         background: isDark
           ? 'radial-gradient(circle, rgba(251,146,60,0.12) 0%, transparent 70%)'
           : 'radial-gradient(circle, rgba(234,88,12,0.08) 0%, transparent 70%)',
-        filter: lite ? undefined : 'blur(var(--aurora-blur, 90px))',
         pointerEvents: 'none',
       },
     },
@@ -205,7 +204,7 @@ export default function VitalBackground({ density = 'normal' }) {
   if (lowPower) {
     return (
       <div className={`vital-bg vital-bg-${theme} vital-bg-${density}`} aria-hidden="true">
-        <AuroraBlobs theme={theme} lite />
+        <AuroraBlobs theme={theme} />
         <div className="vital-gradient-field" />
         <div className="vital-grid-field" />
         <VitalPathsFrozen side={1} />

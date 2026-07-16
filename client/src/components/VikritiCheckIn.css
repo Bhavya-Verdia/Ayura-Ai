@@ -22,6 +22,9 @@
   background: #5cab74;
   flex-shrink: 0;
   animation: vci-pulse 1.8s ease-in-out infinite;
+  /* box-shadow animates forever = per-frame repaint; keep it on its own layer
+     so it doesn't dirty the whole card layer every frame. */
+  will-change: transform;
 }
 
 @keyframes vci-pulse {

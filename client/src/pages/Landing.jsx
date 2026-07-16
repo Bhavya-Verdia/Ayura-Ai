@@ -24,9 +24,12 @@ import {
 import './Landing.css'
 
 // ─── Animation variants ───────────────────────────────────────
+// NO filter/blur here: the per-word blur entrance left every hero word in its
+// own filtered render surface (even blur(0px) counts), and they flashed empty
+// whenever drag-selection over the headline changed. Opacity+y only.
 const wordVariants = {
-  hidden: { opacity: 0, y: 32, filter: 'blur(4px)' },
-  visible: { opacity: 1, y: 0, filter: 'blur(0px)' },
+  hidden: { opacity: 0, y: 32 },
+  visible: { opacity: 1, y: 0 },
 }
 const stagger = { visible: { transition: { staggerChildren: 0.09 } } }
 const fadeUp   = { hidden: { opacity: 0, y: 36 }, visible: { opacity: 1, y: 0 } }

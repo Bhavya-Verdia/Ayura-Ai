@@ -21,15 +21,19 @@
 }
 .chat-header-subtitle { color: var(--ayura-muted); margin: 4px 0 0; font-size: 0.9rem; }
 
-/* Canvas */
+/* Canvas — no backdrop-filter here: a near-viewport blur over the always-
+   animating vital-bg re-filters every frame, and combined with the rounded
+   overflow:hidden clip around the composited .chat-history scroller it made
+   the whole panel intermittently composite EMPTY during scroll (flicker).
+   The slightly higher alpha reads the same as the old 74%+blur(24px). */
 .chat-canvas {
   flex: 1; position: relative;
-  background: var(--glass-bg); backdrop-filter: blur(24px);
+  background: rgba(23,19,14,0.88);
   border: 1px solid var(--border-subtle); border-radius: 24px;
   box-shadow: var(--glass-shadow-strong);
   display: flex; flex-direction: column; overflow: hidden; min-height: 0;
 }
-[data-theme='light'] .chat-canvas { background: rgba(255,255,255,0.72); }
+[data-theme='light'] .chat-canvas { background: rgba(255,255,255,0.88); }
 
 .chat-canvas::before {
   content: ''; position: absolute; top: -20%; left: -10%;

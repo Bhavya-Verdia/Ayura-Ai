@@ -54,9 +54,13 @@ const CALM_BG_ROUTES = new Set([
   '/', '/dosha-test', '/login', '/register', '/forgot-password', '/reset-password', '/verify-email',
 ])
 
+// NO filter/blur in entrance variants — ever. An animated (or lingering
+// blur(0px)) filter puts the ENTIRE page in one giant GPU render surface,
+// which composites EMPTY for a frame on hover/selection/scroll invalidation:
+// the app-wide flicker of 2026-07. Opacity+y read nearly identically.
 const pageVariants = {
-  initial: { opacity: 0, y: 16, filter: 'blur(2px)' },
-  animate: { opacity: 1, y: 0,  filter: 'blur(0px)' },
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
 }
 
 const pageVariantsReduced = {

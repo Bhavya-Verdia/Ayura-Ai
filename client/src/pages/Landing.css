@@ -180,24 +180,14 @@
    450px of scroll blanks the bento tiles while they are still on screen and
    leaves an invisible stretch before the next section. Mobile never had the
    parallax historically — content simply stays put and visible. */
-@supports (animation-timeline: scroll()) {
-  @media (min-width: 1025px) and (prefers-reduced-motion: no-preference) {
-    .lnd-hero {
-      animation: lnd-hero-fade linear both;
-      animation-timeline: scroll();
-      animation-range: 0 450px;
-    }
-    .lnd-hero-copy,
-    .lnd-hero-visual,
-    .lnd-hero-echo {
-      animation: lnd-hero-drift linear both;
-      animation-timeline: scroll();
-      animation-range: 0 600px;
-    }
-  }
-}
-@keyframes lnd-hero-drift { to { transform: translateY(-100px); } }
-@keyframes lnd-hero-fade  { to { opacity: 0; } }
+/* REMOVED 2026-07-16: the scroll-driven fade/drift kept .lnd-hero-copy /
+   .lnd-hero-visual permanently composited with a scroll-linked transform;
+   when drag-selection (or hover) invalidated their content mid-scroll, the
+   compositor showed the layer before its texture re-rastered — the hero
+   blanked for a frame (forensically confirmed on screen recordings). The
+   parallax was subtle polish; a static hero is flicker-free. If ever
+   restored, it must not create long-lived compositor layers over selectable
+   text (git history has the old block). */
 
 .lnd-hero-copy { display: flex; flex-direction: column; align-items: flex-start; }
 
@@ -648,10 +638,12 @@
 }
 
 /* Floating badges on preview */
+/* No backdrop-filter: the badge FLOATS, and a moving backdrop-filter element
+   re-samples + re-blurs its backdrop every frame forever. Over the soft hero
+   visual the blur is invisible behind the 74-80% alpha glass background. */
 .lnd-float-badge {
   position: absolute;
   background: var(--glass-bg);
-  backdrop-filter: blur(16px);
   border: 1px solid var(--border-light);
   border-radius: 14px;
   padding: 12px 16px;
@@ -852,6 +844,8 @@
 .lnd-prev-plan.fmv-generating {
   border-color: rgba(251,146,60,0.3);
   animation: fmvPulse 2s ease-in-out infinite;
+  /* box-shadow animates forever — contain the repaint to this chip's layer */
+  will-change: transform;
 }
 @keyframes fmvPulse {
   0%,100% { box-shadow: none; }
@@ -1160,8 +1154,14 @@
 }
 
 /* ─── SHIMMER HERO TITLE ───────────────────────────────────── */
+/* background-position animates = the word repaints every frame, forever.
+   inline-block + will-change isolate that repaint onto the word's own small
+   layer; without them each frame dirties the whole hero-copy layer, which
+   under GPU pressure flickered the entire headline. */
 .shimmer-text {
   font-style: normal;
+  display: inline-block;
+  will-change: transform;
   background: linear-gradient(
     90deg,
     var(--ayura-teal)   0%,
@@ -1183,9 +1183,13 @@
 }
 
 /* ─── ANIMATED CTA BORDER ──────────────────────────────────── */
+/* --angle animates on the main thread and repaints the conic each frame;
+   will-change confines that permanent repaint to this pseudo's own layer
+   instead of re-dirtying the CTA section (which blanked under scroll). */
 .lnd-cta-main::before {
   animation: lnd-border-spin 3s linear infinite;
   opacity: 0.55;
+  will-change: transform;
 }
 .lnd-cta-main:hover::before { opacity: 1; }
 

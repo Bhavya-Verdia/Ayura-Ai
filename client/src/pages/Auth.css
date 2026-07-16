@@ -137,6 +137,10 @@
 }
 .auth-card-title em {
   font-style: normal;
+  /* isolate the permanent background-position repaint to the word's own
+     layer (same fix as .shimmer-text) */
+  display: inline-block;
+  will-change: transform;
   background: linear-gradient(90deg,
     var(--ayura-teal) 0%, var(--ayura-violet) 45%, var(--ayura-teal) 100%
   );
