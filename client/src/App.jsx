@@ -67,13 +67,12 @@ const pageTransitionFast  = { duration: 0.15 }
 function PageWrapper({ children, inLayout = false }) {
   const prefersReducedMotion = useReducedMotion()
   const lowPower = useLowPowerMode()
-  // Animating filter: blur() on a route change repaints the whole page every
-  // frame — fine on desktop GPUs, a visible hitch on phones. Touch devices get
-  // the same-duration opacity fade instead (smooth beats blurry-and-janky);
-  // reduced-motion users get it too.
-  const touch = typeof window !== 'undefined' && !!window.matchMedia
-    && window.matchMedia('(pointer: coarse), (max-width: 900px)').matches
-  const cheap = prefersReducedMotion || lowPower || touch
+  // Phones get the SAME route entrance as the laptop (opacity + 16px slide) so
+  // navigation feels consistent across devices. This variant never animates a
+  // filter/blur (only opacity + transform), so it's cheap on mobile GPUs too —
+  // the reason the old touch downgrade existed no longer applies. Only an
+  // explicit OS "reduce motion" preference falls back to the plain fade.
+  const cheap = prefersReducedMotion || lowPower
 
   // Inside the app shell, MainLayout already animates route changes and owns
   // the Suspense boundary (with route-aware skeleton fallbacks). A second

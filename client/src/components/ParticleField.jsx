@@ -8,10 +8,6 @@ function seededRandom(seed) {
   return value - Math.floor(value)
 }
 
-// Device class, not viewport state — safe to read once at module load.
-const TOUCH_DEVICE = typeof window !== 'undefined' && !!window.matchMedia
-  && window.matchMedia('(pointer: coarse), (max-width: 900px)').matches
-
 export default function ParticleField({
   count = 120,
   color1 = '#06b6d4',
@@ -23,11 +19,9 @@ export default function ParticleField({
   const { theme } = useTheme()
   const prefersReducedMotion = useReducedMotion()
   const lowPower = useLowPowerMode()
-  // Reduced-motion: a fraction of the particles and no blurred mix-blend orbs.
-  // Touch devices: each particle is its own composited layer at 3x DPR — a
-  // calmer field keeps the starfield read while staying inside phone GPU
-  // layer/memory budgets.
-  const particleCount = lowPower ? Math.min(count, 22) : Math.min(count, TOUCH_DEVICE ? 48 : 160)
+  // Phones get the same field density as the laptop for a consistent look;
+  // only reduced-motion thins the field (and drops the blurred orbs below).
+  const particleCount = lowPower ? Math.min(count, 22) : Math.min(count, 160)
 
   const particles = useMemo(() => {
     return Array.from({ length: particleCount }, (_, index) => {
@@ -50,7 +44,7 @@ export default function ParticleField({
 
   const orbs = useMemo(() => {
     if (lowPower) return []
-    return Array.from({ length: TOUCH_DEVICE ? 4 : 7 }, (_, index) => ({
+    return Array.from({ length: 7 }, (_, index) => ({
       id: index,
       x: seededRandom(index + 901) * 100,
       y: seededRandom(index + 1001) * 100,
