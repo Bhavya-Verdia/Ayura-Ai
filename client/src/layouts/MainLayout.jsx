@@ -197,7 +197,11 @@ export default function MainLayout() {
             animate={{ opacity: 1, y: 0 }}
             exit={prefersReducedMotion ? {} : { opacity: 0, y: -6 }}
             transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            style={{ flex: 1, overflowY: 'auto', paddingBottom: isMobile ? 'calc(72px + env(safe-area-inset-bottom))' : 0, height: '100%' }}
+            /* Bottom padding clears BOTH the fixed tab bar (64px+safe) and the
+               floating feedback FAB above it (bottom 64+safe+18, 56px tall) so
+               end-of-scroll content — pose tags, the remedies tab strip — never
+               sits trapped under the FAB on phones. */
+            style={{ flex: 1, overflowY: 'auto', paddingBottom: isMobile ? 'calc(140px + env(safe-area-inset-bottom))' : 0, height: '100%' }}
           >
             <ScrollToTop />
             <React.Suspense fallback={
