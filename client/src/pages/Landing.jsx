@@ -518,6 +518,7 @@ export default function Landing() {
       {/* CursorGlow (a cursor-following blurred glow that repaints on every
           pointer move/click) was part of the confirmed flicker source — retired.
           Re-test cross-device on a real display before ever re-enabling. */}
+      {/* eslint-disable-next-line no-constant-binary-expression -- `false` is an intentional kill switch; the mount is kept intact for a future flicker re-test */}
       {false && <CursorGlow />}
 
       {/* ── NAVBAR ──────────────────────────────────────────── */}

@@ -171,6 +171,7 @@ export default function App() {
           confirmed contributor to the app-wide compositing flicker, so it stays
           retired. Do not re-mount without a cross-device (Mac + Android) flicker
           re-test on a real display. */}
+      {/* eslint-disable-next-line no-constant-binary-expression -- `false` is an intentional kill switch; the mount wiring is kept intact for a future flicker re-test */}
       {false && !lowPower && CALM_BG_ROUTES.has(location.pathname) && <MeditationCanvas />}
       <ErrorBoundary>
         {/* Catches the lazy MainLayout itself; pages inside it fall to nearer
