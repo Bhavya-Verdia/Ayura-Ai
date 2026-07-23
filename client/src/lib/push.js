@@ -13,7 +13,7 @@ function urlBase64ToUint8Array(base64String) {
   return Uint8Array.from([...raw].map((ch) => ch.charCodeAt(0)))
 }
 
-export function pushSupported() {
+function pushSupported() {
   return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
 }
 

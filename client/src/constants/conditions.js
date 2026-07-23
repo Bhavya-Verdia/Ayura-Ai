@@ -126,7 +126,7 @@ export const CONDITION_CATEGORIES = [
 ]
 
 // Flat id -> label lookup for rendering prefilled/free-text conditions as chips.
-export const CONDITION_LABELS = Object.fromEntries(
+const CONDITION_LABELS = Object.fromEntries(
   CONDITION_CATEGORIES.flatMap((c) => c.items).map((i) => [i.id, i.label])
 )
 

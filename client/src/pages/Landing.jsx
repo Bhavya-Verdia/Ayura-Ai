@@ -12,7 +12,6 @@ import { SUPPORTED_LANGUAGES, setLanguage } from '../i18n'
 import enLocale from '../locales/en.json'
 import { Helmet } from 'react-helmet-async'
 import React from 'react'
-import CursorGlow from '../components/CursorGlow'
 import MagneticButton from '../components/MagneticButton'
 import CountUp from '../components/CountUp'
 import { DOSHA_COLOR } from '../constants/dosha'
@@ -515,12 +514,6 @@ export default function Landing() {
         <script type="application/ld+json">{JSON.stringify(siteJsonLd)}</script>
       </Helmet>
 
-      {/* CursorGlow (a cursor-following blurred glow that repaints on every
-          pointer move/click) was part of the confirmed flicker source — retired.
-          Re-test cross-device on a real display before ever re-enabling. */}
-      {/* eslint-disable-next-line no-constant-binary-expression -- `false` is an intentional kill switch; the mount is kept intact for a future flicker re-test */}
-      {false && <CursorGlow />}
-
       {/* ── NAVBAR ──────────────────────────────────────────── */}
       <header className={`lnd-nav-wrap${scrolled ? ' scrolled' : ''}`}>
         <nav className="lnd-nav">
@@ -581,7 +574,7 @@ export default function Landing() {
               initial={PRERENDERED ? false : 'hidden'}
               animate="visible"
             >
-              {[...t('landing.hero_title').split(' '), ' accent'].map((word, i) => (
+              {t('landing.hero_title').split(' ').map((word, i) => (
                 <m.span
                   key={`${word}-${i}`}
                   variants={wordVariants}
@@ -591,11 +584,22 @@ export default function Landing() {
                     marginRight: '0.25em',
                   }}
                 >
-                  {word === ' accent'
-                    ? <em className="shimmer-text">{t('landing.hero_title_accent')}</em>
-                    : word}
+                  {word}
                 </m.span>
               ))}
+              {/* Accent word rendered as its own staggered span (was
+                  previously a sentinel entry appended to the word array). */}
+              <m.span
+                key="hero-title-accent"
+                variants={wordVariants}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  display: 'inline-block',
+                  marginRight: '0.25em',
+                }}
+              >
+                <em className="shimmer-text">{t('landing.hero_title_accent')}</em>
+              </m.span>
             </m.h2>
 
             {/* Transform-only entrance (opacity stays 1) so this prerendered LCP

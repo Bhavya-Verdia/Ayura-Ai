@@ -602,33 +602,6 @@ select {
   background: rgba(47,143,91,0.22);
 }
 
-/* ─── CURSOR GLOW ─────────────────────────────────────────────
-   Follows the cursor via transform only (see CursorGlow.jsx). 600px so the
-   translate math (x-300) keeps it centred. Decorative → pointer-events:none. */
-/* Plain alpha, NOT mix-blend-mode: a blend mode here means every mousemove
-   forces the compositor to re-blend the glow against everything beneath it —
-   on desktop Chromium the content layer would intermittently composite empty,
-   blanking glass cards on hover/scroll. At ≤8% alpha, source-over is visually
-   equivalent to the old screen/multiply blends. */
-.cursor-glow {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 1;
-  will-change: transform;
-  background: radial-gradient(circle, rgba(92,171,116,0.07) 0%, rgba(230,162,60,0.03) 35%, transparent 70%);
-}
-[data-theme='light'] .cursor-glow {
-  background: radial-gradient(circle, rgba(47,143,91,0.08) 0%, rgba(184,121,26,0.04) 35%, transparent 70%);
-}
-@media (prefers-reduced-motion: reduce) {
-  .cursor-glow { display: none; }
-}
-
 /* ─── KEYBOARD FOCUS RING (a11y) ──────────────────────────────
    Only shows for keyboard navigation, never on mouse click, so it
    adds accessibility without disrupting the pointer UX.            */

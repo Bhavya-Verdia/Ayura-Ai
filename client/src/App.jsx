@@ -9,7 +9,6 @@ import ScrollToTop from './components/ScrollToTop'
 import ErrorBoundary from './components/ErrorBoundary'
 import NoiseOverlay from './components/NoiseOverlay'
 import VitalBackground from './components/VitalBackground'
-import MeditationCanvas from './components/MeditationCanvas'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import useLowPowerMode from './hooks/useLowPowerMode'
 import ReloadPrompt from './components/ReloadPrompt'
@@ -47,12 +46,6 @@ const Reminders = React.lazy(() => import('./pages/Reminders'))
 const InteractionChecker = React.lazy(() => import('./pages/InteractionChecker'))
 const Progress = React.lazy(() => import('./pages/Progress'))
 const DoshaTest = React.lazy(() => import('./pages/DoshaTest'))
-
-// Calm, meditative pages where the rising yoga/ॐ field belongs.
-// Kept off data-dense app pages (dashboard, chat, settings…) for clarity + perf.
-const CALM_BG_ROUTES = new Set([
-  '/', '/dosha-test', '/login', '/register', '/forgot-password', '/reset-password', '/verify-email',
-])
 
 // NO filter/blur in entrance variants — ever. An animated (or lingering
 // blur(0px)) filter puts the ENTIRE page in one giant GPU render surface,
@@ -156,7 +149,6 @@ function PublicRoute({ children }) {
 export default function App() {
   const location = useLocation()
   const { theme } = useTheme()
-  const lowPower = useLowPowerMode()
   useKeyboardShortcuts()
 
   useEffect(() => {
@@ -167,12 +159,6 @@ export default function App() {
     <>
       <a href="#main-content" className="skip-link">Skip to content</a>
       <VitalBackground />
-      {/* MeditationCanvas (a full-viewport canvas redrawing every frame) was a
-          confirmed contributor to the app-wide compositing flicker, so it stays
-          retired. Do not re-mount without a cross-device (Mac + Android) flicker
-          re-test on a real display. */}
-      {/* eslint-disable-next-line no-constant-binary-expression -- `false` is an intentional kill switch; the mount wiring is kept intact for a future flicker re-test */}
-      {false && !lowPower && CALM_BG_ROUTES.has(location.pathname) && <MeditationCanvas />}
       <ErrorBoundary>
         {/* Catches the lazy MainLayout itself; pages inside it fall to nearer
             boundaries (MainLayout's skeletons / PageWrapper's spinner). */}
