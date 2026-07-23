@@ -167,8 +167,11 @@ export default function App() {
     <>
       <a href="#main-content" className="skip-link">Skip to content</a>
       <VitalBackground />
-      {/* Ambient art on calm routes — skipped only for reduced-motion users. */}
-      {!lowPower && CALM_BG_ROUTES.has(location.pathname) && <MeditationCanvas />}
+      {/* MeditationCanvas (a full-viewport canvas redrawing every frame) was a
+          confirmed contributor to the app-wide compositing flicker, so it stays
+          retired. Do not re-mount without a cross-device (Mac + Android) flicker
+          re-test on a real display. */}
+      {false && !lowPower && CALM_BG_ROUTES.has(location.pathname) && <MeditationCanvas />}
       <ErrorBoundary>
         {/* Catches the lazy MainLayout itself; pages inside it fall to nearer
             boundaries (MainLayout's skeletons / PageWrapper's spinner). */}
@@ -208,6 +211,8 @@ export default function App() {
         </Suspense>
       </ErrorBoundary>
     <ScrollToTop />
+    {/* Static grain (feTurbulence baked into a 220px tiled data-URI) — a single
+        static paint, safe to keep on. */}
     <NoiseOverlay />
     <OfflineBanner />
     <ReloadPrompt />

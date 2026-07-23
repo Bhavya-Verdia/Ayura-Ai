@@ -913,12 +913,13 @@
 .lnd-plan-card {
   padding: 28px; border-radius: 24px;
   border: 1px solid var(--border-subtle);
-  background: var(--glass-bg-subtle);
-  backdrop-filter: blur(16px);
-  transition: all 0.3s ease; position: relative; overflow: hidden;
-}
-[data-theme='light'] .lnd-plan-card {
-  background: rgba(255,255,255,0.60);
+  /* No backdrop-filter: a live blur on each card re-samples every frame while
+     scrolling → the subtle shimmer/flicker in this section. Use the opaque glass
+     token instead (alpha ≥0.74 reads as glass without the blur). Transition is
+     scoped to hover props only so theme switches stay instant. */
+  background: var(--glass-bg);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  position: relative; overflow: hidden;
 }
 .lnd-plan-card::before {
   content: ''; position: absolute; top: -30%; right: -20%;
@@ -1161,20 +1162,20 @@
 .shimmer-text {
   font-style: normal;
   display: inline-block;
-  will-change: transform;
+  /* Descender-safe + static (no will-change layer clip, no shimmer motion). */
+  line-height: 1.2;
+  padding-bottom: 0.08em;
   background: linear-gradient(
     90deg,
     var(--ayura-teal)   0%,
-    var(--ayura-violet) 30%,
-    var(--ayura-amber)  55%,
-    var(--ayura-teal)   80%,
-    var(--ayura-violet) 100%
+    var(--ayura-violet) 34%,
+    var(--ayura-amber)  60%,
+    var(--ayura-teal)   100%
   );
-  background-size: 300% auto;
+  background-size: 100% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: lnd-shimmer 4s linear infinite;
 }
 
 /* ─── KICKER DOT PING ──────────────────────────────────────── */

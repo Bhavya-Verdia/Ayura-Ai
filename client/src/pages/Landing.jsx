@@ -515,7 +515,10 @@ export default function Landing() {
         <script type="application/ld+json">{JSON.stringify(siteJsonLd)}</script>
       </Helmet>
 
-      <CursorGlow />
+      {/* CursorGlow (a cursor-following blurred glow that repaints on every
+          pointer move/click) was part of the confirmed flicker source — retired.
+          Re-test cross-device on a real display before ever re-enabling. */}
+      {false && <CursorGlow />}
 
       {/* ── NAVBAR ──────────────────────────────────────────── */}
       <header className={`lnd-nav-wrap${scrolled ? ' scrolled' : ''}`}>

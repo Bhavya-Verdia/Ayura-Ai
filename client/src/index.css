@@ -345,8 +345,8 @@ html {
      which silently breaks carefully-tuned layouts. */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* smooth theme cross-fade */
-  transition: background-color 0.4s ease, color 0.4s ease;
+  /* No theme-change transition: the switch must be instant (like a language
+     toggle). A cross-fade here made an already-instant flip feel sluggish. */
 }
 
 body {
@@ -409,6 +409,21 @@ h4, h5, h6 {
     radial-gradient(ellipse 70% 56% at 92% 12%, rgba(230,162,60,0.12), transparent 60%),
     radial-gradient(ellipse 65% 56% at 56% 104%, rgba(224,138,74,0.08), transparent 62%),
     linear-gradient(145deg, #0c0a07 0%, #12100b 42%, #16130d 100%);
+}
+
+/* Static-background variant. The animated ambient layers were confirmed
+   (A/B on macOS + Android) as the app-wide GPU-compositing flicker source, so
+   the background now renders motionless. This hard-disables every animation,
+   compositor-layer promotion (will-change), blend mode, and live filter on the
+   background subtree — the whole thing becomes a single static paint that never
+   re-rasterizes on scroll/click/load. Applied via <VitalBackground>. */
+.vital-bg-static,
+.vital-bg-static * {
+  animation: none !important;
+  will-change: auto !important;
+  mix-blend-mode: normal !important;
+  filter: none !important;
+  transition: none !important;
 }
 
 .vital-bg-light {
@@ -760,21 +775,24 @@ textarea:focus-visible {
    will-change isolate it to the text's own layer (see Landing.css twin). */
 .shimmer-text {
   display: inline-block;
-  will-change: transform;
+  /* line-height + padding give the italic 'y' descender room; without them the
+     glyph tail was clipped. No will-change / animation: a static gradient (the
+     motion was another continuous paint loop and the will-change layer bounds
+     were what clipped the descender). */
+  line-height: 1.2;
+  padding-bottom: 0.08em;
   background: linear-gradient(
     90deg,
     var(--ayura-teal) 0%,
-    var(--ayura-teal-lt) 20%,
-    var(--ayura-violet) 40%,
-    #f2cf8a 55%,
-    var(--ayura-teal) 70%,
-    var(--ayura-teal-lt) 100%
+    var(--ayura-teal-lt) 22%,
+    var(--ayura-violet) 48%,
+    #f2cf8a 68%,
+    var(--ayura-teal) 100%
   );
-  background-size: 200% auto;
+  background-size: 100% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: shimmer-gradient 5s linear infinite;
 }
 
 /* Independent aurora blob animations */

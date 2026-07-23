@@ -24,7 +24,7 @@ python scripts/build_vectors.py                    # Seed ChromaDB knowledge bas
 cd client
 npm install
 npm run dev       # Dev server at http://localhost:5173
-npm run build
+npm run build     # Vite build; postbuild runs scripts/prerender.mjs (multi-route SEO) + check-bundle-size.mjs
 npm run lint
 npm run test:e2e  # Playwright E2E tests
 npm run test:e2e:ui
@@ -67,6 +67,9 @@ Each feature is produced by a **deterministic, KB-grounded engine**, then option
 3. **Tier 3 — LLM enrichers** (`server/services/*_enricher.py`): add narrative/coaching on top of the deterministic plan via the shared `llm_client`. RAG (`server/ai/rag_pipeline.py`) provides ChromaDB semantic context.
 
 `routes/plans._generate_feature_via_engine` is the single entry point both the holistic and per-feature paths use — it runs the engine + enricher and applies pregnancy/safety gating. The per-feature endpoints (`POST /api/plans/{gym,yoga,diet,routine,panchakarma,remedies,medicines}`) return the plan **synchronously**. The holistic `POST /api/plans/generate` is offloaded to an **ARQ background worker** (`server/worker.py`) via Redis and returns a `job_id` to poll at `/api/plans/job/{jobId}`; if Redis/ARQ is unavailable it falls back to running the job in-process via FastAPI `BackgroundTasks`.
+
+### Chat Agent (`server/ai/agents/health_agent.py`)
+The conversational chatbot (`POST /api/chat`, mounted in `main.py`) **is** a LangGraph ReAct agent (`create_react_agent`) with a small tool set (`get_plan_detail`, `set_reminder`, `check_my_medicine_interactions`, `adapt_plan`, `get_health_trend`). This is the *only* place LangGraph is used — the removed 4-agent pipeline noted above was for **plan authoring**, which is now purely engine-backed. Chat may read/adapt plans and trigger side effects but never authors them from free text. LangSmith tracing is enabled when a key is configured.
 
 ### LLM Client (`server/ai/llm_client.py`)
 Singleton `llm_client` wraps Azure OpenAI (primary) and Google Gemini (fallback) with automatic failover and tenacity retry. Both `generate()` (batch) and `generate_stream()` (SSE) are supported. Metrics are recorded via `core/metrics.py`.
