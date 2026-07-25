@@ -1,7 +1,7 @@
 import React, { useState, useContext, useMemo, Suspense, lazy } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { m, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { toast } from 'sonner'
 import { AuthContext } from '../providers/AuthContext'
 import { useTheme } from '../providers/ThemeProvider'
@@ -16,6 +16,7 @@ import DoshaArcRings from '../components/DoshaArcRings'
 import PreferencesModal from '../components/PreferencesModal'
 import SectionBoundary from '../components/SectionBoundary'
 import { DOSHA_COLOR } from '../constants/dosha'
+import useLowPowerMode from '../hooks/useLowPowerMode'
 import confetti from 'canvas-confetti'
 import {
   Sunrise, Salad, Flower2, Dumbbell, Leaf, Soup, Pill,
@@ -498,6 +499,12 @@ function ReactionModal({ planType, onClose }) {
 const Dashboard = () => {
   const { user } = useContext(AuthContext)
   const { theme, setThemeAnimated } = useTheme()
+  // Gate the plan-open "expand" transition: skip it for reduced-motion users and
+  // low-power/mobile devices (where full-view transform anims have historically
+  // caused GPU raster softness — see the mobile-blur incidents).
+  const reducedMotion = useReducedMotion()
+  const lowPower      = useLowPowerMode()
+  const smoothViewer  = !reducedMotion && !lowPower
   const [viewingPlan, setViewingPlan]     = useState(null)
   const [viewingType, setViewingType]     = useState(null)
   const [generating,  setGenerating]      = useState({})
@@ -619,7 +626,16 @@ const Dashboard = () => {
   // ── Plan viewer ────────────────────────────────────────────
   if (viewingPlan) {
     return (
-      <div className="dash-viewer-container">
+      <m.div
+        className="dash-viewer-container"
+        // Reads as the tapped plan card expanding into the full page. Transform +
+        // opacity only (domAnimation-safe, no layout engine); origin-top so it
+        // grows from where the card list was. Instant for reduced-motion/low-power.
+        initial={smoothViewer ? { opacity: 0, scale: 0.965, y: 10 } : false}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 30, mass: 0.8 }}
+        style={{ transformOrigin: 'top center' }}
+      >
         <div className="dash-viewer-back-bar">
           <button className="dash-back-btn" onClick={() => { setViewingPlan(null); setViewingType(null) }}>
             ← Back to Dashboard
@@ -641,7 +657,7 @@ const Dashboard = () => {
             <PlanViewer plan={viewingPlan} planType={viewingType} />
           </Suspense>
         </SectionBoundary>
-      </div>
+      </m.div>
     )
   }
 

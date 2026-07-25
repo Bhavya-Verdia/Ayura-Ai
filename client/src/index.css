@@ -208,6 +208,36 @@ body,
   --glass-shadow-strong: 0 26px 80px rgba(0,0,0,0.52);
   --glass-shadow-light:  0 4px 12px rgba(0,0,0,0.12);
 
+  /* ── Elevation & edge treatment — depth without motion ──
+     Each --elev-N stacks a tight contact shadow, a mid ambient one, and a
+     wide soft one. A single large blur reads as fog; three layered ones read
+     as an object sitting above a surface, which is most of what "premium"
+     actually is. Prefer these over new one-off box-shadows.
+
+     --edge-highlight is a 1px inset specular line along the top (lit) edge —
+     the cheapest cue that a surface has thickness. Compose with elevation:
+       box-shadow: var(--edge-highlight), var(--elev-2);
+     All static: shadows on a non-animating element paint once. */
+  --elev-1: 0 1px 2px rgba(0,0,0,0.24), 0 2px 8px rgba(0,0,0,0.16);
+  --elev-2: 0 1px 2px rgba(0,0,0,0.28), 0 6px 16px rgba(0,0,0,0.22), 0 14px 40px rgba(0,0,0,0.16);
+  --elev-3: 0 2px 4px rgba(0,0,0,0.32), 0 12px 32px rgba(0,0,0,0.28), 0 32px 80px rgba(0,0,0,0.24);
+  --edge-highlight:        inset 0 1px 0 rgba(255,255,255,0.07);
+  --edge-highlight-strong: inset 0 1px 0 rgba(255,255,255,0.14);
+  --edge-inset:            inset 0 0 0 1px rgba(255,255,255,0.04);
+  --ring-accent: 0 0 0 1px color-mix(in srgb, var(--ayura-teal) 42%, transparent);
+  --glow-accent: 0 10px 34px -10px color-mix(in srgb, var(--ayura-teal) 46%, transparent);
+
+  /* ── Motion ──
+     For finite, interaction-triggered transitions ONLY. Nothing using these
+     may be paired with `infinite`: permanent loops on large surfaces are the
+     flicker class this app spent a release eliminating (see .vital-bg-static).
+     Hover/press/reveal transitions create a layer, run, and tear it down. */
+  --dur-fast:    120ms;
+  --dur-base:    200ms;
+  --dur-slow:    320ms;
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);      /* decel — hovers, reveals */
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);    /* slight overshoot — press release */
+
   /* ── Typography ──
      Display = Fraunces (warm editorial serif, optical-size variable) for headings;
      UI/body = Manrope. The pairing gives the brand an "editorial wellness" voice
@@ -322,6 +352,18 @@ body,
   --glass-shadow:        0 8px 32px rgba(15,23,42,0.10);
   --glass-shadow-strong: 0 24px 64px rgba(15,23,42,0.14);
   --glass-shadow-light:  0 4px 12px rgba(15,23,42,0.06);
+
+  /* Light-mode elevation is tinted warm (the sandstone substrate), not neutral
+     grey — a grey shadow on a warm surface reads as dirt. The specular edge
+     inverts to near-white: on a light surface the lit edge is the brightest
+     thing, not a faint sheen. */
+  --elev-1: 0 1px 2px rgba(72,54,30,0.07), 0 2px 8px rgba(72,54,30,0.05);
+  --elev-2: 0 1px 2px rgba(72,54,30,0.08), 0 6px 16px rgba(72,54,30,0.07), 0 14px 40px rgba(72,54,30,0.06);
+  --elev-3: 0 2px 4px rgba(72,54,30,0.10), 0 12px 32px rgba(72,54,30,0.10), 0 32px 80px rgba(72,54,30,0.09);
+  --edge-highlight:        inset 0 1px 0 rgba(255,255,255,0.85);
+  --edge-highlight-strong: inset 0 1px 0 rgba(255,255,255,1);
+  --edge-inset:            inset 0 0 0 1px rgba(255,255,255,0.55);
+  --glow-accent: 0 10px 34px -10px color-mix(in srgb, var(--ayura-teal) 30%, transparent);
 }
 
 /* ─── BASE RESET ──────────────────────────────────────────── */
@@ -404,11 +446,13 @@ h4, h5, h6 {
   overflow: hidden;
   pointer-events: none;
   color: rgba(92,171,116,0.9);
+  /* Substrate only — the coloured light pools are separate layers now. This is
+     the unlit material: lifted toward the key light (upper left), falling to
+     its deepest value in the opposite corner. A directional base is what makes
+     a still image read as lit rather than as flat fill. */
   background:
-    radial-gradient(ellipse 90% 70% at 12% 8%, rgba(92,171,116,0.13), transparent 58%),
-    radial-gradient(ellipse 70% 56% at 92% 12%, rgba(230,162,60,0.12), transparent 60%),
-    radial-gradient(ellipse 65% 56% at 56% 104%, rgba(224,138,74,0.08), transparent 62%),
-    linear-gradient(145deg, #0c0a07 0%, #12100b 42%, #16130d 100%);
+    radial-gradient(ellipse 120% 90% at 8% -6%, rgba(92,171,116,0.10), transparent 62%),
+    linear-gradient(152deg, #14110b 0%, #100d09 46%, #0a0806 100%);
 }
 
 /* Static-background variant. The animated ambient layers were confirmed
@@ -429,89 +473,115 @@ h4, h5, h6 {
 .vital-bg-light {
   color: rgba(47,143,91,0.75);
   background:
-    radial-gradient(ellipse 86% 68% at 10% 4%, rgba(47,143,91,0.15), transparent 60%),
-    radial-gradient(ellipse 66% 52% at 94% 10%, rgba(184,121,26,0.10), transparent 62%),
-    radial-gradient(ellipse 62% 54% at 52% 104%, rgba(194,105,31,0.08), transparent 64%),
-    linear-gradient(145deg, #f7f2e8 0%, #f1ebde 50%, #f5eee0 100%);
+    radial-gradient(ellipse 120% 90% at 8% -6%, rgba(47,143,91,0.10), transparent 62%),
+    linear-gradient(152deg, #fbf7ee 0%, #f5f0e4 48%, #ece5d6 100%);
 }
 
-/* No live blur: at Retina this was a ~1.4x-viewport filtered GPU texture —
-   the first thing evicted under memory pressure (whole-background flash).
-   The conic's stops span tens of degrees, soft by construction; rotation is
-   compositor-only. Opacity matches the mobile tier's validated twin. */
+/* Light pools — soft colour cast from the key light and its bounces. Painted
+   as multi-stop radial gradients, never `filter: blur()`: the blur of a soft
+   gradient IS a bigger soft gradient, and the filtered version was a
+   ~1.4x-viewport GPU texture, first to be evicted under memory pressure
+   (which flashed the whole background). Per-pool position/colour is set
+   inline by VitalBackground so it can vary with theme. */
+.vital-pool {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Colour swirl, frozen at its resting angle. The conic's stops span tens of
+   degrees, so it is soft by construction and needs no blur. Rotated to run
+   with the key light rather than against it. */
 .vital-gradient-field {
   position: absolute;
   inset: -20%;
-  opacity: 0.6;
+  opacity: 0.55;
   background:
-    conic-gradient(from 130deg at 50% 48%, transparent 0deg, rgba(92,171,116,0.12) 52deg, transparent 118deg, rgba(230,162,60,0.12) 188deg, transparent 260deg, rgba(224,138,74,0.08) 318deg, transparent 360deg);
-  animation: vital-field-rotate 36s linear infinite;
+    conic-gradient(from 196deg at 34% 30%, transparent 0deg, rgba(92,171,116,0.13) 48deg, transparent 116deg, rgba(230,162,60,0.11) 192deg, transparent 262deg, rgba(224,138,74,0.07) 320deg, transparent 360deg);
 }
 
 .vital-bg-light .vital-gradient-field {
-  opacity: 0.5;
-  mix-blend-mode: multiply;
+  opacity: 0.45;
 }
 
+/* Grid, lit from the same direction as everything else: the mask is an ellipse
+   centred on the key light and falls off well before the frame edge, so the
+   grid emerges out of the glow instead of tiling edge-to-edge. */
 .vital-grid-field {
   position: absolute;
   inset: 0;
-  opacity: 0.16;
+  opacity: 0.17;
   background-image:
-    linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: radial-gradient(circle at 50% 24%, black 0%, transparent 68%);
+    linear-gradient(rgba(255,255,255,0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.075) 1px, transparent 1px);
+  background-size: 76px 76px;
+  /* No hand-written -webkit- prefix: lightningcss (vite.config targets) emits
+     it. Hand-writing prefixes here has broken this build before. */
+  mask-image: radial-gradient(ellipse 68% 58% at 18% 14%, black 0%, rgba(0,0,0,0.55) 34%, transparent 72%);
 }
 
 .vital-bg-light .vital-grid-field {
-  opacity: 0.18;
+  opacity: 0.2;
   background-image:
-    linear-gradient(rgba(15,23,42,0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15,23,42,0.08) 1px, transparent 1px);
+    linear-gradient(rgba(15,23,42,0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,23,42,0.075) 1px, transparent 1px);
 }
 
-/* The dash sweeps animate stroke-dasharray/offset — paint properties, so these
-   SVGs legitimately repaint every frame. will-change isolates each onto its
-   own compositor layer so that per-frame invalidation stays confined to the
-   strands instead of dirtying the whole fixed .vital-bg (gradients + grid +
-   noise), which under GPU pressure flashed the entire background. */
+/* Strand bundles. No `will-change`: nothing animates, so promoting these to
+   their own compositor layers would buy a permanent GPU surface for a static
+   image — exactly the trade that caused the flicker. The stroke gradients
+   (defined in VitalBackground) do the fade-out; there is no dash, no filter. */
 .vital-paths {
   position: absolute;
-  inset: -8% -2% auto -2%;
+  inset: -12% -2% auto -2%;
   width: 104%;
-  height: 68vh;
+  height: 72vh;
   min-height: 460px;
-  opacity: 0.8;
-  will-change: transform;
+  opacity: 0.85;
 }
 
+/* Counter-sweep in the lower half — offset rather than a 180° mirror, so the
+   two bundles read as one continuous flow through the frame. */
 .vital-paths:nth-of-type(2) {
   top: auto;
-  bottom: -10%;
+  bottom: -14%;
+  height: 56vh;
   transform: rotate(180deg);
-  opacity: 0.44;
+  opacity: 0.4;
 }
 
-/* No filter here: a drop-shadow on strokes whose dash animates re-runs the
-   filter every frame of the sweep — a permanent full-width raster cost for a
-   glow that is invisible at 10% alpha. */
+/* Vital-sign trace, sunk to the bottom edge. This layer is fixed, so anything
+   mid-viewport sits behind whatever section is scrolled into view — at higher
+   opacity the spike drew a hard diagonal straight through section headings.
+   It belongs at the frame's edge, as texture. */
 .vital-pulse-lines {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 10%;
+  bottom: 2%;
   width: 100%;
-  height: 28vh;
-  min-height: 180px;
+  height: 26vh;
+  min-height: 170px;
   color: rgba(251,146,60,0.9);
-  opacity: 0.72;
-  will-change: transform;
+  opacity: 0.4;
 }
 
 .vital-bg-light .vital-pulse-lines {
   color: rgba(47,143,91,0.75);
-  opacity: 0.5;
+  opacity: 0.34;
+}
+
+/* Vignette — closes the frame and stops the composition from bleeding flatly
+   into the viewport edges. Weighted away from the key light so the darkening
+   reads as falloff from a source, not as a symmetrical photo filter. */
+.vital-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 96% 82% at 26% 20%, transparent 34%, rgba(0,0,0,0.16) 72%, rgba(0,0,0,0.42) 100%);
+}
+
+.vital-bg-light .vital-vignette {
+  background: radial-gradient(ellipse 96% 82% at 26% 20%, transparent 38%, rgba(90,72,44,0.05) 74%, rgba(90,72,44,0.13) 100%);
 }
 
 .vital-noise-field {
@@ -519,11 +589,6 @@ h4, h5, h6 {
   inset: 0;
   opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-@keyframes vital-field-rotate {
-  from { transform: rotate(0deg) scale(1.08); }
-  to { transform: rotate(360deg) scale(1.08); }
 }
 
 a {
@@ -643,11 +708,15 @@ textarea:focus-visible {
   backdrop-filter: blur(24px);
 }
 
+/* Glass had a border and a highlight but no shadow at all, so it sat flush
+   against the background rather than above it. Elevation + a lit top edge is
+   what separates it. */
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(24px);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
+  box-shadow: var(--edge-highlight), var(--elev-2);
   position: relative;
   overflow: hidden;
 }
@@ -693,6 +762,51 @@ textarea:focus-visible {
   transition: opacity 0.3s;
 }
 .glow-border:hover::before { opacity: 1; }
+
+/* ─── INTERACTION LAYER ───────────────────────────────────────
+   The app's ambient motion is gone for good (see .vital-bg-static). Everything
+   here is its replacement: motion that exists only while the user is touching
+   something. Each transition is finite — it creates a compositor layer, runs,
+   and tears it down — which is structurally incapable of the permanent
+   always-invalidating surface that caused the app-wide flicker.
+
+   Rules for anything added to this layer:
+     - transform / opacity / box-shadow only; never a live `filter` on a large
+       or long-lived element
+     - never `infinite`
+     - hover effects go behind @media (hover: hover) so touch devices don't
+       latch them on first tap                                              */
+
+/* Opt-in raised surface. Opt-in, not applied to .glass-card directly, because
+   that class also wraps static containers — a panel that lifts when the
+   pointer crosses it reads as a bug, not as polish. */
+.interactive-surface {
+  transition: transform var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out);
+}
+@media (hover: hover) {
+  .interactive-surface:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--ayura-teal) 32%, var(--glass-border));
+    box-shadow: var(--edge-highlight-strong), var(--elev-3), var(--glow-accent);
+  }
+}
+/* Press settles the surface back toward the page — the release is what sells
+   the click, so it runs at --dur-fast in and eases back out. */
+.interactive-surface:active {
+  transform: translateY(-1px) scale(0.995);
+  transition-duration: var(--dur-fast);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive-surface,
+  .interactive-surface:hover,
+  .interactive-surface:active {
+    transform: none;
+    transition: box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+  }
+}
 
 /* ─── ANIMATIONS ──────────────────────────────────────────── */
 @keyframes pulse {
@@ -768,28 +882,9 @@ textarea:focus-visible {
   background-clip: text;
 }
 
-/* Independent aurora blob animations */
-@keyframes aurora-float-1 {
-  0%   { transform: translate(0px,    0px)   scale(1);    opacity: 0.18; }
-  33%  { transform: translate(40px,   20px)  scale(1.1);  opacity: 0.22; }
-  66%  { transform: translate(-20px,  35px)  scale(0.95); opacity: 0.16; }
-  100% { transform: translate(0px,    0px)   scale(1);    opacity: 0.18; }
-}
-@keyframes aurora-float-2 {
-  0%   { transform: translate(0px,    0px)   scale(1);    opacity: 0.15; }
-  40%  { transform: translate(-50px, -30px)  scale(1.08); opacity: 0.19; }
-  80%  { transform: translate(25px,   45px)  scale(0.93); opacity: 0.12; }
-  100% { transform: translate(0px,    0px)   scale(1);    opacity: 0.15; }
-}
-@keyframes aurora-float-3 {
-  0%   { transform: translate(0px,   0px)    scale(1);    opacity: 0.12; }
-  50%  { transform: translate(30px,  -40px)  scale(1.12); opacity: 0.17; }
-  100% { transform: translate(0px,   0px)    scale(1);    opacity: 0.12; }
-}
-
-.aurora-blob-1 { animation: aurora-float-1 22s ease-in-out infinite; }
-.aurora-blob-2 { animation: aurora-float-2 18s ease-in-out infinite; }
-.aurora-blob-3 { animation: aurora-float-3 26s ease-in-out infinite; }
+/* The aurora-float keyframes and .aurora-blob-* rules that lived here were
+   removed with the animated background: VitalBackground now paints static
+   .vital-pool light pools instead, and nothing else referenced them. */
 
 @keyframes aurora-spin {
   from { transform: rotate(0deg) scale(1); }
@@ -1084,9 +1179,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
 @media (prefers-reduced-motion: reduce) {
   .particle-dot,
   .particle-orb,
-  .aurora-blob-1,
-  .aurora-blob-2,
-  .aurora-blob-3,
   .app-bg-mesh,
   .vital-noise-field,
   .vital-paths path,
@@ -1102,24 +1194,10 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
 }
 
 
-/* ─── VITAL PATH SWEEPS (CSS-driven) ──────────────────────────
-   The living-path layers used to be 27 independent framer-motion loops —
-   permanent main-thread JS on every open page. These keyframes reproduce the
-   exact cycles (pathLength/pathOffset/opacity) as declarative CSS on
-   pathLength="1" strokes: the browser animation engine owns them and the
-   main thread never runs a line of JS for the ambience. */
-@keyframes vital-path-sweep {
-  0%   { stroke-dasharray: 0.18 0.82; stroke-dashoffset: 0;  opacity: 0.22; }
-  50%  { stroke-dasharray: 0.86 0.14; stroke-dashoffset: -1; opacity: 0.58; }
-  100% { stroke-dasharray: 0.18 0.82; stroke-dashoffset: 0;  opacity: 0.22; }
-}
-@keyframes vital-pulse-sweep {
-  0%   { stroke-dasharray: 0.08 0.92; stroke-dashoffset: 0;    }
-  50%  { stroke-dasharray: 1 0.02;    stroke-dashoffset: -0.9; }
-  100% { stroke-dasharray: 0.08 0.92; stroke-dashoffset: -1.8; }
-}
-.vital-path-sweep  { animation: vital-path-sweep  linear infinite; }
-.vital-pulse-sweep { animation: vital-pulse-sweep linear infinite; }
+/* The .vital-path-sweep / .vital-pulse-sweep keyframes lived here. They drove
+   the strand dash animation, which the flicker A/B retired; VitalBackground
+   has not emitted either class since, and the strands now fade via SVG stroke
+   gradients rather than dashes. */
 
 /* Noise grain (rendered by NoiseOverlay as a repeating 220px tile): plain
    alpha, NOT mix-blend-mode — a blend here forces the compositor to re-blend
@@ -1142,42 +1220,16 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
    transform/opacity), glass stays glass wherever sharp content actually
    scrolls behind it (fixed bars, drawer, floating overlays). */
 @media (max-width: 900px), (pointer: coarse) {
-  /* Aurora blobs: drop the live blur(90px); the radial stops are already
-     soft, enlarging ~25% reproduces the blur's spread. Float keyframes keep
-     running (compositor-only). */
-  .aurora-blob-1 { filter: none !important; width: 68% !important; height: 68% !important; }
-  .aurora-blob-2 { filter: none !important; width: 62% !important; height: 62% !important; }
-  .aurora-blob-3 { filter: none !important; width: 56% !important; height: 56% !important; }
-
-  /* Conic field: unblurred (its stops span tens of degrees — soft by
-     construction) and frozen at its resting angle: a 36s rotation is
-     imperceptible, but it kept a full-screen layer compositing on every
-     frame of every page. */
-  .vital-gradient-field { filter: none; opacity: 0.6; animation: none; }
+  /* The aurora-blob and .vital-gradient-field overrides that lived here are
+     gone: the background is now static and blur-free on every device, so the
+     phone tier has nothing left to downgrade in it. */
 
   /* Particle orbs: the JSX paints them as soft radial gradients, so the
      extra blur(34px) + screen-blend pass adds nothing visible. */
   .particle-orb { filter: none; mix-blend-mode: normal; }
 
-  /* Ambient motion discipline: phones keep ONE living background element
-     (the floating aurora blobs — pure compositor transform/opacity). The
-     layered strands freeze into the exact staggered mid-flight pattern of
-     the animation (per-path seed set inline), and the color swirl keeps its
-     angle — every pixel of the composition survives, but the GPU stops
-     re-painting strands and re-compositing a rotating full-screen layer on
-     every frame of every open page. Interaction/entrance animations are
-     untouched — this governs only the permanent background loops. */
-  .vital-path-sweep {
-    animation: none;
-    stroke-dasharray: 0.55 0.45;
-    stroke-dashoffset: var(--sweep-seed, 0);
-    opacity: 0.45;
-  }
-  .vital-pulse-sweep {
-    animation: none;
-    stroke-dasharray: 0.8 0.2;
-    stroke-dashoffset: var(--sweep-seed, 0);
-  }
+  /* The phone-tier strand/swirl freeze that lived here is obsolete: the
+     background has no ambient motion on any device now. */
 
   /* Below-fold landing sections: skip layout/paint until scrolled near.
      (Entrance reveals use IntersectionObserver, which still fires.) */

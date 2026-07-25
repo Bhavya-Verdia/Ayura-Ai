@@ -219,9 +219,13 @@ function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) 
     <m.div
       className="comm-post-card"
       initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
+      // Reveal on scroll-into-view rather than all-at-once on mount, so the feed
+      // cascades as you scroll. Stagger index is capped so posts far down the feed
+      // reveal promptly when reached instead of inheriting a large mount delay.
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
       exit={{ opacity: 0, y: -12, scale: 0.97 }}
-      transition={{ duration: 0.4, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.4, delay: Math.min(index, 6) * 0.06, ease: [0.16, 1, 0.3, 1] }}
       layout
     >
       {/* Gradient top border */}

@@ -430,7 +430,7 @@ export default function Landing() {
   }, [])
 
   useEffect(() => {
-    const els = document.querySelectorAll('.reveal, .reveal-left, .reveal-right')
+    const els = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-stagger')
     const obs = new IntersectionObserver(
       entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target) } }),
       { threshold: 0.12, rootMargin: '0px 0px -60px 0px' }
@@ -663,7 +663,7 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="lnd-cards-row reveal">
+          <div className="lnd-cards-row reveal-stagger">
             {HOW_CARDS.map(card => (
               <div key={card.id} className="lnd-how-card">
                 <span className="lnd-how-card-step">{t(card.step)}</span>
@@ -744,7 +744,7 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="lnd-plans-grid reveal">
+          <div className="lnd-plans-grid reveal-stagger">
             {PLAN_SHOWCASE.map((plan) => (
               <m.div
                 key={plan.id}
@@ -769,7 +769,7 @@ export default function Landing() {
             <span className="lnd-section-kicker">{t('landing.testi_kicker')}</span>
             <h2 className="lnd-section-title">{t('landing.testi_title')}</h2>
           </div>
-          <div className="lnd-testimonials-grid reveal">
+          <div className="lnd-testimonials-grid reveal-stagger">
             {TESTIMONIALS.map(item => (
               <m.div
                 key={item.id}
@@ -805,7 +805,7 @@ export default function Landing() {
             <span className="lnd-section-kicker">{t('landing.faq_kicker')}</span>
             <h2 className="lnd-section-title">{t('landing.faq_title')}</h2>
           </div>
-          <div className="lnd-faq-list reveal">
+          <div className="lnd-faq-list reveal-stagger">
             {FAQS.map((item, i) => (
               <details key={i} className="lnd-faq-item">
                 <summary className="lnd-faq-q">

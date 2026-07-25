@@ -57,9 +57,11 @@
   cursor: pointer; transition: all 0.2s;
 }
 .onb-switch-account:hover { background: var(--border-subtle); color: var(--ayura-ink); }
+/* Editorial display setting — see the note on .dash-hero-greeting. */
 .onb-header h2 {
-  font-family: var(--font-display); font-size: 1.9rem; font-weight: 800;
-  letter-spacing: 0; margin: 0 0 6px; color: var(--ayura-ink);
+  font-family: var(--font-display); font-size: 1.9rem; font-weight: 600;
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em; margin: 0 0 6px; color: var(--ayura-ink);
 }
 .onb-subtitle {
   color: var(--step-accent, var(--ayura-teal));
@@ -84,8 +86,9 @@
 .onb-card { position: relative; min-height: 360px; display: flex; flex-direction: column; }
 .onb-stage { flex: 1; display: flex; flex-direction: column; gap: 20px; }
 .onb-title {
-  font-family: var(--font-display); font-size: 1.45rem; font-weight: 800;
-  letter-spacing: 0; margin: 0 0 4px; color: var(--ayura-ink);
+  font-family: var(--font-display); font-size: 1.45rem; font-weight: 600;
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em; margin: 0 0 4px; color: var(--ayura-ink);
 }
 .onb-help { color: var(--ayura-muted); font-size: 0.875rem; margin: 0 0 12px; line-height: 1.6; }
 

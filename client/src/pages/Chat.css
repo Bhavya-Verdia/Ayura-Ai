@@ -66,9 +66,11 @@
   display: flex; align-items: center; justify-content: center;
   color: var(--ayura-teal); margin-bottom: 8px;
 }
+/* Editorial display setting — see the note on .dash-hero-greeting. */
 .chat-empty-title {
-  font-family: var(--font-display); font-size: 1.5rem; font-weight: 800;
-  letter-spacing: 0; color: var(--ayura-ink);
+  font-family: var(--font-display); font-size: 1.5rem; font-weight: 600;
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em; color: var(--ayura-ink);
 }
 .chat-empty-sub { color: var(--ayura-muted); font-size: 0.9rem; line-height: 1.6; }
 

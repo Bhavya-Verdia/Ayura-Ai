@@ -9,7 +9,8 @@
 
 .settings-container { max-width: 800px; margin: 0 auto; position: relative; z-index: 10; }
 .settings-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 44px; }
-.settings-page-title { font-family: var(--font-display); font-size: var(--fs-h1); font-weight: 800; margin: 0 0 4px; letter-spacing: 0; color: var(--ayura-ink); }
+/* Editorial display setting — see the note on .dash-hero-greeting. */
+.settings-page-title { font-family: var(--font-display); font-size: var(--fs-h1); font-weight: 600; font-optical-sizing: auto; margin: 0 0 4px; letter-spacing: -0.02em; color: var(--ayura-ink); }
 .settings-page-sub { color: var(--ayura-muted); font-size: 0.9rem; margin: 0; }
 
 .settings-card {
@@ -57,7 +58,7 @@
   border: none;
 }
 .settings-account-info { display: flex; flex-direction: column; }
-.settings-account-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: 0; color: var(--ayura-ink); }
+.settings-account-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; font-optical-sizing: auto; letter-spacing: -0.02em; color: var(--ayura-ink); }
 .settings-account-email { color: var(--ayura-muted); font-size: 0.9rem; margin-top: 4px; }
 .settings-account-meta { display: flex; gap: 10px; margin-top: 12px; }
 

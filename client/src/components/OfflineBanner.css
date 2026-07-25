@@ -8,7 +8,9 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.6rem 1rem;
+  /* Top inset (viewport-fit=cover) so the text clears the notch/status bar and
+     the red fills behind it, instead of the copy hiding under the camera cutout. */
+  padding: calc(0.6rem + env(safe-area-inset-top)) 1rem 0.6rem;
   background: #dc2626;
   color: #fff;
   font-size: 0.85rem;

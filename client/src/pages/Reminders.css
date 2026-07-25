@@ -71,7 +71,7 @@
 /* Toasts */
 .rem-toast {
   position: fixed;
-  bottom: 32px;
+  bottom: calc(32px + env(safe-area-inset-bottom));
   right: 32px;
   padding: 16px 24px;
   border-radius: 12px;
@@ -478,5 +478,13 @@
   }
   .rem-form-grid {
     grid-template-columns: 1fr;
+  }
+  /* Lift the toast above the fixed bottom tab bar (64px) + home-bar inset so it
+     never hides behind the nav, and let it span the width on narrow screens. */
+  .rem-toast {
+    bottom: calc(64px + env(safe-area-inset-bottom) + 16px);
+    right: 16px;
+    left: 16px;
+    justify-content: center;
   }
 }

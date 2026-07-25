@@ -84,8 +84,8 @@
   color: var(--text-primary);
 }
 .vci-chip.selected {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.5);
+  background: rgba(143,127,214, 0.15);
+  border-color: rgba(143,127,214, 0.5);
   color: #a5b4fc;
 }
 

@@ -62,9 +62,13 @@ function NotificationCard({ notif, onMarkRead, onDelete, index }) {
         '--notif-glow':   cfg.glowColor,
       }}
       initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
+      // Reveal as the card scrolls into view (not all-at-once on mount), so a long
+      // list cascades under the scroll. Cap the stagger index so cards deep in the
+      // list reveal promptly when reached instead of waiting on a mount-based delay.
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
       exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0 }}
-      transition={{ duration: 0.35, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.35, delay: Math.min(index, 6) * 0.04, ease: [0.16, 1, 0.3, 1] }}
       onClick={() => !notif.is_read && onMarkRead(notif.id)}
       role="button"
       tabIndex={0}

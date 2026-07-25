@@ -30,7 +30,7 @@
   height: 500px;
   top: -140px;
   right: -120px;
-  background: radial-gradient(circle, var(--ayura-teal, #06b6d4), transparent 70%);
+  background: radial-gradient(circle, var(--ayura-teal, #5cab74), transparent 70%);
 }
 .da-orb-b {
   width: 400px;
@@ -75,7 +75,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.82rem;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
 }
 
 .da-step {
@@ -85,16 +85,16 @@
   transition: all 0.2s;
 }
 .da-step.active {
-  color: var(--ayura-teal, #06b6d4);
-  border-color: var(--ayura-teal, #06b6d4);
-  background: rgba(6, 182, 212, 0.08);
+  color: var(--ayura-teal, #5cab74);
+  border-color: var(--ayura-teal, #5cab74);
+  background: rgba(92,171,116, 0.08);
 }
 .da-step.done {
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   text-decoration: line-through;
 }
 .da-step-sep {
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   opacity: 0.5;
 }
 
@@ -109,12 +109,12 @@
 }
 .da-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--ayura-teal, #06b6d4), #a08cf0);
+  background: linear-gradient(90deg, var(--ayura-teal, #5cab74), #a08cf0);
   border-radius: 999px;
 }
 .da-progress-label {
   font-size: 0.8rem;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   margin-bottom: 1.75rem;
   text-align: right;
 }
@@ -134,7 +134,7 @@
 
 .da-hint {
   font-size: 0.88rem;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   margin-bottom: 1.5rem;
   line-height: 1.5;
 }
@@ -161,12 +161,12 @@
 }
 .da-trait-card:hover {
   background: var(--glass-bg, rgba(255,255,255,0.06));
-  border-color: rgba(6, 182, 212, 0.3);
+  border-color: rgba(92,171,116, 0.3);
 }
 .da-trait-card.selected {
-  background: rgba(6, 182, 212, 0.07);
-  border-color: var(--ayura-teal, #06b6d4);
-  box-shadow: 0 0 0 1px var(--ayura-teal, #06b6d4), 0 8px 24px rgba(6, 182, 212, 0.12);
+  background: rgba(92,171,116, 0.07);
+  border-color: var(--ayura-teal, #5cab74);
+  box-shadow: 0 0 0 1px var(--ayura-teal, #5cab74), 0 8px 24px rgba(92,171,116, 0.12);
 }
 
 .da-trait-icon {
@@ -178,7 +178,7 @@
   border-radius: 9px;
   background: var(--glass-bg-subtle, rgba(255,255,255,0.05));
   border: 1px solid var(--dash-edge, rgba(255,255,255,0.1));
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   font-family: var(--font-display);
   font-size: 0.85rem;
   font-weight: 700;
@@ -203,7 +203,7 @@
 .da-trait-desc {
   display: block;
   font-size: 0.82rem;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   line-height: 1.5;
 }
 
@@ -212,34 +212,34 @@
   top: 12px;
   right: 14px;
   font-size: 0.9rem;
-  color: var(--ayura-teal, #06b6d4);
+  color: var(--ayura-teal, #5cab74);
   font-weight: 700;
 }
 
 /* Secondary (blend) selection — lighter than the primary pick */
 .da-trait-card.selected-secondary {
-  background: rgba(6, 182, 212, 0.035);
-  border-color: rgba(6, 182, 212, 0.5);
-  box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.4);
+  background: rgba(92,171,116, 0.035);
+  border-color: rgba(92,171,116, 0.5);
+  box-shadow: 0 0 0 1px rgba(92,171,116, 0.4);
 }
 .da-trait-card.selected-secondary .da-trait-icon {
-  background: rgba(6, 182, 212, 0.18);
-  border-color: rgba(6, 182, 212, 0.5);
-  color: var(--ayura-teal, #06b6d4);
+  background: rgba(92,171,116, 0.18);
+  border-color: rgba(92,171,116, 0.5);
+  color: var(--ayura-teal, #5cab74);
 }
 .da-trait-check-secondary {
-  color: rgba(6, 182, 212, 0.7);
+  color: rgba(92,171,116, 0.7);
 }
 
 .da-blend-hint {
   margin: 12px 2px 0;
   font-size: 0.78rem;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   text-align: center;
   opacity: 0.85;
 }
 .da-blend-hint-active {
-  color: var(--ayura-teal, #06b6d4);
+  color: var(--ayura-teal, #5cab74);
   opacity: 1;
   font-weight: 600;
   text-transform: capitalize;
@@ -299,7 +299,7 @@
 }
 .da-chip-desc {
   font-size: 0.75rem;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   line-height: 1.4;
 }
 .da-chip-check {
@@ -340,16 +340,16 @@
   border-radius: 999px;
   border: 1px solid var(--dash-edge, rgba(255,255,255,0.12));
   background: transparent;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-.da-cond-chip:hover { border-color: var(--ayura-teal, #06b6d4); color: var(--ayura-ink, #f1f5f9); }
+.da-cond-chip:hover { border-color: var(--ayura-teal, #5cab74); color: var(--ayura-ink, #f1f5f9); }
 .da-cond-chip.selected {
-  background: rgba(6, 182, 212, 0.10);
-  border-color: var(--ayura-teal, #06b6d4);
+  background: rgba(92,171,116, 0.10);
+  border-color: var(--ayura-teal, #5cab74);
   color: var(--ayura-ink, #f1f5f9);
 }
 .da-cond-x { font-size: 1rem; line-height: 1; opacity: 0.7; }
@@ -357,7 +357,7 @@
   margin-top: 4px;
   background: none;
   border: none;
-  color: var(--ayura-teal, #06b6d4);
+  color: var(--ayura-teal, #5cab74);
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
@@ -384,7 +384,7 @@
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   margin-bottom: 6px;
 }
 .da-cond-other {
@@ -404,7 +404,7 @@
 
 .da-symptom-note {
   font-size: 0.78rem;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   text-align: center;
   max-width: 380px;
   line-height: 1.5;
@@ -425,7 +425,7 @@
   inset: 0;
   border-radius: 50%;
   border: 2px solid transparent;
-  border-top-color: var(--ayura-teal, #06b6d4);
+  border-top-color: var(--ayura-teal, #5cab74);
   animation: da-spin 1.4s linear infinite;
 }
 .da-loading-ring-2 {
@@ -455,7 +455,7 @@
 
 .da-loading-sub {
   font-size: 0.82rem;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   text-align: center;
 }
 
@@ -473,9 +473,9 @@
   display: inline-block;
   padding: 5px 14px;
   border-radius: 999px;
-  background: rgba(6, 182, 212, 0.12);
-  border: 1px solid var(--ayura-teal, #06b6d4);
-  color: var(--ayura-teal, #06b6d4);
+  background: rgba(92,171,116, 0.12);
+  border: 1px solid var(--ayura-teal, #5cab74);
+  color: var(--ayura-teal, #5cab74);
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -506,7 +506,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   margin-bottom: 0.9rem;
 }
 
@@ -545,7 +545,7 @@
 
 .da-dosha-bar-pct {
   font-size: 0.75rem;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   text-align: right;
 }
 
@@ -599,8 +599,8 @@
 }
 
 .da-focus-box {
-  background: rgba(6, 182, 212, 0.07);
-  border: 1px solid rgba(6, 182, 212, 0.2);
+  background: rgba(92,171,116, 0.07);
+  border: 1px solid rgba(92,171,116, 0.2);
   border-radius: 12px;
   padding: 0.875rem 1rem;
   margin-bottom: 1rem;
@@ -611,7 +611,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: var(--ayura-teal, #06b6d4);
+  color: var(--ayura-teal, #5cab74);
   margin-bottom: 4px;
 }
 .da-focus-text {
@@ -634,7 +634,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   margin-bottom: 0.5rem;
 }
 .da-signals-list {
@@ -655,7 +655,7 @@
   content: '›';
   position: absolute;
   left: 0;
-  color: var(--ayura-teal, #06b6d4);
+  color: var(--ayura-teal, #5cab74);
 }
 
 .da-confidence-row {
@@ -667,7 +667,7 @@
 }
 .da-confidence-label {
   font-size: 0.8rem;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
 }
 .da-confidence-badge {
   font-size: 0.75rem;
@@ -687,7 +687,7 @@
   background: rgba(251, 146, 60, 0.1);
 }
 .da-confidence-low {
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   border-color: var(--dash-edge, rgba(255,255,255,0.15));
   background: var(--card-bg);
 }
@@ -702,7 +702,7 @@
 /* ── Shared ───────────────────────────────────────────────────────────────── */
 .da-disclaimer {
   font-size: 0.75rem;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   text-align: center;
   line-height: 1.5;
   opacity: 0.7;
@@ -806,7 +806,7 @@
   content: '›';
   position: absolute;
   left: 0;
-  color: var(--color-primary, #6366f1);
+  color: var(--color-primary, #8f7fd6);
 }
 .da-confirm-actions {
   display: flex;
@@ -869,7 +869,7 @@
 
 .da-confirm-chip {
   background: var(--glass-bg, rgba(255,255,255,0.06));
-  border: 1px solid var(--ayura-teal, #06b6d4);
+  border: 1px solid var(--ayura-teal, #5cab74);
   border-radius: 999px;
   padding: 0.35rem 0.9rem;
   font-size: 0.83rem;
@@ -882,19 +882,19 @@
 }
 
 .da-confirm-chip:hover {
-  background: rgba(6, 182, 212, 0.1);
+  background: rgba(92,171,116, 0.1);
 }
 
 .da-confirm-chip.rejected {
   background: rgba(248, 113, 133, 0.08);
   border-color: var(--ayura-rose, #fb7185);
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   text-decoration: line-through;
 }
 
 .da-confirm-adjust-note {
   font-size: 0.81rem;
-  color: var(--ayura-teal, #06b6d4);
+  color: var(--ayura-teal, #5cab74);
   margin: 0;
 }
 
@@ -1023,7 +1023,7 @@
 .da-unmapped-icon {
   display: inline-flex;
   align-items: center;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -1041,7 +1041,7 @@
   text-transform: capitalize;
 }
 .da-unmapped-hint {
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-secondary, #a89d8b);
   font-size: 0.77rem;
   opacity: 0.8;
   margin: 0;
@@ -1099,8 +1099,8 @@
 
 /* ── Manas Prakriti ── */
 .da-manas-box {
-  background: rgba(139,92,246,0.06);
-  border: 1px solid rgba(139,92,246,0.18);
+  background: rgba(160,140,240,0.06);
+  border: 1px solid rgba(160,140,240,0.18);
   border-radius: 14px;
   padding: 14px 18px;
   margin: 12px 0;
@@ -1111,7 +1111,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(139,92,246,0.8);
+  color: rgba(160,140,240,0.8);
   margin-bottom: 6px;
 }
 .da-manas-text {

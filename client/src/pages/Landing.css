@@ -17,20 +17,24 @@
   z-index: var(--z-sticky);
   padding: 14px 0;
   backdrop-filter: blur(20px);
-  background: rgba(5,8,16,0.55);
+  /* Warm charcoal / sandstone, matched to --ayura-bg and --ayura-surface-2.
+     These were cool blue-greys (rgba(5,8,16) / rgba(232,237,245)) left over
+     from the pre-rebrand palette, which read as a foreign strip laid over the
+     warm background. */
+  background: rgba(16,13,9,0.55);
   border-bottom: 1px solid var(--border-subtle);
-  transition: background 0.3s, box-shadow 0.3s;
+  transition: background var(--dur-slow) var(--ease-out), box-shadow var(--dur-slow) var(--ease-out);
 }
 [data-theme='light'] .lnd-nav-wrap {
-  background: rgba(232,237,245,0.75);
+  background: rgba(245,241,232,0.72);
 }
 .lnd-nav-wrap.scrolled {
-  background: rgba(5,8,16,0.88);
-  box-shadow: 0 4px 32px rgba(0,0,0,0.3);
+  background: rgba(16,13,9,0.88);
+  box-shadow: var(--elev-2);
 }
 [data-theme='light'] .lnd-nav-wrap.scrolled {
-  background: rgba(232,237,245,0.95);
-  box-shadow: 0 4px 24px rgba(15,23,42,0.08);
+  background: rgba(250,247,240,0.94);
+  box-shadow: var(--elev-1);
 }
 .lnd-nav {
   max-width: 1200px;
@@ -250,10 +254,16 @@
 /* ── Primary CTA ── */
 .lnd-cta-main {
   position: relative;
+  /* The pill face lives on ::after, not on this element, so the rotating
+     gradient ring (::before) can sit beneath it. Themes override --cta-face
+     rather than `background`. */
+  --cta-face: linear-gradient(135deg, var(--ayura-teal), var(--ayura-teal-lt));
+  isolation: isolate;   /* keep the negative-z pseudos inside this button */
+  overflow: hidden;     /* clips the rotating square down to the pill */
   display: inline-flex; align-items: center; gap: 8px;
   padding: 15px 32px;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--ayura-teal), var(--ayura-teal-lt));
+  background: none;
   color: #000;
   font-family: var(--font-ui);
   font-weight: 700; font-size: 0.95rem;
@@ -261,17 +271,34 @@
   box-shadow: 0 8px 32px rgba(92,171,116,0.40);
   transition: transform 0.2s, box-shadow 0.2s;
   border: none; cursor: pointer;
-  overflow: hidden;
 }
+/* The rotating colour wheel. A SQUARE (aspect-ratio 1) wider than the button
+   and clipped to the pill by the parent's overflow — square so that rotating
+   it sweeps colour evenly instead of wobbling the way an ellipse would.
+   `translate` is a separate property from `transform`, so the centring is not
+   clobbered by the rotate animation. */
 .lnd-cta-main::before {
   content: '';
   position: absolute;
-  inset: -2px;
-  border-radius: 999px;
-  background: conic-gradient(from var(--angle, 0deg), var(--ayura-teal), var(--ayura-violet), var(--ayura-amber), var(--ayura-teal));
-  z-index: -1;
-  opacity: 0;
+  top: 50%; left: 50%;
+  width: 220%; aspect-ratio: 1;
+  translate: -50% -50%;
+  background: conic-gradient(var(--ayura-teal), var(--ayura-violet), var(--ayura-amber), var(--ayura-teal-lt), var(--ayura-teal));
+  z-index: -2;
+  /* Held back at rest so the warm arc reads as a sheen travelling around the
+     edge rather than an orange outline; hover brings it to full. */
+  opacity: 0.55;
   transition: opacity 0.3s;
+}
+/* The opaque pill face, inset by the ring width. Everything outside this inset
+   is where the wheel shows through — that 2px band IS the gradient ring. */
+.lnd-cta-main::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 999px;
+  background: var(--cta-face);
+  z-index: -1;
 }
 .lnd-cta-main:hover {
   transform: translateY(-2px);
@@ -759,6 +786,20 @@
   border: 1px solid rgba(92,171,116,0.22);
   box-shadow: 0 8px 24px rgba(92,171,116,0.10), inset 0 1px 0 rgba(255,255,255,0.08);
 }
+/* The icon leads the hover — it reacts a touch further and settles a touch
+   later than the card itself. That offset is what makes the lift read as one
+   object responding to the pointer instead of a box sliding up. Transform and
+   box-shadow only, and gated behind (hover: hover) so a tap on a touch device
+   doesn't latch the state on. */
+.lnd-how-card-icon-badge {
+  transition: transform var(--dur-slow) var(--ease-spring), box-shadow var(--dur-slow) var(--ease-out);
+}
+@media (hover: hover) {
+  .lnd-how-card:hover .lnd-how-card-icon-badge {
+    transform: translateY(-4px) scale(1.07);
+    box-shadow: 0 14px 32px rgba(92,171,116,0.22), inset 0 1px 0 rgba(255,255,255,0.14);
+  }
+}
 .lnd-how-card-body { position: relative; z-index: 2; margin-top: auto; }
 .lnd-how-card-title {
   font-family: var(--font-display);
@@ -942,6 +983,16 @@
   background: var(--plan-clr, rgba(92,171,116,0.10));
   border: 1px solid color-mix(in srgb, var(--plan-tint, #5cab74) 30%, transparent);
 }
+/* Same icon-leads-the-hover treatment as the how-cards, tinted per plan. */
+.lnd-plan-emoji {
+  transition: transform var(--dur-slow) var(--ease-spring), box-shadow var(--dur-slow) var(--ease-out);
+}
+@media (hover: hover) {
+  .lnd-plan-card:hover .lnd-plan-emoji {
+    transform: translateY(-3px) scale(1.06);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--plan-tint, #5cab74) 22%, transparent);
+  }
+}
 .lnd-plan-title {
   font-family: var(--font-ui);
   font-size: 1.05rem; font-weight: 700; color: var(--ayura-ink); margin-bottom: 8px;
@@ -991,8 +1042,19 @@
   position: relative; z-index: 1;
 }
 .lnd-cta-box {
-  background: var(--glass-bg-subtle);
-  backdrop-filter: blur(32px);
+  /* No backdrop-filter — same fix as .lnd-plan-card above, for the same
+     reason, but this was the worst offender on the page: at ~1136x400 CSS px
+     it is the LARGEST live-blur surface here, a ~2272x800 filtered GPU
+     texture at Retina. That size is the first thing evicted under memory
+     pressure, and eviction flashes the whole card. It also sits directly
+     under the animated CTA button, so a moving composited layer was riding
+     inside a live-blur surface — the exact pairing the floating badge at
+     .lnd-hero-badge already avoids.
+
+     The card sits over the soft ambient background, where a blur is
+     undetectable; the opaque glass token (alpha 0.74) reads as glass on its
+     own. Nothing here changes what the eye sees. */
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 40px;
   padding: 80px 60px;
@@ -1001,7 +1063,9 @@
   box-shadow: var(--glass-shadow-strong);
 }
 [data-theme='light'] .lnd-cta-box {
-  background: rgba(255,255,255,0.65);
+  /* Raised from 0.65: without the blur behind it the surface needs its own
+     opacity to still read as a solid card. */
+  background: rgba(255,255,255,0.86);
 }
 .lnd-cta-box::before {
   content: ''; position: absolute; top: -50%; left: 50%; transform: translateX(-50%);
@@ -1124,6 +1188,31 @@
 .reveal-right { opacity: 0; transform: translateX(40px); transition: opacity 0.75s ease, transform 0.75s ease; }
 .reveal-right.visible { opacity: 1; transform: translateX(0); }
 
+/* Staggered reveal — for grids/rows, where the whole block appearing in one
+   step reads cheap. The container is what the observer watches (one entry,
+   unobserved after it fires); the DIRECT CHILDREN carry the transition and a
+   per-position delay, so cards arrive in sequence.
+
+   Use INSTEAD of .reveal on a container, never alongside it — both animate,
+   and the two transforms compound.
+
+   Finite by construction: each child transitions once and settles. No
+   `infinite`, no will-change, nothing left on a compositor layer afterwards. */
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.62s var(--ease-out), transform 0.62s var(--ease-out);
+}
+.reveal-stagger.visible > * { opacity: 1; transform: translateY(0); }
+.reveal-stagger.visible > *:nth-child(1) { transition-delay: 0ms; }
+.reveal-stagger.visible > *:nth-child(2) { transition-delay: 70ms; }
+.reveal-stagger.visible > *:nth-child(3) { transition-delay: 140ms; }
+.reveal-stagger.visible > *:nth-child(4) { transition-delay: 210ms; }
+.reveal-stagger.visible > *:nth-child(5) { transition-delay: 280ms; }
+.reveal-stagger.visible > *:nth-child(6) { transition-delay: 350ms; }
+/* Cap the ramp: past ~6 items the tail feels like waiting, not choreography. */
+.reveal-stagger.visible > *:nth-child(n+7) { transition-delay: 400ms; }
+
 /* ─── KEYFRAMES ───────────────────────────────────────────── */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
@@ -1146,9 +1235,10 @@
   60%  { transform: scale(1.35); box-shadow: 0 0 0 8px rgba(92,171,116,0);  }
   100% { transform: scale(1);   box-shadow: 0 0 0 0   rgba(92,171,116,0);  }
 }
-@keyframes lnd-border-spin {
-  to { --angle: 360deg; }
-}
+/* lnd-border-spin (`to { --angle: 360deg }`) lived here. Removed with its only
+   caller: animating a registered custom property inside conic-gradient() on a
+   pseudo-element repaints every frame and, on Chromium, does not re-resolve
+   the gradient at all. Replaced by lnd-cta-orbit, which rotates a transform. */
 @keyframes lnd-ring-expand {
   0%   { transform: scale(0.85); opacity: 0.55; }
   100% { transform: scale(1.55); opacity: 0;    }
@@ -1183,14 +1273,39 @@
   animation: lnd-dot-ping 2.4s ease-in-out infinite !important;
 }
 
-/* ─── ANIMATED CTA BORDER ──────────────────────────────────── */
-/* --angle animates on the main thread and repaints the conic each frame;
-   will-change confines that permanent repaint to this pseudo's own layer
-   instead of re-dirtying the CTA section (which blanked under scroll). */
+/* ─── ANIMATED CTA BORDER — the app's ONLY ambient loop ──────
+   Everything else that ran forever was retired in the flicker work (see
+   .vital-bg-static in index.css). This is the single deliberate exception.
+
+   It rotates a TRANSFORM, not a paint property. That distinction is the whole
+   point: the previous version animated `--angle` inside conic-gradient(), a
+   registered @property, which repaints the gradient on the main thread every
+   frame — the exact category that caused the app-wide flicker. Worse, it
+   never actually rendered: Chromium animates --angle on a ::before (computed
+   style reports it stepping 0deg→360deg) but does not re-resolve the
+   gradient that reads it, so the painted output never changed. Verified by
+   screenshotting the button at several frozen animation times — byte-
+   identical — while the same construct on a real element animates fine.
+   So it was a permanent per-frame main-thread cost producing zero pixels.
+
+   `transform: rotate()` is compositor-only: the layer is rasterised once and
+   the GPU re-composites it. No per-frame repaint, nothing to evict.
+
+   Still fenced to desktop + non-reduced-motion — phones run zero ambient
+   loops and this must not be the thing that breaks that.
+
+   KILL SWITCH: comment out the `animation` line below. The ring stays as a
+   static gradient border and the button still looks finished. */
 .lnd-cta-main::before {
-  animation: lnd-border-spin 3s linear infinite;
-  opacity: 0.55;
   will-change: transform;
+}
+@media (hover: hover) and (min-width: 901px) and (prefers-reduced-motion: no-preference) {
+  .lnd-cta-main::before {
+    animation: lnd-cta-orbit 6s linear infinite;
+  }
+}
+@keyframes lnd-cta-orbit {
+  to { transform: rotate(360deg); }
 }
 .lnd-cta-main:hover::before { opacity: 1; }
 
@@ -1256,6 +1371,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal-left, .reveal-right { opacity: 1; transform: none; transition: none; }
+  .reveal-stagger > * { opacity: 1; transform: none; transition: none; transition-delay: 0ms; }
 }
 
 /* ─── FAQ ──────────────────────────────────────────────────── */
@@ -1330,6 +1446,7 @@
    deep-green gradient so it stays high-contrast and premium. */
 [data-theme='light'] .lnd-cta-main {
   color: #fff;
-  background: linear-gradient(135deg, #237045, #1c6b3f);
+  /* Face colour only — the element itself has no background (see --cta-face). */
+  --cta-face: linear-gradient(135deg, #237045, #1c6b3f);
   box-shadow: 0 8px 32px rgba(28,107,63,0.35);
 }

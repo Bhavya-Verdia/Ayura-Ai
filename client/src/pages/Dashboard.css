@@ -85,7 +85,9 @@
 @media (max-width: 900px) {
   /* Drawer + its overlay must cover the fixed bottom tab bar (z-sidebar=200),
      like a native drawer — otherwise the tab bar floats over the open menu. */
-  .dash-sidebar.mobile { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); z-index: calc(var(--z-overlay) + 10); }
+  /* Safe-area insets (viewport-fit=cover): keep the drawer's brand off the notch
+     and its logout/footer above the home-bar on full-height phones. */
+  .dash-sidebar.mobile { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); z-index: calc(var(--z-overlay) + 10); padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
   .dash-sidebar.mobile.open { transform: translateX(0); box-shadow: 24px 0 64px var(--glass-shadow-strong); }
   .dash-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: var(--z-overlay); border: none; cursor: pointer; }
   .dash-mobile-bar {
@@ -146,9 +148,15 @@
   box-shadow: 0 12px 32px rgba(92,171,116,0.35);
   flex-shrink: 0;
 }
+/* Editorial display setting, matched to the landing (.lnd-hero-title /
+   .lnd-section-title): Fraunces at 600 with the opsz axis engaged and negative
+   tracking. At 800/0 the same face reads blocky, which made the product look
+   like a different brand from the marketing site. Numerals, avatar initials,
+   and brand lockups stay at 800 — there the weight is deliberate. */
 .dash-hero-greeting {
-  font-family: var(--font-display); font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 800;
-  margin: 0 0 4px; letter-spacing: 0; color: var(--ayura-ink);
+  font-family: var(--font-display); font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 600;
+  font-optical-sizing: auto;
+  margin: 0 0 4px; letter-spacing: -0.02em; color: var(--ayura-ink);
 }
 .dash-hero-name {
   background: linear-gradient(135deg, var(--ayura-teal), var(--ayura-violet));
@@ -179,7 +187,7 @@
 
 /* Plans Section */
 .dash-plans-header { margin-bottom: 20px; }
-.dash-plans-title { font-family: var(--font-display); font-size: 1.7rem; font-weight: 800; margin: 0 0 4px; letter-spacing: 0; color: var(--ayura-ink); }
+.dash-plans-title { font-family: var(--font-display); font-size: 1.7rem; font-weight: 600; font-optical-sizing: auto; margin: 0 0 4px; letter-spacing: -0.02em; color: var(--ayura-ink); }
 .dash-plans-sub { color: var(--ayura-muted); font-size: 0.9rem; margin: 0; }
 
 .dash-plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 16px; }
@@ -312,7 +320,7 @@
   cursor: pointer; transition: all 0.2s;
 }
 .dash-back-btn:hover { background: var(--border-subtle); color: var(--ayura-ink); }
-.dash-viewer-title { font-family: var(--font-display); font-size: 1.7rem; font-weight: 800; margin: 0; color: var(--ayura-ink); letter-spacing: 0; }
+.dash-viewer-title { font-family: var(--font-display); font-size: 1.7rem; font-weight: 600; font-optical-sizing: auto; margin: 0; color: var(--ayura-ink); letter-spacing: -0.02em; }
 
 /* ── Streak Card ── */
 .dash-streak-card {
