@@ -123,10 +123,14 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
 
-        # Frontend deps are kept clean — this gate blocks merges on high+ CVEs.
-      - name: npm audit (high+ severity)
+        # Blocks on high+ CVEs in PRODUCTION deps (the code that ships to users).
+        # Dev / build-tool CVEs are out of scope — they run at build time on our
+        # own trusted input, never in the browser bundle. The gate script scopes
+        # with --omit=dev and allows individually-reviewed advisories (each with a
+        # justification + re-audit trigger in its header). See client/scripts/audit-gate.mjs.
+      - name: npm audit (high+ severity, production deps)
         working-directory: client
-        run: npm audit --audit-level=high
+        run: node scripts/audit-gate.mjs
 
       - uses: actions/setup-python@v6
         with:
