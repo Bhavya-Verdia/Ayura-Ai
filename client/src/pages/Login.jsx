@@ -44,9 +44,6 @@ export default function Login() {
 
       <div className="auth-center">
         <div className="auth-card">
-          {/* ॐ watermark */}
-          <span className="auth-card-om" aria-hidden="true">ॐ</span>
-
           {/* Brand */}
           <Link to="/" className="auth-brand">
             <img src="/favicon.svg" alt="Ayura AI" className="auth-brand-logo" />
@@ -141,9 +138,6 @@ export default function Login() {
             </p>
           </div>
         </div>
-
-        {/* Footer ॐ */}
-        <span className="auth-foot-om" aria-hidden="true">ॐ</span>
       </div>
     </div>
   )

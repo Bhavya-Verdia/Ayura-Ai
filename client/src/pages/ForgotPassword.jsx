@@ -30,8 +30,6 @@ export default function ForgotPassword() {
 
       <div className="auth-center">
         <div className="auth-card">
-          <span className="auth-card-om" aria-hidden="true">ॐ</span>
-
           <Link to="/" className="auth-brand">
             <img src="/favicon.svg" alt="Ayura AI" className="auth-brand-logo" />
             <span className="auth-brand-name">Ayura <span>AI</span></span>

@@ -22,7 +22,6 @@ export default function ResetPassword() {
         <Helmet><title>Set New Password · Ayura AI</title></Helmet>
         <div className="auth-center">
           <div className="auth-card" style={{ textAlign: 'center' }}>
-            <span className="auth-card-om" aria-hidden="true">ॐ</span>
             <Link to="/" className="auth-brand">
               <img src="/favicon.svg" alt="Ayura AI" className="auth-brand-logo" />
               <span className="auth-brand-name">Ayura <span>AI</span></span>
@@ -71,8 +70,6 @@ export default function ResetPassword() {
 
       <div className="auth-center">
         <div className="auth-card">
-          <span className="auth-card-om" aria-hidden="true">ॐ</span>
-
           <Link to="/" className="auth-brand">
             <img src="/favicon.svg" alt="Ayura AI" className="auth-brand-logo" />
             <span className="auth-brand-name">Ayura <span>AI</span></span>

@@ -48,8 +48,6 @@ export default function VerifyEmail() {
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="auth-card" style={{ textAlign: 'center' }}>
-          <span className="auth-card-om" aria-hidden="true">ॐ</span>
-
           <Link to="/" className="auth-brand">
             <img src="/favicon.svg" alt="Ayura AI Logo" className="auth-brand-logo" />
             <span className="auth-brand-name">Ayura <span>AI</span></span>

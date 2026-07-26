@@ -755,6 +755,22 @@
 .lnd-how-header { text-align: center; margin-bottom: 56px; }
 .lnd-how-header .lnd-section-desc { margin: 0 auto; }
 .lnd-cards-row { display: flex; gap: 24px; }
+/* 3D-tilt wrapper: the CSS reveal (translateY) rides on this outer element so it
+   never fights the inner card's pointer-tilt transform. On desktop the inner
+   .lnd-how-card gets the rotate; on touch/small screens TiltCard renders plain
+   and this is just a transparent flex passthrough. */
+.lnd-how-card-tilt { flex: 1; display: flex; }
+.lnd-how-card-tilt > .lnd-how-card { flex: 1; }
+/* Cursor-following light glare — clipped to the card's radius via its
+   overflow:hidden. Pointer-transparent, sits above the surface as a soft sheen. */
+.tilt-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  z-index: 2;
+}
 .lnd-how-card {
   position: relative; border-radius: 28px; overflow: hidden;
   flex: 1; display: flex; flex-direction: column;

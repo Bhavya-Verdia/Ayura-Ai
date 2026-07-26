@@ -9,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop'
 import ErrorBoundary from './components/ErrorBoundary'
 import NoiseOverlay from './components/NoiseOverlay'
 import VitalBackground from './components/VitalBackground'
+import AmbientMeditation from './components/AmbientMeditation'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import useLowPowerMode from './hooks/useLowPowerMode'
 import ReloadPrompt from './components/ReloadPrompt'
@@ -145,6 +146,14 @@ function PublicRoute({ children }) {
   return children
 }
 
+// Auth + onboarding routes that get the ambient meditation background (floating
+// Om/figure icons in the gutters around the centred form card). Landing and the
+// data-dense app screens are intentionally excluded — their content stacks at
+// low z-index and would collide with the glyph layer.
+const CALM_BG_ROUTES = new Set([
+  '/login', '/register', '/forgot-password', '/reset-password', '/verify-email', '/onboarding',
+])
+
 export default function App() {
   const location = useLocation()
   const { theme } = useTheme()
@@ -158,6 +167,10 @@ export default function App() {
     <>
       <a href="#main-content" className="skip-link">Skip to content</a>
       <VitalBackground />
+      {/* Ground-up, flicker-safe replacement for the retired MeditationCanvas —
+          CSS-only drifting Om/figure glyphs, desktop-only (self-gated), on calm
+          routes. See AmbientMeditation.css for the anti-flicker rationale. */}
+      {CALM_BG_ROUTES.has(location.pathname) && <AmbientMeditation />}
       <ErrorBoundary>
         {/* Catches the lazy MainLayout itself; pages inside it fall to nearer
             boundaries (MainLayout's skeletons / PageWrapper's spinner). */}

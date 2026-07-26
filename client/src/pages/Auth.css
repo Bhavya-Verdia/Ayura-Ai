@@ -100,17 +100,11 @@
   animation: auth-top-line 5s ease-in-out infinite;
 }
 
-/* Large ॐ watermark inside card */
-.auth-card-om {
-  position: absolute;
-  bottom: -18px; right: 8px;
-  font-size: 140px; line-height: 1;
-  font-family: Georgia, "Noto Serif Devanagari", serif;
-  color: rgba(92,171,116,0.042);
-  pointer-events: none; user-select: none;
-  letter-spacing: -0.05em;
-}
-[data-theme='light'] .auth-card-om { color: rgba(13,148,136,0.055); }
+/* The static ॐ watermark and footer ॐ that used to sit here were removed: the
+   drifting AmbientMeditation field now carries the Om motif on these routes, and
+   a fixed glyph beside moving ones read as a leftover. They also rendered
+   through Georgia, which has no Devanagari, so the character fell back to a
+   stretched system face (the same reason the sprites use a traced vector). */
 
 /* ── Brand ────────────────────────────────────────────────────── */
 .auth-brand {
@@ -285,15 +279,6 @@
 .auth-forgot { color: var(--ayura-muted); font-size: 0.80rem; text-decoration: none; transition: color 0.2s; }
 .auth-forgot:hover { color: var(--ayura-teal); }
 .auth-disclaimer { font-size: 0.67rem; color: var(--ayura-muted); text-align: center; line-height: 1.5; opacity: 0.55; }
-
-/* Bottom ॐ outside card */
-.auth-foot-om {
-  font-size: 1.8rem;
-  font-family: Georgia, "Noto Serif Devanagari", serif;
-  color: rgba(92,171,116,0.25);
-  letter-spacing: 0.02em;
-  user-select: none;
-}
 
 /* Checkbox row */
 .auth-consent {

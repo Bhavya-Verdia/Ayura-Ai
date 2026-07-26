@@ -13,6 +13,7 @@ import enLocale from '../locales/en.json'
 import { Helmet } from 'react-helmet-async'
 import React from 'react'
 import MagneticButton from '../components/MagneticButton'
+import TiltCard from '../components/TiltCard'
 import CountUp from '../components/CountUp'
 import { DOSHA_COLOR } from '../constants/dosha'
 import {
@@ -665,13 +666,15 @@ export default function Landing() {
 
           <div className="lnd-cards-row reveal-stagger">
             {HOW_CARDS.map(card => (
-              <div key={card.id} className="lnd-how-card">
-                <span className="lnd-how-card-step">{t(card.step)}</span>
-                <div className="lnd-how-card-icon-badge"><card.Icon size={26} strokeWidth={1.6} /></div>
-                <div className="lnd-how-card-body">
-                  <div className="lnd-how-card-title">{t(card.title)}</div>
-                  <p className="lnd-how-card-desc">{t(card.desc)}</p>
-                </div>
+              <div key={card.id} className="lnd-how-card-tilt">
+                <TiltCard className="lnd-how-card">
+                  <span className="lnd-how-card-step">{t(card.step)}</span>
+                  <div className="lnd-how-card-icon-badge"><card.Icon size={26} strokeWidth={1.6} /></div>
+                  <div className="lnd-how-card-body">
+                    <div className="lnd-how-card-title">{t(card.title)}</div>
+                    <p className="lnd-how-card-desc">{t(card.desc)}</p>
+                  </div>
+                </TiltCard>
               </div>
             ))}
           </div>

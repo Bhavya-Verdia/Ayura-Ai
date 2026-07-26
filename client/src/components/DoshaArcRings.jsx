@@ -33,7 +33,15 @@ export default function DoshaArcRings({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-      <div style={{ position: 'relative', width: size, height: size }}>
+      <m.div
+        style={{ position: 'relative', width: size, height: size }}
+        // Hover-reactive "lift": the rings gently swell toward the viewer. A
+        // discrete spring on hover (not a continuous breathe loop) keeps it lively
+        // without reintroducing a per-frame paint. Reduced-motion is honored via
+        // the app-wide MotionConfig.
+        whileHover={{ scale: 1.05 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+      >
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ overflow: 'visible' }}>
           <defs>
             {rings.map(({ key }) => {
@@ -108,7 +116,7 @@ export default function DoshaArcRings({
             {dominantDosha}
           </text>
         </svg>
-      </div>
+      </m.div>
 
       {/* Legend */}
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>

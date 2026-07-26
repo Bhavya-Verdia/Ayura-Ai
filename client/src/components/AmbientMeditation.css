@@ -1,0 +1,73 @@
+/* Ambient meditation field — Om glyphs + seated figures drifting slowly upward
+   on calm/marketing routes. DESKTOP ONLY (self-gated in the component).
+
+   FLICKER-SAFE BY CONSTRUCTION. This is intentionally NOT the retired
+   full-viewport canvas: no <canvas>, no requestAnimationFrame, no per-frame
+   full-screen repaint, and NO animated filter / blur / mix-blend-mode anywhere
+   (that combination on a page-sized GPU surface was the 2026-07 flicker). Each
+   glyph is a tiny compositor layer the GPU merely translates; the container is
+   isolated + paint-contained so its repaints can never invalidate the page. */
+/* Doubled class (.ambient-med.ambient-med, specificity 0,2,0) so position + z-index
+   BEAT the global `.vital-bg ~ *` rule in index.css (0,1,0), which forces every
+   sibling after <VitalBackground> into position:relative + z-index:1 to stack page
+   content over the background. Without this, that rule swept up this fixed overlay,
+   dropped it into flow, and page content painted over it (glyphs invisible). We
+   sit at z-index 2 — in front of the page content (1) — and the component biases
+   glyphs into the empty side gutters so they float beside the form card, not over
+   it. No canvas/rAF/filter, so it stays flicker-safe. */
+.ambient-med.ambient-med {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ambient-med-sprite {
+  position: absolute;
+  bottom: -8vh;
+  opacity: 0;
+  line-height: 1;
+  user-select: none;
+  /* translate3d in the keyframe promotes each glyph to its own GPU layer so the
+     drift is a pure composite (no paint). */
+  animation-name: ambient-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* Both glyphs are inline SVG (fill=currentColor); soft glow via a STATIC
+   drop-shadow (omitted colour = currentColor). Static + tiny sprite =
+   flicker-safe — the shadow is rasterised once, never re-run per frame. */
+.ambient-med-sprite svg { display: block; filter: drop-shadow(0 0 9px); }
+.ambient-med-fig {
+  color: color-mix(in srgb, var(--ayura-teal-lt) 82%, #fff);
+}
+
+/* Om is a traced vector of the reference mark, NOT the ॐ text character — the
+   UI fonts carry no Devanagari, so the glyph fell back to a stretched system
+   face that also differed per OS. Vector = identical shape everywhere. */
+.ambient-med-om {
+  color: var(--ayura-teal-lt);
+}
+/* Some Om lean saffron for warmth/variety. */
+.ambient-med-sprite.ambient-med-om:nth-child(3n) {
+  color: var(--ayura-violet);
+}
+
+@keyframes ambient-rise {
+  0%   { opacity: 0;                 transform: translate3d(0, 0, 0) rotate(0deg); }
+  10%  { opacity: var(--peak, 0.4); }
+  90%  { opacity: var(--peak, 0.4); }
+  100% { opacity: 0;                 transform: translate3d(var(--drift, 0px), -108vh, 0) rotate(var(--spin, 0deg)); }
+}
+
+/* Belt-and-braces gates (also cover prerendered HTML before JS runs, so a phone
+   never flashes glyphs): hide on reduced-motion and on phone-class screens. The
+   JS component already returns null in these cases; this is the CSS mirror. */
+@media (prefers-reduced-motion: reduce) {
+  .ambient-med { display: none; }
+}
+@media (max-width: 900px), (pointer: coarse) {
+  .ambient-med { display: none; }
+}
