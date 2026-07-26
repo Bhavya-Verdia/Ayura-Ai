@@ -31,11 +31,16 @@
 }
 /* Editorial display setting — see the note on .dash-hero-greeting. */
 .comm-title { font-family: var(--font-display); font-size: var(--fs-h1); font-weight: 600; font-optical-sizing: auto; letter-spacing: -0.02em; margin: 0 0 4px; }
-.comm-subtitle { color: #a1a1aa; font-size: 0.95rem; margin: 0; }
+.comm-subtitle { color: var(--ayura-muted); font-size: 0.95rem; margin: 0; }
 .gradient-text { background: linear-gradient(135deg, #5cab74, #83c896); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .comm-post-count-badge { display: flex; flex-direction: column; align-items: flex-end; }
 .comm-count-num { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: var(--ayura-ink); }
-.comm-count-label { font-size: 0.75rem; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em; }
+.comm-count-label { font-size: 0.75rem; color: var(--ayura-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* NOTE: text colours here are theme TOKENS, never literals. These rules used to
+   hardcode dark-theme zinc greys (#d4d4d8/#e4e4e7/#a1a1aa/#71717a) with no light
+   override, which made post body text 1.31:1 in light mode — invisible. Use
+   var(--ayura-ink) for content and var(--ayura-muted) for secondary text. */
 
 /* Create Post Card */
 .comm-create-card {
@@ -52,7 +57,7 @@
   font-family: var(--font-display); font-weight: 700; font-size: 0.9rem;
   color: #fff; letter-spacing: 0.02em;
 }
-.comm-create-prompt { font-weight: 500; color: #e4e4e7; }
+.comm-create-prompt { font-weight: 500; color: var(--ayura-ink); }
 .comm-textarea-wrap { background: var(--glass-shadow); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; }
 .comm-textarea {
   width: 100%; min-height: 80px; background: transparent; border: none; color: var(--ayura-ink);
@@ -61,7 +66,7 @@
 .comm-textarea:focus { outline: none; }
 .comm-create-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
 .comm-create-tips { display: flex; gap: 8px; }
-.comm-tip-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--border-subtle); padding: 6px 12px; border-radius: 999px; font-size: 0.75rem; color: #a1a1aa; }
+.comm-tip-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--border-subtle); padding: 6px 12px; border-radius: 999px; font-size: 0.75rem; color: var(--ayura-muted); }
 .comm-empty-icon { display: inline-flex; align-items: center; justify-content: center; color: var(--ayura-teal); margin-bottom: 16px; }
 .comm-post-btn {
   background: #5cab74; color: #000; font-family: var(--font-ui); font-weight: 700;
@@ -94,9 +99,9 @@
 }
 .comm-post-meta { display: flex; flex-direction: column; }
 .comm-post-author { font-family: var(--font-ui); font-weight: 700; font-size: 1.05rem; }
-.comm-post-time { font-size: 0.8rem; color: #71717a; }
+.comm-post-time { font-size: 0.8rem; color: var(--ayura-muted); }
 
-.comm-post-content { font-size: 1rem; line-height: 1.6; color: #d4d4d8; margin-bottom: 20px; white-space: pre-wrap; }
+.comm-post-content { font-size: 1rem; line-height: 1.6; color: var(--ayura-ink); margin-bottom: 20px; white-space: pre-wrap; }
 
 .comm-post-tags { display: flex; gap: 8px; margin-bottom: 20px; }
 .comm-post-tag {
@@ -108,7 +113,7 @@
 .comm-post-footer { display: flex; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 16px; }
 .comm-like-btn {
   display: flex; align-items: center; gap: 8px; background: transparent; border: none;
-  color: #a1a1aa; cursor: pointer; transition: all 0.2s; font-family: var(--font-ui); font-weight: 600;
+  color: var(--ayura-muted); cursor: pointer; transition: all 0.2s; font-family: var(--font-ui); font-weight: 600;
 }
 .comm-like-btn.liked { color: #f43f5e; }
 .comm-heart-icon { font-size: 1.2rem; }
@@ -169,3 +174,19 @@
   .comm-post { padding: 18px; }
   .comm-post-tags { flex-wrap: wrap; }
 }
+
+/* Post action targets. These render only when the feed has posts, so they were
+   invisible to every audit until the Remedies/Community fixes landed: delete was
+   15x19, like 35x18, comments 101x22 — all under the 24x24 minimum.
+   Audit 2026-07-27. */
+.comm-post-delete-btn,
+.comm-like-btn,
+.comm-comments-toggle {
+  min-height: 32px;
+  min-width: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.comm-like-btn,
+.comm-comments-toggle { justify-content: flex-start; padding: 4px 6px; margin-left: -6px; }

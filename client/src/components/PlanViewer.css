@@ -5032,3 +5032,13 @@
 [data-theme='light'] .diet-seasonal-icon,
 [data-theme='light'] .din-slot-cond-note svg,
 [data-theme='light'] .din-mg-season-note svg { color: #b45309; }
+
+/* ── Light-mode contrast: slate note/badge text ──────────────────────────────
+   These four rules use #94a3b8, a dark-theme slate that lands at ~3.0:1 on the
+   light sandstone surface (AA wants 4.5 for body text). The DARK values are
+   deliberately left alone — this file's cool tones are intentional data-viz
+   encodings, so only the light theme is overridden. Audit 2026-07-27. */
+[data-theme='light'] .mv-duration-badge,
+[data-theme='light'] .mv-vipaka-badge,
+[data-theme='light'] .mv-classical-basis,
+[data-theme='light'] .din-slot-occ-note svg { color: var(--ayura-muted); }

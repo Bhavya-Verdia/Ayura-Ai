@@ -55,10 +55,13 @@
   color: var(--ayura-violet);
 }
 
+/* --peak is set per-sprite as an INLINE style, so a theme rule cannot override it
+   (inline wins). --peak-mult is inherited from the container instead, which lets
+   the light theme damp the whole field without touching the per-sprite values. */
 @keyframes ambient-rise {
   0%   { opacity: 0;                 transform: translate3d(0, 0, 0) rotate(0deg); }
-  10%  { opacity: var(--peak, 0.4); }
-  90%  { opacity: var(--peak, 0.4); }
+  10%  { opacity: calc(var(--peak, 0.4) * var(--peak-mult, 1)); }
+  90%  { opacity: calc(var(--peak, 0.4) * var(--peak-mult, 1)); }
   100% { opacity: 0;                 transform: translate3d(var(--drift, 0px), -108vh, 0) rotate(var(--spin, 0deg)); }
 }
 
@@ -71,3 +74,10 @@
 @media (max-width: 900px), (pointer: coarse) {
   .ambient-med { display: none; }
 }
+
+/* Light theme sits the glyphs on cream rather than near-black, so the same alpha
+   reads considerably louder. Damp the field (and soften the glow, which is what
+   really carries on a pale ground) so it stays ambient in both themes.
+   Audit 2026-07-27. */
+[data-theme='light'] .ambient-med { --peak-mult: 0.72; }
+[data-theme='light'] .ambient-med-sprite svg { filter: drop-shadow(0 0 6px); }

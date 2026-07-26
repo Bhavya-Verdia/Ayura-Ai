@@ -178,3 +178,7 @@
 }
 .onb-condition-search:focus { outline: none; border-color: var(--ayura-teal); }
 .onb-other-condition { margin-top: 4px; }
+
+/* Selected chip is the deep green in light mode — black text is 3.48:1. See the
+   matching override in HealthTimeline.css / Onboarding.css. Audit 2026-07-27. */
+[data-theme='light'] .onb-chip.selected { color: #fff; }

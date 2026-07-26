@@ -55,8 +55,9 @@
   font-weight: 600;
   font-size: 0.9rem;
   transition: color 0.2s;
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  min-height: 44px;   /* was a 19px-tall target on mobile */
   gap: 6px;
 }
 .rem-back-btn:hover {
@@ -452,3 +453,9 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Active filter chip is filled with the deep green in light mode; black text on
+   it is 3.48:1 and fails AA. Matches the override used for .ht-filter-pill.active
+   and .onb-chip.selected. (Only surfaced once the page stopped rendering empty.)
+   Audit 2026-07-27. */
+[data-theme='light'] .rem-filter-chip.active { color: #fff; }

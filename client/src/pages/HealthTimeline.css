@@ -418,3 +418,8 @@
     margin-left: 0;
   }
 }
+
+/* Light mode fills the active pill with the DEEP green (#237045); black text on
+   it is 3.48:1 and fails AA. White clears it at ~6:1. Same override pattern as
+   .btn-primary / .lnd-cta-main / .chat-bubble.user. Audit 2026-07-27. */
+[data-theme='light'] .ht-filter-pill.active { color: #fff; }

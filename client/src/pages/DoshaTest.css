@@ -198,11 +198,16 @@
   flex-wrap: wrap;
   justify-content: center;
 }
+/* >=24px hit area — see the matching note in Landing.css. Audit 2026-07-27. */
 .dt-footer-links a {
   font-size: 0.9rem;
   color: var(--ayura-muted);
   text-decoration: none;
   transition: color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 0;
 }
 .dt-footer-links a:hover { color: var(--ayura-teal); }
 .dt-footer-copy {

@@ -335,24 +335,103 @@ function FilterBar({ symptoms, activeFilter, onFilter }) {
   )
 }
 
+// ─── Plan → card adapters ──────────────────────────────────────────────────
+// The engines emit their own shapes; these cards want flat records. Keep the
+// translation here so the card components stay dumb.
+//
+// This page used to read `res.data.plan_data.home_remedies` off /plans/latest.
+// That could never work: /plans/latest returns the PlanResponse directly (there
+// is no `plan_data` key), and it only returns the single most recent plan — so a
+// user whose newest plan was, say, gym would see nothing either way. We now read
+// the history and pick the newest plan of each relevant type.
+
+const asList = (v) => (Array.isArray(v) ? v : [])
+
+// remedies engine → RemedyCard[]  (source: plan_data.symptoms_addressed[].remedy)
+function toRemedyCards(planData) {
+  return asList(planData?.symptoms_addressed)
+    .filter((e) => e && e.remedy)
+    .map((e) => {
+      const r = e.remedy
+      return {
+        remedy_name: r.name,
+        symptom_addressed: e.symptom_display || e.symptom_id,
+        // the engine gives ingredient OBJECTS; the chips render raw strings, so
+        // flatten here — passing the object through would crash React.
+        ingredients: asList(r.ingredients).map((ing) =>
+          typeof ing === 'string' ? ing : [ing.item, ing.amount].filter(Boolean).join(' — ')
+        ),
+        preparation: r.preparation,
+        dosage: r.dosage,
+        frequency: r.duration,
+        ayurvedic_rationale: e.dosha_cause,
+        warnings: [e.drug_interaction_warning].filter(Boolean),
+        safety_rating: e.requires_practitioner ? 'consult_doctor' : 'safe_for_all',
+      }
+    })
+}
+
+// medicines engine → MedicineCard[]  (source: plan_data.medicines.*_formulations)
+function toMedicineCards(planData) {
+  const med = planData?.medicines
+  if (!med || typeof med !== 'object' || Array.isArray(med)) return []
+  return [...asList(med.primary_formulations), ...asList(med.supporting_formulations)].map((f) => {
+    const contra = asList(f.contraindications)
+    const interactions = asList(f.drug_interactions)
+    return {
+      medicine_name: f.name,
+      symptom_addressed: asList(f.primary_uses)[0],
+      type: f.type,
+      dosage: f.dosage,
+      anupana: f.selected_anupana || f.anupana,
+      description: [f.classical_action, f.classical_text_reference].filter(Boolean).join(' · ') || undefined,
+      warnings: [
+        ...contra.map((c) => `Avoid in: ${String(c).replace(/_/g, ' ')}`),
+        ...interactions.map((d) => `Interacts with: ${String(d).replace(/_/g, ' ')}`),
+      ],
+      // anything with a contraindication or a known interaction gets the
+      // practitioner badge, regardless of how benign its tier looks.
+      safety_rating: contra.length || interactions.length ? 'consult_doctor' : 'safe_for_most',
+    }
+  })
+}
+
 // ─── Main Remedies Page ────────────────────────────────────────────────────
 const Remedies = () => {
   const navigate = useNavigate()
   const { data, isLoading: loading, error: queryError } = useQuery({
-    queryKey: ['latest-plan'],
+    queryKey: ['remedies-source-plans'],
     queryFn: async () => {
-      const res = await plansAPI.getLatest()
-      return res.data?.plan_data || {}
+      const res = await plansAPI.getHistory(50)
+      const items = asList(res.data?.items ?? res.data)
+      const newestOf = (type) =>
+        items
+          .filter((i) => i.plan_type === type)
+          .sort((a, b) => String(b.generated_at).localeCompare(String(a.generated_at)))[0]?.plan_data
+      // Per-feature plans are the primary flow; a holistic plan (which carries
+      // flat home_remedies/medicines arrays) is still honoured as a fallback.
+      const holistic = items.find((i) => asList(i.plan_data?.home_remedies).length)?.plan_data
+      return {
+        homeRemedies: toRemedyCards(newestOf('remedies')),
+        medicines: toMedicineCards(newestOf('medicines')),
+        holistic,
+      }
     },
-    retry: false
+    retry: false,
   })
 
   const [activeTab, setActiveTab] = useState('remedies')
   const [filter, setFilter]       = useState('')
   const [errorDismissed, setErrorDismissed] = useState(false)
 
-  const homeRemedies = useMemo(() => Array.isArray(data?.home_remedies) ? data.home_remedies : [], [data])
-  const medicines = useMemo(() => Array.isArray(data?.medicines) ? data.medicines : [], [data])
+  const homeRemedies = useMemo(
+    () => (data?.homeRemedies?.length ? data.homeRemedies : asList(data?.holistic?.home_remedies)),
+    [data]
+  )
+  const medicines = useMemo(
+    () => (data?.medicines?.length ? data.medicines : asList(data?.holistic?.medicines)),
+    [data]
+  )
   const error = queryError && !errorDismissed ? (queryError.response?.data?.detail || 'Could not load your latest plan.') : null
 
   // Collect unique symptoms for filter

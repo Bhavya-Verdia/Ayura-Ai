@@ -199,3 +199,8 @@
   color: var(--text-primary); border-radius: 8px; padding: 5px 9px;
   font-size: 0.78rem; cursor: pointer;
 }
+/* Touch comfort: these were 31px tall, under the 44px standard. Widened only on
+   phone-class screens so the desktop density is untouched. Audit 2026-07-27. */
+@media (max-width: 900px) {
+  .vci-stage-select { min-height: 44px; padding: 8px 10px; font-size: 0.85rem; }
+}

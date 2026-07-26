@@ -99,7 +99,10 @@
     backdrop-filter: blur(24px) saturate(140%);
     border-bottom: 1px solid var(--border-subtle);
   }
-  .dash-hamburger { background: transparent; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; }
+  /* 44x44 minimum hit area — this is the primary nav control on mobile.
+     Padding (not size) does the work so the icon itself does not move. */
+  .dash-hamburger { background: transparent; border: none; cursor: pointer; padding: 11px; margin: -11px;
+    min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
   .dash-mobile-brand { display: flex; align-items: center; gap: 8px; }
   .dash-mobile-brand-mark { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; }
   .dash-mobile-brand-text { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; letter-spacing: 0; }

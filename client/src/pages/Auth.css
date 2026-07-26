@@ -274,7 +274,10 @@
 /* Bottom links */
 .auth-links { margin-top: 18px; display: flex; flex-direction: column; gap: 9px; align-items: center; }
 .auth-links-text { font-size: 0.84rem; color: var(--ayura-muted); text-align: center; }
-.auth-link { color: var(--ayura-teal); font-weight: 600; text-decoration: none; }
+/* inline-flex + min-height keeps this a >=24px target (WCAG 2.2 SC 2.5.8);
+   it was an 18px-tall link on mobile. Audit 2026-07-27. */
+.auth-link { color: var(--ayura-teal); font-weight: 600; text-decoration: none;
+  display: inline-flex; align-items: center; min-height: 24px; }
 .auth-link:hover { text-decoration: underline; }
 .auth-forgot { color: var(--ayura-muted); font-size: 0.80rem; text-decoration: none; transition: color 0.2s; }
 .auth-forgot:hover { color: var(--ayura-teal); }

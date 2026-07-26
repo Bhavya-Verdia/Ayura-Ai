@@ -208,3 +208,8 @@
   .onb-grid-3 { grid-template-columns: 1fr; }
   .onb-grid-2 { grid-template-columns: 1fr; }
 }
+
+/* Selected chip sits on --step-accent, which in light mode is a DEEP tone for
+   every step (green #237045 / sage #237045 / ochre #925c12) — black text fails
+   AA on all three, white clears 5.5:1+ on all three. Audit 2026-07-27. */
+[data-theme='light'] .onb-chip.selected { color: #fff; }

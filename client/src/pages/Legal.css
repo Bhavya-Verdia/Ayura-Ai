@@ -68,6 +68,7 @@
 .legal-back {
   display: inline-flex;
   align-items: center;
+  min-height: 44px;   /* comfortable back-link target on mobile */
   gap: 8px;
   color: var(--primary-600);
   text-decoration: none;
