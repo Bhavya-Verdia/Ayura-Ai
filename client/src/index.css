@@ -1176,6 +1176,17 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   100% { transform: translateX(260%); }
 }
 
+/* ParticleField renders to a single <canvas> now; the .particle-dot /
+   .particle-orb rules below are kept because the light-theme glow colour and
+   the reduced-motion contract are documented against them, and because any
+   stale precached bundle may still emit the old markup for one load.
+   The canvas itself just fills its wrapper. */
+.pf-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 /* No `will-change` here. ParticleField mounts up to 167 of these at once
    (160 dots + 7 orbs) on Onboarding / Settings / Dosha Quiz / Admin, and
    `will-change` is a per-element instruction to allocate a compositor layer up
