@@ -378,14 +378,61 @@ Bundle: initial-path JS unchanged at **197.0 KB gzip**. No new dependencies.
   community). It helps with hundreds of items; these lists are tens, and a wrong
   `contain-intrinsic-size` causes scroll-anchoring jitter. Not worth the risk at
   current list sizes.
-- **Rewriting `ParticleField` onto a canvas.** 167 animated DOM nodes is a lot,
-  but they are tiny; with `will-change` gone the remaining cost is likely
-  acceptable. This is the next lever if onboarding still feels heavy on a real
-  device — it would be a like-for-like visual port, not a reduction.
+- **Rewriting `ParticleField` onto a canvas — BUILT, MEASURED, REJECTED.**
+  See the section below.
 - **Lenis** is already correctly disabled on touch devices.
 - **The 16 px input floor** (iOS focus-zoom) is already in place.
 - **`backdrop-filter`** is already tiered down on mobile, keeping true blur only
   where sharp content actually scrolls behind glass.
+
+---
+
+## Rejected: the ParticleField canvas rewrite
+
+This report originally listed "port the 167-node particle field to a canvas" as
+the next lever. It was built in full, benchmarked, and **rejected**. Preserved
+on branch `particlefield-canvas-experiment` (commit `9ec94db`) — do not merge.
+
+The port was complete and visually faithful: identical seeded geometry, glow
+baked into pre-rendered sprites (never `shadowBlur` per particle per frame),
+orbs pre-rendered once, DPR capped at 2, the CSS keyframe timing reproduced
+(`ease-in-out`, `infinite alternate`, negative delays), plus visibility gating
+so it stops when off-screen. It renders correctly.
+
+Benchmarked on `/settings` — the heaviest real case, `count={200}` clamped to
+160 dots + 7 orbs — at Pixel 5 with 4× CPU throttle. The control is the same
+page with the field removed from the DOM at runtime, so the delta is the
+field's own cost:
+
+| | idle fps | p95 frame | janky frames | task latency (med) | long tasks |
+|---|---|---|---|---|---|
+| **DOM (shipped)** | 60 | 18 ms | 0 | 4 ms | 3 (347 ms) |
+| field removed entirely | 60 | 18 ms | 1 | 4 ms | 5 (451 ms) |
+| **canvas** | **23** | **51 ms** | **91** | **87 ms** | 16 (1029 ms) |
+
+**The DOM version is indistinguishable from having no particle field at all.**
+That is the whole point: CSS transform animations are compositor-driven, so the
+main thread does *zero* per-frame work. A canvas `requestAnimationFrame` loop
+cannot beat zero — 167 `drawImage` calls plus a full `clearRect` every frame
+costs ~40 ms on a throttled phone. That is a 20× interaction-latency regression
+(4 ms → 87 ms: the difference between a tap feeling instant and feeling stuck)
+and less than half the frame rate.
+
+No tuning closes this. Capping DPR or halving the frame rate lowers the
+constant; it does not change the fact that the alternative is free.
+
+**What the canvas would still buy, and what could not be measured here:** 168
+fewer DOM nodes and 167 fewer compositor layers, i.e. GPU texture memory. That
+is invisible on a dev machine and is precisely the thing most likely to bite a
+real low-memory phone. If onboarding or settings ever *does* feel heavy on
+actual hardware, the branch is there — but the burden of proof is on a device
+measurement, not on the node count looking alarming.
+
+**Generalisable lesson for this codebase:** node count is not cost. Before
+replacing anything CSS-animated with JS, measure it against the same page with
+the thing deleted. Two of the three "obvious" optimisations in this pass
+(`will-change` removal, this rewrite) turned out to be neutral-to-harmful; the
+wins came from removing live `filter: blur()` and from fixing layout bugs.
 
 ---
 
