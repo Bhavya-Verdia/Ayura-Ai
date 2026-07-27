@@ -1,4 +1,16 @@
 /* ─── AI CHAT PAGE ──────────────────────────────────────────── */
+
+/* A percentage height only resolves if EVERY ancestor has a definite one.
+   PageWrapper's in-shell wrapper (`#main-content`) sets no height, so
+   `.chat-page-root { height: 100% }` below silently computed to `auto`: the
+   panel grew with the transcript, `.chat-history`'s `flex: 1; overflow-y: auto`
+   never got a box to scroll inside (measured scrollHeight === clientHeight ===
+   1881px — i.e. no inner scrolling at all), and the composer scrolled off the
+   bottom of a long conversation instead of staying pinned above the tab bar.
+   Scoped with :has() so ONLY the chat route's wrapper is constrained — every
+   other in-shell page still grows naturally into the shell's scroller. */
+#main-content:has(> .chat-page-root) { height: 100%; }
+
 .chat-page-root {
   display: flex; flex-direction: column; height: 100%;
   padding: 0 32px 32px 32px;
@@ -342,7 +354,15 @@
 
 @media (max-width: 768px) {
   .chat-page-root { padding: 0 12px 12px; }
-  .chat-header { padding: 18px 0 14px; }
+  /* The panel is viewport-height here, so every pixel the header takes comes
+     straight out of the transcript — it was eating ~45% of a 662px screen,
+     leaving 370px of messages. The subtitle is first-run copy that a returning
+     user does not need, and the title/icon are oversized for a phone. */
+  .chat-header { padding: 14px 0 10px; gap: 12px; }
+  .chat-header-icon { width: 40px; height: 40px; border-radius: 12px; }
+  .chat-header-icon svg { width: 20px; height: 20px; }
+  .chat-header-title { font-size: 1.25rem; }
+  .chat-header-subtitle { display: none; }
   .chat-history { padding: 20px 14px; }
   .chat-input-area { padding: 12px; }
   .chat-bubble-wrapper { max-width: 88%; }

@@ -6,7 +6,7 @@ GPU was doing for no visible benefit) or fixes an outright bug. **No design,
 colour, layer or motion was removed** — the mobile visual-parity decision
 (phones get the exact desktop look) is intact.
 
-Scope: `client/` only. 23 files changed. Lint clean, production build clean,
+Scope: `client/` only. 26 files changed. Lint clean, production build clean,
 initial-path JS unchanged at 197.0 KB gzip (budget 250 KB).
 
 ---
@@ -17,8 +17,9 @@ initial-path JS unchanged at 197.0 KB gzip (budget 250 KB).
 |---|---|
 | Live `filter: blur()` layers removed | **12 → 0** (verified at runtime) |
 | `will-change` layer hints removed | **67 → 0** on ParticleField pages (verified at runtime) |
-| Real bugs found and fixed | **5** (2 of them user-visible) |
-| Dead scroll removed from every in-app page | ~200–300 px per screen |
+| Real bugs found and fixed | **6** (3 of them user-visible) |
+| Dead scroll removed from short in-app pages | 205 → 99 px (`/notifications`) |
+| Chat: outer-page scroll eliminated | 1179 → **0 px** (transcript scrolls instead) |
 | Route-change latency (perceived) | 0.28 s + 0.28 s → 0.10 s + 0.24 s |
 
 The public/marketing pages were already in good shape — they measured 58–60 fps
@@ -48,9 +49,23 @@ headless emulation and are marked accordingly:
    materialises on a real device. **Verify on a phone.**
    (Playwright's WebKit is also not iOS Safari — same engine family, different
    compositor, no real touch input or GPU.)
-2. The app shell is auth-gated and no backend was running, so the in-shell
-   fixes (dead scroll, Chat, drawer, route transitions) are code-level and
-   reasoned, not profiled. **Verify on a phone.**
+2. ~~The app shell is auth-gated and no backend was running~~ — **closed.** The
+   12 auth-gated routes were subsequently walked on both engines with the API
+   mocked at the network layer (`ctx.route('**/api/**')`), so no backend and no
+   database were involved and **production Atlas was never touched**. This
+   renders the real React app, real CSS and the real MainLayout shell, which is
+   exactly what this pass changed. It is what surfaced bug #5.
+   Result: **24/24 route-loads render, 0 app errors, 0 horizontal overflow,
+   `overscroll-behavior: contain` confirmed applied on every one.**
+   Still unmocked: the chat WebSocket, so live streaming (the memoised
+   `ChatMessage` and the instant-scroll behaviour) is verified by construction,
+   not observed.
+
+   Harness note: `serviceWorkers: 'block'` is required. Without it the PWA
+   service worker takes over after the first navigation and WebKit bypasses
+   Playwright's route interception, which silently served the login page instead
+   of the route under test. The resulting "SW registration error" in the logs is
+   caused by that blocking, not by the app.
 
 Everything else in this report is a measured before/after.
 
@@ -112,7 +127,35 @@ while JS still rendered the desktop sidebar.
 
 ---
 
-### 5. The browserslist target promised support the CSS could not deliver
+### 5. Chat had no inner scrolling at all — the composer scrolled off-screen
+
+Found only after finally rendering the auth-gated routes (see *Verification*
+below). `.chat-page-root` sets `height: 100%`, but a percentage height resolves
+only if **every** ancestor has a definite one — and `#main-content`,
+PageWrapper's in-shell wrapper, sets no height. So it silently computed to
+`auto`.
+
+Consequence: the chat panel grew with the transcript instead of fitting the
+screen. Measured `.chat-history`: `scrollHeight === clientHeight === 1881px` —
+i.e. the transcript's `flex: 1; overflow-y: auto` never had a box to scroll
+inside. The whole page scrolled in the app shell instead, so on a long
+conversation **the composer was pushed off the bottom of the screen** and you
+had to scroll down to type. The scroll-to-bottom FAB never appeared either,
+because the element it watches was never scrollable.
+
+**Fix:** `#main-content:has(> .chat-page-root) { height: 100%; }` — scoped with
+`:has()` so only the chat route's wrapper is constrained and every other
+in-shell page still grows naturally.
+
+Measured after: `.chat-history` clientHeight 1881 → **417px** (now genuinely
+scrollable), outer shell scroll on `/chat` **1139px → 0px** on both engines,
+scroll FAB present at 44×44 `position: absolute`.
+
+While there: the mobile header was eating ~45% of a 662px screen. Trimming the
+oversized title/icon and dropping the first-run subtitle took the visible
+transcript from 370px to **417px**.
+
+### 6. The browserslist target promised support the CSS could not deliver
 
 `vite.config.js` declared `iOS >= 14, Safari >= 14`. That was fiction. The
 shipped CSS requires `color-mix()` (Safari **16.2** — `--ayura-accent-soft`,
@@ -166,7 +209,7 @@ declarations. Re-checked on WebKit and Chromium: no errors, no overflow,
 
 ## P1 — GPU cost removed, zero visual change
 
-### 5. Twelve full-screen `filter: blur()` layers → soft gradients
+### 7. Twelve full-screen `filter: blur()` layers → soft gradients
 
 Almost every app page painted decorative "orbs": `position: fixed`,
 `50vw`-scale, with `filter: blur(80–120px)` on top. A blurred fixed element is a
@@ -196,7 +239,7 @@ screenshots — the glows still read as soft light, no hard-edged discs.
 `CheckIn.css`, `Settings.css`, `Community.css`, `InteractionChecker.css`,
 `DoshaQuiz.css`, `NotFound.css`, `Onboarding.css`
 
-### 6. `will-change` on up to 167 elements at once
+### 8. `will-change` on up to 167 elements at once
 
 `.particle-dot, .particle-orb { will-change: transform, opacity }`.
 `ParticleField` mounts up to 167 of these (160 dots + 7 orbs) on Onboarding,
@@ -215,7 +258,23 @@ Measured on `/verify-email`: elements with `will-change` **67 → 0**.
 
 ## P2 — Scroll correctness and perceived latency
 
-### 7. Every in-app page had ~200–300 px of dead scroll *(verify on device)*
+### 9. Short in-app pages had dead scroll under them
+
+**Correction to an earlier draft of this report,** which claimed ~200–300 px on
+*every* screen. Measuring the real routes showed that is too broad: the fix only
+bites where the page root's `min-height` is the binding constraint, i.e. on
+short pages. On tall ones (Settings, Dashboard) content already exceeds the
+viewport and the change is a no-op. Measured, Chromium/Pixel 5:
+
+| Route | Before | After |
+|---|---|---|
+| `/notifications` | 205 px | **99 px** |
+| `/community` | 205 px | **136 px** |
+| `/chat` | 1179 px | **0 px** (via the fix above) |
+| `/settings`, `/dashboard`, `/progress`, … | unchanged | unchanged |
+
+Add the URL-bar delta on real hardware — headless resolves `100vh` and `100dvh`
+identically, so the emulator only shows the padding component of the bug.
 
 `100vh` is the **large** viewport — the height the page would have with the
 mobile URL bar hidden. Nine app pages set `min-height: 100vh` on their root
@@ -239,7 +298,7 @@ scrolled for no reason, and every page rubber-banded into dead space.
 The convention is now written down under **"App page roots"** in `index.css` so
 it doesn't drift back.
 
-### 8. Scroll chaining / accidental pull-to-refresh
+### 10. Scroll chaining / accidental pull-to-refresh
 
 Only `body` had `overscroll-behavior`. The three inner scrollers didn't, so a
 flick past the end of any of them chained into the document — on Android that is
@@ -249,13 +308,13 @@ under the fixed tab bar.
 **Fix:** `overscroll-behavior: contain` on the app-shell scroller, the chat
 transcript, and the mobile drawer.
 
-### 9. The mobile drawer couldn't scroll
+### 11. The mobile drawer couldn't scroll
 
 `.dash-sidebar.mobile` lists 12 nav items plus a profile card and sign-out, with
 no scroller of its own — on a small phone (and any phone in landscape) the
 bottom items were simply unreachable. Added `overflow-y: auto`.
 
-### 10. `resize` listener ran on every scroll frame on Android
+### 12. `resize` listener ran on every scroll frame on Android
 
 MainLayout tracked the breakpoint with a `resize` listener. Android fires
 `resize` on **every URL-bar show/hide**, i.e. continuously while scrolling — so
@@ -263,7 +322,7 @@ the handler did a layout read (`innerWidth`) and a `setState` on the whole shell
 mid-scroll. Replaced with a `matchMedia` change listener, which fires only when
 the breakpoint is actually crossed.
 
-### 11. Route changes felt slow
+### 13. Route changes felt slow
 
 `AnimatePresence mode="wait"` holds the incoming route until the outgoing one
 finishes exiting, so a tab tap cost 0.28 s exit **plus** 0.28 s enter. On a phone
@@ -271,7 +330,7 @@ the tap is the only feedback you get, so total latency matters more than the
 outgoing flourish. The exit is now a 0.10 s fade with no y-drift; the entrance is
 0.24 s.
 
-### 12. Chat wasted ~76 px of a phone screen
+### 14. Chat wasted ~76 px of a phone screen
 
 The shell reserves 140 px at the end of the scroller for the tab bar **and** the
 floating feedback FAB. But `FeedbackWidget.css` already hides that FAB on Chat —
