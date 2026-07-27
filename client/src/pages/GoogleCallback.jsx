@@ -33,7 +33,7 @@ export default function GoogleCallback() {
   }, [loginWithGoogle, navigate])
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', minHeight:'100vh', gap:'16px' }}>
+    <div className="fill-viewport" style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px' }}>
       <div className="spinner" />
       <p style={{ color:'var(--text-secondary)' }}>Signing you in with Google…</p>
     </div>

@@ -413,6 +413,58 @@ a, button, [role='button'], input, select, textarea, label, summary {
   isolation: isolate;
 }
 
+/* ─── App page roots (viewport units) ────────────────────────────────────────
+   `100vh` is the LARGE viewport — the height the page WOULD have with the
+   mobile URL bar hidden. Using it costs real scroll on phones, in two ways:
+
+   1. Standalone pages (Landing, auth, onboarding, 404, modals) end up ~60-100px
+      taller than the screen, so a page that fits still scrolls. Those use
+      `100dvh` (tracks the bar) — or `100svh` where a reflow mid-scroll would be
+      worse than a slightly short box (the landing hero).
+   2. Pages rendered INSIDE the app shell are worse: MainLayout's scroller is
+      already `100dvh` minus the mobile top bar, with ~140px of bottom padding
+      clearing the tab bar + FAB. A `100vh` page root inside it guaranteed
+      ~200-300px of empty scrollable space under EVERY screen — short pages
+      (Check-In, an empty Notifications list) scrolled for no reason and every
+      page rubber-banded into dead space at the bottom. Those roots use
+      `min-height: 100%`, which resolves against the scroller, not the viewport.
+
+   Rule: inside the shell → `100%`. Outside it → `100dvh` (or `100svh`). Never
+   a bare `100vh`.
+
+   HOW to write it: `100vh` as the base declaration, then upgrade inside
+   `@supports`. The obvious two-declaration fallback
+   (`min-height: 100vh; min-height: 100dvh;`) does NOT survive this build —
+   lightningcss collapses the pair down to the last one, exactly as it does for
+   `backdrop-filter` (see the note in vite.config.js). `@supports` is a separate
+   rule block, so it survives minification and genuinely degrades:
+
+     .thing { min-height: 100vh; }
+     @supports (min-height: 100dvh) { .thing { min-height: 100dvh; } }
+
+   Why bother, when the browserslist floor is already past `dvh`? Because a
+   dropped `dvh` on a LOAD-BEARING height (`.dash-root`, `.dash-main-container`)
+   doesn't degrade — the shell's flex column loses its height and the app-shell
+   layout collapses. Old iOS is only part of it; embedded webviews and in-app
+   browsers are the ones that actually surprise you. The base declaration costs
+   one line and removes the whole class of failure.
+
+   Inline `style={{ minHeight: '100dvh' }}` CANNOT express this — a JS object
+   has one key. Use `.fill-viewport` / `.fill-viewport-h` below instead. */
+
+/* min-height variant — for page wrappers that must fill the screen but may grow. */
+.fill-viewport {
+  min-height: 100vh;
+}
+/* height variant — for shells that must be EXACTLY the viewport and clip. */
+.fill-viewport-h {
+  height: 100vh;
+}
+@supports (height: 100dvh) {
+  .fill-viewport { min-height: 100dvh; }
+  .fill-viewport-h { height: 100dvh; }
+}
+
 .vital-bg ~ * {
   position: relative;
   z-index: 1;
@@ -1124,13 +1176,19 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   100% { transform: translateX(260%); }
 }
 
+/* No `will-change` here. ParticleField mounts up to 167 of these at once
+   (160 dots + 7 orbs) on Onboarding / Settings / Dosha Quiz / Admin, and
+   `will-change` is a per-element instruction to allocate a compositor layer up
+   front — 167 of them, held for the lifetime of the page, on the device with
+   the least GPU memory. It also bought nothing: every one of these elements
+   has a running `transform` animation, which the browser composites on its own
+   anyway. The hint only mattered before the animation started. */
 .particle-dot,
 .particle-orb {
   position: absolute;
   display: block;
   border-radius: 999px;
   transform: translate(-50%, -50%);
-  will-change: transform, opacity;
 }
 
 .particle-dot {
@@ -1249,4 +1307,14 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   .dash-reaction-overlay { backdrop-filter: blur(4px) !important; }
   .cmd-backdrop { backdrop-filter: blur(6px) !important; }
   .pref-modal-overlay { backdrop-filter: blur(8px) !important; }
+}
+
+
+/* Upgrade to the dynamic/small viewport where supported. A separate
+   @supports block, not a duplicate declaration — lightningcss collapses the
+   latter. See "App page roots" in index.css. */
+@supports (min-height: 100dvh) {
+  body { min-height: 100dvh; }
+  #root { min-height: 100dvh; }
+  .loading-screen { min-height: 100dvh; }
 }

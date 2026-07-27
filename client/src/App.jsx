@@ -94,7 +94,7 @@ function PageWrapper({ children, inLayout = false }) {
       initial="initial"
       animate="animate"
       transition={cheap ? pageTransitionFast : pageTransition}
-      style={{ minHeight: '100dvh' }}
+      className="fill-viewport"
       id="main-content"
       tabIndex={-1}
     >

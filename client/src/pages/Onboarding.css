@@ -13,16 +13,20 @@
 .onb-page[data-step='1'] { --step-accent: var(--ayura-sage); }
 .onb-page[data-step='2'] { --step-accent: var(--ayura-violet); }
 
-/* Background orbs */
-.onb-orb { position: absolute; border-radius: 50%; filter: blur(100px); z-index: 0; pointer-events: none; }
+/* Background orbs. These were `filter: blur(100px)` on an ANIMATING layer —
+   the single most expensive pattern on a phone GPU (a ~600px filtered texture
+   re-rasterized every frame of a 20s loop) and the exact shape of the 2026-07
+   flicker. They already paint a soft radial gradient, so the blur was adding
+   nothing visible; without it the drift is a pure compositor transform. */
+.onb-orb { position: absolute; border-radius: 50%; z-index: 0; pointer-events: none; }
 .onb-orb-a {
-  width: 600px; height: 600px; top: -200px; left: -200px;
+  width: 760px; height: 760px; top: -280px; left: -280px;
   background: radial-gradient(ellipse, var(--step-accent, var(--ayura-teal)) 0%, transparent 65%);
   opacity: 0.12; transition: background 0.8s ease;
   animation: onb-orb-drift 20s ease-in-out infinite;
 }
 .onb-orb-b {
-  width: 500px; height: 500px; bottom: -100px; right: -100px;
+  width: 640px; height: 640px; bottom: -170px; right: -170px;
   background: radial-gradient(ellipse, var(--ayura-violet) 0%, transparent 65%);
   opacity: 0.10; animation: onb-orb-drift 26s ease-in-out infinite reverse;
 }
@@ -213,3 +217,11 @@
    every step (green #237045 / sage #237045 / ochre #925c12) — black text fails
    AA on all three, white clears 5.5:1+ on all three. Audit 2026-07-27. */
 [data-theme='light'] .onb-chip.selected { color: #fff; }
+
+
+/* Upgrade to the dynamic/small viewport where supported. A separate
+   @supports block, not a duplicate declaration — lightningcss collapses the
+   latter. See "App page roots" in index.css. */
+@supports (min-height: 100dvh) {
+  .onb-page { min-height: 100dvh; }
+}

@@ -5,16 +5,16 @@
   overflow: hidden;
 }
 
+/* Gradient falloff instead of `filter: blur()` — see the note in Progress.css. */
 .ic-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(90px);
   opacity: 0.18;
   pointer-events: none;
   z-index: 0;
 }
-.ic-orb-a { width: 360px; height: 360px; background: var(--ayura-teal); top: -80px; right: -60px; }
-.ic-orb-b { width: 300px; height: 300px; background: var(--ayura-violet); bottom: 40px; left: -80px; }
+.ic-orb-a { width: 500px; height: 500px; background: radial-gradient(circle at 50% 50%, var(--ayura-teal) 0%, transparent 70%); top: -150px; right: -130px; }
+.ic-orb-b { width: 420px; height: 420px; background: radial-gradient(circle at 50% 50%, var(--ayura-violet) 0%, transparent 70%); bottom: -20px; left: -140px; }
 
 .ic-container {
   position: relative;

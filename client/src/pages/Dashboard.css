@@ -1,8 +1,11 @@
 /* ─── DASHBOARD LAYOUT & SIDEBAR ───────────────────────────── */
 .dash-root {
   display: flex;
+  /* dvh tracks the mobile URL bar (100vh is the LARGE viewport, so the shell
+     ran ~60-100px taller than the screen on phones); width in % avoids the
+     desktop scrollbar-gutter overflow that 100vw causes. */
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   overflow: hidden;
   background: transparent;
 }
@@ -87,7 +90,11 @@
      like a native drawer — otherwise the tab bar floats over the open menu. */
   /* Safe-area insets (viewport-fit=cover): keep the drawer's brand off the notch
      and its logout/footer above the home-bar on full-height phones. */
-  .dash-sidebar.mobile { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); z-index: calc(var(--z-overlay) + 10); padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+  /* overflow-y + overscroll-behavior: the drawer lists 12 nav items plus a
+     profile card and sign-out — taller than a small phone in landscape, and
+     with no scroller of its own the overflow was simply unreachable. `contain`
+     keeps a flick inside the drawer instead of scrolling the page behind it. */
+  .dash-sidebar.mobile { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); z-index: calc(var(--z-overlay) + 10); padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); overflow-y: auto; overscroll-behavior: contain; }
   .dash-sidebar.mobile.open { transform: translateX(0); box-shadow: 24px 0 64px var(--glass-shadow-strong); }
   .dash-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: var(--z-overlay); border: none; cursor: pointer; }
   .dash-mobile-bar {
@@ -735,3 +742,11 @@
 .dash-reaction-sev-btn.active { border-color: #fb923c; color: #fb923c; background: rgba(251,146,60,0.1); }
 .dash-reaction-actions { display: flex; gap: 10px; margin-top: 20px; }
 .dash-reaction-actions .btn { flex: 1; }
+
+
+/* Upgrade to the dynamic/small viewport where supported. A separate
+   @supports block, not a duplicate declaration — lightningcss collapses the
+   latter. See "App page roots" in index.css. */
+@supports (height: 100dvh) {
+  .dash-root { height: 100dvh; }
+}

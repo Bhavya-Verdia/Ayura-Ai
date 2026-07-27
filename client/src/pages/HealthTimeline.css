@@ -1,6 +1,6 @@
 /* ─── HEALTH TIMELINE PAGE ──────────────────────────────── */
 .ht-root {
-  min-height: 100vh;
+  min-height: 100%; /* fills the app scroller, NOT the viewport — see "App page roots" in index.css */
   position: relative;
   padding-bottom: 80px;
 }

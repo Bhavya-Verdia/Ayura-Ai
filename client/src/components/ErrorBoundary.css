@@ -36,3 +36,11 @@
   gap: 0.75rem;
   justify-content: center;
 }
+
+
+/* Upgrade to the dynamic/small viewport where supported. A separate
+   @supports block, not a duplicate declaration — lightningcss collapses the
+   latter. See "App page roots" in index.css. */
+@supports (min-height: 100dvh) {
+  .error-boundary-page { min-height: 100dvh; }
+}

@@ -10,11 +10,12 @@
   overflow: hidden;
 }
 
+/* Already radial gradients — the extra blur only re-blurred a soft image at
+   full GPU-texture cost. See the note in Progress.css. */
 .notfound-orb-a,
 .notfound-orb-b {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
   pointer-events: none;
 }
 
@@ -133,4 +134,12 @@
 [data-theme='light'] .btn-glass {
   background: rgba(255,255,255,0.75);
   border-color: rgba(0,0,0,0.1);
+}
+
+
+/* Upgrade to the dynamic/small viewport where supported. A separate
+   @supports block, not a duplicate declaration — lightningcss collapses the
+   latter. See "App page roots" in index.css. */
+@supports (min-height: 100dvh) {
+  .notfound-page { min-height: 100dvh; }
 }

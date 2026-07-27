@@ -1,9 +1,9 @@
 .pref-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  /* `inset: 0` rather than 100vw/100vh: on mobile `100vh` is the large
+     viewport, so the overlay ran taller than the screen (its centred card sat
+     partly under the URL bar), and `100vw` includes the scrollbar gutter. */
+  inset: 0;
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(8px);
   display: flex;
