@@ -163,6 +163,13 @@ export const plansAPI = {
   checkInteractions:  (herbs, medications = null) => API.post('/plans/interaction-check', { herbs, ...(medications !== null ? { medications } : {}) }),
   reportReaction:     (planType, { item, reaction, severity = 'moderate' }) => API.post(`/plans/${planType}/report-reaction`, { item, reaction, severity }),
   getJobStatus:       (jobId) => API.get(`/plans/job/${jobId}`),
+  // Remedies are symptom-driven: the engine matches `symptoms[]` against the KB's
+  // own ids, so the picker loads its vocabulary from the KB rather than reusing
+  // the plain-language onboarding/check-in labels.
+  getRemedySymptoms:  ()      => API.get('/plans/remedy-symptoms'),
+  generateRemedies:   ({ symptoms, severity = {}, duration = {} }) =>
+                        API.post('/plans/remedies', { symptoms, severity, duration }),
+  generateMedicines:  (forceRegenerate = false) => API.post('/plans/medicines', { force_regenerate: forceRegenerate }),
 }
 
 // ── Preferences ────────────────────────────────

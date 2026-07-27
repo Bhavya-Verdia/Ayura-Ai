@@ -7,7 +7,7 @@ import LoadingScreen from '../components/LoadingScreen'
 import { SkeletonDashboard, SkeletonChat } from '../components/Skeleton'
 import {
   LayoutDashboard, MessageCircle, Activity, CheckSquare,
-  Settings, LogOut, Menu, X, Bell, TrendingUp, Users, AlarmClock, Brain, ShieldCheck
+  Settings, LogOut, Menu, X, Bell, TrendingUp, Users, AlarmClock, Brain, ShieldCheck, Soup
 } from 'lucide-react'
 import ScrollToTop from '../components/ScrollToTop'
 import FeedbackWidget from '../components/FeedbackWidget'
@@ -17,8 +17,11 @@ import '../pages/Dashboard.css'
 import './MainLayout.css'
 
 // Sidebar nav — grouped logically: Home & AI → Track & Assess → Tools → Social & Account.
-// The 7 wellness plans (routine, diet, yoga, gym, panchakarma, remedies, medicines) live
-// on the Dashboard as generated plan cards, so they are intentionally NOT duplicated here.
+// The wellness plans (routine, diet, yoga, gym, panchakarma) live on the Dashboard as
+// generated plan cards, so they are intentionally NOT duplicated here. Remedies is the
+// exception: /remedies is the canonical home for BOTH remedies and medicines — it is
+// where symptoms are chosen (the generator needs them) and the only surface that shows
+// both plans together — so it earns a permanent Tools entry.
 const NAV_ITEMS = [
   // Home & AI
   { id: 'dashboard',    label: 'Dashboard',    Icon: LayoutDashboard, path: '/dashboard',     i18nKey: 'dashboard_title' },
@@ -29,6 +32,7 @@ const NAV_ITEMS = [
   { id: 'timeline',     label: 'Timeline',     Icon: Activity,        path: '/timeline',       i18nKey: 'timeline' },
   { id: 'dosha-quiz',   label: 'Dosha Quiz',   Icon: Brain,           path: '/dosha-quiz',     i18nKey: 'dosha_quiz' },
   // Tools
+  { id: 'remedies',     label: 'Remedies',     Icon: Soup,            path: '/remedies',       i18nKey: 'remedies' },
   { id: 'interaction',  label: 'Herb Safety',  Icon: ShieldCheck,     path: '/interaction-check', i18nKey: 'interaction_check' },
   { id: 'reminders',    label: 'Reminders',    Icon: AlarmClock,      path: '/reminders',      i18nKey: 'reminders' },
   // Social & Account

@@ -1,77 +1,213 @@
-import React, { useState, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { useNavigate, Link } from 'react-router-dom'
+import { useContext, useMemo, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
-import { plansAPI } from '../api/client'
-import { Soup, Pill, Leaf, TriangleAlert, Stethoscope, X } from 'lucide-react'
+import { toast } from 'sonner'
+import { plansAPI, preferencesAPI } from '../api/client'
+import { AuthContext } from '../providers/AuthContext'
+import PreferencesModal from '../components/PreferencesModal'
+import { RemedyView } from '../components/planViews/RemedyView'
+import { MedicineView } from '../components/planViews/MedicineView'
+import {
+  Soup, Pill, Stethoscope, TriangleAlert, X, SlidersHorizontal, Sparkles, RefreshCw, Check,
+} from 'lucide-react'
+import '../components/PlanViewer.css'   // rv-* / mv-* styles for the shared plan views
 import './Remedies.css'
 
+// This page is the canonical home for remedies + medicines. It renders the SAME
+// RemedyView / MedicineView that PlanViewer uses, so there is one renderer per
+// feature and no second, thinner copy to drift out of sync — the previous
+// bespoke card set silently dropped doctor referrals, recovery guidelines and
+// the dosage schedule. What this page adds on top is the symptom picker (the
+// only place symptoms can be chosen — /plans/remedies 422s without them) and
+// aggregation: the newest remedies plan and the newest medicines plan side by
+// side, which a single-plan view cannot show.
 
-// ─── Safety rating config ──────────────────────────────────────────────────
-const SAFETY_CONFIG = {
-  safe_for_all: {
-    label: 'Safe for All',
-    color: 'var(--sage)',
-    bg: 'rgba(16,185,129,0.12)',
-    border: 'rgba(16,185,129,0.3)',
-    borderLeft: '#10B981',
-    dot: '#10B981',
-  },
-  safe_for_most: {
-    label: 'Safe for Most',
-    color: 'var(--primary-light)',
-    bg: 'rgba(92,171,116,0.10)',
-    border: 'rgba(92,171,116,0.25)',
-    borderLeft: '#5cab74',
-    dot: '#5cab74',
-  },
-  generally_safe: {
-    label: 'Generally Safe',
-    color: 'var(--accent)',
-    bg: 'rgba(245,158,11,0.10)',
-    border: 'rgba(245,158,11,0.25)',
-    borderLeft: '#F59E0B',
-    dot: '#F59E0B',
-  },
-  consult_doctor: {
-    label: 'Consult Doctor',
-    color: 'var(--rose)',
-    bg: 'rgba(244,63,94,0.10)',
-    border: 'rgba(244,63,94,0.25)',
-    borderLeft: '#F43F5E',
-    dot: '#F43F5E',
-  },
+const SEVERITIES = [
+  { id: 'mild',     label: 'Mild' },
+  { id: 'moderate', label: 'Moderate' },
+  { id: 'severe',   label: 'Severe' },
+]
+
+const DURATIONS = [
+  { id: 'recent', label: 'A few days' },
+  { id: 'weeks',  label: 'Weeks' },
+  { id: 'months', label: 'Months' },
+  { id: 'chronic',label: 'Chronic' },
+]
+
+// Covers every `symptom_category` in the remedy KB; anything new falls back to
+// the raw id with underscores stripped.
+const CATEGORY_LABELS = {
+  digestive: 'Digestion', pain: 'Pain', skin: 'Skin & Hair', respiratory: 'Respiratory',
+  immunity: 'Immunity', energy: 'Energy & Sleep', mental: 'Mind & Mood',
+  womens_health: "Women's Health", general: 'General',
 }
 
-function getSafety(key) {
-  return SAFETY_CONFIG[key] || SAFETY_CONFIG.generally_safe
+const asList = (v) => (Array.isArray(v) ? v : [])
+
+// The per-feature endpoints are inconsistent about wrapping: /plans/medicines
+// stores `plan_data = { medicines: {...} }` while /plans/remedies stores the plan
+// flat, and a holistic plan nests both under `home_remedies` / `medicines`. Try
+// the envelope first, then accept a flat body — using the same field guards
+// PlanViewer uses to decide a dedicated view can render it.
+function unwrap(planData, key) {
+  const inner = planData?.[key]
+  if (inner && typeof inner === 'object' && !Array.isArray(inner)) return inner
+  return null
 }
 
-// ─── Animation variants ────────────────────────────────────────────────────
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.05 } },
+// ─── Symptom picker ────────────────────────────────────────────────────────
+function SymptomPicker({ options, selected, severity, duration, onToggle, onSeverity, onDuration, onGenerate, generating, hasPlan }) {
+  const grouped = useMemo(() => {
+    const by = {}
+    for (const o of options) (by[o.category] ||= []).push(o)
+    return Object.entries(by)
+  }, [options])
+
+  const byId = useMemo(() => Object.fromEntries(options.map(o => [o.id, o])), [options])
+
+  return (
+    <m.div
+      className="rem-picker"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      style={{ overflow: 'hidden' }}
+    >
+      <div className="rem-picker-inner">
+        <div className="rem-picker-head">
+          <h2 className="rem-picker-title">What would you like remedies for?</h2>
+          <p className="rem-picker-sub">
+            Pick your symptoms, then set how strong and how long-standing each one is —
+            severity and duration change which remedy you get, and severe symptoms are
+            referred to a doctor instead.
+          </p>
+        </div>
+
+        {grouped.map(([cat, items]) => (
+          <div key={cat} className="rem-picker-group">
+            <p className="rem-picker-group-label">{CATEGORY_LABELS[cat] || cat.replace(/_/g, ' ')}</p>
+            <div className="rem-picker-chips">
+              {items.map(o => {
+                const on = selected.includes(o.id)
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    className={`rem-filter-chip${on ? ' active' : ''}`}
+                    aria-pressed={on}
+                    onClick={() => onToggle(o.id)}
+                  >
+                    {on && <Check size={13} strokeWidth={2.5} />} {o.display}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+
+        {selected.length > 0 && (
+          <div className="rem-picker-detail">
+            <p className="rem-picker-group-label">Tell us about each one</p>
+            {selected.map(id => (
+              <div key={id} className="rem-picker-row">
+                <span className="rem-picker-row-name">{byId[id]?.display || id}</span>
+                <div className="rem-picker-row-controls">
+                  <div className="rem-seg" role="group" aria-label={`Severity for ${byId[id]?.display || id}`}>
+                    {SEVERITIES.map(s => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        className={`rem-seg-btn${(severity[id] || 'mild') === s.id ? ' active' : ''}`}
+                        aria-pressed={(severity[id] || 'mild') === s.id}
+                        onClick={() => onSeverity(id, s.id)}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                  <select
+                    className="rem-picker-select"
+                    aria-label={`Duration for ${byId[id]?.display || id}`}
+                    value={duration[id] || 'recent'}
+                    onChange={(e) => onDuration(id, e.target.value)}
+                  >
+                    {DURATIONS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
+                  </select>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="rem-picker-actions">
+          <m.button
+            type="button"
+            className="btn btn-primary"
+            disabled={selected.length === 0 || generating}
+            onClick={onGenerate}
+            whileHover={selected.length ? { scale: 1.03, y: -1 } : undefined}
+            whileTap={selected.length ? { scale: 0.98 } : undefined}
+          >
+            {generating
+              ? <><RefreshCw size={15} strokeWidth={2} className="rem-spin" /> Building your remedies…</>
+              : <><Sparkles size={15} strokeWidth={2} /> {hasPlan ? 'Rebuild remedies' : 'Get my remedies'}</>}
+          </m.button>
+          {selected.length > 0 && (
+            <span className="rem-picker-count">{selected.length} selected</span>
+          )}
+        </div>
+      </div>
+    </m.div>
+  )
 }
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+// ─── Empty state ───────────────────────────────────────────────────────────
+function EmptyState({ tab, onAction, busy }) {
+  return (
+    <m.div
+      className="rem-empty"
+      initial={{ opacity: 0, scale: 0.97 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className="rem-empty-emoji">
+        {tab === 'remedies' ? <Soup size={34} strokeWidth={1.7} /> : <Pill size={34} strokeWidth={1.7} />}
+      </div>
+      <h3 className="rem-empty-title">
+        {tab === 'remedies' ? 'No home remedies yet' : 'No medicines yet'}
+      </h3>
+      <p className="rem-empty-sub">
+        {tab === 'remedies'
+          ? 'Tell us what is bothering you and we will build kitchen remedies matched to your dosha, conditions and medications.'
+          : 'Generate a classical formulation plan matched to your Vikriti, Agni and current medications.'}
+      </p>
+      <m.button
+        className="btn btn-primary"
+        onClick={onAction}
+        disabled={busy}
+        whileHover={{ scale: 1.04, y: -2 }}
+        whileTap={{ scale: 0.97 }}
+      >
+        {busy
+          ? <><RefreshCw size={15} strokeWidth={2} className="rem-spin" /> Working…</>
+          : tab === 'remedies'
+            ? <><SlidersHorizontal size={15} strokeWidth={2} /> Choose symptoms</>
+            : <><Sparkles size={15} strokeWidth={2} /> Generate medicines</>}
+      </m.button>
+    </m.div>
+  )
 }
 
-
-
-// ─── Skeleton card ─────────────────────────────────────────────────────────
-function SkeletonCard() {
+function SkeletonBlock() {
   return (
     <div className="rem-skeleton-card">
       <div className="rem-skeleton-header">
         <div className="skeleton rem-skel-title" />
         <div className="skeleton rem-skel-badge" />
-      </div>
-      <div className="skeleton rem-skel-sub" />
-      <div className="rem-skel-chips">
-        {[1, 2, 3].map(i => <div key={i} className="skeleton rem-skel-chip" />)}
       </div>
       <div className="skeleton rem-skel-body" />
       <div className="skeleton rem-skel-body short" />
@@ -79,404 +215,189 @@ function SkeletonCard() {
   )
 }
 
-// ─── Remedy Card ───────────────────────────────────────────────────────────
-function RemedyCard({ remedy }) {
-  const [expanded, setExpanded] = useState(false)
-  const safety = getSafety(remedy.safety_rating)
-  const ingredients = Array.isArray(remedy.ingredients) ? remedy.ingredients : []
-  const warnings = Array.isArray(remedy.warnings) ? remedy.warnings : []
-
-  return (
-    <m.div
-      className="rem-card"
-      variants={cardVariants}
-      style={{ '--border-left-color': safety.borderLeft }}
-      layout
-    >
-      {/* Header */}
-      <div className="rem-card-header">
-        <div className="rem-card-title-row">
-          <span className="rem-card-icon"><Soup size={20} strokeWidth={2} /></span>
-          <div>
-            <h3 className="rem-card-name">{remedy.remedy_name || 'Unnamed Remedy'}</h3>
-            {remedy.symptom_addressed && (
-              <p className="rem-card-symptom">For: {remedy.symptom_addressed}</p>
-            )}
-          </div>
-        </div>
-        <div className="rem-safety-badge" style={{ background: safety.bg, border: `1px solid ${safety.border}`, color: safety.color }}>
-          <span className="rem-safety-dot" style={{ background: safety.dot }} />
-          {safety.label}
-        </div>
-      </div>
-
-      {/* Ingredients chips */}
-      {ingredients.length > 0 && (
-        <div className="rem-section">
-          <p className="rem-label">Ingredients</p>
-          <div className="rem-chips">
-            {ingredients.map((ing, i) => (
-              <span key={i} className="rem-chip">{ing}</span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Info grid */}
-      <div className="rem-info-grid">
-        {remedy.dosage && (
-          <div className="rem-info-item">
-            <span className="rem-info-label">Dosage</span>
-            <span className="rem-info-val">{remedy.dosage}</span>
-          </div>
-        )}
-        {remedy.frequency && (
-          <div className="rem-info-item">
-            <span className="rem-info-label">Frequency</span>
-            <span className="rem-info-val">{remedy.frequency}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Preparation — collapsible */}
-      {remedy.preparation && (
-        <div className="rem-section">
-          <p className="rem-label">Preparation</p>
-          <p className="rem-text">{remedy.preparation}</p>
-        </div>
-      )}
-
-      {/* Expand button */}
-      <button
-        className="rem-expand-btn"
-        onClick={() => setExpanded(prev => !prev)}
-        aria-expanded={expanded}
-      >
-        {expanded ? 'Hide details ↑' : 'View details ↓'}
-      </button>
-
-      <AnimatePresence>
-        {expanded && (
-          <m.div
-            key="details"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            style={{ overflow: 'hidden' }}
-          >
-            {remedy.ayurvedic_rationale && (
-              <div className="rem-section rem-rationale">
-                <p className="rem-label"><Leaf size={14} strokeWidth={2} /> Ayurvedic Rationale</p>
-                <p className="rem-text">{remedy.ayurvedic_rationale}</p>
-              </div>
-            )}
-
-            {warnings.length > 0 && (
-              <div className="rem-section rem-warnings-section">
-                <p className="rem-label rem-warn-label"><TriangleAlert size={14} strokeWidth={2} /> Warnings</p>
-                <ul className="rem-warnings">
-                  {warnings.map((w, i) => (
-                    <li key={i} className="rem-warning-item">{w}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </m.div>
-        )}
-      </AnimatePresence>
-    </m.div>
-  )
-}
-
-// ─── Medicine Card ─────────────────────────────────────────────────────────
-function MedicineCard({ medicine }) {
-  const [expanded, setExpanded] = useState(false)
-  const safety = getSafety(medicine.safety_rating)
-  const warnings = Array.isArray(medicine.warnings) ? medicine.warnings : []
-
-  return (
-    <m.div
-      className="rem-card rem-medicine-card"
-      variants={cardVariants}
-      style={{ '--border-left-color': safety.borderLeft }}
-      layout
-    >
-      {/* Header */}
-      <div className="rem-card-header">
-        <div className="rem-card-title-row">
-          <span className="rem-card-icon"><Pill size={20} strokeWidth={2} /></span>
-          <div>
-            <h3 className="rem-card-name">{medicine.medicine_name || 'Unnamed Medicine'}</h3>
-            {medicine.symptom_addressed && (
-              <p className="rem-card-symptom">For: {medicine.symptom_addressed}</p>
-            )}
-          </div>
-        </div>
-        <div className="rem-card-badges">
-          {medicine.type && (
-            <span className="rem-type-badge">{medicine.type}</span>
-          )}
-          <div className="rem-safety-badge" style={{ background: safety.bg, border: `1px solid ${safety.border}`, color: safety.color }}>
-            <span className="rem-safety-dot" style={{ background: safety.dot }} />
-            {safety.label}
-          </div>
-        </div>
-      </div>
-
-      {/* Info grid */}
-      <div className="rem-info-grid">
-        {medicine.dosage && (
-          <div className="rem-info-item">
-            <span className="rem-info-label">Dosage</span>
-            <span className="rem-info-val">{medicine.dosage}</span>
-          </div>
-        )}
-        {medicine.anupana && (
-          <div className="rem-info-item">
-            <span className="rem-info-label">Anupana</span>
-            <span className="rem-info-val">{medicine.anupana}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Expand */}
-      {(warnings.length > 0 || medicine.description) && (
-        <button
-          className="rem-expand-btn"
-          onClick={() => setExpanded(prev => !prev)}
-          aria-expanded={expanded}
-        >
-          {expanded ? 'Hide details ↑' : 'View details ↓'}
-        </button>
-      )}
-
-      <AnimatePresence>
-        {expanded && (
-          <m.div
-            key="med-details"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            style={{ overflow: 'hidden' }}
-          >
-            {medicine.description && (
-              <div className="rem-section">
-                <p className="rem-label">Description</p>
-                <p className="rem-text">{medicine.description}</p>
-              </div>
-            )}
-            {warnings.length > 0 && (
-              <div className="rem-section rem-warnings-section">
-                <p className="rem-label rem-warn-label"><TriangleAlert size={14} strokeWidth={2} /> Warnings</p>
-                <ul className="rem-warnings">
-                  {warnings.map((w, i) => (
-                    <li key={i} className="rem-warning-item">{w}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </m.div>
-        )}
-      </AnimatePresence>
-    </m.div>
-  )
-}
-
-// ─── Empty State ───────────────────────────────────────────────────────────
-function EmptyState({ tab }) {
-  const navigate = useNavigate()
-  return (
-    <m.div
-      className="rem-empty"
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <div className="rem-empty-emoji">{tab === 'remedies' ? <Soup size={34} strokeWidth={1.7} /> : <Pill size={34} strokeWidth={1.7} />}</div>
-      <h3 className="rem-empty-title">No {tab === 'remedies' ? 'home remedies' : 'medicines'} generated yet</h3>
-      <p className="rem-empty-sub">
-        Head to your Dashboard and generate a personalized Ayurvedic plan to unlock your custom remedy cabinet.
-      </p>
-      <m.button
-        className="btn btn-primary"
-        onClick={() => navigate('/dashboard')}
-        whileHover={{ scale: 1.04, y: -2 }}
-        whileTap={{ scale: 0.97 }}
-      >
-        ✦ Go to Dashboard
-      </m.button>
-    </m.div>
-  )
-}
-
-// ─── Filter bar ────────────────────────────────────────────────────────────
-function FilterBar({ symptoms, activeFilter, onFilter }) {
-  if (symptoms.length === 0) return null
-  return (
-    <div className="rem-filter-bar">
-      <button
-        className={`rem-filter-chip${activeFilter === '' ? ' active' : ''}`}
-        onClick={() => onFilter('')}
-      >
-        All
-      </button>
-      {symptoms.map(s => (
-        <button
-          key={s}
-          className={`rem-filter-chip${activeFilter === s ? ' active' : ''}`}
-          onClick={() => onFilter(s)}
-        >
-          {s}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-// ─── Plan → card adapters ──────────────────────────────────────────────────
-// The engines emit their own shapes; these cards want flat records. Keep the
-// translation here so the card components stay dumb.
-//
-// This page used to read `res.data.plan_data.home_remedies` off /plans/latest.
-// That could never work: /plans/latest returns the PlanResponse directly (there
-// is no `plan_data` key), and it only returns the single most recent plan — so a
-// user whose newest plan was, say, gym would see nothing either way. We now read
-// the history and pick the newest plan of each relevant type.
-
-const asList = (v) => (Array.isArray(v) ? v : [])
-
-// remedies engine → RemedyCard[]  (source: plan_data.symptoms_addressed[].remedy)
-function toRemedyCards(planData) {
-  return asList(planData?.symptoms_addressed)
-    .filter((e) => e && e.remedy)
-    .map((e) => {
-      const r = e.remedy
-      return {
-        remedy_name: r.name,
-        symptom_addressed: e.symptom_display || e.symptom_id,
-        // the engine gives ingredient OBJECTS; the chips render raw strings, so
-        // flatten here — passing the object through would crash React.
-        ingredients: asList(r.ingredients).map((ing) =>
-          typeof ing === 'string' ? ing : [ing.item, ing.amount].filter(Boolean).join(' — ')
-        ),
-        preparation: r.preparation,
-        dosage: r.dosage,
-        frequency: r.duration,
-        ayurvedic_rationale: e.dosha_cause,
-        warnings: [e.drug_interaction_warning].filter(Boolean),
-        safety_rating: e.requires_practitioner ? 'consult_doctor' : 'safe_for_all',
-      }
-    })
-}
-
-// medicines engine → MedicineCard[]  (source: plan_data.medicines.*_formulations)
-function toMedicineCards(planData) {
-  const med = planData?.medicines
-  if (!med || typeof med !== 'object' || Array.isArray(med)) return []
-  return [...asList(med.primary_formulations), ...asList(med.supporting_formulations)].map((f) => {
-    const contra = asList(f.contraindications)
-    const interactions = asList(f.drug_interactions)
-    return {
-      medicine_name: f.name,
-      symptom_addressed: asList(f.primary_uses)[0],
-      type: f.type,
-      dosage: f.dosage,
-      anupana: f.selected_anupana || f.anupana,
-      description: [f.classical_action, f.classical_text_reference].filter(Boolean).join(' · ') || undefined,
-      warnings: [
-        ...contra.map((c) => `Avoid in: ${String(c).replace(/_/g, ' ')}`),
-        ...interactions.map((d) => `Interacts with: ${String(d).replace(/_/g, ' ')}`),
-      ],
-      // anything with a contraindication or a known interaction gets the
-      // practitioner badge, regardless of how benign its tier looks.
-      safety_rating: contra.length || interactions.length ? 'consult_doctor' : 'safe_for_most',
-    }
-  })
-}
-
-// ─── Main Remedies Page ────────────────────────────────────────────────────
+// ─── Page ──────────────────────────────────────────────────────────────────
 const Remedies = () => {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  // `user` is a slim mapping (id/name/dosha); the full record with
+  // current_symptoms lives on `profile`.
+  const { profile } = useContext(AuthContext)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const activeTab = searchParams.get('tab') === 'medicines' ? 'medicines' : 'remedies'
+  const [filter, setFilter] = useState('')
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [errorDismissed, setErrorDismissed] = useState(false)
+  const [prefModalOpen, setPrefModalOpen] = useState(false)
+  // Picker state is DERIVED from the seed below until the user touches it —
+  // `null` means "still following the seed". Syncing it in an effect instead
+  // would be a cascading render (and is banned by the compiler lint).
+  const [pickedIds, setPickedIds] = useState(null)
+  const [severityEdits, setSeverityEdits] = useState({})
+  const [durationEdits, setDurationEdits] = useState({})
+
   const { data, isLoading: loading, error: queryError } = useQuery({
     queryKey: ['remedies-source-plans'],
     queryFn: async () => {
       const res = await plansAPI.getHistory(50)
       const items = asList(res.data?.items ?? res.data)
-      const newestOf = (type) =>
+      const newestData = (type) =>
         items
           .filter((i) => i.plan_type === type)
           .sort((a, b) => String(b.generated_at).localeCompare(String(a.generated_at)))[0]?.plan_data
-      // Per-feature plans are the primary flow; a holistic plan (which carries
-      // flat home_remedies/medicines arrays) is still honoured as a fallback.
-      const holistic = items.find((i) => asList(i.plan_data?.home_remedies).length)?.plan_data
+      const remedyPd   = newestData('remedies')
+      const medicinePd = newestData('medicines')
+      const holisticPd = newestData('holistic')
       return {
-        homeRemedies: toRemedyCards(newestOf('remedies')),
-        medicines: toMedicineCards(newestOf('medicines')),
-        holistic,
+        remedyPlan:
+          unwrap(remedyPd, 'home_remedies') ||
+          (remedyPd?.symptoms_addressed || remedyPd?.doctor_referrals ? remedyPd : null) ||
+          unwrap(holisticPd, 'home_remedies'),
+        medicinePlan:
+          unwrap(medicinePd, 'medicines') ||
+          (medicinePd?.primary_formulations || medicinePd?.supporting_formulations ? medicinePd : null) ||
+          unwrap(holisticPd, 'medicines'),
       }
     },
     retry: false,
   })
 
-  const [activeTab, setActiveTab] = useState('remedies')
-  const [filter, setFilter]       = useState('')
-  const [errorDismissed, setErrorDismissed] = useState(false)
+  const { data: symptomOptions = [] } = useQuery({
+    queryKey: ['remedy-symptoms'],
+    queryFn: async () => asList((await plansAPI.getRemedySymptoms()).data?.items),
+    staleTime: 24 * 60 * 60 * 1000,   // static KB vocabulary
+    retry: false,
+  })
 
-  const homeRemedies = useMemo(
-    () => (data?.homeRemedies?.length ? data.homeRemedies : asList(data?.holistic?.home_remedies)),
-    [data]
-  )
-  const medicines = useMemo(
-    () => (data?.medicines?.length ? data.medicines : asList(data?.holistic?.medicines)),
-    [data]
-  )
-  const error = queryError && !errorDismissed ? (queryError.response?.data?.detail || 'Could not load your latest plan.') : null
+  const remedyPlan   = data?.remedyPlan || null
+  const medicinePlan = data?.medicinePlan || null
 
-  // Collect unique symptoms for filter
-  const remedySymptoms = useMemo(() => [
-    ...new Set(homeRemedies.map(r => r.symptom_addressed).filter(Boolean))
-  ], [homeRemedies])
-
-  const medicineSymptoms = useMemo(() => [
-    ...new Set(medicines.map(m => m.symptom_addressed).filter(Boolean))
-  ], [medicines])
-
-  const filteredRemedies = useMemo(() =>
-    filter ? homeRemedies.filter(r => r.symptom_addressed === filter) : homeRemedies,
-    [homeRemedies, filter]
+  const addressed = useMemo(() => asList(remedyPlan?.symptoms_addressed), [remedyPlan])
+  const medicineCount = useMemo(
+    () => asList(medicinePlan?.primary_formulations).length + asList(medicinePlan?.supporting_formulations).length,
+    [medicinePlan]
   )
 
-  const filteredMedicines = useMemo(() =>
-    filter ? medicines.filter(m => m.symptom_addressed === filter) : medicines,
-    [medicines, filter]
-  )
+  // Seed the picker from the last plan when there is one, otherwise from the
+  // symptoms captured at onboarding/check-in — but only ids the engine can
+  // actually match, since those pickers use a plain-language vocabulary.
+  const seed = useMemo(() => {
+    const valid = new Set(symptomOptions.map(o => o.id))
+    const previous = addressed.filter(e => valid.has(e.symptom_id))
+    if (previous.length > 0) {
+      return {
+        ids: previous.map(e => e.symptom_id),
+        severity: Object.fromEntries(previous.map(e => [e.symptom_id, e.severity || 'mild'])),
+      }
+    }
+    return { ids: asList(profile?.current_symptoms).filter(id => valid.has(id)), severity: {} }
+  }, [symptomOptions, addressed, profile?.current_symptoms])
 
-  const currentSymptoms = activeTab === 'remedies' ? remedySymptoms : medicineSymptoms
-  const currentItems    = activeTab === 'remedies' ? filteredRemedies : filteredMedicines
-  const totalItems      = activeTab === 'remedies' ? homeRemedies.length : medicines.length
+  const selected = pickedIds ?? seed.ids
+  const severity = useMemo(() => ({ ...seed.severity, ...severityEdits }), [seed.severity, severityEdits])
+  const duration = durationEdits
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab)
-    setFilter('')
+  const invalidatePlans = () => {
+    queryClient.invalidateQueries({ queryKey: ['remedies-source-plans'] })
+    queryClient.invalidateQueries({ queryKey: ['plans-history'] })   // Dashboard cards
   }
+
+  const remedyMutation = useMutation({
+    mutationFn: () => plansAPI.generateRemedies({ symptoms: selected, severity, duration }),
+    onSuccess: () => {
+      invalidatePlans()
+      setPickerOpen(false)
+      setFilter('')
+      toast.success('Your remedies are ready ✦')
+    },
+    onError: (err) => {
+      if (err.response?.status === 429) {
+        toast.error('Rate limit reached — wait a minute before requesting another medical plan.')
+        return
+      }
+      toast.error(err.response?.data?.detail || 'Could not build your remedies. Please try again.')
+    },
+  })
+
+  const medicineMutation = useMutation({
+    mutationFn: async (forceRegenerate = false) => {
+      // Medicines are driven by saved preferences (allopathic meds, Ama, access),
+      // not symptoms — collect them first, exactly like the Dashboard flow.
+      const prefRes = await preferencesAPI.getFeature('medicines')
+      if (!prefRes.data.is_set) {
+        const err = new Error('PREF_REQUIRED')
+        err.prefRequired = true
+        throw err
+      }
+      return plansAPI.generateMedicines(forceRegenerate)
+    },
+    onSuccess: () => {
+      invalidatePlans()
+      toast.success('Your medicines plan is ready ✦')
+    },
+    onError: (err) => {
+      if (err.prefRequired) {
+        setPrefModalOpen(true)
+        return
+      }
+      if (err.response?.status === 429) {
+        toast.error('Rate limit reached — wait a minute before requesting another medical plan.')
+        return
+      }
+      toast.error(err.response?.data?.detail || 'Could not generate your medicines plan. Please try again.')
+    },
+  })
+
+  const error = queryError && !errorDismissed
+    ? (queryError.response?.data?.detail || 'Could not load your plans.')
+    : null
+
+  // Filter chips act on the remedy list only — doctor referrals stay visible
+  // whatever is filtered, since they are the "see someone about this" signal.
+  const symptomFilters = useMemo(
+    () => [...new Set(addressed.map(e => e.symptom_display).filter(Boolean))],
+    [addressed]
+  )
+
+  const shownRemedyPlan = useMemo(() => {
+    if (!remedyPlan || !filter) return remedyPlan
+    return { ...remedyPlan, symptoms_addressed: addressed.filter(e => e.symptom_display === filter) }
+  }, [remedyPlan, addressed, filter])
+
+  const setTab = (tab) => {
+    setFilter('')
+    setSearchParams(tab === 'medicines' ? { tab: 'medicines' } : {}, { replace: true })
+  }
+
+  const toggleSymptom = (id) =>
+    setPickedIds(selected.includes(id) ? selected.filter(s => s !== id) : [...selected, id])
+
+  const busy = activeTab === 'remedies' ? remedyMutation.isPending : medicineMutation.isPending
 
   return (
     <>
       <Helmet>
         <title>Remedies &amp; Medicines | Ayura AI</title>
-        <meta name="description" content="Your personalized Ayurvedic home remedies and classical medicines from your latest wellness plan." />
+        <meta name="description" content="Your personalized Ayurvedic home remedies and classical medicines — matched to your dosha, conditions and current medications." />
       </Helmet>
 
+      <PreferencesModal
+        isOpen={prefModalOpen}
+        typeId="medicines"
+        onClose={() => setPrefModalOpen(false)}
+        onSubmitSuccess={() => {
+          setPrefModalOpen(false)
+          medicineMutation.mutate(false)
+        }}
+      />
+
       <div className="rem-root">
-        {/* ── Background orbs ─────────────────── */}
         <div className="rem-bg-orb rem-orb-1" aria-hidden />
         <div className="rem-bg-orb rem-orb-2" aria-hidden />
 
         <div className="rem-container">
 
-          {/* ── Page header ─────────────────────── */}
+          {/* ── Page header ── */}
           <m.div
             className="rem-page-header"
             initial={{ opacity: 0, y: -16 }}
@@ -495,17 +416,34 @@ const Remedies = () => {
                 <h1 className="rem-page-title">
                   <span className="gradient-text">Remedies</span> &amp; Medicines
                 </h1>
-                <p className="rem-page-sub">Your personal Ayurvedic natural medicine cabinet</p>
+                <p className="rem-page-sub">Your personal Ayurvedic medicine cabinet</p>
               </div>
             </div>
             <div className="rem-header-right">
-              <Link to="/dashboard" className="btn btn-secondary btn-sm rem-regen-btn">
-                ↻ Regenerate from Dashboard
-              </Link>
+              {activeTab === 'remedies' ? (
+                <button
+                  className="btn btn-secondary btn-sm rem-regen-btn"
+                  onClick={() => setPickerOpen(o => !o)}
+                  aria-expanded={pickerOpen}
+                >
+                  <SlidersHorizontal size={14} strokeWidth={2} />
+                  {pickerOpen ? 'Hide symptoms' : remedyPlan ? 'Update symptoms' : 'Choose symptoms'}
+                </button>
+              ) : (
+                <button
+                  className="btn btn-secondary btn-sm rem-regen-btn"
+                  onClick={() => medicineMutation.mutate(!!medicinePlan)}
+                  disabled={medicineMutation.isPending}
+                >
+                  {medicineMutation.isPending
+                    ? <><RefreshCw size={14} strokeWidth={2} className="rem-spin" /> Generating…</>
+                    : <><RefreshCw size={14} strokeWidth={2} /> {medicinePlan ? 'Regenerate' : 'Generate'}</>}
+                </button>
+              )}
             </div>
           </m.div>
 
-          {/* ── Disclaimer banner ───────────────── */}
+          {/* ── Disclaimer ── */}
           <m.div
             className="disclaimer rem-disclaimer"
             initial={{ opacity: 0, y: 8 }}
@@ -519,7 +457,7 @@ const Remedies = () => {
             </span>
           </m.div>
 
-          {/* ── Error bar ───────────────────────── */}
+          {/* ── Error bar ── */}
           <AnimatePresence>
             {error && (
               <m.div
@@ -528,13 +466,15 @@ const Remedies = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
               >
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><TriangleAlert size={15} strokeWidth={2} /> {error}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <TriangleAlert size={15} strokeWidth={2} /> {error}
+                </span>
                 <button onClick={() => setErrorDismissed(true)} aria-label="Dismiss"><X size={14} strokeWidth={2} /></button>
               </m.div>
             )}
           </AnimatePresence>
 
-          {/* ── Tabs ────────────────────────────── */}
+          {/* ── Tabs ── */}
           <m.div
             className="rem-tabs-wrapper"
             initial={{ opacity: 0, y: 12 }}
@@ -544,103 +484,108 @@ const Remedies = () => {
             <div className="tabs rem-tabs" role="tablist">
               <button
                 className={`tab${activeTab === 'remedies' ? ' active' : ''}`}
-                onClick={() => handleTabChange('remedies')}
+                onClick={() => setTab('remedies')}
                 role="tab"
                 aria-selected={activeTab === 'remedies'}
               >
                 <Soup size={15} strokeWidth={2} /> Home Remedies
-                {!loading && homeRemedies.length > 0 && (
-                  <span className="rem-tab-count">{homeRemedies.length}</span>
-                )}
+                {!loading && addressed.length > 0 && <span className="rem-tab-count">{addressed.length}</span>}
               </button>
               <button
                 className={`tab${activeTab === 'medicines' ? ' active' : ''}`}
-                onClick={() => handleTabChange('medicines')}
+                onClick={() => setTab('medicines')}
                 role="tab"
                 aria-selected={activeTab === 'medicines'}
               >
                 <Pill size={15} strokeWidth={2} /> Ayurvedic Medicines
-                {!loading && medicines.length > 0 && (
-                  <span className="rem-tab-count">{medicines.length}</span>
-                )}
+                {!loading && medicineCount > 0 && <span className="rem-tab-count">{medicineCount}</span>}
               </button>
             </div>
           </m.div>
 
-          {/* ── Filter bar ──────────────────────── */}
+          {/* ── Symptom picker (remedies only) ── */}
+          <AnimatePresence>
+            {activeTab === 'remedies' && pickerOpen && symptomOptions.length > 0 && (
+              <SymptomPicker
+                options={symptomOptions}
+                selected={selected}
+                severity={severity}
+                duration={duration}
+                onToggle={toggleSymptom}
+                onSeverity={(id, v) => setSeverityEdits(s => ({ ...s, [id]: v }))}
+                onDuration={(id, v) => setDurationEdits(d => ({ ...d, [id]: v }))}
+                onGenerate={() => remedyMutation.mutate()}
+                generating={remedyMutation.isPending}
+                hasPlan={!!remedyPlan}
+              />
+            )}
+          </AnimatePresence>
+
+          {/* ── Symptom filter (remedies only) ── */}
           <AnimatePresence mode="wait">
-            {!loading && currentSymptoms.length > 0 && (
+            {activeTab === 'remedies' && !loading && symptomFilters.length > 1 && (
               <m.div
-                key={activeTab + '-filters'}
+                key="filters"
+                className="rem-filter-bar"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
               >
-                <FilterBar
-                  symptoms={currentSymptoms}
-                  activeFilter={filter}
-                  onFilter={setFilter}
-                />
+                <button
+                  className={`rem-filter-chip${filter === '' ? ' active' : ''}`}
+                  onClick={() => setFilter('')}
+                >
+                  All
+                </button>
+                {symptomFilters.map(s => (
+                  <button
+                    key={s}
+                    className={`rem-filter-chip${filter === s ? ' active' : ''}`}
+                    onClick={() => setFilter(s)}
+                  >
+                    {s}
+                  </button>
+                ))}
               </m.div>
             )}
           </AnimatePresence>
 
-          {/* ── Content area ────────────────────── */}
+          {/* ── Content ── */}
           <AnimatePresence mode="wait">
             {loading ? (
-              <m.div
-                key="skeletons"
-                className="rem-cards-grid"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
+              <m.div key="skeletons" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                {[1, 2, 3].map(i => <SkeletonBlock key={i} />)}
               </m.div>
-            ) : totalItems === 0 ? (
+            ) : activeTab === 'remedies' ? (
+              shownRemedyPlan ? (
+                <m.div
+                  key={'remedies-' + filter}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <RemedyView plan={shownRemedyPlan} />
+                </m.div>
+              ) : (
+                <m.div key="empty-remedies" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <EmptyState tab="remedies" busy={busy} onAction={() => setPickerOpen(true)} />
+                </m.div>
+              )
+            ) : medicinePlan ? (
               <m.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                key="medicines"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
-                <EmptyState tab={activeTab} />
+                <MedicineView plan={medicinePlan} />
               </m.div>
             ) : (
-              <m.div
-                key={activeTab + '-' + filter}
-                className="rem-cards-grid"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-                exit={{ opacity: 0 }}
-              >
-                <AnimatePresence>
-                  {activeTab === 'remedies'
-                    ? filteredRemedies.map((remedy, i) => (
-                        <RemedyCard key={remedy.remedy_name + i} remedy={remedy} index={i} />
-                      ))
-                    : filteredMedicines.map((med, i) => (
-                        <MedicineCard key={med.medicine_name + i} medicine={med} index={i} />
-                      ))
-                  }
-                </AnimatePresence>
-
-                {/* No results for filter */}
-                {currentItems.length === 0 && filter && (
-                  <m.div
-                    className="rem-no-filter-results"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <p>No {activeTab === 'remedies' ? 'remedies' : 'medicines'} found for "{filter}".</p>
-                    <button className="rem-filter-chip active" onClick={() => setFilter('')}>
-                      Clear filter
-                    </button>
-                  </m.div>
-                )}
+              <m.div key="empty-medicines" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <EmptyState tab="medicines" busy={busy} onAction={() => medicineMutation.mutate(false)} />
               </m.div>
             )}
           </AnimatePresence>

@@ -52,6 +52,10 @@ test.describe('app shell (mocked API)', () => {
       ['/checkin', 'h1'],
       ['/timeline', 'h1'],
       ['/reminders', 'h1'],
+      // /remedies renders the shared RemedyView/MedicineView against whatever
+      // /plans/history returns — here `{}`, so it must reach its empty state
+      // rather than throwing on a missing plan body.
+      ['/remedies', 'h1'],
       ['/community', 'h1'],
       ['/notifications', 'h1'],
       ['/interaction-check', 'h1'],

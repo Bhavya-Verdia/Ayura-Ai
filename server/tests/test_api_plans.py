@@ -114,6 +114,36 @@ def test_get_latest_plan_empty(auth_cookies, verified_mock_db):
     assert resp.status_code in (200, 404)
 
 
+# ── Remedy symptom vocabulary ──────────────────────────────────────────────────
+
+def test_remedy_symptoms_requires_auth(client):
+    resp = client.get("/api/plans/remedy-symptoms")
+    assert resp.status_code == 401
+
+
+def test_remedy_symptoms_returns_kb_vocabulary(auth_cookies, verified_mock_db):
+    """The picker's vocabulary must be the ids POST /plans/remedies can match.
+
+    Regression guard: the page used to have no picker at all, and the onboarding
+    vocabulary ('acidity', 'cough') only partly overlaps the KB's clinical ids.
+    """
+    resp = auth_cookies.get("/api/plans/remedy-symptoms")
+    assert resp.status_code == 200
+    items = resp.json()["items"]
+    assert len(items) > 0
+    ids = [i["id"] for i in items]
+    assert len(ids) == len(set(ids)), "symptom ids must be unique — they key the picker"
+    for i in items:
+        assert i["display"] and i["category"]
+
+    # Every id must resolve in the engine's own matcher, or the picker offers
+    # symptoms that silently produce no remedy.
+    from services.remedy_engine import _REMEDIES_FALLBACK, _SYMPTOM_ALIASES
+    kb_ids = {r.get("symptom_id") for r in _REMEDIES_FALLBACK}
+    for sid in ids:
+        assert _SYMPTOM_ALIASES.get(sid, sid) in kb_ids
+
+
 # ── Plan history — returns list ────────────────────────────────────────────────
 
 def test_get_plan_history_empty(auth_cookies, verified_mock_db):

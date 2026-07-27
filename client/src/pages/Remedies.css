@@ -178,214 +178,162 @@
   font-weight: 600;
 }
 
-/* Cards Grid */
-.rem-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 24px;
+/* Symptom picker — the page owns symptom capture, since /plans/remedies
+   matches against KB symptom ids and 422s without them. */
+.rem-picker {
+  margin-bottom: 28px;
 }
-
-/* Remedy Card */
-.rem-card {
+.rem-picker-inner {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  position: relative;
-  overflow: hidden;
   box-shadow: var(--glass-shadow-light);
 }
-.rem-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--border-left-color, var(--border-light));
+.rem-picker-head {
+  margin-bottom: 20px;
 }
-
-.rem-card-header {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.rem-picker-title {
+  font-size: 1.15rem;
+  margin-bottom: 6px;
 }
-.rem-card-title-row {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-.rem-card-icon {
-  color: var(--ayura-teal);
-  background: rgba(255,255,255,0.05);
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.rem-card-name {
-  font-size: 1.25rem;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-  line-height: 1.2;
-}
-.rem-card-symptom {
+.rem-picker-sub {
   color: var(--text-secondary);
   font-size: 0.9rem;
+  line-height: 1.55;
+  max-width: 62ch;
 }
-
-.rem-card-badges {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.rem-picker-group {
+  margin-bottom: 16px;
 }
-.rem-type-badge {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border-light);
-  color: var(--text-secondary);
-  padding: 4px 10px;
-  border-radius: 8px;
+.rem-picker-group-label {
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
 }
-.rem-safety-badge {
+.rem-picker-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rem-picker-chips .rem-filter-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  width: fit-content;
-}
-.rem-safety-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  gap: 5px;
 }
 
-.rem-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.rem-picker-detail {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-subtle);
 }
-.rem-label {
+.rem-picker-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.rem-chips {
-  display: flex;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 10px;
+  padding: 8px 0;
 }
-.rem-chip {
-  background: rgba(255,255,255,0.05);
+.rem-picker-row-name {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.rem-picker-row-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.rem-seg {
+  display: inline-flex;
+  background: rgba(0, 0, 0, 0.2);
   border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
-  padding: 4px 12px;
   border-radius: 12px;
+  padding: 3px;
+}
+[data-theme='light'] .rem-seg {
+  background: rgba(0, 0, 0, 0.04);
+}
+.rem-seg-btn {
+  padding: 7px 12px;
+  min-height: 34px;
+  border-radius: 9px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: background 0.2s, color 0.2s;
+}
+.rem-seg-btn:hover {
+  color: var(--text-primary);
+}
+.rem-seg-btn.active {
+  background: var(--ayura-teal);
+  color: #000;
+}
+[data-theme='light'] .rem-seg-btn.active {
+  color: #fff;   /* black on the deep-green light fill is 3.48:1 */
+}
+.rem-picker-select {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 8px 12px;
+  min-height: 40px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.rem-picker-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 22px;
+}
+.rem-picker-count {
+  color: var(--text-secondary);
   font-size: 0.85rem;
 }
+.rem-spin {
+  animation: rem-spin 1s linear infinite;
+}
+@keyframes rem-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rem-spin { animation: none; }
+}
 
-.rem-info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* Error bar — was rendered by the page but never styled. */
+.rem-error-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  background: rgba(0,0,0,0.15);
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-}
-[data-theme='light'] .rem-info-grid {
-  background: rgba(0,0,0,0.03);
-}
-.rem-info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.rem-info-label {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  font-weight: 600;
-}
-.rem-info-val {
-  font-weight: 500;
-  color: var(--text-primary);
-  font-size: 0.95rem;
-}
-
-.rem-text {
-  font-size: 0.95rem;
-  color: var(--text-primary);
-  line-height: 1.6;
-}
-
-.rem-expand-btn {
-  background: transparent;
-  color: var(--ayura-teal);
-  font-weight: 600;
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  color: #fb7185;
+  padding: 12px 16px;
+  border-radius: 14px;
+  margin-bottom: 20px;
   font-size: 0.9rem;
-  padding: 8px 0;
-  text-align: left;
-  border-top: 1px solid var(--border-light);
-  margin-top: 4px;
 }
-.rem-expand-btn:hover {
-  color: var(--ayura-teal-lt);
+[data-theme='light'] .rem-error-bar {
+  color: #be123c;
 }
-
-.rem-rationale {
-  background: rgba(92,171,116,0.05);
-  border: 1px solid rgba(92,171,116,0.1);
-  padding: 16px;
-  border-radius: 12px;
+.rem-error-bar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  color: inherit;
+  opacity: 0.8;
 }
-
-.rem-warnings-section {
-  background: rgba(244,63,94,0.05);
-  border: 1px solid rgba(244,63,94,0.1);
-  padding: 16px;
-  border-radius: 12px;
-  margin-top: 12px;
-}
-.rem-warn-label {
-  color: #f43f5e;
-}
-.rem-warnings {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.rem-warning-item {
-  color: #fda4af;
-  font-size: 0.9rem;
-  position: relative;
-  padding-left: 16px;
-}
-.rem-warning-item::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  color: #f43f5e;
-}
+.rem-error-bar button:hover { opacity: 1; }
 
 /* Empty State */
 .rem-empty {
@@ -435,11 +383,9 @@
 }
 .rem-skel-title { width: 60%; height: 24px; border-radius: 8px; }
 .rem-skel-badge { width: 80px; height: 24px; border-radius: 12px; }
-.rem-skel-sub { width: 40%; height: 16px; border-radius: 6px; }
-.rem-skel-chips { display: flex; gap: 8px; margin: 8px 0; }
-.rem-skel-chip { width: 60px; height: 28px; border-radius: 12px; }
 .rem-skel-body { width: 100%; height: 60px; border-radius: 8px; }
 .rem-skel-body.short { width: 70%; height: 16px; }
+.rem-skeleton-card + .rem-skeleton-card { margin-top: 16px; }
 
 @media (max-width: 768px) {
   .rem-page-header {
@@ -449,8 +395,23 @@
   .rem-header-right {
     margin-top: 0;
   }
-  .rem-cards-grid {
-    grid-template-columns: 1fr;
+  .rem-picker-inner {
+    padding: 18px 16px;
+  }
+  .rem-picker-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .rem-picker-row-controls {
+    width: 100%;
+  }
+  .rem-seg-btn {
+    min-height: 44px;   /* phones: SC 2.5.8 */
+    padding: 10px 14px;
+  }
+  .rem-picker-select {
+    min-height: 44px;
   }
 }
 

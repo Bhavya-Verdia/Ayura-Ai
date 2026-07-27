@@ -437,6 +437,35 @@ async def generate_panchakarma_plan(
     return enriched_plan
 
 
+@router.get("/remedy-symptoms")
+async def list_remedy_symptoms(user: UserDocument = Depends(get_current_user)):
+    """The symptom vocabulary the remedy engine can actually treat.
+
+    `POST /plans/remedies` matches `symptoms[]` against the KB's `symptom_id`, so
+    the picker has to offer these exact ids — the onboarding/check-in vocabularies
+    are plain-language and only partly bridged by the engine's alias map. Served
+    from the KB so the list can never drift from what the engine will match.
+    """
+    from services.remedy_engine import _REMEDIES_FALLBACK
+
+    entries = kb_cache.ayurvedic_remedies or _REMEDIES_FALLBACK
+    seen: set[str] = set()
+    items = []
+    for e in entries:
+        sid = e.get("symptom_id")
+        if not sid or sid in seen:
+            continue
+        seen.add(sid)
+        items.append({
+            "id": sid,
+            "display": e.get("symptom_display") or sid.replace("_", " ").title(),
+            "category": e.get("symptom_category") or "general",
+            "pregnancy_safe": bool(e.get("pregnancy_safe", False)),
+        })
+    items.sort(key=lambda i: (i["category"], i["display"]))
+    return {"items": items}
+
+
 @router.post("/remedies")
 async def generate_remedies_plan(
     req: dict = Body(default={}),

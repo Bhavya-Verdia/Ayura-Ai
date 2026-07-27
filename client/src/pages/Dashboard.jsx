@@ -1,6 +1,6 @@
 import React, { useState, useContext, useMemo, Suspense, lazy } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { toast } from 'sonner'
 import { AuthContext } from '../providers/AuthContext'
@@ -34,6 +34,12 @@ const PLAN_TYPES = [
   { id: 'remedies',    title: 'Home Remedies',       Icon: Soup,     desc: 'Kitchen medicine for common ailments.',        color: 'var(--ayura-rose)',   bg: 'rgba(251,113,133,0.10)' },
   { id: 'medicines',   title: 'Ayurvedic Medicines', Icon: Pill,     desc: 'Classical formulations for deep healing.',     color: 'var(--ayura-violet)', bg: 'rgba(230,162,60,0.10)' },
 ]
+
+// Remedies and medicines are owned by /remedies, not by the inline PlanViewer:
+// remedies cannot be generated from here at all (the engine needs a symptom list,
+// which only that page collects) and the page shows both plans plus referrals in
+// one place. So these two cards navigate instead of generating inline.
+const REMEDY_PAGE_PATH = { remedies: '/remedies', medicines: '/remedies?tab=medicines' }
 
 
 function formatRelativeTime(dateStr) {
@@ -499,6 +505,7 @@ function ReactionModal({ planType, onClose }) {
 const Dashboard = () => {
   const { user } = useContext(AuthContext)
   const { theme, setThemeAnimated } = useTheme()
+  const navigate = useNavigate()
   // Gate the plan-open "expand" transition: skip it for reduced-motion users and
   // low-power/mobile devices (where full-view transform anims have historically
   // caused GPU raster softness — see the mobile-blur incidents).
@@ -838,12 +845,19 @@ const Dashboard = () => {
             <div className="dash-plan-actions">
               {plans[type.id] ? (
                 <div className="dash-plan-action-row">
-                  <button className="dash-plan-view-btn" onClick={() => { setViewingPlan(plans[type.id].data); setViewingType(type.id) }}>
+                  <button
+                    className="dash-plan-view-btn"
+                    onClick={() => REMEDY_PAGE_PATH[type.id]
+                      ? navigate(REMEDY_PAGE_PATH[type.id])
+                      : (setViewingPlan(plans[type.id].data), setViewingType(type.id))}
+                  >
                     View Plan →
                   </button>
                   <button
                     className="dash-plan-regen-btn"
-                    onClick={() => generatePlan(type.id, true)}
+                    onClick={() => REMEDY_PAGE_PATH[type.id]
+                      ? navigate(REMEDY_PAGE_PATH[type.id])
+                      : generatePlan(type.id, true)}
                     disabled={generating[type.id]}
                     title="Regenerate"
                   >
@@ -861,12 +875,14 @@ const Dashboard = () => {
               ) : (
                 <button
                   className="dash-plan-generate-btn"
-                  onClick={() => generatePlan(type.id)}
+                  onClick={() => REMEDY_PAGE_PATH[type.id]
+                    ? navigate(REMEDY_PAGE_PATH[type.id])
+                    : generatePlan(type.id)}
                   disabled={generating[type.id]}
                 >
                   {generating[type.id] ? (
                     <><span className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} /> Generating…</>
-                  ) : '✦ Generate Plan'}
+                  ) : REMEDY_PAGE_PATH[type.id] ? `✦ Open ${type.id === 'medicines' ? 'Medicines' : 'Remedies'}` : '✦ Generate Plan'}
                 </button>
               )}
             </div>
