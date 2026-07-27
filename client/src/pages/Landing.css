@@ -157,6 +157,11 @@
 
 /* ─── HERO SECTION ────────────────────────────────────────── */
 .lnd-hero {
+  /* svh, not vh/dvh: `vh` is the LARGE viewport, so with the mobile URL bar
+     showing the hero is taller than the screen and pushes the CTA below the
+     fold; `dvh` fixes that but re-lays-out the hero every time the bar
+     animates during scroll. `svh` is the small (bar-visible) viewport — always
+     fully visible, never reflows. */
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1470,4 +1475,15 @@
   /* Face colour only — the element itself has no background (see --cta-face). */
   --cta-face: linear-gradient(135deg, #237045, #1c6b3f);
   box-shadow: 0 8px 32px rgba(28,107,63,0.35);
+}
+
+
+/* Upgrade to the dynamic/small viewport where supported. A separate
+   @supports block, not a duplicate declaration — lightningcss collapses the
+   latter. See "App page roots" in index.css. */
+@supports (min-height: 100dvh) {
+  .landing-root { min-height: 100dvh; }
+}
+@supports (min-height: 100svh) {
+  .lnd-hero { min-height: 100svh; }
 }

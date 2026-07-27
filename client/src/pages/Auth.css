@@ -297,3 +297,11 @@
   .auth-card { padding: 32px 22px 28px; border-radius: 20px; }
   .auth-card-title { font-size: 1.60rem; }
 }
+
+
+/* Upgrade to the dynamic/small viewport where supported. A separate
+   @supports block, not a duplicate declaration — lightningcss collapses the
+   latter. See "App page roots" in index.css. */
+@supports (min-height: 100dvh) {
+  .auth-page { min-height: 100dvh; }
+}

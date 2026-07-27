@@ -1,33 +1,33 @@
 /* ─── REMEDIES PAGE ───────────────────────────────────────── */
 .rem-root {
-  min-height: 100vh;
+  min-height: 100%; /* fills the app scroller, NOT the viewport — see "App page roots" in index.css */
   position: relative;
   padding-bottom: 80px;
   overflow: hidden;
 }
 
-/* Background orbs */
+/* Background orbs — gradient falloff instead of `filter: blur()`; see the note
+   in Progress.css (blurred fixed layers re-rasterize on every scroll frame). */
 .rem-bg-orb {
   position: fixed;
   border-radius: 50%;
-  filter: blur(120px);
   z-index: 0;
   pointer-events: none;
   opacity: 0.6;
 }
 .rem-orb-1 {
-  width: 600px;
-  height: 600px;
-  background: var(--aurora-3);
-  top: -100px;
-  right: -100px;
+  width: 760px;
+  height: 760px;
+  background: radial-gradient(circle at 50% 50%, var(--aurora-3) 0%, transparent 70%);
+  top: -180px;
+  right: -180px;
 }
 .rem-orb-2 {
-  width: 500px;
-  height: 500px;
-  background: var(--aurora-1);
-  bottom: -50px;
-  left: -200px;
+  width: 640px;
+  height: 640px;
+  background: radial-gradient(circle at 50% 50%, var(--aurora-1) 0%, transparent 70%);
+  bottom: -120px;
+  left: -270px;
 }
 
 .rem-container {

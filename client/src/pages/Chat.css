@@ -1,4 +1,16 @@
 /* ─── AI CHAT PAGE ──────────────────────────────────────────── */
+
+/* A percentage height only resolves if EVERY ancestor has a definite one.
+   PageWrapper's in-shell wrapper (`#main-content`) sets no height, so
+   `.chat-page-root { height: 100% }` below silently computed to `auto`: the
+   panel grew with the transcript, `.chat-history`'s `flex: 1; overflow-y: auto`
+   never got a box to scroll inside (measured scrollHeight === clientHeight ===
+   1881px — i.e. no inner scrolling at all), and the composer scrolled off the
+   bottom of a long conversation instead of staying pinned above the tab bar.
+   Scoped with :has() so ONLY the chat route's wrapper is constrained — every
+   other in-shell page still grows naturally into the shell's scroller. */
+#main-content:has(> .chat-page-root) { height: 100%; }
+
 .chat-page-root {
   display: flex; flex-direction: column; height: 100%;
   padding: 0 32px 32px 32px;
@@ -47,6 +59,9 @@
   flex: 1; padding: 28px 32px; overflow-y: auto;
   display: flex; flex-direction: column; gap: 20px;
   position: relative; z-index: 2;
+  /* A flick past the top/bottom of the transcript must not chain into the app
+     shell's scroller (or Android's pull-to-refresh) behind it. */
+  overscroll-behavior: contain;
 }
 .chat-history::-webkit-scrollbar { width: 4px; }
 .chat-history::-webkit-scrollbar-track { background: transparent; }
@@ -180,6 +195,56 @@
 }
 .ai-status-indicator svg { animation: spin 1.5s linear infinite; color: var(--ayura-teal); }
 
+/* Scroll-to-bottom FAB.
+   This had NO styles at all: with no `position` it laid out as a normal button
+   in .chat-canvas's flex column, so scrolling up in a conversation inserted a
+   stray unstyled button between the transcript and the composer and shrank the
+   message area. It is an overlay — it must be absolutely positioned. */
+.chat-scroll-fab {
+  position: absolute;
+  bottom: 96px; right: 20px;
+  z-index: 3;
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--glass-bg);
+  border: 1px solid var(--border-light);
+  color: var(--ayura-ink);
+  box-shadow: var(--glass-shadow-light);
+  cursor: pointer;
+}
+[data-theme='light'] .chat-scroll-fab { background: rgba(255,255,255,0.92); }
+.chat-scroll-fab:hover { border-color: var(--ayura-teal); color: var(--ayura-teal); }
+
+/* Copy button under an AI reply — also previously unstyled (a default grey
+   browser button under every message). */
+.chat-copy-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 6px; padding: 4px 9px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--ayura-muted);
+  font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+}
+.chat-copy-btn:hover { opacity: 1; color: var(--ayura-teal); border-color: var(--ayura-teal); }
+
+/* Action chips (reminder set / plan regenerating) — were inline styles. */
+.chat-action-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chat-action-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 600;
+}
+.chat-action-chip--reminder {
+  background: rgba(74,222,128,0.12); color: #5cab74; border: 1px solid rgba(74,222,128,0.3);
+}
+.chat-action-chip--plan {
+  background: rgba(230,162,60,0.12); color: #e6a23c; border: 1px solid rgba(230,162,60,0.3);
+}
+
 /* Message timestamp */
 .chat-bubble-time {
   font-size: 0.66rem; color: var(--ayura-muted); opacity: 0.6;
@@ -288,10 +353,25 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 768px) {
-  .chat-page-root { padding: 0 16px 16px; }
-  .chat-history { padding: 20px 16px; }
-  .chat-input-area { padding: 16px; }
+  .chat-page-root { padding: 0 12px 12px; }
+  /* The panel is viewport-height here, so every pixel the header takes comes
+     straight out of the transcript — it was eating ~45% of a 662px screen,
+     leaving 370px of messages. The subtitle is first-run copy that a returning
+     user does not need, and the title/icon are oversized for a phone. */
+  .chat-header { padding: 14px 0 10px; gap: 12px; }
+  .chat-header-icon { width: 40px; height: 40px; border-radius: 12px; }
+  .chat-header-icon svg { width: 20px; height: 20px; }
+  .chat-header-title { font-size: 1.25rem; }
+  .chat-header-subtitle { display: none; }
+  .chat-history { padding: 20px 14px; }
+  .chat-input-area { padding: 12px; }
   .chat-bubble-wrapper { max-width: 88%; }
+  /* 44px minimum hit area for both in-transcript controls. */
+  .chat-scroll-fab { width: 44px; height: 44px; bottom: 88px; right: 14px; }
+  .chat-copy-btn { padding: 8px 12px; opacity: 1; }
+  /* One column: two 0.8rem prompt cards side by side wrapped to 3-4 lines each
+     and pushed the composer off a small screen. */
+  .chat-suggestion-groups { grid-template-columns: 1fr; }
 }
 
 /* Light mode: deep-green surfaces get white text (token green is dark for AA). */

@@ -1,6 +1,6 @@
 /* ─── COMMUNITY FEED (Cyber-Ayurveda) ───────────── */
 .comm-root {
-  min-height: 100vh;
+  min-height: 100%; /* fills the app scroller, NOT the viewport — see "App page roots" in index.css */
   color: var(--ayura-ink);
   padding: 40px 20px;
   position: relative;
@@ -8,9 +8,10 @@
 }
 
 /* Background glows */
-.comm-bg-glow { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
-.comm-bg-glow-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: rgba(92,171,116,0.06); }
-.comm-bg-glow-2 { bottom: -20%; right: -10%; width: 40vw; height: 40vw; background: rgba(230,162,60,0.05); }
+/* Gradient falloff instead of `filter: blur()` — see the note in Progress.css. */
+.comm-bg-glow { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+.comm-bg-glow-1 { top: -18%; left: -18%; width: 66vw; height: 66vw; background: radial-gradient(circle at 50% 50%, rgba(92,171,116,0.06) 0%, transparent 70%); }
+.comm-bg-glow-2 { bottom: -28%; right: -18%; width: 54vw; height: 54vw; background: radial-gradient(circle at 50% 50%, rgba(230,162,60,0.05) 0%, transparent 70%); }
 
 .comm-container {
   max-width: 720px;

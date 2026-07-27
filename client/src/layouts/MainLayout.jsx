@@ -41,6 +41,12 @@ const NAV_ITEMS = [
   { id: 'settings',     label: 'Settings',     Icon: Settings,        path: '/settings',       i18nKey: 'settings' },
 ]
 
+// Exactly the breakpoint the layout CSS uses (`@media (max-width: 900px)` in
+// Dashboard.css / index.css). The old JS test was `innerWidth < 900`, which
+// EXCLUDED 900 — so at exactly 900px CSS applied the mobile drawer/tab-bar
+// rules while JS still rendered the desktop sidebar.
+const MOBILE_QUERY = '(max-width: 900px)'
+
 const BOTTOM_NAV = [
   { id: 'dashboard', label: 'Home',      Icon: LayoutDashboard, path: '/dashboard' },
   { id: 'chat',      label: 'AI Chat',   Icon: MessageCircle,   path: '/chat' },
@@ -58,14 +64,19 @@ export default function MainLayout() {
   // one frame on a phone before JS measures. (MainLayout is auth-only and never
   // prerendered, so `window` is always available here; guarded anyway.)
   const [isMobile, setIsMobile] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth < 900
+    () => typeof window !== 'undefined' && window.matchMedia(MOBILE_QUERY).matches
   )
 
+  // matchMedia, NOT a `resize` listener: Android fires `resize` on every
+  // URL-bar show/hide, i.e. continuously while scrolling, so the old handler
+  // ran a layout read (innerWidth) + setState on the whole shell mid-scroll.
+  // A media-query listener fires only when the breakpoint is actually crossed.
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 900)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
+    const mq = window.matchMedia(MOBILE_QUERY)
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
   }, [])
 
   // Idle prefetch of the lazy chunks a logged-in user is most likely to hit
@@ -89,6 +100,7 @@ export default function MainLayout() {
   }, [])
 
   const location = useLocation()
+  const isChatRoute = location.pathname.startsWith('/chat')
   const prefersReducedMotion = useReducedMotion()
   const doshaBadgeColor = DOSHA_COLOR[user?.dominant_dosha?.toLowerCase()] || DOSHA_COLOR.default
   const initials = user?.name ? user.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() : 'AY'
@@ -172,11 +184,14 @@ export default function MainLayout() {
       </aside>
 
       {/* ── MAIN CONTENT ── */}
+      {/* `fill-viewport-h` (index.css), not an inline height: this height is
+          load-bearing — it is what makes the column below it scroll instead of
+          the page — and the dynamic viewport unit that tracks the Android/iOS
+          URL bar needs a `100vh` base to fall back to. An inline style object
+          has one key per property, so it cannot express that pair. */}
       <div
-        className={`dash-main-container${isMobile ? ' mobile' : ''}`}
-        /* 100dvh (dynamic viewport) tracks Android/iOS URL-bar show/hide so the
-           shell doesn't overflow or leave a gap when the bar animates. */
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}
+        className={`dash-main-container fill-viewport-h${isMobile ? ' mobile' : ''}`}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
       >
         {/* Mobile topbar */}
         {isMobile && (
@@ -194,18 +209,43 @@ export default function MainLayout() {
           </div>
         )}
 
+        {/* `mode="wait"` holds the incoming route until the outgoing one has
+            finished exiting, so a tab tap cost exit + enter back to back. The
+            exit is now a fast fade (no y-drift) — on a phone, where the tap is
+            the only feedback you get, total perceived latency matters more than
+            the outgoing flourish. */}
         <AnimatePresence mode="wait" initial={false}>
           <m.div
             key={location.pathname}
             initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? {} : { opacity: 0, y: -6 }}
-            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            exit={prefersReducedMotion ? {} : { opacity: 0 }}
+            transition={prefersReducedMotion
+              ? { duration: 0 }
+              : { duration: 0.24, ease: [0.16, 1, 0.3, 1], opacity: { duration: 0.1 } }}
             /* Bottom padding clears BOTH the fixed tab bar (64px+safe) and the
                floating feedback FAB above it (bottom 64+safe+18, 56px tall) so
                end-of-scroll content — pose tags, the remedies tab strip — never
-               sits trapped under the FAB on phones. */
-            style={{ flex: 1, overflowY: 'auto', paddingBottom: isMobile ? 'calc(140px + env(safe-area-inset-bottom))' : 0, height: '100%' }}
+               sits trapped under the FAB on phones. Chat is the exception: it
+               is not a scrolling document but a fixed-height panel with its own
+               inner scroller, and FeedbackWidget.css already hides the FAB
+               there — so the extra ~76px only shrank the message area and
+               floated the composer above the tab bar for no reason.
+
+               overscroll-behavior: contain stops a flick past the end of this
+               scroller from chaining into the document — which on Android is
+               what triggers pull-to-refresh mid-scroll, and on iOS is the
+               whole-page rubber-band under the fixed tab bar. */
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              overscrollBehavior: 'contain',
+              WebkitOverflowScrolling: 'touch',
+              paddingBottom: isMobile
+                ? `calc(${isChatRoute ? '64px' : '140px'} + env(safe-area-inset-bottom))`
+                : 0,
+              height: '100%',
+            }}
           >
             <ScrollToTop />
             <React.Suspense fallback={

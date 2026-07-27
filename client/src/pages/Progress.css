@@ -1,28 +1,32 @@
 /* ─── PROGRESS PAGE ───────────────────────────────────── */
 .prg-root {
-  min-height: 100vh;
+  min-height: 100%; /* fills the app scroller, NOT the viewport — see "App page roots" in index.css */
   position: relative;
   padding-bottom: 80px;
   overflow: hidden;
 }
 
+/* Softness comes from the gradient falloff, NOT `filter: blur()`. A blurred
+   fixed element is a viewport-sized GPU texture that re-rasterizes on every
+   scroll/URL-bar move — the same cost pattern the ambient background was
+   rebuilt to avoid (see VitalBackground). The blur of a soft gradient IS a
+   bigger soft gradient, so nothing here changes what the eye sees. */
 .prg-orb {
   position: fixed;
   border-radius: 50%;
-  filter: blur(120px);
   z-index: 0;
   pointer-events: none;
   opacity: 0.45;
 }
 .prg-orb-a {
-  width: 500px; height: 500px;
-  background: var(--aurora-1);
-  top: -120px; left: -120px;
+  width: 640px; height: 640px;
+  background: radial-gradient(circle at 50% 50%, var(--aurora-1) 0%, transparent 70%);
+  top: -180px; left: -180px;
 }
 .prg-orb-b {
-  width: 600px; height: 600px;
-  background: var(--aurora-2);
-  bottom: -160px; right: -180px;
+  width: 760px; height: 760px;
+  background: radial-gradient(circle at 50% 50%, var(--aurora-2) 0%, transparent 70%);
+  bottom: -240px; right: -260px;
 }
 
 .prg-container {

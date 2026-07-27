@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import client from '../api/client';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -39,6 +39,99 @@ function TypingDots() {
   );
 }
 
+const hasEmergency = (content) => content?.toLowerCase().includes('urgency: emergency') || content?.toLowerCase().includes('consult a doctor');
+const hasAdapted   = (content) => content?.toLowerCase().includes('plan_adapted: true') || content?.toLowerCase().includes('plan updated');
+
+/**
+ * One message row, memoised on the message object.
+ *
+ * Streaming rewrites `messages` on every chunk (many times a second), and each
+ * AI bubble runs the full remark/micromark markdown pipeline. Rendering the
+ * list inline meant every chunk re-parsed the markdown of EVERY message in the
+ * conversation — cost growing with history length, on the device least able to
+ * absorb it. Only the last message's object identity actually changes per
+ * chunk, so React.memo confines the work to that one bubble.
+ */
+const ChatMessage = React.memo(function ChatMessage({ msg, idx, copied, onCopy }) {
+  const isUser      = msg.role === 'user';
+  const isEmergency = !isUser && hasEmergency(msg.content);
+  const isAdapted   = !isUser && hasAdapted(msg.content);
+
+  return (
+    <div className={`chat-bubble-row ${isUser ? 'user' : 'ai'}`}>
+      {!isUser && (
+        <div className="chat-ai-avatar">
+          <Zap size={14} strokeWidth={2.5} />
+        </div>
+      )}
+      <div className="chat-bubble-wrapper">
+        {isEmergency && (
+          <div className="chat-bubble-alert">
+            <AlertTriangle size={14} strokeWidth={2.5} />
+            Please consult a doctor immediately.
+          </div>
+        )}
+        {isAdapted && (
+          <div className="chat-bubble-success">
+            <Sparkles size={14} strokeWidth={2.5} />
+            Your daily plan has been updated!
+          </div>
+        )}
+
+        <div className={`chat-bubble ${isUser ? 'user' : 'ai'}`}>
+          {msg.typing && !msg.content ? (
+            <TypingDots />
+          ) : isUser ? (
+            msg.content
+          ) : (
+            <div className="chat-markdown">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {msg.content || ''}
+              </ReactMarkdown>
+            </div>
+          )}
+        </div>
+
+        {!isUser && msg.status && !msg.content && (
+          <div className="ai-status-indicator">
+            <Loader2 size={14} strokeWidth={2} />
+            {msg.status}
+          </div>
+        )}
+        {!isUser && !msg.typing && msg.content && (
+          <button
+            className="chat-copy-btn"
+            onClick={() => onCopy(msg.content, idx)}
+            title="Copy message"
+            aria-label="Copy message"
+          >
+            {copied
+              ? <><Check size={12} strokeWidth={2.5} /> Copied</>
+              : <><Copy size={12} strokeWidth={2} /> Copy</>}
+          </button>
+        )}
+        {!isUser && msg.actions && (msg.actions.reminders?.length > 0 || msg.actions.plansAdapting?.length > 0) && (
+          <div className="chat-action-chips">
+            {msg.actions.reminders?.map((r, i) => (
+              <span key={`rem-${i}`} className="chat-action-chip chat-action-chip--reminder">
+                <AlarmClock size={12} strokeWidth={2} /> Reminder set — {r.title} at {r.time}
+              </span>
+            ))}
+            {msg.actions.plansAdapting?.map((p, i) => (
+              <span key={`pln-${i}`} className="chat-action-chip chat-action-chip--plan">
+                <Sparkles size={12} strokeWidth={2} /> Regenerating your {p} plan…
+              </span>
+            ))}
+          </div>
+        )}
+        {!msg.typing && msg.timestamp && (
+          <span className="chat-bubble-time">{formatMsgTime(msg.timestamp)}</span>
+        )}
+      </div>
+    </div>
+  );
+});
+
 export default function Chat() {
   const [messages, setMessages]       = useState([]);
   const [inputValue, setInputValue]   = useState('');
@@ -46,7 +139,6 @@ export default function Chat() {
   const [sessionId, setSessionId]     = useState(null);
   const [copiedIdx, setCopiedIdx]     = useState(null);
   const [showScrollFab, setShowScrollFab] = useState(false);
-  const messagesEndRef = useRef(null);
   const inputRef       = useRef(null);
   const historyRef     = useRef(null);
   const wsRef          = useRef(null);
@@ -77,12 +169,22 @@ export default function Chat() {
     fetchSession();
   }, []);
 
-  // Auto-scroll to bottom unless user has scrolled up
+  // Auto-scroll to bottom unless user has scrolled up.
+  //
+  // Scroll the history element directly instead of scrollIntoView on a
+  // sentinel: scrollIntoView walks up and scrolls EVERY ancestor scroller,
+  // including the app shell's, which on a phone yanked the whole page.
+  //
+  // And jump instantly while a reply streams. Chunks land many times a second;
+  // `behavior: 'smooth'` restarts its animation on each one, so the list never
+  // settles — it reads as vibrating, and it fights the user's own scrolling.
+  // The smooth glide is kept for the discrete case (a completed message).
   useEffect(() => {
-    if (!showScrollFab) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, showScrollFab]);
+    if (showScrollFab) return;
+    const el = historyRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: isLoading ? 'auto' : 'smooth' });
+  }, [messages, showScrollFab, isLoading]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -204,14 +306,13 @@ export default function Chat() {
     handleSend(inputValue);
   };
 
-  const hasEmergency = (content) => content?.toLowerCase().includes('urgency: emergency') || content?.toLowerCase().includes('consult a doctor');
-  const hasAdapted   = (content) => content?.toLowerCase().includes('plan_adapted: true') || content?.toLowerCase().includes('plan updated');
-
-  function copyMessage(content, idx) {
+  // Stable identity: ChatMessage is memoised on its props, so a new function
+  // here every render would defeat the memo and re-render every bubble.
+  const copyMessage = useCallback((content, idx) => {
     navigator.clipboard.writeText(content).catch(() => {});
     setCopiedIdx(idx);
     setTimeout(() => setCopiedIdx(null), 1600);
-  }
+  }, []);
 
   return (
     <div className="chat-page-root">
@@ -250,87 +351,15 @@ export default function Chat() {
             </div>
           )}
 
-          {messages.map((msg, idx) => {
-            const isEmergency = msg.role === 'ai' && hasEmergency(msg.content);
-            const isAdapted   = msg.role === 'ai' && hasAdapted(msg.content);
-            const isUser      = msg.role === 'user';
-
-            return (
-              <div key={idx} className={`chat-bubble-row ${isUser ? 'user' : 'ai'}`}>
-                {!isUser && (
-                  <div className="chat-ai-avatar">
-                    <Zap size={14} strokeWidth={2.5} />
-                  </div>
-                )}
-                <div className="chat-bubble-wrapper">
-                  {isEmergency && (
-                    <div className="chat-bubble-alert">
-                      <AlertTriangle size={14} strokeWidth={2.5} />
-                      Please consult a doctor immediately.
-                    </div>
-                  )}
-                  {isAdapted && (
-                    <div className="chat-bubble-success">
-                      <Sparkles size={14} strokeWidth={2.5} />
-                      Your daily plan has been updated!
-                    </div>
-                  )}
-
-                  <div className={`chat-bubble ${isUser ? 'user' : 'ai'}`}>
-                    {msg.typing && !msg.content ? (
-                      <TypingDots />
-                    ) : isUser ? (
-                      msg.content
-                    ) : (
-                      <div className="chat-markdown">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {msg.content || ''}
-                        </ReactMarkdown>
-                      </div>
-                    )}
-                  </div>
-
-                  {!isUser && msg.status && !msg.content && (
-                    <div className="ai-status-indicator">
-                      <Loader2 size={14} strokeWidth={2} />
-                      {msg.status}
-                    </div>
-                  )}
-                  {!isUser && !msg.typing && msg.content && (
-                    <button
-                      className="chat-copy-btn"
-                      onClick={() => copyMessage(msg.content, idx)}
-                      title="Copy message"
-                      aria-label="Copy message"
-                    >
-                      {copiedIdx === idx
-                        ? <Check size={12} strokeWidth={2.5} />
-                        : <Copy size={12} strokeWidth={2} />}
-                    </button>
-                  )}
-                  {!isUser && msg.actions && (msg.actions.reminders?.length > 0 || msg.actions.plansAdapting?.length > 0) && (
-                    <div className="chat-action-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-                      {msg.actions.reminders?.map((r, i) => (
-                        <span key={`rem-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: 'rgba(74,222,128,0.12)', color: '#5cab74', border: '1px solid rgba(74,222,128,0.3)' }}>
-                          <AlarmClock size={12} strokeWidth={2} /> Reminder set — {r.title} at {r.time}
-                        </span>
-                      ))}
-                      {msg.actions.plansAdapting?.map((p, i) => (
-                        <span key={`pln-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: 'rgba(230,162,60,0.12)', color: '#e6a23c', border: '1px solid rgba(230,162,60,0.3)' }}>
-                          <Sparkles size={12} strokeWidth={2} /> Regenerating your {p} plan…
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {!msg.typing && msg.timestamp && (
-                    <span className="chat-bubble-time">{formatMsgTime(msg.timestamp)}</span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-
-          <div ref={messagesEndRef} />
+          {messages.map((msg, idx) => (
+            <ChatMessage
+              key={idx}
+              msg={msg}
+              idx={idx}
+              copied={copiedIdx === idx}
+              onCopy={copyMessage}
+            />
+          ))}
         </div>
 
         {/* Scroll-to-bottom FAB */}
@@ -344,7 +373,7 @@ export default function Chat() {
               transition={{ duration: 0.2 }}
               onClick={() => {
                 setShowScrollFab(false);
-                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                historyRef.current?.scrollTo({ top: historyRef.current.scrollHeight, behavior: 'smooth' });
               }}
               aria-label="Scroll to bottom"
             >

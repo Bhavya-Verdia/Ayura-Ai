@@ -3,7 +3,7 @@
    ────────────────────────────────────────────────────────────────────────── */
 
 .da-root {
-  min-height: 100vh;
+  min-height: 100%; /* fills the app scroller, NOT the viewport — see "App page roots" in index.css */
   /* Let the global themed background show through (was a hard dark fill that
      stayed dark in light mode); text follows the theme ink token. */
   background: transparent;
@@ -17,10 +17,12 @@
 }
 
 /* Background orbs */
+/* These already paint a radial gradient — the extra `filter: blur(80px)` on top
+   only re-blurred an already-soft image, at the cost of a viewport-sized GPU
+   texture that re-rasterizes every scroll frame. See the note in Progress.css. */
 .da-orb {
   position: fixed;
   border-radius: 50%;
-  filter: blur(80px);
   pointer-events: none;
   opacity: 0.18;
   z-index: 0;

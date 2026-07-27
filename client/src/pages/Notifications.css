@@ -1,33 +1,32 @@
 /* ─── NOTIFICATIONS PAGE ────────────────────────────────── */
 .notif-root {
-  min-height: 100vh;
+  min-height: 100%; /* fills the app scroller, NOT the viewport — see "App page roots" in index.css */
   position: relative;
   padding-bottom: 80px;
   overflow: hidden;
 }
 
-/* Background orbs */
+/* Background orbs — gradient falloff instead of `filter: blur()`; see Progress.css. */
 .notif-orb {
   position: fixed;
   border-radius: 50%;
-  filter: blur(120px);
   z-index: 0;
   pointer-events: none;
   opacity: 0.5;
 }
 .notif-orb-a {
-  width: 500px;
-  height: 500px;
-  background: var(--aurora-1);
-  top: -100px;
-  right: -50px;
+  width: 640px;
+  height: 640px;
+  background: radial-gradient(circle at 50% 50%, var(--aurora-1) 0%, transparent 70%);
+  top: -170px;
+  right: -120px;
 }
 .notif-orb-b {
-  width: 600px;
-  height: 600px;
-  background: var(--aurora-2);
-  bottom: -150px;
-  left: -200px;
+  width: 760px;
+  height: 760px;
+  background: radial-gradient(circle at 50% 50%, var(--aurora-2) 0%, transparent 70%);
+  bottom: -230px;
+  left: -280px;
 }
 
 .notif-container {

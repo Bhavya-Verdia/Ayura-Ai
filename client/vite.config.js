@@ -89,9 +89,37 @@ export default defineConfig({
   // last (the -webkit- one, which Chromium does NOT support) — shipping glass
   // surfaces with no blur on Chrome/Android. Real targets make it emit the
   // standard property and keep/add the -webkit- prefix only for Safari.
+  // The target list must describe what the app ACTUALLY supports, because
+  // lightningcss makes lowering/prefixing decisions from it.
+  //
+  // It used to claim `iOS >= 14`, which was fiction: the shipped CSS requires
+  // `color-mix()` (Safari 16.2 — `--ayura-accent-soft` and the button hovers)
+  // and `@property` (Safari 16.4 — the animated gradient angle). On iOS 14/15
+  // those declarations are invalid, so the target was promising support the
+  // stylesheet could not deliver. 16.4 is the first version where everything
+  // load-bearing works.
+  //
+  // Two features shipped here are NEWER than the floor on purpose, because they
+  // degrade to "no optimisation" rather than to a broken layout:
+  // `content-visibility` (Safari 18) and `text-wrap` (Safari 17.5).
+  // Viewport units (`dvh`/`svh`) are guarded by @supports instead — see
+  // "App page roots" in index.css for why a duplicate declaration cannot work.
+  //
+  // NOTE: raising this floor must NOT lose `-webkit-backdrop-filter`. Safari
+  // only dropped the prefix in 18, so at a 16.4 floor lightningcss still emits
+  // it — verified in the built CSS. Re-check if the floor ever moves past 18.
   css: {
     lightningcss: {
-      targets: browserslistToTargets(browserslist('defaults, iOS >= 14, Safari >= 14')),
+      // The `>= 16.4` clauses are load-bearing, not decorative: `defaults`
+      // alone resolves to iOS 18.5+ (it is "last 2 versions / >0.5%"), and at
+      // that floor lightningcss stops emitting -webkit-backdrop-filter. The
+      // union pulls 16.4→current back in; the `not` clauses drop what
+      // `defaults`' >0.5% bucket would otherwise re-admit below the floor.
+      targets: browserslistToTargets(
+        browserslist(
+          'defaults, ios_saf >= 16.4, safari >= 16.4, not ios_saf < 16.4, not safari < 16.4'
+        )
+      ),
     },
   },
   build: {

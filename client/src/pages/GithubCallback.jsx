@@ -43,7 +43,7 @@ function GithubCallback() {
 
   if (error) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column' }}>
+      <div className="fill-viewport-h" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
         <h2>Authentication Failed</h2>
         <p style={{ color: 'red' }}>{error}</p>
         <p>Redirecting back to login...</p>
