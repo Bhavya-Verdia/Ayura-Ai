@@ -62,8 +62,15 @@
   align-items: flex-end;
   gap: 12px;
 }
+/* Where there is room, lay the badge + both actions along one row instead of
+   stacking three items down the right edge against a 2.5rem title. */
+@media (min-width: 900px) {
+  .notif-header-right { flex-direction: row; align-items: center; }
+}
 .notif-count-badge {
   background: var(--ayura-teal);
+  /* Light mode deepens --ayura-teal to #237045, where black is 3.48:1. Same
+     split as .btn-primary and the skip link. */
   color: #000;
   font-weight: 800;
   padding: 4px 12px;
@@ -72,6 +79,7 @@
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
+[data-theme='light'] .notif-count-badge { color: #fff; }
 
 /* Error */
 .notif-error {

@@ -11,7 +11,7 @@ import { m, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../providers/ThemeProvider'
 import {
   Camera, Save, Brain, KeyRound, FileText, Table2,
-  Package, LogOut, Trash2,
+  Package, LogOut, Trash2, MessageSquare,
 } from 'lucide-react'
 import React from 'react'
 import './Settings.css'
@@ -745,6 +745,25 @@ export default function Settings() {
             </m.button>
             <m.button className="btn btn-secondary" onClick={downloadCsv} disabled={exportingCsv} whileTap={{ scale: 0.97 }}>
               {exportingCsv ? 'Exporting…' : <><Table2 size={16} strokeWidth={2} /> Download Progress CSV</>}
+            </m.button>
+          </div>
+        </m.div>
+
+        {/* Feedback — the permanent home for the widget. On phones this is the
+            ONLY entry point: the floating FAB is hidden there because it sat over
+            scrollable content and stole taps (see FeedbackWidget.css). */}
+        <m.div className="settings-card" variants={staggerItem}>
+          <h2 className="settings-section-title">Help us improve</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 20 }}>
+            Found a bug, a medical or content error, or something that could work better? Tell us — it goes straight to the team.
+          </p>
+          <div className="settings-action-row">
+            <m.button
+              className="btn btn-primary"
+              onClick={() => window.dispatchEvent(new CustomEvent('ayura:open-feedback'))}
+              whileTap={{ scale: 0.97 }}
+            >
+              <MessageSquare size={16} strokeWidth={2} /> Send Feedback
             </m.button>
           </div>
         </m.div>

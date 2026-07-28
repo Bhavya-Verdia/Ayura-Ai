@@ -83,6 +83,12 @@
   padding: 11px 14px; cursor: pointer; border-radius: 12px; transition: all 0.2s; margin-top: auto;
 }
 .dash-sidebar-signout:hover { color: var(--ayura-rose); background: rgba(251,113,133,0.08); }
+/* Feedback sits directly above Sign out and takes over the `margin-top: auto`
+   that pins the pair to the bottom of the sidebar. Teal hover, not the rose
+   destructive hover the sign-out button uses. */
+.dash-sidebar-feedback { margin-top: auto; }
+.dash-sidebar-feedback + .dash-sidebar-signout { margin-top: 0; }
+.dash-sidebar-feedback:hover { color: var(--ayura-teal); background: rgba(92,171,116,0.08); }
 
 /* Mobile sidebar */
 @media (max-width: 900px) {

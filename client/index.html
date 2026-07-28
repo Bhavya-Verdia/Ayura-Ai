@@ -4,8 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="dark light" />
-    <meta name="theme-color" content="#100D09" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#F5F1E8" media="(prefers-color-scheme: light)" />
+    <!-- Single value, NOT split by prefers-color-scheme. The app is dark-first
+         and ignores the OS preference (light is opt-in via the in-app toggle),
+         so a media-split meta told the browser to paint cream chrome around a
+         dark page on any light-mode device. The bootstrap script below and
+         ThemeProvider keep this in sync with the theme actually rendered. -->
+    <meta name="theme-color" content="#100D09" />
 
     <!-- Primary SEO -->
     <meta name="google-site-verification" content="ObnJ5WuepcnBXzSAiIhOOsWPWI9x6wJRwSv3hfRifD0" />
@@ -44,8 +48,13 @@
     <script>
       (function() {
         try {
+          // Dark-first by design: the OS preference is deliberately NOT read.
           var theme = localStorage.getItem('ayura_theme') || 'dark';
           document.documentElement.setAttribute('data-theme', theme);
+          // Repaint the browser chrome before first paint, so a returning
+          // light-mode user never sees dark chrome flash above a light page.
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', theme === 'light' ? '#F5F1E8' : '#100D09');
         } catch (e) {}
       })();
     </script>

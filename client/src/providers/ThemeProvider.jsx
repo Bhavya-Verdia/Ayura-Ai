@@ -5,11 +5,18 @@ const ThemeContext = createContext()
 export const useTheme = () => useContext(ThemeContext)
 
 export function ThemeProvider({ children }) {
+  // Dark-first by design — the OS `prefers-color-scheme` is deliberately not
+  // read. Light is opt-in via the toggle, and that choice persists. Keep this
+  // default in step with the pre-paint bootstrap script in index.html.
   const [theme, setTheme] = useState(localStorage.getItem('ayura_theme') || 'dark')
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('ayura_theme', theme)
+    // Keep the browser/OS chrome (iOS Safari bar, Android status bar, PWA
+    // title bar) matching the theme actually on screen.
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (meta) meta.setAttribute('content', theme === 'light' ? '#F5F1E8' : '#100D09')
   }, [theme])
 
   // Instant theme switch — no animation. (A View-Transitions circular reveal,

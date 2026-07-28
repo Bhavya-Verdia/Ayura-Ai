@@ -49,7 +49,7 @@
   color: var(--ayura-ink);
   caret-color: var(--ayura-teal);
 }
-.cmd-input::placeholder { color: var(--ayura-muted); font-weight: 400; }
+.cmd-input::placeholder { color: var(--placeholder); opacity: 1; font-weight: 400; }
 
 .cmd-esc-badge {
   font-size: 0.62rem;

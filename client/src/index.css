@@ -67,6 +67,13 @@
   outline: 2px solid var(--ayura-ink);
   outline-offset: 2px;
 }
+/* Light mode darkens --ayura-teal to #237045, against which the near-black ink
+   above drops to 3.27:1 — under AA, on the one control that exists purely for
+   accessibility. White on that green is 6.04:1. Same convention as
+   `[data-theme='light'] .btn-primary`. Dark mode is already 7.09:1. */
+[data-theme='light'] .skip-link {
+  color: #fff;
+}
 
 /* ─── SMOOTH THEME TRANSITION ────────────────────────────── */
 html,
@@ -106,6 +113,16 @@ body,
   --ayura-surface-2: #201a13;
   --ayura-ink:      #f7f1e6;
   --ayura-muted:    #a89d8b;
+  /* Placeholder text is TEXT — it needs AA (4.5:1), which the old
+     `rgba(148,163,184,0.40)` (2.2:1 dark / 1.4:1 light) badly missed. Tuned to
+     ~4.75:1 against the input fill in each theme: enough headroom to clear AA,
+     still dim enough to read as a hint rather than an entered value. */
+  --placeholder:    #8b8271;
+  /* PlanViewer's yoga/fasting accent. Was hard-coded #8b5cf6 in 40 places, so
+     light mode kept the dark-mode violet and dropped to 4.19:1 as text on the
+     near-white plan cards. The light value is deepened to clear AA while
+     keeping the violet identity (the saffron --ayura-violet would change it). */
+  --plan-violet:    #8b5cf6;
 
   /* ── Brand Accents (herbal green + saffron + terracotta) ──
      Token NAMES are kept for backward-compat with 30+ stylesheets:
@@ -303,6 +320,8 @@ body,
   --ayura-surface-2: #efe9dc;
   --ayura-ink:      #241d14;
   --ayura-muted:    #6b5f4f;
+  --placeholder:    #7d7161;   /* ~4.77:1 on the near-white input fill */
+  --plan-violet:    #6d28d9;   /* ~6.8:1 as text on the near-white plan card */
 
   /* Light accents are darkened so accent-as-TEXT clears WCAG AA (≥4.5:1) on the
      sandstone bg/surfaces. Primary buttons get white text in light mode (below),
@@ -663,13 +682,34 @@ select {
   font-family: inherit;
 }
 
+/* Global placeholder colour. `opacity: 1` is required — Firefox applies a
+   default ~0.54 alpha to placeholders, which would drag the tuned contrast
+   back below AA. Components should not re-declare a placeholder colour; if one
+   needs to, it must keep 4.5:1 against its own fill. */
+::placeholder {
+  color: var(--placeholder);
+  opacity: 1;
+}
+
 /* iOS Safari auto-zooms the viewport when a focused control's font-size is < 16px.
-   Enforce a 16px floor at mobile widths so focusing an input never yanks the zoom. */
+   Enforce a 16px floor at mobile widths so focusing an input never yanks the zoom.
+
+   `!important` is load-bearing, not laziness. This was previously a plain
+   `input, textarea, select` rule — specificity (0,0,1) — which lost to EVERY
+   component that sizes its own fields (`.auth-input`, `.rem-form input`,
+   `.input-group input`, …, all (0,1,0) or (0,1,1)). The floor therefore applied
+   to exactly zero real inputs, and tapping the login email field zoomed the page
+   on every iPhone. Bumping specificity instead (`html:root input`) would win
+   today but silently lose again the first time someone writes `.a .b input`.
+   This is a platform floor, so it wins unconditionally.
+
+   `max(16px, 1em)` keeps the original intent: it can only ever raise a field to
+   16px, never shrink one — no rule in the app asks for more than 16px. */
 @media (max-width: 768px) {
   input,
   textarea,
   select {
-    font-size: max(16px, 1em);
+    font-size: max(16px, 1em) !important;
   }
 }
 

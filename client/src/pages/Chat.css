@@ -334,7 +334,7 @@
   display: block;
 }
 .chat-input-wrapper input::placeholder,
-.chat-text-input::placeholder { color: var(--ayura-muted); opacity: 0.7; }
+.chat-text-input::placeholder { color: var(--placeholder); opacity: 1; }
 
 .chat-send-btn {
   background: linear-gradient(135deg, var(--ayura-teal), var(--ayura-teal-lt));

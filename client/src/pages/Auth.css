@@ -208,18 +208,20 @@
   background: rgba(92,171,116,0.035);
   box-shadow: 0 0 0 3px rgba(92,171,116,0.11);
 }
-.auth-input::placeholder { color: rgba(148,163,184,0.40); }
+.auth-input::placeholder { color: var(--placeholder); opacity: 1; }
 
 /* Password row */
 .auth-pw-row { position: relative; }
-.auth-pw-row .auth-input { padding-right: 40px; }
-/* 32x32 hit area (was 23x23, failing SC 2.5.8). `right` is pulled in from 11px
-   to 7px so the wider box keeps the icon at the same optical position; the
-   input's 40px right padding still clears it. */
+.auth-pw-row .auth-input { padding-right: 52px; }
+/* 44x44 hit area — the iOS HIG / WCAG 2.5.5 target, not just the 24px SC 2.5.8
+   floor. (History: 23x23 → 32x32 → 44x44.) The password row is the one place
+   in the auth form with slack to spend, so the box is genuinely 44px rather
+   than a pseudo-element overlay; the input's right padding grows to match so
+   typed text never runs under the icon. */
 .auth-pw-eye {
-  position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
   background: none; border: none; cursor: pointer; padding: 0;
-  min-width: 32px; min-height: 32px;
+  min-width: 44px; min-height: 44px;
   color: var(--ayura-muted); display: flex; align-items: center;
   justify-content: center;
   transition: color 0.2s;

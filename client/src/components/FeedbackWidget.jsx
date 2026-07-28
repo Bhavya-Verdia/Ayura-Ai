@@ -23,6 +23,20 @@ export default function FeedbackWidget() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen])
 
+  // This component renders NO trigger of its own — it is opened by an event.
+  // It used to own a floating FAB, which was `position: fixed` over scrollable
+  // content and won the hit-test against whatever scrolled under it: Chat's
+  // send button, Community's "Share", Herb Safety's "Check safety", a
+  // dosha-quiz answer card, and on desktop the "Report a reaction" button on
+  // the dashboard plan cards. Hiding it per page was whack-a-mole because the
+  // collisions are content-dependent. Triggers now live in fixed chrome that
+  // never overlays content: the sidebar (MainLayout) and Settings.
+  useEffect(() => {
+    const open = () => setIsOpen(true)
+    window.addEventListener('ayura:open-feedback', open)
+    return () => window.removeEventListener('ayura:open-feedback', open)
+  }, [])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (description.trim().length < 5) {
@@ -50,20 +64,6 @@ export default function FeedbackWidget() {
 
   return (
     <>
-      <m.button
-        className="feedback-fab"
-        onClick={() => setIsOpen(true)}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        aria-label="Give Feedback"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-      </m.button>
-
       <AnimatePresence>
         {isOpen && (
           <div className="feedback-overlay" onClick={() => setIsOpen(false)}>

@@ -7,7 +7,8 @@ import LoadingScreen from '../components/LoadingScreen'
 import { SkeletonDashboard, SkeletonChat } from '../components/Skeleton'
 import {
   LayoutDashboard, MessageCircle, Activity, CheckSquare,
-  Settings, LogOut, Menu, X, Bell, TrendingUp, Users, AlarmClock, Brain, ShieldCheck, Soup
+  Settings, LogOut, Menu, X, Bell, TrendingUp, Users, AlarmClock, Brain, ShieldCheck, Soup,
+  MessageSquare
 } from 'lucide-react'
 import ScrollToTop from '../components/ScrollToTop'
 import FeedbackWidget from '../components/FeedbackWidget'
@@ -176,6 +177,18 @@ export default function MainLayout() {
             )
           })}
         </nav>
+
+        {/* Feedback lives here, in the sidebar, rather than in a floating FAB:
+            a fixed overlay button won the hit-test against whatever scrolled
+            under it (see FeedbackWidget.jsx). The sidebar is chrome, so it can
+            never cover page content. Also mirrored in Settings. */}
+        <button
+          className="dash-sidebar-signout dash-sidebar-feedback"
+          onClick={() => window.dispatchEvent(new CustomEvent('ayura:open-feedback'))}
+        >
+          <MessageSquare size={16} strokeWidth={2} />
+          {t('send_feedback') || 'Send feedback'}
+        </button>
 
         <button className="dash-sidebar-signout" onClick={logout}>
           <LogOut size={16} strokeWidth={2} />

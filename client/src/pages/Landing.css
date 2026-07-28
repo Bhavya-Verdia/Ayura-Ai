@@ -80,6 +80,7 @@
 
 /* ── Theme + language switchers ── */
 .lnd-nav-icon-btn {
+  position: relative;
   display: inline-flex; align-items: center; justify-content: center;
   width: 36px; height: 36px;
   border-radius: 999px;
@@ -88,6 +89,19 @@
   color: var(--ayura-muted);
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+/* Hit area only — paints nothing. The circle stays 36px (32px on phones) so the
+   nav's visual density is untouched, while the thumb target reaches the 44px
+   iOS HIG / WCAG 2.5.5 size. Generated content hit-tests as part of its
+   originating element, so this widens the button without a wrapper.
+   `.lnd-nav-actions` carries a >=12px gap wherever this applies, so adjacent
+   44px targets meet edge-to-edge and never overlap. */
+.lnd-nav-icon-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 44px; height: 44px;
+  transform: translate(-50%, -50%);
 }
 .lnd-nav-icon-btn:hover,
 .lnd-nav-icon-btn.open {
@@ -1358,6 +1372,13 @@
 @media (max-width: 1024px) {
   .lnd-hero { grid-template-columns: 1fr; padding: 120px 40px 60px; gap: 48px; }
   .lnd-hero-copy { align-items: center; text-align: center; }
+  /* `align-items: center` only centres these rows while they shrink to fit.
+     Once they WRAP (phones, ~<430px) each becomes full-width, and their own
+     default `justify-content: flex-start` pinned the CTAs and trust chips to
+     the left edge under centred heading and body copy. Centre them explicitly
+     so the hero stays symmetric through the wrap. */
+  .lnd-hero-cta-row { justify-content: center; }
+  .lnd-trust-bar { justify-content: center; }
   .lnd-hero-subtitle { max-width: 56ch; }
   .lnd-feature { gap: 48px; }
 }
@@ -1384,8 +1405,11 @@
   .lnd-footer-top { flex-direction: column; }
   .lnd-footer-disclaimer { text-align: left; }
   .lnd-nav { padding: 0 20px; }
-  /* Keep brand + theme + language + auth links on one uncramped row */
-  .lnd-nav-actions { gap: 6px; }
+  /* Keep brand + theme + language + auth links on one uncramped row.
+     Gap is 12px, not 6px: the icon buttons carry a 44px hit overlay, so a
+     narrower gap would make neighbouring targets overlap and steal each
+     other's taps. 12px = (44 - 32) exactly, so they meet without overlapping. */
+  .lnd-nav-actions { gap: 12px; }
   .lnd-nav-icon-btn { width: 32px; height: 32px; }
   .lnd-cta-pill { padding: 8px 14px; }
   .lnd-nav-link { margin-left: 4px; }
@@ -1394,6 +1418,16 @@
    space goes to the four nav actions. */
 @media (max-width: 430px) {
   .lnd-brand-text { display: none; }
+}
+/* Below ~356px the row cannot afford both the 12px gap and the nav on one
+   line — the 12px gap alone moved the wrap threshold from ~330px to ~352px.
+   Give the spacing back and narrow the hit overlay to the available pitch
+   (32 + 6) so targets still never overlap. They stay 44px TALL, and 38x44
+   clears WCAG 2.5.8 AA (24px) comfortably; only the AAA/HIG 44px width is
+   traded, and only on sub-356px screens. */
+@media (max-width: 355px) {
+  .lnd-nav-actions { gap: 6px; }
+  .lnd-nav-icon-btn::after { width: 38px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal-left, .reveal-right { opacity: 1; transform: none; transition: none; }
