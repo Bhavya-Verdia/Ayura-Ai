@@ -28,7 +28,9 @@ test.describe('Authentication Flow', () => {
 
     // Fill in fake credentials
     await page.getByLabel(/Email address/i).fill('fake@ayura.ai');
-    await page.getByLabel(/Password/i).fill('wrongpassword');
+    // Exact: the reveal toggle beside this input is named "Show password", so a
+    // loose /Password/i also matches that button.
+    await page.getByLabel('Password', { exact: true }).fill('wrongpassword');
 
     // Submit form
     await page.getByRole('button', { name: 'Sign In →' }).click();

@@ -75,6 +75,12 @@ function PageWrapper({ children, inLayout = false }) {
   // explicit OS "reduce motion" preference falls back to the plain fade.
   const cheap = prefersReducedMotion || lowPower
 
+  // Both branches render <main>, not a div: this is the skip-link's target on
+  // every route, and as a div it was a jump destination with no landmark — so
+  // every page except Landing (which had its own <main>) failed
+  // landmark-one-main and gave screen-reader users no "main" region to jump to.
+  // Landing's and Admin's inner <main> were demoted to divs to keep exactly one.
+  //
   // Inside the app shell, MainLayout already animates route changes and owns
   // the Suspense boundary (with route-aware skeleton fallbacks). A second
   // motion div + Suspense here would double the entrance animation and steal
@@ -82,14 +88,14 @@ function PageWrapper({ children, inLayout = false }) {
   // the skip-link landmark.
   if (inLayout) {
     return (
-      <div id="main-content" tabIndex={-1}>
+      <main id="main-content" tabIndex={-1}>
         {children}
-      </div>
+      </main>
     )
   }
 
   return (
-    <m.div
+    <m.main
       variants={cheap ? pageVariantsReduced : pageVariants}
       initial="initial"
       animate="animate"
@@ -101,7 +107,7 @@ function PageWrapper({ children, inLayout = false }) {
       <Suspense fallback={<LoadingScreen />}>
         {children}
       </Suspense>
-    </m.div>
+    </m.main>
   )
 }
 

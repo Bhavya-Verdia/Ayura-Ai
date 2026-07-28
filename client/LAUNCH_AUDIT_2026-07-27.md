@@ -261,3 +261,9 @@ Unchanged and still green: 0 JS errors, 0 console errors, 0 failed requests,
 
 Real iOS/Android/Safari hardware, the GPU-compositing flicker check, keyboard and
 screen-reader tab-order, and a fresh Lighthouse run.
+
+**Update 2026-07-28** — keyboard tab-order and the Lighthouse run are now done;
+see `A11Y_LIGHTHOUSE_2026-07-28.md`. They found a missing `<main>` landmark on
+every route but Landing, and a password-reveal button that was unnamed,
+keyboard-unreachable and 23x23. Mobile a11y is now 100 on every public route.
+Real hardware and the flicker check remain open.

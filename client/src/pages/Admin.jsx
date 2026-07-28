@@ -48,7 +48,8 @@ export default function Admin() {
         <LazyParticleField count={200} spread={20} style={{ opacity: 0.35 }} />
       </Suspense>
 
-      <main className="dash-main" style={{ margin: '0 auto', maxWidth: '1100px', position: 'relative', zIndex: 2 }}>
+      {/* PageWrapper supplies the page's single <main> landmark. */}
+      <div className="dash-main" style={{ margin: '0 auto', maxWidth: '1100px', position: 'relative', zIndex: 2 }}>
         <m.section
           className="dash-section"
           style={{ display: 'grid', gap: '14px', padding: '24px' }}
@@ -197,7 +198,7 @@ export default function Admin() {
             </m.section>
           )}
         </AnimatePresence>
-      </main>
+      </div>
     </div>
     </>
   )

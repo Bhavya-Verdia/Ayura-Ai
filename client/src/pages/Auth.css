@@ -213,10 +213,15 @@
 /* Password row */
 .auth-pw-row { position: relative; }
 .auth-pw-row .auth-input { padding-right: 40px; }
+/* 32x32 hit area (was 23x23, failing SC 2.5.8). `right` is pulled in from 11px
+   to 7px so the wider box keeps the icon at the same optical position; the
+   input's 40px right padding still clears it. */
 .auth-pw-eye {
-  position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
-  background: none; border: none; cursor: pointer; padding: 4px;
+  position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; padding: 0;
+  min-width: 32px; min-height: 32px;
   color: var(--ayura-muted); display: flex; align-items: center;
+  justify-content: center;
   transition: color 0.2s;
 }
 .auth-pw-eye:hover { color: var(--ayura-teal); }
@@ -279,7 +284,13 @@
 .auth-link { color: var(--ayura-teal); font-weight: 600; text-decoration: none;
   display: inline-flex; align-items: center; min-height: 24px; }
 .auth-link:hover { text-decoration: underline; }
-.auth-forgot { color: var(--ayura-muted); font-size: 0.80rem; text-decoration: none; transition: color 0.2s; }
+/* inline-flex + min-height lifts the target from 19px to 24px (SC 2.5.8)
+   without changing where the text sits. */
+.auth-forgot {
+  color: var(--ayura-muted); font-size: 0.80rem; text-decoration: none;
+  transition: color 0.2s;
+  display: inline-flex; align-items: center; min-height: 24px;
+}
 .auth-forgot:hover { color: var(--ayura-teal); }
 .auth-disclaimer { font-size: 0.67rem; color: var(--ayura-muted); text-align: center; line-height: 1.5; opacity: 0.55; }
 
@@ -289,7 +300,12 @@
   font-size: 0.80rem; color: var(--ayura-muted); line-height: 1.5;
   margin-top: 2px;
 }
-.auth-consent input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; accent-color: var(--ayura-teal); }
+/* The wrapping <label> already gives this a 315x43 activation area, so SC 2.5.8
+   passes either way — 13px was just an uncomfortable tap on a phone. */
+.auth-consent input[type="checkbox"] {
+  margin-top: 1px; flex-shrink: 0; accent-color: var(--ayura-teal);
+  width: 18px; height: 18px;
+}
 
 /* ── Mobile ───────────────────────────────────────────────────── */
 @media (max-width: 500px) {

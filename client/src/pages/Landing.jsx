@@ -543,7 +543,8 @@ export default function Landing() {
         </nav>
       </header>
 
-      <main>
+      {/* PageWrapper supplies the page's single <main> landmark. */}
+      <div>
         {/* ── HERO ────────────────────────────────────────── */}
         <m.section className="lnd-hero">
           {/* Echo rings behind hero */}
@@ -847,7 +848,7 @@ export default function Landing() {
             </div>
           </m.div>
         </div>
-      </main>
+      </div>
 
       {/* ── FOOTER ──────────────────────────────────── */}
       <footer className="lnd-footer">

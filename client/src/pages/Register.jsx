@@ -151,7 +151,9 @@ export default function Register() {
                       value={password} onChange={e => setPassword(e.target.value)}
                       placeholder="At least 8 characters" required />
                     <button type="button" className="auth-pw-eye"
-                      onClick={() => setShowPw(v => !v)} tabIndex={-1}>
+                      onClick={() => setShowPw(v => !v)}
+                      aria-label={showPw ? 'Hide password' : 'Show password'}
+                      aria-pressed={showPw}>
                       {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
                   </div>
