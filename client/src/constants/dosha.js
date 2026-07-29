@@ -15,6 +15,17 @@ export const DOSHA_COLOR = {
   default: '#5cab74', // herbal-green accent for "tridoshic"/unknown
 }
 
+// Theme-flipping counterpart, for when the dosha colour is used as TEXT.
+// The hexes above are the dark-theme values; used as ink on a light surface
+// they measured 2.14-4.22:1 (pitta on the near-white plan cards is the worst).
+// `--{dosha}-ink` carries a deepened light value, so this clears AA in both
+// themes. Keep using DOSHA_COLOR for `${hex}44` tints — alpha suffixes need a
+// literal hex, and a translucent tint reads fine either way.
+export const doshaInk = (dosha) => {
+  const key = (dosha || '').toLowerCase()
+  return ['vata', 'pitta', 'kapha'].includes(key) ? `var(--${key}-ink)` : 'var(--kapha-ink)'
+}
+
 // Alias for remedy/medicine views, which key on "universal" instead of "default".
 export const DOSHA_COLORS_R = {
   vata:      DOSHA_COLOR.vata,

@@ -1,3 +1,15 @@
+/* The plan views used to render every section title as a <div>, so a plan had
+   no document outline at all — a screen-reader user could not jump between
+   "Week 2", "Ayurvedic Tips" or "Safety Notes". Those titles are now real
+   h3/h4 elements. This reset makes the swap purely semantic: `:where()` keeps
+   the selector at zero specificity, so every existing class rule still wins,
+   and `font: inherit` + `margin: 0` reproduce exactly what a <div> did.
+   Anything relying on UA heading styles must set them on its own class. */
+:where(.plan-viewer-container, .yoga-view, .gym-view, .diet-view, .din-view, .pk-view, .rv-view, .mv-view) :where(h1, h2, h3, h4, h5, h6) {
+  font: inherit;
+  margin: 0;
+}
+
 .plan-viewer-container {
   padding: 0 0 40px;
   color: var(--ayura-ink);
@@ -6,6 +18,129 @@
      (which spawns many narrow, dense grid columns and hurts readability). */
   max-width: 1040px;
   margin: 0 auto;
+}
+
+/* ── Day-list toolbar (yoga / gym / panchakarma) ──────────────────────────
+   Names the list for the outline and carries the expand/collapse-all escape
+   hatch, so reading the whole week is one click rather than seven. */
+.plan-days-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.9rem 0 0.5rem;
+}
+.plan-days-toolbar-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ayura-muted);
+  min-width: 0;
+}
+.plan-days-toolbar-btn {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--ayura-border);
+  background: transparent;
+  color: var(--ayura-text);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.plan-days-toolbar-btn:hover {
+  border-color: var(--ayura-muted);
+  background: color-mix(in srgb, var(--ayura-muted) 8%, transparent);
+}
+
+/* The accordion heading is a pass-through wrapper: the <button> inside it is
+   the control, and the card owns the padding. */
+.yoga-day-heading,
+.gym-day-heading { width: 100%; min-width: 0; }
+
+/* ── Sticky week/day pickers ───────────────────────────────────────────────
+   Once you are a few days down the list, switching week or day meant
+   scrolling back to the top. The picker now rides along. `top` clears the
+   fixed app chrome; the backdrop stops day cards showing through. */
+.yoga-week-tabs,
+.gym-week-tabs,
+.din-day-tabs,
+.diet-day-strip {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--ayura-bg);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+/* Sticky needs a non-visible overflow ancestor to be absent; these grids are
+   the only ancestors that could clip, and none of them scroll. */
+@media (prefers-reduced-motion: reduce) {
+  /* no motion involved — kept for parity with the rest of the file */
+  .yoga-week-tabs { scroll-behavior: auto; }
+}
+
+/* ── Print ────────────────────────────────────────────────────────────────
+   A plan is something people print and take to a class, a gym or a Vaidya.
+   Collapsed days are not in the DOM, so "Expand all" first — then this makes
+   the printed page legible: ink on white, no chrome, no split cards. */
+@media print {
+  /* Chrome's default is to drop backgrounds when printing, but a user who
+     ticks "Background graphics" would otherwise get black ink on the dark
+     app background. Force the sheet white either way. */
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .plan-viewer-container {
+    max-width: none;
+    color: #000;
+    padding: 0;
+  }
+  .plan-viewer-container * {
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #000 !important;
+    text-shadow: none !important;
+  }
+  /* Controls do nothing on paper. */
+  .plan-days-toolbar-btn,
+  .yoga-week-tabs,
+  .gym-week-tabs,
+  .yoga-day-toggle > .yoga-day-headmeta > svg,
+  .gym-day-toggle > .gym-day-headmeta > svg,
+  .pk-section-toggle > svg:last-child,
+  .yoga-section-toggle > svg,
+  .gym-instructions-toggle > svg,
+  .din-meal-toggle,
+  .gym-show-more {
+    display: none !important;
+  }
+  /* Keep a card, a day, a meal or a therapy on one page. */
+  .plan-section,
+  .yoga-day-card,
+  .gym-day-card,
+  .pk-section,
+  .diet-meal-card,
+  .din-slot,
+  .mv-card,
+  .rv-card,
+  .plan-safety-box {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1px solid #999 !important;
+  }
+  .yoga-days-grid,
+  .gym-days-grid { display: block !important; }
+  .yoga-day-card,
+  .gym-day-card { margin-bottom: 0.6rem; }
+  /* Sticky elements print stuck to the top of every page otherwise. */
+  .din-day-tabs,
+  .diet-day-strip { position: static !important; }
 }
 
 .plan-empty {
@@ -45,12 +180,15 @@
   color: var(--ayura-muted);
 }
 
+/* --ayura-amber is tuned as text on the page surface; on this 15%-orange pill
+   the light value only reaches 4.22:1, so light gets a deeper terracotta. */
+[data-theme='light'] .plan-dosha-badge { color: #7c3d0f; }
 .plan-dosha-badge {
   display: inline-block;
   padding: 3px 12px;
   border-radius: 20px;
   background: rgba(251,146,60,0.15);
-  color: var(--ayura-amber);
+  color: var(--ayura-amber);   /* 5.78:1 dark */
   font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -181,7 +319,7 @@
 
 .plan-card-label {
   color: var(--ayura-muted);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 700;
@@ -195,7 +333,7 @@
 /* ── Safety tier pill ── */
 .plan-safety-tier {
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 2px 9px;
   border-radius: 999px;
@@ -301,7 +439,7 @@
   margin-bottom: 1rem;
 }
 .pk-vaidya-icon {
-  color: #a08cf0;
+  color: var(--plan-lavender);
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -354,7 +492,7 @@
   border-radius: 999px;
   background: color-mix(in srgb, var(--ayura-card-bg) 80%, var(--ayura-surface));
   border: 1px solid var(--ayura-border);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 .pk-vital-chip.pk-vital-warn {
@@ -381,7 +519,7 @@
   padding: 0.28rem 0.75rem;
   border-radius: 999px;
   border: 1px solid;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   width: fit-content;
@@ -423,7 +561,7 @@
   align-items: flex-start;
   gap: 0.4rem;
   font-size: 0.78rem;
-  color: #f97316;
+  color: var(--plan-orange);
   background: rgba(249,115,22,0.08);
   border: 1px solid rgba(249,115,22,0.2);
   border-radius: 8px;
@@ -449,7 +587,7 @@
 }
 
 .pk-info-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -466,7 +604,7 @@
 }
 
 .pk-info-sub {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
 }
 
@@ -475,7 +613,7 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.78rem;
-  color: #f97316;
+  color: var(--plan-orange);
   padding: 0.5rem 0.8rem;
   background: rgba(249,115,22,0.07);
   border: 1px solid rgba(249,115,22,0.18);
@@ -490,7 +628,7 @@
 }
 
 .pk-rationale-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 700;
@@ -554,7 +692,7 @@
 }
 
 .pk-phase-sub {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   text-transform: capitalize;
 }
@@ -586,6 +724,39 @@
   gap: 0.4rem;
 }
 
+/* ── Collapsible protocol sections ── */
+.pk-section-collapsible:not(.open) { padding: 0.35rem 1.3rem; }
+.pk-section-heading { width: 100%; }
+.pk-section-toggle {
+  width: 100%;
+  min-height: 44px;
+  min-width: 0;
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.pk-section-toggle > svg { flex-shrink: 0; color: var(--ayura-muted); }
+.pk-section-toggle:hover .pk-section-title-text { color: var(--plan-orange); }
+/* The title takes what it needs; the summary beside it is what truncates. */
+.pk-section-title-text { flex: 1 1 auto; min-width: 0; }
+.pk-section-summary {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ayura-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.pk-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 /* Aushadha grid */
 .pk-aus-grid {
   display: grid;
@@ -604,7 +775,7 @@
 }
 
 .pk-aus-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.07em;
   font-weight: 700;
@@ -618,7 +789,7 @@
 }
 
 .pk-aus-sub {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
 }
 
@@ -631,7 +802,7 @@
 }
 
 .pk-signs-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -684,7 +855,7 @@
   background: color-mix(in srgb, var(--ayura-accent) 15%, transparent);
   border: 1px solid color-mix(in srgb, var(--ayura-accent) 30%, transparent);
   color: var(--ayura-accent);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -725,13 +896,13 @@
 }
 
 .pk-day-num {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--ayura-accent);
 }
 
 .pk-day-phase {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   font-weight: 500;
   overflow: hidden;
@@ -749,7 +920,7 @@
   background: color-mix(in srgb, var(--ayura-accent) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--ayura-accent) 25%, transparent);
   color: var(--ayura-accent);
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 0.18rem 0.5rem;
   border-radius: 999px;
@@ -757,8 +928,8 @@
 
 .pk-pradhana-action {
   width: 100%;
-  background: color-mix(in srgb, #f97316 8%, var(--ayura-card-bg) 92%);
-  border: 1.5px solid color-mix(in srgb, #f97316 30%, transparent);
+  background: color-mix(in srgb, var(--plan-orange) 8%, var(--ayura-card-bg) 92%);
+  border: 1.5px solid color-mix(in srgb, var(--plan-orange) 30%, transparent);
   border-radius: 9px;
   padding: 0.65rem 0.8rem;
   margin-bottom: 0.4rem;
@@ -773,25 +944,26 @@
   flex-wrap: wrap;
 }
 .pk-pradhana-flame {
-  color: #f97316;
+  color: var(--plan-orange);
   flex-shrink: 0;
 }
 .pk-pradhana-action-name {
   font-size: 0.78rem;
   font-weight: 700;
-  color: #fb923c;
+  color: #fb923c;   /* dark-theme orange */
   flex: 1;
 }
 .pk-pradhana-timing {
-  font-size: 0.67rem;
-  color: var(--ayura-text-secondary);
-  background: color-mix(in srgb, #f97316 10%, transparent);
-  border: 1px solid color-mix(in srgb, #f97316 20%, transparent);
+  font-size: 0.75rem;
+  color: var(--ayura-ink);   /* --ayura-text-secondary was 4.33:1 at 10.7px */
+  background: color-mix(in srgb, var(--plan-orange) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--plan-orange) 20%, transparent);
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
 }
+[data-theme='light'] .pk-pradhana-action-name { color: #9a3412; }   /* was 1.99:1 */
 .pk-pradhana-action-notes {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   line-height: 1.6;
   color: var(--ayura-text-secondary);
   margin: 0;
@@ -827,7 +999,7 @@
   background: rgba(239,68,68,0.1);
   border: 1px solid rgba(239,68,68,0.25);
   color: #ef4444;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 0.18rem 0.55rem;
   border-radius: 999px;
@@ -874,18 +1046,18 @@
 .pk-rare-k {
   font-weight: 600;
   color: var(--ayura-muted);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding-top: 0.05rem;
 }
 
 .pk-rare-warn .pk-rare-k {
-  color: #f97316;
+  color: var(--plan-orange);
 }
 
 .pk-rare-warn span:last-child {
-  color: #f97316;
+  color: var(--plan-orange);
   font-weight: 500;
 }
 
@@ -899,7 +1071,7 @@
 
 /* ══════════════════════════════════════════════════════════════
    GYM VIEW — dedicated renderer
-   Accent: #22c55e (green)
+   Accent: var(--plan-green) (green)
 ══════════════════════════════════════════════════════════════ */
 .gym-view {
   display: flex;
@@ -908,13 +1080,13 @@
 }
 
 .gym-motivational {
-  background: color-mix(in srgb, #22c55e 8%, var(--ayura-card-bg) 92%);
-  border: 1.5px solid color-mix(in srgb, #22c55e 25%, transparent);
+  background: color-mix(in srgb, var(--plan-green) 8%, var(--ayura-card-bg) 92%);
+  border: 1.5px solid color-mix(in srgb, var(--plan-green) 25%, transparent);
   border-radius: 10px;
   padding: 0.85rem 1.1rem;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #22c55e;
+  color: var(--plan-green);
   line-height: 1.5;
 }
 
@@ -940,11 +1112,11 @@
   border: 1px solid color-mix(in srgb, var(--ayura-accent) 20%, transparent);
   border-radius: 20px;
   padding: 0.28rem 0.7rem;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .gym-vital-icon {
-  color: #22c55e;
+  color: var(--plan-green);
   flex-shrink: 0;
 }
 
@@ -953,13 +1125,13 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 
 .gym-vital-v {
   color: var(--ayura-text);
   font-weight: 700;
-  font-size: 0.73rem;
+  font-size: 0.75rem;
 }
 
 /* ── Week tabs ── */
@@ -984,25 +1156,25 @@
 }
 
 .gym-week-tab:hover {
-  border-color: #22c55e;
-  color: #22c55e;
+  border-color: var(--plan-green);
+  color: var(--plan-green);
 }
 
 .gym-week-tab.active {
-  background: color-mix(in srgb, #22c55e 12%, var(--ayura-card-bg) 88%);
-  border-color: #22c55e;
-  color: #22c55e;
+  background: color-mix(in srgb, var(--plan-green) 12%, var(--ayura-card-bg) 88%);
+  border-color: var(--plan-green);
+  color: var(--plan-green);
 }
 
 .gym-tab-num {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .gym-tab-theme {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   opacity: 0.8;
 }
 
@@ -1011,6 +1183,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 0.85rem;
+  /* Same stretch problem as .yoga-days-grid: rest days were padded out to match
+     the tallest workout in their row — measured 866px and 817px of empty card. */
+  align-items: start;
 }
 
 .gym-day-card {
@@ -1021,11 +1196,19 @@
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
+  min-width: 0;
 }
 
+/* Closed, the card is only its header row. */
+.gym-day-card:not(.open) {
+  padding: 0.35rem 1rem;
+}
+
+/* Recessed by background rather than `opacity: 0.65`, which dimmed the text
+   along with the card — same fix as .yoga-day-card.rest. */
 .gym-day-card.rest {
-  opacity: 0.65;
   background: color-mix(in srgb, var(--ayura-surface) 60%, var(--ayura-card-bg));
+  border-color: color-mix(in srgb, var(--ayura-border) 65%, transparent);
 }
 
 .gym-day-header {
@@ -1035,6 +1218,45 @@
   gap: 0.5rem;
 }
 
+/* The header is the disclosure control: reset the button chrome, fill the card,
+   and hold a 44px row so the day is not a hairline tap target on a phone. */
+.gym-day-toggle {
+  width: 100%;
+  min-width: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  min-height: 44px;
+}
+.gym-day-toggle:hover .gym-day-name { color: var(--plan-green); }
+.gym-day-headmeta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+}
+.gym-day-headmeta > svg { color: var(--ayura-muted); flex-shrink: 0; }
+/* Collapsed precis — truncates so a closed day is always exactly one row. */
+.gym-day-summary {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ayura-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+@media (max-width: 340px) {
+  .gym-day-summary { display: none; }
+}
+
 .gym-day-name {
   display: flex;
   align-items: center;
@@ -1042,17 +1264,20 @@
   font-size: 0.88rem;
   font-weight: 700;
   color: var(--ayura-text);
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
+.gym-day-name svg { flex-shrink: 0; }
 
-.gym-work-icon { color: #22c55e; }
+.gym-work-icon { color: var(--plan-green); }
 .gym-rest-icon { color: var(--ayura-muted); }
 
 .gym-day-focus {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #22c55e;
-  background: color-mix(in srgb, #22c55e 10%, transparent);
-  border: 1px solid color-mix(in srgb, #22c55e 20%, transparent);
+  color: var(--plan-green);
+  background: color-mix(in srgb, var(--plan-green) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--plan-green) 20%, transparent);
   padding: 0.15rem 0.5rem;
   border-radius: 20px;
   white-space: nowrap;
@@ -1076,7 +1301,7 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--ayura-text-secondary);
   background: color-mix(in srgb, var(--ayura-accent) 8%, transparent);
   border: 1px solid var(--ayura-border);
@@ -1092,7 +1317,7 @@
 }
 
 .gym-section-label {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -1120,7 +1345,7 @@
   content: '›';
   position: absolute;
   left: 0;
-  color: #22c55e;
+  color: var(--plan-green);
   font-weight: 700;
 }
 
@@ -1164,10 +1389,10 @@
 }
 
 .gym-ex-badge {
-  background: color-mix(in srgb, #22c55e 15%, transparent);
-  border: 1px solid color-mix(in srgb, #22c55e 30%, transparent);
-  color: #22c55e;
-  font-size: 0.72rem;
+  background: color-mix(in srgb, var(--plan-green) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--plan-green) 30%, transparent);
+  color: var(--plan-green);
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 0.12rem 0.45rem;
   border-radius: 4px;
@@ -1175,7 +1400,7 @@
 }
 
 .gym-ex-rest {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   background: color-mix(in srgb, var(--ayura-accent) 8%, transparent);
   border: 1px solid var(--ayura-border);
@@ -1185,7 +1410,7 @@
 }
 
 .gym-ex-equip {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--ayura-text-secondary);
   background: color-mix(in srgb, var(--ayura-accent) 5%, transparent);
   border: 1px solid var(--ayura-border);
@@ -1195,7 +1420,7 @@
 }
 
 .gym-ex-notes {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   margin: 0;
   font-style: italic;
@@ -1243,11 +1468,11 @@
 }
 
 .gym-tip-label {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #22c55e;
+  color: var(--plan-green);
 }
 
 .gym-tip-text {
@@ -1274,7 +1499,7 @@
 .gym-progression-table th {
   text-align: left;
   padding: 0.4rem 0.6rem;
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1292,7 +1517,7 @@
 
 .gym-progression-table td:first-child {
   font-weight: 700;
-  color: #22c55e;
+  color: var(--plan-green);
   white-space: nowrap;
 }
 
@@ -1305,8 +1530,8 @@
 .gym-overtraining {
   margin-top: 0.8rem;
   padding: 0.7rem 0.9rem;
-  background: color-mix(in srgb, #f97316 6%, var(--ayura-card-bg));
-  border: 1px solid color-mix(in srgb, #f97316 20%, transparent);
+  background: color-mix(in srgb, var(--plan-orange) 6%, var(--ayura-card-bg));
+  border: 1px solid color-mix(in srgb, var(--plan-orange) 20%, transparent);
   border-radius: 9px;
 }
 
@@ -1339,7 +1564,7 @@
 
 /* ── Weight range ── */
 .gym-weight-range {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--ayura-text-secondary);
   margin-top: 0.22rem;
   line-height: 1.4;
@@ -1349,15 +1574,16 @@
   flex-wrap: wrap;
 }
 .gym-weight-range.kg {
-  color: #22c55e;
+  color: var(--plan-green);
 }
 
 /* ── Instructions accordion ── */
 .gym-instructions-toggle {
+  min-height: 44px;   /* touch floor — these read as links but are controls */
   display: flex;
   align-items: center;
   gap: 0.2rem;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--ayura-text-secondary);
   background: none;
   border: none;
@@ -1369,10 +1595,10 @@
 }
 .gym-instructions-toggle:hover {
   opacity: 1;
-  color: #22c55e;
+  color: var(--plan-green);
 }
 .gym-instructions-panel {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   line-height: 1.65;
   color: var(--ayura-text-secondary);
   padding-left: 1.2rem;
@@ -1396,11 +1622,11 @@
 .gym-rest-title {
   font-weight: 700;
   font-size: 0.84rem;
-  color: #a08cf0;
+  color: var(--plan-lavender);
   margin-bottom: 0.55rem;
 }
 .gym-rest-activities {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   line-height: 1.7;
   color: var(--ayura-text-secondary);
   padding-left: 1.2rem;
@@ -1409,19 +1635,19 @@
 .gym-rest-meta-row {
   display: flex;
   gap: 0.4rem;
-  font-size: 0.71rem;
+  font-size: 0.75rem;
   color: var(--ayura-text-secondary);
   margin-bottom: 0.3rem;
   line-height: 1.5;
 }
 .gym-rest-meta-label {
   font-weight: 600;
-  color: #a08cf0;
+  color: var(--plan-lavender);
   flex-shrink: 0;
 }
 .gym-rest-quote {
   font-style: italic;
-  font-size: 0.71rem;
+  font-size: 0.75rem;
   color: var(--ayura-text-secondary);
   opacity: 0.8;
   margin-top: 0.55rem;
@@ -1430,8 +1656,9 @@
   margin-bottom: 0;
 }
 .gym-show-more {
-  font-size: 0.7rem;
-  color: #a08cf0;
+  min-height: 44px;   /* was 17px tall */
+  font-size: 0.75rem;
+  color: var(--plan-lavender);
   background: none;
   border: none;
   cursor: pointer;
@@ -1483,7 +1710,7 @@
   border-radius: 10px;
 }
 .yoga-medical-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #10b981;
   text-transform: uppercase;
@@ -1491,7 +1718,7 @@
   flex-shrink: 0;
 }
 .yoga-medical-chip {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--ayura-text-secondary);
   background: color-mix(in srgb, #10b981 12%, var(--ayura-card-bg) 88%);
@@ -1507,8 +1734,8 @@
   align-items: flex-start;
   gap: 0.45rem;
   padding: 0.55rem 0.85rem;
-  background: color-mix(in srgb, #f59e0b 7%, var(--ayura-card-bg) 93%);
-  border: 1px solid color-mix(in srgb, #f59e0b 20%, transparent);
+  background: color-mix(in srgb, var(--plan-amber) 7%, var(--ayura-card-bg) 93%);
+  border: 1px solid color-mix(in srgb, var(--plan-amber) 20%, transparent);
   border-radius: 10px;
   font-size: 0.78rem;
   color: #d97706;
@@ -1517,7 +1744,7 @@
 .yoga-seasonal-note svg {
   flex-shrink: 0;
   margin-top: 0.1rem;
-  color: #f59e0b;
+  color: var(--plan-amber);
 }
 
 .yoga-motivational {
@@ -1554,11 +1781,11 @@
 }
 .yoga-protocol-summary::-webkit-details-marker { display: none; }
 .yoga-protocol-condition {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #a08cf0;
+  color: var(--plan-lavender);
   background: color-mix(in srgb, #6366f1 15%, transparent);
   border-radius: 20px;
   padding: 0.12rem 0.55rem;
@@ -1591,14 +1818,14 @@
   margin: 0;
 }
 .yoga-protocol-research {
-  font-size: 0.73rem;
+  font-size: 0.75rem;
   color: var(--ayura-text-secondary);
   line-height: 1.5;
   margin: 0;
   font-style: italic;
 }
 .yoga-protocol-ref {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: color-mix(in srgb, #6366f1 70%, var(--ayura-text-secondary));
   line-height: 1.45;
   margin: 0;
@@ -1635,7 +1862,7 @@
   border: 1px solid color-mix(in srgb, var(--plan-violet) 22%, transparent);
   border-radius: 20px;
   padding: 0.28rem 0.7rem;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .yoga-vital-chip svg {
@@ -1648,13 +1875,13 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 
 .yoga-vital-v {
   color: var(--ayura-text);
   font-weight: 700;
-  font-size: 0.73rem;
+  font-size: 0.75rem;
 }
 
 /* ── Week tabs ── */
@@ -1690,14 +1917,14 @@
 }
 
 .yoga-tab-num {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .yoga-tab-theme {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   opacity: 0.8;
 }
 
@@ -1735,10 +1962,21 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+  /* Grid items stretch to the tallest cell in their row by default, so a rest
+     day sitting beside a full practice day was padded out to match it —
+     measured 1313px tall with 1175px of empty card. Size to content instead. */
+  align-items: start;
 }
 
+/* minmax(0, 1fr), not 1fr: a plain `1fr` track floors at min-content, and the
+   nowrap summary made that 456px wide inside a 390px phone. */
 @media (max-width: 760px) {
-  .yoga-days-grid { grid-template-columns: 1fr; }
+  .yoga-days-grid { grid-template-columns: minmax(0, 1fr); }
+}
+/* Below this the summary truncates to a word and a half, which reads as noise
+   next to the day name — give the row to the name, badge and chevron instead. */
+@media (max-width: 340px) {
+  .yoga-day-summary { display: none; }
 }
 
 .yoga-day-card {
@@ -1749,11 +1987,22 @@
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  /* Let the header row truncate instead of pushing the card past its track. */
+  min-width: 0;
 }
 
+/* Closed, the card is just its header row, so the roomy open-state padding
+   would leave it looking half empty. Tighten it to the row it contains. */
+.yoga-day-card:not(.open) {
+  padding: 0.35rem 1rem;
+}
+
+/* Recessed by background, not by `opacity: 0.65` — that dimmed the text with
+   the card and put the muted summary at 3.53:1 dark / 2.90:1 light. The mix
+   alone reads as "lighter day" and keeps the row at 6.8:1 / 6.1:1. */
 .yoga-day-card.rest {
-  opacity: 0.65;
   background: color-mix(in srgb, var(--ayura-surface) 60%, var(--ayura-card-bg));
+  border-color: color-mix(in srgb, var(--ayura-border) 65%, transparent);
 }
 
 .yoga-day-header {
@@ -1763,6 +2012,48 @@
   gap: 0.5rem;
 }
 
+/* The whole header is the disclosure control on practice days. Reset the button
+   chrome and let it fill the card so the tap target is the full row. */
+.yoga-day-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+  /* 44px on phones: the header IS the control, and a day row is easy to
+     mis-tap when it is only as tall as its text. */
+  min-height: 44px;
+}
+.yoga-day-toggle:hover .yoga-day-name { color: var(--plan-violet); }
+.yoga-day-toggle > svg,
+.yoga-day-headmeta > svg { color: var(--ayura-muted); flex-shrink: 0; }
+
+.yoga-day-headmeta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  /* The name keeps its width; the summary inside here gives up space first. */
+  flex: 1 1 auto;
+  justify-content: flex-end;
+}
+/* Collapsed-state precis: "5 poses · 3 warmup · 2 cooldown · pranayama".
+   Truncates rather than wrapping so every closed day stays exactly one row. */
+.yoga-day-summary {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ayura-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
 .yoga-day-name {
   display: flex;
   align-items: center;
@@ -1770,14 +2061,19 @@
   font-size: 1rem;
   font-weight: 700;
   color: var(--ayura-text);
+  /* The day name never gives up space — the summary beside it is what
+     truncates. Left shrinkable, "Thursday" ran into "5 poses". */
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .yoga-day-name svg {
   color: var(--plan-violet);
+  flex-shrink: 0;
 }
 
 .yoga-duration-badge-sm {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--plan-violet);
   background: color-mix(in srgb, var(--plan-violet) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--plan-violet) 22%, transparent);
@@ -1785,6 +2081,14 @@
   border-radius: 999px;
   white-space: nowrap;
   font-weight: 600;
+}
+
+/* Rest days carry a label where practice days carry a duration, so the row
+   reads the same shape on every day of the week. */
+.yoga-duration-badge-sm.rest {
+  color: var(--ayura-muted);
+  background: color-mix(in srgb, var(--ayura-muted) 10%, transparent);
+  border-color: color-mix(in srgb, var(--ayura-muted) 22%, transparent);
 }
 
 .yoga-session-theme {
@@ -1828,6 +2132,7 @@
 }
 
 .yoga-section-toggle {
+  min-height: 44px;   /* was 30px tall */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1852,7 +2157,7 @@
 }
 
 .yoga-section-label {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -1895,7 +2200,7 @@
 }
 
 .yoga-wp-dur {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   flex-shrink: 0;
 }
@@ -1956,7 +2261,7 @@
   background: color-mix(in srgb, var(--plan-violet) 15%, transparent);
   border: 1px solid color-mix(in srgb, var(--plan-violet) 30%, transparent);
   color: var(--plan-violet);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
@@ -1964,7 +2269,7 @@
 }
 
 .yoga-category-chip {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--ayura-text-secondary);
   background: color-mix(in srgb, var(--ayura-accent) 5%, transparent);
   border: 1px solid var(--ayura-border);
@@ -1992,6 +2297,7 @@
 }
 
 .yoga-pose-expand-toggle {
+  min-height: 44px;   /* touch floor — these read as links but are controls */
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -2076,14 +2382,14 @@
 }
 
 .yoga-prana-icon {
-  color: #a08cf0;
+  color: var(--plan-lavender);
   flex-shrink: 0;
 }
 
 .yoga-prana-name {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #a08cf0;
+  color: var(--plan-lavender);
   flex: 1;
 }
 
@@ -2094,10 +2400,10 @@
 }
 
 .yoga-prana-dur {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
-  background: color-mix(in srgb, #a08cf0 10%, transparent);
-  border: 1px solid color-mix(in srgb, #a08cf0 20%, transparent);
+  background: color-mix(in srgb, var(--plan-lavender) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--plan-lavender) 20%, transparent);
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
   flex-shrink: 0;
@@ -2153,7 +2459,7 @@
 }
 
 .yoga-tip-label {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -2194,7 +2500,7 @@
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -2217,9 +2523,9 @@
   margin-top: 0.5rem;
   padding: 0.85rem 1rem;
   background: linear-gradient(135deg,
-    color-mix(in srgb, #f59e0b 8%, var(--ayura-card-bg) 92%),
-    color-mix(in srgb, #f97316 5%, var(--ayura-card-bg) 95%));
-  border: 1px solid color-mix(in srgb, #f59e0b 28%, transparent);
+    color-mix(in srgb, var(--plan-amber) 8%, var(--ayura-card-bg) 92%),
+    color-mix(in srgb, var(--plan-orange) 5%, var(--ayura-card-bg) 95%));
+  border: 1px solid color-mix(in srgb, var(--plan-amber) 28%, transparent);
   border-radius: 12px;
 }
 
@@ -2240,7 +2546,7 @@
 }
 
 .sns-sun-icon {
-  color: #f59e0b;
+  color: var(--plan-amber);
   flex-shrink: 0;
 }
 
@@ -2252,7 +2558,7 @@
 
 .sns-sanskrit {
   font-size: 0.75rem;
-  color: #b45309;
+  color: var(--plan-amber);   /* was #b45309 — a light-mode ink, 3.57:1 dark */
   font-style: italic;
   opacity: 0.8;
 }
@@ -2268,14 +2574,14 @@
   display: inline-block;
   padding: 0.15rem 0.5rem;
   border-radius: 20px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  background: color-mix(in srgb, #f59e0b 15%, transparent);
+  background: color-mix(in srgb, var(--plan-amber) 15%, transparent);
   color: #fcd34d;
-  border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--plan-amber) 30%, transparent);
 }
-.sns-badge.pace { background: color-mix(in srgb, #f97316 12%, transparent); color: #fdba74; }
-.sns-badge.dur  { background: color-mix(in srgb, #22c55e 12%, transparent); color: #86efac; border-color: color-mix(in srgb, #22c55e 28%, transparent); }
+.sns-badge.pace { background: color-mix(in srgb, var(--plan-orange) 12%, transparent); color: #fdba74; }
+.sns-badge.dur  { background: color-mix(in srgb, var(--plan-green) 12%, transparent); color: #86efac; border-color: color-mix(in srgb, var(--plan-green) 28%, transparent); }
 [data-theme='light'] .sns-badge { color: #92400e; }
 [data-theme='light'] .sns-badge.pace { color: #7c2d12; }
 [data-theme='light'] .sns-badge.dur { color: #14532d; }
@@ -2312,13 +2618,14 @@
   display: flex;
   align-items: flex-start;
   gap: 0.4rem;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   color: #92400e;
   line-height: 1.45;
 }
 .sns-warn-icon { flex-shrink: 0; margin-top: 0.1rem; color: #d97706; }
 
 .sns-toggle {
+  min-height: 44px;   /* touch floor — these read as links but are controls */
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -2326,20 +2633,20 @@
   border: none;
   cursor: pointer;
   font-size: 0.75rem;
-  color: #b45309;
+  color: var(--plan-amber);   /* was #b45309, 3.57:1 on the dark card */
   font-weight: 600;
   padding: 0;
   margin-top: 0.15rem;
   transition: color 0.15s;
 }
-.sns-toggle:hover { color: #92400e; }
+.sns-toggle:hover { color: var(--ayura-ink); }
 
 .sns-steps {
   margin-top: 0.65rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  border-top: 1px solid color-mix(in srgb, #f59e0b 20%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--plan-amber) 20%, transparent);
   padding-top: 0.65rem;
 }
 
@@ -2354,10 +2661,10 @@
   height: 1.5rem;
   min-width: 1.5rem;
   border-radius: 50%;
-  background: color-mix(in srgb, #f59e0b 18%, transparent);
-  border: 1px solid color-mix(in srgb, #f59e0b 35%, transparent);
+  background: color-mix(in srgb, var(--plan-amber) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--plan-amber) 35%, transparent);
   color: #92400e;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -2385,12 +2692,12 @@
 }
 
 .sns-step-english {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
 }
 
 .sns-breath-pill {
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 0.1rem 0.4rem;
   border-radius: 20px;
@@ -2405,23 +2712,23 @@
 }
 
 .sns-step-mod {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: #92400e;
   font-style: italic;
   margin: 0.2rem 0 0;
   padding: 0.3rem 0.5rem;
-  background: color-mix(in srgb, #f59e0b 8%, transparent);
-  border-left: 2px solid #f59e0b;
+  background: color-mix(in srgb, var(--plan-amber) 8%, transparent);
+  border-left: 2px solid var(--plan-amber);
   border-radius: 0 4px 4px 0;
 }
 
 .sns-classical-ref {
-  font-size: 0.69rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   font-style: italic;
   margin: 0.5rem 0 0;
   padding-top: 0.4rem;
-  border-top: 1px solid color-mix(in srgb, #f59e0b 18%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--plan-amber) 18%, transparent);
   line-height: 1.5;
 }
 
@@ -2450,8 +2757,8 @@
   color: #059669;
 }
 .yoga-age-badge.youth {
-  background: color-mix(in srgb, #f59e0b 10%, var(--ayura-card-bg) 90%);
-  border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent);
+  background: color-mix(in srgb, var(--plan-amber) 10%, var(--ayura-card-bg) 90%);
+  border: 1px solid color-mix(in srgb, var(--plan-amber) 30%, transparent);
   color: #d97706;
 }
 
@@ -2472,8 +2779,8 @@
 
 /* ── Vital chip variants for Ayurvedic signals ── */
 .yoga-vital-agni {
-  background: color-mix(in srgb, #f97316 8%, var(--ayura-card-bg) 92%);
-  border-color: color-mix(in srgb, #f97316 22%, transparent);
+  background: color-mix(in srgb, var(--plan-orange) 8%, var(--ayura-card-bg) 92%);
+  border-color: color-mix(in srgb, var(--plan-orange) 22%, transparent);
   color: #c2410c;
 }
 .yoga-vital-ojas {
@@ -2525,10 +2832,10 @@
 }
 
 .yoga-dharana-dur {
-  font-size: 0.73rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #7c3aed;
-  background: color-mix(in srgb, #7c3aed 12%, transparent);
+  color: var(--plan-violet);   /* #7c3aed was 2.49:1 dark / 4.30:1 light */
+  background: color-mix(in srgb, var(--plan-violet) 12%, transparent);
   padding: 0.15rem 0.45rem;
   border-radius: 20px;
   flex-shrink: 0;
@@ -2555,7 +2862,7 @@
 
 .yoga-dharana-ref {
   margin: 0.5rem 0 0;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   font-style: italic;
   padding-top: 0.4rem;
@@ -2565,7 +2872,7 @@
 
 /* ── Mobile ── */
 @media (max-width: 600px) {
-  .yoga-days-grid { grid-template-columns: 1fr; }
+  .yoga-days-grid { grid-template-columns: minmax(0, 1fr); }
   .yoga-week-tabs { gap: 0.3rem; }
   .yoga-week-tab { padding: 0.4rem 0.65rem; }
   .yoga-tips-grid { grid-template-columns: 1fr; }
@@ -2619,18 +2926,20 @@
   gap: 0.3rem;
   padding: 0.25rem 0.6rem;
   border-radius: 20px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 500;
   background: var(--ayura-card-bg);
   border: 1px solid var(--ayura-border);
   color: var(--ayura-text-secondary);
 }
 .diet-vital-icon { opacity: 0.75; }
-.diet-vital-k { opacity: 0.7; font-weight: 400; }
+/* `opacity: 0.7` on top of the chip's own colour dropped the key to 2.66:1
+   in light. Dim with a muted colour instead, which the theme controls. */
+.diet-vital-k { color: var(--ayura-muted); font-weight: 400; }
 .diet-vital-v { font-weight: 600; }
 .diet-vital-chip.cond {
-  background: color-mix(in srgb, #22c55e 8%, var(--ayura-card-bg));
-  border-color: color-mix(in srgb, #22c55e 25%, transparent);
+  background: color-mix(in srgb, var(--plan-green) 8%, var(--ayura-card-bg));
+  border-color: color-mix(in srgb, var(--plan-green) 25%, transparent);
   color: #15803d;
 }
 
@@ -2640,8 +2949,8 @@
   align-items: flex-start;
   gap: 0.6rem;
   padding: 0.8rem 1rem;
-  background: color-mix(in srgb, #22c55e 8%, var(--ayura-card-bg));
-  border: 1px solid color-mix(in srgb, #22c55e 22%, transparent);
+  background: color-mix(in srgb, var(--plan-green) 8%, var(--ayura-card-bg));
+  border: 1px solid color-mix(in srgb, var(--plan-green) 22%, transparent);
   border-radius: 10px;
 }
 .diet-coaching-icon { color: var(--ayura-sage); flex-shrink: 0; margin-top: 0.1rem; }
@@ -2674,7 +2983,7 @@
 .diet-week-theme {
   font-weight: 400;
   opacity: 0.8;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 /* ── Day strip ── */
@@ -2689,13 +2998,15 @@
 .diet-day-btn {
   flex-shrink: 0;
   position: relative;
-  width: 2.5rem;
-  height: 2.5rem;
+  /* 44px: iOS HIG minimum. Was 2.5rem/40px, and rendered 35px at the phone
+     root size, which is a miss on a control you tap seven times a week. */
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1.5px solid var(--ayura-border);
   background: transparent;
   cursor: pointer;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--ayura-muted);
   transition: all 0.18s;
@@ -2759,11 +3070,13 @@
   overflow: hidden;
   background: var(--ayura-card-bg);
 }
-.diet-meal-card.meal-breakfast { border-left: 3px solid #f59e0b; }
-.diet-meal-card.meal-lunch     { border-left: 3px solid #22c55e; }
-.diet-meal-card.meal-snack     { border-left: 3px solid #f97316; }
+.diet-meal-card.meal-breakfast { border-left: 3px solid var(--plan-amber); }
+.diet-meal-card.meal-lunch     { border-left: 3px solid var(--plan-green); }
+.diet-meal-card.meal-snack     { border-left: 3px solid var(--plan-orange); }
 .diet-meal-card.meal-dinner    { border-left: 3px solid #6366f1; }
 
+/* Was a click-only <div>; now a real button, so reset the UA chrome. */
+.diet-meal-heading { width: 100%; min-width: 0; }
 .diet-meal-header {
   display: flex;
   align-items: flex-start;
@@ -2771,6 +3084,23 @@
   padding: 0.65rem 0.9rem;
   cursor: pointer;
   gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  background: none;
+  border: none;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+/* Names the day whose meals are listed below the day strip. */
+.diet-day-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ayura-text);
+  margin: 0.85rem 0 0.5rem;
 }
 
 .diet-meal-title-row {
@@ -2785,9 +3115,9 @@
   flex-shrink: 0;
   opacity: 0.7;
 }
-.diet-meal-card.meal-breakfast .diet-meal-icon { color: #f59e0b; }
-.diet-meal-card.meal-lunch .diet-meal-icon     { color: #22c55e; }
-.diet-meal-card.meal-snack .diet-meal-icon     { color: #f97316; }
+.diet-meal-card.meal-breakfast .diet-meal-icon { color: var(--plan-amber); }
+.diet-meal-card.meal-lunch .diet-meal-icon     { color: var(--plan-green); }
+.diet-meal-card.meal-snack .diet-meal-icon     { color: var(--plan-orange); }
 .diet-meal-card.meal-dinner .diet-meal-icon    { color: #6366f1; }
 
 .diet-meal-label {
@@ -2812,7 +3142,7 @@
   color: var(--ayura-muted);
 }
 .diet-meal-count {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
 }
 
@@ -2848,7 +3178,7 @@
   max-width: 160px;
 }
 .diet-food-portion {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   white-space: nowrap;
 }
@@ -2860,7 +3190,7 @@
   flex-shrink: 0;
 }
 .diet-rasa-pill {
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   padding: 0.08rem 0.35rem;
   border-radius: 20px;
   border: 1px solid;
@@ -2868,7 +3198,7 @@
   white-space: nowrap;
 }
 .diet-food-cal {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   font-weight: 500;
   white-space: nowrap;
@@ -2884,7 +3214,7 @@
   border-top: 1px solid var(--ayura-border);
 }
 .diet-day-macros-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   font-weight: 500;
 }
@@ -2898,25 +3228,33 @@
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 0.18rem 0.5rem;
   border-radius: 20px;
 }
-.diet-macro-chip.cal  { background: color-mix(in srgb,#ef4444 12%,transparent); color: #b91c1c; }
-.diet-macro-chip.pro  { background: color-mix(in srgb,#3b82f6 12%,transparent); color: #1d4ed8; }
-.diet-macro-chip.carb { background: color-mix(in srgb,#f59e0b 12%,transparent); color: #92400e; }
-.diet-macro-chip.fat  { background: color-mix(in srgb,var(--plan-violet) 12%,transparent); color: #5b21b6; }
-.diet-macro-chip.fiber{ background: color-mix(in srgb,#22c55e 12%,transparent); color: #15803d; }
-.diet-macro-chip span { opacity: 0.7; font-weight: 400; font-size: 0.62rem; }
+/* Every macro ink used to be a dark-on-light value (#b91c1c, #1d4ed8, …) —
+   correct in light, 1.94-2.69:1 on the dark theme the app defaults to. Each
+   theme now gets its own ink; ≥8:1 dark, ≥4.4:1 light. */
+.diet-macro-chip.cal  { background: color-mix(in srgb,#ef4444 12%,transparent); color: #fca5a5; }
+.diet-macro-chip.pro  { background: color-mix(in srgb,#3b82f6 12%,transparent); color: #93c5fd; }
+.diet-macro-chip.carb { background: color-mix(in srgb,var(--plan-amber) 12%,transparent); color: #fcd34d; }
+.diet-macro-chip.fat  { background: color-mix(in srgb,var(--plan-violet) 12%,transparent); color: #c4b5fd; }
+.diet-macro-chip.fiber{ background: color-mix(in srgb,var(--plan-green) 12%,transparent); color: #86efac; }
+[data-theme='light'] .diet-macro-chip.cal  { color: #b91c1c; }
+[data-theme='light'] .diet-macro-chip.pro  { color: #1d4ed8; }
+[data-theme='light'] .diet-macro-chip.carb { color: #92400e; }
+[data-theme='light'] .diet-macro-chip.fat  { color: #5b21b6; }
+[data-theme='light'] .diet-macro-chip.fiber{ color: #14532d; }
+.diet-macro-chip span { opacity: 0.7; font-weight: 400; font-size: 0.75rem; }
 
 /* ── Spice of the day ── */
 .diet-spice-card {
   padding: 0.75rem 1rem;
   background: linear-gradient(135deg,
-    color-mix(in srgb, #f97316 8%, var(--ayura-card-bg)),
-    color-mix(in srgb, #f59e0b 5%, var(--ayura-card-bg)));
-  border: 1px solid color-mix(in srgb, #f97316 22%, transparent);
+    color-mix(in srgb, var(--plan-orange) 8%, var(--ayura-card-bg)),
+    color-mix(in srgb, var(--plan-amber) 5%, var(--ayura-card-bg)));
+  border: 1px solid color-mix(in srgb, var(--plan-orange) 22%, transparent);
   border-radius: 10px;
 }
 .diet-spice-header {
@@ -2926,15 +3264,15 @@
   flex-wrap: wrap;
   margin-bottom: 0.35rem;
 }
-.diet-spice-icon { color: #f97316; }
+.diet-spice-icon { color: var(--plan-orange); }
 .diet-spice-title { font-size: 0.88rem; font-weight: 700; color: var(--ayura-text-primary); }
-.diet-spice-sanskrit { font-size: 0.73rem; color: #b45309; font-style: italic; }
+.diet-spice-sanskrit { font-size: 0.75rem; color: #b45309; font-style: italic; }
 .diet-spice-label {
   margin-left: auto;
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #92400e;
-  background: color-mix(in srgb,#f97316 15%,transparent);
+  background: color-mix(in srgb,var(--plan-orange) 15%,transparent);
   padding: 0.12rem 0.4rem;
   border-radius: 20px;
 }
@@ -2950,6 +3288,7 @@
 }
 .diet-timing-toggle {
   width: 100%;
+  min-height: 44px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -3007,7 +3346,7 @@
   color: var(--ayura-text-primary);
   margin-bottom: 0.2rem;
 }
-.diet-spice-guide-sk { font-style: italic; font-size: 0.73rem; color: var(--ayura-muted); font-weight: 400; }
+.diet-spice-guide-sk { font-style: italic; font-size: 0.75rem; color: var(--ayura-muted); font-weight: 400; }
 .diet-spice-guide-use { font-size: 0.77rem; color: var(--ayura-text-secondary); margin: 0; line-height: 1.55; }
 
 /* ── Guidance cards ── */
@@ -3042,14 +3381,14 @@
   align-items: flex-start;
   gap: 0.55rem;
   padding: 0.75rem 1rem;
-  background: color-mix(in srgb, #f59e0b 8%, var(--ayura-card-bg));
-  border: 1px solid color-mix(in srgb, #f59e0b 22%, transparent);
+  background: color-mix(in srgb, var(--plan-amber) 8%, var(--ayura-card-bg));
+  border: 1px solid color-mix(in srgb, var(--plan-amber) 22%, transparent);
   border-radius: 10px;
   font-size: 0.8rem;
   color: #92400e;
   line-height: 1.55;
 }
-.diet-seasonal-icon { flex-shrink: 0; color: #f59e0b; margin-top: 0.1rem; }
+.diet-seasonal-icon { flex-shrink: 0; color: var(--plan-amber); margin-top: 0.1rem; }
 .diet-seasonal-note p { margin: 0; }
 
 /* ── Ayurvedic tips ── */
@@ -3058,8 +3397,8 @@
   align-items: flex-start;
   gap: 0.55rem;
   padding: 0.75rem 1rem;
-  background: color-mix(in srgb, #22c55e 6%, var(--ayura-card-bg));
-  border: 1px solid color-mix(in srgb, #22c55e 18%, transparent);
+  background: color-mix(in srgb, var(--plan-green) 6%, var(--ayura-card-bg));
+  border: 1px solid color-mix(in srgb, var(--plan-green) 18%, transparent);
   border-radius: 10px;
   font-size: 0.79rem;
   color: var(--ayura-text-secondary);
@@ -3071,8 +3410,11 @@
 /* ── Responsive ── */
 @media (max-width: 500px) {
   .diet-guidance-row { grid-template-columns: 1fr; }
-  .diet-day-btn { width: 2.2rem; height: 2.2rem; font-size: 0.65rem; }
-  .diet-meal-recipe { font-size: 0.72rem; }
+  /* The phone override used to shrink these to 35px — the smallest screen got
+     the smallest target. 7 × 44px + gaps is 336px, inside a 358px content
+     column, and the strip scrolls horizontally below that anyway. */
+  .diet-day-btn { font-size: 0.75rem; }
+  .diet-meal-recipe { font-size: 0.75rem; }
 }
 
 /* ── LLM Diet additions ── */
@@ -3086,7 +3428,7 @@
   line-height: 1.35;
 }
 .diet-meal-cal-badge {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #b91c1c;
   background: color-mix(in srgb,#ef4444 10%,transparent);
@@ -3116,7 +3458,7 @@
   gap: 0.3rem;
 }
 .diet-ing-chip {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 500;
   padding: 0.15rem 0.45rem;
   border-radius: 20px;
@@ -3128,7 +3470,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
 }
 .diet-llm-ayur-note {
@@ -3137,8 +3479,8 @@
   gap: 0.4rem;
   font-size: 0.76rem;
   color: #15803d;
-  background: color-mix(in srgb,#22c55e 8%,transparent);
-  border-left: 2px solid #22c55e;
+  background: color-mix(in srgb,var(--plan-green) 8%,transparent);
+  border-left: 2px solid var(--plan-green);
   border-radius: 0 6px 6px 0;
   padding: 0.4rem 0.6rem;
   line-height: 1.55;
@@ -3148,27 +3490,27 @@
 
 /* ── Pathya-Apathya card ── */
 .diet-pa-card {
-  border: 1px solid color-mix(in srgb, #22c55e 28%, transparent);
+  border: 1px solid color-mix(in srgb, var(--plan-green) 28%, transparent);
   border-radius: 10px;
   overflow: hidden;
-  background: color-mix(in srgb, #22c55e 5%, var(--ayura-card-bg));
+  background: color-mix(in srgb, var(--plan-green) 5%, var(--ayura-card-bg));
 }
-.diet-pa-body { padding: 0.1rem 1rem 0.9rem; border-top: 1px solid color-mix(in srgb, #22c55e 20%, transparent); }
+.diet-pa-body { padding: 0.1rem 1rem 0.9rem; border-top: 1px solid color-mix(in srgb, var(--plan-green) 20%, transparent); }
 .diet-pa-ref {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: #92400e;
   font-style: italic;
-  background: color-mix(in srgb,#f59e0b 10%,transparent);
+  background: color-mix(in srgb,var(--plan-amber) 10%,transparent);
   border-radius: 6px;
   padding: 0.3rem 0.6rem;
   margin: 0.6rem 0 0.5rem;
 }
 .diet-pa-section { margin-bottom: 0.65rem; }
 .diet-pa-section-title {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 700;
   margin-bottom: 0.3rem;
   text-transform: uppercase;
@@ -3207,7 +3549,7 @@
 /* ── Day theme badge ── */
 .diet-day-theme-badge {
   display: inline-block;
-  font-size: 0.73rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--ayura-accent);
   background: color-mix(in srgb, var(--ayura-accent) 10%, transparent);
@@ -3236,7 +3578,7 @@
 .diet-drink-name { font-size: 0.85rem; font-weight: 700; color: var(--ayura-text-primary); }
 .diet-drink-when {
   margin-left: auto;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #4f46e5;
   background: color-mix(in srgb,#6366f1 12%,transparent);
@@ -3299,7 +3641,7 @@
   color: #fff;
 }
 .diet-week-num {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   opacity: 0.75;
 }
@@ -3339,7 +3681,7 @@
   flex-shrink: 0;
 }
 .diet-compact-meal-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -3355,7 +3697,7 @@
 
 /* ── Allergen warning banner ── */
 .diet-allergen-warning {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #c0392b;
   background: #fdecea;
@@ -3372,7 +3714,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 600;
   /* Theme-safe translucent tint + token text (a hardcoded light fill made the
      text unreadable in dark mode). */
@@ -3411,7 +3753,7 @@
 .diet-safety-list {
   margin: 0;
   padding-left: 1.1rem;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   line-height: 1.45;
   color: var(--ayura-text);
 }
@@ -3439,7 +3781,7 @@
 .yoga-prana-excl-list {
   margin: 0;
   padding-left: 1.1rem;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   line-height: 1.45;
   color: var(--ayura-text);
 }
@@ -3474,7 +3816,7 @@
 .gym-vyayama-card {
   border-radius: 8px;
   padding: 0.55rem 0.7rem;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   line-height: 1.45;
   /* MUST be set. These cards have a FIXED pale background in both themes, but
      previously declared no text colour — so the body inherited the theme ink,
@@ -3490,9 +3832,11 @@
 .gym-vyayama-card.adequate .gym-vyayama-label { color: #1e7d52; }
 .gym-vyayama-card.over .gym-vyayama-label { color: #c0392b; }
 .gym-vyayama-bala {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-style: italic;
-  color: var(--ayura-text-muted, #8a8378);
+  /* Sits on the section background (theme-following), not inside the fixed-pale
+     .gym-vyayama-card. --ayura-text-muted's #8a8378 fallback was 3.62:1 light. */
+  color: var(--ayura-muted);
   margin-top: 0.5rem;
 }
 @media (max-width: 560px) {
@@ -3509,7 +3853,7 @@
   border-radius: 8px;
   background: var(--ayura-surface);
   border: 1px solid var(--ayura-border);
-  font-size: 0.71rem;
+  font-size: 0.75rem;
   color: var(--ayura-text-secondary);
   line-height: 1.55;
 }
@@ -3622,7 +3966,7 @@
 .rv-sev-badge, .rv-dosha-chip {
   padding: 3px 9px;
   border-radius: 20px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: capitalize;
   white-space: nowrap;
@@ -3655,7 +3999,7 @@
 }
 .rv-section { display: flex; flex-direction: column; gap: 6px; }
 .rv-section-label {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -3712,7 +4056,7 @@
   align-items: center;
   gap: 7px;
   font-size: 0.8rem;
-  color: #f59e0b;
+  color: var(--plan-amber);
   background: rgba(245,158,11,0.08);
   padding: 8px 12px;
   border-radius: 8px;
@@ -3807,7 +4151,7 @@
   display: flex;
   align-items: flex-start;
   gap: 7px;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   line-height: 1.55;
   padding: 10px 14px;
@@ -3835,7 +4179,7 @@
   font-weight: 600;
   text-transform: capitalize;
   background: rgba(99,102,241,0.12);
-  color: #a08cf0;
+  color: var(--plan-lavender);
   border: 1px solid rgba(99,102,241,0.2);
 }
 
@@ -3843,7 +4187,7 @@
 .mv-card {
   background: var(--glass-bg-subtle);
   border: 1px solid var(--border-subtle);
-  border-left: 3px solid var(--mv-accent, #a08cf0);
+  border-left: 3px solid var(--mv-accent, var(--plan-lavender));
   border-radius: 14px;
   overflow: hidden;
   transition: border-color 0.2s;
@@ -3852,6 +4196,7 @@
   background: rgba(255,255,255,0.8);
   box-shadow: 0 2px 10px rgba(0,0,0,0.04);
 }
+.mv-card-heading { width: 100%; min-width: 0; }
 .mv-card-header {
   display: flex;
   justify-content: space-between;
@@ -3860,6 +4205,14 @@
   padding: 14px 16px;
   cursor: pointer;
   user-select: none;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
 }
 .mv-card-left { flex: 1; min-width: 0; }
 .mv-card-right {
@@ -3880,7 +4233,7 @@
   margin-bottom: 5px;
 }
 .mv-tried-badge {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   padding: 2px 8px;
   border-radius: 20px;
   background: rgba(251,191,36,0.15);
@@ -3892,13 +4245,13 @@
   display: inline-block;
   padding: 2px 9px;
   border-radius: 10px;
-  font-size: 0.73rem;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 .mv-tier-badge {
   padding: 3px 9px;
   border-radius: 20px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -3918,7 +4271,7 @@
 .mv-external-badge {
   padding: 3px 9px;
   border-radius: 20px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   background: rgba(92,171,116,0.12);
   color: #5cab74;
@@ -3937,7 +4290,7 @@
   color: var(--ayura-ink);
   padding: 10px 12px;
   background: rgba(160,140,240,0.07);
-  border-left: 3px solid var(--mv-accent, #a08cf0);
+  border-left: 3px solid var(--mv-accent, var(--plan-lavender));
   border-radius: 0 8px 8px 0;
 }
 .mv-action-row {
@@ -3951,7 +4304,7 @@
 .mv-action-row svg { color: var(--ayura-accent); flex-shrink: 0; }
 .mv-section { display: flex; flex-direction: column; gap: 7px; }
 .mv-section-label {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -4002,7 +4355,7 @@
   border-radius: 20px;
   font-size: 0.76rem;
   background: rgba(249,115,22,0.1);
-  color: #f97316;
+  color: var(--plan-orange);
   border: 1px solid rgba(249,115,22,0.2);
 }
 .mv-interaction-chip {
@@ -4079,7 +4432,7 @@
 
 /* ── Duration badge ── */
 .mv-duration-badge {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #94a3b8;
   background: rgba(148,163,184,0.12);
@@ -4104,7 +4457,7 @@
   gap: 6px;
 }
 .mv-pharma-label {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #64748b;
   text-transform: uppercase;
@@ -4113,14 +4466,14 @@
 }
 .mv-rasa-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .mv-rasa-chip {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 20px;
   letter-spacing: 0.01em;
 }
 .mv-virya-badge {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 2px 9px;
   border-radius: 20px;
@@ -4131,7 +4484,7 @@
 [data-theme='light'] .mv-virya-badge.ushna { color: #b91c1c; }
 [data-theme='light'] .mv-virya-badge.sheeta { color: #1d4ed8; }
 .mv-vipaka-badge {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 2px 9px;
   border-radius: 20px;
@@ -4142,14 +4495,14 @@
 /* ── Karma pills + Dhatu chips + Guna ── */
 .mv-karma-row { display: flex; flex-wrap: wrap; gap: 5px; }
 .mv-karma-pill {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 3px 9px;
   border-radius: 20px;
   letter-spacing: 0.01em;
 }
 .mv-dhatu-chip {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 500;
   padding: 3px 9px;
   border-radius: 20px;
@@ -4158,7 +4511,7 @@
   border: 1px solid rgba(230,162,60,0.2);
 }
 .mv-guna-chip {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   padding: 3px 9px;
   border-radius: 20px;
   background: rgba(100,116,139,0.1);
@@ -4204,10 +4557,10 @@
   border: 1px solid rgba(99,102,241,0.12);
   border-radius: 8px;
   font-size: 0.78rem;
-  color: #a08cf0;
+  color: var(--plan-lavender);
   line-height: 1.5;
 }
-.mv-afi-ref svg { flex-shrink: 0; margin-top: 2px; color: #a08cf0; }
+.mv-afi-ref svg { flex-shrink: 0; margin-top: 2px; color: var(--plan-lavender); }
 
 /* ── Shodhana clinical alert ── */
 .mv-shodhana-alert {
@@ -4220,8 +4573,8 @@
   border: 1.5px solid rgba(249,115,22,0.35);
   margin-bottom: 10px;
 }
-.mv-shodhana-alert svg { color: #f97316; flex-shrink: 0; margin-top: 2px; }
-.mv-shodhana-alert strong { display: block; font-size: 0.82rem; color: #f97316; margin-bottom: 4px; }
+.mv-shodhana-alert svg { color: var(--plan-orange); flex-shrink: 0; margin-top: 2px; }
+.mv-shodhana-alert strong { display: block; font-size: 0.82rem; color: var(--plan-orange); margin-bottom: 4px; }
 .mv-shodhana-alert p { margin: 0; font-size: 0.78rem; color: var(--ayura-text-secondary, #6b7280); line-height: 1.5; }
 
 .mv-coverage-note {
@@ -4253,14 +4606,14 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #6366f1;
   text-transform: uppercase;
   letter-spacing: 0.07em;
 }
 .mv-approach-badge {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 20px;
@@ -4282,12 +4635,12 @@
   display: flex;
   align-items: center;
   gap: 3px;
-  font-size: 0.69rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 20px;
   background: rgba(99,102,241,0.1);
-  color: #a08cf0;
+  color: var(--plan-lavender);
   text-transform: capitalize;
 }
 
@@ -4302,7 +4655,7 @@
   align-items: flex-start;
   gap: 6px;
   font-size: 0.82rem;
-  color: #f59e0b;
+  color: var(--plan-amber);
   background: rgba(245,158,11,0.08);
   border: 1px solid rgba(245,158,11,0.2);
   border-radius: 8px;
@@ -4326,7 +4679,7 @@
   gap: 6px;
 }
 .mv-protocol-week {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #6366f1;
   text-transform: uppercase;
@@ -4361,7 +4714,7 @@
   top: 8px;
   bottom: 8px;
   width: 2px;
-  background: linear-gradient(to bottom, #22c55e, #f59e0b, #6366f1);
+  background: linear-gradient(to bottom, var(--plan-green), var(--plan-amber), #6366f1);
   border-radius: 2px;
 }
 .mv-outcome-milestone {
@@ -4380,7 +4733,7 @@
   border: 2px solid #6366f1;
 }
 .mv-milestone-marker {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #6366f1;
   text-transform: uppercase;
@@ -4411,13 +4764,13 @@
   border: 1px solid var(--border-subtle);
 }
 .mv-pathya-col-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 2px;
 }
-.mv-pathya-col-label.do  { color: #22c55e; }
+.mv-pathya-col-label.do  { color: var(--plan-green); }
 .mv-pathya-col-label.dont { color: #ef4444; }
 .mv-pathya-row {
   font-size: 0.82rem;
@@ -4443,9 +4796,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: #f97316;
+  color: var(--plan-orange);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -4511,7 +4864,7 @@
 }
 .din-anchor:first-child { padding-left: 0; }
 .din-anchor-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -4568,6 +4921,7 @@
 .din-day-tab {
   position: relative;
   padding: 6px 14px;
+  min-height: 44px;
   border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.1);
   background: transparent;
@@ -4580,9 +4934,9 @@
 [data-theme='light'] .din-day-tab { border-color: rgba(0,0,0,0.08); }
 .din-day-tab:hover { color: var(--ayura-ink); border-color: rgba(255,255,255,0.22); }
 .din-day-tab.active {
-  background: color-mix(in srgb, var(--tab-color, #a08cf0) 15%, transparent);
-  border-color: color-mix(in srgb, var(--tab-color, #a08cf0) 40%, transparent);
-  color: var(--tab-color, #a08cf0);
+  background: color-mix(in srgb, var(--tab-color, var(--plan-lavender)) 15%, transparent);
+  border-color: color-mix(in srgb, var(--tab-color, var(--plan-lavender)) 40%, transparent);
+  color: var(--tab-color, var(--plan-lavender));
 }
 .din-day-tab.fasting { opacity: 0.8; }
 .din-fast-dot {
@@ -4590,7 +4944,7 @@
   top: 4px; right: 4px;
   width: 5px; height: 5px;
   border-radius: 50%;
-  background: #f59e0b;
+  background: var(--plan-amber);
 }
 
 /* Timeline */
@@ -4617,7 +4971,7 @@
   gap: 0;
 }
 .din-slot-time {
-  font-size: 0.71rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--ayura-muted);
   white-space: nowrap;
@@ -4654,13 +5008,34 @@
   align-items: center;
   gap: 7px;
 }
-.din-slot-icon-wrap { display: flex; align-items: center; flex-shrink: 0; }
+.din-slot-icon-wrap { display: flex; align-items: center; flex-shrink: 0; color: var(--slot-label); }
 .din-slot-activity {
   font-size: 0.84rem;
   font-weight: 700;
   flex: 1;
   line-height: 1.2;
+  color: var(--slot-label);
 }
+
+/* Per-day-part activity ink. Dark values are ≥8:1 on their own slot tint,
+   light ≥4.4:1. These were one shared dark-on-light value applied inline,
+   which put the sleep slot at 1.68:1 in the default (dark) theme. */
+.din-slot[data-slot='morning_routine'] { --slot-label: #f0c775; }
+.din-slot[data-slot='self_care']       { --slot-label: #7fd8bb; }
+.din-slot[data-slot='exercise']        { --slot-label: #8fd3a4; }
+.din-slot[data-slot='meal']            { --slot-label: #f2b183; }
+.din-slot[data-slot='work']            { --slot-label: #c9bfae; }
+.din-slot[data-slot='rest']            { --slot-label: #c4b5fd; }
+.din-slot[data-slot='wind_down']       { --slot-label: #b5b8f0; }
+.din-slot[data-slot='sleep']           { --slot-label: #a5b4fc; }
+[data-theme='light'] .din-slot[data-slot='morning_routine'] { --slot-label: #92400e; }
+[data-theme='light'] .din-slot[data-slot='self_care']       { --slot-label: #0f5f57; }
+[data-theme='light'] .din-slot[data-slot='exercise']        { --slot-label: #166534; }
+[data-theme='light'] .din-slot[data-slot='meal']            { --slot-label: #9a3412; }
+[data-theme='light'] .din-slot[data-slot='work']            { --slot-label: #5a4f40; }
+[data-theme='light'] .din-slot[data-slot='rest']            { --slot-label: #5b21b6; }
+[data-theme='light'] .din-slot[data-slot='wind_down']       { --slot-label: #3730a3; }
+[data-theme='light'] .din-slot[data-slot='sleep']           { --slot-label: #312e81; }
 .din-meal-toggle {
   background: transparent;
   border: none;
@@ -4669,6 +5044,18 @@
   padding: 2px;
   display: flex;
   align-items: center;
+  /* The painted chevron stays 16px; the ::after grows the HIT area to 44px so
+     the control does not need pixel-accurate aim inside a dense timeline. */
+  position: relative;
+}
+.din-meal-toggle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
 }
 .din-slot-desc {
   font-size: 0.78rem;
@@ -4690,7 +5077,7 @@
   line-height: 1.45;
 }
 [data-theme='light'] .din-slot-cond-note { background: rgba(234,179,8,0.07); color: #92400e; }
-.din-slot-cond-note svg { flex-shrink: 0; color: #f59e0b; margin-top: 1px; }
+.din-slot-cond-note svg { flex-shrink: 0; color: var(--plan-amber); margin-top: 1px; }
 .din-meal-expand {
   margin-top: 8px;
   padding: 8px 10px;
@@ -4732,6 +5119,7 @@
   align-items: center;
   gap: 8px;
   width: 100%;
+  min-height: 44px;
   background: transparent;
   border: none;
   padding: 9px 12px;
@@ -4743,7 +5131,7 @@
 .din-ritual-icon { display: flex; align-items: center; color: var(--ayura-teal); flex-shrink: 0; }
 .din-ritual-name { font-size: 0.82rem; font-weight: 600; flex: 1; }
 .din-ritual-dur {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--ayura-muted);
   background: rgba(255,255,255,0.07);
   padding: 2px 6px;
@@ -4798,6 +5186,7 @@
 }
 .din-mg-tab {
   padding: 5px 14px;
+  min-height: 44px;
   border-radius: 20px;
   border: 1px solid rgba(255,255,255,0.12);
   background: transparent;
@@ -4811,7 +5200,7 @@
 .din-mg-tab.active {
   background: rgba(251,146,60,0.12);
   border-color: rgba(251,146,60,0.35);
-  color: #c2410c;
+  color: #fdba74;   /* was #c2410c — a light-mode ink on the dark default, 2.99:1 */
 }
 [data-theme='light'] .din-mg-tab.active { color: #9a3412; }
 .din-mg-time {
@@ -4833,7 +5222,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -4866,7 +5255,7 @@
   color: var(--ayura-muted);
   line-height: 1.45;
 }
-.din-mg-season-note svg { color: #f59e0b; flex-shrink: 0; margin-top: 1px; }
+.din-mg-season-note svg { color: var(--plan-amber); flex-shrink: 0; margin-top: 1px; }
 
 /* Seasonal section */
 .din-seasonal-cols {
@@ -4942,7 +5331,7 @@
   padding: 2px 8px;
   background: rgba(230,162,60,0.15);
   border-radius: 12px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #7c3aed;
   letter-spacing: 0.03em;
@@ -4952,7 +5341,7 @@
   padding: 2px 8px;
   background: rgba(251,191,36,0.15);
   border-radius: 12px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #b45309;
   letter-spacing: 0.03em;
@@ -4966,7 +5355,7 @@
   background: rgba(74,222,128,0.12);
   border: 1px solid rgba(74,222,128,0.28);
   border-radius: 10px;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #15803d;
   letter-spacing: 0.02em;
@@ -5022,11 +5411,13 @@
 .plan-classical-list li {
   color: var(--text-secondary); font-size: 0.84rem; line-height: 1.5; margin-bottom: 2px;
 }
-.plan-classical-note { color: var(--text-muted); font-size: 0.76rem; line-height: 1.5; margin: 0; }
+/* --text-muted is a 0.46/0.52-alpha ink — 4.47:1 dark, 3.49:1 light at 12px.
+   --ayura-muted is the AA-cleared muted token (6.7 / 6.0). */
+.plan-classical-note { color: var(--ayura-muted); font-size: 0.76rem; line-height: 1.5; margin: 0; }
 
 /* ── Light-mode contrast overrides for hardcoded golden-amber text ──
    These classes style text with dark-theme amber literals (#fbbf24/#fcd34d/
-   #f59e0b — ~2:1 on cream, unreadable). Same pattern as the .sns-badge
+   var(--plan-amber) — ~2:1 on cream, unreadable). Same pattern as the .sns-badge
    overrides above: keep the dark look, swap to AA-dark ambers in light. */
 [data-theme='light'] .yoga-week-banner-text,
 [data-theme='light'] .gym-week-banner-text,

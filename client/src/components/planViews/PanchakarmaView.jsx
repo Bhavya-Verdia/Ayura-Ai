@@ -1,10 +1,37 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Sun, Leaf, Sparkles, AlertTriangle, Droplets, Calendar, ShieldCheck, Flame, Beaker, ArrowRight,
+  ChevronDown, ChevronUp,
 } from 'lucide-react'
-import { DOSHA_COLOR } from '../../constants/dosha'
+import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 
 const PHASE_ICON  = { purvakarma: Droplets, pradhana: Flame, paschat: Sparkles }
+
+
+// A protocol section that opens on click. The view used to render all five
+// inline — 4,462px of unbroken prose on a phone with not one control on the
+// page. The clinical header and phase strip above stay open; everything below
+// is disclosure, so the plan opens as a summary you can scan in one screen.
+function PkSection({ icon: Icon, title, summary, children, open, onToggle }) {
+  return (
+    <div className={`pk-section pk-section-collapsible${open ? ' open' : ''}`}>
+      <h3 className="pk-section-heading">
+        <button
+          type="button"
+          className="pk-section-title pk-section-toggle"
+          onClick={onToggle}
+          aria-expanded={open}
+        >
+          <Icon size={14} />
+          <span className="pk-section-title-text">{title}</span>
+          {!open && summary && <span className="pk-section-summary">{summary}</span>}
+          {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </button>
+      </h3>
+      {open && <div className="pk-section-body">{children}</div>}
+    </div>
+  )
+}
 
 
 export function PanchakarmaView({ plan }) {
@@ -24,10 +51,31 @@ export function PanchakarmaView({ plan }) {
 
   const vikritiDom = cd.vikriti_dominant || us.vikriti_dominant || '—'
   const doshaColor = DOSHA_COLOR[vikritiDom] || DOSHA_COLOR.default
+  const doshaText = doshaInk(vikritiDom)
   const isShodhana = elig.type === 'shodhana'
   const isClinic = us.setting === 'clinic'
 
   const aushadhaRows = Object.entries(aus).filter(([, v]) => v)
+
+  // Which protocol sections are open. All closed on arrival — see PkSection.
+  const [openSections, setOpenSections] = useState(new Set())
+  const toggleSection = (key) => setOpenSections(prev => {
+    const next = new Set(prev)
+    next.has(key) ? next.delete(key) : next.add(key)
+    return next
+  })
+  const sectionKeys = [
+    (sn.internal_ghrita || sn.abhyanga_oil) && 'snehana',
+    aushadhaRows.length > 0 && 'aushadha',
+    sk.length > 0 && 'samsarjana',
+    sch.length > 0 && 'schedule',
+    rareAssessment && Object.keys(rareAssessment).length > 0 && 'rare',
+  ].filter(Boolean)
+  const allSectionsOpen = sectionKeys.length > 0 && openSections.size === sectionKeys.length
+  const toggleAllSections = () => setOpenSections(
+    allSectionsOpen ? new Set() : new Set(sectionKeys)
+  )
+  const sec = (key) => ({ open: openSections.has(key), onToggle: () => toggleSection(key) })
 
   const AGNI_LABEL  = { sama: 'Sama Agni', vata: 'Vishama Agni', pitta: 'Tikshna Agni', kapha: 'Manda Agni' }
   const BALA_LABEL  = { uttama: 'Uttama Bala', madhyama: 'Madhyama Bala', manda: 'Manda Bala' }
@@ -49,7 +97,7 @@ export function PanchakarmaView({ plan }) {
       {/* ── Clinical Decision Header ── */}
       <div className="pk-decision-header">
         <div className="pk-header-top-row">
-          <div className="pk-dosha-pill" style={{ background: `${doshaColor}18`, borderColor: `${doshaColor}55`, color: doshaColor }}>
+          <div className="pk-dosha-pill" style={{ background: `${doshaColor}18`, borderColor: `${doshaColor}55`, color: doshaText }}>
             Vikriti: {vikritiDom.toUpperCase()}
             {cd.vikriti_secondary ? ` + ${cd.vikriti_secondary.toUpperCase()}` : ''}
           </div>
@@ -122,9 +170,9 @@ export function PanchakarmaView({ plan }) {
         {/* Unmapped / rare disease notice */}
         {unmapped.length > 0 && (
           <div className="pk-unmapped-banner">
-            <div className="pk-unmapped-title">
+            <h3 className="pk-unmapped-title">
               <AlertTriangle size={13} /> Rare / Unmapped Conditions Detected — Vaidya Review Required
-            </div>
+            </h3>
             <div className="pk-unmapped-chips">
               {unmapped.map(c => (
                 <span key={c} className="pk-unmapped-chip">
@@ -194,9 +242,22 @@ export function PanchakarmaView({ plan }) {
       </div>
 
       {/* ── Snehana Protocol ── */}
+      {sectionKeys.length > 0 && (
+        <div className="plan-days-toolbar">
+          <h3 className="plan-days-toolbar-title">Protocol detail — {sectionKeys.length} sections</h3>
+          <button type="button" className="plan-days-toolbar-btn" onClick={toggleAllSections}>
+            {allSectionsOpen ? 'Collapse all' : 'Expand all'}
+          </button>
+        </div>
+      )}
+
       {(sn.internal_ghrita || sn.abhyanga_oil) && (
-        <div className="pk-section">
-          <div className="pk-section-title"><Droplets size={14} /> Snehana Protocol (Internal + External Oleation)</div>
+        <PkSection
+          icon={Droplets}
+          title="Snehana Protocol (Internal + External Oleation)"
+          summary={[sn.internal_ghrita && 'internal', sn.abhyanga_oil && 'abhyanga'].filter(Boolean).join(' · ')}
+          {...sec('snehana')}
+        >
           <div className="pk-aus-grid">
             {sn.internal_ghrita && (
               <div className="pk-aus-card">
@@ -233,13 +294,17 @@ export function PanchakarmaView({ plan }) {
               </ul>
             </div>
           )}
-        </div>
+        </PkSection>
       )}
 
       {/* ── Aushadha ── */}
       {aushadhaRows.length > 0 && (
-        <div className="pk-section">
-          <div className="pk-section-title"><Beaker size={14} /> Aushadha (Medicines & Oils)</div>
+        <PkSection
+          icon={Beaker}
+          title="Aushadha (Medicines & Oils)"
+          summary={`${aushadhaRows.length} item${aushadhaRows.length === 1 ? '' : 's'}`}
+          {...sec('aushadha')}
+        >
           <div className="pk-aus-grid">
             {aushadhaRows.map(([k, v]) => {
               const name = typeof v === 'object' ? (v.name || v.herb || v.primary || '') : v
@@ -254,13 +319,17 @@ export function PanchakarmaView({ plan }) {
               )
             })}
           </div>
-        </div>
+        </PkSection>
       )}
 
       {/* ── Samsarjana Krama ── */}
       {sk.length > 0 && (
-        <div className="pk-section">
-          <div className="pk-section-title"><Leaf size={14} /> Samsarjana Krama (Dietary Re-entry)</div>
+        <PkSection
+          icon={Leaf}
+          title="Samsarjana Krama (Dietary Re-entry)"
+          summary={`${sk.length} stages`}
+          {...sec('samsarjana')}
+        >
           <p className="pk-sk-intro">Critical post-Shodhana re-feeding protocol. Skipping this risks Dhatu Kshaya.</p>
           <div className="pk-sk-stages">
             {sk.map((stage, i) => (
@@ -274,13 +343,17 @@ export function PanchakarmaView({ plan }) {
               </div>
             ))}
           </div>
-        </div>
+        </PkSection>
       )}
 
       {/* ── Daily Schedule ── */}
       {sch.length > 0 && (
-        <div className="pk-section">
-          <div className="pk-section-title"><Calendar size={14} /> Daily Schedule</div>
+        <PkSection
+          icon={Calendar}
+          title="Daily Schedule"
+          summary={`${sch.length} days`}
+          {...sec('schedule')}
+        >
           <div className="pk-schedule">
             {sch.map((day) => (
               <div key={day.day} className="pk-day-row">
@@ -309,13 +382,17 @@ export function PanchakarmaView({ plan }) {
               </div>
             ))}
           </div>
-        </div>
+        </PkSection>
       )}
 
       {/* ── Rare Disease Assessment (LLM Nidana-Samprapti inference) ── */}
       {rareAssessment && Object.keys(rareAssessment).length > 0 && (
-        <div className="pk-section pk-rare-section">
-          <div className="pk-section-title"><Sparkles size={14} /> Rare Disease Nidana-Samprapti Assessment</div>
+        <PkSection
+          icon={Sparkles}
+          title="Rare Disease Nidana-Samprapti Assessment"
+          summary={`${Object.keys(rareAssessment).length} condition${Object.keys(rareAssessment).length === 1 ? '' : 's'}`}
+          {...sec('rare')}
+        >
           <p className="pk-sk-intro">AI-inferred Ayurvedic analysis for conditions outside classical mapping. Verify with a qualified Vaidya.</p>
           {Object.entries(rareAssessment).map(([condition, data]) => (
             <div key={condition} className="pk-rare-card">
@@ -337,7 +414,7 @@ export function PanchakarmaView({ plan }) {
               )}
             </div>
           ))}
-        </div>
+        </PkSection>
       )}
     </div>
   )

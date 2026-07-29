@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   Leaf, Sparkles, Calendar, ShieldCheck, Flame, Timer, Zap, ChevronDown, ChevronUp, Layers, TriangleAlert, BadgeCheck, HeartPulse,
 } from 'lucide-react'
-import { DOSHA_COLORS_R } from '../../constants/dosha'
+import { DOSHA_COLORS_R, doshaInk } from '../../constants/dosha'
 import { MedicineView } from './MedicineView'
 
 const SEV_COLOR  = { mild: '#22c55e', moderate: '#f59e0b', severe: '#ef4444' }
@@ -27,6 +27,7 @@ function RemedyCard({ result }) {
   const { remedy, symptom_display, severity, dosha_cause, dosha_used, requires_practitioner, ayurvedic_rationale } = result
   if (!remedy) return null
   const doshaColor = DOSHA_COLORS_R[dosha_used] || DOSHA_COLORS_R.universal
+  const doshaText = doshaInk(dosha_used === 'universal' ? '' : dosha_used)
 
   return (
     <div className="rv-card">
@@ -39,7 +40,7 @@ function RemedyCard({ result }) {
           <span className="rv-sev-badge" style={{ background: SEV_COLOR[severity] + '22', color: SEV_COLOR[severity] }}>
             {SEV_LABEL[severity] || severity}
           </span>
-          <span className="rv-dosha-chip" style={{ background: doshaColor + '22', color: doshaColor }}>
+          <span className="rv-dosha-chip" style={{ background: doshaColor + '22', color: doshaText }}>
             {dosha_used}
           </span>
           {open ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
@@ -109,10 +110,10 @@ export function RemedyView({ plan }) {
       {/* Symptom remedy cards */}
       {symptoms.length > 0 && (
         <div className="rv-section-block">
-          <div className="rv-block-title">
+          <h3 className="rv-block-title">
             <Leaf size={16} />
             Remedies for Your Symptoms
-          </div>
+          </h3>
           {symptoms.map((res, i) => <RemedyCard key={i} result={res} />)}
         </div>
       )}
@@ -120,7 +121,7 @@ export function RemedyView({ plan }) {
       {/* Doctor referrals */}
       {referrals.length > 0 && (
         <div className="rv-section-block rv-referrals">
-          <div className="rv-block-title"><TriangleAlert size={16} style={{ color: '#ef4444' }} />Doctor Referrals</div>
+          <h3 className="rv-block-title"><TriangleAlert size={16} style={{ color: '#ef4444' }} />Doctor Referrals</h3>
           {referrals.map((r, i) => (
             <div key={i} className="rv-referral-card">
               <span className="rv-referral-sym">{r.symptom_id || r.symptom_display || 'Symptom'}</span>
@@ -133,7 +134,7 @@ export function RemedyView({ plan }) {
       {/* Recovery timeline */}
       {plan.recovery_timeline && (
         <div className="rv-info-card">
-          <div className="rv-info-label"><Calendar size={14} />Recovery Timeline</div>
+          <h3 className="rv-info-label"><Calendar size={14} />Recovery Timeline</h3>
           <p className="rv-info-body">{plan.recovery_timeline}</p>
         </div>
       )}
@@ -141,7 +142,7 @@ export function RemedyView({ plan }) {
       {/* Synergy note */}
       {plan.synergy_note && (
         <div className="rv-info-card">
-          <div className="rv-info-label"><Sparkles size={14} />Synergy Note</div>
+          <h3 className="rv-info-label"><Sparkles size={14} />Synergy Note</h3>
           <p className="rv-info-body">{plan.synergy_note}</p>
         </div>
       )}
@@ -149,7 +150,7 @@ export function RemedyView({ plan }) {
       {/* Prevention tips */}
       {prevention.length > 0 && (
         <div className="rv-info-card">
-          <div className="rv-info-label"><BadgeCheck size={14} />Prevention Tips</div>
+          <h3 className="rv-info-label"><BadgeCheck size={14} />Prevention Tips</h3>
           <ul className="rv-tip-list">
             {prevention.map((tip, i) => <li key={i}>{tip}</li>)}
           </ul>
@@ -159,7 +160,7 @@ export function RemedyView({ plan }) {
       {/* When to escalate */}
       {plan.when_to_escalate && (
         <div className="rv-info-card rv-escalate">
-          <div className="rv-info-label"><TriangleAlert size={14} />When to See a Doctor</div>
+          <h3 className="rv-info-label"><TriangleAlert size={14} />When to See a Doctor</h3>
           <p className="rv-info-body">{plan.when_to_escalate}</p>
         </div>
       )}
@@ -167,7 +168,7 @@ export function RemedyView({ plan }) {
       {/* General guidelines */}
       {(guidelines.diet_during_recovery || guidelines.lifestyle_notes || guidelines.what_to_avoid?.length > 0) && (
         <div className="rv-info-card">
-          <div className="rv-info-label"><Layers size={14} />Recovery Guidelines ({plan.user_dosha} dosha)</div>
+          <h3 className="rv-info-label"><Layers size={14} />Recovery Guidelines ({plan.user_dosha} dosha)</h3>
           {guidelines.diet_during_recovery && <p className="rv-info-body">{guidelines.diet_during_recovery}</p>}
           {guidelines.lifestyle_notes && <p className="rv-info-body" style={{ marginTop: 6 }}>{guidelines.lifestyle_notes}</p>}
           {guidelines.what_to_avoid?.length > 0 && (

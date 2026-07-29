@@ -3,19 +3,23 @@ import { m } from 'framer-motion'
 import {
   Sun, PersonStanding, Dumbbell, Leaf, Sparkles, Star, Droplets, ShieldCheck, Flame, ArrowRight, Moon, Zap, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain, UtensilsCrossed, Clock, CupSoda, BookOpen, TriangleAlert, BadgeCheck,
 } from 'lucide-react'
-import { DOSHA_COLOR } from '../../constants/dosha'
+import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 
 // Earthy day-part palette — warm gold → herbal greens → terracotta → cool
 // evening/night tones, each hue distinct so adjacent timeline slots read apart.
+// bg/border/dot are translucent tints that work on either theme, so they stay
+// inline. The label ink does NOT: every value here used to be a dark-on-light
+// one (#312e81 measured 1.68:1 on the dark theme, which is the default), so the
+// activity names are themed in CSS via [data-slot] instead — see .din-slot.
 const SLOT_COLORS = {
-  morning_routine: { bg: 'rgba(224,165,60,0.12)',  border: 'rgba(224,165,60,0.35)',  dot: '#e0a53c', label: '#b45309' },
-  self_care:       { bg: 'rgba(79,174,143,0.10)',  border: 'rgba(79,174,143,0.30)',  dot: '#4fae8f', label: '#0f766e' },
-  exercise:        { bg: 'rgba(92,171,116,0.10)',  border: 'rgba(92,171,116,0.30)',  dot: '#5cab74', label: '#15803d' },
-  meal:            { bg: 'rgba(224,138,74,0.10)',  border: 'rgba(224,138,74,0.30)',  dot: '#e08a4a', label: '#c2410c' },
-  work:            { bg: 'rgba(168,157,139,0.10)', border: 'rgba(168,157,139,0.26)', dot: '#a89d8b', label: '#6b5f4f' },
-  rest:            { bg: 'rgba(160,140,240,0.10)', border: 'rgba(160,140,240,0.28)', dot: '#a08cf0', label: '#6d5fd0' },
-  wind_down:       { bg: 'rgba(139,143,224,0.10)', border: 'rgba(139,143,224,0.28)', dot: '#8b8fe0', label: '#4338ca' },
-  sleep:           { bg: 'rgba(30,27,75,0.08)',    border: 'rgba(99,102,241,0.22)',  dot: '#4f46e5', label: '#312e81' },
+  morning_routine: { bg: 'rgba(224,165,60,0.12)',  border: 'rgba(224,165,60,0.35)',  dot: '#e0a53c' },
+  self_care:       { bg: 'rgba(79,174,143,0.10)',  border: 'rgba(79,174,143,0.30)',  dot: '#4fae8f' },
+  exercise:        { bg: 'rgba(92,171,116,0.10)',  border: 'rgba(92,171,116,0.30)',  dot: '#5cab74' },
+  meal:            { bg: 'rgba(224,138,74,0.10)',  border: 'rgba(224,138,74,0.30)',  dot: '#e08a4a' },
+  work:            { bg: 'rgba(168,157,139,0.10)', border: 'rgba(168,157,139,0.26)', dot: '#a89d8b' },
+  rest:            { bg: 'rgba(160,140,240,0.10)', border: 'rgba(160,140,240,0.28)', dot: '#a08cf0' },
+  wind_down:       { bg: 'rgba(139,143,224,0.10)', border: 'rgba(139,143,224,0.28)', dot: '#8b8fe0' },
+  sleep:           { bg: 'rgba(30,27,75,0.08)',    border: 'rgba(99,102,241,0.22)',  dot: '#4f46e5' },
 }
 
 const SLOT_ICON_MAP = {
@@ -59,12 +63,14 @@ function RitualCard({ ritual, idx }) {
 
 function TimelineSlot({ slot, idx }) {
   const [mealOpen, setMealOpen] = useState(false)
-  const colors = SLOT_COLORS[slot.type] || SLOT_COLORS.work
+  const slotType = SLOT_COLORS[slot.type] ? slot.type : 'work'
+  const colors = SLOT_COLORS[slotType]
   const Icon = SLOT_ICON_MAP[slot.icon] || Sparkles
 
   return (
     <m.div
       className="din-slot"
+      data-slot={slotType}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: idx * 0.04 }}
@@ -77,8 +83,8 @@ function TimelineSlot({ slot, idx }) {
       <div className="din-slot-dot" style={{ background: colors.dot }} />
       <div className="din-slot-body" style={{ background: colors.bg, borderColor: colors.border }}>
         <div className="din-slot-top">
-          <span className="din-slot-icon-wrap" style={{ color: colors.label }}><Icon size={13} /></span>
-          <span className="din-slot-activity" style={{ color: colors.label }}>{slot.activity}</span>
+          <span className="din-slot-icon-wrap"><Icon size={13} /></span>
+          <span className="din-slot-activity">{slot.activity}</span>
           {slot.gym_focus && <span className="din-gym-focus-badge">{slot.gym_focus}</span>}
           {slot.type === 'meal' && (
             <button className="din-meal-toggle" onClick={() => setMealOpen(o => !o)}>
@@ -133,13 +139,13 @@ function MealGuidancePanel({ guidance }) {
       <div className="din-mg-cols">
         {m.favour?.length > 0 && (
           <div className="din-mg-col favour">
-            <div className="din-mg-col-head"><BadgeCheck size={12} />Favour</div>
+            <h4 className="din-mg-col-head"><BadgeCheck size={12} />Favour</h4>
             <ul>{m.favour.map((f, i) => <li key={i}>{f}</li>)}</ul>
           </div>
         )}
         {m.avoid?.length > 0 && (
           <div className="din-mg-col avoid">
-            <div className="din-mg-col-head"><TriangleAlert size={12} />Avoid</div>
+            <h4 className="din-mg-col-head"><TriangleAlert size={12} />Avoid</h4>
             <ul>{m.avoid.map((f, i) => <li key={i}>{f}</li>)}</ul>
           </div>
         )}
@@ -163,6 +169,9 @@ export function RoutineView({ plan }) {
   const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   const dosha = (plan.user_summary?.dominant_dosha || 'vata').toLowerCase()
   const dcolor = DOSHA_COLOR[dosha] || DOSHA_COLOR.default
+  // Theme-flipping ink for anything that renders as text (the active day tab
+  // sat at 2.15:1 in light mode with the dark-theme dosha hex).
+  const dtext = doshaInk(dosha)
 
   return (
     <div className="din-root">
@@ -244,7 +253,7 @@ export function RoutineView({ plan }) {
                   key={i}
                   className={`din-day-tab ${activeDay === i ? 'active' : ''} ${isFasting ? 'fasting' : ''} ${isRest ? 'rest-day' : ''}`}
                   onClick={() => setActiveDay(i)}
-                  style={activeDay === i ? { '--tab-color': dcolor } : {}}
+                  style={activeDay === i ? { '--tab-color': dtext } : {}}
                 >
                   {d}
                   {isFasting && <span className="din-fast-dot" />}
@@ -275,7 +284,7 @@ export function RoutineView({ plan }) {
         <div className="din-right">
           {/* Morning rituals */}
           <div className="din-panel">
-            <div className="din-panel-head"><Sun size={14} style={{ color: '#f59e0b' }} />Morning Protocol</div>
+            <h3 className="din-panel-head"><Sun size={14} style={{ color: '#f59e0b' }} />Morning Protocol</h3>
             <div className="din-ritual-list">
               {(din.morning_rituals || []).map((r, i) => <RitualCard key={i} ritual={r} idx={i} />)}
             </div>
@@ -284,7 +293,7 @@ export function RoutineView({ plan }) {
           {/* Evening rituals */}
           {(din.evening_rituals || []).length > 0 && (
             <div className="din-panel" style={{ marginTop: 16 }}>
-              <div className="din-panel-head"><Moon size={14} style={{ color: '#a08cf0' }} />Evening Wind-Down</div>
+              <h3 className="din-panel-head"><Moon size={14} style={{ color: '#a08cf0' }} />Evening Wind-Down</h3>
               <div className="din-ritual-list">
                 {(din.evening_rituals || []).map((r, i) => <RitualCard key={i} ritual={r} idx={i} />)}
               </div>
@@ -296,7 +305,7 @@ export function RoutineView({ plan }) {
       {/* ── Meal Guidance ── */}
       {Object.keys(mealGuide).length > 0 && (
         <m.div className="din-section" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <div className="din-section-head"><UtensilsCrossed size={14} />Dosha Meal Guidance</div>
+          <h3 className="din-section-head"><UtensilsCrossed size={14} />Dosha Meal Guidance</h3>
           {mealGuide.general && <p className="din-section-body">{mealGuide.general}</p>}
           <MealGuidancePanel guidance={mealGuide} />
         </m.div>
@@ -305,24 +314,24 @@ export function RoutineView({ plan }) {
       {/* ── Seasonal Ritucharya ── */}
       {seasonal.season && (
         <m.div className="din-section" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <div className="din-section-head"><Leaf size={14} />Seasonal Ritucharya — {seasonal.season}</div>
+          <h3 className="din-section-head"><Leaf size={14} />Seasonal Ritucharya — {seasonal.season}</h3>
           <div className="din-seasonal-cols">
             {seasonal.recommended_foods?.length > 0 && (
               <div className="din-seas-col">
-                <div className="din-seas-col-head favour"><BadgeCheck size={11} />Recommended Foods</div>
+                <h4 className="din-seas-col-head favour"><BadgeCheck size={11} />Recommended Foods</h4>
                 <ul>{seasonal.recommended_foods.map((f, i) => <li key={i}>{f}</li>)}</ul>
               </div>
             )}
             {seasonal.foods_to_avoid?.length > 0 && (
               <div className="din-seas-col">
-                <div className="din-seas-col-head avoid"><TriangleAlert size={11} />Avoid This Season</div>
+                <h4 className="din-seas-col-head avoid"><TriangleAlert size={11} />Avoid This Season</h4>
                 <ul>{seasonal.foods_to_avoid.map((f, i) => <li key={i}>{f}</li>)}</ul>
               </div>
             )}
           </div>
           {seasonal.seasonal_practices?.length > 0 && (
             <div className="din-seas-practices">
-              <div className="din-seas-col-head" style={{ marginBottom: 8 }}><Sparkles size={11} />Seasonal Practices</div>
+              <h4 className="din-seas-col-head" style={{ marginBottom: 8 }}><Sparkles size={11} />Seasonal Practices</h4>
               <div className="din-seas-practice-grid">
                 {seasonal.seasonal_practices.map((p, i) => (
                   <div key={i} className="din-seas-practice-chip"><ArrowRight size={10} />{p}</div>

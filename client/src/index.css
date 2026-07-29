@@ -122,7 +122,16 @@ body,
      light mode kept the dark-mode violet and dropped to 4.19:1 as text on the
      near-white plan cards. The light value is deepened to clear AA while
      keeping the violet identity (the saffron --ayura-violet would change it). */
-  --plan-violet:    #8b5cf6;
+  /* #8b5cf6 measured 3.84:1 as 11px text on its own 10%-violet chip — an AA
+     miss in the theme the app defaults to. violet-400 clears it at 5.7:1. */
+  --plan-violet:    #a78bfa;
+  /* Same story for the other three plan accents: one value was hard-coded for
+     dark and reused verbatim in light, where green/amber/orange text on a pale
+     tint measured 2.03 / 1.93 / 2.46:1. Each theme now carries its own ink. */
+  --plan-green:     #22c55e;
+  --plan-amber:     #f59e0b;
+  --plan-orange:    #f97316;
+  --plan-lavender:  #a08cf0;   /* rest / pranayama / formulation accent */
 
   /* ── Brand Accents (herbal green + saffron + terracotta) ──
      Token NAMES are kept for backward-compat with 30+ stylesheets:
@@ -145,6 +154,12 @@ body,
   --vata-color:     #a08cf0;   /* air/ether — soft lavender */
   --pitta-color:    #e0863f;   /* fire — terracotta */
   --kapha-color:    #5cab74;   /* earth/water — herbal green */
+  /* Dosha colour used as TEXT. Identical to the above in dark; light needs a
+     deeper pitta than --pitta-color, which only reaches 4.47:1 on the 15%
+     terracotta tints the plan views paint behind it. */
+  --vata-ink:       var(--vata-color);
+  --pitta-ink:      var(--pitta-color);
+  --kapha-ink:      var(--kapha-color);
 
   /* ── Global Aliases ── */
   --primary:        var(--ayura-teal);
@@ -322,6 +337,10 @@ body,
   --ayura-muted:    #6b5f4f;
   --placeholder:    #7d7161;   /* ~4.77:1 on the near-white input fill */
   --plan-violet:    #6d28d9;   /* ~6.8:1 as text on the near-white plan card */
+  --plan-green:     #166534;   /* 5.93:1 on its 10% chip (was 2.03) */
+  --plan-amber:     #92400e;   /* 5.89:1 on its 10% chip (was 1.93) */
+  --plan-orange:    #9a3412;   /* 6.03:1 on its 10% chip (was 2.46) */
+  --plan-lavender:  #4c3f9e;   /* 7.1:1 on its tints (was 2.52) */
 
   /* Light accents are darkened so accent-as-TEXT clears WCAG AA (≥4.5:1) on the
      sandstone bg/surfaces. Primary buttons get white text in light mode (below),
@@ -342,6 +361,9 @@ body,
   --vata-color:     #6152c0;
   --pitta-color:    #a85512;
   --kapha-color:    #237045;
+  --vata-ink:       #6152c0;   /* 5.1:1 on the tinted chips */
+  --pitta-ink:      #8a4210;   /* deeper than --pitta-color: 6.2:1 vs 4.47 */
+  --kapha-ink:      #237045;   /* 5.1:1 */
 
   --primary:        var(--ayura-teal);
   --accent:         var(--ayura-violet);

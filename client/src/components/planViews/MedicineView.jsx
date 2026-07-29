@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   Leaf, Pill, Sparkles, Droplets, Calendar, ShieldCheck, Flame, ChevronDown, ChevronUp, UtensilsCrossed, Clock, BookOpen, Stethoscope, Layers, TriangleAlert, Snowflake,
 } from 'lucide-react'
-import { DOSHA_COLORS_R } from '../../constants/dosha'
+import { doshaInk } from '../../constants/dosha'
 import { RoutineView } from './RoutineView'
 
 const TIER_LABEL = { 1: 'OTC Safe', 2: 'Practitioner Advised' }
@@ -65,7 +65,8 @@ function MedCard({ med, rationale }) {
   return (
     <div className="mv-card" style={{ '--mv-accent': color }}>
       {/* ── Header ── */}
-      <div className="mv-card-header" onClick={() => setOpen(o => !o)} role="button" tabIndex={0}>
+      <h3 className="mv-card-heading">
+      <button type="button" className="mv-card-header" onClick={() => setOpen(o => !o)} aria-expanded={open}>
         <div className="mv-card-left">
           <div className="mv-med-name">
             {med.name}
@@ -81,7 +82,8 @@ function MedCard({ med, rationale }) {
           {isExternal && <span className="mv-external-badge">External</span>}
           {open ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
         </div>
-      </div>
+      </button>
+      </h3>
 
       {/* ── Panchakosha pharmacology strip (always visible) ── */}
       {(hasRasa || med.virya || med.vipaka) && (
@@ -154,7 +156,7 @@ function MedCard({ med, rationale }) {
           {/* Karma pills */}
           {hasKarma && (
             <div className="mv-section">
-              <div className="mv-section-label">Karma (Actions)</div>
+              <h4 className="mv-section-label">Karma (Actions)</h4>
               <div className="mv-karma-row">
                 {med.karma.map((k, i) => (
                   <span key={i} className="mv-karma-pill" style={{ '--chip': KARMA_COLOR[k] || '#94a3b8' }}>{k}</span>
@@ -166,7 +168,7 @@ function MedCard({ med, rationale }) {
           {/* Dhatu affected */}
           {hasDhatu && (
             <div className="mv-section">
-              <div className="mv-section-label">Dhatu Affected</div>
+              <h4 className="mv-section-label">Dhatu Affected</h4>
               <div className="mv-karma-row">
                 {med.dhatu_affected.map((d, i) => (
                   <span key={i} className="mv-dhatu-chip">{d.charAt(0).toUpperCase() + d.slice(1)}</span>
@@ -178,7 +180,7 @@ function MedCard({ med, rationale }) {
           {/* Guna */}
           {med.guna?.length > 0 && (
             <div className="mv-section">
-              <div className="mv-section-label">Guna (Qualities)</div>
+              <h4 className="mv-section-label">Guna (Qualities)</h4>
               <div className="mv-karma-row">
                 {med.guna.map((g, i) => (
                   <span key={i} className="mv-guna-chip">{g.charAt(0).toUpperCase() + g.slice(1)}</span>
@@ -190,7 +192,7 @@ function MedCard({ med, rationale }) {
           {/* Ingredients */}
           {med.ingredients?.length > 0 && (
             <div className="mv-section">
-              <div className="mv-section-label">Key Ingredients</div>
+              <h4 className="mv-section-label">Key Ingredients</h4>
               <div className="mv-ingredients">
                 {med.ingredients.map((ing, i) => (
                   <span key={i} className="mv-ing-chip">{ing}</span>
@@ -201,7 +203,7 @@ function MedCard({ med, rationale }) {
 
           {/* Dosage */}
           <div className="mv-dosage-block">
-            <div className="mv-section-label">Dosage & Administration</div>
+            <h4 className="mv-section-label">Dosage & Administration</h4>
             <p className="mv-dosage-text">{med.dosage}</p>
             {(med.selected_anupana || med.anupana) && (med.selected_anupana || med.anupana) !== 'External use only' && (
               <div className="mv-anupana">
@@ -219,7 +221,7 @@ function MedCard({ med, rationale }) {
           {/* Contraindications */}
           {med.contraindications?.length > 0 && (
             <div className="mv-section">
-              <div className="mv-section-label" style={{ color: '#f97316' }}>Contraindications</div>
+              <h4 className="mv-section-label" style={{ color: '#f97316' }}>Contraindications</h4>
               <div className="mv-contra-chips">
                 {med.contraindications.map((c, i) => (
                   <span key={i} className="mv-contra-chip">{c.replace(/_/g, ' ')}</span>
@@ -230,9 +232,9 @@ function MedCard({ med, rationale }) {
 
           {med.drug_interactions?.length > 0 ? (
             <div className="mv-section">
-              <div className="mv-section-label" style={{ color: '#c0392b' }}>
+              <h4 className="mv-section-label" style={{ color: '#c0392b' }}>
                 <TriangleAlert size={11} /> Drug–herb interactions — check with your doctor
-              </div>
+              </h4>
               <div className="mv-contra-chips">
                 {med.drug_interactions.map((d, i) => (
                   <span key={i} className="mv-interaction-chip">{String(d).replace(/_/g, ' ')}</span>
@@ -241,9 +243,9 @@ function MedCard({ med, rationale }) {
             </div>
           ) : (
             <div className="mv-section">
-              <div className="mv-section-label mv-no-interactions">
+              <h4 className="mv-section-label mv-no-interactions">
                 <ShieldCheck size={11} /> No known drug–herb interactions documented
-              </div>
+              </h4>
             </div>
           )}
 
@@ -278,7 +280,7 @@ export function MedicineView({ plan }) {
   const apathya    = plan.apathya || []
   const viruddha   = plan.viruddha_ahara_alerts || []
 
-  const doshaColor = DOSHA_COLORS_R[plan.vikriti_dominant || plan.user_dosha] || DOSHA_COLORS_R.universal
+  const doshaText = doshaInk(plan.vikriti_dominant || plan.user_dosha)
 
   return (
     <div className="mv-view">
@@ -348,7 +350,7 @@ export function MedicineView({ plan }) {
       {/* ── Primary formulations ── */}
       {primary.length > 0 && (
         <div className="rv-section-block">
-          <div className="rv-block-title"><Pill size={16} />Primary Formulations</div>
+          <h3 className="rv-block-title"><Pill size={16} />Primary Formulations</h3>
           {primary.map((med, i) => <MedCard key={i} med={med} rationale={rationale[med.name]} />)}
         </div>
       )}
@@ -356,7 +358,7 @@ export function MedicineView({ plan }) {
       {/* ── Supporting formulations ── */}
       {supporting.length > 0 && (
         <div className="rv-section-block">
-          <div className="rv-block-title"><Layers size={16} />Supporting Formulations</div>
+          <h3 className="rv-block-title"><Layers size={16} />Supporting Formulations</h3>
           {supporting.map((med, i) => <MedCard key={i} med={med} rationale={rationale[med.name]} />)}
         </div>
       )}
@@ -364,7 +366,7 @@ export function MedicineView({ plan }) {
       {/* ── External therapies ── */}
       {external.length > 0 && (
         <div className="rv-section-block">
-          <div className="rv-block-title"><Droplets size={16} />External Therapies (Taila)</div>
+          <h3 className="rv-block-title"><Droplets size={16} />External Therapies (Taila)</h3>
           {external.map((med, i) => <MedCard key={i} med={med} rationale={rationale[med.name]} />)}
         </div>
       )}
@@ -372,7 +374,7 @@ export function MedicineView({ plan }) {
       {/* ── Daily dosage schedule ── */}
       {schedule.length > 0 && (
         <div className="rv-section-block">
-          <div className="rv-block-title"><Clock size={16} />Daily Dosage Schedule</div>
+          <h3 className="rv-block-title"><Clock size={16} />Daily Dosage Schedule</h3>
           {schedule.map((slot, i) => (
             <div key={i} className="mv-schedule-slot">
               <div className="mv-schedule-time">{slot.time}</div>
@@ -387,7 +389,7 @@ export function MedicineView({ plan }) {
       {/* ── Treatment protocol grid ── */}
       {(protocol.week_1_2 || protocol.week_3_4 || protocol.week_5_plus) && (
         <div className="mv-protocol-section">
-          <div className="rv-block-title"><Calendar size={16} />Treatment Protocol</div>
+          <h3 className="rv-block-title"><Calendar size={16} />Treatment Protocol</h3>
           {protocol.dose_note && (
             <div className="mv-dose-note"><Flame size={12} />{protocol.dose_note}</div>
           )}
@@ -420,7 +422,7 @@ export function MedicineView({ plan }) {
       {/* ── Expected outcomes timeline ── */}
       {(outcomes.week_2 || outcomes.week_4 || outcomes.week_8) && (
         <div className="rv-section-block">
-          <div className="rv-block-title"><Sparkles size={16} />Expected Outcomes</div>
+          <h3 className="rv-block-title"><Sparkles size={16} />Expected Outcomes</h3>
           <div className="mv-outcomes-timeline">
             {outcomes.week_2 && (
               <div className="mv-outcome-milestone">
@@ -447,7 +449,7 @@ export function MedicineView({ plan }) {
       {/* ── Synergy note ── */}
       {plan.synergy_note && (
         <div className="rv-info-card">
-          <div className="rv-info-label"><Sparkles size={14} />Synergy of Formulations</div>
+          <h3 className="rv-info-label"><Sparkles size={14} />Synergy of Formulations</h3>
           <p className="rv-info-body">{plan.synergy_note}</p>
         </div>
       )}
@@ -455,7 +457,7 @@ export function MedicineView({ plan }) {
       {/* ── Pathya-Apathya (structured lists) ── */}
       {(pathya.length > 0 || apathya.length > 0) && (
         <div className="mv-pathya-section">
-          <div className="rv-block-title"><UtensilsCrossed size={16} />Pathya & Apathya</div>
+          <h3 className="rv-block-title"><UtensilsCrossed size={16} />Pathya & Apathya</h3>
           <div className="mv-pathya-grid">
             {pathya.length > 0 && (
               <div className="mv-pathya-col">
@@ -486,9 +488,9 @@ export function MedicineView({ plan }) {
       {/* ── Lifestyle guidance (Dosha base) ── */}
       {(lifestyle.dietary_note || lifestyle.routine_note || lifestyle.avoid?.length > 0) && (
         <div className="rv-info-card">
-          <div className="rv-info-label" style={{ color: doshaColor }}>
+          <h3 className="rv-info-label" style={{ color: doshaText }}>
             <Leaf size={14} />Lifestyle — {(plan.vikriti_dominant || plan.user_dosha)?.charAt(0).toUpperCase() + (plan.vikriti_dominant || plan.user_dosha)?.slice(1)} Vikriti
-          </div>
+          </h3>
           {lifestyle.dietary_note && <p className="rv-info-body">{lifestyle.dietary_note}</p>}
           {lifestyle.routine_note && <p className="rv-info-body" style={{ marginTop: 6 }}>{lifestyle.routine_note}</p>}
           {lifestyle.avoid?.length > 0 && (
@@ -502,7 +504,7 @@ export function MedicineView({ plan }) {
       {/* ── Monitoring signs ── */}
       {plan.monitoring_signs && (
         <div className="rv-info-card">
-          <div className="rv-info-label"><Stethoscope size={14} />Monitoring & Follow-Up</div>
+          <h3 className="rv-info-label"><Stethoscope size={14} />Monitoring & Follow-Up</h3>
           <p className="rv-info-body">{plan.monitoring_signs}</p>
         </div>
       )}
@@ -510,7 +512,7 @@ export function MedicineView({ plan }) {
       {/* ── When to stop ── */}
       {plan.when_to_stop && (
         <div className="rv-info-card rv-escalate">
-          <div className="rv-info-label"><TriangleAlert size={14} />When to Stop & Consult Immediately</div>
+          <h3 className="rv-info-label"><TriangleAlert size={14} />When to Stop & Consult Immediately</h3>
           <p className="rv-info-body">{plan.when_to_stop}</p>
         </div>
       )}
@@ -518,7 +520,7 @@ export function MedicineView({ plan }) {
       {/* ── Blocked medicines ── */}
       {blocked.length > 0 && (
         <div className="mv-blocked-section">
-          <div className="rv-info-label"><TriangleAlert size={14} style={{ color: '#ef4444' }} />Medicines Excluded for Your Safety</div>
+          <h3 className="rv-info-label"><TriangleAlert size={14} style={{ color: '#ef4444' }} />Medicines Excluded for Your Safety</h3>
           {blocked.map((b, i) => (
             <div key={i} className="mv-blocked-item">
               <span className="mv-blocked-name">{b.name}</span>

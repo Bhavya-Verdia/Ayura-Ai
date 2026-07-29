@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   Sun, Leaf, AlertTriangle, Droplets, ShieldCheck, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain,
 } from 'lucide-react'
-import { DOSHA_COLOR } from '../../constants/dosha'
+import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 
 const SNS_BREATH_COLOR = { 'Inhale': '#3b82f6', 'Exhale': '#ef4444', 'Natural': '#6b7280', 'Exhale — hold 3-5 breaths': '#ef4444' }
 
@@ -99,6 +99,10 @@ export function YogaView({ plan }) {
   const [expandedCooldown, setExpandedCooldown] = useState(new Set())
   const [expandedPrana, setExpandedPrana] = useState(new Set())
   const [expandedDharana, setExpandedDharana] = useState(new Set())
+  // Which day cards are open. Every day used to render fully expanded, so one
+  // week was ~5,400px — six screens. Days now start closed and open only on
+  // click, so a week is one scannable list of seven rows.
+  const [expandedDays, setExpandedDays] = useState(new Set())
 
   const us = plan.user_summary || {}
   const fourWeekPlan = plan.four_week_plan || []
@@ -108,7 +112,28 @@ export function YogaView({ plan }) {
   const tips = plan.ayurvedic_tips || {}
   const dailyIntention = plan.daily_intention || {}
 
+  // Day indices mean a different day's content once the week changes, so a
+  // week switch starts closed rather than carrying the old week's open rows.
+  const selectWeek = (i) => {
+    setActiveWeek(i)
+    setExpandedDays(new Set())
+  }
+
+  const toggleDay = (i) => setExpandedDays(prev => {
+    const next = new Set(prev)
+    next.has(i) ? next.delete(i) : next.add(i)
+    return next
+  })
+
+  // Expand/collapse all — the escape hatch from per-day clicking when you want
+  // to read (or print) the whole week at once.
+  const allDaysOpen = weekDays.length > 0 && expandedDays.size === weekDays.length
+  const toggleAllDays = () => setExpandedDays(
+    allDaysOpen ? new Set() : new Set(weekDays.map((_, i) => i))
+  )
+
   const doshaColor = DOSHA_COLOR[us.dominant_dosha] || DOSHA_COLOR.default
+  const doshaText = doshaInk(us.dominant_dosha)
   const goalLabel = (us.yoga_goal || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
   const styleLabel = Array.isArray(us.style_preference)
     ? us.style_preference.join(', ')
@@ -156,9 +181,9 @@ export function YogaView({ plan }) {
       {/* ── Pranayama safety exclusions (forceful breaths removed for safety) ── */}
       {plan.pranayama_safety_exclusions?.length > 0 && (
         <div className="yoga-prana-exclusions">
-          <div className="yoga-prana-excl-title">
+          <h3 className="yoga-prana-excl-title">
             <ShieldCheck size={13} /> Excluded for your safety
-          </div>
+          </h3>
           <ul className="yoga-prana-excl-list">
             {plan.pranayama_safety_exclusions.map((ex, i) => (
               <li key={i}><strong>{ex.name}</strong> — {ex.reason}</li>
@@ -183,7 +208,7 @@ export function YogaView({ plan }) {
           </div>
         )}
         {us.dominant_dosha && (
-          <div className="yoga-vital-chip" style={{ borderColor: `${doshaColor}44`, color: doshaColor }}>
+          <div className="yoga-vital-chip" style={{ borderColor: `${doshaColor}44`, color: doshaText }}>
             <span className="yoga-vital-k">Dosha</span><span className="yoga-vital-v">{us.dominant_dosha.toUpperCase()}</span>
           </div>
         )}
@@ -271,7 +296,7 @@ export function YogaView({ plan }) {
           <button
             key={i}
             className={`yoga-week-tab${activeWeek === i ? ' active' : ''}`}
-            onClick={() => setActiveWeek(i)}
+            onClick={() => selectWeek(i)}
           >
             <span className="yoga-tab-num">Week {i + 1}</span>
             <span className="yoga-tab-theme">{theme}</span>
@@ -289,6 +314,16 @@ export function YogaView({ plan }) {
         </div>
       )}
 
+      {/* ── Day-list toolbar ── */}
+      {weekDays.length > 0 && (
+        <div className="plan-days-toolbar">
+          <h3 className="plan-days-toolbar-title">Week {activeWeek + 1} — {weekDays.length} days</h3>
+          <button type="button" className="plan-days-toolbar-btn" onClick={toggleAllDays}>
+            {allDaysOpen ? 'Collapse all' : 'Expand all'}
+          </button>
+        </div>
+      )}
+
       {/* ── Day cards ── */}
       <div className="yoga-days-grid">
         {weekDays.map((day, dayIdx) => {
@@ -297,20 +332,47 @@ export function YogaView({ plan }) {
           const intention = dailyIntention[day.day_name] || null
           const warmupOpen = expandedWarmup.has(dayIdx)
           const cooldownOpen = expandedCooldown.has(dayIdx)
+          const dayOpen = expandedDays.has(dayIdx)
+
+          // Shown on the collapsed card so a closed day still says what it is.
+          // Rest days say it with their badge, so they get no summary.
+          const summaryBits = isRest ? [] : [
+            session.main_sequence?.length && `${session.main_sequence.length} poses`,
+            session.warmup?.length && `${session.warmup.length} warmup`,
+            session.cooldown?.length && `${session.cooldown.length} cooldown`,
+            session.pranayama_section && 'pranayama',
+          ].filter(Boolean)
 
           return (
-            <div key={dayIdx} className={`yoga-day-card${isRest ? ' rest' : ''}`}>
-              <div className="yoga-day-header">
-                <div className="yoga-day-name">
-                  {isRest ? <Moon size={13} /> : <Flower2 size={13} />}
-                  {day.day_name || `Day ${day.day}`}
-                </div>
-                {!isRest && session.total_duration_minutes && (
-                  <span className="yoga-duration-badge-sm">{session.total_duration_minutes} min</span>
-                )}
-              </div>
+            <div key={dayIdx} className={`yoga-day-card${isRest ? ' rest' : ''}${dayOpen ? ' open' : ''}`}>
+              {/* h3 wrapping the disclosure button is the standard accordion
+                  shape: the day is a landmark in the outline AND the control. */}
+              <h3 className="yoga-day-heading">
+                <button
+                  type="button"
+                  className="yoga-day-header yoga-day-toggle"
+                  onClick={() => toggleDay(dayIdx)}
+                  aria-expanded={dayOpen}
+                >
+                  <div className="yoga-day-name">
+                    {isRest ? <Moon size={13} /> : <Flower2 size={13} />}
+                    {day.day_name || `Day ${day.day}`}
+                  </div>
+                  <div className="yoga-day-headmeta">
+                    {!dayOpen && summaryBits.length > 0 && (
+                      <span className="yoga-day-summary">{summaryBits.join(' · ')}</span>
+                    )}
+                    {isRest
+                      ? <span className="yoga-duration-badge-sm rest">Rest</span>
+                      : session.total_duration_minutes && (
+                        <span className="yoga-duration-badge-sm">{session.total_duration_minutes} min</span>
+                      )}
+                    {dayOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                  </div>
+                </button>
+              </h3>
 
-              {isRest ? (
+              {!dayOpen ? null : isRest ? (
                 <div className="yoga-rest-card">
                   <p className="yoga-rest-tip">Let your body absorb the week's practice. Gentle movement and stillness are welcome.</p>
                 </div>
@@ -351,7 +413,7 @@ export function YogaView({ plan }) {
                   {/* Main sequence */}
                   {session.main_sequence?.length > 0 && (
                     <div className="yoga-section-block">
-                      <div className="yoga-section-label standalone">Main Practice ({session.main_sequence.length} poses)</div>
+                      <h4 className="yoga-section-label standalone">Main Practice ({session.main_sequence.length} poses)</h4>
                       <div className="yoga-main-list">
                         {session.main_sequence.map((p, pi) => {
                           const poseId = `${dayIdx}-main-${pi}`
@@ -524,7 +586,7 @@ export function YogaView({ plan }) {
       {/* ── Ayurvedic Tips ── */}
       {Object.keys(tips).length > 0 && (
         <div className="yoga-tips-section">
-          <div className="yoga-tips-title"><Leaf size={14} /> Ayurvedic Practice Tips</div>
+          <h3 className="yoga-tips-title"><Leaf size={14} /> Ayurvedic Practice Tips</h3>
           <div className="yoga-tips-grid">
             {[
               { key: 'best_time', label: 'Best Time' },
@@ -533,7 +595,7 @@ export function YogaView({ plan }) {
               { key: 'after_practice', label: 'After Practice' },
             ].map(({ key, label }) => tips[key] ? (
               <div key={key} className="yoga-tip-card">
-                <div className="yoga-tip-label">{label}</div>
+                <h4 className="yoga-tip-label">{label}</h4>
                 <p className="yoga-tip-text">{tips[key]}</p>
               </div>
             ) : null)}
@@ -545,13 +607,13 @@ export function YogaView({ plan }) {
       {/* ── Enrichment cards ── */}
       {plan.breathing_guidance && (
         <div className="yoga-enrichment-card">
-          <div className="yoga-enrichment-label"><Wind size={13} /> Breathing Guidance</div>
+          <h3 className="yoga-enrichment-label"><Wind size={13} /> Breathing Guidance</h3>
           <p className="yoga-enrichment-text">{plan.breathing_guidance}</p>
         </div>
       )}
       {plan.lifestyle_sync && (
         <div className="yoga-enrichment-card">
-          <div className="yoga-enrichment-label"><Leaf size={13} /> Lifestyle Sync</div>
+          <h3 className="yoga-enrichment-label"><Leaf size={13} /> Lifestyle Sync</h3>
           <p className="yoga-enrichment-text">{plan.lifestyle_sync}</p>
         </div>
       )}

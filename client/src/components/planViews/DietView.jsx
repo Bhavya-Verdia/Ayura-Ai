@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   Sun, Leaf, Coffee, AlertTriangle, Star, Droplets, ShieldCheck, Flame, Moon, Timer, Target, ChevronDown, ChevronUp, Flower2, UtensilsCrossed, Clock, Soup, Apple, CupSoda, BookOpen, TriangleAlert,
 } from 'lucide-react'
-import { DOSHA_COLOR } from '../../constants/dosha'
+import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { RemedyView } from './RemedyView'
 
 const DIET_MEAL_ICONS = {
@@ -46,21 +46,28 @@ function LLMMealCard({ mealName, meal }) {
           Allergen detected: {meal.allergen_terms?.join(', ')}
         </div>
       )}
-      <div className="diet-meal-header" onClick={() => setOpen(o => !o)}>
-        <div className="diet-meal-title-row">
-          <MealIcon size={13} className="diet-meal-icon" />
-          <div className="diet-meal-title-stack">
-            <span className="diet-meal-label">{label}</span>
-            <span className="diet-meal-name-llm">{meal.meal_name}</span>
+      <h3 className="diet-meal-heading">
+        <button
+          type="button"
+          className="diet-meal-header"
+          onClick={() => setOpen(o => !o)}
+          aria-expanded={open}
+        >
+          <div className="diet-meal-title-row">
+            <MealIcon size={13} className="diet-meal-icon" />
+            <div className="diet-meal-title-stack">
+              <span className="diet-meal-label">{label}</span>
+              <span className="diet-meal-name-llm">{meal.meal_name}</span>
+            </div>
           </div>
-        </div>
-        <div className="diet-meal-meta">
-          {meal.macros_approx?.calories > 0 && (
-            <span className="diet-meal-cal-badge">{Math.round(meal.macros_approx.calories)} cal</span>
-          )}
-          {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-        </div>
-      </div>
+          <div className="diet-meal-meta">
+            {meal.macros_approx?.calories > 0 && (
+              <span className="diet-meal-cal-badge">{Math.round(meal.macros_approx.calories)} cal</span>
+            )}
+            {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+          </div>
+        </button>
+      </h3>
 
       {open && (
         <div className="diet-llm-body">
@@ -117,7 +124,7 @@ function PathyaApathyaCard({ pa }) {
           )}
           {pa.pathya?.length > 0 && (
             <div className="diet-pa-section">
-              <div className="diet-pa-section-title pathya">Pathya — Recommended</div>
+              <h3 className="diet-pa-section-title pathya">Pathya — Recommended</h3>
               <ul className="diet-pa-list">
                 {pa.pathya.map((item, i) => <li key={i}>{item}</li>)}
               </ul>
@@ -125,7 +132,7 @@ function PathyaApathyaCard({ pa }) {
           )}
           {pa.apathya?.length > 0 && (
             <div className="diet-pa-section">
-              <div className="diet-pa-section-title apathya">Apathya — Avoid</div>
+              <h3 className="diet-pa-section-title apathya">Apathya — Avoid</h3>
               <ul className="diet-pa-list apathya">
                 {pa.apathya.map((item, i) => <li key={i}>{item}</li>)}
               </ul>
@@ -133,7 +140,7 @@ function PathyaApathyaCard({ pa }) {
           )}
           {pa.viruddha_ahara_warnings?.length > 0 && (
             <div className="diet-pa-section">
-              <div className="diet-pa-section-title viruddha">Viruddha Ahara Warnings</div>
+              <h3 className="diet-pa-section-title viruddha">Viruddha Ahara Warnings</h3>
               <ul className="diet-pa-list viruddha">
                 {pa.viruddha_ahara_warnings.map((item, i) => (
                   <li key={i}><AlertTriangle size={10} className="diet-pa-warn-icon" />{item}</li>
@@ -169,9 +176,9 @@ function DietSafetyBanner({ plan }) {
     <div className="diet-safety-banner">
       {alerts.length > 0 && (
         <div className="diet-safety-card allergen">
-          <div className="diet-safety-title">
+          <h3 className="diet-safety-title">
             <TriangleAlert size={13} /> Allergen conflicts — substitute before following these meals
-          </div>
+          </h3>
           <ul className="diet-safety-list">
             {alerts.map((a, i) => (
               <li key={i}>
@@ -183,9 +190,9 @@ function DietSafetyBanner({ plan }) {
       )}
       {condAlerts.length > 0 && (
         <div className="diet-safety-card allergen">
-          <div className="diet-safety-title">
+          <h3 className="diet-safety-title">
             <TriangleAlert size={13} /> Foods not advised for your conditions — substitute before following these meals
-          </div>
+          </h3>
           <ul className="diet-safety-list">
             {condAlerts.map((c, i) => (
               <li key={i}>
@@ -197,9 +204,9 @@ function DietSafetyBanner({ plan }) {
       )}
       {viruddha.length > 0 && (
         <div className="diet-safety-card viruddha">
-          <div className="diet-safety-title">
+          <h3 className="diet-safety-title">
             <TriangleAlert size={13} /> Viruddha Ahara detected (Charaka Sutrasthana 26)
-          </div>
+          </h3>
           <ul className="diet-safety-list">
             {viruddha.map((v, i) => (
               <li key={i}><strong>{v.combination}</strong> — {v.reason}</li>
@@ -221,6 +228,7 @@ export function DietView({ plan }) {
   const us = plan.user_summary || {}
   const isLLM = !!plan.weekly_plan
   const doshaColor = DOSHA_COLOR[us.dominant_dosha] || DOSHA_COLOR.default
+  const doshaText = doshaInk(us.dominant_dosha)
   const goalLabel = (us.diet_goal || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
   const agniLabel = (us.agni_type || '').replace(/\b\w/g, c => c.toUpperCase())
 
@@ -265,7 +273,7 @@ export function DietView({ plan }) {
           </div>
         )}
         {us.dominant_dosha && (
-          <div className="diet-vital-chip" style={{ borderColor: `${doshaColor}44`, color: doshaColor }}>
+          <div className="diet-vital-chip" style={{ borderColor: `${doshaColor}44`, color: doshaText }}>
             <span className="diet-vital-k">Dosha</span>
             <span className="diet-vital-v">{us.dominant_dosha.toUpperCase()}</span>
           </div>
@@ -355,6 +363,11 @@ export function DietView({ plan }) {
           )
         })}
       </div>
+
+      {/* ── Selected-day heading ── */}
+      <h3 className="diet-day-heading">
+        {DIET_DAY_FULL[activeDay]}{isMultiWeek ? ` · Week ${activeWeek + 1}` : ''}
+      </h3>
 
       {/* ── Day theme badge (LLM) ── */}
       {isLLM && dayData.theme && (
@@ -447,12 +460,13 @@ export function DietView({ plan }) {
               const MealIcon = DIET_MEAL_ICONS[meal] || UtensilsCrossed
               return (
                 <div key={meal} className={`diet-meal-card meal-${meal}`}>
-                  <div className="diet-meal-header">
+                  {/* Static card — nothing to disclose, so a plain heading. */}
+                  <h3 className="diet-meal-header">
                     <div className="diet-meal-title-row">
                       <MealIcon size={13} className="diet-meal-icon" />
                       <span className="diet-meal-label">{meal.charAt(0).toUpperCase() + meal.slice(1)}</span>
                     </div>
-                  </div>
+                  </h3>
                   <div className="diet-meal-foods">
                     {items.map((item, i) => (
                       <div key={i} className="diet-food-row">
@@ -497,9 +511,9 @@ export function DietView({ plan }) {
       {/* ── Ahar Vidhi (LLM) ── */}
       {isLLM && plan.ahar_vidhi && (
         <div className="diet-ahar-vidhi">
-          <div className="diet-ahar-vidhi-title">
+          <h3 className="diet-ahar-vidhi-title">
             <BookOpen size={13} /> Ahar Vidhi — Rules of Eating
-          </div>
+          </h3>
           <p>{plan.ahar_vidhi}</p>
         </div>
       )}
@@ -573,7 +587,7 @@ export function DietView({ plan }) {
             <div className="diet-guidance-card">
               <Droplets size={13} className="diet-guidance-icon hydration" />
               <div>
-                <div className="diet-guidance-title">Hydration</div>
+                <h3 className="diet-guidance-title">Hydration</h3>
                 <p className="diet-guidance-text">{plan.hydration_guidance}</p>
               </div>
             </div>
@@ -582,7 +596,7 @@ export function DietView({ plan }) {
             <div className="diet-guidance-card">
               <Moon size={13} className="diet-guidance-icon fasting" />
               <div>
-                <div className="diet-guidance-title">Fasting Protocol</div>
+                <h3 className="diet-guidance-title">Fasting Protocol</h3>
                 <p className="diet-guidance-text">{plan.fasting_guidance}</p>
               </div>
             </div>
