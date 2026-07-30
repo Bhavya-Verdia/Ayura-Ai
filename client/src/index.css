@@ -104,6 +104,16 @@ body,
   initial-value: 30%;
   inherits: false;
 }
+/* Drives the one-shot sheen that sweeps across the hero's "sync" accent word
+   (see .shimmer-text in Landing.css). Registered so it can be ANIMATED — an
+   unregistered custom property is not interpolatable, so the gradient would
+   jump rather than sweep. Initial value parks the sheen past the right edge,
+   which is the resting (and reduced-motion) state: fully invisible. */
+@property --sync-sheen {
+  syntax: '<percentage>';
+  initial-value: 130%;
+  inherits: false;
+}
 
 /* ─── AYURA AI 3.0 — DESIGN TOKENS ───────────────────────── */
 :root {

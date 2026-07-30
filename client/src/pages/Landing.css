@@ -1304,27 +1304,72 @@
 }
 
 /* ─── SHIMMER HERO TITLE ───────────────────────────────────── */
-/* background-position animates = the word repaints every frame, forever.
-   inline-block + will-change isolate that repaint onto the word's own small
-   layer; without them each frame dirties the whole hero-copy layer, which
-   under GPU pressure flickered the entire headline. */
+/* The word is "sync", so it earns one moment of motion: a sheen sweeps across
+   it once, as the word lands, and then it is done.
+
+   HISTORY — read before changing. This used to be an infinite
+   `background-position` shimmer, retired in f031ab4 (flicker fix) for two
+   distinct reasons, and the design below avoids BOTH:
+
+   1. It repainted the word every frame FOREVER. That is what broke the mobile
+      ambient budget (one living background element per phone screen). The
+      sweep here runs a single 1.15s pass and stops, so the steady state is a
+      static gradient exactly as it is today — no perpetual paint.
+   2. Isolating that repaint needed `will-change`, and the composited layer it
+      created had bounds that CLIPPED THE ITALIC 'y' DESCENDER. There is no
+      will-change here and none should be added: a one-shot paint does not need
+      layer isolation, and re-adding it would clip the glyph again.
+
+   The sheen is a second background layer over the unchanged brand gradient —
+   `background-clip: text` clips every layer, so both are masked to the glyphs.
+   It is positioned by --sync-sheen, registered with @property in index.css
+   because an unregistered custom property cannot be interpolated (the gradient
+   would jump instead of sweeping). At rest the property parks at 130%, i.e.
+   past the right edge and fully transparent, so the resting appearance is
+   pixel-identical to the static gradient this replaces. */
 .shimmer-text {
   font-style: normal;
   display: inline-block;
-  /* Descender-safe + static (no will-change layer clip, no shimmer motion). */
+  /* Descender-safe (see note 2 above — keep these, and keep will-change out). */
   line-height: 1.2;
   padding-bottom: 0.08em;
-  background: linear-gradient(
-    90deg,
-    var(--ayura-teal)   0%,
-    var(--ayura-violet) 34%,
-    var(--ayura-amber)  60%,
-    var(--ayura-teal)   100%
-  );
+  background:
+    /* sheen — travels with --sync-sheen, invisible at the resting 130% */
+    linear-gradient(
+      100deg,
+      transparent            calc(var(--sync-sheen) - 22%),
+      rgba(255, 247, 230, 0.55) calc(var(--sync-sheen) - 6%),
+      rgba(255, 252, 245, 0.92) var(--sync-sheen),
+      rgba(255, 247, 230, 0.55) calc(var(--sync-sheen) + 6%),
+      transparent            calc(var(--sync-sheen) + 22%)
+    ),
+    /* brand gradient — unchanged, and the only layer once the sweep is over */
+    linear-gradient(
+      90deg,
+      var(--ayura-teal)   0%,
+      var(--ayura-violet) 34%,
+      var(--ayura-amber)  60%,
+      var(--ayura-teal)   100%
+    );
   background-size: 100% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* The hero title staggers its words 0.09s apart and "sync" is the 5th, so it
+   finishes arriving at ~0.96s (0.36s stagger + 0.6s travel). The sweep starts
+   just before that so it reads as the word settling INTO sync, not as a
+   separate effect bolted on afterwards. */
+@media (prefers-reduced-motion: no-preference) {
+  .shimmer-text {
+    animation: lnd-sync-sweep 1.15s cubic-bezier(0.33, 0, 0.2, 1) 0.9s both;
+  }
+}
+
+@keyframes lnd-sync-sweep {
+  from { --sync-sheen: -30%; }
+  to   { --sync-sheen: 130%; }
 }
 
 /* ─── KICKER DOT PING ──────────────────────────────────────── */
