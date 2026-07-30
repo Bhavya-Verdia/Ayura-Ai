@@ -322,9 +322,15 @@
 .dash-plan-desc,
 .dash-plan-preview {
   color: var(--ayura-muted); font-size: 0.85rem; line-height: 1.5;
-  margin: 0 0 18px; flex-grow: 1;
+  margin: 0 0 18px;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   overflow: hidden;
+  /* NOT flex-grow: 1. `-webkit-line-clamp` draws the ellipsis after line 2 but
+     relies on `overflow: hidden` to clip the rest — and growing this paragraph
+     to fill the card made the box taller than two lines, so line 3 sat INSIDE
+     it and stayed visible, stranding the ellipsis mid-sentence. The card's
+     buttons are pinned by `.dash-plan-actions { margin-top: auto }`, so nothing
+     here needs to grow. The min-height keeps one- and two-line cards aligned. */
   min-height: calc(2 * 1.5 * 0.85rem);
 }
 
