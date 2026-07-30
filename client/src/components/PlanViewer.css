@@ -18,6 +18,10 @@
      (which spawns many narrow, dense grid columns and hurts readability). */
   max-width: 1040px;
   margin: 0 auto;
+  /* Measure for RUNNING PROSE specifically. The 1040px container above is the
+     right width for grids and day rows, but a paragraph set across all of it
+     runs ~145 characters per line. Long-form text opts into this instead. */
+  --plan-measure: 68ch;
 }
 
 /* ── Day-list toolbar (yoga / gym / panchakarma) ──────────────────────────
@@ -149,54 +153,22 @@
   padding: 24px 0;
 }
 
-/* ── Summary banner ── */
+/* ── Daily-tip banner ──
+   Was a 24px-padded gradient hero holding a greeting, the dosha badge and the
+   tip. The greeting/badge are gone (they duplicated the Dashboard hero and the
+   vitals grid — see PlanViewer.jsx), so this now wraps a single line and is
+   sized for one: a quiet strip, not a card. `.plan-summary-name`,
+   `.plan-summary-dosha-row` and `.plan-dosha-badge` were removed with it. */
 .plan-summary-banner {
-  margin-bottom: 24px;
-  padding: 24px;
-  background: linear-gradient(135deg, rgba(160,140,240,0.1), rgba(92,171,116,0.05));
-  border-radius: 20px;
-  border: 1px solid rgba(160,140,240,0.18);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.06);
-  backdrop-filter: blur(10px);
-}
-[data-theme='light'] .plan-summary-banner {
-  background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(13,148,136,0.04));
-  border-color: rgba(99,102,241,0.12);
-}
-
-.plan-summary-name {
-  font-family: var(--font-display);
-  font-size: 1.45rem;
-  font-weight: 700;
-  color: var(--ayura-ink);
-  margin-bottom: 8px;
-}
-
-.plan-summary-dosha-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-  color: var(--ayura-muted);
-}
-
-/* --ayura-amber is tuned as text on the page surface; on this 15%-orange pill
-   the light value only reaches 4.22:1, so light gets a deeper terracotta. */
-[data-theme='light'] .plan-dosha-badge { color: #7c3d0f; }
-.plan-dosha-badge {
-  display: inline-block;
-  padding: 3px 12px;
-  border-radius: 20px;
-  background: rgba(251,146,60,0.15);
-  color: var(--ayura-amber);   /* 5.78:1 dark */
-  font-size: 0.76rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--ayura-card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  max-width: var(--plan-measure, 68ch);
 }
 
 .plan-daily-tip {
-  margin-top: 14px;
   font-size: 0.88rem;
   color: var(--ayura-muted);
   display: flex;
@@ -1536,15 +1508,18 @@
 }
 
 /* ── Week coaching banner ── */
+/* Neutral surface, matching .yoga-week-banner — the two views render the same
+   component and must not diverge. */
 .gym-week-banner {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  background: rgba(251, 191, 36, 0.10);
-  border: 1px solid rgba(251, 191, 36, 0.28);
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
+  max-width: var(--plan-measure, 68ch);
 }
 .gym-week-banner-icon {
   display: inline-flex;
@@ -1555,11 +1530,11 @@
 }
 .gym-week-banner-text {
   font-size: 0.8rem;
-  color: #fbbf24;
+  color: var(--ayura-text-secondary);
   line-height: 1.55;
 }
 .gym-week-banner-text strong {
-  color: #fcd34d;
+  color: var(--ayura-text-primary);
 }
 
 /* ── Weight range ── */
@@ -1696,17 +1671,25 @@
   color: var(--ayura-text-secondary);
   line-height: 1.7;
   margin: 0;
+  /* Unconstrained, this ran the full ~1050px column — about 145 characters per
+     line, roughly double a comfortable measure. See --plan-measure. */
+  max-width: var(--plan-measure, 68ch);
 }
 
-/* ── Medical conditions banner ── */
+/* ── Medical conditions banner ──
+   Neutral surface, not a green fill: this strip, the amber seasonal note, the
+   violet protocol card and the amber week note used to stack as four
+   consecutive full-bleed tints in four different hues, which read as a queue of
+   alerts rather than plan context. The hue now lives only in the label/icon,
+   which is where it actually carries meaning. */
 .yoga-medical-banner {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem;
   padding: 0.55rem 0.85rem;
-  background: color-mix(in srgb, #10b981 8%, var(--ayura-card-bg) 92%);
-  border: 1px solid color-mix(in srgb, #10b981 22%, transparent);
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
 }
 .yoga-medical-label {
@@ -1728,18 +1711,19 @@
   text-transform: capitalize;
 }
 
-/* ── Seasonal note ── */
+/* ── Seasonal note ── (neutral surface — see .yoga-medical-banner) */
 .yoga-seasonal-note {
   display: flex;
   align-items: flex-start;
   gap: 0.45rem;
   padding: 0.55rem 0.85rem;
-  background: color-mix(in srgb, var(--plan-amber) 7%, var(--ayura-card-bg) 93%);
-  border: 1px solid color-mix(in srgb, var(--plan-amber) 20%, transparent);
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
   font-size: 0.78rem;
-  color: #d97706;
+  color: var(--ayura-text-secondary);
   line-height: 1.55;
+  max-width: var(--plan-measure, 68ch);
 }
 .yoga-seasonal-note svg {
   flex-shrink: 0;
@@ -1764,9 +1748,11 @@
   flex-direction: column;
   gap: 0.5rem;
 }
+/* Neutral surface — see .yoga-medical-banner. The violet identity stays on the
+   condition pill inside, which is what the colour actually encodes. */
 .yoga-protocol-card {
-  background: color-mix(in srgb, #6366f1 6%, var(--ayura-card-bg) 94%);
-  border: 1px solid color-mix(in srgb, #6366f1 18%, transparent);
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -1803,6 +1789,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+  max-width: var(--plan-measure, 68ch);
 }
 .yoga-protocol-seq {
   font-size: 0.78rem;
@@ -1847,10 +1834,16 @@
   margin: 0;
 }
 
-/* ── Vitals bar ── */
+/* ── Vitals bar ──
+   A grid, not a wrapping pill row. As free-flowing pills the eight key/value
+   facts (goal, dosha, level, style, duration, time, agni, ojas) wrapped to
+   ragged rows with a single orphan on the last line, and nothing aligned
+   column-to-column, so reading "what is my level" meant scanning the whole
+   block. Fixed tracks put the keys under each other and make the set scannable;
+   8 items land as two clean rows of four on desktop. */
 .yoga-vitals {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 0.5rem;
 }
 
@@ -1858,11 +1851,12 @@
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  background: color-mix(in srgb, var(--plan-violet) 8%, var(--ayura-card-bg) 92%);
-  border: 1px solid color-mix(in srgb, var(--plan-violet) 22%, transparent);
-  border-radius: 20px;
-  padding: 0.28rem 0.7rem;
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 0.4rem 0.7rem;
   font-size: 0.75rem;
+  min-width: 0;
 }
 
 .yoga-vital-chip svg {
@@ -1882,6 +1876,12 @@
   color: var(--ayura-text);
   font-weight: 700;
   font-size: 0.75rem;
+  /* Fixed grid tracks now, so a long value must ellipsis rather than widen
+     its cell and desynchronise the column. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 /* ── Week tabs ── */
@@ -1929,14 +1929,18 @@
 }
 
 /* ── Week banner ── */
+/* Neutral surface — see .yoga-medical-banner. This is the note for the selected
+   week, i.e. ordinary plan context, not a warning; as a full amber fill it was
+   the fourth tinted strip in the stack above the schedule. */
 .yoga-week-banner {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  background: rgba(251, 191, 36, 0.10);
-  border: 1px solid rgba(251, 191, 36, 0.28);
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
   padding: 0.75rem 1rem;
+  max-width: var(--plan-measure, 68ch);
 }
 
 .yoga-week-banner-icon {
@@ -1949,12 +1953,12 @@
 
 .yoga-week-banner-text {
   font-size: 0.8rem;
-  color: #fbbf24;
+  color: var(--ayura-text-secondary);
   line-height: 1.55;
 }
 
 .yoga-week-banner-text strong {
-  color: #fcd34d;
+  color: var(--ayura-text-primary);
 }
 
 /* ── Days grid ── */
@@ -2778,21 +2782,13 @@
 }
 
 /* ── Vital chip variants for Ayurvedic signals ── */
-.yoga-vital-agni {
-  background: color-mix(in srgb, var(--plan-orange) 8%, var(--ayura-card-bg) 92%);
-  border-color: color-mix(in srgb, var(--plan-orange) 22%, transparent);
-  color: #c2410c;
-}
-.yoga-vital-ojas {
-  background: color-mix(in srgb, #06b6d4 8%, var(--ayura-card-bg) 92%);
-  border-color: color-mix(in srgb, #06b6d4 22%, transparent);
-  color: #0e7490;
-}
-.yoga-vital-stress {
-  background: color-mix(in srgb, #ef4444 8%, var(--ayura-card-bg) 92%);
-  border-color: color-mix(in srgb, #ef4444 22%, transparent);
-  color: #b91c1c;
-}
+/* Agni / ojas / stress are the clinical-state readings in the vitals grid. They
+   keep a distinct hue, but on the ICON only — as full tinted fills they made
+   three of the eight cells shout (the red stress cell in particular read as an
+   error rather than a measurement) and broke the grid's even rhythm. */
+.yoga-vital-agni svg   { color: var(--plan-orange); }
+.yoga-vital-ojas svg   { color: #06b6d4; }
+.yoga-vital-stress svg { color: #ef4444; }
 
 /* ── Dharana / Meditation card ── */
 .yoga-dharana-card {
@@ -5418,16 +5414,16 @@
 /* ── Light-mode contrast overrides for hardcoded golden-amber text ──
    These classes style text with dark-theme amber literals (#fbbf24/#fcd34d/
    var(--plan-amber) — ~2:1 on cream, unreadable). Same pattern as the .sns-badge
-   overrides above: keep the dark look, swap to AA-dark ambers in light. */
-[data-theme='light'] .yoga-week-banner-text,
-[data-theme='light'] .gym-week-banner-text,
+   overrides above: keep the dark look, swap to AA-dark ambers in light.
+
+   The yoga/gym week banners and the yoga seasonal note used to be listed here.
+   They now paint from --ayura-text-secondary/-primary, which already flip per
+   theme, so overriding them to brown would only make light mode disagree with
+   dark for no contrast benefit. */
 [data-theme='light'] .mv-tried-badge,
 [data-theme='light'] .yoga-pose-modification { color: #92400e; }
-[data-theme='light'] .yoga-week-banner-text strong,
-[data-theme='light'] .gym-week-banner-text strong { color: #7c2d12; }
 [data-theme='light'] .rv-practitioner-note,
-[data-theme='light'] .mv-dose-note,
-[data-theme='light'] .yoga-seasonal-note { color: #92400e; }
+[data-theme='light'] .mv-dose-note { color: #92400e; }
 [data-theme='light'] .pk-shamana { color: #92400e; }
 [data-theme='light'] .pk-shodhana { color: #166534; }
 /* Amber icons: 3:1 graphics floor on cream */

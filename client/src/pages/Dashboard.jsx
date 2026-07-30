@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { toast } from 'sonner'
 import { AuthContext } from '../providers/AuthContext'
-import { useTheme } from '../providers/ThemeProvider'
 import API, { plansAPI, preferencesAPI, progressAPI, profileAPI, authAPI } from '../api/client'
 // Lazy-loaded: PlanViewer pulls in all 7 heavy plan-view components (~3k LOC),
 // but only renders when a user opens a generated plan. Keeps the Dashboard
@@ -504,7 +503,6 @@ function ReactionModal({ planType, onClose }) {
 // ── Main Dashboard ────────────────────────────────────────────
 const Dashboard = () => {
   const { user } = useContext(AuthContext)
-  const { theme, setThemeAnimated } = useTheme()
   const navigate = useNavigate()
   // Gate the plan-open "expand" transition: skip it for reduced-motion users and
   // low-power/mobile devices (where full-view transform anims have historically
@@ -692,16 +690,9 @@ const Dashboard = () => {
         <VerifyEmailBanner email={user.email} />
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-16px', position: 'relative', zIndex: 10 }}>
-        <m.button
-          onClick={(e) => setThemeAnimated(theme === 'dark' ? 'light' : 'dark', e)}
-          className="btn btn-secondary btn-sm"
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '20px', padding: '6px 14px', fontSize: '0.85rem' }}
-          whileTap={{ scale: 0.95 }}
-        >
-          {theme === 'dark' ? <><Sun size={15} strokeWidth={2} /> Light Mode</> : <><Moon size={15} strokeWidth={2} /> Dark Mode</>}
-        </m.button>
-      </div>
+      {/* The theme toggle that used to live here — a lone pill in an otherwise
+          empty full-width band above the hero — now sits in the sidebar brand
+          row (MainLayout.jsx), where it is reachable from every page. */}
 
       {/* ── Hero Card ── */}
       <m.div
@@ -860,6 +851,7 @@ const Dashboard = () => {
                       : generatePlan(type.id, true)}
                     disabled={generating[type.id]}
                     title="Regenerate"
+                    aria-label={`Regenerate ${type.title} plan`}
                   >
                     {generating[type.id] ? '…' : '↻'}
                   </button>

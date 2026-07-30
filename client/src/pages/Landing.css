@@ -483,11 +483,19 @@
   animation: pulse 2s ease-in-out infinite;
 }
 
-/* Dosha bars inside bento tile */
+/* Dosha bars inside bento tile.
+   `flex: 1` + centring makes the bars absorb the tall tile's slack. The tile
+   spans both rows of the bento, so it is as tall as the two stacked tiles
+   beside it and its content did not fill it; with the badge pinned to the
+   bottom by `margin-top: auto`, ALL of that slack collected into a single
+   ~150px hole in the middle of the card. Distributing it above and below the
+   bars instead makes the tile read as composed rather than half-empty. */
 .lnd-bento-dosha-rings {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 10px;
+  flex: 1;
 }
 
 /* Insight caption — gives the tall tile substance instead of empty space */
@@ -528,7 +536,9 @@
   font-weight: 700;
   color: var(--ayura-teal);
   width: fit-content;
-  margin-top: auto;
+  /* Was `margin-top: auto` — see .lnd-bento-dosha-rings for why that pin is
+     what created the tile's mid-card void. The bars now take the slack. */
+  margin-top: 2px;
 }
 
 /* Chat bubbles inside bento tile */
@@ -890,10 +900,19 @@
 .lnd-feature-visual-placeholder { font-size: 5rem; opacity: 0.4; }
 
 /* ─── FEATURE MINI-UI VISUALS ─────────────────────────────── */
+/* The frame is `min-height: 460px` but these mini-UIs are only ~280px of
+   content, and being top-aligned they left ~160px of dead space at the bottom
+   of every feature visual (most visibly the six-pillar grid). Centring the
+   content in the filled area distributes that slack instead of pooling it. */
 .lnd-app-preview.fmv-fill {
   max-width: none; width: 100%; flex: 1;
   border-radius: 0; border: none; box-shadow: none;
   box-sizing: border-box; overflow-y: auto;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  /* `safe` so that if the content ever DOES exceed the frame it overflows
+     downward into the scroller instead of centring and clipping its own top. */
+  justify-content: safe center;
 }
 
 .fmv-insight-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }

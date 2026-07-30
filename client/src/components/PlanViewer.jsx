@@ -110,13 +110,6 @@ function ClassicalBasis({ planType }) {
 }
 
 
-function timeGreeting() {
-  const h = new Date().getHours()
-  if (h < 12) return 'Good morning'
-  if (h < 17) return 'Good afternoon'
-  return 'Good evening'
-}
-
 export default function PlanViewer({ plan: rawPlan, planType }) {
   if (!rawPlan) return <p className="plan-empty">No plan data available.</p>
 
@@ -153,31 +146,24 @@ export default function PlanViewer({ plan: rawPlan, planType }) {
 
   return (
     <div className="plan-viewer-container">
-      {/* ── Summary banner ── */}
-      {plan.user_summary && (
+      {/* ── Daily tip ──
+          This used to be a full "Good evening, <name> / Your dominant dosha is
+          PITTA" hero, which repeated the Dashboard's greeting card verbatim and
+          pushed the actual plan below the fold. The dosha was stated a THIRD
+          time in the meta chip row a few hundred pixels lower. Only the daily
+          tip is unique to this page, so only it survives — and the block
+          collapses entirely when there is no tip. */}
+      {plan.daily_tip && (
         <m.div
           className="plan-summary-banner"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="plan-summary-name">
-            {plan.user_summary.name
-              ? `${timeGreeting()}, ${plan.user_summary.name.split(' ')[0]}`
-              : timeGreeting()}
+          <div className="plan-daily-tip">
+            <Star size={14} strokeWidth={2} />
+            <span>{plan.daily_tip}</span>
           </div>
-          {plan.user_summary.dominant_dosha && (
-            <div className="plan-summary-dosha-row">
-              <span>Your dominant dosha is</span>
-              <span className="plan-dosha-badge">{plan.user_summary.dominant_dosha}</span>
-            </div>
-          )}
-          {plan.daily_tip && (
-            <div className="plan-daily-tip">
-              <Star size={14} strokeWidth={2} />
-              <span>{plan.daily_tip}</span>
-            </div>
-          )}
         </m.div>
       )}
 

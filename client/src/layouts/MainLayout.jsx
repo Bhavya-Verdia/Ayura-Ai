@@ -3,12 +3,13 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { AuthContext } from '../providers/AuthContext'
+import { useTheme } from '../providers/ThemeProvider'
 import LoadingScreen from '../components/LoadingScreen'
 import { SkeletonDashboard, SkeletonChat } from '../components/Skeleton'
 import {
   LayoutDashboard, MessageCircle, Activity, CheckSquare,
   Settings, LogOut, Menu, X, Bell, TrendingUp, Users, AlarmClock, Brain, ShieldCheck, Soup,
-  MessageSquare
+  MessageSquare, Sun, Moon
 } from 'lucide-react'
 import ScrollToTop from '../components/ScrollToTop'
 import FeedbackWidget from '../components/FeedbackWidget'
@@ -27,17 +28,20 @@ const NAV_ITEMS = [
   // Home & AI
   { id: 'dashboard',    label: 'Dashboard',    Icon: LayoutDashboard, path: '/dashboard',     i18nKey: 'dashboard_title' },
   { id: 'chat',         label: 'AI Assistant', Icon: MessageCircle,   path: '/chat',           i18nKey: 'chat' },
-  // Track & Assess
-  { id: 'progress',     label: 'Progress',     Icon: TrendingUp,      path: '/progress',       i18nKey: 'progress' },
+  // Track & Assess. `startsGroup` draws a hairline rule above the item — the
+  // three groups below were only ever comments in this file, so the rendered
+  // sidebar was 12 undifferentiated rows. A rule costs ~9px of height each,
+  // where a labelled section header would have cost ~30px and overflowed.
+  { id: 'progress',     label: 'Progress',     Icon: TrendingUp,      path: '/progress',       i18nKey: 'progress', startsGroup: true },
   { id: 'checkin',      label: 'Check-In',     Icon: CheckSquare,     path: '/checkin',        i18nKey: 'checkin' },
   { id: 'timeline',     label: 'Timeline',     Icon: Activity,        path: '/timeline',       i18nKey: 'timeline' },
   { id: 'dosha-quiz',   label: 'Dosha Quiz',   Icon: Brain,           path: '/dosha-quiz',     i18nKey: 'dosha_quiz' },
   // Tools
-  { id: 'remedies',     label: 'Remedies',     Icon: Soup,            path: '/remedies',       i18nKey: 'remedies' },
+  { id: 'remedies',     label: 'Remedies',     Icon: Soup,            path: '/remedies',       i18nKey: 'remedies', startsGroup: true },
   { id: 'interaction',  label: 'Herb Safety',  Icon: ShieldCheck,     path: '/interaction-check', i18nKey: 'interaction_check' },
   { id: 'reminders',    label: 'Reminders',    Icon: AlarmClock,      path: '/reminders',      i18nKey: 'reminders' },
   // Social & Account
-  { id: 'community',    label: 'Community',    Icon: Users,           path: '/community',      i18nKey: 'community' },
+  { id: 'community',    label: 'Community',    Icon: Users,           path: '/community',      i18nKey: 'community', startsGroup: true },
   { id: 'notifications',label: 'Notifications',Icon: Bell,            path: '/notifications',  i18nKey: 'notifications' },
   { id: 'settings',     label: 'Settings',     Icon: Settings,        path: '/settings',       i18nKey: 'settings' },
 ]
@@ -58,6 +62,7 @@ const BOTTOM_NAV = [
 
 export default function MainLayout() {
   const { user, logout } = useContext(AuthContext)
+  const { theme, setThemeAnimated } = useTheme()
   const { t } = useTranslation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   // Initialise synchronously from the real viewport so the first paint already
@@ -125,9 +130,24 @@ export default function MainLayout() {
       {/* ── SIDEBAR ── */}
       <aside className={`dash-sidebar${isMobile ? ` mobile${sidebarOpen ? ' open' : ''}` : ''}`}>
         {/* Brand */}
+        {/* The theme toggle used to be a lone right-aligned pill in its own band
+            at the top of the DASHBOARD ONLY — an otherwise empty strip on one
+            page, and no way to flip theme from any other. It rides the brand
+            row's spare horizontal space instead: available on every authed
+            page, and it costs the sidebar no extra height. (Settings still has
+            the explicit Dark/Light pair; this is the quick toggle.) */}
         <div className="dash-sidebar-brand">
           <img src="/favicon.svg" alt="Ayura AI Logo" className="dash-sidebar-brand-mark" />
           <span className="dash-sidebar-brand-text">Ayura AI</span>
+          <button
+            type="button"
+            className="dash-sidebar-theme-toggle"
+            onClick={(e) => setThemeAnimated(theme === 'dark' ? 'light' : 'dark', e)}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+          </button>
         </div>
 
         {/* Profile card */}
@@ -156,7 +176,7 @@ export default function MainLayout() {
               <NavLink
                 key={item.id}
                 to={item.path}
-                className={({ isActive }) => `dash-nav-item${isActive ? ' active' : ''}`}
+                className={({ isActive }) => `dash-nav-item${isActive ? ' active' : ''}${item.startsGroup ? ' starts-group' : ''}`}
                 onClick={() => { if (isMobile) setSidebarOpen(false) }}
               >
                 {({ isActive }) => (

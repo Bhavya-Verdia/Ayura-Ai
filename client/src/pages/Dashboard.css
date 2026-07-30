@@ -28,9 +28,14 @@
 .dash-sidebar::-webkit-scrollbar { width: 4px; }
 .dash-sidebar::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
 
+/* Vertical budget: brand + profile + 12 nav rows + feedback + sign-out summed
+   to ~834px, so on a 13" laptop (812px viewport) "Log Out" was clipped below
+   the fold and the sidebar needed its own scroll to reach it. The margins and
+   nav-row padding below are trimmed to bring the column to ~784px, which fits
+   with headroom. `overflow-y: auto` still catches shorter viewports. */
 .dash-sidebar-brand {
   display: flex; align-items: center; gap: 12px;
-  margin-bottom: 32px; padding: 0 8px;
+  margin-bottom: 20px; padding: 0 8px;
 }
 .dash-sidebar-brand-mark {
   width: 36px; height: 36px; border-radius: 8px; object-fit: cover;
@@ -40,6 +45,21 @@
   font-family: var(--font-display); font-weight: 800; font-size: 1.1rem;
   letter-spacing: 0; color: var(--ayura-ink);
 }
+/* Quick theme toggle — rides the brand row's spare width so it adds no height
+   to a sidebar that already only just fits a 13" laptop. */
+.dash-sidebar-theme-toggle {
+  margin-left: auto; flex-shrink: 0;
+  width: 30px; height: 30px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid var(--border-light);
+  color: var(--ayura-muted); cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+.dash-sidebar-theme-toggle:hover {
+  color: var(--ayura-ink);
+  background: var(--glass-bg-subtle);
+  border-color: var(--border-light-hover);
+}
 
 .dash-sidebar-profile {
   display: flex; align-items: center; gap: 12px;
@@ -47,7 +67,7 @@
   background: var(--glass-bg-subtle);
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
-  margin-bottom: 28px;
+  margin-bottom: 18px;
 }
 .dash-sidebar-avatar {
   width: 40px; height: 40px; border-radius: 12px;
@@ -63,9 +83,19 @@
 /* nav items now in MainLayout.css */
 .dash-nav-item {
   display: flex; align-items: center; gap: 12px;
-  padding: 11px 14px; border-radius: 12px;
+  padding: 9px 14px; border-radius: 12px;
   color: var(--ayura-muted); text-decoration: none; font-weight: 500; font-size: 0.9rem;
   position: relative; transition: all 0.2s;
+}
+/* Group separator (see NAV_ITEMS `startsGroup` in MainLayout.jsx). Hairline
+   only — no label — so the sidebar gains structure without gaining height.
+   Drawn as a detached ::before rather than a border-top, so it never sits on
+   top of the rounded hover/active pill. */
+.dash-nav-item.starts-group { margin-top: 13px; }
+.dash-nav-item.starts-group::before {
+  content: '';
+  position: absolute; left: 14px; right: 14px; top: -7px; height: 1px;
+  background: var(--border-subtle);
 }
 .dash-nav-item:hover { color: var(--ayura-ink); background: var(--glass-bg-subtle); }
 .dash-nav-item.active { color: var(--ayura-ink); background: var(--border-subtle); font-weight: 600; }
@@ -206,7 +236,18 @@
 .dash-plans-title { font-family: var(--font-display); font-size: 1.7rem; font-weight: 600; font-optical-sizing: auto; margin: 0 0 4px; letter-spacing: -0.02em; color: var(--ayura-ink); }
 .dash-plans-sub { color: var(--ayura-muted); font-size: 0.9rem; margin: 0; }
 
-.dash-plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 16px; }
+/* Flex-wrap rather than `grid auto-fit`: there are SEVEN plan types, so a
+   4-column grid always left-hugs the last row and leaves a visible hole at
+   row-2/column-4. `justify-content: center` on a wrapping flex row centres the
+   trailing row instead, so 4+3 (or 3+3+1) reads as deliberate. Cards must not
+   grow (`flex-grow: 0`) or the last row would stretch to fill the width and the
+   card sizes would disagree between rows. Breakpoints are viewport-based but
+   account for the 260px sidebar, which is only present at >=900px. */
+.dash-plans-grid { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+.dash-plans-grid > * { flex: 0 1 calc(25% - 12px); min-width: 0; }
+@media (max-width: 1392px) { .dash-plans-grid > * { flex-basis: calc(33.333% - 11px); } }
+@media (max-width: 1120px) { .dash-plans-grid > * { flex-basis: calc(50% - 8px); } }
+@media (max-width: 620px)  { .dash-plans-grid > * { flex-basis: 100%; } }
 
 .dash-plan-card {
   background:
@@ -273,16 +314,35 @@
 }
 
 .dash-plan-name { font-family: var(--font-ui); font-size: 1.05rem; font-weight: 700; margin: 0 0 6px; color: var(--ayura-ink); }
-.dash-plan-desc { color: var(--ayura-muted); font-size: 0.85rem; line-height: 1.5; margin: 0 0 18px; flex-grow: 1; }
+/* .dash-plan-desc (static copy) and .dash-plan-preview (LLM prose from a
+   generated plan) sit side by side in the same grid row, so they MUST share
+   type metrics — they were 0.85rem vs 0.78rem, which broke the row's baseline
+   rhythm and made the one generated card look like a different component.
+   The 2-line min-height keeps every card's button on the same line. */
+.dash-plan-desc,
+.dash-plan-preview {
+  color: var(--ayura-muted); font-size: 0.85rem; line-height: 1.5;
+  margin: 0 0 18px; flex-grow: 1;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(2 * 1.5 * 0.85rem);
+}
 
 .dash-plan-actions { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
 .dash-plan-action-row { display: flex; gap: 8px; }
+/* PRIMARY. The card that actually HAS a plan must carry the most weight on the
+   grid — previously this was a faint green ghost while the six empty "Generate"
+   cards wore solid ink slabs, so the finished plan read as the least important
+   thing on the page. Solid brand green now, matching the ✦ Ready badge. */
 .dash-plan-view-btn {
-  flex: 2; background: rgba(92,171,116,0.10); color: var(--ayura-teal);
-  border: 1px solid rgba(92,171,116,0.2); padding: 10px; border-radius: 10px;
-  font-family: var(--font-ui); font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.875rem;
+  flex: 2; background: var(--ayura-teal); color: #0c0a07;
+  border: 1px solid transparent; padding: 10px; border-radius: 10px;
+  font-family: var(--font-ui); font-weight: 700; cursor: pointer; transition: all 0.2s; font-size: 0.875rem;
 }
-.dash-plan-view-btn:hover { background: rgba(92,171,116,0.18); }
+/* Light mode deepens --ayura-teal to #237045; near-black on it is ~2.4:1, so the
+   label flips to white (6.04:1) — same convention as .btn-primary/.skip-link. */
+[data-theme='light'] .dash-plan-view-btn { color: #fff; }
+.dash-plan-view-btn:hover { background: var(--ayura-teal-lt); transform: translateY(-1px); box-shadow: var(--glow-accent); }
 .dash-plan-regen-btn {
   flex: 1; background: transparent; color: var(--ayura-muted); border: 1px solid var(--border-light);
   padding: 10px; border-radius: 10px; font-family: var(--font-ui); font-weight: 600;
@@ -290,13 +350,24 @@
 }
 .dash-plan-regen-btn:hover { background: var(--border-subtle); color: var(--ayura-ink); }
 
+/* SECONDARY. Six of these are on screen at once for a new user; as solid
+   --ayura-ink slabs they were six cream blocks competing with each other and
+   drowning the one real plan. Tinted-surface treatment keeps them obviously
+   actionable (this is still the primary action on an EMPTY card) at a fraction
+   of the visual weight. */
 .dash-plan-generate-btn {
-  width: 100%; background: var(--ayura-ink); color: var(--ayura-bg);
-  border: none; padding: 12px; border-radius: 10px;
-  font-family: var(--font-ui); font-weight: 700; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;
+  width: 100%; background: color-mix(in srgb, var(--ayura-teal) 12%, transparent);
+  color: var(--ayura-ink);
+  border: 1px solid color-mix(in srgb, var(--ayura-teal) 30%, transparent);
+  padding: 12px; border-radius: 10px;
+  font-family: var(--font-ui); font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-.dash-plan-generate-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: var(--glass-shadow); }
+.dash-plan-generate-btn:hover {
+  background: color-mix(in srgb, var(--ayura-teal) 20%, transparent);
+  border-color: color-mix(in srgb, var(--ayura-teal) 48%, transparent);
+  transform: translateY(-1px);
+}
 .dash-plan-generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 /* Tactile press feedback on dashboard actions */
@@ -375,11 +446,10 @@
 .dash-streak-cta:hover { background: rgba(251,146,60,0.18); }
 
 /* ── Plan card meta (preview + timestamp) ── */
-.dash-plan-preview {
-  font-size: 0.78rem; color: var(--ayura-muted); line-height: 1.5;
-  margin: 0 0 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  flex-grow: 1;
-}
+/* Type metrics + clamp now live with .dash-plan-desc so the two stay identical;
+   only the trailing margin differs, because a generated card also renders a
+   timestamp line underneath. */
+.dash-plan-preview { margin-bottom: 6px; }
 .dash-plan-timestamp {
   font-size: 0.68rem; color: var(--ayura-teal); opacity: 0.75;
   display: block; margin-bottom: 14px; font-weight: 600;
@@ -687,6 +757,14 @@
 .dash-ritu-risk--high { color: #fb923c; border-color: rgba(251,146,60,0.4); }
 .dash-ritu-risk--medium { color: #fbbf24; border-color: rgba(251,191,36,0.4); }
 .dash-ritu-risk--low { color: #34d399; border-color: rgba(52,211,153,0.4); }
+/* Those three are dark-theme literals: on the cream light-mode card they measure
+   roughly 2.2:1 / 1.7:1 / 1.8:1, and the amber "medium" pill (the seasonal
+   badge, e.g. "Vata Season") was the least readable text on the whole light
+   dashboard. Swapped for the AA-dark equivalents of the same hues — same
+   convention as the amber overrides in PlanViewer.css. */
+[data-theme='light'] .dash-ritu-risk--high   { color: #c2410c; }
+[data-theme='light'] .dash-ritu-risk--medium { color: #b45309; }
+[data-theme='light'] .dash-ritu-risk--low    { color: #15803d; }
 .dash-ritu-cols { display: flex; gap: 24px; margin-top: 14px; flex-wrap: wrap; }
 .dash-ritu-col { flex: 1; min-width: 160px; }
 .dash-ritu-col-label { font-size: 0.78rem; font-weight: 700; }
@@ -696,17 +774,27 @@
 .dash-ritu-col li { color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5; margin-bottom: 2px; }
 
 /* ── Reaction report ── */
+/* "Report a reaction" is a rarely-used escape hatch, but as a permanently amber
+   warning triangle it sat next to every finished plan reading as an active
+   alert — the one card in a healthy state looked like the one with a problem.
+   Neutral at rest, amber only on hover/focus, where the intent is deliberate. */
 .dash-plan-react-btn {
-  background: rgba(251,146,60,0.1);
-  border: 1px solid rgba(251,146,60,0.3);
-  color: #fb923c;
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--ayura-muted);
   border-radius: 8px;
   width: 38px; flex-shrink: 0;
   cursor: pointer;
   font-size: 0.95rem;
-  transition: background 0.15s;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.dash-plan-react-btn:hover { background: rgba(251,146,60,0.2); }
+.dash-plan-react-btn:hover,
+.dash-plan-react-btn:focus-visible {
+  background: rgba(251,146,60,0.14);
+  border-color: rgba(251,146,60,0.4);
+  color: #fb923c;
+}
 
 .dash-reaction-overlay {
   position: fixed; inset: 0;
