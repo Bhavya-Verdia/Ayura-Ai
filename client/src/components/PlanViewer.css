@@ -165,7 +165,6 @@
   background: var(--ayura-card-bg);
   border-radius: 12px;
   border: 1px solid var(--border-light);
-  max-width: var(--plan-measure, 68ch);
 }
 
 .plan-daily-tip {
@@ -1519,7 +1518,6 @@
   border-radius: 10px;
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
-  max-width: var(--plan-measure, 68ch);
 }
 .gym-week-banner-icon {
   display: inline-flex;
@@ -1532,6 +1530,7 @@
   font-size: 0.8rem;
   color: var(--ayura-text-secondary);
   line-height: 1.55;
+  max-width: var(--plan-measure, 68ch);
 }
 .gym-week-banner-text strong {
   color: var(--ayura-text-primary);
@@ -1723,7 +1722,6 @@
   font-size: 0.78rem;
   color: var(--ayura-text-secondary);
   line-height: 1.55;
-  max-width: var(--plan-measure, 68ch);
 }
 .yoga-seasonal-note svg {
   flex-shrink: 0;
@@ -1821,10 +1819,12 @@
 }
 
 /* ── Condition coaching (LLM) ── */
+/* Neutral surface — see .yoga-medical-banner. This was the fifth tinted strip
+   in the stack (cyan) and the worst line-length offender on the page. */
 .yoga-condition-coaching {
   padding: 0.75rem 1rem;
-  background: color-mix(in srgb, #06b6d4 6%, var(--ayura-card-bg) 94%);
-  border: 1px solid color-mix(in srgb, #06b6d4 18%, transparent);
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
 }
 .yoga-condition-coaching-text {
@@ -1832,6 +1832,7 @@
   color: var(--ayura-text-primary);
   line-height: 1.65;
   margin: 0;
+  max-width: var(--plan-measure, 68ch);
 }
 
 /* ── Vitals bar ──
@@ -1940,7 +1941,6 @@
   border: 1px solid var(--border-light);
   border-radius: 10px;
   padding: 0.75rem 1rem;
-  max-width: var(--plan-measure, 68ch);
 }
 
 .yoga-week-banner-icon {
@@ -1955,6 +1955,7 @@
   font-size: 0.8rem;
   color: var(--ayura-text-secondary);
   line-height: 1.55;
+  max-width: var(--plan-measure, 68ch);
 }
 
 .yoga-week-banner-text strong {
