@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, Suspense } from 'react'
+import { useRef, useEffect, useLayoutEffect, useMemo, useState, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import Lenis from 'lenis'
 import { m, AnimatePresence, MotionConfig } from 'framer-motion'
@@ -47,6 +47,66 @@ const VP       = { once: true, margin: '-60px' }
 // first paint (~1.6s) to post-hydration (~3s) on slow devices. Client-side
 // navigations to "/" (no prerendered DOM at module load) keep the entrance.
 const PRERENDERED = typeof document !== 'undefined' && !!document.querySelector('.lnd-hero-subtitle')
+
+// ─── Hero accent word, revealed one letter at a time ─────────
+// Per-grapheme boxing breaks shaping in cursive and conjunct scripts (Arabic
+// joining, Devanagari/Tamil conjuncts formed across a virama), so the split is
+// limited to scripts where a grapheme is an independently shapeable box. Any
+// other language keeps the word whole — it still arrives with the title's word
+// stagger, just without the per-letter reveal.
+const SPLITTABLE = /^[\p{Script=Latin}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Nd}\p{P}\s]+$/u
+function splitGraphemes(word) {
+  if (!word || !SPLITTABLE.test(word)) return null
+  // Intl.Segmenter over Array.from: code points would split an emoji ZWJ
+  // sequence or a combining mark off its base. Falls back if unavailable.
+  if (typeof Intl === 'undefined' || !Intl.Segmenter) return Array.from(word)
+  return [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(word)]
+    .map(s => s.segment)
+}
+
+// Each letter has to own its own background-clip:text gradient. A child of a
+// clipped parent CANNOT be hidden — opacity and filter:opacity() are both
+// ignored on it (measured in-browser; only transform and clip-path affect the
+// painted result), so the reveal must live on an element that paints for
+// itself. The separate per-letter gradients are stitched back into ONE
+// continuous gradient by giving every letter the whole word's width as its
+// background-size and its own left offset as a negative background-position,
+// which reproduces the single-element gradient exactly.
+function SyncAccent({ word }) {
+  const ref = useRef(null)
+  const parts = useMemo(() => splitGraphemes(word), [word])
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el || !parts) return
+    const measure = () => {
+      const base = el.getBoundingClientRect()
+      if (!base.width) return
+      el.querySelectorAll('.lnd-sync-ch').forEach(span => {
+        span.style.setProperty('--sync-w', `${base.width}px`)
+        span.style.setProperty('--sync-x', `${span.getBoundingClientRect().left - base.left}px`)
+      })
+    }
+    measure()
+    // Re-measure on webfont swap and on viewport resize — the title is
+    // `clamp(2.4rem, 7vw, 5.4rem)`, so letter offsets move with the viewport and
+    // stale offsets show up as visible seams in the gradient. A ResizeObserver
+    // on the word catches both without a resize listener.
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [parts])
+
+  if (!parts) return <em className="shimmer-text">{word}</em>
+
+  return (
+    <em className="shimmer-text" ref={ref}>
+      {parts.map((g, i) => (
+        <span key={`${g}-${i}`} className="lnd-sync-ch" style={{ '--i': i }}>{g}</span>
+      ))}
+    </em>
+  )
+}
 
 // All user-visible copy lives in the locale files under "landing.*" — arrays
 // below hold translation keys, resolved with t() at render so the language
@@ -600,7 +660,7 @@ export default function Landing() {
                   marginRight: '0.25em',
                 }}
               >
-                <em className="shimmer-text">{t('landing.hero_title_accent')}</em>
+                <SyncAccent word={t('landing.hero_title_accent')} />
               </m.span>
             </m.h2>
 

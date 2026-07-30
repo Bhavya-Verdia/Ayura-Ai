@@ -1304,72 +1304,97 @@
 }
 
 /* ─── SHIMMER HERO TITLE ───────────────────────────────────── */
-/* The word is "sync", so it earns one moment of motion: a sheen sweeps across
-   it once, as the word lands, and then it is done.
+/* The word is "sync", so it writes itself in: its letters arrive one after
+   another, and then it is done. See .lnd-sync-ch below for the mechanism.
 
    HISTORY — read before changing. This used to be an infinite
    `background-position` shimmer, retired in f031ab4 (flicker fix) for two
-   distinct reasons, and the design below avoids BOTH:
+   distinct reasons, and anything added here must keep avoiding BOTH:
 
    1. It repainted the word every frame FOREVER. That is what broke the mobile
       ambient budget (one living background element per phone screen). The
-      sweep here runs a single 1.15s pass and stops, so the steady state is a
-      static gradient exactly as it is today — no perpetual paint.
+      reveal below runs a single ~0.7s pass and stops, so the steady state is a
+      static gradient — no perpetual paint.
    2. Isolating that repaint needed `will-change`, and the composited layer it
       created had bounds that CLIPPED THE ITALIC 'y' DESCENDER. There is no
       will-change here and none should be added: a one-shot paint does not need
       layer isolation, and re-adding it would clip the glyph again.
 
-   The sheen is a second background layer over the unchanged brand gradient —
-   `background-clip: text` clips every layer, so both are masked to the glyphs.
-   It is positioned by --sync-sheen, registered with @property in index.css
-   because an unregistered custom property cannot be interpolated (the gradient
-   would jump instead of sweeping). At rest the property parks at 130%, i.e.
-   past the right edge and fully transparent, so the resting appearance is
-   pixel-identical to the static gradient this replaces. */
+   The rule below is the resting appearance and the fallback for scripts that
+   cannot be split per letter (see splitGraphemes in Landing.jsx). */
 .shimmer-text {
   font-style: normal;
   display: inline-block;
   /* Descender-safe (see note 2 above — keep these, and keep will-change out). */
   line-height: 1.2;
   padding-bottom: 0.08em;
-  background:
-    /* sheen — travels with --sync-sheen, invisible at the resting 130% */
-    linear-gradient(
-      100deg,
-      transparent            calc(var(--sync-sheen) - 22%),
-      rgba(255, 247, 230, 0.55) calc(var(--sync-sheen) - 6%),
-      rgba(255, 252, 245, 0.92) var(--sync-sheen),
-      rgba(255, 247, 230, 0.55) calc(var(--sync-sheen) + 6%),
-      transparent            calc(var(--sync-sheen) + 22%)
-    ),
-    /* brand gradient — unchanged, and the only layer once the sweep is over */
-    linear-gradient(
-      90deg,
-      var(--ayura-teal)   0%,
-      var(--ayura-violet) 34%,
-      var(--ayura-amber)  60%,
-      var(--ayura-teal)   100%
-    );
+  background: linear-gradient(
+    90deg,
+    var(--ayura-teal)   0%,
+    var(--ayura-violet) 34%,
+    var(--ayura-amber)  60%,
+    var(--ayura-teal)   100%
+  );
   background-size: 100% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* The hero title staggers its words 0.09s apart and "sync" is the 5th, so it
-   finishes arriving at ~0.96s (0.36s stagger + 0.6s travel). The sweep starts
-   just before that so it reads as the word settling INTO sync, not as a
-   separate effect bolted on afterwards. */
+/* ── Per-letter reveal ──
+   Each letter carries its own slice of the SAME gradient: --sync-w is the whole
+   word's width and --sync-x this letter's offset within it (both measured in
+   SyncAccent, Landing.jsx), so the slices reassemble into one continuous
+   gradient indistinguishable from painting it on the single element above.
+
+   Why the letters must own the gradient at all: a child of a
+   `background-clip: text` parent cannot be hidden. `opacity` and
+   `filter: opacity()` on such a child are both ignored — measured in-browser,
+   a letter set to `opacity: 0` still paints at full strength. Only `transform`
+   and `clip-path` affect the result, which is why the reveal below uses those
+   two and not a fade. Do not "simplify" this to opacity; it silently no-ops. */
+.lnd-sync-ch {
+  display: inline-block;
+  background-image: linear-gradient(
+    90deg,
+    var(--ayura-teal)   0%,
+    var(--ayura-violet) 34%,
+    var(--ayura-amber)  60%,
+    var(--ayura-teal)   100%
+  );
+  background-size: var(--sync-w, 100%) 100%;
+  background-position: calc(-1 * var(--sync-x, 0px)) 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Letters land in sequence, 85ms apart. The title staggers its WORDS 0.09s
+   apart and "sync" is the fifth, arriving at ~0.96s, so the first letter starts
+   just after the word's slot — the line finishes writing itself rather than
+   appearing all at once. One pass, no steady-state paint (see the history note
+   above), and no will-change anywhere near the italic descender. */
 @media (prefers-reduced-motion: no-preference) {
-  .shimmer-text {
-    animation: lnd-sync-sweep 1.15s cubic-bezier(0.33, 0, 0.2, 1) 0.9s both;
+  .lnd-sync-ch {
+    animation: lnd-sync-letter-in 0.46s cubic-bezier(0.22, 0.9, 0.24, 1)
+               calc(0.92s + var(--i) * 0.085s) both;
   }
 }
 
-@keyframes lnd-sync-sweep {
-  from { --sync-sheen: -30%; }
-  to   { --sync-sheen: 130%; }
+@keyframes lnd-sync-letter-in {
+  from {
+    /* Wipes up from the baseline. The horizontal insets are NEGATIVE so the
+       clip box extends past the letter's advance width — italic Fraunces
+       glyphs overhang their own box (the 'y' tail most of all), and a 0 inset
+       would shear those overhangs off. */
+    clip-path: inset(0 -40% 100% -40%);
+    transform: translateY(0.12em);
+  }
+  to {
+    clip-path: inset(0 -40% -40% -40%);
+    transform: translateY(0);
+  }
 }
 
 /* ─── KICKER DOT PING ──────────────────────────────────────── */
