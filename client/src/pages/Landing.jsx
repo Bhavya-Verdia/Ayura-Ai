@@ -64,14 +64,33 @@ function splitGraphemes(word) {
     .map(s => s.segment)
 }
 
+// Where the accent gradient changes colour, as fractions of the WHOLE word's
+// width. Must stay in step with the colour list in `.lnd-sync-ch` — these are
+// the positions those colours sit at; the CSS only names the colours.
+const SYNC_STOPS = [0, 0.34, 0.6, 1]
+
 // Each letter has to own its own background-clip:text gradient. A child of a
 // clipped parent CANNOT be hidden — opacity and filter:opacity() are both
 // ignored on it (measured in-browser; only transform and clip-path affect the
 // painted result), so the reveal must live on an element that paints for
-// itself. The separate per-letter gradients are stitched back into ONE
-// continuous gradient by giving every letter the whole word's width as its
-// background-size and its own left offset as a negative background-position,
-// which reproduces the single-element gradient exactly.
+// itself. Confirmed again the other way round: move the gradient up to the
+// parent and the letters paint nothing at all.
+//
+// The separate per-letter gradients are stitched back into ONE continuous ramp
+// by REMAPPING each colour stop out of word space into that letter's own box:
+// a stop p% of the way across the word sits at ((p*wordWidth) - letterX) /
+// letterWidth of the way across the letter. Those land outside 0–100% for most
+// letters, which is legal and is what keeps the ramp continuous across the
+// boundaries.
+//
+// It used to do this with `background-size: <wordWidth>` and a negative
+// `background-position` instead. That is equivalent on paper and Safari renders
+// it correctly, but it hands Chrome a 142px-wide background on a 31px element,
+// and when Chrome promotes that element for the clip-path animation during page
+// load it rasterizes the oversized texture wrong — every letter's ink lands in
+// roughly the same place, so the word paints as one stacked, illegible clump.
+// Keeping each background exactly its own element's size avoids the whole
+// class of bug. Do not reintroduce background-size/background-position here.
 function SyncAccent({ word }) {
   const ref = useRef(null)
   const parts = useMemo(() => splitGraphemes(word), [word])
@@ -83,8 +102,12 @@ function SyncAccent({ word }) {
       const base = el.getBoundingClientRect()
       if (!base.width) return
       el.querySelectorAll('.lnd-sync-ch').forEach(span => {
-        span.style.setProperty('--sync-w', `${base.width}px`)
-        span.style.setProperty('--sync-x', `${span.getBoundingClientRect().left - base.left}px`)
+        const r = span.getBoundingClientRect()
+        if (!r.width) return
+        const x = r.left - base.left
+        SYNC_STOPS.forEach((p, i) => {
+          span.style.setProperty('--s' + i, `${(((p * base.width) - x) / r.width) * 100}%`)
+        })
       })
     }
     measure()

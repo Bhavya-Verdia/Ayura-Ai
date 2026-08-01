@@ -1353,17 +1353,20 @@
    a letter set to `opacity: 0` still paints at full strength. Only `transform`
    and `clip-path` affect the result, which is why the reveal below uses those
    two and not a fade. Do not "simplify" this to opacity; it silently no-ops. */
+/* The stop POSITIONS are set per letter from JS (SyncAccent), remapped out of
+   word space into this letter's own box so the four slices read as one ramp —
+   see the note there for why this is not done with background-size any more.
+   The fallbacks are the unremapped word-space positions, which is what a letter
+   shows before measurement (prerendered HTML, or if the effect never runs). */
 .lnd-sync-ch {
   display: inline-block;
   background-image: linear-gradient(
     90deg,
-    var(--ayura-teal)   0%,
-    var(--ayura-violet) 34%,
-    var(--ayura-amber)  60%,
-    var(--ayura-teal)   100%
+    var(--ayura-teal)   var(--s0, 0%),
+    var(--ayura-violet) var(--s1, 34%),
+    var(--ayura-amber)  var(--s2, 60%),
+    var(--ayura-teal)   var(--s3, 100%)
   );
-  background-size: var(--sync-w, 100%) 100%;
-  background-position: calc(-1 * var(--sync-x, 0px)) 0;
   background-repeat: no-repeat;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
