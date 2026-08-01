@@ -1365,19 +1365,19 @@
    a letter set to `opacity: 0` still paints at full strength. Only `transform`
    and `clip-path` affect the result, which is why the reveal below uses those
    two and not a fade. Do not "simplify" this to opacity; it silently no-ops. */
-/* The stop POSITIONS are set per letter from JS (SyncAccent), remapped out of
-   word space into this letter's own box so the four slices read as one ramp —
-   see the note there for why this is not done with background-size any more.
-   The fallbacks are the unremapped word-space positions, which is what a letter
-   shows before measurement (prerendered HTML, or if the effect never runs). */
+/* This is only the BEFORE-MEASUREMENT fallback — a letter showing the whole
+   ramp on its own. SyncAccent replaces background-image per letter with that
+   letter's slice of the word ramp (see the note there; the slice must stay
+   inside the letter or Chrome mis-rasterizes it during load). Keep this list
+   in step with SYNC_RAMP in Landing.jsx. */
 .lnd-sync-ch {
   display: inline-block;
   background-image: linear-gradient(
     90deg,
-    var(--ayura-teal)   var(--s0, 0%),
-    var(--ayura-violet) var(--s1, 34%),
-    var(--ayura-amber)  var(--s2, 60%),
-    var(--ayura-teal)   var(--s3, 100%)
+    var(--ayura-teal)   0%,
+    var(--ayura-violet) 34%,
+    var(--ayura-amber)  60%,
+    var(--ayura-teal)   100%
   );
   background-repeat: no-repeat;
   -webkit-background-clip: text;

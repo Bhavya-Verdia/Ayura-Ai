@@ -64,10 +64,47 @@ function splitGraphemes(word) {
     .map(s => s.segment)
 }
 
-// Where the accent gradient changes colour, as fractions of the WHOLE word's
-// width. Must stay in step with the colour list in `.lnd-sync-ch` — these are
-// the positions those colours sit at; the CSS only names the colours.
-const SYNC_STOPS = [0, 0.34, 0.6, 1]
+// The accent ramp across the WHOLE word: which brand token sits at which
+// fraction of the word's width. The `.lnd-sync-ch` fallback gradient in
+// Landing.css is this same list — keep the two in step.
+const SYNC_RAMP = [
+  { at: 0,    token: '--ayura-teal' },
+  { at: 0.34, token: '--ayura-violet' },
+  { at: 0.6,  token: '--ayura-amber' },
+  { at: 1,    token: '--ayura-teal' },
+]
+
+// The ramp's colour at fraction `f` of the word, as an expression that still
+// refers to the brand TOKENS rather than resolving them to rgb(). That is what
+// keeps the letters theme-reactive without re-running this on every theme
+// switch, and keeps the prerenderer from baking dark-mode colours into HTML a
+// light-mode visitor will read.
+function rampColorAt(f) {
+  for (let i = 1; i < SYNC_RAMP.length; i++) {
+    const a = SYNC_RAMP[i - 1]
+    const b = SYNC_RAMP[i]
+    if (f > b.at && i < SYNC_RAMP.length - 1) continue
+    const t = (f - a.at) / (b.at - a.at)
+    if (t <= 0) return `var(${a.token})`
+    if (t >= 1) return `var(${b.token})`
+    return `color-mix(in srgb, var(${b.token}) ${(t * 100).toFixed(3)}%, var(${a.token}))`
+  }
+  return `var(${SYNC_RAMP[0].token})`
+}
+
+// One letter's slice of the word ramp, expressed ENTIRELY INSIDE that letter:
+// interpolated colours pinned at 0% and 100%, plus whichever ramp stops fall
+// within the letter, at their local positions. Every position is in 0–100%.
+function sliceGradient(f0, f1) {
+  const stops = [`${rampColorAt(f0)} 0%`]
+  for (const s of SYNC_RAMP) {
+    if (s.at > f0 && s.at < f1) {
+      stops.push(`var(${s.token}) ${(((s.at - f0) / (f1 - f0)) * 100).toFixed(3)}%`)
+    }
+  }
+  stops.push(`${rampColorAt(f1)} 100%`)
+  return `linear-gradient(90deg, ${stops.join(', ')})`
+}
 
 // Each letter has to own its own background-clip:text gradient. A child of a
 // clipped parent CANNOT be hidden — opacity and filter:opacity() are both
@@ -77,20 +114,29 @@ const SYNC_STOPS = [0, 0.34, 0.6, 1]
 // parent and the letters paint nothing at all.
 //
 // The separate per-letter gradients are stitched back into ONE continuous ramp
-// by REMAPPING each colour stop out of word space into that letter's own box:
-// a stop p% of the way across the word sits at ((p*wordWidth) - letterX) /
-// letterWidth of the way across the letter. Those land outside 0–100% for most
-// letters, which is legal and is what keeps the ramp continuous across the
-// boundaries.
+// by giving each letter the SLICE of the word ramp that falls inside it, with
+// the cut ends interpolated (see sliceGradient) so the colour is identical at
+// every boundary.
 //
-// It used to do this with `background-size: <wordWidth>` and a negative
-// `background-position` instead. That is equivalent on paper and Safari renders
-// it correctly, but it hands Chrome a 142px-wide background on a 31px element,
-// and when Chrome promotes that element for the clip-path animation during page
-// load it rasterizes the oversized texture wrong — every letter's ink lands in
-// roughly the same place, so the word paints as one stacked, illegible clump.
-// Keeping each background exactly its own element's size avoids the whole
-// class of bug. Do not reintroduce background-size/background-position here.
+// THE RAMP MUST NOT EXTEND BEYOND THE LETTER. This is the whole ballgame, and
+// two earlier versions got it wrong in different ways:
+//   - 6557eae used `background-size: <wholeWordWidth>` with a negative
+//     `background-position`, i.e. a 142px background on a ~31px element.
+//   - 925be51 replaced that with in-place stops remapped out of word space,
+//     which ran from -326% to 100% — legal, and just as oversized.
+// Both are correct on paper, and Safari paints both correctly. Chrome does not:
+// when it promotes the element for the clip-path animation DURING PAGE LOAD it
+// rasterizes the oversized ramp wrong and lands every letter's ink in roughly
+// the same place, so the word paints as one illegible stacked clump. Confirmed
+// on production by injecting in-range gradients before the hero mounts, which
+// makes the same load render clean.
+//
+// So: no background-size, no background-position, and no stop outside 0–100%.
+//
+// Note this is NOT reproducible by seeking a paused animation (pausing takes it
+// off the compositor and it paints correctly), nor by re-triggering the
+// animation after the page settles. It only shows in a live composited run
+// during load — reload and burst-capture.
 function SyncAccent({ word }) {
   const ref = useRef(null)
   const parts = useMemo(() => splitGraphemes(word), [word])
@@ -104,10 +150,9 @@ function SyncAccent({ word }) {
       el.querySelectorAll('.lnd-sync-ch').forEach(span => {
         const r = span.getBoundingClientRect()
         if (!r.width) return
-        const x = r.left - base.left
-        SYNC_STOPS.forEach((p, i) => {
-          span.style.setProperty('--s' + i, `${(((p * base.width) - x) / r.width) * 100}%`)
-        })
+        const f0 = (r.left - base.left) / base.width
+        const f1 = (r.right - base.left) / base.width
+        span.style.backgroundImage = sliceGradient(f0, f1)
       })
     }
     measure()
