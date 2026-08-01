@@ -1384,15 +1384,25 @@
 
 @keyframes lnd-sync-letter-in {
   from {
-    /* Wipes up from the baseline. The horizontal insets are NEGATIVE so the
-       clip box extends past the letter's advance width — italic Fraunces
-       glyphs overhang their own box (the 'y' tail most of all), and a 0 inset
-       would shear those overhangs off. */
-    clip-path: inset(0 -40% 100% -40%);
+    /* Wipes LEFT→RIGHT, the direction the word is read and written: the RIGHT
+       inset animates from 140% (nothing painted) to -40%, so each letter is
+       uncovered stroke by stroke from its left edge.
+       This axis is deliberate, not cosmetic. A vertical wipe cuts a glyph at
+       its waist and the top half of an italic 's' is a complete, legible 'c' —
+       measured on the live page, the word read "cync" for ~25ms of the reveal.
+       A left-clipped letter is only ever an unfinished stroke, never a
+       different letter, so the illusion has nowhere to form.
+       Every inset is NEGATIVE at rest because italic Fraunces glyphs overhang
+       their own advance width (the 'y' tail most of all) and a 0 inset shears
+       those overhangs off. That is also why `from` is 140% and not 100%: with
+       left at -40% the clip box has to give back that same 40% on the right to
+       start at zero width. The vertical insets never animate — they stay open
+       so the descender is never touched. */
+    clip-path: inset(-40% 140% -40% -40%);
     transform: translateY(0.12em);
   }
   to {
-    clip-path: inset(0 -40% -40% -40%);
+    clip-path: inset(-40% -40% -40% -40%);
     transform: translateY(0);
   }
 }
