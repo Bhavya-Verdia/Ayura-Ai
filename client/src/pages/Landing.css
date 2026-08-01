@@ -247,8 +247,20 @@
   font-optical-sizing: auto;
   line-height: 1.05;
   letter-spacing: -0.02em;
-  color: var(--ayura-ink);
+  /* A step back from --ayura-ink (#f7f1e6), and only here. At full ink the
+     plain words measure ~13.4:1 and are the brightest, heaviest thing in the
+     hero — brighter than the accent word the headline turns on, so the eye
+     lands on "Your wellness, finally in" and reads "sync" as the quiet part.
+     #e9e5db is still ~12:1, far above AA at this size, but it lets the accent
+     lead. Scoped rather than applied to the token because the token is the
+     site's body ink and nowhere else has a gradient accent to lose to. */
+  color: #e9e5db;
   margin-bottom: 24px;
+}
+/* Light mode is already balanced — the ink is near-black and the accent is the
+   darker green/rust ramp, so the hierarchy reads correctly. Keep the token. */
+[data-theme='light'] .lnd-hero-title {
+  color: var(--ayura-ink);
 }
 /* Accent word ("sync.") in a true Fraunces italic — the roman + italic
    contrast is the signature of the editorial-serif identity. */
