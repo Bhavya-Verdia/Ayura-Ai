@@ -1,4 +1,4 @@
-import { useRef, useEffect, useLayoutEffect, useMemo, useState, Suspense } from 'react'
+import { useRef, useEffect, useState, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import Lenis from 'lenis'
 import { m, AnimatePresence, MotionConfig } from 'framer-motion'
@@ -48,133 +48,9 @@ const VP       = { once: true, margin: '-60px' }
 // navigations to "/" (no prerendered DOM at module load) keep the entrance.
 const PRERENDERED = typeof document !== 'undefined' && !!document.querySelector('.lnd-hero-subtitle')
 
-// ─── Hero accent word, revealed one letter at a time ─────────
-// Per-grapheme boxing breaks shaping in cursive and conjunct scripts (Arabic
-// joining, Devanagari/Tamil conjuncts formed across a virama), so the split is
-// limited to scripts where a grapheme is an independently shapeable box. Any
-// other language keeps the word whole — it still arrives with the title's word
-// stagger, just without the per-letter reveal.
-const SPLITTABLE = /^[\p{Script=Latin}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Nd}\p{P}\s]+$/u
-function splitGraphemes(word) {
-  if (!word || !SPLITTABLE.test(word)) return null
-  // Intl.Segmenter over Array.from: code points would split an emoji ZWJ
-  // sequence or a combining mark off its base. Falls back if unavailable.
-  if (typeof Intl === 'undefined' || !Intl.Segmenter) return Array.from(word)
-  return [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(word)]
-    .map(s => s.segment)
-}
-
-// The accent ramp across the WHOLE word: which brand token sits at which
-// fraction of the word's width. The `.lnd-sync-ch` fallback gradient in
-// Landing.css is this same list — keep the two in step.
-const SYNC_RAMP = [
-  { at: 0,    token: '--ayura-teal' },
-  { at: 0.34, token: '--ayura-violet' },
-  { at: 0.6,  token: '--ayura-amber' },
-  { at: 1,    token: '--ayura-teal' },
-]
-
-// The ramp's colour at fraction `f` of the word, as an expression that still
-// refers to the brand TOKENS rather than resolving them to rgb(). That is what
-// keeps the letters theme-reactive without re-running this on every theme
-// switch, and keeps the prerenderer from baking dark-mode colours into HTML a
-// light-mode visitor will read.
-function rampColorAt(f) {
-  for (let i = 1; i < SYNC_RAMP.length; i++) {
-    const a = SYNC_RAMP[i - 1]
-    const b = SYNC_RAMP[i]
-    if (f > b.at && i < SYNC_RAMP.length - 1) continue
-    const t = (f - a.at) / (b.at - a.at)
-    if (t <= 0) return `var(${a.token})`
-    if (t >= 1) return `var(${b.token})`
-    return `color-mix(in srgb, var(${b.token}) ${(t * 100).toFixed(3)}%, var(${a.token}))`
-  }
-  return `var(${SYNC_RAMP[0].token})`
-}
-
-// One letter's slice of the word ramp, expressed ENTIRELY INSIDE that letter:
-// interpolated colours pinned at 0% and 100%, plus whichever ramp stops fall
-// within the letter, at their local positions. Every position is in 0–100%.
-function sliceGradient(f0, f1) {
-  const stops = [`${rampColorAt(f0)} 0%`]
-  for (const s of SYNC_RAMP) {
-    if (s.at > f0 && s.at < f1) {
-      stops.push(`var(${s.token}) ${(((s.at - f0) / (f1 - f0)) * 100).toFixed(3)}%`)
-    }
-  }
-  stops.push(`${rampColorAt(f1)} 100%`)
-  return `linear-gradient(90deg, ${stops.join(', ')})`
-}
-
-// Each letter has to own its own background-clip:text gradient. A child of a
-// clipped parent CANNOT be hidden — opacity and filter:opacity() are both
-// ignored on it (measured in-browser; only transform and clip-path affect the
-// painted result), so the reveal must live on an element that paints for
-// itself. Confirmed again the other way round: move the gradient up to the
-// parent and the letters paint nothing at all.
-//
-// The separate per-letter gradients are stitched back into ONE continuous ramp
-// by giving each letter the SLICE of the word ramp that falls inside it, with
-// the cut ends interpolated (see sliceGradient) so the colour is identical at
-// every boundary.
-//
-// THE RAMP MUST NOT EXTEND BEYOND THE LETTER. This is the whole ballgame, and
-// two earlier versions got it wrong in different ways:
-//   - 6557eae used `background-size: <wholeWordWidth>` with a negative
-//     `background-position`, i.e. a 142px background on a ~31px element.
-//   - 925be51 replaced that with in-place stops remapped out of word space,
-//     which ran from -326% to 100% — legal, and just as oversized.
-// Both are correct on paper, and Safari paints both correctly. Chrome does not:
-// when it promotes the element for the clip-path animation DURING PAGE LOAD it
-// rasterizes the oversized ramp wrong and lands every letter's ink in roughly
-// the same place, so the word paints as one illegible stacked clump. Confirmed
-// on production by injecting in-range gradients before the hero mounts, which
-// makes the same load render clean.
-//
-// So: no background-size, no background-position, and no stop outside 0–100%.
-//
-// Note this is NOT reproducible by seeking a paused animation (pausing takes it
-// off the compositor and it paints correctly), nor by re-triggering the
-// animation after the page settles. It only shows in a live composited run
-// during load — reload and burst-capture.
-function SyncAccent({ word }) {
-  const ref = useRef(null)
-  const parts = useMemo(() => splitGraphemes(word), [word])
-
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el || !parts) return
-    const measure = () => {
-      const base = el.getBoundingClientRect()
-      if (!base.width) return
-      el.querySelectorAll('.lnd-sync-ch').forEach(span => {
-        const r = span.getBoundingClientRect()
-        if (!r.width) return
-        const f0 = (r.left - base.left) / base.width
-        const f1 = (r.right - base.left) / base.width
-        span.style.backgroundImage = sliceGradient(f0, f1)
-      })
-    }
-    measure()
-    // Re-measure on webfont swap and on viewport resize — the title is
-    // `clamp(2.4rem, 7vw, 5.4rem)`, so letter offsets move with the viewport and
-    // stale offsets show up as visible seams in the gradient. A ResizeObserver
-    // on the word catches both without a resize listener.
-    const ro = new ResizeObserver(measure)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [parts])
-
-  if (!parts) return <em className="shimmer-text">{word}</em>
-
-  return (
-    <em className="shimmer-text" ref={ref}>
-      {parts.map((g, i) => (
-        <span key={`${g}-${i}`} className="lnd-sync-ch" style={{ '--i': i }}>{g}</span>
-      ))}
-    </em>
-  )
-}
+// ─── Hero accent word ────────────────────────────────────────
+// Deliberately a single, static gradient element — see the note above
+// .shimmer-text in Landing.css for why there is no per-letter reveal here.
 
 // All user-visible copy lives in the locale files under "landing.*" — arrays
 // below hold translation keys, resolved with t() at render so the language
@@ -728,7 +604,7 @@ export default function Landing() {
                   marginRight: '0.25em',
                 }}
               >
-                <SyncAccent word={t('landing.hero_title_accent')} />
+                <em className="shimmer-text">{t('landing.hero_title_accent')}</em>
               </m.span>
             </m.h2>
 

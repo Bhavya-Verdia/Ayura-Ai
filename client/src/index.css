@@ -928,11 +928,6 @@ textarea:focus-visible {
   50%       { opacity: 0.4; }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
-}
-
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -966,14 +961,8 @@ textarea:focus-visible {
   100% { background-position:  200% 0; }
 }
 
-/* Shimmer gradient for text headlines */
-@keyframes shimmer-gradient {
-  0%   { background-position: 0% center; }
-  100% { background-position: 200% center; }
-}
-
-/* background-position animates = permanent per-frame repaint; inline-block +
-   will-change isolate it to the text's own layer (see Landing.css twin). */
+/* Static gradient text. The Landing.css twin overrides this on "/" (it loads
+   after this file) and carries the full history of why nothing here animates. */
 .shimmer-text {
   display: inline-block;
   /* line-height + padding give the italic 'y' descender room; without them the
@@ -1000,45 +989,14 @@ textarea:focus-visible {
    removed with the animated background: VitalBackground now paints static
    .vital-pool light pools instead, and nothing else referenced them. */
 
-@keyframes aurora-spin {
-  from { transform: rotate(0deg) scale(1); }
-  50%  { transform: rotate(180deg) scale(1.08); }
-  to   { transform: rotate(360deg) scale(1); }
-}
-
-@keyframes aurora-breathe {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50%       { opacity: 1;   transform: scale(1.06); }
-}
-
-@keyframes gradient-border-spin {
-  from { --angle: 0deg; }
-  to   { --angle: 360deg; }
-}
-
-/* Spinning conic border on buttons */
-@keyframes conic-spin {
-  to { --angle: 360deg; }
-}
-
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-16px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
 @keyframes typing-bounce {
   0%, 60%, 100% { transform: translateY(0); }
   30%            { transform: translateY(-8px); }
-}
-
-/* Mesh background animation */
-@keyframes mesh-spin {
-  to { --angle: 360deg; }
 }
 
 /* ─── SKELETON SHIMMER ────────────────────────────────────── */
@@ -1295,7 +1253,9 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
 
 /* ─── Accessibility: Reduced Motion ──────────────────────────────────────────
    Disable all decorative animations for users who have requested reduced
-   motion in their OS/browser settings (WCAG 2.1 SC 2.3.3).               */
+   motion in their OS/browser settings (WCAG 2.1 SC 2.3.3).
+   Note this list is explicit, not a blanket `*`, so the loading bar and other
+   non-decorative indicators keep animating without needing an exemption. */
 @media (prefers-reduced-motion: reduce) {
   .particle-dot,
   .particle-orb,
@@ -1305,11 +1265,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--ayura-teal) transparent; }
   .vital-pulse-lines path {
     animation: none !important;
     transition: none !important;
-  }
-
-  /* Keep loading indicators functional (they are not purely decorative) */
-  .loading-bar-inner {
-    animation: loading-bar 1.6s ease infinite !important;
   }
 }
 

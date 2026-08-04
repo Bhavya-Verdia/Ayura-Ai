@@ -707,41 +707,6 @@
   margin-top: 4px;
 }
 
-/* Floating badges on preview */
-/* No backdrop-filter: the badge FLOATS, and a moving backdrop-filter element
-   re-samples + re-blurs its backdrop every frame forever. Over the soft hero
-   visual the blur is invisible behind the 74-80% alpha glass background. */
-.lnd-float-badge {
-  position: absolute;
-  background: var(--glass-bg);
-  border: 1px solid var(--border-light);
-  border-radius: 14px;
-  padding: 12px 16px;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.3);
-  animation: float 4s ease-in-out infinite;
-}
-[data-theme='light'] .lnd-float-badge {
-  box-shadow: 0 12px 32px rgba(15,23,42,0.12);
-}
-.lnd-float-badge-1 {
-  top: 18px; right: 18px;
-  animation-delay: 0s;
-}
-.lnd-float-badge-2 {
-  bottom: 18px; left: 18px;
-  animation-delay: -2s;
-}
-.lnd-float-badge-val {
-  font-family: var(--font-display);
-  font-size: 1.4rem; font-weight: 800;
-  color: var(--ayura-teal);
-  line-height: 1;
-}
-.lnd-float-badge-lbl {
-  font-size: 0.68rem; color: var(--ayura-muted);
-  font-weight: 500; margin-top: 2px;
-}
-
 /* Hero stats bar */
 .lnd-stats-bar {
   display: flex; align-items: center; gap: 0;
@@ -1285,21 +1250,9 @@
 .reveal-stagger.visible > *:nth-child(n+7) { transition-delay: 400ms; }
 
 /* ─── KEYFRAMES ───────────────────────────────────────────── */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
-}
 @keyframes pulse {
   0%,100% { opacity: 1; }
   50%     { opacity: 0.4; }
-}
-@keyframes lndFadeUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes lnd-shimmer {
-  0%   { background-position: -300% center; }
-  100% { background-position:  300% center; }
 }
 @keyframes lnd-dot-ping {
   0%   { transform: scale(1);   box-shadow: 0 0 0 0   rgba(92,171,116,0.55); }
@@ -1316,24 +1269,30 @@
 }
 
 /* ─── SHIMMER HERO TITLE ───────────────────────────────────── */
-/* The word is "sync", so it writes itself in: its letters arrive one after
-   another, and then it is done. See .lnd-sync-ch below for the mechanism.
+/* The accent word is ONE element with ONE static gradient, and it stays that
+   way. It arrives with the headline's word stagger (Framer, in Landing.jsx) and
+   is otherwise never animated.
 
-   HISTORY — read before changing. This used to be an infinite
-   `background-position` shimmer, retired in f031ab4 (flicker fix) for two
-   distinct reasons, and anything added here must keep avoiding BOTH:
+   HISTORY — read before adding motion here. Two different animations have been
+   tried and both shipped visible bugs:
 
-   1. It repainted the word every frame FOREVER. That is what broke the mobile
-      ambient budget (one living background element per phone screen). The
-      reveal below runs a single ~0.7s pass and stops, so the steady state is a
-      static gradient — no perpetual paint.
-   2. Isolating that repaint needed `will-change`, and the composited layer it
-      created had bounds that CLIPPED THE ITALIC 'y' DESCENDER. There is no
-      will-change here and none should be added: a one-shot paint does not need
-      layer isolation, and re-adding it would clip the glyph again.
+   1. An infinite `background-position` shimmer, retired in f031ab4 (flicker
+      fix). It repainted the word every frame FOREVER, breaking the mobile
+      ambient budget (one living background element per phone screen), and
+      isolating that repaint needed `will-change`, whose composited layer bounds
+      CLIPPED THE ITALIC 'y' DESCENDER.
+   2. A per-letter reveal (6557eae..226277c): each letter was its own span
+      carrying its slice of the word gradient, uncovered by an animated
+      `clip-path`. That combination — `background-clip: text` on an element the
+      compositor promotes for a clip-path animation during page LOAD — is
+      mis-rasterized: letters land on top of each other and the word paints as
+      an illegible clump. Three attempts at keeping the ramp inside each letter
+      (background-size, remapped stops, then exact per-letter slices) each fixed
+      it on one engine and left it broken on another; the last one still failed
+      on mobile. Removed rather than fixed a fourth time.
 
-   The rule below is the resting appearance and the fallback for scripts that
-   cannot be split per letter (see splitGraphemes in Landing.jsx). */
+   So: no per-frame paint, no will-change, no clip-path, no splitting the word
+   into per-letter boxes. A static gradient has none of these failure modes. */
 .shimmer-text {
   font-style: normal;
   display: inline-block;
@@ -1351,75 +1310,6 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-/* ── Per-letter reveal ──
-   Each letter carries its own slice of the SAME gradient: --sync-w is the whole
-   word's width and --sync-x this letter's offset within it (both measured in
-   SyncAccent, Landing.jsx), so the slices reassemble into one continuous
-   gradient indistinguishable from painting it on the single element above.
-
-   Why the letters must own the gradient at all: a child of a
-   `background-clip: text` parent cannot be hidden. `opacity` and
-   `filter: opacity()` on such a child are both ignored — measured in-browser,
-   a letter set to `opacity: 0` still paints at full strength. Only `transform`
-   and `clip-path` affect the result, which is why the reveal below uses those
-   two and not a fade. Do not "simplify" this to opacity; it silently no-ops. */
-/* This is only the BEFORE-MEASUREMENT fallback — a letter showing the whole
-   ramp on its own. SyncAccent replaces background-image per letter with that
-   letter's slice of the word ramp (see the note there; the slice must stay
-   inside the letter or Chrome mis-rasterizes it during load). Keep this list
-   in step with SYNC_RAMP in Landing.jsx. */
-.lnd-sync-ch {
-  display: inline-block;
-  background-image: linear-gradient(
-    90deg,
-    var(--ayura-teal)   0%,
-    var(--ayura-violet) 34%,
-    var(--ayura-amber)  60%,
-    var(--ayura-teal)   100%
-  );
-  background-repeat: no-repeat;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Letters land in sequence, 85ms apart. The title staggers its WORDS 0.09s
-   apart and "sync" is the fifth, arriving at ~0.96s, so the first letter starts
-   just after the word's slot — the line finishes writing itself rather than
-   appearing all at once. One pass, no steady-state paint (see the history note
-   above), and no will-change anywhere near the italic descender. */
-@media (prefers-reduced-motion: no-preference) {
-  .lnd-sync-ch {
-    animation: lnd-sync-letter-in 0.46s cubic-bezier(0.22, 0.9, 0.24, 1)
-               calc(0.92s + var(--i) * 0.085s) both;
-  }
-}
-
-@keyframes lnd-sync-letter-in {
-  from {
-    /* Wipes LEFT→RIGHT, the direction the word is read and written: the RIGHT
-       inset animates from 140% (nothing painted) to -40%, so each letter is
-       uncovered stroke by stroke from its left edge.
-       This axis is deliberate, not cosmetic. A vertical wipe cuts a glyph at
-       its waist and the top half of an italic 's' is a complete, legible 'c' —
-       measured on the live page, the word read "cync" for ~25ms of the reveal.
-       A left-clipped letter is only ever an unfinished stroke, never a
-       different letter, so the illusion has nowhere to form.
-       Every inset is NEGATIVE at rest because italic Fraunces glyphs overhang
-       their own advance width (the 'y' tail most of all) and a 0 inset shears
-       those overhangs off. That is also why `from` is 140% and not 100%: with
-       left at -40% the clip box has to give back that same 40% on the right to
-       start at zero width. The vertical insets never animate — they stay open
-       so the descender is never touched. */
-    clip-path: inset(-40% 140% -40% -40%);
-    transform: translateY(0.12em);
-  }
-  to {
-    clip-path: inset(-40% -40% -40% -40%);
-    transform: translateY(0);
-  }
 }
 
 /* ─── KICKER DOT PING ──────────────────────────────────────── */

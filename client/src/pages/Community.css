@@ -123,9 +123,7 @@
 /* Skeletons */
 .comm-post-skeleton { background: var(--glass-bg-subtle); border-radius: 20px; padding: 24px; }
 .comm-skeleton-header { display: flex; gap: 12px; margin-bottom: 20px; }
-.comm-skeleton-avatar { width: 44px; height: 44px; border-radius: 14px; background: var(--border-subtle); animation: pulse 1.5s infinite; }
 .comm-skeleton-meta { flex: 1; }
-.comm-skeleton-line { background: var(--border-subtle); border-radius: 4px; animation: pulse 1.5s infinite; }
 
 /* ── Comments ── */
 .comm-comments { margin-top: 12px; border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.07)); padding-top: 10px; }
