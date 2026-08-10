@@ -9,6 +9,7 @@ import {
   ClipboardList, Scale, Sparkles, TriangleAlert, Plus, X,
   Laugh, Smile, Meh, Frown, Annoyed,
 } from 'lucide-react'
+import EmptyState from '../components/EmptyState'
 import './Progress.css'
 
 const MOOD_OPTIONS = [
@@ -139,6 +140,11 @@ export default function Progress() {
   const totalEntries = summary?.streak_data?.total_entries ?? summary?.current?.total_entries ?? 0
   const weight = summary?.current?.weight_kg
   const insight = summary?.weekly_insight
+  // Nothing has ever been logged: no entries AND no weight on file, so every
+  // stat tile would be a zero or a dash. Checked together rather than on
+  // totalEntries alone because a profile weight from onboarding is still real
+  // data worth showing.
+  const isFirstRun = totalEntries === 0 && !weight && logs.length === 0
 
   return (
     <>
@@ -256,13 +262,30 @@ export default function Progress() {
 
           {!isLoading && !isError && summary && (
             <>
-              {/* Stats row */}
-              <div className="prg-stat-row">
-                <StatCard icon={<Flame size={20} strokeWidth={2} />} label="Day Streak" value={streak > 0 ? `${streak}d` : '0d'} sub="consecutive days logged" color="var(--ayura-amber)" />
-                <StatCard icon={<ClipboardList size={20} strokeWidth={2} />} label="Total Entries" value={totalEntries} sub="logs recorded" color="var(--primary-light)" />
-                <StatCard icon={<Scale size={20} strokeWidth={2} />} label="Current Weight" value={weight ? `${weight} kg` : '—'} sub={summary.current?.bmi_category || ''} color="var(--ayura-violet)" />
-                <StatCard icon={<trend.Icon size={20} strokeWidth={2} />} label="Weight Trend" value={trend.label} color={trend.color} />
-              </div>
+              {/* Stats row — or, before the first entry exists, an invitation.
+                  Four tiles reading 0d / 0 / — / "No data yet" is a wall of
+                  zeroes that makes a new account look abandoned rather than
+                  new; there is no information in a stat with no data behind it. */}
+              {isFirstRun ? (
+                <EmptyState
+                  className="empty-state--inline"
+                  icon={ChartColumn}
+                  title="Start tracking your progress"
+                  description="Log your weight, energy and sleep and this page fills in — streaks, trends and a weekly AI insight built from your own entries."
+                  actions={
+                    <button type="button" className="btn btn-primary" onClick={() => setShowLogForm(true)}>
+                      + Log your first entry
+                    </button>
+                  }
+                />
+              ) : (
+                <div className="prg-stat-row">
+                  <StatCard icon={<Flame size={20} strokeWidth={2} />} label="Day Streak" value={streak > 0 ? `${streak}d` : '0d'} sub="consecutive days logged" color="var(--ayura-amber)" />
+                  <StatCard icon={<ClipboardList size={20} strokeWidth={2} />} label="Total Entries" value={totalEntries} sub="logs recorded" color="var(--primary-light)" />
+                  <StatCard icon={<Scale size={20} strokeWidth={2} />} label="Current Weight" value={weight ? `${weight} kg` : '—'} sub={summary.current?.bmi_category || ''} color="var(--ayura-violet)" />
+                  <StatCard icon={<trend.Icon size={20} strokeWidth={2} />} label="Weight Trend" value={trend.label} color={trend.color} />
+                </div>
+              )}
 
               {/* LLM Insight */}
               {insight && (
@@ -280,13 +303,19 @@ export default function Progress() {
                 </m.div>
               )}
 
-              {/* Recent entries */}
+              {/* Recent entries. On a first run the invitation above already
+                  says this, so the older "No entries yet" block is suppressed
+                  rather than stacked beneath it — two empty states on one screen
+                  is worse than the zeroes were. It still covers the case where
+                  there IS summary data but the log list came back empty. */}
               {logs.length === 0 ? (
-                <div className="prg-empty">
-                  <div className="prg-empty-icon"><ChartColumn size={28} strokeWidth={1.8} /></div>
-                  <p className="prg-empty-title">No entries yet</p>
-                  <p className="prg-empty-sub">Click "+ Log Today" to record your first progress entry.</p>
-                </div>
+                !isFirstRun && (
+                  <div className="prg-empty">
+                    <div className="prg-empty-icon"><ChartColumn size={28} strokeWidth={1.8} /></div>
+                    <p className="prg-empty-title">No entries yet</p>
+                    <p className="prg-empty-sub">Click "+ Log Today" to record your first progress entry.</p>
+                  </div>
+                )
               ) : (
                 <div className="prg-logs-section">
                   <h2 className="prg-logs-title">Recent Entries <span className="prg-logs-count">{logs.length}</span></h2>

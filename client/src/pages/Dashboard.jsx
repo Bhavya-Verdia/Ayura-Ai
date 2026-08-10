@@ -14,13 +14,15 @@ import DoshaValidationCard from '../components/DoshaValidationCard'
 import DoshaArcRings from '../components/DoshaArcRings'
 import PreferencesModal from '../components/PreferencesModal'
 import SectionBoundary from '../components/SectionBoundary'
+import EmptyState from '../components/EmptyState'
 import { DOSHA_COLOR } from '../constants/dosha'
 import useLowPowerMode from '../hooks/useLowPowerMode'
+import { track, EVENTS } from '../lib/analytics'
 import confetti from 'canvas-confetti'
 import {
   Sunrise, Salad, Flower2, Dumbbell, Leaf, Soup, Pill,
   Flame, Snowflake, Sun, CloudRain, Moon, Mail, RefreshCw,
-  TriangleAlert, MessageCircle, TrendingUp, CircleCheck,
+  TriangleAlert, MessageCircle, TrendingUp, CircleCheck, Sparkles,
 } from 'lucide-react'
 import './Dashboard.css'
 
@@ -160,7 +162,12 @@ function RitucharyaCard() {
     retry: 1,
   })
 
-  if (isError || (!isLoading && !data)) return null
+  // Gate on the fields actually rendered, not merely on `data` being present:
+  // `{}` is truthy, so an empty or partial payload used to pass this check and
+  // render the title as `undefined · undefined Ritu` — a card whose entire
+  // visible content was the word "Ritu". Seasonal guidance is decorative, so
+  // when it is unusable the right answer is to show nothing.
+  if (isError || (!isLoading && !data?.season)) return null
   if (isLoading) return <div className="dash-ritu-card skeleton" style={{ height: 130 }} />
 
   const rec = data.recommendations || data
@@ -562,6 +569,9 @@ const Dashboard = () => {
         [result.typeId]: { data: result.data, created_at: new Date().toISOString() }
       }))
       toast.success(`${result.typeId.charAt(0).toUpperCase() + result.typeId.slice(1)} plan ready! ✦`, { id: `gen-${result.typeId}` })
+      // The activation moment. plan_type is a feature name (gym/yoga/diet), not
+      // health data; the plan body itself is never sent.
+      track(EVENTS.PLAN_GENERATED, { plan_type: result.typeId, is_first_plan: isFirstPlan })
       // Confetti on first plan generation
       if (isFirstPlan) fireConfetti()
     },
@@ -739,11 +749,35 @@ const Dashboard = () => {
 
         <div className="dash-hero-right" style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
           {user?.dominant_dosha && <DoshaGauge dosha={user.dominant_dosha} doshaScores={user.dosha_scores} />}
-          <HealthScoreCard completedCount={completedCount} total={PLAN_TYPES.length} />
+          {/* The score ring is hidden until there is a score worth showing. At
+              zero it rendered a "0% COMPLETE — 0 of 7 plans generated" dial as
+              the first thing a new user ever saw, which reads as a report of
+              failure rather than a starting point. The first-run prompt below
+              takes its place. */}
+          {completedCount > 0 && <HealthScoreCard completedCount={completedCount} total={PLAN_TYPES.length} />}
         </div>
       </m.div>
 
-
+      {/* ── First-run prompt (replaces the zeroed score ring) ── */}
+      {!plansLoading && completedCount === 0 && (
+        <EmptyState
+          className="empty-state--inline"
+          icon={Sparkles}
+          title="Let's build your first plan"
+          description={`${user?.dominant_dosha
+            ? `Your ${user.dominant_dosha} constitution is on file.`
+            : 'Your profile is set up.'} Pick any area below and Ayura will craft a plan around it — most people start with diet or daily routine.`}
+          actions={
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => document.getElementById('dash-plans')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            >
+              Choose an area →
+            </button>
+          }
+        />
+      )}
 
       {/* ── Streak Card ── */}
       <StreakCard />
@@ -783,7 +817,8 @@ const Dashboard = () => {
       )}
 
       {/* ── Plans section ── */}
-      <div className="dash-plans-header">
+      {/* id is the scroll target for the first-run prompt's "Choose an area" CTA. */}
+      <div className="dash-plans-header" id="dash-plans">
         <h2 className="dash-plans-title">Your Wellness Plans</h2>
         <p className="dash-plans-sub">Generate or view your AI-crafted Ayurvedic plans</p>
       </div>

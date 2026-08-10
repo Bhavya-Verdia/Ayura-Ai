@@ -48,6 +48,13 @@ const shellFallbacks = {
   shellDesc: (shell.match(/<meta name="description" content="([^"]*)"/) || [])[1] ?? null,
 }
 
+// NOTE: the SPA fallback document (dist/app.html — the pristine shell that
+// every NON-prerendered route is served) is emitted during the build by the
+// `emitAppShell` plugin in vite.config.js, deliberately not here: it has to
+// exist before vite-plugin-pwa builds its precache manifest, and postbuild
+// runs long after that. See that plugin for why the fallback can't be
+// index.html.
+
 console.log('🔧  Starting Vite preview server…')
 const server = await preview({
   root,

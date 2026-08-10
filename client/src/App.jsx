@@ -5,6 +5,7 @@ import { Toaster } from 'sonner'
 import { useAuth } from './providers/AuthContext'
 import { useTheme } from './providers/ThemeProvider'
 import LoadingScreen from './components/LoadingScreen'
+import ShellSkeleton from './components/ShellSkeleton'
 import ScrollToTop from './components/ScrollToTop'
 import ErrorBoundary from './components/ErrorBoundary'
 import NoiseOverlay from './components/NoiseOverlay'
@@ -14,12 +15,20 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import useLowPowerMode from './hooks/useLowPowerMode'
 import ReloadPrompt from './components/ReloadPrompt'
 import OfflineBanner from './components/OfflineBanner'
+import { trackPageview } from './lib/analytics'
+import { isReturningUser } from './lib/sessionHint'
 
 // Lazy like the pages: the app shell (sidebar, command palette, feedback
 // widget + Dashboard.css) is only for authenticated users — statically
 // importing it shipped ~38KB of render-blocking CSS/JS to every anonymous
 // Landing visitor.
-const MainLayout = React.lazy(() => import('./layouts/MainLayout'))
+//
+// The import functions are named so the same module URL can be requested ahead
+// of time (see warmAppShell below) — React.lazy exposes no preload of its own,
+// and re-writing the specifier inline would be a second, easy-to-desync copy.
+const importMainLayout = () => import('./layouts/MainLayout')
+const importDashboard = () => import('./pages/Dashboard')
+const MainLayout = React.lazy(importMainLayout)
 const Landing = React.lazy(() => import('./pages/Landing'))
 const Login = React.lazy(() => import('./pages/Login'))
 const Register = React.lazy(() => import('./pages/Register'))
@@ -27,7 +36,7 @@ const GoogleCallback = React.lazy(() => import('./pages/GoogleCallback'))
 const GithubCallback = React.lazy(() => import('./pages/GithubCallback'))
 
 const Onboarding = React.lazy(() => import('./pages/Onboarding'))
-const Dashboard = React.lazy(() => import('./pages/Dashboard'))
+const Dashboard = React.lazy(importDashboard)
 const Settings = React.lazy(() => import('./pages/Settings'))
 const ForgotPassword = React.lazy(() => import('./pages/ForgotPassword'))
 const ResetPassword = React.lazy(() => import('./pages/ResetPassword'))
@@ -62,7 +71,11 @@ const pageVariantsReduced = {
   animate: { opacity: 1 },
 }
 
-const pageTransition      = { duration: 0.38, ease: [0.16, 1, 0.3, 1] }
+// 0.38s read as a lag on entry rather than as polish: with the same easing, most
+// of that duration is the last few pixels of the slide, long after the text is
+// legible. 0.24s keeps the identical motion (fade + 16px rise, same curve) and
+// settles ~140ms sooner on every public-route entry.
+const pageTransition      = { duration: 0.24, ease: [0.16, 1, 0.3, 1] }
 const pageTransitionFast  = { duration: 0.15 }
 
 function PageWrapper({ children, inLayout = false }) {
@@ -113,7 +126,12 @@ function PageWrapper({ children, inLayout = false }) {
 
 function PrivateRoute({ children, requireOnboardingComplete = false }) {
   const { user, loading } = useAuth()
-  if (loading) return <LoadingScreen />
+  // A silhouette of the shell, not a spinner: this gate guards the app shell
+  // specifically, so the layout it is standing in for is known. Only the routes
+  // that actually render MainLayout get this — the other guards below keep the
+  // spinner, because a dashboard silhouette in front of a login form or the
+  // onboarding wizard would be promising the wrong screen.
+  if (loading) return <ShellSkeleton />
   if (!user) return <Navigate to="/login" replace />
 
   if (requireOnboardingComplete && !user.onboarding_complete) {
@@ -167,6 +185,32 @@ export default function App() {
 
   useEffect(() => {
     window.scrollTo(0, 0)
+  }, [location.pathname])
+
+  // Start the app shell's chunks alongside the /profile/me request instead of
+  // after it. Every guarded route renders a spinner until auth resolves, and
+  // only THEN mounts MainLayout — which only then mounts Dashboard — so a cold
+  // authed load was three serial round-trips deep before any content painted
+  // (measured on a throttled phone: profile 1.17s → MainLayout 1.36s →
+  // Dashboard 1.61s → content 1.86s).
+  //
+  // Not gated on `user`, deliberately — waiting for it is the whole problem.
+  // The localStorage hint keeps anonymous first-time visitors from paying for
+  // chunks they will not use; see lib/sessionHint.js on why that is safe.
+  // Fired at normal priority, not requestIdleCallback: the point is to occupy
+  // the network while it is otherwise idle waiting on the profile response.
+  useEffect(() => {
+    if (!isReturningUser()) return
+    importMainLayout().catch(() => {})
+    importDashboard().catch(() => {})
+  }, [])
+
+  // Pathname only, deliberately: location.search carries password-reset and
+  // email-verification tokens on some routes, and those must not reach a
+  // third party. All app routes are static paths, so the path alone is
+  // already free of user ids.
+  useEffect(() => {
+    trackPageview(location.pathname)
   }, [location.pathname])
 
   return (

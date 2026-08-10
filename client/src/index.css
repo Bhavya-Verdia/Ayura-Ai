@@ -956,6 +956,123 @@ textarea:focus-visible {
   padding: 32px;
 }
 
+/* ─── EMPTY STATE ────────────────────────────────────────────
+   Shared "nothing here yet" surface (components/EmptyState.jsx). Lives here
+   rather than in a page chunk because every page is a potential caller; the
+   geometry is HealthTimeline's original `.ht-empty`, which now delegates to
+   these rules so the screens using it cannot drift apart.
+
+   The DASHED border is load-bearing: it is what distinguishes "an empty slot
+   waiting for you" from "a card reporting a zero". */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 20px;
+  background: var(--glass-bg);
+  border: 1px dashed var(--border-medium);
+  border-radius: 24px;
+}
+.empty-state-orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ayura-teal);
+  margin-bottom: 20px;
+}
+.empty-state-title {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+.empty-state-desc {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  max-width: 400px;
+  line-height: 1.6;
+}
+.empty-state-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+/* Inline variant — for a screen that already has its own page heading and other
+   cards around it (the dashboard's first-run prompt, /progress' stat-row
+   stand-in). The full 80px well is for a whole-page void. */
+.empty-state--inline { padding: 44px 22px; }
+.empty-state--inline .empty-state-title { font-size: 1.3rem; }
+.empty-state--inline .empty-state-orb { margin-bottom: 14px; }
+
+/* ─── APP-SHELL SKELETON ─────────────────────────────────────
+   Used by the auth gate (components/ShellSkeleton.jsx) while /profile/me is in
+   flight, i.e. BEFORE MainLayout — and therefore before Dashboard.css and
+   MainLayout.css — has loaded. That is why these rules live here in the
+   always-loaded stylesheet and re-declare the chrome's geometry instead of
+   reusing `.dash-sidebar` / `.dash-mobile-bar` / `.mobile-bottom-nav`.
+
+   THESE NUMBERS MUST TRACK THE REAL CHROME, or the shell will visibly jump when
+   it mounts. Currently mirrored:
+     sidebar    260px wide, 24px 16px padding   (.dash-sidebar, Dashboard.css)
+     top bar    14px+safe-top / 14px padding    (.dash-mobile-bar, Dashboard.css)
+     tab bar    64px + safe-bottom, fixed       (.mobile-bottom-nav, MainLayout.css)
+     breakpoint 900px                            (MOBILE_QUERY in MainLayout.jsx)
+   No backdrop-filter here on purpose: it buys nothing behind flat skeleton
+   shapes and large blurred surfaces are what the 2026-07 flicker work removed. */
+.shell-skel {
+  display: flex;
+  align-items: stretch;
+}
+.shell-skel-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  padding: 24px 16px;
+  background: var(--glass-bg);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.shell-skel-brand { display: flex; align-items: center; gap: 10px; }
+.shell-skel-profile { display: flex; align-items: center; gap: 12px; }
+.shell-skel-nav { display: flex; flex-direction: column; gap: 15px; }
+.shell-skel-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.shell-skel-topbar,
+.shell-skel-tabbar { display: none; }
+.shell-skel-content {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.shell-skel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .shell-skel-sidebar { display: none; }
+  .shell-skel-topbar {
+    display: block;
+    flex-shrink: 0;
+    height: calc(52px + env(safe-area-inset-top));
+    background: var(--glass-bg);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .shell-skel-tabbar {
+    display: block;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: calc(64px + env(safe-area-inset-bottom));
+    background: var(--glass-bg);
+    border-top: 1px solid var(--border-light);
+  }
+  /* Matches .dash-content-container's mobile padding. */
+  .shell-skel-content { padding: 20px; gap: 18px; }
+}
+
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }

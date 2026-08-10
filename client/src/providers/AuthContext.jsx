@@ -7,6 +7,8 @@ import {
   setAuthTokens,
 } from '../api/client'
 import { resetQueryCache } from '../queryClient'
+import { identifyUser, resetAnalytics } from '../lib/analytics'
+import { markReturningUser, clearReturningUser } from '../lib/sessionHint'
 
 export const AuthContext = createContext(null)
 
@@ -32,6 +34,8 @@ export function AuthProvider({ children }) {
       clearAuthTokens()
       setUser(null)
       setProfile(null)
+      resetAnalytics()
+      clearReturningUser()
       resetQueryCache()
     }
     window.addEventListener('auth-expired', handleAuthExpired)
@@ -44,10 +48,21 @@ export function AuthProvider({ children }) {
       const { data } = await profileAPI.getMe()
       setProfile(data)
       setUser(mapProfileToUser(data))
+      // Every login path (email, Google, GitHub, OTP) funnels through here, so
+      // this is the one place identity needs binding. Id only — never the email
+      // or any profile field, per the privacy contract in lib/analytics.js.
+      identifyUser(data.id)
+      // Same reason this is the one place to record that this browser has a
+      // session at all, so the NEXT cold load can fetch the app shell's chunks
+      // in parallel with this request rather than after it (see App.jsx).
+      markReturningUser()
     } catch {
       clearAuthTokens()
       setUser(null)
       setProfile(null)
+      // No session here — stop prefetching the shell on future loads until
+      // there is one again.
+      clearReturningUser()
     } finally {
       setLoading(false)
     }
@@ -106,6 +121,10 @@ export function AuthProvider({ children }) {
     clearAuthTokens()
     setUser(null)
     setProfile(null)
+    // Unbind identity so a second user on a shared device isn't attributed to
+    // the first, mirroring the query-cache reset directly below.
+    resetAnalytics()
+    clearReturningUser()
     await resetQueryCache()
   }
   return (

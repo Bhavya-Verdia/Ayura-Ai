@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-
+import { Link } from 'react-router-dom'
 import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import API from '../api/client'
@@ -11,6 +11,7 @@ import {
   Scale, Ruler, Smile, CircleCheck, MapPin, ClipboardList, Sprout, MessageCircle, X,
 } from 'lucide-react'
 import { SkeletonLine } from '../components/Skeleton'
+import EmptyState from '../components/EmptyState'
 import './HealthTimeline.css'
 
 
@@ -378,31 +379,33 @@ function DateGroupHeader({ label }) {
 }
 
 /* ─── Empty State ────────────────────────────────────── */
-function EmptyState({ filtered }) {
+// Delegates to the shared surface (components/EmptyState.jsx) — this treatment
+// started here and is now also used by the dashboard and /progress.
+function TimelineEmptyState({ filtered }) {
   return (
-    <m.div
-      className="ht-empty"
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <div className="ht-empty-orb" aria-hidden="true"><Sprout size={34} strokeWidth={1.6} /></div>
-      <h3 className="ht-empty-title">
-        {filtered ? 'No events in this category' : 'Your health story begins here'}
-      </h3>
-      <p className="ht-empty-desc">
-        {filtered
+    <EmptyState
+      icon={Sprout}
+      title={filtered ? 'No events in this category' : 'Your health story begins here'}
+      description={
+        filtered
           ? 'Try selecting a different filter to see more events.'
           : 'Start logging progress and chat with Ayura AI. Your health timeline will fill up as you engage with the platform.'
-        }
-      </p>
-      {!filtered && (
-        <div className="ht-empty-actions">
-          <a href="/checkin" className="btn btn-primary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><CircleCheck size={15} strokeWidth={2} /> Log Check-In</a>
-          <a href="/chat" className="btn btn-secondary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><MessageCircle size={15} strokeWidth={2} /> Chat with Ayura</a>
-        </div>
-      )}
-    </m.div>
+      }
+      actions={
+        !filtered && (
+          <>
+            {/* Link, not <a href>: the anchors these replaced did a full document
+                navigation, re-running the entire app boot to move one route. */}
+            <Link to="/checkin" className="btn btn-primary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+              <CircleCheck size={15} strokeWidth={2} /> Log Check-In
+            </Link>
+            <Link to="/chat" className="btn btn-secondary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+              <MessageCircle size={15} strokeWidth={2} /> Chat with Ayura
+            </Link>
+          </>
+        )
+      }
+    />
   )
 }
 
@@ -554,7 +557,7 @@ export default function HealthTimeline() {
           {loading ? (
             <TimelineSkeleton />
           ) : filteredEvents.length === 0 ? (
-            <EmptyState filtered={isFiltered} />
+            <TimelineEmptyState filtered={isFiltered} />
           ) : (
             <div className="ht-timeline">
               {/* Vertical Line */}

@@ -27,10 +27,46 @@ const preloadCriticalFonts = () => ({
   },
 })
 
+// Emit dist/app.html — a byte-copy of the built index.html, kept as the SPA
+// fallback document for every route that is NOT pre-rendered.
+//
+// WHY: scripts/prerender.mjs overwrites dist/index.html with a full snapshot of
+// `/` (69 kB of landing-page DOM). That file was also the fallback nginx and the
+// service worker served for unmatched paths, so opening /dashboard, /login or
+// /settings painted the entire marketing homepage — hero, "Sign In", "Get
+// Started" — for ~0.9-1.3s on a throttled phone, then a spinner, then the real
+// screen. main.jsx uses `createRoot`, not `hydrateRoot`, so that markup is
+// discarded wholesale: on any route but `/` it was never anything but cost.
+//
+// app.html is 4.6 kB against index.html's 69 kB and carries only the entry
+// preloads, not the runtime-injected Landing chunk + Landing.css the snapshot
+// had absorbed — so app routes stop fetching landing code altogether.
+//
+// It must be emitted HERE, in the bundle, rather than in postbuild: the PWA
+// plugin builds its precache manifest from the emitted output, and
+// `navigateFallback` below can only point at a precached file. Copying the
+// index.html asset in generateBundle also means it inherits every
+// transformIndexHtml edit (font preloads, PWA register script) for free.
+const emitAppShell = () => ({
+  name: 'emit-app-shell',
+  enforce: 'post',
+  generateBundle(_options, bundle) {
+    const index = bundle['index.html']
+    if (!index || index.type !== 'asset') {
+      // Loud rather than silent: without this file every app route silently
+      // falls back to the landing snapshot again.
+      this.warn('emit-app-shell: index.html asset not found — app.html NOT emitted')
+      return
+    }
+    this.emitFile({ type: 'asset', fileName: 'app.html', source: index.source })
+  },
+})
+
 // https://vite.dev/config/
 export default defineConfig({
   envDir: '..',
   plugins: [
+    emitAppShell(),
     // React Compiler auto-memoizes components/hooks at build time — the
     // equivalent of hand-written React.memo/useMemo/useCallback everywhere,
     // which cuts re-render work (the main source of interaction jank on
@@ -49,6 +85,15 @@ export default defineConfig({
         // ~160KB of mobile data for nothing. Images are left to nginx's
         // immutable HTTP cache.
         globPatterns: ['**/*.{js,css,html}', '**/*latin*.woff2'],
+        // Installed-PWA navigations are served from the precache, so this — not
+        // just nginx — decides which HTML an app route gets offline or on a warm
+        // start. It defaults to 'index.html', i.e. the pre-rendered landing
+        // snapshot, which is exactly the wrong-page paint app.html exists to
+        // stop (see the emitAppShell plugin above). Keep the two in sync.
+        navigateFallback: '/app.html',
+        // `/` and `/dosha-test` have their own pre-rendered HTML worth serving
+        // from the network; everything else is the SPA and wants the shell.
+        navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//],
         // Web push + notification-click handlers live in a separate file so
         // the generated Workbox SW stays plugin-managed. Copied from public/
         // into dist untouched; not precache-manifested, so it must stay
