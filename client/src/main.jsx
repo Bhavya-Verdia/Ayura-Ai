@@ -8,6 +8,7 @@ import { AuthProvider } from './providers/AuthContext'
 import { ThemeProvider } from './providers/ThemeProvider'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { queryClient, idbPersister } from './queryClient'
+import { initAnalytics } from './lib/analytics'
 // Self-hosted fonts (was Google Fonts): same-origin woff2 discovered with the
 // main CSS instead of a late 2-domain chain (googleapis CSS → gstatic font) —
 // the webfont repaint was the mobile LCP bottleneck. Latin subsets only are
@@ -51,6 +52,12 @@ if (SENTRY_DSN && !SENTRY_DSN.includes('sentry.example.com')) {
     })
   })
 }
+
+// Product analytics. Also lazy + key-gated (see lib/analytics.js for the privacy
+// contract — autocapture and session recording are off because this UI displays
+// health data). Kicked off here so the SDK fetch overlaps app render rather than
+// waiting for the first route effect.
+initAnalytics()
 
 // LazyMotion + the `m` component (used app-wide instead of `motion`) ships only
 // the `domAnimation` feature set and lets Rollup tree-shake out the heavier

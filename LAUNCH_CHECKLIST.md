@@ -2,8 +2,9 @@
 
 Status legend: ☐ todo · ✅ verified this session · ⚠️ needs your action / environment
 
-Generated 2026-06-26. "verified this session" = exercised against a live local stack
-(local MongoDB + backend + Playwright). It does **not** mean verified on production infra.
+Generated 2026-06-26, revised 2026-08-04. "verified this session" = exercised against a
+live local stack (local MongoDB + backend + Playwright). It does **not** mean verified on
+production infra.
 
 ---
 
@@ -57,20 +58,50 @@ Supporting features
 - ☐ Confirm pregnancy/nursing gating excludes contraindicated medicines/poses/therapies.
 - ☐ Confirm disclaimers appear on every plan + remedy + the PDF.
 
-## 5. Observability & ops (☐)
-- ☐ Sentry DSN set (backend + worker); errors reporting.
-- ☐ `/api/health` + `/api/ready` wired to load balancer health checks.
+## 5. Observability & ops
+- ⚠️ **Sentry DSN NOT set** — integration is wired in `client/src/main.jsx`, `server/main.py`
+  and `worker.py`, all correctly gated on a DSN, but no `SENTRY_DSN` / `VITE_SENTRY_DSN`
+  exists in `.env`. **Production errors are currently reported nowhere.** Add both keys
+  (see `.env.example`) and rebuild the web image — VITE_* vars bake at build time.
+- ⚠️ **PostHog key NOT set** — analytics wired 2026-08-04 (`client/src/lib/analytics.js`),
+  inert until `VITE_POSTHOG_KEY` is set. Confirm the host region matches the project
+  (`eu.` vs `us.`) or events are silently dropped. Rebuild the web image after setting.
+- ✅ `/api/health` + `/api/ready` live and green on production (mongodb + chromadb connected).
 - ☐ Structured logs shipping; metrics endpoint (`/api/health/metrics`, admin-gated) reachable.
 - ☐ Backups configured on Atlas.
 
-## 6. Known gaps / not built
-- Web-push notifications (in-app + email only — needs VAPID + service worker).
+## 6. Legal & compliance (revised 2026-08-04)
+- ✅ Privacy Policy rewritten for the DPDP Act 2023 + IT Rules 2021: grievance officer
+  contact, retention periods, cookie/analytics disclosure, breach notification, 18+ age
+  gate, nomination right, DPB complaint route.
+- ✅ Terms rewritten: no-practitioner-relationship clause, acceptable use, IP, termination,
+  indemnity, governing law.
+- ✅ Both pages now carry a hand-maintained `LAST_UPDATED` constant. They previously
+  rendered `new Date()`, so each claimed same-day revision in perpetuity.
+- ⚠️ **`privacy@ayuraai.in` does not exist yet** — both documents publish it as the
+  grievance contact. Set up forwarding (Cloudflare Email Routing is free) *before*
+  announcing, or grievance mail bounces.
+- ⚠️ **Jurisdiction is a placeholder** — `JURISDICTION` in `client/src/pages/Terms.jsx`
+  says Bengaluru. Confirm it matches where you actually operate.
+- ☐ No legal entity named in either document (not incorporated yet — revisit on registration).
+
+## 7. Known gaps / not built
+- No monetisation: zero payment integration anywhere in the codebase.
 - Onboarding symptom set unified with the engine, but verify plan output reflects it for a real profile.
 - Reminder firing is only testable with Redis + ARQ running (couldn't verify in sandbox).
+- Dependency drift: chromadb 0.6.3→1.5.9, bcrypt 4.2→5.0, cryptography 48→50. Not urgent; needs a patch cadence.
 
 ---
 
-### Verified green this session
-- Backend: **212 unit/integration tests passing**.
-- Frontend: **lint + build clean**, **Playwright E2E 6 passing**.
-- Live API walk against a real DB: register → onboard → assess → generate plan → all new endpoints.
+### Verified green 2026-08-04
+- Backend: **260 unit/integration tests passing**.
+- Frontend: **lint + build clean**, **Playwright E2E 10 passing**, initial JS 197.6 KB gzip
+  against a 250 KB budget.
+- Production live and healthy at https://ayuraai.in (`/api/health`, `/api/ready` both green).
+- Zero TODO/FIXME markers in application source.
+
+### The one item no amount of testing closes
+Section 4 (clinical/BAMS validation) remains entirely unchecked. The app ships dosage,
+anupana and contraindication guidance to the public, and no registered practitioner has
+reviewed the medicine KB, the disease→dosha mappings, or the pregnancy gating. The medical
+disclaimer in the Terms mitigates but does not substitute for that review.

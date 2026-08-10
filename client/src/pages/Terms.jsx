@@ -3,6 +3,16 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import './Legal.css'
 
+// Hand-maintained; see the note in Privacy.jsx for why this is not `new Date()`.
+const LAST_UPDATED = '4 August 2026'
+
+const CONTACT_EMAIL = 'privacy@ayuraai.in'
+
+// ⚠️ CONFIRM BEFORE LAUNCH — this should be the city you actually operate from
+// (or your registered office, once incorporated). It is a placeholder, not a
+// verified fact, and it determines where a dispute would be heard.
+const JURISDICTION = 'Bengaluru, Karnataka'
+
 export default function Terms() {
   return (
     <div className="legal-page">
@@ -16,48 +26,99 @@ export default function Terms() {
 
       <div className="legal-header">
         <h1>Terms of Service</h1>
-        <p>Last Updated: {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+        <p>Last Updated: {LAST_UPDATED}</p>
       </div>
 
       <div className="legal-content">
         <div className="legal-important">
           <strong>MEDICAL DISCLAIMER</strong>
           <p style={{ marginBottom: 0, color: 'inherit' }}>
-            Ayura AI provides wellness, fitness, and nutritional guidance based on Ayurvedic principles and AI generation for informational and educational purposes only. <strong>The Service is NOT a substitute for professional medical advice, diagnosis, or treatment.</strong> Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. Do not disregard professional medical advice or delay in seeking it because of something you have read on Ayura AI.
+            Ayura AI provides wellness, fitness, and nutritional guidance based on Ayurvedic principles and AI generation for informational and educational purposes only. <strong>The Service is NOT a substitute for professional medical advice, diagnosis, or treatment.</strong> Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. Do not disregard professional medical advice or delay in seeking it because of something you have read on Ayura AI. <strong>If you think you may have a medical emergency, call your doctor or emergency services immediately.</strong>
           </p>
         </div>
 
         <h2>1. Acceptance of Terms</h2>
         <p>
-          By accessing or using the Ayura AI platform, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
+          By accessing or using the Ayura AI platform (the &quot;Service&quot;), you agree to be bound by these Terms of Service. If you do not agree, please do not use the Service. You must be at least 18 years old to create an account.
         </p>
 
         <h2>2. Description of Service</h2>
         <p>
-          Ayura AI provides AI-generated health, wellness, and fitness plans based on user-provided data, including Ayurvedic dosha profiles. These plans include suggestions for diet, yoga, panchakarma therapies, and home remedies.
+          Ayura AI provides AI-generated health, wellness, and fitness plans based on user-provided data, including Ayurvedic dosha profiles. These plans include suggestions for diet, yoga, panchakarma therapies, home remedies, and Ayurvedic formulations.
         </p>
 
-        <h2>3. User Responsibilities</h2>
+        <h2>3. No Practitioner Relationship</h2>
+        <p>
+          Using the Service does not create a doctor–patient, vaidya–patient, or any other professional healthcare relationship between you and Ayura AI or its operators. No registered medical practitioner reviews your individual plan before it is delivered to you. Information about herbs, formulations, dosages, and therapies is educational reference material, not a prescription.
+        </p>
+
+        <h2>4. User Responsibilities</h2>
         <ul>
-          <li>You must provide accurate information when filling out your profile and medical history.</li>
-          <li>You are responsible for evaluating your own medical and physical condition and determining whether participating in any diet or exercise program is safe for you.</li>
-          <li>If you experience faintness, dizziness, pain, or shortness of breath at any time, you should stop immediately and seek medical help.</li>
-          <li>You must not use the service if you are pregnant, nursing, or have a severe medical condition without consulting a healthcare provider first.</li>
+          <li>You must provide accurate information when filling out your profile and medical history. Recommendations are only as safe as the information they are based on — omitting a condition, medication, or pregnancy may result in unsuitable suggestions.</li>
+          <li>You are responsible for evaluating your own medical and physical condition and determining whether participating in any diet or exercise programme is safe for you.</li>
+          <li>Consult a qualified practitioner before taking any herb or formulation suggested by the Service, particularly if you take prescription medication, as herb–drug interactions can be serious.</li>
+          <li>If you experience faintness, dizziness, pain, or shortness of breath at any time, stop immediately and seek medical help.</li>
+          <li>You must not use the Service if you are pregnant, nursing, or have a severe medical condition without consulting a healthcare provider first.</li>
         </ul>
 
-        <h2>4. AI-Generated Content</h2>
+        <h2>5. Acceptable Use</h2>
+        <p>You agree not to:</p>
+        <ul>
+          <li>Use the Service to provide medical advice to others, or resell or redistribute generated plans as professional healthcare guidance.</li>
+          <li>Attempt to gain unauthorised access to the Service, other users&apos; accounts, or our infrastructure, or to probe, scan, or overload the platform.</li>
+          <li>Post content to community features that is unlawful, abusive, misleading as to medical fact, or that discloses another person&apos;s private information.</li>
+          <li>Use automated means to extract our knowledge bases or generated content in bulk.</li>
+        </ul>
+
+        <h2>6. AI-Generated Content</h2>
         <p>
-          You acknowledge that the wellness plans and chat responses are generated by Artificial Intelligence. While we strive for accuracy using curated Ayurvedic knowledge bases, AI systems can hallucinate or produce inaccurate information. You agree to use your own judgement before applying any recommendations.
+          You acknowledge that the wellness plans and chat responses are generated by artificial intelligence. While we strive for accuracy using curated Ayurvedic knowledge bases, AI systems can produce inaccurate or incomplete information. You agree to use your own judgement, and to consult a qualified practitioner, before acting on any recommendation.
         </p>
 
-        <h2>5. Limitation of Liability</h2>
+        <h2>7. Intellectual Property</h2>
         <p>
-          To the maximum extent permitted by law, Ayura AI and its creators shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including any bodily injury or health complications resulting from your use of the Service or reliance on any information provided by the Service.
+          The Service, its knowledge bases, and its software are owned by the operators of Ayura AI and protected by intellectual property law. You retain ownership of the data you submit, and grant us a limited licence to process it solely to provide the Service as described in our <Link to="/privacy">Privacy Policy</Link>. Plans generated for you are yours to use for your own personal, non-commercial purposes.
         </p>
 
-        <h2>6. Account Security</h2>
+        <h2>8. Account Security</h2>
         <p>
-          You are responsible for safeguarding your password and you agree not to disclose your password to any third party. You must notify us immediately upon becoming aware of any breach of security or unauthorized use of your account.
+          You are responsible for safeguarding your password and agree not to disclose it to any third party. You must notify us immediately upon becoming aware of any breach of security or unauthorised use of your account.
+        </p>
+
+        <h2>9. Service Availability and Changes</h2>
+        <p>
+          The Service is provided on an &quot;as is&quot; and &quot;as available&quot; basis, without warranties of any kind, whether express or implied. We do not warrant that the Service will be uninterrupted, error-free, or that its recommendations will achieve any particular result. We may modify, suspend, or discontinue any part of the Service at any time.
+        </p>
+
+        <h2>10. Termination</h2>
+        <p>
+          You may stop using the Service and delete your account at any time from the Settings page. We may suspend or terminate your account if you breach these Terms, if required by law, or if we discontinue the Service. On termination, your data is handled as described in the Data Retention section of our <Link to="/privacy">Privacy Policy</Link>.
+        </p>
+
+        <h2>11. Limitation of Liability</h2>
+        <p>
+          To the maximum extent permitted by law, Ayura AI and its creators shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including any bodily injury or health complications resulting from your use of the Service or reliance on any information it provides. Nothing in these Terms excludes liability that cannot lawfully be excluded.
+        </p>
+
+        <h2>12. Indemnity</h2>
+        <p>
+          You agree to indemnify and hold harmless Ayura AI and its operators from claims arising out of your misuse of the Service, your breach of these Terms, or your violation of the rights of any third party.
+        </p>
+
+        <h2>13. Governing Law and Jurisdiction</h2>
+        <p>
+          These Terms are governed by the laws of India. Subject to any non-waivable rights you have as a consumer, the courts at {JURISDICTION} shall have exclusive jurisdiction over any dispute arising out of or relating to these Terms or the Service.
+        </p>
+
+        <h2>14. Changes to These Terms</h2>
+        <p>
+          We may revise these Terms from time to time. Material changes will be notified in the app or by email, and the &quot;Last Updated&quot; date above will be revised. Continued use of the Service after a change constitutes acceptance of the revised Terms.
+        </p>
+
+        <h2>15. Contact</h2>
+        <p>
+          Questions about these Terms, and any grievance regarding the Service, may be sent to{' '}
+          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. We acknowledge grievances within 24 hours and aim to resolve them within 15 days.
         </p>
       </div>
     </div>

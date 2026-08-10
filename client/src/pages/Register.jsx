@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../providers/AuthContext'
 import { Helmet } from 'react-helmet-async'
 import { Eye, EyeOff } from 'lucide-react'
+import { track, EVENTS } from '../lib/analytics'
 import './Auth.css'
 
 const GOOGLE_ENABLED  = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID)
@@ -34,7 +35,13 @@ export default function Register() {
 
   async function handleSubmit(e) {
     e.preventDefault(); setError(''); setLoading(true)
-    try { await register(name, email, password, consentGiven); setSubmitted(true) }
+    try {
+      await register(name, email, password, consentGiven)
+      // Fires before verification — pairs with logged_in to show how many
+      // accounts actually make it through the email gate.
+      track(EVENTS.SIGNED_UP, { method: 'email' })
+      setSubmitted(true)
+    }
     catch (err) {
       let msg = err.response?.data?.detail
       if (Array.isArray(msg)) msg = msg.map(m => m.msg).join(', ')

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import React from 'react'
 import { CONDITION_CATEGORIES } from '../constants/conditions'
+import { track, EVENTS } from '../lib/analytics'
 import './Onboarding.css'
 
 const LazyParticleField = React.lazy(() => import('../components/ParticleField'))
@@ -120,6 +121,14 @@ export default function Onboarding() {
         // Device IANA timezone — lets the backend seed the default morning
         // reminder at the user's local 07:00 (and future local-time features).
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || undefined,
+      })
+      // Counts only — never the conditions, symptoms or dosha themselves.
+      // This is the launch drop-off question: how many who start onboarding
+      // actually reach the assessment.
+      track(EVENTS.ONBOARDING_COMPLETED, {
+        condition_count: conditions.length,
+        symptom_count: symptoms.length,
+        has_goal: Boolean(goal),
       })
       // Route into the real Prakriti assessment so first plans are built on an
       // assessed constitution (Vikriti, Agni, dosha %) — not just the quick pick.
