@@ -70,6 +70,24 @@ try {
   browser = await chromium.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] })
   const page = await browser.newPage()
 
+  // Tell the app it is being snapshotted, BEFORE any of its script runs.
+  // Third-party SDKs (Sentry, PostHog) are dynamically imported when a key is
+  // configured, and that has two consequences during a capture, both bad:
+  //
+  //   1. The browser injects a <link rel="modulepreload"> for the SDK chunk into
+  //      the live DOM, and page.content() bakes it into the snapshot as though it
+  //      were a static dependency of `/`. Sentry alone is 84 kB gzip, which both
+  //      blew the initial-JS budget and — the real damage — would have made every
+  //      landing visitor eagerly preload the SDK that main.jsx deliberately
+  //      loads lazily.
+  //   2. The build machine would report a live pageview and open a Sentry
+  //      session on every build, i.e. CI noise inside production analytics.
+  //
+  // Route-blocking the chunks instead would mean matching hashed filenames; a
+  // flag read at init is stable. Route chunks (Landing, useTranslation) are NOT
+  // suppressed — preloading those is exactly what the snapshot is for.
+  await page.addInitScript(() => { window.__PRERENDER__ = true })
+
   // Abort API calls → auth check throws immediately → user = null → public page renders
   await page.route('**/api/**', route => route.abort())
   // Also abort CDN requests that might slow networkidle

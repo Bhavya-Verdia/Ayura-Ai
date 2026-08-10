@@ -33,6 +33,11 @@ const HOST = import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com'
 let clientPromise = null
 
 function enabled() {
+  // `window.__PRERENDER__` is set by scripts/prerender.mjs before any app script
+  // runs. A build must not appear in the funnel as a real visit, and loading the
+  // SDK during a snapshot bakes a modulepreload for its chunk into the static
+  // HTML. See that script for the full note.
+  if (typeof window !== 'undefined' && window.__PRERENDER__) return false
   return Boolean(KEY) && !String(KEY).startsWith('phc_your')
 }
 

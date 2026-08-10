@@ -33,7 +33,16 @@ fi
 
 # ── 2. Build & restart ───────────────────────────────────────────────────────
 echo "▶ Building containers on server..."
-ssh "$SERVER" "cd $REMOTE_DIR && docker compose build --no-cache api web worker 2>&1 | tail -6"
+# `bash -o pipefail`, not a bare pipeline: ssh reports the exit status of the
+# LAST command in the remote pipeline, so `docker compose build | tail` returned
+# tail's 0 even when the build failed. This script's own `set -e` then saw
+# success, went on to recreate the containers from the PREVIOUS images, and
+# printed "✅ Deploy complete" over a deploy that had shipped nothing. The health
+# check did not catch it either: it only probes /api/health, which the stale api
+# image answers perfectly well.
+# tail -40 because -6 truncated the actual compiler/bundler error to the frame
+# around it, leaving only "did not complete successfully: exit code: 1".
+ssh "$SERVER" "cd $REMOTE_DIR && bash -o pipefail -c 'docker compose build --no-cache api web worker 2>&1 | tail -40'"
 
 echo "▶ Restarting services..."
 # `up --force-recreate` intermittently races with its own container teardown

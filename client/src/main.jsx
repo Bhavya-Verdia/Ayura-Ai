@@ -37,8 +37,13 @@ if (import.meta.env.PROD) {
 // even for users with no Sentry. The dynamic import makes it a separate async
 // chunk that's never fetched unless a DSN is set. Replay is errors-only (no
 // always-on session recording).
+// `window.__PRERENDER__` is set by scripts/prerender.mjs before any app script
+// runs. Loading Sentry during a snapshot would bake a modulepreload for its
+// 84 kB chunk into dist/index.html — making every landing visitor eagerly fetch
+// the SDK this dynamic import exists to defer — and would report the build
+// machine as a live session. See that script for the full note.
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN
-if (SENTRY_DSN && !SENTRY_DSN.includes('sentry.example.com')) {
+if (SENTRY_DSN && !SENTRY_DSN.includes('sentry.example.com') && !window.__PRERENDER__) {
   import('@sentry/react').then((Sentry) => {
     Sentry.init({
       dsn: SENTRY_DSN,
