@@ -711,6 +711,16 @@
   flex-wrap: wrap;
 }
 [data-theme='light'] .dash-verify-banner { background: rgba(245,158,11,0.06); }
+
+/* Prakriti rescore prompt — reuses the banner layout but reads as information,
+   not as a warning: nothing is broken for the user, we're offering an update. */
+.dash-rescore-banner {
+  background: rgba(92,171,116,0.08);
+  border-color: rgba(92,171,116,0.30);
+}
+[data-theme='light'] .dash-rescore-banner { background: rgba(92,171,116,0.06); }
+.dash-rescore-banner .dash-verify-body strong { color: var(--ayura-teal); }
+.dash-rescore-banner .dash-verify-btn { background: var(--ayura-teal); color: #fff; }
 .dash-verify-icon { display: inline-flex; align-items: center; color: var(--ayura-teal); flex-shrink: 0; }
 .dash-verify-body { flex: 1; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.4; }
 .dash-verify-body strong { color: var(--ayura-amber); }

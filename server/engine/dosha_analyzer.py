@@ -169,6 +169,16 @@ def _trait_dosha_shares(value) -> dict[str, float]:
     return {seen[0]: _BLEND_PRIMARY_SHARE, seen[1]: _BLEND_SECONDARY_SHARE}
 
 
+# Bump whenever a change alters the Prakriti numbers a given answer set produces.
+# Stored assessments carry the version that scored them, so a correction can find
+# the results it invalidated. Prakriti is locked for life once assessed, so
+# without this a scoring bug is permanent for everyone who took the quiz first.
+#   v1 — original. The self-report ceiling capped the dominant dosha and shared
+#        the excess proportionally, which handed the whole remainder to one dosha
+#        when another had zero weight, and measured confidence post-cap.
+#   v2 — ceiling compresses toward even thirds; confidence measured uncapped.
+DOSHA_SCORING_VERSION = 2
+
 # A questionnaire cannot justify "you are 100% Vata", so the reported dominant
 # dosha is held to this ceiling.
 _SELF_REPORT_CEILING = 55.0

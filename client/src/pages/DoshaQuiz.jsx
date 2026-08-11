@@ -1037,7 +1037,14 @@ export default function DoshaQuiz() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
-          {user?.prakriti_locked && (
+          {/* A stale-scoring result is the one case where the lock does NOT hold,
+              so saying "set for life" here would be wrong — the retake below will
+              genuinely recompute it. */}
+          {user?.prakriti_recompute_available ? (
+            <div className="da-prakriti-lock-notice da-prakriti-recompute-notice">
+              <strong>We've corrected how constitutions are scored.</strong> Your Prakriti was calculated with an earlier version that could overstate a secondary dosha. Retaking the assessment will recalculate it — normally Prakriti is fixed for life, so this is a one-time update.
+            </div>
+          ) : user?.prakriti_locked && (
             <div className="da-prakriti-lock-notice">
               <strong>Prakriti already determined.</strong> Your constitutional type is set for life — only your Vikriti (current imbalance) has been updated from this session.
             </div>

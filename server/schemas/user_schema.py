@@ -36,6 +36,14 @@ class UserDocument(BaseModel):
     secondary_dosha: Optional[str] = None
     dosha_confidence: Optional[int] = None          # 0-100 — set after quiz
     prakriti_locked: bool = False                   # True after first Prakriti assessment — Prakriti is lifelong per Charaka
+    # Which scoring algorithm produced the stored Prakriti. Lets a corrected
+    # scorer identify results it should offer to recompute, without which a
+    # locked constitution is permanent — see DOSHA_SCORING_VERSION.
+    dosha_scoring_version: Optional[int] = None
+    # The quiz answers themselves, kept so a future scoring correction is a
+    # backfill instead of asking every user to sit the quiz again. The v1 bug
+    # was unfixable for existing users precisely because only outputs were kept.
+    dosha_raw_answers: Optional[dict] = None
 
     # ── Vikriti (current imbalance — separate from constitutional Prakriti) ──
     vikriti_scores: Optional[dict] = None           # {"vata": 70, "pitta": 25, "kapha": 5}
@@ -95,6 +103,20 @@ class UserDocument(BaseModel):
     consent_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
+
+    @property
+    def prakriti_recompute_available(self) -> bool:
+        """True when the locked Prakriti was scored by a superseded algorithm.
+
+        A plain property rather than a pydantic field: UserProfileResponse reads
+        it via from_attributes, while model_dump() — which feeds the plan engines
+        and Mongo writes — stays exactly as it was.
+        """
+        from engine.dosha_analyzer import DOSHA_SCORING_VERSION
+
+        if not self.prakriti_locked:
+            return False
+        return (self.dosha_scoring_version or 1) < DOSHA_SCORING_VERSION
 
 
 class DoshaScores(BaseModel):
@@ -219,6 +241,10 @@ class UserProfileResponse(BaseModel):
     secondary_dosha: Optional[str] = None
     dosha_confidence: Optional[int] = None
     prakriti_locked: bool = False
+    dosha_scoring_version: Optional[int] = None
+    # True when the stored Prakriti predates the current scorer, so the UI can
+    # offer a recompute instead of showing the flat "set for life" notice.
+    prakriti_recompute_available: bool = False
 
     # Vikriti
     vikriti_scores: Optional[dict] = None

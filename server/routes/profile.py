@@ -348,7 +348,7 @@ async def submit_dosha_assessment(
     db: AsyncIOMotorDatabase = Depends(get_mongodb),
 ):
     """LLM-powered Prakriti + Vikriti assessment from physical traits + current symptoms."""
-    from engine.dosha_analyzer import assess_dosha_with_llm
+    from engine.dosha_analyzer import assess_dosha_with_llm, DOSHA_SCORING_VERSION
     from engine.condition_vocab import normalize_conditions
     from core.cache import cache_manager
 
@@ -419,6 +419,18 @@ async def submit_dosha_assessment(
         "agni_type": result.get("agni_type"),
         "ojas_score": (result.get("ojas") or {}).get("score"),
         "ojas_level": (result.get("ojas") or {}).get("level"),
+        # Keep the answers, not just the verdict. The v1 ceiling bug could not be
+        # backfilled for existing users because only the scores were stored, so a
+        # corrected scorer had nothing to re-run. Written on every assessment,
+        # including locked ones, so the record matches what was last answered.
+        "dosha_raw_answers": {
+            "physical_traits": req.physical_traits.model_dump(),
+            "current_symptoms": list(req.current_symptoms or []),
+            "manasa_traits": req.manasa_traits or None,
+            "medical_history": list(user.medical_history or []),
+            "answered_at": now,
+            "scoring_version": DOSHA_SCORING_VERSION,
+        },
         "updated_at": now,
     }
     # Persist edited conditions when the quiz sent an override.
@@ -431,7 +443,16 @@ async def submit_dosha_assessment(
         else None
     )
 
-    if user.prakriti_locked:
+    # Prakriti is lifelong per Charaka, so it locks after the first assessment and
+    # a retake refreshes Vikriti only. The one exception is a stored result that
+    # predates the current scorer: those numbers came from an algorithm we've since
+    # corrected, and since the raw answers weren't kept before v2 there is no way
+    # to repair them except to let this retake recompute. Without this the lock
+    # would make a scoring bug permanent for everyone who took the quiz first.
+    _stored_version = user.dosha_scoring_version or 1
+    _recompute_stale = _stored_version < DOSHA_SCORING_VERSION
+
+    if user.prakriti_locked and not _recompute_stale:
         update_fields = vikriti_only_update
         if manasa_prakriti_scores:
             update_fields["manasa_prakriti"] = manasa_prakriti_scores
@@ -449,6 +470,7 @@ async def submit_dosha_assessment(
             "prakriti_classical_type": result.get("prakriti_classical_type"),
             "prakriti_classical_name": result.get("prakriti_classical_name"),
             "prakriti_locked": True,
+            "dosha_scoring_version": DOSHA_SCORING_VERSION,
         }
         if manasa_prakriti_scores:
             update_fields["manasa_prakriti"] = manasa_prakriti_scores

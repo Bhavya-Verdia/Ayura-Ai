@@ -347,3 +347,52 @@ def test_prakriti_always_sums_to_100_and_respects_the_floor():
         assert sum(prakriti.values()) == 100, (n, prakriti)
         assert min(prakriti.values()) >= 5, (n, prakriti)
         assert max(prakriti.values()) <= 55, (n, prakriti)
+
+
+def test_scoring_version_is_stamped_and_gates_recompute():
+    """Prakriti locks for life, so a corrected scorer needs a way back in.
+
+    The v1 ceiling bug was unfixable for existing users: the lock discarded any
+    recomputed Prakriti, and the raw answers weren't stored to backfill from.
+    A stored scoring version is what makes the exception possible.
+    """
+    from datetime import datetime, timezone
+    from engine.dosha_analyzer import DOSHA_SCORING_VERSION
+    from schemas.user_schema import UserDocument
+
+    now = datetime.now(timezone.utc)
+    base = dict(_id="u1", email="a@b.com", created_at=now, updated_at=now)
+
+    # Never assessed — nothing to recompute.
+    assert UserDocument(**base, prakriti_locked=False).prakriti_recompute_available is False
+    # Assessed before versions existed, and explicitly on v1.
+    assert UserDocument(**base, prakriti_locked=True).prakriti_recompute_available is True
+    assert UserDocument(**base, prakriti_locked=True,
+                        dosha_scoring_version=1).prakriti_recompute_available is True
+    # Current — the lock holds, as Charaka intends.
+    assert UserDocument(
+        **base, prakriti_locked=True, dosha_scoring_version=DOSHA_SCORING_VERSION
+    ).prakriti_recompute_available is False
+
+    # A plain property, so Mongo writes and the plan-engine profile dict are unchanged.
+    assert "prakriti_recompute_available" not in UserDocument(**base).model_dump()
+
+
+def test_audit_fingerprint_catches_every_v1_dump():
+    """The audit's 'unaffected' verdict is what --stamp-current writes on, so it
+    must never clear a distorted result. A dump could only occur when a dosha had
+    zero raw weight, which always pinned it to the 5% floor."""
+    import os
+    import sys
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
+    from dosha_scoring_audit import classify
+
+    # The exact shapes v1 produced for all-one-dosha answer sets.
+    assert classify({"vata": 50, "pitta": 45, "kapha": 5}) == "suspect"
+    assert classify({"vata": 50, "pitta": 5, "kapha": 45}) == "suspect"
+    assert classify({"vata": 45, "pitta": 50, "kapha": 5}) == "suspect"
+
+    # A third dosha above the floor proves the dump branch was never taken.
+    assert classify({"vata": 55, "pitta": 23, "kapha": 22}) == "plausible"
+    assert classify({"vata": 55, "pitta": 30, "kapha": 15}) == "plausible"
+    assert classify({}) == "unscored"

@@ -343,6 +343,35 @@ function HealthScoreCard({ completedCount, total }) {
   )
 }
 
+// ── Prakriti Rescore Banner ───────────────────────────────────
+// Prakriti locks after the first assessment, so a user scored by the superseded
+// v1 algorithm cannot fix their constitution by retaking — the server discards
+// the new Prakriti. It now makes an exception for stale scoring versions, but
+// that is invisible unless we say so here: the raw quiz answers were never
+// stored before v2, so recomputing on their behalf is impossible.
+function PrakritiRescoreBanner() {
+  const [dismissed, setDismissed] = useState(false)
+  const navigate = useNavigate()
+  if (dismissed) return null
+  return (
+    <m.div
+      className="dash-verify-banner dash-rescore-banner"
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.3 }}
+    >
+      <span className="dash-verify-icon"><RefreshCw size={18} strokeWidth={2} /></span>
+      <div className="dash-verify-body">
+        <strong>We've improved how constitutions are scored.</strong>
+        {' '}Your Prakriti was calculated with an earlier version that could overstate a secondary dosha. Retake the 2-minute assessment to update it.
+      </div>
+      <button className="dash-verify-btn" onClick={() => navigate('/dosha-quiz')}>Retake</button>
+      <button className="dash-verify-dismiss" onClick={() => setDismissed(true)} aria-label="Dismiss">✕</button>
+    </m.div>
+  )
+}
+
 // ── Email Verification Banner ─────────────────────────────────
 function VerifyEmailBanner({ email }) {
   const [sent, setSent] = useState(false)
@@ -699,6 +728,9 @@ const Dashboard = () => {
       {user?.auth_provider === 'local' && user?.is_verified === false && (
         <VerifyEmailBanner email={user.email} />
       )}
+
+      {/* ── Prakriti rescore prompt (superseded scoring version) ── */}
+      {user?.prakriti_recompute_available && <PrakritiRescoreBanner />}
 
       {/* The theme toggle that used to live here — a lone pill in an otherwise
           empty full-width band above the hero — now sits in the sidebar brand
