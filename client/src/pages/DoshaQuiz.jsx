@@ -8,6 +8,7 @@ import { Wind, Flame, Waves, CircleCheck, Search, Leaf, Zap, TriangleAlert, Scro
 import React from 'react'
 import { CONDITION_CATEGORIES, conditionLabel } from '../constants/conditions'
 import { track, trackSync, EVENTS } from '../lib/analytics'
+import { useTranslation } from 'react-i18next'
 import './DoshaQuiz.css'
 
 const LazyParticleField = React.lazy(() => import('../components/ParticleField'))
@@ -480,6 +481,38 @@ function SpectrumSection({ title, scores, highlightDominant, capped, footnote })
   )
 }
 
+// ── Localisation ──────────────────────────────────────────────────────────────
+// The constants above stay the source of truth for ids, option values and order
+// — only the *copy* is looked up. Every lookup passes the English string as the
+// i18next default, so an untranslated key renders exactly as it does today
+// rather than blanking, and a locale can be filled in one question at a time.
+//
+// This matters more here than on a marketing page: a self-report instrument is
+// only as accurate as the respondent's comprehension, so a Hindi speaker
+// guessing at "fine, dry, frizzy — prone to split ends" contributes noise that
+// then drives all seven plans. Settings offers eight languages; until now this
+// flow was English regardless of the choice.
+function localiseQuestions(t, questions, ns) {
+  return questions.map((q) => ({
+    ...q,
+    question: t(`quiz.${ns}.${q.id}.q`, q.question),
+    hint: t(`quiz.${ns}.${q.id}.hint`, q.hint),
+    options: q.options.map((o) => ({
+      ...o,
+      label: t(`quiz.${ns}.${q.id}.opt.${o.value}.label`, o.label),
+      desc: t(`quiz.${ns}.${q.id}.opt.${o.value}.desc`, o.desc),
+    })),
+  }))
+}
+
+function localiseSymptoms(t, clusters) {
+  return clusters.map((c) => ({
+    ...c,
+    label: t(`quiz.symptom.${c.id}.label`, c.label),
+    desc: t(`quiz.symptom.${c.id}.desc`, c.desc),
+  }))
+}
+
 const MANASA_TRAIT_IDS = ['motivation_source', 'mind_clarity', 'emotional_quality', 'daily_discipline', 'conflict_approach']
 
 // Grace window after the first tap in which a second tap records a blend.
@@ -703,7 +736,11 @@ export default function DoshaQuiz() {
     }
   }
 
-  const currentTraitQ = TRAIT_QUESTIONS[traitIndex]
+  const { t } = useTranslation()
+  const traitQuestions = useMemo(() => localiseQuestions(t, TRAIT_QUESTIONS, 'trait'), [t])
+  const clarifyQuestions = useMemo(() => localiseQuestions(t, CLARIFY_QUESTIONS, 'clarify'), [t])
+  const symptomClusters = useMemo(() => localiseSymptoms(t, SYMPTOM_CLUSTERS), [t])
+  const currentTraitQ = traitQuestions[traitIndex]
   const traitProgress = (traitIndex / TRAIT_QUESTIONS.length) * 100
 
   // Cycle loading messages during assessment
@@ -1001,7 +1038,7 @@ export default function DoshaQuiz() {
 
   // ── Clarify phase ────────────────────────────────────────────────────────────
   if (phase === 'clarify') {
-    const allAnswered = CLARIFY_QUESTIONS.every(q => clarifyAnswers[q.id])
+    const allAnswered = clarifyQuestions.every(q => clarifyAnswers[q.id])
     return (
       <div className="da-root">
         <Helmet><title>Clarify Your Profile | Ayura AI</title></Helmet>
@@ -1021,7 +1058,7 @@ export default function DoshaQuiz() {
             </p>
           </div>
 
-          {CLARIFY_QUESTIONS.map((q) => (
+          {clarifyQuestions.map((q) => (
             <div key={q.id} className="da-clarify-section">
               <h3 className="da-question">{q.question}</h3>
               <p className="da-hint">{q.hint}</p>
@@ -1525,7 +1562,7 @@ export default function DoshaQuiz() {
           </div>
 
           <div className="da-symptom-grid">
-            {SYMPTOM_CLUSTERS.map((cluster) => {
+            {symptomClusters.map((cluster) => {
               const selected = symptoms.includes(cluster.id)
               return (
                 <m.button

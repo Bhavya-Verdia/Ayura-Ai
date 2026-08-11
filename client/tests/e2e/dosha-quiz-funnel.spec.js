@@ -207,3 +207,56 @@ test.describe('dosha assessment funnel', () => {
     }
   })
 })
+
+/* Localisation of the assessment.
+ *
+ * The quiz was hardcoded English while Settings offers eight languages, so a
+ * Hindi speaker answered 27 nuanced questions about digestion, pulse and
+ * emotional regulation in a second language. For a self-report instrument that
+ * is an accuracy problem, not a polish one: comprehension IS the measurement,
+ * and the result drives all seven plan types.
+ */
+test.describe('dosha assessment localisation', () => {
+  test.beforeEach(async ({ page }) => {
+    await stubAnalytics(page)
+    await mockApi(page)
+    await page.addInitScript(() => localStorage.setItem('ayura_lang', 'hi'))
+  })
+
+  test('renders the questions in Hindi when Hindi is selected', async ({ page }) => {
+    await page.goto('/dosha-quiz')
+    await expect(page.getByText('Question 1 of')).toBeVisible()
+    const heading = page.locator('.da-question')
+    await expect(heading).toBeVisible()
+    // Devanagari, and specifically not the English source string.
+    await expect(heading).toHaveText(/[ऀ-ॿ]/)
+    await expect(heading).not.toHaveText(/body frame/i)
+  })
+
+  test('option values are untouched by translation', async ({ page }) => {
+    // Scoring keys on option *values*; only the copy is localised. If a
+    // translation ever replaced a value, every Hindi user's constitution would
+    // be computed from garbage — silently, since the UI would look fine.
+    await page.goto('/dosha-quiz')
+    await expect(page.locator('.da-trait-card').first()).toBeVisible()
+    for (let i = 0; i < 3; i++) {
+      await page.locator('.da-trait-card').first().click()
+      await page.locator('.da-next-btn').click()
+    }
+    await expect.poll(() => countOf(page, 'assessment_step_completed')).toBeGreaterThanOrEqual(3)
+    const steps = named(await readEvents(page), 'assessment_step_completed')
+    // Question ids stay the English source ids regardless of display language.
+    expect(steps.map((e) => e.properties.question_id)).toEqual(
+      expect.arrayContaining(['body_frame', 'skin', 'digestion']),
+    )
+  })
+
+  test('an untranslated language falls back to English rather than blanking', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('ayura_lang', 'fr'))
+    await page.goto('/dosha-quiz')
+    const heading = page.locator('.da-question')
+    await expect(heading).toBeVisible()
+    await expect(heading).not.toHaveText(/^\s*$/)
+    await expect(heading).not.toHaveText(/quiz\.trait/)
+  })
+})
