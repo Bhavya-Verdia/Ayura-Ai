@@ -347,6 +347,9 @@ class PhysicalTraitAnswers(BaseModel):
     voice_quality: Optional[str] = Field(None, pattern=_DOSHA_ANSWER)
     nadi_rhythm: Optional[str] = Field(None, pattern=_DOSHA_ANSWER)   # Nadi Pareeksha (self-report approximation)
     mutra_pattern: Optional[str] = Field(None, pattern=_DOSHA_ANSWER) # Mutra Pareeksha
+    # Consistency probe — re-asks `temperature` from the opposite angle. Carries
+    # no scoring weight; disagreement lowers confidence. See _CONSISTENCY_CHECKS.
+    temperature_check: Optional[str] = Field(None, pattern=_DOSHA_ANSWER)
 
 
 class DoshaAssessmentRequest(BaseModel):

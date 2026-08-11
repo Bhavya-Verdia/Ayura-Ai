@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense, useRef } from 'react'
+import { useState, useEffect, useMemo, Suspense, useRef } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../providers/AuthContext'
@@ -10,6 +10,46 @@ import { CONDITION_CATEGORIES, conditionLabel } from '../constants/conditions'
 import './DoshaQuiz.css'
 
 const LazyParticleField = React.lazy(() => import('../components/ParticleField'))
+
+// ── Option ordering ───────────────────────────────────────────────────────────
+// Every question used to list its options in the same order — Vata first in all
+// 20 dosha questions, Satva first in all 5 Manasa ones — each rendered with an
+// A/B/C badge. Anyone satisficing (tap the first plausible option, move on) was
+// therefore pushed toward Vata and Satva systematically, which on a 26-question
+// quiz is the default behaviour rather than the exception.
+//
+// The order is now permuted per user per question. Seeded rather than random so
+// a given user always sees the same layout — going Back must not reshuffle the
+// options under them — while the bias cancels across the user base instead of
+// accumulating in one direction. It also defuses straight-lining: tapping
+// position A every time no longer yields a single dosha, it yields noise, which
+// the confidence gap then correctly reports as an unclear reading.
+function hashSeed(str) {
+  let h = 2166136261
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+function seededShuffle(items, seedStr) {
+  let s = hashSeed(seedStr) || 1
+  const next = () => {
+    // mulberry32
+    s = (s + 0x6D2B79F5) >>> 0
+    let t = s
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+  const out = items.slice()
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(next() * (i + 1))
+    ;[out[i], out[j]] = [out[j], out[i]]
+  }
+  return out
+}
 
 // ── Physical trait questions — NO dosha labels shown ──────────────────────────
 const TRAIT_QUESTIONS = [
@@ -226,13 +266,29 @@ const TRAIT_QUESTIONS = [
   },
   // ── Manasa Prakriti — Triguna assessment (Charaka Samhita Shareera Sthana 4) ─
   {
+    // Consistency probe: re-asks the `temperature` construct from the opposite
+    // angle (aversion rather than preference) and far away from it in the
+    // sequence. It carries no scoring weight — disagreement with `temperature`
+    // lowers confidence instead, which is how an inattentive or random
+    // run gets caught now that permuted options make straight-lining look
+    // like noise rather than like a clean single dosha.
+    id: 'temperature_check',
+    question: 'Which kind of weather leaves you feeling worst?',
+    hint: 'The conditions you actively avoid, not just mildly dislike',
+    options: [
+      { value: 'vata', label: 'Cold, dry, windy', desc: 'Bitter wind and dry cold get into you — stiff joints, dry skin, hard to warm up again.' },
+      { value: 'pitta', label: 'Hot, bright, humid', desc: 'High sun and heat drain you — you get flushed, irritable, and seek shade or air-conditioning.' },
+      { value: 'kapha', label: 'Damp, grey, heavy', desc: 'Overcast, wet, muggy days make you feel sluggish, congested, and hard to get moving.' },
+    ],
+  },
+  {
     id: 'motivation_source',
     question: 'What primarily drives you to act or make decisions?',
     hint: 'Your most honest motivation, not your ideal',
     options: [
-      { value: 'satva', label: 'Purpose & wisdom', desc: 'I act from a genuine desire to grow, help others, and do what\'s right — even when hard.' },
-      { value: 'rajas', label: 'Goals & recognition', desc: 'I act to achieve, succeed, and be seen for my accomplishments. Winning and status matter to me.' },
-      { value: 'tamas', label: 'Habit & inertia', desc: 'I often act from routine, comfort, or to avoid discomfort. Hard to change what I know.' },
+      { value: 'satva', label: 'Principle', desc: 'I weigh what seems right or worthwhile, and that usually settles it.' },
+      { value: 'rajas', label: 'Achievement', desc: 'I move toward a target — progress, results, and being recognised for them.' },
+      { value: 'tamas', label: 'Continuity', desc: 'I stay with what is familiar and settled, and change when there is clear reason to.' },
     ],
   },
   {
@@ -240,9 +296,9 @@ const TRAIT_QUESTIONS = [
     question: 'How would you describe your typical mental state?',
     hint: 'On a regular day — not when you are at your best',
     options: [
-      { value: 'satva', label: 'Clear & focused', desc: 'Generally calm, clear-headed, and able to think through things without much mental noise.' },
-      { value: 'rajas', label: 'Active & scattered', desc: 'Mind is usually busy, planning, thinking, evaluating. Hard to completely switch off.' },
-      { value: 'tamas', label: 'Heavy & foggy', desc: 'Often feel mentally dull, cloudy, or unmotivated. Heavy feeling that makes starting things hard.' },
+      { value: 'satva', label: 'Quiet', desc: 'Usually one thought at a time, with space between them.' },
+      { value: 'rajas', label: 'Busy', desc: 'Usually several threads at once — planning, weighing, running ahead.' },
+      { value: 'tamas', label: 'Slow', desc: 'Usually unhurried and low-key; takes a while to get moving on something new.' },
     ],
   },
   {
@@ -250,9 +306,9 @@ const TRAIT_QUESTIONS = [
     question: 'When you feel a strong emotion, what characterises it most?',
     hint: 'Think of anger, fear, grief, or excitement',
     options: [
-      { value: 'satva', label: 'Felt, processed, released', desc: 'I can feel emotions fully, reflect on them, and let them go without much residue.' },
-      { value: 'rajas', label: 'Intense & lingering', desc: 'Emotions tend to be strong, sometimes overwhelming, and I replay situations mentally.' },
-      { value: 'tamas', label: 'Suppressed & numb', desc: 'Emotions feel muted or stuck. I tend to avoid confronting them or feel emotionally flat.' },
+      { value: 'satva', label: 'Passes through', desc: 'It arrives clearly, I register it, and it moves on fairly quickly.' },
+      { value: 'rajas', label: 'Runs hot', desc: 'It arrives strongly and stays with me; I go back over the situation afterwards.' },
+      { value: 'tamas', label: 'Stays under the surface', desc: 'It registers quietly and settles in the background rather than showing outwardly.' },
     ],
   },
   {
@@ -260,9 +316,9 @@ const TRAIT_QUESTIONS = [
     question: 'How consistent are you with daily routines and self-care?',
     hint: 'Sleep, diet, exercise, spiritual or reflective practice',
     options: [
-      { value: 'satva', label: 'Consistent & disciplined', desc: 'Follow a fairly regular routine. Make time for sleep, meals, and some form of reflection or practice.' },
-      { value: 'rajas', label: 'Inconsistent & driven', desc: 'Very active but irregular — sometimes extremely disciplined, other times completely off-track due to busyness.' },
-      { value: 'tamas', label: 'Irregular & passive', desc: 'Struggle to maintain routines. Days feel unstructured. Self-care habits are hard to sustain.' },
+      { value: 'satva', label: 'Even', desc: 'Roughly the same rhythm most days — sleep, meals and practice land around the same time.' },
+      { value: 'rajas', label: 'Variable', desc: 'Intense stretches of routine alternating with stretches where it all goes out the window.' },
+      { value: 'tamas', label: 'Loose', desc: 'Days take their own shape; I follow how I feel rather than a set structure.' },
     ],
   },
   {
@@ -270,9 +326,9 @@ const TRAIT_QUESTIONS = [
     question: 'When you face a conflict or difficult conversation:',
     hint: 'Your first natural impulse',
     options: [
-      { value: 'satva', label: 'Seek understanding', desc: 'Try to understand both sides, stay calm, and look for a fair resolution.' },
-      { value: 'rajas', label: 'Assert & argue', desc: 'Feel the urge to defend my position, argue, or ensure I am not wronged.' },
-      { value: 'tamas', label: 'Avoid & withdraw', desc: 'Prefer to avoid the conflict entirely, go silent, or delay dealing with it.' },
+      { value: 'satva', label: 'Work it through', desc: 'Talk it out then and there, and try to land somewhere both sides can accept.' },
+      { value: 'rajas', label: 'Take it on', desc: 'State my case directly and push until the disagreement is settled.' },
+      { value: 'tamas', label: 'Let it sit', desc: 'Step back and give it time rather than taking it up immediately.' },
     ],
   },
 ]
@@ -378,20 +434,25 @@ const stepVariants = {
   exit: (d) => ({ x: d > 0 ? -56 : 56, opacity: 0 }),
 }
 
-function qualitativeLabel(pct) {
-  if (pct >= 66) return { text: 'Dominant', color: 'var(--ayura-teal)' }
-  if (pct >= 46) return { text: 'Elevated', color: 'var(--ayura-amber)' }
-  if (pct >= 26) return { text: 'Moderate', color: 'var(--text-secondary)' }
+// Prakriti is deliberately capped at 55 for self-report, so it lives on a
+// narrower scale than the uncapped Vikriti and needs its own bands — against the
+// shared ladder below, "Dominant" (>=66) was unreachable and every constitution
+// came back "Elevated" no matter how clear the answers were.
+function qualitativeLabel(pct, capped) {
+  const [dominant, elevated, moderate] = capped ? [46, 34, 20] : [66, 46, 26]
+  if (pct >= dominant) return { text: 'Dominant', color: 'var(--ayura-teal)' }
+  if (pct >= elevated) return { text: 'Elevated', color: 'var(--ayura-amber)' }
+  if (pct >= moderate) return { text: 'Moderate', color: 'var(--text-secondary)' }
   return { text: 'Low', color: 'var(--text-secondary)' }
 }
 
-function SpectrumSection({ title, scores, highlightDominant }) {
+function SpectrumSection({ title, scores, highlightDominant, capped, footnote }) {
   const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1])
   return (
     <div className="da-spectrum-section">
       <h4 className="da-spectrum-title">{title}</h4>
       {sorted.map(([dosha, pct]) => {
-        const ql = qualitativeLabel(pct)
+        const ql = qualitativeLabel(pct, capped)
         return (
           <div key={dosha} className={`da-dosha-bar-row ${highlightDominant && dosha === sorted[0][0] ? 'dominant' : ''}`}>
             <span className="da-dosha-bar-label" style={{ color: DOSHA_COLORS[dosha] }}>
@@ -402,17 +463,18 @@ function SpectrumSection({ title, scores, highlightDominant }) {
                 className="da-dosha-bar-fill"
                 style={{ background: DOSHA_COLORS[dosha] }}
                 initial={{ width: 0 }}
-                animate={{ width: `${pct}%` }}
+                animate={{ width: `${capped ? Math.round((pct / 55) * 100) : pct}%` }}
                 transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               />
             </div>
             <div className="da-dosha-bar-right">
-              <span className="da-dosha-bar-pct">{pct}%</span>
+              <span className="da-dosha-bar-pct">{capped ? pct : `${pct}%`}</span>
               <span className="da-dosha-bar-qual" style={{ color: ql.color }}>{ql.text}</span>
             </div>
           </div>
         )
       })}
+      {footnote && <p className="da-spectrum-footnote">{footnote}</p>}
     </div>
   )
 }
@@ -646,6 +708,14 @@ export default function DoshaQuiz() {
 
   const isManasaQ = MANASA_TRAIT_IDS.includes(currentTraitQ.id)
 
+  // Stable per user + question, so Back/Next never reshuffles under the user.
+  // Falls back to the question id alone for the rare pre-auth render.
+  const orderSeed = `${user?.id || 'anon'}:${currentTraitQ.id}`
+  const traitOptions = useMemo(
+    () => seededShuffle(currentTraitQ.options, orderSeed),
+    [currentTraitQ, orderSeed],
+  )
+
   function advanceNow() {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current)
     if (traitIndex < TRAIT_QUESTIONS.length - 1) {
@@ -789,7 +859,10 @@ export default function DoshaQuiz() {
               <h3 className="da-question">{q.question}</h3>
               <p className="da-hint">{q.hint}</p>
               <div className="da-trait-options">
-                {q.options.map((opt, optIdx) => {
+                {/* Same per-user permutation as the trait questions — these are
+                    the tie-breakers for an already-unclear reading, so a
+                    position bias here would land squarely on the ambiguous cases. */}
+                {seededShuffle(q.options, `${user?.id || 'anon'}:${q.id}`).map((opt, optIdx) => {
                   const selected = clarifyAnswers[q.id] === opt.value
                   return (
                     <m.button
@@ -1062,6 +1135,8 @@ export default function DoshaQuiz() {
               title="Constitution (Prakriti)"
               scores={prakriti}
               highlightDominant={false}
+              capped
+              footnote="A relative weighting across the three doshas, not a percentage of you — everyone carries all three. A self-assessment can't justify a reading above 55, so that's the top of this scale."
             />
             <SpectrumSection
               title="Current Imbalance (Vikriti)"
@@ -1457,8 +1532,8 @@ export default function DoshaQuiz() {
                 const [selPrimary, selSecondary] = (traits[currentTraitQ.id] || '').split('+')
                 return (
                   <>
-                    <div className={`da-trait-options${currentTraitQ.options.length === 4 ? ' da-trait-options-4' : ''}`}>
-                      {currentTraitQ.options.map((opt, optIdx) => {
+                    <div className={`da-trait-options${traitOptions.length === 4 ? ' da-trait-options-4' : ''}`}>
+                      {traitOptions.map((opt, optIdx) => {
                         const isPrimary = selPrimary === opt.value
                         const isSecondary = selSecondary === opt.value
                         return (

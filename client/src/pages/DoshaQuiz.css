@@ -233,6 +233,14 @@
   color: rgba(92,171,116, 0.7);
 }
 
+.da-spectrum-footnote {
+  margin: 10px 2px 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--text-secondary, #a89d8b);
+  opacity: 0.75;
+}
+
 .da-blend-hint {
   margin: 12px 2px 0;
   font-size: 0.78rem;

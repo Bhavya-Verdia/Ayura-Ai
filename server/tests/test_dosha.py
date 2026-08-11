@@ -396,3 +396,38 @@ def test_audit_fingerprint_catches_every_v1_dump():
     assert classify({"vata": 55, "pitta": 23, "kapha": 22}) == "plausible"
     assert classify({"vata": 55, "pitta": 30, "kapha": 15}) == "plausible"
     assert classify({}) == "unscored"
+
+
+def test_consistency_probe_carries_no_scoring_weight():
+    """The probe re-asks a trait that is already scored, so counting it would
+    double-weight one construct — the exact redundancy it exists to detect."""
+    from engine.dosha_analyzer import _rule_based_assessment
+
+    base = _answer_set(len(_trait_ids()))
+    agrees = dict(base, temperature_check="vata")
+    clashes = dict(base, temperature_check="kapha")
+
+    scores = _rule_based_assessment(base, [], age=30)["prakriti"]
+    assert _rule_based_assessment(agrees, [], age=30)["prakriti"] == scores
+    assert _rule_based_assessment(clashes, [], age=30)["prakriti"] == scores
+
+
+def test_consistency_probe_tempers_confidence_when_it_disagrees():
+    """Answering the same construct two ways means the gap is measuring less
+    signal than it looks like, so the reading should be reported less certainly."""
+    from engine.dosha_analyzer import _rule_based_assessment
+
+    base = _answer_set(len(_trait_ids()))
+    assert _rule_based_assessment(dict(base, temperature_check="vata"), [], age=30)["confidence"] == "high"
+    assert _rule_based_assessment(dict(base, temperature_check="kapha"), [], age=30)["confidence"] == "medium"
+
+
+def test_unanswered_probe_is_not_treated_as_a_conflict():
+    """Every assessment stored before the probe existed has no answer for it.
+    Absence is not disagreement, and must not silently downgrade those users."""
+    from engine.dosha_analyzer import _rule_based_assessment
+
+    base = _answer_set(len(_trait_ids()))
+    assert _rule_based_assessment(base, [], age=30)["confidence"] == "high"
+    assert _rule_based_assessment(dict(base, temperature_check=None), [], age=30)["confidence"] == "high"
+    assert _rule_based_assessment(dict(base, temperature_check=""), [], age=30)["confidence"] == "high"

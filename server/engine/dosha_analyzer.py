@@ -134,6 +134,31 @@ _TRAIT_WEIGHTS: dict[str, float] = {
 
 _DOSHAS = ("vata", "pitta", "kapha")
 
+# Consistency probes: {probe_trait: trait_it_re_asks}. Each re-asks a scored
+# trait from a different angle, far away in the sequence. They carry NO weight —
+# scoring them would just double-count the construct — and instead temper
+# confidence when the two answers disagree, which is how an inattentive or
+# random run gets caught. (Permuted option order already handles the other
+# failure mode: tapping the same position every time now produces noise rather
+# than a clean single dosha, so the gap reports it as unclear on its own.)
+_CONSISTENCY_CHECKS: dict[str, str] = {"temperature_check": "temperature"}
+
+
+def _consistency_conflicts(physical_traits: dict) -> int:
+    """How many consistency probes disagree with the trait they re-ask.
+
+    Only counts pairs where BOTH sides were answered — a probe the respondent
+    never saw (every assessment stored before the probe existed) is not evidence
+    of inconsistency.
+    """
+    conflicts = 0
+    for probe, source in _CONSISTENCY_CHECKS.items():
+        probe_dosha = _primary_dosha(physical_traits.get(probe))
+        source_dosha = _primary_dosha(physical_traits.get(source))
+        if probe_dosha and source_dosha and probe_dosha != source_dosha:
+            conflicts += 1
+    return conflicts
+
 # A blended trait answer ("I'm mostly Vata but partly Pitta on this") splits the
 # trait's weight between primary and secondary rather than forcing one dosha.
 _BLEND_PRIMARY_SHARE = 0.65
@@ -1218,6 +1243,10 @@ def _rule_based_assessment(
     """Weighted trait-count Prakriti + symptom-signal Vikriti (LLM fallback)."""
     prakriti_raw = {"vata": 0.0, "pitta": 0.0, "kapha": 0.0}
     for trait, val in physical_traits.items():
+        if trait in _CONSISTENCY_CHECKS:
+            # Re-asks a trait already scored above; weighting it too would just
+            # count one construct twice. It informs confidence instead.
+            continue
         if trait == "agni_type" and str(val).lower() in ("sama", "sama+", ""):
             # Sama Agni = balanced fire — does not bias any dosha
             continue
@@ -1300,7 +1329,10 @@ def _rule_based_assessment(
 
     # Deterministic confidence from signal clarity: how many traits were answered
     # and how cleanly one dosha dominates. Self-report, so we never claim certainty.
-    _answered = len([v for v in physical_traits.values() if _trait_dosha_shares(v)])
+    _answered = len([
+        v for t, v in physical_traits.items()
+        if t not in _CONSISTENCY_CHECKS and _trait_dosha_shares(v)
+    ])
     # Measured on the UNCAPPED distribution. Reading it off the reported numbers
     # inverted the signal: the self-report ceiling compresses exactly the clearest
     # answer sets hardest, so the most internally consistent respondent — every
@@ -1314,6 +1346,15 @@ def _rule_based_assessment(
         _conf = "medium"
     else:
         _conf = "low"
+
+    # A probe contradicting the trait it re-asks means the respondent answered the
+    # same question two different ways, so the gap above is measuring less signal
+    # than it appears to. Step confidence down rather than discarding the reading:
+    # people are genuinely inconsistent about themselves, and dropping to "low"
+    # routes them into the clarify follow-up, which is exactly the right place for
+    # a reading we are no longer sure of.
+    for _ in range(_consistency_conflicts(physical_traits)):
+        _conf = {"high": "medium", "medium": "low"}.get(_conf, "low")
 
     return {
         "prakriti": prakriti,
