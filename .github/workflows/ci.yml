@@ -100,6 +100,12 @@ jobs:
         # playwright.config.js auto-starts the Vite dev server; the specs mock
         # /api responses, so no backend is required.
         run: npm run test:e2e
+        env:
+          # analytics.js no-ops without a key, so the funnel specs would assert
+          # against an SDK that never loads. CI has no root .env, hence this stub.
+          # It cannot leak anywhere: dosha-quiz-funnel.spec.js replaces the
+          # posthog-js module itself and blocks the posthog.com host.
+          VITE_POSTHOG_KEY: phc_e2e_stub_key_not_a_real_project
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}

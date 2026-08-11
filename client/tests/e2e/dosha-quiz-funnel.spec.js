@@ -88,6 +88,18 @@ test.describe('dosha assessment funnel', () => {
     await mockApi(page)
   })
 
+  test('analytics is switched on for this run', async ({ page }) => {
+    // analytics.js no-ops unless VITE_POSTHOG_KEY is set, so without it every
+    // assertion below fails as "0 events" and reads like broken instrumentation.
+    // CI supplies a stub key (see .github/workflows/ci.yml); this test names the
+    // cause so nobody has to rediscover it.
+    await page.goto('/dosha-quiz')
+    await expect(page.getByText('Question 1 of')).toBeVisible()
+    await expect
+      .poll(() => countOf(page, 'assessment_started'))
+      .toBeGreaterThan(0)
+  })
+
   test('reports the start of the assessment', async ({ page }) => {
     await page.goto('/dosha-quiz')
     await expect(page.getByText('Question 1 of')).toBeVisible()
