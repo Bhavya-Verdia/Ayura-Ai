@@ -29,7 +29,9 @@ production infra.
   gave a fresh bucket per request — verified live against ayuraai.in (30 rotating
   requests, zero 429s). nginx now overwrites with `$remote_addr`; the app reads from
   the right (`TRUSTED_PROXY_HOPS`). Regression test: `test_abuse_limits.py`.
-  ⚠️ **Requires a `web` image rebuild to take effect** — verify after deploy.
+  **Re-verified on production after the rebuild**: 30 rotating-header requests now
+  trip at 20 (20× 200 → 10× 429), and a 3-entry fake chain is still bucketed to the
+  real peer. Note the nginx half needs an image **rebuild**, not a restart.
 - ✅ Per-account login lockout added (was: IP rate limit only, which a distributed
   attacker sidesteps). `LOGIN_MAX_FAILED_ATTEMPTS` / `LOGIN_LOCKOUT_MINUTES`.
 - ✅ Per-user daily LLM quotas added (`DAILY_PLAN_QUOTA` / `DAILY_CHAT_QUOTA`) —
