@@ -165,6 +165,24 @@ async def register(req: RegisterRequest, background_tasks: BackgroundTasks, db: 
     return generic_response
 
 
+async def _record_failed_login(db: AsyncIOMotorDatabase, user_dict: dict) -> None:
+    """Count a failed attempt and lock the account once the threshold is hit.
+
+    Deliberately keyed on the account, not the caller's IP: the per-minute
+    limiter keys on network origin, which a distributed attacker sidesteps for
+    free. This is what actually bounds guesses against one password.
+    """
+    attempts = (user_dict.get("failed_login_attempts") or 0) + 1
+    update: dict = {"failed_login_attempts": attempts}
+    if attempts >= settings.LOGIN_MAX_FAILED_ATTEMPTS:
+        update["lockout_until"] = _utc_now() + timedelta(minutes=settings.LOGIN_LOCKOUT_MINUTES)
+        update["failed_login_attempts"] = 0
+    try:
+        await db.users.update_one({"_id": user_dict["_id"]}, {"$set": update})
+    except Exception as exc:
+        logger.warning(f"Could not record failed login for {user_dict.get('_id')}: {exc}")
+
+
 @router.post("/login", response_model=TokenResponse)
 async def login(req: LoginRequest, response: Response, db: AsyncIOMotorDatabase = Depends(get_mongodb)):
     """Login with email/password."""
@@ -173,8 +191,31 @@ async def login(req: LoginRequest, response: Response, db: AsyncIOMotorDatabase 
     if not user_dict or not user_dict.get("password_hash"):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+    locked_until = _as_aware_utc(user_dict.get("lockout_until"))
+    if locked_until and locked_until > _utc_now():
+        retry_after = max(1, int((locked_until - _utc_now()).total_seconds()))
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                "Too many failed sign-in attempts. This account is locked for "
+                f"{max(1, retry_after // 60)} more minute(s)."
+            ),
+            headers={"Retry-After": str(retry_after)},
+        )
+
     if not verify_password(req.password, user_dict["password_hash"]):
+        await _record_failed_login(db, user_dict)
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    # Successful password check clears the counter and any expired lock.
+    if user_dict.get("failed_login_attempts") or user_dict.get("lockout_until"):
+        try:
+            await db.users.update_one(
+                {"_id": user_dict["_id"]},
+                {"$set": {"failed_login_attempts": 0}, "$unset": {"lockout_until": ""}},
+            )
+        except Exception as exc:
+            logger.warning(f"Could not reset login counter for {user_dict.get('_id')}: {exc}")
 
     user = UserDocument(**user_dict)
 

@@ -36,9 +36,22 @@ class Settings(BaseSettings):
     AUTH_RATE_LIMIT_PER_MINUTE: int = 20
     REDIS_URL: Optional[str] = None
     TRUST_FORWARDED_FOR: bool = False
+    # How many proxies we control sit in front of the app. The client identity is
+    # read this many entries from the RIGHT of X-Forwarded-For, so entries a
+    # caller prepends themselves are ignored. 1 = our own nginx only.
+    TRUSTED_PROXY_HOPS: int = 1
     ADMIN_TOKEN: Optional[str] = None
     CACHE_ENABLED: bool = True
     PLAN_TIMEOUT_SECONDS: int = 120
+
+    # --- Per-user abuse / cost limits ---
+    # Per-minute rate limits cap burst; these cap sustained spend, since every
+    # plan generation and chat turn is a billed LLM call.
+    DAILY_PLAN_QUOTA: int = 40        # plan generations per user per UTC day
+    DAILY_CHAT_QUOTA: int = 200       # chat turns per user per UTC day
+    QUOTA_ENABLED: bool = True
+    LOGIN_MAX_FAILED_ATTEMPTS: int = 8
+    LOGIN_LOCKOUT_MINUTES: int = 15
 
     @field_validator("DEBUG", mode="before")
     @classmethod

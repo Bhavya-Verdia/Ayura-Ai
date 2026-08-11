@@ -23,7 +23,19 @@ production infra.
 - ☐ Confirm JWT in HTTP-only cookies only (no localStorage); refresh flow works on 401.
 - ☐ Admin endpoints require `X-Admin-Token` (✅ confirmed in code: HMAC compare).
 - ☐ GDPR: `/privacy/export` and `/privacy/account` (delete) work end-to-end; deletion cascades (timeline, plans, reminders, comments).
-- ☐ Rate limits active on auth + sensitive plan endpoints in prod (needs Redis).
+- ✅ Rate limits active on auth + sensitive plan endpoints in prod (needs Redis).
+- ✅ **Rate-limit bypass fixed (2026-08-11).** nginx appended to the caller's
+  `X-Forwarded-For` while the app read the *leftmost* entry, so rotating one header
+  gave a fresh bucket per request — verified live against ayuraai.in (30 rotating
+  requests, zero 429s). nginx now overwrites with `$remote_addr`; the app reads from
+  the right (`TRUSTED_PROXY_HOPS`). Regression test: `test_abuse_limits.py`.
+  ⚠️ **Requires a `web` image rebuild to take effect** — verify after deploy.
+- ✅ Per-account login lockout added (was: IP rate limit only, which a distributed
+  attacker sidesteps). `LOGIN_MAX_FAILED_ATTEMPTS` / `LOGIN_LOCKOUT_MINUTES`.
+- ✅ Per-user daily LLM quotas added (`DAILY_PLAN_QUOTA` / `DAILY_CHAT_QUOTA`) —
+  there was previously **no ceiling on billed LLM spend** for an authenticated
+  account. Covers plan routes, holistic (billed ×6), meditation, interaction-check,
+  and both chat paths incl. the WebSocket, which bypasses the HTTP middleware.
 - ☐ Avatar upload: magic-byte validation + size cap (✅ in code).
 - ☐ Penetration sanity: prompt-injection sanitization on chat/quiz inputs (✅ helpers exist).
 

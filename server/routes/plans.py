@@ -19,6 +19,7 @@ from schemas.plan_schema import PlanGenerationRequest, PlanRatingRequest, PlanRe
 from routes.profile import get_current_user
 from services.audit_service import log_plan_generated
 from core.kb_cache import kb_cache
+from core.quota import consume_plan_quota
 
 from routes.plan_runner import (
     _sanitize_prompt_input,
@@ -34,6 +35,10 @@ import json
 import re
 
 router = APIRouter()
+
+# A holistic generation runs one engine + enricher per feature, so it costs the
+# daily allowance roughly what generating each feature by hand would.
+HOLISTIC_QUOTA_COST = 6
 
 # --- Route Handlers (return job_id instantly) ---
 
@@ -67,6 +72,8 @@ async def generate_yoga_plan(
         return cached_plan
 
     # 2. Generate new plan (per-user lock + global LLM semaphore)
+    # Cache miss — this run hits the LLM, so it bills the daily allowance.
+    await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "yoga"):
         if is_prenatal:
             yoga_poses = [p for p in kb_cache.yoga_poses if p.get("pregnancy_safe") is True]
@@ -151,6 +158,8 @@ async def generate_diet_plan(
         return cached_plan
 
     # 2. Generate new plan (per-user lock + global LLM semaphore)
+    # Cache miss — this run hits the LLM, so it bills the daily allowance.
+    await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "diet"):
         from services.diet_llm_generator import generate_diet_plan_llm
 
@@ -261,6 +270,8 @@ async def generate_routine_plan(
         return cached_plan
 
     # 2. Generate new plan (engine first, then LLM enrichment for coaching rationale)
+    # Cache miss — this run hits the LLM, so it bills the daily allowance.
+    await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "routine"):
         from engine.seasonal import get_current_season
         season_info = get_current_season()
@@ -329,6 +340,8 @@ async def generate_gym_plan(
         return cached_plan
 
     # 2. Generate new plan (per-user lock + global LLM semaphore)
+    # Cache miss — this run hits the LLM, so it bills the daily allowance.
+    await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "gym"):
         if is_prenatal:
             gym_exercises = [e for e in kb_cache.gym_exercises if e.get("pregnancy_safe") is True] or None
@@ -401,6 +414,8 @@ async def generate_panchakarma_plan(
         return cached_plan
 
     # 2. Generate new plan (per-user lock + global LLM semaphore)
+    # Cache miss — this run hits the LLM, so it bills the daily allowance.
+    await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "panchakarma"):
         panchakarma_therapies = kb_cache.panchakarma_protocols
         # None triggers the engine's bundled-JSON fallback (kb_* Mongo collections
@@ -484,6 +499,8 @@ async def generate_remedies_plan(
         raise HTTPException(status_code=422, detail="Request body must contain 'symptoms' list")
 
     # Remedies don't have a preference_hash cache, but still need lock + semaphore
+    # Cache miss — this run hits the LLM, so it bills the daily allowance.
+    await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "remedies"):
         # 1. Engine Filter
         filtered_remedies = filter_remedies(user_profile, req)
@@ -548,6 +565,8 @@ async def generate_medicines_plan(
         return cached_plan
 
     # 2. Generate new plan (per-user lock + global LLM semaphore)
+    # Cache miss — this run hits the LLM, so it bills the daily allowance.
+    await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "medicines"):
         raw_plan = engine_generate(user_profile, medicines_prefs, [], 'clinical_medicine')
         enriched_plan = await enrich_medicines_plan(raw_plan, user_profile, medicines_prefs)
@@ -583,6 +602,9 @@ async def generate_medicines_plan(
 
 @router.post("/generate")
 async def generate_holistic_plan(req: PlanGenerationRequest, background_tasks: BackgroundTasks, user: UserDocument = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_mongodb)):
+    # A holistic run fans out to every feature engine + enricher, so it bills
+    # for the whole fan-out rather than a single generation.
+    await consume_plan_quota(db, user, cost=HOLISTIC_QUOTA_COST)
     return await _enqueue_plan("holistic", req, user, db, background_tasks)
 
 
@@ -618,6 +640,10 @@ async def stream_holistic_plan(
         raise HTTPException(status_code=400, detail="Please complete onboarding first")
     if user.auth_provider == "local" and not user.is_verified:
         raise HTTPException(status_code=403, detail="Please verify your email before generating plans.")
+
+    # Charged up front, before the SSE stream opens — once we start streaming we
+    # can no longer return a 429 status to the client.
+    await consume_plan_quota(db, user, cost=HOLISTIC_QUOTA_COST)
 
     season_info = get_current_season()
     # Build the profile from the full user document so every safety/personalisation
@@ -854,11 +880,15 @@ async def get_seasonal_guidance(user: UserDocument = Depends(get_current_user)):
 async def get_guided_meditation(
     mood: str = "anxious",
     duration_minutes: int = 5,
-    user: UserDocument = Depends(get_current_user)
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
 ):
     """Feature 14: Guided Meditation Script Generation."""
     from ai.rag_pipeline import rag_pipeline
     from ai.llm_client import llm_client
+
+    # Unconditionally reaches the LLM, so it bills like any other generation.
+    await consume_plan_quota(db, user)
 
     dosha = user.dominant_dosha or "vata"
     mood = _sanitize_prompt_input(mood, max_len=50)
@@ -907,7 +937,8 @@ async def get_guided_meditation(
 async def check_interactions(
     herbs: list[str] = Body(..., embed=True),
     medications: list[str] | None = Body(default=None, embed=True),
-    user: UserDocument = Depends(get_current_user)
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
 ):
     """Drug-Herb Interaction Checker.
 
@@ -943,6 +974,10 @@ async def check_interactions(
             "general_warnings": interaction_result.get("general_warnings", []),
             "detailed_explanation": "No known dangerous interactions detected between your medications and these herbs.",
         }
+
+    # Charged here, not at entry: the deterministic "no warnings" answers above
+    # return without touching the LLM and shouldn't cost the user anything.
+    await consume_plan_quota(db, user)
 
     # TIER 2: RAG Retrieval (parallel queries — one per warning)
     rag_results = await asyncio.gather(*[

@@ -4,7 +4,7 @@ import asyncio
 import time
 import uuid
 from collections import defaultdict
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Cookie
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Cookie
 from pydantic import BaseModel, Field
 
 from schemas.plan_schema import ChatMessage, ChatResponse
@@ -13,6 +13,7 @@ from routes.profile import get_current_user
 from database.mongodb import get_mongodb
 from services.safety_service import detect_red_flags
 
+from core.quota import consume_chat_quota
 from services.chat_service import (
     save_message,
     fetch_active_plans,
@@ -111,6 +112,10 @@ async def send_message(msg: ChatMessage, user: UserDocument = Depends(get_curren
         sources = [{"source": "Ayura AI safety triage", "red_flags": red_flags["matches"]}]
         await save_message(db, user.id, session_id, "ai", response_text, sources)
         return ChatResponse(response=response_text, sources=sources, session_id=session_id)
+
+    # Past the safety short-circuit above (which answers without the LLM), so
+    # this turn is a billed call and counts against the daily allowance.
+    await consume_chat_quota(db, user)
 
     # Context gathering — these reads are independent, so run them concurrently.
     _t0 = time.perf_counter()
@@ -252,6 +257,15 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
 
             if not await _check_ws_rate(user.id):
                 await websocket.send_json({"type": "error", "message": "Rate limit exceeded. Please wait before sending another message."})
+                continue
+
+            # WebSocket frames never traverse the HTTP rate-limit middleware, so
+            # the daily allowance has to be charged here too — otherwise the
+            # socket is a free channel to the LLM.
+            try:
+                await consume_chat_quota(db, user)
+            except HTTPException as quota_exc:
+                await websocket.send_json({"type": "error", "message": quota_exc.detail})
                 continue
 
             safe_content = _sanitize_prompt_input(data)

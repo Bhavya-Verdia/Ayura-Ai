@@ -109,6 +109,10 @@ async def _create_indexes(db):
         await db.user_preferences.create_index("user_id", unique=True)
         # Feedback
         await db.feedback.create_index([("created_at", -1)])
+        # Per-user daily usage quotas (core/quota.py). _id is
+        # "<user>:<bucket>:<day>", so lookups are covered; the TTL just reaps.
+        await db.usage_quota.create_index("expires_at", expireAfterSeconds=0)
+        await db.usage_quota.create_index([("user_id", 1), ("day", -1)])
     except Exception as e:
         logger.error(f"Failed to create indexes in background: {e}")
 

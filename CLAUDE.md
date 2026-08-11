@@ -85,7 +85,13 @@ Singleton `llm_client` wraps Azure OpenAI (primary) and Google Gemini (fallback)
 - `server/routes/` — FastAPI routers, one file per domain
 - `server/schemas/` — Pydantic v2 request/response models
 - `server/services/` — business logic called by routes
-- `server/core/` — cross-cutting concerns: rate limiting, caching, KB cache, metrics, WebSocket manager, admin token auth
+- `server/core/` — cross-cutting concerns: rate limiting, daily usage quotas, caching, KB cache, metrics, WebSocket manager, admin token auth
+
+### Abuse & Cost Controls
+Two independent layers, because they stop different things:
+- **Per-minute rate limiting** (`core/rate_limit.py`, middleware) caps burst. Authenticated requests key on **user id** (decoded from the access cookie); auth routes and anonymous requests key on **IP**. The client IP is read from the *right* of `X-Forwarded-For`, `TRUSTED_PROXY_HOPS` entries in — reading from the left let callers spoof a fresh bucket per request. `client/nginx.conf` must therefore **overwrite** `X-Forwarded-For` with `$remote_addr`, not append to it.
+- **Per-user daily quotas** (`core/quota.py`) cap sustained spend, since every plan generation and chat turn is a billed LLM call. Counted in `usage_quota` (MongoDB, TTL-reaped) so they hold across processes. Charged on cache *misses* only, after any non-LLM short-circuit; holistic generation bills `HOLISTIC_QUOTA_COST`. Admins are exempt, and the check fails open if Mongo is unreachable.
+- Login has a **per-account lockout** (`LOGIN_MAX_FAILED_ATTEMPTS` / `LOGIN_LOCKOUT_MINUTES`) — IP limits alone don't bound a distributed guessing attack on one password.
 - `server/database/` — Motor (async MongoDB) and ChromaDB clients
 - `server/data/` — JSON knowledge base files ingested into ChromaDB
 

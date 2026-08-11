@@ -66,7 +66,11 @@ class InMemoryRateLimitMiddleware(BaseHTTPMiddleware):
             limit = self.default_limit
             bucket_name = "api"
 
-        identity = self._client_identity(request)
+        # Auth endpoints are pre-authentication by definition, so they always key
+        # on network origin. Everything else prefers the authenticated user id,
+        # which both survives carrier-grade NAT (many real users behind one IPv4
+        # would otherwise share a bucket) and pins abuse to an account.
+        identity = self._client_identity(request, prefer_user=(bucket_name != "auth"))
         if self._redis:
             try:
                 limited_response = await self._redis_limit(identity, bucket_name, limit)
@@ -117,12 +121,59 @@ class InMemoryRateLimitMiddleware(BaseHTTPMiddleware):
         return None
 
     @staticmethod
-    def _client_identity(request: Request) -> str:
+    def _client_identity(request: Request, prefer_user: bool = False) -> str:
+        if prefer_user:
+            user_id = InMemoryRateLimitMiddleware._user_identity(request)
+            if user_id:
+                return f"u:{user_id}"
+
+        return f"ip:{InMemoryRateLimitMiddleware._peer_ip(request)}"
+
+    @staticmethod
+    def _user_identity(request: Request) -> str | None:
+        """User id from the access-token cookie, or None if absent/invalid.
+
+        Signature-verified, so a caller cannot forge someone else's bucket — and
+        a forged/expired token just falls through to the IP bucket rather than
+        creating a free one.
+        """
         from config import settings
+
+        token = request.cookies.get(settings.ACCESS_TOKEN_COOKIE)
+        if not token:
+            auth = request.headers.get("authorization") or ""
+            if auth.startswith("Bearer "):
+                token = auth.split(" ", 1)[1]
+        if not token:
+            return None
+        try:
+            from services.auth_service import get_current_user_id
+
+            return get_current_user_id(token)
+        except Exception:
+            return None
+
+    @staticmethod
+    def _peer_ip(request: Request) -> str:
+        """Real client IP, counting X-Forwarded-For from the RIGHT.
+
+        Each proxy we control appends one entry, so the Nth-from-last entry is
+        the address our outermost proxy actually saw. Reading from the left
+        instead would take an entry the caller wrote, letting anyone mint a new
+        rate-limit bucket per request with a spoofed header.
+        """
+        from config import settings
+
         if getattr(settings, "TRUST_FORWARDED_FOR", False):
             forwarded_for = request.headers.get("x-forwarded-for")
             if forwarded_for:
-                return forwarded_for.split(",", 1)[0].strip()
+                parts = [p.strip() for p in forwarded_for.split(",") if p.strip()]
+                if parts:
+                    hops = max(1, int(getattr(settings, "TRUSTED_PROXY_HOPS", 1) or 1))
+                    # Clamp: a header shorter than the configured hop count means
+                    # the request didn't traverse the expected chain, so fall back
+                    # to the leftmost entry we were actually given.
+                    return parts[-min(hops, len(parts))]
         return request.client.host if request.client else "unknown"
 
     def _evict_stale(self, now: float) -> None:
