@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet-async'
 import { Wind, Flame, Waves, CircleCheck, Search, Leaf, Zap, TriangleAlert, ScrollText } from 'lucide-react'
 import React from 'react'
 import { CONDITION_CATEGORIES, conditionLabel } from '../constants/conditions'
+import { track, trackSync, EVENTS } from '../lib/analytics'
 import './DoshaQuiz.css'
 
 const LazyParticleField = React.lazy(() => import('../components/ParticleField'))
@@ -660,6 +661,17 @@ export default function DoshaQuiz() {
   // Holds the pending auto-advance so a second tap (to add a blend) can cancel it.
   const advanceTimerRef = useRef(null)
 
+  // ── Funnel instrumentation ─────────────────────────────────────────────────
+  // Mirrors of state for the unmount handler: a cleanup closure created on mount
+  // would otherwise report whatever the values were on mount, i.e. always
+  // question 1, which is exactly the number we're trying to measure.
+  const startedAtRef = useRef(Date.now())
+  const questionStartRef = useRef(Date.now())
+  const reachedResultRef = useRef(false)
+  const abandonReportedRef = useRef(false)
+  const progressRef = useRef({ phase: 'traits', index: 0, answered: 0 })
+  const secondsSince = (ref) => Math.round((Date.now() - ref.current) / 1000)
+
   // Medical conditions — PREFILLED from the stored profile, fully editable here.
   // They feed the current-imbalance (Vikriti) reading and rare ones are LLM-classified.
   const [conditions, setConditions] = useState(() => [...(user?.medical_history || [])])
@@ -706,6 +718,93 @@ export default function DoshaQuiz() {
   // Never let a pending auto-advance fire after the component unmounts.
   useEffect(() => () => { if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current) }, [])
 
+  // Keep the unmount mirror current.
+  useEffect(() => {
+    progressRef.current = {
+      phase,
+      index: traitIndex,
+      answered: Object.keys(traits).length,
+    }
+  }, [phase, traitIndex, traits])
+
+  // Leaving before the result is the number that matters: it is the only way to
+  // see whether 27 auto-advancing questions with no save/resume are costing
+  // completions, and which question is where people give up.
+  function reportAbandon(exit) {
+    if (reachedResultRef.current || abandonReportedRef.current) return
+    const { phase: lastPhase, index, answered } = progressRef.current
+    // React's development StrictMode mounts, unmounts and remounts, which fired a
+    // phantom abandonment at question 1 with nothing answered — and, worse, then
+    // suppressed the real one via the guard below. Nobody answers a question or
+    // spends a second inside that window, so requiring either is enough to tell
+    // the two apart. The cost is not counting sub-second bounces, which is a fair
+    // description of "never really started".
+    if (answered === 0 && Date.now() - startedAtRef.current < 1000) return
+    abandonReportedRef.current = true
+    // Synchronous where possible: on the pagehide path an awaited send is lost.
+    const send = trackSync(EVENTS.ASSESSMENT_ABANDONED, {
+      phase: lastPhase,
+      exit,
+      last_question_index: index,
+      last_question_id: TRAIT_QUESTIONS[index]?.id ?? null,
+      questions_answered: answered,
+      total_questions: TRAIT_QUESTIONS.length,
+      seconds_spent: secondsSince(startedAtRef),
+    })
+    if (send === false) {
+      // SDK still loading — an unmount this early can afford the async path.
+      track(EVENTS.ASSESSMENT_ABANDONED, {
+        phase: lastPhase,
+        exit,
+        last_question_index: index,
+        last_question_id: TRAIT_QUESTIONS[index]?.id ?? null,
+        questions_answered: answered,
+        total_questions: TRAIT_QUESTIONS.length,
+        seconds_spent: secondsSince(startedAtRef),
+      })
+    }
+  }
+
+  useEffect(() => {
+    // Cleared here so the StrictMode remount restores a usable guard.
+    abandonReportedRef.current = false
+    startedAtRef.current = Date.now()
+    questionStartRef.current = Date.now()
+    track(EVENTS.ASSESSMENT_STARTED, {
+      total_questions: TRAIT_QUESTIONS.length,
+      // A retake by someone already assessed behaves differently from a first
+      // run and shouldn't be averaged in with it.
+      is_retake: Boolean(user?.prakriti_locked),
+      is_rescore: Boolean(user?.prakriti_recompute_available),
+    })
+
+    // React cleanup only runs on an in-app unmount. Closing the tab, reloading,
+    // or typing a new URL is almost certainly the *common* way to quit a long
+    // form, and none of those unmount anything — so without this listener the
+    // abandonment number would silently exclude most of the abandonment.
+    // Best effort by nature: the SDK may not flush before the page dies.
+    const onPageHide = () => reportAbandon('pagehide')
+    window.addEventListener('pagehide', onPageHide)
+    return () => {
+      window.removeEventListener('pagehide', onPageHide)
+      reportAbandon('unmount')
+    }
+    // Once per mount — a retake resets state in place rather than remounting, and
+    // is reported separately via ASSESSMENT_RETAKE_STARTED.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    // Past this point the assessment is saved server-side, so leaving is not a
+    // drop-off — ASSESSMENT_COMPLETED has already fired.
+    if (phase === 'confirm' || phase === 'result') reachedResultRef.current = true
+    if (phase === 'traits') return  // covered by ASSESSMENT_STARTED
+    track(EVENTS.ASSESSMENT_PHASE_REACHED, {
+      phase,
+      seconds_spent: secondsSince(startedAtRef),
+    })
+  }, [phase])
+
   const isManasaQ = MANASA_TRAIT_IDS.includes(currentTraitQ.id)
 
   // Stable per user + question, so Back/Next never reshuffles under the user.
@@ -716,8 +815,23 @@ export default function DoshaQuiz() {
     [currentTraitQ, orderSeed],
   )
 
-  function advanceNow() {
+  // `recorded` is threaded in from selectTrait rather than read off state: this
+  // runs from a timeout created in the same tick as setTraits, so the closure's
+  // copy of `traits` predates the answer it is reporting on. The Next button
+  // passes nothing and reads state, which is current by then.
+  function advanceNow(recorded) {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current)
+    const answer = recorded ?? traits[currentTraitQ.id] ?? ''
+    track(EVENTS.ASSESSMENT_STEP_COMPLETED, {
+      question_index: traitIndex,
+      question_id: currentTraitQ.id,
+      is_manasa: isManasaQ,
+      // Whether the two-tap blend is actually being used now that it is
+      // reachable — the 650ms window made it effectively invisible before.
+      is_blend: String(answer).includes('+'),
+      seconds_on_question: secondsSince(questionStartRef),
+    })
+    questionStartRef.current = Date.now()
     if (traitIndex < TRAIT_QUESTIONS.length - 1) {
       setDirection(1)
       setTraitIndex((i) => i + 1)
@@ -726,16 +840,16 @@ export default function DoshaQuiz() {
     }
   }
 
-  function scheduleAdvance(delay) {
+  function scheduleAdvance(delay, recorded) {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current)
-    advanceTimerRef.current = setTimeout(advanceNow, delay)
+    advanceTimerRef.current = setTimeout(() => advanceNow(recorded), delay)
   }
 
   function selectTrait(value) {
     // Manasa (Triguna) answers are scored by exact string count — no blending.
     if (isManasaQ) {
       setTraits((prev) => ({ ...prev, [currentTraitQ.id]: value }))
-      scheduleAdvance(220)
+      scheduleAdvance(220, value)
       return
     }
 
@@ -760,11 +874,12 @@ export default function DoshaQuiz() {
       delay = 380
     }
     setTraits((prev) => ({ ...prev, [currentTraitQ.id]: next }))
-    scheduleAdvance(delay)
+    scheduleAdvance(delay, next)
   }
 
   function goBackTrait() {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current)
+    questionStartRef.current = Date.now()
     if (traitIndex > 0) {
       setDirection(-1)
       setTraitIndex((i) => i - 1)
@@ -781,10 +896,31 @@ export default function DoshaQuiz() {
     })
   }
 
+  // Bands the 0-100 confidence score. The band is a property of the reading's
+  // clarity, not of the person — unlike the dosha it applies to, which stays out
+  // of analytics entirely.
+  function confidenceBand(score) {
+    if (score == null) return 'unknown'
+    if (score >= 75) return 'high'
+    if (score >= 45) return 'medium'
+    return 'low'
+  }
+
   async function runAssessment() {
     setError('')
     setPhase('loading')
     setLoadingStep(0)
+    const blendCount = Object.entries(traits)
+      .filter(([k, v]) => !MANASA_TRAIT_IDS.includes(k) && String(v).includes('+')).length
+    track(EVENTS.ASSESSMENT_SUBMITTED, {
+      questions_answered: Object.keys(traits).length,
+      total_questions: TRAIT_QUESTIONS.length,
+      blend_count: blendCount,
+      // Counts only. Which symptoms and conditions were selected is health data.
+      symptom_count: symptoms.length,
+      condition_count: conditions.length,
+      seconds_spent: secondsSince(startedAtRef),
+    })
     try {
       const dehaTraits = {}
       const manasaTraits = {}
@@ -800,6 +936,9 @@ export default function DoshaQuiz() {
         medical_history: conditions,
       })
       const assessResult = response.data
+      // Saved server-side from here on, so leaving is no longer abandonment —
+      // the optional clarify follow-up that may come next must not re-count it.
+      reachedResultRef.current = true
       setResult(assessResult)
       await updateProfile({})
       // The API returns dosha_confidence as a 0-100 score and dosha_contradictions
@@ -809,6 +948,17 @@ export default function DoshaQuiz() {
       // than commit to an uncertain constitution.
       const isLowConfidence = (assessResult.dosha_confidence ?? 0) < 45
       const hasContradiction = detectContradiction(traits) || (assessResult.dosha_contradictions?.length > 0)
+      track(EVENTS.ASSESSMENT_COMPLETED, {
+        confidence_band: confidenceBand(assessResult.dosha_confidence),
+        // How often the reading is shaky enough to need follow-ups is a quality
+        // measure of the instrument itself.
+        needed_clarify: Boolean(hasContradiction || isLowConfidence),
+        had_contradiction: Boolean(hasContradiction),
+        blend_count: blendCount,
+        symptom_count: symptoms.length,
+        seconds_spent: secondsSince(startedAtRef),
+        is_retake: Boolean(user?.prakriti_locked),
+      })
       if (hasContradiction || isLowConfidence) {
         setPhase('clarify')
       } else {
@@ -816,11 +966,28 @@ export default function DoshaQuiz() {
       }
     } catch (err) {
       setError(err.response?.data?.detail || 'Assessment failed. Please try again.')
+      // A failure here is indistinguishable from a drop-off in the funnel unless
+      // it is reported: the user answered everything and still got nothing.
+      track(EVENTS.ASSESSMENT_ABANDONED, {
+        phase: 'submit_failed',
+        status: err.response?.status ?? 0,
+        questions_answered: Object.keys(traits).length,
+        total_questions: TRAIT_QUESTIONS.length,
+        seconds_spent: secondsSince(startedAtRef),
+      })
       setPhase('symptoms')
     }
   }
 
   function retake() {
+    track(EVENTS.ASSESSMENT_RETAKE_STARTED, {
+      seconds_spent: secondsSince(startedAtRef),
+      is_rescore: Boolean(user?.prakriti_recompute_available),
+    })
+    startedAtRef.current = Date.now()
+    questionStartRef.current = Date.now()
+    reachedResultRef.current = false
+    abandonReportedRef.current = false
     setPhase('traits')
     setTraitIndex(0)
     setDirection(1)
@@ -1570,7 +1737,7 @@ export default function DoshaQuiz() {
                     {/* Lets anyone who doesn't want the blend pause skip it, so the
                         wait reads as deliberate rather than as a laggy interface. */}
                     {selPrimary && (
-                      <button type="button" className="btn btn-primary da-next-btn" onClick={advanceNow}>
+                      <button type="button" className="btn btn-primary da-next-btn" onClick={() => advanceNow()}>
                         {traitIndex < TRAIT_QUESTIONS.length - 1 ? 'Next →' : 'Continue →'}
                       </button>
                     )}

@@ -31,6 +31,9 @@ const HOST = import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com'
 // Resolves to the posthog module once loaded, or null when analytics is off.
 // Every helper below awaits this, so call sites never branch on configuration.
 let clientPromise = null
+// The resolved client, kept alongside the promise so an event can be sent
+// synchronously. See trackSync.
+let client = null
 
 function enabled() {
   // `window.__PRERENDER__` is set by scripts/prerender.mjs before any app script
@@ -55,6 +58,7 @@ function load() {
           person_profiles: 'identified_only',
           respect_dnt: true,
         })
+        client = posthog
         return posthog
       })
       .catch(() => null) // analytics must never break the app
@@ -79,6 +83,19 @@ export async function track(event, properties) {
   posthog?.capture(event, properties)
 }
 
+/** Record an event without awaiting, for use while the page is being torn down.
+ *
+ * `track` awaits the lazy import, and on `pagehide` that continuation never runs
+ * — the page is gone before the microtask does. Anything reporting an exit has
+ * to reach the SDK in the same tick. Returns false when the SDK isn't loaded
+ * yet, so the caller can fall back to the async path.
+ */
+export function trackSync(event, properties) {
+  if (!client) return false
+  client.capture(event, properties)
+  return true
+}
+
 /** Tie events to a stable user id after login. Never pass email or health data. */
 export async function identifyUser(userId) {
   if (!userId) return
@@ -101,7 +118,23 @@ export const EVENTS = {
   LOGGED_IN: 'logged_in',
   ONBOARDING_STARTED: 'onboarding_started',
   ONBOARDING_COMPLETED: 'onboarding_completed',
+
+  /* Dosha assessment funnel. This is the longest flow in the product (27
+   * questions, auto-advancing, no save/resume) and every plan is generated from
+   * its output, so it gets step-level granularity rather than just start/finish:
+   * without the per-question event there is no way to see WHERE people leave.
+   *
+   * Note what is deliberately absent — no answers, no dominant dosha, no
+   * constitution type, no symptom or condition ids. Those are the health data the
+   * privacy contract above rules out. Question ids describe the instrument, not
+   * the respondent, so they are safe; the answers to them are not. */
+  ASSESSMENT_STARTED: 'assessment_started',
+  ASSESSMENT_STEP_COMPLETED: 'assessment_step_completed',
+  ASSESSMENT_PHASE_REACHED: 'assessment_phase_reached',
+  ASSESSMENT_SUBMITTED: 'assessment_submitted',
   ASSESSMENT_COMPLETED: 'assessment_completed',
+  ASSESSMENT_ABANDONED: 'assessment_abandoned',
+  ASSESSMENT_RETAKE_STARTED: 'assessment_retake_started',
   PLAN_GENERATED: 'plan_generated',
   CHAT_MESSAGE_SENT: 'chat_message_sent',
   CHECKIN_SUBMITTED: 'checkin_submitted',
