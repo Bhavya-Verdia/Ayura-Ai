@@ -169,6 +169,49 @@ def _trait_dosha_shares(value) -> dict[str, float]:
     return {seen[0]: _BLEND_PRIMARY_SHARE, seen[1]: _BLEND_SECONDARY_SHARE}
 
 
+# A questionnaire cannot justify "you are 100% Vata", so the reported dominant
+# dosha is held to this ceiling.
+_SELF_REPORT_CEILING = 55.0
+_UNIFORM_SHARE = 100.0 / 3.0
+
+
+def _apply_self_report_ceiling(pct: dict[str, float]) -> dict[str, float]:
+    """Hold the dominant dosha to the ceiling by compressing toward even thirds.
+
+    Compression — pulling every score toward 33.3 by the single factor that lands
+    the peak on the ceiling — preserves the ordering and the *relative* gaps the
+    answers produced.
+
+    The obvious alternative, capping the peak and sharing the excess out in
+    proportion to the other two, is subtly broken: a dosha with zero raw weight
+    gets zero share of the excess, so the whole remainder lands on whichever
+    other dosha has any weight at all. That returned 45% Pitta for someone who
+    answered all 26 questions Vata, and let one answer on the lowest-weighted
+    trait (hair) manufacture a 45% secondary dosha. Compression cannot invent a
+    dosha the answers never supported.
+    """
+    peak = max(pct.values(), default=0.0)
+    if peak <= _SELF_REPORT_CEILING:
+        return dict(pct)
+    shrink = (_SELF_REPORT_CEILING - _UNIFORM_SHARE) / (peak - _UNIFORM_SHARE)
+    return {d: _UNIFORM_SHARE + shrink * (v - _UNIFORM_SHARE) for d, v in pct.items()}
+
+
+def _round_to_100(pct: dict[str, float]) -> dict[str, int]:
+    """Round percentages to integers that still sum to exactly 100.
+
+    Largest-remainder, so the rounding residual goes to the doshas that were
+    closest to rounding up rather than always to the dominant one.
+    """
+    floors = {d: int(v) for d, v in pct.items()}
+    residual = 100 - sum(floors.values())
+    if residual > 0:
+        by_remainder = sorted(pct, key=lambda d: pct[d] - floors[d], reverse=True)
+        for d in by_remainder[:residual]:
+            floors[d] += 1
+    return floors
+
+
 def _primary_dosha(value) -> str | None:
     """The dominant dosha of a (possibly blended) trait answer, or None."""
     shares = _trait_dosha_shares(value)
@@ -1175,23 +1218,13 @@ def _rule_based_assessment(
             prakriti_raw[dosha] += weight * share
 
     total_p = sum(prakriti_raw.values()) or 1
-    prakriti = {d: round(v / total_p * 100) for d, v in prakriti_raw.items()}
-    diff = 100 - sum(prakriti.values())
-    if diff != 0:
-        prakriti[max(prakriti, key=prakriti.get)] += diff
+    # Kept unrounded and uncapped: this is the true signal the answers carry, and
+    # confidence is judged against it (see _gap below). The reported percentages
+    # are a deliberately hedged view of it, which is the wrong thing to measure
+    # our own certainty with.
+    prakriti_uncapped = {d: v / total_p * 100 for d, v in prakriti_raw.items()}
 
-    # Cap at 55 for self-report (low confidence cannot justify extreme scores)
-    dominant_p = max(prakriti, key=prakriti.get)
-    if prakriti[dominant_p] > 55:
-        excess = prakriti[dominant_p] - 55
-        prakriti[dominant_p] = 55
-        others = [d for d in prakriti if d != dominant_p]
-        other_total = sum(prakriti[d] for d in others) or 1
-        for d in others:
-            prakriti[d] += round(excess * prakriti[d] / other_total)
-        diff = 100 - sum(prakriti.values())
-        if diff != 0:
-            prakriti[others[0]] += diff
+    prakriti = _round_to_100(_apply_self_report_ceiling(prakriti_uncapped))
 
     # Constitution floor: classically everyone carries all three doshas, so never
     # report an absolute 0% for Prakriti. Raise any trace dosha to 5% and take the
@@ -1258,7 +1291,13 @@ def _rule_based_assessment(
     # Deterministic confidence from signal clarity: how many traits were answered
     # and how cleanly one dosha dominates. Self-report, so we never claim certainty.
     _answered = len([v for v in physical_traits.values() if _trait_dosha_shares(v)])
-    _gap = sorted_p[0][1] - sorted_p[1][1]
+    # Measured on the UNCAPPED distribution. Reading it off the reported numbers
+    # inverted the signal: the self-report ceiling compresses exactly the clearest
+    # answer sets hardest, so the most internally consistent respondent — every
+    # answer pointing one way — came out with the smallest gap and was told "low
+    # confidence". Certainty is a property of the answers, not of how we hedge them.
+    _uncapped_sorted = sorted(prakriti_uncapped.values(), reverse=True)
+    _gap = _uncapped_sorted[0] - _uncapped_sorted[1]
     if _answered >= 10 and _gap >= 18:
         _conf = "high"
     elif _answered >= 6 and _gap >= 8:

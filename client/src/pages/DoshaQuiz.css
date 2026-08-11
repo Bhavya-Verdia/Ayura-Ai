@@ -247,6 +247,14 @@
   text-transform: capitalize;
 }
 
+/* Skips the blend grace window. Centred under the options so it reads as the
+   forward action rather than competing with the option cards themselves. */
+.da-next-btn {
+  display: block;
+  margin: 14px auto 0;
+  min-width: 140px;
+}
+
 /* ── Symptom grid ─────────────────────────────────────────────────────────── */
 .da-symptom-intro {
   margin-bottom: 1.5rem;

@@ -222,3 +222,128 @@ def test_contradictions_are_deterministic():
     # A uniform constitution has no contradictions.
     calm = {k: "vata" for k in traits}
     assert _rule_based_assessment(calm, [])["contradictions"] == []
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Prakriti scoring properties
+#
+# The self-report ceiling used to cap the dominant dosha and share the excess
+# out in proportion to the other two. A dosha with zero raw weight got zero
+# share, so the whole remainder landed on whichever other dosha had any weight:
+# answering every question Vata returned 45% Pitta and the label "Vata-Pitta
+# Dvidoshaja", at *low* confidence. These properties pin the shape of the
+# scoring rather than any single expected number.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _trait_ids():
+    from engine.dosha_analyzer import _TRAIT_WEIGHTS
+    return [t for t in _TRAIT_WEIGHTS if t != "agni_type"]
+
+
+def _answer_set(n_vata: int) -> dict:
+    """`n_vata` traits answered Vata, the rest split between Pitta and Kapha."""
+    ids = _trait_ids()
+    rest = len(ids) - n_vata
+    n_pitta = rest // 2
+    traits = {}
+    for i, t in enumerate(ids):
+        if i < n_vata:
+            traits[t] = "vata"
+        elif i < n_vata + n_pitta:
+            traits[t] = "pitta"
+        else:
+            traits[t] = "kapha"
+    traits["agni_type"] = "vishama"
+    return traits
+
+
+def test_prakriti_is_monotonic_in_its_own_evidence():
+    """PROPERTY: answering *more* questions Vata can never lower the Vata score.
+
+    This is the property the redistribution bug violated — 16/26 Vata answers
+    scored 55% Vata while 19/26 scored 50%, so the reading got less Vata the
+    more Vata the person answered.
+    """
+    from engine.dosha_analyzer import _rule_based_assessment
+
+    scores = [
+        (n, _rule_based_assessment(_answer_set(n), [], age=30)["prakriti"]["vata"])
+        for n in range(6, len(_trait_ids()) + 1)
+    ]
+    for (n_lo, v_lo), (n_hi, v_hi) in zip(scores, scores[1:]):
+        assert v_hi >= v_lo, (
+            f"{n_hi} Vata answers scored {v_hi}% Vata but {n_lo} scored {v_lo}% — "
+            "more evidence produced a weaker reading"
+        )
+
+
+def test_scoring_never_invents_a_dosha_the_answers_never_supported():
+    """PROPERTY: an unendorsed dosha stays near the constitutional floor.
+
+    Classically everyone carries all three, so a 5% floor is correct — but a
+    dosha the respondent never once selected must not outrank one they chose
+    repeatedly.
+    """
+    from engine.dosha_analyzer import _rule_based_assessment
+
+    for dominant in ("vata", "pitta", "kapha"):
+        traits = {t: dominant for t in _trait_ids()}
+        traits["agni_type"] = {"vata": "vishama", "pitta": "tikshna", "kapha": "manda"}[dominant]
+        prakriti = _rule_based_assessment(traits, [], age=30)["prakriti"]
+
+        for other in ("vata", "pitta", "kapha"):
+            if other == dominant:
+                continue
+            assert prakriti[other] <= 25, (
+                f"every answer was {dominant}, yet {other} scored {prakriti[other]}%"
+            )
+        assert prakriti[dominant] == max(prakriti.values())
+
+
+def test_a_single_low_weight_answer_cannot_flip_the_constitution():
+    """`hair` carries the lowest weight (0.75) precisely because styling and
+    products make it unreliable. One hair answer must not manufacture a
+    secondary dosha — it used to produce 45% Kapha and a Dvidoshaja label."""
+    from engine.dosha_analyzer import _rule_based_assessment
+
+    traits = {t: "vata" for t in _trait_ids()}
+    traits["hair"] = "kapha"
+    traits["agni_type"] = "vishama"
+    r = _rule_based_assessment(traits, [], age=30)
+
+    assert r["prakriti_dominant"] == "vata"
+    assert r["prakriti"]["kapha"] <= 25, r["prakriti"]
+    assert r["prakriti_classical_type"] == "vata", r["prakriti_classical_name"]
+
+
+def test_confidence_is_highest_when_the_answers_agree():
+    """PROPERTY: confidence must not fall as the answers get more consistent.
+
+    The gap was measured on the *capped* distribution, which compresses the
+    clearest answer sets hardest — so a respondent whose every answer pointed
+    one way was told "low confidence". Certainty belongs to the answers, not to
+    how conservatively we report them.
+    """
+    from engine.dosha_analyzer import _rule_based_assessment, _confidence_score
+
+    ranks = [
+        _confidence_score(_rule_based_assessment(_answer_set(n), [], age=30)["confidence"])
+        for n in range(6, len(_trait_ids()) + 1)
+    ]
+    for lo, hi in zip(ranks, ranks[1:]):
+        assert hi >= lo, f"confidence dropped from {lo} to {hi} as answers grew more consistent"
+
+    # And the fully-consistent set must land at the top of the scale.
+    full = _rule_based_assessment(_answer_set(len(_trait_ids())), [], age=30)
+    assert full["confidence"] == "high", full["confidence"]
+
+
+def test_prakriti_always_sums_to_100_and_respects_the_floor():
+    """Percentages are user-facing and feed every downstream engine."""
+    from engine.dosha_analyzer import _rule_based_assessment
+
+    for n in range(0, len(_trait_ids()) + 1):
+        prakriti = _rule_based_assessment(_answer_set(n), [], age=30)["prakriti"]
+        assert sum(prakriti.values()) == 100, (n, prakriti)
+        assert min(prakriti.values()) >= 5, (n, prakriti)
+        assert max(prakriti.values()) <= 55, (n, prakriti)

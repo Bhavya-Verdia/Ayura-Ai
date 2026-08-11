@@ -419,6 +419,13 @@ function SpectrumSection({ title, scores, highlightDominant }) {
 
 const MANASA_TRAIT_IDS = ['motivation_source', 'mind_clarity', 'emotional_quality', 'daily_discipline', 'conflict_approach']
 
+// Grace window after the first tap in which a second tap records a blend.
+// This was 650ms, which is less time than it takes to read the hint explaining
+// that blending exists — so in practice nobody could reach the feature and
+// almost every answer came back as a single dosha. The hint is now shown before
+// any selection too, and "Next →" skips the wait for anyone who doesn't want it.
+const BLEND_WINDOW_MS = 2000
+
 function detectContradiction(traits) {
   const PHYSICAL_TRAITS = ['body_frame', 'skin', 'digestion', 'sleep', 'temperature', 'hair', 'energy']
   const MENTAL_TRAITS = ['stress_response', 'memory', 'decision_making', 'speech', 'emotional_nature']
@@ -639,16 +646,19 @@ export default function DoshaQuiz() {
 
   const isManasaQ = MANASA_TRAIT_IDS.includes(currentTraitQ.id)
 
+  function advanceNow() {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current)
+    if (traitIndex < TRAIT_QUESTIONS.length - 1) {
+      setDirection(1)
+      setTraitIndex((i) => i + 1)
+    } else {
+      setPhase('symptoms')
+    }
+  }
+
   function scheduleAdvance(delay) {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current)
-    advanceTimerRef.current = setTimeout(() => {
-      if (traitIndex < TRAIT_QUESTIONS.length - 1) {
-        setDirection(1)
-        setTraitIndex((i) => i + 1)
-      } else {
-        setPhase('symptoms')
-      }
-    }, delay)
+    advanceTimerRef.current = setTimeout(advanceNow, delay)
   }
 
   function selectTrait(value) {
@@ -668,13 +678,13 @@ export default function DoshaQuiz() {
     let delay
     if (!primary) {
       next = value                     // first pick → primary, wait for optional blend
-      delay = 650
+      delay = BLEND_WINDOW_MS
     } else if (value === primary) {
       next = primary                   // re-tap primary → confirm single, go now
       delay = 180
     } else if (value === secondary) {
       next = primary                   // re-tap secondary → remove the blend
-      delay = 650
+      delay = BLEND_WINDOW_MS
     } else {
       next = `${primary}+${value}`     // tap a second → blend, advance shortly
       delay = 380
@@ -1462,12 +1472,25 @@ export default function DoshaQuiz() {
                         )
                       })}
                     </div>
-                    {/* Blend affordance — Prakriti is rarely one pure dosha */}
+                    {/* Blend affordance — Prakriti is rarely one pure dosha, so the
+                        option to pick two has to be visible BEFORE the first tap.
+                        Explaining it only afterwards put the user under a timer to
+                        read it, which meant the feature may as well not have existed. */}
+                    {!isManasaQ && !selPrimary && (
+                      <p className="da-blend-hint">Pick the closest — or tap two options if you're a blend of both.</p>
+                    )}
                     {!isManasaQ && selPrimary && !selSecondary && (
                       <p className="da-blend-hint">Mostly this — but a blend? Tap a second option (optional).</p>
                     )}
                     {!isManasaQ && selPrimary && selSecondary && (
                       <p className="da-blend-hint da-blend-hint-active">Blend recorded: mostly {selPrimary}, partly {selSecondary}.</p>
+                    )}
+                    {/* Lets anyone who doesn't want the blend pause skip it, so the
+                        wait reads as deliberate rather than as a laggy interface. */}
+                    {selPrimary && (
+                      <button type="button" className="btn btn-primary da-next-btn" onClick={advanceNow}>
+                        {traitIndex < TRAIT_QUESTIONS.length - 1 ? 'Next →' : 'Continue →'}
+                      </button>
                     )}
                   </>
                 )
