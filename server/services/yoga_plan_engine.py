@@ -1461,7 +1461,10 @@ def build_yoga_day(sequence: dict, pranayama: list, yoga_prefs: dict,
     mult = sequence.get("hold_multipliers") or {}
 
     def _hold(pose, section):
-        return int(pose_hold_seconds(pose, exp, week, age_group) * mult.get(section, 1.0))
+        # The cap has to be re-applied after the section multiplier, or a pose
+        # already at the ceiling gets stretched straight past it.
+        stretched = pose_hold_seconds(pose, exp, week, age_group) * mult.get(section, 1.0)
+        return int(min(stretched, _MAX_POSE_HOLD_SECONDS))
 
     warmup_fmt = [format_pose(p, exp, week, age_group, hold_override=_hold(p, "warmup"))
                   for p in sequence["warmup"]]

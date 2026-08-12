@@ -810,5 +810,87 @@
         "desc": "कोई विशेष शिकायत नहीं — केवल निवारक मार्गदर्शन चाहिए"
       }
     }
+  },
+  "yoga": {
+    "suryaNamaskar": "सूर्य नमस्कार",
+    "rounds": "{{count}} चक्र",
+    "minutes": "{{count}} मिनट",
+    "hideSteps": "12 चरण छिपाएँ",
+    "showSteps": "12 चरण देखें",
+    "seniorAdapted": "वरिष्ठजनों के लिए अनुकूलित अभ्यास",
+    "youthPractice": "किशोरों का अभ्यास",
+    "personalisedFor": "आपके लिए अनुकूलित:",
+    "excludedForSafety": "आपकी सुरक्षा के लिए हटाया गया",
+    "vital": {
+      "goal": "लक्ष्य",
+      "dosha": "दोष",
+      "level": "स्तर",
+      "style": "शैली",
+      "duration": "अवधि",
+      "time": "समय",
+      "agni": "अग्नि",
+      "ojas": "ओजस",
+      "stress": "तनाव"
+    },
+    "week": "सप्ताह {{n}}",
+    "weekDays": "सप्ताह {{n}} — {{count}} दिन",
+    "weekTheme": {
+      "foundation": "नींव",
+      "deepen": "गहराई",
+      "challenge": "चुनौती",
+      "integration": "एकीकरण"
+    },
+    "collapseAll": "सभी बंद करें",
+    "expandAll": "सभी खोलें",
+    "rest": "विश्राम",
+    "restTip": "अपने शरीर को इस सप्ताह के अभ्यास को आत्मसात करने दें। हल्की गतिविधि और स्थिरता दोनों उपयुक्त हैं।",
+    "startPractice": "निर्देशित अभ्यास शुरू करें",
+    "section": {
+      "warmup": "वार्म-अप ({{count}})",
+      "main": "मुख्य अभ्यास ({{count}} आसन)",
+      "cooldown": "शिथिलीकरण ({{count}})"
+    },
+    "less": "कम",
+    "details": "विवरण",
+    "instructions": "विधि",
+    "howToPractice": "अभ्यास कैसे करें",
+    "modification": "संशोधन",
+    "tipsTitle": "आयुर्वेदिक अभ्यास सुझाव",
+    "tip": {
+      "bestTime": "सर्वोत्तम समय",
+      "environment": "वातावरण",
+      "whatToWear": "क्या पहनें",
+      "afterPractice": "अभ्यास के बाद"
+    },
+    "breathingGuidance": "श्वास मार्गदर्शन",
+    "lifestyleSync": "जीवनशैली संतुलन"
+  },
+  "practice": {
+    "title": "निर्देशित अभ्यास",
+    "complete": "पूर्ण",
+    "completeTitle": "अभ्यास पूर्ण हुआ",
+    "stepCount": "{{total}} में से {{current}}",
+    "timeLeft": "{{time}} शेष",
+    "segments": "{{count}} खंड",
+    "mute": "ध्वनि बंद करें",
+    "unmute": "ध्वनि चालू करें",
+    "exit": "अभ्यास से बाहर निकलें",
+    "previous": "पिछला खंड",
+    "skip": "खंड छोड़ें",
+    "pause": "रोकें",
+    "start": "शुरू करें",
+    "done": "हो गया",
+    "saving": "आपका सत्र सहेजा जा रहा है…",
+    "saved": "सत्र आपकी टाइमलाइन में सहेज लिया गया।",
+    "saveFailed": "हम इस सत्र को सहेज नहीं सके, लेकिन आपका अभ्यास फिर भी गिना जाएगा।",
+    "section": {
+      "surya_namaskar": "सूर्य नमस्कार",
+      "warmup": "वार्म-अप",
+      "main": "मुख्य अभ्यास",
+      "cooldown": "शिथिलीकरण",
+      "pranayama": "प्राणायाम",
+      "dharana": "ध्यान",
+      "final_relaxation": "अंतिम विश्राम"
+    }
   }
 }

@@ -8,6 +8,7 @@ import {
   buildSessionTimeline, timelineTotalSeconds, formatClock, SEGMENT_KIND,
 } from './buildSessionTimeline'
 import client from '../../api/client'
+import { useTranslation } from 'react-i18next'
 
 /**
  * Guided practice mode.
@@ -64,6 +65,7 @@ function ProgressRing({ fraction }) {
 }
 
 export function SessionPlayer({ session, planId, week, day, onClose }) {
+  const { t } = useTranslation()
   const segments = useMemo(() => buildSessionTimeline(session), [session])
   const totalSeconds = useMemo(() => timelineTotalSeconds(segments), [segments])
 
@@ -168,24 +170,30 @@ export function SessionPlayer({ session, planId, week, day, onClose }) {
   const overallFraction = Math.min((doneSeconds + (segment?.seconds ?? 0) * segmentFraction) / Math.max(totalSeconds, 1), 1)
 
   const body = (
-    <div className="sp-overlay" role="dialog" aria-modal="true" aria-label="Guided practice">
+    <div className="sp-overlay" role="dialog" aria-modal="true"
+         aria-label={t('practice.title', 'Guided practice')}>
       <div className="sp-topbar">
         <div className="sp-progress-track">
           <div className="sp-progress-fill" style={{ width: `${overallFraction * 100}%` }} />
         </div>
         <div className="sp-topbar-row">
           <span className="sp-step-count">
-            {finished ? 'Complete' : `${index + 1} of ${segments.length}`}
+            {finished
+              ? t('practice.complete', 'Complete')
+              : t('practice.stepCount', '{{current}} of {{total}}', { current: index + 1, total: segments.length })}
           </span>
           <span className="sp-total-left">
-            {formatClock(Math.max(totalSeconds - doneSeconds - (segment ? segment.seconds - remaining : 0), 0))} left
+            {t('practice.timeLeft', '{{time}} left', {
+              time: formatClock(Math.max(totalSeconds - doneSeconds - (segment ? segment.seconds - remaining : 0), 0)),
+            })}
           </span>
           <div className="sp-topbar-actions">
             <button className="sp-icon-btn" onClick={() => setSound(s => !s)}
-                    aria-label={sound ? 'Mute cues' : 'Unmute cues'}>
+                    aria-label={sound ? t('practice.mute', 'Mute cues') : t('practice.unmute', 'Unmute cues')}>
               {sound ? <Volume2 size={16} /> : <VolumeX size={16} />}
             </button>
-            <button className="sp-icon-btn" onClick={exitEarly} aria-label="Exit practice">
+            <button className="sp-icon-btn" onClick={exitEarly}
+                    aria-label={t('practice.exit', 'Exit practice')}>
               <X size={18} />
             </button>
           </div>
@@ -195,20 +203,22 @@ export function SessionPlayer({ session, planId, week, day, onClose }) {
       {finished ? (
         <div className="sp-stage sp-complete">
           <div className="sp-complete-mark"><Check size={40} strokeWidth={2.5} /></div>
-          <h2>Practice complete</h2>
+          <h2>{t('practice.completeTitle', 'Practice complete')}</h2>
           <p className="sp-complete-sub">
-            {formatClock(finalSeconds)} · {segments.length} segments
+            {formatClock(finalSeconds)} · {t('practice.segments', '{{count}} segments', { count: segments.length })}
           </p>
           <p className="sp-save-state">
-            {saveState === 'saving' && 'Saving your session…'}
-            {saveState === 'saved' && 'Session saved to your timeline.'}
-            {saveState === 'error' && 'We could not save this session, but the practice still counts.'}
+            {saveState === 'saving' && t('practice.saving', 'Saving your session…')}
+            {saveState === 'saved' && t('practice.saved', 'Session saved to your timeline.')}
+            {saveState === 'error' && t('practice.saveFailed', 'We could not save this session, but the practice still counts.')}
           </p>
-          <button className="sp-primary-btn" onClick={onClose}>Done</button>
+          <button className="sp-primary-btn" onClick={onClose}>{t('practice.done', 'Done')}</button>
         </div>
       ) : (
         <div className="sp-stage">
-          <span className="sp-section-tag">{segment.sectionLabel}</span>
+          <span className="sp-section-tag">
+            {t(`practice.section.${segment.section}`, segment.sectionLabel)}
+          </span>
           <h2 className="sp-title">{segment.title}</h2>
           {segment.subtitle && <p className="sp-subtitle">{segment.subtitle}</p>}
 
@@ -254,15 +264,15 @@ export function SessionPlayer({ session, planId, week, day, onClose }) {
       {!finished && (
         <div className="sp-controls">
           <button className="sp-ctrl-btn" onClick={() => goTo(index - 1)}
-                  disabled={index === 0} aria-label="Previous segment">
+                  disabled={index === 0} aria-label={t('practice.previous', 'Previous segment')}>
             <SkipBack size={20} />
           </button>
           <button className="sp-play-btn" onClick={() => setRunning(r => !r)}
-                  aria-label={running ? 'Pause' : 'Start'}>
+                  aria-label={running ? t('practice.pause', 'Pause') : t('practice.start', 'Start')}>
             {running ? <Pause size={26} /> : <Play size={26} />}
           </button>
           <button className="sp-ctrl-btn" onClick={() => goTo(index + 1, { skipped: true })}
-                  aria-label="Skip segment">
+                  aria-label={t('practice.skip', 'Skip segment')}>
             <SkipForward size={20} />
           </button>
         </div>

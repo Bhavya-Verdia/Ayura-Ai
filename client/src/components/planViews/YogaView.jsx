@@ -5,11 +5,13 @@ import {
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { PoseFigure } from './PoseFigure'
 import { SessionPlayer } from './SessionPlayer'
+import { useTranslation } from 'react-i18next'
 
 const SNS_BREATH_COLOR = { 'Inhale': '#3b82f6', 'Exhale': '#ef4444', 'Natural': '#6b7280', 'Exhale — hold 3-5 breaths': '#ef4444' }
 
 
 function SuryaNamaskarCard({ sns }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const pace = (sns.pace || '').replace(/\b\w/g, c => c.toUpperCase())
   return (
@@ -17,11 +19,11 @@ function SuryaNamaskarCard({ sns }) {
       <div className="sns-header">
         <div className="sns-title-row">
           <Sun size={14} className="sns-sun-icon" />
-          <span className="sns-title">Surya Namaskar</span>
+          <span className="sns-title">{t('yoga.suryaNamaskar', 'Surya Namaskar')}</span>
           <span className="sns-sanskrit">सूर्य नमस्कार</span>
         </div>
         <div className="sns-meta">
-          <span className="sns-badge">{sns.rounds} round{sns.rounds > 1 ? 's' : ''}</span>
+          <span className="sns-badge">{t('yoga.rounds', '{{count}} rounds', { count: sns.rounds })}</span>
           <span className="sns-badge pace">{pace}</span>
           <span className="sns-badge dur">{sns.duration_minutes} min</span>
         </div>
@@ -48,7 +50,7 @@ function SuryaNamaskarCard({ sns }) {
 
       <button className="sns-toggle" onClick={() => setOpen(o => !o)}>
         {open ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-        {open ? 'Hide 12 steps' : 'Show 12 steps'}
+        {open ? t('yoga.hideSteps', 'Hide 12 steps') : t('yoga.showSteps', 'Show 12 steps')}
       </button>
 
       {open && (
@@ -95,6 +97,7 @@ const YOGA_WEEK_THEMES = ['Foundation', 'Deepen', 'Challenge', 'Integration']
 
 
 export function YogaView({ plan }) {
+  const { t } = useTranslation()
   const [activeWeek, setActiveWeek] = useState(0)
   const [expandedPoses, setExpandedPoses] = useState(new Set())
   const [expandedWarmup, setExpandedWarmup] = useState(new Set())
@@ -169,12 +172,14 @@ export function YogaView({ plan }) {
       <div className="yoga-banners-row">
         {us.age_group && us.age_group !== 'adult' && (
           <div className={`yoga-age-badge ${us.age_group}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            {us.age_group === 'senior' ? <><Leaf size={14} strokeWidth={2} /> Senior-Adapted Practice</> : <><Zap size={14} strokeWidth={2} /> Youth Practice</>}
+            {us.age_group === 'senior'
+              ? <><Leaf size={14} strokeWidth={2} /> {t('yoga.seniorAdapted', 'Senior-Adapted Practice')}</>
+              : <><Zap size={14} strokeWidth={2} /> {t('yoga.youthPractice', 'Youth Practice')}</>}
           </div>
         )}
         {us.medical_conditions?.length > 0 && (
           <div className="yoga-medical-banner">
-            <span className="yoga-medical-label">Personalised for:</span>
+            <span className="yoga-medical-label">{t('yoga.personalisedFor', 'Personalised for:')}</span>
             {us.medical_conditions.map(c => (
               <span key={c} className="yoga-medical-chip">{c.replace(/_/g, ' ')}</span>
             ))}
@@ -186,7 +191,7 @@ export function YogaView({ plan }) {
       {plan.pranayama_safety_exclusions?.length > 0 && (
         <div className="yoga-prana-exclusions">
           <h3 className="yoga-prana-excl-title">
-            <ShieldCheck size={13} /> Excluded for your safety
+            <ShieldCheck size={13} /> {t('yoga.excludedForSafety', 'Excluded for your safety')}
           </h3>
           <ul className="yoga-prana-excl-list">
             {plan.pranayama_safety_exclusions.map((ex, i) => (
@@ -208,51 +213,51 @@ export function YogaView({ plan }) {
       <div className="yoga-vitals">
         {goalLabel && (
           <div className="yoga-vital-chip">
-            <Target size={11} /><span className="yoga-vital-k">Goal</span><span className="yoga-vital-v">{goalLabel}</span>
+            <Target size={11} /><span className="yoga-vital-k">{t('yoga.vital.goal', 'Goal')}</span><span className="yoga-vital-v">{goalLabel}</span>
           </div>
         )}
         {us.dominant_dosha && (
           <div className="yoga-vital-chip" style={{ borderColor: `${doshaColor}44`, color: doshaText }}>
-            <span className="yoga-vital-k">Dosha</span><span className="yoga-vital-v">{us.dominant_dosha.toUpperCase()}</span>
+            <span className="yoga-vital-k">{t('yoga.vital.dosha', 'Dosha')}</span><span className="yoga-vital-v">{us.dominant_dosha.toUpperCase()}</span>
           </div>
         )}
         {us.experience && (
           <div className="yoga-vital-chip">
-            <Activity size={11} /><span className="yoga-vital-k">Level</span>
+            <Activity size={11} /><span className="yoga-vital-k">{t('yoga.vital.level', 'Level')}</span>
             <span className="yoga-vital-v">{us.experience.replace(/\b\w/g, c => c.toUpperCase())}</span>
           </div>
         )}
         {styleLabel && (
           <div className="yoga-vital-chip">
-            <Flower2 size={11} /><span className="yoga-vital-k">Style</span><span className="yoga-vital-v">{styleLabel}</span>
+            <Flower2 size={11} /><span className="yoga-vital-k">{t('yoga.vital.style', 'Style')}</span><span className="yoga-vital-v">{styleLabel}</span>
           </div>
         )}
         {us.time_available && (
           <div className="yoga-vital-chip">
-            <Timer size={11} /><span className="yoga-vital-k">Duration</span><span className="yoga-vital-v">{us.time_available} min</span>
+            <Timer size={11} /><span className="yoga-vital-k">{t('yoga.vital.duration', 'Duration')}</span><span className="yoga-vital-v">{t('yoga.minutes', '{{count}} min', { count: us.time_available })}</span>
           </div>
         )}
         {us.time_of_day && (
           <div className="yoga-vital-chip">
-            <Sun size={11} /><span className="yoga-vital-k">Time</span>
+            <Sun size={11} /><span className="yoga-vital-k">{t('yoga.vital.time', 'Time')}</span>
             <span className="yoga-vital-v">{us.time_of_day.replace(/\b\w/g, c => c.toUpperCase())}</span>
           </div>
         )}
         {us.agni_type && (
           <div className="yoga-vital-chip yoga-vital-agni">
-            <Flame size={11} /><span className="yoga-vital-k">Agni</span>
+            <Flame size={11} /><span className="yoga-vital-k">{t('yoga.vital.agni', 'Agni')}</span>
             <span className="yoga-vital-v">{us.agni_type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
           </div>
         )}
         {us.ojas_level && (
           <div className="yoga-vital-chip yoga-vital-ojas">
-            <Droplets size={11} /><span className="yoga-vital-k">Ojas</span>
+            <Droplets size={11} /><span className="yoga-vital-k">{t('yoga.vital.ojas', 'Ojas')}</span>
             <span className="yoga-vital-v">{us.ojas_level.replace(/\b\w/g, c => c.toUpperCase())}</span>
           </div>
         )}
         {us.stress_level && us.stress_level !== 'low' && (
           <div className="yoga-vital-chip yoga-vital-stress">
-            <Zap size={11} /><span className="yoga-vital-k">Stress</span>
+            <Zap size={11} /><span className="yoga-vital-k">{t('yoga.vital.stress', 'Stress')}</span>
             <span className="yoga-vital-v">{us.stress_level.replace(/\b\w/g, c => c.toUpperCase())}</span>
           </div>
         )}
@@ -302,8 +307,8 @@ export function YogaView({ plan }) {
             className={`yoga-week-tab${activeWeek === i ? ' active' : ''}`}
             onClick={() => selectWeek(i)}
           >
-            <span className="yoga-tab-num">Week {i + 1}</span>
-            <span className="yoga-tab-theme">{theme}</span>
+            <span className="yoga-tab-num">{t('yoga.week', 'Week {{n}}', { n: i + 1 })}</span>
+            <span className="yoga-tab-theme">{t(`yoga.weekTheme.${theme.toLowerCase()}`, theme)}</span>
           </button>
         ))}
       </div>
@@ -313,7 +318,7 @@ export function YogaView({ plan }) {
         <div className="yoga-week-banner">
           <span className="yoga-week-banner-icon"><Leaf size={16} strokeWidth={2} /></span>
           <span className="yoga-week-banner-text">
-            <strong>Week {activeWeek + 1} · {YOGA_WEEK_THEMES[activeWeek]}:</strong> {weekNote}
+            <strong>{t('yoga.week', 'Week {{n}}', { n: activeWeek + 1 })} · {t(`yoga.weekTheme.${YOGA_WEEK_THEMES[activeWeek].toLowerCase()}`, YOGA_WEEK_THEMES[activeWeek])}:</strong> {weekNote}
           </span>
         </div>
       )}
@@ -321,9 +326,9 @@ export function YogaView({ plan }) {
       {/* ── Day-list toolbar ── */}
       {weekDays.length > 0 && (
         <div className="plan-days-toolbar">
-          <h3 className="plan-days-toolbar-title">Week {activeWeek + 1} — {weekDays.length} days</h3>
+          <h3 className="plan-days-toolbar-title">{t('yoga.weekDays', 'Week {{n}} — {{count}} days', { n: activeWeek + 1, count: weekDays.length })}</h3>
           <button type="button" className="plan-days-toolbar-btn" onClick={toggleAllDays}>
-            {allDaysOpen ? 'Collapse all' : 'Expand all'}
+            {allDaysOpen ? t('yoga.collapseAll', 'Collapse all') : t('yoga.expandAll', 'Expand all')}
           </button>
         </div>
       )}
@@ -367,7 +372,7 @@ export function YogaView({ plan }) {
                       <span className="yoga-day-summary">{summaryBits.join(' · ')}</span>
                     )}
                     {isRest
-                      ? <span className="yoga-duration-badge-sm rest">Rest</span>
+                      ? <span className="yoga-duration-badge-sm rest">{t('yoga.rest', 'Rest')}</span>
                       : session.total_duration_minutes && (
                         <span className="yoga-duration-badge-sm">{session.total_duration_minutes} min</span>
                       )}
@@ -378,7 +383,7 @@ export function YogaView({ plan }) {
 
               {!dayOpen ? null : isRest ? (
                 <div className="yoga-rest-card">
-                  <p className="yoga-rest-tip">Let your body absorb the week's practice. Gentle movement and stillness are welcome.</p>
+                  <p className="yoga-rest-tip">{t('yoga.restTip', "Let your body absorb the week's practice. Gentle movement and stillness are welcome.")}</p>
                 </div>
               ) : (
                 <>
@@ -391,7 +396,7 @@ export function YogaView({ plan }) {
                       day: day.day,
                     })}
                   >
-                    <Play size={14} /> Start guided practice
+                    <Play size={14} /> {t('yoga.startPractice', 'Start guided practice')}
                   </button>
 
                   {session.dosha_theme && (
@@ -410,7 +415,7 @@ export function YogaView({ plan }) {
                   {session.warmup?.length > 0 && (
                     <div className="yoga-section-block">
                       <button className="yoga-section-toggle" onClick={() => toggleWarmup(dayIdx)}>
-                        <span className="yoga-section-label">Warmup ({session.warmup.length})</span>
+                        <span className="yoga-section-label">{t('yoga.section.warmup', 'Warmup ({{count}})', { count: session.warmup.length })}</span>
                         {warmupOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                       </button>
                       {warmupOpen && (
@@ -429,7 +434,7 @@ export function YogaView({ plan }) {
                   {/* Main sequence */}
                   {session.main_sequence?.length > 0 && (
                     <div className="yoga-section-block">
-                      <h4 className="yoga-section-label standalone">Main Practice ({session.main_sequence.length} poses)</h4>
+                      <h4 className="yoga-section-label standalone">{t('yoga.section.main', 'Main Practice ({{count}} poses)', { count: session.main_sequence.length })}</h4>
                       <div className="yoga-main-list">
                         {session.main_sequence.map((p, pi) => {
                           const poseId = `${dayIdx}-main-${pi}`
@@ -461,7 +466,7 @@ export function YogaView({ plan }) {
                                 <>
                                   <button className="yoga-pose-expand-toggle" onClick={() => togglePose(poseId)}>
                                     {isOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-                                    {isOpen ? 'Less' : 'Details'}
+                                    {isOpen ? t('yoga.less', 'Less') : t('yoga.details', 'Details')}
                                   </button>
                                   {isOpen && (
                                     <div className="yoga-pose-expand">
@@ -472,7 +477,7 @@ export function YogaView({ plan }) {
                                         </ol>
                                       )}
                                       {p.modification && (
-                                        <p className="yoga-pose-modification">Modification: {p.modification}</p>
+                                        <p className="yoga-pose-modification">{t('yoga.modification', 'Modification')}: {p.modification}</p>
                                       )}
                                       {p.ayurvedic_rationale && (
                                         <p className="yoga-pose-rationale">{p.ayurvedic_rationale}</p>
@@ -492,7 +497,7 @@ export function YogaView({ plan }) {
                   {session.cooldown?.length > 0 && (
                     <div className="yoga-section-block">
                       <button className="yoga-section-toggle" onClick={() => toggleCooldown(dayIdx)}>
-                        <span className="yoga-section-label">Cooldown ({session.cooldown.length})</span>
+                        <span className="yoga-section-label">{t('yoga.section.cooldown', 'Cooldown ({{count}})', { count: session.cooldown.length })}</span>
                         {cooldownOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                       </button>
                       {cooldownOpen && (
@@ -534,7 +539,7 @@ export function YogaView({ plan }) {
                           <>
                             <button className="yoga-pose-expand-toggle" onClick={() => togglePrana(dayIdx)}>
                               {pranaOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-                              {pranaOpen ? 'Less' : 'Instructions'}
+                              {pranaOpen ? t('yoga.less', 'Less') : t('yoga.instructions', 'Instructions')}
                             </button>
                             {pranaOpen && (
                               <ol className="yoga-pose-instructions yoga-prana-instructions">
@@ -572,7 +577,7 @@ export function YogaView({ plan }) {
                           <>
                             <button className="yoga-pose-expand-toggle" onClick={() => toggleDharana(dayIdx)}>
                               {dharanaOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-                              {dharanaOpen ? 'Less' : 'How to practice'}
+                              {dharanaOpen ? t('yoga.less', 'Less') : t('yoga.howToPractice', 'How to practice')}
                             </button>
                             {dharanaOpen && (
                               <>
@@ -599,13 +604,13 @@ export function YogaView({ plan }) {
       {/* ── Ayurvedic Tips ── */}
       {Object.keys(tips).length > 0 && (
         <div className="yoga-tips-section">
-          <h3 className="yoga-tips-title"><Leaf size={14} /> Ayurvedic Practice Tips</h3>
+          <h3 className="yoga-tips-title"><Leaf size={14} /> {t('yoga.tipsTitle', 'Ayurvedic Practice Tips')}</h3>
           <div className="yoga-tips-grid">
             {[
-              { key: 'best_time', label: 'Best Time' },
-              { key: 'environment', label: 'Environment' },
-              { key: 'what_to_wear', label: 'What to Wear' },
-              { key: 'after_practice', label: 'After Practice' },
+              { key: 'best_time', label: t('yoga.tip.bestTime', 'Best Time') },
+              { key: 'environment', label: t('yoga.tip.environment', 'Environment') },
+              { key: 'what_to_wear', label: t('yoga.tip.whatToWear', 'What to Wear') },
+              { key: 'after_practice', label: t('yoga.tip.afterPractice', 'After Practice') },
             ].map(({ key, label }) => tips[key] ? (
               <div key={key} className="yoga-tip-card">
                 <h4 className="yoga-tip-label">{label}</h4>
@@ -620,13 +625,13 @@ export function YogaView({ plan }) {
       {/* ── Enrichment cards ── */}
       {plan.breathing_guidance && (
         <div className="yoga-enrichment-card">
-          <h3 className="yoga-enrichment-label"><Wind size={13} /> Breathing Guidance</h3>
+          <h3 className="yoga-enrichment-label"><Wind size={13} /> {t('yoga.breathingGuidance', 'Breathing Guidance')}</h3>
           <p className="yoga-enrichment-text">{plan.breathing_guidance}</p>
         </div>
       )}
       {plan.lifestyle_sync && (
         <div className="yoga-enrichment-card">
-          <h3 className="yoga-enrichment-label"><Leaf size={13} /> Lifestyle Sync</h3>
+          <h3 className="yoga-enrichment-label"><Leaf size={13} /> {t('yoga.lifestyleSync', 'Lifestyle Sync')}</h3>
           <p className="yoga-enrichment-text">{plan.lifestyle_sync}</p>
         </div>
       )}
