@@ -373,7 +373,6 @@ def build_week_adjustment(feedback_history) -> WeekAdjustment:
     duration_scale = 1.0
     restorative_bias = 0
     excluded: set[str] = set()
-    reasons: list[str] = []
 
     for entry in (feedback_history or []):
         if not isinstance(entry, dict):
@@ -389,7 +388,6 @@ def build_week_adjustment(feedback_history) -> WeekAdjustment:
         days = entry.get("days_practised")
         if isinstance(days, int) and days <= 3:
             effects.append({"duration_scale": 0.8})
-            reasons.append("Sessions shortened — last week only fitted in a few days.")
 
         for effect in effects:
             level_shift += effect.get("level_shift", 0)
@@ -399,34 +397,34 @@ def build_week_adjustment(feedback_history) -> WeekAdjustment:
         dropped = entry.get("dropped_pose_ids") or []
         excluded.update(str(p) for p in dropped if p)
 
-        if entry.get("difficulty") == "too_hard":
-            reasons.append("Gentler poses and shorter holds — you found last week hard.")
-        elif entry.get("difficulty") == "too_easy":
-            reasons.append("Stronger poses and longer holds — last week was too easy.")
-        if entry.get("session_length") == "too_long":
-            reasons.append("Shorter sessions — last week ran long.")
-        elif entry.get("session_length") == "too_short":
-            reasons.append("Longer sessions — you wanted more time on the mat.")
-        if entry.get("energy_after") == "drained":
-            reasons.append("More restorative work — practice was leaving you drained.")
+    level_shift = _clamp(level_shift, _LEVEL_SHIFT_BOUNDS)
+    duration_scale = _clamp(duration_scale, _DURATION_SCALE_BOUNDS)
+    restorative_bias = min(restorative_bias, _RESTORATIVE_BIAS_MAX)
 
+    # Describe where the practice has NET landed, not every answer that got it
+    # there. Listing per-answer reasons meant week 4 still read "you found last
+    # week hard" three weeks after the user stopped saying so — and alongside
+    # "last week was too easy", which contradicted it.
+    reasons = []
+    if level_shift < 0:
+        reasons.append("Working at a gentler level than your stated experience.")
+    elif level_shift > 0:
+        reasons.append("Working a level above your stated experience.")
+    if duration_scale < 0.97:
+        reasons.append(f"Sessions are about {round((1 - duration_scale) * 100)}% shorter than your default.")
+    elif duration_scale > 1.03:
+        reasons.append(f"Sessions are about {round((duration_scale - 1) * 100)}% longer than your default.")
+    if restorative_bias > 0:
+        reasons.append("More restorative and grounding work in the mix.")
     if excluded:
         reasons.append(f"{len(excluded)} pose(s) you asked to drop are excluded.")
 
-    # De-duplicate while preserving order — repeated weeks of the same answer
-    # compound the effect but should not repeat the sentence.
-    seen, unique_reasons = set(), []
-    for r in reasons:
-        if r not in seen:
-            seen.add(r)
-            unique_reasons.append(r)
-
     return WeekAdjustment(
-        level_shift=_clamp(level_shift, _LEVEL_SHIFT_BOUNDS),
-        duration_scale=_clamp(duration_scale, _DURATION_SCALE_BOUNDS),
-        restorative_bias=min(restorative_bias, _RESTORATIVE_BIAS_MAX),
+        level_shift=level_shift,
+        duration_scale=duration_scale,
+        restorative_bias=restorative_bias,
         excluded_pose_ids=excluded,
-        reasons=unique_reasons,
+        reasons=reasons,
     )
 
 
