@@ -92,6 +92,12 @@ class UserDocument(BaseModel):
 
     # ── Safety ────────────────────────────────────────────────────────────────
     pregnancy_or_nursing: Optional[bool] = None            # NEW — CRITICAL safety gate
+    # `pregnancy_or_nursing` conflates two states with very different
+    # restrictions: pregnancy changes what is safe substantially, nursing barely
+    # at all. These refine it where the user has told us which. Left None, every
+    # engine keeps treating the boolean as "pregnant", which is the safe reading.
+    pregnancy_status: Optional[str] = None                 # pregnant / nursing
+    pregnancy_trimester: Optional[int] = None              # 1 / 2 / 3
 
     # ── Deprecated — use per-feature goals in preferences_schema.py ───────────
     goal: Optional[str] = None
@@ -165,6 +171,16 @@ class UserProfileUpdate(BaseModel):
     pregnancy_or_nursing: Optional[bool] = Field(
         None,
         description="True if user is pregnant or nursing. Blocks many features for safety."
+    )
+    pregnancy_status: Optional[str] = Field(
+        None,
+        description="Which of the two the user is: 'pregnant' or 'nursing'. Nursing "
+                    "carries almost no pose restrictions; pregnancy carries many."
+    )
+    pregnancy_trimester: Optional[int] = Field(
+        None, ge=1, le=3,
+        description="Trimester, when pregnant. Drives yoga pose gating — first, "
+                    "second and third trimester practices differ substantially."
     )
 
     # ── Step 3: Health Profile ───────────────────────────────────────────────
@@ -295,6 +311,8 @@ class UserProfileResponse(BaseModel):
 
     # Safety
     pregnancy_or_nursing: Optional[bool] = None
+    pregnancy_status: Optional[str] = None
+    pregnancy_trimester: Optional[int] = None
 
     # Deprecated
     goal: Optional[str] = None

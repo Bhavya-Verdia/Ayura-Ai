@@ -172,8 +172,8 @@ def _build_surya_namaskar_block(user_profile: dict, yoga_prefs: dict,
     if time_of_day == "evening":
         return None
 
-    # Pregnancy: skip entirely
-    if user_profile.get("pregnancy_or_nursing"):
+    # Pregnancy: skip entirely. Nursing does not rule out Surya Namaskar.
+    if _pregnancy_state(user_profile)[0]:
         return None
 
     # Hard contraindications — for seniors use only user-specific medical contra tags
@@ -231,6 +231,61 @@ def _build_surya_namaskar_block(user_profile: dict, yoga_prefs: dict,
         ),
         "steps": _SURYA_NAMASKAR_STEPS,
     }
+
+
+# ── Pregnancy / nursing ───────────────────────────────────────────────────────
+# `pregnancy_or_nursing` is one boolean covering two states whose restrictions
+# have almost nothing in common: pregnancy rules out prone poses, supine holds,
+# deep twists, inversions and abdominal work, while nursing rules out
+# essentially nothing. Treating a nursing mother as pregnant costs her most of
+# the library for no clinical reason.
+#
+# The refinement is opt-in. Where the user has not told us which they are, the
+# boolean is still read as "pregnant" — the safe reading, and the behaviour
+# every other engine in the codebase still relies on.
+
+# Category exclusions by trimester. First trimester is comparatively
+# unrestricted; from the second the growing uterus rules out lying prone, and
+# extended supine holds risk vena cava compression.
+_TRIMESTER_BLOCKED_CATEGORIES = {
+    1: set(),
+    2: {"prone"},
+    3: {"prone", "supine", "inversion"},
+}
+
+# Mechanisms unsafe throughout pregnancy, plus what each trimester adds.
+_TRIMESTER_RISK_TAGS = {
+    1: {"abdominal_pressure"},
+    2: {"abdominal_pressure", "intracranial_pressure"},
+    3: {"abdominal_pressure", "intracranial_pressure", "fall_risk"},
+}
+
+
+def _pregnancy_state(user_profile: dict) -> tuple[bool, bool, int]:
+    """Return (is_pregnant, is_nursing, trimester).
+
+    Trimester defaults to 3 — the most restrictive — when the user says they are
+    pregnant but not how far along. Guessing gently would be the wrong default
+    for a safety gate.
+    """
+    flag = bool(user_profile.get("pregnancy_or_nursing"))
+    status = (user_profile.get("pregnancy_status") or "").strip().lower()
+
+    if status == "nursing":
+        return False, True, 0
+    if status == "pregnant":
+        is_pregnant = True
+    else:
+        is_pregnant = flag  # unspecified: the boolean means pregnant
+
+    if not is_pregnant:
+        return False, False, 0
+
+    try:
+        trimester = int(user_profile.get("pregnancy_trimester") or 3)
+    except (TypeError, ValueError):
+        trimester = 3
+    return True, False, min(max(trimester, 1), 3)
 
 
 # ── Age group classification ───────────────────────────────────────────────────
@@ -381,14 +436,70 @@ _MEDICAL_CONTRA_MAP = {
     "knee_replacement":    {"knee_injury", "knee_replacement"},
     "ankle_injury":        {"ankle_injury"},
     "shoulder_injury":     {"shoulder_injury", "rotator_cuff"},
-    "epilepsy":            {"heart_disease"},
     "osteoporosis":        {"serious_spinal_injury"},
-    "hernia":              {"knee_injury"},
-    "retinal_detachment":  {"glaucoma"},
-    "migraine":            {"high_blood_pressure"},
     "post_cardiac":        {"heart_disease", "high_blood_pressure"},
     "heart_surgery_recovery": {"heart_disease", "high_blood_pressure"},
-    "vertigo":             {"high_blood_pressure"},
+}
+
+# ── Condition → risk mechanism ───────────────────────────────────────────────
+# Conditions used to be mapped onto whichever pose tag was vaguely nearby:
+# hernia onto knee_injury, epilepsy onto heart_disease, migraine onto
+# high_blood_pressure, wrist onto shoulder_injury. Those tags describe a
+# different body part, so the poses that actually endanger those users were
+# never the ones removed — blocking knee poses does nothing for a hernia.
+#
+# These map to what a pose *does* (`risk_tags` in the KB), so the exclusion
+# matches the mechanism: abdominal pressure for hernia, intracranial pressure
+# for glaucoma and retinal detachment, loaded spinal flexion for osteoporosis.
+_CONDITION_RISK_TAGS: dict[str, set[str]] = {
+    "hernia":               {"abdominal_pressure"},
+    "inguinal_hernia":      {"abdominal_pressure"},
+    "hiatal_hernia":        {"abdominal_pressure"},
+    "abdominal_surgery":    {"abdominal_pressure", "wrist_weight_bearing"},
+    "recent_surgery":       {"abdominal_pressure"},
+    "ulcer":                {"abdominal_pressure"},
+    "ibd":                  {"abdominal_pressure"},
+    "diverticulitis":       {"abdominal_pressure"},
+
+    "glaucoma":             {"intracranial_pressure"},
+    "retinal_detachment":   {"intracranial_pressure"},
+    "retinopathy":          {"intracranial_pressure"},
+    "migraine":             {"intracranial_pressure"},
+    "sinusitis":            {"intracranial_pressure"},
+    "stroke":               {"intracranial_pressure", "fall_risk"},
+
+    "epilepsy":             {"seizure_risk", "intracranial_pressure", "fall_risk"},
+    "seizure":              {"seizure_risk", "intracranial_pressure", "fall_risk"},
+
+    "vertigo":              {"fall_risk", "neck_load", "intracranial_pressure"},
+    "bppv":                 {"fall_risk", "neck_load", "intracranial_pressure"},
+    "labyrinthitis":        {"fall_risk", "neck_load", "intracranial_pressure"},
+    "vestibular":           {"fall_risk", "neck_load", "intracranial_pressure"},
+    "parkinson":            {"fall_risk"},
+    "multiple_sclerosis":   {"fall_risk"},
+    "neuropathy":           {"fall_risk"},
+
+    "osteoporosis":         {"spinal_flexion", "fall_risk"},
+    "osteopenia":           {"spinal_flexion"},
+    "compression_fracture": {"spinal_flexion"},
+
+    "carpal_tunnel":        {"wrist_weight_bearing"},
+    "wrist_injury":         {"wrist_weight_bearing"},
+    "rheumatoid_arthritis": {"wrist_weight_bearing"},
+
+    "cervical_spondylosis": {"neck_load"},
+    "cervical_disc":        {"neck_load"},
+    "neck_injury":          {"neck_load"},
+    "whiplash":             {"neck_load"},
+}
+
+# Injury free-text → risk mechanism, for the same reason as above.
+_INJURY_RISK_TAGS: dict[str, set[str]] = {
+    "wrist":  {"wrist_weight_bearing"},
+    "hand":   {"wrist_weight_bearing"},
+    "neck":   {"neck_load"},
+    "hernia": {"abdominal_pressure"},
+    "balance": {"fall_risk"},
 }
 
 _INJURY_CONTRA_MAP = {
@@ -404,7 +515,7 @@ _INJURY_CONTRA_MAP = {
     "glaucoma":        {"glaucoma"},
     "ankle":           {"ankle_injury"},
     "groin":           {"groin_injury"},
-    "wrist":           {"shoulder_injury"},
+    "wrist":           {"wrist_injury"},
 }
 
 # Current symptom → category boost
@@ -467,6 +578,30 @@ def _build_contra_set(user_profile: dict, age_group: str = "adult") -> set:
     return contra
 
 
+def _build_risk_set(user_profile: dict, age_group: str = "adult") -> set:
+    """Pose mechanisms this user must avoid, derived from conditions and injuries."""
+    risks: set[str] = set()
+
+    for cond in (user_profile.get("medical_history") or []):
+        key = str(cond).lower()
+        for k, tags in _CONDITION_RISK_TAGS.items():
+            if k in key:
+                risks.update(tags)
+
+    for inj in (user_profile.get("injuries_or_limitations") or []):
+        key = str(inj).lower()
+        for k, tags in _INJURY_RISK_TAGS.items():
+            if k in key:
+                risks.update(tags)
+
+    # Falls are the dominant injury mechanism over 60, and bone density is
+    # already declining — the two risks that most warrant a blanket exclusion.
+    if age_group == "senior":
+        risks.update({"fall_risk", "intracranial_pressure", "neck_load"})
+
+    return risks
+
+
 # ── Ritucharya seasonal yoga mode ────────────────────────────────────────────
 
 _RITUCHARYA_YOGA = {
@@ -523,8 +658,12 @@ def filter_poses(user_profile, yoga_prefs, poses, max_allowed_levels=None, proto
     elif age_group == "youth":
         allowed_levels = [l for l in allowed_levels if l != "advanced"]
 
-    is_pregnant = user_profile.get("pregnancy_or_nursing", False)
+    is_pregnant, _is_nursing, trimester = _pregnancy_state(user_profile)
     contra_tags = _build_contra_set(user_profile, age_group)
+    risk_tags = _build_risk_set(user_profile, age_group)
+    if is_pregnant:
+        risk_tags |= _TRIMESTER_RISK_TAGS[trimester]
+    blocked_categories = _TRIMESTER_BLOCKED_CATEGORIES[trimester] if is_pregnant else set()
     user_conditions = set(c.lower() for c in (user_profile.get("medical_history") or []))
 
     # Gender — for filtering female-only protocol boosts
@@ -569,14 +708,28 @@ def filter_poses(user_profile, yoga_prefs, poses, max_allowed_levels=None, proto
     for pose in poses:
         if pose.get("level", "intermediate") not in allowed_levels:
             continue
-        if is_pregnant and not pose.get("pregnancy_safe", True):
-            continue
+        if is_pregnant:
+            if not pose.get("pregnancy_safe", True):
+                continue
+            if pose.get("category") in blocked_categories:
+                continue
+            # 28 poses carry a `pregnancy_third_trimester` tag that nothing has
+            # ever read — the engine only consulted the pregnancy_safe boolean.
+            pose_preg_tags = set(pose.get("contraindications", []))
+            if "pregnancy" in pose_preg_tags:
+                continue
+            if trimester == 3 and "pregnancy_third_trimester" in pose_preg_tags:
+                continue
         # Condition-specific pose contraindication (dynamic protocol) — hard exclude.
         if pose.get("id", "") in protocol_avoid_ids:
             continue
 
         pose_contra = set(pose.get("contraindications", [])) | set(pose.get("medical_conditions_contraindicated", []))
         if contra_tags.intersection(pose_contra):
+            continue
+        # Mechanism-level exclusion: what this pose does to the body, against
+        # what this user's conditions cannot tolerate.
+        if risk_tags.intersection(pose.get("risk_tags", [])):
             continue
 
         score = 0
@@ -754,7 +907,7 @@ def select_pranayama(user_profile, yoga_prefs, pranayama_db, count=3, protocol_m
     if protocol_map is None:
         protocol_map = _PROTOCOL_MAP
 
-    is_pregnant = user_profile.get("pregnancy_or_nursing", False)
+    is_pregnant = _pregnancy_state(user_profile)[0]
     user_exp = yoga_prefs.get("yoga_experience", "beginner")
     if user_exp == "none":
         user_exp = "beginner"
@@ -1453,7 +1606,7 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
     # user's conditions — surfaced in the UI so the exclusion is visible, not silent.
     _prana_exclusions = []
     _uc = set(c.lower() for c in (user_profile.get("medical_history") or []))
-    _is_preg_x = user_profile.get("pregnancy_or_nursing", False)
+    _is_preg_x = _pregnancy_state(user_profile)[0]
     if _uc or _is_preg_x:
         _PRANA_DISPLAY = {
             "skull_shining":   "Kapalabhati (Skull-Shining Breath)",
@@ -1472,7 +1625,7 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
             if _preg_block or _pranayama_hard_blocked(_pr, _uc):
                 _prana_exclusions.append({
                     "name": _PRANA_DISPLAY[_pid],
-                    "reason": "Pregnancy / nursing" if _preg_block else "Contraindicated for your health conditions",
+                    "reason": "Pregnancy" if _preg_block else "Contraindicated for your health conditions",
                 })
 
     time_of_day = yoga_prefs.get("time_of_day_preference", "morning")
@@ -1482,7 +1635,7 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
 
     user_id = str(user_profile.get("id") or user_profile.get("_id") or "default")
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
-    is_pregnant = user_profile.get("pregnancy_or_nursing", False)
+    is_pregnant, is_nursing, trimester = _pregnancy_state(user_profile)
     user_conditions = [c for c in (user_profile.get("medical_history") or []) if c]
     gender = (user_profile.get("gender") or "").lower()
     season_cfg = _get_season_boost(user_profile.get("current_season"))
@@ -1595,12 +1748,33 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
             "therapist can supervise poses that a self-guided plan has to exclude."
         )
 
-    disclaimer = (
-        "PREGNANCY WARNING: Several poses have been removed for pregnancy safety. "
-        "Please consult your doctor and a qualified yoga instructor before practice."
-        if is_pregnant else
-        "This plan is for general wellness guidance only. Consult a physician before beginning any new practice."
-    )
+    _TRIMESTER_NOTE = {
+        1: "First trimester: poses that raise abdominal pressure are excluded. Stop "
+           "if you feel light-headed, and skip practice entirely on days you are nauseous.",
+        2: "Second trimester: lying prone is excluded as the bump grows, along with "
+           "abdominal work and inversions. Widen your stance for balance.",
+        3: "Third trimester: prone and supine poses are both excluded — extended time "
+           "on your back can compress the vena cava — as are inversions and unsupported "
+           "balances. Use a wall or chair for anything on one leg.",
+    }
+    if is_pregnant:
+        disclaimer = (
+            f"PREGNANCY — TRIMESTER {trimester}: This plan is filtered for pregnancy safety. "
+            f"{_TRIMESTER_NOTE[trimester]} Please practise under the guidance of a prenatal "
+            "yoga teacher and clear this plan with your doctor or midwife first."
+        )
+    elif is_nursing:
+        disclaimer = (
+            "Nursing: yoga carries no specific restrictions while breastfeeding. Practise "
+            "after a feed for comfort, stay well hydrated, and rebuild abdominal and pelvic "
+            "floor strength gradually if you gave birth recently. Consult a physician before "
+            "beginning any new practice."
+        )
+    else:
+        disclaimer = (
+            "This plan is for general wellness guidance only. Consult a physician before "
+            "beginning any new practice."
+        )
 
     return {
         "plan_id":        f"yoga_{user_id}_{int(datetime.now(timezone.utc).timestamp())}",

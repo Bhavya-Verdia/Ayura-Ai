@@ -66,6 +66,11 @@ export default function Onboarding() {
   const [name, setName]                   = useState('')
   const [gender, setGender]               = useState('')
   const [pregnancyOrNursing, setPregnancyOrNursing] = useState(false)
+  // Pregnancy and nursing restrict practice very differently, and the trimester
+  // changes it again — so we ask which, rather than filtering everyone who
+  // answers "yes" as though they were in the third trimester.
+  const [pregnancyStatus, setPregnancyStatus]       = useState('')
+  const [pregnancyTrimester, setPregnancyTrimester] = useState('')
   const [age, setAge]                     = useState('')
   const [height, setHeight]               = useState('')
   const [weight, setWeight]               = useState('')
@@ -115,6 +120,10 @@ export default function Onboarding() {
           : [],
         goal, dominant_dosha: dosha,
         pregnancy_or_nursing: gender === 'female' ? pregnancyOrNursing : false,
+        pregnancy_status: gender === 'female' && pregnancyOrNursing
+          ? (pregnancyStatus || undefined) : undefined,
+        pregnancy_trimester: gender === 'female' && pregnancyStatus === 'pregnant'
+          ? (Number(pregnancyTrimester) || undefined) : undefined,
         fitness_level:  fitnessLevel  || 'beginner',
         activity_level: 'moderate',
         satmya: satmya || undefined,
@@ -283,11 +292,59 @@ export default function Onboarding() {
                         {[{ v: false, l: 'No', E: Ban }, { v: true, l: 'Yes', E: Baby }].map(opt => (
                           <m.button
                             key={String(opt.v)} type="button"
-                            onClick={() => setPregnancyOrNursing(opt.v)}
+                            onClick={() => {
+                              setPregnancyOrNursing(opt.v)
+                              if (!opt.v) { setPregnancyStatus(''); setPregnancyTrimester('') }
+                            }}
                             className={`onb-tile ${pregnancyOrNursing === opt.v ? 'selected' : ''}`}
                             whileTap={{ scale: 0.95 }}
                           >
                             <span className="onb-tile-emoji"><opt.E size={22} strokeWidth={2} /></span>
+                            {opt.l}
+                          </m.button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Which of the two, and how far along. Pregnancy and nursing
+                      restrict practice very differently, and each trimester
+                      differs again — without this we have to assume the most
+                      restrictive case for everyone who answered yes. */}
+                  {gender === 'female' && pregnancyOrNursing && (
+                    <div className="input-group">
+                      <label>Which applies to you?</label>
+                      <p className="onb-help">Nursing carries almost no restrictions on yoga. Pregnancy changes what is safe considerably, and it changes again each trimester.</p>
+                      <div className="onb-grid-2">
+                        {[{ v: 'pregnant', l: 'Pregnant' }, { v: 'nursing', l: 'Nursing' }].map(opt => (
+                          <m.button
+                            key={opt.v} type="button"
+                            onClick={() => {
+                              setPregnancyStatus(opt.v)
+                              if (opt.v !== 'pregnant') setPregnancyTrimester('')
+                            }}
+                            className={`onb-tile ${pregnancyStatus === opt.v ? 'selected' : ''}`}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            {opt.l}
+                          </m.button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {gender === 'female' && pregnancyStatus === 'pregnant' && (
+                    <div className="input-group">
+                      <label>Which trimester?</label>
+                      <p className="onb-help">If you would rather not say, we will plan for the third trimester, which is the most cautious.</p>
+                      <div className="onb-grid-3">
+                        {[{ v: '1', l: 'First' }, { v: '2', l: 'Second' }, { v: '3', l: 'Third' }].map(opt => (
+                          <m.button
+                            key={opt.v} type="button"
+                            onClick={() => setPregnancyTrimester(opt.v)}
+                            className={`onb-tile ${pregnancyTrimester === opt.v ? 'selected' : ''}`}
+                            whileTap={{ scale: 0.95 }}
+                          >
                             {opt.l}
                           </m.button>
                         ))}

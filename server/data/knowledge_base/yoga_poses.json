@@ -55,7 +55,10 @@
     "medical_conditions_contraindicated": [
       "back_pain"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
   },
   {
     "id": "camel",
@@ -124,7 +127,12 @@
     "medical_conditions_contraindicated": [
       "back_pain"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "neck_load",
+      "seizure_risk",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "cobra_pose",
@@ -192,7 +200,8 @@
     "medical_conditions_contraindicated": [
       "back_pain"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "cow",
@@ -246,7 +255,11 @@
     "medical_conditions_contraindicated": [
       "back_pain"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "neck_load",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "fish_pose",
@@ -315,7 +328,10 @@
       "heart_disease",
       "hypertension"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "neck_load"
+    ]
   },
   {
     "id": "frog_pose",
@@ -379,7 +395,8 @@
       "back_pain",
       "sciatica"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "full_pigeon",
@@ -451,7 +468,11 @@
       "heart_disease",
       "hypertension"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "neck_load",
+      "seizure_risk"
+    ]
   },
   {
     "id": "pigeon",
@@ -508,7 +529,8 @@
     "medical_conditions_contraindicated": [
       "back_pain"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "snake_pose",
@@ -571,7 +593,8 @@
       "cervical_spondylosis",
       "sciatica"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "sphinx",
@@ -632,7 +655,8 @@
     "medical_conditions_contraindicated": [
       "back_pain"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "tiger_pose",
@@ -696,7 +720,10 @@
       "arthritis",
       "back_pain"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "upward_plank_pose",
@@ -770,7 +797,11 @@
       "heart_disease",
       "hypertension"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "upward_facing_dog",
@@ -855,7 +886,11 @@
       "Upward-Facing Dog Pose",
       "Urdhva Mukha Shvanasana"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "neck_load",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "wheel",
@@ -926,7 +961,12 @@
     "medical_conditions_contraindicated": [
       "back_pain"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "neck_load",
+      "seizure_risk",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "wild_thing_pose",
@@ -1006,7 +1046,11 @@
       "Wild Thing",
       "Camatkarasana"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "neck_load",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "bird_of_paradise_pose",
@@ -1072,7 +1116,10 @@
       "arthritis",
       "back_pain"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "fall_risk"
+    ]
   },
   {
     "id": "crow",
@@ -1132,7 +1179,12 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "fall_risk",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "dancer_pose",
@@ -1198,7 +1250,10 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "fall_risk"
+    ]
   },
   {
     "id": "eagle",
@@ -1259,7 +1314,10 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "fall_risk"
+    ]
   },
   {
     "id": "eight_angle_pose",
@@ -1326,7 +1384,12 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "abdominal_pressure",
+      "fall_risk",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "extended_hand_to_toe",
@@ -1383,7 +1446,10 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "fall_risk"
+    ]
   },
   {
     "id": "firefly_pose",
@@ -1449,7 +1515,12 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "fall_risk",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "flying_splits",
@@ -1516,7 +1587,12 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "abdominal_pressure",
+      "fall_risk",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "half_moon",
@@ -1584,7 +1660,10 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "fall_risk"
+    ]
   },
   {
     "id": "plank",
@@ -1642,7 +1721,11 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "fall_risk",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "revolved_half_moon_pose",
@@ -1715,7 +1798,10 @@
       "hypertension",
       "sciatica"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "fall_risk"
+    ]
   },
   {
     "id": "side_crow",
@@ -1786,7 +1872,12 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "abdominal_pressure",
+      "fall_risk",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "side_plank_pose",
@@ -1854,7 +1945,11 @@
       "Side Plank",
       "Vasisthasana"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "fall_risk",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "tree_pose",
@@ -1925,7 +2020,10 @@
       "Tree",
       "Vrksasana"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "fall_risk"
+    ]
   },
   {
     "id": "warrior_three",
@@ -1994,7 +2092,10 @@
       "Warrior III Pose",
       "Virabhadrasana C"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "fall_risk"
+    ]
   },
   {
     "id": "big_toe_pose",
@@ -2060,7 +2161,11 @@
       "hypertension",
       "sciatica"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "spinal_flexion"
+    ]
   },
   {
     "id": "forward_bend_with_shoulder_opener",
@@ -2141,7 +2246,11 @@
       "obesity"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "spinal_flexion"
+    ]
   },
   {
     "id": "gorilla_pose",
@@ -2208,7 +2317,12 @@
       "hypertension",
       "sciatica"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "spinal_flexion",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "half_standing_forward_fold",
@@ -2268,7 +2382,12 @@
       "cervical_spondylosis"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "spinal_flexion",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "head_to_knee_forward_bend",
@@ -2335,7 +2454,10 @@
       "hypertension"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "spinal_flexion"
+    ]
   },
   {
     "id": "seated_forward_bend",
@@ -2404,7 +2526,10 @@
       "insomnia"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "spinal_flexion"
+    ]
   },
   {
     "id": "splits",
@@ -2468,7 +2593,10 @@
       "back_pain"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "spinal_flexion"
+    ]
   },
   {
     "id": "tortoise_pose",
@@ -2534,7 +2662,11 @@
       "hypertension"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ]
   },
   {
     "id": "wide_leg_forward_fold",
@@ -2599,7 +2731,11 @@
       "insomnia"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "spinal_flexion"
+    ]
   },
   {
     "id": "dolphin_pose",
@@ -2670,7 +2806,11 @@
       "heart_disease",
       "hypertension"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "fall_risk",
+      "intracranial_pressure"
+    ]
   },
   {
     "id": "forearm_stand",
@@ -2738,7 +2878,14 @@
       "heart_disease",
       "hypertension"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "fall_risk",
+      "intracranial_pressure",
+      "neck_load",
+      "seizure_risk"
+    ]
   },
   {
     "id": "handstand_pose",
@@ -2814,7 +2961,15 @@
       "Handstand",
       "Adho Mukha Vrksasana"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "fall_risk",
+      "intracranial_pressure",
+      "neck_load",
+      "seizure_risk",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "plow",
@@ -2884,7 +3039,15 @@
       "glaucoma",
       "hypertension"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "fall_risk",
+      "intracranial_pressure",
+      "neck_load",
+      "seizure_risk",
+      "spinal_flexion"
+    ]
   },
   {
     "id": "scorpion_pose",
@@ -2955,7 +3118,14 @@
       "heart_disease",
       "hypertension"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "fall_risk",
+      "intracranial_pressure",
+      "neck_load",
+      "seizure_risk"
+    ]
   },
   {
     "id": "shoulder_stand",
@@ -3036,7 +3206,14 @@
       "Shoulderstand",
       "Sarvangasana"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "fall_risk",
+      "intracranial_pressure",
+      "neck_load",
+      "seizure_risk"
+    ]
   },
   {
     "id": "supported_headstand_pose",
@@ -3119,7 +3296,14 @@
       "Headstand",
       "Sirsasana"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "fall_risk",
+      "intracranial_pressure",
+      "neck_load",
+      "seizure_risk"
+    ]
   },
   {
     "id": "cat_cow_flow",
@@ -3182,7 +3366,11 @@
       "menopause"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "neck_load",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "four_limbed_staff_pose",
@@ -3247,7 +3435,10 @@
       "back_pain",
       "sciatica"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "locust_pose",
@@ -3315,7 +3506,10 @@
       "depression"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
   },
   {
     "id": "puppy_pose",
@@ -3378,7 +3572,12 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "spinal_flexion",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "reverse_corpse_pose",
@@ -3435,7 +3634,8 @@
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [],
     "bilateral": false,
-    "final_relaxation": false
+    "final_relaxation": false,
+    "risk_tags": []
   },
   {
     "id": "table_pose",
@@ -3495,7 +3695,10 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "childs_pose",
@@ -3563,7 +3766,10 @@
       "pcos"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "spinal_flexion"
+    ]
   },
   {
     "id": "constructive_rest",
@@ -3623,7 +3829,8 @@
       "menopause"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "corpse",
@@ -3689,7 +3896,8 @@
       "Savasana"
     ],
     "bilateral": false,
-    "final_relaxation": true
+    "final_relaxation": true,
+    "risk_tags": []
   },
   {
     "id": "legs_up_wall",
@@ -3758,7 +3966,10 @@
       "cervical_spondylosis",
       "glaucoma"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "intracranial_pressure"
+    ]
   },
   {
     "id": "supta_baddha_konasana",
@@ -3823,7 +4034,8 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "reclined_hero",
@@ -3888,7 +4100,8 @@
       "back_pain",
       "sciatica"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "supta_matsyendrasana",
@@ -3959,7 +4172,8 @@
     "medical_conditions_contraindicated": [
       "back_pain"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "supported_bridge",
@@ -4025,7 +4239,8 @@
     "medical_conditions_contraindicated": [
       "cervical_spondylosis"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "supported_fish",
@@ -4092,7 +4307,10 @@
       "cervical_spondylosis",
       "hypertension"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "neck_load"
+    ]
   },
   {
     "id": "yin_forward_fold",
@@ -4153,7 +4371,10 @@
       "back_pain",
       "sciatica"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "spinal_flexion"
+    ]
   },
   {
     "id": "yoga_nidra_pose",
@@ -4207,7 +4428,8 @@
       "insomnia"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "archers_pose",
@@ -4267,7 +4489,8 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "butterfly",
@@ -4332,7 +4555,8 @@
       "back_pain"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "cow_face_pose",
@@ -4396,7 +4620,8 @@
       "arthritis"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "easy_pose",
@@ -4458,7 +4683,8 @@
       "depression"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "fire_log_pose",
@@ -4519,7 +4745,8 @@
       "arthritis"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "half_pigeon_pose",
@@ -4587,7 +4814,8 @@
       "back_pain",
       "sciatica"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "hero_pose",
@@ -4647,7 +4875,8 @@
       "diabetes"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "heron_pose",
@@ -4707,7 +4936,8 @@
       "arthritis",
       "back_pain"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "lotus_pose",
@@ -4769,7 +4999,8 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "mountain_in_seated",
@@ -4830,7 +5061,8 @@
       "back_pain"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "staff_pose",
@@ -4889,7 +5121,8 @@
       "cervical_spondylosis"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "thunderbolt_pose",
@@ -4955,7 +5188,8 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "boat",
@@ -5015,7 +5249,10 @@
       "obesity"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
   },
   {
     "id": "cat",
@@ -5071,7 +5308,10 @@
       "cervical_spondylosis"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "chair",
@@ -5132,7 +5372,8 @@
       "obesity"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "crescent_lunge",
@@ -5182,7 +5423,8 @@
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483080/yoga-api/12_pv4p1z.png",
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "downward_facing_dog",
@@ -5255,7 +5497,11 @@
       "obesity"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "equestrian_pose",
@@ -5317,7 +5563,8 @@
       "diabetes"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "extended_side_angle",
@@ -5375,7 +5622,8 @@
       "obesity"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "garland_pose",
@@ -5436,7 +5684,11 @@
       "pcos"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "fall_risk"
+    ]
   },
   {
     "id": "gate_pose",
@@ -5498,7 +5750,8 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "goddess_pose",
@@ -5568,7 +5821,8 @@
       "arthritis",
       "back_pain"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "half_boat",
@@ -5625,7 +5879,10 @@
       "obesity"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
   },
   {
     "id": "high_lunge_pose",
@@ -5690,7 +5947,8 @@
       "arthritis",
       "back_pain"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "king_pigeon",
@@ -5750,7 +6008,10 @@
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483087/yoga-api/25_rssro9.png",
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "neck_load"
+    ]
   },
   {
     "id": "lizard_pose",
@@ -5813,7 +6074,10 @@
       "obesity"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "low_lunge_pose",
@@ -5878,7 +6142,8 @@
       "arthritis",
       "back_pain"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "mountain_pose",
@@ -5936,7 +6201,8 @@
       "anxiety"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "pyramid",
@@ -6011,7 +6277,10 @@
       "Pyramid Pose",
       "Parshvottanasana"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "spinal_flexion"
+    ]
   },
   {
     "id": "reverse_warrior",
@@ -6070,7 +6339,8 @@
       "depression"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "side_lunge_pose",
@@ -6131,7 +6401,8 @@
     "medical_conditions_contraindicated": [
       "arthritis"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "side_splits",
@@ -6197,7 +6468,10 @@
       "pcos"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "spinal_flexion"
+    ]
   },
   {
     "id": "triangle",
@@ -6267,7 +6541,8 @@
       "obesity"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "upward_salute",
@@ -6328,7 +6603,8 @@
       "depression"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "warrior_one",
@@ -6391,7 +6667,8 @@
       "obesity"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "warrior_two",
@@ -6455,7 +6732,8 @@
       "obesity"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "banana_pose",
@@ -6522,7 +6800,8 @@
       "back_pain",
       "sciatica"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "bridge_pose",
@@ -6594,7 +6873,11 @@
       "insomnia"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "neck_load",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "happy_baby_pose",
@@ -6663,7 +6946,8 @@
       "back_pain",
       "sciatica"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": []
   },
   {
     "id": "knees_to_chest",
@@ -6727,7 +7011,10 @@
       "menopause"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
   },
   {
     "id": "sleeping_vishnu",
@@ -6790,7 +7077,8 @@
       "pcos"
     ],
     "medical_conditions_contraindicated": [],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": []
   },
   {
     "id": "wind_removing_pose",
@@ -6859,7 +7147,10 @@
       "cervical_spondylosis",
       "sciatica"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
   },
   {
     "id": "yoga_sleep_pose",
@@ -6926,7 +7217,11 @@
     "image_url": "",
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ]
   },
   {
     "id": "bound_revolved_chair_pose",
@@ -6997,7 +7292,11 @@
       "heart_disease",
       "hypertension"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "abdominal_pressure",
+      "wrist_weight_bearing"
+    ]
   },
   {
     "id": "half_lord_of_the_fishes",
@@ -7065,7 +7364,10 @@
     "medical_conditions_contraindicated": [
       "back_pain"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
   },
   {
     "id": "noose_pose",
@@ -7130,7 +7432,10 @@
       "arthritis",
       "back_pain"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
   },
   {
     "id": "revolved_head_to_knee",
@@ -7201,7 +7506,10 @@
     "medical_conditions_contraindicated": [
       "back_pain"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
   },
   {
     "id": "revolved_triangle_pose",
@@ -7281,7 +7589,10 @@
       "Revolved Triangle",
       "Parivrtta Trikonasana"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
   },
   {
     "id": "revolved_wide_legged_forward_bend",
@@ -7352,7 +7663,10 @@
       "hypertension",
       "sciatica"
     ],
-    "bilateral": false
+    "bilateral": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
   },
   {
     "id": "sage_pose",
@@ -7420,6 +7734,9 @@
     "medical_conditions_contraindicated": [
       "back_pain"
     ],
-    "bilateral": true
+    "bilateral": true,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
   }
 ]

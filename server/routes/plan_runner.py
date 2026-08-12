@@ -588,8 +588,12 @@ async def _enqueue_plan(
         "stress_level": user.stress_level,
         "digestion_quality": user.digestion_quality,
         "sleep_quality": user.sleep_quality,
-        # Safety flags
+        # Safety flags. The status/trimester refine the boolean where the user
+        # told us which they are — the yoga engine gates on them, and without
+        # them it has to assume third-trimester pregnancy for everyone.
         "pregnancy_or_nursing": user.pregnancy_or_nursing or False,
+        "pregnancy_status": user.pregnancy_status,
+        "pregnancy_trimester": user.pregnancy_trimester,
         # Classical Ayurvedic fields
         "satmya": user.satmya,
         "disease_stages": user.disease_stages,
