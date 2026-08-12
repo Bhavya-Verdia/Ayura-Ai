@@ -20,7 +20,7 @@
       "locust_pose",
       "triangle",
       "chair",
-      "revolved_triangle",
+      "revolved_triangle_pose",
       "bridge_pose",
       "supported_bridge",
       "side_splits",
@@ -110,7 +110,6 @@
     "classical_reference": "Hatha Yoga Pradipika 3.70 — Jalandhara Bandha (throat lock) regulates thyroid and parathyroid; shoulderstand (Sarvangasana) is prescribed as the 'queen of asanas' for thyroid health",
     "research_note": "Journal of Alternative and Complementary Medicine (2011): Sarvangasana increased T3/T4 levels measurably in hypothyroid group. Throat compression + release in shoulder stand cycles thyroid blood flow.",
     "priority_pose_ids": [
-      "shoulderstand",
       "shoulder_stand",
       "plow",
       "supported_fish",
@@ -121,7 +120,7 @@
       "legs_up_wall",
       "fish_pose",
       "sphinx",
-      "wild_thing",
+      "wild_thing_pose",
       "supported_headstand_pose"
     ],
     "priority_pranayama_ids": [
@@ -215,7 +214,6 @@
       "happy_baby_pose",
       "easy_pose",
       "corpse",
-      "corpse_pose",
       "tree_pose",
       "puppy_pose",
       "banana_pose"
@@ -264,14 +262,13 @@
       "warrior_two",
       "reverse_warrior",
       "dancer_pose",
-      "tree",
+      "tree_pose",
       "bridge_pose",
       "sphinx",
-      "wild_thing",
+      "wild_thing_pose",
       "eagle",
       "half_moon",
       "fish_pose",
-      "wild_thing_pose",
       "high_lunge_pose"
     ],
     "priority_pranayama_ids": [
@@ -310,7 +307,7 @@
       "knees_to_chest",
       "supta_matsyendrasana",
       "half_lord_of_the_fishes",
-      "revolved_triangle",
+      "revolved_triangle_pose",
       "sage_pose",
       "seated_forward_bend",
       "garland_pose",
@@ -321,8 +318,7 @@
       "side_splits",
       "wind_removing_pose",
       "thunderbolt_pose",
-      "noose_pose",
-      "revolved_triangle_pose"
+      "noose_pose"
     ],
     "priority_pranayama_ids": [
       "skull_shining",
@@ -411,7 +407,6 @@
       "supta_matsyendrasana",
       "childs_pose",
       "corpse",
-      "corpse_pose",
       "banana_pose",
       "wind_removing_pose",
       "thunderbolt_pose"
@@ -461,7 +456,7 @@
       "extended_side_angle",
       "downward_facing_dog",
       "plank",
-      "side_plank",
+      "side_plank_pose",
       "crow",
       "half_moon",
       "garland_pose",
@@ -469,8 +464,7 @@
       "wind_removing_pose",
       "goddess_pose",
       "thunderbolt_pose",
-      "high_lunge_pose",
-      "warrior_iii_pose"
+      "high_lunge_pose"
     ],
     "priority_pranayama_ids": [
       "skull_shining",
@@ -510,7 +504,6 @@
       "supta_matsyendrasana",
       "easy_pose",
       "corpse",
-      "corpse_pose",
       "butterfly",
       "tree_pose",
       "lotus_pose"
@@ -696,7 +689,7 @@
     "priority_pose_ids": [
       "half_lord_of_the_fishes",
       "sage_pose",
-      "revolved_triangle",
+      "revolved_triangle_pose",
       "revolved_head_to_knee",
       "seated_forward_bend",
       "boat",
@@ -879,7 +872,7 @@
       "warrior_one",
       "warrior_two",
       "triangle",
-      "tree",
+      "tree_pose",
       "chair",
       "downward_facing_dog",
       "cat",
@@ -922,7 +915,6 @@
       "constructive_rest",
       "yoga_nidra_pose",
       "corpse",
-      "corpse_pose",
       "supported_bridge",
       "easy_pose",
       "mountain_pose",
@@ -1241,7 +1233,7 @@
       "easy_pose",
       "butterfly",
       "mountain_pose",
-      "tree",
+      "tree_pose",
       "cat",
       "cow",
       "seated_forward_bend",

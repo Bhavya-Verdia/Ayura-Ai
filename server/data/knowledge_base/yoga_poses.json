@@ -16,7 +16,15 @@
       "Improves posture",
       "Stimulates the organs of the abdomen and neck"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "chest",
+      "abdomen",
+      "hip flexors",
+      "quadriceps",
+      "shoulders",
+      "throat"
+    ],
     "instructions": [
       "From a prone position with the abdomen on the earth, the hands grip the ankles (but not the tops of the feet) with knees no wider than the width of your hips",
       "The heels are lifted away from the buttocks and at the same time the thighs are lifted away from the earth working opposing forces as the heart center, hips and back open",
@@ -39,14 +47,15 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Dhanurasana draws the whole front body open like a strung bow, generating strong heat. It is powerfully Kapha-reducing and kindles Agni through direct abdominal compression. Pitta types should hold it briefly and avoid it in peak summer; Vata types need a warm spine first, as a cold deep backbend is where the lumbar complains.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483072/yoga-api/3_aa0fgk.png",
     "medical_conditions_beneficial": [
       "diabetes"
     ],
     "medical_conditions_contraindicated": [
       "back_pain"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "camel",
@@ -66,7 +75,15 @@
       "Improves posture",
       "Stimulates the organs of the abdomen and neck"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "chest",
+      "throat",
+      "hip flexors",
+      "quadriceps",
+      "shoulders",
+      "abdomen"
+    ],
     "instructions": [
       "From a kneeling position the knees are hip width apart and the thighs are perpendicular to the earth",
       "The inner thighs are narrowed and rotated slightly inward with the buttocks engaged but not hardened",
@@ -97,7 +114,7 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Ustrasana opens the heart centre and the throat, releasing the emotional holding that settles in the chest. The strong extension is heating and Kapha-clearing, and the throat opening stimulates the thyroid. Because it can provoke a rush of emotion or dizziness, Vata types should keep the hands on the sacrum rather than reaching for the heels.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483075/yoga-api/6_ri1w0e.png",
     "medical_conditions_beneficial": [
       "asthma",
@@ -106,7 +123,8 @@
     ],
     "medical_conditions_contraindicated": [
       "back_pain"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "cobra_pose",
@@ -120,12 +138,25 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves backbend strength and flexibility."
+      "Strengthens the erector spinae and mid-back extensors that stabilise posture",
+      "Opens the chest and intercostals, increasing usable lung capacity",
+      "Stimulates the abdominal organs and supports digestive motility",
+      "Counteracts the thoracic rounding built up by desk and phone posture"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "lower back",
+      "chest",
+      "shoulders",
+      "abdomen"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Lie prone with the legs together, tops of the feet pressing down, and the forehead resting on the mat.",
+      "Place the palms flat beside the lowest ribs, elbows bent and hugging close to the side body.",
+      "Inhale and peel the chest away from the floor by contracting the back muscles — take almost no weight into the hands.",
+      "Draw the shoulder blades down the back and widen across the collarbones; keep the elbows soft and pointing back, never splayed out.",
+      "Press the pubic bone toward the mat to lengthen the lumbar spine rather than compressing it.",
+      "Gaze forward and slightly down. Exhale to lower with control, one vertebra at a time."
     ],
     "dosha_balance": {
       "vata": "neutral",
@@ -135,7 +166,10 @@
     "contraindications": [
       "lower_back_pain",
       "pregnancy_third_trimester",
-      "herniated_disc"
+      "herniated_disc",
+      "serious_back_injury",
+      "wrist_injury",
+      "pregnancy"
     ],
     "pregnancy_safe": false,
     "goals": [
@@ -143,8 +177,8 @@
       "flexibility"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lift the chest, exhale to lower. Never hold the breath at the top.",
+    "ayurvedic_rationale": "Bhujangasana opens the chest — the seat of Prana Vayu and Sadhaka Pitta — lifting the heaviness and low mood that accumulate with excess Kapha. The gentle abdominal compression kindles Agni. Pitta types should keep the pose light and stop well short of maximum depth, as forceful backbending adds heat.",
     "image_url": "",
     "medical_conditions_beneficial": [
       "asthma",
@@ -152,17 +186,19 @@
       "cervical_spondylosis",
       "depression",
       "diabetes",
-      "thyroid"
+      "thyroid",
+      "constipation"
     ],
     "medical_conditions_contraindicated": [
       "back_pain"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "cow",
     "english_name": "Cow",
     "sanskrit_name": "Bitilasana",
-    "category": "backbend",
+    "category": "prone",
     "level": "beginner",
     "duration_seconds": {
       "beginner": 20,
@@ -174,7 +210,13 @@
       "Improves breathing and the circulation of blood to the brain",
       "Rejuvenates the entire body"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "lower back",
+      "chest",
+      "abdomen",
+      "neck"
+    ],
     "instructions": [
       "From  box neutral the ribcage is lifted with a gentle sway in the low back",
       "The tailbone lifts up into dog tilt",
@@ -194,7 +236,7 @@
     "goals": [],
     "sequence_role": "main",
     "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Bitilasana is the extension half of the Cat-Cow pair — the gentlest spinal backbend available. The breath-linked movement grounds Vata, the mild pace keeps Pitta from rushing, and the mobilisation lifts the morning stagnation of Kapha. It is the safest possible warming of the spine for every constitution.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483077/yoga-api/8_wi10sn.png",
     "medical_conditions_beneficial": [
       "arthritis",
@@ -203,7 +245,8 @@
     ],
     "medical_conditions_contraindicated": [
       "back_pain"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "fish_pose",
@@ -271,7 +314,8 @@
       "cervical_spondylosis",
       "heart_disease",
       "hypertension"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "frog_pose",
@@ -334,7 +378,8 @@
       "arthritis",
       "back_pain",
       "sciatica"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "full_pigeon",
@@ -348,12 +393,26 @@
       "advanced": 90
     },
     "primary_benefits": [
-      "Improves backbend strength and flexibility."
+      "Opens the entire front line — hip flexors, abdomen, chest, throat",
+      "Builds deep thoracic and lumbar spinal extension",
+      "Strengthens the back body and shoulder girdle under load",
+      "Stimulates the thyroid and parathyroid through sustained throat extension"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "chest",
+      "hip flexors",
+      "quadriceps",
+      "shoulders",
+      "throat"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Begin kneeling with the thighs vertical and the shins parallel, hip-width apart.",
+      "Place the palms on the sacrum, fingers pointing down, and draw the elbows toward one another.",
+      "Inhale and lift the sternum toward the ceiling, arching the upper back first while the hips stay stacked over the knees.",
+      "Slowly release the head back only if the neck is entirely comfortable, then walk the hands down to reach for the feet.",
+      "In the full expression the forearms rest on the floor and the crown approaches the soles of the feet.",
+      "Come out the way you came in, leading with the chest, then rest in Child's Pose for at least as long as you held the pose."
     ],
     "dosha_balance": {
       "vata": "neutral",
@@ -365,7 +424,14 @@
       "pregnancy_third_trimester",
       "heart_disease",
       "herniated_disc",
-      "hypertension"
+      "hypertension",
+      "serious_back_injury",
+      "serious_spinal_injury",
+      "neck_injury",
+      "serious_neck_injury",
+      "high_blood_pressure",
+      "knee_injury",
+      "pregnancy"
     ],
     "pregnancy_safe": false,
     "goals": [
@@ -373,15 +439,19 @@
       "flexibility"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Steady Ujjayi throughout. If the breath becomes ragged, come out immediately.",
+    "ayurvedic_rationale": "Kapotasana is among the most demanding backbends and generates intense Pitta. It suits robust Kapha constitutions with an established practice and should be approached with restraint by Pitta types, particularly in Grishma (summer). Vata types need thorough warming first, as cold, unprepared joints are where injury happens.",
     "image_url": "",
-    "medical_conditions_beneficial": [],
+    "medical_conditions_beneficial": [
+      "thyroid",
+      "depression"
+    ],
     "medical_conditions_contraindicated": [
       "back_pain",
       "heart_disease",
       "hypertension"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "pigeon",
@@ -398,7 +468,15 @@
       "Stretches the hamstrings and quads",
       "If the elbow is used to push the thigh, it opens the hips as well"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hips",
+      "outer hips",
+      "glutes",
+      "piriformis",
+      "psoas",
+      "hip flexors",
+      "lower back"
+    ],
     "instructions": [
       "Lie on the back in supine position",
       "Bend the knees, heels close to SI bones and cross one ankle over the opposite knee",
@@ -421,7 +499,7 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Supta Kapotasana opens the deep external rotators and the psoas, releasing the pelvic region governed by Apana Vayu. The hips hold the residue of unprocessed stress, which is why this pose so often surfaces emotion. Long, supported holds are deeply Vata-pacifying; forcing depth is Vata-aggravating.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483088/yoga-api/24_ulgsjo.png",
     "medical_conditions_beneficial": [
       "back_pain",
@@ -429,7 +507,8 @@
     ],
     "medical_conditions_contraindicated": [
       "back_pain"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "snake_pose",
@@ -491,7 +570,8 @@
       "back_pain",
       "cervical_spondylosis",
       "sciatica"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "sphinx",
@@ -510,7 +590,13 @@
       "Stimulates the abdominal organs",
       "Opens the heart and the lungs"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "lower back",
+      "chest",
+      "shoulders",
+      "abdomen"
+    ],
     "instructions": [
       "From a prone position with the pelvic bowl is firmly contracted interiorly towards the center line of the body while the pubis is tucked under",
       "The legs are extended back and the tops of the feet are flat",
@@ -534,7 +620,7 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Salamba Bhujangasana is the most accessible backbend in the system — the forearm support means the lower back is never asked to hold the weight. It gently stimulates the adrenals and kidneys and opens the chest without heat, making it the backbend of choice where Cobra is contraindicated and the safest extension for a Vata-disturbed lumbar spine.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483092/yoga-api/35_dytwvz.png",
     "medical_conditions_beneficial": [
       "asthma",
@@ -545,7 +631,8 @@
     ],
     "medical_conditions_contraindicated": [
       "back_pain"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "tiger_pose",
@@ -608,7 +695,8 @@
     "medical_conditions_contraindicated": [
       "arthritis",
       "back_pain"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "upward_plank_pose",
@@ -681,7 +769,8 @@
       "cervical_spondylosis",
       "heart_disease",
       "hypertension"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "upward_facing_dog",
@@ -703,7 +792,16 @@
       "Helps relieve mild depression, fatigue, and sciatica",
       "Therapeutic for asthma"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "wrists",
+      "hands",
+      "arms",
+      "shoulders",
+      "chest",
+      "spine",
+      "abdomen",
+      "thighs"
+    ],
     "instructions": [
       "The body is in a prone position parallel to the earth",
       "The weight of the body is supported equally by the straight arms and the tops of the feet which press firmly into the earth",
@@ -723,16 +821,24 @@
     "contraindications": [
       "lower_back_pain",
       "pregnancy_third_trimester",
-      "herniated_disc"
+      "herniated_disc",
+      "wrist_injury",
+      "shoulder_injury",
+      "neck_injury",
+      "serious_back_injury",
+      "serious_spinal_injury",
+      "pregnancy"
     ],
     "pregnancy_safe": false,
     "goals": [
       "strength",
-      "flexibility"
+      "flexibility",
+      "energy",
+      "stress_relief"
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Urdhva Mukha Svanasana lifts the whole body off the floor on the hands and the tops of the feet, making it far more demanding than Cobra. The strong chest opening awakens Prana Vayu and clears Kapha heaviness. The thighs must stay lifted — dragging them along the mat dumps the entire load into the lumbar spine.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483096/yoga-api/43_m3nxjk.png",
     "medical_conditions_beneficial": [
       "asthma",
@@ -740,75 +846,16 @@
       "thyroid"
     ],
     "medical_conditions_contraindicated": [
-      "back_pain"
-    ]
-  },
-  {
-    "id": "upward_facing_dog_pose",
-    "english_name": "Upward-Facing Dog Pose",
-    "sanskrit_name": "Urdhva Mukha Shvanasana",
-    "category": "backbend",
-    "level": "beginner",
-    "duration_seconds": {
-      "beginner": 20,
-      "intermediate": 30,
-      "advanced": 45
-    },
-    "primary_benefits": [
-      "Opens the chest and front body",
-      "Strengthens the arms, wrists, and spinal extensors",
-      "Improves posture and counteracts slumping",
-      "Invigorates and lifts mood and energy"
-    ],
-    "body_parts": [
-      "wrists",
-      "hands",
-      "arms",
-      "shoulders",
-      "chest",
-      "spine",
-      "abdomen",
-      "thighs"
-    ],
-    "instructions": [
-      "Lie face down with legs extended and the tops of the feet on the mat.",
-      "Place the hands beside the lower ribs with elbows hugged close to the body.",
-      "Press firmly into the hands and tops of the feet as you lift the chest.",
-      "Straighten the arms only as far as you can without compressing the low back.",
-      "Draw the shoulders down and back, broadening the collarbones.",
-      "Keep the thighs active and lifted away from the floor if possible, then breathe steadily."
-    ],
-    "dosha_balance": {
-      "vata": "balances",
-      "pitta": "aggravates",
-      "kapha": "balances"
-    },
-    "contraindications": [
-      "wrist_injury",
-      "shoulder_injury",
-      "neck_injury",
-      "serious_back_injury",
-      "serious_spinal_injury",
-      "lower_back_pain",
-      "pregnancy"
-    ],
-    "pregnancy_safe": false,
-    "goals": [
-      "energy",
-      "strength",
-      "stress_relief"
-    ],
-    "sequence_role": "main",
-    "pranayama_sync": "Inhale to lift and expand the chest, and exhale to soften the shoulders away from the ears.",
-    "ayurvedic_rationale": "This expansive backbend increases prana and circulation, making it helpful for lethargy and Kapha congestion. Its heating, stimulating quality can aggravate Pitta when the chest and neck are forced or the lumbar spine is compressed.",
-    "image_url": "https://pocketyoga.com/assets/images/full/UpwardDog.png",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": [
-      "arthritis",
       "back_pain",
+      "arthritis",
       "cervical_spondylosis",
       "sciatica"
-    ]
+    ],
+    "also_known_as": [
+      "Upward-Facing Dog Pose",
+      "Urdhva Mukha Shvanasana"
+    ],
+    "bilateral": false
   },
   {
     "id": "wheel",
@@ -827,7 +874,15 @@
       "Increases energy and counteracts depression",
       "Therapeutic for asthma, back pain, infertility, and osteoporosis"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "chest",
+      "shoulders",
+      "wrists",
+      "hip flexors",
+      "quadriceps",
+      "glutes"
+    ],
     "instructions": [
       "Pressed up from a supine position, lying on your back, the palms are rooted into the earth with the fingers pointed towards the heels",
       "The feet are grounded",
@@ -863,14 +918,15 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale as you open the chest, exhale to deepen",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Urdhva Dhanurasana is the full expression of spinal extension and generates intense heat throughout the system. Strongly Kapha-reducing and energising, but markedly Pitta-provoking — it should be practised in the cool of the morning rather than in Grishma heat. Requires thorough preparation of the shoulders and thoracic spine.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483097/yoga-api/47_w2jsof.png",
     "medical_conditions_beneficial": [
       "depression"
     ],
     "medical_conditions_contraindicated": [
       "back_pain"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "wild_thing_pose",
@@ -920,28 +976,37 @@
       "serious_back_injury",
       "serious_spinal_injury",
       "lower_back_pain",
-      "pregnancy"
+      "pregnancy",
+      "knee_injury",
+      "ankle_injury"
     ],
     "pregnancy_safe": false,
     "goals": [
       "balance",
       "strength",
       "energy",
-      "spiritual"
+      "spiritual",
+      "flexibility"
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to lift the chest and open the side body, and exhale to ground through the supporting hand and foot.",
     "ayurvedic_rationale": "This expressive backbend can enliven stagnant Kapha and support a sense of lightness and openness. Because it is stimulating and unstable, it may increase Pitta and should be practiced with moderation and clear alignment.",
     "image_url": "https://pocketyoga.com/assets/images/full/WildThing_R.png",
     "medical_conditions_beneficial": [
-      "depression"
+      "depression",
+      "thyroid"
     ],
     "medical_conditions_contraindicated": [
       "arthritis",
       "back_pain",
       "cervical_spondylosis",
       "sciatica"
-    ]
+    ],
+    "also_known_as": [
+      "Wild Thing",
+      "Camatkarasana"
+    ],
+    "bilateral": true
   },
   {
     "id": "bird_of_paradise_pose",
@@ -1006,7 +1071,8 @@
     "medical_conditions_contraindicated": [
       "arthritis",
       "back_pain"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "crow",
@@ -1026,7 +1092,14 @@
       "Opens the groin",
       "Tones the abdominal organs"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "arms",
+      "wrists",
+      "shoulders",
+      "core",
+      "upper back",
+      "hip flexors"
+    ],
     "instructions": [
       "From an inverted position, with the hips up and the head down, the arms are bent in a 90-degree angle with the knees resting on the elbows",
       "The palms are firmly rooted into the earth with knuckles pressed firmly into the earth for support",
@@ -1051,14 +1124,15 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Bakasana is the gateway arm balance, and the obstacle it addresses is mental more than physical. The forward commitment over the hands cultivates the fearlessness and focus of a steady Pitta mind, while the effort clears Kapha inertia. Vata types gain real grounding from bearing their own weight, once the wrists are conditioned.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483083/yoga-api/13_hdjxuz.png",
     "medical_conditions_beneficial": [
       "obesity"
     ],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "dancer_pose",
@@ -1072,12 +1146,26 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves balancing strength and flexibility."
+      "Develops single-leg balance and proprioceptive control",
+      "Opens the front of the shoulder, chest, and hip flexor of the lifted leg",
+      "Strengthens the standing ankle, calf, and gluteal complex",
+      "Trains sustained concentration through drishti"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "standing leg",
+      "ankles",
+      "hip flexors",
+      "chest",
+      "shoulders",
+      "spine"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Stand in Tadasana and shift the weight into the right foot, grounding evenly through all four corners.",
+      "Bend the left knee and catch the inside of the left ankle with the left hand, thumb pointing up.",
+      "Extend the right arm forward and up, and fix your drishti on a still point at eye level.",
+      "Press the left foot firmly back into the hand — the pressing, not the pulling, is what lifts you.",
+      "Hinge the torso forward as the left thigh lifts behind you, keeping the hips level and the standing leg straight but not locked.",
+      "Hold, then release the foot slowly and return to Tadasana before changing sides."
     ],
     "dosha_balance": {
       "vata": "aggravates",
@@ -1086,7 +1174,11 @@
     },
     "contraindications": [
       "knee_injury",
-      "ankle_injury"
+      "ankle_injury",
+      "lower_back_pain",
+      "high_blood_pressure",
+      "hypertension",
+      "pregnancy_third_trimester"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -1095,15 +1187,18 @@
       "balance"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lengthen and lift, exhale to steady. Keep the breath even — balance follows breath.",
+    "ayurvedic_rationale": "Natarajasana demands the steadiness (sthira) that scattered Vata most needs, while the backbend and single-point gaze lift Kapha's inertia. The pose is named for Shiva as lord of the cosmic dance — it asks for poise inside movement rather than rigidity.",
     "image_url": "",
     "medical_conditions_beneficial": [
-      "depression"
+      "depression",
+      "obesity",
+      "back_pain"
     ],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "eagle",
@@ -1122,7 +1217,14 @@
       "Improves concentration",
       "Improves sense of balance"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "shoulders",
+      "upper back",
+      "hips",
+      "outer thighs",
+      "ankles",
+      "standing leg"
+    ],
     "instructions": [
       "From a standing position the one thigh is crossed over the other with the toes and/or the ankle hooked behind the lower calf",
       "The weight of the body is balanced on the standing foot",
@@ -1149,14 +1251,15 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Garudasana wraps the limbs inward, compressing the joints and then flooding them with circulation on release. The bound, contained shape is markedly Vata-pacifying — it gathers scattered energy toward the midline — while the single-leg balance demands the concentration that quiets a busy mind.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483081/yoga-api/16_g7ueht.png",
     "medical_conditions_beneficial": [
       "depression"
     ],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "eight_angle_pose",
@@ -1170,12 +1273,26 @@
       "advanced": 90
     },
     "primary_benefits": [
-      "Improves balancing strength and flexibility."
+      "Builds significant arm, wrist, and shoulder strength",
+      "Develops deep core and oblique control under load",
+      "Opens the hips and hamstrings in a compressed position",
+      "Trains the fear-management and focus that arm balances demand"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "arms",
+      "wrists",
+      "shoulders",
+      "core",
+      "obliques",
+      "hips"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "From a seated position, hook the right knee over the right shoulder as high onto the upper arm as it will go.",
+      "Plant both palms on the floor, shoulder-width apart, fingers spread wide and pointing forward.",
+      "Cross the left ankle over the right and squeeze the legs firmly together — the grip of the ankles holds the pose.",
+      "Press down through the hands, lift the hips, and shift the weight forward until the feet leave the ground.",
+      "Bend the elbows to 90 degrees as in Chaturanga and extend the legs out to the right side, torso lowering toward parallel.",
+      "Gaze forward. To exit, straighten the arms, lower the hips, and unwind the legs."
     ],
     "dosha_balance": {
       "vata": "aggravates",
@@ -1184,7 +1301,16 @@
     },
     "contraindications": [
       "knee_injury",
-      "ankle_injury"
+      "ankle_injury",
+      "wrist_injury",
+      "shoulder_injury",
+      "rotator_cuff",
+      "herniated_disc",
+      "serious_back_injury",
+      "hip_injury",
+      "pregnancy",
+      "pregnancy_third_trimester",
+      "high_blood_pressure"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -1193,13 +1319,14 @@
       "balance"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Exhale to lift and shift forward. Keep breathing — holding the breath collapses the pose.",
+    "ayurvedic_rationale": "Astavakrasana generates strong Pitta — heat, effort, and determination. It is well suited to Kapha constitutions needing activation, and should be practised sparingly by Pitta types prone to pushing past their limit. Vata practitioners benefit from the grounding of bearing their own weight, but only once the wrists and shoulders are genuinely conditioned.",
     "image_url": "",
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "extended_hand_to_toe",
@@ -1217,7 +1344,13 @@
       "Stretches the hamstrings, IT bands and legs",
       "Improves balance"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hamstrings",
+      "standing leg",
+      "hips",
+      "core",
+      "ankles"
+    ],
     "instructions": [
       "From mountain",
       "html pose, lift one foot",
@@ -1244,12 +1377,13 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Utthita Hasta Padangusthasana demands hamstring length and single-point focus at the same time, exposing any wobble in either. The steadiness it asks for is precisely what scattered Vata needs. Use a strap around the foot rather than rounding the spine to reach — the compromise in the spine is never worth the reach.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483084/yoga-api/17_l9joyu.png",
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "firefly_pose",
@@ -1263,12 +1397,26 @@
       "advanced": 90
     },
     "primary_benefits": [
-      "Improves balancing strength and flexibility."
+      "Builds arm, wrist, and shoulder strength",
+      "Deeply stretches the hamstrings, inner thighs, and adductors",
+      "Strengthens the hip flexors and deep core",
+      "Improves overall body awareness and balance on the hands"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "arms",
+      "wrists",
+      "shoulders",
+      "hamstrings",
+      "inner thighs",
+      "core"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Stand with the feet slightly wider than hip-width and fold forward, walking the hands behind the heels.",
+      "Bend the knees deeply and work the shoulders as far under the backs of the thighs as possible.",
+      "Plant the palms flat behind the feet, fingers pointing forward, and grip the floor.",
+      "Shift the weight back into the hands and lift the feet off the floor, resting the thighs high on the upper arms.",
+      "Straighten the legs out to the sides as much as the hamstrings allow, pointing through the toes.",
+      "Lift the chest and gaze forward. Lower with control by bending the knees and setting the feet down."
     ],
     "dosha_balance": {
       "vata": "aggravates",
@@ -1277,7 +1425,15 @@
     },
     "contraindications": [
       "knee_injury",
-      "ankle_injury"
+      "ankle_injury",
+      "wrist_injury",
+      "shoulder_injury",
+      "rotator_cuff",
+      "lower_back_pain",
+      "herniated_disc",
+      "hamstring_injury",
+      "pregnancy",
+      "pregnancy_third_trimester"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -1286,13 +1442,14 @@
       "balance"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Exhale to lift off. Maintain a steady Ujjayi throughout the hold.",
+    "ayurvedic_rationale": "Tittibhasana requires both heat and precision, making it a Pitta-dominant practice. Kapha types gain from the vigour and lightness it cultivates. Vata practitioners should warm the hamstrings and hips thoroughly first, as forcing this pose cold risks strain at the adductor insertion.",
     "image_url": "",
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "flying_splits",
@@ -1306,12 +1463,26 @@
       "advanced": 90
     },
     "primary_benefits": [
-      "Improves balancing strength and flexibility."
+      "Builds substantial upper-body and core strength",
+      "Opens the hamstrings and hip flexors simultaneously",
+      "Develops the balance and commitment required for arm balances",
+      "Strengthens the wrists and the serratus and pectoral stabilisers"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "arms",
+      "wrists",
+      "shoulders",
+      "core",
+      "hamstrings",
+      "hip flexors"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Begin in a low lunge with the right foot forward, then thread the right shoulder under the right thigh.",
+      "Plant both palms shoulder-width apart on the floor, fingers spread and pointing forward.",
+      "Bend the elbows to a Chaturanga angle, creating a firm shelf for the right thigh on the right upper arm.",
+      "Shift the weight forward over the hands until the back foot lifts off the floor.",
+      "Extend the right leg straight forward and the left leg straight back, forming a split in the air.",
+      "Gaze forward. Lower the back foot first, then release the front leg, and repeat on the second side."
     ],
     "dosha_balance": {
       "vata": "aggravates",
@@ -1320,7 +1491,16 @@
     },
     "contraindications": [
       "knee_injury",
-      "ankle_injury"
+      "ankle_injury",
+      "wrist_injury",
+      "shoulder_injury",
+      "rotator_cuff",
+      "herniated_disc",
+      "serious_back_injury",
+      "hamstring_injury",
+      "pregnancy",
+      "pregnancy_third_trimester",
+      "high_blood_pressure"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -1329,13 +1509,14 @@
       "balance"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Exhale to shift forward and lift. Breathe steadily; the pose collapses on a held breath.",
+    "ayurvedic_rationale": "Eka Pada Koundinyasana is intensely Pitta-generating — it rewards precision and courage but punishes forcing. Best suited to Kapha constitutions that benefit from activation, and to seasoned Pitta practitioners willing to work without competition.",
     "image_url": "",
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "half_moon",
@@ -1355,7 +1536,15 @@
       "Helps relieve stress",
       "Improves digestion"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "standing leg",
+      "hamstrings",
+      "hips",
+      "side body",
+      "obliques",
+      "ankles",
+      "core"
+    ],
     "instructions": [
       "From a standing position one leg is straight while the other is extended back parallel to the earth (or a little above parallel) and one hand is on the earth (beyond the little-toe side of the foot, about 12 inches) while the other hand is extended up towards the sky",
       "The shoulder blades are squeezed together and the fingers move outward in opposing directions",
@@ -1386,7 +1575,7 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Ardha Chandrasana opens the whole side body while balancing on one leg and one hand — expansion and stability held together. The lunar name signals its cooling, receptive quality, making it well suited to Pitta. A block under the bottom hand is standard practice, not a beginner's concession.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483085/yoga-api/21_etedlp.png",
     "medical_conditions_beneficial": [
       "depression",
@@ -1394,7 +1583,8 @@
     ],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "plank",
@@ -1411,7 +1601,14 @@
       "Strengthens the arms, wrists, and spine",
       "Tones the abdomen"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "core",
+      "shoulders",
+      "wrists",
+      "arms",
+      "glutes",
+      "spine"
+    ],
     "instructions": [
       "The body is parallel to the earth",
       "The weight of the body is supported by straight arms and active toes",
@@ -1437,14 +1634,15 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Phalakasana builds the core stability that protects the spine — the primary seat of Vata — in every other posture. The sustained isometric effort generates heat and strongly reduces Kapha. Pitta types should watch the tendency to grit through it; the pose ends when the lower back starts to sag, not when willpower runs out.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483088/yoga-api/26_mxkzlo.png",
     "medical_conditions_beneficial": [
       "obesity"
     ],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "revolved_half_moon_pose",
@@ -1516,7 +1714,8 @@
       "glaucoma",
       "hypertension",
       "sciatica"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "side_crow",
@@ -1530,12 +1729,26 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves balancing strength and flexibility."
+      "Strengthens the arms, wrists, and shoulder girdle",
+      "Builds oblique and deep core strength through the twist",
+      "Improves spinal rotation and detoxifying abdominal compression",
+      "Develops balance, focus, and confidence on the hands"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "arms",
+      "wrists",
+      "shoulders",
+      "core",
+      "obliques",
+      "spine"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Begin in a deep squat with the feet and knees together, heels lifted.",
+      "Twist the torso to the right, bringing the left elbow to the outside of the right thigh.",
+      "Plant both palms on the floor to the right, shoulder-width apart, fingers spread and pointing away from you.",
+      "Bend both elbows to 90 degrees, keeping them stacked directly over the wrists and hugging in toward the midline.",
+      "Rest the outer right thigh on the left upper arm, then shift the weight forward and lift the feet.",
+      "Keep the knees together and gaze past the fingertips. Lower with control and repeat on the second side."
     ],
     "dosha_balance": {
       "vata": "aggravates",
@@ -1544,7 +1757,16 @@
     },
     "contraindications": [
       "knee_injury",
-      "ankle_injury"
+      "ankle_injury",
+      "wrist_injury",
+      "shoulder_injury",
+      "rotator_cuff",
+      "herniated_disc",
+      "serious_back_injury",
+      "spinal_injury",
+      "pregnancy",
+      "pregnancy_third_trimester",
+      "high_blood_pressure"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -1553,58 +1775,18 @@
       "balance"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
-    "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": [
-      "arthritis"
-    ]
-  },
-  {
-    "id": "side_plank",
-    "english_name": "Side Plank",
-    "sanskrit_name": "Vasisthasana",
-    "category": "balancing",
-    "level": "intermediate",
-    "duration_seconds": {
-      "beginner": 30,
-      "intermediate": 45,
-      "advanced": 60
-    },
-    "primary_benefits": [
-      "Improves balancing strength and flexibility."
-    ],
-    "body_parts": [],
-    "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
-    ],
-    "dosha_balance": {
-      "vata": "aggravates",
-      "pitta": "balances",
-      "kapha": "balances"
-    },
-    "contraindications": [
-      "knee_injury",
-      "ankle_injury"
-    ],
-    "pregnancy_safe": true,
-    "goals": [
-      "strength",
-      "flexibility",
-      "balance"
-    ],
-    "sequence_role": "main",
-    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Exhale to deepen the twist and shift forward. Never hold the breath in a loaded twist.",
+    "ayurvedic_rationale": "The twist compresses and then flushes the abdominal organs, kindling Agni and helping clear Ama. The heat and effort are Pitta in nature and strongly reduce Kapha. Vata types should approach slowly with a warm spine, as cold rotation under load is where the lumbar complains.",
     "image_url": "",
     "medical_conditions_beneficial": [
-      "obesity"
+      "constipation",
+      "obesity",
+      "fatty_liver"
     ],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "side_plank_pose",
@@ -1647,71 +1829,32 @@
     },
     "contraindications": [
       "wrist_injury",
-      "shoulder_injury"
+      "shoulder_injury",
+      "knee_injury",
+      "ankle_injury"
     ],
     "pregnancy_safe": false,
     "goals": [
       "strength",
       "balance",
-      "energy"
+      "energy",
+      "flexibility"
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to lengthen through the crown and exhale to lift the hips and engage the core, keeping the breath steady and unforced.",
     "ayurvedic_rationale": "This pose generates heat and stability while strengthening the side body and core, which can help counter kapha heaviness and vata instability. Because it is effortful and energizing, it is best practiced with steady breath and moderation if pitta is elevated.",
     "image_url": "https://pocketyoga.com/assets/images/full/PlankSide_R.png",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": [
-      "arthritis"
-    ]
-  },
-  {
-    "id": "tree",
-    "english_name": "Tree",
-    "sanskrit_name": "Vrksasana",
-    "category": "balancing",
-    "level": "beginner",
-    "duration_seconds": {
-      "beginner": 20,
-      "intermediate": 30,
-      "advanced": 45
-    },
-    "primary_benefits": [
-      "Strengthens the legs, ankles, and feet",
-      "Improves flexibility in the hips and knees",
-      "Improves balance"
-    ],
-    "body_parts": [],
-    "instructions": [
-      "From a standing position, one foot is rooted into the earth with the opposite heel rooted into the inner thigh with the toes pointing towards the earth",
-      "The pelvis and the chin are tucked in",
-      "The arms are lifted above the head with the palms together in prayer position",
-      "The gaze is forward"
-    ],
-    "dosha_balance": {
-      "vata": "aggravates",
-      "pitta": "balances",
-      "kapha": "balances"
-    },
-    "contraindications": [
-      "knee_injury",
-      "ankle_injury"
-    ],
-    "pregnancy_safe": true,
-    "goals": [
-      "strength",
-      "flexibility",
-      "balance"
-    ],
-    "sequence_role": "main",
-    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
-    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483094/yoga-api/41_veknug.png",
     "medical_conditions_beneficial": [
-      "depression"
+      "obesity"
     ],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "also_known_as": [
+      "Side Plank",
+      "Vasisthasana"
+    ],
+    "bilateral": true
   },
   {
     "id": "tree_pose",
@@ -1761,7 +1904,8 @@
     "goals": [
       "balance",
       "strength",
-      "stress_relief"
+      "stress_relief",
+      "flexibility"
     ],
     "sequence_role": "main",
     "pranayama_sync": "Use slow, even breaths to steady the gaze and maintain balance without gripping.",
@@ -1771,75 +1915,17 @@
       "anxiety",
       "arthritis",
       "diabetes",
-      "hypertension"
+      "hypertension",
+      "depression"
     ],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
-  },
-  {
-    "id": "warrior_iii_pose",
-    "english_name": "Warrior III Pose",
-    "sanskrit_name": "Virabhadrasana C",
-    "category": "balancing",
-    "level": "intermediate",
-    "duration_seconds": {
-      "beginner": 20,
-      "intermediate": 30,
-      "advanced": 45
-    },
-    "primary_benefits": [
-      "Builds balance and proprioception",
-      "Strengthens the glutes, hamstrings, and core",
-      "Improves posture and hip stability",
-      "Enhances concentration and full-body coordination"
     ],
-    "body_parts": [
-      "glutes",
-      "hamstrings",
-      "core",
-      "ankles",
-      "feet",
-      "lower back",
-      "shoulders"
+    "also_known_as": [
+      "Tree",
+      "Vrksasana"
     ],
-    "instructions": [
-      "Stand tall in Mountain Pose with feet hip-width apart.",
-      "Shift weight into one standing leg and engage the standing foot.",
-      "Inhale and lengthen the spine forward as the other leg lifts back.",
-      "Keep hips as level as possible and square them toward the floor.",
-      "Reach the arms forward or keep them at the sides for balance.",
-      "Hold the pose with steady breathing, then return slowly to standing and repeat on the other side."
-    ],
-    "dosha_balance": {
-      "vata": "balances",
-      "pitta": "neutral",
-      "kapha": "balances"
-    },
-    "contraindications": [
-      "ankle_injury",
-      "knee_injury",
-      "hip_injury",
-      "lower_back_pain"
-    ],
-    "pregnancy_safe": false,
-    "goals": [
-      "balance",
-      "strength",
-      "focus",
-      "energy"
-    ],
-    "sequence_role": "main",
-    "pranayama_sync": "Use a steady inhale to lengthen and an even exhale to stabilize the standing leg and torso.",
-    "ayurvedic_rationale": "This strong balancing posture is stimulating and building, making it useful when kapha is sluggish or when clarity and focus are needed. Its stabilizing nature can also help organize scattered vata by training steadiness and control.",
-    "image_url": "https://pocketyoga.com/assets/images/full/WarriorIII_L.png",
-    "medical_conditions_beneficial": [
-      "obesity"
-    ],
-    "medical_conditions_contraindicated": [
-      "arthritis",
-      "back_pain"
-    ]
+    "bilateral": true
   },
   {
     "id": "warrior_three",
@@ -1858,7 +1944,15 @@
       "Tones the abdomen",
       "Improves balance and posture"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "glutes",
+      "hamstrings",
+      "core",
+      "ankles",
+      "feet",
+      "lower back",
+      "shoulders"
+    ],
     "instructions": [
       "From a standing position, one leg is rooted and perpendicular to the earth while the other leg is raised, extended back and parallel to the earth",
       "The head of the thighbone of the standing leg presses back towards the heel and is actively rooted into the earth",
@@ -1874,75 +1968,33 @@
     },
     "contraindications": [
       "knee_injury",
-      "ankle_injury"
+      "ankle_injury",
+      "hip_injury",
+      "lower_back_pain"
     ],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "goals": [
       "strength",
-      "balance"
+      "balance",
+      "focus",
+      "energy"
     ],
     "sequence_role": "main",
     "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Virabhadrasana Three extends the whole body into one horizontal line over a single leg, demanding strength and focus in equal measure. The commitment and precision are Pitta in character, the effort clears Kapha, and the intense concentration required leaves no room for Vata's mental scatter.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483097/yoga-api/46_lz6v7i.png",
     "medical_conditions_beneficial": [
       "obesity"
     ],
     "medical_conditions_contraindicated": [
-      "arthritis"
-    ]
-  },
-  {
-    "id": "wild_thing",
-    "english_name": "Wild Thing",
-    "sanskrit_name": "Camatkarasana",
-    "category": "balancing",
-    "level": "intermediate",
-    "duration_seconds": {
-      "beginner": 30,
-      "intermediate": 45,
-      "advanced": 60
-    },
-    "primary_benefits": [
-      "Stretches the chest, shoulders, back, and throat",
-      "Strengthens and opens the hips, hip flexors, and thighs"
+      "arthritis",
+      "back_pain"
     ],
-    "body_parts": [],
-    "instructions": [
-      "From downward dog pose, elevate one leg toward the sky and stack the corresponding hip over the other hip",
-      "Bring the upper heel as close to the buttocks as possible",
-      "The hips remain stacked; then bring the shoulders forward slowly over the hands",
-      "Replace the corresponding hand to the upraised leg with the other hand and flip yourself over and extend the top hand forward",
-      "The bottom foot is now facing toward the front of the mat and you remain on the ball of the top foot and the corresponding knee is bent",
-      "Continue to lift hips up towards the sky and continue reaching the free hand towards the front of the room and slightly downwards",
-      "Allow the head to curl back"
+    "also_known_as": [
+      "Warrior III Pose",
+      "Virabhadrasana C"
     ],
-    "dosha_balance": {
-      "vata": "aggravates",
-      "pitta": "balances",
-      "kapha": "balances"
-    },
-    "contraindications": [
-      "knee_injury",
-      "ankle_injury"
-    ],
-    "pregnancy_safe": true,
-    "goals": [
-      "strength",
-      "flexibility",
-      "balance"
-    ],
-    "sequence_role": "main",
-    "pranayama_sync": "Steady rhythmic breathing, gaze fixed",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
-    "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483097/yoga-api/48_unoav6.png",
-    "medical_conditions_beneficial": [
-      "depression",
-      "thyroid"
-    ],
-    "medical_conditions_contraindicated": [
-      "arthritis"
-    ]
+    "bilateral": true
   },
   {
     "id": "big_toe_pose",
@@ -2007,7 +2059,8 @@
       "glaucoma",
       "hypertension",
       "sciatica"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "forward_bend_with_shoulder_opener",
@@ -2032,7 +2085,14 @@
       "Relieves headache and insomnia",
       "Opens the shoulders"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hamstrings",
+      "calves",
+      "spine",
+      "shoulders",
+      "chest",
+      "lower back"
+    ],
     "instructions": [
       "From a standing position, the body is folded over at the crease of the hip with the spine long",
       "The neck is relaxed and the crown of the head is towards the earth",
@@ -2068,7 +2128,7 @@
     ],
     "sequence_role": "cooldown",
     "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Uttanasana with a shoulder bind combines the cooling, inward quality of a forward fold with a strong opening across the front of the shoulders. The head-below-heart position calms Pitta and clears the Kapha mind. Keep the knees generously bent — length in the spine matters far more than straight legs.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483085/yoga-api/20_uogrfq.png",
     "medical_conditions_beneficial": [
       "anxiety",
@@ -2080,7 +2140,8 @@
       "hypertension",
       "obesity"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "gorilla_pose",
@@ -2146,7 +2207,8 @@
       "glaucoma",
       "hypertension",
       "sciatica"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "half_standing_forward_fold",
@@ -2160,12 +2222,24 @@
       "advanced": 45
     },
     "primary_benefits": [
-      "Improves forward_fold strength and flexibility."
+      "Lengthens the spine and teaches the flat-back position that protects the lumbar in every forward fold",
+      "Stretches the hamstrings without rounding the lower back",
+      "Strengthens the mid-back extensors and postural muscles",
+      "Builds the body awareness that makes deeper folds safe"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "hamstrings",
+      "lower back",
+      "upper back"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "From a standing forward fold, place the fingertips on the floor, on blocks, or on the shins.",
+      "Inhale and straighten the arms to lift the torso until the spine is parallel to the floor.",
+      "Draw the shoulder blades down the back and broaden the collarbones — do not let the shoulders creep toward the ears.",
+      "Lengthen the crown of the head forward and the tailbone back, creating one long line.",
+      "Keep a soft micro-bend in the knees so the length comes from the spine, not the hamstrings.",
+      "Gaze at the floor a few inches ahead to keep the neck in line with the spine."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -2175,7 +2249,9 @@
     "contraindications": [
       "lower_back_pain",
       "herniated_disc",
-      "serious_back_injury"
+      "serious_back_injury",
+      "hamstring_injury",
+      "glaucoma"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -2184,11 +2260,15 @@
       "flexibility"
     ],
     "sequence_role": "cooldown",
-    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lift and lengthen; exhale to fold deeper.",
+    "ayurvedic_rationale": "Ardha Uttanasana is the alignment gateway of the Surya Namaskar sequence. Its calming forward orientation soothes Pitta while the spinal extension keeps Kapha from settling. For Vata, the half-fold is safer than the full fold, which can over-mobilise already loose joints.",
     "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_beneficial": [
+      "back_pain",
+      "cervical_spondylosis"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "head_to_knee_forward_bend",
@@ -2202,12 +2282,26 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves forward_fold strength and flexibility."
+      "Stretches the hamstring, calf, and entire back line of the extended leg",
+      "Opens the hip and inner thigh of the bent leg",
+      "Calms the nervous system and quiets mental agitation",
+      "Compresses and stimulates the liver, kidneys, and digestive organs"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hamstrings",
+      "calves",
+      "spine",
+      "hips",
+      "inner thighs",
+      "lower back"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Sit in Dandasana, then bend the right knee and draw the right heel toward the perineum, letting the knee open out to the side.",
+      "Sit on a folded blanket if the pelvis tilts backward — the fold must begin at the hips, not the waist.",
+      "Turn the torso to square it over the extended left leg before folding.",
+      "Inhale to lengthen the spine, exhale to hinge forward from the hip crease, reaching for the left foot or a strap around it.",
+      "Keep the left foot flexed and the left kneecap pointing straight up to protect the knee joint.",
+      "Hold, breathing into the back of the ribs. Rise on an inhale and change sides."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -2218,7 +2312,9 @@
       "lower_back_pain",
       "herniated_disc",
       "serious_back_injury",
-      "knee_injury"
+      "knee_injury",
+      "hamstring_injury",
+      "pregnancy_third_trimester"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -2227,79 +2323,19 @@
       "flexibility"
     ],
     "sequence_role": "cooldown",
-    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lengthen the spine, exhale to fold. Let the exhale carry you deeper, never the effort.",
+    "ayurvedic_rationale": "Janu Sirsasana is deeply Pitta-pacifying — the inward, downward fold cools the heat and drive of a Pitta mind. Classically used for digestive complaints, as the asymmetric compression massages the abdominal organs one side at a time. Vata types should sit elevated and keep the knee softly bent.",
     "image_url": "",
     "medical_conditions_beneficial": [
       "diabetes",
-      "fatty_liver"
+      "fatty_liver",
+      "constipation",
+      "anxiety",
+      "insomnia",
+      "hypertension"
     ],
-    "medical_conditions_contraindicated": []
-  },
-  {
-    "id": "pyramid_pose",
-    "english_name": "Pyramid Pose",
-    "sanskrit_name": "Parshvottanasana",
-    "category": "forward_fold",
-    "level": "beginner",
-    "duration_seconds": {
-      "beginner": 20,
-      "intermediate": 30,
-      "advanced": 45
-    },
-    "primary_benefits": [
-      "Stretches the hamstrings and calves",
-      "Improves balance and posture",
-      "Calms the nervous system",
-      "Encourages length through the spine and hips"
-    ],
-    "body_parts": [
-      "hamstrings",
-      "calves",
-      "hips",
-      "spine",
-      "shoulders"
-    ],
-    "instructions": [
-      "Start in a standing lunge with one foot forward and the other foot angled slightly inward.",
-      "Square the hips toward the front of the mat and ground evenly through both feet.",
-      "Inhale to lengthen the spine and lift the chest.",
-      "Exhale to hinge forward from the hips, keeping the spine long as you fold over the front leg.",
-      "Place your hands on blocks, shins, or the floor as needed to maintain alignment.",
-      "Keep both legs active and draw the front hip back and the back hip forward.",
-      "Breathe steadily and hold before slowly rising back to standing."
-    ],
-    "dosha_balance": {
-      "vata": "balances",
-      "pitta": "balances",
-      "kapha": "balances"
-    },
-    "contraindications": [
-      "high_blood_pressure",
-      "hypertension",
-      "glaucoma",
-      "serious_back_injury",
-      "herniated_disc",
-      "lower_back_pain",
-      "hamstring injury"
-    ],
-    "pregnancy_safe": false,
-    "goals": [
-      "flexibility",
-      "stress_relief",
-      "healing"
-    ],
-    "sequence_role": "main",
-    "pranayama_sync": "Inhale to create length in the spine, and exhale to deepen the fold without collapsing the chest.",
-    "ayurvedic_rationale": "This pose is grounding and lengthening, helping to calm excess vata while gently releasing tension from the posterior chain. The steady forward fold also supports a quiet, cooling effect that can be helpful when pitta is elevated.",
-    "image_url": "https://pocketyoga.com/assets/images/full/PyramidPrayer_L.png",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": [
-      "back_pain",
-      "glaucoma",
-      "hypertension",
-      "sciatica"
-    ]
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "seated_forward_bend",
@@ -2313,12 +2349,25 @@
       "advanced": 45
     },
     "primary_benefits": [
-      "Improves forward_fold strength and flexibility."
+      "Stretches the entire posterior chain — hamstrings, calves, and spine",
+      "Strongly activates the parasympathetic nervous system, easing anxiety and insomnia",
+      "Massages the abdominal organs and supports digestion and elimination",
+      "Relieves the compression of prolonged sitting through the lower back"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hamstrings",
+      "calves",
+      "spine",
+      "lower back",
+      "abdomen"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Sit in Dandasana with the legs extended, feet flexed, and the thighs rooting down.",
+      "Sit on the front edge of a folded blanket so the pelvis can tip forward rather than tucking under.",
+      "Inhale, lift the arms overhead, and lengthen the whole spine.",
+      "Exhale and hinge forward from the hip creases, leading with the chest rather than the head.",
+      "Hold the shins, feet, or a strap looped around the soles — wherever you land with a long spine.",
+      "Soften the knees as much as needed. Let each exhale release you a little further without pulling."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -2328,7 +2377,11 @@
     "contraindications": [
       "lower_back_pain",
       "herniated_disc",
-      "serious_back_injury"
+      "serious_back_injury",
+      "hamstring_injury",
+      "pregnancy",
+      "pregnancy_third_trimester",
+      "asthma"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -2337,8 +2390,8 @@
       "flexibility"
     ],
     "sequence_role": "cooldown",
-    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lengthen, exhale to fold. Long, slow exhales deepen the calming effect.",
+    "ayurvedic_rationale": "Paschimottanasana translates as the stretch of the west — the entire back body. It is the classical Pitta-cooling asana, drawing awareness inward and downward, and is prescribed across the Hatha texts for digestive fire regulation. Vata types must sit elevated with bent knees; the temptation to force this pose is exactly what aggravates Vata in the lumbar spine.",
     "image_url": "",
     "medical_conditions_beneficial": [
       "anxiety",
@@ -2347,9 +2400,11 @@
       "fatty_liver",
       "hypertension",
       "menopause",
-      "pcos"
+      "pcos",
+      "insomnia"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "splits",
@@ -2363,12 +2418,25 @@
       "advanced": 90
     },
     "primary_benefits": [
-      "Improves forward_fold strength and flexibility."
+      "Deeply opens the hamstrings of the front leg and the hip flexors and psoas of the back leg",
+      "Improves pelvic mobility and stride length",
+      "Releases the sciatic pathway when practised progressively",
+      "Builds patience and long-term consistency in the practice"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hamstrings",
+      "hip flexors",
+      "psoas",
+      "groin",
+      "quadriceps"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Begin in a low lunge with the right foot forward and the left knee on the mat, placing a block under each hand.",
+      "Straighten the front leg progressively, sliding the right heel forward as the left thigh slides back.",
+      "Keep the hips square to the front — the left hip will want to swing open; draw it back and in.",
+      "Descend only as far as the hands can support with the pelvis level. Blocks or a bolster under the front thigh are not a compromise, they are the method.",
+      "Once at your depth, lengthen the spine and either stay upright or fold over the front leg.",
+      "Come out by bending the front knee and stepping back into a lunge. Repeat on the second side."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -2379,7 +2447,12 @@
       "groin_injury",
       "knee_injury",
       "serious_back_injury",
-      "hip_injury"
+      "hip_injury",
+      "hamstring_injury",
+      "lower_back_pain",
+      "herniated_disc",
+      "pregnancy",
+      "pregnancy_third_trimester"
     ],
     "pregnancy_safe": false,
     "goals": [
@@ -2388,11 +2461,14 @@
       "flexibility"
     ],
     "sequence_role": "cooldown",
-    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Long, slow exhales as you descend. Never hold the breath at your end range.",
+    "ayurvedic_rationale": "Hanumanasana is named for the leap of Hanuman and demands sustained, patient effort rather than force. The deep hip opening releases Apana Vayu, the downward-moving air that governs elimination and where Vata most readily lodges. Never approach it cold — Vata aggravation in this pose means a strained hamstring insertion.",
     "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_beneficial": [
+      "back_pain"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "tortoise_pose",
@@ -2406,12 +2482,26 @@
       "advanced": 90
     },
     "primary_benefits": [
-      "Improves forward_fold strength and flexibility."
+      "Deeply opens the hips, groin, and adductors",
+      "Lengthens the entire spine and the muscles between the shoulder blades",
+      "Induces pratyahara — the withdrawal of the senses — through full forward enclosure",
+      "Profoundly calms an overactive nervous system"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hips",
+      "groin",
+      "inner thighs",
+      "spine",
+      "shoulders",
+      "hamstrings"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Sit with the legs wide and the knees bent, feet on the floor about a shoulder-width apart.",
+      "Fold forward and thread each arm underneath the corresponding knee, palms facing down.",
+      "Slide the arms out to the sides as the legs straighten gradually over the shoulders.",
+      "Lower the chest and chin toward the floor, letting the torso settle between the thighs.",
+      "Release the neck completely and let the weight of the legs do the work.",
+      "Stay for several slow breaths, then bend the knees and withdraw the arms to exit."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -2422,7 +2512,11 @@
       "lower_back_pain",
       "herniated_disc",
       "serious_back_injury",
-      "hip_injury"
+      "hip_injury",
+      "groin_injury",
+      "shoulder_injury",
+      "pregnancy",
+      "pregnancy_third_trimester"
     ],
     "pregnancy_safe": false,
     "goals": [
@@ -2431,11 +2525,16 @@
       "flexibility"
     ],
     "sequence_role": "cooldown",
-    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Slow, quiet breathing into the back of the ribs. Let the exhale lengthen naturally.",
+    "ayurvedic_rationale": "Kurmasana takes its name from the tortoise withdrawing into its shell, and it is the archetypal pratyahara posture. Intensely Pitta-cooling and calming for an agitated mind. It requires open hips built over months — forcing it aggravates Vata in the sacroiliac joint and the groin.",
     "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_beneficial": [
+      "anxiety",
+      "insomnia",
+      "hypertension"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "wide_leg_forward_fold",
@@ -2449,12 +2548,25 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves forward_fold strength and flexibility."
+      "Stretches the hamstrings, adductors, and calves simultaneously",
+      "Decompresses the spine through gentle traction",
+      "Provides the calming effects of a mild inversion without load on the neck",
+      "Relieves tension headaches and mental fatigue"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hamstrings",
+      "inner thighs",
+      "calves",
+      "spine",
+      "shoulders"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Step the feet 3 to 4 feet apart with the outer edges parallel and the toes pointing forward.",
+      "Place the hands on the hips, inhale, and lengthen the spine upward.",
+      "Exhale and hinge forward from the hip creases with a flat back, bringing the hands to the floor under the shoulders.",
+      "Walk the hands back until they are in line with the feet, elbows bending straight back.",
+      "Let the crown of the head release toward the floor; use a block under it if it does not reach.",
+      "Keep the weight slightly forward in the balls of the feet and the quadriceps engaged. Rise with a flat back on an inhale."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -2465,7 +2577,9 @@
       "lower_back_pain",
       "herniated_disc",
       "high_blood_pressure",
-      "glaucoma"
+      "glaucoma",
+      "serious_back_injury",
+      "hamstring_injury"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -2474,13 +2588,18 @@
       "flexibility"
     ],
     "sequence_role": "cooldown",
-    "pranayama_sync": "Exhale as you fold, breathe naturally in pose",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lengthen, exhale to fold deeper. Rise on an inhale to avoid light-headedness.",
+    "ayurvedic_rationale": "Prasarita Padottanasana cools and grounds. The head-below-heart position is calming for Pitta and clarifying for the Kapha mind, while the wide, stable base makes it one of the safest folds for Vata. Those with high blood pressure should keep the head above the heart and come up slowly.",
     "image_url": "",
     "medical_conditions_beneficial": [
-      "asthma"
+      "asthma",
+      "hypertension",
+      "anxiety",
+      "back_pain",
+      "insomnia"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "dolphin_pose",
@@ -2550,7 +2669,8 @@
       "glaucoma",
       "heart_disease",
       "hypertension"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "forearm_stand",
@@ -2564,12 +2684,25 @@
       "advanced": 90
     },
     "primary_benefits": [
-      "Improves inversion strength and flexibility."
+      "Builds significant shoulder, upper back, and core strength",
+      "Improves circulation and lymphatic return",
+      "Develops balance, spatial awareness, and mental steadiness",
+      "Strengthens the scapular stabilisers that protect the shoulder joint"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "shoulders",
+      "forearms",
+      "upper back",
+      "core",
+      "spine"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Set up facing a wall in Dolphin Pose with the forearms parallel, shoulder-width apart, and the elbows directly under the shoulders.",
+      "Press the forearms and the outer wrists firmly down; the shoulders must stay stacked over the elbows throughout.",
+      "Walk the feet in toward the elbows until the hips are directly above the shoulders.",
+      "Lift one leg straight up, then hop lightly off the bottom foot with control — do not fling.",
+      "Once inverted, engage the core, lengthen the tailbone toward the heels, and avoid dumping into the lower back.",
+      "Come down one leg at a time, then rest in Child's Pose until the head-rush settles."
     ],
     "dosha_balance": {
       "vata": "aggravates",
@@ -2582,7 +2715,12 @@
       "high_blood_pressure",
       "heart_disease",
       "neck_injury",
-      "hypertension"
+      "hypertension",
+      "shoulder_injury",
+      "rotator_cuff",
+      "serious_neck_injury",
+      "pregnancy_third_trimester",
+      "serious_back_injury"
     ],
     "pregnancy_safe": false,
     "goals": [
@@ -2590,8 +2728,8 @@
       "flexibility"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Breathe slowly and evenly throughout",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Steady Ujjayi. Never hold the breath while inverted — it spikes intracranial pressure.",
+    "ayurvedic_rationale": "Pincha Mayurasana reverses the flow of Apana Vayu and stimulates the higher chakras. Its intensity generates Pitta and strongly reduces Kapha inertia. Vata types benefit from the grounding of pressing into the earth, but only with a wall and a genuinely conditioned shoulder girdle.",
     "image_url": "",
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [
@@ -2599,56 +2737,8 @@
       "glaucoma",
       "heart_disease",
       "hypertension"
-    ]
-  },
-  {
-    "id": "handstand",
-    "english_name": "Handstand",
-    "sanskrit_name": "Adho Mukha Vrksasana",
-    "category": "inversion",
-    "level": "advanced",
-    "duration_seconds": {
-      "beginner": 45,
-      "intermediate": 60,
-      "advanced": 90
-    },
-    "primary_benefits": [
-      "Improves inversion strength and flexibility."
     ],
-    "body_parts": [],
-    "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
-    ],
-    "dosha_balance": {
-      "vata": "aggravates",
-      "pitta": "neutral",
-      "kapha": "balances"
-    },
-    "contraindications": [
-      "pregnancy",
-      "glaucoma",
-      "high_blood_pressure",
-      "heart_disease",
-      "neck_injury",
-      "hypertension"
-    ],
-    "pregnancy_safe": false,
-    "goals": [
-      "strength",
-      "flexibility"
-    ],
-    "sequence_role": "main",
-    "pranayama_sync": "Breathe slowly and evenly throughout",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
-    "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": [
-      "cervical_spondylosis",
-      "glaucoma",
-      "heart_disease",
-      "hypertension"
-    ]
+    "bilateral": false
   },
   {
     "id": "handstand_pose",
@@ -2697,14 +2787,16 @@
       "neck_injury",
       "serious_neck_injury",
       "wrist_injury",
-      "shoulder_injury"
+      "shoulder_injury",
+      "pregnancy"
     ],
     "pregnancy_safe": false,
     "goals": [
       "strength",
       "balance",
       "energy",
-      "spiritual"
+      "spiritual",
+      "flexibility"
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to lengthen and prepare, then exhale to engage the core and lift, maintaining smooth nasal breathing throughout the inversion.",
@@ -2717,63 +2809,19 @@
       "glaucoma",
       "heart_disease",
       "hypertension"
-    ]
-  },
-  {
-    "id": "headstand",
-    "english_name": "Headstand",
-    "sanskrit_name": "Sirsasana",
-    "category": "inversion",
-    "level": "advanced",
-    "duration_seconds": {
-      "beginner": 45,
-      "intermediate": 60,
-      "advanced": 90
-    },
-    "primary_benefits": [
-      "Improves inversion strength and flexibility."
     ],
-    "body_parts": [],
-    "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+    "also_known_as": [
+      "Handstand",
+      "Adho Mukha Vrksasana"
     ],
-    "dosha_balance": {
-      "vata": "aggravates",
-      "pitta": "neutral",
-      "kapha": "balances"
-    },
-    "contraindications": [
-      "pregnancy",
-      "glaucoma",
-      "high_blood_pressure",
-      "heart_disease",
-      "neck_injury",
-      "hypertension"
-    ],
-    "pregnancy_safe": false,
-    "goals": [
-      "strength",
-      "flexibility"
-    ],
-    "sequence_role": "main",
-    "pranayama_sync": "Breathe slowly and evenly throughout",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
-    "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": [
-      "cervical_spondylosis",
-      "glaucoma",
-      "heart_disease",
-      "hypertension"
-    ]
+    "bilateral": false
   },
   {
     "id": "plow",
     "english_name": "Plow",
     "sanskrit_name": "Halasana",
     "category": "inversion",
-    "level": "intermediate",
+    "level": "advanced",
     "duration_seconds": {
       "beginner": 30,
       "intermediate": 45,
@@ -2787,7 +2835,14 @@
       "Reduces stress and fatigue",
       "Therapeutic for backache, headache, infertility, insomnia,  and sinusitis"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "shoulders",
+      "neck",
+      "hamstrings",
+      "upper back",
+      "throat"
+    ],
     "instructions": [
       "From a supine position, the upper back rests on the earth with the hips and legs revolved back over the torso above and beyond the head towards the earth",
       "The torso is perpendicular to the earth",
@@ -2819,7 +2874,7 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Breathe slowly and evenly throughout",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Halasana folds the body fully inward over the shoulders, producing deep pratyahara and strong stimulation of the thyroid. It is calming and Vata-pacifying when supported, but it loads the cervical spine heavily — the neck must never turn while inverted, and the shoulders, not the neck, carry the weight.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483088/yoga-api/27_m4yux9.png",
     "medical_conditions_beneficial": [
       "thyroid"
@@ -2828,7 +2883,8 @@
       "cervical_spondylosis",
       "glaucoma",
       "hypertension"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "scorpion_pose",
@@ -2842,12 +2898,26 @@
       "advanced": 90
     },
     "primary_benefits": [
-      "Improves inversion strength and flexibility."
+      "Builds extreme shoulder stability and back strength",
+      "Develops maximal thoracic spinal extension",
+      "Sharpens balance, proprioception, and concentration",
+      "Opens the entire front line of the body"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "shoulders",
+      "forearms",
+      "spine",
+      "chest",
+      "core",
+      "hip flexors"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Establish a stable, held Forearm Stand against a wall before attempting any backbend.",
+      "With the forearms pressing down and the shoulders stacked, begin to lift the head and gaze forward.",
+      "Bend the knees and allow the spine to arch, drawing the feet toward the crown of the head.",
+      "Keep pressing the forearms down and lifting through the shoulders — the arch must come from the thoracic spine, not a collapsed lower back.",
+      "Hold only as long as the shoulders stay engaged and the breath stays even.",
+      "Exit by straightening the legs back to vertical, then lowering one leg at a time. Rest in Child's Pose."
     ],
     "dosha_balance": {
       "vata": "aggravates",
@@ -2860,7 +2930,14 @@
       "high_blood_pressure",
       "heart_disease",
       "neck_injury",
-      "hypertension"
+      "hypertension",
+      "shoulder_injury",
+      "rotator_cuff",
+      "serious_neck_injury",
+      "herniated_disc",
+      "serious_back_injury",
+      "serious_spinal_injury",
+      "pregnancy_third_trimester"
     ],
     "pregnancy_safe": false,
     "goals": [
@@ -2868,8 +2945,8 @@
       "flexibility"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Breathe slowly and evenly throughout",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Even, unforced breath. Any breath-holding means you have gone past your limit.",
+    "ayurvedic_rationale": "Vrschikasana is one of the most advanced Hatha postures and generates intense heat and Pitta. It is appropriate only for long-established practitioners with unrestricted shoulder and spinal mobility. In an unsupervised setting it should be treated as aspirational rather than prescriptive.",
     "image_url": "",
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [
@@ -2877,14 +2954,15 @@
       "glaucoma",
       "heart_disease",
       "hypertension"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "shoulder_stand",
     "english_name": "Shoulder Stand",
     "sanskrit_name": "Salamba Sarvangasana",
     "category": "inversion",
-    "level": "intermediate",
+    "level": "advanced",
     "duration_seconds": {
       "beginner": 30,
       "intermediate": 45,
@@ -2900,7 +2978,14 @@
       "Reduces fatigue and alleviates insomnia",
       "Therapeutic for asthma, infertility, and sinusitis"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "shoulders",
+      "neck",
+      "spine",
+      "core",
+      "throat",
+      "legs"
+    ],
     "instructions": [
       "From a supine position, the upper back is resting on the earth with the hips straight up towards the sky",
       "The torso is perpendicular to the earth",
@@ -2936,7 +3021,7 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Breathe slowly and evenly throughout",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Salamba Sarvangasana is called the queen of asanas — sarvanga means all limbs, reflecting its systemic effect. The inversion reverses Apana Vayu and the throat compression regulates the thyroid. It also places substantial load on the cervical spine, so folded blankets under the shoulders are classical practice and the neck is never turned while inverted.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483091/yoga-api/33_r7motl.png",
     "medical_conditions_beneficial": [
       "thyroid"
@@ -2944,66 +3029,21 @@
     "medical_conditions_contraindicated": [
       "cervical_spondylosis",
       "glaucoma",
-      "hypertension"
-    ]
-  },
-  {
-    "id": "shoulderstand",
-    "english_name": "Shoulderstand",
-    "sanskrit_name": "Sarvangasana",
-    "category": "inversion",
-    "level": "advanced",
-    "duration_seconds": {
-      "beginner": 45,
-      "intermediate": 60,
-      "advanced": 90
-    },
-    "primary_benefits": [
-      "Improves inversion strength and flexibility."
+      "hypertension",
+      "heart_disease"
     ],
-    "body_parts": [],
-    "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+    "also_known_as": [
+      "Shoulderstand",
+      "Sarvangasana"
     ],
-    "dosha_balance": {
-      "vata": "aggravates",
-      "pitta": "neutral",
-      "kapha": "balances"
-    },
-    "contraindications": [
-      "pregnancy",
-      "glaucoma",
-      "high_blood_pressure",
-      "heart_disease",
-      "neck_injury",
-      "hypertension"
-    ],
-    "pregnancy_safe": false,
-    "goals": [
-      "strength",
-      "flexibility"
-    ],
-    "sequence_role": "main",
-    "pranayama_sync": "Breathe slowly and evenly throughout",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
-    "image_url": "",
-    "medical_conditions_beneficial": [
-      "thyroid"
-    ],
-    "medical_conditions_contraindicated": [
-      "cervical_spondylosis",
-      "glaucoma",
-      "heart_disease",
-      "hypertension"
-    ]
+    "bilateral": false
   },
   {
     "id": "supported_headstand_pose",
     "english_name": "Supported Headstand Pose",
     "sanskrit_name": "Salamba Shirshasana",
     "category": "inversion",
-    "level": "intermediate",
+    "level": "advanced",
     "duration_seconds": {
       "beginner": 20,
       "intermediate": 30,
@@ -3057,7 +3097,8 @@
       "balance",
       "energy",
       "spiritual",
-      "strength"
+      "strength",
+      "flexibility"
     ],
     "sequence_role": "main",
     "pranayama_sync": "Breathe slowly and evenly without strain, using each exhale to stabilize the shoulders and core.",
@@ -3073,7 +3114,12 @@
       "glaucoma",
       "heart_disease",
       "hypertension"
-    ]
+    ],
+    "also_known_as": [
+      "Headstand",
+      "Sirsasana"
+    ],
+    "bilateral": false
   },
   {
     "id": "cat_cow_flow",
@@ -3087,12 +3133,26 @@
       "advanced": 45
     },
     "primary_benefits": [
-      "Improves prone strength and flexibility."
+      "Mobilises the entire spine through flexion and extension",
+      "Warms and lubricates the intervertebral joints before deeper work",
+      "Relieves back and neck tension from prolonged sitting",
+      "Synchronises breath with movement, settling the mind at the start of practice"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "lower back",
+      "upper back",
+      "neck",
+      "core",
+      "shoulders"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Come to all fours with the wrists directly under the shoulders and the knees under the hips.",
+      "Spread the fingers wide and press evenly through the whole hand to protect the wrists.",
+      "Inhale into Cow: drop the belly, roll the shoulders back, and lift the tailbone and gaze.",
+      "Exhale into Cat: press the floor away, round the spine toward the ceiling, and draw the navel in and the chin toward the chest.",
+      "Move one vertebra at a time, letting the breath set the pace rather than the other way round.",
+      "Continue for 6 to 10 full rounds, finishing in a neutral spine."
     ],
     "dosha_balance": {
       "vata": "neutral",
@@ -3101,7 +3161,9 @@
     },
     "contraindications": [
       "wrist_injury",
-      "neck_injury"
+      "neck_injury",
+      "knee_injury",
+      "serious_neck_injury"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -3109,15 +3171,18 @@
       "flexibility"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Breathe naturally",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale into Cow, exhale into Cat. One full breath per movement.",
+    "ayurvedic_rationale": "The Cat-Cow pair is the classical spinal warm-up and the safest entry point for every constitution. The rhythmic, breath-linked movement is deeply grounding for Vata, the gentle pace keeps Pitta from rushing into intensity, and the mobilisation breaks up the morning stagnation characteristic of Kapha.",
     "image_url": "",
     "medical_conditions_beneficial": [
       "arthritis",
       "back_pain",
-      "cervical_spondylosis"
+      "cervical_spondylosis",
+      "constipation",
+      "menopause"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "four_limbed_staff_pose",
@@ -3181,7 +3246,8 @@
       "arthritis",
       "back_pain",
       "sciatica"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "locust_pose",
@@ -3195,12 +3261,26 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves prone strength and flexibility."
+      "Strengthens the entire posterior chain — spinal extensors, glutes, and hamstrings",
+      "Builds the postural endurance that protects the lower back",
+      "Opens the chest and shoulders",
+      "Stimulates the abdominal organs and supports digestive function"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "lower back",
+      "glutes",
+      "hamstrings",
+      "chest",
+      "shoulders"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Lie prone with the forehead on the mat, arms alongside the body, palms facing down or up.",
+      "Roll the shoulders back and down, drawing the shoulder blades toward one another.",
+      "Lengthen the tailbone toward the heels to protect the lumbar spine before lifting anything.",
+      "Inhale and lift the head, chest, arms, and legs away from the floor simultaneously.",
+      "Reach strongly back through the fingertips and the toes — length first, height second.",
+      "Keep the gaze down and slightly forward so the back of the neck stays long. Exhale to lower and rest one cheek on the mat."
     ],
     "dosha_balance": {
       "vata": "neutral",
@@ -3211,7 +3291,11 @@
       "lower_back_pain",
       "herniated_disc",
       "serious_back_injury",
-      "neck_injury"
+      "neck_injury",
+      "pregnancy",
+      "pregnancy_third_trimester",
+      "high_blood_pressure",
+      "heart_disease"
     ],
     "pregnancy_safe": false,
     "goals": [
@@ -3219,13 +3303,19 @@
       "flexibility"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Breathe naturally",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lift, hold for a few breaths, exhale to release. Never strain the breath.",
+    "ayurvedic_rationale": "Salabhasana builds the back-body strength that keeps the spine — the primary seat of Vata — stable and supported. The effort generates warmth, making it valuable for clearing Kapha heaviness. Pitta types should work on length rather than maximum lift, which is where the strain and the heat come from.",
     "image_url": "",
     "medical_conditions_beneficial": [
-      "diabetes"
+      "diabetes",
+      "back_pain",
+      "constipation",
+      "obesity",
+      "fatty_liver",
+      "depression"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "puppy_pose",
@@ -3287,7 +3377,8 @@
     ],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "reverse_corpse_pose",
@@ -3342,7 +3433,9 @@
     "ayurvedic_rationale": "This quiet prone rest pose is grounding and cooling, helping calm excess Vata and Pitta through stillness and surrender. It is often used to settle the nervous system after more active practice.",
     "image_url": "https://pocketyoga.com/assets/images/full/CorpseFrontArmsForward.png",
     "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false,
+    "final_relaxation": false
   },
   {
     "id": "table_pose",
@@ -3401,7 +3494,8 @@
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "childs_pose",
@@ -3410,17 +3504,30 @@
     "category": "restorative",
     "level": "beginner",
     "duration_seconds": {
-      "beginner": 20,
-      "intermediate": 30,
-      "advanced": 45
+      "beginner": 60,
+      "intermediate": 90,
+      "advanced": 120
     },
     "primary_benefits": [
-      "Improves restorative strength and flexibility."
+      "Gently decompresses the lower back and sacrum",
+      "Calms the nervous system and lowers heart rate",
+      "Releases the hips, thighs, and ankles",
+      "Serves as the universal resting position, available at any point in a practice"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "lower back",
+      "hips",
+      "thighs",
+      "ankles",
+      "spine"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Kneel with the big toes touching and the knees either together or as wide as the mat.",
+      "Sit the hips back toward the heels; place a folded blanket between the calves and thighs if they do not meet.",
+      "Walk the hands forward and lower the forehead to the mat or onto a block or bolster.",
+      "Extend the arms forward for a more active shoulder stretch, or rest them alongside the body, palms up, for full surrender.",
+      "Let the belly soften completely and breathe into the back of the ribcage.",
+      "Stay for at least 8 to 10 slow breaths — this pose works through duration, not effort."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -3428,7 +3535,10 @@
       "kapha": "aggravates"
     },
     "contraindications": [
-      "knee_injury"
+      "knee_injury",
+      "knee_replacement",
+      "ankle_injury",
+      "pregnancy_third_trimester"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -3438,8 +3548,8 @@
       "flexibility"
     ],
     "sequence_role": "cooldown",
-    "pranayama_sync": "Slow deep belly breathing throughout",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Slow diaphragmatic breathing into the back body. Let the exhale be longer than the inhale.",
+    "ayurvedic_rationale": "Balasana is the posture of return. The forward enclosure and grounding of the forehead settle Vata's restlessness immediately, and the withdrawal of the senses cools Pitta's drive. Kapha types benefit from it as a brief reset rather than an extended stay, which can tip into inertia.",
     "image_url": "",
     "medical_conditions_beneficial": [
       "anxiety",
@@ -3452,7 +3562,8 @@
       "menopause",
       "pcos"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "constructive_rest",
@@ -3461,9 +3572,9 @@
     "category": "restorative",
     "level": "beginner",
     "duration_seconds": {
-      "beginner": 300,
-      "intermediate": 600,
-      "advanced": 900
+      "beginner": 240,
+      "intermediate": 300,
+      "advanced": 420
     },
     "primary_benefits": [
       "Neutral spine — completely decompresses all spinal structures",
@@ -3511,18 +3622,19 @@
       "insomnia",
       "menopause"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "corpse",
-    "english_name": "Corpse",
-    "sanskrit_name": "Sivasana",
+    "english_name": "Corpse Pose",
+    "sanskrit_name": "Savasana",
     "category": "restorative",
     "level": "beginner",
     "duration_seconds": {
-      "beginner": 20,
-      "intermediate": 30,
-      "advanced": 45
+      "beginner": 300,
+      "intermediate": 420,
+      "advanced": 600
     },
     "primary_benefits": [
       "Calms the brain and helps relieve stress and mild depression",
@@ -3530,7 +3642,10 @@
       "Reduces headache, fatigue, and insomnia",
       "Helps to lower blood pressure"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "nervous system",
+      "all systems"
+    ],
     "instructions": [
       "The body rests on the earth in a supine position with the arms resting by the side body",
       "The palms are relaxed and open toward the sky",
@@ -3546,15 +3661,20 @@
       "pitta": "balances",
       "kapha": "aggravates"
     },
-    "contraindications": [],
+    "contraindications": [
+      "pregnancy_third_trimester"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "healing",
-      "stress_relief"
+      "stress_relief",
+      "strength",
+      "flexibility",
+      "spiritual"
     ],
     "sequence_role": "cooldown",
     "pranayama_sync": "Slow deep belly breathing throughout",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Savasana is the most important and least respected posture in the system. It is where the nervous system integrates everything the practice has done — cutting it short discards the benefit of the session. Complete stillness is profoundly Vata-pacifying, and the classical minimum is five minutes, longer for Vata constitutions.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483078/yoga-api/11_dczyrp.png",
     "medical_conditions_beneficial": [
       "anxiety",
@@ -3563,7 +3683,13 @@
       "insomnia",
       "menopause"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "also_known_as": [
+      "Corpse Pose",
+      "Savasana"
+    ],
+    "bilateral": false,
+    "final_relaxation": true
   },
   {
     "id": "legs_up_wall",
@@ -3572,7 +3698,7 @@
     "category": "restorative",
     "level": "beginner",
     "duration_seconds": {
-      "beginner": 180,
+      "beginner": 240,
       "intermediate": 300,
       "advanced": 420
     },
@@ -3631,7 +3757,8 @@
     "medical_conditions_contraindicated": [
       "cervical_spondylosis",
       "glaucoma"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "supta_baddha_konasana",
@@ -3640,9 +3767,9 @@
     "category": "restorative",
     "level": "beginner",
     "duration_seconds": {
-      "beginner": 120,
+      "beginner": 180,
       "intermediate": 240,
-      "advanced": 360
+      "advanced": 300
     },
     "primary_benefits": [
       "Opens hips and inner groin passively without muscular effort",
@@ -3695,7 +3822,8 @@
     ],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "reclined_hero",
@@ -3704,9 +3832,9 @@
     "category": "restorative",
     "level": "intermediate",
     "duration_seconds": {
-      "beginner": 60,
-      "intermediate": 120,
-      "advanced": 300
+      "beginner": 120,
+      "intermediate": 180,
+      "advanced": 240
     },
     "primary_benefits": [
       "Deep stretch of quadriceps, hip flexors, and psoas",
@@ -3759,13 +3887,14 @@
       "arthritis",
       "back_pain",
       "sciatica"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "supta_matsyendrasana",
     "english_name": "Supine Spinal Twist",
     "sanskrit_name": "Supta Matsyendrasana",
-    "category": "restorative",
+    "category": "twist",
     "level": "beginner",
     "duration_seconds": {
       "beginner": 60,
@@ -3829,7 +3958,8 @@
     ],
     "medical_conditions_contraindicated": [
       "back_pain"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "supported_bridge",
@@ -3838,8 +3968,8 @@
     "category": "restorative",
     "level": "beginner",
     "duration_seconds": {
-      "beginner": 120,
-      "intermediate": 180,
+      "beginner": 180,
+      "intermediate": 240,
       "advanced": 300
     },
     "primary_benefits": [
@@ -3894,7 +4024,8 @@
     ],
     "medical_conditions_contraindicated": [
       "cervical_spondylosis"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "supported_fish",
@@ -3903,9 +4034,9 @@
     "category": "restorative",
     "level": "beginner",
     "duration_seconds": {
-      "beginner": 120,
-      "intermediate": 240,
-      "advanced": 360
+      "beginner": 150,
+      "intermediate": 210,
+      "advanced": 300
     },
     "primary_benefits": [
       "Opens the chest, throat, and front of the body",
@@ -3960,7 +4091,8 @@
     "medical_conditions_contraindicated": [
       "cervical_spondylosis",
       "hypertension"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "yin_forward_fold",
@@ -3969,8 +4101,8 @@
     "category": "restorative",
     "level": "beginner",
     "duration_seconds": {
-      "beginner": 120,
-      "intermediate": 180,
+      "beginner": 180,
+      "intermediate": 240,
       "advanced": 300
     },
     "primary_benefits": [
@@ -4020,7 +4152,8 @@
     "medical_conditions_contraindicated": [
       "back_pain",
       "sciatica"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "yoga_nidra_pose",
@@ -4073,7 +4206,8 @@
       "anxiety",
       "insomnia"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "archers_pose",
@@ -4116,7 +4250,7 @@
     "contraindications": [
       "knee_injury",
       "groin_injury",
-      "hip issues"
+      "hip_injury"
     ],
     "pregnancy_safe": false,
     "goals": [
@@ -4132,7 +4266,8 @@
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "butterfly",
@@ -4146,12 +4281,25 @@
       "advanced": 45
     },
     "primary_benefits": [
-      "Improves seated strength and flexibility."
+      "Opens the hips, groin, and inner thighs",
+      "Stimulates circulation to the pelvis and abdominal organs",
+      "Relieves menstrual discomfort and supports reproductive health",
+      "Grounds and settles the nervous system through a stable seated base"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hips",
+      "groin",
+      "inner thighs",
+      "pelvis",
+      "lower back"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Sit on the front edge of a folded blanket with the legs extended.",
+      "Bend both knees and bring the soles of the feet together, drawing the heels toward the pelvis.",
+      "Hold the feet or the ankles and let the knees release toward the floor under their own weight.",
+      "Support the outer thighs with blocks or cushions if the knees sit high — hanging unsupported strains the medial knee.",
+      "Lengthen the spine on an inhale, crown lifting; on an exhale, fold forward from the hips if comfortable.",
+      "Hold for 1 to 3 minutes, breathing into the groin and inner thighs."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -4161,7 +4309,8 @@
     "contraindications": [
       "knee_injury",
       "groin_injury",
-      "hip_injury"
+      "hip_injury",
+      "lower_back_pain"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -4170,17 +4319,20 @@
       "spiritual"
     ],
     "sequence_role": "warmup",
-    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Slow, even breathing. Direct the exhale into the inner thighs to invite release.",
+    "ayurvedic_rationale": "Baddha Konasana works directly on the pelvic floor and the Apana Vayu that governs elimination and reproduction — the primary seat of Vata. Classically prescribed for menstrual and prostate health. The grounded base and open hips make it one of the most reliably Vata-pacifying seated postures.",
     "image_url": "",
     "medical_conditions_beneficial": [
       "anxiety",
       "arthritis",
       "hypertension",
       "menopause",
-      "pcos"
+      "pcos",
+      "constipation",
+      "back_pain"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "cow_face_pose",
@@ -4194,12 +4346,27 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves seated strength and flexibility."
+      "Deeply opens the outer hips, glutes, and piriformis",
+      "Stretches the shoulders, triceps, and chest in opposing rotations",
+      "Reveals and helps correct left-right asymmetry",
+      "Improves posture by opening the front of the shoulder"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hips",
+      "outer hips",
+      "glutes",
+      "piriformis",
+      "shoulders",
+      "triceps",
+      "chest"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "From a seated position, bend the right knee and place the right foot outside the left hip.",
+      "Cross the left knee over the right, stacking the knees, and bring the left foot outside the right hip.",
+      "Sit on a folded blanket so the pelvis stays level; if the top knee floats high, sit higher.",
+      "Reach the left arm up, bend the elbow, and let the left hand drop down the spine.",
+      "Reach the right arm out to the side, rotate it inward, and bend the elbow to bring the right hand up the back — clasp the fingers or hold a strap between them.",
+      "Lift the chest and keep the head neutral. Hold, then unwind and reverse both the legs and the arms."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -4209,7 +4376,9 @@
     "contraindications": [
       "knee_injury",
       "shoulder_injury",
-      "rotator_cuff"
+      "rotator_cuff",
+      "knee_replacement",
+      "hip_injury"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -4218,11 +4387,16 @@
       "spiritual"
     ],
     "sequence_role": "warmup",
-    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Steady breathing. Exhale into the outer hip and the shoulder simultaneously.",
+    "ayurvedic_rationale": "Gomukhasana releases the outer hips and shoulders where Vata's tension characteristically accumulates. Its pronounced left-right asymmetry makes it diagnostic — the tighter side reveals where the body compensates. The strap is not a lesser version; forcing the clasp is what injures the rotator cuff.",
     "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_beneficial": [
+      "back_pain",
+      "cervical_spondylosis",
+      "arthritis"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "easy_pose",
@@ -4236,12 +4410,24 @@
       "advanced": 45
     },
     "primary_benefits": [
-      "Improves seated strength and flexibility."
+      "Establishes the stable seated base for pranayama and meditation",
+      "Gently opens the hips and lengthens the spine",
+      "Calms the mind and slows the breath",
+      "Builds the postural endurance needed for sustained sitting"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hips",
+      "spine",
+      "lower back",
+      "knees"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Sit on the front edge of a folded blanket or cushion so the hips are higher than the knees.",
+      "Cross the shins comfortably, letting each foot rest under the opposite knee.",
+      "Let the knees release toward the floor; support them with cushions if they sit high.",
+      "Stack the head over the heart and the heart over the pelvis, lengthening the spine without rigidity.",
+      "Rest the hands on the knees or in the lap, palms up to receive or down to ground.",
+      "Soften the jaw, the eyes, and the shoulders. Change the cross of the legs halfway through."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -4249,7 +4435,8 @@
       "kapha": "neutral"
     },
     "contraindications": [
-      "knee_injury"
+      "knee_injury",
+      "hip_injury"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -4258,17 +4445,20 @@
       "spiritual"
     ],
     "sequence_role": "warmup",
-    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "The seat for all pranayama. Let the breath settle to its natural rhythm before beginning any technique.",
+    "ayurvedic_rationale": "Sukhasana means the comfortable seat — sukha, ease. It is the foundational asana for pranayama and dhyana. The grounded base and symmetrical stillness pacify Vata directly, which is why every classical text places it at the start of the subtle practices.",
     "image_url": "",
     "medical_conditions_beneficial": [
       "anxiety",
       "arthritis",
       "asthma",
       "cervical_spondylosis",
-      "hypertension"
+      "hypertension",
+      "insomnia",
+      "depression"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "fire_log_pose",
@@ -4282,12 +4472,25 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves seated strength and flexibility."
+      "Intensely opens the outer hips, glutes, and piriformis",
+      "Relieves sciatic-type referral from piriformis tightness",
+      "Improves external rotation of the hip joint",
+      "Releases the deep pelvic holding built up by prolonged sitting"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hips",
+      "outer hips",
+      "glutes",
+      "piriformis",
+      "groin"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Sit on a folded blanket with the legs extended, then bend the left knee and place the left shin on the floor parallel to the front edge of the mat.",
+      "Stack the right shin directly on top of the left, right ankle over left knee and right knee over left ankle.",
+      "If the top knee floats, fill the gap with a folded blanket rather than pressing the knee down.",
+      "Flex both feet strongly to protect the knee ligaments — this is not optional in this pose.",
+      "Sit tall on an inhale; on an exhale, walk the hands forward and fold from the hips.",
+      "Hold for up to 2 minutes, then switch the stack of the legs."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -4297,7 +4500,9 @@
     "contraindications": [
       "knee_injury",
       "groin_injury",
-      "hip_injury"
+      "hip_injury",
+      "knee_replacement",
+      "lower_back_pain"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -4306,11 +4511,15 @@
       "spiritual"
     ],
     "sequence_role": "warmup",
-    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Long, slow exhales into the outer hip. Resist the urge to hold the breath against the intensity.",
+    "ayurvedic_rationale": "Agnistambhasana means fire log — the stacked shins resemble logs laid for a fire, and the pose kindles the pelvic Agni. The deep hip release addresses the Apana Vayu region where Vata lodges most stubbornly. Both feet must stay flexed; a passive foot transfers the load straight into the medial knee.",
     "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_beneficial": [
+      "back_pain",
+      "arthritis"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "half_pigeon_pose",
@@ -4377,7 +4586,8 @@
       "arthritis",
       "back_pain",
       "sciatica"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "hero_pose",
@@ -4391,12 +4601,25 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves seated strength and flexibility."
+      "Stretches the quadriceps, ankles, and tops of the feet",
+      "Provides an alternative meditation seat for tight hips",
+      "Classically practised after eating to aid digestion",
+      "Improves ankle mobility and relieves plantar tension"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "quadriceps",
+      "ankles",
+      "knees",
+      "feet",
+      "spine"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Kneel with the knees together and the feet slightly wider than the hips, tops of the feet flat on the floor.",
+      "Place a block or bolster between the feet and sit down onto it — sitting directly on the heels compresses the knee.",
+      "Point the toes straight back and press the tops of the feet down evenly.",
+      "Rest the hands on the thighs and lengthen the spine, lifting the crown.",
+      "Broaden the collarbones and let the shoulder blades settle down the back.",
+      "Begin with 1 minute and build gradually; come out slowly and extend the legs if the feet go numb."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -4415,13 +4638,16 @@
       "spiritual"
     ],
     "sequence_role": "warmup",
-    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "A stable seat for pranayama. Keep the spine long so the diaphragm moves freely.",
+    "ayurvedic_rationale": "Virasana is the hero's seat, valued as a pranayama posture where crossed-leg sitting is inaccessible. Vajrasana and Virasana are the two asanas traditionally permitted after a meal, as the position directs circulation toward the digestive organs and kindles Agni. Props here are classical practice, not modern compromise.",
     "image_url": "",
     "medical_conditions_beneficial": [
-      "arthritis"
+      "arthritis",
+      "constipation",
+      "diabetes"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "heron_pose",
@@ -4461,7 +4687,7 @@
       "kapha": "balances"
     },
     "contraindications": [
-      "hamstring strain",
+      "hamstring_injury",
       "knee_injury",
       "lower_back_pain"
     ],
@@ -4480,7 +4706,8 @@
     "medical_conditions_contraindicated": [
       "arthritis",
       "back_pain"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "lotus_pose",
@@ -4541,7 +4768,8 @@
     ],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "mountain_in_seated",
@@ -4555,19 +4783,37 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves seated strength and flexibility."
+      "Lengthens the spine and creates space between the vertebrae",
+      "Opens the shoulders, lats, and the side body",
+      "Expands the ribcage and improves breathing capacity",
+      "Corrects the thoracic rounding of desk posture from a stable seated base"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "shoulders",
+      "lats",
+      "side body",
+      "ribs",
+      "chest"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Sit in a stable cross-legged position or in Virasana on a folded blanket.",
+      "Interlace the fingers and turn the palms to face away from you.",
+      "Inhale and extend the arms straight overhead, palms pressing toward the ceiling.",
+      "Draw the lower ribs in so the lift comes from the thoracic spine rather than an arching lower back.",
+      "Keep the shoulders drawing away from the ears and the biceps alongside them.",
+      "Hold for 5 to 8 breaths, then release and change the interlace of the fingers."
     ],
     "dosha_balance": {
       "vata": "balances",
       "pitta": "balances",
       "kapha": "neutral"
     },
-    "contraindications": [],
+    "contraindications": [
+      "shoulder_injury",
+      "rotator_cuff",
+      "knee_injury"
+    ],
     "pregnancy_safe": true,
     "goals": [
       "strength",
@@ -4575,11 +4821,16 @@
       "spiritual"
     ],
     "sequence_role": "warmup",
-    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lift and lengthen, exhale to settle the shoulders down.",
+    "ayurvedic_rationale": "Parvatasana is the seated mountain — steady, grounded, and rising. The overhead extension lifts the Kapha heaviness that settles in the chest and upper back, while the stable seat keeps the practice grounding rather than agitating for Vata.",
     "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_beneficial": [
+      "cervical_spondylosis",
+      "asthma",
+      "back_pain"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "staff_pose",
@@ -4593,12 +4844,25 @@
       "advanced": 45
     },
     "primary_benefits": [
-      "Improves seated strength and flexibility."
+      "Establishes the neutral pelvis and long spine that every seated pose is built on",
+      "Strengthens the deep postural muscles of the back",
+      "Stretches the hamstrings and calves actively",
+      "Builds the awareness needed to fold safely from the hips"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "lower back",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Sit with the legs extended straight in front, feet hip-width apart and strongly flexed.",
+      "Sit on a folded blanket if the lower back rounds — the pelvis must be neutral, not tipped back.",
+      "Press the backs of the thighs down and engage the quadriceps so the kneecaps draw up.",
+      "Place the palms flat beside the hips, fingers pointing forward, and press down to lift the sternum.",
+      "Stack the shoulders over the hips and the ears over the shoulders.",
+      "Hold for 5 to 10 breaths, maintaining the length of the spine throughout."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -4606,7 +4870,9 @@
       "kapha": "neutral"
     },
     "contraindications": [
-      "lower_back_pain"
+      "lower_back_pain",
+      "herniated_disc",
+      "hamstring_injury"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -4615,11 +4881,15 @@
       "spiritual"
     ],
     "sequence_role": "warmup",
-    "pranayama_sync": "Breathe naturally, focus on lengthening spine",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lengthen the spine, exhale to root the sitting bones down.",
+    "ayurvedic_rationale": "Dandasana is the staff — a straight, upright axis. It is to seated postures what Tadasana is to standing: the reference alignment against which everything else is measured. The active engagement steadies Vata, and the upright axis prevents the collapse into Kapha heaviness.",
     "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_beneficial": [
+      "back_pain",
+      "cervical_spondylosis"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "thunderbolt_pose",
@@ -4684,13 +4954,14 @@
     ],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "boat",
     "english_name": "Boat",
     "sanskrit_name": "Navasana",
-    "category": "standing",
+    "category": "seated",
     "level": "intermediate",
     "duration_seconds": {
       "beginner": 30,
@@ -4703,7 +4974,13 @@
       "Helps relieve stress",
       "Improves digestion"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "core",
+      "abdominals",
+      "hip flexors",
+      "spine",
+      "quadriceps"
+    ],
     "instructions": [
       "From a seated position the feet are lifted up so that the thighs are angled about 45-50 degrees relative to the earth",
       "The tailbone is lengthened into the earth and the pubis pulls toward the navel",
@@ -4729,7 +5006,7 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Navasana kindles Agni directly through sustained abdominal contraction, and the classical texts prescribe it for sluggish digestion and Ama accumulation. The heat and effort strongly reduce Kapha. Bend the knees rather than rounding the lower back — a collapsed lumbar spine turns a digestive pose into a back injury.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483071/yoga-api/1_txmirf.png",
     "medical_conditions_beneficial": [
       "constipation",
@@ -4737,13 +5014,14 @@
       "fatty_liver",
       "obesity"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "cat",
     "english_name": "Cat",
     "sanskrit_name": "Marjaryasana",
-    "category": "standing",
+    "category": "prone",
     "level": "beginner",
     "duration_seconds": {
       "beginner": 20,
@@ -4754,7 +5032,14 @@
       "Relieves the spine and neck",
       "Energizes the body"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "upper back",
+      "lower back",
+      "neck",
+      "core",
+      "shoulders"
+    ],
     "instructions": [
       "From box neutral shift some weight to the palms",
       "The wrists, elbows and shoulders are in one line",
@@ -4778,14 +5063,15 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Marjaryasana is the flexion half of the Cat-Cow pair, drawing the navel in and rounding the spine. The breath-linked movement is the classical spinal warm-up and among the safest postures for every constitution — grounding for Vata, unhurried for Pitta, and mobilising for the stagnation of Kapha.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483075/yoga-api/7_a6aspg.png",
     "medical_conditions_beneficial": [
       "arthritis",
       "back_pain",
       "cervical_spondylosis"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "chair",
@@ -4805,7 +5091,14 @@
       "Reduces flat feet",
       "Energizes the entire body"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "quadriceps",
+      "glutes",
+      "ankles",
+      "spine",
+      "shoulders",
+      "core"
+    ],
     "instructions": [
       "From a standing position, the feet are together and rooted into the earth with toes actively lifted",
       "The knees are bent and the weight of the body is on the heels of the feet",
@@ -4832,13 +5125,14 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Utkatasana means fierce or powerful, and the sustained effort generates heat quickly. It is strongly Kapha-reducing and builds the leg strength that supports every standing posture. Pitta types should resist making it a contest of endurance; the pose is complete when the knees start tracking inward, not when the thighs give out.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483078/yoga-api/9_ewvoun.png",
     "medical_conditions_beneficial": [
       "diabetes",
       "obesity"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "crescent_lunge",
@@ -4855,7 +5149,14 @@
       "Stretches the rib cage, arms and torso",
       "Tones the oblique muscles"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hip flexors",
+      "psoas",
+      "quadriceps",
+      "chest",
+      "shoulders",
+      "spine"
+    ],
     "instructions": [
       "From mountain pose, on the inhalation bring the hands up and interlace the fingers together",
       "Exhale, bend to one side, lengthening the opposite of the rib cage and stretch"
@@ -4877,10 +5178,11 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Alanasana opens the hip flexors and psoas of the back leg while the upward reach expands the chest. The lifted, expansive shape counters Kapha heaviness, and the strong grounding of the front foot steadies Vata. Keep the tailbone lengthening down so the extension stays in the upper back.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483080/yoga-api/12_pv4p1z.png",
     "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "downward_facing_dog",
@@ -4905,7 +5207,15 @@
       "Relieves headache, insomnia, back pain, and fatigue",
       "Therapeutic for high blood pressure, asthma, flat feet, sciatica, and sinusitis"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hamstrings",
+      "calves",
+      "shoulders",
+      "spine",
+      "wrists",
+      "arms",
+      "upper back"
+    ],
     "instructions": [
       "From downward_dog",
       "html the legs are straight with the sits bones tilted up and reaching for the sky",
@@ -4936,7 +5246,7 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Adho Mukha Svanasana is the resting and transitional posture of the whole Hatha system, and a mild inversion in its own right. The head-below-heart position cools Pitta and calms the mind, while the full-body engagement clears Kapha. Bend the knees freely — length in the spine is the point, not straight legs.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483081/yoga-api/15_vkviqn.png",
     "medical_conditions_beneficial": [
       "cervical_spondylosis",
@@ -4944,7 +5254,8 @@
       "fatty_liver",
       "obesity"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "equestrian_pose",
@@ -4958,12 +5269,25 @@
       "advanced": 45
     },
     "primary_benefits": [
-      "Improves standing strength and flexibility."
+      "Opens the hip flexors and psoas of the back leg",
+      "Stretches the groin and strengthens the front thigh",
+      "Improves hip mobility restricted by prolonged sitting",
+      "Serves as the transitional posture of the Surya Namaskar sequence"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hip flexors",
+      "psoas",
+      "groin",
+      "quadriceps",
+      "chest"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "From a standing forward fold, step the right foot back and lower the right knee to the mat.",
+      "Position the left knee directly over the left ankle — never let it travel past the toes.",
+      "Place the fingertips on the floor either side of the front foot, or on blocks to bring the floor up.",
+      "Inhale and lift the chest, drawing the shoulder blades down and lengthening the front of the right hip.",
+      "Tuck the tailbone slightly to protect the lower back and deepen the hip flexor stretch.",
+      "Gaze forward. Hold for 3 to 5 breaths, then change sides."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -4971,7 +5295,11 @@
       "kapha": "balances"
     },
     "contraindications": [
-      "knee_injury"
+      "knee_injury",
+      "knee_replacement",
+      "ankle_injury",
+      "groin_injury",
+      "lower_back_pain"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -4980,11 +5308,16 @@
       "balance"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale as you step back and lift the chest.",
+    "ayurvedic_rationale": "Ashwa Sanchalanasana is steps 4 and 9 of Surya Namaskar. The deep hip flexor opening releases the psoas, which classically holds the physical residue of stress and where Vata's tension lodges. The forward, upward gaze lifts Kapha's inertia.",
     "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_beneficial": [
+      "back_pain",
+      "obesity",
+      "diabetes"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "extended_side_angle",
@@ -5003,7 +5336,15 @@
       "Stimulates abdominal organs",
       "Increases stamina"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "side body",
+      "obliques",
+      "intercostals",
+      "hips",
+      "groin",
+      "quadriceps",
+      "shoulders"
+    ],
     "instructions": [
       "From warrior II the lower body stays static while the upper body is folded forward at the crease of the hip",
       "One arm is extended toward the front with the bicep by the ear and the fingers spread wide while the other reaches down to the earth on the inside of the thigh",
@@ -5027,13 +5368,14 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Utthita Parsvakonasana creates one long line from the back heel to the top fingertips, opening the entire side body and the intercostals — expanding the field of Prana Vayu. The strong legs ground Vata while the lateral opening keeps Kapha from settling in the ribcage.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483083/yoga-api/18_aqufak.png",
     "medical_conditions_beneficial": [
       "asthma",
       "obesity"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "garland_pose",
@@ -5050,7 +5392,14 @@
       "Stretches the ankles, groins and back torso",
       "Tones the belly"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hips",
+      "groin",
+      "ankles",
+      "lower back",
+      "pelvis",
+      "inner thighs"
+    ],
     "instructions": [
       "From a squatting position the feet are as close together as possible (keep your heels on the floor if you can; otherwise, support them on a folded mat)",
       "The thighs are slightly wider than the torso",
@@ -5077,7 +5426,7 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Malasana is the natural resting squat, and it works directly on Apana Vayu — the downward-moving air governing elimination. Classically prescribed for constipation and pelvic stagnation, and valuable in pregnancy preparation. A rolled blanket under the heels is standard where the ankles do not yet allow the squat.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483093/yoga-api/37_moh7ii.png",
     "medical_conditions_beneficial": [
       "back_pain",
@@ -5086,7 +5435,8 @@
       "obesity",
       "pcos"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "gate_pose",
@@ -5147,7 +5497,8 @@
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "goddess_pose",
@@ -5216,13 +5567,14 @@
     "medical_conditions_contraindicated": [
       "arthritis",
       "back_pain"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "half_boat",
     "english_name": "Half Boat",
     "sanskrit_name": "Ardha Navasana",
-    "category": "standing",
+    "category": "seated",
     "level": "intermediate",
     "duration_seconds": {
       "beginner": 30,
@@ -5235,7 +5587,12 @@
       "Helps relieve stress",
       "Improves digestion"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "core",
+      "abdominals",
+      "hip flexors",
+      "spine"
+    ],
     "instructions": [
       "From a seated position the hands are gripped around the back of the legs and the knees are bent in a 90 degree angle",
       "Both legs are pulled in towards the abdomen",
@@ -5261,13 +5618,14 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Ardha Navasana is the accessible entry to Navasana, with the shins parallel to the floor so the lower back stays supported. It kindles Agni through abdominal engagement while asking far less of the hip flexors, making it the correct starting point for anyone whose lumbar spine rounds in the full pose.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483073/yoga-api/2_ozh7sv.png",
     "medical_conditions_beneficial": [
       "diabetes",
       "obesity"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "high_lunge_pose",
@@ -5331,13 +5689,14 @@
     "medical_conditions_contraindicated": [
       "arthritis",
       "back_pain"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "king_pigeon",
     "english_name": "King Pigeon",
     "sanskrit_name": "Eka Pada Rajakapotasana",
-    "category": "standing",
+    "category": "backbend",
     "level": "intermediate",
     "duration_seconds": {
       "beginner": 30,
@@ -5349,7 +5708,15 @@
       "Stimulates the abdominal organs",
       "Opens the shoulders and chest"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hips",
+      "hip flexors",
+      "psoas",
+      "spine",
+      "chest",
+      "shoulders",
+      "quadriceps"
+    ],
     "instructions": [
       "From a seated position with the hips squared, one leg is extended forward with the knee bent and parallel to the earth",
       "The front heel is rooted close to the groin (or extended out in a 90 degree angle if flexibility allows)",
@@ -5379,10 +5746,11 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Eka Pada Rajakapotasana combines a deep hip opening with a full backbend — the hips release Apana Vayu while the chest opening awakens Prana Vayu. It is demanding and heating, best suited to Kapha constitutions, and requires the hips to be genuinely open first; forcing the backbend to compensate for tight hips is what injures the lower back.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483087/yoga-api/25_rssro9.png",
     "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "lizard_pose",
@@ -5396,12 +5764,25 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves standing strength and flexibility."
+      "Deeply opens the hip flexors, hamstrings, and inner groin",
+      "Releases the psoas and the deep external rotators",
+      "Improves hip mobility for squatting and lunging",
+      "Relieves lower back tension caused by tight hip flexors"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hip flexors",
+      "psoas",
+      "hamstrings",
+      "groin",
+      "inner thighs"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "From Downward-Facing Dog, step the right foot to the outside of the right hand.",
+      "Lower the left knee to the mat, or keep the back leg lifted and strong for more intensity.",
+      "Walk the right foot slightly further right and turn the toes out about 45 degrees.",
+      "Stay on the hands, or lower to the forearms — onto blocks first if the floor is far away.",
+      "Let the right hip sink and keep the chest broad rather than collapsing between the shoulders.",
+      "Hold for 5 to 10 slow breaths, then press back to Downward Dog and change sides."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -5411,7 +5792,10 @@
     "contraindications": [
       "knee_injury",
       "groin_injury",
-      "hip_injury"
+      "hip_injury",
+      "lower_back_pain",
+      "hamstring_injury",
+      "pregnancy_third_trimester"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -5420,13 +5804,16 @@
       "balance"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Long, slow breaths. Let each exhale invite the hip to descend a little further.",
+    "ayurvedic_rationale": "Utthan Pristhasana works the pelvic region governed by Apana Vayu, releasing the stagnation that accumulates from sedentary living. The long hold suits a Yin approach and is deeply Vata-pacifying when supported on forearms or blocks — unsupported, at depth, it becomes Vata-aggravating.",
     "image_url": "",
     "medical_conditions_beneficial": [
-      "pcos"
+      "pcos",
+      "back_pain",
+      "obesity"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "low_lunge_pose",
@@ -5490,7 +5877,8 @@
     "medical_conditions_contraindicated": [
       "arthritis",
       "back_pain"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "mountain_pose",
@@ -5504,12 +5892,25 @@
       "advanced": 45
     },
     "primary_benefits": [
-      "Improves standing strength and flexibility."
+      "Establishes the alignment blueprint that every standing pose inherits",
+      "Builds postural awareness and improves everyday standing habits",
+      "Strengthens the feet, ankles, and legs",
+      "Grounds and centres the mind at the start of practice"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "feet",
+      "ankles",
+      "legs",
+      "spine",
+      "core"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Stand with the feet either together or hip-width apart, whichever is steadier.",
+      "Root down through all four corners of each foot — big toe mound, little toe mound, and both sides of the heel.",
+      "Lift the arches, engage the quadriceps, and let the kneecaps draw up without locking the knees.",
+      "Find a neutral pelvis: neither tucked under nor tipped forward.",
+      "Lengthen the spine, broaden the collarbones, and let the arms hang with the palms facing forward.",
+      "Stack the crown over the pelvis and soften the face. Stand for 5 to 10 breaths, feeling the body settle."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -5524,21 +5925,24 @@
       "balance"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Natural, unforced breathing. Feel the breath move the whole body subtly.",
+    "ayurvedic_rationale": "Tadasana is the mountain — immovable, rooted, quietly alert. It is the single most Vata-pacifying posture in the system, because it asks for nothing but presence and grounding. Every practice should begin here, establishing the connection to the earth element before movement starts.",
     "image_url": "",
     "medical_conditions_beneficial": [
       "arthritis",
       "asthma",
-      "cervical_spondylosis"
+      "cervical_spondylosis",
+      "back_pain",
+      "anxiety"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "pyramid",
     "english_name": "Pyramid",
     "sanskrit_name": "Parsvottanasana",
-    "category": "standing",
+    "category": "forward_fold",
     "level": "intermediate",
     "duration_seconds": {
       "beginner": 30,
@@ -5553,7 +5957,13 @@
       "Improves posture and sense of balance",
       "Improves digestion"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hamstrings",
+      "calves",
+      "hips",
+      "spine",
+      "shoulders"
+    ],
     "instructions": [
       "From a standing position with one leg forward and one back lean the torso forward at the crease of the hip joint",
       "Stop when the torso is parallel to the floor",
@@ -5572,21 +5982,36 @@
     "contraindications": [
       "lower_back_pain",
       "herniated_disc",
-      "serious_back_injury"
+      "serious_back_injury",
+      "high_blood_pressure",
+      "hypertension",
+      "glaucoma",
+      "hamstring_injury"
     ],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "stress_relief",
       "flexibility",
-      "balance"
+      "balance",
+      "healing"
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Parsvottanasana is an intense one-sided forward fold over a straight front leg, cooling and inward in character and therefore Pitta-pacifying. The narrow stance makes it a genuine balance challenge. Blocks under the hands are standard — rounding the spine to reach the floor defeats the purpose of the pose.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483089/yoga-api/28_uu58tt.png",
     "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [
+      "back_pain",
+      "glaucoma",
+      "hypertension",
+      "sciatica"
+    ],
+    "also_known_as": [
+      "Pyramid Pose",
+      "Parshvottanasana"
+    ],
+    "bilateral": true
   },
   {
     "id": "reverse_warrior",
@@ -5607,7 +6032,14 @@
       "Relieves backaches, especially through second trimester of pregnancy",
       "Therapeutic for carpal tunnel syndrome, flat feet, infertility, osteoporosis, and sciatica"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "side body",
+      "obliques",
+      "intercostals",
+      "hips",
+      "quadriceps",
+      "shoulders"
+    ],
     "instructions": [
       "From warrior II , the lower body stays static while the upper body arches back in a gentle back bend",
       "The top arm is extended back with the bicep by the ear and the fingers spread wide",
@@ -5631,13 +6063,14 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Parsva Virabhadrasana opens the side body from a strong warrior base, lengthening the intercostals and expanding breathing capacity. The combination of grounded legs and expansive upper body is balancing for Vata, while the lateral opening clears the Kapha that settles across the ribs. Keep the weight in the legs rather than collapsing into the lower back.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483089/yoga-api/29_ww7bot.png",
     "medical_conditions_beneficial": [
       "asthma",
       "depression"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "side_lunge_pose",
@@ -5697,13 +6130,14 @@
     "medical_conditions_beneficial": [],
     "medical_conditions_contraindicated": [
       "arthritis"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "side_splits",
     "english_name": "Side Splits",
     "sanskrit_name": "Upavistha Konasana",
-    "category": "standing",
+    "category": "forward_fold",
     "level": "intermediate",
     "duration_seconds": {
       "beginner": 30,
@@ -5717,7 +6151,14 @@
       "Calms the brain",
       "Releases groin"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hamstrings",
+      "inner thighs",
+      "groin",
+      "spine",
+      "lower back",
+      "pelvis"
+    ],
     "instructions": [
       "From a wide stance the legs are open and extended sideways to your degree of flexibility",
       "The outer edges of the feet are rotated and gripping toward the earth",
@@ -5746,7 +6187,7 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Upavistha Konasana is a wide-angle seated forward fold that opens the adductors and hamstrings while the forward orientation cools and calms. Classically valuable for pelvic circulation and reproductive health. Sit elevated on a blanket and fold from the hips — rounding from the waist puts the load straight into the lumbar discs.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483093/yoga-api/40_dkmow6.png",
     "medical_conditions_beneficial": [
       "constipation",
@@ -5755,7 +6196,8 @@
       "menopause",
       "pcos"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "triangle",
@@ -5778,7 +6220,15 @@
       "Relieves backache, especially through second trimester of pregnancy",
       "Therapeutic for anxiety, flat feet, infertility, neck pain, osteoporosis, and sciatica"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hamstrings",
+      "hips",
+      "side body",
+      "obliques",
+      "spine",
+      "shoulders",
+      "ankles"
+    ],
     "instructions": [
       "From a standing position, the legs are straight and separated into a wide stance",
       "The feet are aligned and flat on the earth with the back foot in a 60-degree angle towards the front",
@@ -5808,7 +6258,7 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Trikonasana is the archetypal standing posture, creating stable triangles through the legs and torso. The strong grounding through both feet is markedly Vata-pacifying, while the side-body opening and spinal length keep Kapha from settling. Reach for the shin or a block rather than the floor — the length of the side body matters more than the depth of the reach.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483096/yoga-api/42_jawxqw.png",
     "medical_conditions_beneficial": [
       "constipation",
@@ -5816,7 +6266,8 @@
       "fatty_liver",
       "obesity"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "upward_salute",
@@ -5830,12 +6281,25 @@
       "advanced": 45
     },
     "primary_benefits": [
-      "Improves standing strength and flexibility."
+      "Lengthens the whole side body, spine, and shoulders",
+      "Expands the ribcage and increases breathing capacity",
+      "Improves posture by opening the front of the shoulders",
+      "Energises the body as the second step of Surya Namaskar"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "shoulders",
+      "side body",
+      "spine",
+      "chest",
+      "ribs"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Begin in Tadasana with the feet rooted and the legs engaged.",
+      "Inhale and sweep the arms out to the sides and overhead in a wide arc.",
+      "Bring the palms together overhead, or keep them shoulder-width apart if the shoulders are tight.",
+      "Draw the lower ribs in and lengthen the tailbone down so the lift comes from the upper back.",
+      "Roll the shoulders away from the ears; keep the biceps beside them.",
+      "Gaze forward or softly up at the thumbs. Exhale to release the arms down with control."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -5843,7 +6307,9 @@
       "kapha": "balances"
     },
     "contraindications": [
-      "shoulder_injury"
+      "shoulder_injury",
+      "rotator_cuff",
+      "high_blood_pressure"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -5852,11 +6318,17 @@
       "balance"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to sweep the arms up, exhale to lower.",
+    "ayurvedic_rationale": "Urdhva Hastasana is step 2 of Surya Namaskar — the upward salute to the sun. The expansive overhead reach lifts Kapha heaviness and awakens Prana Vayu in the chest. Those with high blood pressure or shoulder restriction should keep the arms parallel rather than pressing the palms together.",
     "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_beneficial": [
+      "asthma",
+      "cervical_spondylosis",
+      "back_pain",
+      "depression"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "warrior_one",
@@ -5874,7 +6346,15 @@
       "Strengthens the shoulders, arms and back muscles",
       "Strengthens and stretches the thighs, calves and ankles"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "quadriceps",
+      "glutes",
+      "hip flexors",
+      "shoulders",
+      "chest",
+      "spine",
+      "ankles"
+    ],
     "instructions": [
       "From a standing position, the legs are in a wide stance with the feet aligned and flat on the earth",
       "The back foot is in a 60-degree angle towards the front",
@@ -5904,13 +6384,14 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Virabhadrasana One faces forward and reaches up, building determination and heat. Strongly Kapha-reducing and grounding for Vata through the powerful leg engagement. Pitta types should soften the jaw and gaze — the pose invites a striving quality that quickly tips into aggravation.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483096/yoga-api/44_dqeayo.png",
     "medical_conditions_beneficial": [
       "depression",
       "obesity"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "warrior_two",
@@ -5931,7 +6412,15 @@
       "Relieves backaches, especially through second trimester of pregnancy",
       "Therapeutic for carpal tunnel syndrome, flat feet, infertility, osteoporosis, and sciatica"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "quadriceps",
+      "glutes",
+      "hips",
+      "groin",
+      "shoulders",
+      "core",
+      "ankles"
+    ],
     "instructions": [
       "From a standing position, the legs are separated into a wide stance",
       "The front knee is bent in a 90-degree angle directly above the ankle",
@@ -5959,13 +6448,14 @@
     ],
     "sequence_role": "main",
     "pranayama_sync": "Inhale to ground, exhale to stabilize",
-    "ayurvedic_rationale": "Balancing through mindful breath and structural alignment.",
+    "ayurvedic_rationale": "Virabhadrasana Two opens laterally into a wide, stable base with the gaze steady over the front hand. The broad grounding is deeply Vata-pacifying and the sustained hold generates the heat that clears Kapha. The classical instruction is to hold the gaze soft while the legs work hard — strength without strain.",
     "image_url": "https://res.cloudinary.com/dko1be2jy/image/upload/fl_sanitize/v1676483096/yoga-api/45_ehimr1.png",
     "medical_conditions_beneficial": [
       "depression",
       "obesity"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "banana_pose",
@@ -6031,7 +6521,8 @@
       "arthritis",
       "back_pain",
       "sciatica"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "bridge_pose",
@@ -6045,12 +6536,27 @@
       "advanced": 45
     },
     "primary_benefits": [
-      "Improves supine strength and flexibility."
+      "Strengthens the glutes, hamstrings, and spinal extensors",
+      "Opens the chest, shoulders, and hip flexors",
+      "Stimulates the thyroid through gentle throat compression",
+      "Relieves lower back pain by strengthening the posterior chain"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "glutes",
+      "hamstrings",
+      "lower back",
+      "spine",
+      "chest",
+      "hip flexors",
+      "throat"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Lie supine with the knees bent, feet flat and hip-width apart, heels close enough to graze with the fingertips.",
+      "Keep the feet parallel and the knees tracking directly over the ankles throughout.",
+      "Press the feet and the arms down, and lift the hips by peeling the spine off the floor one vertebra at a time.",
+      "Roll the shoulders underneath and either interlace the fingers beneath you or hold the edges of the mat.",
+      "Keep the glutes active but not gripping, and the chin slightly away from the chest — never turn the head while lifted.",
+      "Hold for 5 to 8 breaths, then lower slowly, vertebra by vertebra, and let the knees knock together to release."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -6058,7 +6564,12 @@
       "kapha": "aggravates"
     },
     "contraindications": [
-      "pregnancy_third_trimester"
+      "pregnancy_third_trimester",
+      "neck_injury",
+      "serious_neck_injury",
+      "cervical_spondylosis",
+      "knee_injury",
+      "herniated_disc"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -6068,8 +6579,8 @@
       "spiritual"
     ],
     "sequence_role": "cooldown",
-    "pranayama_sync": "Allow breath to expand belly naturally",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lift the hips, exhale to lower. Breathe into the chest while held.",
+    "ayurvedic_rationale": "Setu Bandha means bridge formation, and the pose builds exactly that — a supported span across the front body. It is gently heating and Kapha-reducing while remaining accessible to Vata thanks to the floor contact throughout. The supported variation on a block is one of the most restorative postures available.",
     "image_url": "",
     "medical_conditions_beneficial": [
       "asthma",
@@ -6078,54 +6589,12 @@
       "diabetes",
       "menopause",
       "pcos",
-      "thyroid"
-    ],
-    "medical_conditions_contraindicated": []
-  },
-  {
-    "id": "corpse_pose",
-    "english_name": "Corpse Pose",
-    "sanskrit_name": "Savasana",
-    "category": "supine",
-    "level": "beginner",
-    "duration_seconds": {
-      "beginner": 20,
-      "intermediate": 30,
-      "advanced": 45
-    },
-    "primary_benefits": [
-      "Improves supine strength and flexibility."
-    ],
-    "body_parts": [],
-    "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
-    ],
-    "dosha_balance": {
-      "vata": "balances",
-      "pitta": "balances",
-      "kapha": "aggravates"
-    },
-    "contraindications": [
-      "pregnancy_third_trimester"
-    ],
-    "pregnancy_safe": true,
-    "goals": [
-      "strength",
-      "stress_relief",
-      "flexibility",
-      "spiritual"
-    ],
-    "sequence_role": "cooldown",
-    "pranayama_sync": "Allow breath to expand belly naturally",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
-    "image_url": "",
-    "medical_conditions_beneficial": [
-      "anxiety",
+      "thyroid",
       "hypertension",
       "insomnia"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "happy_baby_pose",
@@ -6193,7 +6662,8 @@
       "arthritis",
       "back_pain",
       "sciatica"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "knees_to_chest",
@@ -6207,12 +6677,25 @@
       "advanced": 45
     },
     "primary_benefits": [
-      "Improves supine strength and flexibility."
+      "Releases and decompresses the lower back",
+      "Compresses and stimulates the ascending and descending colon, relieving trapped wind",
+      "Gently stretches the glutes and lower spine",
+      "Calms the nervous system and settles the abdomen"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "lower back",
+      "glutes",
+      "abdomen",
+      "spine",
+      "hips"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Lie supine with the legs extended and the whole spine settled on the mat.",
+      "Exhale and draw both knees in toward the chest.",
+      "Wrap the arms around the shins, or hold behind the thighs if the knees are sensitive.",
+      "Let the lower back release and widen against the floor; keep the tailbone heavy.",
+      "Keep the head and shoulders resting down — there is no need to lift the chin toward the knees.",
+      "Optionally rock gently side to side to massage the lumbar spine. Hold for 8 to 10 breaths."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -6220,7 +6703,9 @@
       "kapha": "aggravates"
     },
     "contraindications": [
-      "pregnancy_third_trimester"
+      "pregnancy_third_trimester",
+      "knee_injury",
+      "herniated_disc"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -6230,16 +6715,19 @@
       "spiritual"
     ],
     "sequence_role": "cooldown",
-    "pranayama_sync": "Allow breath to expand belly naturally",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Exhale to draw the knees in, inhale to let them float slightly away. Move with the breath.",
+    "ayurvedic_rationale": "Apanasana is named directly for Apana Vayu, the downward-moving air governing elimination. Its compression of the abdomen is the classical remedy for the bloating and constipation of aggravated Vata, and it is among the most reliably Vata-pacifying postures in the repertoire.",
     "image_url": "",
     "medical_conditions_beneficial": [
       "arthritis",
       "back_pain",
       "constipation",
-      "fatty_liver"
+      "fatty_liver",
+      "anxiety",
+      "menopause"
     ],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "sleeping_vishnu",
@@ -6253,12 +6741,25 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves supine strength and flexibility."
+      "Stretches the hamstrings and inner thighs of the lifted leg",
+      "Improves lateral pelvic stability and hip alignment",
+      "Strengthens the deep obliques that resist rotation",
+      "Opens the side body and improves overall balance"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hamstrings",
+      "inner thighs",
+      "obliques",
+      "hips",
+      "side body"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Lie on the right side with the body in one long line, right arm extended along the floor overhead.",
+      "Bend the right elbow and rest the head in the right hand, elbow grounded for stability.",
+      "Bend the left knee and catch the left big toe with the first two fingers and thumb of the left hand.",
+      "Exhale and extend the left leg straight up toward the ceiling, keeping both hips stacked vertically.",
+      "Resist the tendency to roll backward — the top hip must stay directly over the bottom hip.",
+      "Hold for 5 to 8 breaths, release, and roll over to repeat on the second side."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -6266,7 +6767,12 @@
       "kapha": "aggravates"
     },
     "contraindications": [
-      "pregnancy_third_trimester"
+      "pregnancy_third_trimester",
+      "hamstring_injury",
+      "shoulder_injury",
+      "neck_injury",
+      "hip_injury",
+      "lower_back_pain"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -6276,11 +6782,15 @@
       "spiritual"
     ],
     "sequence_role": "cooldown",
-    "pranayama_sync": "Allow breath to expand belly naturally",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Exhale to extend the leg. Keep the breath even to hold the balance.",
+    "ayurvedic_rationale": "Anantasana is named for Vishnu reclining on the serpent Ananta on the cosmic ocean — a posture of rest that nonetheless demands alertness. The side-lying position is grounding for Vata while the hamstring work maintains circulation. The pose teaches sthira sukham: steadiness within ease.",
     "image_url": "",
-    "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_beneficial": [
+      "back_pain",
+      "pcos"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": true
   },
   {
     "id": "wind_removing_pose",
@@ -6348,7 +6858,8 @@
       "back_pain",
       "cervical_spondylosis",
       "sciatica"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "yoga_sleep_pose",
@@ -6362,12 +6873,26 @@
       "advanced": 90
     },
     "primary_benefits": [
-      "Improves supine strength and flexibility."
+      "Extreme opening of the hips, hamstrings, and groin",
+      "Deep spinal flexion and lengthening of the entire back body",
+      "Strong pratyahara — sensory withdrawal in a fully enclosed shape",
+      "Compresses and stimulates the abdominal organs"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "hips",
+      "hamstrings",
+      "groin",
+      "spine",
+      "lower back",
+      "shoulders"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Lie supine and draw both knees toward the chest, warming the hips thoroughly first.",
+      "Take hold of the right foot with both hands and work the right leg behind the right shoulder.",
+      "Ease the leg further until the right ankle can rest behind the neck rather than on it.",
+      "Repeat with the left leg, crossing the left ankle over the right behind the head.",
+      "Bring the palms together at the heart and settle the shoulders down away from the ears.",
+      "Hold only while the breath stays completely free. Unhook the legs one at a time and rest in Savasana."
     ],
     "dosha_balance": {
       "vata": "balances",
@@ -6375,7 +6900,18 @@
       "kapha": "aggravates"
     },
     "contraindications": [
-      "pregnancy_third_trimester"
+      "pregnancy_third_trimester",
+      "herniated_disc",
+      "serious_back_injury",
+      "serious_spinal_injury",
+      "neck_injury",
+      "serious_neck_injury",
+      "cervical_spondylosis",
+      "knee_injury",
+      "hip_injury",
+      "groin_injury",
+      "pregnancy",
+      "high_blood_pressure"
     ],
     "pregnancy_safe": true,
     "goals": [
@@ -6385,11 +6921,12 @@
       "spiritual"
     ],
     "sequence_role": "cooldown",
-    "pranayama_sync": "Allow breath to expand belly naturally",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "The breath must stay completely free. Any constriction of the throat or ribs means come out.",
+    "ayurvedic_rationale": "Yoganidrasana is the yogic sleep posture, classically described as inducing a state between waking and sleeping. It is an advanced posture requiring years of hip preparation and, in an unsupervised setting, should be treated as aspirational. Any restriction of the breath means the pose is not yet available.",
     "image_url": "",
     "medical_conditions_beneficial": [],
-    "medical_conditions_contraindicated": []
+    "medical_conditions_contraindicated": [],
+    "bilateral": false
   },
   {
     "id": "bound_revolved_chair_pose",
@@ -6459,7 +6996,8 @@
       "glaucoma",
       "heart_disease",
       "hypertension"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "half_lord_of_the_fishes",
@@ -6473,12 +7011,26 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves twist strength and flexibility."
+      "Improves spinal rotation and segmental mobility",
+      "Compresses and then flushes the liver, kidneys, and digestive organs",
+      "Stretches the outer hip, glutes, and shoulders",
+      "Relieves mid-back stiffness from prolonged sitting"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "obliques",
+      "hips",
+      "glutes",
+      "shoulders",
+      "abdomen"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Sit in Dandasana, then bend the right knee and place the right foot outside the left thigh.",
+      "Bend the left knee and tuck the left foot beside the right hip, or keep the left leg extended for a simpler version.",
+      "Sit on a folded blanket so both sitting bones stay grounded and the pelvis stays level.",
+      "Inhale and lengthen the spine, placing the right hand on the floor behind the sacrum as a light support, not a lever.",
+      "Exhale and rotate to the right, hooking the left elbow outside the right knee.",
+      "Turn the head last and least. Unwind on an exhale and repeat on the second side."
     ],
     "dosha_balance": {
       "vata": "neutral",
@@ -6487,7 +7039,11 @@
     },
     "contraindications": [
       "pregnancy",
-      "spinal_injury"
+      "spinal_injury",
+      "herniated_disc",
+      "serious_back_injury",
+      "knee_injury",
+      "pregnancy_third_trimester"
     ],
     "pregnancy_safe": false,
     "goals": [
@@ -6495,18 +7051,21 @@
       "flexibility"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Inhale to lengthen spine, exhale to deepen twist",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lengthen the spine, exhale to rotate deeper. Never twist on an inhale.",
+    "ayurvedic_rationale": "Ardha Matsyendrasana is named for the sage Matsyendranath, a founding figure of Hatha Yoga. The wringing action on the abdominal organs is the classical method for kindling Agni and clearing Ama, making it especially valuable for manda (sluggish) digestion. Always lengthen before rotating — twisting a compressed spine is what injures discs.",
     "image_url": "",
     "medical_conditions_beneficial": [
       "constipation",
       "diabetes",
       "fatty_liver",
-      "pcos"
+      "pcos",
+      "obesity",
+      "back_pain"
     ],
     "medical_conditions_contraindicated": [
       "back_pain"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "noose_pose",
@@ -6570,7 +7129,8 @@
     "medical_conditions_contraindicated": [
       "arthritis",
       "back_pain"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "revolved_head_to_knee",
@@ -6584,12 +7144,27 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves twist strength and flexibility."
+      "Deeply opens the side body, intercostals, and lats",
+      "Combines a lateral bend with a spinal twist for full ribcage mobility",
+      "Stretches the hamstring and inner thigh of the extended leg",
+      "Expands breathing capacity by mobilising the ribs"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "side body",
+      "intercostals",
+      "ribs",
+      "hamstrings",
+      "spine",
+      "shoulders",
+      "inner thighs"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Sit with the right leg extended to the side and the left knee bent, left heel drawn toward the groin.",
+      "Sit on a folded blanket to keep the pelvis upright.",
+      "Rest the right forearm inside the right leg, palm facing up, and slide it toward the right foot.",
+      "Inhale and sweep the left arm overhead, rotating the chest open toward the ceiling.",
+      "Reach the left hand toward the right foot, keeping the left shoulder rolling back rather than collapsing forward.",
+      "Gaze up under the left arm if the neck allows. Hold for 5 to 8 breaths and change sides."
     ],
     "dosha_balance": {
       "vata": "neutral",
@@ -6598,7 +7173,14 @@
     },
     "contraindications": [
       "pregnancy",
-      "spinal_injury"
+      "spinal_injury",
+      "herniated_disc",
+      "serious_back_injury",
+      "knee_injury",
+      "groin_injury",
+      "hamstring_injury",
+      "shoulder_injury",
+      "pregnancy_third_trimester"
     ],
     "pregnancy_safe": false,
     "goals": [
@@ -6606,61 +7188,20 @@
       "flexibility"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Inhale to lengthen spine, exhale to deepen twist",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lengthen the side body, exhale to rotate the chest open.",
+    "ayurvedic_rationale": "Parivrtta Janu Sirsasana opens the intercostals and the side body, directly expanding the field of Prana Vayu in the chest. The combined lateral bend and rotation is cooling and lengthening, making it well suited to Pitta, while the seated base keeps it grounding for Vata.",
     "image_url": "",
     "medical_conditions_beneficial": [
-      "fatty_liver"
-    ],
-    "medical_conditions_contraindicated": [
-      "back_pain"
-    ]
-  },
-  {
-    "id": "revolved_triangle",
-    "english_name": "Revolved Triangle",
-    "sanskrit_name": "Parivrtta Trikonasana",
-    "category": "twist",
-    "level": "intermediate",
-    "duration_seconds": {
-      "beginner": 30,
-      "intermediate": 45,
-      "advanced": 60
-    },
-    "primary_benefits": [
-      "Improves twist strength and flexibility."
-    ],
-    "body_parts": [],
-    "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
-    ],
-    "dosha_balance": {
-      "vata": "neutral",
-      "pitta": "balances",
-      "kapha": "balances"
-    },
-    "contraindications": [
-      "pregnancy",
-      "spinal_injury"
-    ],
-    "pregnancy_safe": false,
-    "goals": [
-      "strength",
-      "flexibility"
-    ],
-    "sequence_role": "main",
-    "pranayama_sync": "Inhale to lengthen spine, exhale to deepen twist",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
-    "image_url": "",
-    "medical_conditions_beneficial": [
+      "fatty_liver",
+      "asthma",
+      "back_pain",
       "constipation",
-      "diabetes",
-      "fatty_liver"
+      "menopause"
     ],
     "medical_conditions_contraindicated": [
       "back_pain"
-    ]
+    ],
+    "bilateral": true
   },
   {
     "id": "revolved_triangle_pose",
@@ -6711,7 +7252,8 @@
       "serious_back_injury",
       "herniated_disc",
       "lower_back_pain",
-      "pregnancy"
+      "pregnancy",
+      "spinal_injury"
     ],
     "pregnancy_safe": false,
     "goals": [
@@ -6724,7 +7266,9 @@
     "ayurvedic_rationale": "Twisting poses are traditionally used to kindle agni and support digestive flow, which can help reduce kapha stagnation. When practiced with moderation, this pose also creates clarity and openness without overly heating pitta.",
     "image_url": "https://pocketyoga.com/assets/images/full/TriangleRevolved_L.png",
     "medical_conditions_beneficial": [
-      "constipation"
+      "constipation",
+      "diabetes",
+      "fatty_liver"
     ],
     "medical_conditions_contraindicated": [
       "back_pain",
@@ -6732,7 +7276,12 @@
       "glaucoma",
       "hypertension",
       "sciatica"
-    ]
+    ],
+    "also_known_as": [
+      "Revolved Triangle",
+      "Parivrtta Trikonasana"
+    ],
+    "bilateral": true
   },
   {
     "id": "revolved_wide_legged_forward_bend",
@@ -6802,7 +7351,8 @@
       "glaucoma",
       "hypertension",
       "sciatica"
-    ]
+    ],
+    "bilateral": false
   },
   {
     "id": "sage_pose",
@@ -6816,12 +7366,26 @@
       "advanced": 60
     },
     "primary_benefits": [
-      "Improves twist strength and flexibility."
+      "Improves spinal rotation with a strongly grounded base",
+      "Massages the abdominal organs and supports digestion",
+      "Stretches the shoulders and the outer hip",
+      "Builds the shoulder mobility that makes binds accessible"
     ],
-    "body_parts": [],
+    "body_parts": [
+      "spine",
+      "obliques",
+      "abdomen",
+      "shoulders",
+      "hips",
+      "hamstrings"
+    ],
     "instructions": [
-      "Follow classical alignment.",
-      "Breathe steadily."
+      "Sit in Dandasana, then bend the right knee and place the right foot flat on the floor close to the right sitting bone.",
+      "Keep the left leg extended and strongly active, foot flexed and thigh rooting down.",
+      "Inhale and lengthen the spine, lifting the crown.",
+      "Exhale and rotate to the right, hooking the left upper arm outside the right shin.",
+      "Place the right hand on the floor behind you and press down to lift and rotate further, or bind the hands behind the back if available.",
+      "Keep both sitting bones grounded. Release on an exhale and repeat on the second side."
     ],
     "dosha_balance": {
       "vata": "neutral",
@@ -6830,7 +7394,12 @@
     },
     "contraindications": [
       "pregnancy",
-      "spinal_injury"
+      "spinal_injury",
+      "herniated_disc",
+      "serious_back_injury",
+      "shoulder_injury",
+      "pregnancy_third_trimester",
+      "lower_back_pain"
     ],
     "pregnancy_safe": false,
     "goals": [
@@ -6838,16 +7407,19 @@
       "flexibility"
     ],
     "sequence_role": "main",
-    "pranayama_sync": "Inhale to lengthen spine, exhale to deepen twist",
-    "ayurvedic_rationale": "Classical asana for balancing mind and body.",
+    "pranayama_sync": "Inhale to lengthen, exhale to twist. The rotation follows the exhale, never precedes it.",
+    "ayurvedic_rationale": "Marichyasana is named for the sage Marichi, son of Brahma. The deep abdominal compression kindles Agni and assists elimination, and the pose is classically prescribed for sluggish digestion. The extended leg must stay active — a passive leg lets the twist migrate into the lumbar spine, which is where twisting injuries occur.",
     "image_url": "",
     "medical_conditions_beneficial": [
       "constipation",
       "diabetes",
-      "fatty_liver"
+      "fatty_liver",
+      "obesity",
+      "back_pain"
     ],
     "medical_conditions_contraindicated": [
       "back_pain"
-    ]
+    ],
+    "bilateral": true
   }
 ]
