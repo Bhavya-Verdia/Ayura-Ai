@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 import uuid
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Body
+from pydantic import BaseModel, Field
+from typing import Literal, Optional
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from fastapi import BackgroundTasks
 
@@ -132,6 +134,139 @@ async def generate_yoga_plan(
         )
 
     return enriched_plan
+
+
+# ── Week-by-week progression ─────────────────────────────────────────────────
+# A four-week plan built up front has to guess how week 3 should go before the
+# user has practised week 1. Weeks are generated one at a time instead, each
+# shaped by what the user reported about the last.
+
+class YogaWeekFeedback(BaseModel):
+    """What the user reports after finishing a week.
+
+    Every field is optional: someone who wants to keep practising should never be
+    blocked by a form. An empty submission generates the next week on the default
+    progression, which is exactly what the old behaviour did for all four weeks.
+    """
+    difficulty: Optional[Literal["too_easy", "just_right", "too_hard"]] = None
+    session_length: Optional[Literal["too_short", "just_right", "too_long"]] = None
+    energy_after: Optional[Literal["drained", "neutral", "energised"]] = None
+    days_practised: Optional[int] = Field(None, ge=0, le=7)
+    dropped_pose_ids: list[str] = Field(default_factory=list, max_length=40)
+    note: Optional[str] = Field(None, max_length=500)
+
+
+class YogaNextWeekRequest(BaseModel):
+    plan_id: str
+    # The week just completed. Defaults to the latest generated week.
+    week: Optional[int] = Field(None, ge=1, le=4)
+    feedback: YogaWeekFeedback = Field(default_factory=YogaWeekFeedback)
+
+
+@router.post("/yoga/next-week")
+async def generate_next_yoga_week(
+    req: YogaNextWeekRequest,
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """Record feedback on the week just finished and build the next one."""
+    from services.yoga_plan_engine import generate_yoga_plan as engine_generate
+    from services.yoga_plan_enricher import enrich_yoga_plan
+
+    record = await db.plan_history.find_one({"_id": req.plan_id, "user_id": user.id})
+    if not record:
+        raise HTTPException(status_code=404, detail="Yoga plan not found")
+
+    plan = (record.get("plan_data") or {}).get("yoga_plan") or {}
+    existing_weeks = plan.get("four_week_plan") or []
+    if not existing_weeks:
+        raise HTTPException(status_code=409, detail="This plan has no weeks to continue from")
+
+    latest_week = max(w.get("week", 0) for w in existing_weeks)
+    next_week = latest_week + 1
+    if next_week > plan.get("total_weeks", 4):
+        raise HTTPException(status_code=409, detail="This plan is already complete")
+
+    reviewed_week = req.week or latest_week
+
+    # Feedback lives with the plan it describes, keyed by week so re-submitting
+    # corrects the entry rather than compounding it.
+    history = {int(f["week"]): f for f in (plan.get("week_feedback") or []) if f.get("week")}
+    history[reviewed_week] = {"week": reviewed_week, **req.feedback.model_dump()}
+    feedback_history = [history[w] for w in sorted(history)]
+
+    prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
+    if not prefs_doc or not prefs_doc.get("yoga"):
+        raise HTTPException(status_code=422, detail="Complete yoga preferences first")
+    yoga_prefs = prefs_doc.get("yoga")
+
+    user_profile = user.model_dump()
+    from engine.seasonal import get_current_season
+    user_profile["current_season"] = get_current_season().name.lower()
+
+    # Poses already used, so the next week reaches for something new where the
+    # safe pool allows it.
+    recent_pose_ids = {
+        p.get("pose_id")
+        for w in existing_weeks for d in w.get("days", [])
+        if d.get("session")
+        for section in ("warmup", "main_sequence", "cooldown")
+        for p in (d["session"].get(section) or [])
+        if p.get("pose_id")
+    }
+
+    await consume_plan_quota(db, user)
+    async with _plan_guard(user.id, "yoga"):
+        if user.pregnancy_or_nursing:
+            poses = [p for p in kb_cache.yoga_poses if p.get("pregnancy_safe") is True]
+        else:
+            poses = kb_cache.yoga_poses
+
+        raw_week = engine_generate(
+            user_profile, yoga_prefs, poses or None, kb_cache.pranayama or None,
+            weeks=[next_week], feedback_history=feedback_history,
+            recent_pose_ids=recent_pose_ids,
+        )
+        enriched = await enrich_yoga_plan(raw_week, user_profile, yoga_prefs)
+
+    # Append the new week to the stored plan rather than replacing it — the
+    # earlier weeks are the user's practice history now, not disposable output.
+    merged_weeks = existing_weeks + [w for w in (enriched.get("four_week_plan") or [])
+                                     if w.get("week") == next_week]
+    merged_weeks.sort(key=lambda w: w.get("week", 0))
+
+    plan["four_week_plan"] = merged_weeks
+    plan["week_feedback"] = feedback_history
+    plan["weeks_generated"] = [w["week"] for w in merged_weeks]
+    plan["next_week"] = next_week + 1 if next_week < plan.get("total_weeks", 4) else None
+    plan["progression_adjustment"] = enriched.get("progression_adjustment")
+    # Carry forward the narrative the enricher wrote for the new week.
+    for key in ("breathing_guidance", "lifestyle_sync", "motivational_note",
+                "daily_intention", "age_coaching", "condition_coaching"):
+        if enriched.get(key):
+            plan[key] = enriched[key]
+
+    await db.plan_history.update_one(
+        {"_id": req.plan_id, "user_id": user.id},
+        {"$set": {
+            "plan_data.yoga_plan": plan,
+            "updated_at": datetime.now(timezone.utc),
+        }},
+    )
+
+    await db.timeline.insert_one({
+        "user_id": user.id,
+        "event_type": "yoga_week_generated",
+        "source": "yoga",
+        "details": {
+            "week": next_week,
+            "reviewed_week": reviewed_week,
+            "adjusted": bool(enriched.get("progression_adjustment")),
+        },
+        "timestamp": datetime.now(timezone.utc),
+    })
+
+    return plan
 
 
 @router.post("/diet")

@@ -5700,3 +5700,131 @@
   .sp-progress-fill,
   .sp-ring-fill { transition: none; }
 }
+
+/* ── Week-by-week progression ─────────────────────────────────────────────── */
+
+.yoga-week-tab.pending {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+.yoga-progression-note {
+  margin: 0.75rem 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--plan-violet) 22%, transparent);
+  background: color-mix(in srgb, var(--plan-violet) 7%, transparent);
+}
+
+.yoga-progression-title {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--plan-violet);
+  margin-bottom: 0.35rem;
+}
+
+.yoga-progression-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ayura-text-secondary);
+}
+
+/* Feedback card */
+.wf-card {
+  margin: 1.25rem 0;
+  padding: 1.1rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--plan-violet) 24%, transparent);
+  background: color-mix(in srgb, var(--plan-violet) 6%, transparent);
+}
+
+.wf-header { display: flex; gap: 0.6rem; align-items: flex-start; margin-bottom: 0.9rem; }
+.wf-icon { color: var(--plan-violet); flex: 0 0 auto; margin-top: 0.2rem; }
+.wf-title { margin: 0; font-size: 1rem; }
+.wf-sub { margin: 0.2rem 0 0; font-size: 0.82rem; color: var(--ayura-text-secondary); }
+
+.wf-question { margin-bottom: 0.85rem; }
+
+.wf-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--ayura-text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.wf-choice-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.wf-choice {
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--plan-violet) 26%, transparent);
+  background: transparent;
+  color: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.wf-choice:hover { border-color: color-mix(in srgb, var(--plan-violet) 55%, transparent); }
+
+.wf-choice.selected {
+  background: var(--plan-violet);
+  border-color: var(--plan-violet);
+  color: #fff;
+}
+
+.wf-days { gap: 0.3rem; }
+.wf-day { min-width: 2.1rem; padding: 0.4rem 0; text-align: center; }
+
+.wf-drop { margin-bottom: 0.85rem; }
+.wf-drop-summary { font-size: 0.82rem; cursor: pointer; color: var(--ayura-text-secondary); }
+.wf-drop-count { color: var(--plan-violet); }
+.wf-drop-help { font-size: 0.78rem; color: var(--ayura-text-secondary); margin: 0.4rem 0; }
+.wf-drop-list { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+.wf-drop-chip {
+  padding: 0.35rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--plan-violet) 22%, transparent);
+  background: transparent;
+  color: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.wf-drop-chip.selected {
+  background: color-mix(in srgb, #ef4444 18%, transparent);
+  border-color: #ef4444;
+  text-decoration: line-through;
+}
+
+.wf-error { font-size: 0.82rem; color: #ef4444; margin: 0.5rem 0; }
+
+.wf-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.3rem;
+  padding: 0.6rem 1.2rem;
+  border: 0;
+  border-radius: 10px;
+  background: var(--plan-violet);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.wf-submit:disabled { opacity: 0.7; cursor: default; }
+
+.wf-spin { animation: wf-spin 1s linear infinite; }
+
+@keyframes wf-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .wf-spin { animation: none; }
+}

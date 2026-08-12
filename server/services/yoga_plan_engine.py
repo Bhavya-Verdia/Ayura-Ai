@@ -288,6 +288,160 @@ def _pregnancy_state(user_profile: dict) -> tuple[bool, bool, int]:
     return True, False, min(max(trimester, 1), 3)
 
 
+# ── Week-by-week progression from user feedback ───────────────────────────────
+# A four-week plan generated up front has to guess how week 3 should go before
+# the user has practised week 1. Weeks are now generated one at a time, each one
+# shaped by what the user reported about the last.
+#
+# The mapping from feedback to plan change is DETERMINISTIC — the same answers
+# always produce the same adjustment. Nothing here goes through an LLM, for the
+# same reason plan authoring doesn't: a vaidya has to be able to audit why week 3
+# got easier, and "the model decided" is not an answer.
+
+_TOTAL_WEEKS = 4
+DEFAULT_WEEKS_GENERATED = 1
+
+# Per-answer effect. Multiplicative fields compose across weeks, additive ones sum.
+#
+# There is deliberately no per-pose "hold length" lever here. Section budgets are
+# filled to the requested session length, so shortening base holds just makes the
+# filler stretch them back or add poses — the knob reads as if it does something
+# and measurably does not. The levers below all survive that: which poses are
+# eligible, which categories are favoured, and how long the session runs.
+_DIFFICULTY_EFFECT = {
+    "too_easy":   {"level_shift": 1,  "duration_scale": 1.1},
+    "just_right": {},
+    "too_hard":   {"level_shift": -1, "duration_scale": 0.9, "restorative_bias": 3},
+}
+_LENGTH_EFFECT = {
+    "too_short":  {"duration_scale": 1.2},
+    "just_right": {},
+    "too_long":   {"duration_scale": 0.8},
+}
+_ENERGY_EFFECT = {
+    "energised":  {},
+    "neutral":    {},
+    # Feeling wrung out after practice is the clearest signal that the load is
+    # wrong, regardless of what the difficulty answer said.
+    "drained":    {"duration_scale": 0.9, "restorative_bias": 3},
+}
+
+# Bounds on the accumulated adjustment. Without these, four consecutive
+# "too hard" answers would drive the practice to nothing.
+_LEVEL_SHIFT_BOUNDS = (-2, 2)
+_DURATION_SCALE_BOUNDS = (0.5, 1.5)
+_RESTORATIVE_BIAS_MAX = 4
+
+
+class WeekAdjustment:
+    """How the next week differs from the default progression."""
+
+    __slots__ = ("level_shift", "duration_scale",
+                 "restorative_bias", "excluded_pose_ids", "reasons")
+
+    def __init__(self, level_shift=0, duration_scale=1.0,
+                 restorative_bias=0, excluded_pose_ids=(), reasons=()):
+        self.level_shift = level_shift
+        self.duration_scale = duration_scale
+        self.restorative_bias = restorative_bias
+        self.excluded_pose_ids = frozenset(excluded_pose_ids)
+        self.reasons = tuple(reasons)
+
+    def as_dict(self) -> dict:
+        return {
+            "level_shift": self.level_shift,
+            "duration_scale": round(self.duration_scale, 2),
+            "restorative_bias": self.restorative_bias,
+            "excluded_pose_count": len(self.excluded_pose_ids),
+            "reasons": list(self.reasons),
+        }
+
+
+def _clamp(value, bounds):
+    low, high = bounds
+    return max(low, min(value, high))
+
+
+def build_week_adjustment(feedback_history) -> WeekAdjustment:
+    """Fold every week of feedback so far into one adjustment.
+
+    Reads the whole history rather than only the most recent week: someone who
+    reports "too hard" three weeks running needs the practice to keep easing,
+    not to reset to default the moment they stop saying it.
+    """
+    level_shift = 0
+    duration_scale = 1.0
+    restorative_bias = 0
+    excluded: set[str] = set()
+    reasons: list[str] = []
+
+    for entry in (feedback_history or []):
+        if not isinstance(entry, dict):
+            continue
+        effects = [
+            _DIFFICULTY_EFFECT.get(entry.get("difficulty"), {}),
+            _LENGTH_EFFECT.get(entry.get("session_length"), {}),
+            _ENERGY_EFFECT.get(entry.get("energy_after"), {}),
+        ]
+
+        # Practising 3 days or fewer usually means the sessions did not fit the
+        # week, not that the user gave up. Shorten them so they can be kept.
+        days = entry.get("days_practised")
+        if isinstance(days, int) and days <= 3:
+            effects.append({"duration_scale": 0.8})
+            reasons.append("Sessions shortened — last week only fitted in a few days.")
+
+        for effect in effects:
+            level_shift += effect.get("level_shift", 0)
+            duration_scale *= effect.get("duration_scale", 1.0)
+            restorative_bias += effect.get("restorative_bias", 0)
+
+        dropped = entry.get("dropped_pose_ids") or []
+        excluded.update(str(p) for p in dropped if p)
+
+        if entry.get("difficulty") == "too_hard":
+            reasons.append("Gentler poses and shorter holds — you found last week hard.")
+        elif entry.get("difficulty") == "too_easy":
+            reasons.append("Stronger poses and longer holds — last week was too easy.")
+        if entry.get("session_length") == "too_long":
+            reasons.append("Shorter sessions — last week ran long.")
+        elif entry.get("session_length") == "too_short":
+            reasons.append("Longer sessions — you wanted more time on the mat.")
+        if entry.get("energy_after") == "drained":
+            reasons.append("More restorative work — practice was leaving you drained.")
+
+    if excluded:
+        reasons.append(f"{len(excluded)} pose(s) you asked to drop are excluded.")
+
+    # De-duplicate while preserving order — repeated weeks of the same answer
+    # compound the effect but should not repeat the sentence.
+    seen, unique_reasons = set(), []
+    for r in reasons:
+        if r not in seen:
+            seen.add(r)
+            unique_reasons.append(r)
+
+    return WeekAdjustment(
+        level_shift=_clamp(level_shift, _LEVEL_SHIFT_BOUNDS),
+        duration_scale=_clamp(duration_scale, _DURATION_SCALE_BOUNDS),
+        restorative_bias=min(restorative_bias, _RESTORATIVE_BIAS_MAX),
+        excluded_pose_ids=excluded,
+        reasons=unique_reasons,
+    )
+
+
+_EXPERIENCE_LADDER = ["beginner", "intermediate", "advanced"]
+
+
+def _shift_experience(experience: str, shift: int) -> str:
+    """Move the practitioner a rung up or down the experience ladder."""
+    try:
+        idx = _EXPERIENCE_LADDER.index(experience)
+    except ValueError:
+        idx = 0
+    return _EXPERIENCE_LADDER[_clamp(idx + shift, (0, len(_EXPERIENCE_LADDER) - 1))]
+
+
 # ── Age group classification ───────────────────────────────────────────────────
 
 def _get_age_group(age) -> str:
@@ -632,9 +786,15 @@ def _get_season_boost(season_str) -> dict:
 
 # ── Main pose filter + scoring ────────────────────────────────────────────────
 
-def filter_poses(user_profile, yoga_prefs, poses, max_allowed_levels=None, protocol_map=None):
+def filter_poses(user_profile, yoga_prefs, poses, max_allowed_levels=None, protocol_map=None,
+                 adjustment: "WeekAdjustment | None" = None, recent_pose_ids=None):
     if protocol_map is None:
         protocol_map = _PROTOCOL_MAP
+    adjustment = adjustment or WeekAdjustment()
+    # Poses seen in the weeks already generated. Not excluded — with a filtered
+    # pool there may be nothing else to give — just pushed down the ranking so a
+    # four-week plan does not keep serving the same twelve poses.
+    recent_pose_ids = set(recent_pose_ids or ())
 
     level_map = {
         "beginner":     ["beginner"],
@@ -722,6 +882,10 @@ def filter_poses(user_profile, yoga_prefs, poses, max_allowed_levels=None, proto
                 continue
         # Condition-specific pose contraindication (dynamic protocol) — hard exclude.
         if pose.get("id", "") in protocol_avoid_ids:
+            continue
+        # Poses the user asked to drop after practising them. Their word on what
+        # hurt outranks the engine's scoring.
+        if pose.get("id", "") in adjustment.excluded_pose_ids:
             continue
 
         pose_contra = set(pose.get("contraindications", [])) | set(pose.get("medical_conditions_contraindicated", []))
@@ -811,6 +975,17 @@ def filter_poses(user_profile, yoga_prefs, poses, max_allowed_levels=None, proto
         elif age_group == "youth":
             if cat in ("standing", "balancing"):
                 score += 1
+
+        # ── Feedback: bias toward restorative work when the practice has been
+        # too hard or has been leaving the user drained ──
+        if adjustment.restorative_bias and cat in ("restorative", "supine", "forward_fold"):
+            score += adjustment.restorative_bias
+        if adjustment.restorative_bias and cat in ("inversion", "backbend", "balancing"):
+            score -= adjustment.restorative_bias
+
+        # ── Variety: poses already used in this plan rank lower ──
+        if pose_id in recent_pose_ids:
+            score -= 3
 
         # Always keep Savasana / Corpse in pool
         name = pose.get("english_name", "").lower()
@@ -1062,7 +1237,9 @@ _MAX_POSE_HOLD_SECONDS = 240
 
 
 def pose_hold_seconds(pose: dict, experience: str, week: int, age_group: str = "adult") -> int:
-    """Per-side hold for one pose, after week progression and age scaling."""
+    """Per-side hold for one pose, after week progression and age scaling.
+
+    """
     durs = pose.get("duration_seconds", {})
     base = durs.get(experience, durs.get("beginner", 30))
     hold = _week_hold(base, week)
@@ -1571,9 +1748,22 @@ def get_ayurvedic_tips(dosha: str) -> dict:
 # ── Main entry point ──────────────────────────────────────────────────────────
 
 def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_list_db=None,
-                       extra_protocols=None):
+                       extra_protocols=None, weeks=None, feedback_history=None,
+                       recent_pose_ids=None):
+    """Build a yoga plan.
+
+    `weeks` selects which week numbers to generate — by default just the first.
+    Weeks are produced one at a time so each can be shaped by what the user
+    reported about the last one; passing [1, 2, 3, 4] restores the old behaviour
+    of generating the whole block up front.
+    """
     yp = yoga_poses_db if yoga_poses_db is not None else yoga_poses
     pl = pranayama_list_db if pranayama_list_db is not None else pranayama_list
+
+    weeks = sorted({int(w) for w in (weeks or [1]) if 1 <= int(w) <= _TOTAL_WEEKS})
+    if not weeks:
+        weeks = [1]
+    adjustment = build_week_adjustment(feedback_history)
 
     # Thread-safe local protocol map (merge base + any dynamic protocols for unknown conditions)
     effective_proto_map = dict(_PROTOCOL_MAP)
@@ -1583,6 +1773,17 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
     user_exp = yoga_prefs.get("yoga_experience", "beginner")
     if user_exp == "none":
         user_exp = "beginner"
+
+    # Feedback moves the practitioner up or down the experience ladder, which is
+    # what actually changes which poses are eligible.
+    effective_exp = _shift_experience(user_exp, adjustment.level_shift)
+    if adjustment.duration_scale != 1.0:
+        scaled_minutes = int(round(
+            yoga_prefs.get("time_available_minutes", 30) * adjustment.duration_scale))
+        yoga_prefs = {**yoga_prefs, "time_available_minutes": max(scaled_minutes, 10)}
+    if effective_exp != user_exp:
+        yoga_prefs = {**yoga_prefs, "yoga_experience": effective_exp}
+    user_exp = effective_exp
 
     # Age group for adaptive modifications
     age_group = _get_age_group(user_profile.get("age"))
@@ -1602,7 +1803,9 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
     # Filter and score the full pose pool once
     filtered_poses = filter_poses(user_profile, yoga_prefs, yp,
                                   max_allowed_levels=all_levels,
-                                  protocol_map=effective_proto_map)
+                                  protocol_map=effective_proto_map,
+                                  adjustment=adjustment,
+                                  recent_pose_ids=recent_pose_ids)
 
     # Select top 3 pranayamas for this user
     pranayamas = select_pranayama(user_profile, yoga_prefs, pl, count=3,
@@ -1635,9 +1838,11 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
                 })
 
     time_of_day = yoga_prefs.get("time_of_day_preference", "morning")
-    if time_of_day == "morning":   rest_days = {3, 7}
-    elif time_of_day == "evening": rest_days = {4, 7}
-    else:                          rest_days = {7}
+    # No rest days. Unlike resistance training, yoga is a daily practice —
+    # classical Dinacharya prescribes sadhana every day, and the week-to-week
+    # feedback loop is what protects against overload now: "too hard" or
+    # "drained" pulls the following week's intensity down automatically.
+    rest_days: set[int] = set()
 
     user_id = str(user_profile.get("id") or user_profile.get("_id") or "default")
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
@@ -1704,7 +1909,7 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
                        - savasana_seconds - dharana_seconds, 180)
 
     four_week_plan = []
-    for week in range(1, 5):
+    for week in weeks:
         cfg = _WEEK_CONFIG[week]
         week_levels = prog_levels[week]
         week_days = []
@@ -1801,6 +2006,15 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
         },
         "weekly_schedule":    four_week_plan[0]["days"],
         "four_week_plan":     four_week_plan,
+        # Progression state. The plan is built a week at a time, so the client
+        # needs to know which weeks exist and whether another can be requested.
+        "weeks_generated":    [w["week"] for w in four_week_plan],
+        "total_weeks":        _TOTAL_WEEKS,
+        "next_week":          (max(w["week"] for w in four_week_plan) + 1
+                               if max(w["week"] for w in four_week_plan) < _TOTAL_WEEKS
+                               else None),
+        # What last week's feedback changed, in the user's terms. Empty on week 1.
+        "progression_adjustment": adjustment.as_dict() if adjustment.reasons else None,
         "ayurvedic_tips":     get_ayurvedic_tips(dominant_dosha),
         "seasonal_note":      season_cfg.get("note") if season_cfg else None,
         "practice_pool_notice": pool_notice,

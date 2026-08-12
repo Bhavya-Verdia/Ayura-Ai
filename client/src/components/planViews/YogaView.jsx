@@ -5,6 +5,7 @@ import {
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { PoseFigure } from './PoseFigure'
 import { SessionPlayer } from './SessionPlayer'
+import { WeekFeedbackCard } from './WeekFeedbackCard'
 import { useTranslation } from 'react-i18next'
 
 const SNS_BREATH_COLOR = { 'Inhale': '#3b82f6', 'Exhale': '#ef4444', 'Natural': '#6b7280', 'Exhale — hold 3-5 breaths': '#ef4444' }
@@ -96,8 +97,12 @@ function SuryaNamaskarCard({ sns }) {
 const YOGA_WEEK_THEMES = ['Foundation', 'Deepen', 'Challenge', 'Integration']
 
 
-export function YogaView({ plan }) {
+export function YogaView({ plan: planProp }) {
   const { t } = useTranslation()
+  // Generating the next week returns the whole updated plan; hold it locally so
+  // the new week appears immediately rather than waiting on a refetch.
+  const [livePlan, setLivePlan] = useState(null)
+  const plan = livePlan || planProp
   const [activeWeek, setActiveWeek] = useState(0)
   const [expandedPoses, setExpandedPoses] = useState(new Set())
   const [expandedWarmup, setExpandedWarmup] = useState(new Set())
@@ -113,6 +118,12 @@ export function YogaView({ plan }) {
 
   const us = plan.user_summary || {}
   const fourWeekPlan = plan.four_week_plan || []
+  const totalWeeks = plan.total_weeks || 4
+  // `next_week` is absent on plans generated before the week-by-week change —
+  // those already contain all four weeks and need no continuation affordance.
+  const nextWeek = plan.next_week || null
+  const latestWeek = fourWeekPlan.length ? fourWeekPlan[fourWeekPlan.length - 1] : null
+  const showFeedback = Boolean(nextWeek && latestWeek)
   const activeWeekData = fourWeekPlan[activeWeek] || null
   const weekDays = activeWeekData?.days || []
   const weekNote = activeWeekData?.note || null
@@ -301,17 +312,45 @@ export function YogaView({ plan }) {
 
       {/* ── Week tabs ── */}
       <div className="yoga-week-tabs">
-        {YOGA_WEEK_THEMES.map((theme, i) => (
-          <button
-            key={i}
-            className={`yoga-week-tab${activeWeek === i ? ' active' : ''}`}
-            onClick={() => selectWeek(i)}
-          >
-            <span className="yoga-tab-num">{t('yoga.week', 'Week {{n}}', { n: i + 1 })}</span>
-            <span className="yoga-tab-theme">{t(`yoga.weekTheme.${theme.toLowerCase()}`, theme)}</span>
-          </button>
-        ))}
+        {fourWeekPlan.map((wk, i) => {
+          const theme = wk.theme || YOGA_WEEK_THEMES[i] || ''
+          return (
+            <button
+              key={wk.week ?? i}
+              className={`yoga-week-tab${activeWeek === i ? ' active' : ''}`}
+              onClick={() => selectWeek(i)}
+            >
+              <span className="yoga-tab-num">{t('yoga.week', 'Week {{n}}', { n: wk.week ?? i + 1 })}</span>
+              <span className="yoga-tab-theme">{t(`yoga.weekTheme.${theme.toLowerCase()}`, theme)}</span>
+            </button>
+          )
+        })}
+        {nextWeek && Array.from({ length: totalWeeks - fourWeekPlan.length }, (_, i) => {
+          const weekNum = fourWeekPlan.length + i + 1
+          return (
+            <div key={`pending-${weekNum}`} className="yoga-week-tab pending" aria-disabled="true">
+              <span className="yoga-tab-num">{t('yoga.week', 'Week {{n}}', { n: weekNum })}</span>
+              <span className="yoga-tab-theme">
+                {weekNum === nextWeek
+                  ? t('yoga.weekNext', 'After your feedback')
+                  : t('yoga.weekLater', 'Not yet built')}
+              </span>
+            </div>
+          )
+        })}
       </div>
+
+      {/* What last week's feedback changed, in the user's own terms. */}
+      {plan.progression_adjustment?.reasons?.length > 0 && (
+        <div className="yoga-progression-note">
+          <span className="yoga-progression-title">
+            {t('yoga.progressionTitle', 'Adjusted from your feedback')}
+          </span>
+          <ul className="yoga-progression-list">
+            {plan.progression_adjustment.reasons.map((r, i) => <li key={i}>{r}</li>)}
+          </ul>
+        </div>
+      )}
 
       {/* ── Week note banner ── */}
       {weekNote && (
@@ -600,6 +639,20 @@ export function YogaView({ plan }) {
           )
         })}
       </div>
+
+      {showFeedback && activeWeek === fourWeekPlan.length - 1 && (
+        <WeekFeedbackCard
+          plan={plan}
+          week={latestWeek}
+          nextWeek={nextWeek}
+          onPlanUpdate={(updated) => {
+            setLivePlan(updated)
+            // Land the user on the week they just unlocked.
+            setActiveWeek((updated.four_week_plan || []).length - 1)
+            setExpandedDays(new Set())
+          }}
+        />
+      )}
 
       {/* ── Ayurvedic Tips ── */}
       {Object.keys(tips).length > 0 && (

@@ -44,6 +44,14 @@ def prefs(**overrides):
     return {**BASE_PREFS, **overrides}
 
 
+ALL_WEEKS = [1, 2, 3, 4]
+
+
+def full_plan(prof=None, pr=None, **kwargs):
+    """All four weeks at once — for invariants that span the whole arc."""
+    return generate_yoga_plan(prof or profile(), pr or prefs(), weeks=ALL_WEEKS, **kwargs)
+
+
 def sessions(plan):
     return [d["session"] for w in plan["four_week_plan"]
             for d in w["days"] if d.get("session")]
@@ -59,8 +67,8 @@ def all_poses(session):
 @pytest.mark.parametrize("experience", ["beginner", "intermediate"])
 def test_session_length_is_close_to_what_was_requested(minutes, experience):
     """A 30-minute request used to produce 5-9 minutes of practice."""
-    plan = generate_yoga_plan(
-        profile(), prefs(time_available_minutes=minutes, yoga_experience=experience))
+    plan = full_plan(pr=prefs(time_available_minutes=minutes,
+                              yoga_experience=experience))
     for session in sessions(plan):
         estimate = session["estimated_pose_time_minutes"]
         assert abs(estimate - minutes) / minutes <= 0.35, (
@@ -70,7 +78,7 @@ def test_session_length_is_close_to_what_was_requested(minutes, experience):
 def test_time_estimate_covers_every_timed_block():
     """The estimate excluded Surya Namaskar and Dharana, so it did not even
     match the session's own content."""
-    plan = generate_yoga_plan(profile(), prefs())
+    plan = full_plan()
     for session in sessions(plan):
         breakdown = session["time_breakdown_minutes"]
         assert session["estimated_pose_time_minutes"] == pytest.approx(
@@ -83,7 +91,7 @@ def test_time_estimate_covers_every_timed_block():
 # ── Bilateral poses ──────────────────────────────────────────────────────────
 
 def test_unilateral_poses_are_counted_on_both_sides():
-    plan = generate_yoga_plan(profile(), prefs())
+    plan = full_plan()
     seen_bilateral = False
     for session in sessions(plan):
         for pose in all_poses(session):
@@ -99,14 +107,14 @@ def test_unilateral_poses_are_counted_on_both_sides():
 
 def test_savasana_never_opens_a_practice():
     """Corpse pose qualified for the warmup pool and opened all 20 sessions."""
-    plan = generate_yoga_plan(profile(), prefs())
+    plan = full_plan()
     for session in sessions(plan):
         assert not any(p["final_relaxation"] for p in session["warmup"])
         assert not any(p["final_relaxation"] for p in session["main_sequence"])
 
 
 def test_practice_closes_with_exactly_one_final_relaxation():
-    plan = generate_yoga_plan(profile(), prefs())
+    plan = full_plan()
     for session in sessions(plan):
         closing = [p for p in all_poses(session) if p["final_relaxation"]]
         assert len(closing) == 1
@@ -115,14 +123,14 @@ def test_practice_closes_with_exactly_one_final_relaxation():
 
 def test_final_relaxation_is_held_for_minutes_not_seconds():
     """Savasana shipped with a 20-second hold."""
-    plan = generate_yoga_plan(profile(), prefs())
+    plan = full_plan()
     for session in sessions(plan):
         closing = next(p for p in session["cooldown"] if p["final_relaxation"])
         assert closing["duration_seconds"] >= 120
 
 
 def test_no_ordinary_pose_is_held_longer_than_the_cap():
-    plan = generate_yoga_plan(profile(), prefs(time_available_minutes=60))
+    plan = full_plan(pr=prefs(time_available_minutes=60))
     for session in sessions(plan):
         for pose in all_poses(session):
             if not pose["final_relaxation"]:
@@ -132,7 +140,7 @@ def test_no_ordinary_pose_is_held_longer_than_the_cap():
 # ── Sequencing ───────────────────────────────────────────────────────────────
 
 def test_main_sequence_follows_the_category_arc():
-    plan = generate_yoga_plan(profile(), prefs())
+    plan = full_plan()
     for session in sessions(plan):
         ranks = [_CATEGORY_ARC.get(p["category"], 5) for p in session["main_sequence"]]
         # The counterpose is appended after sorting, so allow the final entry to
@@ -141,7 +149,7 @@ def test_main_sequence_follows_the_category_arc():
 
 
 def test_backbends_and_inversions_are_always_counterposed():
-    plan = generate_yoga_plan(profile(), prefs())
+    plan = full_plan()
     for session in sessions(plan):
         sequence = session["main_sequence"] + session["cooldown"]
         peaks = [i for i, p in enumerate(sequence)
@@ -156,13 +164,13 @@ def test_backbends_and_inversions_are_always_counterposed():
 
 def test_the_opening_pose_varies_across_the_plan():
     """Child's Pose used to open all 20 sessions."""
-    plan = generate_yoga_plan(profile(), prefs())
+    plan = full_plan()
     openers = {s["warmup"][0]["pose_id"] for s in sessions(plan) if s["warmup"]}
     assert len(openers) >= 3, openers
 
 
 def test_no_pose_repeats_within_a_single_session():
-    plan = generate_yoga_plan(profile(), prefs())
+    plan = full_plan()
     for session in sessions(plan):
         ids = [p["pose_id"] for p in all_poses(session)]
         assert len(ids) == len(set(ids)), ids
@@ -175,21 +183,20 @@ def test_no_pose_repeats_within_a_single_session():
 ])
 def test_restricted_profiles_still_get_a_real_main_sequence(condition):
     """A herniated disc produced an empty main sequence, silently."""
-    plan = generate_yoga_plan(profile(medical_history=[condition]), prefs())
+    plan = full_plan(prof=profile(medical_history=[condition]))
     for session in sessions(plan):
         assert len(session["main_sequence"]) >= 2, (
             f"{condition} produced a {len(session['main_sequence'])}-pose main sequence")
 
 
 def test_a_heavily_filtered_plan_says_so():
-    plan = generate_yoga_plan(
-        profile(age=70, medical_history=["hypertension", "arthritis"]), prefs())
+    plan = full_plan(prof=profile(age=70, medical_history=["hypertension", "arthritis"]))
     assert plan["practice_pool_notice"], (
         "a plan built from a heavily restricted pool should explain itself")
 
 
 def test_an_unrestricted_plan_carries_no_pool_notice():
-    plan = generate_yoga_plan(profile(), prefs())
+    plan = full_plan()
     assert plan["practice_pool_notice"] is None
 
 
@@ -262,16 +269,155 @@ def test_unspecified_pregnancy_flag_is_treated_as_the_safest_case():
 
 
 def test_pregnancy_disclaimer_names_the_trimester():
-    plan = generate_yoga_plan(
-        profile(pregnancy_or_nursing=True, pregnancy_status="pregnant",
-                pregnancy_trimester=2), prefs())
+    plan = full_plan(prof=profile(pregnancy_or_nursing=True, pregnancy_status="pregnant",
+                                  pregnancy_trimester=2))
     assert "TRIMESTER 2" in plan["disclaimer"]
 
 
 # ── Determinism ──────────────────────────────────────────────────────────────
 
 def test_the_same_profile_produces_the_same_plan():
-    a = generate_yoga_plan(profile(), prefs())
-    b = generate_yoga_plan(profile(), prefs())
+    a = full_plan()
+    b = full_plan()
     for sa, sb in zip(sessions(a), sessions(b)):
         assert [p["pose_id"] for p in all_poses(sa)] == [p["pose_id"] for p in all_poses(sb)]
+
+
+# ── Daily practice (no rest days) ────────────────────────────────────────────
+
+@pytest.mark.parametrize("time_of_day", ["morning", "evening", "flexible"])
+def test_every_day_of_the_week_has_a_session(time_of_day):
+    """Yoga is a daily practice — unlike resistance training it does not need
+    recovery days, and the plan used to blank out two days a week."""
+    plan = full_plan(pr=prefs(time_of_day_preference=time_of_day))
+    for week in plan["four_week_plan"]:
+        assert len(week["days"]) == 7
+        assert all(d["session"] for d in week["days"]), (
+            f"week {week['week']} has a day with no session")
+        assert not any(d["rest"] for d in week["days"])
+
+
+# ── Week-by-week generation ──────────────────────────────────────────────────
+
+def test_generation_defaults_to_a_single_week():
+    """Weeks are built one at a time so each can respond to real feedback."""
+    plan = generate_yoga_plan(profile(), prefs())
+    assert plan["weeks_generated"] == [1]
+    assert plan["next_week"] == 2
+    assert plan["total_weeks"] == 4
+    assert len(plan["four_week_plan"]) == 1
+
+
+def test_a_specific_week_can_be_generated_on_its_own():
+    plan = generate_yoga_plan(profile(), prefs(), weeks=[3])
+    assert plan["weeks_generated"] == [3]
+    assert plan["four_week_plan"][0]["week"] == 3
+    assert plan["four_week_plan"][0]["theme"] == "Challenge"
+
+
+def test_the_last_week_offers_no_next_week():
+    plan = generate_yoga_plan(profile(), prefs(), weeks=[4])
+    assert plan["next_week"] is None
+
+
+def test_week_one_has_no_progression_adjustment():
+    assert generate_yoga_plan(profile(), prefs())["progression_adjustment"] is None
+
+
+def test_recently_used_poses_are_deprioritised():
+    """With seven sessions a week the pool cycles fast; the next week should
+    still reach for something new where it can."""
+    week1 = generate_yoga_plan(profile(), prefs())
+    used = {p["pose_id"] for s in sessions(week1) for p in all_poses(s)}
+    fresh = generate_yoga_plan(profile(), prefs(), weeks=[2], recent_pose_ids=used)
+    fresh_ids = {p["pose_id"] for s in sessions(fresh) for p in all_poses(s)}
+    repeat = generate_yoga_plan(profile(), prefs(), weeks=[2])
+    repeat_ids = {p["pose_id"] for s in sessions(repeat) for p in all_poses(s)}
+    assert len(fresh_ids - used) >= len(repeat_ids - used)
+
+
+# ── Feedback → plan changes ──────────────────────────────────────────────────
+
+def _week_two(feedback):
+    return generate_yoga_plan(profile(), prefs(yoga_experience="intermediate"),
+                              weeks=[2], feedback_history=feedback)
+
+
+def _session_minutes(plan):
+    return plan["four_week_plan"][0]["days"][0]["session"]["total_duration_minutes"]
+
+
+def test_too_hard_makes_the_next_week_easier():
+    base = _week_two([{"difficulty": "just_right"}])
+    easier = _week_two([{"difficulty": "too_hard"}])
+    assert _session_minutes(easier) < _session_minutes(base)
+    assert easier["user_summary"]["experience"] == "beginner"
+
+
+def test_too_easy_makes_the_next_week_harder():
+    base = _week_two([{"difficulty": "just_right"}])
+    harder = _week_two([{"difficulty": "too_easy"}])
+    assert _session_minutes(harder) > _session_minutes(base)
+    assert harder["user_summary"]["experience"] == "advanced"
+
+
+@pytest.mark.parametrize("answer,direction", [("too_long", -1), ("too_short", 1)])
+def test_session_length_feedback_moves_the_duration(answer, direction):
+    base = _session_minutes(_week_two([{"session_length": "just_right"}]))
+    changed = _session_minutes(_week_two([{"session_length": answer}]))
+    assert (changed - base) * direction > 0
+
+
+def test_feeling_drained_biases_toward_restorative_work():
+    calm = _week_two([{"energy_after": "drained"}])
+    base = _week_two([{"energy_after": "neutral"}])
+
+    def vigorous(plan):
+        return sum(1 for s in sessions(plan) for p in s["main_sequence"]
+                   if p["category"] in ("inversion", "backbend", "balancing"))
+    assert vigorous(calm) < vigorous(base)
+
+
+def test_practising_only_a_few_days_shortens_the_sessions():
+    """Low adherence usually means the sessions did not fit the week."""
+    busy = _session_minutes(_week_two([{"days_practised": 2}]))
+    regular = _session_minutes(_week_two([{"days_practised": 7}]))
+    assert busy < regular
+
+
+def test_dropped_poses_never_come_back():
+    week1 = generate_yoga_plan(profile(), prefs())
+    used = [p["pose_id"] for s in sessions(week1) for p in all_poses(s)]
+    dropped = used[0]
+    later = generate_yoga_plan(
+        profile(), prefs(), weeks=[2, 3, 4],
+        feedback_history=[{"dropped_pose_ids": [dropped]}])
+    assert dropped not in {p["pose_id"] for s in sessions(later) for p in all_poses(s)}
+
+
+def test_feedback_accumulates_across_weeks():
+    """Reporting 'too hard' three weeks running should keep easing, not reset."""
+    once = _session_minutes(_week_two([{"difficulty": "too_hard"}]))
+    thrice = _session_minutes(_week_two([{"difficulty": "too_hard"}] * 3))
+    assert thrice < once
+
+
+def test_repeated_feedback_cannot_shrink_the_practice_to_nothing():
+    extreme = [{"difficulty": "too_hard", "session_length": "too_long",
+                "energy_after": "drained", "days_practised": 0}] * 8
+    plan = generate_yoga_plan(profile(), prefs(), weeks=[4], feedback_history=extreme)
+    session = plan["four_week_plan"][0]["days"][0]["session"]
+    assert session["total_duration_minutes"] >= 10
+    assert len(session["main_sequence"]) >= 2
+
+
+def test_the_adjustment_explains_itself_in_plain_language():
+    plan = _week_two([{"difficulty": "too_hard", "energy_after": "drained"}])
+    reasons = plan["progression_adjustment"]["reasons"]
+    assert reasons and all(isinstance(r, str) and r.strip() for r in reasons)
+
+
+def test_malformed_feedback_is_ignored_rather_than_crashing():
+    for junk in ([None], ["nonsense"], [{"difficulty": "banana"}], [{}]):
+        plan = generate_yoga_plan(profile(), prefs(), weeks=[2], feedback_history=junk)
+        assert plan["four_week_plan"][0]["days"][0]["session"]
