@@ -25,6 +25,7 @@ from routes import (
     feedback,
     notifications,
     plans,
+    practice,
     preferences,
     privacy,
     profile,
@@ -215,6 +216,7 @@ app.include_router(community.router, prefix="/api/community", tags=["Community"]
 app.include_router(feedback.router, prefix="/api/feedback", tags=["Feedback"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(push.router, prefix="/api/push", tags=["Web Push"])
+app.include_router(practice.router, prefix="/api/practice", tags=["Practice Sessions"])
 
 
 

@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import {
-  Sun, Leaf, AlertTriangle, Droplets, ShieldCheck, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain,
+  Sun, Leaf, AlertTriangle, Droplets, ShieldCheck, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain, Play,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
+import { PoseFigure } from './PoseFigure'
+import { SessionPlayer } from './SessionPlayer'
 
 const SNS_BREATH_COLOR = { 'Inhale': '#3b82f6', 'Exhale': '#ef4444', 'Natural': '#6b7280', 'Exhale — hold 3-5 breaths': '#ef4444' }
 
@@ -103,6 +105,8 @@ export function YogaView({ plan }) {
   // week was ~5,400px — six screens. Days now start closed and open only on
   // click, so a week is one scannable list of seven rows.
   const [expandedDays, setExpandedDays] = useState(new Set())
+  // Which session, if any, is currently being practised in the guided player.
+  const [activeSession, setActiveSession] = useState(null)
 
   const us = plan.user_summary || {}
   const fourWeekPlan = plan.four_week_plan || []
@@ -378,6 +382,18 @@ export function YogaView({ plan }) {
                 </div>
               ) : (
                 <>
+                  <button
+                    type="button"
+                    className="yoga-practice-btn"
+                    onClick={() => setActiveSession({
+                      session,
+                      week: activeWeekData?.week || activeWeek + 1,
+                      day: day.day,
+                    })}
+                  >
+                    <Play size={14} /> Start guided practice
+                  </button>
+
                   {session.dosha_theme && (
                     <p className="yoga-session-theme">{session.dosha_theme}</p>
                   )}
@@ -418,7 +434,6 @@ export function YogaView({ plan }) {
                         {session.main_sequence.map((p, pi) => {
                           const poseId = `${dayIdx}-main-${pi}`
                           const isOpen = expandedPoses.has(poseId)
-                          const hasValidImg = p.image_url && !p.image_url.startsWith('https://...')
                           return (
                             <div key={pi} className="yoga-pose-row">
                               <div className="yoga-pose-top">
@@ -450,9 +465,7 @@ export function YogaView({ plan }) {
                                   </button>
                                   {isOpen && (
                                     <div className="yoga-pose-expand">
-                                      {hasValidImg && (
-                                        <img src={p.image_url} alt={p.pose_name} className="yoga-pose-image" loading="lazy" decoding="async" />
-                                      )}
+                                      <PoseFigure imageUrl={p.image_url} name={p.pose_name} category={p.category} />
                                       {p.instructions?.length > 0 && (
                                         <ol className="yoga-pose-instructions">
                                           {p.instructions.map((step, si) => <li key={si}>{step}</li>)}
@@ -619,6 +632,16 @@ export function YogaView({ plan }) {
       )}
       {plan.motivational_note && (
         <div className="yoga-motivational">{plan.motivational_note}</div>
+      )}
+
+      {activeSession && (
+        <SessionPlayer
+          session={activeSession.session}
+          planId={plan.plan_id}
+          week={activeSession.week}
+          day={activeSession.day}
+          onClose={() => setActiveSession(null)}
+        />
       )}
     </div>
   )

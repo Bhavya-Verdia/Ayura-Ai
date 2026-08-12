@@ -1371,6 +1371,9 @@ def format_pose(pose: dict, experience: str, week: int, age_group: str = "adult"
         "pose_name":           pose.get("english_name"),
         "sanskrit_name":       pose.get("sanskrit_name"),
         "category":            pose.get("category"),
+        # Lets the client place the closing relaxation last, after pranayama and
+        # meditation, rather than in the middle of the cooldown.
+        "final_relaxation":    bool(pose.get("final_relaxation")),
         # `duration_seconds` is the hold for ONE side; `total_duration_seconds`
         # is what the pose actually costs in the session.
         "duration_seconds":    hold,
