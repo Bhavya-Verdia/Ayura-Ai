@@ -5567,6 +5567,10 @@
   position: relative;
   width: 150px;
   height: 150px;
+  /* The stage is a column flex container, so without this the timer is the
+     thing that gives when a segment has a lot of content — the Surya Namaskar
+     step list squashed the ring from 150px to 48px. */
+  flex: 0 0 auto;
   display: grid;
   place-items: center;
   margin: 0.5rem 0;
@@ -5584,7 +5588,11 @@
 
 .sp-timer { font-size: 2rem; font-variant-numeric: tabular-nums; font-weight: 600; }
 
-.sp-pose-img { max-height: 150px; border-radius: 10px; }
+.sp-pose-img { max-height: 150px; border-radius: 10px; flex: 0 0 auto; }
+
+/* Same reason as the timer block — the pose figure must not be compressed to
+   nothing by a long instruction list. */
+.sp-stage .pose-figure-fallback { flex: 0 0 auto; }
 
 .sp-breath-cue {
   margin: 0.25rem 0;
