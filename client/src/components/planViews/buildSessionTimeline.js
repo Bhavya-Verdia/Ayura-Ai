@@ -9,6 +9,8 @@
  * practising it, the app has to tell you when to switch.
  */
 
+import { primaryName, secondaryName } from './poseNames'
+
 const SECTION_LABEL = {
   surya_namaskar: 'Surya Namaskar',
   warmup: 'Warm-up',
@@ -32,8 +34,8 @@ function poseSegments(pose, section) {
     section,
     sectionLabel: SECTION_LABEL[section],
     poseId: pose.pose_id,
-    title: pose.pose_name,
-    subtitle: pose.sanskrit_name,
+    title: primaryName(pose),
+    subtitle: secondaryName(pose),
     instructions: pose.instructions || [],
     modification: pose.modification,
     breathCue: pose.pranayama_sync,
@@ -48,9 +50,10 @@ function poseSegments(pose, section) {
 
   // Both sides, announced separately. A single combined countdown would leave
   // the practitioner guessing when to switch.
+  const name = primaryName(pose)
   return [
-    { ...base, seconds: hold, side: 'right', title: `${pose.pose_name} — right side` },
-    { ...base, seconds: hold, side: 'left', title: `${pose.pose_name} — left side` },
+    { ...base, seconds: hold, side: 'right', title: `${name} — right side` },
+    { ...base, seconds: hold, side: 'left', title: `${name} — left side` },
   ]
 }
 
@@ -90,8 +93,8 @@ export function buildSessionTimeline(session) {
       kind: SEGMENT_KIND.BREATH,
       section: 'pranayama',
       sectionLabel: SECTION_LABEL.pranayama,
-      title: pr.technique_name,
-      subtitle: pr.sanskrit_name,
+      title: primaryName(pr),
+      subtitle: secondaryName(pr),
       seconds: Math.round((pr.duration_minutes || 0) * 60),
       instructions: pr.instructions || [],
       note: pr.dosha_note,
@@ -104,8 +107,8 @@ export function buildSessionTimeline(session) {
       kind: SEGMENT_KIND.MEDITATION,
       section: 'dharana',
       sectionLabel: SECTION_LABEL.dharana,
-      title: dh.technique,
-      subtitle: dh.sanskrit_name,
+      title: dh.sanskrit_name || dh.technique,
+      subtitle: dh.sanskrit_name ? dh.technique : null,
       seconds: Math.round((dh.duration_minutes || 0) * 60),
       instructions: dh.instructions || [],
       note: dh.dosha_note,

@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ArrowRight, Loader2, Sparkles } from 'lucide-react'
 import client from '../../api/client'
+import { primaryName, secondaryName } from './poseNames'
 
 /**
  * End-of-week feedback, and the trigger for the next week.
@@ -74,12 +75,12 @@ export function WeekFeedbackCard({ plan, week, nextWeek, onPlanUpdate }) {
       for (const section of ['warmup', 'main_sequence', 'cooldown']) {
         for (const p of day.session[section] || []) {
           if (p.pose_id && !p.final_relaxation && !seen.has(p.pose_id)) {
-            seen.set(p.pose_id, p.pose_name)
+            seen.set(p.pose_id, { name: primaryName(p), english: secondaryName(p) })
           }
         }
       }
     }
-    return [...seen.entries()].map(([id, name]) => ({ id, name }))
+    return [...seen.entries()].map(([id, names]) => ({ id, ...names }))
   }, [week])
 
   const set = (name) => (value) => setAnswers(a => ({ ...a, [name]: value }))
@@ -186,8 +187,10 @@ export function WeekFeedbackCard({ plan, week, nextWeek, onPlanUpdate }) {
                 className={`wf-drop-chip${dropped.has(p.id) ? ' selected' : ''}`}
                 aria-pressed={dropped.has(p.id)}
                 onClick={() => toggleDropped(p.id)}
+                title={p.english || undefined}
               >
                 {p.name}
+                {p.english && <span className="wf-drop-english">{p.english}</span>}
               </button>
             ))}
           </div>

@@ -806,7 +806,7 @@
   {
     "id": "upward_facing_dog",
     "english_name": "Upward-Facing Dog",
-    "sanskrit_name": "Urdhva Mukha Svsnssana",
+    "sanskrit_name": "Urdhva Mukha Svanasana",
     "category": "backbend",
     "level": "intermediate",
     "duration_seconds": {
@@ -1730,7 +1730,7 @@
   {
     "id": "revolved_half_moon_pose",
     "english_name": "Revolved Half Moon Pose",
-    "sanskrit_name": "Parivritta Ardha Chandrasana",
+    "sanskrit_name": "Parivrtta Ardha Chandrasana",
     "category": "balancing",
     "level": "intermediate",
     "duration_seconds": {
@@ -1882,7 +1882,7 @@
   {
     "id": "side_plank_pose",
     "english_name": "Side Plank Pose",
-    "sanskrit_name": "Vasishthasana",
+    "sanskrit_name": "Vasisthasana",
     "category": "balancing",
     "level": "intermediate",
     "duration_seconds": {
@@ -2028,7 +2028,7 @@
   {
     "id": "warrior_three",
     "english_name": "Warrior Three",
-    "sanskrit_name": "Virabhadrasana Three",
+    "sanskrit_name": "Virabhadrasana III",
     "category": "balancing",
     "level": "intermediate",
     "duration_seconds": {
@@ -3218,7 +3218,7 @@
   {
     "id": "supported_headstand_pose",
     "english_name": "Supported Headstand Pose",
-    "sanskrit_name": "Salamba Shirshasana",
+    "sanskrit_name": "Salamba Sirsasana",
     "category": "inversion",
     "level": "advanced",
     "duration_seconds": {
@@ -3308,7 +3308,7 @@
   {
     "id": "cat_cow_flow",
     "english_name": "Cat-Cow Flow",
-    "sanskrit_name": "Bidalasana",
+    "sanskrit_name": "Marjaryasana-Bitilasana",
     "category": "prone",
     "level": "beginner",
     "duration_seconds": {
@@ -4178,7 +4178,7 @@
   {
     "id": "supported_bridge",
     "english_name": "Supported Bridge",
-    "sanskrit_name": "Setu Bandha Sarvangasana (Supported)",
+    "sanskrit_name": "Salamba Setu Bandhasana",
     "category": "restorative",
     "level": "beginner",
     "duration_seconds": {
@@ -4245,7 +4245,7 @@
   {
     "id": "supported_fish",
     "english_name": "Supported Fish",
-    "sanskrit_name": "Matsyasana (Supported)",
+    "sanskrit_name": "Salamba Matsyasana",
     "category": "restorative",
     "level": "beginner",
     "duration_seconds": {
@@ -4315,7 +4315,7 @@
   {
     "id": "yin_forward_fold",
     "english_name": "Yin Seated Forward Fold",
-    "sanskrit_name": "Paschimottanasana (Yin)",
+    "sanskrit_name": "Salamba Paschimottanasana",
     "category": "restorative",
     "level": "beginner",
     "duration_seconds": {
@@ -6609,7 +6609,7 @@
   {
     "id": "warrior_one",
     "english_name": "Warrior One",
-    "sanskrit_name": "Virabhadrasana One",
+    "sanskrit_name": "Virabhadrasana I",
     "category": "standing",
     "level": "intermediate",
     "duration_seconds": {
@@ -6673,7 +6673,7 @@
   {
     "id": "warrior_two",
     "english_name": "Warrior Two",
-    "sanskrit_name": "Virabhadrasana Two",
+    "sanskrit_name": "Virabhadrasana II",
     "category": "standing",
     "level": "intermediate",
     "duration_seconds": {
@@ -7226,7 +7226,7 @@
   {
     "id": "bound_revolved_chair_pose",
     "english_name": "Bound Revolved Chair Pose",
-    "sanskrit_name": "Parivritta Utkatasana",
+    "sanskrit_name": "Parivrtta Utkatasana",
     "category": "twist",
     "level": "intermediate",
     "duration_seconds": {
@@ -7514,7 +7514,7 @@
   {
     "id": "revolved_triangle_pose",
     "english_name": "Revolved Triangle Pose",
-    "sanskrit_name": "Parivritta Trikonasana",
+    "sanskrit_name": "Parivrtta Trikonasana",
     "category": "twist",
     "level": "intermediate",
     "duration_seconds": {
@@ -7597,7 +7597,7 @@
   {
     "id": "revolved_wide_legged_forward_bend",
     "english_name": "Revolved Wide Legged Forward Bend",
-    "sanskrit_name": "Parivritta Prasarita Padottanasana",
+    "sanskrit_name": "Parivrtta Prasarita Padottanasana",
     "category": "twist",
     "level": "intermediate",
     "duration_seconds": {

@@ -6,6 +6,7 @@ import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { PoseFigure } from './PoseFigure'
 import { SessionPlayer } from './SessionPlayer'
 import { WeekFeedbackCard } from './WeekFeedbackCard'
+import { primaryName, secondaryName } from './poseNames'
 import { useTranslation } from 'react-i18next'
 
 const SNS_BREATH_COLOR = { 'Inhale': '#3b82f6', 'Exhale': '#ef4444', 'Natural': '#6b7280', 'Exhale — hold 3-5 breaths': '#ef4444' }
@@ -461,7 +462,12 @@ export function YogaView({ plan: planProp }) {
                         <ul className="yoga-pose-list">
                           {session.warmup.map((p, pi) => (
                             <li key={pi} className="yoga-warmup-pose">
-                              <span className="yoga-wp-name">{p.pose_name}</span>
+                              <span className="yoga-wp-names">
+                                <span className="yoga-wp-name">{primaryName(p)}</span>
+                                {secondaryName(p) && (
+                                  <span className="yoga-wp-english">{secondaryName(p)}</span>
+                                )}
+                              </span>
                               {p.duration_seconds && <span className="yoga-wp-dur">{p.duration_seconds}s</span>}
                             </li>
                           ))}
@@ -482,9 +488,9 @@ export function YogaView({ plan: planProp }) {
                             <div key={pi} className="yoga-pose-row">
                               <div className="yoga-pose-top">
                                 <div className="yoga-pose-name-block">
-                                  <span className="yoga-pose-name">{p.pose_name}</span>
-                                  {p.sanskrit_name && (
-                                    <span className="yoga-pose-sanskrit">{p.sanskrit_name}</span>
+                                  <span className="yoga-pose-name">{primaryName(p)}</span>
+                                  {secondaryName(p) && (
+                                    <span className="yoga-pose-english">{secondaryName(p)}</span>
                                   )}
                                 </div>
                                 <div className="yoga-pose-chips">
@@ -509,7 +515,7 @@ export function YogaView({ plan: planProp }) {
                                   </button>
                                   {isOpen && (
                                     <div className="yoga-pose-expand">
-                                      <PoseFigure imageUrl={p.image_url} name={p.pose_name} category={p.category} />
+                                      <PoseFigure imageUrl={p.image_url} name={primaryName(p)} category={p.category} />
                                       {p.instructions?.length > 0 && (
                                         <ol className="yoga-pose-instructions">
                                           {p.instructions.map((step, si) => <li key={si}>{step}</li>)}
@@ -543,7 +549,12 @@ export function YogaView({ plan: planProp }) {
                         <ul className="yoga-pose-list">
                           {session.cooldown.map((p, pi) => (
                             <li key={pi} className="yoga-warmup-pose">
-                              <span className="yoga-wp-name">{p.pose_name}</span>
+                              <span className="yoga-wp-names">
+                                <span className="yoga-wp-name">{primaryName(p)}</span>
+                                {secondaryName(p) && (
+                                  <span className="yoga-wp-english">{secondaryName(p)}</span>
+                                )}
+                              </span>
                               {p.duration_seconds && <span className="yoga-wp-dur">{p.duration_seconds}s</span>}
                             </li>
                           ))}
@@ -562,9 +573,9 @@ export function YogaView({ plan: planProp }) {
                         <div className="yoga-prana-header">
                           <Wind size={12} className="yoga-prana-icon" />
                           <span className="yoga-prana-name">
-                            {pr.technique_name}
-                            {pr.sanskrit_name && (
-                              <span className="yoga-prana-sanskrit"> · {pr.sanskrit_name}</span>
+                            {primaryName(pr)}
+                            {secondaryName(pr) && (
+                              <span className="yoga-prana-sanskrit"> · {secondaryName(pr)}</span>
                             )}
                           </span>
                           {pr.duration_minutes && (
@@ -600,9 +611,9 @@ export function YogaView({ plan: planProp }) {
                         <div className="yoga-dharana-header">
                           <Brain size={12} className="yoga-dharana-icon" />
                           <span className="yoga-dharana-name">
-                            {dh.technique}
-                            {dh.sanskrit_name && (
-                              <span className="yoga-dharana-sanskrit"> · {dh.sanskrit_name}</span>
+                            {dh.sanskrit_name || dh.technique}
+                            {dh.sanskrit_name && dh.sanskrit_name !== dh.technique && (
+                              <span className="yoga-dharana-sanskrit"> · {dh.technique}</span>
                             )}
                           </span>
                           {dh.duration_minutes && (

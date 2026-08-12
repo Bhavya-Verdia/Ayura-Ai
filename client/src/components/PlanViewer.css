@@ -2199,9 +2199,22 @@
   background: color-mix(in srgb, var(--plan-violet) 5%, transparent);
 }
 
+.yoga-wp-names {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
 .yoga-wp-name {
   color: var(--ayura-text);
   font-weight: 500;
+}
+
+.yoga-wp-english {
+  font-size: 0.75rem;
+  color: var(--ayura-muted);
 }
 
 .yoga-wp-dur {
@@ -2248,10 +2261,9 @@
   color: var(--ayura-text);
 }
 
-.yoga-pose-sanskrit {
+.yoga-pose-english {
   font-size: 0.8rem;
   color: var(--ayura-muted);
-  font-style: italic;
 }
 
 .yoga-pose-chips {
@@ -5588,7 +5600,15 @@
 
 .sp-timer { font-size: 2rem; font-variant-numeric: tabular-nums; font-weight: 600; }
 
-.sp-pose-img { max-height: 150px; border-radius: 10px; flex: 0 0 auto; }
+/* PoseFigure also carries .yoga-pose-image, which sets align-self: flex-start
+   for the plan view. In the centred player column that pinned the figure to the
+   left edge, so the alignment has to be reasserted here. */
+.sp-pose-img {
+  max-height: 150px;
+  border-radius: 10px;
+  flex: 0 0 auto;
+  align-self: center;
+}
 
 /* Same reason as the timer block — the pose figure must not be compressed to
    nothing by a long instruction list. */
@@ -5795,6 +5815,11 @@
 .wf-drop-list { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 
 .wf-drop-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  text-align: left;
   padding: 0.35rem 0.7rem;
   border-radius: 8px;
   border: 1px solid color-mix(in srgb, var(--plan-violet) 22%, transparent);
@@ -5802,6 +5827,11 @@
   color: inherit;
   font-size: 0.78rem;
   cursor: pointer;
+}
+
+.wf-drop-english {
+  font-size: 0.68rem;
+  opacity: 0.7;
 }
 
 .wf-drop-chip.selected {
