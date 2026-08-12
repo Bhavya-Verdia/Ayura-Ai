@@ -853,34 +853,248 @@ def select_pranayama(user_profile, yoga_prefs, pranayama_db, count=3, protocol_m
     return [p for _, p in scored[:count]]
 
 
+# ── Session time budget ───────────────────────────────────────────────────────
+# A session used to be a fixed pose count regardless of the time asked for, and
+# the counts were far too low: a 30-minute request produced 3+5+2 poses at ~30
+# seconds each — under 9 minutes of content against a 30-minute promise. Sections
+# are now filled against a real second-by-second budget derived from the
+# requested duration, so the plan delivers the practice length the user chose.
+
+# Fraction of the *asana* budget (what is left after the fixed blocks below) that
+# each section receives.
+_SECTION_SPLIT = {"warmup": 0.22, "main": 0.55, "cooldown": 0.23}
+
+# Held final relaxation and seated meditation scale with session length rather
+# than sitting at a fixed 5 and 7 minutes, which would eat a third of a short
+# practice. (minutes_available_upper_bound, savasana_seconds, dharana_seconds)
+_CLOSING_BUDGET = [
+    (15,  120, 120),
+    (20,  180, 180),
+    (30,  240, 300),
+    (45,  300, 420),
+    (999, 420, 600),
+]
+
+
+# Surya Namaskar, pranayama, meditation and final relaxation together may not
+# take more than this share of a session — the rest belongs to asana.
+_MAX_FIXED_BLOCK_SHARE = 0.55
+
+
+def _scale_surya_namaskar(sns: dict | None, scale: float) -> tuple[dict | None, int]:
+    """Shrink a Surya Namaskar block to fit a short session, by dropping rounds."""
+    if not sns or not sns.get("rounds"):
+        return sns, 0
+    rounds = max(1, int(sns["rounds"] * scale))
+    if rounds == sns["rounds"]:
+        return sns, int(sns.get("duration_minutes", 0) * 60)
+    scaled = dict(sns)
+    scaled["rounds"] = rounds
+    scaled["duration_minutes"] = round((rounds * 12 * 5) / 60 + (rounds - 1) * 0.25, 1)
+    return scaled, int(scaled["duration_minutes"] * 60)
+
+
+def _closing_budget(mins: int) -> tuple[int, int]:
+    for upper, sav, dharana in _CLOSING_BUDGET:
+        if mins <= upper:
+            return sav, dharana
+    return _CLOSING_BUDGET[-1][1], _CLOSING_BUDGET[-1][2]
+
+
+# No pose other than the closing relaxation is held longer than this. The week-3
+# progression multiplier applied to an already-long restorative hold (Legs Up The
+# Wall, Constructive Rest) produced six-minute single poses, which alone
+# overran a 20-minute session.
+_MAX_POSE_HOLD_SECONDS = 240
+
+
+def pose_hold_seconds(pose: dict, experience: str, week: int, age_group: str = "adult") -> int:
+    """Per-side hold for one pose, after week progression and age scaling."""
+    durs = pose.get("duration_seconds", {})
+    base = durs.get(experience, durs.get("beginner", 30))
+    hold = _week_hold(base, week)
+    if age_group == "senior":
+        hold = int(hold * 0.75)
+    return max(min(hold, _MAX_POSE_HOLD_SECONDS), 10)
+
+
+def pose_total_seconds(pose: dict, experience: str, week: int, age_group: str = "adult") -> int:
+    """Wall-clock cost of a pose in a sequence — both sides if it is unilateral.
+
+    Unilateral poses were previously budgeted (and displayed) as a single hold,
+    so Tree Pose counted 30 seconds for what is really 30 seconds *per side*.
+    That understated every session and, practised as written, would have built
+    left-right asymmetry.
+    """
+    return pose_hold_seconds(pose, experience, week, age_group) * pose_sides(pose)
+
+
+def pose_sides(pose: dict) -> int:
+    return 2 if pose.get("bilateral") else 1
+
+
 # ── Sequence builder ──────────────────────────────────────────────────────────
 
-def build_sequence(filtered_poses, yoga_prefs, user_profile, day_num: int, week: int,
-                   user_id: str, week_allowed_levels: list | None = None):
-    mins = yoga_prefs.get("time_available_minutes", 30)
-    if mins <= 15:   w_c, m_c, c_c = 2, 2, 1
-    elif mins <= 20: w_c, m_c, c_c = 2, 3, 2
-    elif mins <= 30: w_c, m_c, c_c = 3, 5, 2
-    elif mins <= 45: w_c, m_c, c_c = 3, 8, 3
-    else:            w_c, m_c, c_c = 4, 10, 4
+# Poses that may open a practice. Rotated per day so the opener is not the same
+# pose in all 28 sessions.
+_GROUNDING_OPENERS = ["Mountain Pose", "Easy Pose", "Child's Pose", "Staff Pose",
+                      "Thunderbolt Pose", "Table Pose"]
 
-    other_c = max(c_c - 1, 0)
+# Order the main sequence follows. A practice has an arc — warm the body upright,
+# balance while fresh, peak through backbends and inversions, then neutralise and
+# descend toward the floor. The builder used to emit a plain shuffle, so a
+# sequence could run standing balance → quadruped → prone → lunge with no
+# through-line and no counterposing.
+_CATEGORY_ARC = {
+    "standing": 1, "balancing": 2, "prone": 3, "backbend": 4, "inversion": 5,
+    "twist": 6, "seated": 7, "forward_fold": 8, "supine": 9, "restorative": 10,
+}
+
+# Categories that neutralise a backbend or an inversion. Classical sequencing
+# never leaves a deep extension or an inversion unanswered.
+_COUNTERPOSE_CATEGORIES = ("forward_fold", "twist", "supine")
+_NEEDS_COUNTERPOSE = ("backbend", "inversion")
+
+# Standalone practices that are a session in their own right. Yoga Nidra is the
+# Dharana slot, not a cooldown pose to stack in front of Savasana.
+_STANDALONE_PRACTICES = {"yoga_nidra_pose"}
+
+# Lying rest poses. They belong in a cooldown, never as the opening of a practice.
+_REST_POSES = {"reverse_corpse_pose", "constructive_rest"}
+
+# Below this many safe poses, a 4-week plan cannot avoid repeating heavily. The
+# plan says so rather than presenting the repetition as the intended design.
+_MIN_VARIED_POOL = 30
+
+# Categories too vigorous to open a practice cold, whatever their level.
+_NON_WARMUP_CATEGORIES = {"inversion", "backbend", "balancing", "twist"}
+
+
+def _arc_sort(poses: list) -> list:
+    return sorted(poses, key=lambda p: _CATEGORY_ARC.get(p.get("category"), 5))
+
+
+def _add_counterpose(main_seq: list, cooldown: list, pool: list, exp: str, week: int,
+                     age_group: str, seed_key: str, used_ids: set) -> list:
+    """Guarantee the practice resolves a backbend or inversion before it ends.
+
+    Returns the cooldown, with a neutralising pose prepended if nothing already
+    following the peak does that job.
+    """
+    whole = main_seq + cooldown
+    peak_idx = max((i for i, p in enumerate(whole)
+                    if p.get("category") in _NEEDS_COUNTERPOSE), default=None)
+    if peak_idx is None:
+        return cooldown
+    if any(p.get("category") in _COUNTERPOSE_CATEGORIES for p in whole[peak_idx + 1:]):
+        return cooldown
+    candidates = [p for p in pool
+                  if p.get("category") in _COUNTERPOSE_CATEGORIES
+                  and p["id"] not in used_ids
+                  and not p.get("final_relaxation")]
+    if not candidates:
+        return cooldown
+    return [_det_shuffle(candidates, seed_key)[0]] + cooldown
+
+
+def _fill_to_budget(pool, budget_seconds, exp, week, age_group, seed_key,
+                    exclude_ids=None, min_poses=1, max_poses=14):
+    """Take poses from a deterministically shuffled pool until the budget is met.
+
+    Stops once adding another pose would overshoot by more than half its own
+    length, so a section lands close to its budget from either side.
+    """
+    excl = set(exclude_ids or ())
+    candidates = _det_shuffle([p for p in pool if p["id"] not in excl], seed_key)
+
+    # A single pose must not be able to swallow the whole section. The long
+    # restorative holds (Legs Up The Wall, Constructive Rest) run 4-5 minutes,
+    # which is longer than the entire cooldown budget of a short session — so
+    # prefer poses that fit, and fall back to the cheapest available rather than
+    # to whatever the shuffle happened to put first.
+    affordable = [p for p in candidates
+                  if pose_total_seconds(p, exp, week, age_group) <= budget_seconds]
+    if affordable:
+        candidates = affordable
+    else:
+        candidates = sorted(candidates,
+                            key=lambda p: pose_total_seconds(p, exp, week, age_group))
+
+    chosen, used = [], 0
+    for pose in candidates:
+        if len(chosen) >= max_poses:
+            break
+        cost = pose_total_seconds(pose, exp, week, age_group)
+        # Once the minimum is met, only overshoot when the pose lands closer to
+        # the budget than stopping short would. Short sessions have little slack.
+        if used + cost > budget_seconds and len(chosen) >= min_poses:
+            if (used + cost) - budget_seconds > budget_seconds - used:
+                break
+        chosen.append(pose)
+        used += cost
+        if used >= budget_seconds and len(chosen) >= min_poses:
+            break
+    return chosen
+
+
+def _hold_multiplier(poses, budget_seconds, exp, week, age_group, cap: float) -> float:
+    """How much to lengthen holds so a section reaches its time budget.
+
+    Returns 1.0 when the poses already fill the budget. Capped, because a hold
+    stretched indefinitely stops being the same pose.
+    """
+    used = sum(pose_total_seconds(p, exp, week, age_group) for p in poses)
+    if used <= 0 or used >= budget_seconds:
+        return 1.0
+    return round(min(budget_seconds / used, cap), 2)
+
+
+def build_sequence(filtered_poses, yoga_prefs, user_profile, day_num: int, week: int,
+                   user_id: str, week_allowed_levels: list | None = None,
+                   asana_budget_seconds: int | None = None,
+                   savasana_seconds: int | None = None,
+                   age_group: str = "adult"):
+    mins = yoga_prefs.get("time_available_minutes", 30)
+    exp = yoga_prefs.get("yoga_experience", "beginner")
+    if exp == "none":
+        exp = "beginner"
+
+    if asana_budget_seconds is None:
+        sav_s, dharana_s = _closing_budget(mins)
+        asana_budget_seconds = max(mins * 60 - sav_s - dharana_s, 300)
+        savasana_seconds = sav_s
+    savasana_seconds = savasana_seconds or _closing_budget(mins)[0]
 
     # Progressive week-level filtering
     pose_pool = filtered_poses
     if week_allowed_levels:
-        pose_pool = [p for p in filtered_poses if p.get("level", "beginner") in week_allowed_levels]
-        if len(pose_pool) < (w_c + m_c + c_c):
-            pose_pool = filtered_poses  # fallback if too restrictive
+        narrowed = [p for p in filtered_poses if p.get("level", "beginner") in week_allowed_levels]
+        # Only honour the week gate if it still leaves enough material to fill a
+        # session; otherwise fall back rather than silently shipping a short one.
+        if sum(pose_total_seconds(p, exp, week, age_group) for p in narrowed) >= asana_budget_seconds:
+            pose_pool = narrowed
 
-    warmup_pool   = [p for p in pose_pool if p.get("sequence_role") == "warmup"
-                     or (p.get("category") in ["standing", "seated", "restorative"] and p.get("level") == "beginner")]
-    cooldown_pool = [p for p in pose_pool if p.get("sequence_role") == "cooldown"
-                     or p.get("category") in ["supine", "forward_fold", "restorative"]]
-    savasana_pool = [p for p in pose_pool
-                     if "corpse" in p.get("english_name", "").lower()
-                     or "savasana" in p.get("sanskrit_name", "").lower()]
-    main_pool     = [p for p in pose_pool if p.get("sequence_role") == "main"]
+    # Savasana is the closing pose and nothing else. It used to qualify for the
+    # warmup pool (restorative + beginner), so "Corpse" opened every session and
+    # then appeared again at the end.
+    def is_final_relaxation(p):
+        return bool(p.get("final_relaxation"))
+
+    def selectable(p):
+        return not is_final_relaxation(p) and p["id"] not in _STANDALONE_PRACTICES
+
+    warmup_pool   = [p for p in pose_pool if selectable(p)
+                     and p.get("category") not in _NON_WARMUP_CATEGORIES
+                     and p["id"] not in _REST_POSES
+                     and (p.get("sequence_role") == "warmup"
+                          or (p.get("category") in ["standing", "seated", "prone", "supine"]
+                              and p.get("level") == "beginner"))]
+    cooldown_pool = [p for p in pose_pool if selectable(p)
+                     and (p.get("sequence_role") == "cooldown"
+                          or p.get("category") in ["supine", "forward_fold", "restorative", "twist"])]
+    savasana_pool = [p for p in pose_pool if is_final_relaxation(p)]
+    main_pool     = [p for p in pose_pool if selectable(p)
+                     and p.get("sequence_role") == "main"]
 
     styles = yoga_prefs.get("yoga_style_preference") or ["hatha"]
     style = styles[0] if styles else "hatha"
@@ -896,55 +1110,122 @@ def build_sequence(filtered_poses, yoga_prefs, user_profile, day_num: int, week:
         return True
 
     if style in ("restorative", "yin"):
-        extended_pool = [p for p in pose_pool if style_ok(p)]
-        styled_main = extended_pool if len(extended_pool) >= m_c else main_pool
+        extended_pool = [p for p in pose_pool if style_ok(p) and selectable(p)]
+        styled_main = extended_pool or main_pool
     else:
         styled_main = [p for p in main_pool if style_ok(p)] or main_pool
 
-    def pick(pool, n, tag, exclude_ids=None):
-        excl = exclude_ids or set()
-        candidates = _det_shuffle([p for p in pool if p["id"] not in excl],
-                                   f"{user_id}-{tag}-d{day_num}-w{week}")
-        return candidates[:n]
+    # A heavily contraindicated profile can filter the main pool down to nothing
+    # — a herniated disc used to yield an empty main sequence, silently. Fall
+    # back to whatever the user CAN safely do, and record that we did, so the
+    # plan can say so rather than shipping a short session with no explanation.
+    pool_limited = False
+    if not styled_main:
+        styled_main = [p for p in pose_pool if selectable(p)
+                       and p.get("sequence_role") != "warmup"]
+        pool_limited = True
+    if not styled_main:
+        styled_main = [p for p in pose_pool if selectable(p)]
+        pool_limited = True
 
-    grounding = [p for p in warmup_pool if p["english_name"] in ["Mountain Pose", "Easy Pose", "Child's Pose"]]
-    warmup = grounding[:1]
-    warmup_ids = {p["id"] for p in warmup}
-    warmup += pick([p for p in warmup_pool if p["id"] not in warmup_ids], w_c - len(warmup), "warmup")
-    all_used = {p["id"] for p in warmup}
+    # Savasana is already priced out of the asana budget by the caller, so the
+    # cooldown share must not subtract it a second time.
+    main_budget     = int(asana_budget_seconds * _SECTION_SPLIT["main"])
+    warmup_budget   = int(asana_budget_seconds * _SECTION_SPLIT["warmup"])
+    cooldown_budget = int(asana_budget_seconds * _SECTION_SPLIT["cooldown"])
 
-    main_seq = pick([p for p in styled_main if p["id"] not in all_used], m_c, "main")
-    all_used.update(p["id"] for p in main_seq)
+    # The main sequence claims the pool first. Filling warmup first meant that on
+    # a heavily restricted profile the handful of safe poses were spent on the
+    # warm-up and the main sequence came out empty.
+    # A very short session cannot afford a three-pose minimum without blowing
+    # past the time the user actually has.
+    # A minimum of two poses is meaningless if two poses do not fit — an advanced
+    # practitioner holds for 60-90s a side, so a 15-minute session can only
+    # afford one main pose once the fixed blocks are paid for.
+    cheapest = sorted(pose_total_seconds(p, exp, week, age_group) for p in styled_main)[:2]
+    main_min = 1 if sum(cheapest) > main_budget else max(2, min(3, main_budget // 90))
+    # Pose counts scale with the time available. A fixed cap meant a 45-minute
+    # session ran out of poses long before it ran out of budget and landed short.
+    main_seq = _fill_to_budget(styled_main, main_budget, exp, week, age_group,
+                               f"{user_id}-main-d{day_num}-w{week}",
+                               min_poses=main_min,
+                               max_poses=max(4, min(18, main_budget // 45)))
+    main_seq = _arc_sort(main_seq)
+    all_used = {p["id"] for p in main_seq}
 
-    non_sav = [p for p in cooldown_pool
-               if p["id"] not in all_used
-               and "corpse" not in p.get("english_name", "").lower()
-               and "savasana" not in p.get("sanskrit_name", "").lower()]
-    cooldown = pick(non_sav, other_c, "cooldown")
+    # Opening pose rotates across the 28 sessions instead of being Child's Pose
+    # in every one of them.
+    openers = [p for p in warmup_pool
+               if p["english_name"] in _GROUNDING_OPENERS and p["id"] not in all_used]
+    warmup = []
+    if openers:
+        ordered = _det_shuffle(openers, f"{user_id}-opener-w{week}")
+        warmup = [ordered[(day_num - 1) % len(ordered)]]
+    all_used.update(p["id"] for p in warmup)
+    used_warm = sum(pose_total_seconds(p, exp, week, age_group) for p in warmup)
+    warmup += _fill_to_budget(warmup_pool, warmup_budget - used_warm, exp, week, age_group,
+                              f"{user_id}-warmup-d{day_num}-w{week}",
+                              exclude_ids=all_used, min_poses=1,
+                              max_poses=max(2, min(6, warmup_budget // 45)))
+    warmup = _arc_sort(warmup)
+    all_used.update(p["id"] for p in warmup)
+
+    cooldown = _fill_to_budget(cooldown_pool, cooldown_budget, exp, week, age_group,
+                               f"{user_id}-cooldown-d{day_num}-w{week}",
+                               exclude_ids=all_used, min_poses=1,
+                               max_poses=max(2, min(6, cooldown_budget // 45)))
+    cooldown = _arc_sort(cooldown)
     all_used.update(p["id"] for p in cooldown)
 
-    sav_candidates = [p for p in savasana_pool if p["id"] not in all_used] or savasana_pool
-    if sav_candidates:
-        cooldown.append(sav_candidates[0])
+    # Counterposing is judged across the whole practice, not the main sequence
+    # alone — the cooldown usually already resolves the peak. Only when nothing
+    # after the last backbend or inversion neutralises it do we add one.
+    cooldown = _add_counterpose(main_seq, cooldown, cooldown_pool, exp, week, age_group,
+                                f"{user_id}-counter-d{day_num}-w{week}", all_used)
+    all_used.update(p["id"] for p in cooldown)
 
-    return {"warmup": warmup, "main": main_seq, "cooldown": cooldown}
+    # Falling short of the minimum means the pool ran dry — not merely that the
+    # session was short, which is a legitimate outcome of a 15-minute request.
+    if len(main_seq) < main_min:
+        pool_limited = True
+
+    # Where the pool runs out before the budget does, hold longer rather than
+    # shipping a short session. This is what a teacher does with a small safe
+    # repertoire, and it is why a 45-minute beginner practice is not 40 poses.
+    holds = {
+        "warmup":   _hold_multiplier(warmup, warmup_budget, exp, week, age_group, 1.6),
+        "main":     _hold_multiplier(main_seq, main_budget, exp, week, age_group, 2.0),
+        "cooldown": _hold_multiplier(cooldown, cooldown_budget, exp, week, age_group, 2.5),
+    }
+
+    if savasana_pool:
+        cooldown.append(savasana_pool[0])
+
+    return {"warmup": warmup, "main": main_seq, "cooldown": cooldown,
+            "savasana_seconds": savasana_seconds, "pool_limited": pool_limited,
+            "hold_multipliers": holds}
 
 
 # ── Pose formatter ────────────────────────────────────────────────────────────
 
-def format_pose(pose: dict, experience: str, week: int, age_group: str = "adult") -> dict:
-    durs = pose.get("duration_seconds", {})
-    base = durs.get(experience, durs.get("beginner", 30))
-    hold = _week_hold(base, week)
-    # Senior: reduce hold times by 25%
-    if age_group == "senior":
-        hold = int(hold * 0.75)
+def format_pose(pose: dict, experience: str, week: int, age_group: str = "adult",
+                hold_override: int | None = None) -> dict:
+    hold = hold_override if hold_override is not None else \
+        pose_hold_seconds(pose, experience, week, age_group)
+    sides = pose_sides(pose)
     return {
         "pose_id":             pose.get("id"),
         "pose_name":           pose.get("english_name"),
         "sanskrit_name":       pose.get("sanskrit_name"),
         "category":            pose.get("category"),
+        # `duration_seconds` is the hold for ONE side; `total_duration_seconds`
+        # is what the pose actually costs in the session.
         "duration_seconds":    hold,
+        "sides":               sides,
+        "bilateral":           sides == 2,
+        "total_duration_seconds": hold * sides,
+        "side_cue":            ("Hold the full time on the right, then repeat for the "
+                                "same count on the left." if sides == 2 else None),
         "instructions":        pose.get("instructions", []),
         "primary_benefits":    pose.get("primary_benefits", []),
         "modification":        _get_modification(pose, experience, age_group),
@@ -1007,7 +1288,10 @@ _DHARANA = {
 
 def build_yoga_day(sequence: dict, pranayama: list, yoga_prefs: dict,
                    user_profile: dict, week: int, age_group: str = "adult",
-                   contra_tags: set | None = None) -> dict:
+                   contra_tags: set | None = None,
+                   dharana_seconds: int | None = None,
+                   sns: dict | None = None,
+                   pranayama_seconds: int | None = None) -> dict:
     exp = yoga_prefs.get("yoga_experience", "beginner")
     if exp == "none":
         exp = "beginner"
@@ -1018,30 +1302,62 @@ def build_yoga_day(sequence: dict, pranayama: list, yoga_prefs: dict,
     elif dosha == "pitta": theme = f"Cooling & Calming {goal.title()} Flow"
     else:                  theme = f"Energising & Invigorating {goal.title()} Sequence"
 
-    warmup_fmt   = [format_pose(p, exp, week, age_group) for p in sequence["warmup"]]
-    main_fmt     = [format_pose(p, exp, week, age_group) for p in sequence["main"]]
-    cooldown_fmt = [format_pose(p, exp, week, age_group) for p in sequence["cooldown"]]
+    mult = sequence.get("hold_multipliers") or {}
+
+    def _hold(pose, section):
+        return int(pose_hold_seconds(pose, exp, week, age_group) * mult.get(section, 1.0))
+
+    warmup_fmt = [format_pose(p, exp, week, age_group, hold_override=_hold(p, "warmup"))
+                  for p in sequence["warmup"]]
+    main_fmt   = [format_pose(p, exp, week, age_group, hold_override=_hold(p, "main"))
+                  for p in sequence["main"]]
+    # The closing relaxation is held for the session's budgeted savasana time,
+    # not the pose's own default.
+    sav_seconds  = sequence.get("savasana_seconds")
+    cooldown_fmt = [
+        format_pose(p, exp, week, age_group,
+                    hold_override=sav_seconds if p.get("final_relaxation")
+                    else _hold(p, "cooldown"))
+        for p in sequence["cooldown"]
+    ]
 
     pranayama_section = []
     for pr in pranayama:
         durs = pr.get("duration_minutes", {})
+        pr_minutes = durs.get(exp, durs.get("beginner", 3))
+        # The KB duration is what the technique deserves in a full practice. In a
+        # short session it has to fit the budget — an advanced Alternate Nostril
+        # is 10 minutes, which is most of a 15-minute session on its own.
+        if pranayama_seconds:
+            pr_minutes = min(pr_minutes, max(round(pranayama_seconds / 60), 2))
         pranayama_section.append({
             "technique_id":    pr.get("id"),
             "technique_name":  pr.get("english_name"),
             "sanskrit_name":   pr.get("sanskrit_name"),
-            "duration_minutes": durs.get(exp, durs.get("beginner", 3)),
+            "duration_minutes": pr_minutes,
             "instructions":    pr.get("instructions", []),
             "dosha_note":      f"Balances {dosha.title()} — {pr.get('type', 'balancing')} pranayama.",
         })
 
-    # Surya Namaskar block — morning sessions only
-    sns = _build_surya_namaskar_block(user_profile, yoga_prefs, contra_tags or set(), age_group)
+    # Surya Namaskar block — morning sessions only. Built once per user by the
+    # caller so its cost can be subtracted from the asana budget before the
+    # sequence is filled; rebuilt here only when called directly.
+    if sns is None:
+        sns = _build_surya_namaskar_block(user_profile, yoga_prefs, contra_tags or set(), age_group)
 
-    # Dharana/meditation slot — dosha-matched
+    # Dharana/meditation slot — dosha-matched, scaled to the session length
     dharana = dict(_DHARANA.get(dosha, _DHARANA["vata"]))
+    if dharana_seconds:
+        dharana["duration_minutes"] = max(round(dharana_seconds / 60), 2)
 
-    total_secs = sum(p["duration_seconds"] for p in warmup_fmt + main_fmt + cooldown_fmt)
-    total_prana = sum(p["duration_minutes"] * 60 for p in pranayama_section)
+    # Every block that costs the practitioner wall-clock time counts toward the
+    # estimate. Surya Namaskar (2-8 min) and Dharana (2-10 min) used to be left
+    # out, so the figure shown did not even match the session's own content.
+    asana_secs  = sum(p["total_duration_seconds"] for p in warmup_fmt + main_fmt + cooldown_fmt)
+    prana_secs  = sum(p["duration_minutes"] * 60 for p in pranayama_section)
+    sns_secs    = int((sns or {}).get("duration_minutes", 0) * 60)
+    dharana_sec = int(dharana.get("duration_minutes", 0) * 60)
+    total_secs  = asana_secs + prana_secs + sns_secs + dharana_sec
 
     return {
         "surya_namaskar":    sns,
@@ -1051,9 +1367,16 @@ def build_yoga_day(sequence: dict, pranayama: list, yoga_prefs: dict,
         "pranayama_section": pranayama_section,
         "dharana_section":   dharana,
         "total_duration_minutes":         yoga_prefs.get("time_available_minutes", 30),
-        "estimated_pose_time_minutes":    round((total_secs + total_prana) / 60, 1),
+        "estimated_pose_time_minutes":    round(total_secs / 60, 1),
+        "time_breakdown_minutes": {
+            "surya_namaskar": round(sns_secs / 60, 1),
+            "asana":          round(asana_secs / 60, 1),
+            "pranayama":      round(prana_secs / 60, 1),
+            "dharana":        round(dharana_sec / 60, 1),
+        },
         "sequence_type":     yoga_prefs.get("time_of_day_preference", "morning"),
         "dosha_theme":       theme,
+        "pool_limited":      bool(sequence.get("pool_limited")),
     }
 
 
@@ -1186,6 +1509,41 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
 
     days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
+    # ── Session time budget ──────────────────────────────────────────────────
+    # Everything that costs wall-clock time is priced before the asana sections
+    # are filled, so the sum of the parts lands on the duration the user asked
+    # for rather than a third of it.
+    session_minutes = yoga_prefs.get("time_available_minutes", 30)
+    savasana_seconds, dharana_seconds = _closing_budget(session_minutes)
+    sns_block = _build_surya_namaskar_block(user_profile, yoga_prefs,
+                                           user_contra_tags, age_group)
+    sns_seconds = int((sns_block or {}).get("duration_minutes", 0) * 60)
+    # Days rotate through the selected pranayamas and they are not all the same
+    # length, so the budget has to price the longest one — otherwise the days
+    # that draw a longer technique overshoot the session the user asked for.
+    prana_seconds = 0
+    for _pr in pranayamas:
+        _pd = _pr.get("duration_minutes", {})
+        prana_seconds = max(prana_seconds,
+                            int(_pd.get(user_exp, _pd.get("beginner", 3)) * 60))
+    # The fixed blocks can exceed the whole session — an advanced practitioner
+    # asking for 15 minutes draws 4 rounds of Surya Namaskar and a long
+    # pranayama, which together with the closing already overruns the request.
+    # Trim them to fit rather than flooring the asana budget and overshooting,
+    # so a 15-minute session is 15 minutes of practice.
+    session_seconds = session_minutes * 60
+    fixed_seconds = sns_seconds + prana_seconds + savasana_seconds + dharana_seconds
+    max_fixed = int(session_seconds * _MAX_FIXED_BLOCK_SHARE)
+    if fixed_seconds > max_fixed:
+        scale = max_fixed / fixed_seconds
+        prana_seconds = max(int(prana_seconds * scale), 60)
+        dharana_seconds = max(int(dharana_seconds * scale), 90)
+        savasana_seconds = max(int(savasana_seconds * scale), 90)
+        sns_block, sns_seconds = _scale_surya_namaskar(sns_block, scale)
+
+    asana_budget = max(session_seconds - sns_seconds - prana_seconds
+                       - savasana_seconds - dharana_seconds, 180)
+
     four_week_plan = []
     for week in range(1, 5):
         cfg = _WEEK_CONFIG[week]
@@ -1198,7 +1556,10 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
             else:
                 seq = build_sequence(filtered_poses, yoga_prefs, user_profile,
                                      day_num=i, week=week, user_id=user_id,
-                                     week_allowed_levels=week_levels)
+                                     week_allowed_levels=week_levels,
+                                     asana_budget_seconds=asana_budget,
+                                     savasana_seconds=savasana_seconds,
+                                     age_group=age_group)
                 # Rotate through all 3 pranayamas deterministically per day (variety)
                 if pranayamas:
                     day_prana = [pranayamas[(i - 1) % len(pranayamas)]]
@@ -1207,7 +1568,10 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
 
                 day_plan = build_yoga_day(seq, day_prana, yoga_prefs, user_profile,
                                           week, age_group=age_group,
-                                          contra_tags=user_contra_tags)
+                                          contra_tags=user_contra_tags,
+                                          dharana_seconds=dharana_seconds,
+                                          sns=sns_block,
+                                          pranayama_seconds=prana_seconds)
                 week_days.append({"day": i, "day_name": day_name, "session": day_plan, "rest": False})
 
         four_week_plan.append({
@@ -1216,6 +1580,20 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
             "note":  cfg["note"],
             "days":  week_days,
         })
+
+    # If safety filtering left too little material to build a full practice from,
+    # say so plainly. The alternative — silently shipping a short session — reads
+    # as a thin product rather than as the safety decision it actually is.
+    pool_notice = None
+    if len(filtered_poses) < _MIN_VARIED_POOL or any(
+            d["session"] and d["session"].get("pool_limited")
+            for w in four_week_plan for d in w["days"]):
+        pool_notice = (
+            "Your health conditions rule out a large part of the pose library, so this "
+            "plan is built from the smaller set that is safe for you. Sessions are "
+            "shorter and repeat more often than usual by design. A qualified yoga "
+            "therapist can supervise poses that a self-guided plan has to exclude."
+        )
 
     disclaimer = (
         "PREGNANCY WARNING: Several poses have been removed for pregnancy safety. "
@@ -1245,6 +1623,7 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
         "four_week_plan":     four_week_plan,
         "ayurvedic_tips":     get_ayurvedic_tips(dominant_dosha),
         "seasonal_note":      season_cfg.get("note") if season_cfg else None,
+        "practice_pool_notice": pool_notice,
         "condition_protocols": active_protocols or None,
         "pranayama_safety_exclusions": _prana_exclusions or None,
         "disclaimer":         disclaimer,
