@@ -143,9 +143,13 @@ Supporting features
   indemnity, governing law.
 - ✅ Both pages now carry a hand-maintained `LAST_UPDATED` constant. They previously
   rendered `new Date()`, so each claimed same-day revision in perpetuity.
-- ⚠️ **`privacy@ayuraai.in` does not exist yet** — both documents publish it as the
-  grievance contact. Set up forwarding (Cloudflare Email Routing is free) *before*
-  announcing, or grievance mail bounces.
+- ✅ **`privacy@ayuraai.in` is live (2026-08-14)** — the grievance contact published in both
+  legal documents now accepts mail. Hostinger Business Email mailbox; apex MX already
+  pointed there. Verified by SMTP probe rather than assumption: both `mx1` and
+  `mx2.hostinger.com` answer `250` for the address and `550` for a made-up one, so the
+  accept is real and not a catch-all. Re-check with an RCPT probe after any MX change.
+  ⚠️ **On a 30-day Hostinger trial** — the mailbox *and* DNS for the whole domain go with it
+  if the trial lapses. Decide before the date.
 - ⚠️ **Jurisdiction is a placeholder** — `JURISDICTION` in `client/src/pages/Terms.jsx`
   says Bengaluru. Confirm it matches where you actually operate.
 - ☐ No legal entity named in either document (not incorporated yet — revisit on registration).
