@@ -1,8 +1,36 @@
 #!/usr/bin/env bash
-# deploy.sh — push local changes to the DigitalOcean production server
-# Usage:  ./deploy.sh           (deploy current branch)
-#         ./deploy.sh --no-build (skip rebuild, just restart containers)
+# deploy.sh — BREAK-GLASS deploy to the DigitalOcean production server.
+#
+# Deploys normally happen in GitHub Actions on push to main
+# (.github/workflows/deploy.yml), gated on CI. This script exists for when
+# Actions is unavailable, and it refuses to run without --break-glass.
+#
+# The guard is not ceremony. Running this while a push-triggered deploy is in
+# flight puts two deployers on one droplet: both run `docker compose rm -fs`
+# then `up -d`, Docker renames the loser's container to <hash>_ayura_api, the
+# next run fails with "container name is already in use", and on 2026-08-14 it
+# ended with api, web and worker removed and nothing started. The habit that
+# caused it was reflexive — push, then immediately run this.
+#
+# Usage:  ./deploy.sh --break-glass              (full build + restart)
+#         ./deploy.sh --break-glass --no-build   (restart containers only)
 set -euo pipefail
+
+if [[ "${1:-}" != "--break-glass" && "${ALLOW_MANUAL_DEPLOY:-}" != "1" ]]; then
+  cat <<'MSG'
+Deploys run in GitHub Actions on push to main.
+
+  watch a run     gh run watch
+  deploy manually gh workflow run "Ayura AI Deploy"
+  recent runs     gh run list --workflow="Ayura AI Deploy" --limit 5
+
+To deploy from here anyway, FIRST confirm no run is in flight, then:
+
+  ./deploy.sh --break-glass
+MSG
+  exit 1
+fi
+[[ "${1:-}" == "--break-glass" ]] && shift
 
 SERVER="root@64.227.191.87"
 REMOTE_DIR="/opt/ayuraai"

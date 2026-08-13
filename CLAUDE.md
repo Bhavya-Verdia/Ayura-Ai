@@ -4,6 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+### Deployment
+Production deploys run in **GitHub Actions on push to `main`** (`.github/workflows/deploy.yml`),
+gated on CI. There is nothing to run locally.
+
+```bash
+gh run watch                                    # follow the deploy
+gh run list --workflow="Ayura AI Deploy" -L 5   # recent deploys
+gh workflow run "Ayura AI Deploy"               # deploy without a push
+```
+
+`./deploy.sh` is break-glass only and refuses to run without `--break-glass`. Do not use it
+because it is faster: a local deploy and a push-triggered one both run `docker compose rm -fs`
+then `up -d` on the same droplet, and the collision has taken production down — Docker renames
+the loser's container, the next run hits "container name is already in use", and the site can
+be left with nothing running. **Never accept a deploy script's own success line as evidence**;
+verify by image timestamp and by fetching the served asset.
+
 ### Infrastructure
 ```bash
 docker-compose up -d          # Start MongoDB, Redis, ChromaDB
