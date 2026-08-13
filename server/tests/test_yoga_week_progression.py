@@ -9,7 +9,7 @@ compounds, and that the whole thing works with no feedback at all — nobody
 should be blocked from practising by a form.
 """
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
 from fastapi.testclient import TestClient

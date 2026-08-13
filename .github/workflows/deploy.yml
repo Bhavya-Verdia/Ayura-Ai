@@ -5,6 +5,21 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# One deploy touches the droplet at a time. Without this, pushes in quick
+# succession each start a run, and two runs doing `docker compose rm -fs` and
+# `up -d` against the same host collide: Docker renames the loser's container
+# (`<hash>_ayura_api`), the next run hits "container name is already in use",
+# and the site can be left with nothing running. Queued, not cancelled — an
+# in-flight deploy that is mid-restart must finish rather than be killed
+# halfway.
+#
+# NOTE this cannot see `./deploy.sh` run from a laptop. Running that while a
+# push-triggered deploy is in flight is the same collision, and is what took
+# production down on 2026-08-14. Use one path or the other, not both.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 # Single deploy method, mirroring deploy.sh: sync source to the droplet and build
 # the images from source there (docker-compose.yml uses `build:`, not prebuilt
 # images — the previous GHCR pull approach could never match it, and it also
