@@ -4,14 +4,14 @@ import { ArrowLeft } from 'lucide-react'
 import './Legal.css'
 
 // Hand-maintained; see the note in Privacy.jsx for why this is not `new Date()`.
-const LAST_UPDATED = '4 August 2026'
+const LAST_UPDATED = '14 August 2026'
 
 const CONTACT_EMAIL = 'privacy@ayuraai.in'
 
-// ⚠️ CONFIRM BEFORE LAUNCH — this should be the city you actually operate from
-// (or your registered office, once incorporated). It is a placeholder, not a
-// verified fact, and it determines where a dispute would be heard.
-const JURISDICTION = 'Bengaluru, Karnataka'
+// Where the operator actually is. Revisit if the business is incorporated with a
+// registered office elsewhere — this decides where a dispute would be heard, so it
+// follows the registered office once one exists, not the founder's location.
+const JURISDICTION = 'Udaipur, Rajasthan'
 
 export default function Terms() {
   return (

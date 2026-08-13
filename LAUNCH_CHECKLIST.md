@@ -163,8 +163,11 @@ Supporting features
   accept is real and not a catch-all. Re-check with an RCPT probe after any MX change.
   ⚠️ **On a 30-day Hostinger trial** — the mailbox *and* DNS for the whole domain go with it
   if the trial lapses. Decide before the date.
-- ⚠️ **Jurisdiction is a placeholder** — `JURISDICTION` in `client/src/pages/Terms.jsx`
-  says Bengaluru. Confirm it matches where you actually operate.
+- ✅ **Jurisdiction confirmed 2026-08-14** — `JURISDICTION` in `client/src/pages/Terms.jsx`
+  is now `Udaipur, Rajasthan`, the operator's actual location, and Terms' `LAST_UPDATED` was
+  bumped with it. Privacy was left at its own date, since that document did not change.
+  Revisit if the business incorporates with a registered office elsewhere: the clause should
+  follow the registered office, not the founder.
 - ☐ No legal entity named in either document (not incorporated yet — revisit on registration).
 
 ## 7. Known gaps / not built
