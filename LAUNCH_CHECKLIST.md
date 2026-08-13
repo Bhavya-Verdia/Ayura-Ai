@@ -111,6 +111,12 @@ Supporting features
   model, so a download failure left `ayurveda_knowledge` empty (this happened, and was
   recovered by re-running). It now embeds a probe string before touching anything and
   exits rather than deleting. Still: reseed deliberately, and check counts afterwards.
+- ✅ **Embedding model baked into the API image 2026-08-13.** Every fresh container used to
+  have all four gunicorn workers download the same 79 MB ONNX archive concurrently and
+  unpack over each other — `/api/health` unreachable for ~15s, then `INVALID_PROTOBUF` from
+  each worker. It logs as a WARNING and the app stays up, so the symptom is RAG silently
+  returning nothing. **After any deploy that rebuilds the api image, check
+  `docker compose logs api | grep -i warm-up` is empty.**
 
 ## 6. Legal & compliance (revised 2026-08-04)
 - ✅ Privacy Policy rewritten for the DPDP Act 2023 + IT Rules 2021: grievance officer
