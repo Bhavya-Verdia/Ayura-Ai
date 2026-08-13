@@ -50,10 +50,25 @@ function PoseDiagram({ category, name }) {
 }
 
 /**
- * The pose drawn from its own joints — Tree looks like Tree, not like "a balance".
- * Falls back to the category schematic for poses that have no figure yet, so the
- * library can be filled in a pose at a time without a broken state in between.
+ * Drawn pose figures are OFF.
+ *
+ * 12 of 113 poses were drawn, which is ~27% of the pose cards in a session: a
+ * day's list showed five drawn figures among eleven category diagrams, and a
+ * partially-illustrated list reads as broken in a way a uniformly plain one does
+ * not. Consistency beats a better-looking minority. (The "36% of slots" figure
+ * that made 12 poses sound like a reasonable first batch counted repetition —
+ * Savasana appears in every session — so it flattered the coverage against what
+ * a user actually scrolls past.)
+ *
+ * Everything needed to turn this back on is intact and tested: joint data in
+ * yoga_poses.json, the renderer in poseSkeleton.js, validation in
+ * test_yoga_practice_quality.py, and the engine still sends `figure` with each
+ * pose. Flip this flag once the library is complete — roughly 60-80 poses, which
+ * is where a session reads as consistently illustrated — or delete the lot if
+ * commissioned artwork replaces it.
  */
+const USE_DRAWN_FIGURES = false
+
 function PoseSkeleton({ figure, name, mirror }) {
   const built = buildPoseFigure(figure, mirror)
   if (!built) return null
@@ -74,7 +89,9 @@ export function PoseFigure({ imageUrl, name, category, figure, mirror = false, c
   // The seed library shipped some literal "https://..." placeholders.
   const usable = imageUrl && !imageUrl.startsWith('https://...') && !failed
 
-  if (!usable && figure) return <PoseSkeleton figure={figure} name={name} mirror={mirror} />
+  if (!usable && figure && USE_DRAWN_FIGURES) {
+    return <PoseSkeleton figure={figure} name={name} mirror={mirror} />
+  }
   if (!usable) return <PoseDiagram category={category} name={name} />
 
   return (

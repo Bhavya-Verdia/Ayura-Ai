@@ -140,15 +140,26 @@ Supporting features
   commercial intent. Cleared from the KB and from `scripts/generate_new_poses.py`, which
   would otherwise reintroduce them. Guard: `test_no_pose_hotlinks_third_party_imagery`
   asserts provenance, not emptiness, so licensed or self-hosted URLs pass.
-- ☐ **Pose imagery: 12 of 113 poses drawn, the rest still schematic.** Poses now carry a
-  `figure` — joint coordinates in `yoga_poses.json` — that `poseSkeleton.js` draws, so a
-  drawn pose looks like itself instead of like its category. Costs nothing against the
-  frontend budget (coordinates ride with the plan response, not the bundle — build stayed
-  at 199.2 KB) and bilateral poses mirror rather than needing a second drawing.
-  **The 12 drawn cover ~36% of pose slots users actually see**; the next 18 would take it
-  to ~68%, the next 30 after that to ~87%. Undrawn poses fall back to the category diagram,
-  so the library fills in a pose at a time with no broken state. Commissioned art is still
-  the better end state for a consumer product — this makes the interim honest, not final.
+- ☐ **Pose imagery is uniformly schematic, and drawn figures are switched OFF.** All 113
+  poses render the category diagram in `PoseFigure.jsx`, so 15 backbends share one drawing.
+  Plain, but consistent.
+
+  A joint-coordinate figure system was built and shipped for 12 poses on 2026-08-13, then
+  rolled back the same day (`USE_DRAWN_FIGURES = false`). Reason: 12 of 113 is ~27% of the
+  pose cards in a session — a day's list showed five drawn figures among eleven category
+  diagrams, and a partly-illustrated list reads as broken where a uniformly plain one reads
+  as a style. **The "~36% of slots" figure used to justify shipping 12 counted repetition**
+  (Savasana is in every session), so it flattered the coverage against what a user actually
+  scrolls past. Per-card coverage is the number that matters.
+
+  Everything to re-enable is intact and tested — joint data in `yoga_poses.json`, renderer
+  in `poseSkeleton.js`, validation in `test_yoga_practice_quality.py`, and the engine still
+  sends `figure` with every pose. Turning it on needs ~60-80 poses drawn (87-95% of cards),
+  not 12.
+
+  **Recommendation: commission the top 40 poses AFTER clinical sign-off**, as single-colour
+  SVG on one viewbox so they inherit the theme tokens. Imagery is polish; section 4 is the
+  gate, and a reviewer who reclassifies or drops poses would mean re-briefing.
 - Plan content is English-only. The yoga UI chrome and player are translated (68 Hindi
   strings) but pose names, instructions, rationale and all LLM narrative arrive from the
   backend in English regardless of the selected language. Same for the dosha result copy.
