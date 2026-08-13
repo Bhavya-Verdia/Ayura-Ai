@@ -128,11 +128,16 @@ Supporting features
 - ☐ No legal entity named in either document (not incorporated yet — revisit on registration).
 
 ## 7. Known gaps / not built
-- ⚠️ **Pose imagery is not licensed.** 49 of 113 poses have no image; the other 64 hotlink
-  pocketyoga.com and a third-party Cloudinary account, and have been public since
-  2026-08-13. `PoseFigure.jsx` gives every pose a category-diagram fallback, so dropping the
-  hotlinks degrades gracefully — but whether the app may self-host those 64 is a licensing
-  decision, not a code one. Resolve before promoting the yoga feature.
+- ✅ **Third-party pose imagery removed 2026-08-13.** All 64 images traced back to Pocket
+  Yoga's artwork — 32 hotlinked from pocketyoga.com, 32 via the third-party `yoga-api`
+  Cloudinary account that had copied the same assets — served from a public product with
+  commercial intent. Cleared from the KB and from `scripts/generate_new_poses.py`, which
+  would otherwise reintroduce them. Guard: `test_no_pose_hotlinks_third_party_imagery`
+  asserts provenance, not emptiness, so licensed or self-hosted URLs pass.
+- ☐ **Pose imagery is now entirely schematic.** All 113 poses render the category diagram
+  in `PoseFigure.jsx`, which means 15 backbends share one drawing. It is honest and it is
+  plain. Replacing it needs commissioned or openly-licensed art — a spend decision, and the
+  most visible remaining weakness in the yoga feature.
 - Plan content is English-only. The yoga UI chrome and player are translated (68 Hindi
   strings) but pose names, instructions, rationale and all LLM narrative arrive from the
   backend in English regardless of the selected language. Same for the dosha result copy.

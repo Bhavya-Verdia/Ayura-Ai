@@ -2,6 +2,13 @@
 One-time script: generates full Ayurvedic metadata for 50 new yoga poses
 and merges them into yoga_poses.json.
 
+Does NOT populate image_url, and the seed table below carries no image URLs.
+It used to hotlink pocketyoga.com, whose artwork belongs to Pocket Yoga; the
+other half of the library hotlinked a third-party Cloudinary account that had
+copied the same assets. Both were removed from the KB on 2026-08-13. Poses
+render via the category schematic in PoseFigure.jsx until properly licensed or
+commissioned imagery exists. Do not reintroduce a URL you do not have rights to.
+
 Run from the server/ directory:
     python scripts/generate_new_poses.py
 """
@@ -19,56 +26,56 @@ PROTOCOLS_FILE = ROOT / "data" / "knowledge_base" / "condition_protocols.json"
 # ── New poses to generate ─────────────────────────────────────────────────────
 
 NEW_POSES = [
-    {"name": "Big Toe Pose",             "sanskrit": "Padangusthasana",               "types": ["Standing","Forward Bend"],  "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/ForwardBendBigToe.png"},
-    {"name": "Gorilla Pose",             "sanskrit": "Padahastasana",                 "types": ["Standing","Forward Bend"],  "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/Gorilla.png"},
-    {"name": "Bird of Paradise Pose",    "sanskrit": "Svarga Dvijasana",              "types": ["Standing","Balancing"],     "level": "advanced",     "img": "https://pocketyoga.com/assets/images/full/ChairTwistBindUp_L.png"},
-    {"name": "Goddess Pose",             "sanskrit": "Utkata Konasana",               "types": ["Standing"],                 "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/Goddess_L.png"},
-    {"name": "Revolved Half Moon Pose",  "sanskrit": "Parivritta Ardha Chandrasana",  "types": ["Standing","Balancing"],     "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/HalfMoonRevolved_L.png"},
-    {"name": "Pyramid Pose",             "sanskrit": "Parshvottanasana",              "types": ["Standing","Forward Bend"],  "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/PyramidPrayer_L.png"},
-    {"name": "Tree Pose",                "sanskrit": "Vrikshasana",                   "types": ["Standing","Balancing"],     "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/TreePrayer_R.png"},
-    {"name": "Revolved Triangle Pose",   "sanskrit": "Parivritta Trikonasana",        "types": ["Standing","Twist"],         "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/TriangleRevolved_L.png"},
+    {"name": "Big Toe Pose",             "sanskrit": "Padangusthasana",               "types": ["Standing","Forward Bend"],  "level": "beginner",     "img": ""},
+    {"name": "Gorilla Pose",             "sanskrit": "Padahastasana",                 "types": ["Standing","Forward Bend"],  "level": "beginner",     "img": ""},
+    {"name": "Bird of Paradise Pose",    "sanskrit": "Svarga Dvijasana",              "types": ["Standing","Balancing"],     "level": "advanced",     "img": ""},
+    {"name": "Goddess Pose",             "sanskrit": "Utkata Konasana",               "types": ["Standing"],                 "level": "beginner",     "img": ""},
+    {"name": "Revolved Half Moon Pose",  "sanskrit": "Parivritta Ardha Chandrasana",  "types": ["Standing","Balancing"],     "level": "intermediate", "img": ""},
+    {"name": "Pyramid Pose",             "sanskrit": "Parshvottanasana",              "types": ["Standing","Forward Bend"],  "level": "beginner",     "img": ""},
+    {"name": "Tree Pose",                "sanskrit": "Vrikshasana",                   "types": ["Standing","Balancing"],     "level": "beginner",     "img": ""},
+    {"name": "Revolved Triangle Pose",   "sanskrit": "Parivritta Trikonasana",        "types": ["Standing","Twist"],         "level": "intermediate", "img": ""},
     {"name": "Revolved Wide Legged Forward Bend", "sanskrit": "Parivritta Prasarita Padottanasana", "types": ["Standing","Forward Bend","Twist"], "level": "intermediate", "img": ""},
-    {"name": "Bound Revolved Chair Pose","sanskrit": "Parivritta Utkatasana",         "types": ["Standing","Twist"],         "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/ChairTwistBind_L.png"},
-    {"name": "Archer's Pose",            "sanskrit": "Akarna Dhanurasana",            "types": ["Seated"],                   "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/Archer_R.png"},
+    {"name": "Bound Revolved Chair Pose","sanskrit": "Parivritta Utkatasana",         "types": ["Standing","Twist"],         "level": "intermediate", "img": ""},
+    {"name": "Archer's Pose",            "sanskrit": "Akarna Dhanurasana",            "types": ["Seated"],                   "level": "intermediate", "img": ""},
     {"name": "Seated Gate Pose",         "sanskrit": "Parighasana",                   "types": ["Seated","Lateral Bend"],    "level": "beginner",     "img": ""},
     {"name": "Heron Pose",               "sanskrit": "Kraunchasana",                  "types": ["Seated","Forward Bend"],    "level": "intermediate", "img": ""},
     {"name": "Noose Pose",               "sanskrit": "Pashasana",                     "types": ["Seated","Twist"],           "level": "intermediate", "img": ""},
     {"name": "Side Lunge Pose",          "sanskrit": "Skandasana",                    "types": ["Seated","Balancing"],       "level": "intermediate", "img": ""},
-    {"name": "Thunderbolt Pose",         "sanskrit": "Vajrasana",                     "types": ["Seated"],                   "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/Thunderbolt.png"},
-    {"name": "Gate Pose",                "sanskrit": "Parighasana",                   "types": ["Kneeling","Lateral Bend"],  "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/Gate_R.png"},
-    {"name": "Wind Removing Pose",       "sanskrit": "Pavanamuktasana",               "types": ["Supine"],                   "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/Turtle.png"},
-    {"name": "Banana Pose",              "sanskrit": "Supta Nitambasana",             "types": ["Supine"],                   "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/Banana_R.png"},
-    {"name": "Happy Baby Pose",          "sanskrit": "Ananda Balasana",               "types": ["Supine"],                   "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/BlissfulBaby.png"},
-    {"name": "Reverse Corpse Pose",      "sanskrit": "Advasana",                      "types": ["Prone"],                    "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/CorpseFrontArmsForward.png"},
-    {"name": "Puppy Pose",               "sanskrit": "Uttana Shishosana",             "types": ["Prone","Back Bend"],        "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/PuppyExtended.png"},
-    {"name": "Frog Pose",                "sanskrit": "Bhekasana",                     "types": ["Prone","Back Bend"],        "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/FrogTraditional.png"},
-    {"name": "Snake Pose",               "sanskrit": "Sarpasana",                     "types": ["Prone","Back Bend"],        "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/Snake.png"},
-    {"name": "Tiger Pose",               "sanskrit": "Vyaghrasana",                   "types": ["Prone","Back Bend"],        "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/Tiger_L.png"},
-    {"name": "Table Pose",               "sanskrit": "Bharmanasana",                  "types": ["Kneeling"],                 "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/BoxNeutral.png"},
-    {"name": "Four Limbed Staff Pose",   "sanskrit": "Chaturanga Dandasana",          "types": ["Arm Leg Support"],          "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/FourLimbedStaff.png"},
-    {"name": "Upward-Facing Dog Pose",   "sanskrit": "Urdhva Mukha Shvanasana",       "types": ["Prone","Back Bend"],        "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/UpwardDog.png"},
-    {"name": "Wild Thing Pose",          "sanskrit": "Chamatkarasana",                "types": ["Backbend","Balancing"],     "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/WildThing_R.png"},
-    {"name": "Wheel Pose",               "sanskrit": "Urdhva Dhanurasana",            "types": ["Back Bend"],                "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/Wheel.png"},
-    {"name": "Camel Pose",               "sanskrit": "Ushtrasana",                    "types": ["Back Bend"],                "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/Camel.png"},
-    {"name": "Upward Plank Pose",        "sanskrit": "Purvottanasana",                "types": ["Back Bend","Arm Support"],  "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/PlankUpward.png"},
-    {"name": "Fish Pose",                "sanskrit": "Matsyasana",                    "types": ["Supine","Back Bend"],       "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/FishPreparation.png"},
-    {"name": "Plow Pose",                "sanskrit": "Halasana",                      "types": ["Inversion","Forward Bend"], "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/Plow.png"},
-    {"name": "Supported Headstand Pose", "sanskrit": "Salamba Shirshasana",           "types": ["Inversion"],                "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/HeadstandSupported.png"},
-    {"name": "Supported Shoulder Stand Pose","sanskrit":"Salamba Sarvangasana",       "types": ["Inversion"],                "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/ShoulderstandSupported.png"},
-    {"name": "Dolphin Pose",             "sanskrit": "Ardha Pincha Mayurasana",       "types": ["Inversion","Arm Support"],  "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/Dolphin.png"},
-    {"name": "Crow Pose",                "sanskrit": "Kakasana",                      "types": ["Arm Balance"],              "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/Crow.png"},
-    {"name": "Side Plank Pose",          "sanskrit": "Vasishthasana",                 "types": ["Arm Balance","Balancing"],  "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/PlankSide_R.png"},
-    {"name": "Handstand Pose",           "sanskrit": "Adho Mukha Vrikshasana",        "types": ["Inversion","Arm Balance"],  "level": "advanced",     "img": "https://pocketyoga.com/assets/images/full/Handstand.png"},
-    {"name": "Half Pigeon Pose",         "sanskrit": "Ardha Kapotasana",              "types": ["Seated","Hip Opener"],      "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/PigeonHalf_L.png"},
-    {"name": "Lizard Pose",              "sanskrit": "Uttana Pristhasana",            "types": ["Hip Opener"],               "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/Lizard_L.png"},
-    {"name": "Low Lunge Pose",           "sanskrit": "Anjaneyasana",                  "types": ["Standing","Hip Opener"],    "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/WarriorIKneeling_L.png"},
-    {"name": "High Lunge Pose",          "sanskrit": "Ashta Chandrasana",             "types": ["Standing","Balancing"],     "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/LungeCrescent_L.png"},
-    {"name": "Dancer Pose",              "sanskrit": "Natarajasana",                  "types": ["Standing","Balancing","Back Bend"],"level": "intermediate","img": "https://pocketyoga.com/assets/images/full/LordOfTheDance_L.png"},
-    {"name": "Eagle Pose",               "sanskrit": "Garudasana",                    "types": ["Standing","Balancing"],     "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/Eagle_R.png"},
-    {"name": "Standing Forward Bend Pose","sanskrit":"Uttanasana",                    "types": ["Standing","Forward Bend"],  "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/ForwardBend.png"},
-    {"name": "Warrior III Pose",         "sanskrit": "Virabhadrasana C",              "types": ["Standing","Balancing"],     "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/WarriorIII_L.png"},
-    {"name": "Lotus Pose",               "sanskrit": "Padmasana",                     "types": ["Seated","Meditation"],      "level": "intermediate", "img": "https://pocketyoga.com/assets/images/full/LotusFull.png"},
-    {"name": "Garland Pose",             "sanskrit": "Malasana",                      "types": ["Seated","Hip Opener"],      "level": "beginner",     "img": "https://pocketyoga.com/assets/images/full/GarlandSideways_L.png"},
+    {"name": "Thunderbolt Pose",         "sanskrit": "Vajrasana",                     "types": ["Seated"],                   "level": "beginner",     "img": ""},
+    {"name": "Gate Pose",                "sanskrit": "Parighasana",                   "types": ["Kneeling","Lateral Bend"],  "level": "beginner",     "img": ""},
+    {"name": "Wind Removing Pose",       "sanskrit": "Pavanamuktasana",               "types": ["Supine"],                   "level": "beginner",     "img": ""},
+    {"name": "Banana Pose",              "sanskrit": "Supta Nitambasana",             "types": ["Supine"],                   "level": "beginner",     "img": ""},
+    {"name": "Happy Baby Pose",          "sanskrit": "Ananda Balasana",               "types": ["Supine"],                   "level": "beginner",     "img": ""},
+    {"name": "Reverse Corpse Pose",      "sanskrit": "Advasana",                      "types": ["Prone"],                    "level": "beginner",     "img": ""},
+    {"name": "Puppy Pose",               "sanskrit": "Uttana Shishosana",             "types": ["Prone","Back Bend"],        "level": "intermediate", "img": ""},
+    {"name": "Frog Pose",                "sanskrit": "Bhekasana",                     "types": ["Prone","Back Bend"],        "level": "intermediate", "img": ""},
+    {"name": "Snake Pose",               "sanskrit": "Sarpasana",                     "types": ["Prone","Back Bend"],        "level": "beginner",     "img": ""},
+    {"name": "Tiger Pose",               "sanskrit": "Vyaghrasana",                   "types": ["Prone","Back Bend"],        "level": "beginner",     "img": ""},
+    {"name": "Table Pose",               "sanskrit": "Bharmanasana",                  "types": ["Kneeling"],                 "level": "beginner",     "img": ""},
+    {"name": "Four Limbed Staff Pose",   "sanskrit": "Chaturanga Dandasana",          "types": ["Arm Leg Support"],          "level": "intermediate", "img": ""},
+    {"name": "Upward-Facing Dog Pose",   "sanskrit": "Urdhva Mukha Shvanasana",       "types": ["Prone","Back Bend"],        "level": "beginner",     "img": ""},
+    {"name": "Wild Thing Pose",          "sanskrit": "Chamatkarasana",                "types": ["Backbend","Balancing"],     "level": "intermediate", "img": ""},
+    {"name": "Wheel Pose",               "sanskrit": "Urdhva Dhanurasana",            "types": ["Back Bend"],                "level": "intermediate", "img": ""},
+    {"name": "Camel Pose",               "sanskrit": "Ushtrasana",                    "types": ["Back Bend"],                "level": "intermediate", "img": ""},
+    {"name": "Upward Plank Pose",        "sanskrit": "Purvottanasana",                "types": ["Back Bend","Arm Support"],  "level": "intermediate", "img": ""},
+    {"name": "Fish Pose",                "sanskrit": "Matsyasana",                    "types": ["Supine","Back Bend"],       "level": "intermediate", "img": ""},
+    {"name": "Plow Pose",                "sanskrit": "Halasana",                      "types": ["Inversion","Forward Bend"], "level": "intermediate", "img": ""},
+    {"name": "Supported Headstand Pose", "sanskrit": "Salamba Shirshasana",           "types": ["Inversion"],                "level": "intermediate", "img": ""},
+    {"name": "Supported Shoulder Stand Pose","sanskrit":"Salamba Sarvangasana",       "types": ["Inversion"],                "level": "intermediate", "img": ""},
+    {"name": "Dolphin Pose",             "sanskrit": "Ardha Pincha Mayurasana",       "types": ["Inversion","Arm Support"],  "level": "intermediate", "img": ""},
+    {"name": "Crow Pose",                "sanskrit": "Kakasana",                      "types": ["Arm Balance"],              "level": "intermediate", "img": ""},
+    {"name": "Side Plank Pose",          "sanskrit": "Vasishthasana",                 "types": ["Arm Balance","Balancing"],  "level": "intermediate", "img": ""},
+    {"name": "Handstand Pose",           "sanskrit": "Adho Mukha Vrikshasana",        "types": ["Inversion","Arm Balance"],  "level": "advanced",     "img": ""},
+    {"name": "Half Pigeon Pose",         "sanskrit": "Ardha Kapotasana",              "types": ["Seated","Hip Opener"],      "level": "intermediate", "img": ""},
+    {"name": "Lizard Pose",              "sanskrit": "Uttana Pristhasana",            "types": ["Hip Opener"],               "level": "intermediate", "img": ""},
+    {"name": "Low Lunge Pose",           "sanskrit": "Anjaneyasana",                  "types": ["Standing","Hip Opener"],    "level": "beginner",     "img": ""},
+    {"name": "High Lunge Pose",          "sanskrit": "Ashta Chandrasana",             "types": ["Standing","Balancing"],     "level": "beginner",     "img": ""},
+    {"name": "Dancer Pose",              "sanskrit": "Natarajasana",                  "types": ["Standing","Balancing","Back Bend"],"level": "intermediate","img": ""},
+    {"name": "Eagle Pose",               "sanskrit": "Garudasana",                    "types": ["Standing","Balancing"],     "level": "beginner",     "img": ""},
+    {"name": "Standing Forward Bend Pose","sanskrit":"Uttanasana",                    "types": ["Standing","Forward Bend"],  "level": "beginner",     "img": ""},
+    {"name": "Warrior III Pose",         "sanskrit": "Virabhadrasana C",              "types": ["Standing","Balancing"],     "level": "intermediate", "img": ""},
+    {"name": "Lotus Pose",               "sanskrit": "Padmasana",                     "types": ["Seated","Meditation"],      "level": "intermediate", "img": ""},
+    {"name": "Garland Pose",             "sanskrit": "Malasana",                      "types": ["Seated","Hip Opener"],      "level": "beginner",     "img": ""},
 ]
 
 # ── Category mapper ───────────────────────────────────────────────────────────
@@ -219,8 +226,8 @@ async def main():
                 r.setdefault("sanskrit_name", src["sanskrit"])
                 r.setdefault("category", infer_category(src["types"]))
                 r.setdefault("level", src["level"])
-                r.setdefault("image_url", src.get("img", ""))
-                r["image_url"] = src.get("img", "") or r.get("image_url", "")
+                # Deliberately empty: see the note at the top of this file.
+                r["image_url"] = ""
 
                 # Add medical_conditions_beneficial from protocols
                 pid = r["id"]
@@ -255,7 +262,7 @@ async def main():
                     "sequence_role": "main",
                     "pranayama_sync": "Breathe steadily.",
                     "ayurvedic_rationale": "",
-                    "image_url": src.get("img", ""),
+                    "image_url": "",
                     "medical_conditions_beneficial": [],
                     "medical_conditions_contraindicated": [],
                 }

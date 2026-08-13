@@ -85,3 +85,24 @@ def test_pose_documents_carry_dosha_metadata(yoga_docs):
     tagged = [d for d in yoga_docs if d["dosha"]]
     assert len(tagged) / len(yoga_docs) > 0.75
     assert {d["dosha"] for d in tagged} <= {"vata", "pitta", "kapha"}
+
+
+# ── Pose imagery provenance ──────────────────────────────────────────────────
+
+def test_no_pose_hotlinks_third_party_imagery(poses):
+    """64 poses hotlinked artwork belonging to Pocket Yoga — 32 from pocketyoga.com
+    and 32 via a third-party Cloudinary account that had copied the same assets —
+    on a public product. Removed 2026-08-13; poses render the category schematic
+    until licensed or commissioned imagery exists.
+
+    This asserts provenance, not emptiness: self-hosted or properly licensed URLs
+    are fine, someone else's CDN is not.
+    """
+    from urllib.parse import urlparse
+
+    disallowed = {"pocketyoga.com", "www.pocketyoga.com", "res.cloudinary.com"}
+    offenders = [
+        (p["sanskrit_name"], p["image_url"]) for p in poses
+        if p.get("image_url") and urlparse(p["image_url"]).netloc in disallowed
+    ]
+    assert not offenders, f"third-party imagery back in the KB: {offenders[:5]}"
