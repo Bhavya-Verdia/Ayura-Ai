@@ -581,7 +581,7 @@ _MEDICAL_CONTRA_MAP = {
     "glaucoma":            {"glaucoma"},
     "cervical_spondylosis":{"neck_injury", "cervical_spondylosis", "serious_neck_injury"},
     "cervical_disc":       {"neck_injury", "cervical_spondylosis", "serious_neck_injury"},
-    "sciatica":            {"serious_back_injury"},
+    "sciatica":            {"serious_back_injury", "sciatica", "back_pain"},
     "herniated_disc":      {"herniated_disc", "serious_back_injury", "serious_spinal_injury"},
     "spinal_injury":       {"serious_spinal_injury", "spinal_injury"},
     "knee_injury":         {"knee_injury", "knee_replacement"},
@@ -591,6 +591,22 @@ _MEDICAL_CONTRA_MAP = {
     "osteoporosis":        {"serious_spinal_injury"},
     "post_cardiac":        {"heart_disease", "high_blood_pressure"},
     "heart_surgery_recovery": {"heart_disease", "high_blood_pressure"},
+    # ── Tokens the KB already used that no user input could reach ──
+    # These maps are the only route from what a user reports to what a pose says about
+    # itself, so a contraindication the maps never emit is data that cannot fire. Before
+    # this, "arthritis" was listed on 41 poses and excluded 1; hip and hamstring injuries
+    # were listed on 16 and 13 and excluded none. Only "rheumatoid_arthritis" was wired,
+    # so the far more common osteoarthritis got no protection at all.
+    # Substring matching means "arthritis" also catches "rheumatoid arthritis" and
+    # "osteoarthritis", which is intended.
+    "arthritis":           {"arthritis"},
+    "back_pain":           {"back_pain", "lower_back_pain", "serious_back_injury"},
+    "hip_injury":          {"hip_injury"},
+    "hip_replacement":     {"hip_injury"},
+    "hamstring_injury":    {"hamstring_injury"},
+    "groin_injury":        {"groin_injury"},
+    "asthma":              {"asthma"},
+    "migraine":            {"migraine"},
 }
 
 # ── Condition → risk mechanism ───────────────────────────────────────────────
@@ -631,9 +647,23 @@ _CONDITION_RISK_TAGS: dict[str, set[str]] = {
     "multiple_sclerosis":   {"fall_risk"},
     "neuropathy":           {"fall_risk"},
 
-    "osteoporosis":         {"spinal_flexion", "fall_risk"},
+    "osteoporosis":         {"spinal_flexion", "fall_risk", "spinal_extension"},
     "osteopenia":           {"spinal_flexion"},
-    "compression_fracture": {"spinal_flexion"},
+    "compression_fracture": {"spinal_flexion", "spinal_extension"},
+
+    # Spinal EXTENSION — backbending. The mechanism vocabulary covered flexion but
+    # not its opposite, so an entire movement class (18 poses) had no mechanism at
+    # all and could only be caught by a pose's hand-written contraindication list.
+    #
+    # Herniated disc is deliberately NOT mapped here. Extension is frequently the
+    # therapeutic direction for a posterior disc herniation, and excluding backbends
+    # for those users would be actively wrong — it is already covered by its own
+    # contraindication tokens where individual poses call for it. These four are the
+    # conditions where loading into extension is the recognised problem.
+    "spondylolisthesis":    {"spinal_extension"},
+    "spondylolysis":        {"spinal_extension"},
+    "spinal_stenosis":      {"spinal_extension"},
+    "facet":                {"spinal_extension"},
 
     "carpal_tunnel":        {"wrist_weight_bearing"},
     "wrist_injury":         {"wrist_weight_bearing"},
@@ -657,8 +687,8 @@ _INJURY_RISK_TAGS: dict[str, set[str]] = {
 _INJURY_CONTRA_MAP = {
     "bad_knee":        {"knee_injury", "knee_replacement"},
     "knee":            {"knee_injury", "knee_replacement"},
-    "lower_back":      {"lower_back_pain", "herniated_disc", "serious_back_injury"},
-    "back":            {"lower_back_pain", "herniated_disc", "serious_back_injury"},
+    "lower_back":      {"lower_back_pain", "back_pain", "herniated_disc", "serious_back_injury"},
+    "back":            {"lower_back_pain", "back_pain", "herniated_disc", "serious_back_injury"},
     "shoulder":        {"shoulder_injury", "rotator_cuff"},
     "neck":            {"neck_injury", "cervical_spondylosis", "serious_neck_injury"},
     "hypertension":    {"high_blood_pressure", "hypertension"},
@@ -668,6 +698,11 @@ _INJURY_CONTRA_MAP = {
     "ankle":           {"ankle_injury"},
     "groin":           {"groin_injury"},
     "wrist":           {"wrist_injury"},
+    # See the note in _MEDICAL_CONTRA_MAP: hip and hamstring were named on 29 poses
+    # between them and reachable from nothing a user could type.
+    "hip":             {"hip_injury"},
+    "hamstring":       {"hamstring_injury"},
+    "arthritis":       {"arthritis"},
 }
 
 # Current symptom → category boost
@@ -1693,6 +1728,38 @@ def build_yoga_day(sequence: dict, pranayama: list, yoga_prefs: dict,
     dharana_sec = int(dharana.get("duration_minutes", 0) * 60)
     total_secs  = asana_secs + prana_secs + sns_secs + dharana_sec
 
+    # `total_duration_minutes` is what the UI badge renders, so it reports the session
+    # that was BUILT, not the one that was asked for. It used to echo
+    # time_available_minutes straight back: a 60-minute beginner vinyasa request
+    # displayed "60 min" over 42 minutes of practice, which is the same defect as the
+    # original fixed-pose-count builder — the number on the card and the practice
+    # underneath it being different products — just moved into the label.
+    # The request is kept as `requested_duration_minutes` because week-on-week
+    # progression scales the *target*, and that has to stay legible.
+    requested_minutes = yoga_prefs.get("time_available_minutes", 30)
+    built_minutes = round(total_secs / 60)
+    shortfall = requested_minutes - built_minutes
+
+    # A gap this size is a real difference to the practitioner, not rounding. It happens
+    # when the safe pool at this level runs out before the budget does — most visibly a
+    # beginner asking for 60 minutes, where holds lengthen only up to _MAX_POSE_HOLD_SECONDS
+    # and then the session simply is what it is. Say so rather than quietly serving short.
+    duration_notice = None
+    if requested_minutes and abs(shortfall) / requested_minutes > 0.10:
+        if shortfall > 0:
+            duration_notice = (
+                f"This session runs about {built_minutes} minutes rather than the "
+                f"{requested_minutes} you asked for. At your level the poses that are safe "
+                f"for you do not fill that much time without holding each one longer than is "
+                f"useful. Practise it unhurried, or repeat the main sequence to fill the hour."
+            )
+        else:
+            duration_notice = (
+                f"This session runs about {built_minutes} minutes, a little over the "
+                f"{requested_minutes} you asked for, because the poses at your level are held "
+                f"longer. Drop the final poses of the main sequence if you are short on time."
+            )
+
     return {
         "surya_namaskar":    sns,
         "warmup":            warmup_fmt,
@@ -1700,7 +1767,9 @@ def build_yoga_day(sequence: dict, pranayama: list, yoga_prefs: dict,
         "cooldown":          cooldown_fmt,
         "pranayama_section": pranayama_section,
         "dharana_section":   dharana,
-        "total_duration_minutes":         yoga_prefs.get("time_available_minutes", 30),
+        "total_duration_minutes":         built_minutes,
+        "requested_duration_minutes":     requested_minutes,
+        "duration_notice":                duration_notice,
         "estimated_pose_time_minutes":    round(total_secs / 60, 1),
         "time_breakdown_minutes": {
             "surya_namaskar": round(sns_secs / 60, 1),

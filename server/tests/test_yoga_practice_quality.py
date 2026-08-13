@@ -75,6 +75,43 @@ def test_session_length_is_close_to_what_was_requested(minutes, experience):
             f"{minutes}min {experience} session estimated at {estimate}min")
 
 
+@pytest.mark.parametrize("minutes", [10, 15, 20, 30, 45, 60])
+@pytest.mark.parametrize("experience", ["beginner", "intermediate", "advanced"])
+def test_the_displayed_duration_is_the_session_that_was_built(minutes, experience):
+    """The badge used to render time_available_minutes echoed back, so a 60-minute
+    beginner vinyasa request displayed "60 min" over 42 minutes of practice."""
+    plan = full_plan(pr=prefs(time_available_minutes=minutes,
+                              yoga_experience=experience,
+                              yoga_style_preference=["vinyasa"]))
+    for session in sessions(plan):
+        # Within half a minute: the badge is whole minutes, the estimate one decimal.
+        assert abs(session["total_duration_minutes"]
+                   - session["estimated_pose_time_minutes"]) <= 0.5, (
+            f"badge says {session['total_duration_minutes']}min, "
+            f"session is {session['estimated_pose_time_minutes']}min")
+        assert session["requested_duration_minutes"] == minutes
+
+
+def test_a_session_that_cannot_fill_the_budget_says_so():
+    """A beginner asking for an hour gets ~42 minutes: the safe pool at that level
+    runs out before the budget does. Serving it silently is the dishonest part."""
+    plan = full_plan(pr=prefs(time_available_minutes=60, yoga_experience="beginner",
+                              yoga_style_preference=["vinyasa"]))
+    short = [s for s in sessions(plan)
+             if (60 - s["total_duration_minutes"]) / 60 > 0.10]
+    assert short, "fixture assumption broken: expected a short beginner hour"
+    for session in short:
+        assert session["duration_notice"], "short session carries no explanation"
+        assert str(session["total_duration_minutes"]) in session["duration_notice"]
+
+
+def test_a_session_that_matches_the_request_carries_no_notice():
+    plan = full_plan(pr=prefs(time_available_minutes=30, yoga_experience="intermediate"))
+    for session in sessions(plan):
+        if abs(30 - session["total_duration_minutes"]) / 30 <= 0.10:
+            assert session["duration_notice"] is None
+
+
 def test_time_estimate_covers_every_timed_block():
     """The estimate excluded Surya Namaskar and Dharana, so it did not even
     match the session's own content."""
@@ -344,7 +381,9 @@ def _week_two(feedback):
 
 
 def _session_minutes(plan):
-    return plan["four_week_plan"][0]["days"][0]["session"]["total_duration_minutes"]
+    # The progression levers scale the session *target*; total_duration_minutes now
+    # reports what was actually built, which the pool can hold short of the target.
+    return plan["four_week_plan"][0]["days"][0]["session"]["requested_duration_minutes"]
 
 
 def test_too_hard_makes_the_next_week_easier():

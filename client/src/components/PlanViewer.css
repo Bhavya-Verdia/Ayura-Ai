@@ -1729,6 +1729,36 @@
   color: var(--plan-amber);
 }
 
+/* ── Honesty notices ──
+   Why a plan is narrower than usual (pool heavily filtered by conditions), and why
+   a session runs shorter or longer than the duration that was asked for. Same
+   neutral surface as the seasonal note — these are context, not warnings, and must
+   not read with the urgency of .yoga-medical-banner. */
+.yoga-pool-notice,
+.yoga-duration-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding: 0.55rem 0.85rem;
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  color: var(--ayura-text-secondary);
+  line-height: 1.55;
+}
+.yoga-duration-notice {
+  margin-bottom: 0.6rem;
+}
+.yoga-pool-notice svg,
+.yoga-duration-notice svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  /* Lavender, not amber: amber is the seasonal/caution accent, and these are
+     informational. Both themes define it with the contrast floor already checked. */
+  color: var(--plan-lavender);
+}
+
 .yoga-motivational {
   background: color-mix(in srgb, var(--plan-violet) 8%, var(--ayura-card-bg) 92%);
   border: 1.5px solid color-mix(in srgb, var(--plan-violet) 25%, transparent);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import {
-  Sun, Leaf, AlertTriangle, Droplets, ShieldCheck, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain, Play,
+  Sun, Leaf, AlertTriangle, Droplets, ShieldCheck, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain, Play, Info,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { PoseFigure } from './PoseFigure'
@@ -221,6 +221,15 @@ export function YogaView({ plan: planProp }) {
         </div>
       )}
 
+      {/* Why this plan is narrower than usual — the engine has written this for a
+          heavily filtered pool since the safety pass, and nothing rendered it. */}
+      {plan.practice_pool_notice && (
+        <div className="yoga-pool-notice">
+          <Info size={12} />
+          <span>{plan.practice_pool_notice}</span>
+        </div>
+      )}
+
       {/* ── Vitals bar ── */}
       <div className="yoga-vitals">
         {goalLabel && (
@@ -427,6 +436,15 @@ export function YogaView({ plan: planProp }) {
                 </div>
               ) : (
                 <>
+                  {/* The badge now reports the session that was built, so when that is
+                      materially short of the request, say why instead of leaving the
+                      practitioner to notice the gap themselves. */}
+                  {session.duration_notice && (
+                    <div className="yoga-duration-notice">
+                      <Info size={12} />
+                      <span>{session.duration_notice}</span>
+                    </div>
+                  )}
                   <button
                     type="button"
                     className="yoga-practice-btn"

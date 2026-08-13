@@ -196,3 +196,123 @@ async def test_gym_fallback_failsafe_on_llm_error():
     with patch("services.gym_condition_fallback.llm_client") as m:
         m.generate = AsyncMock(side_effect=RuntimeError("down"))
         assert await f.gym_avoid_tags_for_conditions(["some rare disease"]) == set()
+
+
+# ── Contraindication tokens the KB uses must be reachable from user input ────
+#
+# The two condition→tag maps are the only route from what a user reports to what a
+# pose says about itself. A token the maps never emit is safety data that cannot
+# fire, and nothing detects it: the KB looks complete, the filter looks correct,
+# and the pose is served anyway. Measured before this was fixed — "arthritis" was
+# named on 41 poses and excluded 1; hip and hamstring injuries were named on 29
+# poses between them and excluded none.
+
+_YOGA_BASE_PROFILE = {
+    "id": "safety-user", "age": 32, "gender": "female",
+    "dominant_dosha": "vata", "vikriti_dominant": "vata",
+    "medical_history": [], "injuries_or_limitations": [],
+    "current_symptoms": [], "stress_level": "moderate", "sleep_quality": "good",
+    "agni_type": "sama", "ojas_level": "moderate", "bmi_category": "normal",
+    "current_season": "grishma",
+}
+_YOGA_BASE_PREFS = {
+    "yoga_experience": "intermediate", "yoga_goal": "stress_relief",
+    "time_available_minutes": 30, "time_of_day_preference": "morning",
+    "yoga_style_preference": ["hatha"],
+}
+
+
+def _yoga_pool(**profile_overrides):
+    from services.yoga_plan_engine import filter_poses, yoga_poses
+    return filter_poses({**_YOGA_BASE_PROFILE, **profile_overrides},
+                        _YOGA_BASE_PREFS, yoga_poses)
+
+
+def test_every_kb_contraindication_token_is_reachable():
+    """Pregnancy is the deliberate exception: it runs through the trimester pools
+    (_TRIMESTER_*), not the contraindication maps."""
+    from services.yoga_plan_engine import (
+        yoga_poses, _MEDICAL_CONTRA_MAP, _INJURY_CONTRA_MAP,
+    )
+    kb_tokens = set()
+    for pose in yoga_poses:
+        kb_tokens |= set(pose.get("contraindications") or [])
+        kb_tokens |= set(pose.get("medical_conditions_contraindicated") or [])
+
+    emitted = set()
+    for mapping in (_MEDICAL_CONTRA_MAP, _INJURY_CONTRA_MAP):
+        for tags in mapping.values():
+            emitted |= set(tags)
+
+    unreachable = kb_tokens - emitted - {"pregnancy", "pregnancy_third_trimester"}
+    assert not unreachable, (
+        f"KB contraindications no user input can trigger: {sorted(unreachable)}")
+
+
+@pytest.mark.parametrize("field,value,token", [
+    ("medical_history", "arthritis", "arthritis"),
+    ("medical_history", "osteoarthritis", "arthritis"),
+    ("medical_history", "rheumatoid arthritis", "arthritis"),
+    ("medical_history", "back_pain", "back_pain"),
+    ("medical_history", "sciatica", "sciatica"),
+    ("medical_history", "asthma", "asthma"),
+    ("injuries_or_limitations", "hip injury", "hip_injury"),
+    ("injuries_or_limitations", "hamstring injury", "hamstring_injury"),
+    ("injuries_or_limitations", "lower back pain", "back_pain"),
+])
+def test_reported_condition_removes_the_poses_that_name_it(field, value, token):
+    from services.yoga_plan_engine import yoga_poses
+
+    listed = [p for p in yoga_poses
+              if token in set(p.get("contraindications") or [])
+              | set(p.get("medical_conditions_contraindicated") or [])]
+    assert listed, f"fixture assumption broken: no pose lists {token}"
+
+    survivors = [p["sanskrit_name"] for p in _yoga_pool(**{field: [value]})
+                 if token in set(p.get("contraindications") or [])
+                 | set(p.get("medical_conditions_contraindicated") or [])]
+    assert not survivors, f"{value!r} left {len(survivors)} {token} poses in: {survivors[:5]}"
+
+
+def test_filtering_never_leaves_the_practitioner_with_nothing():
+    """The pool backfill relaxes style and goal preference when conditions thin the
+    pool — it must never relax a contraindication to do it."""
+    for field, value in [("medical_history", "arthritis"),
+                         ("medical_history", "back_pain"),
+                         ("medical_history", "herniated_disc"),
+                         ("injuries_or_limitations", "hip injury")]:
+        pool = _yoga_pool(**{field: [value]})
+        assert len(pool) >= 12, f"{value}: pool collapsed to {len(pool)}"
+
+
+# ── Spinal extension ─────────────────────────────────────────────────────────
+# The mechanism vocabulary covered spinal_flexion but not its opposite, so 18
+# backbending poses carried no mechanism at all and could only be excluded by
+# their hand-written contraindication lists.
+
+def test_backbends_carry_the_extension_mechanism():
+    from services.yoga_plan_engine import yoga_poses
+    untagged = [p["sanskrit_name"] for p in yoga_poses
+                if p["category"] == "backbend"
+                and "spinal_extension" not in (p.get("risk_tags") or [])]
+    assert not untagged, f"backbends with no extension mechanism: {untagged}"
+
+
+@pytest.mark.parametrize("condition", [
+    "spondylolisthesis", "spinal_stenosis", "facet_arthropathy", "osteoporosis",
+])
+def test_extension_conditions_exclude_every_backbend(condition):
+    survivors = [p["sanskrit_name"] for p in _yoga_pool(medical_history=[condition])
+                 if "spinal_extension" in (p.get("risk_tags") or [])]
+    assert not survivors, f"{condition} left backbends in: {survivors}"
+
+
+def test_a_herniated_disc_does_not_lose_every_backbend():
+    """Extension is frequently the therapeutic direction for a posterior disc
+    herniation. Mapping herniated_disc onto spinal_extension would be a plausible
+    tidy-up and a clinically wrong one, so it is asserted against."""
+    from services.yoga_plan_engine import _CONDITION_RISK_TAGS
+    assert "spinal_extension" not in _CONDITION_RISK_TAGS.get("herniated_disc", set())
+    kept = [p for p in _yoga_pool(medical_history=["herniated_disc"])
+            if "spinal_extension" in (p.get("risk_tags") or [])]
+    assert kept, "herniated disc should retain the gentle backbends"

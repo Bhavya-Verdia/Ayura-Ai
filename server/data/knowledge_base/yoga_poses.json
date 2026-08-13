@@ -57,7 +57,8 @@
     ],
     "bilateral": false,
     "risk_tags": [
-      "abdominal_pressure"
+      "abdominal_pressure",
+      "spinal_extension"
     ]
   },
   {
@@ -131,7 +132,8 @@
     "risk_tags": [
       "neck_load",
       "seizure_risk",
-      "wrist_weight_bearing"
+      "wrist_weight_bearing",
+      "spinal_extension"
     ]
   },
   {
@@ -201,7 +203,9 @@
       "back_pain"
     ],
     "bilateral": false,
-    "risk_tags": []
+    "risk_tags": [
+      "spinal_extension"
+    ]
   },
   {
     "id": "cow",
@@ -258,7 +262,8 @@
     "bilateral": false,
     "risk_tags": [
       "neck_load",
-      "wrist_weight_bearing"
+      "wrist_weight_bearing",
+      "spinal_extension"
     ]
   },
   {
@@ -330,7 +335,8 @@
     ],
     "bilateral": false,
     "risk_tags": [
-      "neck_load"
+      "neck_load",
+      "spinal_extension"
     ]
   },
   {
@@ -396,7 +402,9 @@
       "sciatica"
     ],
     "bilateral": false,
-    "risk_tags": []
+    "risk_tags": [
+      "spinal_extension"
+    ]
   },
   {
     "id": "full_pigeon",
@@ -471,7 +479,8 @@
     "bilateral": false,
     "risk_tags": [
       "neck_load",
-      "seizure_risk"
+      "seizure_risk",
+      "spinal_extension"
     ]
   },
   {
@@ -530,7 +539,9 @@
       "back_pain"
     ],
     "bilateral": true,
-    "risk_tags": []
+    "risk_tags": [
+      "spinal_extension"
+    ]
   },
   {
     "id": "snake_pose",
@@ -594,7 +605,9 @@
       "sciatica"
     ],
     "bilateral": false,
-    "risk_tags": []
+    "risk_tags": [
+      "spinal_extension"
+    ]
   },
   {
     "id": "sphinx",
@@ -656,7 +669,9 @@
       "back_pain"
     ],
     "bilateral": false,
-    "risk_tags": []
+    "risk_tags": [
+      "spinal_extension"
+    ]
   },
   {
     "id": "tiger_pose",
@@ -722,7 +737,8 @@
     ],
     "bilateral": true,
     "risk_tags": [
-      "wrist_weight_bearing"
+      "wrist_weight_bearing",
+      "spinal_extension"
     ]
   },
   {
@@ -800,7 +816,8 @@
     "bilateral": false,
     "risk_tags": [
       "abdominal_pressure",
-      "wrist_weight_bearing"
+      "wrist_weight_bearing",
+      "spinal_extension"
     ]
   },
   {
@@ -889,7 +906,8 @@
     "bilateral": false,
     "risk_tags": [
       "neck_load",
-      "wrist_weight_bearing"
+      "wrist_weight_bearing",
+      "spinal_extension"
     ]
   },
   {
@@ -965,7 +983,8 @@
     "risk_tags": [
       "neck_load",
       "seizure_risk",
-      "wrist_weight_bearing"
+      "wrist_weight_bearing",
+      "spinal_extension"
     ]
   },
   {
@@ -1049,7 +1068,8 @@
     "bilateral": true,
     "risk_tags": [
       "neck_load",
-      "wrist_weight_bearing"
+      "wrist_weight_bearing",
+      "spinal_extension"
     ]
   },
   {
@@ -3369,7 +3389,8 @@
     "bilateral": false,
     "risk_tags": [
       "neck_load",
-      "wrist_weight_bearing"
+      "wrist_weight_bearing",
+      "spinal_extension"
     ]
   },
   {
@@ -3508,7 +3529,8 @@
     "medical_conditions_contraindicated": [],
     "bilateral": false,
     "risk_tags": [
-      "abdominal_pressure"
+      "abdominal_pressure",
+      "spinal_extension"
     ]
   },
   {
@@ -6010,7 +6032,8 @@
     "medical_conditions_contraindicated": [],
     "bilateral": true,
     "risk_tags": [
-      "neck_load"
+      "neck_load",
+      "spinal_extension"
     ]
   },
   {
