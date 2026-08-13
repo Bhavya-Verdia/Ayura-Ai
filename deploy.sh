@@ -55,10 +55,32 @@ echo "▶ Restarting services..."
 # containers running and the new build un-applied. Deterministically stop+remove
 # the three app services first, then a plain `up -d` recreates them fresh from the
 # new images: no --force-recreate, no race. Retried once in case teardown is slow.
+#
+# The two halves are separated by `;`, not `&&`, and removal is best-effort. Joined
+# by `&&` a failed removal skipped the bring-up entirely — and removal is exactly
+# what loses this race. On 2026-08-14 `rm -fs` hit "removal already in progress",
+# exited non-zero, `up -d` never ran, and production sat with api, web and worker
+# removed until it was recreated by hand. Note the failure mode inverted: the
+# comment above describes the old containers being left RUNNING, which is benign.
+# This left nothing running at all.
+#
+# Failing to remove a container is survivable. Failing to start one is an outage,
+# so bring-up must not be conditional on anything.
 _recreate() {
-  ssh "$SERVER" "cd $REMOTE_DIR && docker compose rm -fs api web worker && docker compose up -d --remove-orphans api web worker"
+  ssh "$SERVER" "cd $REMOTE_DIR && { docker compose rm -fs api web worker || true; } ; docker compose up -d --remove-orphans api web worker"
 }
-_recreate || { echo "⚠️  restart raced — settling 6s and retrying once..."; sleep 6; _recreate; }
+# `if ! cmd` rather than `cmd || { ... }`: under `set -e` a failing command on the
+# right of `||` still aborts the script, so the recovery hint below would never have
+# printed on the one path that needs it.
+if ! _recreate; then
+  echo "⚠️  restart raced — settling 6s and retrying once..."
+  sleep 6
+  if ! _recreate; then
+    echo "❌ Containers did not come up. The site is DOWN. Recover with:"
+    echo "   ssh $SERVER 'cd $REMOTE_DIR && docker compose up -d --remove-orphans api web worker'"
+    exit 1
+  fi
+fi
 
 # ── 3. Health check ──────────────────────────────────────────────────────────
 echo "▶ Waiting for API to come up..."
