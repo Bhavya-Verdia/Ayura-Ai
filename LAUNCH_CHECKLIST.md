@@ -14,7 +14,24 @@ production infra.
 - ⚠️ **ARQ worker process running** (`arq worker.WorkerSettings`) — reminders + background plans depend on it. Confirm it's deployed and the cron `dispatch_due_reminders` ticks.
 - ⚠️ **ChromaDB** reachable (or embedded path persisted) — RAG enrichment + citations context.
 - ⚠️ **LLM keys** (`AZURE_OPENAI_API_KEY` / `GEMINI_API_KEY`) valid in prod — diet, dosha narrative, seasonal, meditation, chat, interaction explanations.
-- ⚠️ **Email service** configured — verification emails + reminder/notification email delivery (`email_notifications` pref respected).
+- ⚠️ **Email service — outbound is very likely BROKEN (found 2026-08-14).** Sending goes
+  through Resend (`smtp.resend.com`) as `noreply@ayuraai.in`. Resend needs three DNS
+  records to verify a domain; only one is correct:
+  - `send.ayuraai.in` MX → `feedback-smtp.ap-northeast-1.amazonses.com` ✅
+  - `send.ayuraai.in` TXT → literally `"v=spf1 include[...]nses.com ~all"` ❌ — `include[...]nses.com`
+    is not valid SPF syntax, it is a truncated copy-paste. Should be `include:amazonses.com`.
+  - `resend._domainkey` TXT (DKIM) → **absent**, confirmed against the authoritative NS ❌
+
+  An unverified domain means Resend refuses sends from it, so **signup verification and
+  password reset mail may never leave**. Fix the SPF string, add the DKIM record from the
+  Resend dashboard, then test a real signup end to end. (A local resolver returned a phantom
+  DKIM record on first query — verify with `dig @1.1.1.1` or against `solar.dns-parking.com`,
+  not the default resolver.)
+- ⚠️ **DNS is served by Hostinger on a 30-day trial.** `ayuraai.in` resolves via
+  `solar/lunar.dns-parking.com`. The droplet is paid for separately, so if the trial lapses
+  the server keeps running and the domain simply stops resolving — the site goes dark with
+  nothing wrong on the host. Confirm whether the domain *registration* is also on the trial;
+  moving DNS to a free permanent provider removes the dependency.
 - ⚠️ `APP_ENV=production` set → confirms `validate_production_secrets()` passes (non-default `SECRET_KEY`, `JWT_SECRET_KEY`, `ADMIN_TOKEN`; `COOKIE_SECURE` + `SAMESITE=strict` auto-forced).
 - ✅ App boots cleanly with all routes mounted (95 routes; both LLM clients init).
 - ✅ DB index creation is migration-safe (partial OAuth-id indexes; drops legacy sparse).
