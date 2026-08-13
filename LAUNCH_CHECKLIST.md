@@ -14,19 +14,22 @@ production infra.
 - ⚠️ **ARQ worker process running** (`arq worker.WorkerSettings`) — reminders + background plans depend on it. Confirm it's deployed and the cron `dispatch_due_reminders` ticks.
 - ⚠️ **ChromaDB** reachable (or embedded path persisted) — RAG enrichment + citations context.
 - ⚠️ **LLM keys** (`AZURE_OPENAI_API_KEY` / `GEMINI_API_KEY`) valid in prod — diet, dosha narrative, seasonal, meditation, chat, interaction explanations.
-- ⚠️ **Email service — outbound is very likely BROKEN (found 2026-08-14).** Sending goes
-  through Resend (`smtp.resend.com`) as `noreply@ayuraai.in`. Resend needs three DNS
-  records to verify a domain; only one is correct:
-  - `send.ayuraai.in` MX → `feedback-smtp.ap-northeast-1.amazonses.com` ✅
-  - `send.ayuraai.in` TXT → literally `"v=spf1 include[...]nses.com ~all"` ❌ — `include[...]nses.com`
-    is not valid SPF syntax, it is a truncated copy-paste. Should be `include:amazonses.com`.
-  - `resend._domainkey` TXT (DKIM) → **absent**, confirmed against the authoritative NS ❌
-
-  An unverified domain means Resend refuses sends from it, so **signup verification and
-  password reset mail may never leave**. Fix the SPF string, add the DKIM record from the
-  Resend dashboard, then test a real signup end to end. (A local resolver returned a phantom
-  DKIM record on first query — verify with `dig @1.1.1.1` or against `solar.dns-parking.com`,
-  not the default resolver.)
+- ✅ **Email service — sending DNS repaired 2026-08-14.** Outbound goes through Resend
+  (`smtp.resend.com`) as `noreply@ayuraai.in`, which needs three records. Two were broken:
+  the SPF on `send.ayuraai.in` read literally `"v=spf1 include[...]nses.com ~all"` (a
+  truncated paste, verified at byte level with `od -c`, not a display artifact), and the
+  DKIM at `resend._domainkey` was absent. Both now correct and consistent across five
+  resolvers including both authoritative servers: DKIM 218 chars, SPF
+  `v=spf1 include:amazonses.com ~all`, MX unchanged.
+  - ☐ **Still untested: an actual signup email.** DNS being right is necessary, not
+    sufficient. Sign up with a throwaway address and confirm the verification mail arrives.
+  - **Resend's "verified" badge is a historical check, not live DNS** — it showed all three
+    green while two were broken. Never accept it as evidence; query DNS.
+  - **Hostinger's email tooling rewrites mail DNS.** Enabling its DKIM removed Resend's
+    record the same day. Re-check both records after any hPanel email change.
+  - Hostinger DNS is fronted by Cloudflare anycast (`172.64.x`), so a fresh record appears
+    on some edge nodes before others — the same nameserver IP answered MISSING and present
+    on consecutive queries for ~7 minutes. Sample repeatedly before concluding anything.
 - ⚠️ **DNS is served by Hostinger on a 30-day trial.** `ayuraai.in` resolves via
   `solar/lunar.dns-parking.com`. The droplet is paid for separately, so if the trial lapses
   the server keeps running and the domain simply stops resolving — the site goes dark with
