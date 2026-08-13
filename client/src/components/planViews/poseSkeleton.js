@@ -2,49 +2,75 @@
  * Pose figures drawn from joint coordinates.
  *
  * A pose carries a `figure`: a handful of named joints in a 0-100 box, ground at
- * y=92. One renderer turns those into limbs, so every pose is drawn with the same
- * proportions, stroke weights and ground line — 113 poses look like one system
- * rather than 113 separate drawings. Authoring a pose means placing points, not
- * writing path syntax.
+ * y=92. One renderer turns those into a body, so every pose is drawn with the
+ * same proportions and ground line — 113 poses look like one system rather than
+ * 113 separate drawings. Authoring a pose means placing points, not writing path
+ * syntax, and a bilateral pose is drawn for its second side by flipping x, so 45
+ * bilateral poses need no second figure.
  *
- * The alternative was one hand-written SVG path per pose, which drifts in style
- * immediately and cannot be mirrored. Coordinates can: a bilateral pose is drawn
- * for the second side by flipping x, so 45 bilateral poses need no second figure.
+ * Drawn as a FILLED body, not a wire frame. The first version stroked the bones
+ * at uniform width and read as a stick figure — accurate and cheap-looking. Each
+ * bone is now a quad that tapers from the proximal joint to the distal one, with
+ * a disc at each joint to round the articulation; overlapping shapes in one fill
+ * colour merge into a silhouette, so no path union is needed.
+ *
+ * Its ceiling is a competent schematic. Front-facing poses in particular still
+ * read as a constructed figure, because they are one. This is the fallback layer
+ * for poses that have no commissioned artwork — not a substitute for it.
  *
  * Joints are all optional. A pose lying on its side needs no separate left and
- * right limbs, and omitting them draws a cleaner figure than stacking two lines a
- * pixel apart.
+ * right limbs, and omitting them draws a cleaner figure than stacking two shapes
+ * a pixel apart.
  */
 
 export const GROUND_Y = 92
-export const HEAD_R = 5.5
 
-// neck → pelvis, bending through spine if the pose gives one. Cat and Cow are the
-// same skeleton apart from which way the spine curves, so a straight two-point
-// spine cannot tell them apart — and 18 backbends have the same problem.
-function spinePath({ neck, pelvis, spine }) {
-  if (!neck || !pelvis) return null
-  if (!spine) return `M${neck[0]} ${neck[1]} L${pelvis[0]} ${pelvis[1]}`
-  // Quadratic control point placed so the curve passes through the given midpoint.
-  const cx = 2 * spine[0] - (neck[0] + pelvis[0]) / 2
-  const cy = 2 * spine[1] - (neck[1] + pelvis[1]) / 2
-  return `M${neck[0]} ${neck[1]} Q${cx} ${cy} ${pelvis[0]} ${pelvis[1]}`
+// Limb widths, proximal → distal. Hands and feet are deliberately narrow: at
+// forearm width they pool into a blob wherever two of them meet, which is every
+// prayer position.
+const W = {
+  torso: 11, hip: 8.5, neck: 5.2,
+  upperArm: 4.6, foreArm: 3.4, hand: 2.0,
+  thigh: 6.4, calf: 4.6, foot: 2.6,
+}
+const HEAD_R = 6.4
+
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1]]
+const norm = (v) => {
+  const l = Math.hypot(v[0], v[1]) || 1
+  return [v[0] / l, v[1] / l]
 }
 
-function limbPath(a, b, c) {
-  if (!a || !b || !c) return null
-  return `M${a[0]} ${a[1]} L${b[0]} ${b[1]} L${c[0]} ${c[1]}`
+function bone(a, b, wa, wb) {
+  if (!a || !b) return ''
+  const d = norm(sub(b, a))
+  const n = [-d[1], d[0]]
+  const edge = (pt, w, side) =>
+    `${pt[0] + n[0] * w * side / 2} ${pt[1] + n[1] * w * side / 2}`
+  return `M${edge(a, wa, 1)} L${edge(b, wb, 1)} L${edge(b, wb, -1)} L${edge(a, wa, -1)} Z`
 }
 
-function segmentPath(a, b) {
-  if (!a || !b) return null
-  return `M${a[0]} ${a[1]} L${b[0]} ${b[1]}`
+function disc(c, r) {
+  if (!c) return ''
+  return `M${c[0] - r} ${c[1]} a${r} ${r} 0 1 0 ${r * 2} 0 a${r} ${r} 0 1 0 ${-r * 2} 0 Z`
+}
+
+function chain(points, widths) {
+  let d = ''
+  for (let i = 0; i < points.length - 1; i++) {
+    if (!points[i] || !points[i + 1]) continue
+    d += bone(points[i], points[i + 1], widths[i], widths[i + 1])
+    d += disc(points[i], widths[i] / 2)
+  }
+  const last = points[points.length - 1]
+  if (last) d += disc(last, widths[widths.length - 1] / 2)
+  return d
 }
 
 /**
  * @param {object} figure  joint map from the KB
  * @param {boolean} mirror flip horizontally (the second side of a bilateral pose)
- * @returns {{head: {cx,cy,r}, strokes: string[]}|null}
+ * @returns {{d: string}|null} one filled path
  */
 export function buildPoseFigure(figure, mirror = false) {
   if (!figure || !figure.head) return null
@@ -54,34 +80,44 @@ export function buildPoseFigure(figure, mirror = false) {
         ([k, v]) => [k, Array.isArray(v) ? [100 - v[0], v[1]] : v]))
     : figure
 
-  // Arms are drawn lighter than the spine and legs. Viewed side on, an arm and a
-  // leg leaving the same point at similar angles are indistinguishable at equal
-  // weight — the lunge and the forward fold both read as a tangle of sticks. The
-  // weight difference is also how anatomical line drawings carry limb depth.
-  const strokes = [
-    { kind: 'trunk', d: spinePath(f) },
-    // Shoulder and hip lines give the torso width. Skipped on side-on poses,
-    // where the two sides sit on top of each other and the line is noise.
-    { kind: 'trunk', d: segmentPath(f.shoulderL, f.shoulderR) },
-    { kind: 'trunk', d: segmentPath(f.hipL, f.hipR) },
-    { kind: 'arm', d: limbPath(f.shoulderL, f.elbowL, f.wristL) },
-    { kind: 'arm', d: limbPath(f.shoulderR, f.elbowR, f.wristR) },
-    { kind: 'leg', d: limbPath(f.hipL, f.kneeL, f.ankleL) },
-    { kind: 'leg', d: limbPath(f.hipR, f.kneeR, f.ankleR) },
-    // A side-on pose gives a single unsuffixed arm and leg, hung off the spine
-    // ends so the limb is not left floating unattached. Drawn whenever present,
-    // NOT only when the L/R pair is absent: an asymmetric pose legitimately mixes
-    // the two — the lunge and the pyramid describe their back leg as hipL/kneeL/
-    // ankleL and their front leg bare. Gating on the pair silently dropped that
-    // front leg, and both poses rendered a limb short.
-    { kind: 'arm', d: limbPath(f.neck, f.elbow, f.wrist) },
-    { kind: 'leg', d: limbPath(f.pelvis, f.knee, f.ankle) },
-  ].filter(s => s.d)
+  let d = ''
 
-  return {
-    head: { cx: f.head[0], cy: f.head[1], r: HEAD_R },
-    strokes,
+  // Torso: a quad when the pose carries shoulder and hip width, otherwise a
+  // tapered bone along the spine — bent through `spine` so Cat and Cow keep the
+  // curve that is the only thing telling them apart.
+  if (f.shoulderL && f.shoulderR && f.hipL && f.hipR) {
+    // Widened away from the spine axis: the joints are centres, so a quad drawn
+    // straight through them is barely one head across and reads as spindly.
+    const widen = (a, b, by) => {
+      const dir = norm(sub(b, a))
+      return [[a[0] - dir[0] * by, a[1] - dir[1] * by],
+              [b[0] + dir[0] * by, b[1] + dir[1] * by]]
+    }
+    const [sL, sR] = widen(f.shoulderL, f.shoulderR, 2.2)
+    const [hL, hR] = widen(f.hipL, f.hipR, 1.2)
+    const pt = (v) => `${v[0]} ${v[1]}`
+    d += `M${pt(sL)} L${pt(sR)} L${pt(hR)} L${pt(hL)} Z`
+  } else if (f.spine) {
+    d += chain([f.neck, f.spine, f.pelvis], [W.neck + 3, W.torso, W.hip])
+  } else {
+    d += chain([f.neck, f.pelvis], [W.neck + 3, W.hip])
   }
+
+  d += chain([f.head, f.neck], [HEAD_R * 1.1, W.neck])
+  d += disc(f.head, HEAD_R)
+
+  d += chain([f.shoulderL, f.elbowL, f.wristL], [W.upperArm, W.foreArm, W.hand])
+  d += chain([f.shoulderR, f.elbowR, f.wristR], [W.upperArm, W.foreArm, W.hand])
+  d += chain([f.hipL, f.kneeL, f.ankleL], [W.thigh, W.calf, W.foot])
+  d += chain([f.hipR, f.kneeR, f.ankleR], [W.thigh, W.calf, W.foot])
+  // The unsuffixed limbs hang off the spine ends. Drawn whenever present, NOT
+  // only when the L/R pair is absent: an asymmetric pose legitimately mixes the
+  // two — the lunge and the pyramid describe their back leg as hipL/kneeL/ankleL
+  // and their front leg bare, and gating on the pair rendered them a leg short.
+  d += chain([f.neck, f.elbow, f.wrist], [W.upperArm, W.foreArm, W.hand])
+  d += chain([f.pelvis, f.knee, f.ankle], [W.thigh, W.calf, W.foot])
+
+  return { d }
 }
 
 export default buildPoseFigure

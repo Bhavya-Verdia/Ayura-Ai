@@ -61,11 +61,9 @@ function PoseSkeleton({ figure, name, mirror }) {
     <div className="pose-figure-fallback pose-figure-skeleton" role="img" aria-label={name}>
       <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
         <line className="pose-figure-ground" x1="8" y1={GROUND_Y} x2="92" y2={GROUND_Y} />
-        {built.strokes.map((s, i) => (
-          <path key={i} className={`pose-figure-${s.kind}`} d={s.d} />
-        ))}
-        <circle className="pose-figure-head"
-                cx={built.head.cx} cy={built.head.cy} r={built.head.r} />
+        {/* One path: overlapping filled shapes in a single colour merge visually,
+            so the body needs no union and no per-limb elements. */}
+        <path className="pose-figure-silhouette" d={built.d} />
       </svg>
     </div>
   )
