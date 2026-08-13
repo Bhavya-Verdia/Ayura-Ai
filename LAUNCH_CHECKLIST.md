@@ -2,7 +2,7 @@
 
 Status legend: ☐ todo · ✅ verified this session · ⚠️ needs your action / environment
 
-Generated 2026-06-26, revised 2026-08-04. "verified this session" = exercised against a
+Generated 2026-06-26, revised 2026-08-13. "verified this session" = exercised against a
 live local stack (local MongoDB + backend + Playwright). It does **not** mean verified on
 production infra.
 
@@ -53,6 +53,10 @@ Assessment & plans
 - ☐ Clarify follow-up flow triggers on low-confidence/contradiction (fixed wiring — verify in UI).
 - ☐ Generate each plan (gym/yoga/diet/routine/panchakarma/remedies/medicines) after setting preferences; confirm content + "Classical basis" footer renders.
 - ☐ Holistic `/plans/generate` job polling (needs worker/Redis).
+- ☐ **Yoga end-to-end on production** (shipped 2026-08-13, `031cfaa`): guided practice
+  player runs a full session, bilateral poses announce both sides, week feedback generates
+  week 2 with an explained adjustment, completion writes a timeline event. Covered by
+  Playwright against stubbed routes; **not yet walked against prod**.
 
 Supporting features
 - ✅ Timeline endpoint returns events (was missing entirely — built).
@@ -71,18 +75,35 @@ Supporting features
 - ☐ Validate disease→dosha mappings + sample generated plans for 5–10 representative profiles.
 - ☐ Confirm pregnancy/nursing gating excludes contraindicated medicines/poses/therapies.
 - ☐ Confirm disclaimers appear on every plan + remedy + the PDF.
+- ☐ **New surface as of 2026-08-12, live since 2026-08-13** — the yoga overhaul widened what
+  needs review: 113 rewritten pose entries (instructions, benefits, Ayurvedic rationale),
+  the `risk_tags` mechanism assignments on 70 of them, the raising of Headstand/Shoulderstand/
+  Plow to `advanced`, and the new per-trimester pregnancy pools (T1 44 / T2 38 / T3 22 poses).
+  None of it practitioner-reviewed. Unspecified pregnancy status is treated as third
+  trimester, which is the safe reading but is itself a clinical judgement.
 
 ## 5. Observability & ops
-- ⚠️ **Sentry DSN NOT set** — integration is wired in `client/src/main.jsx`, `server/main.py`
-  and `worker.py`, all correctly gated on a DSN, but no `SENTRY_DSN` / `VITE_SENTRY_DSN`
-  exists in `.env`. **Production errors are currently reported nowhere.** Add both keys
-  (see `.env.example`) and rebuild the web image — VITE_* vars bake at build time.
-- ⚠️ **PostHog key NOT set** — analytics wired 2026-08-04 (`client/src/lib/analytics.js`),
-  inert until `VITE_POSTHOG_KEY` is set. Confirm the host region matches the project
-  (`eu.` vs `us.`) or events are silently dropped. Rebuild the web image after setting.
+- ✅ **Sentry live (set + deployed + verified 2026-08-11).** `SENTRY_DSN` (Python, shared by
+  api + worker) and `VITE_SENTRY_DSN` (a separate React project — Sentry projects are
+  per-platform, one DSN each) are in the root `.env`. Org is on the **EU/DE** region
+  (`ingest.de.sentry.io`). Confirmed present in the served bundle 2026-08-13.
+- ✅ **PostHog live (same date).** `VITE_POSTHOG_KEY` + `VITE_POSTHOG_HOST`, EU region —
+  proven rather than assumed by POSTing the key to `{eu,us}.i.posthog.com/decide/?v=3`
+  (EU 200, US 401). That probe reads config and writes no event, so it is the safe way to
+  settle a region question; a mismatch drops every event **silently**, with nothing logged.
+- ⚠️ **Local dev pollutes both projects unless you stop it.** Vite's `envDir` is the repo
+  root, so `npm run dev` and every Playwright run load the production keys. A gitignored
+  root `.env.local` now blanks `VITE_SENTRY_DSN` and sets the CI stub `VITE_POSTHOG_KEY`
+  (blank breaks the funnel specs — they need the SDK switched on). `deploy.sh` excludes it
+  from the rsync. **If you clone fresh, recreate it before running the app locally.**
 - ✅ `/api/health` + `/api/ready` live and green on production (mongodb + chromadb connected).
 - ☐ Structured logs shipping; metrics endpoint (`/api/health/metrics`, admin-gated) reachable.
 - ☐ Backups configured on Atlas.
+- ☐ **RAG corpus is rebuilt after any KB edit.** `build_vectors.py` now reads the real
+  113-pose `yoga_poses.json` (was: the 10-entry legacy `yoga_plans.json`, so the yoga
+  enricher's semantic context described poses the engine no longer served — see
+  `tests/test_vector_docs.py`). Production ChromaDB still holds the pre-2026-08-13 corpus
+  until the seeder is re-run against it.
 
 ## 6. Legal & compliance (revised 2026-08-04)
 - ✅ Privacy Policy rewritten for the DPDP Act 2023 + IT Rules 2021: grievance officer
@@ -100,6 +121,14 @@ Supporting features
 - ☐ No legal entity named in either document (not incorporated yet — revisit on registration).
 
 ## 7. Known gaps / not built
+- ⚠️ **Pose imagery is not licensed.** 49 of 113 poses have no image; the other 64 hotlink
+  pocketyoga.com and a third-party Cloudinary account, and have been public since
+  2026-08-13. `PoseFigure.jsx` gives every pose a category-diagram fallback, so dropping the
+  hotlinks degrades gracefully — but whether the app may self-host those 64 is a licensing
+  decision, not a code one. Resolve before promoting the yoga feature.
+- Plan content is English-only. The yoga UI chrome and player are translated (68 Hindi
+  strings) but pose names, instructions, rationale and all LLM narrative arrive from the
+  backend in English regardless of the selected language. Same for the dosha result copy.
 - No monetisation: zero payment integration anywhere in the codebase.
 - Onboarding symptom set unified with the engine, but verify plan output reflects it for a real profile.
 - Reminder firing is only testable with Redis + ARQ running (couldn't verify in sandbox).
@@ -107,12 +136,16 @@ Supporting features
 
 ---
 
-### Verified green 2026-08-04
-- Backend: **260 unit/integration tests passing**.
-- Frontend: **lint + build clean**, **Playwright E2E 10 passing**, initial JS 197.6 KB gzip
-  against a 250 KB budget.
+### Verified green 2026-08-13
+- Backend: **379 unit/integration tests passing** (260 at the 2026-08-04 audit).
+- Frontend: **lint clean**, **Playwright E2E 20 passed / 5 skipped / 0 failed** (the skips
+  need a live backend), initial JS **199.4 KB** gzip against a 250 KB budget.
 - Production live and healthy at https://ayuraai.in (`/api/health`, `/api/ready` both green).
-- Zero TODO/FIXME markers in application source.
+- The nine yoga commits are deployed and **verified by image timestamps + served artifact**,
+  not by `deploy.sh`'s own ✅: served entry hashes match the local build, the prod KB reports
+  113 poses / 70 risk-tagged, and `POST /api/practice/session` answers 401 (route exists,
+  auth-gated) rather than 404. **Never accept the script's success line as evidence** — it
+  has printed it over a deploy that shipped nothing.
 
 ### The one item no amount of testing closes
 Section 4 (clinical/BAMS validation) remains entirely unchecked. The app ships dosage,

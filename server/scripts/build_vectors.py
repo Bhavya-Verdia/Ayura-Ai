@@ -46,6 +46,65 @@ def chunk_text(text: str, max_chars: int = 800) -> list[str]:
     return [c for c in chunks if len(c) > 30]
 
 
+def _humanise(tags: list[str]) -> str:
+    """`herniated_disc` → `herniated disc`. The KB stores machine keys; the embedder
+    reads English, and underscored tokens do not match how a query phrases them."""
+    return ", ".join(t.replace("_", " ") for t in tags)
+
+
+def _yoga_pose_docs(pose: dict) -> list[dict]:
+    """One pose → a practice document and a safety/rationale document.
+
+    Two documents rather than one because the shared embedder (all-MiniLM-L6-v2)
+    truncates at 256 word-pieces: a single blob carrying names, benefits, instructions,
+    contraindications AND rationale runs past that on most poses, and everything past
+    the cut is silently absent from the vector. Splitting also stops a long instruction
+    list from burying the contraindications.
+
+    Every chunk re-states the pose name. A chunk retrieved on its own must say which
+    pose it is describing — an anonymous "avoid in pregnancy" is worse than no context
+    at all when the enricher is writing about a different asana.
+    """
+    label = f"{pose.get('sanskrit_name')} ({pose.get('english_name')})"
+    balance = pose.get("dosha_balance", {}) or {}
+    balances = [d for d, effect in balance.items() if effect == "balances"]
+    aggravates = [d for d, effect in balance.items() if effect == "aggravates"]
+
+    practice = (
+        f"Yoga pose: {label}. Category: {pose.get('category')}, level: {pose.get('level')}, "
+        f"role in sequence: {pose.get('sequence_role')}. "
+        f"Balances: {', '.join(balances) or 'none'}. Aggravates: {', '.join(aggravates) or 'none'}. "
+        # Benefits and instructions are joined with ". ", not "; " — chunk_text splits on
+        # sentence boundaries, so a semicolon-joined list is one unsplittable 900-char
+        # "sentence" that sails past the 256-word-piece cut with its tail unembedded.
+        f"Benefits: {'. '.join(b.rstrip('.') for b in pose.get('primary_benefits', []))}. "
+        f"Works: {_humanise(pose.get('body_parts', []))}. "
+        f"Instructions: {'. '.join(i.rstrip('.') for i in pose.get('instructions', []))}."
+    )
+
+    contra = pose.get("contraindications", []) or []
+    med_contra = pose.get("medical_conditions_contraindicated", []) or []
+    beneficial = pose.get("medical_conditions_beneficial", []) or []
+    safety = (
+        f"Yoga pose {label} — safety and Ayurvedic basis. "
+        f"Avoid with: {_humanise(contra) or 'no listed contraindications'}. "
+        f"Not for: {_humanise(med_contra) or 'no listed conditions'}. "
+        f"Risk mechanisms: {_humanise(pose.get('risk_tags', [])) or 'none flagged'}. "
+        f"Helps with: {_humanise(beneficial) or 'no listed conditions'}. "
+        f"Safe in pregnancy: {'yes' if pose.get('pregnancy_safe') else 'no'}. "
+        f"Breath: {pose.get('pranayama_sync')}. "
+        f"{pose.get('ayurvedic_rationale')}"
+    )
+
+    dosha = balances[0] if balances else ""
+    out = []
+    for body in (practice, safety):
+        for chunk in chunk_text(body):
+            text = chunk if chunk.startswith("Yoga pose") else f"{label}: {chunk}"
+            out.append({"text": text, "dosha": dosha, "source": "yoga_poses"})
+    return out
+
+
 def get_documents_for_collection() -> dict[str, list[dict]]:
     """Build document sets for each ChromaDB collection."""
     docs: dict[str, list[dict]] = {"ayurveda": [], "fitness": [], "nutrition": [], "remedy": [], "panchakarma": []}
@@ -80,11 +139,18 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
                 docs["remedy"].append(meta)
                 docs["ayurveda"].append(meta)
 
-    # Yoga plans → ayurveda
-    yoga_data = json.loads((KNOWLEDGE_DIR / "yoga_plans.json").read_text(encoding="utf-8"))
+    # Yoga poses → ayurveda
+    #
+    # Reads yoga_poses.json (113 poses, the file the yoga engine itself loads), NOT the
+    # 10-entry yoga_plans.json this used to read. Those were two files with similar names
+    # and different consumers: the 2026-08-12 KB overhaul rewrote the poses and left the
+    # legacy summaries untouched, so RAG was serving the enricher ten stale entries —
+    # including pose content that no longer exists — while the engine built plans from a
+    # different set. yoga_plans.json is still seeded to Mongo by seed_db.py; it just has
+    # no business being the semantic context for yoga narrative.
+    yoga_data = json.loads((KNOWLEDGE_DIR / "yoga_poses.json").read_text(encoding="utf-8"))
     for pose in yoga_data:
-        text = f"Yoga pose: {pose.get('name')}. Benefits: {', '.join(pose.get('benefits', []))}. Dosha balance: {', '.join(pose.get('dosha_balance', []))}. Contraindications: {', '.join(pose.get('contraindications', []))}. Instructions: {pose.get('instructions')}."
-        docs["ayurveda"].append({"text": text, "dosha": pose.get('dosha_balance', [''])[0] if pose.get('dosha_balance') else "", "source": "yoga_plans"})
+        docs["ayurveda"].extend(_yoga_pose_docs(pose))
 
     # Gym routines → fitness
     gym_data = json.loads((KNOWLEDGE_DIR / "gym_routines.json").read_text(encoding="utf-8"))
