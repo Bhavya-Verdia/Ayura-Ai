@@ -37,6 +37,23 @@ RUN mkdir -p uploads/avatars data/chromadb && \
 # have a writable location instead of failing on /home/appuser.
 ENV HOME=/app
 
+# Bake ChromaDB's ONNX embedding model into the image.
+#
+# Without this the model is fetched on first use, which on a fresh container means
+# all WEB_CONCURRENCY gunicorn workers downloading the same 79 MB archive to the
+# same path at once and unpacking over each other. Observed in production on the
+# 2026-08-13 deploy: /api/health was unreachable for the first ~15 seconds while
+# four workers pulled the file, and every worker then logged
+#   INVALID_PROTOBUF: Load model from .../model.onnx failed
+# because it read a model another worker was still extracting. The app stays up —
+# the warm-up failure is only a warning — so what the user gets is RAG silently
+# returning nothing until the race settles. Downloading once at build time removes
+# the stampede, the corruption window and the slow first request together.
+RUN python -c "\
+from chromadb.utils.embedding_functions.onnx_mini_lm_l6_v2 import ONNXMiniLM_L6_V2; \
+ONNXMiniLM_L6_V2()._download_model_if_not_exists()" && \
+    chown -R appuser:appuser /app/.cache
+
 USER appuser
 
 EXPOSE 8000
