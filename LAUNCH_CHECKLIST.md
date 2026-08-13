@@ -21,8 +21,15 @@ production infra.
   DKIM at `resend._domainkey` was absent. Both now correct and consistent across five
   resolvers including both authoritative servers: DKIM 218 chars, SPF
   `v=spf1 include:amazonses.com ~all`, MX unchanged.
-  - ☐ **Still untested: an actual signup email.** DNS being right is necessary, not
-    sufficient. Sign up with a throwaway address and confirm the verification mail arrives.
+  - ✅ **Verified end to end 2026-08-14**: register → `Verification email scheduled` →
+    `[OK] Email sent … via smtp.resend.com:2465` → link clicked → account verified.
+  - ⚠️ **Port 2465, not 465.** The droplet cannot reach 25/465/587 — DigitalOcean blocks
+    outbound submission ports, verified from inside the api container. Sending was dead and
+    silent because `smtplib` had no timeout: the blocked connect parked the background
+    thread rather than raising, so registration logged "scheduled" and then nothing at all.
+    There is now a 20s timeout, and `IMPLICIT_TLS_PORTS = {465, 2465}` because choosing the
+    TLS mode on `port == 465` alone sends STARTTLS to 2465, which never answers.
+    Regression: `tests/test_email_transport.py`.
   - **Resend's "verified" badge is a historical check, not live DNS** — it showed all three
     green while two were broken. Never accept it as evidence; query DNS.
   - **Hostinger's email tooling rewrites mail DNS.** Enabling its DKIM removed Resend's
@@ -65,7 +72,10 @@ production infra.
 Auth & onboarding
 - ✅ Multiple email/password signups succeed (was a launch-blocker — fixed).
 - ☐ Google + GitHub OAuth round-trip.
-- ☐ Email verification gate (plan generation blocked until verified).
+- ✅ Email verification gate — an unverified account is refused at login (`POST /api/auth/login
+  403`, observed), and the emailed link verifies the account. Whole flow exercised against
+  production 2026-08-14 with a throwaway plus-address, which was then deleted through the
+  same cascade `routes/privacy.py` uses.
 - ✅ Onboarding free-text conditions normalize to canonical vocab (verified: "high blood pressure"→hypertension).
 
 Assessment & plans
