@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { buildPoseFigure, GROUND_Y } from './poseSkeleton'
 
 /**
  * Pose imagery with a guaranteed fallback.
@@ -48,11 +49,34 @@ function PoseDiagram({ category, name }) {
   )
 }
 
-export function PoseFigure({ imageUrl, name, category, className = '' }) {
+/**
+ * The pose drawn from its own joints — Tree looks like Tree, not like "a balance".
+ * Falls back to the category schematic for poses that have no figure yet, so the
+ * library can be filled in a pose at a time without a broken state in between.
+ */
+function PoseSkeleton({ figure, name, mirror }) {
+  const built = buildPoseFigure(figure, mirror)
+  if (!built) return null
+  return (
+    <div className="pose-figure-fallback pose-figure-skeleton" role="img" aria-label={name}>
+      <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+        <line className="pose-figure-ground" x1="8" y1={GROUND_Y} x2="92" y2={GROUND_Y} />
+        {built.strokes.map((s, i) => (
+          <path key={i} className={`pose-figure-${s.kind}`} d={s.d} />
+        ))}
+        <circle className="pose-figure-head"
+                cx={built.head.cx} cy={built.head.cy} r={built.head.r} />
+      </svg>
+    </div>
+  )
+}
+
+export function PoseFigure({ imageUrl, name, category, figure, mirror = false, className = '' }) {
   const [failed, setFailed] = useState(false)
   // The seed library shipped some literal "https://..." placeholders.
   const usable = imageUrl && !imageUrl.startsWith('https://...') && !failed
 
+  if (!usable && figure) return <PoseSkeleton figure={figure} name={name} mirror={mirror} />
   if (!usable) return <PoseDiagram category={category} name={name} />
 
   return (

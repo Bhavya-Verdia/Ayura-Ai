@@ -229,7 +229,8 @@ export function SessionPlayer({ session, planId, week, day, onClose }) {
 
           {segment.kind === SEGMENT_KIND.POSE && (
             <PoseFigure imageUrl={segment.imageUrl} name={segment.title}
-                        category={segment.category} className="sp-pose-img" />
+                        category={segment.category} figure={segment.figure}
+                        mirror={segment.mirror} className="sp-pose-img" />
           )}
 
           {segment.breathCue && <p className="sp-breath-cue">{segment.breathCue}</p>}

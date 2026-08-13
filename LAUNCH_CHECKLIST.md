@@ -140,10 +140,15 @@ Supporting features
   commercial intent. Cleared from the KB and from `scripts/generate_new_poses.py`, which
   would otherwise reintroduce them. Guard: `test_no_pose_hotlinks_third_party_imagery`
   asserts provenance, not emptiness, so licensed or self-hosted URLs pass.
-- ☐ **Pose imagery is now entirely schematic.** All 113 poses render the category diagram
-  in `PoseFigure.jsx`, which means 15 backbends share one drawing. It is honest and it is
-  plain. Replacing it needs commissioned or openly-licensed art — a spend decision, and the
-  most visible remaining weakness in the yoga feature.
+- ☐ **Pose imagery: 12 of 113 poses drawn, the rest still schematic.** Poses now carry a
+  `figure` — joint coordinates in `yoga_poses.json` — that `poseSkeleton.js` draws, so a
+  drawn pose looks like itself instead of like its category. Costs nothing against the
+  frontend budget (coordinates ride with the plan response, not the bundle — build stayed
+  at 199.2 KB) and bilateral poses mirror rather than needing a second drawing.
+  **The 12 drawn cover ~36% of pose slots users actually see**; the next 18 would take it
+  to ~68%, the next 30 after that to ~87%. Undrawn poses fall back to the category diagram,
+  so the library fills in a pose at a time with no broken state. Commissioned art is still
+  the better end state for a consumer product — this makes the interim honest, not final.
 - Plan content is English-only. The yoga UI chrome and player are translated (68 Hindi
   strings) but pose names, instructions, rationale and all LLM narrative arrive from the
   backend in English regardless of the selected language. Same for the dosha result copy.

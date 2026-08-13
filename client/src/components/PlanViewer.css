@@ -2420,6 +2420,34 @@
   color: var(--ayura-text-secondary);
 }
 
+/* ── Drawn pose figures ──
+   The pose rendered from its own joints, rather than the shared category
+   schematic above. Bigger than the schematic because there is now something
+   worth looking at, and with no caption — the figure IS the pose, so labelling
+   it "Backbend" would be repeating the heading next to it. */
+.pose-figure-skeleton svg {
+  width: 88px;
+  height: 88px;
+}
+
+.pose-figure-trunk,
+.pose-figure-leg,
+.pose-figure-arm,
+.pose-figure-head {
+  fill: none;
+  stroke: color-mix(in srgb, var(--plan-violet) 72%, transparent);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Arms lighter than trunk and legs. Side on, an arm and a leg leaving the same
+   point at a similar angle are one tangle at equal weight — the lunge and the
+   forward fold were unreadable until these were separated. */
+.pose-figure-trunk,
+.pose-figure-leg { stroke-width: 4.2; }
+.pose-figure-arm { stroke-width: 2.9; }
+.pose-figure-head { stroke-width: 3.6; }
+
 .yoga-pose-instructions {
   font-size: 0.82rem;
   line-height: 1.7;

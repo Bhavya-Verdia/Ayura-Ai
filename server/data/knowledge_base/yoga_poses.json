@@ -2043,7 +2043,24 @@
     "bilateral": true,
     "risk_tags": [
       "fall_risk"
-    ]
+    ],
+    "figure": {
+      "head": [50, 16],
+      "neck": [50, 24],
+      "pelvis": [50, 54],
+      "shoulderL": [43, 27],
+      "shoulderR": [57, 27],
+      "elbowL": [38, 38],
+      "elbowR": [62, 38],
+      "wristL": [48, 31],
+      "wristR": [52, 31],
+      "hipL": [45, 55],
+      "hipR": [55, 55],
+      "kneeL": [45, 73],
+      "kneeR": [70, 62],
+      "ankleL": [45, 90],
+      "ankleR": [51, 66]
+    }
   },
   {
     "id": "warrior_three",
@@ -3391,7 +3408,17 @@
       "neck_load",
       "wrist_weight_bearing",
       "spinal_extension"
-    ]
+    ],
+    "figure": {
+      "head": [19, 50],
+      "neck": [29, 56],
+      "spine": [48, 72],
+      "pelvis": [66, 55],
+      "elbow": [30, 74],
+      "wrist": [30, 90],
+      "knee": [66, 90],
+      "ankle": [79, 90]
+    }
   },
   {
     "id": "four_limbed_staff_pose",
@@ -3720,7 +3747,16 @@
     "bilateral": false,
     "risk_tags": [
       "wrist_weight_bearing"
-    ]
+    ],
+    "figure": {
+      "head": [22, 60],
+      "neck": [29, 57],
+      "pelvis": [66, 57],
+      "elbow": [30, 74],
+      "wrist": [30, 90],
+      "knee": [66, 90],
+      "ankle": [79, 90]
+    }
   },
   {
     "id": "childs_pose",
@@ -3919,7 +3955,16 @@
     ],
     "bilateral": false,
     "final_relaxation": true,
-    "risk_tags": []
+    "risk_tags": [],
+    "figure": {
+      "head": [18, 80],
+      "neck": [26, 83],
+      "pelvis": [56, 86],
+      "elbow": [40, 88],
+      "wrist": [50, 90],
+      "knee": [70, 88],
+      "ankle": [86, 88]
+    }
   },
   {
     "id": "legs_up_wall",
@@ -5333,7 +5378,17 @@
     "bilateral": false,
     "risk_tags": [
       "wrist_weight_bearing"
-    ]
+    ],
+    "figure": {
+      "head": [24, 66],
+      "neck": [30, 60],
+      "spine": [48, 46],
+      "pelvis": [66, 57],
+      "elbow": [30, 75],
+      "wrist": [30, 90],
+      "knee": [66, 90],
+      "ankle": [79, 90]
+    }
   },
   {
     "id": "chair",
@@ -5523,7 +5578,16 @@
     "risk_tags": [
       "intracranial_pressure",
       "wrist_weight_bearing"
-    ]
+    ],
+    "figure": {
+      "head": [26, 66],
+      "neck": [32, 60],
+      "pelvis": [58, 28],
+      "elbow": [24, 75],
+      "wrist": [16, 90],
+      "knee": [70, 58],
+      "ankle": [82, 90]
+    }
   },
   {
     "id": "equestrian_pose",
@@ -5586,7 +5650,19 @@
     ],
     "medical_conditions_contraindicated": [],
     "bilateral": true,
-    "risk_tags": []
+    "risk_tags": [],
+    "figure": {
+      "head": [50, 30],
+      "neck": [48, 38],
+      "pelvis": [44, 60],
+      "elbow": [60, 60],
+      "wrist": [64, 90],
+      "knee": [72, 68],
+      "ankle": [72, 90],
+      "kneeL": [28, 86],
+      "ankleL": [12, 90],
+      "hipL": [44, 60]
+    }
   },
   {
     "id": "extended_side_angle",
@@ -6225,7 +6301,24 @@
     ],
     "medical_conditions_contraindicated": [],
     "bilateral": false,
-    "risk_tags": []
+    "risk_tags": [],
+    "figure": {
+      "head": [50, 16],
+      "neck": [50, 24],
+      "pelvis": [50, 54],
+      "shoulderL": [43, 27],
+      "shoulderR": [57, 27],
+      "elbowL": [40, 41],
+      "elbowR": [60, 41],
+      "wristL": [39, 55],
+      "wristR": [61, 55],
+      "hipL": [45, 55],
+      "hipR": [55, 55],
+      "kneeL": [45, 73],
+      "kneeR": [55, 73],
+      "ankleL": [45, 90],
+      "ankleR": [55, 90]
+    }
   },
   {
     "id": "pyramid",
@@ -6303,7 +6396,19 @@
     "bilateral": true,
     "risk_tags": [
       "spinal_flexion"
-    ]
+    ],
+    "figure": {
+      "head": [72, 68],
+      "neck": [65, 61],
+      "pelvis": [44, 54],
+      "elbow": [70, 76],
+      "wrist": [74, 88],
+      "knee": [59, 72],
+      "ankle": [74, 90],
+      "kneeL": [31, 72],
+      "ankleL": [18, 90],
+      "hipL": [44, 54]
+    }
   },
   {
     "id": "reverse_warrior",
@@ -6565,7 +6670,24 @@
     ],
     "medical_conditions_contraindicated": [],
     "bilateral": true,
-    "risk_tags": []
+    "risk_tags": [],
+    "figure": {
+      "head": [26, 32],
+      "neck": [31, 38],
+      "pelvis": [47, 53],
+      "shoulderL": [28, 42],
+      "shoulderR": [36, 34],
+      "elbowL": [24, 57],
+      "elbowR": [41, 21],
+      "wristL": [19, 71],
+      "wristR": [45, 8],
+      "hipL": [38, 52],
+      "hipR": [56, 54],
+      "kneeL": [26, 71],
+      "kneeR": [72, 72],
+      "ankleL": [16, 90],
+      "ankleR": [84, 90]
+    }
   },
   {
     "id": "upward_salute",
@@ -6627,7 +6749,24 @@
     ],
     "medical_conditions_contraindicated": [],
     "bilateral": false,
-    "risk_tags": []
+    "risk_tags": [],
+    "figure": {
+      "head": [50, 22],
+      "neck": [50, 30],
+      "pelvis": [50, 57],
+      "shoulderL": [43, 32],
+      "shoulderR": [57, 32],
+      "elbowL": [40, 20],
+      "elbowR": [60, 20],
+      "wristL": [46, 8],
+      "wristR": [54, 8],
+      "hipL": [45, 58],
+      "hipR": [55, 58],
+      "kneeL": [45, 74],
+      "kneeR": [55, 74],
+      "ankleL": [45, 90],
+      "ankleR": [55, 90]
+    }
   },
   {
     "id": "warrior_one",
@@ -6970,7 +7109,24 @@
       "sciatica"
     ],
     "bilateral": false,
-    "risk_tags": []
+    "risk_tags": [],
+    "figure": {
+      "head": [50, 15],
+      "neck": [50, 23],
+      "pelvis": [50, 54],
+      "shoulderL": [41, 26],
+      "shoulderR": [59, 26],
+      "elbowL": [30, 37],
+      "elbowR": [70, 37],
+      "wristL": [33, 52],
+      "wristR": [67, 52],
+      "hipL": [43, 55],
+      "hipR": [57, 55],
+      "kneeL": [24, 66],
+      "kneeR": [76, 66],
+      "ankleL": [32, 47],
+      "ankleR": [68, 47]
+    }
   },
   {
     "id": "knees_to_chest",

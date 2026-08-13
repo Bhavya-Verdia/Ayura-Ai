@@ -460,3 +460,78 @@ def test_malformed_feedback_is_ignored_rather_than_crashing():
     for junk in ([None], ["nonsense"], [{"difficulty": "banana"}], [{}]):
         plan = generate_yoga_plan(profile(), prefs(), weeks=[2], feedback_history=junk)
         assert plan["four_week_plan"][0]["days"][0]["session"]
+
+
+# ── Drawn pose figures ───────────────────────────────────────────────────────
+# Poses carry joint coordinates the client draws them from. A malformed figure
+# does not raise anywhere — it renders a bent stick — so the shape is asserted
+# here rather than discovered by looking at it.
+
+_JOINTS = {
+    "head", "neck", "spine", "pelvis",
+    "shoulderL", "shoulderR", "elbowL", "elbowR", "wristL", "wristR",
+    "hipL", "hipR", "kneeL", "kneeR", "ankleL", "ankleR",
+    "elbow", "wrist", "knee", "ankle",
+}
+
+
+def _figured_poses():
+    from services.yoga_plan_engine import yoga_poses
+    return [p for p in yoga_poses if p.get("figure")]
+
+
+def test_figures_are_well_formed():
+    figured = _figured_poses()
+    assert figured, "no pose carries a figure"
+
+    for pose in figured:
+        name = pose["sanskrit_name"]
+        fig = pose["figure"]
+
+        unknown = set(fig) - _JOINTS
+        assert not unknown, f"{name}: unknown joints {sorted(unknown)}"
+
+        # Without head, neck and pelvis there is no body to hang limbs off, and
+        # the renderer draws nothing at all.
+        for required in ("head", "neck", "pelvis"):
+            assert required in fig, f"{name}: missing {required}"
+
+        for joint, point in fig.items():
+            assert isinstance(point, list) and len(point) == 2, f"{name}.{joint} is not a point"
+            x, y = point
+            assert all(isinstance(v, (int, float)) for v in point), f"{name}.{joint} is not numeric"
+            assert 0 <= x <= 100 and 0 <= y <= 100, f"{name}.{joint} = {point} is outside the box"
+
+
+def test_figures_stand_on_the_ground_not_through_it():
+    """Ground is drawn at y=92. A joint below it reads as a limb sunk into the mat."""
+    for pose in _figured_poses():
+        for joint, (_x, y) in pose["figure"].items():
+            assert y <= 92, f"{pose['sanskrit_name']}.{joint} is below the ground line (y={y})"
+
+
+def test_a_limb_is_never_half_specified():
+    """A limb needs all three of its points. Two of three draws nothing, silently."""
+    # The unsuffixed limbs hang off neck and pelvis, which every figure has for
+    # its spine — so only their distal joints say whether the limb was drawn.
+    chains = [("shoulderL", "elbowL", "wristL"), ("shoulderR", "elbowR", "wristR"),
+              ("hipL", "kneeL", "ankleL"), ("hipR", "kneeR", "ankleR"),
+              ("elbow", "wrist"), ("knee", "ankle")]
+    for pose in _figured_poses():
+        fig = pose["figure"]
+        for chain in chains:
+            present = [j for j in chain if j in fig]
+            assert len(present) in (0, len(chain)), (
+                f"{pose['sanskrit_name']}: partial limb {chain} — has {present}")
+
+
+def test_the_figure_reaches_the_client():
+    """Drawn in the browser from the plan payload, so it has to survive formatting."""
+    from services.yoga_plan_engine import format_pose, yoga_poses
+
+    drawn = next(p for p in yoga_poses if p.get("figure"))
+    formatted = format_pose(drawn, "intermediate", week=1)
+    assert formatted["figure"] == drawn["figure"]
+
+    undrawn = next(p for p in yoga_poses if not p.get("figure"))
+    assert format_pose(undrawn, "intermediate", week=1)["figure"] is None

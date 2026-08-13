@@ -1581,6 +1581,11 @@ def format_pose(pose: dict, experience: str, week: int, age_group: str = "adult"
         "pose_name":           pose.get("english_name"),
         "sanskrit_name":       pose.get("sanskrit_name"),
         "category":            pose.get("category"),
+        # Joint coordinates the client draws the pose from. Travels with the plan
+        # rather than the bundle: only the ~19 poses in a session are ever sent,
+        # and the frontend budget is untouched. Absent until a pose has been
+        # drawn, which is the signal to fall back to the category schematic.
+        "figure":              pose.get("figure"),
         # Lets the client place the closing relaxation last, after pranayama and
         # meditation, rather than in the middle of the cooldown.
         "final_relaxation":    bool(pose.get("final_relaxation")),

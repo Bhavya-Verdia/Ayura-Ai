@@ -533,7 +533,8 @@ export function YogaView({ plan: planProp }) {
                                   </button>
                                   {isOpen && (
                                     <div className="yoga-pose-expand">
-                                      <PoseFigure imageUrl={p.image_url} name={primaryName(p)} category={p.category} />
+                                      <PoseFigure imageUrl={p.image_url} name={primaryName(p)} category={p.category}
+                                                  figure={p.figure} />
                                       {p.instructions?.length > 0 && (
                                         <ol className="yoga-pose-instructions">
                                           {p.instructions.map((step, si) => <li key={si}>{step}</li>)}

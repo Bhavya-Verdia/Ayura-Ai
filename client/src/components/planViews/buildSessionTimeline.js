@@ -41,6 +41,7 @@ function poseSegments(pose, section) {
     breathCue: pose.pranayama_sync,
     rationale: pose.ayurvedic_rationale,
     imageUrl: pose.image_url,
+    figure: pose.figure,
     category: pose.category,
     benefits: pose.primary_benefits || [],
   }
@@ -51,9 +52,11 @@ function poseSegments(pose, section) {
   // Both sides, announced separately. A single combined countdown would leave
   // the practitioner guessing when to switch.
   const name = primaryName(pose)
+  // The drawn figure is mirrored for the second side rather than needing a second
+  // set of coordinates — the whole reason poses are stored as joints.
   return [
     { ...base, seconds: hold, side: 'right', title: `${name} — right side` },
-    { ...base, seconds: hold, side: 'left', title: `${name} — left side` },
+    { ...base, seconds: hold, side: 'left', title: `${name} — left side`, mirror: true },
   ]
 }
 
