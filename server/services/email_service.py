@@ -10,6 +10,19 @@ from email.mime.multipart import MIMEMultipart
 import asyncio
 from config import settings
 
+# Ports that speak TLS from the first byte, as opposed to negotiating it with
+# STARTTLS. 2465 is the alternate for 465, and it matters here: DigitalOcean
+# blocks outbound 25/465/587 on the droplet, so production has to use Resend's
+# alternates. Deciding the mode on `port == 465` alone quietly picked STARTTLS
+# for 2465, which an implicit-TLS port will never answer.
+IMPLICIT_TLS_PORTS = {465, 2465}
+
+# Without this, a blocked port is not an error — it is a thread parked forever.
+# That is how the real failure hid: registration logged "Verification email
+# scheduled" and then nothing at all, no success and no exception, because the
+# background task was still sitting in connect() on a port the host drops.
+SMTP_TIMEOUT_SECONDS = 20
+
 def _send_email_sync(to_email: str, subject: str, html_body: str):
     """Synchronous function to send email via SMTP."""
     if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
@@ -28,18 +41,19 @@ def _send_email_sync(to_email: str, subject: str, html_body: str):
 
     try:
         port = settings.SMTP_PORT
-        if port == 465:
-            with smtplib.SMTP_SSL(settings.SMTP_SERVER, port) as server:
+        if port in IMPLICIT_TLS_PORTS:
+            with smtplib.SMTP_SSL(settings.SMTP_SERVER, port, timeout=SMTP_TIMEOUT_SECONDS) as server:
                 server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
                 server.sendmail(settings.FROM_EMAIL, to_email, msg.as_string())
         else:
-            with smtplib.SMTP(settings.SMTP_SERVER, port) as server:
+            with smtplib.SMTP(settings.SMTP_SERVER, port, timeout=SMTP_TIMEOUT_SECONDS) as server:
                 server.starttls()
                 server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
                 server.sendmail(settings.FROM_EMAIL, to_email, msg.as_string())
-        logger.info(f"[OK] Email sent to {to_email}")
+        logger.info(f"[OK] Email sent to {to_email} via {settings.SMTP_SERVER}:{port}")
     except Exception as e:
-        logger.error(f" Failed to send email to {to_email}: {e}")
+        logger.error(f" Failed to send email to {to_email} via "
+                     f"{settings.SMTP_SERVER}:{settings.SMTP_PORT}: {type(e).__name__}: {e}")
 
 async def send_email(to_email: str, subject: str, html_body: str):
     """Asynchronous wrapper for sending email."""
