@@ -13,8 +13,12 @@ echo "▶ Deploying branch '$BRANCH' @ $COMMIT to $SERVER"
 
 # ── 1. Sync files ────────────────────────────────────────────────────────────
 echo "▶ Syncing files..."
+# .env IS the production .env and must sync. .env.local must NOT: it is a local
+# override that blanks the observability keys, and prod has no business carrying
+# a file whose whole purpose is to switch reporting off.
 rsync -az --delete \
   --exclude='.git' \
+  --exclude='.env.local' \
   --exclude='client/node_modules' \
   --exclude='server/venv' \
   --exclude='server/data/chromadb' \
