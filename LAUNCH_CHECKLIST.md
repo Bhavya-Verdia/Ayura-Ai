@@ -99,11 +99,18 @@ Supporting features
 - ✅ `/api/health` + `/api/ready` live and green on production (mongodb + chromadb connected).
 - ☐ Structured logs shipping; metrics endpoint (`/api/health/metrics`, admin-gated) reachable.
 - ☐ Backups configured on Atlas.
-- ☐ **RAG corpus is rebuilt after any KB edit.** `build_vectors.py` now reads the real
+- ✅ **RAG corpus rebuilt on production 2026-08-13.** `build_vectors.py` now reads the real
   113-pose `yoga_poses.json` (was: the 10-entry legacy `yoga_plans.json`, so the yoga
-  enricher's semantic context described poses the engine no longer served — see
-  `tests/test_vector_docs.py`). Production ChromaDB still holds the pre-2026-08-13 corpus
-  until the seeder is re-run against it.
+  enricher's semantic context described poses the engine no longer served — and every one
+  of those ten embedded as `"Yoga pose: None."`, because the legacy file keys the name as
+  `name_english`, not `name`). `ayurveda_knowledge` 146 → 474 chunks, 338 of them named
+  poses. Regression: `tests/test_vector_docs.py`. **Re-run the seeder after any KB edit** —
+  nothing detects the drift on its own.
+- ⚠️ **The seeder takes RAG down while it runs**, and on a cold container it used to take
+  it down *permanently*: it deletes each collection before add() first pulls the ONNX
+  model, so a download failure left `ayurveda_knowledge` empty (this happened, and was
+  recovered by re-running). It now embeds a probe string before touching anything and
+  exits rather than deleting. Still: reseed deliberately, and check counts afterwards.
 
 ## 6. Legal & compliance (revised 2026-08-04)
 - ✅ Privacy Policy rewritten for the DPDP Act 2023 + IT Rules 2021: grievance officer

@@ -259,6 +259,22 @@ def build_vectors():
         )
     embedder = get_embedder()
 
+    # Prove the embedder works BEFORE the first delete_collection.
+    #
+    # Learned on production 2026-08-13: the loop deletes a collection, recreates it, then
+    # calls add() — and add() is where the ONNX model is first pulled. On a container that
+    # had never embedded anything, the download raced its own sha256 check and threw, which
+    # left ayurveda_knowledge deleted, recreated and EMPTY. The seeder had taken production
+    # RAG down before doing a single useful thing. Warming here turns that class of failure
+    # into a clean exit with the corpus untouched.
+    try:
+        embedder(["warm the model before anything is deleted"])
+    except Exception as exc:
+        raise SystemExit(
+            f"❌ Embedder unavailable, refusing to touch the corpus: {exc}\n"
+            "   The model downloads on first use — check egress and disk, then re-run."
+        ) from exc
+
     collection_map = {
         "ayurveda": "ayurveda_knowledge",
         "fitness": "fitness_knowledge",
