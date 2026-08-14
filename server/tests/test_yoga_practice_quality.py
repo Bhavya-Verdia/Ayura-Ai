@@ -18,6 +18,8 @@ from services.yoga_plan_engine import (
     _COUNTERPOSE_CATEGORIES,
     _NEEDS_COUNTERPOSE,
     _MAX_POSE_HOLD_SECONDS,
+    _DAY_ARC,
+    _arc_allows,
 )
 
 BASE_PROFILE = {
@@ -122,7 +124,7 @@ def test_time_estimate_covers_every_timed_block():
             sum(breakdown.values()), abs=0.2)
         if session["surya_namaskar"]:
             assert breakdown["surya_namaskar"] > 0
-        assert breakdown["dharana"] > 0
+        assert breakdown["pranayama"] > 0
 
 
 # ── Bilateral poses ──────────────────────────────────────────────────────────
@@ -318,6 +320,509 @@ def test_the_same_profile_produces_the_same_plan():
     b = full_plan()
     for sa, sb in zip(sessions(a), sessions(b)):
         assert [p["pose_id"] for p in all_poses(sa)] == [p["pose_id"] for p in all_poses(sb)]
+
+
+# ── Pranayama ────────────────────────────────────────────────────────────────
+
+@pytest.mark.parametrize("experience,minutes,expected", [
+    ("beginner", 30, 12), ("intermediate", 45, 15), ("advanced", 60, 15),
+])
+def test_every_day_runs_the_prescribed_stack(experience, minutes, expected):
+    """Bhramari, Anulom Vilom and a cleansing breath, the same three every day.
+    Beginners get 5/4/3 rather than 5/5/5 — a 30-minute session cannot spend
+    half of itself breathing — but all three are present."""
+    for week in (1, 2, 3, 4):
+        plan = generate_yoga_plan(profile(), prefs(yoga_experience=experience,
+                                                   time_available_minutes=minutes),
+                                  weeks=[week])
+        for d in week_days(plan):
+            section = d["session"]["pranayama_section"]
+            names = [t["technique_name"] for t in section]
+            assert len(section) == 3, f"{d['day_name']}: {names}"
+            assert names[0] == "Humming Bee", names
+            assert names[1] == "Alternate Nostril", names
+            total = sum(t["duration_minutes"] for t in section)
+            assert total == expected, f"{experience} {d['day_name']}: {total} min"
+
+
+@pytest.mark.parametrize("experience,minutes", [
+    ("beginner", 30), ("intermediate", 45), ("advanced", 60),
+])
+def test_bhramari_is_five_minutes_and_never_trimmed(experience, minutes):
+    """It is the one technique asked for unconditionally, so it is filled first
+    and the others share what is left."""
+    plan = full_plan(pr=prefs(yoga_experience=experience,
+                              time_available_minutes=minutes))
+    for s in sessions(plan):
+        bhramari = [t for t in s["pranayama_section"] if t["technique_name"] == "Humming Bee"]
+        assert bhramari, "Bhramari missing"
+        assert bhramari[0]["duration_minutes"] == 5
+
+
+def test_the_meditation_slot_is_gone():
+    plan = full_plan()
+    for s in sessions(plan):
+        assert s["dharana_section"] is None
+        assert s["time_breakdown_minutes"]["dharana"] == 0
+
+
+@pytest.mark.parametrize("dosha", ["vata", "pitta", "kapha"])
+@pytest.mark.parametrize("time_of_day", ["morning", "evening"])
+def test_the_breathwork_survives_a_crowded_session(dosha, time_of_day):
+    """Kapha draws far more Surya Namaskar, which pushes the fixed blocks past
+    their share of the session. The prescription is not what gives — the scale
+    is recomputed over the blocks that can."""
+    plan = generate_yoga_plan(profile(dominant_dosha=dosha),
+                              prefs(yoga_experience="advanced",
+                                    time_available_minutes=60,
+                                    time_of_day_preference=time_of_day),
+                              weeks=[1])
+    for d in week_days(plan):
+        total = sum(t["duration_minutes"] for t in d["session"]["pranayama_section"])
+        assert total >= 10, f"{dosha} {time_of_day} {d['day_name']}: {total} min"
+
+
+def test_the_stack_does_not_swallow_a_short_session():
+    """The tiers are 30/45/60; this guards preferences stored before they
+    existed, where 15 minutes of breathwork would be the whole practice."""
+    plan = generate_yoga_plan(profile(), prefs(time_available_minutes=15), weeks=[1])
+    for d in week_days(plan):
+        total = sum(t["duration_minutes"] for t in d["session"]["pranayama_section"])
+        assert total <= 15 * 0.45, f"{d['day_name']}: {total} min of 15"
+
+
+@pytest.mark.parametrize("condition,expected", [
+    ("hypertension", "Left Nostril"),
+    ("insomnia", "Three Part Breath"),
+    ("migraine", "Left Nostril"),
+    ("asthma", "Ocean Breath"),
+    ("anxiety", "Three Part Breath"),
+    ("back_pain", "Three Part Breath"),
+    ("type2_diabetes", "Skull Shining"),
+    ("obesity", "Skull Shining"),
+])
+def test_a_condition_protocol_chooses_the_third_breath(condition, expected):
+    """Bhramari and Anulom Vilom are fixed, so the third slot is where clinical
+    tailoring lands. Protocol beats dosha: a diagnosis is more specific than a
+    constitution. Note diabetes and obesity KEEP Kapalabhati — their protocols
+    prioritise it — so this is not a blanket override."""
+    plan = generate_yoga_plan(profile(medical_history=[condition]),
+                              prefs(yoga_experience="intermediate",
+                                    time_available_minutes=45),
+                              weeks=[1])
+    for d in week_days(plan):
+        third = d["session"]["pranayama_section"][2]
+        assert third["technique_name"] == expected, (
+            f"{condition} → {third['technique_name']}, expected {expected}")
+    assert plan["pranayama_protocol_note"], "protocol-led choice unexplained"
+
+
+def test_a_protocol_priority_cannot_reach_past_a_safety_gate():
+    """The obesity protocol prioritises Kapalabhati; age forbids it. The gate
+    wins and the slot falls through to something safe."""
+    for age in (15, 70):
+        plan = generate_yoga_plan(profile(age=age, medical_history=["obesity"]),
+                                  prefs(yoga_experience="intermediate",
+                                        time_available_minutes=45),
+                                  weeks=[1])
+        used = {t["technique_name"] for d in week_days(plan)
+                for t in d["session"]["pranayama_section"]}
+        assert "Skull Shining" not in used, f"age {age}: protocol bypassed the age gate"
+
+
+def test_conflicting_protocols_resolve_to_one_both_permit():
+    """Diabetes wants Kapalabhati; hypertension forbids it. Avoid beats
+    priority, and the slot lands on the next thing the protocols recommend."""
+    plan = generate_yoga_plan(
+        profile(medical_history=["type2_diabetes", "hypertension"]),
+        prefs(yoga_experience="intermediate", time_available_minutes=45), weeks=[1])
+    used = {t["technique_name"] for d in week_days(plan)
+            for t in d["session"]["pranayama_section"]}
+    assert "Skull Shining" not in used
+    assert len(week_days(plan)[0]["session"]["pranayama_section"]) == 3
+
+
+@pytest.mark.parametrize("overrides", [
+    {"age": 70, "medical_history": ["obesity"]},
+    {"age": 15, "medical_history": ["obesity"]},
+    {"pregnancy_status": "pregnant", "pregnancy_trimester": 3},
+    {"medical_history": ["hypertension"], "age": 70},
+])
+def test_everyone_still_gets_three_breaths(overrides):
+    """Dirgha backstops the third slot — beginner-level, no contraindications,
+    safe in pregnancy. Without it a heavily gated practitioner lost the slot."""
+    plan = generate_yoga_plan(profile(**overrides),
+                              prefs(yoga_experience="beginner",
+                                    time_available_minutes=45),
+                              weeks=[1])
+    for d in week_days(plan):
+        assert len(d["session"]["pranayama_section"]) == 3, d["day_name"]
+
+
+def test_an_unremarkable_profile_keeps_the_dosha_default():
+    """No condition means no protocol, so the third slot stays constitutional."""
+    plan = generate_yoga_plan(profile(), prefs(yoga_experience="intermediate",
+                                               time_available_minutes=45), weeks=[1])
+    assert plan["pranayama_protocol_note"] is None
+    for d in week_days(plan):
+        assert d["session"]["pranayama_section"][2]["technique_name"] == "Skull Shining"
+
+
+def test_pitta_gets_cooling_breaths_instead_of_kapalabhati():
+    """Kapalabhati is heating and Pitta is the constitution that must not be
+    heated, so the cleansing slot becomes Sitali and Sitkari, alternating."""
+    plan = full_plan(prof=profile(dominant_dosha="pitta", vikriti_dominant="pitta"),
+                     pr=prefs(yoga_experience="intermediate",
+                              time_of_day_preference="morning"))
+    used = {t["technique_name"] for s in sessions(plan) for t in s["pranayama_section"]}
+    assert "Skull Shining" not in used, "Kapalabhati served to a Pitta profile"
+    assert {"Cooling Breath", "Hissing Breath"} <= used, used
+
+
+def test_the_cooling_pair_alternates_rather_than_splitting_the_slot():
+    """Two and a half minutes each is too short for either to do anything."""
+    days = week_days(full_plan(prof=profile(dominant_dosha="pitta",
+                                            vikriti_dominant="pitta"),
+                               pr=prefs(yoga_experience="intermediate",
+                                        time_available_minutes=45)))
+    third = [d["session"]["pranayama_section"][2] for d in days]
+    assert {t["technique_name"] for t in third} == {"Cooling Breath", "Hissing Breath"}
+    assert all(t["duration_minutes"] == 5 for t in third)
+
+
+def test_no_day_runs_long_on_the_prescription():
+    """The breathwork is paid for out of asana, never out of the clock."""
+    for minutes in (30, 45, 60):
+        for experience in ("beginner", "intermediate", "advanced"):
+            plan = generate_yoga_plan(profile(), prefs(yoga_experience=experience,
+                                                       time_available_minutes=minutes),
+                                      weeks=[1])
+            for d in week_days(plan):
+                built = d["session"]["total_duration_minutes"]
+                assert built <= minutes * 1.10, (
+                    f"{experience} {minutes}min {d['day_name']}: {built}min")
+
+
+def test_the_two_named_techniques_are_preferred_when_they_are_safe():
+    plan = full_plan(pr=prefs(yoga_experience="intermediate",
+                              time_of_day_preference="morning"))
+    used = {t["technique_name"] for s in sessions(plan) for t in s["pranayama_section"]}
+    assert "Alternate Nostril" in used
+    assert "Skull Shining" in used
+
+
+@pytest.mark.parametrize("overrides,label", [
+    ({"medical_history": ["hypertension"]}, "hypertension"),
+    ({"medical_history": ["glaucoma"]}, "glaucoma"),
+    ({"medical_history": ["heart_disease"]}, "heart disease"),
+    ({"pregnancy_status": "pregnant", "pregnancy_trimester": 2}, "pregnancy"),
+])
+def test_the_emphasis_never_promotes_kapalabhati_past_a_contraindication(overrides, label):
+    """The boost is applied after every gate, so it reorders safe techniques and
+    never widens the set. Kapalabhati is a forceful kriya — a preference must not
+    be able to outrank a contraindication."""
+    plan = full_plan(prof=profile(**overrides),
+                     pr=prefs(yoga_experience="advanced",
+                              time_of_day_preference="morning"))
+    used = {t["technique_name"] for s in sessions(plan) for t in s["pranayama_section"]}
+    assert "Skull Shining" not in used, f"Kapalabhati served to a user with {label}"
+
+
+def test_a_missing_emphasis_technique_explains_itself():
+    """The evening gate is recoverable, and "not for you" and "not yet" are
+    different messages."""
+    plan = generate_yoga_plan(profile(), prefs(yoga_experience="intermediate",
+                                               time_of_day_preference="evening"),
+                              weeks=[1])
+    notes = plan.get("pranayama_safety_exclusions") or []
+    kapal = [n for n in notes if "Kapalabhati" in n["name"]]
+    assert kapal, "Kapalabhati absent from an evening plan with no explanation"
+    assert "morning practice" in kapal[0]["reason"].lower()
+
+
+def test_beginners_get_kapalabhati_at_a_beginner_dose():
+    """User decision (2026-08-14): Kapalabhati is taught from beginner level.
+    Its dose is NOT stretched to the five-minute session floor — a pumping kriya
+    held past what it is rated for is a different practice — so a short forceful
+    primary is topped up with a calming partner instead."""
+    plan = full_plan(pr=prefs(yoga_experience="beginner",
+                              time_available_minutes=30,
+                              time_of_day_preference="morning"))
+    days = [s for s in sessions(plan)
+            if any(t["technique_name"] == "Skull Shining" for t in s["pranayama_section"])]
+    assert days, "Kapalabhati never appears for a beginner"
+    for s in days:
+        kapal = next(t for t in s["pranayama_section"]
+                     if t["technique_name"] == "Skull Shining")
+        assert kapal["duration_minutes"] <= 3, kapal["duration_minutes"]
+        assert sum(t["duration_minutes"] for t in s["pranayama_section"]) >= 5
+
+
+@pytest.mark.parametrize("age", [14, 17, 60, 70])
+@pytest.mark.parametrize("experience", ["beginner", "intermediate", "advanced"])
+def test_forceful_kriyas_are_withheld_at_both_ends_of_the_age_range(age, experience):
+    """Kapalabhati used to be level:intermediate, which shielded beginners of
+    every age by accident — but an experienced 70-year-old was already being
+    served it, and lowering the level to beginner widened that to everyone.
+    Rapid abdominal pumping raises intra-abdominal pressure; contraindications,
+    level and age are three different axes."""
+    plan = full_plan(prof=profile(age=age),
+                     pr=prefs(yoga_experience=experience,
+                              time_of_day_preference="morning"))
+    used = {t["technique_name"] for s in sessions(plan) for t in s["pranayama_section"]}
+    assert "Skull Shining" not in used, f"Kapalabhati served at age {age} ({experience})"
+    assert "Fire Essence" not in used, f"Agnisara served at age {age} ({experience})"
+
+
+def test_adults_are_unaffected_by_the_age_gate():
+    for age in (25, 45, 59):
+        plan = full_plan(prof=profile(age=age),
+                         pr=prefs(yoga_experience="beginner",
+                                  time_of_day_preference="morning"))
+        used = {t["technique_name"] for s in sessions(plan)
+                for t in s["pranayama_section"]}
+        assert "Skull Shining" in used, age
+
+
+def test_a_short_forceful_practice_is_paired_not_stretched():
+    """Kapalabhati alone at 3 minutes would undercut the session's breathwork
+    floor; stretching it to 5 would overrun its own rating. It gets a partner."""
+    plan = full_plan(pr=prefs(yoga_experience="beginner",
+                              time_available_minutes=30,
+                              time_of_day_preference="morning"))
+    for s in sessions(plan):
+        section = s["pranayama_section"]
+        if any(t["technique_name"] == "Skull Shining" for t in section):
+            assert len(section) >= 2, "Kapalabhati served alone under the floor"
+
+
+# ── Daily intensity arc ──────────────────────────────────────────────────────
+# The week used to be seven sessions at one intensity, which is one session seven
+# times — and at week 3's 1.5x holds, seven consecutive hard ones.
+
+def week_days(plan, week_index=0):
+    return plan["four_week_plan"][week_index]["days"]
+
+
+def plan_weeks(plan):
+    return plan["four_week_plan"]
+
+
+def test_the_week_has_a_shape_rather_than_one_intensity():
+    days = week_days(full_plan())
+    keys = [d["session"]["intensity"] for d in days]
+    assert keys.count("strong") == 2, keys
+    assert keys.count("moderate") == 3, keys
+    assert keys.count("gentle") == 1, keys
+    assert keys.count("restorative") == 1, keys
+
+
+def test_strong_days_are_never_consecutive():
+    keys = [d["session"]["intensity"] for d in week_days(full_plan())]
+    assert not any(a == b == "strong" for a, b in zip(keys, keys[1:])), keys
+
+
+@pytest.mark.parametrize("minutes", [15, 20, 30, 45, 60])
+@pytest.mark.parametrize("week", [1, 2, 3, 4])
+def test_every_day_of_the_week_asks_for_the_same_slot(minutes, week):
+    """The one thing the arc must not move. A practice survives by occupying a
+    fixed slot in the day; a plan asking 20 minutes on Monday and 45 on Thursday
+    is a plan abandoned on Thursday. The arc changes load, never duration."""
+    plan = generate_yoga_plan(profile(), prefs(time_available_minutes=minutes),
+                              weeks=[week])
+    days = week_days(plan)
+    assert {d["session"]["requested_duration_minutes"] for d in days} == {minutes}
+    # A day may still land off the slot where the safe pool runs out before the
+    # budget does — a beginner asking for an hour is the standing example. What
+    # it may not do is land off it silently, which is the contract the duration
+    # notice already carries for the session as a whole.
+    for d in days:
+        session = d["session"]
+        built = session["total_duration_minutes"]
+        if abs(built - minutes) / minutes > 0.10:
+            assert session["duration_notice"], (
+                f"{d['day_name']} ({session['intensity']}) built {built}min "
+                f"against a {minutes}min slot with no explanation")
+
+
+@pytest.mark.parametrize("experience", ["beginner", "intermediate", "advanced"])
+def test_the_arc_does_not_make_the_week_uneven(experience):
+    """At a duration the pose pool can actually serve, every day of the week
+    lands on the same length. Before the overshoot and pose-floor guards, the
+    restorative day ran four minutes past the slot the other six landed on,
+    because a pose-count floor was being satisfied with holds minutes long."""
+    for week in (1, 2, 3, 4):
+        plan = generate_yoga_plan(profile(), prefs(time_available_minutes=30,
+                                                   yoga_experience=experience),
+                                  weeks=[week])
+        built = [d["session"]["total_duration_minutes"] for d in week_days(plan)]
+        assert max(built) - min(built) <= 3, (
+            f"{experience} week {week} ranged {min(built)}-{max(built)}min")
+
+
+def test_the_restorative_day_excludes_the_two_loaded_categories():
+    """It keeps the week's sequence — that is the point of the consistency work —
+    but an inversion or a deep backbend is contrary to a recovery day whatever
+    your level, so those two are the exception."""
+    days = week_days(full_plan())
+    rest_day = next(d for d in days if d["session"]["intensity"] == "restorative")
+    cats = {p["category"] for p in rest_day["session"]["main_sequence"]}
+    assert not cats & {"backbend", "inversion"}, cats
+
+
+def test_the_recovery_day_holds_longer_than_the_strong_days():
+    days = week_days(full_plan(pr=prefs(time_available_minutes=45)))
+    rest_day = next(d for d in days if d["session"]["intensity"] == "restorative")
+    strong = [d for d in days if d["session"]["intensity"] == "strong"]
+    longest_rest = max(p["duration_seconds"] for p in rest_day["session"]["main_sequence"])
+    longest_strong = max(p["duration_seconds"]
+                         for s in strong for p in s["session"]["main_sequence"])
+    assert longest_rest > longest_strong
+
+
+@pytest.mark.parametrize("experience", ["intermediate", "advanced"])
+def test_an_easy_day_shows_the_gentler_variation_of_the_same_pose(experience):
+    """The easy days keep the week's sequence, so this is what actually makes
+    them easier. A hold multiplier does not: shortening holds frees budget, the
+    filler spends it and `_hold_multiplier` stretches the rest back, which is why
+    a measured 0.95 produced a gentle day byte-identical to a moderate one."""
+    days = week_days(full_plan(pr=prefs(yoga_experience=experience)))
+    easy = [d for d in days if d["session"]["intensity"] in ("gentle", "restorative")]
+    hard = next(d for d in days if d["session"]["intensity"] == "strong")
+    hard_mods = {p["pose_id"]: p["modification"] for p in all_poses(hard["session"])}
+    for d in easy:
+        shared = [p for p in all_poses(d["session"]) if p["pose_id"] in hard_mods]
+        assert shared, f"{d['day_name']} shares no pose with the strong day"
+        assert any(p["modification"] != hard_mods[p["pose_id"]] for p in shared), (
+            f"{d['day_name']} shows the same modifications as the strong day")
+        assert d["session"]["effort_cue"], d["day_name"]
+
+
+def test_an_easy_day_is_still_a_full_practice():
+    """Active recovery, not a stub. The arc must never empty a sequence."""
+    for d in week_days(full_plan()):
+        assert len(d["session"]["main_sequence"]) >= 2, d["day_name"]
+        assert d["session"]["intensity_note"], d["day_name"]
+
+
+@pytest.mark.parametrize("week_levels", [
+    ["beginner"], ["beginner", "intermediate"],
+    ["beginner", "intermediate", "advanced"],
+])
+def test_the_arc_only_ever_narrows_what_the_week_allows(week_levels):
+    """A strong day means the full week allowance, not a new one. Putting extra
+    levels or categories behind a weekday index would be a safety surface nobody
+    would think to look for."""
+    strong_arc = next(a for a in _DAY_ARC.values() if a["key"] == "strong")
+    strong_ok = {p["id"] for p in yoga_poses if _arc_allows(p, strong_arc, week_levels)}
+    assert strong_ok == {p["id"] for p in yoga_poses}, "a strong day must not filter"
+    for day, arc in _DAY_ARC.items():
+        allowed = {p["id"] for p in yoga_poses if _arc_allows(p, arc, week_levels)}
+        assert allowed <= strong_ok, f"day {day} ({arc['key']}) permits extra poses"
+
+
+def test_feedback_that_the_practice_is_too_much_softens_the_arc():
+    """The arc modulates within the feedback adjustment rather than adding a
+    second reduction on top of it — a week already pulled down for someone
+    reporting exhaustion should not still be scheduling two strong days."""
+    history = [{"week": 1, "difficulty": "too_hard", "energy_after": "drained"}]
+    plan = generate_yoga_plan(profile(), prefs(), weeks=[2], feedback_history=history)
+    keys = [d["session"]["intensity"] for d in week_days(plan)]
+    assert "strong" not in keys, keys
+
+
+# ── Core set and daily accent ────────────────────────────────────────────────
+# Every day used to be a fresh shuffle of the pool. That reads as variety and
+# works as amnesia: nobody gets better at Trikonasana by meeting it once.
+
+def full_intensity_days(plan):
+    return [d for d in week_days(plan)
+            if d["session"]["intensity"] in ("strong", "moderate")]
+
+
+def test_most_of_a_day_is_the_core_the_practitioner_is_learning():
+    for d in full_intensity_days(full_plan()):
+        poses = all_poses(d["session"])
+        core = set(d["session"]["core_pose_ids"])
+        share = len([p for p in poses if p["pose_id"] in core]) / len(poses)
+        assert share >= 0.6, f"{d['day_name']} core share {share:.0%}"
+
+
+def standard_days(plan, week_index=0):
+    """Full-intensity days — every day now shares one asana budget."""
+    return [d for d in week_days(plan, week_index)
+            if d["session"]["intensity"] in ("strong", "moderate")]
+
+
+def test_the_core_is_the_same_set_every_full_day_of_the_week():
+    days = standard_days(full_plan())
+    cores = {tuple(d["session"]["core_pose_ids"]) for d in days}
+    assert len(cores) == 1, cores
+
+
+def test_the_core_poses_actually_recur_across_the_week():
+    days = standard_days(full_plan())
+    core = set(days[0]["session"]["core_pose_ids"])
+    assert core, "no core set at all"
+    for pose_id in core:
+        appearances = sum(1 for d in days
+                          if any(p["pose_id"] == pose_id for p in all_poses(d["session"])))
+        assert appearances == len(days), (
+            f"{pose_id} is core but appears on {appearances}/{len(days)} days")
+
+
+@pytest.mark.parametrize("experience", ["beginner", "intermediate", "advanced"])
+def test_one_day_is_mostly_yesterday(experience):
+    """The property the whole core/accent split exists for. Before it, roughly
+    HALF of every session changed overnight — 44-46 distinct poses across a week
+    and only ~6 shared by Mon-Fri, which is a different class each morning, not a
+    practice. Measured over the working days; Sat and Sun are deliberately
+    different in kind, which `_DAY_ARC` owns and the arc tests cover."""
+    for week in plan_weeks(full_plan(pr=prefs(yoga_experience=experience))):
+        days = week["days"][:5]
+        sets = [{p["pose_id"] for p in all_poses(d["session"])} for d in days]
+        for prev, cur, d in zip(sets, sets[1:], days[1:]):
+            overlap = len(prev & cur) / len(cur)
+            assert overlap >= 0.6, (
+                f"{experience} week {week['week']} {d['day_name']}: only "
+                f"{overlap:.0%} of the session carried over from the day before")
+        shared = set.intersection(*sets)
+        assert len(shared) / (sum(len(s) for s in sets) / 5) >= 0.5, (
+            f"{experience} week {week['week']}: only {len(shared)} poses run "
+            f"through all five working days")
+
+
+def test_a_week_that_cannot_rotate_says_so():
+    """A beginner has around nine safe main-role poses and a session needs most
+    of them, so the week genuinely repeats. Inventing variety would mean serving
+    poses the safety filter excluded; presenting the repetition as a rotating
+    week is the other way to get this wrong."""
+    plan = full_plan(pr=prefs(yoga_experience="beginner"))
+    limited = [s for s in sessions(plan) if s["rotation_limited"]]
+    assert limited, "expected a beginner week to be too thin to rotate"
+    for session in limited:
+        assert session["rotation_notice"]
+
+
+def test_a_plan_with_room_to_rotate_carries_no_rotation_notice():
+    plan = full_plan(pr=prefs(yoga_experience="intermediate"))
+    assert any(not s["rotation_limited"] for s in sessions(plan))
+    for session in sessions(plan):
+        if not session["rotation_limited"]:
+            assert session["rotation_notice"] is None
+
+
+def test_the_week_is_not_one_session_seven_times():
+    """Consistency is the goal, sameness is not: where the pool has material to
+    spare, the week should still move. A day that is pure core is fine — every
+    day being pure core is a plan that stopped choosing."""
+    plan = full_plan(pr=prefs(yoga_experience="intermediate"))
+    for week in plan_weeks(plan):
+        days = [d for d in week["days"] if not d["session"]["rotation_limited"]]
+        if len(days) < 2:
+            continue
+        seqs = {frozenset(p["pose_id"] for p in all_poses(d["session"])) for d in days}
+        assert len(seqs) >= 2, f"week {week['week']} is a single session repeated"
 
 
 # ── Daily practice (no rest days) ────────────────────────────────────────────

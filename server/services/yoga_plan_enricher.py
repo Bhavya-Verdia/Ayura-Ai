@@ -39,6 +39,20 @@ Given this user profile, generated yoga plan, and Ayurvedic knowledge context, p
   "motivational_note": "1 personalized sentence addressing their specific goal and dosha"
 }
 
+RULES FOR daily_intention:
+Each day in the schedule below carries an "intensity" — strong, moderate, gentle
+or restorative — plus an "intensity_intent" describing what that day is for and,
+on the easier days, an "effort_cue" saying how the poses should be worked. The
+intention you write for a day MUST match them. Do not write about effort, edges
+or challenge on a gentle or restorative day, and do not write a purely passive
+intention onto a strong one.
+
+Every day is the SAME LENGTH and deliberately the SAME SEQUENCE, give or take a
+pose or two — that repetition is the design, so the practitioner stops needing to
+read the plan. Never suggest an easier day is a shorter one, never present a day
+as a new or different practice, and never frame the repetition as a limitation.
+What changes between days is depth and effort, not the poses.
+
 AYURVEDIC KNOWLEDGE BASE (use these classical references to ground your response):
 {rag_context}
 
@@ -114,7 +128,15 @@ async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict)
                     "activity": "Yoga Practice",
                     "main_poses": main_poses,
                     "pranayama": prana,
-                    "theme": session.get("dosha_theme")
+                    "theme": session.get("dosha_theme"),
+                    # The week has a load arc and the daily intention is rendered
+                    # on the day card, so the enricher has to know which day is
+                    # which. Without it the LLM writes the same "find your edge"
+                    # line onto the restorative day it writes onto a strong one,
+                    # which contradicts the practice underneath it.
+                    "intensity": session.get("intensity"),
+                    "intensity_intent": session.get("intensity_note"),
+                    "effort_cue": session.get("effort_cue"),
                 })
 
         prompt = (
