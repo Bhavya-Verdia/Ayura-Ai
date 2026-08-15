@@ -325,12 +325,15 @@ def test_the_same_profile_produces_the_same_plan():
 # ── Pranayama ────────────────────────────────────────────────────────────────
 
 @pytest.mark.parametrize("experience,minutes,expected", [
-    ("beginner", 30, 12), ("intermediate", 45, 15), ("advanced", 60, 15),
+    ("beginner", 30, 12), ("intermediate", 45, 15), ("advanced", 60, 20),
+    # Any level may pick any tier, and the stack is a property of the TIER.
+    ("beginner", 60, 20), ("advanced", 30, 12),
 ])
 def test_every_day_runs_the_prescribed_stack(experience, minutes, expected):
     """Bhramari, Anulom Vilom and a cleansing breath, the same three every day.
-    Beginners get 5/4/3 rather than 5/5/5 — a 30-minute session cannot spend
-    half of itself breathing — but all three are present."""
+    30 minutes gets 5/4/3 rather than 5/5/5 — a half-hour session cannot spend
+    half of itself breathing — and the hour gets 8/7/5. All three are always
+    present."""
     for week in (1, 2, 3, 4):
         plan = generate_yoga_plan(profile(), prefs(yoga_experience=experience,
                                                    time_available_minutes=minutes),
@@ -345,18 +348,35 @@ def test_every_day_runs_the_prescribed_stack(experience, minutes, expected):
             assert total == expected, f"{experience} {d['day_name']}: {total} min"
 
 
-@pytest.mark.parametrize("experience,minutes", [
-    ("beginner", 30), ("intermediate", 45), ("advanced", 60),
+@pytest.mark.parametrize("experience,minutes,asked", [
+    ("beginner", 30, 5), ("intermediate", 45, 5), ("advanced", 60, 8),
 ])
-def test_bhramari_is_five_minutes_and_never_trimmed(experience, minutes):
+def test_bhramari_takes_its_full_ask_and_is_never_trimmed(experience, minutes, asked):
     """It is the one technique asked for unconditionally, so it is filled first
-    and the others share what is left."""
+    and the others share what is left. The ask itself grows with the tier."""
     plan = full_plan(pr=prefs(yoga_experience=experience,
                               time_available_minutes=minutes))
     for s in sessions(plan):
         bhramari = [t for t in s["pranayama_section"] if t["technique_name"] == "Humming Bee"]
         assert bhramari, "Bhramari missing"
-        assert bhramari[0]["duration_minutes"] == 5
+        assert bhramari[0]["duration_minutes"] == asked
+
+
+@pytest.mark.parametrize("experience", ["beginner", "intermediate", "advanced"])
+def test_the_hours_extra_breathwork_never_lands_on_the_cleansing_breath(experience):
+    """The third slot is usually Kapalabhati, which `pranayama.json` rates 3/5/10
+    by experience. A pumping kriya held past its rating is a different practice —
+    which is precisely why `_FORCEFUL_PRANAYAMA` is exempt from the minutes
+    floor, and it would be incoherent to exempt it from a floor and then push it
+    through its ceiling. The hour's extra five minutes go to Bhramari and Anulom
+    Vilom, which are calming and rated 10 at advanced."""
+    plan = full_plan(pr=prefs(yoga_experience=experience,
+                              time_available_minutes=60))
+    for s in sessions(plan):
+        third = s["pranayama_section"][2]
+        assert third["duration_minutes"] == 5, (
+            f"the cleansing slot grew to {third['duration_minutes']} min "
+            f"({third['technique_name']})")
 
 
 def test_the_meditation_slot_is_gone():
@@ -1133,11 +1153,31 @@ def test_the_main_sequence_absorbs_the_added_length():
         session = plan["four_week_plan"][0]["days"][0]["session"]
         return sum(p["total_duration_seconds"] for p in session["main_sequence"])
 
-    # 45 against 60, where the structure is identical but for a minute of
-    # cool-down. (30 is not the comparison to make: that tier deliberately
-    # scales its own bookends down, so some of the difference is structural.)
+    # 45 against 60. What must hold is that the BOOKENDS do not grow: Surya
+    # Namaskar, the warm-up and savasana are identical at both tiers, so the
+    # added quarter hour goes to the practice and the prescribed breath (which
+    # the user deliberately raised from 15 to 20 at the hour) and nowhere else.
+    def blocks(minutes):
+        plan = generate_yoga_plan(
+            profile(), prefs(time_available_minutes=minutes,
+                             yoga_experience="advanced"), weeks=[1])
+        session = plan["four_week_plan"][0]["days"][0]["session"]
+        closing = next(p for p in session["cooldown"] if p["final_relaxation"])
+        return {
+            "sns": session["surya_namaskar"]["duration_minutes"],
+            "warmup": sum(p["total_duration_seconds"] for p in session["warmup"]),
+            "savasana": closing["total_duration_seconds"],
+        }
+
+    short, long = blocks(45), blocks(60)
+    assert short["sns"] == long["sns"]
+    assert short["savasana"] == long["savasana"]
+    assert abs(short["warmup"] - long["warmup"]) <= 30
+
     added_to_main = main_seconds(60) - main_seconds(45)
-    assert added_to_main >= 0.8 * 15 * 60, (
+    # The main sequence takes the largest single share of the added time: 15
+    # minutes added, 5 to pranayama, 1 to the cool-down, the rest to practice.
+    assert added_to_main >= 8 * 60, (
         f"only {added_to_main / 60:.1f} of the added 15 minutes reached the "
         f"main sequence")
 

@@ -1628,10 +1628,40 @@ _PRANAYAMA_MAX_SHARE = 0.25
 # insomnia, migraine, PTSD and a dozen more — who until now simply lost the third
 # slot. It becomes the breath their condition actually calls for.
 _DAILY_PRANAYAMA = [
-    {"id": "humming_bee",       "minutes": 5, "required": True},
-    {"id": "alternate_nostril", "minutes": 5},
-    {"slot": "third",           "minutes": 5},
+    {"id": "humming_bee",       "required": True},
+    {"id": "alternate_nostril"},
+    {"slot": "third"},
 ]
+
+# Minutes each slot asks for, by session tier (user decision 2026-08-15). The
+# hour has room for more breathwork than the three-quarter hour, and the growth
+# goes to Bhramari and Anulom Vilom — NOT to the third slot.
+#
+# The third slot is usually Kapalabhati, and `pranayama.json` rates it 3/5/10 by
+# experience. A pumping kriya held past its rating is a different practice, which
+# is the whole reason `_FORCEFUL_PRANAYAMA` is exempt from the minutes floor; it
+# would be incoherent to exempt it from a floor and then push it past its
+# ceiling. Bhramari and Anulom Vilom are calming, rated 10 at advanced, and have
+# no such limit — so they are where an hour's extra five minutes belong.
+#
+# The 30-minute tier is not listed separately: it asks for 5/5/5 like 45 and the
+# `_PRESCRIPTION_MAX_SHARE` budget trims it to 5/4/3, which is the existing
+# behaviour and already the right answer.
+_PRESCRIPTION_MINUTES = [
+    (45,  {"humming_bee": 5, "alternate_nostril": 5, "third": 5}),
+    (999, {"humming_bee": 8, "alternate_nostril": 7, "third": 5}),
+]
+
+
+def _prescription_minutes(session_minutes: int) -> dict:
+    for upper, asks in _PRESCRIPTION_MINUTES:
+        if session_minutes <= upper:
+            return asks
+    return _PRESCRIPTION_MINUTES[-1][1]
+
+
+def _slot_key(entry: dict) -> str:
+    return entry.get("id") or entry.get("slot")
 
 # Dosha default for the third slot, used when no protocol names one. Pitta gets
 # cooling breaths instead of Kapalabhati, which is heating; both are prescribed,
@@ -1772,9 +1802,14 @@ def pranayama_day_plan(pranayama_db, user_profile, yoga_prefs, day_num: int,
     # The required technique takes its full ask; the rest share what is left.
     # Shortening beats dropping — at 30 minutes all three still fit as 5/4/3,
     # and 3 minutes of Kapalabhati is its own rated beginner dose anyway.
+    asks = _prescription_minutes(session_minutes)
+
+    def ask(entry):
+        return asks[_slot_key(entry)]
+
     required = [(e, t) for e, t in resolved if e.get("required")]
     optional = [(e, t) for e, t in resolved if not e.get("required")]
-    spent = sum(e["minutes"] for e, _ in required)
+    spent = sum(ask(e) for e, _ in required)
     room = max(budget - spent, 0)
 
     while optional and room < len(optional) * _PRESCRIPTION_MIN_TECHNIQUE_MINUTES:
@@ -1783,9 +1818,9 @@ def pranayama_day_plan(pranayama_db, user_profile, yoga_prefs, day_num: int,
 
     shares = {}
     if optional:
-        asked = sum(e["minutes"] for e, _ in optional)
+        asked = sum(ask(e) for e, _ in optional)
         if asked <= room:
-            shares = {id(t): e["minutes"] for e, t in optional}
+            shares = {id(t): ask(e) for e, t in optional}
         else:
             base, extra = divmod(room, len(optional))
             for idx, (_e, t) in enumerate(optional):
@@ -1794,7 +1829,7 @@ def pranayama_day_plan(pranayama_db, user_profile, yoga_prefs, day_num: int,
     plan = []
     for entry, technique in resolved:
         if entry.get("required"):
-            plan.append((technique, entry["minutes"]))
+            plan.append((technique, ask(entry)))
         elif id(technique) in shares:
             plan.append((technique, shares[id(technique)]))
     # Only report a protocol-led third slot if it survived the budget trim.
