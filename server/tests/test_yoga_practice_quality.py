@@ -1312,3 +1312,39 @@ def test_no_forceful_kriya_reaches_either_end_of_the_age_range(age, age_label):
                 assert not (served & forceful), (
                     f"{age_label} with {condition} at {experience} was served "
                     f"{served & forceful}")
+
+
+def test_a_breath_withheld_by_age_does_not_blame_the_practitioners_conditions():
+    """Age exclusions used to live in the same set as the protocol avoid-lists,
+    so the reason was guessed from whether the practitioner happened to have any
+    condition at all. A 70-year-old with chronic fatigue was told Bhastrika was
+    contraindicated for their health conditions when their age was what withheld
+    it. Three independent axes, three independent answers."""
+    plan = generate_yoga_plan(
+        profile(age=72, medical_history=["chronic_fatigue"]),
+        prefs(yoga_experience="intermediate", time_available_minutes=60),
+        weeks=[1])
+    withheld = {e["name"]: e["reason"]
+                for e in plan["pranayama_safety_exclusions"]}
+    forceful = [n for n in withheld if "Kapalabhati" in n or "Bhastrika" in n]
+    assert forceful, f"expected a forceful kriya to be withheld: {withheld}"
+    for name in forceful:
+        assert "age" in withheld[name].lower(), (
+            f"{name} was withheld for age but explained as: {withheld[name]}")
+
+
+def test_a_protocols_first_choice_is_never_withheld_in_silence():
+    """The slot resolving is exactly when a substitution goes unmentioned: the
+    senior above simply received Surya Bhedana, with no word that the breath
+    their protocol names first had been withheld. Reporting only fired when the
+    slot came out EMPTY."""
+    plan = generate_yoga_plan(
+        profile(age=72, medical_history=["chronic_fatigue"]),
+        prefs(yoga_experience="intermediate", time_available_minutes=60),
+        weeks=[1])
+    session = plan["four_week_plan"][0]["days"][0]["session"]
+    # The slot resolved — this is the succeeding-fallback case, not the empty one.
+    assert len(session["pranayama_section"]) == 3
+    names = {e["name"] for e in plan["pranayama_safety_exclusions"]}
+    assert any("Bhastrika" in n for n in names), (
+        f"the withheld first choice was not reported: {names}")

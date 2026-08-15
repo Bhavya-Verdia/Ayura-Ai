@@ -1354,11 +1354,18 @@ def _pranayama_gates(user_profile, yoga_prefs, protocol_map=None):
     # correctly withheld from the same profile. Bellows breath is rapid forced
     # inhalation AND exhalation; the reason given below for the other two
     # applies to it word for word.
+    #
+    # Age exclusions are kept in their OWN set. Folding them into `avoid_ids`
+    # left the reason to be guessed from whether the practitioner happened to
+    # have any condition at all — so a 70-year-old with chronic fatigue was told
+    # Bhastrika was "contraindicated for your health conditions" when their age
+    # was what withheld it. Three independent axes, three independent answers.
+    age_avoid_ids = set()
     if age_group in ("senior", "youth"):
-        avoid_ids.update({"breath_retention", "skull_shining", "fire_essence",
-                          "bellows_breath"})
+        age_avoid_ids.update({"breath_retention", "skull_shining",
+                              "fire_essence", "bellows_breath"})
     if age_group == "youth":
-        avoid_ids.update({"root_lock_breath"})
+        age_avoid_ids.add("root_lock_breath")
 
     def allowed(pr: dict) -> str | None:
         """None if the technique may be used, else a short reason it may not."""
@@ -1366,8 +1373,10 @@ def _pranayama_gates(user_profile, yoga_prefs, protocol_map=None):
             return "pregnancy"
         if _pranayama_hard_blocked(pr, user_conditions):
             return "condition"
+        if pr.get("id", "") in age_avoid_ids:
+            return "age"
         if pr.get("id", "") in avoid_ids:
-            return "condition" if user_conditions else "age"
+            return "condition"
         if pr.get("level", "beginner") not in allowed_levels:
             return "level"
         if time_of_day == "evening" and pr.get("best_time") == "anytime":
@@ -1376,7 +1385,7 @@ def _pranayama_gates(user_profile, yoga_prefs, protocol_map=None):
             return "time_of_day"
         return None
 
-    return allowed, priority_ids, avoid_ids
+    return allowed, priority_ids, avoid_ids | age_avoid_ids
 
 
 def select_pranayama(user_profile, yoga_prefs, pranayama_db, count=3, protocol_map=None):
@@ -1778,7 +1787,14 @@ def pranayama_day_plan(pranayama_db, user_profile, yoga_prefs, day_num: int,
         else:
             candidates = [entry["id"]]
 
-        chosen, reason = None, None
+        # Every candidate a gate turned down before the slot resolved is
+        # reported, not just the ones that leave the slot empty. A succeeding
+        # fallback is exactly the case where the substitution goes unmentioned:
+        # a senior whose protocol asks for Bhastrika simply received Surya
+        # Bhedana, with no word that the breath their condition names first had
+        # been withheld. The same reasoning already applies to the dosha default
+        # below; this extends it to the protocol's own ranking.
+        chosen, blocked = None, []
         for pid in candidates:
             technique = by_id.get(pid)
             if technique is None:
@@ -1787,10 +1803,12 @@ def pranayama_day_plan(pranayama_db, user_profile, yoga_prefs, day_num: int,
             if why is None:
                 chosen = technique
                 break
-            reason = reason or (pid, why)
+            blocked.append({"id": pid, "reason": why})
+        # A slot that resolves reports what outranked the winner. A slot that
+        # fails entirely reports only its first choice — the practitioner needs
+        # one reason they lost the breath, not the whole rejected list.
+        dropped.extend(blocked if chosen is not None else blocked[:1])
         if chosen is None:
-            if reason:
-                dropped.append({"id": reason[0], "reason": reason[1]})
             continue
         resolved.append((entry, chosen))
         if "slot" in entry:
