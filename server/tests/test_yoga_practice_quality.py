@@ -1278,3 +1278,37 @@ def test_counterposing_survives_the_narrowed_cooldown_pool():
                 after = {p["category"] for p in ordered[i + 1:]}
                 assert after & set(_COUNTERPOSE_CATEGORIES), (
                     f"{pose['pose_name']} is left unresolved")
+
+
+@pytest.mark.parametrize("age,age_label", [(72, "senior"), (15, "youth")])
+def test_no_forceful_kriya_reaches_either_end_of_the_age_range(age, age_label):
+    """Contraindications, KB level and age are three independent axes, and the
+    forceful set has to be listed against ALL of them.
+
+    Bhastrika was excluded for youth only. A 70-year-old with chronic fatigue was
+    prescribed it — while Kapalabhati, a less forceful practice, was correctly
+    withheld from the same profile — because it sat one line below its siblings.
+    """
+    from services.yoga_plan_engine import _PROTOCOL_MAP
+
+    forceful = {"Bellows Breath", "Skull Shining", "Fire Essence",
+                "Breath Retention"}
+    # The conditions whose protocols actively ask for a forceful practice are
+    # the ones that would surface the gap.
+    conditions = [c for c, p in _PROTOCOL_MAP.items()
+                  if {"bellows_breath", "skull_shining", "fire_essence"}
+                  & set(p.get("priority_pranayama_ids", []))]
+    assert conditions, "no protocol prioritises a forceful kriya — test is inert"
+
+    for condition in conditions:
+        for experience in ("beginner", "intermediate", "advanced"):
+            plan = generate_yoga_plan(
+                profile(age=age, medical_history=[condition]),
+                prefs(yoga_experience=experience, time_available_minutes=60),
+                weeks=[1])
+            for day in plan["four_week_plan"][0]["days"]:
+                served = {t["technique_name"]
+                          for t in day["session"]["pranayama_section"]}
+                assert not (served & forceful), (
+                    f"{age_label} with {condition} at {experience} was served "
+                    f"{served & forceful}")

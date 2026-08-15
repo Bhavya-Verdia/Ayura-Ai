@@ -1348,10 +1348,17 @@ def _pranayama_gates(user_profile, yoga_prefs, protocol_map=None):
 
     # See the note in select_pranayama: contraindications, KB level and age are
     # three independent axes.
+    # Bhastrika belongs with its siblings here, not one line down. It was
+    # excluded for youth only, so a 70-year-old with chronic fatigue was
+    # prescribed it — while Kapalabhati, a *less* forceful practice, was
+    # correctly withheld from the same profile. Bellows breath is rapid forced
+    # inhalation AND exhalation; the reason given below for the other two
+    # applies to it word for word.
     if age_group in ("senior", "youth"):
-        avoid_ids.update({"breath_retention", "skull_shining", "fire_essence"})
+        avoid_ids.update({"breath_retention", "skull_shining", "fire_essence",
+                          "bellows_breath"})
     if age_group == "youth":
-        avoid_ids.update({"root_lock_breath", "bellows_breath"})
+        avoid_ids.update({"root_lock_breath"})
 
     def allowed(pr: dict) -> str | None:
         """None if the technique may be used, else a short reason it may not."""
@@ -1422,10 +1429,12 @@ def select_pranayama(user_profile, yoga_prefs, pranayama_db, count=3, protocol_m
     # abdominal pumping raises intra-abdominal and intra-thoracic pressure, which
     # is the wrong thing to do unsupervised at either end of the age range.
     # Contraindications and level are different axes; age is a third.
+    # Bhastrika sits with them for the same reason — see `_pranayama_gates`.
     if age_group in ("senior", "youth"):
-        protocol_avoid_ids.update({"breath_retention", "skull_shining", "fire_essence"})
+        protocol_avoid_ids.update({"breath_retention", "skull_shining",
+                                   "fire_essence", "bellows_breath"})
     if age_group == "youth":
-        protocol_avoid_ids.update({"root_lock_breath", "bellows_breath"})
+        protocol_avoid_ids.update({"root_lock_breath"})
 
     scored = []
     for pr in pranayama_db:
