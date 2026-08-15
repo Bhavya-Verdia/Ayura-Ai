@@ -152,20 +152,56 @@ _SNS_MODIFICATION_TAGS = {
     "lower_back_pain", "knee_injury",
 }
 
-# Dosha-based pacing: (rounds_beginner, rounds_intermediate, rounds_advanced, breaths_per_step)
+# Dosha-based pacing.
+#
+# Rounds used to be the constitutional signal — Kapha did 8 where Vata did 2 —
+# which made the block anywhere from 2 to 8 minutes long and left the session's
+# opening a different length for everybody. Surya Namaskar is now a FIXED slot
+# (`_SESSION_STRUCTURE`) and the dosha sets the *pace* instead, so the rounds
+# fall out of how fast you move through the slot. Nothing constitutional is
+# lost: Kapha still flows vigorously and covers more ground in the same five
+# minutes, Vata still moves slowly and covers less. Experience shifts the pace
+# by a second a step for the same reason.
+_SNS_SECONDS_PER_STEP = {"slow": 6, "moderate": 5, "vigorous": 4}
+_SNS_EXPERIENCE_PACE = {"beginner": 1, "intermediate": 0, "advanced": -1}
+
+# Rest between rounds, which the practitioner spends in Downward Dog.
+_SNS_INTER_ROUND_SECONDS = 15
+
 _SNS_DOSHA_CONFIG = {
-    "vata":  {"rounds": {"beginner": 2, "intermediate": 3, "advanced": 4},
-               "pace": "slow",  "pace_note": "Move slowly and mindfully — 1 breath per movement. Prioritise steadiness over speed to ground Vata energy."},
-    "pitta": {"rounds": {"beginner": 3, "intermediate": 5, "advanced": 6},
-               "pace": "moderate", "pace_note": "Moderate pace — avoid overheating. Rest in Downward Dog for 5 breaths between rounds. Never compete with yourself."},
-    "kapha": {"rounds": {"beginner": 4, "intermediate": 6, "advanced": 8},
-               "pace": "vigorous", "pace_note": "Vigorous, continuous flow. Build heat with purpose — Kapha benefits most from dynamic sequences that activate metabolic fire."},
+    "vata":  {"pace": "slow",  "pace_note": "Move slowly and mindfully — 1 breath per movement. Prioritise steadiness over speed to ground Vata energy."},
+    "pitta": {"pace": "moderate", "pace_note": "Moderate pace — avoid overheating. Rest in Downward Dog for 5 breaths between rounds. Never compete with yourself."},
+    "kapha": {"pace": "vigorous", "pace_note": "Vigorous, continuous flow. Build heat with purpose — Kapha benefits most from dynamic sequences that activate metabolic fire."},
 }
 
 
+def _sns_rounds_for_budget(seconds_per_step: int, target_seconds: int) -> tuple[int, int]:
+    """Rounds that land closest to the slot, and the seconds they actually take.
+
+    Twelve steps is indivisible, so the block cannot hit the target exactly —
+    it lands on whichever whole number of rounds is nearest, which across the
+    dosha × experience grid means 4.7 to 5.6 minutes against a 5-minute slot.
+    """
+    round_seconds = 12 * seconds_per_step
+    step = round_seconds + _SNS_INTER_ROUND_SECONDS
+    lower = max(1, int((target_seconds + _SNS_INTER_ROUND_SECONDS) // step))
+    best = min(
+        (lower, lower + 1),
+        key=lambda r: abs(r * round_seconds + (r - 1) * _SNS_INTER_ROUND_SECONDS
+                          - target_seconds),
+    )
+    return best, best * round_seconds + (best - 1) * _SNS_INTER_ROUND_SECONDS
+
+
 def _build_surya_namaskar_block(user_profile: dict, yoga_prefs: dict,
-                                 contra_tags: set, age_group: str) -> dict | None:
-    """Return a Surya Namaskar flow block or None if contraindicated."""
+                                 contra_tags: set, age_group: str,
+                                 target_seconds: int) -> dict | None:
+    """Return a Surya Namaskar flow block or None if contraindicated.
+
+    `target_seconds` is the fixed slot the session reserves for it. The gates
+    below still return None outright — a fixed slot is a statement about how
+    long the practice opens for, never a reason to serve a contraindicated one.
+    """
     time_of_day = (yoga_prefs.get("time_of_day_preference") or "morning").lower()
 
     # Surya Namaskar is a solar practice — morning only
@@ -188,14 +224,18 @@ def _build_surya_namaskar_block(user_profile: dict, yoga_prefs: dict,
 
     dosha = user_profile.get("dominant_dosha", "vata") or "vata"
     dosha_cfg = _SNS_DOSHA_CONFIG.get(dosha, _SNS_DOSHA_CONFIG["vata"])
-    rounds_map = dosha_cfg["rounds"]
+    seconds_per_step = max(3, _SNS_SECONDS_PER_STEP[dosha_cfg["pace"]]
+                           + _SNS_EXPERIENCE_PACE.get(exp, 1))
 
-    # Senior: 1 round, chair-supported
+    # Senior: 1 round, chair-supported. This is the one profile that does NOT
+    # fill the slot — a chair-supported round is not something to repeat four
+    # times to reach a number — and the minutes it gives back go to asana.
     if age_group == "senior":
         rounds = 1
+        block_seconds = 12 * seconds_per_step
         modification = "Chair-supported Surya Namaskar: perform Steps 1-3 and 10-12 standing. Replace Steps 4-9 with seated chair poses. Always keep one hand on the chair back."
     else:
-        rounds = rounds_map.get(exp, rounds_map["beginner"])
+        rounds, block_seconds = _sns_rounds_for_budget(seconds_per_step, target_seconds)
         modification = None
 
     # Soft modifications for wrist/BP/back — don't skip, just note
@@ -209,12 +249,10 @@ def _build_surya_namaskar_block(user_profile: dict, yoga_prefs: dict,
     if contra_tags.intersection({"knee_injury"}):
         warnings.append("Knee injury: skip the Equestrian (Steps 4 & 9) or use a supported low lunge with the back knee on a blanket.")
 
-    # Duration estimate: ~4-5 seconds per step × 12 steps × rounds + rest
-    duration_minutes = round((rounds * 12 * 5) / 60 + (rounds - 1) * 0.25, 1)
-
     return {
         "rounds": rounds,
-        "duration_minutes": duration_minutes,
+        "duration_minutes": round(block_seconds / 60, 1),
+        "seconds_per_step": seconds_per_step,
         "pace": dosha_cfg["pace"],
         "pace_note": dosha_cfg["pace_note"],
         "senior_modification": modification,
@@ -1454,8 +1492,51 @@ def select_pranayama(user_profile, yoga_prefs, pranayama_db, count=3, protocol_m
 # are now filled against a real second-by-second budget derived from the
 # requested duration, so the plan delivers the practice length the user chose.
 
-# Fraction of the *asana* budget (what is left after the fixed blocks below) that
-# each section receives.
+# ── Fixed session structure (user decision 2026-08-15) ───────────────────────
+# Surya Namaskar, the warm-up, the cool-down and savasana are now FIXED slots,
+# not shares of whatever is left over. The practitioner asked for a session with
+# a shape they can recognise from one day to the next: five minutes of sun
+# salutations, five of warm-up, the asana practice, a short cool-down, two
+# minutes of savasana. Everything not listed here — the main sequence — takes
+# the remainder, so lengthening the session lengthens the practice rather than
+# inflating its bookends.
+#
+# The thirty-minute tier is scaled to 3/3/3, not held at 5/5/6. At half an hour
+# the prescribed breathwork already takes twelve minutes; a full-size opening
+# and closing on top would have left six minutes of asana in a yoga session.
+#
+# (seconds) — keys are the upper bound of the tier they describe.
+_SESSION_STRUCTURE = [
+    (30, {"surya_namaskar": 180, "warmup": 180, "cooldown": 180, "savasana": 120}),
+    (45, {"surya_namaskar": 300, "warmup": 300, "cooldown": 300, "savasana": 120}),
+    (999, {"surya_namaskar": 300, "warmup": 300, "cooldown": 360, "savasana": 120}),
+]
+
+
+def session_structure(mins: int) -> dict:
+    """Fixed slot lengths, in seconds, for a session of `mins` minutes.
+
+    Preferences stored before the three-tier UI landed can still be anything
+    from 15 to 90 (`preferences_schema`), so anything below the 30-minute tier
+    is scaled down proportionally rather than being served a structure that
+    does not fit inside it.
+    """
+    for upper, slots in _SESSION_STRUCTURE:
+        if mins <= upper:
+            if mins >= 30:
+                return dict(slots)
+            # Savasana is a floor, not a share: two minutes of stillness is the
+            # shortest that is worth lying down for.
+            scale = mins / 30
+            return {k: (v if k == "savasana" else max(60, int(v * scale)))
+                    for k, v in slots.items()}
+    return dict(_SESSION_STRUCTURE[-1][1])
+
+
+# How the *remaining* asana budget divides between the main sequence and any
+# cool-down time the fixed slot above could not absorb. The warm-up and cooldown
+# no longer draw shares — they are priced by `session_structure` — so this is
+# only consulted where a legacy caller passes no structure at all.
 _SECTION_SPLIT = {"warmup": 0.22, "main": 0.55, "cooldown": 0.23}
 
 # Share of EACH section's budget that stays the same all week; the rest rotates
@@ -1475,9 +1556,13 @@ _CORE_SHARE = 0.92
 # How far past its budget a section may land to avoid stopping short.
 _MAX_SECTION_OVERSHOOT = 0.12
 
-# Held final relaxation and seated meditation scale with session length rather
-# than sitting at a fixed 5 and 7 minutes, which would eat a third of a short
-# practice. (minutes_available_upper_bound, savasana_seconds, dharana_seconds)
+# Seated meditation scales with session length rather than sitting at a fixed
+# 7 minutes, which would eat a third of a short practice. The savasana column is
+# HISTORICAL — savasana is now a flat 2 minutes from `session_structure`, and
+# this records what it scaled to before that. `_closing_budget` reads only the
+# dharana column, which still needs its scaling if `_INCLUDE_DHARANA` is ever
+# turned back on.
+# (minutes_available_upper_bound, savasana_seconds, dharana_seconds)
 _CLOSING_BUDGET = [
     (15,  120, 120),
     (20,  180, 180),
@@ -1489,7 +1574,15 @@ _CLOSING_BUDGET = [
 
 # Surya Namaskar, pranayama, meditation and final relaxation together may not
 # take more than this share of a session — the rest belongs to asana.
-_MAX_FIXED_BLOCK_SHARE = 0.55
+#
+# Raised from 0.55 to 0.60 when the slots became fixed. At the 30-minute tier
+# the intended structure is 3 + 12 + 2 = 17 of 30 minutes, which is 0.567: the
+# old ceiling trimmed a structure that was deliberate rather than an overrun,
+# and because rounds are whole numbers a 10% trim cost Surya Namaskar half its
+# slot (3.0 minutes down to 1.4). It still binds where it was meant to — a
+# legacy 15-minute preference wants 0.63 — so a short session cannot become
+# breathwork with a token asana practice attached.
+_MAX_FIXED_BLOCK_SHARE = 0.60
 
 # ── Pranayama policy ──────────────────────────────────────────────────────────
 # Every session gets real breathwork: at least five minutes, at most ten.
@@ -1718,8 +1811,10 @@ def _scale_surya_namaskar(sns: dict | None, scale: float) -> tuple[dict | None, 
         return sns, int(sns.get("duration_minutes", 0) * 60)
     scaled = dict(sns)
     scaled["rounds"] = rounds
-    scaled["duration_minutes"] = round((rounds * 12 * 5) / 60 + (rounds - 1) * 0.25, 1)
-    return scaled, int(scaled["duration_minutes"] * 60)
+    per_step = sns.get("seconds_per_step", 5)
+    seconds = rounds * 12 * per_step + (rounds - 1) * _SNS_INTER_ROUND_SECONDS
+    scaled["duration_minutes"] = round(seconds / 60, 1)
+    return scaled, seconds
 
 
 # The seated meditation slot was removed from the session (user decision
@@ -1731,10 +1826,19 @@ _INCLUDE_DHARANA = False
 
 
 def _closing_budget(mins: int) -> tuple[int, int]:
-    for upper, sav, dharana in _CLOSING_BUDGET:
+    """(savasana_seconds, dharana_seconds) for a session of `mins` minutes.
+
+    Savasana no longer scales with the session — it is a flat two minutes at
+    every tier and every experience level (user decision 2026-08-15), so it
+    comes from `session_structure`. The `_CLOSING_BUDGET` savasana column is
+    kept only as the record of what it used to be; `dharana` still reads from
+    it, since restoring the meditation slot means restoring its scaling too.
+    """
+    savasana = session_structure(mins)["savasana"]
+    for upper, _sav, dharana in _CLOSING_BUDGET:
         if mins <= upper:
-            return sav, (dharana if _INCLUDE_DHARANA else 0)
-    return _CLOSING_BUDGET[-1][1], (_CLOSING_BUDGET[-1][2] if _INCLUDE_DHARANA else 0)
+            return savasana, (dharana if _INCLUDE_DHARANA else 0)
+    return savasana, (_CLOSING_BUDGET[-1][2] if _INCLUDE_DHARANA else 0)
 
 
 # No pose other than the closing relaxation is held longer than this. The week-3
@@ -1809,9 +1913,39 @@ _STANDALONE_PRACTICES = {"yoga_nidra_pose"}
 # Lying rest poses. They belong in a cooldown, never as the opening of a practice.
 _REST_POSES = {"reverse_corpse_pose", "constructive_rest"}
 
+# A cool-down pose held this long or longer is a restorative practice in its own
+# right, not the unwinding after one. Judged at the practitioner's experience
+# level rather than the beginner column, because that is the length they will
+# actually hold it for: Supta Virasana is two minutes for a beginner and four
+# for an advanced practitioner, and only the second is a second savasana.
+_LONG_RESTORATIVE_SECONDS = 150
+
+
+def _is_long_restorative(pose: dict, exp: str) -> bool:
+    durations = pose.get("duration_seconds") or {}
+    if not isinstance(durations, dict):
+        return (durations or 0) >= _LONG_RESTORATIVE_SECONDS
+    base = durations.get(exp, durations.get("beginner", 0)) or 0
+    return base >= _LONG_RESTORATIVE_SECONDS
+
+
+# Time the recovery day sets aside for one supported restorative hold, taken
+# out of that day's asana budget rather than out of the cool-down slot — the
+# cool-down core has to stay day-independent or day 7 recomputes its own.
+_RECOVERY_HOLD_SECONDS = 240
+
+
+def _is_recovery_day(arc: dict) -> bool:
+    """Day 7, or any day feedback has softened all the way to restorative."""
+    return arc.get("key") == "restorative"
+
 # Below this many safe poses, a 4-week plan cannot avoid repeating heavily. The
 # plan says so rather than presenting the repetition as the intended design.
 _MIN_VARIED_POOL = 30
+
+# Spare accent poses, beyond what a day already uses, below which a week is not
+# rotating in any sense the practitioner would recognise.
+_MIN_ROTATION_SPARE = 1
 
 # Categories too vigorous to open a practice cold, whatever their level.
 _NON_WARMUP_CATEGORIES = {"inversion", "backbend", "balancing", "twist"}
@@ -2026,6 +2160,29 @@ def build_sequence(filtered_poses, yoga_prefs, user_profile, day_num: int, week:
     cooldown_pool = [p for p in pose_pool if selectable(p)
                      and (p.get("sequence_role") == "cooldown"
                           or p.get("category") in ["supine", "forward_fold", "restorative", "twist"])]
+    # The cool-down pool is two populations wearing one label. Twenty-two of its
+    # poses are 20-90 second unwinding work — forward folds, supine releases,
+    # the twist, and Matsyasana, which is what neutralises Sarvangasana. The
+    # other eight are 2.5-7 minute prop-supported restorative holds, and drawing
+    # one into an ordinary Tuesday put Salamba Paschimottanasana at four minutes
+    # immediately in front of savasana: a session ending in two savasanas.
+    #
+    # Long holds are therefore reserved for the recovery day, where the length
+    # IS the practice. Everything else gets the short work every day.
+    #
+    # The widening is on the ACCENT only. The week's cool-down core is rebuilt
+    # on every day from whatever pool it is handed, so a pool that grows on day
+    # 7 would recompute a different core there and leave the recovery day
+    # sharing nothing with the rest of the week — the same leak that made the
+    # arc filter the core last time. `cooldown_core_pool` is day-independent by
+    # construction; only `cooldown_pool` moves. Same shape as `widen_accent`.
+    everyday_cooldown = [p for p in cooldown_pool if not _is_long_restorative(p, exp)]
+    # Never let the filter empty the pool: a heavily restricted profile may have
+    # nothing but restorative poses left, and a cool-down that exists is worth
+    # more than one that matches the policy.
+    cooldown_core_pool = everyday_cooldown or cooldown_pool
+    if not _is_recovery_day(arc):
+        cooldown_pool = cooldown_core_pool
     savasana_pool = [p for p in pose_pool if is_final_relaxation(p)]
     main_pool     = [p for p in pose_pool if selectable(p)
                      and p.get("sequence_role") == "main"]
@@ -2064,17 +2221,27 @@ def build_sequence(filtered_poses, yoga_prefs, user_profile, day_num: int, week:
 
     # Savasana is already priced out of the asana budget by the caller, so the
     # cooldown share must not subtract it a second time.
-    main_budget     = int(asana_budget_seconds * _SECTION_SPLIT["main"])
-    warmup_budget   = int(asana_budget_seconds * _SECTION_SPLIT["warmup"])
-    cooldown_budget = int(asana_budget_seconds * _SECTION_SPLIT["cooldown"])
+    #
+    # The warm-up and cool-down are FIXED slots, so the main sequence — not the
+    # bookends — absorbs whatever the session length gives it. Under the old
+    # shares a sixty-minute practice spent seven minutes warming up and seven
+    # cooling down; the length the practitioner added went mostly to the parts
+    # either side of the practice.
+    structure = session_structure(mins)
+    warmup_budget   = min(structure["warmup"], asana_budget_seconds // 2)
+    cooldown_budget = min(structure["cooldown"], asana_budget_seconds // 2)
+    main_budget     = max(asana_budget_seconds - warmup_budget - cooldown_budget,
+                          int(asana_budget_seconds * _SECTION_SPLIT["main"]))
 
     # The week's core is selected against the standard asana budget even on days
     # that have less of it — a breathwork day stops earlier in the same sequence
-    # instead of building its own.
+    # instead of building its own. The fixed slots do not vary by day, so only
+    # the main sequence needs a separate reference budget.
     core_ref = core_budget_seconds or asana_budget_seconds
-    core_main_budget     = int(core_ref * _SECTION_SPLIT["main"])
-    core_warmup_budget   = int(core_ref * _SECTION_SPLIT["warmup"])
-    core_cooldown_budget = int(core_ref * _SECTION_SPLIT["cooldown"])
+    core_main_budget     = max(core_ref - warmup_budget - cooldown_budget,
+                               int(core_ref * _SECTION_SPLIT["main"]))
+    core_warmup_budget   = warmup_budget
+    core_cooldown_budget = cooldown_budget
 
     # The main sequence claims the pool first. Filling warmup first meant that on
     # a heavily restricted profile the handful of safe poses were spent on the
@@ -2160,7 +2327,7 @@ def build_sequence(filtered_poses, yoga_prefs, user_profile, day_num: int, week:
              max(4, min(18, core_main_budget // 45))),
             ("warmup",   warmup_pool,   core_warmup_ref,
              max(2, min(6, core_warmup_budget // 45))),
-            ("cooldown", cooldown_pool, core_cooldown_budget,
+            ("cooldown", cooldown_core_pool, core_cooldown_budget,
              max(2, min(6, core_cooldown_budget // 45)))):
         core_budget = int(budget * _CORE_SHARE)
         picked = _fill_to_budget(pool, core_budget, exp, week, age_group,
@@ -2197,7 +2364,14 @@ def build_sequence(filtered_poses, yoga_prefs, user_profile, day_num: int, week:
     # the week is one practice repeated. That is the honest outcome — inventing
     # rotation would mean serving poses the filter excluded — but it must not be
     # presented as a rotating week. Same reasoning as `pool_limited`.
-    rotation_limited = len(accent_pool) - len(main_seq) <= 0
+    #
+    # One spare pose is not rotation. The threshold used to be zero spare, which
+    # made the disclosure knife-edge: a beginner week sat at exactly one spare,
+    # and re-pricing the sections by nine seconds took one pose off the main
+    # sequence and silently switched the notice off for every beginner. What the
+    # flag claims is that the week cannot meaningfully move, and a week whose
+    # accent can swap a single pose cannot. `_MIN_ROTATION_SPARE` is the margin.
+    rotation_limited = len(accent_pool) - len(main_seq) <= _MIN_ROTATION_SPARE
 
     all_used |= opener_ids
     # The opener is fixed for the week, so it is core by definition.
@@ -2240,6 +2414,28 @@ def build_sequence(filtered_poses, yoga_prefs, user_profile, day_num: int, week:
         "main":     _hold_multiplier(main_seq, main_budget, exp, week, age_group, 2.0, day_mult),
         "cooldown": _hold_multiplier(cooldown, cooldown_budget, exp, week, age_group, 2.5, day_mult),
     }
+
+    # ── The recovery day's one long hold ─────────────────────────────────────
+    # Reserving the long restorative poses "for Sunday" delivered nothing on its
+    # own: at a 92% core there is no accent room anywhere, so day 7 came out as
+    # the same standing practice held a quarter longer. The hold is therefore
+    # appended like savasana — outside the sections, priced out of the recovery
+    # day's asana budget by the caller (`_RECOVERY_HOLD_SECONDS`) so the day is
+    # the week's sequence stopped earlier, not a different one.
+    #
+    # It sits AFTER `_arc_sort`, which puts it last in the cool-down and so
+    # immediately before savasana: the recovery day closes on a supported hold.
+    recovery_hold = None
+    if _is_recovery_day(arc):
+        long_pool = [p for p in cooldown_pool
+                     if _is_long_restorative(p, exp) and p["id"] not in all_used]
+        picked = _fill_to_budget(long_pool, _RECOVERY_HOLD_SECONDS, exp, week,
+                                 age_group, f"{user_id}-recovery-hold-w{week}",
+                                 min_poses=1, max_poses=1)
+        if picked:
+            recovery_hold = picked[0]
+            cooldown.append(recovery_hold)
+            all_used.add(recovery_hold["id"])
 
     if savasana_pool:
         cooldown.append(savasana_pool[0])
@@ -2382,7 +2578,15 @@ def build_yoga_day(sequence: dict, pranayama: list, yoga_prefs: dict,
         # already at the ceiling gets stretched straight past it.
         stretched = (pose_hold_seconds(pose, exp, week, age_group, day_mult)
                      * mult.get(section, 1.0))
-        return int(min(stretched, _MAX_POSE_HOLD_SECONDS))
+        ceiling = _MAX_POSE_HOLD_SECONDS
+        # Keeping long restorative POSES out of a weekday cool-down is only half
+        # the rule — where the pool is thin the multiplier stretches whatever is
+        # left, and a beginner's Supta Matsyendrasana came out at nearly three
+        # minutes directly in front of savasana. One number governs both which
+        # poses may appear and how long any of them may run.
+        if section == "cooldown" and not _is_recovery_day(arc):
+            ceiling = min(ceiling, _LONG_RESTORATIVE_SECONDS)
+        return int(min(stretched, ceiling))
 
     warmup_fmt = [format_pose(p, exp, week, age_group, hold_override=_hold(p, "warmup"),
                               modification_experience=mod_exp)
@@ -2423,7 +2627,9 @@ def build_yoga_day(sequence: dict, pranayama: list, yoga_prefs: dict,
     # caller so its cost can be subtracted from the asana budget before the
     # sequence is filled; rebuilt here only when called directly.
     if sns is None:
-        sns = _build_surya_namaskar_block(user_profile, yoga_prefs, contra_tags or set(), age_group)
+        sns = _build_surya_namaskar_block(
+            user_profile, yoga_prefs, contra_tags or set(), age_group,
+            session_structure(yoga_prefs.get("time_available_minutes", 30))["surya_namaskar"])
 
     # Dharana/meditation slot — dosha-matched, scaled to the session length
     dharana = None
@@ -2686,9 +2892,11 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
     # are filled, so the sum of the parts lands on the duration the user asked
     # for rather than a third of it.
     session_minutes = yoga_prefs.get("time_available_minutes", 30)
+    structure = session_structure(session_minutes)
     savasana_seconds, dharana_seconds = _closing_budget(session_minutes)
     sns_block = _build_surya_namaskar_block(user_profile, yoga_prefs,
-                                           user_contra_tags, age_group)
+                                           user_contra_tags, age_group,
+                                           structure["surya_namaskar"])
     sns_seconds = int((sns_block or {}).get("duration_minutes", 0) * 60)
     # Every day runs the same prescribed stack, so the budget prices it once.
     # The cleansing slot alternates for Pitta, but both options are the same
@@ -2789,13 +2997,22 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
             if i in rest_days:
                 week_days.append({"day": i, "day_name": day_name, "session": None, "rest": True})
             else:
+                # The recovery day pays for its one supported hold out of its own
+                # asana budget, but its week core is still selected against the
+                # standard one — so it is the same sequence stopped earlier, not
+                # a sequence of its own. Same mechanism the breathwork focus day
+                # used before the prescription replaced it.
+                day_budget = asana_budget
+                if _is_recovery_day(_day_intensity(i, adjustment)):
+                    day_budget = max(asana_budget - _RECOVERY_HOLD_SECONDS, 180)
                 seq = build_sequence(filtered_poses, yoga_prefs, user_profile,
                                      day_num=i, week=week, user_id=user_id,
                                      week_allowed_levels=week_levels,
-                                     asana_budget_seconds=asana_budget,
+                                     asana_budget_seconds=day_budget,
                                      savasana_seconds=savasana_seconds,
                                      age_group=age_group,
-                                     adjustment=adjustment)
+                                     adjustment=adjustment,
+                                     core_budget_seconds=asana_budget)
 
                 # The same prescribed stack every day. Only the cleansing slot
                 # moves, and only for Pitta, where Sitali and Sitkari alternate.

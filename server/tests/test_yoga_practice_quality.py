@@ -1040,3 +1040,201 @@ def test_the_figure_reaches_the_client():
 
     undrawn = next(p for p in yoga_poses if not p.get("figure"))
     assert format_pose(undrawn, "intermediate", week=1)["figure"] is None
+
+
+# ── Fixed session structure (2026-08-15) ─────────────────────────────────────
+# Surya Namaskar, the warm-up, the cool-down and savasana became fixed slots
+# rather than shares of the leftover budget. Before this the bookends absorbed
+# the length the practitioner added: a 60-minute session spent 4.8 minutes on
+# sun salutations, 7.2 warming up and 7 in savasana, and the main sequence took
+# what was left. The tests below pin the slots and, just as importantly, pin
+# what a fixed slot must NEVER do — override a safety gate to fill itself.
+
+def _sns(session):
+    return session["surya_namaskar"]
+
+
+def _closing(session):
+    return next(p for p in session["cooldown"] if p["final_relaxation"])
+
+
+@pytest.mark.parametrize("minutes,slot", [(30, 3.0), (45, 5.0), (60, 5.0)])
+@pytest.mark.parametrize("dosha", ["vata", "pitta", "kapha"])
+@pytest.mark.parametrize("experience", ["beginner", "intermediate", "advanced"])
+def test_surya_namaskar_fills_its_slot_whatever_the_constitution(
+        minutes, slot, dosha, experience):
+    """Rounds used to BE the constitutional signal — Kapha did 8 where Vata did
+    2 — so the block ran anywhere from 2 to 8 minutes and the session opened at
+    a different length for everybody. The dosha now sets the pace and the rounds
+    fall out of the slot, so Kapha still covers more ground in the same time."""
+    plan = generate_yoga_plan(
+        profile(dominant_dosha=dosha, vikriti_dominant=dosha),
+        prefs(time_available_minutes=minutes, yoga_experience=experience),
+        weeks=[1])
+    for day in plan["four_week_plan"][0]["days"]:
+        block = _sns(day["session"])
+        # Twelve steps is indivisible, so the block lands on the nearest whole
+        # number of rounds rather than exactly on the slot.
+        assert abs(block["duration_minutes"] - slot) <= 0.75, (
+            f"{dosha}/{experience} @ {minutes}min: Surya Namaskar is "
+            f"{block['duration_minutes']} min against a {slot} min slot")
+        assert block["rounds"] >= 1
+
+
+def test_a_faster_pace_buys_more_rounds_not_more_time():
+    """What the dosha and experience level actually change now."""
+    def rounds(dosha, experience):
+        plan = generate_yoga_plan(
+            profile(dominant_dosha=dosha, vikriti_dominant=dosha),
+            prefs(time_available_minutes=60, yoga_experience=experience),
+            weeks=[1])
+        return _sns(plan["four_week_plan"][0]["days"][0]["session"])["rounds"]
+
+    assert rounds("kapha", "advanced") > rounds("vata", "beginner")
+    assert rounds("vata", "advanced") >= rounds("vata", "beginner")
+
+
+@pytest.mark.parametrize("minutes,slot_minutes", [(30, 3), (45, 5), (60, 5)])
+@pytest.mark.parametrize("experience", ["beginner", "intermediate", "advanced"])
+def test_the_warmup_is_a_fixed_slot(minutes, slot_minutes, experience):
+    """It used to be 22% of whatever was left, so adding half an hour to the
+    session added two and a half minutes of warm-up."""
+    plan = generate_yoga_plan(profile(),
+                              prefs(time_available_minutes=minutes,
+                                    yoga_experience=experience),
+                              weeks=[1])
+    for day in plan["four_week_plan"][0]["days"]:
+        held = sum(p["total_duration_seconds"] for p in day["session"]["warmup"])
+        assert held <= slot_minutes * 60 * 1.15, (
+            f"{experience} @ {minutes}min: warm-up ran {held / 60:.1f} min "
+            f"against a {slot_minutes} min slot")
+
+
+@pytest.mark.parametrize("minutes", [30, 45, 60])
+@pytest.mark.parametrize("experience", ["beginner", "intermediate", "advanced"])
+def test_savasana_is_two_minutes_at_every_tier_and_level(minutes, experience):
+    """It scaled 4/5/7 minutes with session length and up to 10 for an advanced
+    practitioner. Two minutes flat is a user decision, so it is pinned here
+    rather than left to `_CLOSING_BUDGET`, whose savasana column is now dead."""
+    plan = generate_yoga_plan(profile(),
+                              prefs(time_available_minutes=minutes,
+                                    yoga_experience=experience),
+                              weeks=[1])
+    for day in plan["four_week_plan"][0]["days"]:
+        assert _closing(day["session"])["total_duration_seconds"] == 120
+
+
+def test_the_main_sequence_absorbs_the_added_length():
+    """The point of the fixed slots: a longer session is a longer PRACTICE."""
+    def main_seconds(minutes):
+        plan = generate_yoga_plan(
+            profile(), prefs(time_available_minutes=minutes,
+                             yoga_experience="advanced"), weeks=[1])
+        session = plan["four_week_plan"][0]["days"][0]["session"]
+        return sum(p["total_duration_seconds"] for p in session["main_sequence"])
+
+    # 45 against 60, where the structure is identical but for a minute of
+    # cool-down. (30 is not the comparison to make: that tier deliberately
+    # scales its own bookends down, so some of the difference is structural.)
+    added_to_main = main_seconds(60) - main_seconds(45)
+    assert added_to_main >= 0.8 * 15 * 60, (
+        f"only {added_to_main / 60:.1f} of the added 15 minutes reached the "
+        f"main sequence")
+
+
+# ── The fixed slots must never widen a gate ──────────────────────────────────
+
+def test_a_fixed_slot_does_not_serve_a_contraindicated_surya_namaskar():
+    """A slot is a statement about length, never a reason to fill it. Each of
+    these returned None before and must still, even though the session now has
+    five minutes reserved and nothing else to put in them."""
+    evening = generate_yoga_plan(
+        profile(), prefs(time_of_day_preference="evening"), weeks=[1])
+    pregnant = generate_yoga_plan(
+        profile(pregnancy_or_nursing=True), prefs(), weeks=[1])
+    for plan in (evening, pregnant):
+        for day in plan["four_week_plan"][0]["days"]:
+            assert day["session"]["surya_namaskar"] is None
+
+
+def test_a_senior_is_not_given_four_rounds_to_fill_the_slot():
+    """One chair-supported round is the prescription. Repeating it to reach five
+    minutes would be the fixed slot overriding the age modification; the minutes
+    it gives back go to asana instead."""
+    plan = generate_yoga_plan(profile(age=72), prefs(time_available_minutes=60),
+                              weeks=[1])
+    for day in plan["four_week_plan"][0]["days"]:
+        block = _sns(day["session"])
+        if block:
+            assert block["rounds"] == 1
+            assert block["senior_modification"]
+
+
+# ── Cool-down: unwinding work daily, long holds on the recovery day ──────────
+
+def test_no_weekday_cooldown_holds_a_second_savasana():
+    """The cool-down pool is two populations under one label: 22 poses of 20-90
+    second unwinding work, and 8 prop-supported restorative holds of 2.5-7
+    minutes. Drawing one of the latter put Salamba Paschimottanasana at four
+    minutes directly in front of savasana — a session ending twice."""
+    for experience in ("beginner", "intermediate", "advanced"):
+        plan = generate_yoga_plan(
+            profile(), prefs(time_available_minutes=60,
+                             yoga_experience=experience), weeks=[1])
+        for day in plan["four_week_plan"][0]["days"]:
+            session = day["session"]
+            if session["intensity"] == "restorative":
+                continue
+            for pose in session["cooldown"]:
+                if pose["final_relaxation"]:
+                    continue
+                # Per-side, because a bilateral twist taken 80 seconds each way
+                # is active work, not two and a half minutes of lying still —
+                # which is the thing this rule exists to prevent.
+                assert pose["duration_seconds"] < 150, (
+                    f"{experience} {day['day_name']}: {pose['pose_name']} held "
+                    f"{pose['duration_seconds']}s in an ordinary cool-down")
+
+
+def test_the_recovery_day_may_still_hold_long():
+    """The widening is the whole point of reserving them."""
+    plan = generate_yoga_plan(
+        profile(), prefs(time_available_minutes=60, yoga_experience="advanced"),
+        weeks=[1])
+    sunday = plan["four_week_plan"][0]["days"][6]["session"]
+    assert sunday["intensity"] == "restorative"
+    assert any(p["total_duration_seconds"] >= 150 and not p["final_relaxation"]
+               for p in sunday["cooldown"])
+
+
+def test_the_recovery_day_still_shares_the_weeks_cooldown_core():
+    """The core is rebuilt on every day from the pool it is handed, so a pool
+    that grows on day 7 would recompute a different core there and leave the
+    recovery day sharing nothing with the week — the same leak that made the arc
+    filter the core. Only the ACCENT widens."""
+    plan = generate_yoga_plan(
+        profile(), prefs(time_available_minutes=60, yoga_experience="advanced"),
+        weeks=[1])
+    days = [d["session"] for d in plan["four_week_plan"][0]["days"]]
+    weekday = {p["pose_id"] for p in days[0]["cooldown"] if not p["final_relaxation"]}
+    sunday = {p["pose_id"] for p in days[6]["cooldown"] if not p["final_relaxation"]}
+    shared = weekday & sunday
+    assert len(shared) >= min(len(weekday), len(sunday)) - 1, (
+        f"the recovery day kept only {len(shared)} of the week's cool-down "
+        f"poses ({sorted(weekday)} vs {sorted(sunday)})")
+
+
+def test_counterposing_survives_the_narrowed_cooldown_pool():
+    """Matsyasana is the only backbend in the cool-down pool and it is what
+    neutralises Sarvangasana. Filtering the pool by hold length must not reach
+    it."""
+    plan = generate_yoga_plan(
+        profile(), prefs(time_available_minutes=60, yoga_experience="advanced"),
+        weeks=[1, 2, 3, 4])
+    for session in sessions(plan):
+        ordered = session["main_sequence"] + session["cooldown"]
+        for i, pose in enumerate(ordered):
+            if pose["category"] in _NEEDS_COUNTERPOSE:
+                after = {p["category"] for p in ordered[i + 1:]}
+                assert after & set(_COUNTERPOSE_CATEGORIES), (
+                    f"{pose['pose_name']} is left unresolved")
