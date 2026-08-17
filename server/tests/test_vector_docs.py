@@ -106,3 +106,74 @@ def test_no_pose_hotlinks_third_party_imagery(poses):
         if p.get("image_url") and urlparse(p["image_url"]).netloc in disallowed
     ]
     assert not offenders, f"third-party imagery back in the KB: {offenders[:5]}"
+
+
+# ── Home remedies ────────────────────────────────────────────────────────────
+
+@pytest.fixture(scope="module")
+def remedy_docs():
+    return [d for d in get_documents_for_collection()["remedy"]
+            if d["source"] == "home_remedies"]
+
+
+def test_every_home_remedy_reaches_the_corpus(remedy_docs):
+    """The builder read `symptom`, `dosha_imbalance` and `precautions`, none of
+    which exist in home_remedies.json — the real keys are `symptom_display`,
+    `dosha_cause` and `contraindications`, and `remedies` is a dict keyed by
+    dosha rather than a list. All 60 entries therefore embedded as the SAME
+    string, "Remedy for None: vata, pitta, kapha. Doshas: . Precautions: None.",
+    the dosha names being the dict keys that join() walked. Same failure as the
+    yoga poses embedding as "Yoga pose: None."
+    """
+    raw = json.loads((KNOWLEDGE_DIR / "home_remedies.json").read_text(encoding="utf-8"))
+    corpus = " ".join(d["text"] for d in remedy_docs)
+    missing = [r["symptom_display"] for r in raw if r["symptom_display"] not in corpus]
+    assert not missing, f"symptoms absent from the corpus: {missing[:5]}"
+
+
+def test_no_home_remedy_doc_is_a_stub(remedy_docs):
+    """The tell for a generator reading keys that do not exist: literal "None"
+    in the rendered text, and a corpus of near-identical documents."""
+    stubs = [d["text"] for d in remedy_docs if "None" in d["text"]]
+    assert not stubs, f"unrendered fields: {stubs[:3]}"
+    assert len(set(d["text"] for d in remedy_docs)) == len(remedy_docs)
+
+
+def test_home_remedy_docs_name_their_symptom(remedy_docs):
+    """A chunk is retrieved on its own, so it has to say what it is about — the
+    embedder truncates and a subject named only in a heading is lost."""
+    for d in remedy_docs:
+        assert d["text"].lower().startswith("home remedy"), d["text"][:60]
+
+
+# ── Content-addressed ids ────────────────────────────────────────────────────
+
+def test_ids_follow_content_not_position():
+    """Ids were positional (`ayurveda_282`), so they only meant anything while
+    document ORDER held: editing one pose left the id pointing at the same slot
+    with stale text, and inserting a pose would have shifted every id after it.
+    A content hash makes an edited chunk a new id, so a reseed writes it and
+    drops the old one instead of overwriting a neighbour.
+    """
+    from build_vectors import _document_id, _document_index
+
+    a = {"text": "Pose X — breathe steadily."}
+    b = {"text": "Pose X — breathe deeply."}
+    assert _document_id("ayurveda", a) == _document_id("ayurveda", a)
+    assert _document_id("ayurveda", a) != _document_id("ayurveda", b)
+    # Same text in different collections stays distinct.
+    assert _document_id("ayurveda", a) != _document_id("remedy", a)
+    # Position must not participate.
+    assert _document_index("ayurveda", [a, b]) == _document_index("ayurveda", [b, a])
+
+
+def test_the_corpus_has_no_bulk_duplication():
+    """60 identical remedy chunks is what a broken generator looks like from the
+    outside. Exact duplicates collapse to one id, so this guards the input."""
+    from collections import Counter
+
+    for domain, docs in get_documents_for_collection().items():
+        worst = Counter(d["text"] for d in docs).most_common(1)
+        if worst:
+            text, count = worst[0]
+            assert count <= 3, f"{domain}: {count} copies of {text[:70]!r}"
