@@ -4,6 +4,7 @@ Embeds knowledge base documents into ChromaDB for RAG retrieval.
 Run: python scripts/build_vectors.py
 """
 
+import hashlib
 import json
 import os
 import sys
@@ -28,6 +29,44 @@ def get_embedder():
     from database.chromadb_client import get_embedding_function
     print("  ℹ️  Using shared ChromaDB embedder (ONNX all-MiniLM-L6-v2, 384-dim)")
     return get_embedding_function()
+
+
+def _metadata(doc: dict) -> dict:
+    return {
+        "dosha": doc.get("dosha", ""),
+        "source": doc.get("source", ""),
+        "source_credibility": doc.get("source_credibility", "general"),
+        "pmid": doc.get("pmid", ""),
+    }
+
+
+def _document_id(domain: str, doc: dict) -> str:
+    """A chunk's id, derived from its own content.
+
+    Ids used to be positional (`ayurveda_282`), which made them meaningful only
+    for as long as document ORDER held. Editing one pose's text left the id
+    pointing at the same slot with stale content and nothing to notice it; worse,
+    inserting a pose would have shifted every id after it, so a targeted repair
+    could silently overwrite the wrong chunk. Hashing the text means an edited
+    chunk gets a new id, so a reseed writes it and drops the old one, and an
+    unchanged chunk keeps its id and is never re-embedded.
+
+    Metadata is deliberately NOT hashed: it is derived from the same source text
+    and including it would only make ids churn for cosmetic reasons.
+    """
+    digest = hashlib.sha256(doc["text"].encode("utf-8")).hexdigest()[:16]
+    return f"{domain}_{digest}"
+
+
+def _document_index(domain: str, docs: list[dict]) -> dict[str, dict]:
+    """Ids → documents, with exact duplicates collapsed.
+
+    Two identical chunks hash to one id. That is correct — they would return the
+    same text to the same query — but it means the collection can legitimately
+    hold fewer rows than the generator produced, so counts are compared against
+    this index rather than against `len(docs)`.
+    """
+    return {_document_id(domain, d): d for d in docs}
 
 
 def chunk_text(text: str, max_chars: int = 800) -> list[str]:
@@ -117,10 +156,68 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
             docs["ayurveda"].append({"text": chunk, "dosha": dosha, "source": "dosha_profiles"})
 
     # Remedies → remedy
+    #
+    # This read `symptom`, `dosha_imbalance` and `precautions`, none of which
+    # exist in the file — the real keys are `symptom_display`, `dosha_cause` and
+    # `contraindications`, and `remedies` is a dict keyed by dosha, not a list of
+    # strings. Every one of the 60 entries therefore embedded as the identical
+    # sentence "Remedy for None: vata, pitta, kapha. Doshas: . Precautions:
+    # None." — the dosha names being the dict KEYS that `join` walked. The whole
+    # home-remedy corpus was 60 copies of one meaningless string, which is the
+    # same failure as the yoga poses embedding as "Yoga pose: None."
+    #
+    # One doc per (symptom, dosha) so a retrieved chunk is a remedy someone can
+    # actually follow, plus one safety doc per symptom, because contraindications
+    # and consult-a-doctor advice are properties of the symptom rather than of a
+    # constitution. Both restate the symptom name — the shared embedder truncates
+    # at 256 word-pieces and a chunk that only names its subject up top loses it.
     remedy_data = json.loads((KNOWLEDGE_DIR / "home_remedies.json").read_text(encoding="utf-8"))
     for r in remedy_data:
-        text = f"Remedy for {r.get('symptom')}: {', '.join(r.get('remedies', []))}. Doshas: {', '.join(r.get('dosha_imbalance', []))}. Precautions: {r.get('precautions')}."
-        docs["remedy"].append({"text": text, "dosha": r.get('dosha_imbalance', [''])[0] if r.get('dosha_imbalance') else "", "source": "home_remedies"})
+        symptom = r.get("symptom_display") or r.get("id") or "unspecified symptom"
+        causes = r.get("dosha_cause") or {}
+
+        for dosha, remedy in (r.get("remedies") or {}).items():
+            if not isinstance(remedy, dict):
+                continue
+            ingredients = ", ".join(
+                " ".join(part for part in (ing.get("amount"), ing.get("item")) if part)
+                for ing in remedy.get("ingredients", []) if isinstance(ing, dict))
+            text = (
+                f"Home remedy for {symptom} — {dosha} constitution: {remedy.get('name')}. "
+                f"Likely cause in {dosha}: {causes.get(dosha, 'not specified')}. "
+                f"Ingredients: {ingredients or 'not specified'}. "
+                f"Preparation: {remedy.get('preparation')} "
+                f"Dosage: {remedy.get('dosage')}. Duration: {remedy.get('duration')}. "
+                f"Expected relief: {remedy.get('expected_relief')}."
+            )
+            docs["remedy"].append({"text": text, "dosha": dosha, "source": "home_remedies"})
+
+        universal = r.get("universal_remedy")
+        if isinstance(universal, dict):
+            docs["remedy"].append({
+                "text": (f"Home remedy for {symptom}, suitable for any constitution: "
+                         f"{universal.get('name')}. Preparation: {universal.get('preparation')} "
+                         f"Dosage: {universal.get('dosage')}."),
+                "dosha": "", "source": "home_remedies"})
+
+        safety_bits = [
+            f"Contraindications: {', '.join(r['contraindications'])}."
+            if r.get("contraindications") else "",
+            f"Safe in pregnancy: {r.get('pregnancy_safe')}."
+            if r.get("pregnancy_safe") is not None else "",
+            f"If pregnant, use instead: {r.get('pregnancy_alternative')}."
+            if r.get("pregnancy_alternative") else "",
+            f"Known drug interactions: {', '.join(r['drug_interactions'])}."
+            if r.get("drug_interactions") else "",
+            r.get("consult_doctor_if") or "",
+        ]
+        safety = " ".join(bit for bit in safety_bits if bit)
+        if safety:
+            docs["remedy"].append({
+                "text": (f"Home remedy safety for {symptom} "
+                         f"({r.get('symptom_category', 'general')}, "
+                         f"tier: {r.get('safety_tier', 'unknown')}). {safety}"),
+                "dosha": "", "source": "home_remedies"})
 
     # Ayurvedic Medicines → remedy
     if (KNOWLEDGE_DIR / "ayurvedic_medicines.json").exists():
@@ -236,8 +333,9 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
     return docs
 
 
-def build_vectors():
-    print("🔄 Building ChromaDB vector store...")
+def build_vectors(check_only: bool = False):
+    print("🔍 Checking ChromaDB for drift..." if check_only
+          else "🔄 Building ChromaDB vector store...")
 
     # Seed the same store the app reads from: a remote Chroma server when
     # CHROMA_HOST is set (Docker/staging/prod), else the embedded persistent dir.
@@ -284,6 +382,7 @@ def build_vectors():
     }
 
     doc_sets = get_documents_for_collection()
+    drifted: list[str] = []
 
     for domain, coll_name in collection_map.items():
         docs = doc_sets.get(domain, [])
@@ -291,29 +390,60 @@ def build_vectors():
             print(f"  ⚠️ No docs for {domain}")
             continue
 
-        try:
-            client.delete_collection(name=coll_name)
-        except Exception:
-            pass
-        col = client.create_collection(name=coll_name, embedding_function=embedder, metadata={"hnsw:space": "cosine"})
+        col = client.get_or_create_collection(
+            name=coll_name, embedding_function=embedder,
+            metadata={"hnsw:space": "cosine"})
 
-        texts = [d["text"] for d in docs]
-        metadatas = [
-            {
-                "dosha": d.get("dosha", ""),
-                "source": d.get("source", ""),
-                "source_credibility": d.get("source_credibility", "general"),
-                "pmid": d.get("pmid", "")
-            }
-            for d in docs
-        ]
-        ids = [f"{domain}_{i}" for i in range(len(docs))]
+        wanted = _document_index(domain, docs)
+        existing = set(col.get(include=[])["ids"])
 
-        col.add(documents=texts, metadatas=metadatas, ids=ids)
-        print(f"  ✅ {coll_name}: {len(docs)} chunks embedded")
+        to_write = [cid for cid in wanted if cid not in existing]
+        to_drop = sorted(existing - set(wanted))
+
+        if check_only:
+            if to_write or to_drop:
+                drifted.append(
+                    f"{coll_name}: {len(to_write)} missing/changed, {len(to_drop)} stale")
+                print(f"  ❌ {coll_name}: {len(to_write)} chunks missing or changed, "
+                      f"{len(to_drop)} stale — reseed needed")
+            else:
+                print(f"  ✅ {coll_name}: {len(wanted)} chunks, in sync")
+            continue
+
+        # Write BEFORE dropping, so the collection is never smaller than it
+        # started. A crash between the two leaves duplicates, which retrieval
+        # tolerates; the reverse order leaves a hole, which it does not.
+        if to_write:
+            batch = [wanted[cid] for cid in to_write]
+            col.upsert(
+                ids=to_write,
+                documents=[d["text"] for d in batch],
+                metadatas=[_metadata(d) for d in batch],
+            )
+        if to_drop:
+            col.delete(ids=to_drop)
+
+        unchanged = len(wanted) - len(to_write)
+        print(f"  ✅ {coll_name}: {len(wanted)} chunks "
+              f"({len(to_write)} written, {len(to_drop)} removed, {unchanged} unchanged)")
+
+    if check_only:
+        if drifted:
+            raise SystemExit(
+                "\n❌ The embedded corpus is behind the knowledge base:\n  "
+                + "\n  ".join(drifted)
+                + "\n   Run `python scripts/build_vectors.py` to bring it in sync — it now "
+                  "writes only what changed and never empties a collection.")
+        print("\n✅ Every collection matches the knowledge base.")
+        return
 
     print("\n🎉 ChromaDB vector store built successfully!")
 
 
 if __name__ == "__main__":
-    build_vectors()
+    # `--check` reports drift and exits non-zero without writing anything, so
+    # "nothing detects this" stops being true. Editing a knowledge-base file the
+    # seeder ingests used to leave the corpus stale in total silence: no test
+    # failed and no error logged, because plans are built by the deterministic
+    # engines and only RAG context went quietly out of date.
+    build_vectors(check_only="--check" in sys.argv)
