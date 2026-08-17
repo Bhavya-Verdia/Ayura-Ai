@@ -167,8 +167,10 @@ export function YogaView({ plan: planProp }) {
   const toggleCooldown = (dayIdx) => setExpandedCooldown(prev => {
     const next = new Set(prev); next.has(dayIdx) ? next.delete(dayIdx) : next.add(dayIdx); return next
   })
-  const togglePrana = (dayIdx) => setExpandedPrana(prev => {
-    const next = new Set(prev); next.has(dayIdx) ? next.delete(dayIdx) : next.add(dayIdx); return next
+  // Keyed by day AND technique: the stack is three breaths (four when a Pitta
+  // earns a cooling chaser), so a per-day key would open all of them at once.
+  const togglePrana = (key) => setExpandedPrana(prev => {
+    const next = new Set(prev); next.has(key) ? next.delete(key) : next.add(key); return next
   })
   const toggleDharana = (dayIdx) => setExpandedDharana(prev => {
     const next = new Set(prev); next.has(dayIdx) ? next.delete(dayIdx) : next.add(dayIdx); return next
@@ -210,6 +212,22 @@ export function YogaView({ plan: planProp }) {
               <li key={i}><strong>{ex.name}</strong> — {ex.reason}</li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {/* Why a breath the practitioner did not ask for is in the stack: the
+          condition chose it, or it cools a heating one that the condition
+          chose. Both notes were written by the engine and never rendered. */}
+      {plan.pranayama_protocol_note && (
+        <div className="yoga-pool-notice">
+          <Wind size={12} />
+          <span>{plan.pranayama_protocol_note}</span>
+        </div>
+      )}
+      {plan.pranayama_cooling_note && (
+        <div className="yoga-pool-notice">
+          <Wind size={12} />
+          <span>{plan.pranayama_cooling_note}</span>
         </div>
       )}
 
@@ -621,12 +639,12 @@ export function YogaView({ plan: planProp }) {
                   )}
 
                   {/* Pranayama */}
-                  {session.pranayama_section?.length > 0 && (() => {
-                    const pr = session.pranayama_section[0]
-                    const pranaOpen = expandedPrana.has(dayIdx)
+                  {session.pranayama_section?.map((pr, prIdx) => {
+                    const pranaKey = `${dayIdx}-${prIdx}`
+                    const pranaOpen = expandedPrana.has(pranaKey)
                     const hasInstructions = pr.instructions?.length > 0
                     return (
-                      <div className="yoga-prana-card">
+                      <div className="yoga-prana-card" key={pr.technique_id || prIdx}>
                         <div className="yoga-prana-header">
                           <Wind size={12} className="yoga-prana-icon" />
                           <span className="yoga-prana-name">
@@ -644,7 +662,7 @@ export function YogaView({ plan: planProp }) {
                         )}
                         {hasInstructions && (
                           <>
-                            <button className="yoga-pose-expand-toggle" onClick={() => togglePrana(dayIdx)}>
+                            <button className="yoga-pose-expand-toggle" onClick={() => togglePrana(pranaKey)}>
                               {pranaOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
                               {pranaOpen ? t('yoga.less', 'Less') : t('yoga.instructions', 'Instructions')}
                             </button>
@@ -657,7 +675,7 @@ export function YogaView({ plan: planProp }) {
                         )}
                       </div>
                     )
-                  })()}
+                  })}
 
                   {/* Dharana / Meditation slot */}
                   {session.dharana_section && (() => {

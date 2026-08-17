@@ -20,6 +20,7 @@ from services.yoga_plan_engine import (
     _MAX_POSE_HOLD_SECONDS,
     _DAY_ARC,
     _arc_allows,
+    _HEATING_PRANAYAMA,
 )
 
 BASE_PROFILE = {
@@ -161,11 +162,13 @@ def test_practice_closes_with_exactly_one_final_relaxation():
 
 
 def test_final_relaxation_is_held_for_minutes_not_seconds():
-    """Savasana shipped with a 20-second hold."""
+    """Savasana shipped with a 20-second hold. The floor is a minute — what the
+    30-minute tier delivers — rather than the two the longer tiers get, since
+    this guards the seconds-vs-minutes regression, not the per-tier length."""
     plan = full_plan()
     for session in sessions(plan):
         closing = next(p for p in session["cooldown"] if p["final_relaxation"])
-        assert closing["duration_seconds"] >= 120
+        assert closing["duration_seconds"] >= 60
 
 
 def test_no_ordinary_pose_is_held_longer_than_the_cap():
@@ -325,15 +328,15 @@ def test_the_same_profile_produces_the_same_plan():
 # ── Pranayama ────────────────────────────────────────────────────────────────
 
 @pytest.mark.parametrize("experience,minutes,expected", [
-    ("beginner", 30, 12), ("intermediate", 45, 15), ("advanced", 60, 20),
+    ("beginner", 30, 9), ("intermediate", 45, 15), ("advanced", 60, 20),
     # Any level may pick any tier, and the stack is a property of the TIER.
-    ("beginner", 60, 20), ("advanced", 30, 12),
+    ("beginner", 60, 20), ("advanced", 30, 9),
 ])
 def test_every_day_runs_the_prescribed_stack(experience, minutes, expected):
     """Bhramari, Anulom Vilom and a cleansing breath, the same three every day.
-    30 minutes gets 5/4/3 rather than 5/5/5 — a half-hour session cannot spend
-    half of itself breathing — and the hour gets 8/7/5. All three are always
-    present."""
+    30 minutes gets 2/4/3 — nine minutes, so the half-hour session's main
+    sequence is eleven minutes rather than seven — 45 gets 5/5/5 and the hour
+    gets 8/7/5. All three are always present at every tier."""
     for week in (1, 2, 3, 4):
         plan = generate_yoga_plan(profile(), prefs(yoga_experience=experience,
                                                    time_available_minutes=minutes),
@@ -349,11 +352,12 @@ def test_every_day_runs_the_prescribed_stack(experience, minutes, expected):
 
 
 @pytest.mark.parametrize("experience,minutes,asked", [
-    ("beginner", 30, 5), ("intermediate", 45, 5), ("advanced", 60, 8),
+    ("beginner", 30, 2), ("intermediate", 45, 5), ("advanced", 60, 8),
 ])
 def test_bhramari_takes_its_full_ask_and_is_never_trimmed(experience, minutes, asked):
     """It is the one technique asked for unconditionally, so it is filled first
-    and the others share what is left. The ask itself grows with the tier."""
+    and the others share what is left. The ask itself grows with the tier —
+    2 at the half hour, 5 at 45, 8 at the hour."""
     plan = full_plan(pr=prefs(yoga_experience=experience,
                               time_available_minutes=minutes))
     for s in sessions(plan):
@@ -384,6 +388,141 @@ def test_the_meditation_slot_is_gone():
     for s in sessions(plan):
         assert s["dharana_section"] is None
         assert s["time_breakdown_minutes"]["dharana"] == 0
+
+
+ALL_HEATING_PROTOCOLS = ["diabetes", "obesity", "depression"]
+
+
+@pytest.mark.parametrize("condition", ALL_HEATING_PROTOCOLS)
+@pytest.mark.parametrize("minutes", [45, 60])
+def test_pitta_keeps_the_disease_breath_and_gains_a_cooling_chaser(condition, minutes):
+    """These three protocols name NOTHING but heating breaths, so refusing them
+    for a Pitta left the practitioner with no breath aimed at their disease at
+    all. The disease breath always wins the third slot; the constitution is
+    answered by ADDING a cooling breath after it, never by withholding."""
+    plan = generate_yoga_plan(profile(dominant_dosha="pitta",
+                                      vikriti_dominant="pitta",
+                                      medical_history=[condition]),
+                              prefs(time_available_minutes=minutes), weeks=[1])
+    for d in week_days(plan):
+        stack = d["session"]["pranayama_section"]
+        assert len(stack) == 4, [t["sanskrit_name"] for t in stack]
+        assert stack[2]["technique_id"] in _HEATING_PRANAYAMA, "lost the disease breath"
+        assert stack[3]["technique_id"] in ("cooling_breath", "hissing_breath")
+    # The fourth breath is explained rather than just appearing.
+    assert "Pitta" in (plan["pranayama_cooling_note"] or "")
+
+
+@pytest.mark.parametrize("condition", ALL_HEATING_PROTOCOLS)
+def test_the_chaser_is_paid_for_out_of_the_tiers_own_breath_budget(condition):
+    """A fourth breath must not lengthen the breathwork — 12/15/20 by tier is a
+    decision about the session, and the chaser redivides it rather than adding
+    to it. Otherwise the asana it steals from is the thing being protected."""
+    for minutes, expected in ((30, 9), (45, 15), (60, 20)):
+        plan = generate_yoga_plan(profile(dominant_dosha="pitta",
+                                          vikriti_dominant="pitta",
+                                          medical_history=[condition]),
+                                  prefs(time_available_minutes=minutes), weeks=[1])
+        for d in week_days(plan):
+            total = sum(t["duration_minutes"] for t in d["session"]["pranayama_section"])
+            assert total == expected, f"{minutes}min: {total}"
+
+
+@pytest.mark.parametrize("condition", ALL_HEATING_PROTOCOLS)
+def test_the_half_hour_serves_the_disease_breath_alone(condition):
+    """Nine minutes split four ways is under three each, below what any of them
+    is rated for. The short tier drops the chaser, never the disease breath."""
+    plan = generate_yoga_plan(profile(dominant_dosha="pitta",
+                                      vikriti_dominant="pitta",
+                                      medical_history=[condition]),
+                              prefs(time_available_minutes=30), weeks=[1])
+    for d in week_days(plan):
+        stack = d["session"]["pranayama_section"]
+        assert len(stack) == 3
+        assert stack[2]["technique_id"] in _HEATING_PRANAYAMA
+
+
+@pytest.mark.parametrize("condition,expected", [
+    ("asthma", "Ujjayi"),            # protocol's own pick, not heating
+    ("hypertension", "Chandra Bhedana"),  # cooling already
+    ("insomnia", "Dirgha"),
+])
+def test_the_condition_still_names_the_third_breath_for_a_pitta(condition,
+                                                               expected):
+    """A protocol outranks the constitution for every breath, and these three
+    are not heating, so no chaser is earned and the stack stays at three. The
+    cooling pair never displaces what the condition asked for.
+
+    Intermediate, because Chandra Bhedana is `level: intermediate` — a beginner
+    with hypertension correctly falls through it to Dirgha, which would hide
+    what this is testing.
+    """
+    plan = generate_yoga_plan(profile(dominant_dosha="pitta",
+                                      vikriti_dominant="pitta",
+                                      medical_history=[condition]),
+                              prefs(time_available_minutes=60,
+                                    yoga_experience="intermediate"), weeks=[1])
+    for d in week_days(plan):
+        stack = d["session"]["pranayama_section"]
+        assert len(stack) == 3, [t["sanskrit_name"] for t in stack]
+        assert stack[2]["sanskrit_name"] == expected
+
+
+@pytest.mark.parametrize("dosha", ["vata", "kapha"])
+def test_only_a_pitta_earns_a_cooling_chaser(dosha):
+    """Vata and Kapha keep Kapalabhati and get no fourth breath — heat is what
+    their prescription is for. The chaser is constitutional, not a new blanket
+    rule about heating practices."""
+    plan = generate_yoga_plan(profile(dominant_dosha=dosha,
+                                      vikriti_dominant=dosha,
+                                      medical_history=["diabetes"]),
+                              prefs(time_available_minutes=60), weeks=[1])
+    for d in week_days(plan):
+        stack = d["session"]["pranayama_section"]
+        assert len(stack) == 3
+        assert stack[2]["technique_id"] == "skull_shining"
+    assert plan["pranayama_cooling_note"] is None
+
+
+def test_the_thin_pool_notice_names_the_axis_that_actually_narrowed_it():
+    """A healthy 70-year-old was told the app had ruled poses out for their
+    "health conditions". Age, injuries, pregnancy and conditions are four
+    independent axes — the same lesson the pranayama exclusions learned."""
+    senior = generate_yoga_plan(profile(age=70), prefs(time_available_minutes=60),
+                                weeks=[1])
+    assert "your age" in senior["practice_pool_notice"]
+    assert "health conditions" not in senior["practice_pool_notice"]
+
+    both = generate_yoga_plan(profile(age=70, medical_history=["hypertension"]),
+                              prefs(time_available_minutes=60), weeks=[1])
+    assert "your health conditions and your age" in both["practice_pool_notice"]
+
+    pregnant = generate_yoga_plan(
+        profile(pregnancy_or_nursing=True, pregnancy_status="pregnant",
+                pregnancy_trimester=3),
+        prefs(time_available_minutes=60), weeks=[1])
+    assert "pregnancy" in pregnant["practice_pool_notice"]
+
+
+def test_a_healthy_adult_gets_no_thin_pool_notice():
+    """The notice is a disclosure, not decoration — it must stay off when the
+    pool is not actually narrow."""
+    plan = generate_yoga_plan(profile(), prefs(time_available_minutes=60), weeks=[1])
+    assert plan["practice_pool_notice"] is None
+
+
+def test_the_fixed_second_slot_is_anulom_vilom_without_retention():
+    """Slot 2 is Anulom Vilom, not Nadi Shodhana: the same alternate-nostril
+    pattern with no Kumbhaka. It is prescribed to every practitioner daily
+    including beginners, and breath retention is not a beginner practice — the
+    engine's own age gates exclude `breath_retention` outright."""
+    plan = full_plan()
+    for s in sessions(plan):
+        second = s["pranayama_section"][1]
+        assert second["sanskrit_name"] == "Anulom Vilom"
+        text = " ".join(second["instructions"]).lower()
+        assert "close both nostrils" not in text, text
+        assert "no pause at the top" in text or "no breath retention" in text
 
 
 @pytest.mark.parametrize("dosha", ["vata", "pitta", "kapha"])
@@ -1130,18 +1269,20 @@ def test_the_warmup_is_a_fixed_slot(minutes, slot_minutes, experience):
             f"against a {slot_minutes} min slot")
 
 
-@pytest.mark.parametrize("minutes", [30, 45, 60])
+@pytest.mark.parametrize("minutes,expected", [(30, 60), (45, 120), (60, 120)])
 @pytest.mark.parametrize("experience", ["beginner", "intermediate", "advanced"])
-def test_savasana_is_two_minutes_at_every_tier_and_level(minutes, experience):
+def test_savasana_is_fixed_per_tier_and_never_varies_by_level(minutes, expected,
+                                                              experience):
     """It scaled 4/5/7 minutes with session length and up to 10 for an advanced
-    practitioner. Two minutes flat is a user decision, so it is pinned here
-    rather than left to `_CLOSING_BUDGET`, whose savasana column is now dead."""
+    practitioner. Two minutes at 45 and 60, one at 30, is a user decision, so it
+    is pinned here rather than left to `_CLOSING_BUDGET`, whose savasana column
+    is now dead. Experience must never move it at any tier."""
     plan = generate_yoga_plan(profile(),
                               prefs(time_available_minutes=minutes,
                                     yoga_experience=experience),
                               weeks=[1])
     for day in plan["four_week_plan"][0]["days"]:
-        assert _closing(day["session"])["total_duration_seconds"] == 120
+        assert _closing(day["session"])["total_duration_seconds"] == expected
 
 
 def test_the_main_sequence_absorbs_the_added_length():
