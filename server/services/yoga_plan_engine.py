@@ -1000,6 +1000,41 @@ def _get_season_boost(season_str) -> dict:
 
 # ── Main pose filter + scoring ────────────────────────────────────────────────
 
+def _pool_narrowing_reasons(user_profile: dict, yoga_prefs: dict) -> list[str]:
+    """Which of the practitioner's own facts actually shrank the pose pool.
+
+    `filter_poses` narrows on four independent axes — conditions and injuries,
+    age, pregnancy, and experience level — but the notice explaining a thin plan
+    named health conditions unconditionally. A healthy 70-year-old was told the
+    app had ruled poses out for their "health conditions" when their age did it,
+    which is the same fault the pranayama exclusions carried until `b0232ef`
+    gave age its own reason. Reported in the order the filter applies them.
+    """
+    reasons = []
+    if user_profile.get("medical_history"):
+        reasons.append("your health conditions")
+    if user_profile.get("injuries_or_limitations"):
+        reasons.append("the injuries you told us about")
+    if _get_age_group(user_profile.get("age")) in ("senior", "youth"):
+        reasons.append("your age")
+    if _pregnancy_state(user_profile)[0]:
+        reasons.append("pregnancy")
+    # Level narrows every pool, so it is only worth naming when nothing else
+    # did — otherwise it reads as a safety restriction rather than a starting
+    # point, and unlike the others it resolves on its own as the weeks unlock.
+    if not reasons:
+        exp = yoga_prefs.get("yoga_experience", "beginner")
+        reasons.append("the level you are practising at"
+                       if exp in ("none", "beginner") else "your profile")
+    return reasons
+
+
+def _join_reasons(reasons: list[str]) -> str:
+    if len(reasons) == 1:
+        return reasons[0]
+    return ", ".join(reasons[:-1]) + f" and {reasons[-1]}"
+
+
 def filter_poses(user_profile, yoga_prefs, poses, max_allowed_levels=None, protocol_map=None,
                  adjustment: "WeekAdjustment | None" = None, recent_pose_ids=None):
     if protocol_map is None:
@@ -1525,7 +1560,10 @@ def select_pranayama(user_profile, yoga_prefs, pranayama_db, count=3, protocol_m
 #
 # (seconds) — keys are the upper bound of the tier they describe.
 _SESSION_STRUCTURE = [
-    (30, {"surya_namaskar": 180, "warmup": 180, "cooldown": 180, "savasana": 120}),
+    # Savasana is 60s at this tier, not the 120 the longer two get (user decision
+    # 2026-08-17). A half-hour session cannot spend a fifteenth of itself lying
+    # still and still deliver a practice; the minute goes to asana.
+    (30, {"surya_namaskar": 180, "warmup": 180, "cooldown": 180, "savasana": 60}),
     (45, {"surya_namaskar": 300, "warmup": 300, "cooldown": 300, "savasana": 120}),
     (999, {"surya_namaskar": 300, "warmup": 300, "cooldown": 360, "savasana": 120}),
 ]
@@ -1543,8 +1581,9 @@ def session_structure(mins: int) -> dict:
         if mins <= upper:
             if mins >= 30:
                 return dict(slots)
-            # Savasana is a floor, not a share: two minutes of stillness is the
-            # shortest that is worth lying down for.
+            # Savasana is a floor, not a share: one minute of stillness is the
+            # shortest that is worth lying down for, and the 30-minute tier is
+            # already at that floor, so a shorter legacy session keeps it whole.
             scale = mins / 30
             return {k: (v if k == "savasana" else max(60, int(v * scale)))
                     for k, v in slots.items()}
@@ -1662,20 +1701,39 @@ _DAILY_PRANAYAMA = [
 # ceiling. Bhramari and Anulom Vilom are calming, rated 10 at advanced, and have
 # no such limit — so they are where an hour's extra five minutes belong.
 #
-# The 30-minute tier is not listed separately: it asks for 5/5/5 like 45 and the
-# `_PRESCRIPTION_MAX_SHARE` budget trims it to 5/4/3, which is the existing
-# behaviour and already the right answer.
+# The 30-minute tier asks for 2/4/3 = 9 minutes (user decision 2026-08-17). It
+# used to ask 5/5/5 and let the `_PRESCRIPTION_MAX_SHARE` budget trim it to
+# 5/4/3, but twelve minutes of breath in a half-hour session left the main
+# sequence at seven — thinner than the warm-up and Surya Namaskar together. The
+# three minutes come off Bhramari, which is the slot with the most to give: it
+# asks for eight at the hour, so two is a real dose at the short tier rather
+# than a token one. The freed minutes go to asana, not to the other breaths.
 _PRESCRIPTION_MINUTES = [
+    (30,  {"humming_bee": 2, "alternate_nostril": 4, "third": 3}),
     (45,  {"humming_bee": 5, "alternate_nostril": 5, "third": 5}),
     (999, {"humming_bee": 8, "alternate_nostril": 7, "third": 5}),
 ]
 
 
-def _prescription_minutes(session_minutes: int) -> dict:
-    for upper, asks in _PRESCRIPTION_MINUTES:
+# The same tier totals, redivided when a Pitta earns a cooling chaser (see
+# `_cooling_chaser_id`). The chaser is paid for out of the tier's own breath
+# budget rather than added to it — 15 and 20 minutes are the tier's decision and
+# a fourth breath is not a reason to spend longer breathing. 30 is None: nine
+# minutes split four ways is under three minutes each, which is below what any
+# of them is rated for, so the short tier serves the disease breath alone.
+_PRESCRIPTION_MINUTES_WITH_CHASER = [
+    (30,  None),
+    (45,  {"humming_bee": 4, "alternate_nostril": 4, "third": 4, "cooling_chaser": 3}),
+    (999, {"humming_bee": 7, "alternate_nostril": 5, "third": 5, "cooling_chaser": 3}),
+]
+
+
+def _prescription_minutes(session_minutes: int, with_chaser: bool = False) -> dict | None:
+    table = _PRESCRIPTION_MINUTES_WITH_CHASER if with_chaser else _PRESCRIPTION_MINUTES
+    for upper, asks in table:
         if session_minutes <= upper:
             return asks
-    return _PRESCRIPTION_MINUTES[-1][1]
+    return table[-1][1]
 
 
 def _slot_key(entry: dict) -> str:
@@ -1711,6 +1769,42 @@ _PRESCRIPTION_MIN_TECHNIQUE_MINUTES = 3
 # partner instead — which is also how it is taught, Kapalabhati followed by
 # Anulom Vilom rather than done alone.
 _FORCEFUL_PRANAYAMA = {"skull_shining", "bellows_breath", "fire_essence"}
+
+# Heating breaths, refused for a Pitta constitution (user decision 2026-08-17).
+# Pitta's dosha default is already the cooling pair, but a condition protocol
+# outranks the constitution, and three protocols — diabetes, obesity, IBS — put
+# Kapalabhati in the third slot of a practitioner whose whole plan is built to
+# cool them down. Protocol precedence is right in general and is NOT reversed
+# here: only the heating breaths are refused, so a Pitta asthmatic still gets
+# the Ujjayi their protocol names, and hypertension still gets Chandra Bhedana
+# (itself cooling). What they fall through to is Sitali/Sitkari.
+#
+# It is the forceful set plus Surya Bhedana: the right-nostril breath is the
+# solar channel and heating by design, though it is not a pumping kriya.
+_HEATING_PRANAYAMA = _FORCEFUL_PRANAYAMA | {"right_nostril"}
+
+
+def _cooling_chaser_id(user_profile: dict, third: dict | None, day_num: int) -> str | None:
+    """The cooling breath that follows a heating one, for a Pitta. Else None.
+
+    A condition protocol outranks the constitution, so the third slot is never
+    refused for being heating — three protocols (diabetes, obesity, depression)
+    name nothing BUT heating breaths, and blocking them left a Pitta with no
+    breath aimed at their disease at all. The constitution is answered by adding
+    a breath rather than by withholding one: Kapalabhati followed by Sitali is
+    how a heating kriya is classically taught anyway, and it is the only
+    arrangement in which both the disease and the constitution are served.
+
+    Vata and Kapha get no chaser — heat is what their prescription is for.
+    """
+    dosha = (user_profile.get("vikriti_dominant")
+             or user_profile.get("dominant_dosha") or "").lower()
+    if dosha != "pitta" or not third:
+        return None
+    if third.get("id") not in _HEATING_PRANAYAMA:
+        return None
+    cooling = _THIRD_SLOT_BY_DOSHA["pitta"]
+    return cooling[(day_num - 1) % len(cooling)]
 
 
 def pranayama_minutes(technique: dict, experience: str, session_minutes: int,
@@ -1826,10 +1920,26 @@ def pranayama_day_plan(pranayama_db, user_profile, yoga_prefs, day_num: int,
                 if why:
                     dropped.append({"id": pid, "reason": why})
 
+    # A Pitta prescribed a heating breath by their condition gets a cooling one
+    # after it, where the tier has room to pay for it out of its own budget.
+    # This is appended AFTER the three slots resolve, so it can never displace
+    # the disease breath — it only ever follows it.
+    chaser_asks = None
+    third = next((t for e, t in resolved if "slot" in e), None)
+    chaser_id = _cooling_chaser_id(user_profile, third, day_num)
+    if chaser_id and _prescription_minutes(session_minutes, with_chaser=True):
+        chaser = by_id.get(chaser_id)
+        why = allowed(chaser) if chaser else "unavailable"
+        if chaser is not None and why is None:
+            resolved.append(({"slot": "cooling_chaser"}, chaser))
+            chaser_asks = True
+        elif chaser is not None:
+            dropped.append({"id": chaser_id, "reason": why})
+
     # The required technique takes its full ask; the rest share what is left.
-    # Shortening beats dropping — at 30 minutes all three still fit as 5/4/3,
+    # Shortening beats dropping — at 30 minutes all three still fit as 2/4/3,
     # and 3 minutes of Kapalabhati is its own rated beginner dose anyway.
-    asks = _prescription_minutes(session_minutes)
+    asks = _prescription_minutes(session_minutes, with_chaser=bool(chaser_asks))
 
     def ask(entry):
         return asks[_slot_key(entry)]
@@ -1890,9 +2000,9 @@ _INCLUDE_DHARANA = False
 def _closing_budget(mins: int) -> tuple[int, int]:
     """(savasana_seconds, dharana_seconds) for a session of `mins` minutes.
 
-    Savasana no longer scales with the session — it is a flat two minutes at
-    every tier and every experience level (user decision 2026-08-15), so it
-    comes from `session_structure`. The `_CLOSING_BUDGET` savasana column is
+    Savasana no longer scales with experience — it is two minutes at the 45 and
+    60 tiers and one at 30, the same for every level, so it comes from
+    `session_structure`. The `_CLOSING_BUDGET` savasana column is
     kept only as the record of what it used to be; `dharana` still reads from
     it, since restoring the meditation slot means restoring its scaling too.
     """
@@ -2976,7 +3086,7 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
     # third slot, so a protocol-led choice is never announced by its raw id.
     _PRESCRIBED_LABELS = {
         "humming_bee":         "Bhramari (Humming-Bee Breath)",
-        "alternate_nostril":   "Anulom Vilom (Nadi Shodhana)",
+        "alternate_nostril":   "Anulom Vilom (Alternate-Nostril Breath)",
         "skull_shining":       "Kapalabhati (Skull-Shining Breath)",
         "cooling_breath":      "Sitali (Cooling Breath)",
         "hissing_breath":      "Sitkari (Hissing Breath)",
@@ -3101,6 +3211,21 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
             "days":  week_days,
         })
 
+    # A fourth breath nobody asked for needs a reason as much as a missing one
+    # does. Read off the stack that was actually built, so it can never claim a
+    # chaser the tier's budget declined to pay for.
+    _prana_cooling_note = None
+    _first_stack = next((d["session"].get("pranayama_section")
+                         for w in four_week_plan for d in w["days"]
+                         if d.get("session")), None) or []
+    if len(_first_stack) == 4:
+        _prana_cooling_note = (
+            f"{_first_stack[2]['sanskrit_name']} is what your condition calls for, "
+            f"and it is a heating practice — so it is followed by "
+            f"{_first_stack[3]['sanskrit_name']}, which cools the system your Pitta "
+            f"constitution already runs warm. Practise them in that order."
+        )
+
     # If safety filtering left too little material to build a full practice from,
     # say so plainly. The alternative — silently shipping a short session — reads
     # as a thin product rather than as the safety decision it actually is.
@@ -3108,10 +3233,14 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
     if len(filtered_poses) < _MIN_VARIED_POOL or any(
             d["session"] and d["session"].get("pool_limited")
             for w in four_week_plan for d in w["days"]):
+        # Passive, deliberately: the reasons are a variable-length list and any
+        # active phrasing needs verb agreement that "your age" and "your health
+        # conditions" do not share.
         pool_notice = (
-            "Your health conditions rule out a large part of the pose library, so this "
-            "plan is built from the smaller set that is safe for you. Sessions are "
-            "shorter and repeat more often than usual by design. A qualified yoga "
+            "A large part of the pose library is ruled out by "
+            f"{_join_reasons(_pool_narrowing_reasons(user_profile, yoga_prefs))}, so "
+            "this plan is built from the smaller set that is safe for you. Sessions "
+            "are shorter and repeat more often than usual by design. A qualified yoga "
             "therapist can supervise poses that a self-guided plan has to exclude."
         )
 
@@ -3176,6 +3305,7 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
         "practice_pool_notice": pool_notice,
         "condition_protocols": active_protocols or None,
         "pranayama_safety_exclusions": _prana_exclusions or None,
+        "pranayama_cooling_note": _prana_cooling_note,
         "pranayama_protocol_note": _prana_protocol_note,
         "disclaimer":         disclaimer,
         "enriched":           False,
