@@ -420,6 +420,15 @@ export function YogaView({ plan: planProp }) {
                     {!dayOpen && summaryBits.length > 0 && (
                       <span className="yoga-day-summary">{summaryBits.join(' · ')}</span>
                     )}
+                    {/* The week has a load arc — two strong days, three moderate,
+                        one gentle, one restorative, all in the same time slot. The
+                        badge is what makes that visible: without it an easy Sunday
+                        reads as a thin plan rather than as the recovery day. */}
+                    {!isRest && session.intensity && (
+                      <span className={`yoga-intensity-badge ${session.intensity}`}>
+                        {t(`yoga.intensity.${session.intensity}`, session.intensity_label)}
+                      </span>
+                    )}
                     {isRest
                       ? <span className="yoga-duration-badge-sm rest">{t('yoga.rest', 'Rest')}</span>
                       : session.total_duration_minutes && (
@@ -443,6 +452,35 @@ export function YogaView({ plan: planProp }) {
                     <div className="yoga-duration-notice">
                       <Info size={12} />
                       <span>{session.duration_notice}</span>
+                    </div>
+                  )}
+                  {/* Why this day is easier or harder than yesterday, in the same
+                      slot and largely the same sequence. Without it the arc is
+                      invisible and an easy day just looks like a repeat.
+                      `effort_cue` is the instruction that actually makes the day
+                      lighter, so it belongs with the note rather than buried. */}
+                  {session.intensity_note && (
+                    <div className="yoga-duration-notice">
+                      <Info size={12} />
+                      <span>
+                        {session.intensity_note}
+                        {session.effort_cue && ` ${session.effort_cue}`}
+                      </span>
+                    </div>
+                  )}
+                  {/* Two days a week carry a second breathing technique, paid for
+                      out of asana. Without this the shorter pose list reads as
+                      the plan running out rather than as the day's design. */}
+                  {session.pranayama_focus_note && (
+                    <div className="yoga-duration-notice">
+                      <Wind size={12} />
+                      <span>{session.pranayama_focus_note}</span>
+                    </div>
+                  )}
+                  {session.rotation_notice && (
+                    <div className="yoga-duration-notice">
+                      <Info size={12} />
+                      <span>{session.rotation_notice}</span>
                     </div>
                   )}
                   <button

@@ -45,6 +45,28 @@ const GOALS = {
   ]
 };
 
+// Three session lengths, one per experience level. A free-entry field let
+// someone ask for 17 or 83 minutes, which the engine can build but nobody
+// designed: the pranayama and meditation blocks are sized per level, so the
+// tiers are where the practice is actually coherent.
+//
+// The pairing is the default, not a restriction — any level can pick any of the
+// three, and the field stops being overwritten once the practitioner sets it.
+const YOGA_SESSION_MINUTES = [30, 45, 60];
+const YOGA_SUGGESTED_MINUTES = {
+  none:         30,
+  beginner:     30,
+  intermediate: 45,
+  advanced:     60,
+};
+
+// Every session carries five to ten minutes of breathwork — the engine's
+// `_PRANAYAMA_MIN_MINUTES` floor over the KB's per-level rating, so a beginner
+// gets five rather than the three the technique alone would give. Shown in the
+// picker because the breathwork share is most of what distinguishes the tiers.
+// Keep in step with `pranayama_minutes()` in yoga_plan_engine.py.
+const YOGA_PRANAYAMA_MINUTES = { none: 5, beginner: 5, intermediate: 5, advanced: 10 };
+
 const DIETARY_TYPES = [
   { value: 'vegetarian', label: 'Vegetarian' },
   { value: 'vegan', label: 'Vegan' },
@@ -56,11 +78,16 @@ const DIETARY_TYPES = [
 export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSuccess }) {
   const [form, setForm] = useState({});
   const [loading, setLoading] = useState(false);
+  // Whether the practitioner has set the session length themselves. Once they
+  // have, changing experience level must not move it back — a suggestion that
+  // silently overwrites a deliberate choice is worse than no suggestion.
+  const [durationTouched, setDurationTouched] = useState(false);
 
   // Initialize defaults when modal opens
   useEffect(() => {
     if (isOpen && typeId) {
       setForm({});
+      setDurationTouched(false);
     }
   }, [isOpen, typeId]);
 
@@ -68,7 +95,14 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    if (name === 'time_available_minutes') setDurationTouched(true);
+    setForm(prev => {
+      const next = { ...prev, [name]: value };
+      if (name === 'yoga_experience' && !durationTouched) {
+        next.time_available_minutes = String(YOGA_SUGGESTED_MINUTES[value] ?? 30);
+      }
+      return next;
+    });
   };
 
   const handleToggle = (field, value) => {
@@ -101,7 +135,14 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       payload.yoga_goal = payload.yoga_goal || 'flexibility';
       payload.yoga_experience = payload.yoga_experience || 'beginner';
       payload.flexibility_level = payload.flexibility_level || 'moderate';
-      payload.time_available_minutes = parseInt(payload.time_available_minutes || 30, 10);
+      // Fall back to the tier for the level they chose, not a flat 30. The
+      // picker fills itself in as soon as an experience level is selected, so
+      // this only runs for a payload that never went through the form.
+      payload.time_available_minutes = parseInt(
+        payload.time_available_minutes
+          || YOGA_SUGGESTED_MINUTES[payload.yoga_experience]
+          || 30,
+        10);
       payload.time_of_day_preference = payload.time_of_day_preference || 'morning';
       payload.yoga_style_preference = [payload.yoga_style_preference || 'hatha'];
       payload.pranayama_interest = payload.pranayama_interest || 'yes';
@@ -261,8 +302,19 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                 </select>
               </div>
               <div className="pref-input-group">
-                <label>Session Duration (mins)</label>
-                <input type="number" name="time_available_minutes" min={15} max={90} value={form.time_available_minutes || ''} onChange={handleChange} required placeholder="e.g. 30" />
+                <label>
+                  Session Duration
+                  {/* The same length every day of the week — the plan varies the
+                      effort, not the slot, so this is the commitment being made. */}
+                  <span className="pref-hint-sub"> — the same every day; the plan varies the effort, not the time</span>
+                </label>
+                <select name="time_available_minutes" value={form.time_available_minutes || ''} onChange={handleChange} required>
+                  {YOGA_SESSION_MINUTES.map(m => (
+                    <option key={m} value={m}>
+                      {m} min — includes {YOGA_PRANAYAMA_MINUTES[form.yoga_experience || 'beginner']} min pranayama
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="pref-row">
