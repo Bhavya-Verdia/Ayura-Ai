@@ -598,8 +598,11 @@ _CONDITION_TO_EXERCISE_CONTRA: dict[str, list[str]] = {
 _SENIOR_AGE = 60
 _YOUTH_AGE = 18
 # The KB tags axial-loading and impact work with `osteoporosis`; it is the closest
-# thing it has to a "loads the spine hard" mechanism.
-_AGE_AVOID_TAGS = {"osteoporosis"}
+# thing it has to a "loads the spine hard" mechanism. `hypertension` is the same
+# kind of proxy for the other direction — the breath-holding strain work and the
+# maximal-effort conditioning — and a seventy-year-old was being finished with
+# assault-bike sprints and burpees because nobody had said the word out loud.
+_AGE_AVOID_TAGS = {"osteoporosis", "hypertension"}
 
 
 def _age_group(age) -> str:
@@ -1350,9 +1353,23 @@ _MAX_EXERCISES = 8
 _SECONDS_PER_REP = 4
 
 
+_TIMED_REPS = re.compile(r"(\d+)\s*(min|sec)", re.I)
+
+
 def _reps_to_seconds(reps, sets: int) -> int:
-    """Time under tension for one exercise, across all its sets."""
-    digits = [int(p) for p in str(reps).replace("\u2013", "-").split("-") if p.strip().isdigit()]
+    """Time under tension for one exercise, across all its sets.
+
+    Prescriptions written in minutes were read as repetitions, so "30 min" on a
+    treadmill cost the session 30 reps — two minutes of estimated work for half
+    an hour of running, and a calorie figure to match.
+    """
+    text = str(reps).replace("\u2013", "-")
+    timed = _TIMED_REPS.findall(text)
+    if timed:
+        per_set = sum(int(n) * (60 if unit.lower().startswith("min") else 1)
+                      for n, unit in timed)
+        return int(sets * per_set)
+    digits = [int(p) for p in text.split("-") if p.strip().isdigit()]
     avg_reps = sum(digits) / len(digits) if digits else 10
     return int(sets * (avg_reps * _SECONDS_PER_REP))
 
@@ -1399,6 +1416,44 @@ def _target_count(duration, goal, rx=None):
     # cost it again.
     count = _fits(1)
     return _fits(2) if count >= 5 else count
+
+
+# ── Conditioning finisher ─────────────────────────────────────────────────────
+#
+# Conditioning only ever reached a plan through a `core_cardio` day, and only
+# three of the six weekly splits have one. Measured across levels and schedules,
+# 60% of fat-loss plans contained no conditioning at all: four days of resistance
+# training, prescribed for fat loss, with nothing that raises a heart rate for
+# longer than a rest interval.
+#
+# Fat loss and endurance are the two goals where conditioning IS the training
+# effect rather than a supplement to it, so for those it is scheduled rather than
+# left to whether the split happens to include a cardio day. It goes last, after
+# the lifting, which is the order it should be performed in and the order the
+# role sort already produces.
+_FINISHER_GOALS = {"fat_loss", "endurance"}
+# A finisher is not a cardio session. The library's steady-state entries are
+# written as the whole workout — "30 min" on a treadmill — so they are clamped;
+# the interval entries are already finisher-shaped and keep their own writing.
+_FINISHER_MINUTES = {"beginner": 8, "intermediate": 10, "advanced": 12}
+
+
+def _finisher_prescription(ex: dict, level: str) -> tuple:
+    own = (ex.get("sets_reps") or {}).get(level) or (ex.get("sets_reps") or {}).get("intermediate") or {}
+    sets = int(own.get("sets", 1) or 1)
+    reps = own.get("reps", "10 min")
+    rest = int(own.get("rest_seconds", 0) or 0)
+    cap = _FINISHER_MINUTES.get(level, 10)
+    if sets == 1 and _TIMED_REPS.search(str(reps)):
+        return 1, f"{cap} min", 0
+    return sets, reps, rest
+
+
+def _pick_finisher(cardio_pool, user_id, focus, day_num, week):
+    if not cardio_pool:
+        return None
+    picked = _deterministic_select(cardio_pool, 1, f"{user_id}-{focus}-d{day_num}-finisher-w{week}")
+    return picked[0] if picked else None
 
 
 # ── Day plan builder ──────────────────────────────────────────────────────────
@@ -1506,6 +1561,15 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     # to give. A real programme keeps the lifts and moves the volume.
     target = _target_count(duration, goal, _get_goal_prescription(goal, 1, level))
 
+    # The finisher takes a slot rather than being added on top of a session that
+    # already fills the clock — the practitioner asked for forty-five minutes.
+    finisher = None
+    if goal in _FINISHER_GOALS and "cardio" not in focus:
+        finisher = _pick_finisher(muscle_split.get("cardio") or [],
+                                  user_id, focus, day_num, week)
+        if finisher:
+            target = max(_MIN_EXERCISES, target - 1)
+
     pool = []
     for k in _focus_to_keys(focus):
         pool.extend(muscle_split.get(k, []))
@@ -1525,13 +1589,16 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     # three triceps extensions before it reached a fly.
     roles = _assign_roles(selected, _primary_slots(len(selected)))
     ordered = sorted(zip(selected, roles), key=lambda pair: _ROLE_ORDER.index(pair[1]))
+    if finisher and all(ex["id"] != finisher["id"] for ex in selected):
+        ordered.append((finisher, "conditioning"))
 
     main_workout = []
     total_cals = 0.0
     work_seconds = 0
     rest_seconds_total = 0
     for ex, role in ordered:
-        sets, reps, rest = _prescribe(ex, rx, level, role)
+        sets, reps, rest = (_finisher_prescription(ex, level) if ex is finisher
+                            else _prescribe(ex, rx, level, role))
 
         ex_work = _reps_to_seconds(reps, sets)
         work_seconds += ex_work
