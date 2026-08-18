@@ -1537,6 +1537,83 @@
   margin: 0;
 }
 
+/* A card per week rather than more table columns: the prescription, the rule
+   that moves it and the coaching line do not fit five abreast on a phone. */
+.gym-progression-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.gym-progression-week {
+  border: 1px solid var(--ayura-border);
+  border-radius: 9px;
+  padding: 0.6rem 0.75rem;
+  background: color-mix(in srgb, var(--ayura-accent) 3%, transparent);
+}
+
+.gym-progression-week.deload {
+  border-color: color-mix(in srgb, var(--plan-green) 30%, transparent);
+  background: color-mix(in srgb, var(--plan-green) 6%, transparent);
+}
+
+.gym-progression-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.gym-progression-week-no {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--plan-green);
+}
+
+.gym-progression-theme {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ayura-text);
+}
+
+.gym-progression-rx {
+  margin-left: auto;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--ayura-muted);
+  white-space: nowrap;
+}
+
+.gym-progression-rule {
+  font-size: 0.78rem;
+  color: var(--ayura-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.gym-progression-coach {
+  font-size: 0.78rem;
+  color: var(--ayura-text-secondary);
+  line-height: 1.55;
+  margin: 0.4rem 0 0;
+  padding-left: 0.6rem;
+  border-left: 2px solid color-mix(in srgb, var(--plan-green) 35%, transparent);
+  font-style: italic;
+}
+
+.gym-progression-lifts {
+  font-size: 0.74rem;
+  color: var(--ayura-muted);
+  line-height: 1.5;
+  margin: 0.7rem 0 0;
+}
+
 .gym-progression-table {
   width: 100%;
   border-collapse: collapse;

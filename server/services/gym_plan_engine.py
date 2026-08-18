@@ -1176,6 +1176,42 @@ def _cardio_notice(goal, preference, finisher_days: int, training_days: int) -> 
     return None
 
 
+def _main_lifts_of(week: dict) -> list:
+    """The block's main lifts, by name and load, in the order they are performed."""
+    lifts = []
+    seen = set()
+    for day in week.get("days", []):
+        for ex in day.get("main_workout", []):
+            if ex.get("role") != "primary" or ex["exercise_name"] in seen:
+                continue
+            seen.add(ex["exercise_name"])
+            lifts.append({
+                "exercise": ex["exercise_name"],
+                "day": day.get("focus"),
+                "load": ex.get("weight_range", "").split(" · ")[0],
+            })
+    return lifts
+
+
+def _progression_spine(four_week_plan: list, scheme: str) -> list:
+    """One entry per week: what changes, by how much, and on which lifts."""
+    table = _GOAL_WEEKS.get(scheme, _GOAL_WEEKS["general_fitness"])
+    main_lifts = _main_lifts_of(four_week_plan[0]) if four_week_plan else []
+    spine = []
+    for i, week in enumerate(four_week_plan):
+        rx = week["prescription"]
+        spine.append({
+            "week": week["week"],
+            "theme": week["theme"],
+            "main_lift_prescription": f"{rx['sets']} × {rx['reps']}, {rx['rest_seconds']}s rest",
+            "role_prescriptions": week.get("role_prescriptions", {}),
+            "note": table[min(i, 3)]["note"],
+            "is_deload": week["theme"].lower().startswith("deload"),
+            "main_lifts": main_lifts,
+        })
+    return spine
+
+
 def _schedule_notice(requested_days: int, schedule: list) -> str | None:
     """Say when the week that was built is not the week that was asked for."""
     built = sum(1 for focus in schedule if focus != "rest")
@@ -2192,6 +2228,14 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "four_week_plan": four_week_plan,
         "ayurvedic_tips": get_ayurvedic_tips(dominant_dosha),
         "vyayama_shakti": _vyayama_shakti(dominant_dosha, user_profile.get("age"), strength_level),
+        # The block's progression, as facts. The four weeks each carry a theme, a
+        # prescription and the rule that moves it, and the main lifts they are
+        # about — which is everything a coaching note needs to be true rather than
+        # plausible. The enricher attaches `coach_note` to each entry; the numbers
+        # here are the engine's and are never overwritten by it.
+        "progression": _progression_spine(four_week_plan, scheme),
+        # Kept because the plan card renders it, and because it is the progression
+        # in one line per week for anything that only wants that.
         "progressive_overload_guide": {
             "week_1": _GOAL_WEEKS[scheme][0]["note"] if scheme in _GOAL_WEEKS else "",
             "week_2": _GOAL_WEEKS[scheme][1]["note"] if scheme in _GOAL_WEEKS else "",

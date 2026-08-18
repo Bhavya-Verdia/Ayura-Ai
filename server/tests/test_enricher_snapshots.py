@@ -113,9 +113,12 @@ _GYM_VALID_RESPONSE = {
     "motivational_note": "Consistency builds strength.",
 }
 
+# `progression_plan` is no longer a top-level field: the model's per-week coaching
+# is merged into the engine's own `progression`, so the plan carries one four-week
+# narrative rather than a deterministic one and a guessed one side by side.
 _GYM_REQUIRED_FIELDS = {
     "plan_title", "plan_description", "weekly_focus_notes",
-    "nutrition_sync", "recovery_protocol", "progression_plan",
+    "nutrition_sync", "recovery_protocol", "progression",
     "vyayama_vidhi", "ayurvedic_lifestyle_sync", "classical_transparency_note", "motivational_note", "enriched",
 }
 
@@ -124,7 +127,16 @@ _GYM_REQUIRED_FIELDS = {
 async def test_gym_enricher_snapshot_all_fields_present():
     from services.gym_plan_enricher import enrich_gym_plan
 
-    raw_plan = {"weekly_schedule": [], "plan_id": "snap-gym"}
+    raw_plan = {
+        "weekly_schedule": [],
+        "plan_id": "snap-gym",
+        "progression": [
+            {"week": n, "theme": theme, "main_lift_prescription": "4 × 8-10, 90s rest",
+             "note": "engine note", "is_deload": theme.startswith("Deload"), "main_lifts": []}
+            for n, theme in enumerate(
+                ("Foundation", "Volume Build", "Intensity Peak", "Deload & Reset"), start=1)
+        ],
+    }
 
     with patch("services.gym_plan_enricher.llm_client") as mock_llm, \
          patch("services.gym_plan_enricher.rag_pipeline") as mock_rag:
