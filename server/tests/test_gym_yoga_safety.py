@@ -337,3 +337,62 @@ def test_every_pose_uses_a_dosha_value_the_scorer_understands():
 
     for pose in yoga_poses:
         assert set(pose.get("dosha_balance") or {}) == {"vata", "pitta", "kapha"}, pose["id"]
+
+
+# ── The week's level gate is absolute ────────────────────────────────────────
+
+@pytest.mark.parametrize("minutes", [30, 45, 60])
+@pytest.mark.parametrize("overrides", [
+    {"medical_history": ["back_pain"], "injuries_or_limitations": ["herniated_disc"]},
+    {"pregnancy_or_nursing": True, "pregnancy_status": "pregnant", "pregnancy_trimester": 3},
+    {},
+], ids=["herniated-disc", "pregnant-T3", "healthy"])
+def test_session_length_never_unlocks_a_level_the_week_has_not(overrides, minutes):
+    """Asking for a longer session must not reach past the week's own levels.
+
+    The gate was dropped whenever the week's levels did not hold enough material
+    to fill the asana budget. A herniated-disc beginner asking for 60 minutes got
+    plank, side plank, dolphin, half moon and eagle in WEEK ONE — 167 poses above
+    their week's level across the four weeks, 12 of those sessions carrying no
+    disclosure at all. A third-trimester pregnancy at 30 minutes got 86.
+
+    This is the surface the daily arc is already forbidden from opening, only
+    behind a duration setting rather than a weekday. A pool too small for the
+    budget has an answer that is tested and disclosed: hold the safe poses longer
+    and say the session came up short.
+    """
+    from services.yoga_plan_engine import generate_yoga_plan, yoga_poses
+
+    by_id = {p["id"]: p for p in yoga_poses}
+    profile = {**_YOGA_BASE_PROFILE, **overrides}
+    for week in (1, 2, 3, 4):
+        allowed = {"beginner"} if week < 3 else {"beginner", "intermediate"}
+        plan = generate_yoga_plan(profile,
+                                  {**_YOGA_BASE_PREFS, "yoga_experience": "beginner",
+                                   "time_available_minutes": minutes},
+                                  weeks=[week])
+        for day in plan["four_week_plan"][0]["days"]:
+            session = day["session"]
+            served = [p for section in ("warmup", "main_sequence", "cooldown")
+                      for p in session[section]]
+            above = [p["pose_id"] for p in served
+                     if by_id[p["pose_id"]]["level"] not in allowed]
+            assert not above, (
+                f"week {week} at {minutes}min served {above} above "
+                f"{sorted(allowed)} — session length reached past the level gate")
+
+
+def test_a_pool_too_thin_for_the_budget_says_so_instead():
+    """The replacement for widening: a short session that explains itself. A
+    third-trimester pregnancy has 22 eligible poses and cannot fill an hour."""
+    from services.yoga_plan_engine import generate_yoga_plan
+
+    plan = generate_yoga_plan(
+        {**_YOGA_BASE_PROFILE, "pregnancy_or_nursing": True,
+         "pregnancy_status": "pregnant", "pregnancy_trimester": 3},
+        {**_YOGA_BASE_PREFS, "yoga_experience": "beginner",
+         "time_available_minutes": 60}, weeks=[1])
+    for day in plan["four_week_plan"][0]["days"]:
+        session = day["session"]
+        if abs(session["total_duration_minutes"] - 60) / 60 > 0.10:
+            assert session["duration_notice"], "short session with no explanation"

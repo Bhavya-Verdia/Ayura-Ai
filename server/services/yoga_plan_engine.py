@@ -2305,13 +2305,34 @@ def build_sequence(filtered_poses, yoga_prefs, user_profile, day_num: int, week:
     savasana_seconds = savasana_seconds or _closing_budget(mins)[0]
 
     # Progressive week-level filtering
+    #
+    # The gate used to be dropped entirely whenever the week's own levels did not
+    # hold enough material to fill the asana budget — "fall back rather than
+    # silently shipping a short one". It shipped something worse than a short
+    # session, silently: a herniated-disc beginner asking for 60 minutes got
+    # plank, side plank, dolphin, half moon and eagle in WEEK ONE, every one of
+    # them `level: intermediate`. Their beginner-only pool is 1980s of material
+    # and the 60-minute asana budget is about 1980s, so that tier tipped over and
+    # the whole gate came off. Nothing said so: `pool_limited` stayed false and
+    # no notice fired.
+    #
+    # Session length must not reach past the week's levels. It is the same
+    # surface the daily arc is forbidden from opening — "putting extra levels
+    # behind a weekday index would be a safety surface nobody would think to look
+    # for" — only behind a duration setting instead of a weekday.
+    #
+    # A pool too small for the budget already has an answer, and it is the one a
+    # teacher uses: hold the safe poses longer (`_hold_multiplier`), and say the
+    # session came up short (`duration_notice`, `pool_limited`). That path is
+    # tested and disclosed. This one was neither.
     pose_pool = filtered_poses
+    level_pool_empty = False
     if week_allowed_levels:
         narrowed = [p for p in filtered_poses if p.get("level", "beginner") in week_allowed_levels]
-        # Only honour the week gate if it still leaves enough material to fill a
-        # session; otherwise fall back rather than silently shipping a short one.
-        if sum(pose_total_seconds(p, exp, week, age_group, day_mult)
-               for p in narrowed) >= asana_budget_seconds:
+        # An empty pool is the one case worth widening for: a plan with no
+        # session is worse than one above the week's level, and it is disclosed.
+        level_pool_empty = not narrowed
+        if narrowed:
             pose_pool = narrowed
 
     # Savasana is the closing pose and nothing else. It used to qualify for the
@@ -2382,7 +2403,8 @@ def build_sequence(filtered_poses, yoga_prefs, user_profile, day_num: int, week:
     # — a herniated disc used to yield an empty main sequence, silently. Fall
     # back to whatever the user CAN safely do, and record that we did, so the
     # plan can say so rather than shipping a short session with no explanation.
-    pool_limited = False
+    # Set above where the week's level pool came out empty and had to be widened.
+    pool_limited = level_pool_empty
     if not styled_main:
         styled_main = [p for p in pose_pool if selectable(p)
                        and p.get("sequence_role") != "warmup"]
