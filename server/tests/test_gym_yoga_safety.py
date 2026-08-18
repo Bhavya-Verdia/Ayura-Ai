@@ -1715,3 +1715,88 @@ def test_the_engine_numbers_survive_enrichment():
     merged = merge_progression(raw, {"week_1": "anything at all"})
     assert merged[0]["main_lift_prescription"] == "4 × 8-10, 90s rest"
     assert merged[0]["note"] == "engine note"
+
+
+@pytest.mark.parametrize("bmi_category", ["obese_class1", "obese_class2", "obese_class3"])
+def test_jumping_is_not_prescribed_at_obese_classifications(bmi_category):
+    """`bmi_category` was echoed into `user_summary` and read by nothing. Landing
+    forces run to several times bodyweight through the knee and the ankle, and at
+    these classifications that is the limiting factor rather than the muscles."""
+    from services.gym_plan_engine import _is_impact
+
+    by_name = {e["name"]: e for e in gym_exercises}
+    for level in ("beginner", "intermediate", "advanced"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": level, "weight_kg": 118,
+             "bmi_category": bmi_category},
+            {"available_equipment": ["full_gym"], "gym_goal": "fat_loss",
+             "workout_days_per_week": 5, "workout_duration_minutes": 45,
+             "cardio_preference": "heavy"})
+        for week in plan["four_week_plan"]:
+            for day in week["days"]:
+                for ex in day["main_workout"]:
+                    assert not _is_impact(by_name[ex["exercise_name"]]), \
+                        f"{level}/{bmi_category}: {ex['exercise_name']}"
+        assert plan["adaptation_notice"], "impact work was removed in silence"
+
+
+def test_the_resistance_work_survives_that_gate():
+    """It is the airborne half that goes. Squats, lunges and the rest of the
+    library are exactly what an obese practitioner should be doing."""
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "beginner", "weight_kg": 118,
+         "bmi_category": "obese_class2"},
+        {"available_equipment": ["full_gym"], "gym_goal": "fat_loss",
+         "workout_days_per_week": 4, "workout_duration_minutes": 45})
+    legs = next(d for d in plan["four_week_plan"][0]["days"]
+                if d["focus"].lower().startswith("legs"))
+    assert len(legs["main_workout"]) >= 3
+    # And conditioning is still there — low-impact, but there.
+    conditioned, _ = _conditioning_days_in(plan)
+    assert conditioned > 0
+
+
+@pytest.mark.parametrize("activity,expected_delta", [
+    ("sedentary", -1), ("light", 0), ("moderate", 0), ("active", 0), ("very_active", +1),
+])
+def test_activity_level_sets_the_starting_volume(activity, expected_delta):
+    """`activity_level` was not read at all — a sedentary 118 kg beginner and an
+    active one were given the same plan. Reps and rest belong to the goal; how
+    much of them a body recovers from is a property of the practitioner."""
+    from services.gym_plan_engine import _get_goal_prescription
+
+    base = _get_goal_prescription("muscle_gain", 1, "intermediate")["sets"]
+    scaled = _get_goal_prescription("muscle_gain", 1, "intermediate", activity)["sets"]
+    assert scaled - base == expected_delta, (base, scaled)
+
+
+def test_a_sedentary_beginner_starts_lower_than_an_active_one():
+    def sets_for(activity):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "beginner", "weight_kg": 90,
+             "activity_level": activity},
+            {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain",
+             "workout_days_per_week": 4, "workout_duration_minutes": 60})
+        return plan["four_week_plan"][2]["prescription"]["sets"]
+
+    assert sets_for("sedentary") < sets_for("very_active")
+
+
+def test_someone_who_needs_mass_is_not_sent_to_the_bike():
+    """Putting mass on means holding onto a surplus. The resistance work is what
+    asks the body to build with it.
+
+    Tested on `general_fitness`, because that is where the cap does work: the
+    muscle-gain goal is already capped for the interference reason, and a cap
+    cannot be shown to bite underneath another cap that already binds."""
+    def conditioned(bmi_category):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 52,
+             "bmi_category": bmi_category},
+            {"available_equipment": ["full_gym"], "gym_goal": "general_fitness",
+             "workout_days_per_week": 6, "workout_duration_minutes": 45,
+             "cardio_preference": "heavy"})
+        return _conditioning_days_in(plan)[0]
+
+    assert conditioned("underweight") < conditioned("normal")
+    assert conditioned("severely_underweight") < conditioned("normal")
