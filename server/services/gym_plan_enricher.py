@@ -74,13 +74,69 @@ User profile and plan:
 {plan_summary_json}
 """
 
+def build_plan_summary(raw_plan: dict, user_profile: dict, gym_prefs: dict) -> dict:
+    """What the model is told about the practitioner and the plan it is enriching.
+
+    Three fields were read off the wrong object. `fitness_level` and
+    `injuries_or_limitations` live on the user profile — that is where
+    `filter_exercises` reads them, and it is why the exercise gating has always
+    been correct — but this asked `gym_prefs` for them, and `GymPreferences` has
+    no such fields. Both were therefore `None` for every user who has ever
+    generated a plan.
+
+    So the coaching narrative wrapped around a correctly-gated plan was written
+    for someone with no injuries and no known training age: the engine kept
+    overhead pressing away from a torn rotator cuff, and the text beside it talked
+    about pushing overhead. The RAG query was worse — `fitness_level` defaulted to
+    "beginner" when missing, so every retrieval this feature has ever made asked
+    for beginner material, including for advanced lifters.
+
+    Split out from `enrich_gym_plan` so the mapping can be tested without an LLM
+    call, which is the only reason it went unnoticed for as long as it did.
+    """
+    return {
+        "user": {
+            "age": user_profile.get("age"),
+            "gender": user_profile.get("gender"),
+            "weight_kg": user_profile.get("weight_kg"),
+            "bmi": user_profile.get("bmi"),
+            "bmi_category": user_profile.get("bmi_category"),
+            "dominant_dosha": user_profile.get("dominant_dosha"),
+            "dosha_scores": user_profile.get("dosha_scores"),
+            "fitness_level": user_profile.get("fitness_level"),
+            # What the practitioner lifts, which is what the load ranges in the
+            # plan are built from. It has always been on gym_prefs and was never
+            # sent, so the model could not see why the numbers were what they are.
+            "strength_level": gym_prefs.get("strength_level"),
+            "gym_goal": gym_prefs.get("gym_goal"),
+            "training_style": gym_prefs.get("training_style"),
+            "target_muscle_focus": gym_prefs.get("target_muscle_focus"),
+            "cardio_preference": gym_prefs.get("cardio_preference"),
+            "workout_days": gym_prefs.get("workout_days_per_week"),
+            "duration_minutes": gym_prefs.get("workout_duration_minutes"),
+            "available_equipment": gym_prefs.get("available_equipment"),
+            "injuries": user_profile.get("injuries_or_limitations"),
+            "medical_history": user_profile.get("medical_history"),
+            "activity_level": user_profile.get("activity_level"),
+        },
+        "generated_schedule": [
+            {
+                "day": d.get("day_name"),
+                "focus": d.get("focus"),
+                "exercises": [e.get("exercise_name") for e in d.get("main_workout", [])],
+            }
+            for d in raw_plan.get("weekly_schedule", [])
+        ],
+    }
+
+
 async def enrich_gym_plan(raw_plan: dict, user_profile: dict, gym_prefs: dict) -> dict:
     raw_plan["enriched"] = False
 
     try:
         dosha = user_profile.get("dominant_dosha") or "vata"
         goal = gym_prefs.get("gym_goal") or "general_fitness"
-        fitness_level = gym_prefs.get("fitness_level") or "beginner"
+        fitness_level = user_profile.get("fitness_level") or "beginner"
 
         # Fetch grounding context from both fitness and Ayurveda collections
         rag_query = f"{dosha} dosha exercise training recovery {goal} {fitness_level}"
@@ -88,32 +144,7 @@ async def enrich_gym_plan(raw_plan: dict, user_profile: dict, gym_prefs: dict) -
         ayur_docs = await rag_pipeline.query(f"{dosha} physical activity lifestyle", "ayurveda", n_results=2, dosha_filter=dosha)
         rag_context = rag_pipeline.format_context(fitness_docs + ayur_docs, max_chars=1500) or "No specific context retrieved — use classical Ayurvedic and modern fitness principles."
 
-        plan_summary = {
-            "user": {
-                "age": user_profile.get("age"),
-                "gender": user_profile.get("gender"),
-                "bmi": user_profile.get("bmi"),
-                "bmi_category": user_profile.get("bmi_category"),
-                "dominant_dosha": user_profile.get("dominant_dosha"),
-                "dosha_scores": user_profile.get("dosha_scores"),
-                "fitness_level": gym_prefs.get("fitness_level"),
-                "gym_goal": gym_prefs.get("gym_goal"),
-                "workout_days": gym_prefs.get("workout_days_per_week"),
-                "duration_minutes": gym_prefs.get("workout_duration_minutes"),
-                "available_equipment": gym_prefs.get("available_equipment"),
-                "injuries": gym_prefs.get("injuries_or_limitations"),
-                "medical_history": user_profile.get("medical_history"),
-                "activity_level": user_profile.get("activity_level")
-            },
-            "generated_schedule": [
-                {
-                    "day": d.get("day_name"),
-                    "focus": d.get("focus"),
-                    "exercises": [e.get("exercise_name") for e in d.get("main_workout", [])]
-                }
-                for d in raw_plan.get("weekly_schedule", [])
-            ]
-        }
+        plan_summary = build_plan_summary(raw_plan, user_profile, gym_prefs)
 
         prompt = (
             USER_PROMPT_TEMPLATE

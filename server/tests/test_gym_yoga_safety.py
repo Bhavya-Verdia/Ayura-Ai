@@ -1599,3 +1599,38 @@ def test_honoured_dislikes_are_not_announced():
     everything was respected trains the reader to ignore it."""
     assert _plan_with_preferences({"dislikes": ["burpee"]})["preference_notice"] is None
     assert _plan_with_preferences(None)["preference_notice"] is None
+
+
+def test_the_enricher_is_told_about_injuries_and_training_age():
+    """`fitness_level` and `injuries_or_limitations` live on the user profile —
+    that is where `filter_exercises` reads them, and it is why the exercise gating
+    has always been correct. The enricher asked `gym_prefs` for them, and
+    `GymPreferences` has no such fields, so both were `None` for every user who
+    has ever generated a plan: the engine kept overhead pressing away from a torn
+    rotator cuff and the coaching text beside it talked about pushing overhead."""
+    from services.gym_plan_enricher import build_plan_summary
+
+    summary = build_plan_summary(
+        {"weekly_schedule": []},
+        {**_YOGA_BASE_PROFILE, "fitness_level": "advanced",
+         "injuries_or_limitations": ["rotator_cuff", "bad_knee"]},
+        {"gym_goal": "muscle_gain", "strength_level": "advanced"})
+    assert summary["user"]["injuries"] == ["rotator_cuff", "bad_knee"]
+    assert summary["user"]["fitness_level"] == "advanced"
+    assert summary["user"]["strength_level"] == "advanced"
+
+
+def test_no_field_the_enricher_sends_is_read_off_the_wrong_object():
+    """The structural version of the bug above, so the next field added cannot
+    repeat it: populate both objects with everything they legitimately hold, and
+    anything the summary reports as missing is being asked of the wrong one."""
+    from schemas.preferences_schema import GymPreferences
+    from schemas.user_schema import UserDocument
+    from services.gym_plan_enricher import build_plan_summary
+
+    profile = {field: f"profile-{field}" for field in UserDocument.model_fields}
+    prefs = {field: f"prefs-{field}" for field in GymPreferences.model_fields}
+    summary = build_plan_summary({"weekly_schedule": []}, profile, prefs)
+
+    missing = [key for key, value in summary["user"].items() if value is None]
+    assert not missing, f"read off an object that does not carry them: {missing}"
