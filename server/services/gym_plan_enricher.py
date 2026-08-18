@@ -1,4 +1,6 @@
 import json
+import re
+
 from ai.llm_client import llm_client
 from ai.rag_pipeline import rag_pipeline
 from core.logger import logger
@@ -44,10 +46,10 @@ Given this user profile, generated gym plan, and knowledge context, provide enri
     ]
   },
   "progression_plan": {
-    "week_1": "What to focus on",
-    "week_2": "How to progress",
-    "week_3": "Next progression",
-    "week_4": "Deload guidance"
+    "week_1": "COACHING for this week — see rules below",
+    "week_2": "...",
+    "week_3": "...",
+    "week_4": "..."
   },
   "vyayama_vidhi": {
     "ardhashakti_guideline": "1 sentence: at what point should THIS user stop their workout, based on their dosha, age, and fitness level — citing Ardhabala principle",
@@ -67,12 +69,35 @@ Given this user profile, generated gym plan, and knowledge context, provide enri
   "motivational_note": "1 personalized sentence addressing their specific goal and dosha"
 }
 
+RULES FOR progression_plan — the four weeks are ALREADY PROGRAMMED. The
+`progression` block below gives you, for each week: its theme, the sets, reps and
+rest the main lifts carry that week, the rule that moves the load, and the main
+lifts themselves by name with their starting loads. Those numbers are the plan.
+Your job is the coaching around them, so:
+- Do NOT invent, restate or contradict any set, rep, rest or weight figure. If you
+  mention a number, it must be one given to you for that week.
+- Name the practitioner's actual main lifts where it helps. They are listed.
+- Week 4 is a DELOAD when the block says so. Never tell them to add weight, add
+  volume, or chase a personal best in a deload week.
+- Write for THIS person: their training age, their injuries, their dosha, their
+  constraints. One or two sentences per week, no preamble.
+
 KNOWLEDGE BASE CONTEXT (Ayurvedic + fitness principles to ground your response):
 {rag_context}
 
 User profile and plan:
 {plan_summary_json}
 """
+
+# What a deload week must never be told to do. The block reduces load by 15-20%
+# and the whole point of it is that the practitioner backs off; a coaching line
+# saying "add weight" beside a prescription that says "reduce weight 15%" is the
+# contradiction that makes a plan untrustworthy, and it is the one an LLM is most
+# likely to write because three of the four weeks call for exactly that.
+_DELOAD_CONTRADICTION = re.compile(
+    r"\b(add (weight|load|volume|a set)|increase (the )?(weight|load|volume|intensity)|"
+    r"heavier|personal best|pr\b|new max|push (harder|for more)|go heavier|"
+    r"more weight|add \d+(\.\d+)?\s*kg)\b", re.I)
 
 def build_plan_summary(raw_plan: dict, user_profile: dict, gym_prefs: dict) -> dict:
     """What the model is told about the practitioner and the plan it is enriching.
@@ -127,7 +152,31 @@ def build_plan_summary(raw_plan: dict, user_profile: dict, gym_prefs: dict) -> d
             }
             for d in raw_plan.get("weekly_schedule", [])
         ],
+        # The four weeks as the engine programmed them. Without this the model was
+        # writing a four-week progression narrative having been shown day names,
+        # focus labels and exercise names — no sets, no reps, no rest, no loads,
+        # and no idea which week was the deload. It was guessing, next to a
+        # deterministic guide that was not.
+        "progression": raw_plan.get("progression", []),
     }
+
+
+def merge_progression(raw_plan: dict, coaching: dict) -> list:
+    """Attach each week's coaching line to the week's actual prescription.
+
+    One progression, not two. The engine's numbers and rule stay exactly as they
+    were; the model's sentence rides alongside them, and is dropped rather than
+    shipped when it contradicts the week it is describing.
+    """
+    merged = []
+    for entry in raw_plan.get("progression", []):
+        note = str(coaching.get(f"week_{entry['week']}", "") or "").strip()
+        if note and entry.get("is_deload") and _DELOAD_CONTRADICTION.search(note):
+            logger.warning(
+                "Dropped deload coaching that told the practitioner to add load: %r", note)
+            note = ""
+        merged.append({**entry, "coach_note": note})
+    return merged
 
 
 async def enrich_gym_plan(raw_plan: dict, user_profile: dict, gym_prefs: dict) -> dict:
@@ -169,7 +218,13 @@ async def enrich_gym_plan(raw_plan: dict, user_profile: dict, gym_prefs: dict) -
         raw_plan["weekly_focus_notes"] = enrichment.get("weekly_focus_notes", {})
         raw_plan["nutrition_sync"] = enrichment.get("nutrition_sync", {})
         raw_plan["recovery_protocol"] = enrichment.get("recovery_protocol", {})
-        raw_plan["progression_plan"] = enrichment.get("progression_plan", {})
+        # `progression_plan` was written by the model, stored on the plan, and read
+        # by nothing — not the plan view, not the export, not the chat agent. The
+        # progression the user actually sees came from the engine. Rather than ship
+        # two competing narratives, the coaching is merged into the engine's own
+        # four weeks, which is the one the UI renders.
+        raw_plan["progression"] = merge_progression(
+            raw_plan, enrichment.get("progression_plan") or {})
         raw_plan["vyayama_vidhi"] = enrichment.get("vyayama_vidhi", {})
         raw_plan["ayurvedic_lifestyle_sync"] = enrichment.get("ayurvedic_lifestyle_sync", "")
         raw_plan["classical_transparency_note"] = enrichment.get("classical_transparency_note", "")

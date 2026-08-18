@@ -24,6 +24,11 @@ export function GymView({ plan }) {
   const rolePrescriptions = activeWeekData?.role_prescriptions || null
   const tips = plan.ayurvedic_tips || {}
   const overload = plan.progressive_overload_guide || plan.progressive_overload_note || null
+  // The four weeks with their real prescriptions, and — when the plan was
+  // enriched — a coaching line per week written against those numbers. Falls back
+  // to the one-line-per-week guide below when the engine predates this.
+  const progression = Array.isArray(plan.progression) && plan.progression.length
+    ? plan.progression : null
   const nutrition = plan.nutrition_sync || {}
   const recovery = plan.recovery_protocol || {}
 
@@ -451,8 +456,36 @@ export function GymView({ plan }) {
         </div>
       )}
 
-      {/* ── Progressive overload guide ── */}
-      {overload && (
+      {/* ── Progression: the engine's four weeks, with coaching against them ── */}
+      {progression && (
+        <div className="gym-progression-section">
+          <h3 className="gym-tips-title"><Activity size={14} /> Four-Week Progression</h3>
+          <ol className="gym-progression-list">
+            {progression.map(week => (
+              <li key={week.week} className={`gym-progression-week${week.is_deload ? ' deload' : ''}`}>
+                <div className="gym-progression-head">
+                  <span className="gym-progression-week-no">Week {week.week}</span>
+                  <span className="gym-progression-theme">{week.theme}</span>
+                  <span className="gym-progression-rx">{week.main_lift_prescription}</span>
+                </div>
+                <p className="gym-progression-rule">{week.note}</p>
+                {week.coach_note && (
+                  <p className="gym-progression-coach">{week.coach_note}</p>
+                )}
+              </li>
+            ))}
+          </ol>
+          {progression[0]?.main_lifts?.length > 0 && (
+            <p className="gym-progression-lifts">
+              <strong>The lifts this block is about:</strong>{' '}
+              {progression[0].main_lifts.map(l => l.exercise).join(' · ')}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ── Progressive overload guide (pre-progression plans) ── */}
+      {!progression && overload && (
         <div className="gym-progression-section">
           <h3 className="gym-tips-title"><Activity size={14} /> Progressive Overload Guide</h3>
           {typeof overload === 'string' ? (

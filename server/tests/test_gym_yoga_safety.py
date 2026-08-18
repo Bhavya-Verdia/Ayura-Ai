@@ -1634,3 +1634,84 @@ def test_no_field_the_enricher_sends_is_read_off_the_wrong_object():
 
     missing = [key for key, value in summary["user"].items() if value is None]
     assert not missing, f"read off an object that does not carry them: {missing}"
+
+
+def test_the_progression_the_model_sees_is_the_one_that_was_programmed():
+    """The model was shown day names, focus labels and exercise names — no sets,
+    no reps, no rest, no loads, and no idea which week was the deload — and asked
+    to write a four-week progression. It was guessing, alongside a deterministic
+    guide that was not."""
+    from services.gym_plan_enricher import build_plan_summary
+
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain",
+         "workout_days_per_week": 4, "workout_duration_minutes": 60})
+    progression = build_plan_summary(plan, _YOGA_BASE_PROFILE, {})["progression"]
+
+    assert len(progression) == 4
+    assert [w["week"] for w in progression] == [1, 2, 3, 4]
+    assert sum(1 for w in progression if w["is_deload"]) == 1
+    for week in progression:
+        assert week["main_lift_prescription"], week
+        assert week["note"], week
+    assert progression[0]["main_lifts"], "the model cannot name lifts it was not given"
+
+
+def test_the_progression_prescription_matches_the_week_it_describes():
+    """The spine reports the engine's own numbers. If it drifted from the days
+    underneath it, grounding the narrative would make the narrative wrong too."""
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "beginner", "weight_kg": 70},
+        {"available_equipment": ["full_gym"], "gym_goal": "strength",
+         "workout_days_per_week": 4, "workout_duration_minutes": 60})
+    for spine, week in zip(plan["progression"], plan["four_week_plan"]):
+        rx = week["prescription"]
+        assert spine["main_lift_prescription"] == \
+            f"{rx['sets']} × {rx['reps']}, {rx['rest_seconds']}s rest"
+        for day in week["days"]:
+            for ex in day["main_workout"]:
+                if ex["role"] == "primary" and "min" not in str(ex["reps"]):
+                    assert (ex["sets"], ex["reps"]) == (rx["sets"], rx["reps"]), day["focus"]
+
+
+@pytest.mark.parametrize("note", [
+    "Add 5 kg to your squat this week.",
+    "Push for a personal best on the bench press.",
+    "Increase the load and add a set to every main lift.",
+    "Go heavier than week 3.",
+])
+def test_deload_coaching_that_says_add_weight_is_dropped(note):
+    """Three of the four weeks tell the practitioner to add load, so it is the
+    line a model is most likely to write for the fourth — beside a prescription
+    that says to reduce weight 15%. A plan that argues with itself is not one
+    anybody follows."""
+    from services.gym_plan_enricher import merge_progression
+
+    raw = {"progression": [{"week": 4, "theme": "Deload & Reset", "is_deload": True}]}
+    assert merge_progression(raw, {"week_4": note})[0]["coach_note"] == ""
+
+
+def test_deload_coaching_that_belongs_there_is_kept():
+    """The guard is for contradictions, not for the whole week."""
+    from services.gym_plan_enricher import merge_progression
+
+    raw = {"progression": [{"week": 4, "theme": "Deload & Reset", "is_deload": True}]}
+    kept = "Back off and let the connective tissue catch up — Vata needs this week most."
+    assert merge_progression(raw, {"week_4": kept})[0]["coach_note"] == kept
+    # And the same sentence is left alone on a week that is not a deload.
+    raw = {"progression": [{"week": 3, "theme": "Intensity Peak", "is_deload": False}]}
+    assert merge_progression(raw, {"week_3": "Add 5 kg if week 2 moved cleanly."})[0]["coach_note"]
+
+
+def test_the_engine_numbers_survive_enrichment():
+    """The model's sentence rides alongside the engine's figures; it never
+    overwrites them, whatever it returns."""
+    from services.gym_plan_enricher import merge_progression
+
+    raw = {"progression": [
+        {"week": 1, "theme": "Foundation", "main_lift_prescription": "4 × 8-10, 90s rest",
+         "note": "engine note", "is_deload": False}]}
+    merged = merge_progression(raw, {"week_1": "anything at all"})
+    assert merged[0]["main_lift_prescription"] == "4 × 8-10, 90s rest"
+    assert merged[0]["note"] == "engine note"
