@@ -212,6 +212,15 @@ export function GymView({ plan }) {
         </div>
       )}
 
+      {/* Which movements they asked to avoid are still here, and why. Silence
+          means every one of them was honoured. */}
+      {plan.preference_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.preference_notice}</span>
+        </div>
+      )}
+
       {/* ── Day-list toolbar ── */}
       {weekDays.length > 0 && (
         <div className="plan-days-toolbar">

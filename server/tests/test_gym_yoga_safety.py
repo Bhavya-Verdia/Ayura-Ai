@@ -1526,3 +1526,76 @@ def test_conditioning_is_available_to_a_goal_the_dataset_calls_it_useless_for():
         {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
         {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain"}, gym_exercises)
     assert [e for e in pool if e["category"] == "cardio"]
+
+
+def _plan_with_preferences(prefs, goal="muscle_gain"):
+    return generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {"available_equipment": ["full_gym"], "gym_goal": goal,
+         "workout_days_per_week": 4, "workout_duration_minutes": 60,
+         "exercise_preferences": prefs})
+
+
+def _names(plan):
+    return [e["exercise_name"].lower()
+            for week in plan["four_week_plan"] for d in week["days"]
+            for e in d["main_workout"]]
+
+
+@pytest.mark.parametrize("term", ["deadlift", "barbell", "burpee"])
+def test_a_disliked_movement_is_left_out(term):
+    """`exercise_preferences` has been in the schema since the beginning and was
+    never read, and the form never collected it. Someone who cannot stand burpees
+    had nowhere to say so, and would have been ignored if they had."""
+    assert not [n for n in _names(_plan_with_preferences({"dislikes": [term]})) if term in n]
+
+
+def test_a_dislike_is_written_the_way_a_person_writes_it():
+    """The dataset writes "Pullups" and a practitioner writes "pull-up". Squashing
+    the punctuation out of both sides is what makes them the same word."""
+    from services.gym_plan_engine import _matches_preference, _preference_terms
+
+    pullup = next(e for e in gym_exercises if e["name"] == "Pullups")
+    assert _matches_preference(pullup, _preference_terms(["pull-up"]))
+    assert _matches_preference(pullup, _preference_terms("pull up, rowing"))
+
+
+def test_a_liked_movement_shows_up_more():
+    """A like outranks every other scoring preference, because it is the only one
+    the practitioner typed themselves. It reorders the pool; it does not reach
+    past the safety gates."""
+    from services.gym_plan_engine import _matches_preference, _preference_terms
+
+    terms = _preference_terms(["pull-up", "chin-up"])
+    by_name = {e["name"].lower(): e for e in gym_exercises}
+
+    def liked_count(plan):
+        return sum(1 for n in _names(plan) if _matches_preference(by_name[n], terms))
+
+    plain = liked_count(_plan_with_preferences(None))
+    liked = liked_count(_plan_with_preferences({"likes": ["pull-up", "chin-up"]}))
+    assert liked > plain, (plain, liked)
+
+
+def test_a_dislike_never_costs_a_muscle_group_its_training():
+    """A dislike is a preference, not a contraindication. Removing every rowing
+    movement leaves nothing to train a back with, and a plan that quietly trains
+    one muscle less because of a typed preference is worse than one that says it
+    kept a few."""
+    from services.gym_plan_engine import _muscle_key
+
+    plan = _plan_with_preferences(
+        {"dislikes": ["row", "pulldown", "pull-up", "chin-up", "shrug", "face pull"]})
+    by_name = {e["name"]: e for e in gym_exercises}
+    trained = collections.Counter(
+        _muscle_key(by_name[e["exercise_name"]])
+        for d in plan["four_week_plan"][0]["days"] for e in d["main_workout"])
+    assert trained["back"] > 0, dict(trained)
+    assert plan["preference_notice"], "kept a disliked movement without saying so"
+
+
+def test_honoured_dislikes_are_not_announced():
+    """The notice is for what could not be honoured. Saying something when
+    everything was respected trains the reader to ignore it."""
+    assert _plan_with_preferences({"dislikes": ["burpee"]})["preference_notice"] is None
+    assert _plan_with_preferences(None)["preference_notice"] is None

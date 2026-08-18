@@ -710,6 +710,85 @@ def _normalise_equipment(available) -> set:
     return tokens
 
 
+# ── Likes and dislikes ────────────────────────────────────────────────────────
+#
+# `exercise_preferences` — `{"likes": [...], "dislikes": [...]}` — has been in the
+# schema since the beginning and was never read, and the form never collected it.
+# Someone who cannot stand burpees had nowhere to say so, and would have been
+# ignored if they had.
+#
+# A term matches an exercise on its name, its movement pattern, its lift class or
+# its equipment, so "deadlift" removes the whole hinge family by name, "cardio"
+# removes conditioning, and "barbell" removes an implement. That is deliberately
+# loose: someone typing a dislike is describing a category, not selecting rows.
+_PREFERENCE_SPLIT = re.compile(r"[,;/]| and ", re.I)
+
+
+def _squash(text: str) -> str:
+    """Lowercase and drop everything that is not a letter or digit.
+
+    The dataset writes "Pullups", a practitioner writes "pull-up", and the yoga
+    engine learned the same lesson about hyphens. Squashing both sides is what
+    makes the two the same word.
+    """
+    return re.sub(r"[^a-z0-9]+", "", str(text).lower())
+
+
+def _preference_terms(value) -> list:
+    if isinstance(value, str):
+        value = _PREFERENCE_SPLIT.split(value)
+    terms = []
+    for term in value or []:
+        squashed = _squash(term)
+        if len(squashed) >= 3:
+            terms.append(squashed)
+    return terms
+
+
+def _matches_preference(ex: dict, terms: list) -> bool:
+    if not terms:
+        return False
+    haystack = _squash(" ".join((
+        ex.get("name", ""),
+        ex.get("equipment", ""),
+        ex.get("category", ""),
+        _movement_pattern(ex),
+        _lift_class(ex) or "",
+    )))
+    return any(term in haystack for term in terms)
+
+
+# A dislike is a preference, not a contraindication. Honouring one must never
+# leave a muscle group too thin to build a day from — the practitioner said they
+# would rather not, not that they cannot.
+_MIN_PER_MUSCLE_AFTER_DISLIKES = 8
+
+
+def _apply_dislikes(scored: list, terms: list) -> tuple:
+    """Drop disliked exercises, and put back the ones a muscle group cannot spare."""
+    if not terms:
+        return scored, []
+    kept = [(score, ex) for score, ex in scored if not _matches_preference(ex, terms)]
+    dropped = [(score, ex) for score, ex in scored if _matches_preference(ex, terms)]
+    if not dropped:
+        return scored, []
+
+    counts: dict = {}
+    for _, ex in kept:
+        key = _muscle_key(ex)
+        counts[key] = counts.get(key, 0) + 1
+
+    restored = []
+    for score, ex in dropped:
+        key = _muscle_key(ex)
+        if counts.get(key, 0) < _MIN_PER_MUSCLE_AFTER_DISLIKES:
+            kept.append((score, ex))
+            counts[key] = counts.get(key, 0) + 1
+            restored.append(ex.get("name", ""))
+    kept.sort(key=lambda pair: pair[0], reverse=True)
+    return kept, restored
+
+
 # ── Exercise filtering ────────────────────────────────────────────────────────
 
 # Self-myofascial release — foam rolling. Named as a suffix throughout the
@@ -718,7 +797,8 @@ def _normalise_equipment(available) -> set:
 _SMR_NAME = re.compile(r"-\s*smr\b", re.I)
 
 
-def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
+def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None,
+                     preference_report=None):
     available_eq = _normalise_equipment(gym_prefs.get("available_equipment"))
 
     # Beginners get beginner + intermediate exercises. The source dataset labels
@@ -738,6 +818,9 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
 
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
     gym_goal = gym_prefs.get("gym_goal", "general_fitness")
+    prefs = gym_prefs.get("exercise_preferences") or {}
+    likes = _preference_terms(prefs.get("likes"))
+    dislikes = _preference_terms(prefs.get("dislikes"))
     # Injuries AND medical conditions both gate exercises against the KB's
     # contraindication tags (heart_disease, hypertension, osteoporosis, herniated_disc…).
     avoid_tags = set(user_profile.get("injuries_or_limitations") or [])
@@ -834,9 +917,17 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
         elif dosha_suit == "avoid":  score -= 2
         if user_level == "beginner" and ex.get("level") == "beginner":
             score += 1
+        # A like outranks every other preference in the scoring, because it is the
+        # only one the practitioner typed themselves. It reorders the pool; it does
+        # not reach past the safety gates above, which have all already run.
+        if _matches_preference(ex, likes):
+            score += 5
         scored.append((score, ex))
 
     scored.sort(key=lambda x: x[0], reverse=True)
+    scored, restored = _apply_dislikes(scored, dislikes)
+    if preference_report is not None:
+        preference_report["dislikes_overridden"] = restored
     return _cut_pool(scored)
 
 
@@ -1045,6 +1136,23 @@ def _focus_notice(muscle_focus, workout_days, is_bodyweight_only, fitness_level)
                 f"trains you evenly; four days a week is where an emphasis starts to mean "
                 f"something.")
     return None
+
+
+def _preference_notice(report: dict) -> str | None:
+    """Say when a dislike could not be honoured in full.
+
+    Removing every rowing movement leaves nothing to train a back with, and a plan
+    that quietly trains one muscle less because of a typed preference is worse
+    than one that says it kept a few.
+    """
+    overridden = report.get("dislikes_overridden") or []
+    if not overridden:
+        return None
+    shown = ", ".join(sorted(set(overridden))[:3])
+    return (f"You asked to avoid some of these movements, and this plan still includes "
+            f"{shown}{' and others' if len(set(overridden)) > 3 else ''}. Leaving them out "
+            f"would have left a muscle group with too little to train it. Everything else "
+            f"you named has been kept out.")
 
 
 def _cardio_notice(goal, preference, finisher_days: int, training_days: int) -> str | None:
@@ -1321,15 +1429,21 @@ def _canonical_score(ex) -> tuple:
     )
 
 
-def _pattern_preference(ex, pattern: str, muscle_rank: dict) -> tuple:
+def _pattern_preference(ex, pattern: str, muscle_rank: dict, preferred_ids=()) -> tuple:
     """Sort key for filling a day's movement-pattern slot, best first.
 
-    In order: a compound before an isolation movement; the muscle the day is
-    named for before the one it is paired with; the movement the pattern is
+    In order: a compound before an isolation movement; a movement the
+    practitioner said they enjoy before one they did not mention; the muscle the
+    day is named for before the one it is paired with; the movement the pattern is
     actually asking for before a cousin of it; then loadable and plainly named.
+
+    A like sits under "is it a compound" and above everything else, so someone who
+    says they love chin-ups opens their pull day with one — and someone who says
+    they love cable flyes still does not open a chest day with them.
     """
     return (
         not _is_compound(ex),
+        ex["id"] not in preferred_ids,
         muscle_rank.get(_muscle_key(ex), len(muscle_rank)),
         _lift_class(ex) not in _PATTERN_HEADLINE_LIFT.get(pattern, set()),
     ) + tuple(-v for v in _canonical_score(ex))
@@ -1370,7 +1484,7 @@ def _movement_family(ex) -> str:
 
 
 def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=(),
-            caps=None, per_muscle=None, muscle_rank=None):
+            caps=None, per_muscle=None, muscle_rank=None, preferred_ids=()):
     """Pick n exercises, compounds first, without stacking one movement family.
 
     Selection was a plain shuffle-and-take, so nothing preferred a compound or
@@ -1380,6 +1494,13 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
     a dip machine — no flat press anywhere.
     """
     ordered = _deterministic_select(pool, len(pool), seed_key)
+    if preferred_ids:
+        # Movements the practitioner said they enjoy go to the front of the draw.
+        # A higher pool score only decided whether a liked exercise SURVIVED the
+        # cut, and selection shuffles uniformly over whatever survived — so a like
+        # changed nothing for anything already in the library. The main lift is
+        # unaffected: it is re-sorted by what the day needs, further down.
+        ordered.sort(key=lambda ex: ex["id"] not in preferred_ids)
     picked = []
     caps = caps or {}
     per_muscle = per_muscle if per_muscle is not None else {}
@@ -1411,7 +1532,8 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
         candidates = [ex for ex in ordered
                       if ex["id"] not in taken_ids and _movement_pattern(ex) == pattern
                       and not _blocked(ex)]
-        candidates.sort(key=lambda ex: _pattern_preference(ex, pattern, muscle_rank))
+        candidates.sort(key=lambda ex: _pattern_preference(ex, pattern, muscle_rank,
+                                                            preferred_ids))
         if candidates:
             _take(candidates[0])
 
@@ -1422,7 +1544,8 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
         # The compounds are chosen plainest-first; the accessories keep the
         # shuffle, because variety belongs in the work that finishes a session
         # rather than in the lift the block is built around.
-        for ex in (sorted(ordered, key=_canonical_score, reverse=True)
+        for ex in (sorted(ordered, key=lambda ex: (ex["id"] in preferred_ids,
+                                                   _canonical_score(ex)), reverse=True)
                    if want_compound else ordered):
             if want_compound and have_compounds >= min_compounds:
                 break
@@ -1461,7 +1584,7 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
     return picked
 
 
-def _select_for_day(pool, target, user_id, focus, day_num, week):
+def _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids=()):
     """The day's exercises: a stable core, plus one that rotates weekly.
 
     The seed used to include the week, so every week drew a fresh random set —
@@ -1491,9 +1614,11 @@ def _select_for_day(pool, target, user_id, focus, day_num, week):
     core = _choose(pool, core_n, f"{user_id}-{focus}-d{day_num}-core",
                    taken, families, min_compounds=min(_MIN_COMPOUNDS, max(1, core_n - 1)),
                    patterns=_FOCUS_PATTERNS.get(focus, ()),
-                   caps=caps, per_muscle=per_muscle, muscle_rank=muscle_rank)
+                   caps=caps, per_muscle=per_muscle, muscle_rank=muscle_rank,
+                   preferred_ids=preferred_ids)
     rotating = _choose(pool, target - len(core), f"{user_id}-{focus}-d{day_num}-rotate-w{week}",
-                       taken, families, caps=caps, per_muscle=per_muscle)
+                       taken, families, caps=caps, per_muscle=per_muscle,
+                       preferred_ids=preferred_ids)
     return core + rotating
 
 
@@ -1755,7 +1880,7 @@ def _focus_label(focus: str, main_workout: list) -> str:
 def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profile,
                    week=1, user_id="default", strength_level="beginner", gender="male",
                    dosha="vata", bodyweight=None, with_finisher=False,
-                   conditioning_pool=()):
+                   conditioning_pool=(), preferred_ids=()):
     if focus == "rest":
         recovery = _REST_DAY_RECOVERY.get(dosha, _REST_DAY_RECOVERY["vata"])
         return {
@@ -1801,7 +1926,7 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     if len(pool) < 3:
         pool = [ex for group in muscle_split.values() for ex in group]
 
-    selected = _select_for_day(pool, target, user_id, focus, day_num, week)
+    selected = _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids)
 
     # A session is performed in an order, and the order is the programme: the
     # heaviest compound while the practitioner is fresh, its support after it,
@@ -1946,7 +2071,9 @@ def _vyayama_shakti(dosha: str, age, strength_level: str) -> dict:
 
 def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoid_tags=None):
     ge = gym_exercises_db if gym_exercises_db is not None else gym_exercises
-    filtered = filter_exercises(user_profile, gym_prefs, ge, extra_avoid_tags=extra_avoid_tags)
+    preference_report: dict = {}
+    filtered = filter_exercises(user_profile, gym_prefs, ge, extra_avoid_tags=extra_avoid_tags,
+                                preference_report=preference_report)
     muscle_split = split_by_muscle_group(filtered)
     # Conditioning reaches a session through the finisher and nowhere else, so
     # `cardio_preference` is the only thing that decides how much of it there is.
@@ -1955,6 +2082,9 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     # was not merely ignored, it was contradicted.
     conditioning_pool = muscle_split.pop("cardio", [])
     muscle_split["cardio"] = []
+
+    likes = _preference_terms((gym_prefs.get("exercise_preferences") or {}).get("likes"))
+    preferred_ids = {ex["id"] for ex in filtered if _matches_preference(ex, likes)}
 
     workout_days = gym_prefs.get("workout_days_per_week", 4)
     available_eq = _normalise_equipment(gym_prefs.get("available_equipment"))
@@ -1990,6 +2120,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
                 week=week, user_id=user_id, strength_level=strength_level,
                 gender=gender, dosha=dominant_dosha, bodyweight=bodyweight,
                 with_finisher=i in finisher_days, conditioning_pool=conditioning_pool,
+                preferred_ids=preferred_ids,
             )
             for i, focus in enumerate(schedule_focus)
         ]
@@ -2074,4 +2205,5 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
                                       fitness_level),
         "cardio_notice": _cardio_notice(goal, cardio_preference, finisher_count,
                                         len(training_days)),
+        "preference_notice": _preference_notice(preference_report),
     }
