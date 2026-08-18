@@ -1122,3 +1122,86 @@ def test_no_exercise_quotes_a_range_that_is_not_a_range(goal):
                         continue
                     assert kg[0] < kg[1], f"{ex['exercise_name']}: {ex['weight_range']}"
                     assert kg[0] > 0, f"{ex['exercise_name']}: {ex['weight_range']}"
+
+
+@pytest.mark.parametrize("goal", ["strength", "muscle_gain", "general_fitness"])
+def test_the_main_lift_is_the_lift_and_not_a_variant_of_it(goal):
+    """Selection was a uniform shuffle over everything eligible, so a specialty
+    variant won a main-lift slot exactly as often as the lift it is a variant of:
+    a strength programme opened with "Bench Press With Chains" and "Dumbbell
+    Squat To A Bench" — two movements whose whole purpose is to change something
+    about a bench press and a squat that this practitioner has not done yet."""
+    from services.gym_plan_engine import _SPECIALTY_NAME
+
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {"available_equipment": FULL_GYM, "gym_goal": goal,
+         "workout_days_per_week": 4, "workout_duration_minutes": 60})
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            for ex in day["main_workout"]:
+                if ex["role"] != "primary":
+                    continue
+                assert not _SPECIALTY_NAME.search(ex["exercise_name"]), (
+                    f"{day['focus']} opens with {ex['exercise_name']}")
+
+
+def test_a_main_lift_is_something_you_can_add_weight_to():
+    """Progressive overload is the point of having a main lift. Name plainness
+    alone preferred "Bench Dips" over the barbell bench press and "Bodyweight
+    Squat" over the barbell squat — shorter names, and no way to add 2.5 kg to
+    either of them in week two."""
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {"available_equipment": FULL_GYM, "gym_goal": "strength",
+         "workout_days_per_week": 4, "workout_duration_minutes": 60})
+    by_name = {e["name"]: e for e in gym_exercises}
+    for day in plan["four_week_plan"][0]["days"]:
+        for ex in day["main_workout"]:
+            if ex["role"] != "primary" or day["focus"].lower().startswith("core"):
+                continue
+            equipment = by_name[ex["exercise_name"]]["equipment"]
+            assert equipment != "bodyweight", (
+                f"{day['focus']} opens with bodyweight {ex['exercise_name']} in a full gym")
+
+
+def test_a_chest_day_opens_with_a_press_not_a_fly():
+    """Flyes, crossovers and the pec deck were classed as horizontal pushes, so a
+    chest day's press slot could be filled by an isolation movement — and once
+    main lifts were chosen for loadability, a barbell-tagged "Bodyweight Flyes"
+    outranked the bench press for it."""
+    from services.gym_plan_engine import _lift_class
+
+    by_name = {e["name"]: e for e in gym_exercises}
+    for goal in ("strength", "muscle_gain"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+            {"available_equipment": FULL_GYM, "gym_goal": goal,
+             "workout_days_per_week": 4, "workout_duration_minutes": 60})
+        for week in plan["four_week_plan"]:
+            for day in week["days"]:
+                if not day["focus"].lower().startswith("chest"):
+                    continue
+                lead = next(e for e in day["main_workout"] if e["role"] == "primary")
+                assert _lift_class(by_name[lead["exercise_name"]]) in (
+                    "bench", "chest_press", "incline_press"), lead["exercise_name"]
+
+
+def test_a_leg_day_can_contain_a_deadlift():
+    """The dataset files the conventional deadlift under "lower back", so it
+    landed in the back bucket — and a legs day draws only from the legs bucket.
+    A leg day could not contain a deadlift at all, while a back day opened with
+    one."""
+    from services.gym_plan_engine import _muscle_key
+
+    deadlift = next(e for e in gym_exercises if e["name"] == "Barbell Deadlift")
+    assert _muscle_key(deadlift) == "legs"
+
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {"available_equipment": FULL_GYM, "gym_goal": "strength",
+         "workout_days_per_week": 4, "workout_duration_minutes": 60})
+    legs = next(d for d in plan["four_week_plan"][0]["days"]
+                if d["focus"].lower().startswith("legs"))
+    assert any("Deadlift" in e["exercise_name"] for e in legs["main_workout"]), \
+        [e["exercise_name"] for e in legs["main_workout"]]
