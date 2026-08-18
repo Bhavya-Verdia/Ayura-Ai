@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import {
-  Dumbbell, Leaf, Calendar, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Lightbulb,
+  Dumbbell, Leaf, Calendar, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Lightbulb, Info,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 
@@ -149,6 +149,17 @@ export function GymView({ plan }) {
         </div>
       )}
 
+      {/* Why this plan is narrower than usual — a pregnant practitioner has 19 safe
+          exercises at beginner level, and bodyweight-only users can be near that.
+          The engine has written this since the pregnancy pass; rendering it is
+          what stops a repetitive plan from looking like the whole library. */}
+      {plan.pool_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.pool_notice}</span>
+        </div>
+      )}
+
       {/* ── Day-list toolbar ── */}
       {weekDays.length > 0 && (
         <div className="plan-days-toolbar">
@@ -232,6 +243,17 @@ export function GymView({ plan }) {
                 )
               ) : (
                 <>
+                  {/* The session's real length now differs from the one that was
+                      asked for — strength rests three minutes between sets and
+                      overruns a half hour whatever else is done. Say so here
+                      rather than let the chip above be quietly wrong. */}
+                  {day.duration_notice && (
+                    <div className="gym-duration-notice">
+                      <Info size={12} />
+                      <span>{day.duration_notice}</span>
+                    </div>
+                  )}
+
                   <div className="gym-day-meta">
                     {day.estimated_duration_minutes > 0 && (
                       <span className="gym-meta-chip"><Timer size={10} /> {day.estimated_duration_minutes} min</span>
