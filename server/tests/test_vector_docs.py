@@ -177,3 +177,127 @@ def test_the_corpus_has_no_bulk_duplication():
         if worst:
             text, count = worst[0]
             assert count <= 3, f"{domain}: {count} copies of {text[:70]!r}"
+
+
+# ── Ayurvedic medicines ──────────────────────────────────────────────────────
+
+@pytest.fixture(scope="module")
+def medicines():
+    return json.loads((KNOWLEDGE_DIR / "ayurvedic_medicines.json").read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def medicine_docs():
+    return [d for d in get_documents_for_collection()["remedy"]
+            if d["source"] == "ayurvedic_medicines"]
+
+
+def test_every_medicine_says_what_it_treats(medicines, medicine_docs):
+    """The builder rendered indications from `primary_uses` alone, which is on
+    102 of the 157 entries and absent from the other 55 — the only key that
+    differs between the two groups. A third of the formulary therefore embedded
+    as "Uses: .": a medicine chunk that never states what it is for, which is
+    the one thing it gets retrieved for. `conditions` carries the indication on
+    every entry, in the vocabulary the engines already match on.
+    """
+    corpus = {d["text"] for d in medicine_docs}
+    for m in medicines:
+        clinical = [t for t in corpus if t.startswith(f"Ayurvedic medicine {m['name']} ")]
+        assert clinical, f"no clinical document for {m['name']}"
+        assert "Treats:" in clinical[0], f"{m['name']} does not say what it treats"
+        first = m["conditions"][0].replace("_", " ")
+        assert first in clinical[0], f"{m['name']} omits its own indication {first!r}"
+
+
+def test_medicine_docs_name_their_medicine(medicine_docs):
+    """A chunk is retrieved alone, so "do not use in pregnancy" attached to no
+    formulation is worse than nothing — the enricher may attribute it anywhere."""
+    for d in medicine_docs:
+        assert d["text"].startswith((
+            "Ayurvedic medicine ", "Composition of the Ayurvedic medicine ",
+            "Safety of the Ayurvedic medicine ")), d["text"][:70]
+
+
+# ── Panchakarma ──────────────────────────────────────────────────────────────
+
+def test_every_panchakarma_protocol_keeps_its_instructions():
+    """Instructions sat last in a single blob per protocol, and Raktamokshana
+    (278 word-pieces) and Basti (258) ran past the embedder's window — so the
+    two protocols with the most procedure to describe were the two that lost it.
+    """
+    raw = json.loads((KNOWLEDGE_DIR / "panchakarma_plans.json").read_text(encoding="utf-8"))
+    corpus = " ".join(d["text"] for d in get_documents_for_collection()["panchakarma"])
+    for protocol in raw:
+        if protocol.get("instructions"):
+            assert protocol["instructions"] in corpus, f"{protocol['name']} lost its procedure"
+
+
+# ── Shape of every chunk, in every collection ────────────────────────────────
+
+def test_no_chunk_ships_an_unrendered_field():
+    """The guard that would have caught all three of these at once.
+
+    Both corpus bugs found so far — the home remedies reading keys that do not
+    exist, and the medicines reading a key that only two thirds of the entries
+    have — left the same fingerprint in the text: a label with nothing after it,
+    or a literal "None" where a value should be. Nothing else notices, because
+    plans come from the deterministic engines and a hollow chunk embeds, stores
+    and retrieves exactly like a real one. `--check` cannot see it either: the
+    text is stable, so its content hash matches and it reports in sync.
+    """
+    import re
+
+    empty_field = re.compile(r":\s*[.,;]|\(\)|\[\]|\bNone\b|\bnan\b")
+    for domain, docs in get_documents_for_collection().items():
+        offenders = [d["text"][:100] for d in docs if empty_field.search(d["text"])]
+        assert not offenders, f"{domain}: unrendered fields — {offenders[:3]}"
+
+
+def test_the_window_guard_measures_without_disarming_the_tokenizer():
+    """`_overflowing_chunks` is the seeder's stop on silent truncation, and it
+    has one trap: the live tokenizer pads and truncates to 256, so measuring
+    with it reports 256 for everything and never fires. It must measure on a
+    copy — and must leave the original truncating, since the ONNX call depends
+    on that fixed input shape.
+
+    Built here on a toy word-level vocabulary rather than the real embedder,
+    which would mean downloading a 79 MB model inside CI.
+    """
+    from tokenizers import Tokenizer, models, pre_tokenizers
+
+    from build_vectors import EMBEDDER_WINDOW, _overflowing_chunks
+
+    toy = Tokenizer(models.WordLevel({"word": 0, "[UNK]": 1}, unk_token="[UNK]"))
+    toy.pre_tokenizer = pre_tokenizers.Whitespace()
+    toy.enable_truncation(max_length=EMBEDDER_WINDOW)
+
+    class _Embedder:
+        tokenizer = toy
+
+    long_doc = {"text": "word " * (EMBEDDER_WINDOW + 20), "source": "toy"}
+    short_doc = {"text": "word " * 10, "source": "toy"}
+
+    flagged = _overflowing_chunks(_Embedder(), {"remedy": [long_doc, short_doc]})
+    assert len(flagged) == 1 and "remedy/toy" in flagged[0]
+    assert not _overflowing_chunks(_Embedder(), {"remedy": [short_doc]})
+    # The embedder's own tokenizer still truncates, or inference breaks.
+    assert len(toy.encode(long_doc["text"]).ids) == EMBEDDER_WINDOW
+
+
+def test_the_real_corpus_fits_the_embedder_window():
+    """The same guard over the shipped corpus, when the model happens to be
+    cached locally or baked into the API image. Skipped in CI, where it would
+    have to download 79 MB — the seeder runs it unconditionally before it
+    writes, so the check is never actually absent where it matters.
+    """
+    from build_vectors import _overflowing_chunks
+
+    try:
+        from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
+
+        embedder = DefaultEmbeddingFunction()
+        assert embedder.tokenizer is not None
+    except Exception as exc:  # noqa: BLE001 — model not present is the only case
+        pytest.skip(f"ONNX embedder unavailable: {exc}")
+
+    assert not _overflowing_chunks(embedder, get_documents_for_collection())
