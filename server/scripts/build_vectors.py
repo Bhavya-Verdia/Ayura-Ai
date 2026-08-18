@@ -69,6 +69,51 @@ def _document_index(domain: str, docs: list[dict]) -> dict[str, dict]:
     return {_document_id(domain, d): d for d in docs}
 
 
+EMBEDDER_WINDOW = 256
+
+
+def _overflowing_chunks(embedder, doc_sets: dict[str, list[dict]]) -> list[str]:
+    """Chunks the embedder will silently truncate, as `domain/source: length — text`.
+
+    all-MiniLM-L6-v2 stops at 256 word-pieces, and everything past the cut is
+    absent from the vector with nothing raised and nothing logged. That is how a
+    formulation lost its dosage line off the end and how two Panchakarma
+    protocols lost their entire instructions field — both invisible until
+    something tokenized them.
+
+    Characters are a bad proxy: a 999-char study abstract fits in 248
+    word-pieces, while an 877-char formulation full of Latin binomials needs
+    269, so a char budget loose enough for the abstract cannot catch the
+    formulation. Tokenizing is the only honest check, which is why this lives in
+    the seeder — where the embedder is already loaded — rather than in a test
+    that would have to download a 79 MB model to run.
+
+    Measured on a COPY of the tokenizer. The live one pads and truncates to the
+    window, so every sequence measures exactly 256 and nothing ever looks too
+    long; turning that off in place would break the fixed input shape the ONNX
+    call depends on.
+    """
+    tokenizer = getattr(embedder, "tokenizer", None)
+    if tokenizer is None:  # not the bundled ONNX embedder — nothing to measure with
+        print("  ⚠️  Embedder exposes no tokenizer — chunk lengths unchecked")
+        return []
+
+    from tokenizers import Tokenizer
+
+    probe = Tokenizer.from_str(tokenizer.to_str())
+    probe.no_truncation()
+    probe.no_padding()
+
+    over = []
+    for domain, docs in doc_sets.items():
+        for doc in docs:
+            length = len(probe.encode(doc["text"]).ids)
+            if length > EMBEDDER_WINDOW:
+                over.append(f"{domain}/{doc.get('source', '?')}: {length} word-pieces "
+                            f"— {doc['text'][:70]}…")
+    return over
+
+
 def chunk_text(text: str, max_chars: int = 800) -> list[str]:
     """Split text into chunks for embedding."""
     sentences = text.replace(". ", ".\n").split("\n")
@@ -220,11 +265,85 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
                 "dosha": "", "source": "home_remedies"})
 
     # Ayurvedic Medicines → remedy
+    #
+    # `primary_uses` is on 102 of the 157 entries and absent from the other 55 —
+    # it is the ONLY key that differs between the two groups, the other 28 being
+    # on every entry. So `', '.join(m.get('primary_uses', []))` rendered
+    # "Uses: ." for a third of the formulary: a medicine chunk that never says
+    # what it treats, which is the one thing it gets retrieved for. `conditions`
+    # carries the indication on all 157, in the same vocabulary the engines match
+    # on, so it is the field to build from; primary_uses is prose to add when it
+    # happens to be there. Same failure class as the home remedies above, and
+    # `--check` cannot see it: the chunk is stable and hashes fine, it is just
+    # empty of meaning. test_vector_docs asserts the shape instead.
+    #
+    # Three docs — what it treats, what is in it, who must not take it — split
+    # for the reason the poses are: an entry carries 28 fields, one blob runs
+    # past the embedder's 256 word-pieces, and everything after the cut is
+    # absent from the vector with no error raised. Each names the medicine,
+    # because a chunk is retrieved on its own.
     if (KNOWLEDGE_DIR / "ayurvedic_medicines.json").exists():
         med_data = json.loads((KNOWLEDGE_DIR / "ayurvedic_medicines.json").read_text(encoding="utf-8"))
         for m in med_data:
-            text = f"Ayurvedic Medicine: {m.get('name')} ({m.get('type')}). Uses: {', '.join(m.get('primary_uses', []))}. Dosage: {m.get('dosage')}. Safety tier: {m.get('safety_tier')}."
-            docs["remedy"].append({"text": text, "dosha": "", "source": "ayurvedic_medicines", "source_credibility": "traditional"})
+            treats = _humanise(m.get("conditions") or [])
+            uses = ", ".join(m.get("primary_uses") or [])
+            clinical = [
+                f"Ayurvedic medicine {m.get('name')} ({m.get('type')}).",
+                f"Treats: {treats}." if treats else "",
+                f"Traditionally given for: {uses}." if uses else "",
+                f"Classical action: {m['classical_action']}." if m.get("classical_action") else "",
+                f"Dosage: {m['dosage']}." if m.get("dosage") else "",
+                f"Taken with: {m['anupana']}." if m.get("anupana") else "",
+                f"Timing: {_humanise([m['timing']])}." if m.get("timing") else "",
+                (f"Typical course: {m['duration_min_weeks']}–{m['duration_max_weeks']} weeks."
+                 if m.get("duration_min_weeks") and m.get("duration_max_weeks") else ""),
+            ]
+            docs["remedy"].append({
+                "text": " ".join(bit for bit in clinical if bit),
+                "dosha": "", "source": "ayurvedic_medicines",
+                "source_credibility": "traditional"})
+
+            # Composition is its own doc rather than a line on the clinical one:
+            # Dashamoola Taila's ten roots carry a Latin binomial each and pushed
+            # that chunk to 269 word-pieces, past the window, which silently cut
+            # the dosage off the end. It also answers a different question — what
+            # is in this, and on whose authority — so it retrieves better alone.
+            composition = [
+                f"Composition of the Ayurvedic medicine {m.get('name')}.",
+                f"Ingredients: {', '.join(m['ingredients'])}." if m.get("ingredients") else "",
+                f"Rasa (taste): {_humanise(m['rasa'])}." if m.get("rasa") else "",
+                f"Virya (potency): {m['virya']}." if m.get("virya") else "",
+                f"Vipaka (post-digestive effect): {m['vipaka']}." if m.get("vipaka") else "",
+                f"Classical reference: {m['classical_text_reference']}."
+                if m.get("classical_text_reference") else "",
+                f"Ayurvedic Formulary of India: {m['afi_reference']}."
+                if m.get("afi_reference") else "",
+            ]
+            docs["remedy"].append({
+                "text": " ".join(bit for bit in composition if bit),
+                "dosha": "", "source": "ayurvedic_medicines",
+                "source_credibility": "traditional"})
+
+            safety = [
+                f"Do not use in: {_humanise(m['contraindications'])}."
+                if m.get("contraindications") else "",
+                f"Interacts with: {_humanise(m['drug_interactions'])}."
+                if m.get("drug_interactions") else "",
+                f"Safe in pregnancy: {'yes' if m.get('pregnancy_safe') else 'no'}."
+                if m.get("pregnancy_safe") is not None else "",
+                f"Avoid in the season of: {_humanise(m['season_avoid'])}."
+                if m.get("season_avoid") else "",
+                f"Prescribed for {m['gender_specific']} patients only."
+                if m.get("gender_specific") else "",
+                f"Paediatric dosage: {m['dosage_pediatric']}."
+                if m.get("dosage_pediatric") else "",
+                f"Safety tier: {m.get('safety_tier')}." if m.get("safety_tier") else "",
+            ]
+            docs["remedy"].append({
+                "text": (f"Safety of the Ayurvedic medicine {m.get('name')}. "
+                         + " ".join(bit for bit in safety if bit)).strip(),
+                "dosha": "", "source": "ayurvedic_medicines",
+                "source_credibility": "traditional"})
 
     # Scientific Studies → remedy & ayurveda
     if (KNOWLEDGE_DIR / "scientific_studies.json").exists():
@@ -306,23 +425,52 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
                 docs["ayurveda"].append(meta)
 
     # Panchakarma → panchakarma
+    #
+    # One blob per protocol put Raktamokshana at 278 word-pieces and Basti at
+    # 258, both past the embedder's window — so the instructions, which sat last,
+    # were cut off in exactly the two protocols with the most procedure to
+    # describe. Three docs instead: what it is for, how it is done, and who must
+    # not have it. Splitting also made room for duration, setting, season and the
+    # oils used, which the single blob never carried at all. Each names the
+    # protocol, because a chunk is retrieved on its own.
     pk_data = json.loads((KNOWLEDGE_DIR / "panchakarma_plans.json").read_text(encoding="utf-8"))
     for protocol in pk_data:
+        name = protocol.get("name")
         dosha = protocol.get("target_dosha", protocol.get("primary_dosha", ""))
-        classification = protocol.get("classical_classification", "")
-        text_ref = protocol.get("classical_text_ref", "")
-        benefits = ", ".join(protocol.get("benefits", []))
-        contraindications = ", ".join(protocol.get("contraindications", []))
-        text = (
-            f"Panchakarma Protocol: {protocol.get('name')}. "
-            f"Classification: {classification}. "
-            f"Target Dosha: {dosha}. "
-            f"Classical reference: {text_ref}. "
-            f"Benefits: {benefits}. "
-            f"Contraindications: {contraindications}. "
-            f"Instructions: {protocol.get('instructions', '')}."
-        )
-        docs["panchakarma"].append({"text": text, "dosha": dosha, "source": "panchakarma_plans"})
+
+        indication = [
+            f"Panchakarma protocol {name}.",
+            f"Classification: {protocol['classical_classification']}."
+            if protocol.get("classical_classification") else "",
+            f"Target dosha: {dosha}." if dosha else "",
+            f"Benefits: {', '.join(protocol['benefits'])}."
+            if protocol.get("benefits") else "",
+            f"Best season: {_humanise(protocol['recommended_season'])}."
+            if protocol.get("recommended_season") else "",
+            f"Session length: {protocol['duration_minutes']} minutes."
+            if protocol.get("duration_minutes") else "",
+            f"Setting: {_humanise(protocol['setting'])}."
+            if protocol.get("setting") else "",
+            f"Classical reference: {protocol['classical_text_ref']}."
+            if protocol.get("classical_text_ref") else "",
+        ]
+        docs["panchakarma"].append({
+            "text": " ".join(bit for bit in indication if bit),
+            "dosha": dosha, "source": "panchakarma_plans"})
+
+        if protocol.get("instructions"):
+            oils = (f" Oils and herbs used: {', '.join(protocol['herbs_oils_used'])}."
+                    if protocol.get("herbs_oils_used") else "")
+            docs["panchakarma"].append({
+                "text": (f"Panchakarma procedure for {name}. "
+                         f"{protocol['instructions']}.{oils}"),
+                "dosha": dosha, "source": "panchakarma_plans"})
+
+        if protocol.get("contraindications"):
+            docs["panchakarma"].append({
+                "text": (f"Panchakarma safety for {name}. Do not perform in: "
+                         f"{_humanise(protocol['contraindications'])}."),
+                "dosha": dosha, "source": "panchakarma_plans"})
 
     # Ritucharya → ayurveda
     ritual_data = json.loads((KNOWLEDGE_DIR / "ritucharya_seasonal.json").read_text(encoding="utf-8"))
@@ -382,6 +530,18 @@ def build_vectors(check_only: bool = False):
     }
 
     doc_sets = get_documents_for_collection()
+
+    # Refuse to seed a corpus that would be truncated on the way in. Fails in
+    # --check too: a chunk past the window is wrong in the store as much as it is
+    # wrong on the way to it, and it reports identical to a healthy one.
+    overflowing = _overflowing_chunks(embedder, doc_sets)
+    if overflowing:
+        raise SystemExit(
+            f"❌ {len(overflowing)} chunk(s) run past the embedder's {EMBEDDER_WINDOW} "
+            "word-pieces and everything after the cut would be dropped silently:\n  "
+            + "\n  ".join(overflowing[:10])
+            + "\n   Split the document instead of trusting the truncation.")
+
     drifted: list[str] = []
 
     for domain, coll_name in collection_map.items():
