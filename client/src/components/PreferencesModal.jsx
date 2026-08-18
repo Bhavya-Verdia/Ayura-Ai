@@ -69,6 +69,19 @@ const EQUIPMENT = [
   { value: 'pool',            label: 'Pool' },
 ];
 
+// The set/rep scheme each goal implies, used to preselect `training_style` the
+// way the yoga picker preselects a session length: the pairing is the default,
+// not a restriction. General Fitness maps to nothing — its own balanced scheme is
+// the answer — so it clears the field rather than borrowing another goal's.
+// Keep in step with `_STYLE_SCHEME` / `_GOAL_SCHEME` in gym_plan_engine.py.
+const GYM_SUGGESTED_STYLE = {
+  fat_loss:        'circuit',
+  muscle_gain:     'hypertrophy',
+  endurance:       'endurance',
+  strength:        'strength',
+  general_fitness: '',
+};
+
 const YOGA_SESSION_MINUTES = [30, 45, 60];
 const YOGA_SUGGESTED_MINUTES = {
   none:         30,
@@ -99,12 +112,17 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
   // have, changing experience level must not move it back — a suggestion that
   // silently overwrites a deliberate choice is worse than no suggestion.
   const [durationTouched, setDurationTouched] = useState(false);
+  // Same contract for the gym set scheme: choosing a goal suggests the style that
+  // usually goes with it, and stops doing so the moment the practitioner picks
+  // one for themselves.
+  const [styleTouched, setStyleTouched] = useState(false);
 
   // Initialize defaults when modal opens
   useEffect(() => {
     if (isOpen && typeId) {
       setForm({});
       setDurationTouched(false);
+      setStyleTouched(false);
     }
   }, [isOpen, typeId]);
 
@@ -113,10 +131,14 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'time_available_minutes') setDurationTouched(true);
+    if (name === 'training_style') setStyleTouched(true);
     setForm(prev => {
       const next = { ...prev, [name]: value };
       if (name === 'yoga_experience' && !durationTouched) {
         next.time_available_minutes = String(YOGA_SUGGESTED_MINUTES[value] ?? 30);
+      }
+      if (name === 'gym_goal' && !styleTouched) {
+        next.training_style = GYM_SUGGESTED_STYLE[value] ?? '';
       }
       return next;
     });
@@ -147,7 +169,10 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       // Bodyweight is always available and is never a choice — the engine adds it
       // regardless, and a plan has to be buildable for someone who ticks nothing.
       payload.available_equipment = ['bodyweight', ...(form.available_equipment || [])];
-      payload.training_style = payload.training_style || 'hypertrophy';
+      // Empty means "follow the goal"; the engine derives the scheme. It used to
+      // be forced to 'hypertrophy' for everyone, which nothing read — and which
+      // would now quietly rewrite a fat-loss block into a hypertrophy one.
+      payload.training_style = payload.training_style || null;
       payload.cardio_preference = payload.cardio_preference || 'moderate';
       payload.target_muscle_focus = payload.target_muscle_focus || 'full_body';
     } else if (typeId === 'yoga') {
@@ -239,7 +264,8 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
             <div className="pref-row">
               <div className="pref-input-group">
                 <label>Training Style</label>
-                <select name="training_style" value={form.training_style || ''} onChange={handleChange} required>
+                <select name="training_style" value={form.training_style ?? ''} onChange={handleChange}>
+                  <option value="">Balanced — follow my goal</option>
                   <option value="strength">Strength</option>
                   <option value="hypertrophy">Hypertrophy (Muscle Size)</option>
                   <option value="endurance">Endurance</option>

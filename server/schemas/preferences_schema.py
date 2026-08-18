@@ -57,10 +57,14 @@ class GymPreferences(BaseModel):
         None,
         description='{"likes": ["swimming"], "dislikes": ["running"]}'
     )
-    training_style: str = Field(
-        "hypertrophy",
+    training_style: Optional[str] = Field(
+        None,
         pattern="^(strength|hypertrophy|endurance|circuit)$",
-        description="Preferred training style"
+        description=("How the sets are written: strength | hypertrophy | endurance | "
+                     "circuit. None means 'follow the goal' — see "
+                     "`gym_plan_engine._resolve_scheme`. Distinct from `gym_goal`, "
+                     "which decides which exercises are eligible and how the week "
+                     "is split.")
     )
     cardio_preference: str = Field(
         "moderate",
