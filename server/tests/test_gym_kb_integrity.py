@@ -86,3 +86,30 @@ def test_contraindication_tokens_are_all_ones_the_engine_can_act_on():
         reachable |= set(mapped)
     used = {tag for e in gym_exercises for tag in e["contraindications"]}
     assert used <= reachable, f"unreachable tags: {sorted(used - reachable)}"
+
+
+def test_every_bmi_category_the_profile_can_write_is_understood():
+    """Two vocabularies reach `bmi_category` and they are not the same one.
+
+    `BMICalculator` defines seven bands; `routes/profile.py` computes BMI inline
+    on save and writes four, and it is the route's value that lands on the user
+    document. The engine read only the calculator's names, so a live user at BMI
+    32.8 came back `obese`, fell through to `normal`, and was prescribed the jump
+    training the map exists to keep away from them.
+    """
+    from engine.bmi_calculator import BMICalculator
+    from services.gym_plan_engine import _BMI_GROUPS, _bmi_group
+
+    # Everything the calculator can produce.
+    for category in BMICalculator.BMI_CATEGORIES:
+        assert category in _BMI_GROUPS, category
+
+    # And everything the profile route can produce, at the BMI that produces it.
+    route_vocabulary = {
+        16.0: "underweight", 22.0: "normal", 27.0: "overweight", 33.0: "obese",
+    }
+    for bmi, category in route_vocabulary.items():
+        assert category in _BMI_GROUPS, f"BMI {bmi} → {category!r} is not understood"
+    assert _bmi_group("obese") == "obese"
+    assert _bmi_group("obese_class3") == "obese"
+    assert _bmi_group(None) == "normal"

@@ -1,3 +1,4 @@
+import collections
 import json
 import hashlib
 import random
@@ -642,10 +643,21 @@ _AGE_AVOID_TAGS = {"osteoporosis", "hypertension"}
 # the practitioner can absorb. `bmi_category` was echoed into `user_summary` and
 # read by nothing; `activity_level` was not read at all. A sedentary 118 kg
 # beginner and an active 118 kg beginner were given the same plan.
+# TWO vocabularies reach this field and they are not the same one. `BMICalculator`
+# defines seven bands (severely_underweight … obese_class3); `routes/profile.py`
+# computes BMI inline on save and writes four (underweight / normal / overweight /
+# obese), and it is the route's value that lands on the user document. Reading
+# only the calculator's names meant a live user at BMI 32.8 came back `obese`,
+# fell through to `normal`, and was prescribed the jump training this map exists
+# to keep away from them. Both vocabularies are read; see
+# `test_every_bmi_category_the_profile_can_write_is_understood`.
 _BMI_GROUPS = {
     "severely_underweight": "underweight", "underweight": "underweight",
-    "normal": "normal", "overweight": "overweight",
+    "normal": "normal", "normal_weight": "normal",
+    "overweight": "overweight",
+    "obese": "obese",
     "obese_class1": "obese", "obese_class2": "obese", "obese_class3": "obese",
+    "severely_obese": "obese", "morbidly_obese": "obese",
 }
 
 # Impact is a property of the movement, and the dataset has no tag for it — its
@@ -1280,6 +1292,76 @@ def _progression_spine(four_week_plan: list, scheme: str) -> list:
     return spine
 
 
+# What to put in a day's place when its own muscle cannot be trained, most
+# generally useful first. A day that becomes a second back day is honest; a day
+# that keeps its name and fills with wrist curls is not.
+_SUBSTITUTE_FOCUSES = ("legs", "back", "full_body", "core_cardio", "arms",
+                       "chest", "pull", "push", "shoulders")
+# Below this a muscle group cannot fill even the shortest session. Kept in step
+# with `_MIN_EXERCISES`, which is declared further down the module.
+_TRAINABLE_MINIMUM = 3
+
+
+def _focus_headline(focus: str):
+    """The muscle a focus day is named for — the first entry of its allocation.
+
+    Read lazily rather than precomputed, because `_FOCUS_ALLOCATION` is defined
+    further down the module than this is used.
+    """
+    alloc = _FOCUS_ALLOCATION.get(focus)
+    return alloc[0][0] if alloc else None
+
+
+def _trainable_muscles(muscle_split: dict) -> set:
+    return {key for key, pool in muscle_split.items() if len(pool) >= _TRAINABLE_MINIMUM}
+
+
+def _resolve_untrainable_days(schedule: list, muscle_split: dict) -> tuple:
+    """Replace focus days whose own muscle group has been filtered away.
+
+    A rotator-cuff injury correctly empties the chest and shoulder pools — that
+    gating is the feature working. But the week was still built from a fixed
+    split, so it kept a Shoulders day and a Push day, and the day builder's
+    fallback filled them from whatever was left: a live plan came back with a
+    27-minute "Shoulders" session of wrist curls and neck isometrics, and a
+    "Push" day of five triceps movements and no pressing.
+
+    Naming a day for a muscle it does not contain is the part that reads as
+    broken. The safe list is right; the timetable has to follow it.
+    """
+    trainable = _trainable_muscles(muscle_split)
+    candidates = [f for f in _SUBSTITUTE_FOCUSES if _focus_headline(f) in trainable]
+    replacements = {}
+    resolved = []
+    # Spread the replacements over what IS trainable instead of stacking them on
+    # the first thing that fits. Taking the head of the list every time turned a
+    # week with three unbuildable days into four identical leg days.
+    used = collections.Counter(f for f in schedule if _focus_headline(f) in trainable)
+    for focus in schedule:
+        headline = _focus_headline(focus)
+        if focus == "rest" or headline is None or headline in trainable:
+            resolved.append(focus)
+            continue
+        substitute = min(candidates, key=lambda f: (used[f], candidates.index(f))) \
+            if candidates else "full_body"
+        used[substitute] += 1
+        replacements.setdefault(focus, substitute)
+        resolved.append(substitute)
+    return resolved, replacements
+
+
+def _substitution_notice(replacements: dict) -> str | None:
+    if not replacements:
+        return None
+    swaps = ", ".join(f"{was.replace('_', ' ')} → {now.replace('_', ' ')}"
+                      for was, now in sorted(replacements.items()))
+    return (f"Your injuries and health details leave too little in the library to build "
+            f"some of the days this split would normally have, so they have been "
+            f"replaced rather than filled with whatever was left over ({swaps}). This is "
+            f"the safe list doing its job — but it does mean a muscle group is going "
+            f"untrained, which is worth raising with a physiotherapist.")
+
+
 def _schedule_notice(requested_days: int, schedule: list) -> str | None:
     """Say when the week that was built is not the week that was asked for."""
     built = sum(1 for focus in schedule if focus != "rest")
@@ -1478,7 +1560,8 @@ def _slot_allocation(focus: str, target: int) -> dict:
 # something about a barbell bench press and a barbell squat that this
 # practitioner has not done yet.
 _SPECIALTY_NAME = re.compile(
-    r"\b(chain|chains|board|box squat|pin press|guillotine|tate|jm|smith|leverage|"
+    r"\b(chain|chains|with bands|reverse band|board|box squat|pin press|guillotine|"
+    r"tate|jm|smith|leverage|"
     r"iso.?lateral|neck|judo|gorilla|clock|"
     r"isometric|vacuum|windmill|jerk|bradford|rocky|cuban|zercher|jefferson|sissy|"
     r"car driver|anti.?gravity|scaption|around the world|kaz|bent press|"
@@ -1587,8 +1670,14 @@ def _movement_family(ex) -> str:
     return " ".join(_singular(w) for w in core[-2:]) if core else ex.get("id", "")
 
 
+# How far down the preference order a repeated day is allowed to reach for its
+# main lift. Deep enough that a second leg day squats something else; shallow
+# enough that it is still one of the movements a coach would have picked.
+_VARIANT_DEPTH = 3
+
+
 def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=(),
-            caps=None, per_muscle=None, muscle_rank=None, preferred_ids=()):
+            caps=None, per_muscle=None, muscle_rank=None, preferred_ids=(), variant=0):
     """Pick n exercises, compounds first, without stacking one movement family.
 
     Selection was a plain shuffle-and-take, so nothing preferred a compound or
@@ -1626,6 +1715,16 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
     # competes for the slots. A leg day came out as step-ups, calf press, glute
     # kickback and flutter kicks — two compounds by the letter of the rule, and
     # nothing that squats or hinges.
+    # A week can train the same muscle twice — a lower-body emphasis has two leg
+    # days, and an emptied pool can put two back days in a week. Both used to open
+    # with the identical two lifts, because the main-lift preference is
+    # deterministic and nothing told the second day it was the second. Rotating
+    # the pattern order makes one of them a squat day and the other a hinge day,
+    # which is what a coach would have written anyway.
+    if variant and patterns:
+        offset = variant % len(patterns)
+        patterns = patterns[offset:] + patterns[:offset]
+
     for pattern in patterns:
         if len(picked) >= n:
             break
@@ -1639,7 +1738,14 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
         candidates.sort(key=lambda ex: _pattern_preference(ex, pattern, muscle_rank,
                                                             preferred_ids))
         if candidates:
-            _take(candidates[0])
+            # Vary within the movements a coach would have picked, not past them.
+            # Reaching for the third-best hinge is how a second leg day stops
+            # repeating the first; reaching for a band-resisted deadlift because
+            # it happens to sit third is not, so specialty variants are only
+            # considered when there is nothing plain left to rotate through.
+            plain = [ex for ex in candidates if not _SPECIALTY_NAME.search(ex.get("name", ""))]
+            shortlist = plain if len(plain) > 1 else candidates
+            _take(shortlist[variant % min(len(shortlist), _VARIANT_DEPTH)])
 
     for want_compound in (True, False):
         if want_compound and min_compounds <= 0:
@@ -1688,7 +1794,8 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
     return picked
 
 
-def _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids=()):
+def _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids=(),
+                    variant=0):
     """The day's exercises: a stable core, plus one that rotates weekly.
 
     The seed used to include the week, so every week drew a fresh random set —
@@ -1703,11 +1810,9 @@ def _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids=(
     history. The core is seeded on the DAY, never the week, so it holds across all
     four; the same shape as the yoga engine's core and accent split.
     """
-    import collections as _collections
-
     core_n = max(1, target - _ROTATING_PER_DAY)
     taken: set = set()
-    families: dict = _collections.defaultdict(int)
+    families: dict = collections.defaultdict(int)
     # The ceilings are for the whole day, so the stable core and the rotating slot
     # share one running count — otherwise the rotating exercise gets a fresh
     # budget and reopens the imbalance the ceilings exist to close.
@@ -1715,11 +1820,11 @@ def _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids=(
     per_muscle: dict = {}
     muscle_rank = {key: i for i, (key, _) in enumerate(_FOCUS_ALLOCATION.get(focus, ()))}
 
-    core = _choose(pool, core_n, f"{user_id}-{focus}-d{day_num}-core",
+    core = _choose(pool, core_n, f"{user_id}-{focus}-d{day_num}-v{variant}-core",
                    taken, families, min_compounds=min(_MIN_COMPOUNDS, max(1, core_n - 1)),
                    patterns=_FOCUS_PATTERNS.get(focus, ()),
                    caps=caps, per_muscle=per_muscle, muscle_rank=muscle_rank,
-                   preferred_ids=preferred_ids)
+                   preferred_ids=preferred_ids, variant=variant)
     rotating = _choose(pool, target - len(core), f"{user_id}-{focus}-d{day_num}-rotate-w{week}",
                        taken, families, caps=caps, per_muscle=per_muscle,
                        preferred_ids=preferred_ids)
@@ -1992,7 +2097,7 @@ def _focus_label(focus: str, main_workout: list) -> str:
 def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profile,
                    week=1, user_id="default", strength_level="beginner", gender="male",
                    dosha="vata", bodyweight=None, with_finisher=False,
-                   conditioning_pool=(), preferred_ids=()):
+                   conditioning_pool=(), preferred_ids=(), variant=0):
     if focus == "rest":
         recovery = _REST_DAY_RECOVERY.get(dosha, _REST_DAY_RECOVERY["vata"])
         return {
@@ -2039,7 +2144,8 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     if len(pool) < 3:
         pool = [ex for group in muscle_split.values() for ex in group]
 
-    selected = _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids)
+    selected = _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids,
+                               variant=variant)
 
     # A session is performed in an order, and the order is the programme: the
     # heaviest compound while the practitioner is fresh, its support after it,
@@ -2211,6 +2317,9 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     muscle_focus = gym_prefs.get("target_muscle_focus") or "full_body"
     schedule_focus = _build_weekly_schedule(
         workout_days, is_bodyweight_only, fitness_level, muscle_focus)
+    # The split is chosen before the library is consulted, so it can name days the
+    # practitioner's own safety gating has emptied.
+    schedule_focus, substitutions = _resolve_untrainable_days(schedule_focus, muscle_split)
     days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     user_id = str(user_profile.get("id") or user_profile.get("_id") or "default")
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
@@ -2226,6 +2335,16 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     finisher_count = _conditioning_days(len(training_days), goal, cardio_preference, bmi_group)
     finisher_days = {training_days[i] for i in _spread(finisher_count, len(training_days))}
 
+    # How many earlier days this week already trained the same region. The second
+    # leg day of a lower-body block should not be the first one again.
+    emphasis_seen: dict = collections.Counter()
+    day_variant = []
+    for focus in schedule_focus:
+        headline = _focus_headline(focus)
+        day_variant.append(emphasis_seen[headline])
+        if focus != "rest":
+            emphasis_seen[headline] += 1
+
     four_week_plan = []
     for week in range(1, 5):
         week_days = [
@@ -2234,7 +2353,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
                 week=week, user_id=user_id, strength_level=strength_level,
                 gender=gender, dosha=dominant_dosha, bodyweight=bodyweight,
                 with_finisher=i in finisher_days, conditioning_pool=conditioning_pool,
-                preferred_ids=preferred_ids,
+                preferred_ids=preferred_ids, variant=day_variant[i],
             )
             for i, focus in enumerate(schedule_focus)
         ]
@@ -2330,4 +2449,5 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
                                         len(training_days)),
         "preference_notice": _preference_notice(preference_report),
         "adaptation_notice": _adaptation_notice(bmi_group, user_profile.get("activity_level")),
+        "substitution_notice": _substitution_notice(substitutions),
     }
