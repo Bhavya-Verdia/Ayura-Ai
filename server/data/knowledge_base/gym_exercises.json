@@ -14793,61 +14793,6 @@
     "pregnancy_safe": false
   },
   {
-    "id": "Elliptical_Trainer",
-    "name": "Elliptical Trainer",
-    "category": "strength",
-    "equipment": "machine",
-    "level": "intermediate",
-    "primary_muscles": [
-      "quadriceps"
-    ],
-    "secondary_muscles": [
-      "calves",
-      "glutes",
-      "hamstrings"
-    ],
-    "instructions": [
-      "To begin, step onto the elliptical and select the desired option from the menu. Most ellipticals have a manual setting, or you can select a program to run. Typically, you can enter your age and weight to estimate the amount of calories burned during exercise. Elevation can be adjusted to change the intensity of the workout.",
-      "The handles can be used to monitor your heart rate to help you stay at an appropriate intensity."
-    ],
-    "sets_reps": {
-      "beginner": {
-        "sets": 3,
-        "reps": "12-15",
-        "rest_seconds": 90
-      },
-      "intermediate": {
-        "sets": 4,
-        "reps": "10-12",
-        "rest_seconds": 75
-      },
-      "advanced": {
-        "sets": 5,
-        "reps": "6-10",
-        "rest_seconds": 60
-      }
-    },
-    "dosha_suitability": {
-      "vata": "good",
-      "pitta": "good",
-      "kapha": "good"
-    },
-    "goal_suitability": {
-      "fat_loss": false,
-      "muscle_gain": true,
-      "endurance": false,
-      "strength": true,
-      "general_fitness": true
-    },
-    "contraindications": [
-      "knee_replacement",
-      "bad_knee"
-    ],
-    "calories_per_minute": 5.0,
-    "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
-  },
-  {
     "id": "Exercise_Ball_Crunch",
     "name": "Exercise Ball Crunch",
     "category": "strength",
@@ -26519,66 +26464,6 @@
     },
     "contraindications": [
       "hip_injury"
-    ],
-    "calories_per_minute": 5.0,
-    "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": false
-  },
-  {
-    "id": "Mountain_Climbers",
-    "name": "Mountain Climbers",
-    "category": "strength",
-    "equipment": "other",
-    "level": "intermediate",
-    "primary_muscles": [
-      "quadriceps"
-    ],
-    "secondary_muscles": [
-      "chest",
-      "hamstrings",
-      "shoulders"
-    ],
-    "instructions": [
-      "Begin in a pushup position, with your weight supported by your hands and toes. Flexing the knee and hip, bring one leg until the knee is approximately under the hip. This will be your starting position.",
-      "Explosively reverse the positions of your legs, extending the bent leg until the leg is straight and supported by the toe, and bringing the other foot up with the hip and knee flexed. Repeat in an alternating fashion for 20-30 seconds."
-    ],
-    "sets_reps": {
-      "beginner": {
-        "sets": 3,
-        "reps": "12-15",
-        "rest_seconds": 90
-      },
-      "intermediate": {
-        "sets": 4,
-        "reps": "10-12",
-        "rest_seconds": 75
-      },
-      "advanced": {
-        "sets": 5,
-        "reps": "6-10",
-        "rest_seconds": 60
-      }
-    },
-    "dosha_suitability": {
-      "vata": "good",
-      "pitta": "good",
-      "kapha": "good"
-    },
-    "goal_suitability": {
-      "fat_loss": false,
-      "muscle_gain": true,
-      "endurance": false,
-      "strength": true,
-      "general_fitness": true
-    },
-    "contraindications": [
-      "bad_knee",
-      "heart_condition",
-      "heart_disease",
-      "hypertension",
-      "knee_replacement",
-      "rotator_cuff",
-      "shoulder_injury"
     ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
@@ -50047,9 +49932,11 @@
       "general_fitness": true
     },
     "contraindications": [
+      "bad_knee",
       "heart_condition",
       "heart_disease",
       "hypertension",
+      "knee_replacement",
       "lower_back_pain",
       "rotator_cuff",
       "shoulder_injury",
@@ -50231,7 +50118,9 @@
       "general_fitness": true
     },
     "contraindications": [
-      "hip_injury"
+      "bad_knee",
+      "hip_injury",
+      "knee_replacement"
     ],
     "calories_per_minute": 8.5,
     "modification": "Use no-incline, low resistance for joint issues.",
