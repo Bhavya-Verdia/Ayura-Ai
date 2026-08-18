@@ -6,6 +6,7 @@ Run: python scripts/build_vectors.py
 
 import hashlib
 import json
+import re
 import os
 import sys
 from pathlib import Path
@@ -189,6 +190,203 @@ def _yoga_pose_docs(pose: dict) -> list[dict]:
     return out
 
 
+def _gym_exercise_docs(ex: dict) -> list[dict]:
+    """One exercise → programming, safety, and however many instruction chunks it needs.
+
+    The corpus was built from `gym_routines.json`, ten legacy summaries, while
+    `gym_plan_engine` prescribes from `gym_exercises.json`, which holds 893 — and
+    six of those ten are not in the engine's file at all, so most of what RAG
+    could say about fitness described exercises no plan can contain. The same
+    split as yoga_plans/yoga_poses, in a domain nobody had rechecked after that
+    one was fixed.
+
+    Three documents for the reason the poses get two: a Barbell Squat's
+    instructions alone run past four hundred words, and one blob would lose its
+    contraindications off the end of the window. Every chunk restates the name.
+    """
+    name = ex.get("name")
+    sets = ex.get("sets_reps") or {}
+    doses = "; ".join(
+        f"{level} {d.get('sets')} sets of {d.get('reps')} reps with "
+        f"{d.get('rest_seconds')}s rest"
+        for level in ("beginner", "intermediate", "advanced")
+        for d in [sets.get(level) or {}] if d)
+    suitability = ex.get("dosha_suitability") or {}
+    goals = [g.replace("_", " ") for g, wanted in (ex.get("goal_suitability") or {}).items()
+             if wanted]
+
+    programming = " ".join(bit for bit in (
+        f"Gym exercise: {name}. Category: {ex.get('category')}, "
+        f"equipment: {_humanise([ex.get('equipment', 'none')])}, level: {ex.get('level')}.",
+        f"Works: {_humanise(ex.get('primary_muscles', []))}."
+        if ex.get("primary_muscles") else "",
+        f"Also works: {_humanise(ex.get('secondary_muscles', []))}."
+        if ex.get("secondary_muscles") else "",
+        f"Prescribed as {doses}." if doses else "",
+        f"Good for the goals: {', '.join(goals)}." if goals else "",
+        # The engine matches on these three words, so the chunk should carry them.
+        f"Suits Vata: {suitability.get('vata', 'unrated')}, "
+        f"Pitta: {suitability.get('pitta', 'unrated')}, "
+        f"Kapha: {suitability.get('kapha', 'unrated')}." if suitability else "",
+        f"Burns about {ex['calories_per_minute']} calories a minute."
+        if ex.get("calories_per_minute") else "",
+    ) if bit)
+
+    safety = " ".join(bit for bit in (
+        f"Gym exercise {name} — safety.",
+        f"Do not perform with: {_humanise(ex['contraindications'])}."
+        if ex.get("contraindications") else "No listed contraindications.",
+        f"Modification: {ex['modification']}" if ex.get("modification") else "",
+        f"Safe in pregnancy: {'yes' if ex.get('pregnancy_safe') else 'no'}."
+        if ex.get("pregnancy_safe") is not None else "",
+    ) if bit)
+
+    # Joined with ". " rather than " " so chunk_text has sentence boundaries to
+    # split on — the lesson the pose instructions taught.
+    #
+    # Three steps in the file end on a dangling label ("…outer deltoids. Tips:"),
+    # which joined into the literal "Tips:." — a label with nothing after it, the
+    # exact fingerprint of a generator reading a key that is not there. It is only
+    # scruffy source data here, but it has to go: a guard that cries wolf is a
+    # guard someone switches off.
+    steps = [step for step in (re.sub(r"\s*\b[\w ]{0,14}:\s*$", "", i.rstrip(".")).strip()
+                               for i in ex.get("instructions", [])) if step]
+    howto = f"Gym exercise {name} — how to perform it. " + ". ".join(steps) + "."
+
+    out = []
+    for body in (programming, safety, howto):
+        for chunk in chunk_text(body):
+            text = chunk if name and chunk.startswith(("Gym exercise", name)) else f"{name}: {chunk}"
+            out.append({"text": text, "dosha": "", "source": "gym_exercises"})
+    return out
+
+
+def _food_docs(food: dict) -> list[dict]:
+    """One food → an Ayurvedic document and a nutrition document.
+
+    `diet_foods.json` is what `diet_plan_engine` builds meals from — 150 foods —
+    and it was never in the corpus. The 25 in `ayurvedic_foods.json` that were
+    overlap it by only nine names, so RAG was answering diet questions from a
+    different, smaller list than the one on the plate. That file is kept: its
+    classical notes are content the engine's file does not carry.
+    """
+    name = food.get("name")
+    ayur = food.get("ayurvedic") or {}
+    effect = ayur.get("dosha_effect") or {}
+    pacifies = [d for d, v in effect.items() if isinstance(v, (int, float)) and v < 0]
+    increases = [d for d, v in effect.items() if isinstance(v, (int, float)) and v > 0]
+
+    ayurvedic = " ".join(bit for bit in (
+        f"Food: {name} ({food.get('category')}).",
+        f"Rasa (taste): {_humanise(ayur['rasa'])}." if ayur.get("rasa") else "",
+        f"Virya (potency): {ayur['virya']}." if ayur.get("virya") else "",
+        f"Vipaka (post-digestive effect): {ayur['vipaka']}." if ayur.get("vipaka") else "",
+        f"Pacifies: {', '.join(pacifies)}." if pacifies else "",
+        f"Increases: {', '.join(increases)}." if increases else "",
+        f"Effect on agni (digestive fire): {_humanise([ayur['agni_effect']])} to digest."
+        if ayur.get("agni_effect") else "",
+        f"Particularly good for: {_humanise(ayur['best_for'])}." if ayur.get("best_for") else "",
+        f"Suits the seasons: {_humanise(food['season_suitable'])}."
+        if food.get("season_suitable") else "",
+    ) if bit)
+
+    nutrition = food.get("nutrition_per_100g") or {}
+    practical = " ".join(bit for bit in (
+        f"Food {name} — nutrition and use.",
+        ("Per 100g: " + ", ".join(
+            f"{k.replace('_g', '').replace('calories', 'calories')} {v}"
+            for k, v in nutrition.items()) + ".") if nutrition else "",
+        f"Suitable at: {_humanise(food['meal_suitable'])}." if food.get("meal_suitable") else "",
+        f"Preparation time: about {food['prep_time_minutes']} minutes."
+        if food.get("prep_time_minutes") else "",
+        f"Dietary type: {_humanise(food['dietary_type'])}." if food.get("dietary_type") else "",
+        "Vegan." if food.get("vegan") else "",
+        "A common allergen." if food.get("common_allergen") else "",
+    ) if bit)
+
+    return [{"text": t, "dosha": pacifies[0] if pacifies else "", "source": "diet_foods"}
+            for t in (ayurvedic, practical)]
+
+
+def _therapy_docs(therapy: dict) -> list[dict]:
+    """One Panchakarma therapy as the engine schedules it.
+
+    `panchakarma_engine` reads `panchakarma_therapies.json` — 23 deliverable
+    units, home and clinical variants of each karma, carrying the phase, the
+    setting, the experience it demands and how strict a diet it needs. The corpus
+    had only the ten classical karma summaries from `panchakarma_plans.json`,
+    which describe the tradition rather than anything the engine can schedule.
+    Both are kept: they answer different questions.
+    """
+    name = therapy.get("name")
+    effect = therapy.get("dosha_effect") or {}
+    pacifies = [d for d, v in effect.items() if isinstance(v, (int, float)) and v < 0]
+    increases = [d for d, v in effect.items() if isinstance(v, (int, float)) and v > 0]
+
+    text = " ".join(bit for bit in (
+        f"Panchakarma therapy: {name}.",
+        f"Phase: {_humanise([therapy['phase']])}." if therapy.get("phase") else "",
+        f"Performed at: {_humanise(therapy['setting_required'])}."
+        if therapy.get("setting_required") else "",
+        f"Takes about {therapy['duration_minutes']} minutes."
+        if therapy.get("duration_minutes") else "",
+        f"Pacifies: {', '.join(pacifies)}." if pacifies else "",
+        f"Increases: {', '.join(increases)}." if increases else "",
+        f"Experience required: {_humanise([therapy['experience_required']])}."
+        if therapy.get("experience_required") else "",
+        f"Dietary discipline: {_humanise([therapy['diet_strictness']])}."
+        if therapy.get("diet_strictness") else "",
+        f"Herbs needed: {_humanise([therapy['herb_requirement']])}."
+        if therapy.get("herb_requirement") else "",
+        f"Benefits: {'. '.join(b.rstrip('.') for b in therapy['benefits'])}."
+        if therapy.get("benefits") else "",
+    ) if bit)
+
+    return [{"text": chunk if chunk.startswith("Panchakarma therapy")
+             else f"Panchakarma therapy {name}: {chunk}",
+             "dosha": pacifies[0] if pacifies else "", "source": "panchakarma_therapies"}
+            for chunk in chunk_text(text)]
+
+
+def _readable(node, depth: int = 0) -> str:
+    """A nested protocol section rendered as prose the embedder can read.
+
+    `panchakarma_protocols.json` is a 52 KB structured document rather than a list
+    of records — eligibility criteria, the purvakarma and pradhana karma
+    protocols, the contraindication matrix — and the engine reads it while the
+    corpus had none of it. Its sections are heterogeneous, so they are flattened
+    generically; keys become words, lists become sentences, and the leaves keep
+    the classical phrasing they were written in.
+    """
+    if isinstance(node, dict):
+        parts = []
+        for key, value in node.items():
+            label = key.replace("_", " ")
+            rendered = _readable(value, depth + 1)
+            if rendered:
+                parts.append(f"{label}: {rendered}")
+        return ". ".join(parts)
+    if isinstance(node, list):
+        return ", ".join(filter(None, (_readable(v, depth + 1) for v in node)))
+    return str(node) if node not in (None, "") else ""
+
+
+def _protocol_section_docs(section: str, node) -> list[dict]:
+    heading = section.replace("_", " ").title()
+    body = _readable(node)
+    if not body:
+        return []
+    # 600 rather than the default 800 characters. This text is denser than prose —
+    # Sanskrit terms, dosages, month numbers — and tokenizes at about 3.1
+    # characters per word-piece against prose's 4, so an 800-char chunk lands at
+    # 260 word-pieces and loses its tail. Seven of these ran past the window
+    # before the seeder's own check refused to write them.
+    return [{"text": chunk if chunk.startswith("Panchakarma protocol")
+             else f"Panchakarma protocol — {heading}: {chunk}",
+             "dosha": "", "source": "panchakarma_protocols"}
+            for chunk in chunk_text(f"Panchakarma protocol — {heading}. {body}", max_chars=600)]
+
+
 def get_documents_for_collection() -> dict[str, list[dict]]:
     """Build document sets for each ChromaDB collection."""
     docs: dict[str, list[dict]] = {"ayurveda": [], "fitness": [], "nutrition": [], "remedy": [], "panchakarma": []}
@@ -368,21 +566,18 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
     for pose in yoga_data:
         docs["ayurveda"].extend(_yoga_pose_docs(pose))
 
-    # Gym routines → fitness
-    gym_data = json.loads((KNOWLEDGE_DIR / "gym_routines.json").read_text(encoding="utf-8"))
-    gym_list = gym_data if isinstance(gym_data, list) else gym_data.get("routines", [])
+    # Gym exercises → fitness
+    #
+    # `gym_routines.json` (10 legacy summaries) was the source here while
+    # `gym_plan_engine` has always prescribed from `gym_exercises.json` (893) —
+    # and only four of the ten even exist in the engine's file. The whole fitness
+    # corpus was ten chunks, six of them describing exercises no plan can
+    # contain. Same failure as yoga_plans/yoga_poses, in a domain that was never
+    # rechecked when that one was fixed.
+    gym_data = json.loads((KNOWLEDGE_DIR / "gym_exercises.json").read_text(encoding="utf-8"))
+    gym_list = gym_data if isinstance(gym_data, list) else gym_data.get("exercises", [])
     for exercise in gym_list:
-        dosha_suit = exercise.get("dosha_suitability", {})
-        contraindications = ", ".join(exercise.get("contraindications", []))
-        text = (
-            f"Exercise: {exercise.get('name')} ({exercise.get('mechanics', '')} movement, "
-            f"targets {exercise.get('target_muscle', '')}). "
-            f"Dosha suitability: Vata={dosha_suit.get('vata', '')}, "
-            f"Pitta={dosha_suit.get('pitta', '')}, Kapha={dosha_suit.get('kapha', '')}. "
-            f"Contraindications: {contraindications or 'none'}. "
-            f"Instructions: {exercise.get('instructions', '')}."
-        )
-        docs["fitness"].append({"text": text, "dosha": "", "source": "gym_routines"})
+        docs["fitness"].extend(_gym_exercise_docs(exercise))
 
     # Diet plans → nutrition
     diet_data = json.loads((KNOWLEDGE_DIR / "diet_plans.json").read_text(encoding="utf-8"))
@@ -400,7 +595,22 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
         )
         docs["nutrition"].append({"text": text, "dosha": dosha, "source": "diet_plans"})
 
+    # Diet foods → nutrition
+    #
+    # What `diet_plan_engine` builds meals from, and it was never in the corpus.
+    # The 25 in ayurvedic_foods.json below overlap these 150 by nine names, so
+    # RAG answered diet questions from a different and much smaller list than the
+    # one on the plate.
+    if (KNOWLEDGE_DIR / "diet_foods.json").exists():
+        diet_foods = json.loads((KNOWLEDGE_DIR / "diet_foods.json").read_text(encoding="utf-8"))
+        food_list = diet_foods if isinstance(diet_foods, list) else diet_foods.get("foods", [])
+        for food in food_list:
+            docs["nutrition"].extend(_food_docs(food))
+
     # Ayurvedic Foods → nutrition
+    # Kept alongside diet_foods.json rather than replaced by it: 16 of these 25
+    # are not in the engine's file, and their classical notes ("raw apples can
+    # increase Vata") are content it does not carry.
     if (KNOWLEDGE_DIR / "ayurvedic_foods.json").exists():
         food_data = json.loads((KNOWLEDGE_DIR / "ayurvedic_foods.json").read_text(encoding="utf-8"))
         for f in food_data:
@@ -471,6 +681,27 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
                 "text": (f"Panchakarma safety for {name}. Do not perform in: "
                          f"{_humanise(protocol['contraindications'])}."),
                 "dosha": dosha, "source": "panchakarma_plans"})
+
+    # Panchakarma therapies → panchakarma
+    # The 23 deliverable units `panchakarma_engine` schedules, as against the ten
+    # classical karma summaries above. Both are kept: one describes the tradition,
+    # the other describes what a practitioner is actually booked in for.
+    if (KNOWLEDGE_DIR / "panchakarma_therapies.json").exists():
+        therapies = json.loads((KNOWLEDGE_DIR / "panchakarma_therapies.json").read_text(encoding="utf-8"))
+        therapy_list = therapies if isinstance(therapies, list) else therapies.get("therapies", [])
+        for therapy in therapy_list:
+            docs["panchakarma"].extend(_therapy_docs(therapy))
+
+    # Panchakarma protocol document → panchakarma
+    # A structured 52 KB document rather than a list of records: eligibility,
+    # purvakarma and pradhana karma protocols, the seasonal calendar, the
+    # contraindication matrix. The engine reads it; the corpus had none of it.
+    if (KNOWLEDGE_DIR / "panchakarma_protocols.json").exists():
+        protocols = json.loads((KNOWLEDGE_DIR / "panchakarma_protocols.json").read_text(encoding="utf-8"))
+        for section, node in (protocols or {}).items():
+            if section == "metadata":
+                continue
+            docs["panchakarma"].extend(_protocol_section_docs(section, node))
 
     # Ritucharya → ayurveda
     ritual_data = json.loads((KNOWLEDGE_DIR / "ritucharya_seasonal.json").read_text(encoding="utf-8"))
