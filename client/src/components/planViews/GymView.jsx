@@ -203,6 +203,15 @@ export function GymView({ plan }) {
         </div>
       )}
 
+      {/* What opting out of conditioning costs on a fat-loss plan, or why a
+          strength block did not get cardio on every day it was asked for. */}
+      {plan.cardio_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.cardio_notice}</span>
+        </div>
+      )}
+
       {/* ── Day-list toolbar ── */}
       {weekDays.length > 0 && (
         <div className="plan-days-toolbar">

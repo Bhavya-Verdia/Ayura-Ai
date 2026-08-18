@@ -1253,6 +1253,13 @@ def test_nothing_selected_still_builds_a_plan():
             assert len(day["main_workout"]) >= 3, f"{equipment}: {day['focus']} came up short"
 
 
+def _conditioning_days_in(plan):
+    days = [d for d in plan["four_week_plan"][0]["days"] if d["main_workout"]]
+    with_cardio = [d for d in days
+                   if any(e["category"] == "cardio" for e in d["main_workout"])]
+    return len(with_cardio), len(days)
+
+
 @pytest.mark.parametrize("goal", ["fat_loss", "endurance"])
 @pytest.mark.parametrize("equipment", [["full_gym"], ["bodyweight"], ["dumbbells"]])
 def test_a_fat_loss_plan_contains_conditioning(goal, equipment):
@@ -1265,24 +1272,27 @@ def test_a_fat_loss_plan_contains_conditioning(goal, equipment):
             {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
             {"available_equipment": equipment, "gym_goal": goal,
              "workout_days_per_week": days_per_week, "workout_duration_minutes": 45})
-        for day in plan["four_week_plan"][0]["days"]:
-            if not day["main_workout"]:
-                continue
-            assert any(e["category"] == "cardio" for e in day["main_workout"]), (
-                f"{goal} {days_per_week}d {day['focus']}: "
-                f"{[e['exercise_name'] for e in day['main_workout']]}")
+        conditioned, total = _conditioning_days_in(plan)
+        # At the default preference, most of the week — not all of it. How much is
+        # `cardio_preference`'s decision now; that it is not zero is this goal's.
+        assert conditioned >= total / 2, f"{goal} {days_per_week}d: {conditioned}/{total}"
 
 
 @pytest.mark.parametrize("goal", ["strength", "muscle_gain"])
-def test_a_strength_plan_is_not_given_a_conditioning_finisher(goal):
-    """Fat loss and endurance are the goals where conditioning IS the training
-    effect. Bolting it onto a strength block would cost the block its recovery."""
-    plan = generate_gym_plan(
-        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
-        {"available_equipment": ["full_gym"], "gym_goal": goal,
-         "workout_days_per_week": 4, "workout_duration_minutes": 45})
-    for day in plan["four_week_plan"][0]["days"]:
-        assert all(e["role"] != "conditioning" for e in day["main_workout"]), day["focus"]
+def test_a_strength_block_is_not_conditioned_every_day(goal):
+    """Conditioning is capped on the goals it interferes with. Someone on a
+    strength block asking for heavy cardio gets the most the block can carry —
+    which is not all of it — and the plan says why rather than quietly halving
+    the request."""
+    for preference in ("light", "moderate", "heavy"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+            {"available_equipment": ["full_gym"], "gym_goal": goal,
+             "workout_days_per_week": 6, "workout_duration_minutes": 45,
+             "cardio_preference": preference})
+        conditioned, total = _conditioning_days_in(plan)
+        assert conditioned <= total / 2, f"{goal}/{preference}: {conditioned}/{total}"
+    assert plan["cardio_notice"], "heavy cardio was capped in silence"
 
 
 def test_time_based_work_costs_the_session_its_time():
@@ -1470,7 +1480,49 @@ def test_the_style_does_not_take_the_goal_s_job():
         {"available_equipment": ["full_gym"], "gym_goal": "fat_loss",
          "workout_days_per_week": 4, "workout_duration_minutes": 60,
          "training_style": "strength"})
-    for day in plan["four_week_plan"][0]["days"]:
-        if not day["main_workout"]:
-            continue
-        assert any(e["category"] == "cardio" for e in day["main_workout"]), day["focus"]
+    conditioned, total = _conditioning_days_in(plan)
+    assert conditioned >= total / 2, f"{conditioned}/{total} days conditioned"
+
+
+@pytest.mark.parametrize("goal", ["fat_loss", "endurance", "muscle_gain",
+                                  "strength", "general_fitness"])
+def test_no_cardio_means_no_cardio(goal):
+    """`cardio_preference` was a required field that nothing read — including the
+    finisher added in the pass that put conditioning into fat-loss plans. Someone
+    who ticked "None" was given a stair climber, which is worse than the field
+    being ignored: it was contradicted."""
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {"available_equipment": ["full_gym"], "gym_goal": goal,
+         "workout_days_per_week": 6, "workout_duration_minutes": 45,
+         "cardio_preference": "none"})
+    conditioned, _ = _conditioning_days_in(plan)
+    assert conditioned == 0, f"{goal} asked for no cardio and got {conditioned} days of it"
+    if goal in ("fat_loss", "endurance"):
+        assert plan["cardio_notice"], "opting out of conditioning on a fat-loss plan is not free"
+
+
+def test_more_cardio_asked_for_means_more_cardio_given():
+    """It is a share of the week rather than a per-day switch, because that is how
+    the decision is really made — three sessions ending on the bike is a different
+    programme from six, and neither one is "some cardio"."""
+    counts = []
+    for preference in ("none", "light", "moderate", "heavy"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+            {"available_equipment": ["full_gym"], "gym_goal": "fat_loss",
+             "workout_days_per_week": 6, "workout_duration_minutes": 45,
+             "cardio_preference": preference})
+        counts.append(_conditioning_days_in(plan)[0])
+    assert counts == sorted(counts) and counts[0] == 0 and counts[-1] == 6, counts
+
+
+def test_conditioning_is_available_to_a_goal_the_dataset_calls_it_useless_for():
+    """The dataset marks every cardio entry unsuitable for `muscle_gain` and
+    `strength` — true of what it builds, and not the question being asked of a
+    finisher, whose goal IS conditioning. A hypertrophy lifter asking for cardio
+    had none available to give them."""
+    pool = filter_exercises(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+        {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain"}, gym_exercises)
+    assert [e for e in pool if e["category"] == "cardio"]

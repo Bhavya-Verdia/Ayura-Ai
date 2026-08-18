@@ -798,7 +798,14 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
         # growing, whatever level they enter.
         if age_group in ("senior", "youth") and ex.get("category") == "plyometrics":
             continue
-        if not ex.get("goal_suitability", {}).get(gym_goal, False):
+        # Conditioning is exempt from the goal gate. The dataset marks cardio
+        # unsuitable for `muscle_gain` and `strength` — true of what it builds,
+        # and not the question being asked of a finisher, whose goal IS
+        # conditioning. Without the exemption a hypertrophy lifter asking for
+        # heavy cardio had none available to give them. How much of it they get
+        # is `_conditioning_days`' decision, not this gate's.
+        if (ex.get("category") != "cardio"
+                and not ex.get("goal_suitability", {}).get(gym_goal, False)):
             continue
         if avoid_tags.intersection(set(ex.get("contraindications", []))):
             continue
@@ -1040,6 +1047,27 @@ def _focus_notice(muscle_focus, workout_days, is_bodyweight_only, fitness_level)
     return None
 
 
+def _cardio_notice(goal, preference, finisher_days: int, training_days: int) -> str | None:
+    """Say when the amount of conditioning is not what the goal would have chosen.
+
+    Both directions matter. Someone who asked for none on a fat-loss plan should
+    know what they have opted out of; someone who asked for heavy on a strength
+    block should know why they did not get it every day.
+    """
+    if preference == "none" and goal in _FINISHER_GOALS:
+        return ("You asked for no cardio, so this plan has none — every session is "
+                "resistance training. For fat loss that puts the entire energy deficit "
+                "on what you eat, since lifting alone burns comparatively little. It is "
+                "a workable plan; it is a harder one.")
+    if preference == "heavy" and goal in _MAX_CONDITIONING_SHARE and finisher_days < training_days:
+        return (f"You asked for heavy cardio. This plan ends {finisher_days} of your "
+                f"{training_days} sessions with conditioning rather than all of them — "
+                f"daily conditioning on a {goal.replace('_', ' ')} block interferes with "
+                f"the adaptation the block is for. Add walking or cycling on the recovery "
+                f"day if you want more.")
+    return None
+
+
 def _schedule_notice(requested_days: int, schedule: list) -> str | None:
     """Say when the week that was built is not the week that was asked for."""
     built = sum(1 for focus in schedule if focus != "rest")
@@ -1197,7 +1225,10 @@ _FOCUS_ALLOCATION = {
     "shoulders_core":  (("shoulders", 2), ("core", 1)),
     "shoulders_arms":  (("shoulders", 2), ("biceps", 1), ("triceps", 1)),
     "arms":            (("biceps", 1), ("triceps", 1)),
-    "core_cardio":     (("core", 2), ("cardio", 1)),
+    # Conditioning no longer arrives through the day's own pool — it is the
+    # finisher, on the days `cardio_preference` puts one there — so this day is
+    # trunk work plus whatever finishes it.
+    "core_cardio":     (("core", 1),),
 }
 
 
@@ -1581,15 +1612,58 @@ _FINISHER_GOALS = {"fat_loss", "endurance"}
 # the interval entries are already finisher-shaped and keep their own writing.
 _FINISHER_MINUTES = {"beginner": 8, "intermediate": 10, "advanced": 12}
 
+# How much of the week ends with conditioning.
+#
+# `cardio_preference` is a required field in the gym form — None, Light,
+# Moderate, Heavy — and nothing read it, including the finisher added in the pass
+# that put conditioning into fat-loss plans. Someone who ticked "None" was given
+# a stair climber, which is worse than the original bug: the field was not merely
+# ignored, it was contradicted.
+#
+# It is a share of the week's training days rather than a per-day switch, because
+# that is how the decision is really made — three sessions ending on the bike is
+# a different programme from six, and neither is "some cardio".
+_CONDITIONING_SHARE = {"none": 0.0, "light": 1 / 3, "moderate": 2 / 3, "heavy": 1.0}
+_DEFAULT_CARDIO_PREFERENCE = "moderate"
+# A strength or hypertrophy block cannot absorb daily conditioning — the
+# interference costs the adaptation the block exists for. Someone on those goals
+# asking for heavy cardio gets the most a strength block can carry, which is not
+# all of it.
+_MAX_CONDITIONING_SHARE = {"strength": 1 / 3, "muscle_gain": 1 / 3}
+# And how long each one runs. Someone asking for heavy cardio on the days they
+# get it should get more of it, not just more days.
+_MINUTE_SCALE = {"none": 0.0, "light": 0.75, "moderate": 1.0, "heavy": 1.25}
 
-def _finisher_prescription(ex: dict, level: str) -> tuple:
+
+def _cardio_preference(gym_prefs) -> str:
+    pref = str(gym_prefs.get("cardio_preference") or "").lower()
+    return pref if pref in _CONDITIONING_SHARE else _DEFAULT_CARDIO_PREFERENCE
+
+
+def _conditioning_days(training_days: int, goal: str, preference: str) -> int:
+    """How many of the week's training days end with conditioning."""
+    share = _CONDITIONING_SHARE.get(preference, _CONDITIONING_SHARE[_DEFAULT_CARDIO_PREFERENCE])
+    share = min(share, _MAX_CONDITIONING_SHARE.get(goal, 1.0))
+    if share <= 0:
+        return 0
+    return max(1, min(training_days, round(training_days * share)))
+
+
+def _spread(count: int, total: int) -> set:
+    """`count` indices spread evenly across `total` slots, earliest first."""
+    if count <= 0 or total <= 0:
+        return set()
+    return {min(total - 1, round(i * total / count)) for i in range(count)}
+
+
+def _finisher_prescription(ex: dict, level: str, preference: str = "moderate") -> tuple:
     own = (ex.get("sets_reps") or {}).get(level) or (ex.get("sets_reps") or {}).get("intermediate") or {}
     sets = int(own.get("sets", 1) or 1)
     reps = own.get("reps", "10 min")
     rest = int(own.get("rest_seconds", 0) or 0)
-    cap = _FINISHER_MINUTES.get(level, 10)
+    cap = _FINISHER_MINUTES.get(level, 10) * _MINUTE_SCALE.get(preference, 1.0)
     if sets == 1 and _TIMED_REPS.search(str(reps)):
-        return 1, f"{cap} min", 0
+        return 1, f"{max(5, round(cap))} min", 0
     return sets, reps, rest
 
 
@@ -1680,7 +1754,8 @@ def _focus_label(focus: str, main_workout: list) -> str:
 
 def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profile,
                    week=1, user_id="default", strength_level="beginner", gender="male",
-                   dosha="vata", bodyweight=None):
+                   dosha="vata", bodyweight=None, with_finisher=False,
+                   conditioning_pool=()):
     if focus == "rest":
         recovery = _REST_DAY_RECOVERY.get(dosha, _REST_DAY_RECOVERY["vata"])
         return {
@@ -1711,8 +1786,8 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     # The finisher takes a slot rather than being added on top of a session that
     # already fills the clock — the practitioner asked for forty-five minutes.
     finisher = None
-    if goal in _FINISHER_GOALS and "cardio" not in focus:
-        finisher = _pick_finisher(muscle_split.get("cardio") or [],
+    if with_finisher:
+        finisher = _pick_finisher(conditioning_pool or [],
                                   user_id, focus, day_num, week)
         if finisher:
             target = max(_MIN_EXERCISES, target - 1)
@@ -1747,8 +1822,9 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     work_seconds = 0
     rest_seconds_total = 0
     for ex, role in ordered:
-        sets, reps, rest = (_finisher_prescription(ex, level) if ex is finisher
-                            else _prescribe(ex, rx, level, role))
+        sets, reps, rest = (
+            _finisher_prescription(ex, level, _cardio_preference(gym_prefs))
+            if ex is finisher else _prescribe(ex, rx, level, role))
 
         ex_work = _reps_to_seconds(reps, sets)
         work_seconds += ex_work
@@ -1872,6 +1948,13 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     ge = gym_exercises_db if gym_exercises_db is not None else gym_exercises
     filtered = filter_exercises(user_profile, gym_prefs, ge, extra_avoid_tags=extra_avoid_tags)
     muscle_split = split_by_muscle_group(filtered)
+    # Conditioning reaches a session through the finisher and nowhere else, so
+    # `cardio_preference` is the only thing that decides how much of it there is.
+    # It used to also arrive through the `core_cardio` day's own pool, which meant
+    # someone who ticked "None" still got a stair climber on Saturday — the field
+    # was not merely ignored, it was contradicted.
+    conditioning_pool = muscle_split.pop("cardio", [])
+    muscle_split["cardio"] = []
 
     workout_days = gym_prefs.get("workout_days_per_week", 4)
     available_eq = _normalise_equipment(gym_prefs.get("available_equipment"))
@@ -1892,6 +1975,13 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     goal = gym_prefs.get("gym_goal", "general_fitness")
     scheme = _resolve_scheme(goal, gym_prefs.get("training_style"))
 
+    # Which days end with conditioning, decided once for the week rather than per
+    # day, so "light" means two days out of six and not a coin flip six times.
+    cardio_preference = _cardio_preference(gym_prefs)
+    training_days = [i for i, focus in enumerate(schedule_focus) if focus != "rest"]
+    finisher_count = _conditioning_days(len(training_days), goal, cardio_preference)
+    finisher_days = {training_days[i] for i in _spread(finisher_count, len(training_days))}
+
     four_week_plan = []
     for week in range(1, 5):
         week_days = [
@@ -1899,6 +1989,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
                 i + 1, days_of_week[i], focus, muscle_split, gym_prefs, user_profile,
                 week=week, user_id=user_id, strength_level=strength_level,
                 gender=gender, dosha=dominant_dosha, bodyweight=bodyweight,
+                with_finisher=i in finisher_days, conditioning_pool=conditioning_pool,
             )
             for i, focus in enumerate(schedule_focus)
         ]
@@ -1981,4 +2072,6 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "schedule_notice": _schedule_notice(workout_days, schedule_focus),
         "focus_notice": _focus_notice(muscle_focus, workout_days, is_bodyweight_only,
                                       fitness_level),
+        "cardio_notice": _cardio_notice(goal, cardio_preference, finisher_count,
+                                        len(training_days)),
     }
