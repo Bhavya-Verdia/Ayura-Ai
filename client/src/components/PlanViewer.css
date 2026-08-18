@@ -1352,6 +1352,34 @@
   flex: 1;
 }
 
+/* Main lift / Secondary. Accessory work is the majority and goes unlabelled —
+   badging every row would make the two that matter disappear into the pattern. */
+.gym-ex-role {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.08rem 0.32rem;
+  margin-right: 0.4rem;
+  border-radius: 3px;
+  vertical-align: 0.08em;
+  white-space: nowrap;
+}
+
+.gym-ex-role-primary {
+  background: color-mix(in srgb, var(--plan-green) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--plan-green) 38%, transparent);
+  color: var(--plan-green);
+}
+
+.gym-ex-role-secondary,
+.gym-ex-role-conditioning {
+  background: color-mix(in srgb, var(--ayura-accent) 10%, transparent);
+  border: 1px solid var(--ayura-border);
+  color: var(--ayura-text-secondary);
+}
+
 .gym-ex-chips {
   display: flex;
   gap: 0.3rem;

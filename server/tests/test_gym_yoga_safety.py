@@ -817,3 +817,128 @@ def test_the_quota_never_costs_a_session():
                 if day.get("type") == "recovery":
                     continue
                 assert len(day["main_workout"]) >= 3, f"{goal} {day['focus']} came up short"
+
+
+@pytest.mark.parametrize("goal", ["general_fitness", "muscle_gain", "strength",
+                                  "fat_loss", "endurance"])
+def test_mobility_work_is_never_prescribed_as_a_lift(goal):
+    """Foam rolling is not a set of eight.
+
+    The dataset carries 51 stretches and 13 self-myofascial-release entries, and
+    nothing separated them from training movements — so a fifth of all generated
+    days served one as main work: "Calves-Smr — 3 sets of 8-12, 90s rest, 82-130
+    kg". Mobility belongs to the warm-up and cool-down, which are written per
+    focus and timed in seconds.
+    """
+    from services.gym_plan_engine import _SMR_NAME
+
+    for equipment in (["bodyweight"], FULL_GYM):
+        for level in ("beginner", "intermediate", "advanced"):
+            plan = generate_gym_plan(
+                {**_YOGA_BASE_PROFILE, "fitness_level": level},
+                {"available_equipment": equipment, "gym_goal": goal,
+                 "workout_days_per_week": 5, "workout_duration_minutes": 60})
+            for week in plan["four_week_plan"]:
+                for day in week["days"]:
+                    for ex in day["main_workout"]:
+                        assert ex["category"] != "stretching", (
+                            f"{goal}/{level}: {ex['exercise_name']} is a stretch")
+                        assert not _SMR_NAME.search(ex["exercise_name"]), (
+                            f"{goal}/{level}: {ex['exercise_name']} is foam rolling")
+
+
+def test_no_kb_entry_files_foam_rolling_as_strength():
+    """The thirteen SMR rows were categorised `strength`, which is how they
+    reached a chest day at all. The engine now excludes them by name as well, but
+    the data is corrected so a future reader of the category alone is not misled."""
+    from services.gym_plan_engine import _SMR_NAME
+
+    mislabelled = [e["name"] for e in gym_exercises
+                   if _SMR_NAME.search(e["name"]) and e["category"] != "stretching"]
+    assert not mislabelled, mislabelled
+
+
+@pytest.mark.parametrize("goal", ["strength", "muscle_gain", "fat_loss",
+                                  "endurance", "general_fitness"])
+def test_a_session_is_not_one_prescription_repeated(goal):
+    """A barbell squat and a cable crossover both came out 3x8-10 with ninety
+    seconds between sets. Measured over 360 generated days, 95% gave every
+    exercise in the day identical sets, reps AND rest — the clearest tell that a
+    plan was generated rather than programmed."""
+    uniform = 0
+    days = 0
+    for level in ("beginner", "intermediate", "advanced"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": level},
+            {"available_equipment": FULL_GYM, "gym_goal": goal,
+             "workout_days_per_week": 4, "workout_duration_minutes": 60})
+        for day in plan["four_week_plan"][0]["days"]:
+            main = day["main_workout"]
+            if len(main) < 3:
+                continue
+            days += 1
+            if len({(e["sets"], str(e["reps"]), e["rest_seconds"]) for e in main}) == 1:
+                uniform += 1
+    assert days and uniform == 0, f"{goal}: {uniform}/{days} days are one prescription repeated"
+
+
+@pytest.mark.parametrize("goal", ["strength", "muscle_gain", "general_fitness"])
+def test_the_heaviest_work_comes_first(goal):
+    """Selection optimises for which movement patterns the day contains and
+    returned them in whatever order it found them, so a chest day opened with a
+    push-up and ran three triceps extensions before it reached a fly. A session
+    is performed in an order, and the order is the programme."""
+    from services.gym_plan_engine import _ROLE_ORDER
+
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+        {"available_equipment": FULL_GYM, "gym_goal": goal,
+         "workout_days_per_week": 5, "workout_duration_minutes": 60})
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            ranks = [_ROLE_ORDER.index(e["role"]) for e in day["main_workout"]]
+            assert ranks == sorted(ranks), (
+                f"{goal} {day['focus']}: "
+                f"{[(e['exercise_name'], e['role']) for e in day['main_workout']]}")
+
+
+@pytest.mark.parametrize("goal", ["strength", "muscle_gain", "fat_loss"])
+def test_a_main_lift_rests_longer_than_the_isolation_after_it(goal):
+    """Rest interval is the difference between a set of five and a set of
+    fifteen. Giving a cable curl the squat's three minutes is not a small
+    inaccuracy — it is most of why the session took the time it claimed."""
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+        {"available_equipment": FULL_GYM, "gym_goal": goal,
+         "workout_days_per_week": 4, "workout_duration_minutes": 60})
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            main = [e for e in day["main_workout"] if e["role"] in ("primary", "accessory")]
+            primary = [e for e in main if e["role"] == "primary"]
+            accessory = [e for e in main if e["role"] == "accessory"]
+            if not primary or not accessory:
+                continue
+            assert min(e["rest_seconds"] for e in primary) > max(e["rest_seconds"] for e in accessory), day["focus"]
+            assert min(e["sets"] for e in primary) >= max(e["sets"] for e in accessory), day["focus"]
+
+
+@pytest.mark.parametrize("level", ["beginner", "intermediate", "advanced"])
+def test_the_week_header_describes_the_lifts_underneath_it(level):
+    """The header used the intermediate prescription whoever was reading it, so
+    two thirds of plans announced a set count no exercise under them used — a
+    beginner was told three sets above a page of twos."""
+    for goal in ("strength", "muscle_gain", "endurance"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": level},
+            {"available_equipment": FULL_GYM, "gym_goal": goal,
+             "workout_days_per_week": 4, "workout_duration_minutes": 60})
+        for week in plan["four_week_plan"]:
+            hdr = week["prescription"]
+            for day in week["days"]:
+                for ex in day["main_workout"]:
+                    if ex["role"] != "primary":
+                        continue
+                    assert (ex["sets"], ex["reps"], ex["rest_seconds"]) == (
+                        hdr["sets"], hdr["reps"], hdr["rest_seconds"]), (
+                        f"{level}/{goal} W{week['week']}: header {hdr['sets']}x{hdr['reps']} "
+                        f"vs {ex['exercise_name']} {ex['sets']}x{ex['reps']}")

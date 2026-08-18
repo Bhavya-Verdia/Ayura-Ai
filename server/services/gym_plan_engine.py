@@ -168,10 +168,145 @@ def _get_goal_prescription(goal: str, week: int, level: str = "intermediate") ->
     them; they are the same boilerplate on 873 of 904 rows, so this adjusts the
     goal table rather than trusting them.
     """
-    rx = dict(_GOAL_WEEKS.get(goal, _GOAL_WEEKS["general_fitness"])[min(week - 1, 3)])
+    table = _GOAL_WEEKS.get(goal, _GOAL_WEEKS["general_fitness"])
+    rx = dict(table[min(week - 1, 3)])
     delta = _LEVEL_SET_DELTA.get(level, 0)
     rx["sets"] = max(_MIN_SETS, min(_MAX_SETS, int(rx["sets"]) + delta))
+    # Week 1's rest, carried through the block. The goal tables shorten rest week
+    # over week to raise metabolic demand, which is right for the tiers that can
+    # be squeezed and wrong for the lift the block is built around: muscle gain
+    # peaked at five sets of ten-to-twelve with SIXTY seconds between them, while
+    # simultaneously instructing the practitioner to add weight. A main lift's
+    # rest is set by the load it is carrying, and the load only goes up.
+    rx["base_rest_seconds"] = int(table[0]["rest_seconds"])
     return rx
+
+
+# ── Exercise roles within a session ───────────────────────────────────────────
+# The goal prescription was applied to every exercise in the day, identically —
+# 95% of generated sessions gave the same sets, reps AND rest to all of their
+# work. A barbell squat and a cable crossover both came out 3x8-10 with 90
+# seconds between sets. No coach writes a session that way, and it is the single
+# clearest tell that a plan was generated rather than programmed.
+#
+# A session has a shape. The first movement is the heaviest thing the day does,
+# it gets the most sets and the longest rest, and it is the lift the four-week
+# progression is actually about. What follows supports it, at lower load and
+# higher reps. What finishes is isolation, which needs neither three minutes nor
+# three-rep sets.
+#
+# The goal table stays the source of truth — it is what makes a set a strength
+# set or an endurance set, and it is what periodises across the four weeks. The
+# roles shift it.
+_ROLE_ORDER = ("primary", "secondary", "accessory", "conditioning")
+
+_ROLE_SETS = {"primary": +1, "secondary": 0, "accessory": -1}
+_ROLE_REST = {"primary": 1.0, "secondary": 0.75, "accessory": 0.5}
+_ACCESSORY_MAX_SETS = 4
+
+# How long a set needs before the next one is a floor under the movement, not a
+# property of the goal. Fat loss and endurance rest 30 and 20 seconds in their
+# peak weeks, and scaling that down for accessories put every role at the same
+# number — a heavy compound and a cable curl separated by nothing. A main lift
+# gets a minute whatever the block is trying to do; the goal's own rest interval
+# then periodises the tiers that can afford to be squeezed, which is how a
+# metabolic block is written anyway.
+_ROLE_MIN_REST = {"primary": 60, "secondary": 40, "accessory": 20}
+
+_ROLE_LABEL = {
+    "primary": "Main lift",
+    "secondary": "Secondary",
+    "accessory": "Accessory",
+    "conditioning": "Conditioning",
+}
+
+# Movements that can carry a day. A compound in one of these patterns is doing
+# the session's real work; a compound outside them (a shrug, a face pull) is not
+# a lift you build a month around.
+_PRIMARY_PATTERNS = {"squat", "hinge", "lunge", "push_h", "push_v", "pull_v", "pull_h", "carry"}
+
+
+def _parse_reps(reps):
+    """(lo, hi) for a rep range, or None if the prescription is not in reps."""
+    digits = [p.strip() for p in str(reps).replace("\u2013", "-").split("-")]
+    if not digits or not all(d.isdigit() for d in digits):
+        return None
+    nums = [int(d) for d in digits]
+    return nums[0], nums[-1]
+
+
+def _rep_delta(hi: int, role: str) -> int:
+    """How far up the rep range a supporting movement sits.
+
+    Scaled against the goal, not fixed: adding five reps to a 3-5 strength set
+    makes it an accessory set, and adding five to a 15-20 endurance set makes it
+    a set of 25 that nobody asked for.
+    """
+    if role == "primary":
+        return 0
+    if role == "secondary":
+        return 2
+    return 5 if hi <= 8 else (3 if hi <= 12 else 2)
+
+
+def _role_prescription(rx: dict, role: str) -> dict:
+    """The goal's week prescription, shifted for what this exercise is doing."""
+    sets = int(rx.get("sets", 3)) + _ROLE_SETS.get(role, 0)
+    if role == "accessory":
+        sets = min(sets, _ACCESSORY_MAX_SETS)
+    sets = max(_MIN_SETS, min(_MAX_SETS, sets))
+
+    reps = rx.get("reps", "10-12")
+    parsed = _parse_reps(reps)
+    if parsed:
+        delta = _rep_delta(parsed[1], role)
+        reps = f"{parsed[0] + delta}-{parsed[1] + delta}" if delta else reps
+
+    rest = int(rx.get("rest_seconds", 60)) * _ROLE_REST.get(role, 1.0)
+    floor = _ROLE_MIN_REST.get(role, 40)
+    if role == "primary":
+        floor = max(floor, int(rx.get("base_rest_seconds", 0)))
+    rest = max(floor, int(rest / 5 + 0.5) * 5)
+    return {"sets": sets, "reps": reps, "rest_seconds": rest}
+
+
+def _assign_roles(selected: list, primary_slots: int) -> list:
+    """Label each selected exercise with the job it does in the session."""
+    roles = []
+    taken = 0
+    for ex in selected:
+        if ex.get("category") == "cardio":
+            roles.append("conditioning")
+        elif (taken < primary_slots
+              and _is_compound(ex) and _movement_pattern(ex) in _PRIMARY_PATTERNS):
+            roles.append("primary")
+            taken += 1
+        elif _is_compound(ex):
+            roles.append("secondary")
+        else:
+            roles.append("accessory")
+    # An arms day and a core day hold no big compound, and that is the truth
+    # about them — they are accessory work. But something has to lead, so the
+    # first movement is promoted to the middle tier rather than being given a
+    # main lift's three-minute rest.
+    if roles and "primary" not in roles:
+        for i, r in enumerate(roles):
+            if r == "accessory":
+                roles[i] = "secondary"
+                break
+    return roles
+
+
+def _primary_slots(target: int) -> int:
+    """One main lift in a short session, two once there is room to support them."""
+    return 2 if target >= 5 else 1
+
+
+def _role_at(index: int, primary_slots: int) -> str:
+    """The role of the nth exercise in a session, for costing it before it exists."""
+    if index < primary_slots:
+        return "primary"
+    return "secondary" if index < primary_slots + 1 else "accessory"
 
 
 # ── Weight / Load Guidance ────────────────────────────────────────────────────
@@ -470,6 +605,12 @@ def _condition_contra_tags(medical_history) -> set:
 
 # ── Exercise filtering ────────────────────────────────────────────────────────
 
+# Self-myofascial release — foam rolling. Named as a suffix throughout the
+# dataset ("Adductors-Smr", "Peroneals-Smr"); the `-` matters, since `_MOVEMENT_
+# PATTERNS` has to keep reading "Smith" and "Smr" apart.
+_SMR_NAME = re.compile(r"-\s*smr\b", re.I)
+
+
 def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
     available_eq = {eq.lower() for eq in gym_prefs.get("available_equipment", ["bodyweight"])}
     available_eq.add("bodyweight")
@@ -533,6 +674,19 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
         # because "endurance" resolved to cardio plus plyometrics and nothing
         # else.
         if user_level == "beginner" and ex.get("category") == "plyometrics":
+            continue
+        # A stretch is not a set of eight, and foam rolling is not a lift. The
+        # dataset carries 51 stretches and 13 self-myofascial-release entries
+        # ("Brachialis-Smr", "Latissimus Dorsi-Smr"), and nothing separated them
+        # from training movements — so 20% of generated days prescribed one as
+        # main work: "Calves-Smr — 3 sets of 8-12, 90s rest, 82-130 kg". The
+        # thirteen SMR rows were filed as `strength` in the dataset, which is
+        # how they reached a chest day at all; that is corrected too, so a
+        # future reader of the category alone is not misled.
+        #
+        # Mobility work belongs to the session — it is what `_WARMUP` and
+        # `_COOLDOWN` are, written per focus and timed in seconds.
+        if ex.get("category") == "stretching" or _SMR_NAME.search(ex.get("name", "")):
             continue
         # Jump training is the wrong risk for a 65-year-old and for a body still
         # growing, whatever level they enter.
@@ -888,11 +1042,31 @@ def _target_count(duration, goal, rx=None):
     if rx is None:  # legacy callers keep the old behaviour
         return 3 if duration <= 20 else (4 if duration <= 30 else 5)
 
+    # Exercises no longer cost the same, so the count cannot come from dividing
+    # the budget by one of them. A main lift resting three minutes is most of a
+    # strength session; the accessories after it cost a third of that each. The
+    # session is filled in the order it will be performed, and stops when the
+    # next exercise would overrun the clock.
     budget = max(int(duration) * 60 - _OVERHEAD_SECONDS, 300)
-    sets = int(rx.get("sets", 3))
-    per_exercise = (_reps_to_seconds(rx.get("reps", "10-12"), sets)
-                    + sets * int(rx.get("rest_seconds", 60)))
-    return max(_MIN_EXERCISES, min(_MAX_EXERCISES, budget // max(per_exercise, 60)))
+
+    def _fits(primary_slots: int) -> int:
+        spent = 0
+        count = 0
+        while count < _MAX_EXERCISES:
+            r = _role_prescription(rx, _role_at(count, primary_slots))
+            cost = _reps_to_seconds(r["reps"], r["sets"]) + r["sets"] * r["rest_seconds"]
+            if spent + cost > budget and count >= _MIN_EXERCISES:
+                break
+            spent += cost
+            count += 1
+        return max(_MIN_EXERCISES, count)
+
+    # How many main lifts the day gets depends on how long it is, and how long it
+    # is depends on how many main lifts it gets. One pass settles it: cost the
+    # session with a single main lift, and if it came out long enough to carry two,
+    # cost it again.
+    count = _fits(1)
+    return _fits(2) if count >= 5 else count
 
 
 # ── Day plan builder ──────────────────────────────────────────────────────────
@@ -925,19 +1099,20 @@ def _duration_notice(built: int, requested: int, goal: str) -> str | None:
 _TIME_UNITS = re.compile(r"\b(min|sec|minute|second)", re.I)
 
 
-def _prescribe(ex: dict, rx: dict, level: str):
-    """Sets, reps and rest for one exercise.
+def _prescribe(ex: dict, rx: dict, level: str, role: str = "secondary"):
+    """Sets, reps and rest for one exercise, in the job it is doing today.
 
     The goal prescription was applied to everything, so time-based work came out
     as repetitions: "Brisk Walking — 4 sets of 18-22 reps, 20s rest". The 21
     exercises whose own KB entry is written in minutes or seconds (treadmill,
     rowing machine, jump rope, plank-style holds) keep their own prescription;
-    everything else takes the goal's, which is the right default for a lift.
+    everything else takes the goal's, shifted for its role in the session.
     """
     own = (ex.get("sets_reps") or {}).get(level) or (ex.get("sets_reps") or {}).get("intermediate") or {}
     if own and _TIME_UNITS.search(str(own.get("reps", ""))):
         return int(own.get("sets", 1)), own.get("reps"), int(own.get("rest_seconds", 60))
-    return rx["sets"], rx["reps"], rx["rest_seconds"]
+    r = _role_prescription(rx, role)
+    return r["sets"], r["reps"], r["rest_seconds"]
 
 
 def _modification_for(ex: dict) -> str:
@@ -1010,12 +1185,21 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
 
     selected = _select_for_day(pool, target, user_id, focus, day_num, week)
 
+    # A session is performed in an order, and the order is the programme: the
+    # heaviest compound while the practitioner is fresh, its support after it,
+    # isolation last, conditioning last of all. Selection optimises for coverage
+    # — which movement patterns the day contains — and returned them in whatever
+    # order it found them, so a chest day opened with a push-up and then ran
+    # three triceps extensions before it reached a fly.
+    roles = _assign_roles(selected, _primary_slots(len(selected)))
+    ordered = sorted(zip(selected, roles), key=lambda pair: _ROLE_ORDER.index(pair[1]))
+
     main_workout = []
     total_cals = 0.0
     work_seconds = 0
     rest_seconds_total = 0
-    for ex in selected:
-        sets, reps, rest = _prescribe(ex, rx, level)
+    for ex, role in ordered:
+        sets, reps, rest = _prescribe(ex, rx, level, role)
 
         ex_work = _reps_to_seconds(reps, sets)
         work_seconds += ex_work
@@ -1038,6 +1222,8 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
             "sets": sets,
             "reps": reps,
             "rest_seconds": rest,
+            "role": role,
+            "role_label": _ROLE_LABEL.get(role, "Accessory"),
             "weight_range": _get_weight_range(ex, strength_level, gender),
             "week_note": rx.get("note", ""),
             "notes": _modification_for(ex),
@@ -1163,10 +1349,23 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
             )
             for i, focus in enumerate(schedule_focus)
         ]
+        # The header used the intermediate prescription whoever was reading it, so
+        # two thirds of plans announced a set count no exercise underneath them
+        # used — a beginner was told three sets above a page of twos. It is now
+        # the practitioner's own, and it names what it describes: the main lift.
+        # The supporting roles are published alongside it rather than left for the
+        # reader to infer from the exercise rows.
+        base_rx = _get_goal_prescription(goal, week, fitness_level)
         four_week_plan.append({
             "week": week,
             "theme": {1: "Foundation", 2: "Volume Build", 3: "Intensity Peak", 4: "Deload & Reset"}[week],
-            "prescription": _get_goal_prescription(goal, week),
+            "prescription": {**_role_prescription(base_rx, "primary"),
+                             "note": base_rx.get("note", ""),
+                             "applies_to": "main lifts"},
+            "role_prescriptions": {
+                role: {**_role_prescription(base_rx, role), "label": _ROLE_LABEL[role]}
+                for role in ("primary", "secondary", "accessory")
+            },
             "days": week_days,
         })
 
