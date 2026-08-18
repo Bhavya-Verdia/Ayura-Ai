@@ -247,7 +247,13 @@ def test_no_chunk_ships_an_unrendered_field():
     """
     import re
 
-    empty_field = re.compile(r":\s*[.,;]|\(\)|\[\]|\bNone\b|\bnan\b")
+    # "None" only counts where it is the WHOLE value — `Precautions: None.` or
+    # `Remedy for None:`. The Panchakarma eligibility criteria legitimately read
+    # "Ama: None or mild (Ama must be cleared by Deepana-Pachana first)", which a
+    # bare \bNone\b flagged. A guard that cries wolf is a guard someone switches
+    # off, so it is narrowed to the shape the real failures took.
+    empty_field = re.compile(
+        r":\s*[.,;]|\(\)|\[\]|:\s*None\s*(?:[.,;]|$)|\bNone\s*:|\bnan\b")
     for domain, docs in get_documents_for_collection().items():
         offenders = [d["text"][:100] for d in docs if empty_field.search(d["text"])]
         assert not offenders, f"{domain}: unrendered fields — {offenders[:3]}"
@@ -301,3 +307,92 @@ def test_the_real_corpus_fits_the_embedder_window():
         pytest.skip(f"ONNX embedder unavailable: {exc}")
 
     assert not _overflowing_chunks(embedder, get_documents_for_collection())
+
+
+# ── The corpus and the engines must read the same files ──────────────────────
+
+# Engine KB files deliberately absent from the corpus, with the reason. Anything
+# NOT listed here has to be ingested — that is the point of the test below.
+NOT_IN_CORPUS = {
+    # Only the pose KB's `pranayama_sync` line reaches RAG. The technique list is
+    # prescribed by the engine, never retrieved as narrative context.
+    "pranayama.json",
+    # Read by the condition filter as a lookup table, not as prose worth
+    # retrieving. Candidate for ingestion — an open decision, not an oversight.
+    "drug_herb_interactions.json",
+    "condition_protocols.json",
+    "medical_constraints.json",
+}
+
+
+def _json_files_referenced(path):
+    import re
+    return set(re.findall(r'"([a-z_]+\.json)"', Path(path).read_text(encoding="utf-8")))
+
+
+def test_the_corpus_is_built_from_the_files_the_engines_read():
+    """The most expensive bug in this file's history, four times over.
+
+    `build_vectors.py` seeded yoga from `yoga_plans.json` (10 legacy summaries)
+    while the engine prescribed from `yoga_poses.json` (113). That was found and
+    fixed for yoga in August — and the identical split was still live in three
+    more domains six days later:
+
+        gym          engine gym_exercises.json (893)   corpus gym_routines.json (10)
+        diet         engine diet_foods.json (150)      corpus ayurvedic_foods.json (25)
+        panchakarma  engine panchakarma_therapies.json corpus panchakarma_plans.json
+
+    Only four of the ten gym routines even exist in the engine's file, so most of
+    what RAG could say about fitness described exercises no plan can contain.
+
+    Comparing the two lists is the check nobody was doing. A file an engine reads
+    is either in the corpus or in NOT_IN_CORPUS with a reason.
+    """
+    engine_dir = Path(__file__).resolve().parent.parent / "services"
+    seeded = _json_files_referenced(SCRIPTS / "build_vectors.py")
+
+    missing = {}
+    for engine in sorted(engine_dir.glob("*_engine.py")):
+        for kb_file in _json_files_referenced(engine) - seeded - NOT_IN_CORPUS:
+            missing.setdefault(kb_file, []).append(engine.name)
+
+    assert not missing, (
+        "engines read knowledge-base files the RAG corpus never sees: "
+        + "; ".join(f"{f} (read by {', '.join(sorted(who))})" for f, who in missing.items()))
+
+
+def test_every_exercise_the_engine_can_prescribe_is_described():
+    """893 exercises, against a corpus that held ten summaries of which six were
+    not in the engine's file at all."""
+    raw = json.loads((KNOWLEDGE_DIR / "gym_exercises.json").read_text(encoding="utf-8"))
+    exercises = raw if isinstance(raw, list) else raw.get("exercises", [])
+    corpus = " ".join(d["text"] for d in get_documents_for_collection()["fitness"])
+
+    assert len(exercises) > 800, f"the engine's exercise file has shrunk to {len(exercises)}"
+    missing = [e["name"] for e in exercises if e["name"] not in corpus]
+    assert not missing, f"exercises absent from the corpus: {missing[:5]}"
+
+
+def test_every_food_the_engine_plates_is_described():
+    raw = json.loads((KNOWLEDGE_DIR / "diet_foods.json").read_text(encoding="utf-8"))
+    foods = raw if isinstance(raw, list) else raw.get("foods", [])
+    corpus = " ".join(d["text"] for d in get_documents_for_collection()["nutrition"])
+
+    missing = [f["name"] for f in foods if f["name"] not in corpus]
+    assert not missing, f"foods absent from the corpus: {missing[:5]}"
+
+
+def test_every_panchakarma_therapy_the_engine_schedules_is_described():
+    raw = json.loads((KNOWLEDGE_DIR / "panchakarma_therapies.json").read_text(encoding="utf-8"))
+    therapies = raw if isinstance(raw, list) else raw.get("therapies", [])
+    corpus = " ".join(d["text"] for d in get_documents_for_collection()["panchakarma"])
+
+    missing = [t["name"] for t in therapies if t["name"] not in corpus]
+    assert not missing, f"therapies absent from the corpus: {missing[:5]}"
+
+
+def test_no_legacy_gym_routines_documents():
+    """gym_routines.json stays in seed_db.py for Mongo, as yoga_plans.json does.
+    It must not come back as semantic context."""
+    assert not [d for d in get_documents_for_collection()["fitness"]
+                if d.get("source") == "gym_routines"]
