@@ -1340,3 +1340,22 @@ def test_every_focus_day_opens_with_its_own_canonical_lift():
                 continue
             names = [e["exercise_name"] for e in day["main_workout"] if e["role"] == "primary"]
             assert any(expected[focus] in n for n in names), f"{level} {day['focus']}: {names}"
+
+
+@pytest.mark.parametrize("days", [2, 3, 4, 5, 6, 7])
+def test_the_week_has_the_days_that_were_asked_for(days):
+    """The schema accepts 7 and the form offers it, and nothing handled it — a
+    request for seven training days fell through the catch-all and came back as
+    THREE full-body days, silently, with four rest days nobody asked for."""
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain",
+         "workout_days_per_week": days, "workout_duration_minutes": 45})
+    built = len(_workout_days(plan))
+    # Seven lifting days is not a programme: the seventh is where the adaptation
+    # happens, so the week is six plus active recovery — and it says so.
+    assert built == min(days, 6), f"asked {days}, built {built}"
+    if built < days:
+        assert plan["schedule_notice"], "the week is short and does not say so"
+    else:
+        assert plan["schedule_notice"] is None

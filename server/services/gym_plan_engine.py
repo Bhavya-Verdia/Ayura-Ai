@@ -924,7 +924,36 @@ def _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level):
         # enough to afford a dedicated arm day, the arms come OFF the push and pull
         # days; that is what the arm day is for.
         return ["chest", "back", "legs", "shoulders", "arms", "core_cardio", "rest"]
-    return ["full_body", "full_body", "full_body", "rest", "rest", "rest", "rest"]
+    if workout_days >= 7:
+        # The schema accepts 7 and the form offers it, and nothing here handled it
+        # — a request for seven training days fell through to the catch-all below
+        # and came back as THREE full-body days. Silently, with four rest days the
+        # practitioner had not asked for.
+        #
+        # Seven lifting days is not a programme; the seventh day is where the
+        # adaptation happens. So the week is the six-day split with its rest day
+        # turned into the active-recovery day the engine already writes per dosha
+        # — abhyanga and a walk for Vata, a brisk 30 minutes for Kapha — and
+        # `_schedule_notice` says that is what happened.
+        return ["chest", "back", "legs", "shoulders", "arms", "core_cardio", "rest"]
+    return ["full_body", "rest", "full_body", "rest", "full_body", "rest", "rest"]
+
+
+def _schedule_notice(requested_days: int, schedule: list) -> str | None:
+    """Say when the week that was built is not the week that was asked for."""
+    built = sum(1 for focus in schedule if focus != "rest")
+    if built >= requested_days:
+        return None
+    if requested_days >= 7:
+        return (
+            "You asked to train seven days a week; this plan trains six and keeps the "
+            "seventh for active recovery. Muscle is built between sessions, not during "
+            "them — a week with no recovery day accumulates fatigue faster than it "
+            "accumulates training. The recovery day is not a day off: it has its own "
+            "prescription below.")
+    return (f"This plan trains {built} days a week rather than the {requested_days} you "
+            f"asked for — your equipment and level do not support more distinct sessions "
+            f"than that without repeating one.")
 
 
 def _focus_to_keys(focus):
@@ -1841,4 +1870,5 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         },
         "disclaimer": disclaimer,
         "pool_notice": pool_notice,
+        "schedule_notice": _schedule_notice(workout_days, schedule_focus),
     }

@@ -182,6 +182,17 @@ export function GymView({ plan }) {
         </div>
       )}
 
+      {/* Why the week has fewer training days than were asked for. Seven lifting
+          days is the case that matters: the engine builds six and keeps the
+          seventh for active recovery, and that has to be said rather than
+          discovered by counting the cards. */}
+      {plan.schedule_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.schedule_notice}</span>
+        </div>
+      )}
+
       {/* ── Day-list toolbar ── */}
       {weekDays.length > 0 && (
         <div className="plan-days-toolbar">
