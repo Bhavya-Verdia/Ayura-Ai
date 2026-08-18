@@ -1390,7 +1390,7 @@
       "pregnancy_third_trimester",
       "high_blood_pressure"
     ],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "flexibility",
@@ -1521,7 +1521,7 @@
       "pregnancy",
       "pregnancy_third_trimester"
     ],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "flexibility",
@@ -1593,7 +1593,7 @@
       "pregnancy_third_trimester",
       "high_blood_pressure"
     ],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "flexibility",
@@ -1874,7 +1874,7 @@
       "pregnancy_third_trimester",
       "high_blood_pressure"
     ],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "flexibility",
@@ -2262,7 +2262,7 @@
       "pregnancy_third_trimester",
       "serious_back_injury"
     ],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "stress_relief",
@@ -2542,7 +2542,7 @@
       "pregnancy_third_trimester",
       "asthma"
     ],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "stress_relief",
@@ -4010,7 +4010,7 @@
       "pregnancy_third_trimester",
       "serious_neck_injury"
     ],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "goals": [
       "stress_relief",
       "healing",
@@ -7383,7 +7383,7 @@
       "pregnancy",
       "high_blood_pressure"
     ],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "goals": [
       "strength",
       "stress_relief",

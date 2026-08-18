@@ -599,7 +599,7 @@
     ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": false
   },
   {
     "id": "Alternate_Incline_Dumbbell_Curl",
@@ -15498,7 +15498,7 @@
     ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": false
   },
   {
     "id": "Flexor_Incline_Dumbbell_Curls",
@@ -18138,7 +18138,7 @@
     ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": false
   },
   {
     "id": "Hanging_Pike",
@@ -29724,7 +29724,7 @@
     ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": false
   },
   {
     "id": "Overhead_Triceps",
@@ -35075,7 +35075,7 @@
     ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": false
   },
   {
     "id": "Scissors_Jump",
@@ -36619,7 +36619,7 @@
     ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": false
   },
   {
     "id": "Seated_One-Arm_Dumbbell_Palms-Down_Wrist_Curl",
@@ -36845,7 +36845,7 @@
     ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": false
   },
   {
     "id": "Seated_Palm-Up_Barbell_Wrist_Curl",
@@ -43556,7 +43556,7 @@
     ],
     "calories_per_minute": 2.5,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": false
   },
   {
     "id": "Standing_Leg_Curl",
@@ -45016,7 +45016,7 @@
     ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": false
   },
   {
     "id": "Straight-Arm_Dumbbell_Pullover",
@@ -46466,7 +46466,7 @@
     ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
-    "pregnancy_safe": true
+    "pregnancy_safe": false
   },
   {
     "id": "Torso_Rotation",

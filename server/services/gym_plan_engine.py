@@ -472,7 +472,22 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
             continue
         if avoid_tags.intersection(set(ex.get("contraindications", []))):
             continue
-        if is_pregnant and not ex.get("pregnancy_safe", False):
+        # Pregnancy is described TWICE in the KB — a `pregnancy_safe` boolean and
+        # a `pregnancy` contraindication token — and this read only the boolean.
+        # Ten exercises say both, and disagree: `pregnancy_safe: true` beside
+        # `contraindications: [... "pregnancy"]`. All ten are abdominal (Toe
+        # Touchers, Scissor Kick, Hanging Leg Raise, Stomach Vacuum…), so the
+        # ones a pregnant practitioner most needs kept away were the ones the
+        # flag waved through: a pregnant beginner's four-week plan served Toe
+        # Touchers eight times and Seated Leg Tucks seven.
+        #
+        # The yoga engine has always read both (`filter_poses`, the
+        # `"pregnancy" in pose_preg_tags` branch), which is why the same
+        # contradiction in the pose KB was harmless. Either field saying no is a
+        # no, in both engines. The data is corrected as well, so a future reader
+        # of one field alone is not trapped by the other.
+        if is_pregnant and (not ex.get("pregnancy_safe", False)
+                            or "pregnancy" in set(ex.get("contraindications", []))):
             continue
 
         score = 0
@@ -568,6 +583,11 @@ def _deterministic_select(pool, n, seed_key):
     unique_pool = list({ex["id"]: ex for ex in pool}.values())
     rng.shuffle(unique_pool)
     return unique_pool[:n]
+
+
+# Below this the week is the same handful of exercises repeated, which the plan
+# should say rather than imply. Bodyweight + endurance lands at 16.
+_THIN_POOL = 20
 
 
 def _target_count(duration, goal):
@@ -766,6 +786,29 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "This plan is for general wellness guidance only. Consult a physician before beginning any new exercise program."
     )
 
+    # Say when the safe list is too short to be a programme.
+    #
+    # 56 of the 893 exercises are safe in pregnancy, and after the goal and level
+    # gates about 13 reach a beginner — 40 of the 56 are stretches, and there is
+    # nothing for the abdomen or the chest, which is correct and also most of a
+    # gym. The plan that comes out is safe and extremely repetitive. Presenting a
+    # month of neck isometrics and wrist circles as a prenatal programme, in
+    # silence, is the failure the yoga engine avoids with `practice_pool_notice`.
+    pool_notice = None
+    if is_pregnant:
+        pool_notice = (
+            f"Only {len(filtered)} exercises in the library are safe to prescribe during "
+            "pregnancy at your level, so this plan repeats them and leans on stretching and "
+            "mobility. It is not a prenatal training programme — for that, work with a "
+            "prenatal-qualified instructor."
+        )
+    elif len(filtered) < _THIN_POOL:
+        pool_notice = (
+            f"Your equipment, goal and health details narrow the library to {len(filtered)} "
+            "exercises, so this plan repeats them more than a fuller one would. Adding "
+            "equipment, or widening the goal, opens it up."
+        )
+
     return {
         "plan_id": f"gym_{user_id}_{int(datetime.now(timezone.utc).timestamp())}",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -789,4 +832,5 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
             "week_4": _GOAL_WEEKS[goal][3]["note"] if goal in _GOAL_WEEKS else "",
         },
         "disclaimer": disclaimer,
+        "pool_notice": pool_notice,
     }

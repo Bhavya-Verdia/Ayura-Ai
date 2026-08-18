@@ -396,3 +396,70 @@ def test_a_pool_too_thin_for_the_budget_says_so_instead():
         session = day["session"]
         if abs(session["total_duration_minutes"] - 60) / 60 > 0.10:
             assert session["duration_notice"], "short session with no explanation"
+
+
+# ── Pregnancy is described twice; both descriptions must agree ───────────────
+
+def test_no_kb_entry_claims_to_be_pregnancy_safe_and_contraindicates_pregnancy():
+    """Pregnancy is stored TWICE — a `pregnancy_safe` boolean and a `pregnancy`
+    contraindication token — and ten gym exercises said both at once:
+    `pregnancy_safe: true` beside `contraindications: [..., "pregnancy"]`.
+
+    Every one was abdominal (Toe Touchers, Scissor Kick, Hanging Leg Raise,
+    Stomach Vacuum…), so the exercises a pregnant practitioner most needs kept
+    away were exactly the ones the flag waved through. `filter_exercises` read
+    only the boolean, so a pregnant beginner's four-week plan served Toe Touchers
+    eight times and Seated Leg Tucks seven. Eight yoga poses carried the same
+    contradiction, harmlessly, because `filter_poses` has always read both.
+    """
+    from services.gym_plan_engine import gym_exercises
+    from services.yoga_plan_engine import yoga_poses
+
+    for label, entries in (("gym", gym_exercises), ("yoga", yoga_poses)):
+        contradictory = [e.get("id") or e.get("name") for e in entries
+                         if e.get("pregnancy_safe")
+                         and "pregnancy" in (e.get("contraindications") or [])]
+        assert not contradictory, (
+            f"{label}: marked pregnancy-safe while contraindicating pregnancy: "
+            f"{contradictory[:6]}")
+
+
+@pytest.mark.parametrize("equipment", [["bodyweight"], ["barbell", "dumbbell", "machine", "cable"]])
+@pytest.mark.parametrize("goal", ["general_fitness", "muscle_gain", "endurance"])
+def test_a_pregnant_user_is_never_prescribed_a_pregnancy_contraindicated_exercise(equipment, goal):
+    """The gate, not the data — either field saying no has to be a no, so that
+    correcting one file later cannot quietly reopen this."""
+    from services.gym_plan_engine import generate_gym_plan, gym_exercises
+
+    by_name = {e["name"]: e for e in gym_exercises}
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "beginner", "pregnancy_or_nursing": True},
+        {"available_equipment": equipment, "gym_goal": goal,
+         "workout_days_per_week": 4, "workout_duration_minutes": 45})
+
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            for entry in day.get("main_workout") or []:
+                exercise = by_name[entry["exercise_name"]]
+                assert exercise.get("pregnancy_safe"), entry["exercise_name"]
+                assert "pregnancy" not in (exercise.get("contraindications") or []), \
+                    entry["exercise_name"]
+
+
+def test_a_pregnant_plan_says_the_library_is_thin():
+    """13 safe exercises at beginner level is not a prenatal programme, and the
+    plan should not imply that it is."""
+    from services.gym_plan_engine import generate_gym_plan
+
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "beginner", "pregnancy_or_nursing": True},
+        {"available_equipment": ["bodyweight"], "gym_goal": "general_fitness",
+         "workout_days_per_week": 4, "workout_duration_minutes": 45})
+    assert plan["pool_notice"] and "prenatal" in plan["pool_notice"]
+
+    unrestricted = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+        {"available_equipment": ["barbell", "dumbbell", "machine", "cable"],
+         "gym_goal": "muscle_gain", "workout_days_per_week": 4,
+         "workout_duration_minutes": 45})
+    assert unrestricted["pool_notice"] is None
