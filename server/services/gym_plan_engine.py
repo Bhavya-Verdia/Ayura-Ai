@@ -724,7 +724,46 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
         scored.append((score, ex))
 
     scored.sort(key=lambda x: x[0], reverse=True)
-    return [ex for _, ex in scored[:200]]
+    return _cut_pool(scored)
+
+
+# The library is cut down before selection ever sees it. It used to be a single
+# global "best 200 by dosha score", which reads like a preference and behaves
+# like a ban: the score gap between `good` (+2) and `avoid` (-2) is wider than
+# the pool is deep, so anything scored below the top band was not demoted, it was
+# deleted. Every one of the 179 barbell exercises was tagged `pitta: avoid`
+# (the tag was derived from the EQUIPMENT, not the movement), and the result was
+# that a Vata or Pitta practitioner asking for a strength programme with a full
+# gym never saw a barbell squat, deadlift, bench press, row or overhead press.
+# Two thirds of users, and the whole foundation of strength training.
+#
+# The data is corrected — a barbell is a tool and carries no dosha — but the
+# mechanism is what made a mislabel fatal, so it is the mechanism that changes.
+# The cut is now taken per muscle group, and inside each group the compounds are
+# taken first: no scoring rule, present or future, can empty a muscle group or
+# strip a group of the movements that train it hardest. Dosha suitability still
+# orders what fills the remaining room, which is what a preference does.
+_POOL_PER_MUSCLE = 40
+_POOL_COMPOUNDS_PER_MUSCLE = 14
+
+
+def _cut_pool(scored: list) -> list:
+    by_muscle: dict = {}
+    for _, ex in scored:
+        by_muscle.setdefault(_muscle_key(ex), []).append(ex)
+
+    pool = []
+    for items in by_muscle.values():
+        chosen = [ex for ex in items if _is_compound(ex)][:_POOL_COMPOUNDS_PER_MUSCLE]
+        seen = {ex["id"] for ex in chosen}
+        for ex in items:
+            if len(chosen) >= _POOL_PER_MUSCLE:
+                break
+            if ex["id"] not in seen:
+                chosen.append(ex)
+                seen.add(ex["id"])
+        pool.extend(chosen)
+    return pool
 
 
 # ── Muscle group split ────────────────────────────────────────────────────────

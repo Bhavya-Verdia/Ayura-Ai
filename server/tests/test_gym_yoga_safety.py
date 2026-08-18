@@ -994,3 +994,52 @@ def test_weekly_volume_puts_the_big_muscles_ahead_of_the_small_ones():
                 volume[_muscle_key(by_name[ex["exercise_name"]])] += ex["sets"]
         assert volume["chest"] >= volume["triceps"], f"{days_per_week}d: {dict(volume)}"
         assert volume["back"] >= volume["biceps"], f"{days_per_week}d: {dict(volume)}"
+
+
+@pytest.mark.parametrize("dosha", ["vata", "pitta", "kapha"])
+@pytest.mark.parametrize("goal", ["strength", "muscle_gain"])
+def test_every_constitution_can_reach_the_foundational_lifts(dosha, goal):
+    """All 179 barbell exercises were tagged `pitta: avoid` — the tag was derived
+    from the EQUIPMENT, not the movement — and the pool was cut to the best 200
+    by dosha score. The gap between `good` (+2) and `avoid` (-2) is wider than
+    the pool is deep, so the tag did not demote those lifts, it deleted them: a
+    Vata or Pitta practitioner asking for a strength programme with a full gym
+    never saw a barbell squat, deadlift, bench press, row or overhead press."""
+    pool = {e["name"] for e in filter_exercises(
+        {**_YOGA_BASE_PROFILE, "dominant_dosha": dosha, "fitness_level": "intermediate"},
+        {"available_equipment": FULL_GYM, "gym_goal": goal}, gym_exercises)}
+    for lift in ("Barbell Squat", "Barbell Deadlift", "Barbell Bench Press - Medium Grip",
+                 "Barbell Shoulder Press", "Bent Over Barbell Row"):
+        assert lift in pool, f"{dosha}/{goal} cannot be prescribed {lift}"
+
+
+@pytest.mark.parametrize("dosha", ["vata", "pitta", "kapha"])
+def test_the_pool_cut_never_empties_a_muscle_group(dosha):
+    """A single global "best N by score" is a preference that behaves like a ban.
+    The cut is taken per muscle group with the compounds taken first, so no
+    scoring rule — present or future — can empty a group or strip it of the
+    movements that train it hardest."""
+    from services.gym_plan_engine import _is_compound, split_by_muscle_group
+
+    split = split_by_muscle_group(filter_exercises(
+        {**_YOGA_BASE_PROFILE, "dominant_dosha": dosha, "fitness_level": "intermediate"},
+        {"available_equipment": FULL_GYM, "gym_goal": "muscle_gain"}, gym_exercises))
+    for key in ("chest", "back", "legs", "shoulders", "biceps", "triceps", "core"):
+        assert len(split[key]) >= 8, f"{dosha}: {key} pool is {len(split[key])}"
+        assert any(_is_compound(e) for e in split[key]), f"{dosha}: {key} has no compound"
+
+
+def test_no_dosha_tag_is_derived_from_the_equipment_alone():
+    """A barbell is a tool and carries no dosha. Vata's aversion is to explosive,
+    irregular work and Kapha's to passive work — both movement properties, and
+    both correctly tagged. Pitta's was `equipment == "barbell"`, on all 179."""
+    banned = collections.Counter()
+    for e in gym_exercises:
+        for dosha, verdict in e["dosha_suitability"].items():
+            if verdict == "avoid":
+                banned[(e["equipment"], dosha)] += 1
+    total = collections.Counter(e["equipment"] for e in gym_exercises)
+    for (equipment, dosha), count in banned.items():
+        assert count < total[equipment], (
+            f"every {equipment} exercise is 'avoid' for {dosha} — that is a tag on "
+            f"the equipment, not on the movement")
