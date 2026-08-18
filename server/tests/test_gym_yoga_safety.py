@@ -1420,3 +1420,57 @@ def test_a_short_week_says_it_cannot_specialise(days):
     plan = _plan_for("back", days)
     assert plan["focus_notice"], f"{days}-day week ignored the emphasis in silence"
     assert _plan_for("full_body", days)["focus_notice"] is None
+
+
+@pytest.mark.parametrize("style,expected_reps", [
+    ("strength", "3-5"), ("hypertrophy", "8-10"),
+    ("endurance", "15-20"), ("circuit", "15-20"),
+])
+def test_training_style_writes_the_sets(style, expected_reps):
+    """`training_style` is a required field in the gym form and nothing read it.
+    It is not a duplicate of the goal: the goal is what you train FOR and decides
+    which exercises are eligible and how the week is split; the style is how the
+    sets are written."""
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {"available_equipment": ["full_gym"], "gym_goal": "fat_loss",
+         "workout_days_per_week": 4, "workout_duration_minutes": 60,
+         "training_style": style})
+    assert plan["four_week_plan"][0]["prescription"]["reps"] == expected_reps
+    assert plan["user_summary"]["gym_goal"] == "fat_loss", "the style must not rewrite the goal"
+
+
+def test_no_style_follows_the_goal():
+    """Absent means "follow the goal". The form used to force 'hypertrophy' on
+    everyone, which nothing read — and which would now quietly rewrite a fat-loss
+    block into a hypertrophy one."""
+    from services.gym_plan_engine import _resolve_scheme
+
+    for goal in ("strength", "muscle_gain", "fat_loss", "endurance", "general_fitness"):
+        assert _resolve_scheme(goal, None) == goal
+        assert _resolve_scheme(goal, "") == goal
+        base = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+            {"available_equipment": ["full_gym"], "gym_goal": goal,
+             "workout_days_per_week": 4, "workout_duration_minutes": 60})
+        styled = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+            {"available_equipment": ["full_gym"], "gym_goal": goal,
+             "workout_days_per_week": 4, "workout_duration_minutes": 60,
+             "training_style": None})
+        assert base["four_week_plan"][0]["prescription"] == styled["four_week_plan"][0]["prescription"]
+
+
+def test_the_style_does_not_take_the_goal_s_job():
+    """A fat-loss goal keeps its conditioning even when the sets are written for
+    strength — conditioning comes from what you are training for, not from how
+    the sets are counted."""
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {"available_equipment": ["full_gym"], "gym_goal": "fat_loss",
+         "workout_days_per_week": 4, "workout_duration_minutes": 60,
+         "training_style": "strength"})
+    for day in plan["four_week_plan"][0]["days"]:
+        if not day["main_workout"]:
+            continue
+        assert any(e["category"] == "cardio" for e in day["main_workout"]), day["focus"]

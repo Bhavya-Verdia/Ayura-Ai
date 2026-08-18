@@ -158,6 +158,37 @@ _LEVEL_SET_DELTA = {"beginner": -1, "intermediate": 0, "advanced": 1}
 _MIN_SETS, _MAX_SETS = 2, 6
 
 
+# Which of the tables above a block is written in.
+#
+# `training_style` is a required field in the gym form — Strength, Hypertrophy,
+# Endurance, Circuit Training — and nothing read it. It is not a duplicate of the
+# goal: the goal is what you are training FOR, and it drives which exercises are
+# eligible (`goal_suitability`), how the week is split, and whether the day ends
+# with conditioning. The style is how the sets are WRITTEN, and that is exactly
+# what `_GOAL_WEEKS` is — a set, rep and rest scheme with a four-week
+# periodisation on it. The four styles map onto four of the five tables, so the
+# field costs nothing to honour and lets someone cut weight on heavy triples if
+# that is how they want to do it.
+_STYLE_SCHEME = {
+    "strength":    "strength",
+    "hypertrophy": "muscle_gain",
+    "endurance":   "endurance",
+    "circuit":     "fat_loss",   # short rest, high reps — the table's own notes say "circuit style"
+}
+# What each goal implies when the practitioner has expressed no preference. The
+# form preselects the same pairing, so the two agree on screen and in the plan.
+_GOAL_SCHEME = {
+    "strength": "strength", "muscle_gain": "muscle_gain", "fat_loss": "fat_loss",
+    "endurance": "endurance", "general_fitness": "general_fitness",
+}
+
+
+def _resolve_scheme(goal: str, training_style=None) -> str:
+    """The `_GOAL_WEEKS` key this block is written in."""
+    scheme = _STYLE_SCHEME.get(str(training_style or "").lower())
+    return scheme or _GOAL_SCHEME.get(goal, "general_fitness")
+
+
 def _get_goal_prescription(goal: str, week: int, level: str = "intermediate") -> dict:
     """The week's sets, reps and rest, adjusted for training age.
 
@@ -1662,18 +1693,20 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
 
     duration = gym_prefs.get("workout_duration_minutes", 45)
     goal = gym_prefs.get("gym_goal", "general_fitness")
+    # The goal picks the exercises and the split; the style writes the sets.
+    scheme = _resolve_scheme(goal, gym_prefs.get("training_style"))
     level = user_profile.get("fitness_level", "beginner") or "beginner"
     if level not in ["beginner", "intermediate", "advanced"]:
         level = "beginner"
 
-    rx = _get_goal_prescription(goal, week, level)
+    rx = _get_goal_prescription(scheme, week, level)
     # The COUNT comes off week 1 and holds for the block, while the sets and reps
     # move with the periodisation. Sizing each week against its own prescription
     # made peak weeks (four sets instead of three) drop an exercise, which
     # changed the day's core and cost the very continuity the stable core exists
     # to give. A real programme keeps the lifts and moves the volume.
     target, primary_slots = _session_shape(
-        duration, goal, _get_goal_prescription(goal, 1, level))
+        duration, scheme, _get_goal_prescription(scheme, 1, level))
 
     # The finisher takes a slot rather than being added on top of a session that
     # already fills the clock — the practitioner asked for forty-five minutes.
@@ -1767,7 +1800,7 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
                                              + _OVERHEAD_SECONDS) / 60),
         "requested_duration_minutes": duration,
         "duration_notice": _duration_notice(
-            round((work_seconds + rest_seconds_total + _OVERHEAD_SECONDS) / 60), duration, goal),
+            round((work_seconds + rest_seconds_total + _OVERHEAD_SECONDS) / 60), duration, scheme),
         "calories_burned_estimate": int(total_cals + (_OVERHEAD_SECONDS / 60.0)
                                         * _WARMUP_KCAL_PER_MINUTE),
     }
@@ -1857,6 +1890,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
     is_pregnant = user_profile.get("pregnancy_or_nursing", False)
     goal = gym_prefs.get("gym_goal", "general_fitness")
+    scheme = _resolve_scheme(goal, gym_prefs.get("training_style"))
 
     four_week_plan = []
     for week in range(1, 5):
@@ -1874,7 +1908,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         # the practitioner's own, and it names what it describes: the main lift.
         # The supporting roles are published alongside it rather than left for the
         # reader to infer from the exercise rows.
-        base_rx = _get_goal_prescription(goal, week, fitness_level)
+        base_rx = _get_goal_prescription(scheme, week, fitness_level)
         four_week_plan.append({
             "week": week,
             "theme": {1: "Foundation", 2: "Volume Build", 3: "Intensity Peak", 4: "Deload & Reset"}[week],
@@ -1927,6 +1961,8 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
             "fitness_level": fitness_level,
             "strength_level": strength_level,
             "gym_goal": goal,
+            "training_style": gym_prefs.get("training_style") or _GOAL_SCHEME.get(goal),
+            "set_scheme": scheme,
             "workout_days": workout_days,
             "duration_per_session": gym_prefs.get("workout_duration_minutes", 45),
         },
@@ -1935,10 +1971,10 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "ayurvedic_tips": get_ayurvedic_tips(dominant_dosha),
         "vyayama_shakti": _vyayama_shakti(dominant_dosha, user_profile.get("age"), strength_level),
         "progressive_overload_guide": {
-            "week_1": _GOAL_WEEKS[goal][0]["note"] if goal in _GOAL_WEEKS else "",
-            "week_2": _GOAL_WEEKS[goal][1]["note"] if goal in _GOAL_WEEKS else "",
-            "week_3": _GOAL_WEEKS[goal][2]["note"] if goal in _GOAL_WEEKS else "",
-            "week_4": _GOAL_WEEKS[goal][3]["note"] if goal in _GOAL_WEEKS else "",
+            "week_1": _GOAL_WEEKS[scheme][0]["note"] if scheme in _GOAL_WEEKS else "",
+            "week_2": _GOAL_WEEKS[scheme][1]["note"] if scheme in _GOAL_WEEKS else "",
+            "week_3": _GOAL_WEEKS[scheme][2]["note"] if scheme in _GOAL_WEEKS else "",
+            "week_4": _GOAL_WEEKS[scheme][3]["note"] if scheme in _GOAL_WEEKS else "",
         },
         "disclaimer": disclaimer,
         "pool_notice": pool_notice,
