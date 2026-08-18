@@ -21,6 +21,7 @@ export function GymView({ plan }) {
   const activeWeekData = fourWeekPlan[activeWeek] || null
   const weekDays = activeWeekData?.days || (activeWeek === 0 ? fallbackDays : [])
   const weekPrescription = activeWeekData?.prescription || null
+  const rolePrescriptions = activeWeekData?.role_prescriptions || null
   const tips = plan.ayurvedic_tips || {}
   const overload = plan.progressive_overload_guide || plan.progressive_overload_note || null
   const nutrition = plan.nutrition_sync || {}
@@ -146,6 +147,27 @@ export function GymView({ plan }) {
           <span className="gym-week-banner-text">
             <strong>Week {activeWeek + 1} · {WEEK_THEMES[activeWeek]}:</strong> {weekPrescription.note}
           </span>
+        </div>
+      )}
+
+      {/* ── This week's prescription, by what the movement is doing ──
+          The exercise rows carry three different set/rep/rest schemes now — the
+          main lift is heavier and rests longer than the isolation work that
+          finishes the session. Without this strip the rows read as an
+          unexplained inconsistency rather than as a programme. */}
+      {rolePrescriptions && (
+        <div className="gym-role-strip">
+          {['primary', 'secondary', 'accessory'].map(role => {
+            const rx = rolePrescriptions[role]
+            if (!rx) return null
+            return (
+              <div key={role} className={`gym-role-cell gym-role-cell-${role}`}>
+                <span className="gym-role-cell-label">{rx.label}</span>
+                <span className="gym-role-cell-rx">{rx.sets} × {rx.reps}</span>
+                <span className="gym-role-cell-rest">{rx.rest_seconds}s rest</span>
+              </div>
+            )
+          })}
         </div>
       )}
 
