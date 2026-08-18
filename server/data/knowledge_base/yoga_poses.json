@@ -7917,5 +7917,843 @@
     "risk_tags": [
       "abdominal_pressure"
     ]
+  },
+  {
+    "id": "shoulder_socket_rotation",
+    "english_name": "Shoulder Socket Rotation",
+    "sanskrit_name": "Skandha Chakra",
+    "category": "seated",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 40,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Frees the shoulder joint through its full range without loading it",
+      "Relieves the upper-back and shoulder stiffness of desk work",
+      "Warms the rotator cuff before any weight-bearing pose",
+      "Improves circulation to the neck, shoulders and upper back"
+    ],
+    "body_parts": [
+      "shoulders",
+      "upper back",
+      "chest",
+      "arms"
+    ],
+    "instructions": [
+      "Sit in any comfortable cross-legged position or on a chair with the spine upright",
+      "Place the fingertips of each hand on the same-side shoulder, elbows out to the sides",
+      "Draw both elbows forward until they meet in front of the chest",
+      "Lift them upward towards the ears, then take them out and back, squeezing the shoulder blades",
+      "Lower them to the starting position to complete one slow circle",
+      "Continue for half the time in this direction, then reverse",
+      "Keep the head still and the breath even — the movement belongs to the shoulders alone"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "shoulder_injury",
+      "rotator_cuff"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "flexibility",
+      "healing",
+      "stress_relief"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Inhale as the elbows lift and open, exhale as they close and lower",
+    "ayurvedic_rationale": "Skandha Chakra belongs to the Pawanmuktasana series, whose purpose is to release trapped Vata from the joints before any stronger practice asks them to bear load. The shoulders are where Vata accumulates in anyone who sits and works with their hands, and stiffness there is Vata's dryness in the joint capsule. Rotating the joint through its own range, without weight on it, is the classical answer — movement and warmth rather than stretch.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "arthritis",
+      "cervical_spondylosis",
+      "anxiety"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": false,
+    "risk_tags": []
+  },
+  {
+    "id": "ankle_rotation",
+    "english_name": "Ankle Rotation",
+    "sanskrit_name": "Goolf Chakra",
+    "category": "seated",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 40,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Mobilises the ankle joint and relieves stiffness from long sitting or standing",
+      "Improves venous return from the feet and lower legs",
+      "Prepares the ankles for standing balance work",
+      "Accessible from a chair, requiring no weight on the joint"
+    ],
+    "body_parts": [
+      "ankles",
+      "feet",
+      "calves"
+    ],
+    "instructions": [
+      "Sit with the legs extended, hands behind for support, or upright on a chair",
+      "Keep the heels resting and the legs still",
+      "Rotate one foot slowly from the ankle, drawing the largest circle the joint allows",
+      "Complete slow circles in one direction, then reverse the same number",
+      "Change to the other foot, matching the count",
+      "Move from the ankle only — the knee and hip stay quiet"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "ankle_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "flexibility",
+      "healing",
+      "balance"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Breathe normally and slowly; let the circle take one full breath",
+    "ayurvedic_rationale": "The feet are the seat of Apana Vata, and its downward flow stagnates first in the ankles — which is why swelling and stiffness there is the earliest sign of Vata obstruction in the lower body. The Pawanmuktasana joint practices treat exactly this, and they are prescribed for the elderly and the convalescent precisely because they ask nothing of strength or balance.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "arthritis",
+      "diabetes",
+      "obesity"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": true,
+    "risk_tags": []
+  },
+  {
+    "id": "standing_side_bend",
+    "english_name": "Standing Side Bend",
+    "sanskrit_name": "Ardha Kati Chakrasana",
+    "category": "standing",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 40,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Opens the side body and the space between the ribs",
+      "Tones the waist and the oblique muscles",
+      "Increases lateral flexibility of the spine, a direction most sequences neglect",
+      "Encourages fuller breathing by expanding the rib cage sideways"
+    ],
+    "body_parts": [
+      "side body",
+      "obliques",
+      "spine",
+      "shoulders",
+      "hips"
+    ],
+    "instructions": [
+      "Stand with the feet hip-width apart and the weight even through both soles",
+      "Inhale and raise the right arm out to the side and up beside the ear, palm facing left",
+      "Exhale and bend directly to the left from the waist, letting the left hand slide down the left thigh",
+      "Keep both feet flat and the hips level — the bend belongs to the spine, not the pelvis",
+      "Do not lean forward or twist; the chest stays facing straight ahead",
+      "Hold with steady breath, then inhale to return upright and lower the arm",
+      "Repeat on the second side for the same length of time"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "serious_spinal_injury",
+      "serious_back_injury"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "flexibility",
+      "strength",
+      "energy"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Inhale to lengthen upward, exhale to bend sideways",
+    "ayurvedic_rationale": "Lateral bending opens the flanks, where Kapha settles as heaviness and where the breath stops reaching in anyone who habitually breathes shallowly. It is the one spinal direction a standing sequence usually misses — forward, back and twist are everywhere, sideways is rare — so the side body stays short and the lower ribs stay closed. Both feet remain planted, so nothing is asked of balance.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "obesity",
+      "asthma",
+      "constipation",
+      "back_pain"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": true,
+    "risk_tags": []
+  },
+  {
+    "id": "standing_spinal_twist",
+    "english_name": "Standing Spinal Twist",
+    "sanskrit_name": "Kati Chakrasana",
+    "category": "standing",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 40,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Loosens the waist, back and hips through gentle rhythmic rotation",
+      "Relieves the stiffness of prolonged sitting",
+      "Encourages peristalsis and eases sluggish digestion",
+      "Warms the spine for rotation without holding it under load"
+    ],
+    "body_parts": [
+      "spine",
+      "lower back",
+      "waist",
+      "obliques",
+      "shoulders"
+    ],
+    "instructions": [
+      "Stand with the feet about shoulder-width apart, arms relaxed at the sides",
+      "Keep the feet planted and the knees soft throughout",
+      "Swing both arms loosely to the right, letting the right arm wrap the waist and the left hand reach the right shoulder",
+      "Let the head turn with the shoulders and look over the right shoulder",
+      "Swing back through centre and repeat to the left — one swing each way is one round",
+      "Keep the movement loose and rhythmic rather than forced, and let the hips stay facing forward",
+      "Slow to a stop and stand still for a few breaths before the next pose"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "herniated_disc",
+      "serious_spinal_injury",
+      "serious_back_injury"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "flexibility",
+      "energy",
+      "stress_relief"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Exhale as you swing to each side, inhale through centre",
+    "ayurvedic_rationale": "Kati Chakrasana is loosening rather than stretching — the rhythmic swing warms the lumbar region and moves Samana Vata through the abdomen, which is why it is traditionally practised before breakfast for sluggish digestion. Because nothing is held, it suits stiff and older practitioners who cannot yet sustain a seated twist, and it prepares the spine for the ones that are held later in the session.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "constipation",
+      "obesity",
+      "back_pain",
+      "diabetes"
+    ],
+    "medical_conditions_contraindicated": [
+      "back_pain"
+    ],
+    "bilateral": false,
+    "risk_tags": []
+  },
+  {
+    "id": "supine_leg_rotation",
+    "english_name": "Supine Leg Rotation",
+    "sanskrit_name": "Pada Chakrasana",
+    "category": "supine",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Mobilises the hip joint through its full circle without bearing weight",
+      "Strengthens the lower abdomen and the hip flexors gradually",
+      "Loosens the lower back from a fully supported position",
+      "Useful where standing work is not yet safe"
+    ],
+    "body_parts": [
+      "hips",
+      "hip flexors",
+      "abdomen",
+      "lower back",
+      "quadriceps"
+    ],
+    "instructions": [
+      "Lie on the back with the legs together and the arms beside the body, palms down",
+      "Keep the head, shoulders and the opposite leg resting on the floor throughout",
+      "Raise the right leg a few inches, keeping the knee straight but not locked",
+      "Draw a slow circle with the whole leg from the hip, as large as the joint allows without the pelvis rolling",
+      "Complete the circles in one direction, then reverse",
+      "Lower the leg with control and rest a breath before changing sides",
+      "If the lower back lifts or aches, make the circle smaller — the pelvis staying still is the point"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "serious_back_injury",
+      "hip_injury",
+      "pregnancy_third_trimester"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility",
+      "healing"
+    ],
+    "sequence_role": "warmup",
+    "pranayama_sync": "Breathe evenly throughout; never hold the breath while the leg is raised",
+    "ayurvedic_rationale": "The hip is the largest joint Apana Vata governs, and the supine position lets it be moved through a full circle while the spine stays entirely supported. This is the classical progression for anyone whose back will not yet tolerate standing work: the same joint freedom, none of the load. Keep the far leg heavy on the floor — it is what stops the lumbar spine from taking the movement.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "back_pain",
+      "arthritis",
+      "obesity",
+      "constipation"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": true,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
+  },
+  {
+    "id": "simple_seated_twist",
+    "english_name": "Simple Seated Twist",
+    "sanskrit_name": "Vakrasana",
+    "category": "twist",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Rotates the spine safely without the deep bind of the fuller twist",
+      "Massages the abdominal organs and supports digestion",
+      "Relieves stiffness across the middle and upper back",
+      "Opens the chest and encourages upright sitting posture"
+    ],
+    "body_parts": [
+      "spine",
+      "obliques",
+      "abdomen",
+      "shoulders",
+      "neck",
+      "hips"
+    ],
+    "instructions": [
+      "Sit with both legs extended forward and the spine upright",
+      "Bend the right knee and place the right foot flat on the floor beside the left knee",
+      "Place the right hand on the floor behind the sacrum, fingers pointing away",
+      "Bring the left hand to the outside of the right knee, or hug the knee if that is easier",
+      "Inhale to lengthen the spine upward, exhale to turn the chest to the right",
+      "Turn the head last and only as far as the neck allows comfortably",
+      "Release on an exhale, return to centre and repeat on the second side",
+      "Keep both sitting bones on the floor — lift one and the twist has become a lean"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "herniated_disc",
+      "serious_spinal_injury",
+      "pregnancy",
+      "spinal_injury"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "flexibility",
+      "healing",
+      "focus"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to lengthen the spine, exhale to turn a little further",
+    "ayurvedic_rationale": "Vakrasana is the classical step before Ardha Matsyendrasana: the same rotation of the spine and the same compression of the abdominal organs that kindles Agni, but with the legs simple and no bind to force the twist deeper than the spine is ready for. Twisting moves Samana Vata through the digestive seat, which is why it is prescribed for sluggish digestion and abdominal heaviness.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "constipation",
+      "diabetes",
+      "obesity",
+      "fatty_liver",
+      "back_pain"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": true,
+    "risk_tags": []
+  },
+  {
+    "id": "churning_the_mill",
+    "english_name": "Churning the Mill",
+    "sanskrit_name": "Chakki Chalanasana",
+    "category": "seated",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 30,
+      "intermediate": 45,
+      "advanced": 60
+    },
+    "primary_benefits": [
+      "Tones the abdominal muscles and the waist through continuous movement",
+      "Massages the pelvic and abdominal organs",
+      "Loosens the lower back and hips from a seated position",
+      "Builds abdominal strength without any weight on the wrists"
+    ],
+    "body_parts": [
+      "abdomen",
+      "core",
+      "obliques",
+      "lower back",
+      "hips",
+      "shoulders"
+    ],
+    "instructions": [
+      "Sit with the legs extended and spread comfortably apart",
+      "Interlock the fingers and extend both arms forward at shoulder height",
+      "Keeping the elbows straight and the arms level, lean forward and sweep the hands out over the left leg",
+      "Continue the circle across towards the right leg, then lean back as the hands come towards the body",
+      "Move as though turning a heavy grinding wheel — large, slow and continuous",
+      "Complete the rounds in one direction, then reverse for the same count",
+      "Keep the knees straight but soft and the movement in the waist rather than the arms"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain",
+      "pregnancy",
+      "serious_back_injury"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "flexibility",
+      "energy"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale as you lean back, exhale as you sweep forward",
+    "ayurvedic_rationale": "Chakki Chalanasana takes its name and its shape from the hand mill, and the churning is literal: the whole abdomen is worked through a continuous circle rather than a held contraction. It is classically given for the pelvic organs and for Apana Vata's downward flow, and it builds abdominal strength for practitioners whose wrists cannot yet take plank or table work.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "constipation",
+      "obesity",
+      "pcos",
+      "diabetes"
+    ],
+    "medical_conditions_contraindicated": [
+      "back_pain"
+    ],
+    "bilateral": false,
+    "risk_tags": [
+      "spinal_flexion"
+    ]
+  },
+  {
+    "id": "half_locust",
+    "english_name": "Half Locust",
+    "sanskrit_name": "Ardha Salabhasana",
+    "category": "prone",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Strengthens the lower back, glutes and hamstrings one side at a time",
+      "Builds spinal extension without the effort of lifting both legs",
+      "Tones the pelvic organs and supports elimination",
+      "Counteracts the forward-rounded posture of sitting"
+    ],
+    "body_parts": [
+      "lower back",
+      "glutes",
+      "hamstrings",
+      "spine",
+      "abdomen"
+    ],
+    "instructions": [
+      "Lie face down with the chin resting on the floor and the legs together",
+      "Place the arms beneath the body, palms down under the thighs, or alongside the body",
+      "Inhale and raise the right leg as high as it will go without strain",
+      "Keep the knee straight, the hip bones level and the chin on the floor",
+      "Hold with normal breathing, then lower the leg slowly on an exhale",
+      "Rest for a breath, then repeat with the left leg for the same length",
+      "Do not let the raised hip lift or the body twist — height is not the point"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "pregnancy",
+      "serious_back_injury",
+      "herniated_disc",
+      "high_blood_pressure"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "strength",
+      "energy",
+      "healing"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to lift the leg, breathe normally in the hold, exhale to lower",
+    "ayurvedic_rationale": "Ardha Salabhasana is the beginner's entry to the locust: one leg at a time asks roughly half the effort and lets the pelvis stay square, which is what makes the full pose unsafe for most new practitioners. The backward extension is warming and Kapha-reducing, and the pressure of the abdomen against the floor stimulates Agni and the pelvic organs.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "back_pain",
+      "constipation",
+      "obesity",
+      "depression"
+    ],
+    "medical_conditions_contraindicated": [
+      "cervical_spondylosis"
+    ],
+    "bilateral": true,
+    "risk_tags": [
+      "spinal_extension",
+      "abdominal_pressure"
+    ]
+  },
+  {
+    "id": "double_angle_pose",
+    "english_name": "Double Angle Pose",
+    "sanskrit_name": "Dwikonasana",
+    "category": "standing",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Opens the chest and the front of the shoulders",
+      "Releases tension across the upper back and between the shoulder blades",
+      "Stretches the shoulder joint in a direction daily life never uses",
+      "Improves the posture of anyone who works with their arms in front of them"
+    ],
+    "body_parts": [
+      "shoulders",
+      "chest",
+      "upper back",
+      "arms",
+      "hamstrings"
+    ],
+    "instructions": [
+      "Stand with the feet hip-width apart and interlock the fingers behind the back",
+      "Straighten the elbows and draw the shoulder blades towards each other",
+      "Inhale and lengthen the spine upward",
+      "Exhale and hinge forward from the hips only as far as the back stays straight, raising the clasped hands away from the back",
+      "Stop when the torso is around forty-five degrees — this is not a full forward fold",
+      "Keep the neck in line with the spine and the gaze forward and down",
+      "Inhale to rise, then release the hands and let the arms hang"
+    ],
+    "dosha_balance": {
+      "vata": "neutral",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "shoulder_injury",
+      "rotator_cuff",
+      "serious_back_injury",
+      "herniated_disc"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "flexibility",
+      "energy",
+      "focus"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to lengthen, exhale to hinge and lift the arms",
+    "ayurvedic_rationale": "The chest is the seat of Prana Vata, and it closes in anyone who spends the day reaching forward — over a desk, a wheel or a child. Dwikonasana opens exactly that closure by taking the arms behind, a direction no ordinary movement uses, and the partial hinge keeps the head above the heart so it stays available to practitioners for whom a full forward fold is not.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "asthma",
+      "cervical_spondylosis",
+      "depression",
+      "anxiety"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": false,
+    "risk_tags": [
+      "spinal_flexion"
+    ]
+  },
+  {
+    "id": "half_camel",
+    "english_name": "Half Camel",
+    "sanskrit_name": "Ardha Ustrasana",
+    "category": "backbend",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Opens the chest, throat and the front of the hips",
+      "Strengthens the muscles of the back through gentle extension",
+      "Improves breathing capacity by opening the front of the rib cage",
+      "Gives the benefit of the camel without reaching for the heels"
+    ],
+    "body_parts": [
+      "chest",
+      "abdomen",
+      "hip flexors",
+      "quadriceps",
+      "spine",
+      "shoulders"
+    ],
+    "instructions": [
+      "Kneel with the knees hip-width apart and the shins flat, hips stacked over the knees",
+      "Place both palms on the back of the pelvis, fingers pointing down, elbows drawing together",
+      "Inhale and lift the chest upward, lengthening the whole spine before bending it",
+      "Exhale and ease the chest back and up, pressing the hips gently forward over the knees",
+      "Keep the head in line with the spine — do not drop it back",
+      "Support the lower back with the hands throughout and breathe steadily",
+      "Come up on an inhale, leading with the chest, and sit back on the heels to rest"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "knee_replacement",
+      "serious_back_injury",
+      "neck_injury",
+      "pregnancy_third_trimester"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "energy",
+      "flexibility"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to lift the chest, exhale to ease back; never hold the breath",
+    "ayurvedic_rationale": "Backbending is the strongest Kapha-reducing direction, and it is also where a new practitioner most often hurts themselves by reaching for the heels before the spine can extend. Keeping the hands on the pelvis makes the lower back supported rather than hinged, so the opening happens at the chest where it is wanted. The throat opening is classically associated with clarity of expression.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "asthma",
+      "depression",
+      "thyroid",
+      "back_pain"
+    ],
+    "medical_conditions_contraindicated": [
+      "cervical_spondylosis"
+    ],
+    "bilateral": false,
+    "risk_tags": [
+      "spinal_extension"
+    ]
+  },
+  {
+    "id": "lion_pose",
+    "english_name": "Lion Pose",
+    "sanskrit_name": "Simhasana",
+    "category": "seated",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Releases tension held in the jaw, throat and face",
+      "Exercises the muscles of the face and the vocal apparatus",
+      "Relieves the held tightness that accompanies stress and suppressed speech",
+      "Requires no strength, balance or flexibility of any kind"
+    ],
+    "body_parts": [
+      "face",
+      "jaw",
+      "throat",
+      "neck",
+      "chest"
+    ],
+    "instructions": [
+      "Kneel and sit back on the heels, or sit upright on a chair with the feet flat",
+      "Place the palms on the knees with the fingers spread wide",
+      "Inhale deeply through the nose",
+      "Open the mouth wide, extend the tongue down towards the chin and exhale forcefully with an audible 'haa'",
+      "Widen the eyes and gaze at the point between the eyebrows or at the tip of the nose",
+      "Close the mouth, relax the face completely and breathe normally",
+      "Repeat several rounds, resting the face fully between each"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "knee_injury",
+      "knee_replacement"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "stress_relief",
+      "healing",
+      "energy"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "A full inhale through the nose, a forceful audible exhale through the mouth",
+    "ayurvedic_rationale": "Simhasana works on the throat, which Ayurveda treats as a seat of Udana Vata — the upward-moving breath that governs speech and expression. Tension there is held rather than felt, and the roar is the classical release for it. The pose asks nothing physical at all, which makes it one of the few genuinely available to every practitioner regardless of strength, stiffness or age.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "anxiety",
+      "asthma",
+      "thyroid",
+      "insomnia"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": false,
+    "risk_tags": []
+  },
+  {
+    "id": "single_leg_raise",
+    "english_name": "Single Leg Raise",
+    "sanskrit_name": "Eka Pada Uttanapadasana",
+    "category": "supine",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 20,
+      "intermediate": 30,
+      "advanced": 45
+    },
+    "primary_benefits": [
+      "Strengthens the abdominal muscles and the hip flexors safely",
+      "Stretches the hamstring of the raised leg",
+      "Builds the core stability that protects the lower back",
+      "One leg at a time keeps the lumbar spine supported throughout"
+    ],
+    "body_parts": [
+      "abdomen",
+      "core",
+      "hip flexors",
+      "hamstrings",
+      "quadriceps",
+      "lower back"
+    ],
+    "instructions": [
+      "Lie on the back with the legs together and the palms flat beside the body",
+      "Press the lower back gently towards the floor and keep it there",
+      "Inhale and raise the right leg slowly to about ninety degrees, keeping the knee straight",
+      "Keep the left leg heavy on the floor, the foot relaxed",
+      "Hold with normal breathing, then exhale and lower the leg slowly without letting it drop",
+      "Rest a breath and repeat with the left leg",
+      "If the lower back arches away from the floor, bend the resting knee and place that foot down"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "neutral",
+      "kapha": "balances"
+    },
+    "contraindications": [
+      "serious_back_injury",
+      "pregnancy_third_trimester"
+    ],
+    "pregnancy_safe": true,
+    "goals": [
+      "strength",
+      "healing",
+      "balance"
+    ],
+    "sequence_role": "main",
+    "pranayama_sync": "Inhale to raise the leg, breathe normally in the hold, exhale to lower",
+    "ayurvedic_rationale": "The single leg raise is the classical first step of the Pawanmuktasana strengthening group, and it is deliberately half of the double raise: with one leg still resting, the pelvis stays anchored and the lumbar spine is never asked to hold the load. That makes it one of the few abdominal practices appropriate for a back that is still recovering, and it kindles Agni through the same steady abdominal engagement.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "back_pain",
+      "obesity",
+      "constipation",
+      "diabetes"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": true,
+    "risk_tags": [
+      "abdominal_pressure"
+    ]
+  },
+  {
+    "id": "crocodile_pose",
+    "english_name": "Crocodile Pose",
+    "sanskrit_name": "Makarasana",
+    "category": "prone",
+    "level": "beginner",
+    "duration_seconds": {
+      "beginner": 60,
+      "intermediate": 90,
+      "advanced": 120
+    },
+    "primary_benefits": [
+      "Relaxes the whole body while releasing the lower back",
+      "Encourages the natural curve of the lumbar spine to restore itself",
+      "Makes the diaphragm's movement obvious, since the abdomen presses the floor with each breath",
+      "The classical resting pose for anyone whose back is uncomfortable lying face up"
+    ],
+    "body_parts": [
+      "lower back",
+      "spine",
+      "shoulders",
+      "neck",
+      "abdomen"
+    ],
+    "instructions": [
+      "Lie face down with the legs comfortably apart and the toes turned outward",
+      "Fold the arms in front of the body and rest the forehead on the crossed forearms",
+      "Raise the shoulders and head just enough that the chest is lifted slightly clear of the floor",
+      "Let the whole body soften and the belly rest heavily into the floor",
+      "Breathe naturally and feel the abdomen press down on each inhale",
+      "Stay still for the full time, letting each exhale release the lower back a little more"
+    ],
+    "dosha_balance": {
+      "vata": "balances",
+      "pitta": "balances",
+      "kapha": "neutral"
+    },
+    "contraindications": [
+      "pregnancy",
+      "serious_back_injury"
+    ],
+    "pregnancy_safe": false,
+    "goals": [
+      "stress_relief",
+      "healing"
+    ],
+    "sequence_role": "cooldown",
+    "pranayama_sync": "Natural abdominal breathing; do not shape the breath at all",
+    "ayurvedic_rationale": "Makarasana is the prone counterpart to Savasana, and it is the resting pose given to practitioners with lower-back complaints for whom lying face up is uncomfortable — the position lets the lumbar curve settle rather than flatten. It is deeply Vata-pacifying: the ground contact across the whole front of the body is the grounding that restless, dry, mobile Vata most needs.",
+    "image_url": "",
+    "medical_conditions_beneficial": [
+      "back_pain",
+      "anxiety",
+      "asthma",
+      "insomnia",
+      "hypertension"
+    ],
+    "medical_conditions_contraindicated": [],
+    "bilateral": false,
+    "risk_tags": []
   }
 ]
