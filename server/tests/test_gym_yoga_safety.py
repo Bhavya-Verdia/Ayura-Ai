@@ -1251,3 +1251,92 @@ def test_nothing_selected_still_builds_a_plan():
             if day.get("type") == "recovery":
                 continue
             assert len(day["main_workout"]) >= 3, f"{equipment}: {day['focus']} came up short"
+
+
+@pytest.mark.parametrize("goal", ["fat_loss", "endurance"])
+@pytest.mark.parametrize("equipment", [["full_gym"], ["bodyweight"], ["dumbbells"]])
+def test_a_fat_loss_plan_contains_conditioning(goal, equipment):
+    """Conditioning only ever reached a plan through a `core_cardio` day, and only
+    three of the six weekly splits have one. 60% of fat-loss plans contained none
+    at all: four days of resistance training, prescribed for fat loss, with
+    nothing that raises a heart rate for longer than a rest interval."""
+    for days_per_week in (2, 3, 4, 5, 6):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+            {"available_equipment": equipment, "gym_goal": goal,
+             "workout_days_per_week": days_per_week, "workout_duration_minutes": 45})
+        for day in plan["four_week_plan"][0]["days"]:
+            if not day["main_workout"]:
+                continue
+            assert any(e["category"] == "cardio" for e in day["main_workout"]), (
+                f"{goal} {days_per_week}d {day['focus']}: "
+                f"{[e['exercise_name'] for e in day['main_workout']]}")
+
+
+@pytest.mark.parametrize("goal", ["strength", "muscle_gain"])
+def test_a_strength_plan_is_not_given_a_conditioning_finisher(goal):
+    """Fat loss and endurance are the goals where conditioning IS the training
+    effect. Bolting it onto a strength block would cost the block its recovery."""
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {"available_equipment": ["full_gym"], "gym_goal": goal,
+         "workout_days_per_week": 4, "workout_duration_minutes": 45})
+    for day in plan["four_week_plan"][0]["days"]:
+        assert all(e["role"] != "conditioning" for e in day["main_workout"]), day["focus"]
+
+
+def test_time_based_work_costs_the_session_its_time():
+    """Prescriptions written in minutes were read as repetitions, so "30 min" on
+    a treadmill cost the session 30 reps — two minutes of estimated work for half
+    an hour of running, and a calorie figure to match."""
+    from services.gym_plan_engine import _reps_to_seconds
+
+    assert _reps_to_seconds("30 min", 1) == 1800
+    assert _reps_to_seconds("45 sec", 4) == 180
+    assert _reps_to_seconds("20 sec sprint / 60 sec walk", 4) == 320
+    assert _reps_to_seconds("10-12", 3) == 3 * 11 * 4
+
+
+def test_maximal_conditioning_is_not_prescribed_to_a_seventy_year_old():
+    """A seventy-year-old was being finished with assault-bike sprints and
+    burpees. The KB tagged the moderate dance class for hypertension and left the
+    sprint intervals untagged, and nothing in the age gate spoke to
+    cardiovascular strain at all — only to axial loading."""
+    maximal = {"Sprint Intervals (HIIT)", "HIIT Circuit", "Air Bike (Assault Bike)",
+               "Burpee", "Battle Ropes", "Jump Rope", "Mountain Climbers"}
+    by_name = {e["name"]: e for e in gym_exercises}
+    for name in maximal:
+        assert "hypertension" in by_name[name]["contraindications"], name
+        assert "heart_disease" in by_name[name]["contraindications"], name
+
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "age": 70, "fitness_level": "beginner", "weight_kg": 65},
+        {"available_equipment": ["full_gym"], "gym_goal": "fat_loss",
+         "workout_days_per_week": 4, "workout_duration_minutes": 45})
+    served = {e["exercise_name"] for week in plan["four_week_plan"]
+              for d in week["days"] for e in d["main_workout"]}
+    assert not (served & maximal), served & maximal
+    # And the day still gets conditioning — the gate narrows it, it does not
+    # remove it. Rowing, the stair climber and a treadmill walk all survive.
+    assert any(e["category"] == "cardio"
+               for d in plan["four_week_plan"][0]["days"] for e in d["main_workout"])
+
+
+def test_every_focus_day_opens_with_its_own_canonical_lift():
+    """The last of the specialty variants: a leg day opening with a box squat
+    while the barbell squat sat in the same pool, a chest day with a Guillotine
+    or a JM press. They are all real movements and none is what a four-week block
+    is built around."""
+    expected = {"chest": "Barbell Bench Press", "back": "Bent Over Barbell Row",
+                "legs": "Barbell Squat", "shoulders": "Barbell Shoulder Press"}
+    for level in ("beginner", "intermediate", "advanced"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": level, "weight_kg": 75},
+            {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain",
+             "workout_days_per_week": 4, "workout_duration_minutes": 60})
+        for day in plan["four_week_plan"][0]["days"]:
+            focus = day["focus"].lower().split()[0]
+            if focus not in expected or not day["main_workout"]:
+                continue
+            names = [e["exercise_name"] for e in day["main_workout"] if e["role"] == "primary"]
+            assert any(expected[focus] in n for n in names), f"{level} {day['focus']}: {names}"

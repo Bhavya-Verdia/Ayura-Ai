@@ -26572,10 +26572,13 @@
       "general_fitness": true
     },
     "contraindications": [
-      "shoulder_injury",
+      "bad_knee",
+      "heart_condition",
+      "heart_disease",
+      "hypertension",
       "knee_replacement",
       "rotator_cuff",
-      "bad_knee"
+      "shoulder_injury"
     ],
     "calories_per_minute": 5.0,
     "modification": "Reduce weight or switch to bodyweight if form breaks down.",
@@ -49914,9 +49917,12 @@
       "general_fitness": true
     },
     "contraindications": [
-      "knee_replacement",
+      "ankle_injury",
       "bad_knee",
-      "ankle_injury"
+      "heart_condition",
+      "heart_disease",
+      "hypertension",
+      "knee_replacement"
     ],
     "calories_per_minute": 12.0,
     "modification": "Step side-to-side if jumping is too impactful.",
@@ -49975,11 +49981,14 @@
       "general_fitness": true
     },
     "contraindications": [
-      "knee_replacement",
-      "rotator_cuff",
       "bad_knee",
-      "shoulder_injury",
-      "lower_back_pain"
+      "heart_condition",
+      "heart_disease",
+      "hypertension",
+      "knee_replacement",
+      "lower_back_pain",
+      "rotator_cuff",
+      "shoulder_injury"
     ],
     "calories_per_minute": 13.0,
     "modification": "Step back instead of jumping; skip the push-up.",
@@ -50038,9 +50047,12 @@
       "general_fitness": true
     },
     "contraindications": [
+      "heart_condition",
+      "heart_disease",
+      "hypertension",
+      "lower_back_pain",
       "rotator_cuff",
       "shoulder_injury",
-      "lower_back_pain",
       "wrist_injury"
     ],
     "calories_per_minute": 11.0,
@@ -50518,11 +50530,13 @@
       "general_fitness": true
     },
     "contraindications": [
-      "knee_replacement",
       "bad_knee",
       "heart_condition",
-      "shin_splints",
-      "lower_back_pain"
+      "heart_disease",
+      "hypertension",
+      "knee_replacement",
+      "lower_back_pain",
+      "shin_splints"
     ],
     "calories_per_minute": 14.0,
     "modification": "Replace sprints with fast walking or cycling.",
@@ -50581,9 +50595,12 @@
       "general_fitness": true
     },
     "contraindications": [
+      "elbow_injury",
+      "heart_condition",
+      "heart_disease",
+      "hypertension",
       "rotator_cuff",
-      "shoulder_injury",
-      "elbow_injury"
+      "shoulder_injury"
     ],
     "calories_per_minute": 12.0,
     "modification": "Reduce rope weight; slow the wave tempo.",
@@ -50755,9 +50772,11 @@
       "general_fitness": true
     },
     "contraindications": [
-      "knee_replacement",
       "bad_knee",
       "heart_condition",
+      "heart_disease",
+      "hypertension",
+      "knee_replacement",
       "rotator_cuff"
     ],
     "calories_per_minute": 13.0,
@@ -50941,6 +50960,9 @@
       "general_fitness": true
     },
     "contraindications": [
+      "heart_condition",
+      "heart_disease",
+      "hypertension",
       "rotator_cuff",
       "shoulder_injury"
     ],

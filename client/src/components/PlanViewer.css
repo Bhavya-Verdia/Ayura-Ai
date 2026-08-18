@@ -1352,6 +1352,54 @@
   flex: 1;
 }
 
+/* The week's three prescriptions side by side. The exercise rows below carry
+   different sets, reps and rest depending on what the movement is doing; this
+   is the key to them. */
+.gym-role-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+}
+
+.gym-role-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--ayura-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ayura-accent) 4%, transparent);
+}
+
+.gym-role-cell-primary {
+  border-color: color-mix(in srgb, var(--plan-green) 32%, transparent);
+  background: color-mix(in srgb, var(--plan-green) 7%, transparent);
+}
+
+.gym-role-cell-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ayura-text-secondary);
+}
+
+.gym-role-cell-primary .gym-role-cell-label {
+  color: var(--plan-green);
+}
+
+.gym-role-cell-rx {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ayura-text);
+}
+
+.gym-role-cell-rest {
+  font-size: 0.72rem;
+  color: var(--ayura-muted);
+}
+
 /* Main lift / Secondary. Accessory work is the majority and goes unlabelled —
    badging every row would make the two that matter disappear into the pattern. */
 .gym-ex-role {
