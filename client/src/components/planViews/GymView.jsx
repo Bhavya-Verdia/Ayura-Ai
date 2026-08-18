@@ -237,6 +237,16 @@ export function GymView({ plan }) {
         </div>
       )}
 
+      {/* Which days this split would normally have, and why they are not here.
+          A missing chest day on a plan that says "full gym" needs a reason
+          attached to it. */}
+      {plan.substitution_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.substitution_notice}</span>
+        </div>
+      )}
+
       {/* ── Day-list toolbar ── */}
       {weekDays.length > 0 && (
         <div className="plan-days-toolbar">

@@ -1800,3 +1800,68 @@ def test_someone_who_needs_mass_is_not_sent_to_the_bike():
 
     assert conditioned("underweight") < conditioned("normal")
     assert conditioned("severely_underweight") < conditioned("normal")
+
+
+def test_a_day_is_never_named_for_a_muscle_the_library_cannot_train():
+    """A rotator-cuff injury correctly empties the chest and shoulder pools — that
+    gating is the feature working. But the week was built from a fixed split, so
+    it kept a Shoulders day, and the day builder's fallback filled it: a live plan
+    came back with a 27-minute "Shoulders" session of wrist curls and neck
+    isometrics, and a "Push" day of five triceps movements and no pressing."""
+    from services.gym_plan_engine import _focus_headline, _muscle_key
+
+    by_name = {e["name"]: e for e in gym_exercises}
+    profile = {**_YOGA_BASE_PROFILE, "fitness_level": "beginner", "weight_kg": 104,
+               "bmi_category": "obese", "injuries_or_limitations": ["rotator_cuff"],
+               "medical_history": ["high_blood_pressure"]}
+    plan = generate_gym_plan(profile, {
+        "available_equipment": ["full_gym"], "gym_goal": "fat_loss",
+        "workout_days_per_week": 6, "workout_duration_minutes": 45,
+        "target_muscle_focus": "lower"})
+
+    assert plan["substitution_notice"], "days were swapped without saying so"
+    for day in plan["four_week_plan"][0]["days"]:
+        if not day["main_workout"]:
+            continue
+        focus = day["focus"].lower().replace(" ", "_")
+        headline = _focus_headline(focus)
+        if headline is None:
+            continue
+        trained = {_muscle_key(by_name[e["exercise_name"]]) for e in day["main_workout"]}
+        assert headline in trained, (
+            f"{day['focus']} trains {trained}, not {headline}: "
+            f"{[e['exercise_name'] for e in day['main_workout']]}")
+
+
+def test_a_week_that_trains_a_region_twice_does_not_repeat_the_session():
+    """A lower-body emphasis has two leg days, and an emptied pool can put two
+    back days in a week. Both opened with the identical two lifts, because the
+    main-lift preference is deterministic and nothing told the second day it was
+    the second."""
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 75},
+        {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain",
+         "workout_days_per_week": 5, "workout_duration_minutes": 60,
+         "target_muscle_focus": "lower"})
+    leg_days = [d for d in plan["four_week_plan"][0]["days"]
+                if d["focus"].lower().startswith("legs")]
+    assert len(leg_days) >= 2, [d["focus"] for d in plan["four_week_plan"][0]["days"]]
+    openers = [tuple(e["exercise_name"] for e in d["main_workout"] if e["role"] == "primary")
+               for d in leg_days]
+    assert len(set(openers)) == len(openers), openers
+
+
+def test_a_substituted_week_does_not_become_the_same_day_repeated():
+    """Taking the head of the substitute list every time turned a week with three
+    unbuildable days into four identical leg days."""
+    profile = {**_YOGA_BASE_PROFILE, "fitness_level": "beginner", "weight_kg": 104,
+               "bmi_category": "obese", "injuries_or_limitations": ["rotator_cuff"]}
+    plan = generate_gym_plan(profile, {
+        "available_equipment": ["full_gym"], "gym_goal": "fat_loss",
+        "workout_days_per_week": 6, "workout_duration_minutes": 45,
+        "target_muscle_focus": "lower"})
+    days = [d for d in plan["four_week_plan"][0]["days"] if d["main_workout"]]
+    focuses = [d["focus"] for d in days]
+    assert len(set(focuses)) >= 3, focuses
+    sessions = [tuple(e["exercise_name"] for e in d["main_workout"]) for d in days]
+    assert len(set(sessions)) == len(sessions), "a session is repeated verbatim"
