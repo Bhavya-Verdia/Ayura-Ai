@@ -684,6 +684,66 @@ _MAX_PER_FAMILY = 2
 _MIN_COMPOUNDS = 2
 
 
+# What the movement DOES, as against which muscle it names. A legs day of step-ups,
+# calf press, glute kickback and flutter kicks satisfies "two compounds" and still
+# never asks the practitioner to squat or to hinge at the hip — the two patterns
+# that carry most of what leg training is for. Ordered longest-match-first, since
+# "split squat" is a lunge and "leg press" is a squat.
+_MOVEMENT_PATTERNS = (
+    # `(?:e?s)?` on every alternative: `\b` fails before the plural, so "Step Ups",
+    # "Lunges", "Dips" and "Crunches" all fell through to isolation and a leg day
+    # could satisfy its lunge slot with none of them.
+    # Calf work names the machine it is done on ("Calf Press On The Leg Press
+    # Machine"), so it has to be recognised before the leg-press rule sees it.
+    ("isolation", re.compile(r"\b(calf|toe raise)(?:e?s)?\b", re.I)),
+    ("lunge",  re.compile(r"\b(lunge|split squat|step.?up|bulgarian)(?:e?s)?\b", re.I)),
+    ("squat",  re.compile(r"\b(squat|leg press|hack|sissy|wall sit)(?:e?s)?\b", re.I)),
+    ("hinge",  re.compile(r"\b(deadlift|good morning|hip thrust|glute bridge|back extension|"
+                          r"romanian|swing|clean|snatch|pull.?through|hyperextension)(?:e?s)?\b", re.I)),
+    ("push_v", re.compile(r"\b(shoulder press|overhead press|military|arnold|handstand|"
+                          r"pike push|upright row|lateral raise|front raise)(?:e?s)?\b", re.I)),
+    ("push_h", re.compile(r"\b(bench press|chest press|push.?up|fly|flye|dip|pec deck|"
+                          r"butterfly|crossover)(?:e?s)?\b", re.I)),
+    ("pull_v", re.compile(r"\b(pull.?up|chin.?up|pulldown|lat pull)(?:e?s)?\b", re.I)),
+    ("pull_h", re.compile(r"\b(row|face pull|rear delt|shrug)(?:e?s)?\b", re.I)),
+    ("carry",  re.compile(r"\b(carry|farmer)(?:e?s)?\b", re.I)),
+    ("core",   re.compile(r"\b(crunch|plank|sit.?up|leg raise|twist|bicycle|hollow|"
+                          r"dead bug|bird dog)(?:e?s)?\b", re.I)),
+)
+
+# What each day should try to cover, in priority order. These are PREFERENCES, not
+# requirements: a bodyweight-only library holds two squats and two hinges in total,
+# so a quota that had to be met would either fail or reach past the equipment the
+# practitioner actually has.
+_FOCUS_PATTERNS = {
+    "legs":            ("squat", "hinge", "lunge"),
+    "legs_core":       ("squat", "hinge", "core"),
+    "push":            ("push_h", "push_v"),
+    # Not push_v: a chest/triceps day's pool holds no overhead press, because the
+    # muscle split files those under shoulders. Asking for a pattern the day cannot
+    # contain is a quota that fails 43% of the time and teaches nothing.
+    "chest":           ("push_h",),
+    "chest_triceps":   ("push_h",),
+    "pull":            ("pull_v", "pull_h"),
+    "back":            ("pull_v", "pull_h"),
+    "back_biceps":     ("pull_v", "pull_h"),
+    "shoulders":       ("push_v", "pull_h"),
+    "shoulders_core":  ("push_v", "core"),
+    "shoulders_arms":  ("push_v",),
+    "full_body":       ("squat", "push_h", "pull_h", "hinge"),
+    "core_cardio":     ("core",),
+    "arms":            (),
+}
+
+
+def _movement_pattern(ex) -> str:
+    name = ex.get("name", "")
+    for pattern, rx in _MOVEMENT_PATTERNS:
+        if rx.search(name):
+            return pattern
+    return "isolation"
+
+
 def _is_compound(ex) -> bool:
     return (bool(_COMPOUND_NAME.search(ex.get("name", "")))
             or len(ex.get("secondary_muscles") or []) >= 2)
@@ -696,7 +756,7 @@ def _movement_family(ex) -> str:
     return " ".join(core[-2:]) if core else ex.get("id", "")
 
 
-def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0):
+def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()):
     """Pick n exercises, compounds first, without stacking one movement family.
 
     Selection was a plain shuffle-and-take, so nothing preferred a compound or
@@ -708,20 +768,42 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0):
     ordered = _deterministic_select(pool, len(pool), seed_key)
     picked = []
 
+    def _take(ex):
+        picked.append(ex)
+        taken_ids.add(ex["id"])
+        families[_movement_family(ex)] += 1
+
+    # One exercise for each of the day's movement patterns, before anything else
+    # competes for the slots. A leg day came out as step-ups, calf press, glute
+    # kickback and flutter kicks — two compounds by the letter of the rule, and
+    # nothing that squats or hinges.
+    for pattern in patterns:
+        if len(picked) >= n:
+            break
+        for ex in ordered:
+            if ex["id"] in taken_ids or _movement_pattern(ex) != pattern:
+                continue
+            if families[_movement_family(ex)] >= _MAX_PER_FAMILY:
+                continue
+            _take(ex)
+            break
+
     for want_compound in (True, False):
         if want_compound and min_compounds <= 0:
             continue
+        have_compounds = sum(1 for ex in picked if _is_compound(ex))
         for ex in ordered:
-            if len(picked) >= (min_compounds if want_compound else n):
+            if want_compound and have_compounds >= min_compounds:
+                break
+            if len(picked) >= n:
                 break
             if ex["id"] in taken_ids or _is_compound(ex) is not want_compound:
                 continue
             family = _movement_family(ex)
             if families[family] >= _MAX_PER_FAMILY:
                 continue
-            picked.append(ex)
-            taken_ids.add(ex["id"])
-            families[family] += 1
+            _take(ex)
+            have_compounds += _is_compound(ex)
 
     # A pool too small or too uniform to respect the family cap still has to
     # produce a session; the cap is a preference, not a safety rule.
@@ -731,9 +813,7 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0):
                 break
             if ex["id"] in taken_ids:
                 continue
-            picked.append(ex)
-            taken_ids.add(ex["id"])
-            families[_movement_family(ex)] += 1
+            _take(ex)
     return picked
 
 
@@ -759,7 +839,8 @@ def _select_for_day(pool, target, user_id, focus, day_num, week):
     families: dict = _collections.defaultdict(int)
 
     core = _choose(pool, core_n, f"{user_id}-{focus}-d{day_num}-core",
-                   taken, families, min_compounds=min(_MIN_COMPOUNDS, max(1, core_n - 1)))
+                   taken, families, min_compounds=min(_MIN_COMPOUNDS, max(1, core_n - 1)),
+                   patterns=_FOCUS_PATTERNS.get(focus, ()))
     rotating = _choose(pool, target - len(core), f"{user_id}-{focus}-d{day_num}-rotate-w{week}",
                        taken, families)
     return core + rotating
