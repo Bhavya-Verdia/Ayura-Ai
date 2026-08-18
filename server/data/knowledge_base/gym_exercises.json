@@ -39,9 +39,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -95,9 +95,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -256,9 +256,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -421,9 +421,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -586,9 +586,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -1719,9 +1719,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -2054,9 +2054,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -2111,9 +2111,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -2168,9 +2168,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -2223,9 +2223,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -2275,9 +2275,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -4036,7 +4036,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -4216,7 +4216,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -4504,9 +4504,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -5200,9 +5200,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -5255,7 +5255,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -5423,7 +5423,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -5644,9 +5644,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -6009,9 +6009,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -6120,9 +6120,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -6175,9 +6175,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -7832,9 +7832,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -7984,9 +7984,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -9045,7 +9045,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -9676,7 +9676,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -10079,7 +10079,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -10185,9 +10185,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -10358,9 +10358,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -10471,9 +10471,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -10640,7 +10640,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -10699,9 +10699,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -10755,9 +10755,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -10924,9 +10924,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -11228,9 +11228,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -11503,9 +11503,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -11614,9 +11614,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -11968,7 +11968,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -12378,9 +12378,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -14545,9 +14545,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -15044,9 +15044,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -15268,9 +15268,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -15433,7 +15433,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -15487,7 +15487,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -15767,9 +15767,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -16110,9 +16110,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -16567,9 +16567,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -17072,9 +17072,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -17307,9 +17307,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -17411,9 +17411,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -17634,9 +17634,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -17744,7 +17744,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -18125,9 +18125,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -18180,9 +18180,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -18406,9 +18406,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -18460,9 +18460,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -18513,9 +18513,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -18569,9 +18569,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -18856,7 +18856,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -18958,9 +18958,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -19012,9 +19012,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -19687,7 +19687,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -19744,7 +19744,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -19862,7 +19862,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -19920,7 +19920,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -19978,7 +19978,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -20132,9 +20132,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -20416,9 +20416,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -20470,9 +20470,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -20524,9 +20524,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -20581,9 +20581,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -20693,9 +20693,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -20747,9 +20747,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -22088,9 +22088,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -23070,9 +23070,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -23121,9 +23121,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -23335,9 +23335,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -23446,9 +23446,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -24452,9 +24452,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -24503,9 +24503,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -24998,9 +24998,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -25214,9 +25214,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -25539,9 +25539,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -26419,9 +26419,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -26894,9 +26894,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -27062,9 +27062,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -27117,9 +27117,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -29768,7 +29768,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -30273,9 +30273,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -30490,9 +30490,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -30540,9 +30540,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -31794,9 +31794,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -31852,7 +31852,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -31908,7 +31908,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -31965,7 +31965,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -32199,9 +32199,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -32257,7 +32257,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -32313,7 +32313,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -32468,9 +32468,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -32755,9 +32755,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -33408,9 +33408,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -33910,9 +33910,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -34886,9 +34886,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -35062,9 +35062,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -35511,9 +35511,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -36121,7 +36121,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -36227,9 +36227,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -36281,9 +36281,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -36606,9 +36606,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -37325,7 +37325,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -37533,9 +37533,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -37644,9 +37644,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -37807,9 +37807,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -38316,7 +38316,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -38765,9 +38765,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -38820,9 +38820,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -38929,9 +38929,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -40969,7 +40969,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -41206,9 +41206,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -42010,7 +42010,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -43385,9 +43385,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -44541,9 +44541,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -44712,9 +44712,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -45003,9 +45003,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -45543,9 +45543,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -46453,9 +46453,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -47042,9 +47042,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -47656,7 +47656,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -47825,9 +47825,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -48809,7 +48809,7 @@
     "goal_suitability": {
       "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -49037,9 +49037,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -49207,9 +49207,9 @@
       "kapha": "good"
     },
     "goal_suitability": {
-      "fat_loss": false,
+      "fat_loss": true,
       "muscle_gain": true,
-      "endurance": false,
+      "endurance": true,
       "strength": true,
       "general_fitness": true
     },
@@ -50770,5 +50770,658 @@
     "calories_per_minute": 15.0,
     "modification": "Use steady low-intensity pace instead of intervals.",
     "pregnancy_safe": false
+  },
+  {
+    "id": "Pike_Push-Up",
+    "name": "Pike Push-Up",
+    "category": "strength",
+    "equipment": "bodyweight",
+    "level": "intermediate",
+    "primary_muscles": [
+      "shoulders"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "chest"
+    ],
+    "instructions": [
+      "Start in a push-up position, then walk your feet towards your hands until your hips are high and your body forms an inverted V.",
+      "Your head should be between your arms, looking back towards your feet.",
+      "Bend your elbows and lower the crown of your head towards the floor between your hands.",
+      "Stop just short of the floor, then press back up until the arms are straight.",
+      "Keep the hips high throughout — letting them drop turns this back into a push-up."
+    ],
+    "sets_reps": {
+      "beginner": {
+        "sets": 3,
+        "reps": "5-8",
+        "rest_seconds": 60
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "8-12",
+        "rest_seconds": 60
+      },
+      "advanced": {
+        "sets": 4,
+        "reps": "12-15",
+        "rest_seconds": 60
+      }
+    },
+    "dosha_suitability": {
+      "vata": "moderate",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true
+    },
+    "contraindications": [
+      "shoulder_injury",
+      "rotator_cuff",
+      "wrist_injury",
+      "hypertension",
+      "heart_disease",
+      "pregnancy"
+    ],
+    "calories_per_minute": 5.0,
+    "modification": "Raise the hands onto a step or stair to reduce the load; the higher the hands, the easier.",
+    "pregnancy_safe": false
+  },
+  {
+    "id": "Wall_Shoulder_Slide",
+    "name": "Wall Shoulder Slide",
+    "category": "strength",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "primary_muscles": [
+      "shoulders"
+    ],
+    "secondary_muscles": [
+      "middle back",
+      "traps"
+    ],
+    "instructions": [
+      "Stand with your back against a wall, feet a few inches out from it.",
+      "Press your lower back, upper back and head into the wall.",
+      "Place the backs of your hands and forearms against the wall with the elbows bent at ninety degrees.",
+      "Slide the arms slowly up the wall until they are straight overhead, keeping every point of contact.",
+      "Slide back down to the starting position with the same control.",
+      "If the forearms leave the wall, you have reached your range — stop there."
+    ],
+    "sets_reps": {
+      "beginner": {
+        "sets": 2,
+        "reps": "8-10",
+        "rest_seconds": 60
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "10-12",
+        "rest_seconds": 60
+      },
+      "advanced": {
+        "sets": 3,
+        "reps": "12-15",
+        "rest_seconds": 60
+      }
+    },
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": false,
+      "endurance": true,
+      "strength": false,
+      "general_fitness": true
+    },
+    "contraindications": [
+      "shoulder_injury",
+      "rotator_cuff"
+    ],
+    "calories_per_minute": 3.0,
+    "modification": "Step the feet further from the wall, or work through a smaller range.",
+    "pregnancy_safe": true
+  },
+  {
+    "id": "Prone_Y_T_W_Raise",
+    "name": "Prone Y-T-W Raise",
+    "category": "strength",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "primary_muscles": [
+      "shoulders"
+    ],
+    "secondary_muscles": [
+      "middle back",
+      "traps",
+      "lower back"
+    ],
+    "instructions": [
+      "Lie face down with your forehead resting on the floor and arms extended overhead in a Y shape.",
+      "Lift both arms a few inches off the floor with the thumbs pointing up, hold briefly, and lower.",
+      "Take the arms out to the sides in a T shape and repeat the lift.",
+      "Bend the elbows into a W with the hands beside the shoulders and repeat again.",
+      "One lift in each position is a single repetition.",
+      "Keep the neck long and the movement small — this is control work, not height."
+    ],
+    "sets_reps": {
+      "beginner": {
+        "sets": 2,
+        "reps": "5-8",
+        "rest_seconds": 60
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "8-10",
+        "rest_seconds": 60
+      },
+      "advanced": {
+        "sets": 3,
+        "reps": "10-12",
+        "rest_seconds": 60
+      }
+    },
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "moderate"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": false,
+      "endurance": true,
+      "strength": false,
+      "general_fitness": true
+    },
+    "contraindications": [
+      "shoulder_injury",
+      "rotator_cuff",
+      "lower_back_pain",
+      "pregnancy"
+    ],
+    "calories_per_minute": 3.0,
+    "modification": "Rest the forehead on a folded towel and lift one arm at a time.",
+    "pregnancy_safe": false
+  },
+  {
+    "id": "Self_Resisted_Biceps_Curl",
+    "name": "Self-Resisted Biceps Curl",
+    "category": "strength",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "primary_muscles": [
+      "biceps"
+    ],
+    "secondary_muscles": [
+      "forearms"
+    ],
+    "instructions": [
+      "Stand with the right elbow tucked at your side and the right palm facing up.",
+      "Place the left hand on top of the right hand and press down against it.",
+      "Curl the right hand towards the shoulder while the left hand resists, taking four or five seconds to travel up.",
+      "Resist just as hard on the way back down.",
+      "Complete the repetitions, then change sides.",
+      "The resisting arm sets the difficulty — press harder for a harder set."
+    ],
+    "sets_reps": {
+      "beginner": {
+        "sets": 2,
+        "reps": "8-10 each side",
+        "rest_seconds": 60
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "10-12 each side",
+        "rest_seconds": 60
+      },
+      "advanced": {
+        "sets": 3,
+        "reps": "12-15 each side",
+        "rest_seconds": 60
+      }
+    },
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "moderate"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true
+    },
+    "contraindications": [
+      "elbow_injury",
+      "wrist_injury"
+    ],
+    "calories_per_minute": 3.5,
+    "modification": "Reduce how hard the resisting hand presses.",
+    "pregnancy_safe": true
+  },
+  {
+    "id": "Towel_Isometric_Curl",
+    "name": "Towel Isometric Curl",
+    "category": "strength",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "primary_muscles": [
+      "biceps"
+    ],
+    "secondary_muscles": [
+      "forearms",
+      "lats"
+    ],
+    "instructions": [
+      "Stand on the middle of a rolled towel with both feet and hold one end in each hand, palms facing up.",
+      "Bend the elbows to about ninety degrees so the towel is taut.",
+      "Pull upward against the towel as hard as is comfortable and hold, breathing normally.",
+      "The arms should not move — the towel is anchored under your own feet.",
+      "Release slowly and rest before the next effort."
+    ],
+    "sets_reps": {
+      "beginner": {
+        "sets": 2,
+        "reps": "3 holds of 10 seconds",
+        "rest_seconds": 45
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "4 holds of 15 seconds",
+        "rest_seconds": 45
+      },
+      "advanced": {
+        "sets": 3,
+        "reps": "5 holds of 20 seconds",
+        "rest_seconds": 45
+      }
+    },
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "moderate",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": false,
+      "strength": true,
+      "general_fitness": true
+    },
+    "contraindications": [
+      "elbow_injury",
+      "wrist_injury",
+      "hypertension",
+      "heart_disease"
+    ],
+    "calories_per_minute": 3.0,
+    "modification": "Pull with less force and hold for a shorter count.",
+    "pregnancy_safe": true
+  },
+  {
+    "id": "Wall_Biceps_Isometric",
+    "name": "Wall Biceps Isometric",
+    "category": "strength",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "primary_muscles": [
+      "biceps"
+    ],
+    "secondary_muscles": [
+      "forearms",
+      "shoulders"
+    ],
+    "instructions": [
+      "Stand facing a wall, close enough that your bent elbows nearly touch it.",
+      "Tuck the elbows at your sides and turn the palms up, placing the backs of the hands flat against the wall.",
+      "Press upward into the wall as though curling it, and hold.",
+      "Keep the shoulders down and the ribs stacked over the hips — do not lean in.",
+      "Release, shake the arms out, and repeat."
+    ],
+    "sets_reps": {
+      "beginner": {
+        "sets": 2,
+        "reps": "3 holds of 10 seconds",
+        "rest_seconds": 45
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "4 holds of 15 seconds",
+        "rest_seconds": 45
+      },
+      "advanced": {
+        "sets": 3,
+        "reps": "5 holds of 20 seconds",
+        "rest_seconds": 45
+      }
+    },
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "moderate",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": false,
+      "strength": true,
+      "general_fitness": true
+    },
+    "contraindications": [
+      "elbow_injury",
+      "wrist_injury",
+      "hypertension",
+      "heart_disease"
+    ],
+    "calories_per_minute": 2.5,
+    "modification": "Press more gently and shorten the hold.",
+    "pregnancy_safe": true
+  },
+  {
+    "id": "Superman_Hold",
+    "name": "Superman Hold",
+    "category": "strength",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "primary_muscles": [
+      "lower back"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "shoulders"
+    ],
+    "instructions": [
+      "Lie face down with the arms extended overhead and the legs straight.",
+      "Lift the arms, chest and legs a few inches off the floor at the same time.",
+      "Keep looking at the floor so the neck stays in line with the spine.",
+      "Hold, breathing normally, then lower everything with control.",
+      "Height is not the goal — a small lift held well beats a big one that arches the neck."
+    ],
+    "sets_reps": {
+      "beginner": {
+        "sets": 2,
+        "reps": "3 holds of 10 seconds",
+        "rest_seconds": 45
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "4 holds of 15 seconds",
+        "rest_seconds": 45
+      },
+      "advanced": {
+        "sets": 3,
+        "reps": "4 holds of 25 seconds",
+        "rest_seconds": 45
+      }
+    },
+    "dosha_suitability": {
+      "vata": "moderate",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": false,
+      "general_fitness": true
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "herniated_disc",
+      "pregnancy",
+      "cervical_spondylosis"
+    ],
+    "calories_per_minute": 3.5,
+    "modification": "Lift only the arms, or only the legs, until holding both is comfortable.",
+    "pregnancy_safe": false
+  },
+  {
+    "id": "Prone_Swimmer",
+    "name": "Prone Swimmer",
+    "category": "strength",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "primary_muscles": [
+      "lower back"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "shoulders",
+      "middle back"
+    ],
+    "instructions": [
+      "Lie face down with the arms extended overhead and the forehead resting on the floor.",
+      "Lift the right arm and the left leg a few inches, hold for a breath, and lower.",
+      "Lift the left arm and the right leg the same way.",
+      "Alternate steadily, keeping the hips heavy on the floor and the neck long.",
+      "One lift on each side counts as a single repetition."
+    ],
+    "sets_reps": {
+      "beginner": {
+        "sets": 2,
+        "reps": "8-10",
+        "rest_seconds": 60
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "10-12",
+        "rest_seconds": 60
+      },
+      "advanced": {
+        "sets": 3,
+        "reps": "12-16",
+        "rest_seconds": 60
+      }
+    },
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": false,
+      "general_fitness": true
+    },
+    "contraindications": [
+      "lower_back_pain",
+      "herniated_disc",
+      "pregnancy",
+      "cervical_spondylosis"
+    ],
+    "calories_per_minute": 3.5,
+    "modification": "Lift the arm only, keeping both legs down.",
+    "pregnancy_safe": false
+  },
+  {
+    "id": "Reverse_Snow_Angel",
+    "name": "Reverse Snow Angel",
+    "category": "strength",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "primary_muscles": [
+      "middle back"
+    ],
+    "secondary_muscles": [
+      "shoulders",
+      "traps",
+      "lower back"
+    ],
+    "instructions": [
+      "Lie face down with the arms at your sides, palms facing down.",
+      "Lift the hands an inch off the floor and keep them there for the whole set.",
+      "Sweep the arms out and overhead in a wide arc, as though making a snow angel.",
+      "Sweep them back to your sides along the same path.",
+      "Keep the arms straight and the hands off the floor throughout."
+    ],
+    "sets_reps": {
+      "beginner": {
+        "sets": 2,
+        "reps": "6-8",
+        "rest_seconds": 60
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "8-12",
+        "rest_seconds": 60
+      },
+      "advanced": {
+        "sets": 3,
+        "reps": "12-15",
+        "rest_seconds": 60
+      }
+    },
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": false,
+      "general_fitness": true
+    },
+    "contraindications": [
+      "shoulder_injury",
+      "rotator_cuff",
+      "lower_back_pain",
+      "pregnancy"
+    ],
+    "calories_per_minute": 3.5,
+    "modification": "Rest the hands lightly on the floor and slide them through the arc.",
+    "pregnancy_safe": false
+  },
+  {
+    "id": "Wall_Angel_Row",
+    "name": "Wall Angel Row",
+    "category": "strength",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "primary_muscles": [
+      "middle back"
+    ],
+    "secondary_muscles": [
+      "lats",
+      "shoulders",
+      "biceps"
+    ],
+    "instructions": [
+      "Stand with your back flat against a wall, feet a step out from it, knees softly bent.",
+      "Raise the arms to shoulder height with the elbows bent at ninety degrees, backs of the hands on the wall.",
+      "Squeeze the shoulder blades together and drive the elbows back into the wall, as though rowing it towards you.",
+      "Hold the squeeze for two seconds, then release without letting the arms leave the wall.",
+      "Keep the ribs down — the movement belongs to the shoulder blades, not the lower back."
+    ],
+    "sets_reps": {
+      "beginner": {
+        "sets": 2,
+        "reps": "8-10",
+        "rest_seconds": 60
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "10-12",
+        "rest_seconds": 60
+      },
+      "advanced": {
+        "sets": 3,
+        "reps": "12-15",
+        "rest_seconds": 60
+      }
+    },
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": false,
+      "general_fitness": true
+    },
+    "contraindications": [
+      "shoulder_injury",
+      "rotator_cuff"
+    ],
+    "calories_per_minute": 3.0,
+    "modification": "Work with the elbows lower, closer to the ribs.",
+    "pregnancy_safe": true
+  },
+  {
+    "id": "Bird_Dog_Row",
+    "name": "Bird Dog",
+    "category": "strength",
+    "equipment": "bodyweight",
+    "level": "beginner",
+    "primary_muscles": [
+      "lower back"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "abdominals",
+      "shoulders"
+    ],
+    "instructions": [
+      "Start on hands and knees with the wrists under the shoulders and the knees under the hips.",
+      "Extend the right arm forward and the left leg back until both are level with the torso.",
+      "Hold for a breath without letting the hips tilt — imagine balancing a glass of water on your lower back.",
+      "Return to the start with control and change sides.",
+      "One extension on each side is a single repetition."
+    ],
+    "sets_reps": {
+      "beginner": {
+        "sets": 2,
+        "reps": "8-10",
+        "rest_seconds": 60
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "10-12",
+        "rest_seconds": 60
+      },
+      "advanced": {
+        "sets": 3,
+        "reps": "12-16",
+        "rest_seconds": 60
+      }
+    },
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": false,
+      "general_fitness": true
+    },
+    "contraindications": [
+      "wrist_injury",
+      "bad_knee",
+      "knee_replacement",
+      "lower_back_pain"
+    ],
+    "calories_per_minute": 3.5,
+    "modification": "Extend the arm only, or the leg only, keeping three points of contact.",
+    "pregnancy_safe": true
   }
 ]

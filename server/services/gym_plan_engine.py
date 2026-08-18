@@ -468,6 +468,17 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
             continue
         if ex.get("level", "intermediate") not in allowed_levels:
             continue
+        # Plyometrics are never a beginner's first month. The level allowance
+        # above hands beginners the intermediate tier deliberately, because the
+        # dataset files foundational lifts — bench press, rows, shoulder press —
+        # as intermediate; jump training is not what that allowance was for, and
+        # NOT ONE of the 25 plyometrics is rated beginner (16 intermediate, 9
+        # advanced). Before this a beginner asking for endurance was served
+        # Rocket Jump and Freehand Jump Squat nine times each over four weeks,
+        # because "endurance" resolved to cardio plus plyometrics and nothing
+        # else.
+        if user_level == "beginner" and ex.get("category") == "plyometrics":
+            continue
         if not ex.get("goal_suitability", {}).get(gym_goal, False):
             continue
         if avoid_tags.intersection(set(ex.get("contraindications", []))):
