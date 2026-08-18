@@ -9,6 +9,7 @@ These lock in the demo-hardening fixes:
   - cooling/forceful pranayama is gated for the relevant medical conditions
 """
 import collections
+import re
 
 import pytest
 
@@ -1043,3 +1044,81 @@ def test_no_dosha_tag_is_derived_from_the_equipment_alone():
         assert count < total[equipment], (
             f"every {equipment} exercise is 'avoid' for {dosha} — that is a tag on "
             f"the equipment, not on the movement")
+
+
+def _kg(text):
+    """The numeric range out of a weight_range string, or None if it has none."""
+    m = re.match(r"^([\d.]+)–([\d.]+) kg", text)
+    return (float(m.group(1)), float(m.group(2))) if m else None
+
+
+def test_the_load_is_priced_per_lift_not_per_muscle_group():
+    """Load was looked up by (equipment, coarse muscle group), which is not enough
+    information to price a lift. Everything a barbell did to the chest got one
+    number and everything it did to the legs got another:
+
+        Barbell Bench Press  →  35–55 kg (beginner)
+        Barbell Curl         →  35–55 kg
+        Barbell Deadlift     →  50–80 kg
+        Barbell Squat        →  50–80 kg
+
+    A beginner told to curl 55 kg concludes the app does not know what a curl is.
+    """
+    from services.gym_plan_engine import _get_weight_range
+
+    by_name = {e["name"]: e for e in gym_exercises}
+    load = {n: _kg(_get_weight_range(by_name[n], "intermediate", "male", 80))
+            for n in ("Barbell Curl", "Barbell Bench Press - Medium Grip",
+                      "Barbell Squat", "Barbell Deadlift")}
+    curl, bench, squat, deadlift = (load[n] for n in (
+        "Barbell Curl", "Barbell Bench Press - Medium Grip", "Barbell Squat", "Barbell Deadlift"))
+    assert curl[1] < bench[0], f"curl {curl} is not lighter than bench {bench}"
+    assert bench[1] < squat[0], f"bench {bench} is not lighter than squat {squat}"
+    assert squat[1] < deadlift[1], f"squat {squat} is not lighter than deadlift {deadlift}"
+
+
+def test_load_scales_with_the_practitioner():
+    """It is a starting load for THIS person: their bodyweight and their training
+    age. Neither was an input — the old table keyed on equipment and sex alone."""
+    from services.gym_plan_engine import _get_weight_range
+
+    squat = next(e for e in gym_exercises if e["name"] == "Barbell Squat")
+    light = _kg(_get_weight_range(squat, "intermediate", "male", 55))
+    heavy = _kg(_get_weight_range(squat, "intermediate", "male", 95))
+    assert light[1] < heavy[0], f"bodyweight ignored: {light} vs {heavy}"
+
+    novice = _kg(_get_weight_range(squat, "beginner", "male", 75))
+    veteran = _kg(_get_weight_range(squat, "advanced", "male", 75))
+    assert novice[1] < veteran[0], f"training age ignored: {novice} vs {veteran}"
+
+
+def test_a_one_arm_dumbbell_press_is_the_same_dumbbell():
+    """The practitioner does the sides in turn — it is not half the weight. The
+    unilateral discount only applies when the implement is shared between limbs."""
+    from services.gym_plan_engine import _get_weight_range
+
+    two = {"name": "Dumbbell Shoulder Press", "equipment": "dumbbell",
+           "primary_muscles": ["shoulders"], "category": "strength"}
+    one = dict(two, name="Dumbbell One-Arm Shoulder Press")
+    assert _get_weight_range(one, "intermediate", "male", 75) == \
+           _get_weight_range(two, "intermediate", "male", 75)
+
+
+@pytest.mark.parametrize("goal", ["strength", "muscle_gain", "fat_loss"])
+def test_no_exercise_quotes_a_range_that_is_not_a_range(goal):
+    """Light isolation rounds to a single plate step, and "2–2 kg" reads as a
+    defect rather than a starting point."""
+    for gender, bodyweight in (("female", 52), ("male", 90)):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "gender": gender, "weight_kg": bodyweight,
+             "fitness_level": "beginner"},
+            {"available_equipment": FULL_GYM, "gym_goal": goal,
+             "workout_days_per_week": 5, "workout_duration_minutes": 60})
+        for week in plan["four_week_plan"]:
+            for day in week["days"]:
+                for ex in day["main_workout"]:
+                    kg = _kg(ex["weight_range"])
+                    if kg is None:
+                        continue
+                    assert kg[0] < kg[1], f"{ex['exercise_name']}: {ex['weight_range']}"
+                    assert kg[0] > 0, f"{ex['exercise_name']}: {ex['weight_range']}"

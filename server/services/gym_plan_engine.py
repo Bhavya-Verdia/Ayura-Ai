@@ -313,123 +313,6 @@ def _role_at(index: int, primary_slots: int) -> str:
 # (lo, hi) in kg. Dumbbell = per-hand weight. Cable/machine = stack weight.
 # Female ranges are ~60-65% of male — reflects average population, not a ceiling.
 
-_WEIGHT_GUIDE = {
-    "barbell": {
-        "chest":     {"untrained": {"male": (20,35),  "female": (10,20)},
-                      "beginner":  {"male": (35,55),  "female": (20,35)},
-                      "intermediate": {"male": (55,90), "female": (35,55)},
-                      "advanced":  {"male": (90,140), "female": (55,85)}},
-        "back":      {"untrained": {"male": (30,50),  "female": (20,35)},
-                      "beginner":  {"male": (50,80),  "female": (30,50)},
-                      "intermediate": {"male": (80,130), "female": (50,80)},
-                      "advanced":  {"male": (130,200),"female": (80,120)}},
-        "legs":      {"untrained": {"male": (30,50),  "female": (20,35)},
-                      "beginner":  {"male": (50,80),  "female": (30,55)},
-                      "intermediate": {"male": (80,130), "female": (50,85)},
-                      "advanced":  {"male": (130,200),"female": (80,130)}},
-        "shoulders": {"untrained": {"male": (15,30),  "female": (8,18)},
-                      "beginner":  {"male": (28,48),  "female": (15,30)},
-                      "intermediate": {"male": (46,72), "female": (28,46)},
-                      "advanced":  {"male": (70,100), "female": (44,68)}},
-        "core":      {"untrained": {"male": (20,35),  "female": (10,20)},
-                      "beginner":  {"male": (30,50),  "female": (15,30)},
-                      "intermediate": {"male": (50,80), "female": (28,48)},
-                      "advanced":  {"male": (80,120), "female": (46,72)}},
-    },
-    "dumbbell": {
-        "chest":     {"untrained": {"male": (6,10),  "female": (3,6)},
-                      "beginner":  {"male": (10,16), "female": (5,10)},
-                      "intermediate": {"male": (16,26), "female": (8,16)},
-                      "advanced":  {"male": (26,40), "female": (14,24)}},
-        "back":      {"untrained": {"male": (8,12),  "female": (4,8)},
-                      "beginner":  {"male": (12,20), "female": (6,12)},
-                      "intermediate": {"male": (18,30), "female": (10,18)},
-                      "advanced":  {"male": (28,44), "female": (16,28)}},
-        "legs":      {"untrained": {"male": (8,14),  "female": (6,10)},
-                      "beginner":  {"male": (12,20), "female": (8,14)},
-                      "intermediate": {"male": (20,32), "female": (12,22)},
-                      "advanced":  {"male": (30,50), "female": (18,34)}},
-        "shoulders": {"untrained": {"male": (4,8),   "female": (2,5)},
-                      "beginner":  {"male": (6,12),  "female": (3,8)},
-                      "intermediate": {"male": (10,18), "female": (6,12)},
-                      "advanced":  {"male": (18,28), "female": (10,18)}},
-        "biceps":    {"untrained": {"male": (5,8),   "female": (2,5)},
-                      "beginner":  {"male": (8,14),  "female": (4,8)},
-                      "intermediate": {"male": (12,20), "female": (6,12)},
-                      "advanced":  {"male": (18,30), "female": (10,18)}},
-        "triceps":   {"untrained": {"male": (5,8),   "female": (2,5)},
-                      "beginner":  {"male": (7,12),  "female": (3,7)},
-                      "intermediate": {"male": (10,18), "female": (5,11)},
-                      "advanced":  {"male": (16,26), "female": (9,17)}},
-        "core":      {"untrained": {"male": (4,8),   "female": (2,5)},
-                      "beginner":  {"male": (6,12),  "female": (3,7)},
-                      "intermediate": {"male": (10,18), "female": (5,11)},
-                      "advanced":  {"male": (16,26), "female": (9,17)}},
-        "full_body": {"untrained": {"male": (6,10),  "female": (3,6)},
-                      "beginner":  {"male": (8,14),  "female": (4,8)},
-                      "intermediate": {"male": (12,22), "female": (6,14)},
-                      "advanced":  {"male": (20,34), "female": (12,22)}},
-    },
-    "machine": {
-        "chest":     {"untrained": {"male": (20,35),  "female": (10,20)},
-                      "beginner":  {"male": (30,50),  "female": (15,28)},
-                      "intermediate": {"male": (48,78), "female": (26,48)},
-                      "advanced":  {"male": (76,120), "female": (44,72)}},
-        "back":      {"untrained": {"male": (25,40),  "female": (14,24)},
-                      "beginner":  {"male": (36,56),  "female": (20,36)},
-                      "intermediate": {"male": (54,84), "female": (30,54)},
-                      "advanced":  {"male": (82,130), "female": (50,82)}},
-        "legs":      {"untrained": {"male": (30,55),  "female": (20,38)},
-                      "beginner":  {"male": (50,85),  "female": (30,56)},
-                      "intermediate": {"male": (82,130), "female": (52,86)},
-                      "advanced":  {"male": (128,200),"female": (76,128)}},
-        "shoulders": {"untrained": {"male": (14,28),  "female": (8,16)},
-                      "beginner":  {"male": (24,44),  "female": (12,26)},
-                      "intermediate": {"male": (40,68), "female": (22,42)},
-                      "advanced":  {"male": (64,100), "female": (36,66)}},
-    },
-    "cable": {
-        "chest":     {"untrained": {"male": (10,20),  "female": (5,12)},
-                      "beginner":  {"male": (16,30),  "female": (8,18)},
-                      "intermediate": {"male": (26,44), "female": (14,28)},
-                      "advanced":  {"male": (40,64),  "female": (24,42)}},
-        "back":      {"untrained": {"male": (15,26),  "female": (8,16)},
-                      "beginner":  {"male": (22,38),  "female": (12,24)},
-                      "intermediate": {"male": (34,56), "female": (18,36)},
-                      "advanced":  {"male": (54,86),  "female": (32,56)}},
-        "shoulders": {"untrained": {"male": (8,16),   "female": (4,9)},
-                      "beginner":  {"male": (12,22),  "female": (6,13)},
-                      "intermediate": {"male": (18,32), "female": (10,20)},
-                      "advanced":  {"male": (30,50),  "female": (18,32)}},
-        "biceps":    {"untrained": {"male": (8,16),   "female": (4,9)},
-                      "beginner":  {"male": (12,22),  "female": (6,13)},
-                      "intermediate": {"male": (18,32), "female": (10,20)},
-                      "advanced":  {"male": (28,46),  "female": (16,30)}},
-        "triceps":   {"untrained": {"male": (8,14),   "female": (4,8)},
-                      "beginner":  {"male": (12,20),  "female": (6,12)},
-                      "intermediate": {"male": (16,28), "female": (9,18)},
-                      "advanced":  {"male": (24,40),  "female": (14,26)}},
-        "core":      {"untrained": {"male": (8,16),   "female": (4,9)},
-                      "beginner":  {"male": (12,22),  "female": (6,13)},
-                      "intermediate": {"male": (18,32), "female": (10,20)},
-                      "advanced":  {"male": (28,46),  "female": (16,30)}},
-        "legs":      {"untrained": {"male": (15,30),  "female": (10,20)},
-                      "beginner":  {"male": (26,46),  "female": (16,30)},
-                      "intermediate": {"male": (40,68), "female": (24,44)},
-                      "advanced":  {"male": (64,100), "female": (38,66)}},
-    },
-    "kettlebell": {
-        "full_body": {"untrained": {"male": (8,12),  "female": (4,8)},
-                      "beginner":  {"male": (12,20), "female": (6,12)},
-                      "intermediate": {"male": (20,32), "female": (10,20)},
-                      "advanced":  {"male": (28,48), "female": (16,32)}},
-        "legs":      {"untrained": {"male": (8,16),  "female": (6,10)},
-                      "beginner":  {"male": (14,24), "female": (8,16)},
-                      "intermediate": {"male": (22,36), "female": (14,24)},
-                      "advanced":  {"male": (32,56), "female": (20,36)}},
-    },
-}
-
 _BODYWEIGHT_PROGRESSIONS = {
     "chest":     "Bodyweight · Progress: easier (incline) → standard → decline → archer push-up → single-arm",
     "back":      "Bodyweight · Progress: band-assisted → negative → full pull-up/chin-up → weighted",
@@ -443,61 +326,199 @@ _BODYWEIGHT_PROGRESSIONS = {
 }
 
 
-def _primary_muscle_group(ex: dict) -> str:
-    """Map an exercise's primary muscle to a weight-guide key."""
-    primary = [m.lower() for m in ex.get("primary_muscles", [])]
-    for m in primary:
-        if "chest" in m or "pectoral" in m:    return "chest"
-        if "lat" in m or "back" in m or "trap" in m: return "back"
-        if "quad" in m or "hamstring" in m or "glute" in m or "calf" in m or "leg" in m: return "legs"
-        if "shoulder" in m or "deltoid" in m:  return "shoulders"
-        if "bicep" in m:                        return "biceps"
-        if "tricep" in m:                       return "triceps"
-        if "abdominal" in m or "core" in m or "abs" in m: return "core"
-    return "full_body"
+# ── Load prescription ─────────────────────────────────────────────────────────
+#
+# Load used to be looked up by (equipment, coarse muscle group), which is not
+# enough information to price a lift. Everything a barbell does to the chest got
+# one number and everything it does to the legs got another, so:
+#
+#     Barbell Bench Press   →  35–55 kg  (beginner)
+#     Barbell Curl          →  35–55 kg
+#     Barbell Deadlift      →  50–80 kg
+#     Barbell Squat         →  50–80 kg
+#     Ab Crunch Machine     →  48–78 kg   (`core` is missing from the machine
+#     Machine Bicep Curl    →  48–78 kg    table, so both fell back to `chest`)
+#
+# A beginner told to curl 55 kg does not attempt it — they conclude the app does
+# not know what a curl is, and they are right. And a deadlift priced identically
+# to a squat is wrong in the direction that gets people hurt.
+#
+# What a coach actually does is anchor the lift to the practitioner's bodyweight
+# and their training age. The multipliers below are the total system load for the
+# bilateral barbell or machine version of each movement at INTERMEDIATE level,
+# taken from the strength-standards ranges those lifts are ordinarily quoted in.
+# Level and sex scale it; the implement converts it.
+_LIFT_BW = {
+    # lower body
+    "squat":         1.25, "front_squat": 1.00, "leg_press": 2.20, "hack_squat": 1.40,
+    "deadlift":      1.50, "romanian":    1.20, "hip_thrust": 1.50, "good_morning": 0.70,
+    "lunge":         0.70, "step_up":     0.55, "calf_raise": 1.00,
+    "leg_extension": 0.55, "leg_curl":    0.45, "hip_abduction": 0.50,
+    # horizontal push
+    "bench":         0.85, "incline_press": 0.70, "chest_press": 0.85, "fly": 0.35,
+    # vertical push
+    "overhead_press": 0.60, "upright_row": 0.45, "lateral_raise": 0.21,
+    "front_raise":   0.20, "rear_delt":   0.20,
+    # pull
+    "row":           0.80, "pulldown":    0.85, "shrug": 1.20, "face_pull": 0.30,
+    "pullover":      0.35,
+    # arms and trunk
+    "curl":          0.30, "triceps_extension": 0.35, "pushdown": 0.45,
+    "core":          0.30,
+}
+
+# Movement → lift class, longest-match-first. The class is read off the name for
+# the same reason `_MOVEMENT_PATTERNS` is: the dataset records the muscle and the
+# machine, and neither of those is the lift.
+_LIFT_PATTERNS = (
+    ("leg_press",         re.compile(r"\bleg press\b", re.I)),
+    ("calf_raise",        re.compile(r"\b(calf|toe raise)", re.I)),
+    ("hack_squat",        re.compile(r"\b(hack|sissy)\b", re.I)),
+    ("front_squat",       re.compile(r"\bfront (barbell )?squat\b", re.I)),
+    ("leg_extension",     re.compile(r"\bleg extension", re.I)),
+    ("leg_curl",          re.compile(r"\b(leg curl|lying leg curls|hamstring curl)", re.I)),
+    ("hip_abduction",     re.compile(r"\b(abduct|adduct)", re.I)),
+    ("step_up",           re.compile(r"\bstep.?up", re.I)),
+    ("lunge",             re.compile(r"\b(lunge|split squat|bulgarian)", re.I)),
+    ("squat",             re.compile(r"\bsquat|\bwall sit\b", re.I)),
+    ("romanian",          re.compile(r"\b(romanian|stiff.?leg|rdl)\b", re.I)),
+    ("hip_thrust",        re.compile(r"\b(hip thrust|glute bridge|butt lift)", re.I)),
+    ("good_morning",      re.compile(r"\b(good morning|back extension|hyperextension)", re.I)),
+    ("deadlift",          re.compile(r"\b(deadlift|clean|snatch|swing)", re.I)),
+    ("incline_press",     re.compile(r"\bincline.*(press|bench)", re.I)),
+    ("fly",               re.compile(r"\b(fly|flye|pec deck|butterfly|crossover|iron cross)", re.I)),
+    ("pullover",          re.compile(r"\bpullover\b", re.I)),
+    ("bench",             re.compile(r"\bbench press\b", re.I)),
+    ("chest_press",       re.compile(r"\bchest press\b", re.I)),
+    ("lateral_raise",     re.compile(r"\b(lateral raise|side raise|scaption|deltoid raise)", re.I)),
+    ("rear_delt",         re.compile(r"\b(rear delt|reverse fly|rear lateral)", re.I)),
+    ("front_raise",       re.compile(r"\bfront raise|\bdumbbell raise\b", re.I)),
+    ("upright_row",       re.compile(r"\bupright row\b", re.I)),
+    ("shrug",             re.compile(r"\bshrug", re.I)),
+    ("face_pull",         re.compile(r"\bface pull\b", re.I)),
+    ("overhead_press",    re.compile(r"\b(shoulder press|overhead press|military|arnold|"
+                                     r"push press|neck press|bradford)", re.I)),
+    ("pulldown",          re.compile(r"\b(pulldown|pull.?down|lat pull)", re.I)),
+    ("row",               re.compile(r"\brow", re.I)),
+    ("pushdown",          re.compile(r"\b(pushdown|push.?down)", re.I)),
+    ("triceps_extension", re.compile(r"\b(tricep|skull.?crusher|kickback)", re.I)),
+    ("curl",              re.compile(r"\bcurl", re.I)),
+    ("core",              re.compile(r"\b(crunch|sit.?up|leg raise|twist|woodchop|"
+                                     r"leg pull|knee raise|hip raise|leg tuck)", re.I)),
+)
+
+# Training age, as a share of the intermediate standard.
+_LIFT_LEVEL = {"untrained": 0.40, "beginner": 0.62, "intermediate": 1.00, "advanced": 1.40}
+# Averages, not ceilings. Lower-body strength is closer between the sexes than
+# upper-body strength, which one flat factor cannot express.
+_LIFT_SEX = {"upper": 0.62, "lower": 0.72}
+_LOWER_CLASSES = {"squat", "front_squat", "leg_press", "hack_squat", "deadlift", "romanian",
+                  "hip_thrust", "good_morning", "lunge", "step_up", "calf_raise",
+                  "leg_extension", "leg_curl", "hip_abduction"}
+
+# A dumbbell pair carries about 80% of the barbell load for the same movement, so
+# each hand takes 40% of it. Cable stacks read low against a free weight through
+# the pulley; machines read close to it.
+_IMPLEMENT_FACTOR = {"barbell": 1.00, "machine": 1.00, "smith": 1.00,
+                     "cable": 0.70, "dumbbell": 0.40, "kettlebell": 0.40}
+_PER_HAND = {"dumbbell", "kettlebell"}
+# One limb lifts less than two, and the dataset says so in the name.
+_UNILATERAL = re.compile(r"\b(one.?arm|single.?arm|one.?leg|single.?leg|one arm|"
+                         r"alternating|alternate)\b", re.I)
+# Nobody holds a 38 kg dumbbell to squat with; the movement is limited by the grip
+# long before the legs run out.
+_DUMBBELL_CEILING = 45.0
+_DEFAULT_BODYWEIGHT = {"male": 70.0, "female": 60.0}
 
 
-def _get_weight_range(ex: dict, strength_level: str, gender: str) -> str:
-    """Return a starter weight range string or bodyweight progression note."""
-    eq = ex.get("equipment", "bodyweight").lower()
-    cat = ex.get("category", "strength").lower()
+# When the name does not identify the lift — 94 of the 503 weighted movements,
+# the floor presses and windmills and rollouts — the muscle it trains gives a
+# conservative class rather than nothing. Legs fall back to the extension rather
+# than the squat: under-quoting a starting load costs a set, over-quoting it
+# costs a back.
+_LIFT_BY_MUSCLE = {
+    "chest": "chest_press", "back": "row", "shoulders": "overhead_press",
+    "biceps": "curl", "triceps": "triceps_extension", "legs": "leg_extension",
+    "core": "core",
+}
 
-    # Cardio and timed exercises don't need weight
-    if cat == "cardio":
+
+def _lift_class(ex: dict) -> str | None:
+    name = ex.get("name", "")
+    for lift, rx in _LIFT_PATTERNS:
+        if rx.search(name):
+            return lift
+    return _LIFT_BY_MUSCLE.get(_muscle_key(ex))
+
+
+def _round_load(kg: float) -> float:
+    """Plates come in fixed sizes. Below 20 kg the useful increment is 1 kg;
+    above it, 2.5 — quoting a 63.4 kg bench press implies a precision the
+    estimate does not have."""
+    step = 1.0 if kg < 20 else 2.5
+    return max(step, round(kg / step) * step)
+
+
+def _fmt_kg(kg: float) -> str:
+    return f"{kg:.1f}".rstrip("0").rstrip(".")
+
+
+def _bodyweight_of(user_profile: dict, gender_key: str) -> float:
+    try:
+        kg = float(user_profile.get("weight_kg") or 0)
+    except (TypeError, ValueError):
+        kg = 0.0
+    return kg if 30 <= kg <= 250 else _DEFAULT_BODYWEIGHT[gender_key]
+
+
+def _get_weight_range(ex: dict, strength_level: str, gender: str,
+                      bodyweight: float | None = None) -> str:
+    """A starting load for THIS lift, at this bodyweight and this training age."""
+    eq = (ex.get("equipment") or "bodyweight").lower()
+    if (ex.get("category") or "").lower() == "cardio":
         return "Effort-based — see intensity note"
 
-    # Bodyweight exercises: return progression ladder
     if eq in ("bodyweight", "other"):
-        muscle = _primary_muscle_group(ex)
-        return _BODYWEIGHT_PROGRESSIONS.get(muscle, "Bodyweight · Add band/vest to progress")
+        return _BODYWEIGHT_PROGRESSIONS.get(
+            _muscle_key(ex), "Bodyweight · Add band/vest to progress")
+    if eq in ("bands", "resistance_bands"):
+        return "Light–heavy band · choose resistance that makes last 2 reps challenging"
 
-    # Map equipment aliases
-    eq_key = eq
-    if eq in ("dumbbells", "dumbbell"):      eq_key = "dumbbell"
-    elif eq in ("barbell",):                  eq_key = "barbell"
-    elif eq in ("machine",):                  eq_key = "machine"
-    elif eq in ("cable", "cables"):           eq_key = "cable"
-    elif eq in ("kettlebell", "kettlebells"): eq_key = "kettlebell"
-    elif eq in ("bands", "resistance_bands"): return "Light–heavy band · choose resistance that makes last 2 reps challenging"
-    else:                                     return "Moderate resistance · adjust to feel challenging by last rep"
+    implement = {"dumbbells": "dumbbell", "cables": "cable",
+                 "kettlebells": "kettlebell"}.get(eq, eq)
+    factor = _IMPLEMENT_FACTOR.get(implement)
+    lift = _lift_class(ex)
+    if factor is None or lift is None:
+        # An unpriced movement says so rather than guessing. It is the honest
+        # answer, and it is what the old table gave 35–55 kg for.
+        return "Moderate weight · adjust so the last 2 reps are hard and form holds"
 
-    muscle = _primary_muscle_group(ex)
     gender_key = "female" if str(gender).lower() in ("female", "f", "woman") else "male"
-    lvl = strength_level if strength_level in ("untrained", "beginner", "intermediate", "advanced") else "beginner"
+    level = strength_level if strength_level in _LIFT_LEVEL else "beginner"
 
-    equip_data = _WEIGHT_GUIDE.get(eq_key, {})
-    # Try exact muscle, then fall back to full_body or chest
-    muscle_data = equip_data.get(muscle) or equip_data.get("full_body") or equip_data.get("chest")
-    if not muscle_data:
-        return "Moderate weight · adjust so last 2 reps are challenging"
+    load = _LIFT_BW[lift] * (bodyweight or _DEFAULT_BODYWEIGHT[gender_key])
+    load *= _LIFT_LEVEL[level]
+    if gender_key == "female":
+        load *= _LIFT_SEX["lower" if lift in _LOWER_CLASSES else "upper"]
+    load *= factor
+    if implement in _PER_HAND:
+        # A one-arm dumbbell press is the same dumbbell as a two-arm one — the
+        # practitioner just does the sides in turn. Halving it here would have
+        # priced the single-arm variant of every movement at half the weight it
+        # is actually performed with. Unilateral only costs load when the
+        # implement is shared between the limbs.
+        load = min(load, _DUMBBELL_CEILING)
+    elif _UNILATERAL.search(ex.get("name", "")):
+        load *= 0.5
 
-    level_data = muscle_data.get(lvl, {})
-    lo, hi = level_data.get(gender_key, (0, 0))
-    if lo == 0:
-        return "Moderate weight · adjust so last 2 reps are challenging"
-
-    unit_note = " per hand" if eq_key == "dumbbell" else ""
-    return f"{lo}–{hi} kg{unit_note} · adjust so last 2 reps are hard but form stays perfect"
+    lo, hi = _round_load(load * 0.85), _round_load(load * 1.15)
+    # Light isolation rounds to a single plate step and the range collapses —
+    # "2–2 kg" reads as a defect rather than a starting point.
+    if hi <= lo:
+        hi = _round_load(lo + (1.0 if lo < 20 else 2.5))
+    unit = " per hand" if implement in _PER_HAND else ""
+    return (f"{_fmt_kg(lo)}–{_fmt_kg(hi)} kg{unit} · a starting estimate from your "
+            f"bodyweight — adjust so the last 2 reps are hard and form holds")
 
 
 # ── Ayurvedic Rest Day Recovery ───────────────────────────────────────────────
@@ -1305,7 +1326,7 @@ def _focus_label(focus: str, main_workout: list) -> str:
 
 def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profile,
                    week=1, user_id="default", strength_level="beginner", gender="male",
-                   dosha="vata"):
+                   dosha="vata", bodyweight=None):
     if focus == "rest":
         recovery = _REST_DAY_RECOVERY.get(dosha, _REST_DAY_RECOVERY["vata"])
         return {
@@ -1380,7 +1401,7 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
             "rest_seconds": rest,
             "role": role,
             "role_label": _ROLE_LABEL.get(role, "Accessory"),
-            "weight_range": _get_weight_range(ex, strength_level, gender),
+            "weight_range": _get_weight_range(ex, strength_level, gender, bodyweight),
             "week_note": rx.get("note", ""),
             "notes": _modification_for(ex),
             "instructions": ex.get("instructions", []),
@@ -1487,6 +1508,8 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     fitness_level = user_profile.get("fitness_level", "beginner") or "beginner"
     strength_level = gym_prefs.get("strength_level", fitness_level)
     gender = user_profile.get("gender", "male") or "male"
+    bodyweight = _bodyweight_of(
+        user_profile, "female" if str(gender).lower() in ("female", "f", "woman") else "male")
 
     schedule_focus = _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level)
     days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -1501,7 +1524,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
             build_day_plan(
                 i + 1, days_of_week[i], focus, muscle_split, gym_prefs, user_profile,
                 week=week, user_id=user_id, strength_level=strength_level,
-                gender=gender, dosha=dominant_dosha,
+                gender=gender, dosha=dominant_dosha, bodyweight=bodyweight,
             )
             for i, focus in enumerate(schedule_focus)
         ]
