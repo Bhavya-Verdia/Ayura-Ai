@@ -52,6 +52,23 @@ const GOALS = {
 //
 // The pairing is the default, not a restriction — any level can pick any of the
 // three, and the field stops being overwritten once the practitioner sets it.
+// What the practitioner can actually train with. This was hardcoded to
+// `['bodyweight']` for every user — the picker did not exist — so the 763
+// barbell, dumbbell, machine and cable exercises in the library were unreachable
+// in production no matter what gym someone had. Values must stay in step with
+// the server's EQUIPMENT_OPTIONS.
+const EQUIPMENT = [
+  { value: 'dumbbells',       label: 'Dumbbells' },
+  { value: 'barbell',         label: 'Barbell & plates' },
+  { value: 'machines',        label: 'Resistance machines' },
+  { value: 'cables',          label: 'Cable machine' },
+  { value: 'kettlebell',      label: 'Kettlebells' },
+  { value: 'resistance_bands', label: 'Resistance bands' },
+  { value: 'cardio_machines', label: 'Cardio machines' },
+  { value: 'jump_rope',       label: 'Jump rope' },
+  { value: 'pool',            label: 'Pool' },
+];
+
 const YOGA_SESSION_MINUTES = [30, 45, 60];
 const YOGA_SUGGESTED_MINUTES = {
   none:         30,
@@ -127,7 +144,9 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       payload.gym_goal = payload.gym_goal || 'general_fitness';
       payload.workout_days_per_week = parseInt(payload.workout_days_per_week || 4, 10);
       payload.workout_duration_minutes = parseInt(payload.workout_duration_minutes || 45, 10);
-      payload.available_equipment = ['bodyweight']; // hardcode for now
+      // Bodyweight is always available and is never a choice — the engine adds it
+      // regardless, and a plan has to be buildable for someone who ticks nothing.
+      payload.available_equipment = ['bodyweight', ...(form.available_equipment || [])];
       payload.training_style = payload.training_style || 'hypertrophy';
       payload.cardio_preference = payload.cardio_preference || 'moderate';
       payload.target_muscle_focus = payload.target_muscle_focus || 'full_body';
@@ -257,6 +276,37 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                   <option value="advanced">Advanced — 3+ years, near max lifts</option>
                 </select>
               </div>
+            </div>
+            <div className="pref-input-group">
+              <label>Equipment you can train with</label>
+              <div className="pref-chip-row">
+                {EQUIPMENT.map(eq => {
+                  const chosen = (form.available_equipment || []).includes(eq.value)
+                  return (
+                    <button
+                      key={eq.value}
+                      type="button"
+                      aria-pressed={chosen}
+                      className={`pref-chip${chosen ? ' active' : ''}`}
+                      onClick={() => setForm(p => {
+                        const current = p.available_equipment || []
+                        return {
+                          ...p,
+                          available_equipment: chosen
+                            ? current.filter(v => v !== eq.value)
+                            : [...current, eq.value],
+                        }
+                      })}
+                    >
+                      {eq.label}
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="pref-hint">
+                Bodyweight movements are always included. Tick nothing and the plan is
+                built from them alone.
+              </p>
             </div>
           </>
         );

@@ -489,8 +489,7 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
     if eq in ("bands", "resistance_bands"):
         return "Light–heavy band · choose resistance that makes last 2 reps challenging"
 
-    implement = {"dumbbells": "dumbbell", "cables": "cable",
-                 "kettlebells": "kettlebell"}.get(eq, eq)
+    implement = next(iter(_EQUIPMENT_ALIASES.get(eq, {eq})))
     factor = _IMPLEMENT_FACTOR.get(implement)
     lift = _lift_class(ex)
     if factor is None or lift is None:
@@ -630,6 +629,53 @@ def _condition_contra_tags(medical_history) -> set:
     return tags
 
 
+# ── Equipment ─────────────────────────────────────────────────────────────────
+#
+# The preference vocabulary and the dataset's vocabulary were never the same one.
+# Preferences offer `dumbbells`, `cables`, `resistance_bands` and `full_gym`; the
+# dataset tags exercises `dumbbell`, `cable`, `bands` and `machine`. The filter
+# compared them directly, so the only preference that ever matched anything was
+# `bodyweight` — which the filter adds unconditionally. A user with `full_gym`
+# selected was served a bodyweight plan, and `machine` was not reachable by any
+# preference at all.
+#
+# `_get_weight_range` had a private alias map of its own, which is how the load
+# guidance managed to price dumbbells the filter would never have selected.
+_EQUIPMENT_ALIASES = {
+    "bodyweight":       {"bodyweight"},
+    "dumbbells":        {"dumbbell"},
+    "dumbbell":         {"dumbbell"},
+    "barbell":          {"barbell"},
+    "machines":         {"machine"},
+    "machine":          {"machine"},
+    "cables":           {"cable"},
+    "cable":            {"cable"},
+    "kettlebell":       {"kettlebell"},
+    "kettlebells":      {"kettlebell"},
+    "resistance_bands": {"bands"},
+    "bands":            {"bands"},
+    "jump_rope":        {"jump_rope"},
+    "pool":             {"pool"},
+    # The cardio machines are one purchase decision as far as the practitioner is
+    # concerned: either the gym has a cardio floor or it does not.
+    "cardio_machines":  {"treadmill", "stationary_bike", "rowing_machine", "elliptical",
+                         "stair_climber", "air_bike", "battle_ropes", "box"},
+}
+_FULL_GYM = ("dumbbells", "barbell", "machines", "cables", "kettlebell",
+             "resistance_bands", "jump_rope", "cardio_machines")
+
+
+def _normalise_equipment(available) -> set:
+    """The dataset's equipment tokens for what the practitioner says they have."""
+    requested = {str(eq).lower().strip() for eq in (available or ["bodyweight"])}
+    if "full_gym" in requested:
+        requested |= set(_FULL_GYM)
+    tokens = {"bodyweight"}
+    for eq in requested:
+        tokens |= _EQUIPMENT_ALIASES.get(eq, {eq})
+    return tokens
+
+
 # ── Exercise filtering ────────────────────────────────────────────────────────
 
 # Self-myofascial release — foam rolling. Named as a suffix throughout the
@@ -639,8 +685,7 @@ _SMR_NAME = re.compile(r"-\s*smr\b", re.I)
 
 
 def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
-    available_eq = {eq.lower() for eq in gym_prefs.get("available_equipment", ["bodyweight"])}
-    available_eq.add("bodyweight")
+    available_eq = _normalise_equipment(gym_prefs.get("available_equipment"))
 
     # Beginners get beginner + intermediate exercises. The source dataset labels
     # only ~5% of exercises 'beginner' (almost all foundational lifts — bench
@@ -1612,8 +1657,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     muscle_split = split_by_muscle_group(filtered)
 
     workout_days = gym_prefs.get("workout_days_per_week", 4)
-    available_eq = {eq.lower() for eq in gym_prefs.get("available_equipment", ["bodyweight"])}
-    available_eq.add("bodyweight")
+    available_eq = _normalise_equipment(gym_prefs.get("available_equipment"))
     is_bodyweight_only = available_eq <= {"bodyweight", "bands", "jump_rope"}
     fitness_level = user_profile.get("fitness_level", "beginner") or "beginner"
     strength_level = gym_prefs.get("strength_level", fitness_level)

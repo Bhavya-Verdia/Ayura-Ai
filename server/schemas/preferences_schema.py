@@ -17,7 +17,13 @@ YOGA_GOALS = {"flexibility", "stress_relief", "strength", "balance", "healing", 
 DIET_GOALS = {"weight_loss", "muscle_support", "gut_health", "energy", "detox", "general_wellness"}
 PK_GOALS = {"detox", "rejuvenation", "stress_relief", "seasonal_cleanse", "specific_condition"}
 
-EQUIPMENT_OPTIONS = {"bodyweight", "dumbbells", "full_gym", "resistance_bands", "kettlebell", "barbell", "cables"}
+# Must stay in step with `gym_plan_engine._EQUIPMENT_ALIASES`, which translates
+# these into the dataset's own equipment tokens. They were two different
+# vocabularies with no translation between them, so the only value that ever
+# selected an exercise was `bodyweight`.
+EQUIPMENT_OPTIONS = {"bodyweight", "dumbbells", "barbell", "machines", "cables",
+                     "kettlebell", "resistance_bands", "cardio_machines", "pool",
+                     "jump_rope", "full_gym"}
 YOGA_STYLES = {"hatha", "vinyasa", "restorative", "yin", "power", "ashtanga", "kundalini"}
 DIETARY_TYPES = {"vegetarian", "vegan", "eggetarian", "non_vegetarian", "pescatarian"}
 FOOD_ALLERGIES = {"gluten", "dairy", "nuts_tree", "peanuts", "soy", "eggs", "shellfish", "fish", "sesame", "mustard"}
@@ -42,7 +48,8 @@ class GymPreferences(BaseModel):
     # Equipment
     available_equipment: list[str] = Field(
         default=["bodyweight"],
-        description="Available equipment: bodyweight / dumbbells / full_gym / resistance_bands / kettlebell"
+        description=("What the practitioner can train with. One of EQUIPMENT_OPTIONS; "
+                     "`full_gym` expands to everything. Bodyweight is always available.")
     )
 
     # Preferences & restrictions
@@ -85,7 +92,7 @@ class GymPreferences(BaseModel):
         invalid = set(v) - EQUIPMENT_OPTIONS
         if invalid:
             raise ValueError(f"Unknown equipment: {invalid}. Valid: {EQUIPMENT_OPTIONS}")
-        return v
+        return v or ["bodyweight"]
 
 
 # ─── Yoga Preferences ────────────────────────────────────────────────────────
