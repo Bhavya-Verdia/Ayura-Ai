@@ -226,6 +226,17 @@ export function GymView({ plan }) {
         </div>
       )}
 
+      {/* What the practitioner's starting point changed about the plan — impact
+          work left out, conditioning kept light, volume started a set lower. Each
+          of those is a visible absence, and an unexplained absence reads as a
+          gap in the library rather than a decision. */}
+      {plan.adaptation_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.adaptation_notice}</span>
+        </div>
+      )}
+
       {/* ── Day-list toolbar ── */}
       {weekDays.length > 0 && (
         <div className="plan-days-toolbar">

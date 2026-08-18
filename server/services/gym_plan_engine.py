@@ -189,7 +189,8 @@ def _resolve_scheme(goal: str, training_style=None) -> str:
     return scheme or _GOAL_SCHEME.get(goal, "general_fitness")
 
 
-def _get_goal_prescription(goal: str, week: int, level: str = "intermediate") -> dict:
+def _get_goal_prescription(goal: str, week: int, level: str = "intermediate",
+                           activity: str = None) -> dict:
     """The week's sets, reps and rest, adjusted for training age.
 
     Level used to gate WHICH exercises were eligible and nothing else, so a
@@ -201,7 +202,8 @@ def _get_goal_prescription(goal: str, week: int, level: str = "intermediate") ->
     """
     table = _GOAL_WEEKS.get(goal, _GOAL_WEEKS["general_fitness"])
     rx = dict(table[min(week - 1, 3)])
-    delta = _LEVEL_SET_DELTA.get(level, 0)
+    delta = _LEVEL_SET_DELTA.get(level, 0) + _ACTIVITY_SET_DELTA.get(
+        str(activity or "").lower(), 0)
     rx["sets"] = max(_MIN_SETS, min(_MAX_SETS, int(rx["sets"]) + delta))
     # Week 1's rest, carried through the block. The goal tables shorten rest week
     # over week to raise metabolic demand, which is right for the tiers that can
@@ -636,6 +638,43 @@ _YOUTH_AGE = 18
 _AGE_AVOID_TAGS = {"osteoporosis", "hypertension"}
 
 
+# Body composition changes what a session can safely ask for, and how much of it
+# the practitioner can absorb. `bmi_category` was echoed into `user_summary` and
+# read by nothing; `activity_level` was not read at all. A sedentary 118 kg
+# beginner and an active 118 kg beginner were given the same plan.
+_BMI_GROUPS = {
+    "severely_underweight": "underweight", "underweight": "underweight",
+    "normal": "normal", "overweight": "overweight",
+    "obese_class1": "obese", "obese_class2": "obese", "obese_class3": "obese",
+}
+
+# Impact is a property of the movement, and the dataset has no tag for it — its
+# contraindication vocabulary describes joints, not forces. Jumping, skipping,
+# bounding and running land at several times bodyweight through the knee and the
+# ankle; at obese classifications that is the wrong risk to open a programme
+# with, whatever the practitioner's training age. Everything else stays: squats,
+# lunges, the whole resistance library, and the low-impact conditioning that
+# actually suits the goal.
+_IMPACT_NAME = re.compile(
+    r"\b(jump|jumping|skip|skipping|rope|sprint|running|run|burpee|jack|jacks|"
+    r"hop|hops|bound|bounding|plyo|leap|high knee|depth|tuck jump)\b", re.I)
+
+# Training volume someone can absorb from where they are starting. The same shape
+# as `_LEVEL_SET_DELTA`: reps and rest belong to the goal, and how much of them a
+# body recovers from is a property of the practitioner.
+_ACTIVITY_SET_DELTA = {"sedentary": -1, "light": 0, "moderate": 0,
+                       "active": 0, "very_active": +1}
+
+
+def _bmi_group(bmi_category) -> str:
+    return _BMI_GROUPS.get(str(bmi_category or "").lower(), "normal")
+
+
+def _is_impact(ex: dict) -> bool:
+    return (ex.get("category") == "plyometrics"
+            or bool(_IMPACT_NAME.search(ex.get("name", ""))))
+
+
 def _age_group(age) -> str:
     try:
         age = int(age)
@@ -842,6 +881,7 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None,
     # is declining by 60 whether or not anyone has said so, which is the reasoning
     # the yoga engine already uses for its blanket senior exclusions.
     age_group = _age_group(user_profile.get("age"))
+    bmi_group = _bmi_group(user_profile.get("bmi_category"))
     if age_group in ("senior", "youth"):
         allowed_levels = [lv for lv in allowed_levels if lv != "advanced"]
         avoid_tags = avoid_tags | _AGE_AVOID_TAGS
@@ -880,6 +920,12 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None,
         # Jump training is the wrong risk for a 65-year-old and for a body still
         # growing, whatever level they enter.
         if age_group in ("senior", "youth") and ex.get("category") == "plyometrics":
+            continue
+        # And for a body carrying enough mass that the landing forces are the
+        # limiting factor rather than the muscles. Resistance work is untouched —
+        # squats, lunges and the whole library stay; it is the airborne half that
+        # goes.
+        if bmi_group == "obese" and _is_impact(ex):
             continue
         # Conditioning is exempt from the goal gate. The dataset marks cardio
         # unsuitable for `muscle_gain` and `strength` — true of what it builds,
@@ -1136,6 +1182,28 @@ def _focus_notice(muscle_focus, workout_days, is_bodyweight_only, fitness_level)
                 f"trains you evenly; four days a week is where an emphasis starts to mean "
                 f"something.")
     return None
+
+
+def _adaptation_notice(bmi_group: str, activity_level) -> str | None:
+    """Say what the practitioner's starting point changed about the plan."""
+    parts = []
+    if bmi_group == "obese":
+        parts.append(
+            "This plan leaves out jumping, skipping and running. Landing forces run to "
+            "several times bodyweight through the knee and ankle, and at your current "
+            "weight that is the limiting factor rather than the muscles — so the "
+            "conditioning here is low-impact, and it works just as well. Squats, lunges "
+            "and the rest of the resistance work are untouched.")
+    if bmi_group == "underweight":
+        parts.append(
+            "Conditioning is kept light here. Putting mass on means holding onto a "
+            "surplus, and the resistance work is what asks the body to build with it.")
+    if str(activity_level or "").lower() == "sedentary":
+        parts.append(
+            "Starting volume is one set below the standard prescription. Coming from a "
+            "sedentary baseline, the first month is about turning up — the volume goes "
+            "up from there, and it will still be more than enough to be sore.")
+    return " ".join(parts) or None
 
 
 def _preference_notice(report: dict) -> str | None:
@@ -1801,10 +1869,18 @@ def _cardio_preference(gym_prefs) -> str:
     return pref if pref in _CONDITIONING_SHARE else _DEFAULT_CARDIO_PREFERENCE
 
 
-def _conditioning_days(training_days: int, goal: str, preference: str) -> int:
+# Someone who needs to put mass on should not be spending the surplus on the
+# bike. The cap is the same shape as the one that protects a strength block.
+_UNDERWEIGHT_CONDITIONING_SHARE = 1 / 3
+
+
+def _conditioning_days(training_days: int, goal: str, preference: str,
+                       bmi_group: str = "normal") -> int:
     """How many of the week's training days end with conditioning."""
     share = _CONDITIONING_SHARE.get(preference, _CONDITIONING_SHARE[_DEFAULT_CARDIO_PREFERENCE])
     share = min(share, _MAX_CONDITIONING_SHARE.get(goal, 1.0))
+    if bmi_group == "underweight":
+        share = min(share, _UNDERWEIGHT_CONDITIONING_SHARE)
     if share <= 0:
         return 0
     return max(1, min(training_days, round(training_days * share)))
@@ -1934,15 +2010,16 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     level = user_profile.get("fitness_level", "beginner") or "beginner"
     if level not in ["beginner", "intermediate", "advanced"]:
         level = "beginner"
+    activity = user_profile.get("activity_level")
 
-    rx = _get_goal_prescription(scheme, week, level)
+    rx = _get_goal_prescription(scheme, week, level, activity)
     # The COUNT comes off week 1 and holds for the block, while the sets and reps
     # move with the periodisation. Sizing each week against its own prescription
     # made peak weeks (four sets instead of three) drop an exercise, which
     # changed the day's core and cost the very continuity the stable core exists
     # to give. A real programme keeps the lifts and moves the volume.
     target, primary_slots = _session_shape(
-        duration, scheme, _get_goal_prescription(scheme, 1, level))
+        duration, scheme, _get_goal_prescription(scheme, 1, level, activity))
 
     # The finisher takes a slot rather than being added on top of a session that
     # already fills the clock — the practitioner asked for forty-five minutes.
@@ -2145,7 +2222,8 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     # day, so "light" means two days out of six and not a coin flip six times.
     cardio_preference = _cardio_preference(gym_prefs)
     training_days = [i for i, focus in enumerate(schedule_focus) if focus != "rest"]
-    finisher_count = _conditioning_days(len(training_days), goal, cardio_preference)
+    bmi_group = _bmi_group(user_profile.get("bmi_category"))
+    finisher_count = _conditioning_days(len(training_days), goal, cardio_preference, bmi_group)
     finisher_days = {training_days[i] for i in _spread(finisher_count, len(training_days))}
 
     four_week_plan = []
@@ -2166,7 +2244,8 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         # the practitioner's own, and it names what it describes: the main lift.
         # The supporting roles are published alongside it rather than left for the
         # reader to infer from the exercise rows.
-        base_rx = _get_goal_prescription(scheme, week, fitness_level)
+        base_rx = _get_goal_prescription(scheme, week, fitness_level,
+                                         user_profile.get("activity_level"))
         four_week_plan.append({
             "week": week,
             "theme": {1: "Foundation", 2: "Volume Build", 3: "Intensity Peak", 4: "Deload & Reset"}[week],
@@ -2250,4 +2329,5 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "cardio_notice": _cardio_notice(goal, cardio_preference, finisher_count,
                                         len(training_days)),
         "preference_notice": _preference_notice(preference_report),
+        "adaptation_notice": _adaptation_notice(bmi_group, user_profile.get("activity_level")),
     }
