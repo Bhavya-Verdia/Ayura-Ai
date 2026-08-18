@@ -463,3 +463,56 @@ def test_a_pregnant_plan_says_the_library_is_thin():
          "gym_goal": "muscle_gain", "workout_days_per_week": 4,
          "workout_duration_minutes": 45})
     assert unrestricted["pool_notice"] is None
+
+
+# ── Bodyweight coverage and the beginner's first month ───────────────────────
+
+def test_a_beginner_is_never_prescribed_plyometrics():
+    """The level allowance hands beginners the intermediate tier on purpose —
+    the dataset files foundational lifts (bench press, rows, shoulder press) as
+    intermediate, and a beginner-only gate leaves push and pull days empty. Jump
+    training is not what that allowance was for, and not one of the 25
+    plyometrics is rated beginner: 16 intermediate, 9 advanced.
+
+    Before this, a beginner asking for endurance was served Rocket Jump and
+    Freehand Jump Squat nine times each over four weeks, because "endurance"
+    resolved to cardio plus plyometrics and nothing else.
+    """
+    from services.gym_plan_engine import filter_exercises, gym_exercises
+
+    for goal in ("endurance", "fat_loss", "general_fitness"):
+        pool = filter_exercises({**_YOGA_BASE_PROFILE, "fitness_level": "beginner"},
+                                {"available_equipment": ["bodyweight"], "gym_goal": goal},
+                                gym_exercises)
+        plyo = [e["name"] for e in pool if e.get("category") == "plyometrics"]
+        assert not plyo, f"{goal}: plyometrics in a beginner pool — {plyo[:4]}"
+
+    # An intermediate still gets them; this is a beginner gate, not a ban.
+    inter = filter_exercises({**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+                             {"available_equipment": ["bodyweight"], "gym_goal": "endurance"},
+                             gym_exercises)
+    assert [e for e in inter if e.get("category") == "plyometrics"]
+
+
+@pytest.mark.parametrize("goal", ["general_fitness", "muscle_gain", "endurance", "fat_loss"])
+def test_a_home_user_can_train_every_muscle_group(goal):
+    """`goal_suitability` is derived from `category`, so all 797 strength
+    exercises were `endurance: false` and "endurance" meant cardio plus
+    plyometrics — 45 exercises, 16 after the bodyweight filter, with ZERO for
+    chest, back, shoulders, biceps or core. Bodyweight and band work is high-rep
+    by nature and now counts for endurance and fat loss.
+
+    The other half was content: 130 of 893 exercises are bodyweight and 42 of
+    those are abdominal, so a home user had one shoulder exercise and two for
+    biceps. Eleven equipment-free additions cover shoulders, biceps and back.
+    """
+    from services.gym_plan_engine import filter_exercises, split_by_muscle_group, gym_exercises
+
+    pool = filter_exercises({**_YOGA_BASE_PROFILE, "fitness_level": "beginner"},
+                            {"available_equipment": ["bodyweight"], "gym_goal": goal},
+                            gym_exercises)
+    split = split_by_muscle_group(pool)
+    for group in ("chest", "back", "shoulders", "biceps", "triceps", "legs", "core"):
+        assert len(split[group]) >= 2, (
+            f"{goal}: only {len(split[group])} bodyweight options for {group} — "
+            "a home user cannot train it")
