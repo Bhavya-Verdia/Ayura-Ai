@@ -2530,21 +2530,6 @@ def build_sequence(filtered_poses, yoga_prefs, user_profile, day_num: int, week:
     main_seq = _arc_sort(main_seq)
     all_used = {p["id"] for p in main_seq}
 
-    # The split only produces variety if there is material left over once the
-    # core is taken. A beginner in week 1 has around nine safe main-role poses
-    # and the session needs most of them, so every day draws the same accent and
-    # the week is one practice repeated. That is the honest outcome — inventing
-    # rotation would mean serving poses the filter excluded — but it must not be
-    # presented as a rotating week. Same reasoning as `pool_limited`.
-    #
-    # One spare pose is not rotation. The threshold used to be zero spare, which
-    # made the disclosure knife-edge: a beginner week sat at exactly one spare,
-    # and re-pricing the sections by nine seconds took one pose off the main
-    # sequence and silently switched the notice off for every beginner. What the
-    # flag claims is that the week cannot meaningfully move, and a week whose
-    # accent can swap a single pose cannot. `_MIN_ROTATION_SPARE` is the margin.
-    rotation_limited = len(accent_pool) - len(main_seq) <= _MIN_ROTATION_SPARE
-
     all_used |= opener_ids
     # The opener is fixed for the week, so it is core by definition.
     core_ids |= opener_ids
@@ -2572,6 +2557,38 @@ def build_sequence(filtered_poses, yoga_prefs, user_profile, day_num: int, week:
     cooldown = _add_counterpose(main_seq, cooldown, cooldown_pool, exp, week, age_group,
                                 f"{user_id}-counter-d{day_num}-w{week}", all_used)
     all_used.update(p["id"] for p in cooldown)
+
+    # ── Can this week move at all? ───────────────────────────────────────────
+    # The split only produces variety if material is left over once a session has
+    # taken what it needs. Where nothing is left, every day draws the same poses
+    # and the week is one practice repeated — the honest outcome, since inventing
+    # rotation would mean serving poses the safety filter excluded, but it must
+    # not be presented as a rotating week. Same reasoning as `pool_limited`.
+    #
+    # This measured `len(accent_pool) - len(main_seq)`: spare in the MAIN pool
+    # alone. Two things were wrong with that.
+    #
+    # A session uses most of a beginner's main-role poses by construction, so the
+    # spare sat at the threshold however large the library grew. The 13 poses
+    # added on 2026-08-18 took the senior main sequence from 4 to 8 and halved the
+    # median duration deviation, and left this flag at exactly 18 of 28 sessions —
+    # still telling a beginner their safe poses "barely fill one session" while
+    # their session ran thirteen poses long.
+    #
+    # And it only ever fired for beginners. Measured at 45 minutes: a beginner
+    # week carries 36-38 distinct poses at 94% day-to-day carryover, an
+    # intermediate week 23-37, an ADVANCED week 3 fifteen at 98% carryover — least
+    # variety of the three, no notice, because a deep main pool leaves spare the
+    # week never spends. The flag was describing pool shape rather than what the
+    # practitioner receives.
+    #
+    # It now measures what it claims — everything eligible across all three
+    # sections against everything one session spends — at every level, with the
+    # threshold unchanged. A week whose whole safe library is one pose larger than
+    # a single session cannot meaningfully move.
+    session_ids = {p["id"] for p in warmup + main_seq + cooldown}
+    week_material = {p["id"] for p in list(accent_pool) + list(warmup_pool) + list(cooldown_pool)}
+    rotation_limited = len(week_material - session_ids) <= _MIN_ROTATION_SPARE
 
     # Falling short of the minimum means the pool ran dry — not merely that the
     # session was short, which is a legitimate outcome of a 15-minute request.

@@ -967,15 +967,40 @@ def test_one_day_is_mostly_yesterday(experience):
 
 
 def test_a_week_that_cannot_rotate_says_so():
-    """A beginner has around nine safe main-role poses and a session needs most
-    of them, so the week genuinely repeats. Inventing variety would mean serving
-    poses the safety filter excluded; presenting the repetition as a rotating
-    week is the other way to get this wrong."""
-    plan = full_plan(pr=prefs(yoga_experience="beginner"))
+    """Where a safe pool is barely larger than one session the week genuinely
+    repeats. Inventing variety would mean serving poses the safety filter
+    excluded; presenting the repetition as a rotating week is the other way to
+    get this wrong.
+
+    A herniated disc plus back pain is the profile that still qualifies — 24
+    eligible poses against a session that spends 17 of them. It used to be every
+    beginner, which was the flag measuring spare in the MAIN pool alone: a
+    beginner session uses most of its main-role poses by construction, so the
+    notice fired for 18 of 28 healthy beginner sessions carrying 36-38 distinct
+    poses a week, and never for an advanced week 3 carrying fifteen.
+    """
+    restricted = profile(medical_history=["back_pain"],
+                         injuries_or_limitations=["herniated_disc"])
+    plan = full_plan(prof=restricted, pr=prefs(yoga_experience="beginner",
+                                               time_available_minutes=45))
     limited = [s for s in sessions(plan) if s["rotation_limited"]]
-    assert limited, "expected a beginner week to be too thin to rotate"
+    assert limited, "expected a heavily restricted week to be too thin to rotate"
     for session in limited:
         assert session["rotation_notice"]
+
+
+def test_the_rotation_notice_is_not_just_a_beginner_tax():
+    """The flag has to describe what the practitioner receives, not the shape of
+    their pool. A healthy beginner's week carries as many distinct poses as an
+    intermediate's and more than an advanced one's — it must not be the only
+    level told its practice cannot move."""
+    for experience in ("beginner", "intermediate", "advanced"):
+        plan = full_plan(pr=prefs(yoga_experience=experience,
+                                  time_available_minutes=45))
+        limited = [s for s in sessions(plan) if s["rotation_limited"]]
+        assert not limited, (
+            f"a healthy {experience} was told {len(limited)} of its sessions "
+            "cannot rotate")
 
 
 def test_a_plan_with_room_to_rotate_carries_no_rotation_notice():
