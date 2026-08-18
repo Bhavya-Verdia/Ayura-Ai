@@ -285,7 +285,16 @@ export function GymView({ plan }) {
                           return (
                             <div key={j} className="gym-exercise-row">
                               <div className="gym-ex-top">
-                                <span className="gym-ex-name">{ex.exercise_name || ex.name}</span>
+                                <span className="gym-ex-name">
+                                  {/* What the movement is FOR in this session. The plan
+                                      now programs a main lift, its support, and accessory
+                                      work at different sets, reps and rest — without the
+                                      label the rows read as an unexplained inconsistency. */}
+                                  {ex.role && ex.role !== 'accessory' && (
+                                    <span className={`gym-ex-role gym-ex-role-${ex.role}`}>{ex.role_label}</span>
+                                  )}
+                                  {ex.exercise_name || ex.name}
+                                </span>
                                 <div className="gym-ex-chips">
                                   <span className="gym-ex-badge">{ex.sets} × {ex.reps}</span>
                                   {ex.rest_seconds && <span className="gym-ex-rest">{ex.rest_seconds}s rest</span>}
