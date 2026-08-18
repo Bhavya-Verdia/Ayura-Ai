@@ -899,7 +899,58 @@ def split_by_muscle_group(exercises):
 
 # ── Weekly schedule builder ───────────────────────────────────────────────────
 
-def _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level):
+# A week built around the region the practitioner asked to prioritise.
+#
+# `target_muscle_focus` is a required field in the gym form — Full Body, Upper,
+# Lower, Core or Back — and nothing read it. Someone who said "my back is the
+# priority" got the same four-day split as someone who said "core", which is the
+# split everybody got.
+#
+# Emphasis is a second day for the region, not the removal of the others: every
+# schedule below still trains legs, still pushes and still pulls. A specialised
+# block that drops a movement pattern is how people get hurt in the eleventh week,
+# and it is not what someone means when they say they want to focus on their back.
+_FOCUS_SCHEDULES = {
+    "upper": {
+        4: ["chest_triceps", "rest", "back_biceps", "shoulders_arms", "rest", "legs_core", "rest"],
+        5: ["chest", "back", "rest", "shoulders_arms", "legs_core", "arms", "rest"],
+        # Not chest / back / shoulders / arms / legs / conditioning — that is the
+        # balanced six-day split with the days shuffled, and it produced one set
+        # LESS upper-body volume than no emphasis at all. Six days is enough for
+        # push and pull twice each, which is what an upper emphasis is.
+        6: ["push", "pull", "legs_core", "push", "pull", "arms", "rest"],
+    },
+    "lower": {
+        4: ["legs", "rest", "push", "legs_core", "rest", "pull", "rest"],
+        5: ["legs", "push", "rest", "legs_core", "pull", "core_cardio", "rest"],
+        6: ["legs", "push", "legs_core", "pull", "shoulders", "core_cardio", "rest"],
+    },
+    "back": {
+        4: ["back", "rest", "chest_triceps", "legs_core", "rest", "back_biceps", "rest"],
+        5: ["back", "chest", "rest", "legs", "back_biceps", "core_cardio", "rest"],
+        6: ["back", "chest", "legs", "back_biceps", "shoulders", "core_cardio", "rest"],
+    },
+    "core": {
+        4: ["push", "rest", "legs_core", "pull", "rest", "core_cardio", "rest"],
+        5: ["chest", "back", "rest", "legs_core", "shoulders_core", "core_cardio", "rest"],
+        6: ["chest", "back", "legs_core", "shoulders_core", "arms", "core_cardio", "rest"],
+    },
+}
+# Below four days there is one balanced rotation and no room for a second day of
+# anything. Saying so beats quietly ignoring the field, which is what used to
+# happen at every day count.
+_MIN_DAYS_TO_SPECIALISE = 4
+
+
+def _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level,
+                           muscle_focus="full_body"):
+    specialised = _FOCUS_SCHEDULES.get(muscle_focus, {}).get(min(workout_days, 6))
+    if specialised and not (is_bodyweight_only and fitness_level == "beginner"):
+        return specialised
+    return _base_weekly_schedule(workout_days, is_bodyweight_only, fitness_level)
+
+
+def _base_weekly_schedule(workout_days, is_bodyweight_only, fitness_level):
     if is_bodyweight_only and fitness_level == "beginner":
         if workout_days <= 2:
             return ["full_body", "rest", "full_body", "rest", "rest", "rest", "rest"]
@@ -937,6 +988,25 @@ def _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level):
         # `_schedule_notice` says that is what happened.
         return ["chest", "back", "legs", "shoulders", "arms", "core_cardio", "rest"]
     return ["full_body", "rest", "full_body", "rest", "full_body", "rest", "rest"]
+
+
+def _focus_notice(muscle_focus, workout_days, is_bodyweight_only, fitness_level) -> str | None:
+    """Say when the requested emphasis could not shape the week."""
+    if muscle_focus not in _FOCUS_SCHEDULES:
+        return None
+    region = {"upper": "upper body", "lower": "lower body",
+              "core": "core", "back": "back"}[muscle_focus]
+    if is_bodyweight_only and fitness_level == "beginner":
+        return (f"You asked to prioritise the {region}. A bodyweight beginner's week is "
+                f"built from full-body sessions, which is the right place to start and "
+                f"leaves no separate day to give the {region}. Adding equipment, or "
+                f"moving past beginner, opens the split up.")
+    if workout_days < _MIN_DAYS_TO_SPECIALISE:
+        return (f"You asked to prioritise the {region}, and a {workout_days}-day week has "
+                f"room for one balanced rotation and no second day of anything. This plan "
+                f"trains you evenly; four days a week is where an emphasis starts to mean "
+                f"something.")
+    return None
 
 
 def _schedule_notice(requested_days: int, schedule: list) -> str | None:
@@ -1779,7 +1849,9 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     bodyweight = _bodyweight_of(
         user_profile, "female" if str(gender).lower() in ("female", "f", "woman") else "male")
 
-    schedule_focus = _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level)
+    muscle_focus = gym_prefs.get("target_muscle_focus") or "full_body"
+    schedule_focus = _build_weekly_schedule(
+        workout_days, is_bodyweight_only, fitness_level, muscle_focus)
     days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     user_id = str(user_profile.get("id") or user_profile.get("_id") or "default")
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
@@ -1871,4 +1943,6 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "disclaimer": disclaimer,
         "pool_notice": pool_notice,
         "schedule_notice": _schedule_notice(workout_days, schedule_focus),
+        "focus_notice": _focus_notice(muscle_focus, workout_days, is_bodyweight_only,
+                                      fitness_level),
     }

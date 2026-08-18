@@ -1359,3 +1359,64 @@ def test_the_week_has_the_days_that_were_asked_for(days):
         assert plan["schedule_notice"], "the week is short and does not say so"
     else:
         assert plan["schedule_notice"] is None
+
+
+_EMPHASIS_MUSCLES = {
+    "upper": ("chest", "back", "shoulders", "biceps", "triceps"),
+    "lower": ("legs",),
+    "back": ("back",),
+    "core": ("core",),
+}
+
+
+def _weekly_volume(plan):
+    from services.gym_plan_engine import _muscle_key
+
+    by_name = {e["name"]: e for e in gym_exercises}
+    volume = collections.Counter()
+    for day in plan["four_week_plan"][0]["days"]:
+        for ex in day["main_workout"]:
+            volume[_muscle_key(by_name[ex["exercise_name"]])] += ex["sets"]
+    return volume
+
+
+def _plan_for(focus, days):
+    return generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain",
+         "workout_days_per_week": days, "workout_duration_minutes": 60,
+         "target_muscle_focus": focus})
+
+
+@pytest.mark.parametrize("focus", ["upper", "lower", "back", "core"])
+@pytest.mark.parametrize("days", [4, 5, 6])
+def test_the_region_you_asked_to_prioritise_gets_more_work(focus, days):
+    """`target_muscle_focus` is a required field in the gym form and nothing read
+    it. Someone who said "my back is the priority" got the same split as someone
+    who said "core" — the split everybody got."""
+    balanced = _weekly_volume(_plan_for("full_body", days))
+    emphasised = _weekly_volume(_plan_for(focus, days))
+    muscles = _EMPHASIS_MUSCLES[focus]
+    before = sum(balanced[m] for m in muscles)
+    after = sum(emphasised[m] for m in muscles)
+    assert after > before, f"{focus} {days}d: {before} sets balanced, {after} emphasised"
+
+
+@pytest.mark.parametrize("focus", ["upper", "lower", "back", "core"])
+@pytest.mark.parametrize("days", [4, 5, 6])
+def test_an_emphasis_never_drops_a_movement_pattern(focus, days):
+    """Emphasis is a second day for the region, not the removal of the others. A
+    specialised block that drops a movement pattern is how people get hurt in the
+    eleventh week, and it is not what someone means by "focus on my back"."""
+    volume = _weekly_volume(_plan_for(focus, days))
+    for essential in ("legs", "chest", "back"):
+        assert volume[essential] > 0, f"{focus} {days}d trains no {essential}: {dict(volume)}"
+
+
+@pytest.mark.parametrize("days", [2, 3])
+def test_a_short_week_says_it_cannot_specialise(days):
+    """Below four days there is one balanced rotation and no room for a second day
+    of anything. Saying so beats quietly ignoring the field."""
+    plan = _plan_for("back", days)
+    assert plan["focus_notice"], f"{days}-day week ignored the emphasis in silence"
+    assert _plan_for("full_body", days)["focus_notice"] is None

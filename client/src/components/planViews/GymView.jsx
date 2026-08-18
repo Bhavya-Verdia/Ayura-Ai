@@ -193,6 +193,16 @@ export function GymView({ plan }) {
         </div>
       )}
 
+      {/* Why the emphasis they asked for is not visible in the week — a two- or
+          three-day week, or a bodyweight beginner's full-body block, has no
+          second day to give it. */}
+      {plan.focus_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.focus_notice}</span>
+        </div>
+      )}
+
       {/* ── Day-list toolbar ── */}
       {weekDays.length > 0 && (
         <div className="plan-days-toolbar">
