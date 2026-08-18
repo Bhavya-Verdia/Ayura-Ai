@@ -8,6 +8,8 @@ These lock in the demo-hardening fixes:
   - pregnancy-unsafe poses never reach a pregnant user
   - cooling/forceful pranayama is gated for the relevant medical conditions
 """
+import collections
+
 import pytest
 
 from services.gym_plan_engine import (
@@ -942,3 +944,53 @@ def test_the_week_header_describes_the_lifts_underneath_it(level):
                         hdr["sets"], hdr["reps"], hdr["rest_seconds"]), (
                         f"{level}/{goal} W{week['week']}: header {hdr['sets']}x{hdr['reps']} "
                         f"vs {ex['exercise_name']} {ex['sets']}x{ex['reps']}")
+
+
+@pytest.mark.parametrize("focus_word,headline,paired", [
+    ("chest triceps", "chest", "triceps"),
+    ("back biceps", "back", "biceps"),
+    ("legs core", "legs", "core"),
+])
+def test_a_day_trains_the_muscle_it_is_named_for_most(focus_word, headline, paired):
+    """The pool was the concatenation of the day's muscle groups, and selection
+    never asked which muscle an exercise trained — so a day filled up with
+    whichever muscle the dataset holds the most of. The library carries 90
+    triceps movements against 68 chest, and a Chest & Triceps day came out three
+    chest and five triceps: named for the muscle it trained least."""
+    from services.gym_plan_engine import _muscle_key
+
+    by_name = {e["name"]: e for e in gym_exercises}
+    for goal in ("muscle_gain", "general_fitness", "fat_loss"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+            {"available_equipment": FULL_GYM, "gym_goal": goal,
+             "workout_days_per_week": 4, "workout_duration_minutes": 60})
+        for week in plan["four_week_plan"]:
+            for day in week["days"]:
+                if day["focus"].lower() != focus_word:
+                    continue
+                counts = collections.Counter(
+                    _muscle_key(by_name[e["exercise_name"]]) for e in day["main_workout"])
+                assert counts[headline] >= counts[paired], (
+                    f"{goal} {day['focus']}: {dict(counts)}")
+
+
+def test_weekly_volume_puts_the_big_muscles_ahead_of_the_small_ones():
+    """Across a four-day week the practitioner accumulated 13 sets of triceps
+    against 6 of chest, and 15 of biceps against 9 of back. Arms are trained
+    directly on their own day and indirectly on every press and every row; when
+    they outrank the muscles that drive those lifts, the split is upside down."""
+    from services.gym_plan_engine import _muscle_key
+
+    by_name = {e["name"]: e for e in gym_exercises}
+    for days_per_week in (4, 5, 6):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+            {"available_equipment": FULL_GYM, "gym_goal": "muscle_gain",
+             "workout_days_per_week": days_per_week, "workout_duration_minutes": 60})
+        volume = collections.Counter()
+        for day in plan["four_week_plan"][0]["days"]:
+            for ex in day["main_workout"]:
+                volume[_muscle_key(by_name[ex["exercise_name"]])] += ex["sets"]
+        assert volume["chest"] >= volume["triceps"], f"{days_per_week}d: {dict(volume)}"
+        assert volume["back"] >= volume["biceps"], f"{days_per_week}d: {dict(volume)}"

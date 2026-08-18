@@ -729,31 +729,42 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
 
 # ── Muscle group split ────────────────────────────────────────────────────────
 
+_MUSCLE_KEYS = ["chest", "triceps", "biceps", "back", "shoulders",
+                "legs", "core", "full_body", "cardio"]
+
+
+def _muscle_key(ex) -> str:
+    """The one bucket an exercise belongs to, for splitting AND for budgeting.
+
+    The day builder needs to ask an exercise which muscle it trains — to stop a
+    chest day filling up with triceps — and the splitter already knew. It was
+    inline in the loop, so there was no way to ask.
+    """
+    if ex.get("category") == "cardio":
+        return "cardio"
+    for m in (mm.lower() for mm in ex.get("primary_muscles", [])):
+        if "chest" in m or "pectoral" in m:
+            return "chest"
+        if "tricep" in m:
+            return "triceps"
+        if "bicep" in m:
+            return "biceps"
+        if m in ("lats", "middle back", "lower back", "traps", "back"):
+            return "back"
+        if "shoulder" in m or "deltoid" in m:
+            return "shoulders"
+        if m in ("quadriceps", "hamstrings", "glutes", "calves", "adductors",
+                 "abductors", "legs", "quad", "calf"):
+            return "legs"
+        if "abdominal" in m or "core" in m or "abs" in m or "hip flex" in m:
+            return "core"
+    return "full_body"
+
+
 def split_by_muscle_group(exercises):
-    split = {k: [] for k in ["chest", "triceps", "biceps", "back", "shoulders", "legs", "core", "full_body", "cardio"]}
+    split = {k: [] for k in _MUSCLE_KEYS}
     for ex in exercises:
-        if ex.get("category") == "cardio":
-            split["cardio"].append(ex)
-            continue
-        primary = [m.lower() for m in ex.get("primary_muscles", [])]
-        assigned = False
-        for m in primary:
-            if "chest" in m or "pectoral" in m:
-                split["chest"].append(ex); assigned = True; break
-            elif "tricep" in m:
-                split["triceps"].append(ex); assigned = True; break
-            elif "bicep" in m:
-                split["biceps"].append(ex); assigned = True; break
-            elif m in ["lats", "middle back", "lower back", "traps", "back"]:
-                split["back"].append(ex); assigned = True; break
-            elif "shoulder" in m or "deltoid" in m:
-                split["shoulders"].append(ex); assigned = True; break
-            elif m in ["quadriceps", "hamstrings", "glutes", "calves", "adductors", "abductors", "legs", "quad", "calf"]:
-                split["legs"].append(ex); assigned = True; break
-            elif "abdominal" in m or "core" in m or "abs" in m or "hip flex" in m:
-                split["core"].append(ex); assigned = True; break
-        if not assigned:
-            split["full_body"].append(ex)
+        split[_muscle_key(ex)].append(ex)
     return split
 
 
@@ -777,7 +788,13 @@ def _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level):
     elif workout_days == 5:
         return ["chest", "back", "rest", "legs", "shoulders_arms", "core_cardio", "rest"]
     elif workout_days == 6:
-        return ["chest_triceps", "back_biceps", "legs", "shoulders", "arms", "core_cardio", "rest"]
+        # Was chest_triceps / back_biceps / legs / shoulders / arms — which hits the
+        # triceps on Monday and again on Friday, and the biceps on Tuesday and again
+        # on Friday, while the chest and the back get one day each. Weekly volume
+        # came out 18 sets of triceps against 12 of chest. Once the week is long
+        # enough to afford a dedicated arm day, the arms come OFF the push and pull
+        # days; that is what the arm day is for.
+        return ["chest", "back", "legs", "shoulders", "arms", "core_cardio", "rest"]
     return ["full_body", "full_body", "full_body", "rest", "rest", "rest", "rest"]
 
 
@@ -890,6 +907,60 @@ _FOCUS_PATTERNS = {
 }
 
 
+# How the day's slots are shared out between the muscles it names.
+#
+# The pool was the concatenation of the day's muscle groups, and selection drew
+# from it without ever asking which muscle an exercise trained — so a day filled
+# up with whichever muscle the dataset happens to hold the most of. The library
+# carries 90 triceps movements and 68 chest, and it showed: a Chest & Triceps day
+# came out three chest and five triceps, and across a four-day week the
+# practitioner accumulated 13 sets of triceps against 6 of chest. The day was
+# named for the muscle it trained least.
+#
+# Weights, not counts — they are scaled to whatever the session's length affords.
+# The muscle the day is NAMED for gets the majority; the arm or the core it is
+# paired with is there to finish it off.
+_FOCUS_ALLOCATION = {
+    "full_body":       (("legs", 3), ("chest", 2), ("back", 2), ("shoulders", 1), ("core", 1)),
+    "push":            (("chest", 3), ("shoulders", 2), ("triceps", 1)),
+    "pull":            (("back", 3), ("biceps", 1)),
+    "legs":            (("legs", 1),),
+    "legs_core":       (("legs", 3), ("core", 1)),
+    "chest_triceps":   (("chest", 2), ("triceps", 1)),
+    "back_biceps":     (("back", 2), ("biceps", 1)),
+    "chest":           (("chest", 1),),
+    "back":            (("back", 1),),
+    "shoulders":       (("shoulders", 1),),
+    "shoulders_core":  (("shoulders", 2), ("core", 1)),
+    "shoulders_arms":  (("shoulders", 2), ("biceps", 1), ("triceps", 1)),
+    "arms":            (("biceps", 1), ("triceps", 1)),
+    "core_cardio":     (("core", 2), ("cardio", 1)),
+}
+
+
+def _slot_allocation(focus: str, target: int) -> dict:
+    """Per-muscle slot ceilings for a day of `target` exercises.
+
+    Ceilings, not quotas — a bodyweight library holds four biceps movements in
+    total, and a day that had to fill its quota would reach past the equipment
+    the practitioner actually has. The fallback pass in `_choose` ignores these
+    for the same reason it ignores the family cap: a session has to exist.
+    """
+    weights = _FOCUS_ALLOCATION.get(focus)
+    if not weights or len(weights) == 1:
+        return {}
+    total = sum(w for _, w in weights)
+    caps = {}
+    for key, w in weights:
+        caps[key] = max(1, int(target * w / total + 0.5))
+    # Rounding can leave the day a slot short of its own length; the muscle the
+    # day is named for absorbs it.
+    shortfall = target - sum(caps.values())
+    if shortfall > 0:
+        caps[weights[0][0]] += shortfall
+    return caps
+
+
 def _movement_pattern(ex) -> str:
     name = ex.get("name", "")
     for pattern, rx in _MOVEMENT_PATTERNS:
@@ -903,14 +974,29 @@ def _is_compound(ex) -> bool:
             or len(ex.get("secondary_muscles") or []) >= 2)
 
 
+def _singular(word: str) -> str:
+    """`flyes`, `flye` and `fly` are one movement; the family cap could not see it.
+
+    Plurals were left alone, so `Incline Cable Flye` and `Flat Bench Cable Flyes`
+    counted as two different families and a chest day came out four fly variants
+    deep — under the cap, twice over.
+    """
+    if len(word) > 3 and word.endswith("es") and not word.endswith("ses"):
+        word = word[:-2]
+    elif len(word) > 2 and word.endswith("s") and not word.endswith("ss"):
+        word = word[:-1]
+    return word[:-1] if len(word) > 2 and word.endswith("e") else word
+
+
 def _movement_family(ex) -> str:
     """`Incline Dumbbell Press` and `Decline Barbell Press` → `press`."""
     core = _VARIANT_WORDS.sub(" ", ex.get("name", ""))
     core = re.sub(r"[^A-Za-z ]", " ", core).lower().split()
-    return " ".join(core[-2:]) if core else ex.get("id", "")
+    return " ".join(_singular(w) for w in core[-2:]) if core else ex.get("id", "")
 
 
-def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()):
+def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=(),
+            caps=None, per_muscle=None):
     """Pick n exercises, compounds first, without stacking one movement family.
 
     Selection was a plain shuffle-and-take, so nothing preferred a compound or
@@ -921,11 +1007,20 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
     """
     ordered = _deterministic_select(pool, len(pool), seed_key)
     picked = []
+    caps = caps or {}
+    per_muscle = per_muscle if per_muscle is not None else {}
 
     def _take(ex):
         picked.append(ex)
         taken_ids.add(ex["id"])
         families[_movement_family(ex)] += 1
+        per_muscle[_muscle_key(ex)] = per_muscle.get(_muscle_key(ex), 0) + 1
+
+    def _blocked(ex) -> bool:
+        if families[_movement_family(ex)] >= _MAX_PER_FAMILY:
+            return True
+        key = _muscle_key(ex)
+        return key in caps and per_muscle.get(key, 0) >= caps[key]
 
     # One exercise for each of the day's movement patterns, before anything else
     # competes for the slots. A leg day came out as step-ups, calf press, glute
@@ -934,13 +1029,16 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
     for pattern in patterns:
         if len(picked) >= n:
             break
-        for ex in ordered:
-            if ex["id"] in taken_ids or _movement_pattern(ex) != pattern:
-                continue
-            if families[_movement_family(ex)] >= _MAX_PER_FAMILY:
-                continue
-            _take(ex)
-            break
+        # Compound first. `push_h` covers the bench press AND the pec deck, and
+        # taking whichever surfaced first meant a chest day's horizontal-push
+        # slot could be filled by a cable crossover — leaving the session with
+        # no main lift at all, which is what happened to one chest day in eight.
+        candidates = [ex for ex in ordered
+                      if ex["id"] not in taken_ids and _movement_pattern(ex) == pattern
+                      and not _blocked(ex)]
+        candidates.sort(key=lambda ex: not _is_compound(ex))
+        if candidates:
+            _take(candidates[0])
 
     for want_compound in (True, False):
         if want_compound and min_compounds <= 0:
@@ -953,14 +1051,27 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
                 break
             if ex["id"] in taken_ids or _is_compound(ex) is not want_compound:
                 continue
-            family = _movement_family(ex)
-            if families[family] >= _MAX_PER_FAMILY:
+            if _blocked(ex):
                 continue
             _take(ex)
             have_compounds += _is_compound(ex)
 
-    # A pool too small or too uniform to respect the family cap still has to
-    # produce a session; the cap is a preference, not a safety rule.
+    # Two fallbacks, in the order the constraints matter. Variant variety is the
+    # cheaper of the two: a chest day whose pressing families are exhausted should
+    # take a third press before it takes a fifth triceps movement. Dropping both
+    # caps at once let the muscle budget be overrun by whichever group the dataset
+    # happens to hold more of — the exact imbalance the budget exists to close.
+    if len(picked) < n:
+        for ex in ordered:
+            if len(picked) >= n:
+                break
+            key = _muscle_key(ex)
+            if ex["id"] in taken_ids or (key in caps and per_muscle.get(key, 0) >= caps[key]):
+                continue
+            _take(ex)
+
+    # A pool too small or too uniform to respect either cap still has to produce a
+    # session; both are preferences, not safety rules.
     if len(picked) < n:
         for ex in ordered:
             if len(picked) >= n:
@@ -991,12 +1102,18 @@ def _select_for_day(pool, target, user_id, focus, day_num, week):
     core_n = max(1, target - _ROTATING_PER_DAY)
     taken: set = set()
     families: dict = _collections.defaultdict(int)
+    # The ceilings are for the whole day, so the stable core and the rotating slot
+    # share one running count — otherwise the rotating exercise gets a fresh
+    # budget and reopens the imbalance the ceilings exist to close.
+    caps = _slot_allocation(focus, target)
+    per_muscle: dict = {}
 
     core = _choose(pool, core_n, f"{user_id}-{focus}-d{day_num}-core",
                    taken, families, min_compounds=min(_MIN_COMPOUNDS, max(1, core_n - 1)),
-                   patterns=_FOCUS_PATTERNS.get(focus, ()))
+                   patterns=_FOCUS_PATTERNS.get(focus, ()),
+                   caps=caps, per_muscle=per_muscle)
     rotating = _choose(pool, target - len(core), f"{user_id}-{focus}-d{day_num}-rotate-w{week}",
-                       taken, families)
+                       taken, families, caps=caps, per_muscle=per_muscle)
     return core + rotating
 
 
