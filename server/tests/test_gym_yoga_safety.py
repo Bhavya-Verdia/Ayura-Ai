@@ -737,3 +737,83 @@ def test_a_day_is_named_for_what_it_holds():
                     continue
                 assert any(e["category"] == "cardio" for e in entries), (
                     f"{goal}: a day called {day['focus']!r} with no cardio in it")
+
+
+# ── Movement patterns ────────────────────────────────────────────────────────
+
+def test_the_pattern_classifier_reads_the_movement_not_the_machine():
+    """"Calf Press On The Leg Press Machine" matched `leg press` and came out a
+    squat, which would let a calf raise satisfy a leg day's squat quota."""
+    from services.gym_plan_engine import gym_exercises, _movement_pattern
+
+    by_name = {e["name"]: e for e in gym_exercises}
+    expected = {
+        "Calf Press On The Leg Press Machine": "isolation",
+        "Barbell Squat": "squat",
+        "Barbell Deadlift": "hinge",
+        "Dumbbell Step Ups": "lunge",
+        "Pullups": "pull_v",
+    }
+    for name, pattern in expected.items():
+        if name in by_name:
+            assert _movement_pattern(by_name[name]) == pattern, name
+
+
+@pytest.mark.parametrize("goal", ["muscle_gain", "strength", "general_fitness"])
+def test_a_leg_day_asks_you_to_squat_and_to_hinge(goal):
+    """A legs day came out as step-ups, calf press, glute kickback and flutter
+    kicks — two compounds by the letter of the rule, and nothing that squats or
+    hinges at the hip, which is most of what leg training is for."""
+    from services.gym_plan_engine import generate_gym_plan, gym_exercises, _movement_pattern
+
+    by_name = {e["name"]: e for e in gym_exercises}
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+        {"available_equipment": ["barbell", "dumbbell", "machine", "cable", "bodyweight"],
+         "gym_goal": goal, "workout_days_per_week": 4, "workout_duration_minutes": 45})
+
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            if not day["focus"].lower().startswith("legs"):
+                continue
+            patterns = {_movement_pattern(by_name[e["exercise_name"]])
+                        for e in day["main_workout"]}
+            assert "squat" in patterns, f"{goal} leg day with no squat: {patterns}"
+            assert "hinge" in patterns, f"{goal} leg day with no hinge: {patterns}"
+
+
+def test_a_pull_day_asks_you_to_pull_from_overhead():
+    from services.gym_plan_engine import generate_gym_plan, gym_exercises, _movement_pattern
+
+    by_name = {e["name"]: e for e in gym_exercises}
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+        {"available_equipment": ["barbell", "dumbbell", "machine", "cable", "bodyweight"],
+         "gym_goal": "muscle_gain", "workout_days_per_week": 4,
+         "workout_duration_minutes": 45})
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            if "back" not in day["focus"].lower():
+                continue
+            patterns = {_movement_pattern(by_name[e["exercise_name"]])
+                        for e in day["main_workout"]}
+            assert "pull_v" in patterns, day["focus"]
+
+
+def test_the_quota_never_costs_a_session():
+    """The bodyweight-only library holds two squats, two hinges and ONE horizontal
+    pull in total. A quota that had to be met would either fail or reach past the
+    equipment the practitioner actually has, so it is a preference — the day still
+    fills."""
+    from services.gym_plan_engine import generate_gym_plan
+
+    for goal in ("general_fitness", "muscle_gain", "endurance", "fat_loss"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "beginner"},
+            {"available_equipment": ["bodyweight"], "gym_goal": goal,
+             "workout_days_per_week": 4, "workout_duration_minutes": 45})
+        for week in plan["four_week_plan"]:
+            for day in week["days"]:
+                if day.get("type") == "recovery":
+                    continue
+                assert len(day["main_workout"]) >= 3, f"{goal} {day['focus']} came up short"
