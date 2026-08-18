@@ -1105,7 +1105,8 @@ def _slot_allocation(focus: str, target: int) -> dict:
 # something about a barbell bench press and a barbell squat that this
 # practitioner has not done yet.
 _SPECIALTY_NAME = re.compile(
-    r"\b(chain|chains|board|smith|leverage|iso.?lateral|neck|judo|gorilla|clock|"
+    r"\b(chain|chains|board|box squat|pin press|guillotine|tate|jm|smith|leverage|"
+    r"iso.?lateral|neck|judo|gorilla|clock|"
     r"isometric|vacuum|windmill|jerk|bradford|rocky|cuban|zercher|jefferson|sissy|"
     r"car driver|anti.?gravity|scaption|around the world|kaz|bent press|"
     r"speed band|band skull|hindu|frog|monkey|spider|drag)\b", re.I)

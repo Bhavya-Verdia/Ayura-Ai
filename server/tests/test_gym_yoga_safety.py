@@ -1320,3 +1320,23 @@ def test_maximal_conditioning_is_not_prescribed_to_a_seventy_year_old():
     # remove it. Rowing, the stair climber and a treadmill walk all survive.
     assert any(e["category"] == "cardio"
                for d in plan["four_week_plan"][0]["days"] for e in d["main_workout"])
+
+
+def test_every_focus_day_opens_with_its_own_canonical_lift():
+    """The last of the specialty variants: a leg day opening with a box squat
+    while the barbell squat sat in the same pool, a chest day with a Guillotine
+    or a JM press. They are all real movements and none is what a four-week block
+    is built around."""
+    expected = {"chest": "Barbell Bench Press", "back": "Bent Over Barbell Row",
+                "legs": "Barbell Squat", "shoulders": "Barbell Shoulder Press"}
+    for level in ("beginner", "intermediate", "advanced"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": level, "weight_kg": 75},
+            {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain",
+             "workout_days_per_week": 4, "workout_duration_minutes": 60})
+        for day in plan["four_week_plan"][0]["days"]:
+            focus = day["focus"].lower().split()[0]
+            if focus not in expected or not day["main_workout"]:
+                continue
+            names = [e["exercise_name"] for e in day["main_workout"] if e["role"] == "primary"]
+            assert any(expected[focus] in n for n in names), f"{level} {day['focus']}: {names}"
