@@ -1,6 +1,7 @@
 import json
 import hashlib
 import random
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -150,8 +151,27 @@ _GOAL_WEEKS = {
 }
 
 
-def _get_goal_prescription(goal: str, week: int) -> dict:
-    return _GOAL_WEEKS.get(goal, _GOAL_WEEKS["general_fitness"])[min(week - 1, 3)]
+# Volume is where training age shows. Reps and rest belong to the goal — they are
+# what makes a set a strength set or an endurance set — but how many of them a
+# body can absorb and recover from is a property of the practitioner.
+_LEVEL_SET_DELTA = {"beginner": -1, "intermediate": 0, "advanced": 1}
+_MIN_SETS, _MAX_SETS = 2, 6
+
+
+def _get_goal_prescription(goal: str, week: int, level: str = "intermediate") -> dict:
+    """The week's sets, reps and rest, adjusted for training age.
+
+    Level used to gate WHICH exercises were eligible and nothing else, so a
+    beginner and an advanced lifter on muscle gain both got 3x8-10 in week 1 —
+    identical volume for someone in their first month and someone in their tenth
+    year. The knowledge base carries per-level prescriptions and nothing read
+    them; they are the same boilerplate on 873 of 904 rows, so this adjusts the
+    goal table rather than trusting them.
+    """
+    rx = dict(_GOAL_WEEKS.get(goal, _GOAL_WEEKS["general_fitness"])[min(week - 1, 3)])
+    delta = _LEVEL_SET_DELTA.get(level, 0)
+    rx["sets"] = max(_MIN_SETS, min(_MAX_SETS, int(rx["sets"]) + delta))
+    return rx
 
 
 # ── Weight / Load Guidance ────────────────────────────────────────────────────
@@ -414,6 +434,25 @@ _CONDITION_TO_EXERCISE_CONTRA: dict[str, list[str]] = {
 }
 
 
+_SENIOR_AGE = 60
+_YOUTH_AGE = 18
+# The KB tags axial-loading and impact work with `osteoporosis`; it is the closest
+# thing it has to a "loads the spine hard" mechanism.
+_AGE_AVOID_TAGS = {"osteoporosis"}
+
+
+def _age_group(age) -> str:
+    try:
+        age = int(age)
+    except (TypeError, ValueError):
+        return "adult"
+    if age >= _SENIOR_AGE:
+        return "senior"
+    if age < _YOUTH_AGE:
+        return "youth"
+    return "adult"
+
+
 def _condition_contra_tags(medical_history) -> set:
     """Expand a user's medical_history into exercise-contraindication tags.
 
@@ -461,6 +500,22 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
     avoid_tags |= {str(t).lower() for t in (extra_avoid_tags or [])}
     is_pregnant = user_profile.get("pregnancy_or_nursing", False)
 
+    # Age was not an input to this filter at all: a 65-year-old received a plan
+    # identical to a 30-year-old's — same exercises, same loads, same volume. The
+    # yoga engine caps seniors at beginner level and blanket-excludes fall risk,
+    # intracranial pressure and neck load; both features read the same profile, so
+    # the app was careful about a 70-year-old doing a shoulderstand and indifferent
+    # to the same person doing a barbell back squat.
+    #
+    # `osteoporosis` is the KB's own proxy for axial loading and impact — it tags
+    # the cleans, the bounds, the Atlas stones, 155 exercises in all. Bone density
+    # is declining by 60 whether or not anyone has said so, which is the reasoning
+    # the yoga engine already uses for its blanket senior exclusions.
+    age_group = _age_group(user_profile.get("age"))
+    if age_group in ("senior", "youth"):
+        allowed_levels = [lv for lv in allowed_levels if lv != "advanced"]
+        avoid_tags = avoid_tags | _AGE_AVOID_TAGS
+
     scored = []
     for ex in exercises:
         eq = ex.get("equipment", "bodyweight").lower()
@@ -478,6 +533,10 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
         # because "endurance" resolved to cardio plus plyometrics and nothing
         # else.
         if user_level == "beginner" and ex.get("category") == "plyometrics":
+            continue
+        # Jump training is the wrong risk for a 65-year-old and for a body still
+        # growing, whatever level they enter.
+        if age_group in ("senior", "youth") and ex.get("category") == "plyometrics":
             continue
         if not ex.get("goal_suitability", {}).get(gym_goal, False):
             continue
@@ -599,6 +658,84 @@ def _deterministic_select(pool, n, seed_key):
 # One exercise a week moves; the rest of the day is the same work as last week.
 _ROTATING_PER_DAY = 1
 
+# A compound trains several muscles under one load and is where the session's
+# value is. The dataset has no such flag, so it is read off the movement's name
+# and how many muscles it lists as secondary.
+_COMPOUND_NAME = re.compile(
+    r"\b(squat|deadlift|press|row|pull-?up|chin-?up|dip|lunge|clean|snatch|"
+    r"thruster|push-?up|step-?up|hip thrust|carry|swing)\b", re.I)
+
+# Words that name a VARIANT rather than a movement. Stripping them leaves the
+# movement family, so "Incline Dumbbell Press" and "Decline Barbell Press" are
+# recognisably the same thing and do not both land in one session.
+_VARIANT_WORDS = re.compile(
+    r"\b(incline|decline|seated|standing|lying|kneeling|machine|cable|smith|"
+    r"barbell|dumbbell|kettlebell|band|bands|resistance|alternate|alternating|"
+    r"single|one|two|arm|arms|leg|legs|close|wide|narrow|reverse|neutral|hammer|"
+    r"weighted|assisted|bodyweight|floor|bench|preacher|prone|supine|front|back|"
+    r"side|rear|overhead|underhand|overhand|grip|medium|with|and|the|on|to|of|a|"
+    r"pronated|supinated|low|high|flat|straight|bent|full|half|partial|v|smr)\b",
+    re.I)
+_MAX_PER_FAMILY = 2
+# Two compounds in a five-exercise day, one in a three. A session built of
+# isolation work trains the same muscles for less, and the first pick being a
+# compound is not enough on its own — the audit's week-one chest day had a
+# machine press and then four accessories.
+_MIN_COMPOUNDS = 2
+
+
+def _is_compound(ex) -> bool:
+    return (bool(_COMPOUND_NAME.search(ex.get("name", "")))
+            or len(ex.get("secondary_muscles") or []) >= 2)
+
+
+def _movement_family(ex) -> str:
+    """`Incline Dumbbell Press` and `Decline Barbell Press` → `press`."""
+    core = _VARIANT_WORDS.sub(" ", ex.get("name", ""))
+    core = re.sub(r"[^A-Za-z ]", " ", core).lower().split()
+    return " ".join(core[-2:]) if core else ex.get("id", "")
+
+
+def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0):
+    """Pick n exercises, compounds first, without stacking one movement family.
+
+    Selection was a plain shuffle-and-take, so nothing preferred a compound or
+    noticed that it had chosen five variants of the same thing. Measured over 240
+    generated days, 12-44% contained NO compound movement at all, and a week-one
+    chest session came out as two flye variants, a pullover, a machine press and
+    a dip machine — no flat press anywhere.
+    """
+    ordered = _deterministic_select(pool, len(pool), seed_key)
+    picked = []
+
+    for want_compound in (True, False):
+        if want_compound and min_compounds <= 0:
+            continue
+        for ex in ordered:
+            if len(picked) >= (min_compounds if want_compound else n):
+                break
+            if ex["id"] in taken_ids or _is_compound(ex) is not want_compound:
+                continue
+            family = _movement_family(ex)
+            if families[family] >= _MAX_PER_FAMILY:
+                continue
+            picked.append(ex)
+            taken_ids.add(ex["id"])
+            families[family] += 1
+
+    # A pool too small or too uniform to respect the family cap still has to
+    # produce a session; the cap is a preference, not a safety rule.
+    if len(picked) < n:
+        for ex in ordered:
+            if len(picked) >= n:
+                break
+            if ex["id"] in taken_ids:
+                continue
+            picked.append(ex)
+            taken_ids.add(ex["id"])
+            families[_movement_family(ex)] += 1
+    return picked
+
 
 def _select_for_day(pool, target, user_id, focus, day_num, week):
     """The day's exercises: a stable core, plus one that rotates weekly.
@@ -615,13 +752,16 @@ def _select_for_day(pool, target, user_id, focus, day_num, week):
     history. The core is seeded on the DAY, never the week, so it holds across all
     four; the same shape as the yoga engine's core and accent split.
     """
-    core_n = max(1, target - _ROTATING_PER_DAY)
-    core = _deterministic_select(pool, core_n, f"{user_id}-{focus}-d{day_num}-core")
+    import collections as _collections
 
-    taken = {ex["id"] for ex in core}
-    remaining = [ex for ex in pool if ex["id"] not in taken]
-    rotating = _deterministic_select(
-        remaining, target - len(core), f"{user_id}-{focus}-d{day_num}-rotate-w{week}")
+    core_n = max(1, target - _ROTATING_PER_DAY)
+    taken: set = set()
+    families: dict = _collections.defaultdict(int)
+
+    core = _choose(pool, core_n, f"{user_id}-{focus}-d{day_num}-core",
+                   taken, families, min_compounds=min(_MIN_COMPOUNDS, max(1, core_n - 1)))
+    rotating = _choose(pool, target - len(core), f"{user_id}-{focus}-d{day_num}-rotate-w{week}",
+                       taken, families)
     return core + rotating
 
 
@@ -701,6 +841,56 @@ def _duration_notice(built: int, requested: int, goal: str) -> str | None:
             f"take the extra time over the warm-up and cool-down, or add a walk.")
 
 
+_TIME_UNITS = re.compile(r"\b(min|sec|minute|second)", re.I)
+
+
+def _prescribe(ex: dict, rx: dict, level: str):
+    """Sets, reps and rest for one exercise.
+
+    The goal prescription was applied to everything, so time-based work came out
+    as repetitions: "Brisk Walking — 4 sets of 18-22 reps, 20s rest". The 21
+    exercises whose own KB entry is written in minutes or seconds (treadmill,
+    rowing machine, jump rope, plank-style holds) keep their own prescription;
+    everything else takes the goal's, which is the right default for a lift.
+    """
+    own = (ex.get("sets_reps") or {}).get(level) or (ex.get("sets_reps") or {}).get("intermediate") or {}
+    if own and _TIME_UNITS.search(str(own.get("reps", ""))):
+        return int(own.get("sets", 1)), own.get("reps"), int(own.get("rest_seconds", 60))
+    return rx["sets"], rx["reps"], rx["rest_seconds"]
+
+
+def _modification_for(ex: dict) -> str:
+    """The coaching note shown under an exercise.
+
+    873 of 904 rows carry the same generated string — "Reduce weight or switch to
+    bodyweight if form breaks down" — including every bodyweight exercise and
+    every stretch, where it appeared directly beneath a load field reading
+    "Bodyweight". The 31 hand-written ones are kept; the boilerplate is replaced
+    with something true of the equipment in question.
+    """
+    note = (ex.get("modification") or "").strip()
+    if note and note != _BOILERPLATE_MODIFICATION:
+        return note
+    equipment = (ex.get("equipment") or "bodyweight").lower()
+    if ex.get("category") == "stretching":
+        return "Ease off the moment the stretch turns sharp — range comes from repetition, not force."
+    if equipment in ("bodyweight", "bands"):
+        return ("Slow the tempo or add a pause to make it harder; shorten the range or drop to "
+                "knees if form breaks down.")
+    return "Reduce the load if form breaks down — the last clean rep is the set, not the last rep."
+
+
+_BOILERPLATE_MODIFICATION = "Reduce weight or switch to bodyweight if form breaks down."
+
+
+def _focus_label(focus: str, main_workout: list) -> str:
+    label = focus.replace("_", " ").title()
+    if "cardio" in focus.lower() and not any(e.get("category") == "cardio" for e in main_workout):
+        stripped = " ".join(w for w in label.split() if w.lower() != "cardio").strip()
+        return stripped or "Conditioning"
+    return label
+
+
 def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profile,
                    week=1, user_id="default", strength_level="beginner", gender="male",
                    dosha="vata"):
@@ -720,13 +910,13 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     if level not in ["beginner", "intermediate", "advanced"]:
         level = "beginner"
 
-    rx = _get_goal_prescription(goal, week)
+    rx = _get_goal_prescription(goal, week, level)
     # The COUNT comes off week 1 and holds for the block, while the sets and reps
     # move with the periodisation. Sizing each week against its own prescription
     # made peak weeks (four sets instead of three) drop an exercise, which
     # changed the day's core and cost the very continuity the stable core exists
     # to give. A real programme keeps the lifts and moves the volume.
-    target = _target_count(duration, goal, _get_goal_prescription(goal, 1))
+    target = _target_count(duration, goal, _get_goal_prescription(goal, 1, level))
 
     pool = []
     for k in _focus_to_keys(focus):
@@ -744,9 +934,7 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     work_seconds = 0
     rest_seconds_total = 0
     for ex in selected:
-        sets = rx["sets"]
-        reps = rx["reps"]
-        rest = rx["rest_seconds"]
+        sets, reps, rest = _prescribe(ex, rx, level)
 
         ex_work = _reps_to_seconds(reps, sets)
         work_seconds += ex_work
@@ -771,14 +959,18 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
             "rest_seconds": rest,
             "weight_range": _get_weight_range(ex, strength_level, gender),
             "week_note": rx.get("note", ""),
-            "notes": ex.get("modification", ""),
+            "notes": _modification_for(ex),
             "instructions": ex.get("instructions", []),
         })
 
     return {
         "day": day_num,
         "day_name": day_name,
-        "focus": focus.replace("_", " ").title(),
+        # Named for what the day HOLDS. Cardio is filtered out entirely for the
+        # muscle-gain and strength goals, so a "Core Cardio" day kept its name and
+        # lost its content — every one of the 32 generated for those goals had no
+        # cardio in it at all.
+        "focus": _focus_label(focus, main_workout),
         "type": "cardio" if "cardio" in focus else "strength",
         "warmup": _warmup_for(focus),
         "main_workout": main_workout,

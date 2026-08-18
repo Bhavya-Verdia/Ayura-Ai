@@ -597,3 +597,143 @@ def test_the_reported_session_length_is_the_one_that_was_built(goal, minutes):
             assert built > work, "reported length is below its own rest time"
             if abs(built - minutes) / minutes > 0.15:
                 assert day["duration_notice"], f"{goal} {minutes}min built {built} in silence"
+
+
+# ── Age, selection quality, and the fields the user reads ────────────────────
+
+@pytest.mark.parametrize("age,expect_gated", [(30, False), (65, True), (16, True)])
+def test_age_gates_impact_and_axial_loading(age, expect_gated):
+    """Age was not an input to the gym filter at all — a 65-year-old received a
+    plan identical to a 30-year-old's, same exercises, same loads, same volume.
+    The yoga engine caps seniors at beginner level and blanket-excludes fall risk;
+    both features read the same profile, so the app was careful about a
+    70-year-old doing a shoulderstand and indifferent to the same person doing a
+    barbell back squat.
+    """
+    from services.gym_plan_engine import filter_exercises, gym_exercises
+
+    pool = filter_exercises({**_YOGA_BASE_PROFILE, "age": age, "fitness_level": "advanced"},
+                            {"available_equipment": ["barbell", "dumbbell", "machine", "cable",
+                                                     "bodyweight"],
+                             "gym_goal": "general_fitness"}, gym_exercises)
+    plyo = [e["name"] for e in pool if e.get("category") == "plyometrics"]
+    advanced = [e["name"] for e in pool if e.get("level") == "advanced"]
+    axial = [e["name"] for e in pool if "osteoporosis" in (e.get("contraindications") or [])]
+
+    if expect_gated:
+        assert not plyo, f"age {age} offered jump training: {plyo[:3]}"
+        assert not advanced, f"age {age} offered advanced movements: {advanced[:3]}"
+        assert not axial, f"age {age} offered axial-loading work: {axial[:3]}"
+    else:
+        assert advanced or axial, "an adult should still reach the loaded end of the library"
+
+
+@pytest.mark.parametrize("goal", ["muscle_gain", "strength", "fat_loss", "general_fitness"])
+def test_every_session_has_a_compound_and_no_stacked_variants(goal):
+    """Selection was a plain shuffle-and-take: nothing preferred a compound or
+    noticed it had chosen five variants of one movement. 12-44% of days had NO
+    compound at all, and a week-one chest day came out as two flye variants, a
+    pullover, a machine press and a dip machine."""
+    from collections import Counter
+    from services.gym_plan_engine import (generate_gym_plan, gym_exercises,
+                                          _is_compound, _movement_family)
+
+    by_name = {e["name"]: e for e in gym_exercises}
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+        {"available_equipment": ["barbell", "dumbbell", "machine", "cable", "bodyweight"],
+         "gym_goal": goal, "workout_days_per_week": 4, "workout_duration_minutes": 45})
+
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            exercises = [by_name[e["exercise_name"]] for e in day.get("main_workout") or []]
+            if not exercises:
+                continue
+            assert any(_is_compound(e) for e in exercises), (
+                f"{goal} {day['focus']}: no compound movement in "
+                f"{[e['name'] for e in exercises]}")
+            worst = Counter(_movement_family(e) for e in exercises).most_common(1)[0]
+            assert worst[1] <= 2, f"{goal} {day['focus']}: {worst[1]} variants of {worst[0]!r}"
+
+
+def test_training_age_changes_the_volume():
+    """Level gated WHICH exercises were eligible and nothing else, so a beginner
+    and an advanced lifter on muscle gain both got 3x8-10 in week 1."""
+    from services.gym_plan_engine import _get_goal_prescription
+
+    for goal in ("muscle_gain", "strength", "fat_loss", "general_fitness", "endurance"):
+        beginner = _get_goal_prescription(goal, 1, "beginner")
+        advanced = _get_goal_prescription(goal, 1, "advanced")
+        assert beginner["sets"] < advanced["sets"], goal
+        # Reps and rest belong to the goal — they are what make a set what it is.
+        assert beginner["reps"] == advanced["reps"] and beginner["rest_seconds"] == advanced["rest_seconds"]
+
+
+def test_time_based_work_is_not_prescribed_in_repetitions():
+    """"Brisk Walking — 4 sets of 18-22 reps, 20s rest." The goal prescription was
+    applied to every exercise regardless of what it is.
+
+    The rule is per exercise, not per category: burpees and jumping jacks are
+    counted in reps and are filed as cardio, while a treadmill or a rowing machine
+    is measured in minutes. The 21 exercises whose OWN knowledge-base entry is
+    written in minutes or seconds must keep it.
+    """
+    from services.gym_plan_engine import generate_gym_plan, gym_exercises, _TIME_UNITS
+
+    timed = {e["name"] for e in gym_exercises
+             if _TIME_UNITS.search(str(((e.get("sets_reps") or {}).get("intermediate") or {}).get("reps", "")))}
+    assert timed, "no time-based exercises left in the KB — the fixture has moved"
+
+    seen = 0
+    for goal in ("fat_loss", "endurance", "general_fitness"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+            {"available_equipment": ["bodyweight"], "gym_goal": goal,
+             "workout_days_per_week": 5, "workout_duration_minutes": 45})
+        for week in plan["four_week_plan"]:
+            for day in week["days"]:
+                for entry in day.get("main_workout") or []:
+                    if entry["exercise_name"] in timed:
+                        seen += 1
+                        assert any(u in str(entry["reps"]) for u in ("min", "sec")), (
+                            f"{entry['exercise_name']} prescribed as {entry['reps']} reps")
+    assert seen, "no time-based exercise was scheduled, so nothing was proven"
+
+
+def test_no_exercise_ships_the_boilerplate_coaching_note():
+    """873 of 904 rows carry one generated string — "Reduce weight or switch to
+    bodyweight if form breaks down" — including every bodyweight exercise and
+    every stretch, where it sat directly beneath a load field reading
+    "Bodyweight". This one is shown to the user."""
+    from services.gym_plan_engine import generate_gym_plan, _BOILERPLATE_MODIFICATION
+
+    for equipment in (["bodyweight"], ["barbell", "dumbbell", "machine", "cable"]):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+            {"available_equipment": equipment, "gym_goal": "general_fitness",
+             "workout_days_per_week": 4, "workout_duration_minutes": 45})
+        for week in plan["four_week_plan"]:
+            for day in week["days"]:
+                for entry in day.get("main_workout") or []:
+                    assert entry["notes"] and entry["notes"] != _BOILERPLATE_MODIFICATION
+                    if entry["equipment"] == "bodyweight":
+                        assert "reduce weight" not in entry["notes"].lower(), entry["exercise_name"]
+
+
+def test_a_day_is_named_for_what_it_holds():
+    """Cardio is filtered out entirely for muscle-gain and strength goals, so the
+    "Core Cardio" day kept its name and lost its content — all 32 of them."""
+    from services.gym_plan_engine import generate_gym_plan
+
+    for goal in ("muscle_gain", "strength"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+            {"available_equipment": ["barbell", "dumbbell", "machine", "cable", "bodyweight"],
+             "gym_goal": goal, "workout_days_per_week": 5, "workout_duration_minutes": 45})
+        for week in plan["four_week_plan"]:
+            for day in week["days"]:
+                entries = day.get("main_workout") or []
+                if not entries or "cardio" not in day["focus"].lower():
+                    continue
+                assert any(e["category"] == "cardio" for e in entries), (
+                    f"{goal}: a day called {day['focus']!r} with no cardio in it")
