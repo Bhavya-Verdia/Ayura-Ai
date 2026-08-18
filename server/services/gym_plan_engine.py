@@ -352,6 +352,7 @@ _LIFT_BW = {
     # lower body
     "squat":         1.25, "front_squat": 1.00, "leg_press": 2.20, "hack_squat": 1.40,
     "deadlift":      1.50, "romanian":    1.20, "hip_thrust": 1.50, "good_morning": 0.70,
+    "swing":         0.32,
     "lunge":         0.70, "step_up":     0.55, "calf_raise": 1.00,
     "leg_extension": 0.55, "leg_curl":    0.45, "hip_abduction": 0.50,
     # horizontal push
@@ -384,7 +385,8 @@ _LIFT_PATTERNS = (
     ("romanian",          re.compile(r"\b(romanian|stiff.?leg|rdl)\b", re.I)),
     ("hip_thrust",        re.compile(r"\b(hip thrust|glute bridge|butt lift)", re.I)),
     ("good_morning",      re.compile(r"\b(good morning|back extension|hyperextension)", re.I)),
-    ("deadlift",          re.compile(r"\b(deadlift|clean|snatch|swing)", re.I)),
+    ("swing",             re.compile(r"\b(swing|goblet)", re.I)),
+    ("deadlift",          re.compile(r"\b(deadlift|clean|snatch)", re.I)),
     ("incline_press",     re.compile(r"\bincline.*(press|bench)", re.I)),
     ("fly",               re.compile(r"\b(fly|flye|pec deck|butterfly|crossover|iron cross)", re.I)),
     ("pullover",          re.compile(r"\bpullover\b", re.I)),
@@ -414,7 +416,10 @@ _LIFT_LEVEL = {"untrained": 0.40, "beginner": 0.62, "intermediate": 1.00, "advan
 _LIFT_SEX = {"upper": 0.62, "lower": 0.72}
 _LOWER_CLASSES = {"squat", "front_squat", "leg_press", "hack_squat", "deadlift", "romanian",
                   "hip_thrust", "good_morning", "lunge", "step_up", "calf_raise",
-                  "leg_extension", "leg_curl", "hip_abduction"}
+                  "leg_extension", "leg_curl", "hip_abduction", "swing"}
+# One implement, two hands on it. A swing priced per hand told a beginner to
+# swing 29 kg in each of them.
+_TWO_HANDED = {"swing"}
 
 # A dumbbell pair carries about 80% of the barbell load for the same movement, so
 # each hand takes 40% of it. Cable stacks read low against a free weight through
@@ -500,8 +505,9 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
     load *= _LIFT_LEVEL[level]
     if gender_key == "female":
         load *= _LIFT_SEX["lower" if lift in _LOWER_CLASSES else "upper"]
-    load *= factor
-    if implement in _PER_HAND:
+    per_hand = implement in _PER_HAND and lift not in _TWO_HANDED
+    load *= factor if per_hand else _IMPLEMENT_FACTOR["barbell"]
+    if per_hand:
         # A one-arm dumbbell press is the same dumbbell as a two-arm one — the
         # practitioner just does the sides in turn. Halving it here would have
         # priced the single-arm variant of every movement at half the weight it
@@ -516,7 +522,7 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
     # "2–2 kg" reads as a defect rather than a starting point.
     if hi <= lo:
         hi = _round_load(lo + (1.0 if lo < 20 else 2.5))
-    unit = " per hand" if implement in _PER_HAND else ""
+    unit = " per hand" if per_hand else ""
     return (f"{_fmt_kg(lo)}–{_fmt_kg(hi)} kg{unit} · a starting estimate from your "
             f"bodyweight — adjust so the last 2 reps are hard and form holds")
 
@@ -793,8 +799,8 @@ _MUSCLE_KEYS = ["chest", "triceps", "biceps", "back", "shoulders",
                 "legs", "core", "full_body", "cardio"]
 
 
-def _muscle_key(ex) -> str:
-    """The one bucket an exercise belongs to, for splitting AND for budgeting.
+def _muscle_key_from_muscles(ex) -> str:
+    """The one bucket an exercise's PRIMARY MUSCLE puts it in.
 
     The day builder needs to ask an exercise which muscle it trains — to stop a
     chest day filling up with triceps — and the splitter already knew. It was
@@ -819,6 +825,21 @@ def _muscle_key(ex) -> str:
         if "abdominal" in m or "core" in m or "abs" in m or "hip flex" in m:
             return "core"
     return "full_body"
+
+
+def _muscle_key(ex) -> str:  # noqa: F811 — see the wrapper below
+    """As `_muscle_key_from_muscles`, but the movement gets the final word.
+
+    The dataset files the conventional deadlift under "lower back", so it landed
+    in the back bucket — and `legs` days draw only from the legs bucket, which
+    meant a leg day could not contain a deadlift at all while a back day opened
+    with one. A hip hinge is posterior-chain work; that is what a leg day is for
+    and it is why the pattern classifier knows the hinge in the first place.
+    """
+    key = _muscle_key_from_muscles(ex)
+    if key == "back" and _movement_pattern(ex) == "hinge":
+        return "legs"
+    return key
 
 
 def split_by_muscle_group(exercises):
@@ -933,8 +954,12 @@ _MOVEMENT_PATTERNS = (
                           r"romanian|swing|clean|snatch|pull.?through|hyperextension)(?:e?s)?\b", re.I)),
     ("push_v", re.compile(r"\b(shoulder press|overhead press|military|arnold|handstand|"
                           r"pike push|upright row|lateral raise|front raise)(?:e?s)?\b", re.I)),
-    ("push_h", re.compile(r"\b(bench press|chest press|push.?up|fly|flye|dip|pec deck|"
-                          r"butterfly|crossover)(?:e?s)?\b", re.I)),
+    # Flyes, crossovers and the pec deck used to live here, which let a chest
+    # day's horizontal-push slot be filled by an isolation movement — and once
+    # main lifts were chosen for loadability, a barbell "Bodyweight Flyes"
+    # outranked the bench press for it. A press is a press; a fly is accessory
+    # work and belongs in the tier that finishes the session.
+    ("push_h", re.compile(r"\b(bench press|chest press|floor press|push.?up|dip)(?:e?s)?\b", re.I)),
     ("pull_v", re.compile(r"\b(pull.?up|chin.?up|pulldown|lat pull)(?:e?s)?\b", re.I)),
     ("pull_h", re.compile(r"\b(row|face pull|rear delt|shrug)(?:e?s)?\b", re.I)),
     ("carry",  re.compile(r"\b(carry|farmer)(?:e?s)?\b", re.I)),
@@ -1021,6 +1046,85 @@ def _slot_allocation(focus: str, target: int) -> dict:
     return caps
 
 
+# Specialty variants. Every one of these is a real movement that a real coach
+# uses — for a specific athlete, at a specific point in a block, for a reason
+# they can name. None of them is what a four-week plan opens a leg day with.
+#
+# Selection was a uniform shuffle over everything eligible, so a specialty
+# variant won a main-lift slot exactly as often as the lift it is a variant of. A
+# strength programme came out opening with "Bench Press With Chains" and
+# "Dumbbell Squat To A Bench" — two movements whose whole purpose is to change
+# something about a barbell bench press and a barbell squat that this
+# practitioner has not done yet.
+_SPECIALTY_NAME = re.compile(
+    r"\b(chain|chains|board|smith|leverage|iso.?lateral|neck|judo|gorilla|clock|"
+    r"isometric|vacuum|windmill|jerk|bradford|rocky|cuban|zercher|jefferson|sissy|"
+    r"car driver|anti.?gravity|scaption|around the world|kaz|bent press|"
+    r"speed band|band skull|hindu|frog|monkey|spider|drag)\b", re.I)
+
+
+# A main lift has to be loadable, because progressive overload is the point of
+# having one. Name plainness alone preferred "Bench Dips" over the barbell bench
+# press and "Bodyweight Squat" over the barbell squat — shorter names, and no way
+# to add 2.5 kg to either of them in week two.
+_LOADABLE_RANK = {"barbell": 3, "machine": 2, "cable": 2, "dumbbell": 2,
+                  "kettlebell": 1, "bodyweight": 1, "other": 0, "bands": 0}
+
+
+# The movement each pattern is really asking for. Name plainness is too crude a
+# proxy on its own: the dataset calls the canonical lift "Barbell Bench Press -
+# Medium Grip" and a specialty variant "Floor Press", so brevity handed a chest
+# day's press slot to the floor press — a triceps movement, two words long.
+_PATTERN_HEADLINE_LIFT = {
+    "push_h": {"bench", "chest_press"},
+    "push_v": {"overhead_press"},
+    "squat":  {"squat", "front_squat"},
+    "hinge":  {"deadlift", "romanian"},
+    "pull_v": {"pulldown"},
+    "pull_h": {"row"},
+    "lunge":  {"lunge"},
+}
+_WORD = re.compile(r"[A-Za-z]{2,}")
+# Words that change WHICH movement this is rather than describing how it is set
+# up. Brevity alone preferred "Barbell Guillotine Bench Press" (four words) and
+# "One Arm Lat Pulldown" over "Barbell Bench Press - Medium Grip" (five) — the
+# grip qualifier on the canonical lift cost it the slot to two variants of it.
+_MODIFIER_NAME = re.compile(
+    r"\b(incline|decline|guillotine|cambered|reverse|wide|close|narrow|behind|"
+    r"pin|deficit|sumo|rear|one.?arm|single.?arm|one.?leg|single.?leg|"
+    r"alternating|alternate|partial|half|paused|tempo)\b", re.I)
+
+
+def _canonical_score(ex) -> tuple:
+    """How well a movement serves as the lift a block is built around.
+
+    A coach writing a programme reaches for the lift they can load and can name
+    without qualification. "Barbell Squat" is two words; "Dumbbell Squat To A
+    Bench" is five, and the extra three all describe what makes it not a squat.
+    """
+    name = ex.get("name", "")
+    return (
+        _LOADABLE_RANK.get((ex.get("equipment") or "bodyweight").lower(), 1),
+        -20 * len(_SPECIALTY_NAME.findall(name))
+        - 5 * len(_MODIFIER_NAME.findall(name))
+        - len(_WORD.findall(name)),
+    )
+
+
+def _pattern_preference(ex, pattern: str, muscle_rank: dict) -> tuple:
+    """Sort key for filling a day's movement-pattern slot, best first.
+
+    In order: a compound before an isolation movement; the muscle the day is
+    named for before the one it is paired with; the movement the pattern is
+    actually asking for before a cousin of it; then loadable and plainly named.
+    """
+    return (
+        not _is_compound(ex),
+        muscle_rank.get(_muscle_key(ex), len(muscle_rank)),
+        _lift_class(ex) not in _PATTERN_HEADLINE_LIFT.get(pattern, set()),
+    ) + tuple(-v for v in _canonical_score(ex))
+
+
 def _movement_pattern(ex) -> str:
     name = ex.get("name", "")
     for pattern, rx in _MOVEMENT_PATTERNS:
@@ -1056,7 +1160,7 @@ def _movement_family(ex) -> str:
 
 
 def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=(),
-            caps=None, per_muscle=None):
+            caps=None, per_muscle=None, muscle_rank=None):
     """Pick n exercises, compounds first, without stacking one movement family.
 
     Selection was a plain shuffle-and-take, so nothing preferred a compound or
@@ -1069,6 +1173,7 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
     picked = []
     caps = caps or {}
     per_muscle = per_muscle if per_muscle is not None else {}
+    muscle_rank = muscle_rank or {}
 
     def _take(ex):
         picked.append(ex)
@@ -1096,7 +1201,7 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
         candidates = [ex for ex in ordered
                       if ex["id"] not in taken_ids and _movement_pattern(ex) == pattern
                       and not _blocked(ex)]
-        candidates.sort(key=lambda ex: not _is_compound(ex))
+        candidates.sort(key=lambda ex: _pattern_preference(ex, pattern, muscle_rank))
         if candidates:
             _take(candidates[0])
 
@@ -1104,7 +1209,11 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
         if want_compound and min_compounds <= 0:
             continue
         have_compounds = sum(1 for ex in picked if _is_compound(ex))
-        for ex in ordered:
+        # The compounds are chosen plainest-first; the accessories keep the
+        # shuffle, because variety belongs in the work that finishes a session
+        # rather than in the lift the block is built around.
+        for ex in (sorted(ordered, key=_canonical_score, reverse=True)
+                   if want_compound else ordered):
             if want_compound and have_compounds >= min_compounds:
                 break
             if len(picked) >= n:
@@ -1167,11 +1276,12 @@ def _select_for_day(pool, target, user_id, focus, day_num, week):
     # budget and reopens the imbalance the ceilings exist to close.
     caps = _slot_allocation(focus, target)
     per_muscle: dict = {}
+    muscle_rank = {key: i for i, (key, _) in enumerate(_FOCUS_ALLOCATION.get(focus, ()))}
 
     core = _choose(pool, core_n, f"{user_id}-{focus}-d{day_num}-core",
                    taken, families, min_compounds=min(_MIN_COMPOUNDS, max(1, core_n - 1)),
                    patterns=_FOCUS_PATTERNS.get(focus, ()),
-                   caps=caps, per_muscle=per_muscle)
+                   caps=caps, per_muscle=per_muscle, muscle_rank=muscle_rank)
     rotating = _choose(pool, target - len(core), f"{user_id}-{focus}-d{day_num}-rotate-w{week}",
                        taken, families, caps=caps, per_muscle=per_muscle)
     return core + rotating
