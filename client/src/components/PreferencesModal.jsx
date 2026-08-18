@@ -169,6 +169,14 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       // Bodyweight is always available and is never a choice — the engine adds it
       // regardless, and a plan has to be buildable for someone who ticks nothing.
       payload.available_equipment = ['bodyweight', ...(form.available_equipment || [])];
+      const splitTerms = (text) => String(text || '')
+        .split(',').map(t => t.trim()).filter(Boolean);
+      payload.exercise_preferences = {
+        likes: splitTerms(form.likes),
+        dislikes: splitTerms(form.dislikes),
+      };
+      delete payload.likes;
+      delete payload.dislikes;
       // Empty means "follow the goal"; the engine derives the scheme. It used to
       // be forced to 'hypertrophy' for everyone, which nothing read — and which
       // would now quietly rewrite a fat-loss block into a hypertrophy one.
@@ -334,6 +342,38 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                 built from them alone.
               </p>
             </div>
+            {/* `exercise_preferences` has been in the schema since the beginning and
+                had nowhere to be typed. A term matches on name, movement pattern,
+                lift class or equipment, so "deadlift" takes out the hinge family and
+                "barbell" takes out an implement — loose on purpose, because someone
+                typing a dislike is describing a category, not picking rows. */}
+            <div className="pref-row">
+              <div className="pref-input-group">
+                <label>Movements to avoid <span className="pref-hint-sub">optional</span></label>
+                <input
+                  type="text"
+                  name="dislikes"
+                  placeholder="burpees, deadlift, jump rope"
+                  value={form.dislikes || ''}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="pref-input-group">
+                <label>Movements you enjoy <span className="pref-hint-sub">optional</span></label>
+                <input
+                  type="text"
+                  name="likes"
+                  placeholder="pull-ups, kettlebell, rowing"
+                  value={form.likes || ''}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <p className="pref-hint">
+              Comma separated. A dislike is a preference, not a restriction — if leaving
+              something out would leave a muscle group with too little to train it, the
+              plan keeps a few and tells you which.
+            </p>
           </>
         );
       case 'yoga':
