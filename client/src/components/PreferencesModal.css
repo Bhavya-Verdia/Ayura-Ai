@@ -140,6 +140,14 @@
   margin-left: 0.3rem;
 }
 
+/* Sits under a chip row to explain what not choosing anything means. */
+.pref-hint {
+  font-size: 0.72rem;
+  color: var(--ayura-text-secondary, #6b7280);
+  margin: 0.45rem 0 0;
+  line-height: 1.45;
+}
+
 .pref-chip-row {
   display: flex;
   flex-wrap: wrap;

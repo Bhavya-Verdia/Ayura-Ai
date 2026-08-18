@@ -1205,3 +1205,49 @@ def test_a_leg_day_can_contain_a_deadlift():
                 if d["focus"].lower().startswith("legs"))
     assert any("Deadlift" in e["exercise_name"] for e in legs["main_workout"]), \
         [e["exercise_name"] for e in legs["main_workout"]]
+
+
+def test_the_preference_vocabulary_reaches_the_dataset():
+    """Preferences offer `dumbbells`, `cables`, `resistance_bands` and `full_gym`;
+    the dataset tags exercises `dumbbell`, `cable`, `bands` and `machine`. The
+    filter compared them directly, so the only preference that ever matched was
+    `bodyweight` — which the filter adds unconditionally. A user who selected a
+    full gym was served a bodyweight plan, and `machine` was not reachable by any
+    preference at all."""
+    from schemas.preferences_schema import EQUIPMENT_OPTIONS
+    from services.gym_plan_engine import _normalise_equipment
+
+    dataset = {e["equipment"] for e in gym_exercises}
+    for option in EQUIPMENT_OPTIONS:
+        if option in ("bodyweight", "full_gym"):
+            continue
+        tokens = _normalise_equipment([option]) - {"bodyweight"}
+        assert tokens, f"{option} normalises to nothing"
+        assert tokens <= dataset, f"{option} → {tokens - dataset}, not in the dataset"
+
+
+def test_a_full_gym_is_not_a_bodyweight_plan():
+    """`full_gym` selected everything the practitioner does not have."""
+    from services.gym_plan_engine import _normalise_equipment
+
+    pool = filter_exercises(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+        {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain"}, gym_exercises)
+    equipment = collections.Counter(e["equipment"] for e in pool)
+    for expected in ("barbell", "dumbbell", "machine", "cable", "kettlebell"):
+        assert equipment[expected] > 0, f"full_gym reaches no {expected}: {dict(equipment)}"
+    assert "machine" in _normalise_equipment(["machines"])
+
+
+def test_nothing_selected_still_builds_a_plan():
+    """Bodyweight is always available and is never a choice — a plan has to be
+    buildable for someone who ticks nothing."""
+    for equipment in ([], ["bodyweight"], None):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "beginner"},
+            {"available_equipment": equipment, "gym_goal": "general_fitness",
+             "workout_days_per_week": 3, "workout_duration_minutes": 45})
+        for day in plan["four_week_plan"][0]["days"]:
+            if day.get("type") == "recovery":
+                continue
+            assert len(day["main_workout"]) >= 3, f"{equipment}: {day['focus']} came up short"
