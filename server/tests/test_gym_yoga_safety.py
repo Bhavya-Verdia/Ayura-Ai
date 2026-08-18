@@ -516,3 +516,84 @@ def test_a_home_user_can_train_every_muscle_group(goal):
         assert len(split[group]) >= 2, (
             f"{goal}: only {len(split[group])} bodyweight options for {group} — "
             "a home user cannot train it")
+
+
+# ── Progression and session length ───────────────────────────────────────────
+
+@pytest.mark.parametrize("goal", ["muscle_gain", "strength", "fat_loss", "general_fitness", "endurance"])
+def test_a_focus_day_keeps_its_exercises_across_the_block(goal):
+    """Progressive overload needs the same movement to come back.
+
+    The selection seed included the week, so every week drew a fresh random set:
+    week 1 and week 2 of the same focus day shared 0-20% of their exercises,
+    while that week's own note told the practitioner "same weight as W1, push for
+    extra reps" and "add 2.5-5 kg vs Week 1 on main lifts". You cannot add 2.5 kg
+    to a lift you are not doing, so the four-week periodisation — the best-built
+    thing in this engine — was decoration.
+    """
+    from services.gym_plan_engine import generate_gym_plan
+
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+        {"available_equipment": ["barbell", "dumbbell", "machine", "cable", "bodyweight"],
+         "gym_goal": goal, "workout_days_per_week": 4, "workout_duration_minutes": 45})
+
+    by_focus = {}
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            if day.get("type") == "recovery" or not day["main_workout"]:
+                continue
+            names = {e["exercise_name"] for e in day["main_workout"]}
+            by_focus.setdefault(day["focus"], {})[week["week"]] = names
+
+    for focus, weeks in by_focus.items():
+        first = weeks[1]
+        for later in (2, 3, 4):
+            kept = len(first & weeks[later]) / len(first)
+            assert kept >= 0.5, (
+                f"{goal} {focus}: only {kept:.0%} of week 1's exercises survive to "
+                f"week {later} — the week's own note tells the user to add weight to them")
+
+
+@pytest.mark.parametrize("goal", ["muscle_gain", "fat_loss", "general_fitness"])
+def test_a_longer_session_is_a_longer_session(goal):
+    """`_target_count` bucketed duration into 3, 4 or 5 and stopped, so 45 and 60
+    minutes produced byte-identical sessions."""
+    from services.gym_plan_engine import generate_gym_plan
+
+    def day_one(minutes):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+            {"available_equipment": ["barbell", "dumbbell", "machine", "cable", "bodyweight"],
+             "gym_goal": goal, "workout_days_per_week": 4,
+             "workout_duration_minutes": minutes})
+        return plan["four_week_plan"][0]["days"][0]
+
+    short, long = day_one(30), day_one(60)
+    assert len(long["main_workout"]) > len(short["main_workout"]), (
+        f"{goal}: 60 minutes buys no more work than 30")
+    assert long["estimated_duration_minutes"] > short["estimated_duration_minutes"]
+
+
+@pytest.mark.parametrize("minutes", [30, 45, 60])
+@pytest.mark.parametrize("goal", ["muscle_gain", "fat_loss", "general_fitness", "strength"])
+def test_the_reported_session_length_is_the_one_that_was_built(goal, minutes):
+    """It echoed the preference straight back, so a 60-minute heading sat above
+    26 minutes of work. Where the goal's rest intervals make the requested length
+    impossible, the day says so rather than quietly misreporting."""
+    from services.gym_plan_engine import generate_gym_plan
+
+    plan = generate_gym_plan(
+        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
+        {"available_equipment": ["barbell", "dumbbell", "machine", "cable", "bodyweight"],
+         "gym_goal": goal, "workout_days_per_week": 4, "workout_duration_minutes": minutes})
+
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            if day.get("type") == "recovery" or not day["main_workout"]:
+                continue
+            built = day["estimated_duration_minutes"]
+            work = sum(e["sets"] * e["rest_seconds"] for e in day["main_workout"]) / 60
+            assert built > work, "reported length is below its own rest time"
+            if abs(built - minutes) / minutes > 0.15:
+                assert day["duration_notice"], f"{goal} {minutes}min built {built} in silence"

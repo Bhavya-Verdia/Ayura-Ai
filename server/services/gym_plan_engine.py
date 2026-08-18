@@ -596,21 +596,110 @@ def _deterministic_select(pool, n, seed_key):
     return unique_pool[:n]
 
 
+# One exercise a week moves; the rest of the day is the same work as last week.
+_ROTATING_PER_DAY = 1
+
+
+def _select_for_day(pool, target, user_id, focus, day_num, week):
+    """The day's exercises: a stable core, plus one that rotates weekly.
+
+    The seed used to include the week, so every week drew a fresh random set —
+    week 1 and week 2 of the same focus day shared 0 to 20% of their exercises.
+    Meanwhile that week's own coaching note told the practitioner "same weight as
+    W1, push for extra reps" and "add 2.5-5 kg vs Week 1 on main lifts". You
+    cannot add 2.5 kg to a lift you are not doing, so the four-week periodisation
+    — otherwise the best-built thing in this engine — was decoration.
+
+    Progressive overload needs the same movement to come back. One rotating slot
+    keeps a month from going stale without costing the other exercises their
+    history. The core is seeded on the DAY, never the week, so it holds across all
+    four; the same shape as the yoga engine's core and accent split.
+    """
+    core_n = max(1, target - _ROTATING_PER_DAY)
+    core = _deterministic_select(pool, core_n, f"{user_id}-{focus}-d{day_num}-core")
+
+    taken = {ex["id"] for ex in core}
+    remaining = [ex for ex in pool if ex["id"] not in taken]
+    rotating = _deterministic_select(
+        remaining, target - len(core), f"{user_id}-{focus}-d{day_num}-rotate-w{week}")
+    return core + rotating
+
+
 # Below this the week is the same handful of exercises repeated, which the plan
 # should say rather than imply. Bodyweight + endurance lands at 16.
 _THIN_POOL = 20
 
 
-def _target_count(duration, goal):
-    if duration <= 20:   base = 3
-    elif duration <= 30: base = 4
-    else:                base = 5
-    if goal == "strength":
-        base = min(base, 4)
-    return base
+# Warm-up and cool-down are written per focus (`_WARMUP` / `_COOLDOWN`), five or
+# six movements each. Nine minutes is what they take at a sane pace, and the
+# exercise budget is what is left after them.
+_OVERHEAD_SECONDS = 9 * 60
+# Rest between sets is not lying down, and a warm-up is real work. Both were
+# counted as zero.
+_REST_KCAL_PER_MINUTE = 2.0
+_WARMUP_KCAL_PER_MINUTE = 4.0
+_MIN_EXERCISES = 3
+_MAX_EXERCISES = 8
+_SECONDS_PER_REP = 4
+
+
+def _reps_to_seconds(reps, sets: int) -> int:
+    """Time under tension for one exercise, across all its sets."""
+    digits = [int(p) for p in str(reps).replace("\u2013", "-").split("-") if p.strip().isdigit()]
+    avg_reps = sum(digits) / len(digits) if digits else 10
+    return int(sets * (avg_reps * _SECONDS_PER_REP))
+
+
+def _target_count(duration, goal, rx=None):
+    """How many exercises fit in the session the user asked for.
+
+    This used to bucket duration into 3, 4 or 5 and stop, so a 45-minute and a
+    60-minute request produced byte-identical sessions — the extra quarter hour
+    bought nothing — and the plan reported back the REQUESTED length rather than
+    the one it built: 26 minutes of work under a 60-minute heading.
+
+    The count now comes off the clock, and the clock depends on the goal, because
+    the goal sets the rest interval. Strength rests 180 seconds between sets and
+    fits three or four exercises into an hour; fat loss rests 30 and fits eight.
+    That is the arithmetic a coach does, and it is why one bucket cannot serve
+    every goal.
+    """
+    if rx is None:  # legacy callers keep the old behaviour
+        return 3 if duration <= 20 else (4 if duration <= 30 else 5)
+
+    budget = max(int(duration) * 60 - _OVERHEAD_SECONDS, 300)
+    sets = int(rx.get("sets", 3))
+    per_exercise = (_reps_to_seconds(rx.get("reps", "10-12"), sets)
+                    + sets * int(rx.get("rest_seconds", 60)))
+    return max(_MIN_EXERCISES, min(_MAX_EXERCISES, budget // max(per_exercise, 60)))
 
 
 # ── Day plan builder ──────────────────────────────────────────────────────────
+
+# Below this the difference is absorbed by how briskly someone warms up. Above
+# it, the session is a different length from the one they chose and should say so.
+_DURATION_TOLERANCE = 0.15
+
+
+def _duration_notice(built: int, requested: int, goal: str) -> str | None:
+    """Say when the session is not the length that was asked for.
+
+    Rest interval is set by the goal, and it dominates: strength rests three
+    minutes between sets, so even the fewest exercises that can train a day's
+    muscle groups overruns a half-hour slot. The honest move is the one the yoga
+    engine makes — build the session the goal requires, and name the gap.
+    """
+    if not requested or abs(built - requested) / requested <= _DURATION_TOLERANCE:
+        return None
+    if built > requested:
+        return (f"This session runs about {built} minutes rather than the {requested} you asked "
+                f"for. At the {goal.replace('_', ' ')} rest intervals, fewer exercises than this "
+                f"would leave the day's muscle groups untrained. Shorten the rests if you are "
+                f"pressed for time — it changes the training effect, but it keeps the session.")
+    return (f"This session runs about {built} minutes rather than the {requested} you asked for. "
+            f"Adding exercises past this point stops being productive at these rest intervals — "
+            f"take the extra time over the warm-up and cool-down, or add a walk.")
+
 
 def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profile,
                    week=1, user_id="default", strength_level="beginner", gender="male",
@@ -631,8 +720,13 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     if level not in ["beginner", "intermediate", "advanced"]:
         level = "beginner"
 
-    target = _target_count(duration, goal)
     rx = _get_goal_prescription(goal, week)
+    # The COUNT comes off week 1 and holds for the block, while the sets and reps
+    # move with the periodisation. Sizing each week against its own prescription
+    # made peak weeks (four sets instead of three) drop an exercise, which
+    # changed the day's core and cost the very continuity the stable core exists
+    # to give. A real programme keeps the lifts and moves the volume.
+    target = _target_count(duration, goal, _get_goal_prescription(goal, 1))
 
     pool = []
     for k in _focus_to_keys(focus):
@@ -643,25 +737,28 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     if len(pool) < 3:
         pool = [ex for group in muscle_split.values() for ex in group]
 
-    seed_key = f"{user_id}-{focus}-d{day_num}-w{week}"
-    selected = _deterministic_select(pool, target, seed_key)
+    selected = _select_for_day(pool, target, user_id, focus, day_num, week)
 
     main_workout = []
-    total_cals = 0
+    total_cals = 0.0
+    work_seconds = 0
+    rest_seconds_total = 0
     for ex in selected:
         sets = rx["sets"]
         reps = rx["reps"]
         rest = rx["rest_seconds"]
 
-        try:
-            parts = str(reps).split("-")
-            reps_val = sum(int(p) for p in parts if p.isdigit()) / max(len(parts), 1)
-        except Exception:
-            reps_val = 10
+        ex_work = _reps_to_seconds(reps, sets)
+        work_seconds += ex_work
+        rest_seconds_total += sets * rest
 
+        # Calories counted the work and nothing else — a 45-minute muscle-gain
+        # session reported 75 kcal, because sets x reps x 4s is nine minutes of
+        # it. Rest between sets and the warm-up are still the practitioner being
+        # upright and moving, so they are counted at their own lower rates.
         cpm = ex.get("calories_per_minute", 5.0)
-        time_per_rep = 2 if ex.get("category") == "cardio" else 4
-        total_cals += (sets * reps_val * time_per_rep / 60.0) * cpm
+        total_cals += (ex_work / 60.0) * cpm
+        total_cals += (sets * rest / 60.0) * _REST_KCAL_PER_MINUTE
 
         main_workout.append({
             "exercise_id": ex.get("id"),
@@ -686,8 +783,18 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         "warmup": _warmup_for(focus),
         "main_workout": main_workout,
         "cooldown": _cooldown_for(focus),
-        "estimated_duration_minutes": duration,
-        "calories_burned_estimate": int(total_cals + 20),
+        # What was BUILT, not what was asked for. The client shows this as the
+        # session-length chip, and it used to echo the preference straight back —
+        # so a 60-minute heading sat above 26 minutes of work. Same lesson the
+        # yoga engine learned: the number on the card and the session underneath
+        # it were different products.
+        "estimated_duration_minutes": round((work_seconds + rest_seconds_total
+                                             + _OVERHEAD_SECONDS) / 60),
+        "requested_duration_minutes": duration,
+        "duration_notice": _duration_notice(
+            round((work_seconds + rest_seconds_total + _OVERHEAD_SECONDS) / 60), duration, goal),
+        "calories_burned_estimate": int(total_cals + (_OVERHEAD_SECONDS / 60.0)
+                                        * _WARMUP_KCAL_PER_MINUTE),
     }
 
 
