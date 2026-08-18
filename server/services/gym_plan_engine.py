@@ -470,6 +470,12 @@ def _condition_contra_tags(medical_history) -> set:
 
 # ── Exercise filtering ────────────────────────────────────────────────────────
 
+# Self-myofascial release — foam rolling. Named as a suffix throughout the
+# dataset ("Adductors-Smr", "Peroneals-Smr"); the `-` matters, since `_MOVEMENT_
+# PATTERNS` has to keep reading "Smith" and "Smr" apart.
+_SMR_NAME = re.compile(r"-\s*smr\b", re.I)
+
+
 def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
     available_eq = {eq.lower() for eq in gym_prefs.get("available_equipment", ["bodyweight"])}
     available_eq.add("bodyweight")
@@ -533,6 +539,19 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None):
         # because "endurance" resolved to cardio plus plyometrics and nothing
         # else.
         if user_level == "beginner" and ex.get("category") == "plyometrics":
+            continue
+        # A stretch is not a set of eight, and foam rolling is not a lift. The
+        # dataset carries 51 stretches and 13 self-myofascial-release entries
+        # ("Brachialis-Smr", "Latissimus Dorsi-Smr"), and nothing separated them
+        # from training movements — so 20% of generated days prescribed one as
+        # main work: "Calves-Smr — 3 sets of 8-12, 90s rest, 82-130 kg". The
+        # thirteen SMR rows were filed as `strength` in the dataset, which is
+        # how they reached a chest day at all; that is corrected too, so a
+        # future reader of the category alone is not misled.
+        #
+        # Mobility work belongs to the session — it is what `_WARMUP` and
+        # `_COOLDOWN` are, written per focus and timed in seconds.
+        if ex.get("category") == "stretching" or _SMR_NAME.search(ex.get("name", "")):
             continue
         # Jump training is the wrong risk for a 65-year-old and for a body still
         # growing, whatever level they enter.

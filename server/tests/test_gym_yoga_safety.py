@@ -817,3 +817,42 @@ def test_the_quota_never_costs_a_session():
                 if day.get("type") == "recovery":
                     continue
                 assert len(day["main_workout"]) >= 3, f"{goal} {day['focus']} came up short"
+
+
+@pytest.mark.parametrize("goal", ["general_fitness", "muscle_gain", "strength",
+                                  "fat_loss", "endurance"])
+def test_mobility_work_is_never_prescribed_as_a_lift(goal):
+    """Foam rolling is not a set of eight.
+
+    The dataset carries 51 stretches and 13 self-myofascial-release entries, and
+    nothing separated them from training movements — so a fifth of all generated
+    days served one as main work: "Calves-Smr — 3 sets of 8-12, 90s rest, 82-130
+    kg". Mobility belongs to the warm-up and cool-down, which are written per
+    focus and timed in seconds.
+    """
+    from services.gym_plan_engine import _SMR_NAME
+
+    for equipment in (["bodyweight"], FULL_GYM):
+        for level in ("beginner", "intermediate", "advanced"):
+            plan = generate_gym_plan(
+                {**_YOGA_BASE_PROFILE, "fitness_level": level},
+                {"available_equipment": equipment, "gym_goal": goal,
+                 "workout_days_per_week": 5, "workout_duration_minutes": 60})
+            for week in plan["four_week_plan"]:
+                for day in week["days"]:
+                    for ex in day["main_workout"]:
+                        assert ex["category"] != "stretching", (
+                            f"{goal}/{level}: {ex['exercise_name']} is a stretch")
+                        assert not _SMR_NAME.search(ex["exercise_name"]), (
+                            f"{goal}/{level}: {ex['exercise_name']} is foam rolling")
+
+
+def test_no_kb_entry_files_foam_rolling_as_strength():
+    """The thirteen SMR rows were categorised `strength`, which is how they
+    reached a chest day at all. The engine now excludes them by name as well, but
+    the data is corrected so a future reader of the category alone is not misled."""
+    from services.gym_plan_engine import _SMR_NAME
+
+    mislabelled = [e["name"] for e in gym_exercises
+                   if _SMR_NAME.search(e["name"]) and e["category"] != "stretching"]
+    assert not mislabelled, mislabelled

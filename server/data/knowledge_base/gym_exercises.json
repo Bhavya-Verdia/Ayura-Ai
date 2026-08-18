@@ -1216,7 +1216,7 @@
   {
     "id": "Anterior_Tibialis-SMR",
     "name": "Anterior Tibialis-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "other",
     "level": "intermediate",
     "primary_muscles": [
@@ -5975,7 +5975,7 @@
   {
     "id": "Brachialis-SMR",
     "name": "Brachialis-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "bodyweight",
     "level": "intermediate",
     "primary_muscles": [
@@ -7950,7 +7950,7 @@
   {
     "id": "Calves-SMR",
     "name": "Calves-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "bodyweight",
     "level": "intermediate",
     "primary_muscles": [
@@ -15784,7 +15784,7 @@
   {
     "id": "Foot-SMR",
     "name": "Foot-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "other",
     "level": "intermediate",
     "primary_muscles": [
@@ -17599,7 +17599,7 @@
   {
     "id": "Hamstring-SMR",
     "name": "Hamstring-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "bodyweight",
     "level": "intermediate",
     "primary_muscles": [
@@ -18923,7 +18923,7 @@
   {
     "id": "Iliotibial_Tract-SMR",
     "name": "Iliotibial Tract-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "bodyweight",
     "level": "intermediate",
     "primary_muscles": [
@@ -23087,7 +23087,7 @@
   {
     "id": "Latissimus_Dorsi-SMR",
     "name": "Latissimus Dorsi-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "bodyweight",
     "level": "intermediate",
     "primary_muscles": [
@@ -24418,7 +24418,7 @@
   {
     "id": "Lower_Back-SMR",
     "name": "Lower Back-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "bodyweight",
     "level": "intermediate",
     "primary_muscles": [
@@ -26913,7 +26913,7 @@
   {
     "id": "Neck-SMR",
     "name": "Neck-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "other",
     "level": "intermediate",
     "primary_muscles": [
@@ -30239,7 +30239,7 @@
   {
     "id": "Peroneals-SMR",
     "name": "Peroneals-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "bodyweight",
     "level": "intermediate",
     "primary_muscles": [
@@ -30456,7 +30456,7 @@
   {
     "id": "Piriformis-SMR",
     "name": "Piriformis-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "bodyweight",
     "level": "intermediate",
     "primary_muscles": [
@@ -32434,7 +32434,7 @@
   {
     "id": "Quadriceps-SMR",
     "name": "Quadriceps-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "bodyweight",
     "level": "intermediate",
     "primary_muscles": [
@@ -33874,7 +33874,7 @@
   {
     "id": "Rhomboids-SMR",
     "name": "Rhomboids-Smr",
-    "category": "strength",
+    "category": "stretching",
     "equipment": "bodyweight",
     "level": "intermediate",
     "primary_muscles": [
