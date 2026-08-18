@@ -13,6 +13,8 @@ import pytest
 from services.yoga_plan_engine import (
     generate_yoga_plan,
     filter_poses,
+    _pool_narrowing_reasons,
+    _join_reasons,
     yoga_poses,
     _CATEGORY_ARC,
     _COUNTERPOSE_CATEGORIES,
@@ -487,20 +489,33 @@ def test_only_a_pitta_earns_a_cooling_chaser(dosha):
 def test_the_thin_pool_notice_names_the_axis_that_actually_narrowed_it():
     """A healthy 70-year-old was told the app had ruled poses out for their
     "health conditions". Age, injuries, pregnancy and conditions are four
-    independent axes — the same lesson the pranayama exclusions learned."""
-    senior = generate_yoga_plan(profile(age=70), prefs(time_available_minutes=60),
-                                weeks=[1])
-    assert "your age" in senior["practice_pool_notice"]
-    assert "health conditions" not in senior["practice_pool_notice"]
+    independent axes — the same lesson the pranayama exclusions learned.
 
-    both = generate_yoga_plan(profile(age=70, medical_history=["hypertension"]),
-                              prefs(time_available_minutes=60), weeks=[1])
-    assert "your health conditions and your age" in both["practice_pool_notice"]
+    Asserted on `_pool_narrowing_reasons` rather than on a generated plan,
+    because *whether* the notice fires depends on how thin the pool is and the
+    KB grows: the 13 beginner-safe poses added on 2026-08-18 took the senior and
+    the hypertensive profiles back over the threshold, so those plans correctly
+    carry no notice at all now. The wording rule has to be pinned to the
+    function that decides it, or it silently stops being tested.
+    """
+    sixty = prefs(time_available_minutes=60)
 
-    pregnant = generate_yoga_plan(
-        profile(pregnancy_or_nursing=True, pregnancy_status="pregnant",
-                pregnancy_trimester=3),
-        prefs(time_available_minutes=60), weeks=[1])
+    assert _pool_narrowing_reasons(profile(age=70), sixty) == ["your age"]
+
+    both = _pool_narrowing_reasons(profile(age=70, medical_history=["hypertension"]), sixty)
+    assert _join_reasons(both) == "your health conditions and your age"
+
+    pregnant_profile = profile(pregnancy_or_nursing=True, pregnancy_status="pregnant",
+                               pregnancy_trimester=3)
+    assert _pool_narrowing_reasons(pregnant_profile, sixty) == ["pregnancy"]
+
+    # Level narrows every pool, so it is only ever named when nothing else was —
+    # pairing it with a real restriction reads as a safety exclusion.
+    assert _pool_narrowing_reasons(profile(), sixty) == ["the level you are practising at"]
+
+    # And the notice itself still reaches the practitioner where the pool really
+    # is thin. Third-trimester pregnancy rules out most of the library.
+    pregnant = generate_yoga_plan(pregnant_profile, sixty, weeks=[1])
     assert "pregnancy" in pregnant["practice_pool_notice"]
 
 
@@ -1489,3 +1504,52 @@ def test_a_protocols_first_choice_is_never_withheld_in_silence():
     names = {e["name"] for e in plan["pranayama_safety_exclusions"]}
     assert any("Bhastrika" in n for n in names), (
         f"the withheld first choice was not reported: {names}")
+
+
+# ── Beginner pool depth (13 poses added 2026-08-18) ──────────────────────────
+
+@pytest.mark.parametrize("overrides", [
+    {},
+    {"medical_history": ["hypertension"]},
+    {"age": 70},
+    {"medical_history": ["back_pain"], "injuries_or_limitations": ["herniated_disc"]},
+], ids=["healthy", "hypertension", "senior", "back-pain"])
+@pytest.mark.parametrize("minutes", [30, 45, 60])
+def test_a_restricted_beginner_still_gets_a_full_main_sequence(overrides, minutes):
+    """The beginner library used to run out before the session did.
+
+    A healthy 70-year-old's main sequence was FOUR poses at 45 minutes — the
+    engine held each one longer to reach the slot, which is the right fallback
+    but not a practice. The shortage was never "beginner poses" in general: it
+    was poses that survive the wrist_weight_bearing, fall_risk,
+    intracranial_pressure, neck_load and spinal_flexion filters, which is what
+    the 2026-08-18 additions were selected against. Worst case per day is 8.
+    """
+    plan = generate_yoga_plan(profile(**overrides),
+                              prefs(yoga_experience="beginner",
+                                    time_available_minutes=minutes),
+                              weeks=[1])
+    for day in week_days(plan):
+        main = day["session"]["main_sequence"]
+        assert len(main) >= 7, (
+            f"{overrides} at {minutes}min built {len(main)} main poses on "
+            f"{day['day_name']} — the safe pool has run dry again")
+
+
+def test_the_beginner_pool_can_outlast_a_session():
+    """The engine can always lengthen holds to fill a slot, so a thin pool shows
+    up as a short list of very long holds rather than as an error. This asserts
+    the pool itself, which is the thing that has to be fixed in the KB."""
+    from services.yoga_plan_engine import filter_poses, yoga_poses
+
+    for overrides in ({}, {"age": 70},
+                      {"medical_history": ["back_pain"],
+                       "injuries_or_limitations": ["herniated_disc"]}):
+        pool = filter_poses(profile(**overrides),
+                            prefs(yoga_experience="beginner",
+                                  time_available_minutes=45), yoga_poses)
+        poses = pool["poses"] if isinstance(pool, dict) else pool
+        main = [p for p in poses if p.get("sequence_role") == "main"]
+        warmup = [p for p in poses if p.get("sequence_role") == "warmup"]
+        assert len(main) >= 9, f"{overrides}: {len(main)} main-role poses"
+        assert len(warmup) >= 4, f"{overrides}: {len(warmup)} warm-up poses"

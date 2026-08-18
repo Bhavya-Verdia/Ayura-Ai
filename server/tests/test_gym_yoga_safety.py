@@ -316,3 +316,24 @@ def test_a_herniated_disc_does_not_lose_every_backbend():
     kept = [p for p in _yoga_pool(medical_history=["herniated_disc"])
             if "spinal_extension" in (p.get("risk_tags") or [])]
     assert kept, "herniated disc should retain the gentle backbends"
+
+
+def test_every_pose_uses_a_dosha_value_the_scorer_understands():
+    """`dosha_balance` is free text in the file and a fixed vocabulary in the code.
+
+    Thirteen poses were added on 2026-08-18 written with "reduces", which reads
+    correctly to a human and scores ZERO — worse than "neutral", which scores 1,
+    so the new poses ranked below poses with no dosha effect at all. Nothing
+    failed: the value is only ever compared with `==`, so an unrecognised one is
+    silently the absence of an effect. The RAG chunk rendering it as "Balances:
+    none. Aggravates: none." is what surfaced it.
+    """
+    from services.yoga_plan_engine import yoga_poses
+
+    allowed = {"balances", "neutral", "aggravates"}
+    bad = {p["id"]: p["dosha_balance"] for p in yoga_poses
+           if set((p.get("dosha_balance") or {}).values()) - allowed}
+    assert not bad, f"dosha values the scorer ignores: {bad}"
+
+    for pose in yoga_poses:
+        assert set(pose.get("dosha_balance") or {}) == {"vata", "pitta", "kapha"}, pose["id"]
