@@ -297,9 +297,9 @@ def _assign_roles(selected: list, primary_slots: int) -> list:
     return roles
 
 
-def _primary_slots(target: int) -> int:
-    """One main lift in a short session, two once there is room to support them."""
-    return 2 if target >= 5 else 1
+# Below this a session cannot carry a second main lift and the accessories that
+# make it worth having; the day is one lift and its support.
+_TWO_LIFT_SESSION = 5
 
 
 def _role_at(index: int, primary_slots: int) -> str:
@@ -1375,6 +1375,12 @@ def _reps_to_seconds(reps, sets: int) -> int:
 
 
 def _target_count(duration, goal, rx=None):
+    """How many exercises fit. See `_session_shape`, which also says how many of
+    them are main lifts."""
+    return _session_shape(duration, goal, rx)[0]
+
+
+def _session_shape(duration, goal, rx=None):
     """How many exercises fit in the session the user asked for.
 
     This used to bucket duration into 3, 4 or 5 and stop, so a 45-minute and a
@@ -1389,7 +1395,7 @@ def _target_count(duration, goal, rx=None):
     every goal.
     """
     if rx is None:  # legacy callers keep the old behaviour
-        return 3 if duration <= 20 else (4 if duration <= 30 else 5)
+        return (3 if duration <= 20 else (4 if duration <= 30 else 5)), 1
 
     # Exercises no longer cost the same, so the count cannot come from dividing
     # the budget by one of them. A main lift resting three minutes is most of a
@@ -1411,11 +1417,18 @@ def _target_count(duration, goal, rx=None):
         return max(_MIN_EXERCISES, count)
 
     # How many main lifts the day gets depends on how long it is, and how long it
-    # is depends on how many main lifts it gets. One pass settles it: cost the
-    # session with a single main lift, and if it came out long enough to carry two,
-    # cost it again.
+    # is depends on how many main lifts it gets. Cost the session with a single
+    # main lift; if it came out long enough to carry two, cost it again — and keep
+    # the second version only if it is STILL long enough, because a second main
+    # lift is expensive. A 45-minute strength day priced with one main lift fits
+    # five exercises and priced with two fits three, and taking the second answer
+    # gave the shorter session the smaller programme.
     count = _fits(1)
-    return _fits(2) if count >= 5 else count
+    if count >= _TWO_LIFT_SESSION:
+        two = _fits(2)
+        if two >= _TWO_LIFT_SESSION:
+            return two, 2
+    return count, 1
 
 
 # ── Conditioning finisher ─────────────────────────────────────────────────────
@@ -1559,7 +1572,8 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     # made peak weeks (four sets instead of three) drop an exercise, which
     # changed the day's core and cost the very continuity the stable core exists
     # to give. A real programme keeps the lifts and moves the volume.
-    target = _target_count(duration, goal, _get_goal_prescription(goal, 1, level))
+    target, primary_slots = _session_shape(
+        duration, goal, _get_goal_prescription(goal, 1, level))
 
     # The finisher takes a slot rather than being added on top of a session that
     # already fills the clock — the practitioner asked for forty-five minutes.
@@ -1587,7 +1601,10 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     # — which movement patterns the day contains — and returned them in whatever
     # order it found them, so a chest day opened with a push-up and then ran
     # three triceps extensions before it reached a fly.
-    roles = _assign_roles(selected, _primary_slots(len(selected)))
+    # The same number of main lifts the session was costed with. Deciding it again
+    # from the length that came out let the day be built to a shape it was not
+    # priced for.
+    roles = _assign_roles(selected, primary_slots)
     ordered = sorted(zip(selected, roles), key=lambda pair: _ROLE_ORDER.index(pair[1]))
     if finisher and all(ex["id"] != finisher["id"] for ex in selected):
         ordered.append((finisher, "conditioning"))
