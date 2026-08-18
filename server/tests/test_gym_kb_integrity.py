@@ -113,3 +113,30 @@ def test_every_bmi_category_the_profile_can_write_is_understood():
     assert _bmi_group("obese") == "obese"
     assert _bmi_group("obese_class3") == "obese"
     assert _bmi_group(None) == "normal"
+
+
+def test_the_review_packet_regenerates_and_matches_the_library():
+    """The packet is only useful if it describes the KB as it is now. It is
+    generated rather than written, so it cannot drift — this asserts the generator
+    still runs against the current library and agrees with it on the numbers."""
+    from scripts.build_gym_review_packet import _coverage_rows, _exercise_rows
+
+    exercises = _exercise_rows()
+    assert len(exercises) == len(gym_exercises)
+
+    coverage = _coverage_rows()
+    assert coverage, "no mechanism groups — the grouping has stopped working"
+    for row in coverage:
+        assert 0 < row["tagged"] <= row["group_size"]
+        assert row["contraindication"]
+    # The flagged rows are the point of the exercise: a rule that fired on part of
+    # a mechanism group and not the rest. If none are flagged, either the library
+    # became consistent or the flagging broke, and the second is likelier.
+    assert [r for r in coverage if r["inconsistent"]]
+
+
+def test_the_reviewed_count_only_goes_up():
+    """`contraindications_reviewed` is what the packet exists to raise. A change
+    that drops rows out of it is a regression, not an edit."""
+    reviewed = sum(1 for e in gym_exercises if e.get("contraindications_reviewed"))
+    assert reviewed >= 18, f"clinically reviewed rows fell to {reviewed}"
