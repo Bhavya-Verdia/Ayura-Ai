@@ -247,6 +247,72 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
 
     return filtered_results
 
+# Dietary guidance carries contraindications exactly as a remedy ingredient does,
+# and this engine already gates the ingredients — `blocks` in the candidate loop
+# withholds guggulu and honey from a diabetic, salt from a hypertensive. The
+# GENERAL GUIDELINES were static prose per dosha and passed no gate at all, so
+# the same diabetic was told to eat "sweet fruits" and someone with chronic
+# kidney disease to drink "coconut water", which is a potassium load.
+#
+# `build_remedy_plan` was handed the whole user profile and read `dominant_dosha`
+# out of it. Same fault as the gym warm-up: the structured data was filtered
+# carefully and the prose beside it was not filtered at all.
+#
+# Matching is substring-based in both directions, the way `_matches_condition`
+# and the ingredient blocks already work, so "type_2_diabetes" catches "diabetes".
+_GUIDELINE_RESTRICTIONS: tuple[tuple[str, tuple[str, ...], str], ...] = (
+    ("coconut water",
+     ("kidney", "renal", "ckd", "dialysis", "hyperkalemia", "hyperkalaemia"),
+     "cool water with lime"),
+    ("sweet fruits",
+     ("diabetes", "diabetic", "prediabetes", "insulin_resistance", "pcos"),
+     "low-sugar fruits (guava, pear, berries)"),
+    ("oily foods",
+     ("gallbladder", "gallstone", "pancreatitis", "cholesterol", "dyslipidemia",
+      "dyslipidaemia", "fatty_liver"),
+     "lightly oiled foods"),
+    ("spiced foods",
+     ("gerd", "acid_reflux", "hyperacidity", "gastritis", "ulcer", "ibs",
+      "inflammatory_bowel", "crohn", "colitis"),
+     "lightly seasoned foods"),
+)
+
+# Each guideline is one or two sentences: what to eat, then what to avoid. A term
+# appearing AFTER "Avoid" is already being warned against, and substituting there
+# inverts the advice — the first version of this produced "Avoid heavy, sweet,
+# moist well-cooked foods with only a little ghee" for a Kapha with gallstones,
+# which reads as a warning against the safer option.
+_AVOID_CLAUSE = "avoid"
+
+
+def _gate_guidelines(guidelines: dict, medical_history) -> tuple[dict, list]:
+    """Swap a dietary item a declared condition rules out, and say that it was
+    swapped. Silently changing clinical guidance is its own problem."""
+    tokens = [str(c).lower() for c in (medical_history or []) if c]
+    if not tokens:
+        return guidelines, []
+
+    out = dict(guidelines)
+    swapped: list[tuple[str, str]] = []
+    for term, contra, replacement in _GUIDELINE_RESTRICTIONS:
+        if not any(k in tok or tok in k for k in contra for tok in tokens):
+            continue
+        for field in ("diet_during_recovery", "lifestyle_notes"):
+            text = out.get(field) or ""
+            low = text.lower()
+            # Only the recommending half. Past "Avoid", the term is already the
+            # thing being warned against.
+            limit = low.index(_AVOID_CLAUSE) if _AVOID_CLAUSE in low else len(text)
+            idx = low.find(term)
+            if idx == -1 or idx >= limit:
+                continue
+            out[field] = text[:idx] + replacement + text[idx + len(term):]
+            swapped.append((term, replacement))
+    notices = [f"'{t}' replaced with '{r}' — your declared health history rules it out."
+               for t, r in swapped]
+    return out, notices
+
+
 def build_remedy_plan(filtered_remedies: list, user_profile: dict, symptom_input: dict) -> dict:
     plan_id = f"remedy_{user_profile.get('id', 'usr')}_{int(datetime.now(timezone.utc).timestamp())}"
     dominant_dosha = user_profile.get("dominant_dosha", "vata").lower()
@@ -280,6 +346,9 @@ def build_remedy_plan(filtered_remedies: list, user_profile: dict, symptom_input
             "what_to_avoid": ["cold dairy", "fried food", "excess sugar", "sedentary behavior"]
         }
 
+    guidelines, guideline_notices = _gate_guidelines(
+        guidelines, user_profile.get("medical_history"))
+
     return {
         "plan_id": plan_id,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -287,6 +356,7 @@ def build_remedy_plan(filtered_remedies: list, user_profile: dict, symptom_input
         "symptoms_addressed": symptoms_addressed,
         "doctor_referrals": doctor_referrals,
         "general_guidelines": guidelines,
+        "guideline_notices": guideline_notices,
         "ayurvedic_context": "",
         "follow_up": "If symptoms persist beyond 7 days, consult an Ayurvedic practitioner",
         "disclaimer": "These are traditional home remedies for general wellness only. They are not a substitute for medical treatment. Consult a qualified healthcare provider for persistent, severe, or worsening symptoms.",
