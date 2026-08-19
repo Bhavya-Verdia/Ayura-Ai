@@ -1,0 +1,297 @@
+[
+  {
+    "name": "Air Bike (Assault Bike)",
+    "primary_muscles": [
+      "cardiovascular system",
+      "shoulders",
+      "arms",
+      "legs"
+    ],
+    "secondary_muscles": [
+      "core",
+      "back"
+    ],
+    "instructions": [
+      "Sit on seat with feet on pedals, hands on moving handles.",
+      "Push and pull handles while pedaling — full body effort.",
+      "Set goal: time, calories, or distance.",
+      "For intervals: sprint 20 sec all-out, cruise 40 sec; repeat.",
+      "Maintain upright posture; avoid hunching."
+    ]
+  },
+  {
+    "name": "Battle Ropes",
+    "primary_muscles": [
+      "cardiovascular system",
+      "shoulders",
+      "arms",
+      "core"
+    ],
+    "secondary_muscles": [
+      "back",
+      "legs"
+    ],
+    "instructions": [
+      "Stand with feet shoulder-width apart, slight squat position.",
+      "Hold one rope end in each hand at hip height.",
+      "Alternately raise and lower each arm to create waves in the ropes.",
+      "Keep core engaged and knees slightly bent.",
+      "Maintain continuous wave motion for the set duration."
+    ]
+  },
+  {
+    "name": "Bird Dog",
+    "primary_muscles": [
+      "lower back"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "abdominals",
+      "shoulders"
+    ],
+    "instructions": [
+      "Start on hands and knees with the wrists under the shoulders and the knees under the hips.",
+      "Extend the right arm forward and the left leg back until both are level with the torso.",
+      "Hold for a breath without letting the hips tilt — imagine balancing a glass of water on your lower back.",
+      "Return to the start with control and change sides.",
+      "One extension on each side is a single repetition."
+    ]
+  },
+  {
+    "name": "Brisk Walking",
+    "primary_muscles": [
+      "cardiovascular system",
+      "quadriceps",
+      "hamstrings",
+      "glutes"
+    ],
+    "secondary_muscles": [
+      "calves",
+      "core"
+    ],
+    "instructions": [
+      "Walk at a pace where you can talk but feel slightly breathless (5-6/10 effort).",
+      "Swing arms naturally at 90 degrees.",
+      "Take slightly longer strides than your normal walk.",
+      "Keep head up, shoulders relaxed, core gently engaged.",
+      "Aim for 100+ steps per minute."
+    ]
+  },
+  {
+    "name": "Burpee",
+    "primary_muscles": [
+      "cardiovascular system",
+      "chest",
+      "quadriceps"
+    ],
+    "secondary_muscles": [
+      "core",
+      "shoulders",
+      "triceps"
+    ],
+    "instructions": [
+      "Stand with feet shoulder-width apart.",
+      "Drop hands to floor, jump feet back to plank position.",
+      "Perform a push-up (optional).",
+      "Jump feet forward to hands.",
+      "Explosively jump up with arms overhead."
+    ]
+  },
+  {
+    "name": "Child'S Pose",
+    "primary_muscles": [
+      "lower back"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "middle back"
+    ],
+    "instructions": [
+      "Get on your hands and knees, walk your hands in front of you.",
+      "Lower your buttocks down to sit on your heels. Let your arms drag along the floor as you sit back to stretch your entire spine.",
+      "Once you settle onto your heels, bring your hands next to your feet and relax. \"breathe\" into your back. Rest your forehead on the floor. Avoid this position if you have knee problems."
+    ]
+  },
+  {
+    "name": "HIIT Circuit",
+    "primary_muscles": [
+      "cardiovascular system",
+      "full body"
+    ],
+    "secondary_muscles": [],
+    "instructions": [
+      "Perform each exercise for 40 seconds, rest 20 seconds between exercises.",
+      "Round 1: Jumping Jacks → Mountain Climbers → High Knees → Burpees.",
+      "Complete 3-5 full rounds.",
+      "Rest 90 seconds between rounds.",
+      "Modify individual exercises as needed."
+    ]
+  },
+  {
+    "name": "High Knees",
+    "primary_muscles": [
+      "cardiovascular system",
+      "hip flexors",
+      "quadriceps"
+    ],
+    "secondary_muscles": [
+      "core",
+      "calves"
+    ],
+    "instructions": [
+      "Stand with feet hip-width apart.",
+      "Run in place, driving knees up to waist height with each step.",
+      "Pump arms in opposition to legs.",
+      "Land softly on balls of feet.",
+      "Maintain upright posture throughout."
+    ]
+  },
+  {
+    "name": "Jumping Jacks",
+    "primary_muscles": [
+      "cardiovascular system",
+      "shoulders",
+      "legs"
+    ],
+    "secondary_muscles": [
+      "core",
+      "calves"
+    ],
+    "instructions": [
+      "Stand upright with feet together, arms at sides.",
+      "Jump, spreading feet wider than shoulder-width and raising arms overhead.",
+      "Jump again, returning feet together and arms to sides.",
+      "Keep a slight bend in knees throughout.",
+      "Land softly on balls of feet."
+    ]
+  },
+  {
+    "name": "Kettlebell Swing (Cardio)",
+    "primary_muscles": [
+      "cardiovascular system",
+      "glutes",
+      "hamstrings",
+      "core"
+    ],
+    "secondary_muscles": [
+      "shoulders",
+      "back",
+      "forearms"
+    ],
+    "instructions": [
+      "Stand with feet shoulder-width apart, kettlebell on floor in front.",
+      "Hinge at hips to grip kettlebell with both hands.",
+      "Hike kettlebell back between legs (hip hinge, not squat).",
+      "Drive hips forward explosively to swing bell to shoulder height.",
+      "Let bell swing back down and repeat in continuous motion."
+    ]
+  },
+  {
+    "name": "Prone Swimmer",
+    "primary_muscles": [
+      "lower back"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "shoulders",
+      "middle back"
+    ],
+    "instructions": [
+      "Lie face down with the arms extended overhead and the forehead resting on the floor.",
+      "Lift the right arm and the left leg a few inches, hold for a breath, and lower.",
+      "Lift the left arm and the right leg the same way.",
+      "Alternate steadily, keeping the hips heavy on the floor and the neck long.",
+      "One lift on each side counts as a single repetition."
+    ]
+  },
+  {
+    "name": "Self-Resisted Biceps Curl",
+    "primary_muscles": [
+      "biceps"
+    ],
+    "secondary_muscles": [
+      "forearms"
+    ],
+    "instructions": [
+      "Stand with the right elbow tucked at your side and the right palm facing up.",
+      "Place the left hand on top of the right hand and press down against it.",
+      "Curl the right hand towards the shoulder while the left hand resists, taking four or five seconds to travel up.",
+      "Resist just as hard on the way back down.",
+      "Complete the repetitions, then change sides.",
+      "The resisting arm sets the difficulty — press harder for a harder set."
+    ]
+  },
+  {
+    "name": "Sprint Intervals (HIIT)",
+    "primary_muscles": [
+      "cardiovascular system",
+      "quadriceps",
+      "hamstrings",
+      "glutes"
+    ],
+    "secondary_muscles": [
+      "calves",
+      "core"
+    ],
+    "instructions": [
+      "Warm up with 3-min jog.",
+      "Sprint at 85-95% max effort for 20-30 seconds.",
+      "Walk or jog at easy pace for 40-60 seconds recovery.",
+      "Repeat sprint-recovery cycle for prescribed rounds.",
+      "Cool down with 2-min walk and stretch."
+    ]
+  },
+  {
+    "name": "Superman Hold",
+    "primary_muscles": [
+      "lower back"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings",
+      "shoulders"
+    ],
+    "instructions": [
+      "Lie face down with the arms extended overhead and the legs straight.",
+      "Lift the arms, chest and legs a few inches off the floor at the same time.",
+      "Keep looking at the floor so the neck stays in line with the spine.",
+      "Hold, breathing normally, then lower everything with control.",
+      "Height is not the goal — a small lift held well beats a big one that arches the neck."
+    ]
+  },
+  {
+    "name": "T-Bar Row With Handle",
+    "primary_muscles": [
+      "middle back"
+    ],
+    "secondary_muscles": [
+      "biceps",
+      "lats"
+    ],
+    "instructions": [
+      "Position a bar into a landmine or in a corner to keep it from moving. Load an appropriate weight onto your end.",
+      "Stand over the bar, and position a Double D row handle around the bar next to the collar. Using your hips and legs, rise to a standing position.",
+      "Assume a wide stance with your hips back and your chest up. Your arms should be extended. This will be your starting position.",
+      "Pull the weight to your upper abdomen by retracting the shoulder blades and flexing the elbows. Do not jerk the weight or cheat during the movement.",
+      "After a brief pause, return to the starting position."
+    ]
+  },
+  {
+    "name": "Wall Angel Row",
+    "primary_muscles": [
+      "middle back"
+    ],
+    "secondary_muscles": [
+      "lats",
+      "shoulders",
+      "biceps"
+    ],
+    "instructions": [
+      "Stand with your back flat against a wall, feet a step out from it, knees softly bent.",
+      "Raise the arms to shoulder height with the elbows bent at ninety degrees, backs of the hands on the wall.",
+      "Squeeze the shoulder blades together and drive the elbows back into the wall, as though rowing it towards you.",
+      "Hold the squeeze for two seconds, then release without letting the arms leave the wall.",
+      "Keep the ribs down — the movement belongs to the shoulder blades, not the lower back."
+    ]
+  }
+]

@@ -362,13 +362,19 @@ def test_the_corpus_is_built_from_the_files_the_engines_read():
 
 
 def test_every_exercise_the_engine_can_prescribe_is_described():
-    """893 exercises, against a corpus that held ten summaries of which six were
-    not in the engine's file at all."""
+    """The corpus held ten summaries, six of which were not in the engine's file
+    at all.
+
+    The floor here used to be 800, for a library of 893 imported rows. The
+    library is now authored — 173 curated movements — so the floor guards what it
+    was always for: the corpus collapsing back to a handful of legacy summaries.
+    It is not a target, and a curation that removes a movement should not have to
+    argue with it."""
     raw = json.loads((KNOWLEDGE_DIR / "gym_exercises.json").read_text(encoding="utf-8"))
     exercises = raw if isinstance(raw, list) else raw.get("exercises", [])
     corpus = " ".join(d["text"] for d in get_documents_for_collection()["fitness"])
 
-    assert len(exercises) > 800, f"the engine's exercise file has shrunk to {len(exercises)}"
+    assert len(exercises) > 120, f"the engine's exercise file has shrunk to {len(exercises)}"
     missing = [e["name"] for e in exercises if e["name"] not in corpus]
     assert not missing, f"exercises absent from the corpus: {missing[:5]}"
 

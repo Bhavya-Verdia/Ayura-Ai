@@ -311,7 +311,11 @@ def _assign_roles(selected: list, primary_slots: int) -> list:
     for ex in selected:
         if ex.get("category") == "cardio":
             roles.append("conditioning")
-        elif (taken < primary_slots
+        # `role` from the library has the final say on what may lead a session.
+        # Compound-and-a-primary-pattern was the best available proxy while the
+        # library did not state it, and a loaded carry satisfies both — so a core
+        # day opened with a farmer's walk, under a header promising 3 x 8-10.
+        elif (taken < primary_slots and ex.get("role", "main") == "main"
               and _is_compound(ex) and _movement_pattern(ex) in _PRIMARY_PATTERNS):
             roles.append("primary")
             taken += 1
@@ -400,6 +404,35 @@ _LIFT_BW = {
     # arms and trunk
     "curl":          0.30, "triceps_extension": 0.35, "pushdown": 0.45,
     "core":          0.30,
+    # Classes the curated library names that the name-matcher never had, because
+    # a name-matcher can only price what it recognises and everything else fell
+    # through to the muscle group's main lift. These are the movements that
+    # fallback priced wrongly, and the cuff drill is the extreme of it: four to
+    # six kilos for an 80 kg lifter, against the 17-22.5 kg it used to be quoted.
+    "external_rotation": 0.06,
+    "floor_press":   0.75, "dip":          0.25, "push_press":   0.75,
+    "straight_arm_pulldown": 0.30,
+    "hammer_curl":   0.28, "preacher_curl": 0.26, "skullcrusher": 0.30,
+    "pallof":        0.25, "side_bend":    0.25, "cable_woodchop": 0.30,
+    "farmers_carry": 0.60, "suitcase_carry": 0.40,
+}
+
+# The curated library and this table grew their vocabularies separately — the
+# library names a movement the way a coach would ("back_squat"), this table the
+# way the old name-matcher did ("squat"). Aliasing keeps ONE set of calibrated
+# numbers rather than two that can drift apart.
+_LOAD_CLASS_ALIAS = {
+    "back_squat":        "squat",
+    "romanian_deadlift": "romanian",
+    "bench_press":       "bench",
+    "decline_press":     "bench",
+    "barbell_row":       "row",
+    "seated_row":        "row",
+    "chest_supported_row": "row",
+    "triceps_pushdown":  "pushdown",
+    "weighted_crunch":   "core",
+    "kettlebell_swing":  "swing",
+    "split_squat":       "lunge",
 }
 
 # Movement → lift class, longest-match-first. The class is read off the name for
@@ -483,6 +516,18 @@ _LIFT_BY_MUSCLE = {
 
 
 def _lift_class(ex: dict) -> str | None:
+    """What this movement is loaded like.
+
+    The curated library names it outright. The fallbacks below are for a library
+    that does not, and the second of them is the reason the field exists: when a
+    movement matched no name pattern it was priced as its MUSCLE GROUP'S main
+    lift, so an external rotation — a cuff drill done with four kilos — was
+    quoted at 17-22.5 kg per hand because it trains the shoulder and a shoulder
+    press is what shoulders are loaded with. 90 of 502 priced movements were
+    reaching that fallback."""
+    stated = ex.get("load_class")
+    if stated:
+        return _LOAD_CLASS_ALIAS.get(stated, stated)
     name = ex.get("name", "")
     for lift, rx in _LIFT_PATTERNS:
         if rx.search(name):
@@ -683,6 +728,11 @@ def _bmi_group(bmi_category) -> str:
 
 
 def _is_impact(ex: dict) -> bool:
+    """Landing force, stated rather than guessed. The name regex missed butt
+    kicks, carioca and the acceleration drills — 21 movements in all."""
+    stated = ex.get("impact")
+    if stated:
+        return stated == "high"
     return (ex.get("category") == "plyometrics"
             or bool(_IMPACT_NAME.search(ex.get("name", ""))))
 
@@ -743,8 +793,10 @@ _EQUIPMENT_ALIASES = {
     "pool":             {"pool"},
     # The cardio machines are one purchase decision as far as the practitioner is
     # concerned: either the gym has a cardio floor or it does not.
+    # Only equipment the library actually holds. `box` was in here and in
+    # nothing else, so the alias named a machine no exercise could be selected by.
     "cardio_machines":  {"treadmill", "stationary_bike", "rowing_machine", "elliptical",
-                         "stair_climber", "air_bike", "battle_ropes", "box"},
+                         "stair_climber", "air_bike", "battle_ropes"},
 }
 _FULL_GYM = ("dumbbells", "barbell", "machines", "cables", "kettlebell",
              "resistance_bands", "jump_rope", "cardio_machines")
@@ -905,6 +957,14 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None,
             continue
         if ex.get("level", "intermediate") not in allowed_levels:
             continue
+        # Whether they can PERFORM it, which the level field never described. A
+        # pull-up is an ordinary thing to programme and an impossible thing for
+        # an untrained 118 kg beginner to do — and `Pullups 3x15-20` is exactly
+        # what they were given, 4,897 times across a sweep. The progression
+        # ladder in the entry is how they get there.
+        floor = ex.get("skill_floor")
+        if floor and _LEVEL_RANK.get(floor, 1) > _LEVEL_RANK.get(user_level, 0):
+            continue
         # Plyometrics are never a beginner's first month. The level allowance
         # above hands beginners the intermediate tier deliberately, because the
         # dataset files foundational lifts — bench press, rows, shoulder press —
@@ -914,7 +974,13 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None,
         # Rocket Jump and Freehand Jump Squat nine times each over four weeks,
         # because "endurance" resolved to cardio plus plyometrics and nothing
         # else.
-        if user_level == "beginner" and ex.get("category") == "plyometrics":
+        # Impact, not category. The curated library records landing force as its
+        # own field and files jump work as the conditioning it is, so keying this
+        # gate on `category == "plyometrics"` would have quietly stopped firing —
+        # and a beginner asking for endurance would have been back on jump
+        # training, which is the exact thing this gate was written for.
+        if user_level == "beginner" and (ex.get("impact") == "high"
+                                         or ex.get("category") == "plyometrics"):
             continue
         # A stretch is not a set of eight, and foam rolling is not a lift. The
         # dataset carries 51 stretches and 13 self-myofascial-release entries
@@ -927,7 +993,18 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None,
         #
         # Mobility work belongs to the session — it is what `_WARMUP` and
         # `_COOLDOWN` are, written per focus and timed in seconds.
-        if ex.get("category") == "stretching" or _SMR_NAME.search(ex.get("name", "")):
+        # The curated library states what slot a movement may occupy, so this is
+        # now one field rather than an accumulating list of things that turned
+        # out not to be lifts. Before the field existed, 46% of generated
+        # training days prescribed at least one stretch as a working set —
+        # `Seated Front Deltoid` 518 times across a sweep — because a stretch
+        # whose name did not contain the word "stretch" was filed as `strength`
+        # by the importer and nothing downstream could tell the difference.
+        role = ex.get("role")
+        if role and role not in _POOL_ROLES:
+            continue
+        if not role and (ex.get("category") == "stretching"
+                         or _SMR_NAME.search(ex.get("name", ""))):
             continue
         # Jump training is the wrong risk for a 65-year-old and for a body still
         # growing, whatever level they enter.
@@ -1005,6 +1082,16 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None,
 # taken first: no scoring rule, present or future, can empty a muscle group or
 # strip a group of the movements that train it hardest. Dosha suitability still
 # orders what fills the remaining room, which is what a preference does.
+# Roles that may fill a working slot. `warmup` and `mobility` movements are
+# still prescribed — as the warm-up and cool-down the session already has — but
+# never as a set of eight with a weight next to it.
+_WORKING_ROLES = ("main", "accessory")
+# Conditioning survives the filter — it is the finisher, and `generate_gym_plan`
+# lifts it straight back out into its own pool. Excluding it here emptied that
+# pool and a fat-loss plan came back with no conditioning at all.
+_POOL_ROLES = ("main", "accessory", "finisher")
+_LEVEL_RANK = {"beginner": 0, "intermediate": 1, "advanced": 2}
+
 _POOL_PER_MUSCLE = 40
 _POOL_COMPOUNDS_PER_MUSCLE = 14
 
@@ -1071,6 +1158,9 @@ def _muscle_key(ex) -> str:  # noqa: F811 — see the wrapper below
     with one. A hip hinge is posterior-chain work; that is what a leg day is for
     and it is why the pattern classifier knows the hinge in the first place.
     """
+    stated = ex.get("bucket")
+    if stated:
+        return stated
     key = _muscle_key_from_muscles(ex)
     if key == "back" and _movement_pattern(ex) == "hinge":
         return "legs"
@@ -1428,7 +1518,13 @@ _VARIANT_WORDS = re.compile(
     r"side|rear|overhead|underhand|overhand|grip|medium|with|and|the|on|to|of|a|"
     r"pronated|supinated|low|high|flat|straight|bent|full|half|partial|v|smr)\b",
     re.I)
+# Two of a family is a coach pairing a flat and an incline press. Two of an
+# ISOLATION family is a barbell curl followed by an EZ-bar curl, which is one
+# movement done twice. The cap could not tell them apart because it had one
+# number, and the authored `family` field is what finally makes the distinction
+# expressible.
 _MAX_PER_FAMILY = 2
+_MAX_PER_ISOLATION_FAMILY = 1
 # Two compounds in a five-exercise day, one in a three. A session built of
 # isolation work trains the same muscles for less, and the first pick being a
 # compound is not enough on its own — the audit's week-one chest day had a
@@ -1630,13 +1726,27 @@ def _pattern_preference(ex, pattern: str, muscle_rank: dict, preferred_ids=()) -
     """
     return (
         not _is_compound(ex),
+        # A movement the library says can open a session, before one it says
+        # supports it. A farmer's walk is a fine carry and a poor thing to build
+        # a block around, and it took the primary slot on a core day — where the
+        # week header then announced "3 sets of 8-10" over "3 x 20 m".
+        ex.get("role", "main") != "main",
         ex["id"] not in preferred_ids,
+        # Stated by the library. Name plainness was the proxy for it, and it
+        # ranked "T-Bar Row" (three words) above "Bent Over Barbell Row" (four)
+        # as the barbell row a back day is built around.
+        not ex.get("canonical", False),
         muscle_rank.get(_muscle_key(ex), len(muscle_rank)),
         _lift_class(ex) not in _PATTERN_HEADLINE_LIFT.get(pattern, set()),
     ) + tuple(-v for v in _canonical_score(ex))
 
 
 def _movement_pattern(ex) -> str:
+    """The curated library states this. The name-matching below is the fallback
+    for a library that does not, and it is why a hack squat was not a squat."""
+    stated = ex.get("movement_pattern")
+    if stated:
+        return stated
     name = ex.get("name", "")
     for pattern, rx in _MOVEMENT_PATTERNS:
         if rx.search(name):
@@ -1645,6 +1755,11 @@ def _movement_pattern(ex) -> str:
 
 
 def _is_compound(ex) -> bool:
+    """Counting secondary muscles decided a fly was a compound, which let it
+    outrank the bench press for a chest day's main lift."""
+    mech = ex.get("mechanic")
+    if mech:
+        return mech == "compound"
     return (bool(_COMPOUND_NAME.search(ex.get("name", "")))
             or len(ex.get("secondary_muscles") or []) >= 2)
 
@@ -1665,6 +1780,12 @@ def _singular(word: str) -> str:
 
 def _movement_family(ex) -> str:
     """`Incline Dumbbell Press` and `Decline Barbell Press` → `press`."""
+    stated = ex.get("family")
+    if stated:
+        return stated
+    # Last two words of the name. It gave `shrug`, `shoulder shrug`, `leverag
+    # shrug` and `middl shrug` for four shrugs, so a back day could hold all of
+    # them: four families, one movement.
     core = _VARIANT_WORDS.sub(" ", ex.get("name", ""))
     core = re.sub(r"[^A-Za-z ]", " ", core).lower().split()
     return " ".join(_singular(w) for w in core[-2:]) if core else ex.get("id", "")
@@ -1677,7 +1798,8 @@ _VARIANT_DEPTH = 3
 
 
 def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=(),
-            caps=None, per_muscle=None, muscle_rank=None, preferred_ids=(), variant=0):
+            caps=None, per_muscle=None, muscle_rank=None, preferred_ids=(), variant=0,
+            loadable_first=False):
     """Pick n exercises, compounds first, without stacking one movement family.
 
     Selection was a plain shuffle-and-take, so nothing preferred a compound or
@@ -1706,7 +1828,9 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
         per_muscle[_muscle_key(ex)] = per_muscle.get(_muscle_key(ex), 0) + 1
 
     def _blocked(ex) -> bool:
-        if families[_movement_family(ex)] >= _MAX_PER_FAMILY:
+        cap = (_MAX_PER_FAMILY if _is_compound(ex)
+               else _MAX_PER_ISOLATION_FAMILY)
+        if families[_movement_family(ex)] >= cap:
             return True
         key = _muscle_key(ex)
         return key in caps and per_muscle.get(key, 0) >= caps[key]
@@ -1745,6 +1869,22 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
             # considered when there is nothing plain left to rotate through.
             plain = [ex for ex in candidates if not _SPECIALTY_NAME.search(ex.get("name", ""))]
             shortlist = plain if len(plain) > 1 else candidates
+            # Rotation varies WHICH lift opens a repeated day; it should not
+            # vary whether the day opens with a lift at all. Reaching for the
+            # third-best horizontal push in a fully equipped gym found an
+            # incline push-up, because the pool is deep enough to have one and
+            # the rotation did not care what it was loaded with.
+            if loadable_first:
+                # A movement the practitioner said they enjoy stays in the draw
+                # whatever it is loaded with. Filtering on loadability alone
+                # meant someone who wrote "I love pull-ups" could not be given
+                # one in a gym that has a pull-up bar — the preference ranked
+                # below a rule that had already removed it from the list.
+                loaded = [ex for ex in shortlist
+                          if ex["id"] in preferred_ids
+                          or (ex.get("equipment") or "bodyweight").lower()
+                          not in ("bodyweight", "bands")]
+                shortlist = loaded or shortlist
             _take(shortlist[variant % min(len(shortlist), _VARIANT_DEPTH)])
 
     for want_compound in (True, False):
@@ -1754,9 +1894,25 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
         # The compounds are chosen plainest-first; the accessories keep the
         # shuffle, because variety belongs in the work that finishes a session
         # rather than in the lift the block is built around.
-        for ex in (sorted(ordered, key=lambda ex: (ex["id"] in preferred_ids,
-                                                   _canonical_score(ex)), reverse=True)
-                   if want_compound else ordered):
+        # Accessories keep the shuffle for variety, but a practitioner standing
+        # in a gym should not be handed a prone swimmer while the cable stack is
+        # free. Loadable work sorts first when they have something to load —
+        # an advanced back day came out as Superman Hold, Prone Swimmer and Wall
+        # Angel Row, which are good movements written for someone with no
+        # equipment at all.
+        if want_compound:
+            candidates_pass = sorted(
+                ordered, key=lambda ex: (ex["id"] in preferred_ids,
+                                         _canonical_score(ex)), reverse=True)
+        elif loadable_first:
+            candidates_pass = sorted(
+                ordered, key=lambda ex: (ex["id"] in preferred_ids,
+                                         _LOADABLE_RANK.get(
+                                             (ex.get("equipment") or "bodyweight").lower(), 1)),
+                reverse=True)
+        else:
+            candidates_pass = ordered
+        for ex in candidates_pass:
             if want_compound and have_compounds >= min_compounds:
                 break
             if len(picked) >= n:
@@ -1773,19 +1929,37 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
     # take a third press before it takes a fifth triceps movement. Dropping both
     # caps at once let the muscle budget be overrun by whichever group the dataset
     # happens to hold more of — the exact imbalance the budget exists to close.
+    # Both fallbacks keep the loadable-first ordering. Without it a pull day
+    # whose loaded families were spent finished on Wall Angel Row, Prone Swimmer
+    # and Superman Hold — three bodyweight drills handed to someone standing in
+    # front of a cable stack.
+    fallback_order = (sorted(ordered, key=lambda ex: _LOADABLE_RANK.get(
+        (ex.get("equipment") or "bodyweight").lower(), 1), reverse=True)
+        if loadable_first else ordered)
+
     if len(picked) < n:
-        for ex in ordered:
+        for ex in fallback_order:
             if len(picked) >= n:
                 break
             key = _muscle_key(ex)
             if ex["id"] in taken_ids or (key in caps and per_muscle.get(key, 0) >= caps[key]):
+                continue
+            # The family cap holds here as well. It used not to, which was
+            # harmless while a family was two words off the end of a name and
+            # every press variant counted as a different one — and stopped being
+            # harmless the moment families were authored: a chest-and-triceps day
+            # came out four `bench_press` movements deep.
+            if _blocked(ex):
                 continue
             _take(ex)
 
     # A pool too small or too uniform to respect either cap still has to produce a
     # session; both are preferences, not safety rules.
     if len(picked) < n:
-        for ex in ordered:
+        # Family-blocked movements go to the back rather than being skipped: the
+        # session still has to exist, but a fourth row variant is the last thing
+        # it should reach for, not the first thing in the leftovers.
+        for ex in sorted(fallback_order, key=_blocked):
             if len(picked) >= n:
                 break
             if ex["id"] in taken_ids:
@@ -1795,7 +1969,7 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
 
 
 def _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids=(),
-                    variant=0):
+                    variant=0, loadable_first=False):
     """The day's exercises: a stable core, plus one that rotates weekly.
 
     The seed used to include the week, so every week drew a fresh random set —
@@ -1824,10 +1998,11 @@ def _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids=(
                    taken, families, min_compounds=min(_MIN_COMPOUNDS, max(1, core_n - 1)),
                    patterns=_FOCUS_PATTERNS.get(focus, ()),
                    caps=caps, per_muscle=per_muscle, muscle_rank=muscle_rank,
-                   preferred_ids=preferred_ids, variant=variant)
+                   preferred_ids=preferred_ids, variant=variant,
+                   loadable_first=loadable_first)
     rotating = _choose(pool, target - len(core), f"{user_id}-{focus}-d{day_num}-rotate-w{week}",
                        taken, families, caps=caps, per_muscle=per_muscle,
-                       preferred_ids=preferred_ids)
+                       preferred_ids=preferred_ids, loadable_first=loadable_first)
     return core + rotating
 
 
@@ -2056,6 +2231,11 @@ def _prescribe(ex: dict, rx: dict, level: str, role: str = "secondary"):
     everything else takes the goal's, shifted for its role in the session.
     """
     own = (ex.get("sets_reps") or {}).get(level) or (ex.get("sets_reps") or {}).get("intermediate") or {}
+    # The curated library states how a movement is measured. Sniffing the reps
+    # string for "min"/"sec" caught holds and cardio but not carries, so a
+    # farmer's walk was prescribed as "5 sets of 8-10" — of what, it did not say.
+    if ex.get("rep_style") in ("time", "distance", "isometric"):
+        return int(own.get("sets", 1)), own.get("reps"), int(own.get("rest_seconds", 60))
     if own and _TIME_UNITS.search(str(own.get("reps", ""))):
         return int(own.get("sets", 1)), own.get("reps"), int(own.get("rest_seconds", 60))
     r = _role_prescription(rx, role)
@@ -2097,7 +2277,8 @@ def _focus_label(focus: str, main_workout: list) -> str:
 def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profile,
                    week=1, user_id="default", strength_level="beginner", gender="male",
                    dosha="vata", bodyweight=None, with_finisher=False,
-                   conditioning_pool=(), preferred_ids=(), variant=0):
+                   conditioning_pool=(), preferred_ids=(), variant=0,
+                   loadable_first=False):
     if focus == "rest":
         recovery = _REST_DAY_RECOVERY.get(dosha, _REST_DAY_RECOVERY["vata"])
         return {
@@ -2145,7 +2326,7 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         pool = [ex for group in muscle_split.values() for ex in group]
 
     selected = _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids,
-                               variant=variant)
+                               variant=variant, loadable_first=loadable_first)
 
     # A session is performed in an order, and the order is the programme: the
     # heaviest compound while the practitioner is fresh, its support after it,
@@ -2196,6 +2377,10 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
             "weight_range": _get_weight_range(ex, strength_level, gender, bodyweight),
             "week_note": rx.get("note", ""),
             "notes": _modification_for(ex),
+            # The one sentence a coach would say about the movement. It is the
+            # difference between a list of exercises and a session someone wrote
+            # for you, and the library carries it for every movement.
+            "coaching_cue": ex.get("coaching_cue"),
             "instructions": ex.get("instructions", []),
         })
 
@@ -2354,6 +2539,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
                 gender=gender, dosha=dominant_dosha, bodyweight=bodyweight,
                 with_finisher=i in finisher_days, conditioning_pool=conditioning_pool,
                 preferred_ids=preferred_ids, variant=day_variant[i],
+                loadable_first=not is_bodyweight_only,
             )
             for i, focus in enumerate(schedule_focus)
         ]

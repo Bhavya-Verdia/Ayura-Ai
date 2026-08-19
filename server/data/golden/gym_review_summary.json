@@ -1,8 +1,8 @@
 {
-  "exercises": 902,
-  "clinically_reviewed": 18,
-  "unreviewed": 884,
-  "mechanism_groups": 42,
-  "tag_rules": 242,
-  "tag_rules_applied_inconsistently": 116
+  "exercises": 173,
+  "clinically_reviewed": 0,
+  "unreviewed": 173,
+  "mechanism_groups": 12,
+  "tag_rules": 33,
+  "tag_rules_applied_inconsistently": 18
 }
