@@ -213,7 +213,13 @@
     "herb_requirement": "specific_ayurvedic",
     "benefits": [
       "Expels deep-rooted Kapha toxins from stomach"
-    ]
+    ],
+    "contraindications": [
+      "pregnancy",
+      "nursing"
+    ],
+    "contraindications_reviewed": false,
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
   },
   {
     "id": "virechana_clinic",
@@ -233,7 +239,13 @@
     "herb_requirement": "specific_ayurvedic",
     "benefits": [
       "Clears Pitta toxins from liver and small intestine"
-    ]
+    ],
+    "contraindications": [
+      "pregnancy",
+      "nursing"
+    ],
+    "contraindications_reviewed": false,
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
   },
   {
     "id": "virechana_home",
@@ -276,7 +288,13 @@
     "benefits": [
       "Clears Vata from colon",
       "Systemic detox"
-    ]
+    ],
+    "contraindications": [
+      "pregnancy",
+      "nursing"
+    ],
+    "contraindications_reviewed": false,
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
   },
   {
     "id": "basti_anuvasana",
@@ -297,7 +315,13 @@
     "benefits": [
       "Nourishes colon",
       "Pacifies severe Vata"
-    ]
+    ],
+    "contraindications": [
+      "pregnancy",
+      "nursing"
+    ],
+    "contraindications_reviewed": false,
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
   },
   {
     "id": "basti_home",
@@ -318,7 +342,13 @@
     "herb_requirement": "readily_available",
     "benefits": [
       "Vata management at home"
-    ]
+    ],
+    "contraindications": [
+      "pregnancy",
+      "nursing"
+    ],
+    "contraindications_reviewed": false,
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
   },
   {
     "id": "nasya_clinic",
@@ -339,7 +369,13 @@
     "benefits": [
       "Clears head and neck toxins",
       "Improves mental clarity"
-    ]
+    ],
+    "contraindications": [
+      "pregnancy",
+      "nursing"
+    ],
+    "contraindications_reviewed": false,
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
   },
   {
     "id": "nasya_home",
@@ -361,7 +397,13 @@
     "benefits": [
       "Protects nasal passages",
       "Mild clearance"
-    ]
+    ],
+    "contraindications": [
+      "pregnancy",
+      "nursing"
+    ],
+    "contraindications_reviewed": false,
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
   },
   {
     "id": "raktamokshana",
@@ -381,7 +423,13 @@
     "herb_requirement": "specific_ayurvedic",
     "benefits": [
       "Extracts deep Pitta toxins from blood"
-    ]
+    ],
+    "contraindications": [
+      "pregnancy",
+      "nursing"
+    ],
+    "contraindications_reviewed": false,
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
   },
   {
     "id": "samsarjana_krama_strict",

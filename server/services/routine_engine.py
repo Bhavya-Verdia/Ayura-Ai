@@ -7,6 +7,7 @@ Personalisation signals used:
   Tier B: season · conditions · occupation_type · gym_schedule · yoga_schedule
   Fasting: intermittent_fasting window · fasting_days
 """
+import re
 
 from datetime import datetime, timezone
 
@@ -135,6 +136,87 @@ def _apply_age_modifications(rituals: list, age_band: str, dosha: str) -> list:
         result.append(r)
     return result
 
+# ── Pregnancy ────────────────────────────────────────────────────────────────
+#
+# This engine handled twenty condition tokens — hypertension, diabetes, PCOS,
+# thyroid, IBS — and had no concept of pregnancy at all; the word did not appear
+# in the file. Every other engine in this app treats it as a first-class gate:
+# the gym library authors `pregnancy_safe` per movement, the yoga engine keeps
+# per-trimester pose pools, and `panchakarma_engine` refuses outright —
+#
+#     if user_profile.get("pregnancy_or_nursing", False):
+#         reasons_shamana.append("Pregnancy / nursing — Shodhana contraindicated")
+#
+# Virechana IS Shodhana. A pregnant practitioner's autumn Ritucharya read
+# "Virechana (Pitta purge) classically recommended" and listed "Virechana
+# (supervised)" among the season's practices, while spring offered "Vamana if
+# supervised" and monsoon "Basti karma". Therapeutic purgation, emesis and enema,
+# recommended to a pregnant woman by the one engine that had never been told to
+# ask. Nasya reached her every morning in the daily ritual list.
+#
+# The panchakarma engine's refusal is a rule in Python; the KB rows for those
+# same therapies carry `contraindications: []`, so nothing reading the data
+# rather than calling that engine gets a warning. Both halves are fixed.
+#
+# Over-blocking is acceptable here and a missed block is not, which is the same
+# posture the yoga engine takes with forceful pranayama.
+_SHODHANA_TERMS = ("vamana", "virechana", "basti", "nasya", "shodhana",
+                   "purge", "purgation", "emesis", "enema")
+
+# Seasonal guidance written for pregnancy, rather than the general text with the
+# unsafe clauses cut out of it — a sentence with a hole in it reads as an
+# oversight, and the seasons genuinely call for different advice here.
+_PREGNANCY_SEASON_NOTES = {
+    "vasanta":  "Spring Kapha season: gentle daily movement and light, warm meals. Dry brushing is fine; skip Vamana and any Shodhana — cleansing therapies are not undertaken during pregnancy.",
+    "grishma":  "Summer Pitta season: stay cool and well hydrated, coconut oil Abhyanga with gentle strokes, avoid afternoon heat. Sheetali is safe; avoid forceful breathing practices.",
+    "varsha":   "Monsoon Vata season: daily gentle Abhyanga, boil all drinking water, favour warm cooked food. Basti and all Shodhana are set aside until after delivery and recovery.",
+    "sharad":   "Autumn Pitta season: cooling foods, moonbathing, bitter-astringent tastes. Virechana is classically indicated this season and is contraindicated in pregnancy — it is omitted here.",
+    "hemanta":  "Early Winter: the nourishment season, which suits pregnancy well. Warm sesame Abhyanga with gentle strokes, nourishing food, rest. Keep exercise moderate rather than strong.",
+    "shishira": "Late Winter: keep warm at all times, gentle sesame Abhyanga, warm cooked food. Avoid cold, dry and light foods.",
+}
+
+_PREGNANCY_PRACTICES = {
+    "vasanta":  ["Gentle daily walking", "Light, warm meals", "Garshana (light, if comfortable)", "No Shodhana during pregnancy"],
+    "grishma":  ["Coconut oil Abhyanga — gentle strokes", "Stay cool and hydrated", "Sheetali Pranayama (no retention)", "Rest through the afternoon heat"],
+    "varsha":   ["Daily gentle Abhyanga", "Boil all drinking water", "Warm, easily digested food", "No Basti or other Shodhana"],
+    "sharad":   ["Moonbathing", "Cooling, bitter-astringent foods", "Gentle evening walk", "No Virechana during pregnancy"],
+    "hemanta":  ["Nourishing warm food", "Gentle sesame Abhyanga", "Moderate movement, not strong exercise", "Early, restful nights"],
+    "shishira": ["Keep the body warm at all times", "Gentle sesame Abhyanga", "Warm cooked food", "Avoid cold and dry foods"],
+}
+
+
+def _apply_pregnancy_modifications(rituals: list, dosha: str) -> tuple:
+    """Withhold what pregnancy rules out of the daily ritual list, and say so.
+
+    Same shape as `_apply_age_modifications`, which already withholds Nasya and
+    Kavala Gandusha from children — the hook existed, pregnancy was simply never
+    one of the cases.
+    """
+    out, notices = [], []
+    for ritual in rituals:
+        r = dict(ritual)
+        name = r.get("name", "")
+        if name == "Nasya":
+            r["instruction"] = (
+                "Set aside during pregnancy. Nasya is classically contraindicated; "
+                "resume after delivery under a Vaidya's guidance.")
+            r["duration_min"] = 0
+            r["withheld"] = True
+            notices.append("Nasya is withheld — classically contraindicated in pregnancy.")
+        elif name == "Abhyanga":
+            r["instruction"] = (
+                "Gentle full-body warm oil self-massage, long light strokes. Avoid deep "
+                "pressure on the abdomen and lower back entirely, and have someone else "
+                "apply it if reaching is uncomfortable.")
+            notices.append("Abhyanga is softened — no deep pressure on the abdomen or low back.")
+        elif name == "Garshana":
+            r["instruction"] = (
+                "Light dry brushing on the limbs only, avoiding the abdomen. Stop if the "
+                "skin is sensitive — it often is during pregnancy.")
+        out.append(r)
+    return out, notices
+
+
 # ── Secondary dosha modifications ─────────────────────────────────────────────
 def _secondary_dosha_note(primary: str, secondary: str) -> str:
     """Returns a note appended to the dinacharya_protocol about dual-dosha adaptations."""
@@ -201,6 +283,39 @@ _OCCUPATION_EX_NOTE = {
 }
 
 # ── Per-dosha base timeline ────────────────────────────────────────────────────
+def _strip_withheld_practices(timeline: list, is_pregnant: bool) -> list:
+    """The timeline carries its OWN copy of the ritual description — "Nasya with
+    warm mustard oil", once per day — so gating the ritual list and the seasonal
+    guidance left a third copy untouched, seven times over.
+
+    The same instruction living in more than one structure is exactly how the
+    prose escaped a gate everywhere else in this codebase. Withheld here rather
+    than rewritten, because the timeline entry is a pointer to the protocol panel
+    and the protocol panel is already correct."""
+    if not is_pregnant:
+        return timeline
+    out = []
+    for slot in timeline:
+        entry = dict(slot)
+        # `ex_label` is a fourth copy of the same instruction — "Full Rest —
+        # Extended Abhyanga + Nasya" — and the first version of this gate read
+        # only `description`, so it survived. Four structures carried the same
+        # sentence; three gates were not enough.
+        label = entry.get("ex_label") or ""
+        if "nasya" in label.lower():
+            entry["ex_label"] = re.sub(r"\s*\+?\s*Nasya", "", label, flags=re.I).strip(" +—-")
+        desc = entry.get("description") or ""
+        if "nasya" in desc.lower():
+            entry["description"] = re.sub(
+                r",?\s*[^,.]*nasya[^,.]*", "", desc, flags=re.I).strip(" ,.") + \
+                ". Nasya is withheld during pregnancy — see the Dinacharya panel."
+        if "abhyanga" in (entry.get("activity") or "").lower():
+            entry["description"] = (entry.get("description") or "") + \
+                " Keep strokes gentle; avoid pressure on the abdomen and low back."
+        out.append(entry)
+    return out
+
+
 def _get_base_timeline(dosha: str, season: str, if_window: str, agni_type: str, occupation: str) -> list:
     sd = _SEASON_MAP.get((season or "sharad").lower(), _DEFAULT_SEASON)
     wake = sd["wake"].get(dosha, "6:00")
@@ -332,7 +447,8 @@ def _apply_condition_notes(timeline: list, conditions: list, gender: str, age: i
 
 # ── Build dinacharya protocol block ──────────────────────────────────────────
 def _build_dinacharya_protocol(dosha: str, secondary: str, vikriti: str, season: str,
-                                conditions: list, gender: str, age: int, agni_type: str) -> dict:
+                                conditions: list, gender: str, age: int, agni_type: str,
+                                is_pregnant: bool = False) -> dict:
     ab = _age_band(age)
     sd = _SEASON_MAP.get((season or "sharad").lower(), _DEFAULT_SEASON)
     wake = sd["wake"].get(dosha, "6:00") + " AM"
@@ -341,10 +457,16 @@ def _build_dinacharya_protocol(dosha: str, secondary: str, vikriti: str, season:
 
     rituals = [dict(r) for r in _MORNING_RITUALS_BASE.get(dosha, _MORNING_RITUALS_BASE["vata"])]
     rituals = _apply_age_modifications(rituals, ab, dosha)
+    pregnancy_notices: list = []
+    if is_pregnant:
+        rituals, pregnancy_notices = _apply_pregnancy_modifications(rituals, dosha)
+        pregnancy_notices.append(
+            "Shodhana — Vamana, Virechana, Basti and Nasya — is set aside for the "
+            "whole of pregnancy. Seasonal guidance here is written accordingly.")
 
     evening = [dict(r) for r in _EVENING_RITUALS_BASE.get(dosha, _EVENING_RITUALS_BASE["vata"])]
 
-    season_notes = {
+    season_notes = _PREGNANCY_SEASON_NOTES if is_pregnant else {
         "vasanta":  "Spring Kapha season: prioritise Garshana, vigorous exercise, light meals. Avoid Divaswapna (daytime napping).",
         "grishma":  "Summer Pitta season: coconut Abhyanga, avoid afternoon exercise in heat, Sheetali Pranayama, limit spicy food.",
         "varsha":   "Monsoon Vata season: daily Abhyanga is essential. Boil all drinking water. Sour-salty-sweet foods protect Vata.",
@@ -368,6 +490,7 @@ def _build_dinacharya_protocol(dosha: str, secondary: str, vikriti: str, season:
         "agni_type":             agni_type or "sama",
         "agni_general_guidance": agni_general,
         "morning_rituals":       rituals,
+        "pregnancy_notices":     pregnancy_notices,
         "evening_rituals":       evening,
         "season_label":          sd["label"],
         "season_practice_note":  season_notes.get((season or "sharad").lower(), ""),
@@ -384,7 +507,7 @@ def _shift_wake(t: str, delta_min: int) -> str:
 
 
 # ── Seasonal Ritucharya block ─────────────────────────────────────────────────
-def _build_seasonal_ritucharya(season: str, dosha: str) -> dict:
+def _build_seasonal_ritucharya(season: str, dosha: str, is_pregnant: bool = False) -> dict:
     s = (season or "sharad").lower()
     sd = _SEASON_MAP.get(s, _DEFAULT_SEASON)
     foods = {
@@ -403,7 +526,7 @@ def _build_seasonal_ritucharya(season: str, dosha: str) -> dict:
         "sharad":   ["hot-spicy food","fermented food","heavy oily food","daytime sleep"],
         "hemanta":  ["fasting","dry foods","cold exposure","light or cold food"],
     }
-    practices = {
+    practices = _PREGNANCY_PRACTICES if is_pregnant else {
         "shishira": ["Daily sesame Abhyanga","Hot food and drink always","Chyawanprash / Ashwagandha Rasayana","Keep body warm"],
         "vasanta":  ["Garshana (dry brushing) daily","Vigorous Vyayama","Trikatu and bitter herbs","Vamana if supervised"],
         "grishma":  ["Coconut / Chandana Abhyanga","Avoid afternoon exertion","Sheetali Pranayama","Moonbathing (Chandrakirana)"],
@@ -529,11 +652,21 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
                            conditions: list, gender: str, age: int,
                            agni_type: str, occupation: str,
                            fasting_days: list,
-                           gym_schedule: dict, yoga_schedule: dict) -> list:
+                           gym_schedule: dict, yoga_schedule: dict,
+                           is_pregnant: bool = False) -> list:
     ab        = _age_band(age)
     fasting   = {d.lower().strip() for d in (fasting_days or [])}
     week_plan = _DEFAULT_WEEK.get(dosha, _DEFAULT_WEEK["vata"])
+    # The week's exercise labels are a FOURTH structure carrying the same
+    # instruction — "Full Rest — Extended Abhyanga + Nasya". The timeline gate
+    # reads `description`; this one lives in `ex_label`, in a separate table, and
+    # survived three previous gates. Four copies of one sentence.
+    if is_pregnant:
+        week_plan = [{**d, "ex_label": re.sub(r"\s*\+?\s*Nasya", "", d.get("ex_label", ""),
+                                              flags=re.I).strip(" +—-")}
+                     for d in week_plan]
     base_tl   = _get_base_timeline(dosha, season, if_window, agni_type, occupation)
+    base_tl   = _strip_withheld_practices(base_tl, is_pregnant)
 
     weekly = []
     for i, day_meta in enumerate(week_plan):
@@ -644,10 +777,13 @@ def generate_routine_plan(user_profile: dict, prefs: dict, diet_foods_db=None,
     gym_sched  = _extract_gym_schedule(gym_plan_data or {}) if gym_plan_data else {}
     yoga_sched = _extract_yoga_schedule(yoga_plan_data or {}) if yoga_plan_data else {}
 
-    dinacharya = _build_dinacharya_protocol(dosha, secondary, vikriti, season, conditions, gender, age, agni_type)
+    is_pregnant = bool(user_profile.get("pregnancy_or_nursing"))
+    dinacharya = _build_dinacharya_protocol(dosha, secondary, vikriti, season, conditions,
+                                            gender, age, agni_type, is_pregnant)
     weekly     = _build_weekly_routine(dosha, secondary, season, if_window, conditions, gender, age,
-                                        agni_type, occupation, fasting_days, gym_sched, yoga_sched)
-    seasonal   = _build_seasonal_ritucharya(season, dosha)
+                                        agni_type, occupation, fasting_days, gym_sched, yoga_sched,
+                                        is_pregnant)
+    seasonal   = _build_seasonal_ritucharya(season, dosha, is_pregnant)
     meal_guide = _build_meal_guidance(dosha, season, agni_type)
     summary    = _weekly_summary(weekly)
 
