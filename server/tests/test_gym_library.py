@@ -258,7 +258,6 @@ def test_no_instruction_text_comes_from_the_dataset():
 
 def test_the_prose_house_style_holds():
     """One voice across the library. These are the tells of the imported text."""
-    import re
     banned = {
         "this will be your starting position": "dataset boilerplate",
         "repeat for the recommended": "the app prints sets and reps above the steps",

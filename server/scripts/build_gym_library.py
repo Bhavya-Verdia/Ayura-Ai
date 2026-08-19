@@ -462,7 +462,7 @@ def main():
     print(f"  by role: {by_role}")
     thin = {k: v for k, v in coverage(rows).items() if len(v) < 3}
     if thin:
-        print(f"\n  thin cells (<3 working options):")
+        print("\n  thin cells (<3 working options):")
         for (bucket, t), names in sorted(thin.items()):
             print(f"    {bucket:10} {t}  {len(names)}  {names}")
 
