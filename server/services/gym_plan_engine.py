@@ -105,6 +105,7 @@ _FOCUS_WARMUP_TYPE = {
     "shoulders_core": "upper", "arms": "upper",
     "legs": "lower", "legs_core": "lower",
     "shoulders_arms": "upper", "core_cardio": "cardio",
+    "upper": "upper", "lower": "lower",
 }
 
 
@@ -1008,7 +1009,14 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None,
             continue
         # Jump training is the wrong risk for a 65-year-old and for a body still
         # growing, whatever level they enter.
-        if age_group in ("senior", "youth") and ex.get("category") == "plyometrics":
+        #
+        # Keyed on `impact`, not on `category == "plyometrics"`. The curated
+        # library records landing force as its own field and files jump work as
+        # the conditioning it is, so the category test silently stopped matching
+        # anything and a 65-year-old was offered jumping jacks. The beginner gate
+        # above had the same fault and was fixed; this one was missed, which is
+        # why `_is_impact` now backs both rather than each testing its own thing.
+        if age_group in ("senior", "youth") and _is_impact(ex):
             continue
         # And for a body carrying enough mass that the landing forces are the
         # limiting factor rather than the muscles. Resistance work is untouched —
@@ -1187,6 +1195,80 @@ def split_by_muscle_group(exercises):
 # schedule below still trains legs, still pushes and still pulls. A specialised
 # block that drops a movement pattern is how people get hurt in the eleventh week,
 # and it is not what someone means when they say they want to focus on their back.
+# Emphasis schedules, per training age.
+#
+# An emphasis has to give the region MORE work than the balanced week does — that
+# is the whole content of the field. Two ways it failed to:
+#
+#   * The novice tables written alongside the split fix reused the same `upper`
+#     and `lower` days the balanced week uses, so an "upper" emphasis had the
+#     same two upper days and one fewer lower day. It only took work away.
+#   * Making the intermediate baseline better (push/pull/legs twice, rather than
+#     one day per body part) raised the bar the emphasis tables had to clear, and
+#     the six-day lower and back emphases quietly stopped clearing it.
+#
+# Both were caught by `test_the_region_you_asked_to_prioritise_gets_more_work`,
+# which compares against the balanced week rather than against a fixed number —
+# which is why it kept working when the baseline moved.
+_BEGINNER_FOCUS_SCHEDULES = {
+    "upper": {
+        4: ["upper", "lower", "rest", "upper", "upper", "rest", "rest"],
+        5: ["upper", "lower", "rest", "upper", "lower", "upper", "rest"],
+        6: ["upper", "lower", "core_cardio", "upper", "lower", "upper", "rest"],
+    },
+    "lower": {
+        4: ["lower", "upper", "rest", "lower", "lower", "rest", "rest"],
+        5: ["lower", "upper", "rest", "lower", "upper", "lower", "rest"],
+        6: ["lower", "upper", "core_cardio", "lower", "upper", "lower", "rest"],
+    },
+    "back": {
+        4: ["pull", "lower", "rest", "upper", "pull", "rest", "rest"],
+        5: ["pull", "lower", "rest", "upper", "pull", "core_cardio", "rest"],
+        6: ["pull", "lower", "core_cardio", "upper", "pull", "lower", "rest"],
+    },
+    "core": {
+        4: ["upper", "legs_core", "rest", "upper", "core_cardio", "rest", "rest"],
+        5: ["upper", "legs_core", "core_cardio", "shoulders_core", "legs_core",
+            "rest", "rest"],
+        6: ["upper", "legs_core", "core_cardio", "shoulders_core", "legs_core",
+            "core_cardio", "rest"],
+    },
+}
+
+# Only the day counts where the intermediate baseline is strong enough that the
+# general table below no longer beats it. Everything else falls through.
+_INTERMEDIATE_FOCUS_SCHEDULES = {
+    "lower": {
+        6: ["legs", "push", "legs_core", "pull", "legs", "core_cardio", "rest"],
+    },
+    "back": {
+        6: ["pull", "push", "legs", "pull", "back_biceps", "core_cardio", "rest"],
+    },
+}
+
+_FOCUS_SCHEDULES = {
+    "upper": {
+        4: ["upper", "lower", "rest", "upper", "core_cardio", "rest", "rest"],
+        5: ["upper", "lower", "rest", "upper", "core_cardio", "lower", "rest"],
+        6: ["upper", "lower", "core_cardio", "upper", "lower", "upper", "rest"],
+    },
+    "lower": {
+        4: ["lower", "upper", "rest", "lower", "core_cardio", "rest", "rest"],
+        5: ["lower", "upper", "rest", "lower", "core_cardio", "upper", "rest"],
+        6: ["lower", "upper", "core_cardio", "lower", "upper", "lower", "rest"],
+    },
+    "back": {
+        4: ["pull", "lower", "rest", "upper", "core_cardio", "rest", "rest"],
+        5: ["pull", "lower", "rest", "upper", "pull", "core_cardio", "rest"],
+        6: ["pull", "lower", "core_cardio", "upper", "pull", "lower", "rest"],
+    },
+    "core": {
+        4: ["upper", "legs_core", "rest", "upper", "core_cardio", "rest", "rest"],
+        5: ["upper", "legs_core", "rest", "upper", "legs_core", "core_cardio", "rest"],
+        6: ["upper", "legs_core", "core_cardio", "upper", "legs_core", "core_cardio", "rest"],
+    },
+}
+
 _FOCUS_SCHEDULES = {
     "upper": {
         4: ["chest_triceps", "rest", "back_biceps", "shoulders_arms", "rest", "legs_core", "rest"],
@@ -1221,7 +1303,14 @@ _MIN_DAYS_TO_SPECIALISE = 4
 
 def _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level,
                            muscle_focus="full_body"):
-    specialised = _FOCUS_SCHEDULES.get(muscle_focus, {}).get(min(workout_days, 6))
+    days = min(workout_days, 6)
+    if fitness_level == "beginner":
+        specialised = _BEGINNER_FOCUS_SCHEDULES.get(muscle_focus, {}).get(days)
+    elif fitness_level == "intermediate":
+        specialised = (_INTERMEDIATE_FOCUS_SCHEDULES.get(muscle_focus, {}).get(days)
+                       or _FOCUS_SCHEDULES.get(muscle_focus, {}).get(days))
+    else:
+        specialised = _FOCUS_SCHEDULES.get(muscle_focus, {}).get(days)
     if specialised and not (is_bodyweight_only and fitness_level == "beginner"):
         return specialised
     return _base_weekly_schedule(workout_days, is_bodyweight_only, fitness_level)
@@ -1235,6 +1324,41 @@ def _base_weekly_schedule(workout_days, is_bodyweight_only, fitness_level):
             return ["full_body", "rest", "full_body", "rest", "full_body", "rest", "rest"]
         else:
             return ["full_body", "rest", "full_body", "rest", "full_body", "core_cardio", "rest"]
+
+    # HOW OFTEN each muscle is trained, which is the variable a split exists to
+    # set — and which used to be the same for everybody. `fitness_level` was
+    # passed into this function and read for exactly one case (bodyweight-only
+    # beginners); everyone else, novice or competitive, got the same body-part
+    # split. A "Chest & Triceps day" trains the chest ONCE a week. That is a
+    # structure for an advanced lifter with years of accumulated work, and it is
+    # the single most recognisable sign a plan was not written by a coach.
+    #
+    # Novices adapt to frequency: two or three exposures per muscle per week, at
+    # low complexity. Intermediates can carry push/pull/legs. A body-part split
+    # is the reward for being advanced enough to need it.
+    if fitness_level == "beginner":
+        if workout_days == 2:
+            return ["full_body", "rest", "full_body", "rest", "rest", "rest", "rest"]
+        elif workout_days == 3:
+            return ["full_body", "rest", "full_body", "rest", "full_body", "rest", "rest"]
+        elif workout_days == 4:
+            return ["upper", "lower", "rest", "upper", "lower", "rest", "rest"]
+        elif workout_days == 5:
+            return ["upper", "lower", "rest", "upper", "lower", "core_cardio", "rest"]
+        elif workout_days >= 6:
+            return ["upper", "lower", "core_cardio", "upper", "lower", "core_cardio", "rest"]
+
+    if fitness_level == "intermediate":
+        if workout_days == 2:
+            return ["full_body", "rest", "full_body", "rest", "rest", "rest", "rest"]
+        elif workout_days == 3:
+            return ["push", "rest", "pull", "rest", "legs_core", "rest", "rest"]
+        elif workout_days == 4:
+            return ["upper", "lower", "rest", "upper", "lower", "rest", "rest"]
+        elif workout_days == 5:
+            return ["push", "pull", "rest", "legs", "upper", "core_cardio", "rest"]
+        elif workout_days >= 6:
+            return ["push", "pull", "legs", "push", "pull", "legs", "rest"]
 
     if workout_days == 2:
         return ["full_body", "rest", "full_body", "rest", "rest", "rest", "rest"]
@@ -1471,6 +1595,8 @@ def _schedule_notice(requested_days: int, schedule: list) -> str | None:
 
 def _focus_to_keys(focus):
     if "full_body" in focus:        return ["full_body", "chest", "back", "legs", "core"]
+    elif focus == "upper":          return ["chest", "back", "shoulders", "biceps", "triceps"]
+    elif focus == "lower":          return ["legs", "core"]
     elif "push" in focus:           return ["chest", "shoulders", "triceps"]
     elif "pull" in focus:           return ["back", "biceps"]
     elif focus == "legs":           return ["legs"]
@@ -1583,6 +1709,8 @@ _FOCUS_PATTERNS = {
     "shoulders_core":  ("push_v", "core"),
     "shoulders_arms":  ("push_v",),
     "full_body":       ("squat", "push_h", "pull_h", "hinge"),
+    "upper":           ("push_h", "pull_h", "push_v", "pull_v"),
+    "lower":           ("squat", "hinge", "lunge"),
     "core_cardio":     ("core",),
     "arms":            (),
 }
@@ -1603,6 +1731,11 @@ _FOCUS_PATTERNS = {
 # paired with is there to finish it off.
 _FOCUS_ALLOCATION = {
     "full_body":       (("legs", 3), ("chest", 2), ("back", 2), ("shoulders", 1), ("core", 1)),
+    # Upper/lower. A novice needs each muscle two or three times a week, which a
+    # body-part split cannot give — it trains everything once. These two days are
+    # what makes a four-day beginner week a beginner's week.
+    "upper":           (("chest", 3), ("back", 3), ("shoulders", 2), ("triceps", 1), ("biceps", 1)),
+    "lower":           (("legs", 4), ("core", 1)),
     "push":            (("chest", 3), ("shoulders", 2), ("triceps", 1)),
     "pull":            (("back", 3), ("biceps", 1)),
     "legs":            (("legs", 1),),

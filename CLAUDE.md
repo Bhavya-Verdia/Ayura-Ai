@@ -96,7 +96,12 @@ The library states what the engine used to infer from names — `role`, `mechani
 `rep_style`, `canonical`, `coaching_cue`. `role` is the important one: only
 `main`/`accessory` may fill a working slot, which is what stops a stretch being
 prescribed as a set of eight. Upstream (`data/sources/free_exercise_db.json`) is
-a **prose source only** — instructions and anatomy, never judgment.
+a **muscle-list source only**. All instruction prose is authored in
+`scripts/gym_library/prose.py`: 89 of the 120 entries that reused upstream text
+carried a defect, including a dumbbell exercise whose steps told you to pick up a
+barbell and two that instructed holding your breath under load. Contraindications,
+pregnancy and dosha are authored per movement in `scripts/gym_library/clinical.py`,
+each with a stated mechanism — they differ from the old derived rules on 89 of 173.
 
 `routes/plans._generate_feature_via_engine` is the single entry point both the holistic and per-feature paths use — it runs the engine + enricher and applies pregnancy/safety gating. The per-feature endpoints (`POST /api/plans/{gym,yoga,diet,routine,panchakarma,remedies,medicines}`) return the plan **synchronously**. The holistic `POST /api/plans/generate` is offloaded to an **ARQ background worker** (`server/worker.py`) via Redis and returns a `job_id` to poll at `/api/plans/job/{jobId}`; if Redis/ARQ is unavailable it falls back to running the job in-process via FastAPI `BackgroundTasks`.
 

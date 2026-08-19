@@ -62,7 +62,7 @@ LEGS = [
       skill_floor="intermediate", level="intermediate", family="split_squat",
       unilateral=True, pm=["quadriceps"], sm=["glutes", "hamstrings"],
       instructions=[
-          "Stand about two feet in front of a bench and place the top of one foot on it behind you.",
+          "Stand about two-thirds of a metre in front of a bench and place the top of one foot on it behind you.",
           "Keep the torso upright and the front foot far enough forward that the knee stays over the ankle.",
           "Lower until the back knee approaches the floor and the front thigh is roughly parallel.",
           "Drive through the front heel to stand, completing all reps before changing sides.",

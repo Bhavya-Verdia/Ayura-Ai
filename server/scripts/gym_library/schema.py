@@ -146,8 +146,14 @@ CONTRA_VOCAB = {
 }
 
 
-_IMPERIAL = re.compile(r"\b\d+\s*(?:-\s*\d+\s*)?(?:inch|inches|feet|foot|lb|lbs|pound|pounds)\b",
-                      re.I)
+# Digits with an imperial unit, a spelled-out count of feet (a plural "feet" with
+# a number in front is always a measurement — "both feet" is not), and inches or
+# pounds in any form. Deliberately does NOT flag a bare "one foot", which in this
+# library means the body part.
+_IMPERIAL = re.compile(
+    r"\b\d+\s*(?:-\s*\d+\s*)?(?:inch|inches|feet|foot|lb|lbs|pound|pounds)\b"
+    r"|\b(?:one|two|three|four|five|six|ten|twelve)[- ](?:inch|inches|feet|lb|lbs|pound|pounds)\b",
+    re.I)
 
 
 def validate(entry: dict) -> list:

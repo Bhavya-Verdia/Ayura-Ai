@@ -659,6 +659,40 @@ def test_every_session_has_a_compound_and_no_stacked_variants(goal):
             assert worst[1] <= 2, f"{goal} {day['focus']}: {worst[1]} variants of {worst[0]!r}"
 
 
+@pytest.mark.parametrize("days", [4, 5, 6])
+def test_a_beginner_is_not_given_a_body_part_split(days):
+    """`fitness_level` was passed into `_build_weekly_schedule` and read for
+    exactly one case — bodyweight-only beginners. Everyone else, novice or
+    competitive, got `chest_triceps / back_biceps / legs / shoulders_core`.
+
+    A body-part split trains each muscle once a week. That is a structure for an
+    advanced lifter with years of accumulated work, and giving it to a novice is
+    the most recognisable sign a plan was not written by a coach — novices adapt
+    to frequency."""
+    from collections import Counter
+    from services.gym_plan_engine import _build_weekly_schedule, _focus_to_keys
+
+    for focus in ("full_body", "upper", "lower", "back", "core"):
+        sched = [d for d in _build_weekly_schedule(days, False, "beginner", focus)
+                 if d != "rest"]
+        assert not {"chest_triceps", "back_biceps", "shoulders_arms"} & set(sched), (
+            f"beginner {days}d/{focus} got a body-part split: {sched}")
+        trained = Counter(k for d in sched for k in _focus_to_keys(d))
+        for region in ("chest", "back", "legs"):
+            assert trained[region] >= 1, f"{days}d/{focus} never trains {region}"
+        # The emphasised half is trained at least twice; nothing is dropped.
+        assert max(trained[r] for r in ("chest", "back", "legs")) >= 2, (
+            f"beginner {days}d/{focus} trains nothing twice: {sched}")
+
+
+def test_an_advanced_lifter_still_gets_the_split_they_have_earned():
+    """The fix is that training age decides, not that body-part splits are bad."""
+    from services.gym_plan_engine import _build_weekly_schedule
+
+    sched = _build_weekly_schedule(4, False, "advanced", "full_body")
+    assert "chest_triceps" in sched and "back_biceps" in sched
+
+
 def test_training_age_changes_the_volume():
     """Level gated WHICH exercises were eligible and nothing else, so a beginner
     and an advanced lifter on muscle gain both got 3x8-10 in week 1."""
@@ -1201,8 +1235,11 @@ def test_a_leg_day_can_contain_a_deadlift():
         {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
         {"available_equipment": FULL_GYM, "gym_goal": "strength",
          "workout_days_per_week": 4, "workout_duration_minutes": 60})
+    # The lower-body day is called "Legs" on a body-part split and "Lower" on the
+    # upper/lower split an intermediate now gets; the point of the test is the
+    # movement reaching it, not what the day is called.
     legs = next(d for d in plan["four_week_plan"][0]["days"]
-                if d["focus"].lower().startswith("legs"))
+                if d["focus"].lower().startswith(("legs", "lower")))
     assert any("Deadlift" in e["exercise_name"] for e in legs["main_workout"]), \
         [e["exercise_name"] for e in legs["main_workout"]]
 
@@ -1390,26 +1427,36 @@ def _weekly_volume(plan):
     return volume
 
 
-def _plan_for(focus, days):
+def _plan_for(focus, days, level="intermediate"):
     return generate_gym_plan(
-        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {**_YOGA_BASE_PROFILE, "fitness_level": level, "weight_kg": 70},
         {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain",
          "workout_days_per_week": days, "workout_duration_minutes": 60,
          "target_muscle_focus": focus})
 
 
+@pytest.mark.parametrize("level", ["beginner", "intermediate", "advanced"])
 @pytest.mark.parametrize("focus", ["upper", "lower", "back", "core"])
 @pytest.mark.parametrize("days", [4, 5, 6])
-def test_the_region_you_asked_to_prioritise_gets_more_work(focus, days):
+def test_the_region_you_asked_to_prioritise_gets_more_work(focus, days, level):
     """`target_muscle_focus` is a required field in the gym form and nothing read
     it. Someone who said "my back is the priority" got the same split as someone
-    who said "core" — the split everybody got."""
-    balanced = _weekly_volume(_plan_for("full_body", days))
-    emphasised = _weekly_volume(_plan_for(focus, days))
+    who said "core" — the split everybody got.
+
+    Parametrised over training age because the emphasis tables are now per-level.
+    Two ways this broke while they were being written: a novice emphasis reused
+    the balanced week's own days, so it only removed work from the other half;
+    and improving the intermediate BASELINE raised the bar the emphasis had to
+    clear, which the six-day lower and back emphases silently stopped doing.
+    Comparing against the balanced week rather than a fixed number is what caught
+    both."""
+    balanced = _weekly_volume(_plan_for("full_body", days, level))
+    emphasised = _weekly_volume(_plan_for(focus, days, level))
     muscles = _EMPHASIS_MUSCLES[focus]
     before = sum(balanced[m] for m in muscles)
     after = sum(emphasised[m] for m in muscles)
-    assert after > before, f"{focus} {days}d: {before} sets balanced, {after} emphasised"
+    assert after > before, (
+        f"{level} {focus} {days}d: {before} sets balanced, {after} emphasised")
 
 
 @pytest.mark.parametrize("focus", ["upper", "lower", "back", "core"])
@@ -1748,8 +1795,10 @@ def test_the_resistance_work_survives_that_gate():
          "bmi_category": "obese_class2"},
         {"available_equipment": ["full_gym"], "gym_goal": "fat_loss",
          "workout_days_per_week": 4, "workout_duration_minutes": 45})
+    # "Legs" on a body-part split, "Lower" on the upper/lower split a beginner
+    # now gets. The test is about the resistance work surviving, not the name.
     legs = next(d for d in plan["four_week_plan"][0]["days"]
-                if d["focus"].lower().startswith("legs"))
+                if d["focus"].lower().startswith(("legs", "lower")))
     assert len(legs["main_workout"]) >= 3
     # And conditioning is still there — low-impact, but there.
     conditioned, _ = _conditioning_days_in(plan)

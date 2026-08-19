@@ -32,10 +32,13 @@ anybody across a 28,320-day sweep.
 
 **The library is now authored rather than imported.** 173 movements, curated to
 cover every region and equipment tier a plan can ask for, with the fields the
-engine programmes from stated explicitly instead of inferred from names. Upstream
-is still used — for exercise instructions and anatomy, where it is good — but
-nothing about how a movement is programmed comes from it. The same sweep now
-prescribes a stretch as a working set on 0% of days.
+engine programmes from stated explicitly instead of inferred from names. Every
+instruction is written for this product too: 89 of the 120 entries that reused
+the dataset's prose carried a defect, including a dumbbell exercise whose steps
+told you to pick up a barbell and two that instructed holding your breath under
+load — the exact mechanism `hypertension` is tagged for. Upstream now supplies
+muscle lists and nothing else. The same sweep now prescribes a stretch as a
+working set on 0% of days.
 
 Two consequences for you:
 
@@ -51,27 +54,36 @@ Two consequences for you:
 
 ## How the tags got here
 
-Every contraindication on a movement is one of two things, and the CSV tells you
-which:
+**Every one of the 173 movements now carries a hand-written clinical judgment
+with a stated reason.** Contraindications, pregnancy suitability and dosha were
+derived by rule until this pass; they are now authored per movement in
+`scripts/gym_library/clinical.py`, and the CSV carries three columns for each:
 
-- **Authored** — written deliberately for that movement. Listed in the
-  `contraindications_authored` column.
-- **Derived** — produced by a mechanism rule in `scripts/build_gym_library.py`.
-  A loaded hinge carries `herniated_disc` and `lower_back_pain`; overhead work
-  carries `shoulder_injury` and `rotator_cuff`; high-impact work carries
-  `bad_knee`, `knee_replacement`, `hypertension` and `heart_disease`; a heavy
-  axial barbell lift carries `hypertension` and `osteoporosis` for the
-  breath-holding strain.
+- **`contraindications`** — the answer that ships.
+- **`why`** — the mechanism, in a sentence. This is what makes your job
+  confirmation rather than archaeology: you read the reasoning and agree or
+  disagree with it, instead of inferring intent from a list of tags.
+- **`what_a_rule_would_have_said`** — what the previous mechanism rule produced.
 
-The derived rules read the movement's authored **pattern, load class, impact and
-equipment** — never its name. That is the difference from the previous version of
-this packet: a fault is now a fault in one rule over one mechanism, which is
-something you can rule on in a sentence, rather than a keyword that happened to
-match a word in a title.
+**The last column is where to look first.** The authored answer differs from the
+rule on **89 of the 173 movements**, and each difference is a decision somebody
+made. Three that show why the rules were not enough:
+
+| movement | rule said | authored | reason |
+|---|---|---|---|
+| `Barbell Bench Press` | pregnancy-safe | **not** pregnancy-safe | The rule modelled impact, skill and load, and had no concept of body position. Every supine press came out safe. |
+| `Wall Slide` | avoid with shoulder injury | **no restriction** | It is a scapular rehab drill — the rule withheld the treatment from the people it is for. |
+| `Renegade Row` | no restriction | shoulder + low back | A plank held under a rowing load. No single mechanism rule saw it. |
+
+Nothing here has been read by a practitioner. `contraindications_reviewed` stays
+false on all 173 until one does — this is engineering's best reasoning, written
+down so it can be checked.
 
 ## Priority order
 
-1. **The 19 rows marked `REVIEW` in `gym_mechanism_review.csv`**, top to bottom.
+1. **The rows where the authored answer differs from the rule** — the
+   `what_a_rule_would_have_said` column in `gym_exercise_review.csv`. 89 of 173.
+   Then the rows marked `REVIEW` in `gym_mechanism_review.csv`, top to bottom.
    They are the mechanism groups where a tag applies to some of the group and not
    the rest. Some of these are deliberate: `row/back` carries `herniated_disc` on
    3 of 11 because a bent-over barbell row loads the spine and a chest-supported
@@ -83,14 +95,14 @@ match a word in a title.
 
 ## Four decisions needing your confirmation
 
-1. **Prenatal safety is a derived allowlist.** Prenatal training is declared
-   unsupported — the plan generates and carries a notice saying it is not a
-   prenatal programme. But the field cannot be left blank (an unanswered
-   `pregnancy_safe` reads as `false` and empties the plan entirely), so it is a
-   stated conservative rule: excluded if the movement has any landing impact, an
-   advanced skill floor, is supine or rotational trunk work, is a maximal axial
-   barbell lift, or is performed lying face down. **Confirm the rule, or replace
-   it.**
+1. **Prenatal suitability is now decided per movement, and 91 of 173 pass.**
+   Prenatal training is still declared unsupported — the plan generates and
+   carries a notice saying it is not a prenatal programme — but the field cannot
+   be left blank, because an unanswered `pregnancy_safe` reads as `false` and
+   empties the plan entirely. The reasoning behind each is in the `why` column;
+   the recurring grounds for exclusion are supine and prone positions, landing
+   impact, hanging, loaded spinal flexion, and maximal bracing. **Confirm the
+   grounds, and spot-check the movements that pass.**
 
 2. **`hypertension` is used as the age proxy for cardiovascular strain**, the way
    `osteoporosis` is used for axial loading. It means a practitioner over 60 is

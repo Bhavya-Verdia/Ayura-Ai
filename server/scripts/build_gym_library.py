@@ -24,6 +24,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from gym_library import schema  # noqa: E402
+from gym_library.clinical import CLINICAL  # noqa: E402
+from gym_library.prose import INSTRUCTIONS  # noqa: E402
 from gym_library.movements_upper import ARMS, BACK, CHEST, SHOULDERS  # noqa: E402
 from gym_library.movements_lower import (CONDITIONING, CORE, LEGS,  # noqa: E402
                                          MOBILITY)
@@ -333,13 +335,20 @@ def build(upstream: dict, legacy: dict) -> tuple:
         # Upstream first, then this project's own earlier authoring. Both are
         # prose sources; neither supplies judgment — every classifying field on
         # the row below comes from the spec.
+        clin = CLINICAL.get(name)
         src = upstream.get(entry["src"]) if entry["src"] else None
         leg = legacy.get(entry["src"]) if entry["src"] else None
         if entry["src"] and src is None and leg is None:
             errors.append(f"{name}: src {entry['src']!r} found in neither source")
 
-        instructions = (entry["instructions"] or (src or {}).get("instructions")
-                        or (leg or {}).get("instructions"))
+        # Prose comes from `prose.py` or from the entry itself. Upstream is no
+        # longer a fallback for it: 89 of the 120 entries that used its text
+        # carried a defect, from `Dumbbell Romanian Deadlift` opening "put a
+        # barbell in front of you" to two entries instructing the reader to hold
+        # their breath under load — the exact mechanism `hypertension` is tagged
+        # for. Anatomy still comes from upstream, because muscle lists are
+        # reference data and its are correct.
+        instructions = entry["instructions"] or INSTRUCTIONS.get(name)
         pm = (entry["primary_muscles"] or (src or {}).get("primaryMuscles")
               or (leg or {}).get("primary_muscles") or [])
         sm = (entry["secondary_muscles"] or (src or {}).get("secondaryMuscles")
@@ -368,16 +377,29 @@ def build(upstream: dict, legacy: dict) -> tuple:
             "coaching_cue": entry["cue"],
             "progression": {k: v for k, v in (entry["progression"] or {}).items() if v},
             "sets_reps": _sets_reps(entry),
-            "contraindications": sorted(set(entry["contraindications"])
+            "contraindications": sorted(clin["contra"] if clin
+                                        else set(entry["contraindications"])
                                         | _derived_contraindications(entry)),
-            "contraindications_authored": sorted(set(entry["contraindications"])),
-            "pregnancy_safe": _pregnancy_safe(entry),
-            "dosha_suitability": entry["dosha_suitability"] or _dosha(entry),
+            # Kept so the review packet can show what a rule would have said
+            # beside what a person did. Where they differ, the person is right by
+            # construction — but the difference is the interesting column.
+            "contraindications_derived": sorted(_derived_contraindications(entry)),
+            "clinical_basis": "authored" if clin else "derived",
+            "clinical_rationale": (clin or {}).get("why", ""),
+            "pregnancy_safe": (clin["preg"] if clin else _pregnancy_safe(entry)),
+            # Derived from the movement's own properties, with any value the
+            # clinical file states deliberately laid over the top.
+            "dosha_suitability": (entry["dosha_suitability"]
+                                  or {**_dosha(entry), **(clin or {}).get("dosha", {})}),
             "goal_suitability": entry["goal_suitability"] or _goals(entry),
             "calories_per_minute": _calories(entry),
             "modification": _modification(entry),
-            "source": (entry["src"] if src else
-                       f"authored ({entry['src']})" if leg else "authored"),
+            # Prose is authored for every movement. `anatomy_source` records
+            # where the muscle lists came from, which is the only thing upstream
+            # still supplies.
+            "prose": "authored",
+            "anatomy_source": (entry["src"] if src else
+                               f"prior authoring ({entry['src']})" if leg else "authored"),
         }
         # `contraindications_reviewed` is the field the clinical packet exists to
         # raise. 18 rows carried it, and a rebuild that silently dropped them

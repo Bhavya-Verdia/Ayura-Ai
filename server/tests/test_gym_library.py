@@ -92,14 +92,77 @@ def test_every_contraindication_token_is_one_the_engine_can_act_on():
     assert used <= schema.CONTRA_VOCAB, sorted(used - schema.CONTRA_VOCAB)
 
 
+def test_every_movement_has_an_authored_clinical_judgment_with_a_reason():
+    """Contraindications, pregnancy and dosha were derived by rule. Writing them
+    per movement changed the answer on 89 of 173 — the rule had no concept of
+    body position, so every supine press came out pregnancy-safe, and it withheld
+    `Wall Slide`, a scapular rehab drill, from anyone with a shoulder problem.
+
+    The rationale is not decoration: it is what lets a reviewer confirm a stated
+    mechanism instead of reverse-engineering intent from a list of tags."""
+    for e in gym_exercises:
+        assert e["clinical_basis"] == "authored", e["name"]
+        assert len(e["clinical_rationale"]) > 20, e["name"]
+
+
+def test_no_supine_movement_is_offered_in_pregnancy():
+    """Lying flat is ordinarily avoided after the first trimester. The derived
+    rule modelled impact, skill and load, and had no idea which way up you were."""
+    supine = {"Barbell Bench Press", "Dumbbell Bench Press", "Machine Bench Press",
+              "Dumbbell Flyes", "Glute Bridge", "Crunches", "Lying Leg Raise",
+              "Barbell Floor Press", "Dumbbell Floor Press", "Dead Bug"}
+    by_name = {e["name"]: e for e in gym_exercises}
+    for name in supine:
+        assert not by_name[name]["pregnancy_safe"], name
+
+
+def test_the_movements_that_treat_a_restriction_are_not_withheld_by_it():
+    """A rule keyed on movement pattern removed the rehab work from the people it
+    is for: `Wall Slide` and `External Rotation` are what a cranky shoulder is
+    given, and the floor press is the press it keeps."""
+    by_name = {e["name"]: e for e in gym_exercises}
+    for name in ("Wall Slide", "External Rotation", "Face Pull", "Band Pull Apart"):
+        tags = set(by_name[name]["contraindications"])
+        assert not tags & {"shoulder_injury", "rotator_cuff"}, (name, tags)
+    for name in ("Barbell Floor Press", "Dumbbell Floor Press"):
+        tags = set(by_name[name]["contraindications"])
+        assert not tags & {"shoulder_injury", "rotator_cuff"}, (name, tags)
+
+
+@pytest.mark.parametrize("profile,label", [
+    ({"age": 68, "fitness_level": "advanced"}, "senior"),
+    ({"age": 16, "fitness_level": "advanced"}, "youth"),
+    ({"age": 30, "fitness_level": "beginner"}, "beginner"),
+    ({"age": 30, "fitness_level": "advanced", "bmi_category": "obese"}, "obese"),
+])
+def test_landing_impact_never_reaches_anyone_it_is_withheld_from(profile, label):
+    """Four separate gates withhold jump training, and each was written against
+    `category == "plyometrics"`. The curated library records landing force in its
+    own field and files jump work as conditioning, so that test silently stopped
+    matching — and the gates failed open one at a time as they were found. This
+    covers all four at once, against behaviour rather than implementation."""
+    from services.gym_plan_engine import filter_exercises
+
+    base = {"id": "t", "gender": "male", "dominant_dosha": "vata", "weight_kg": 80,
+            "height": 175, "bmi_category": "normal", "medical_history": []}
+    pool = filter_exercises({**base, **profile},
+                            {"available_equipment": ["full_gym"],
+                             "gym_goal": "fat_loss"}, gym_exercises)
+    offered = [e["name"] for e in pool if e["impact"] == "high"]
+    assert not offered, f"{label} was offered {offered[:3]}"
+
+
 def test_a_shoulder_restriction_is_honoured_under_either_name():
     """`rotator_cuff` and `shoulder_injury` are two names for one restriction and
     the engine treats them as separate tokens, so a rule emitting one and not the
     other leaves half the people who declared it unprotected."""
     for e in gym_exercises:
         tags = set(e["contraindications"])
-        if "shoulder_injury" in tags and e["movement_pattern"] in ("push_v", "pull_v"):
-            assert "rotator_cuff" in tags, e["name"]
+        # Overhead work under a bar or bodyweight carries both names. A neutral
+        # close grip or a band carries only `shoulder_injury`, deliberately —
+        # see the rationale on each of those entries.
+        if "rotator_cuff" in tags:
+            assert "shoulder_injury" in tags, e["name"]
 
 
 @pytest.mark.parametrize("bucket", ["chest", "back", "shoulders", "legs", "core",
@@ -176,22 +239,39 @@ def test_the_canonical_lift_of_a_pattern_is_stated_not_inferred():
         assert expected in canonical, expected
 
 
-def test_upstream_is_a_prose_source_and_never_a_judgment_source():
-    """Instructions and anatomy may come from free-exercise-db. Everything that
-    decides how a movement is programmed is authored here — that separation is
-    the whole difference between this library and the imported one."""
+def test_no_instruction_text_comes_from_the_dataset():
+    """Upstream supplies muscle lists and nothing else.
+
+    120 movements used its prose and 89 carried a defect: `Dumbbell Romanian
+    Deadlift` opened "put a barbell in front of you on the ground", two entries
+    instructed the reader to hold their breath under load — the mechanism
+    `hypertension` is tagged for — and 66 said "This will be your starting
+    position". Every step is now written in `prose.py`."""
     src = json.loads((SERVER / "data" / "sources" / "free_exercise_db.json").read_text())
-    upstream = {e["name"]: e for e in src}
+    upstream = {e["name"]: e.get("instructions") or [] for e in src}
     for e in gym_exercises:
-        if e["source"] in ("authored",) or e["source"].startswith("authored ("):
-            continue
-        u = upstream.get(e["source"])
-        if not u:
-            continue
-        # The importer took upstream's `level` and re-derived it from the name.
-        # Nothing here reads it at all: `level` and `skill_floor` are authored.
-        assert e["level"] in schema.LEVELS
-        assert e["skill_floor"] in schema.LEVELS
+        assert e["prose"] == "authored", e["name"]
+        theirs = upstream.get(e["anatomy_source"]) or []
+        shared = set(e["instructions"]) & set(theirs)
+        assert not shared, f"{e['name']} reuses an upstream step: {list(shared)[:1]}"
+
+
+def test_the_prose_house_style_holds():
+    """One voice across the library. These are the tells of the imported text."""
+    import re
+    banned = {
+        "this will be your starting position": "dataset boilerplate",
+        "repeat for the recommended": "the app prints sets and reps above the steps",
+        "repeat for the prescribed": "the app prints sets and reps above the steps",
+        "tip:": "inline artifact",
+        "hold your breath": "teaches the strain the safety model gates for",
+        "holding your breath": "teaches the strain the safety model gates for",
+    }
+    for e in gym_exercises:
+        text = " ".join(e["instructions"]).lower()
+        for phrase, why in banned.items():
+            assert phrase not in text, f"{e['name']}: {phrase!r} — {why}"
+        assert 3 <= len(e["instructions"]) <= 8 or e["role"] == "mobility", e["name"]
 
 
 def test_the_keyword_contraindication_filler_refuses_to_run():
