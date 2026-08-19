@@ -18,7 +18,8 @@ sys.path.insert(0, str(SERVER / "scripts"))
 
 from gym_library import schema  # noqa: E402
 from services.gym_plan_engine import (  # noqa: E402
-    _LIFT_BW, _LOAD_CLASS_ALIAS, _WORKING_ROLES, gym_exercises)
+    _FOCUS_WARMUP_TYPE, _LIFT_BW, _LOAD_CLASS_ALIAS, _WORKING_ROLES,
+    gym_exercises)
 
 WORKING = [e for e in gym_exercises if e["role"] in _WORKING_ROLES]
 
@@ -150,6 +151,84 @@ def test_landing_impact_never_reaches_anyone_it_is_withheld_from(profile, label)
                              "gym_goal": "fat_loss"}, gym_exercises)
     offered = [e["name"] for e in pool if e["impact"] == "high"]
     assert not offered, f"{label} was offered {offered[:3]}"
+
+
+@pytest.mark.parametrize("profile,label", [
+    ({"age": 70, "medical_history": ["hypertension"]}, "senior"),
+    ({"age": 16}, "youth"),
+    ({"age": 45, "bmi_category": "obese"}, "obese"),
+    ({"age": 29, "pregnancy_or_nursing": True}, "pregnant"),
+    ({"age": 40, "injuries_or_limitations": ["bad_knee", "knee_replacement"]}, "knee"),
+])
+def test_the_warm_up_is_gated_like_the_workout_it_precedes(profile, label):
+    """The warm-up and cool-down were plain strings, and a plain string passes no
+    gate. Every impact movement was filtered out of the main workout for these
+    practitioners, and then all of them opened the session with "Jumping jacks —
+    30 sec" and "High knees — 30 sec". It defeated the impact gating entirely,
+    from the first line of the session.
+
+    Withheld lines are substituted rather than dropped, so the warm-up keeps its
+    length — a restricted practitioner should not get a visibly shorter one."""
+    from services.gym_plan_engine import generate_gym_plan
+
+    base = {"id": "t", "gender": "female", "dominant_dosha": "vata",
+            "weight_kg": 80, "height": 165, "fitness_level": "beginner",
+            "bmi_category": "normal", "medical_history": []}
+    plan = generate_gym_plan({**base, **profile},
+                             {"available_equipment": ["full_gym"],
+                              "gym_goal": "fat_loss", "workout_days_per_week": 3,
+                              "workout_duration_minutes": 45})
+    for day in plan["four_week_plan"][0]["days"]:
+        if day["type"] == "recovery":
+            continue
+        edges = " ".join(day["warmup"] + day["cooldown"]).lower()
+        for banned in ("jumping jack", "high knees", "jump", "hop", "sprint"):
+            assert banned not in edges, f"{label} warm-up/cool-down had {banned!r}"
+        assert len(day["warmup"]) >= 5, f"{label} got a short warm-up"
+
+
+def test_an_unrestricted_practitioner_keeps_the_written_warm_up():
+    """The gate must not quietly water down the session for everybody."""
+    from services.gym_plan_engine import _warmup_for, _WARMUP
+
+    for focus_type in ("upper", "lower", "core", "full", "cardio"):
+        focus = {"upper": "push", "lower": "legs", "core": "core_cardio",
+                 "full": "full_body", "cardio": "core_cardio"}[focus_type]
+        got = _warmup_for(focus)
+        assert len(got) == len(_WARMUP[_FOCUS_WARMUP_TYPE.get(focus, "full")])
+
+
+@pytest.mark.parametrize("condition", ["hypertension", "heart_disease", "glaucoma"])
+def test_forceful_breathwork_never_reaches_the_people_it_is_contraindicated_for(condition):
+    """`Kapalabhati` was prescribed by name in the Kapha rest day AND in the Kapha
+    Ayurvedic tip, to everybody.
+
+    The yoga engine has gated exactly this since the demo-hardening pass; its own
+    comment says forceful breath "can never reach a hypertensive, cardiac,
+    epileptic, glaucoma, hernia, or pregnant user". Both features read the same
+    profile — the gym engine simply never asked. Same asymmetry as the pregnancy
+    double-field bug, and the same lesson: prose passes no gate."""
+    from services.gym_plan_engine import generate_gym_plan
+
+    plan = generate_gym_plan(
+        {"id": "t", "age": 45, "gender": "male", "fitness_level": "beginner",
+         "dominant_dosha": "kapha", "weight_kg": 90, "height": 170,
+         "bmi_category": "overweight", "medical_history": [condition]},
+        {"available_equipment": ["bodyweight"], "gym_goal": "fat_loss",
+         "workout_days_per_week": 3, "workout_duration_minutes": 45})
+
+    blob = json.dumps(plan).lower()
+    for practice in ("kapalabhati", "bhastrika", "breath retention"):
+        assert practice not in blob, f"{condition} was prescribed {practice}"
+
+
+def test_a_healthy_practitioner_still_gets_the_practice():
+    """The gate withholds; it does not delete the feature for everyone."""
+    from services.gym_plan_engine import get_ayurvedic_tips
+
+    assert "Kapalabhati" in get_ayurvedic_tips("kapha")["post_workout"]
+    assert "Kapalabhati" not in get_ayurvedic_tips(
+        "kapha", {"hypertension"}, False)["post_workout"]
 
 
 def test_a_shoulder_restriction_is_honoured_under_either_name():

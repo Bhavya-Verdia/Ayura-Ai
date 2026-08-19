@@ -17,86 +17,136 @@ if EXERCISES_PATH.exists():
 
 # ── Warmup / Cooldown libraries ───────────────────────────────────────────────
 
+# Warm-up and cool-down movements, each carrying the same two safety properties
+# the library records: whether it lands, and what it is unsuitable for.
+#
+# These were plain strings, and plain strings pass no gate. A 70-year-old with
+# hypertension, a 118 kg practitioner with a knee replacement and a pregnant
+# practitioner were each given a main workout with every impact movement
+# carefully filtered out of it — and then all three opened the session with
+# "Jumping jacks — 30 sec" and "High knees — 30 sec", because the warm-up was
+# written per focus and never consulted anybody's profile. It defeated the whole
+# impact-gating story from the first line of the session.
+#
+# `_gate_movements` runs the same checks the exercise pool runs. A line that is
+# withheld is replaced from `_WARMUP_SUBSTITUTES` so the warm-up keeps its length
+# rather than quietly getting shorter.
+def _w(text, impact="none", contra=(), pregnancy_safe=True):
+    return {"text": text, "impact": impact, "contra": frozenset(contra),
+            "pregnancy_safe": pregnancy_safe}
+
+
 _WARMUP = {
     "upper": [
-        "Arm circles — 10 forward, 10 backward",
-        "Cross-body shoulder stretch — 30 sec each side",
-        "Shoulder roll — 10 slow rotations",
-        "Band pull-apart or doorway chest stretch — 15 reps",
-        "Cat-cow — 8 reps",
-        "Wrist circles — 10 each direction",
+        _w("Arm circles — 10 forward, 10 backward"),
+        _w("Cross-body shoulder stretch — 30 sec each side", contra=["shoulder_injury"]),
+        _w("Shoulder roll — 10 slow rotations"),
+        _w("Band pull-apart or doorway chest stretch — 15 reps"),
+        _w("Cat-cow — 8 reps"),
+        _w("Wrist circles — 10 each direction"),
     ],
     "lower": [
-        "Hip circles — 10 each direction",
-        "Leg swings — 10 forward/back each leg",
-        "Bodyweight squat — 10 slow reps",
-        "Ankle circles — 10 each direction",
-        "Glute bridge — 12 reps",
-        "Walking lunge — 8 each leg",
+        _w("Hip circles — 10 each direction"),
+        _w("Leg swings — 10 forward/back each leg", contra=["hip_injury"]),
+        _w("Bodyweight squat — 10 slow reps", contra=["bad_knee", "knee_replacement"]),
+        _w("Ankle circles — 10 each direction"),
+        _w("Glute bridge — 12 reps", pregnancy_safe=False),
+        _w("Walking lunge — 8 each leg", contra=["bad_knee", "knee_replacement"]),
     ],
     "core": [
-        "Cat-cow — 10 reps",
-        "Dead bug — 8 each side",
-        "Hip flexor stretch — 30 sec each side",
-        "Bird dog — 8 each side",
-        "High knees — 30 sec",
+        _w("Cat-cow — 10 reps"),
+        _w("Dead bug — 8 each side", pregnancy_safe=False),
+        _w("Hip flexor stretch — 30 sec each side"),
+        _w("Bird dog — 8 each side"),
+        _w("High knees — 30 sec", impact="high",
+           contra=["hypertension", "heart_disease", "bad_knee"], pregnancy_safe=False),
     ],
     "full": [
-        "Jumping jacks — 30 sec",
-        "Arm circles — 10 each direction",
-        "Hip circles — 10 each direction",
-        "Bodyweight squat — 10 reps",
-        "High knees — 30 sec",
-        "Inchworm — 5 reps",
+        _w("Jumping jacks — 30 sec", impact="high",
+           contra=["bad_knee", "knee_replacement", "bad_ankle"], pregnancy_safe=False),
+        _w("Arm circles — 10 each direction"),
+        _w("Hip circles — 10 each direction"),
+        _w("Bodyweight squat — 10 reps", contra=["bad_knee", "knee_replacement"]),
+        _w("High knees — 30 sec", impact="high",
+           contra=["hypertension", "heart_disease", "bad_knee"], pregnancy_safe=False),
+        _w("Inchworm — 5 reps", contra=["lower_back_pain", "wrist_injury"]),
     ],
     "cardio": [
-        "Brisk walk or light jog — 3 min",
-        "Leg swings — 10 each leg",
-        "Ankle circles — 10 each direction",
-        "Hip circles — 10 each direction",
-        "Dynamic quad stretch — 8 each leg",
+        _w("Brisk walk or light jog — 3 min"),
+        _w("Leg swings — 10 each leg", contra=["hip_injury"]),
+        _w("Ankle circles — 10 each direction"),
+        _w("Hip circles — 10 each direction"),
+        _w("Dynamic quad stretch — 8 each leg", contra=["bad_knee"]),
     ],
 }
 
+# Drawn on when a line is withheld, so the warm-up keeps its length. Every one is
+# unloaded, non-impact and carries no restriction — they are what is left when
+# everything else has been ruled out.
+_WARMUP_SUBSTITUTES = [
+    _w("Marching on the spot — 60 sec"),
+    _w("Shoulder roll — 10 slow rotations"),
+    _w("Ankle circles — 10 each direction"),
+    _w("Cat-cow — 8 reps"),
+    _w("Standing hip hinge, hands on thighs — 10 slow reps"),
+    _w("Deep breathing with tall posture — 5 breaths"),
+]
+
+# Cool-downs are stretches, so impact is not the risk — position is. Supine and
+# prone holds are the ones a pregnant practitioner should not be handed, and the
+# same gate that filters the warm-up filters these.
 _COOLDOWN = {
     "upper": [
-        "Doorway chest stretch — 30 sec",
-        "Cross-body shoulder stretch — 30 sec each side",
-        "Overhead tricep stretch — 30 sec each arm",
-        "Lat stretch in doorway — 30 sec each side",
-        "Child's pose — 60 sec",
-        "Deep belly breathing — 5 breaths",
+        _w("Doorway chest stretch — 30 sec", contra=["shoulder_injury"]),
+        _w("Cross-body shoulder stretch — 30 sec each side", contra=["shoulder_injury"]),
+        _w("Overhead tricep stretch — 30 sec each arm", contra=["shoulder_injury"]),
+        _w("Lat stretch in doorway — 30 sec each side", contra=["shoulder_injury"]),
+        _w("Child's pose — 60 sec", contra=["bad_knee"]),
+        _w("Deep belly breathing — 5 breaths"),
     ],
     "lower": [
-        "Standing quad stretch — 30 sec each leg",
-        "Seated hamstring stretch — 30 sec each leg",
-        "Pigeon pose or figure-four stretch — 45 sec each side",
-        "Calf stretch against wall — 30 sec each leg",
-        "Supine spinal twist — 30 sec each side",
-        "Child's pose — 60 sec",
+        _w("Standing quad stretch — 30 sec each leg", contra=["bad_knee"]),
+        _w("Seated hamstring stretch — 30 sec each leg"),
+        _w("Pigeon pose or figure-four stretch — 45 sec each side",
+           contra=["hip_injury", "bad_knee"]),
+        _w("Calf stretch against wall — 30 sec each leg"),
+        _w("Supine spinal twist — 30 sec each side",
+           contra=["herniated_disc"], pregnancy_safe=False),
+        _w("Child's pose — 60 sec", contra=["bad_knee"]),
     ],
     "core": [
-        "Supine spinal twist — 30 sec each side",
-        "Child's pose — 60 sec",
-        "Hip flexor stretch (lunge) — 30 sec each side",
-        "Cobra stretch — 30 sec",
-        "Deep belly breathing — 5 breaths",
+        _w("Supine spinal twist — 30 sec each side",
+           contra=["herniated_disc"], pregnancy_safe=False),
+        _w("Child's pose — 60 sec", contra=["bad_knee"]),
+        _w("Hip flexor stretch (lunge) — 30 sec each side", contra=["bad_knee"]),
+        _w("Cobra stretch — 30 sec",
+           contra=["herniated_disc", "lower_back_pain"], pregnancy_safe=False),
+        _w("Deep belly breathing — 5 breaths"),
     ],
     "full": [
-        "Child's pose — 60 sec",
-        "Supine spinal twist — 30 sec each side",
-        "Quad stretch — 30 sec each leg",
-        "Shoulder cross-body stretch — 30 sec each arm",
-        "Deep belly breathing — 5 breaths",
+        _w("Child's pose — 60 sec", contra=["bad_knee"]),
+        _w("Supine spinal twist — 30 sec each side",
+           contra=["herniated_disc"], pregnancy_safe=False),
+        _w("Quad stretch — 30 sec each leg", contra=["bad_knee"]),
+        _w("Shoulder cross-body stretch — 30 sec each arm", contra=["shoulder_injury"]),
+        _w("Deep belly breathing — 5 breaths"),
     ],
     "cardio": [
-        "Walk at easy pace — 3 min",
-        "Standing quad stretch — 30 sec each leg",
-        "Standing calf stretch — 30 sec each leg",
-        "Seated hamstring stretch — 30 sec each leg",
-        "Deep belly breathing — 5 breaths",
+        _w("Walk at easy pace — 3 min"),
+        _w("Standing quad stretch — 30 sec each leg", contra=["bad_knee"]),
+        _w("Standing calf stretch — 30 sec each leg"),
+        _w("Seated hamstring stretch — 30 sec each leg"),
+        _w("Deep belly breathing — 5 breaths"),
     ],
 }
+
+_COOLDOWN_SUBSTITUTES = [
+    _w("Seated forward fold, knees soft — 30 sec"),
+    _w("Seated side bend — 30 sec each side"),
+    _w("Neck tilt, ear to shoulder — 20 sec each side"),
+    _w("Standing calf stretch — 30 sec each leg"),
+    _w("Deep belly breathing — 5 breaths"),
+]
 
 _FOCUS_WARMUP_TYPE = {
     "full_body": "full", "push": "upper", "pull": "upper",
@@ -109,12 +159,44 @@ _FOCUS_WARMUP_TYPE = {
 }
 
 
-def _warmup_for(focus: str) -> list:
-    return _WARMUP.get(_FOCUS_WARMUP_TYPE.get(focus, "full"), _WARMUP["full"])
+def _gate_movements(items, subs, avoid_tags, withhold_impact, is_pregnant):
+    """The same checks the exercise pool runs, applied to the session's edges.
+
+    Withheld lines are replaced from `subs` rather than dropped, so a restricted
+    practitioner gets a warm-up of the same length as everyone else instead of a
+    visibly shorter one.
+    """
+    kept, used = [], set()
+    for item in items:
+        blocked = (avoid_tags & item["contra"]
+                   or (withhold_impact and item["impact"] == "high")
+                   or (is_pregnant and not item["pregnancy_safe"]))
+        if not blocked:
+            kept.append(item["text"])
+            used.add(item["text"])
+    if len(kept) < len(items):
+        for sub in subs:
+            if len(kept) >= len(items):
+                break
+            if sub["text"] in used or avoid_tags & sub["contra"]:
+                continue
+            kept.append(sub["text"])
+            used.add(sub["text"])
+    return kept
 
 
-def _cooldown_for(focus: str) -> list:
-    return _COOLDOWN.get(_FOCUS_WARMUP_TYPE.get(focus, "full"), _COOLDOWN["full"])
+def _warmup_for(focus: str, avoid_tags=frozenset(), withhold_impact=False,
+                is_pregnant=False) -> list:
+    items = _WARMUP.get(_FOCUS_WARMUP_TYPE.get(focus, "full"), _WARMUP["full"])
+    return _gate_movements(items, _WARMUP_SUBSTITUTES, frozenset(avoid_tags),
+                           withhold_impact, is_pregnant)
+
+
+def _cooldown_for(focus: str, avoid_tags=frozenset(), withhold_impact=False,
+                  is_pregnant=False) -> list:
+    items = _COOLDOWN.get(_FOCUS_WARMUP_TYPE.get(focus, "full"), _COOLDOWN["full"])
+    return _gate_movements(items, _COOLDOWN_SUBSTITUTES, frozenset(avoid_tags),
+                           withhold_impact, is_pregnant)
 
 
 # ── Goal-based prescription ───────────────────────────────────────────────────
@@ -607,6 +689,68 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
 
 
 # ── Ayurvedic Rest Day Recovery ───────────────────────────────────────────────
+
+# Rest-day activities and Ayurvedic tips are prose, and prose passes no gate —
+# the same fault the warm-up had, in the one place where the practices carry
+# genuine contraindications rather than merely being unsuitable.
+#
+# `Kapalabhati` reached a hypertensive, a cardiac and a pregnant practitioner in
+# two separate fields. The yoga engine has had a deliberate gate for exactly this
+# since the demo-hardening pass, and its own comment reads: forceful breath
+# "can never reach a hypertensive, cardiac, epileptic, glaucoma, hernia, or
+# pregnant user". Both features read the same profile. The gym engine simply
+# never asked.
+#
+# The vocabulary is imported rather than restated. Two copies of a safety list is
+# how they drift apart, and the yoga one is the one that has been reviewed.
+_RESTRICTED_PRACTICE = {
+    # substring matched against the practitioner's declared conditions, the same
+    # way `_pranayama_hard_blocked` matches, so "high_blood_pressure" catches a
+    # "hypertension" tag and the reverse.
+    "kapalabhati": ("hypertension", "high_blood_pressure", "heart", "cardiac",
+                    "epilep", "seizure", "hernia", "glaucoma", "retina",
+                    "vertigo", "pregnan", "ulcer", "recent_surgery", "stroke"),
+    "bhastrika":   ("hypertension", "high_blood_pressure", "heart", "cardiac",
+                    "epilep", "seizure", "hernia", "glaucoma", "pregnan", "stroke"),
+    "sun salutation": ("pregnan", "hypertension", "herniated_disc",
+                       "lower_back_pain", "wrist_injury", "shoulder_injury"),
+    "vigorous":    ("heart", "cardiac", "hypertension", "pregnan"),
+    "breath retention": ("hypertension", "high_blood_pressure", "heart",
+                         "cardiac", "epilep", "pregnan", "glaucoma"),
+}
+
+# What the line is replaced with when it is withheld — same intent, no
+# contraindication. A rest day that silently loses an item reads as an oversight.
+_PRACTICE_SUBSTITUTES = {
+    "kapalabhati": "Anulom Vilom (alternate nostril breathing, no retention) — 10 min",
+    "bhastrika": "Anulom Vilom (alternate nostril breathing, no retention) — 10 min",
+    "sun salutation": "Gentle joint-mobility sequence — 10 min, moving with the breath",
+    "vigorous": "Brisk walk — 30 min at a pace where talking takes effort but stays possible",
+    "breath retention": "Even-count breathing without retention — 10 min",
+}
+
+
+def _gate_practices(lines, conditions, is_pregnant):
+    """Withhold a restricted practice from the practitioner it is restricted for,
+    and put something equivalent in its place."""
+    tokens = {str(c).lower() for c in conditions if c}
+    if is_pregnant:
+        tokens.add("pregnancy")
+    if not tokens:
+        return list(lines)
+    out = []
+    for line in lines:
+        low = line.lower()
+        swapped = None
+        for practice, contra in _RESTRICTED_PRACTICE.items():
+            if practice not in low:
+                continue
+            if any(tok in uc or uc in tok for tok in contra for uc in tokens):
+                swapped = _PRACTICE_SUBSTITUTES[practice]
+                break
+        out.append(swapped or line)
+    return out
+
 
 _REST_DAY_RECOVERY = {
     "vata": {
@@ -2413,7 +2557,12 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
                    conditioning_pool=(), preferred_ids=(), variant=0,
                    loadable_first=False):
     if focus == "rest":
-        recovery = _REST_DAY_RECOVERY.get(dosha, _REST_DAY_RECOVERY["vata"])
+        recovery = dict(_REST_DAY_RECOVERY.get(dosha, _REST_DAY_RECOVERY["vata"]))
+        recovery["activities"] = _gate_practices(
+            recovery["activities"],
+            set(user_profile.get("medical_history") or [])
+            | set(user_profile.get("injuries_or_limitations") or []),
+            bool(user_profile.get("pregnancy_or_nursing")))
         return {
             "day": day_num, "day_name": day_name,
             "focus": "Rest & Recovery", "type": "recovery",
@@ -2448,6 +2597,19 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
                                   user_id, focus, day_num, week)
         if finisher:
             target = max(_MIN_EXERCISES, target - 1)
+
+    # The session's edges take the same restrictions its middle does. `avoid_tags`
+    # is rebuilt here rather than passed down, because `build_day_plan` is called
+    # directly by tests and by the holistic path, and a warm-up that is only safe
+    # when the caller remembers to say so is not safe.
+    edge_avoid = set(user_profile.get("injuries_or_limitations") or [])
+    edge_avoid |= _condition_contra_tags(user_profile.get("medical_history") or [])
+    edge_age = _age_group(user_profile.get("age"))
+    edge_bmi = _bmi_group(user_profile.get("bmi_category"))
+    if edge_age in ("senior", "youth"):
+        edge_avoid |= _AGE_AVOID_TAGS
+    withhold_impact = edge_bmi == "obese" or edge_age in ("senior", "youth")
+    is_pregnant = bool(user_profile.get("pregnancy_or_nursing"))
 
     pool = []
     for k in _focus_to_keys(focus):
@@ -2526,9 +2688,9 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         # cardio in it at all.
         "focus": _focus_label(focus, main_workout),
         "type": "cardio" if "cardio" in focus else "strength",
-        "warmup": _warmup_for(focus),
+        "warmup": _warmup_for(focus, edge_avoid, withhold_impact, is_pregnant),
         "main_workout": main_workout,
-        "cooldown": _cooldown_for(focus),
+        "cooldown": _cooldown_for(focus, edge_avoid, withhold_impact, is_pregnant),
         # What was BUILT, not what was asked for. The client shows this as the
         # session-length chip, and it used to echo the preference straight back —
         # so a 60-minute heading sat above 26 minutes of work. Same lesson the
@@ -2546,7 +2708,10 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
 
 # ── Ayurvedic tips ────────────────────────────────────────────────────────────
 
-def get_ayurvedic_tips(dosha):
+def get_ayurvedic_tips(dosha, conditions=(), is_pregnant=False):
+    """The Kapha tip prescribed Kapalabhati by name, to everybody. Same gate as
+    the rest day — the practice does not become safe because it is offered as a
+    tip rather than as an activity."""
     if dosha == "pitta":
         return {
             "best_time_to_workout": "Early morning or evening (avoid midday heat)",
@@ -2558,7 +2723,9 @@ def get_ayurvedic_tips(dosha):
         return {
             "best_time_to_workout": "6–10am (Kapha time — exercise fights morning heaviness)",
             "pre_workout": "Dry ginger tea; no heavy breakfast before workout",
-            "post_workout": "Stimulating pranayama (Kapalabhati), light protein meal",
+            "post_workout": _gate_practices(
+                ["Stimulating pranayama (Kapalabhati), light protein meal"],
+                conditions, is_pregnant)[0],
             "recovery": "Stay active on rest days — minimum 30-min walk; avoid napping after workout",
         }
     else:
@@ -2743,7 +2910,11 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         },
         "weekly_schedule": four_week_plan[0]["days"],
         "four_week_plan": four_week_plan,
-        "ayurvedic_tips": get_ayurvedic_tips(dominant_dosha),
+        "ayurvedic_tips": get_ayurvedic_tips(
+            dominant_dosha,
+            set(user_profile.get("medical_history") or [])
+            | set(user_profile.get("injuries_or_limitations") or []),
+            is_pregnant),
         "vyayama_shakti": _vyayama_shakti(dominant_dosha, user_profile.get("age"), strength_level),
         # The block's progression, as facts. The four weeks each carry a theme, a
         # prescription and the rule that moves it, and the main lifts they are
