@@ -83,6 +83,26 @@ Each feature is produced by a **deterministic, KB-grounded engine**, then option
 2. **Tier 2 — Per-feature engines** (`server/services/`): `gym_plan_engine`, `yoga_plan_engine`, `diet_plan_engine`, `panchakarma_engine`, `routine_engine`, `remedy_engine` (medicines + home remedies). Each builds a structured plan from the bundled JSON knowledge bases. Diet is **LLM-primary** (`diet_llm_generator`) with the rule engine as a fallback.
 3. **Tier 3 — LLM enrichers** (`server/services/*_enricher.py`): add narrative/coaching on top of the deterministic plan via the shared `llm_client`. RAG (`server/ai/rag_pipeline.py`) provides ChromaDB semantic context.
 
+#### Gym library: authored, not imported
+`data/knowledge_base/gym_exercises.json` is **generated** by
+`scripts/build_gym_library.py` from the curated spec in `scripts/gym_library/`
+(173 movements). Never hand-edit the JSON — `--check` and a test enforce that it
+matches the spec. `scripts/seed_gym_exercises.py` is a retired stub that refuses
+to run: it re-derived `category`, `level` and `mechanic` from substring matches
+on exercise names, and 23% of its rows contradicted their own upstream source.
+
+The library states what the engine used to infer from names — `role`, `mechanic`,
+`family`, `load_class`, `impact`, `skill_floor`, `movement_pattern`, `bucket`,
+`rep_style`, `canonical`, `coaching_cue`. `role` is the important one: only
+`main`/`accessory` may fill a working slot, which is what stops a stretch being
+prescribed as a set of eight. Upstream (`data/sources/free_exercise_db.json`) is
+a **muscle-list source only**. All instruction prose is authored in
+`scripts/gym_library/prose.py`: 89 of the 120 entries that reused upstream text
+carried a defect, including a dumbbell exercise whose steps told you to pick up a
+barbell and two that instructed holding your breath under load. Contraindications,
+pregnancy and dosha are authored per movement in `scripts/gym_library/clinical.py`,
+each with a stated mechanism — they differ from the old derived rules on 89 of 173.
+
 `routes/plans._generate_feature_via_engine` is the single entry point both the holistic and per-feature paths use — it runs the engine + enricher and applies pregnancy/safety gating. The per-feature endpoints (`POST /api/plans/{gym,yoga,diet,routine,panchakarma,remedies,medicines}`) return the plan **synchronously**. The holistic `POST /api/plans/generate` is offloaded to an **ARQ background worker** (`server/worker.py`) via Redis and returns a `job_id` to poll at `/api/plans/job/{jobId}`; if Redis/ARQ is unavailable it falls back to running the job in-process via FastAPI `BackgroundTasks`.
 
 ### Chat Agent (`server/ai/agents/health_agent.py`)

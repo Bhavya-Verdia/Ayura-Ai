@@ -110,6 +110,15 @@ def _exercise_rows():
         "muscle_group": _muscle_key(ex),
         "is_impact": "yes" if _is_impact(ex) else "",
         "contraindications": ", ".join(ex["contraindications"]),
+        # Which of them a person wrote, and which a mechanism rule produced. The
+        # reviewer should not have to treat both as equally settled.
+        # The reasoning, so the reviewer confirms a stated mechanism rather than
+        # reverse-engineering intent from a list of tags.
+        "why": ex.get("clinical_rationale", ""),
+        "basis": ex.get("clinical_basis", ""),
+        "what_a_rule_would_have_said": ", ".join(ex.get("contraindications_derived") or []),
+        "role": ex.get("role", ""),
+        "skill_floor": ex.get("skill_floor", ""),
         "pregnancy_safe": ex["pregnancy_safe"],
         "dosha_vata": ex["dosha_suitability"]["vata"],
         "dosha_pitta": ex["dosha_suitability"]["pitta"],
@@ -122,8 +131,8 @@ def _exercise_rows():
 
 
 def _write_csv(path, rows):
-    # lineterminator="\n": csv defaults to CRLF, but .gitattributes normalises the repo to
-    # LF, so the default made every regeneration show up as a diff of all 902 rows.
+    # lineterminator="\n": csv defaults to CRLF, but .gitattributes normalises the
+    # repo to LF, so the default made every regeneration a diff of every row.
     with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0]), lineterminator="\n")
         w.writeheader()

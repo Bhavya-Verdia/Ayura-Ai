@@ -1466,6 +1466,18 @@
   text-transform: capitalize;
 }
 
+/* The coaching cue reads as the coach talking, so it gets the weight the
+   modification note does not: upright, slightly stronger colour, and a rule down
+   the side to separate it from the mechanical text around it. */
+.gym-ex-cue {
+  font-size: 0.78rem;
+  color: var(--ayura-text);
+  margin: 0 0 0.35rem;
+  line-height: 1.45;
+  padding-left: 0.55rem;
+  border-left: 2px solid color-mix(in srgb, var(--ayura-accent) 55%, transparent);
+}
+
 .gym-ex-notes {
   font-size: 0.75rem;
   color: var(--ayura-muted);

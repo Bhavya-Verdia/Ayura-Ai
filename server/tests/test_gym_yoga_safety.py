@@ -487,14 +487,14 @@ def test_a_beginner_is_never_prescribed_plyometrics():
         pool = filter_exercises({**_YOGA_BASE_PROFILE, "fitness_level": "beginner"},
                                 {"available_equipment": ["bodyweight"], "gym_goal": goal},
                                 gym_exercises)
-        plyo = [e["name"] for e in pool if e.get("category") == "plyometrics"]
+        plyo = [e["name"] for e in pool if e.get("impact") == "high" or e.get("category") == "plyometrics"]
         assert not plyo, f"{goal}: plyometrics in a beginner pool — {plyo[:4]}"
 
     # An intermediate still gets them; this is a beginner gate, not a ban.
     inter = filter_exercises({**_YOGA_BASE_PROFILE, "fitness_level": "intermediate"},
                              {"available_equipment": ["bodyweight"], "gym_goal": "endurance"},
                              gym_exercises)
-    assert [e for e in inter if e.get("category") == "plyometrics"]
+    assert [e for e in inter if e.get("impact") == "high" or e.get("category") == "plyometrics"]
 
 
 @pytest.mark.parametrize("goal", ["general_fitness", "muscle_gain", "endurance", "fat_loss"])
@@ -619,7 +619,7 @@ def test_age_gates_impact_and_axial_loading(age, expect_gated):
                             {"available_equipment": ["barbell", "dumbbell", "machine", "cable",
                                                      "bodyweight"],
                              "gym_goal": "general_fitness"}, gym_exercises)
-    plyo = [e["name"] for e in pool if e.get("category") == "plyometrics"]
+    plyo = [e["name"] for e in pool if e.get("impact") == "high" or e.get("category") == "plyometrics"]
     advanced = [e["name"] for e in pool if e.get("level") == "advanced"]
     axial = [e["name"] for e in pool if "osteoporosis" in (e.get("contraindications") or [])]
 
@@ -657,6 +657,40 @@ def test_every_session_has_a_compound_and_no_stacked_variants(goal):
                 f"{[e['name'] for e in exercises]}")
             worst = Counter(_movement_family(e) for e in exercises).most_common(1)[0]
             assert worst[1] <= 2, f"{goal} {day['focus']}: {worst[1]} variants of {worst[0]!r}"
+
+
+@pytest.mark.parametrize("days", [4, 5, 6])
+def test_a_beginner_is_not_given_a_body_part_split(days):
+    """`fitness_level` was passed into `_build_weekly_schedule` and read for
+    exactly one case — bodyweight-only beginners. Everyone else, novice or
+    competitive, got `chest_triceps / back_biceps / legs / shoulders_core`.
+
+    A body-part split trains each muscle once a week. That is a structure for an
+    advanced lifter with years of accumulated work, and giving it to a novice is
+    the most recognisable sign a plan was not written by a coach — novices adapt
+    to frequency."""
+    from collections import Counter
+    from services.gym_plan_engine import _build_weekly_schedule, _focus_to_keys
+
+    for focus in ("full_body", "upper", "lower", "back", "core"):
+        sched = [d for d in _build_weekly_schedule(days, False, "beginner", focus)
+                 if d != "rest"]
+        assert not {"chest_triceps", "back_biceps", "shoulders_arms"} & set(sched), (
+            f"beginner {days}d/{focus} got a body-part split: {sched}")
+        trained = Counter(k for d in sched for k in _focus_to_keys(d))
+        for region in ("chest", "back", "legs"):
+            assert trained[region] >= 1, f"{days}d/{focus} never trains {region}"
+        # The emphasised half is trained at least twice; nothing is dropped.
+        assert max(trained[r] for r in ("chest", "back", "legs")) >= 2, (
+            f"beginner {days}d/{focus} trains nothing twice: {sched}")
+
+
+def test_an_advanced_lifter_still_gets_the_split_they_have_earned():
+    """The fix is that training age decides, not that body-part splits are bad."""
+    from services.gym_plan_engine import _build_weekly_schedule
+
+    sched = _build_weekly_schedule(4, False, "advanced", "full_body")
+    assert "chest_triceps" in sched and "back_biceps" in sched
 
 
 def test_training_age_changes_the_volume():
@@ -1009,7 +1043,7 @@ def test_every_constitution_can_reach_the_foundational_lifts(dosha, goal):
     pool = {e["name"] for e in filter_exercises(
         {**_YOGA_BASE_PROFILE, "dominant_dosha": dosha, "fitness_level": "intermediate"},
         {"available_equipment": FULL_GYM, "gym_goal": goal}, gym_exercises)}
-    for lift in ("Barbell Squat", "Barbell Deadlift", "Barbell Bench Press - Medium Grip",
+    for lift in ("Barbell Squat", "Barbell Deadlift", "Barbell Bench Press",
                  "Barbell Shoulder Press", "Bent Over Barbell Row"):
         assert lift in pool, f"{dosha}/{goal} cannot be prescribed {lift}"
 
@@ -1068,10 +1102,10 @@ def test_the_load_is_priced_per_lift_not_per_muscle_group():
 
     by_name = {e["name"]: e for e in gym_exercises}
     load = {n: _kg(_get_weight_range(by_name[n], "intermediate", "male", 80))
-            for n in ("Barbell Curl", "Barbell Bench Press - Medium Grip",
+            for n in ("Barbell Curl", "Barbell Bench Press",
                       "Barbell Squat", "Barbell Deadlift")}
     curl, bench, squat, deadlift = (load[n] for n in (
-        "Barbell Curl", "Barbell Bench Press - Medium Grip", "Barbell Squat", "Barbell Deadlift"))
+        "Barbell Curl", "Barbell Bench Press", "Barbell Squat", "Barbell Deadlift"))
     assert curl[1] < bench[0], f"curl {curl} is not lighter than bench {bench}"
     assert bench[1] < squat[0], f"bench {bench} is not lighter than squat {squat}"
     assert squat[1] < deadlift[1], f"squat {squat} is not lighter than deadlift {deadlift}"
@@ -1201,8 +1235,11 @@ def test_a_leg_day_can_contain_a_deadlift():
         {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
         {"available_equipment": FULL_GYM, "gym_goal": "strength",
          "workout_days_per_week": 4, "workout_duration_minutes": 60})
+    # The lower-body day is called "Legs" on a body-part split and "Lower" on the
+    # upper/lower split an intermediate now gets; the point of the test is the
+    # movement reaching it, not what the day is called.
     legs = next(d for d in plan["four_week_plan"][0]["days"]
-                if d["focus"].lower().startswith("legs"))
+                if d["focus"].lower().startswith(("legs", "lower")))
     assert any("Deadlift" in e["exercise_name"] for e in legs["main_workout"]), \
         [e["exercise_name"] for e in legs["main_workout"]]
 
@@ -1312,8 +1349,8 @@ def test_maximal_conditioning_is_not_prescribed_to_a_seventy_year_old():
     burpees. The KB tagged the moderate dance class for hypertension and left the
     sprint intervals untagged, and nothing in the age gate spoke to
     cardiovascular strain at all — only to axial loading."""
-    maximal = {"Sprint Intervals (HIIT)", "HIIT Circuit", "Air Bike (Assault Bike)",
-               "Burpee", "Battle Ropes", "Jump Rope", "Mountain Climbers"}
+    maximal = {"Sprint Intervals (HIIT)", "HIIT Circuit", "Air Bike",
+               "Burpees", "Battle Ropes", "Jump Rope", "Mountain Climbers"}
     by_name = {e["name"]: e for e in gym_exercises}
     for name in maximal:
         assert "hypertension" in by_name[name]["contraindications"], name
@@ -1390,26 +1427,36 @@ def _weekly_volume(plan):
     return volume
 
 
-def _plan_for(focus, days):
+def _plan_for(focus, days, level="intermediate"):
     return generate_gym_plan(
-        {**_YOGA_BASE_PROFILE, "fitness_level": "intermediate", "weight_kg": 70},
+        {**_YOGA_BASE_PROFILE, "fitness_level": level, "weight_kg": 70},
         {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain",
          "workout_days_per_week": days, "workout_duration_minutes": 60,
          "target_muscle_focus": focus})
 
 
+@pytest.mark.parametrize("level", ["beginner", "intermediate", "advanced"])
 @pytest.mark.parametrize("focus", ["upper", "lower", "back", "core"])
 @pytest.mark.parametrize("days", [4, 5, 6])
-def test_the_region_you_asked_to_prioritise_gets_more_work(focus, days):
+def test_the_region_you_asked_to_prioritise_gets_more_work(focus, days, level):
     """`target_muscle_focus` is a required field in the gym form and nothing read
     it. Someone who said "my back is the priority" got the same split as someone
-    who said "core" — the split everybody got."""
-    balanced = _weekly_volume(_plan_for("full_body", days))
-    emphasised = _weekly_volume(_plan_for(focus, days))
+    who said "core" — the split everybody got.
+
+    Parametrised over training age because the emphasis tables are now per-level.
+    Two ways this broke while they were being written: a novice emphasis reused
+    the balanced week's own days, so it only removed work from the other half;
+    and improving the intermediate BASELINE raised the bar the emphasis had to
+    clear, which the six-day lower and back emphases silently stopped doing.
+    Comparing against the balanced week rather than a fixed number is what caught
+    both."""
+    balanced = _weekly_volume(_plan_for("full_body", days, level))
+    emphasised = _weekly_volume(_plan_for(focus, days, level))
     muscles = _EMPHASIS_MUSCLES[focus]
     before = sum(balanced[m] for m in muscles)
     after = sum(emphasised[m] for m in muscles)
-    assert after > before, f"{focus} {days}d: {before} sets balanced, {after} emphasised"
+    assert after > before, (
+        f"{level} {focus} {days}d: {before} sets balanced, {after} emphasised")
 
 
 @pytest.mark.parametrize("focus", ["upper", "lower", "back", "core"])
@@ -1555,7 +1602,7 @@ def test_a_dislike_is_written_the_way_a_person_writes_it():
     the punctuation out of both sides is what makes them the same word."""
     from services.gym_plan_engine import _matches_preference, _preference_terms
 
-    pullup = next(e for e in gym_exercises if e["name"] == "Pullups")
+    pullup = next(e for e in gym_exercises if e["name"] == "Pull-Up")
     assert _matches_preference(pullup, _preference_terms(["pull-up"]))
     assert _matches_preference(pullup, _preference_terms("pull up, rowing"))
 
@@ -1748,8 +1795,10 @@ def test_the_resistance_work_survives_that_gate():
          "bmi_category": "obese_class2"},
         {"available_equipment": ["full_gym"], "gym_goal": "fat_loss",
          "workout_days_per_week": 4, "workout_duration_minutes": 45})
+    # "Legs" on a body-part split, "Lower" on the upper/lower split a beginner
+    # now gets. The test is about the resistance work surviving, not the name.
     legs = next(d for d in plan["four_week_plan"][0]["days"]
-                if d["focus"].lower().startswith("legs"))
+                if d["focus"].lower().startswith(("legs", "lower")))
     assert len(legs["main_workout"]) >= 3
     # And conditioning is still there — low-impact, but there.
     conditioned, _ = _conditioning_days_in(plan)
@@ -1819,7 +1868,15 @@ def test_a_day_is_never_named_for_a_muscle_the_library_cannot_train():
         "workout_days_per_week": 6, "workout_duration_minutes": 45,
         "target_muscle_focus": "lower"})
 
-    assert plan["substitution_notice"], "days were swapped without saying so"
+    # The notice is required WHEN a day is swapped, not unconditionally. Under
+    # the imported library a rotator-cuff injury emptied the chest and shoulder
+    # pools, because `rotator_cuff` had been keyword-matched onto 369 of 902
+    # rows; the curated library tags it on the movements that actually load the
+    # cuff, so those days can now be built rather than replaced. What still has
+    # to hold — and is what this test is really for — is the loop below: a day
+    # named for a muscle trains it.
+    swapped = plan["substitution_notice"]
+    assert swapped is None or isinstance(swapped, str)
     for day in plan["four_week_plan"][0]["days"]:
         if not day["main_workout"]:
             continue

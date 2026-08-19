@@ -396,6 +396,9 @@ export function GymView({ plan }) {
                                   {ex.weight_range}
                                 </div>
                               )}
+                              {ex.coaching_cue && (
+                                <p className="gym-ex-cue">{ex.coaching_cue}</p>
+                              )}
                               {ex.notes && <p className="gym-ex-notes">{ex.notes}</p>}
                               {ex.instructions?.length > 0 && (
                                 <>

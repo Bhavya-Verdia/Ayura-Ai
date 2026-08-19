@@ -194,11 +194,11 @@ def _gym_exercise_docs(ex: dict) -> list[dict]:
     """One exercise → programming, safety, and however many instruction chunks it needs.
 
     The corpus was built from `gym_routines.json`, ten legacy summaries, while
-    `gym_plan_engine` prescribes from `gym_exercises.json`, which holds 893 — and
-    six of those ten are not in the engine's file at all, so most of what RAG
-    could say about fitness described exercises no plan can contain. The same
-    split as yoga_plans/yoga_poses, in a domain nobody had rechecked after that
-    one was fixed.
+    `gym_plan_engine` prescribes from `gym_exercises.json` — and six of those ten
+    are not in the engine's file at all, so most of what RAG could say about
+    fitness described exercises no plan can contain. The same split as
+    yoga_plans/yoga_poses, in a domain nobody had rechecked after that one was
+    fixed. The engine's file is now the curated 173-movement library.
 
     Three documents for the reason the poses get two: a Barbell Squat's
     instructions alone run past four hundred words, and one blob would lose its
@@ -230,6 +230,12 @@ def _gym_exercise_docs(ex: dict) -> list[dict]:
         f"Kapha: {suitability.get('kapha', 'unrated')}." if suitability else "",
         f"Burns about {ex['calories_per_minute']} calories a minute."
         if ex.get("calories_per_minute") else "",
+        # The one line a coach would actually say about the movement. It is the
+        # most retrievable sentence in the entry and it did not exist before the
+        # library was authored.
+        f"Coaching cue: {ex['coaching_cue']}" if ex.get("coaching_cue") else "",
+        f"Movement pattern: {ex['movement_pattern']}, "
+        f"{ex.get('mechanic', '')}." if ex.get("movement_pattern") else "",
     ) if bit)
 
     safety = " ".join(bit for bit in (
@@ -239,6 +245,8 @@ def _gym_exercise_docs(ex: dict) -> list[dict]:
         f"Modification: {ex['modification']}" if ex.get("modification") else "",
         f"Safe in pregnancy: {'yes' if ex.get('pregnancy_safe') else 'no'}."
         if ex.get("pregnancy_safe") is not None else "",
+        f"Needs at least {ex['skill_floor']}-level ability to perform."
+        if ex.get("skill_floor") else "",
     ) if bit)
 
     # Joined with ". " rather than " " so chunk_text has sentence boundaries to
