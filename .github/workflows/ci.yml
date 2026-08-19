@@ -93,8 +93,30 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+      # `--with-deps` runs apt-get inside the runner, and that hung for the whole
+      # job on three consecutive runs of a pull request whose entire diff was one
+      # markdown file and one Python script — 15m17s, 15m15s, 15m16s, cancelled
+      # each time and surfaced as "Frontend — E2E (Playwright): fail".
+      #
+      # The system dependencies are already present on ubuntu-latest, so the apt
+      # step is split out, time-boxed, and allowed to fail without taking the job
+      # with it; the browser download is time-boxed and retried. A red check that
+      # means "the network stalled" is a check people learn to ignore, and an
+      # ignored check protects nothing.
+      - name: Install Playwright system dependencies
+        continue-on-error: true
+        timeout-minutes: 5
+        run: npx playwright install-deps chromium
+
+      - name: Install Playwright browser
+        timeout-minutes: 5
+        run: |
+          for attempt in 1 2 3; do
+            npx playwright install chromium && exit 0
+            echo "playwright install failed (attempt $attempt), retrying..."
+            sleep 10
+          done
+          exit 1
 
       - name: Run E2E tests
         # playwright.config.js auto-starts the Vite dev server; the specs mock
