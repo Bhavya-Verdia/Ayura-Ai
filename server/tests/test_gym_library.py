@@ -231,6 +231,41 @@ def test_a_healthy_practitioner_still_gets_the_practice():
         "kapha", {"hypertension"}, False)["post_workout"]
 
 
+@pytest.mark.parametrize("goal", ["muscle_gain", "strength", "fat_loss"])
+def test_the_quoted_load_agrees_with_the_note_printed_beside_it(goal):
+    """The load was computed once and printed under all four weeks, while each
+    week's note told the practitioner to change it: "Deload — reduce weight 15%"
+    sat directly above a number identical to week one's, and "add weight if form
+    is solid" above the same. The engine already knew which week was a deload.
+
+    Asserted as a relationship between weeks rather than as fixed numbers, so it
+    keeps working if the load model is recalibrated."""
+    from services.gym_plan_engine import generate_gym_plan
+
+    plan = generate_gym_plan(
+        {"id": "t", "age": 30, "gender": "male", "fitness_level": "intermediate",
+         "dominant_dosha": "pitta", "weight_kg": 80, "height": 178,
+         "bmi_category": "normal", "medical_history": []},
+        {"available_equipment": ["full_gym"], "gym_goal": goal,
+         "workout_days_per_week": 4, "workout_duration_minutes": 60})
+
+    def first_load(week):
+        day = next(d for d in week["days"] if d["type"] != "recovery")
+        for ex in day["main_workout"]:
+            text = ex.get("weight_range") or ""
+            if "kg" in text and "–" in text:
+                return float(text.split("–")[0])
+        return None
+
+    loads = [first_load(w) for w in plan["four_week_plan"]]
+    assert all(loads), f"{goal}: no quoted load to check"
+    deload = loads[3]
+    assert deload < loads[0], (
+        f"{goal}: week 4 says deload but quotes {deload} against week 1's {loads[0]}")
+    assert loads[2] >= loads[0], (
+        f"{goal}: week 3 is the peak but quotes less than week 1")
+
+
 def test_a_shoulder_restriction_is_honoured_under_either_name():
     """`rotator_cuff` and `shoulder_injury` are two names for one restriction and
     the engine treats them as separate tokens, so a rule emitting one and not the

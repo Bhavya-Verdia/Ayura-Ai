@@ -638,8 +638,35 @@ def _bodyweight_of(user_profile: dict, gender_key: str) -> float:
     return kg if 30 <= kg <= 250 else _DEFAULT_BODYWEIGHT[gender_key]
 
 
+# How the week's load relates to week one, matched to what each week's own note
+# tells the practitioner to do. Strength deloads 20% and the others 15%, which is
+# what those notes say; the peak week adds a little, which is what "add weight if
+# form is solid" means.
+#
+# Without this the quoted range was computed once and printed under all four
+# weeks — so the deload week's note said "reduce weight 15%" directly above a
+# number identical to week one's, and the peak week said "add weight" above the
+# same. The engine already knew which week was the deload; the load display was
+# simply never asked. Same fault as the session-length heading that echoed the
+# request back over a shorter session: the number on the card and the instruction
+# beside it were different products.
+_WEEK_LOAD_FACTOR = {
+    "strength":        (1.00, 1.05, 1.08, 0.80),
+    "muscle_gain":     (1.00, 1.00, 1.05, 0.85),
+    "fat_loss":        (1.00, 1.00, 1.00, 0.90),
+    "endurance":       (1.00, 1.00, 1.00, 0.90),
+    "general_fitness": (1.00, 1.00, 1.05, 0.90),
+}
+
+
+def _week_load_factor(scheme: str, week: int) -> float:
+    factors = _WEEK_LOAD_FACTOR.get(scheme, _WEEK_LOAD_FACTOR["general_fitness"])
+    return factors[min(max(week, 1), len(factors)) - 1]
+
+
 def _get_weight_range(ex: dict, strength_level: str, gender: str,
-                      bodyweight: float | None = None) -> str:
+                      bodyweight: float | None = None,
+                      week_factor: float = 1.0) -> str:
     """A starting load for THIS lift, at this bodyweight and this training age."""
     eq = (ex.get("equipment") or "bodyweight").lower()
     if (ex.get("category") or "").lower() == "cardio":
@@ -678,6 +705,7 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
     elif _UNILATERAL.search(ex.get("name", "")):
         load *= 0.5
 
+    load *= week_factor
     lo, hi = _round_load(load * 0.85), _round_load(load * 1.15)
     # Light isolation rounds to a single plate step and the range collapses —
     # "2–2 kg" reads as a defect rather than a starting point.
@@ -2669,7 +2697,8 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
             "rest_seconds": rest,
             "role": role,
             "role_label": _ROLE_LABEL.get(role, "Accessory"),
-            "weight_range": _get_weight_range(ex, strength_level, gender, bodyweight),
+            "weight_range": _get_weight_range(ex, strength_level, gender, bodyweight,
+                                              _week_load_factor(scheme, week)),
             "week_note": rx.get("note", ""),
             "notes": _modification_for(ex),
             # The one sentence a coach would say about the movement. It is the
