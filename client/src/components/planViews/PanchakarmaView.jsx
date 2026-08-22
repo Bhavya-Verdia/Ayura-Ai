@@ -115,6 +115,20 @@ export function PanchakarmaView({ plan }) {
         </div>
       )}
 
+      {/* ── Deferral ── the one finding that postpones the plan rather than
+          narrowing it. It sits above everything because it is an instruction not
+          to start, and a plan the patient reads first is a plan they may begin. */}
+      {cd.deferral && (
+        <div className="pk-deferral-banner">
+          <AlertTriangle size={16} className="pk-deferral-icon" />
+          <div className="pk-deferral-text">
+            <strong>Do not start yet — {cd.deferral.reason}</strong>
+            <p>{cd.deferral.notice}</p>
+            <p className="pk-deferral-resume"><strong>Resume when:</strong> {cd.deferral.resume_when}</p>
+          </div>
+        </div>
+      )}
+
       {/* ── Clinical Decision Header ── */}
       <div className="pk-decision-header">
         <div className="pk-header-top-row">
@@ -453,11 +467,16 @@ export function PanchakarmaView({ plan }) {
                 <div className="pk-day-num">Day {day.day}</div>
                 <div className="pk-day-phase">{(day.phase || '').split(' (')[0]}</div>
                 <div className="pk-day-therapies">
+                  {/* Deepana-Pachana and Brimhana are pinned day actions just as
+                      the Pradhana Karma is; rendering only the Karma variant dropped
+                      their instructions to a bare chip and lost the notes entirely. */}
                   {(day.therapies || []).map((t, i) =>
-                    t.is_pradhana_karma ? (
+                    (t.is_pradhana_karma || t.is_deepana_pachana || t.is_brimhana) ? (
                       <div key={i} className="pk-pradhana-action">
                         <div className="pk-pradhana-action-header">
-                          <Flame size={12} className="pk-pradhana-flame" />
+                          {t.is_brimhana
+                            ? <Sparkles size={12} className="pk-pradhana-flame" />
+                            : <Flame size={12} className="pk-pradhana-flame" />}
                           <span className="pk-pradhana-action-name">{t.name}</span>
                           {t.timing && <span className="pk-pradhana-timing">{t.timing}</span>}
                         </div>
@@ -466,8 +485,19 @@ export function PanchakarmaView({ plan }) {
                         )}
                       </div>
                     ) : (
-                      <span key={i} className="pk-therapy-chip">
-                        {t.name}{t.duration_minutes ? ` · ${t.duration_minutes}min` : ''}
+                      <span key={i} className="pk-therapy-chip-wrap">
+                        <span className={`pk-therapy-chip${t.cautions?.length ? ' pk-therapy-chip-caution' : ''}`}>
+                          {t.name}{t.duration_minutes ? ` · ${t.duration_minutes}min` : ''}
+                        </span>
+                        {/* A relative contraindication held in the engine and never
+                            printed is the same defect as one never checked — the
+                            patient does the therapy either way, without the
+                            modification that made it safe for them. */}
+                        {(t.cautions || []).map((c, j) => (
+                          <span key={j} className="pk-therapy-caution">
+                            <AlertTriangle size={11} /> {c.mechanism}
+                          </span>
+                        ))}
                       </span>
                     )
                   )}

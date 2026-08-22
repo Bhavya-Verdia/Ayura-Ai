@@ -7,9 +7,12 @@ from engine.condition_vocab import term_in_condition
 BASE_DIR = Path(__file__).resolve().parent.parent
 THERAPIES_PATH = BASE_DIR / "data" / "knowledge_base" / "panchakarma_therapies.json"
 PROTOCOLS_PATH = BASE_DIR / "data" / "knowledge_base" / "panchakarma_protocols.json"
+CLINICAL_PATH  = BASE_DIR / "data" / "knowledge_base" / "panchakarma_clinical.json"
 
 pk_therapies: list[dict] = []
 pk_protocols: dict = {}
+# The single contraindication source — see its `_meta.why_this_file_exists`.
+pk_clinical: dict = {}
 
 if THERAPIES_PATH.exists():
     with open(THERAPIES_PATH, "r", encoding="utf-8") as _f:
@@ -18,6 +21,10 @@ if THERAPIES_PATH.exists():
 if PROTOCOLS_PATH.exists():
     with open(PROTOCOLS_PATH, "r", encoding="utf-8") as _f:
         pk_protocols = json.load(_f)
+
+if CLINICAL_PATH.exists():
+    with open(CLINICAL_PATH, "r", encoding="utf-8") as _f:
+        pk_clinical = json.load(_f)
 
 
 # ── Ritu (Season) ─────────────────────────────────────────────────────────────
@@ -274,63 +281,70 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
     }
 
 
-# ── Per-Karma Safety Matrix ───────────────────────────────────────────────────
-# Classical absolute contraindications per Pradhana Karma.
-# "hard" = substitute to safer karma. "soft" = warn but allow with modification.
-_KARMA_CONTRAINDICATIONS: dict[str, dict[str, set[str]]] = {
-    "vamana": {
-        "hard": {
-            "epilepsy", "severe_cardiac", "heart_disease", "heart_failure",
-            "atrial_fibrillation", "bleeding_disorder", "hemophilia",
-            "esophageal", "hiatal_hernia", "abdominal_surgery_recent",
-        },
-        "soft": {
-            "hypertension",   # use very mild Madanaphala dose
-            "anxiety", "ptsd",  # psychological fragility — pre-Shodhana Sattvavajaya needed
-            "underweight",    # Atidurbala risk
-        },
-        "fallback": "nasya",  # substitute when hard contraindicated
-        "fallback_reason": "Vamana contraindicated — Pratimarsha Nasya + mild Virechana substituted",
-    },
-    "virechana": {
-        "hard": {
-            "ulcerative_colitis", "ibd_crohns", "rectal_bleeding",
-            "bleeding_disorder", "anemia", "hemorrhoids",
-            "liver_failure", "hepatitis_chronic",  # damaged liver can't handle purgatives
-        },
-        "soft": {
-            "liver_disease", "fatty_liver",   # use very mild Triphala only
-            "hypertension",                   # avoid strong purgatives
-            "diabetes_type1",                 # monitor glucose carefully
-        },
-        "fallback": "basti",
-        "fallback_reason": "Virechana contraindicated — Basti (enema route) substituted to avoid GI stress",
-    },
-    "basti": {
-        "hard": {
-            "active_fever", "rectal_bleeding", "ulcerative_colitis",
-            "ibd_crohns", "rectal_prolapse", "severe_ascites",
-        },
-        "soft": {
-            "diabetes_type1",           # monitor glucose; use oil Anuvasana only
-            "chronic_kidney_disease",   # Matra Basti only — avoid Niruha
-        },
-        "fallback": "nasya",
-        "fallback_reason": "Basti contraindicated — Nasya + Shamana substituted",
-    },
-    "nasya": {
-        "hard": set(),  # very few absolute contraindications
-        "soft": {"acute_sinusitis", "active_fever"},
-        "fallback": "nasya",
-        "fallback_reason": "",
-    },
-    "raktamokshana": {
-        "hard": {"anemia", "bleeding_disorder", "hemophilia", "anticoagulants"},
-        "soft": {"hypertension"},
-        "fallback": "virechana",
-        "fallback_reason": "Raktamokshana contraindicated — Virechana (blood-purifying Tikta Ghrita) substituted",
-    },
+# Per-Karma contraindications now come from `panchakarma_clinical.json`, which is
+# the single source. There used to be two — the prose absolutes in
+# `panchakarma_protocols.json` and a hardcoded dict here — and they disagreed:
+# the dict omitted Manda Agni, Rajayakshma and active diarrhoea for Virechana,
+# omitted children under 12, severe hypertension and Atidurbala for Vamana, omitted
+# first-trimester pregnancy and extreme emaciation for Basti, and promoted
+# haemorrhoids to hard when the KB marks it relative — silently substituting Basti,
+# the worse choice for haemorrhoids, for a patient who only needed a milder dose.
+# Neither could be corrected without the other drifting.
+_KARMA_FALLBACK: dict[str, tuple[str, str]] = {
+    "vamana":        ("nasya",     "Vamana contraindicated — Pratimarsha Nasya + mild Virechana substituted"),
+    "virechana":     ("basti",     "Virechana contraindicated — Basti (enema route) substituted to avoid GI stress"),
+    "basti":         ("nasya",     "Basti contraindicated — Nasya + Shamana substituted"),
+    "nasya":         ("nasya",     ""),
+    "raktamokshana": ("virechana", "Raktamokshana contraindicated — Virechana (blood-purifying Tikta Ghrita) substituted"),
 }
+
+
+def _karma_contraindications(karma_key: str) -> dict:
+    """hard/soft token→mechanism maps for one Pradhana Karma, plus its fallback."""
+    entry = pk_clinical.get("pradhana_karma", {}).get(karma_key, {})
+    fallback, reason = _KARMA_FALLBACK.get(karma_key, ("nasya", "Therapy substituted due to contraindication"))
+    return {
+        "hard": entry.get("hard", {}),
+        "soft": entry.get("soft", {}),
+        "fallback": fallback,
+        "fallback_reason": reason,
+    }
+
+
+def _therapy_contraindications(therapy_id: str) -> dict:
+    """hard/soft maps for one therapy row, resolving `inherits` and `inherits_karma`.
+
+    Fifteen of the twenty-three therapy rows carried no contraindications at all —
+    Swedana, Abhyanga, Shirodhara and Udvartana among them — and the eight that did
+    were never read by any code. Inheritance keeps the clinic and home variants of a
+    procedure from drifting apart, which is how `virechana_home` came to carry none
+    while `virechana_clinic` carried two.
+    """
+    entry = pk_clinical.get("therapies", {}).get(therapy_id) or {}
+    hard: dict = {}
+    soft: dict = {}
+
+    if parent := entry.get("inherits"):
+        inherited = _therapy_contraindications(parent)
+        hard.update(inherited["hard"])
+        soft.update(inherited["soft"])
+    if karma := entry.get("inherits_karma"):
+        inherited = _karma_contraindications(karma)
+        hard.update(inherited["hard"])
+        soft.update(inherited["soft"])
+
+    hard.update(entry.get("hard") or {})
+    soft.update(entry.get("soft") or {})
+
+    # An override to null lifts an inherited bar for a genuinely different procedure:
+    # Pratimarsha Nasya is two drops of plain oil and is the one nasal route the
+    # pregnancy matrix lists as ALLOWED, so it must not inherit Navana Nasya's bar.
+    for term, value in (entry.get("overrides") or {}).items():
+        if value is None:
+            hard.pop(term, None)
+            soft.pop(term, None)
+
+    return {"hard": hard, "soft": soft}
 
 
 # The Brimhana routes — the only Pradhana Karma a depleted patient may receive.
@@ -374,6 +388,22 @@ def _restrict_to_brimhana(pradhana: dict, eligibility: dict) -> tuple[dict, list
     )
 
 
+def _match_contraindications(medical_history: list[str], terms: dict) -> list[tuple[str, str]]:
+    """(patient condition, stated mechanism) for every term that matches.
+
+    The mechanism travels with the match because "CAUTION: diabetes — modify dose
+    per Vaidya guidance" tells a patient nothing about what to modify or why. Every
+    term in `panchakarma_clinical.json` carries the reason it is there.
+    """
+    hits: list[tuple[str, str]] = []
+    for condition in medical_history:
+        for term, mechanism in terms.items():
+            if term_in_condition(condition, term):
+                hits.append((condition, mechanism))
+                break
+    return hits
+
+
 def _validate_karma_safety(pradhana: dict, medical_history: list[str]) -> dict:
     """
     Post-selection safety gate: checks if chosen Pradhana Karma is contraindicated
@@ -382,38 +412,88 @@ def _validate_karma_safety(pradhana: dict, medical_history: list[str]) -> dict:
     """
     primary = pradhana.get("primary", "virechana")
     karma_key = "basti" if primary == "basti_matra" else primary
-    contra = _KARMA_CONTRAINDICATIONS.get(karma_key, {})
-    hard_set = contra.get("hard", set())
-    soft_set = contra.get("soft", set())
+    contra = _karma_contraindications(karma_key)
 
-    hard_flagged = [m for m in medical_history if any(term_in_condition(m, k) for k in hard_set)]
-    soft_flagged = [m for m in medical_history if any(term_in_condition(m, k) for k in soft_set)]
+    hard_hits = _match_contraindications(medical_history, contra["hard"])
+    soft_hits = _match_contraindications(medical_history, contra["soft"])
 
     warnings: list[str] = []
 
-    if hard_flagged:
-        fallback = contra.get("fallback", "nasya")
-        fallback_reason = contra.get("fallback_reason", "Therapy substituted due to contraindication")
+    if hard_hits:
         old_primary = pradhana["primary"]
-        pradhana = {
-            **pradhana,
-            "primary": fallback,
-            "reason": (
-                f"⚠ {old_primary.title()} CONTRAINDICATED: {', '.join(hard_flagged)}. "
-                f"{fallback_reason}."
-            ),
-            "safety_substitution": True,
-            "original_karma": old_primary,
-        }
-        warnings.append(
-            f"SAFETY SUBSTITUTION: {old_primary} → {fallback} "
-            f"(contraindicated by: {', '.join(hard_flagged)})"
-        )
+        flagged = [c for c, _ in hard_hits]
 
-    if soft_flagged:
-        warnings.append(
-            f"CAUTION: {', '.join(soft_flagged)} — modify dose/protocol per Vaidya guidance"
-        )
+        # The fallback has to be checked too. Ulcerative colitis is a hard
+        # contraindication for BOTH Virechana and Basti, and the substitution was
+        # a single unchecked hop: the engine withdrew the purgative and handed the
+        # same patient an enema, reporting it as a safety substitution. Walk the
+        # chain until something is actually safe, or admit that nothing is.
+        chosen, chain = None, [contra["fallback"]]
+        for candidate in (contra["fallback"], "nasya", "basti_matra"):
+            key = "basti" if candidate == "basti_matra" else candidate
+            if candidate == old_primary:
+                continue
+            if not _match_contraindications(
+                medical_history, _karma_contraindications(key)["hard"]
+            ):
+                chosen = candidate
+                break
+            if candidate not in chain:
+                chain.append(candidate)
+
+        if chosen is None:
+            # No Karma is safe for this patient. Returning primary=None routes the
+            # plan to the Shamana arm rather than picking the least-bad expulsion.
+            pradhana = {
+                **pradhana,
+                "primary": None,
+                "reason": (
+                    f"⚠ No Pradhana Karma is safe with {', '.join(flagged)}. "
+                    f"Every route ({', '.join(chain)}) is contraindicated. Shamana only."
+                ),
+                "safety_substitution": True,
+                "original_karma": old_primary,
+                "contraindication_mechanisms": [
+                    {"condition": c, "mechanism": m} for c, m in hard_hits
+                ],
+            }
+            warnings.append(
+                f"NO SAFE KARMA: every Pradhana route is contraindicated by "
+                f"{', '.join(flagged)} — plan falls back to Shamana"
+            )
+        else:
+            fallback_reason = (
+                _karma_contraindications(
+                    "basti" if old_primary == "basti_matra" else old_primary
+                )["fallback_reason"]
+                if chosen == contra["fallback"]
+                else f"{chosen.replace('_', ' ').title()} substituted — the usual fallback is contraindicated too"
+            ) or "Therapy substituted due to contraindication"
+            pradhana = {
+                **pradhana,
+                "primary": chosen,
+                "reason": (
+                    f"⚠ {old_primary.title()} CONTRAINDICATED: {', '.join(flagged)}. "
+                    f"{fallback_reason}."
+                ),
+                "safety_substitution": True,
+                "original_karma": old_primary,
+                "contraindication_mechanisms": [
+                    {"condition": c, "mechanism": m} for c, m in hard_hits
+                ],
+            }
+            warnings.append(
+                f"SAFETY SUBSTITUTION: {old_primary} → {chosen} "
+                f"(contraindicated by: {', '.join(flagged)})"
+            )
+        warnings += [f"{c}: {m}" for c, m in hard_hits if m]
+
+    if soft_hits:
+        warnings += [
+            f"CAUTION — {c}: {m}" if m
+            else f"CAUTION: {c} — modify dose/protocol per Vaidya guidance"
+            for c, m in soft_hits
+        ]
 
     return pradhana, warnings
 
@@ -786,6 +866,23 @@ def _brimhana_action(vikriti_dom: str, aushadha: dict) -> dict:
     }
 
 
+def _therapy_row(t: dict) -> dict:
+    """The shape a therapy takes on a scheduled day.
+
+    `cautions` is carried through deliberately. A relative contraindication that
+    stays in the engine and never reaches the day is the same defect as one that
+    was never checked — the patient does the therapy either way, without the
+    modification that made it safe for them.
+    """
+    row = {
+        "id": t["id"], "name": t["name"],
+        "duration_minutes": t["duration_minutes"], "benefits": t["benefits"],
+    }
+    if t.get("cautions"):
+        row["cautions"] = t["cautions"]
+    return row
+
+
 def _assemble_rotating_phase(pool, target_days, start_day, phase_name, pinned=None):
     """Lay a therapy pool across a phase, rotating so consecutive days differ.
 
@@ -802,17 +899,9 @@ def _assemble_rotating_phase(pool, target_days, start_day, phase_name, pinned=No
         if pinned:
             therapies.append(pinned)
         if pool:
-            primary = pool[i % len(pool)]
-            therapies.append({
-                "id": primary["id"], "name": primary["name"],
-                "duration_minutes": primary["duration_minutes"], "benefits": primary["benefits"],
-            })
+            therapies.append(_therapy_row(pool[i % len(pool)]))
             if len(pool) > 1:
-                secondary = pool[(i + 1) % len(pool)]
-                therapies.append({
-                    "id": secondary["id"], "name": secondary["name"],
-                    "duration_minutes": secondary["duration_minutes"], "benefits": secondary["benefits"],
-                })
+                therapies.append(_therapy_row(pool[(i + 1) % len(pool)]))
         schedule.append({"day": start_day + i, "phase": phase_name, "therapies": therapies})
     return schedule
 
@@ -954,6 +1043,33 @@ def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list,
 
     max_dur = 15 if "15" in time_str else 60 if "1" in time_str else 120 if "2" in time_str else 30
 
+    # Every filter above this line is a preference filter — setting, experience,
+    # herb access, diet adherence, time. Until this gate there was not one clinical
+    # filter in pool selection at all: a hypertensive diabetic and a healthy athlete
+    # received the same therapy pool, and the `contraindications` field the KB rows
+    # carry was read by no code.
+    # The gate matches against `medical_history`, but several of the states that
+    # contraindicate a therapy are not conditions a user types — they are things
+    # the engine derived. Snehapana's bar on high Ama, Swedana's on Pitta and
+    # Udvartana's Vata caution could never have fired against a history list, so
+    # they are supplied here as findings alongside it.
+    medical_history = list(user_profile.get("medical_history") or [])
+    if user_profile.get("pregnancy_or_nursing"):
+        medical_history.append("pregnancy")
+    if (user_profile.get("ama_indicator") or "none") in ("high", "severe"):
+        medical_history.append("high_ama")
+    _agni = _AGNI_CANON.get(
+        str(user_profile.get("agni_type")
+            or _derive_agni(user_profile.get("digestion_quality"), dominant)).lower(),
+        "sama",
+    )
+    if _agni == "manda":
+        medical_history.append("manda_agni")
+    if dominant in ("vata", "pitta", "kapha"):
+        medical_history.append(f"{dominant}_aggravation")
+    if (user_profile.get("age") or 30) > 70:
+        medical_history.append("elderly")
+
     for t in pk_therapies_list:
         if t["phase"] != phase:
             continue
@@ -966,8 +1082,22 @@ def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list,
         if diet_ab == "partial" and t["diet_strictness"] == "strict": continue
         if t["duration_minutes"] > max_dur and setting != "clinic": continue
 
+        contra = _therapy_contraindications(t["id"])
+        if _match_contraindications(medical_history, contra["hard"]):
+            continue
+
+        soft_hits = _match_contraindications(medical_history, contra["soft"])
+        if soft_hits:
+            # The therapy stays, but never silently: the modification is attached
+            # to the row so the schedule can print it beside the therapy name.
+            t = {**t, "cautions": [{"condition": c, "mechanism": m} for c, m in soft_hits]}
+
         de = t.get("dosha_effect", {}).get(dominant, 0)
         score = 2 if de == -1 else 1 if de == 0 else -2
+        # A therapy carrying cautions ranks below an equally-suitable one that does
+        # not, so the pool prefers the option needing no modification.
+        if soft_hits:
+            score -= 1
         scored.append((score, t))
 
     scored.sort(key=lambda x: x[0], reverse=True)
@@ -1105,15 +1235,9 @@ def assemble_phase(pool, target_days, start_day, phase_name):
     secondary = pool[1] if len(pool) > 1 else None
     schedule  = []
     for i in range(target_days):
-        day_therapies = [{
-            "id": primary["id"], "name": primary["name"],
-            "duration_minutes": primary["duration_minutes"], "benefits": primary["benefits"],
-        }]
+        day_therapies = [_therapy_row(primary)]
         if secondary and i % 2 == 0:
-            day_therapies.append({
-                "id": secondary["id"], "name": secondary["name"],
-                "duration_minutes": secondary["duration_minutes"], "benefits": secondary["benefits"],
-            })
+            day_therapies.append(_therapy_row(secondary))
         schedule.append({"day": start_day + i, "phase": phase_name, "therapies": day_therapies})
     return schedule
 
@@ -1207,6 +1331,31 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
 
     is_shamana = eligibility.get("type") == "shamana"
 
+    # `contraindication_matrix.acute_fever` is the one row whose "allowed" list is
+    # not a therapy: "nothing — wait for fever to resolve completely". Every other
+    # finding narrows the plan; this one postpones it. Handing a febrile patient a
+    # seven-day schedule answers a question they should not be asking yet, so the
+    # plan is still produced — it is what to do afterwards — behind a notice saying
+    # not to start.
+    deferral = None
+    _fever_hits = [
+        c for c in medical_history
+        if any(term_in_condition(c, t) for t in ("active_fever", "fever", "jwara"))
+    ]
+    if _fever_hits:
+        deferral = {
+            "reason": f"Active fever ({', '.join(_fever_hits)})",
+            "notice": (
+                "Do not begin this plan while the fever is present. Panchakarma during Jwara "
+                "drives the Dosha inward and worsens the illness — the classical instruction is "
+                "to wait rather than to substitute something milder. Start once the fever has "
+                "fully resolved and appetite has returned, and re-generate the plan then: the "
+                "assessment below reflects your profile during an acute illness."
+            ),
+            "resume_when": "Fever fully resolved, appetite returned, no residual weakness.",
+            "source": "contraindication_matrix.acute_fever — blocked: all_shodhana",
+        }
+
     # Mridu Shodhana takes the home-adaptation branch wherever the patient is.
     # A Manda Bala patient who books a clinic is still a Manda Bala patient: the
     # verdict has to reach Karma selection, Basti subtype AND drug strength, or
@@ -1235,6 +1384,21 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         # Safety gate: substitute karma if hard contraindicated by medical history
         pradhana, karma_warnings = _validate_karma_safety(pradhana, medical_history)
         safety_warnings += karma_warnings
+
+        # The gate can conclude that no Karma is safe for this patient. That is a
+        # Shamana verdict arrived at from the other direction, and it has to reach
+        # the plan the same way — otherwise the schedule is built for a Karma of None.
+        if pradhana["primary"] is None:
+            is_shamana = True
+            no_karma_reason = pradhana["reason"].lstrip("⚠ ")
+            eligibility = {
+                **eligibility,
+                "type": "shamana",
+                "shodhana_eligible": False,
+                "clinically_ineligible": True,
+                "reasons": [*eligibility.get("reasons", []), no_karma_reason],
+                "blocking_reasons": [*eligibility.get("blocking_reasons", []), no_karma_reason],
+            }
 
     if severe_unmapped:
         safety_warnings.append(
@@ -1417,6 +1581,7 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             "pradhana_karma_selected": pradhana,
             "basti_subtype":          basti_info,
             "safety_warnings":        safety_warnings,
+            "deferral":               deferral,
             "unmapped_conditions":    unmapped_conditions,
             "vaidya_review_required": vaidya_review_required,
         },
