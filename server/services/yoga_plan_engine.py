@@ -1,6 +1,7 @@
 import json
 import hashlib
 import random
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -214,7 +215,7 @@ def _build_surya_namaskar_block(user_profile: dict, yoga_prefs: dict,
 
     # Hard contraindications — for seniors use only user-specific medical contra tags
     # (age-appended tags like _AGE_SENIOR_CONTRA are handled via chair modification, not by blocking)
-    sns_contra_check = _build_contra_set(user_profile, "adult") if age_group == "senior" else contra_tags
+    sns_contra_check = _build_contra_set(user_profile, "adult", yoga_prefs) if age_group == "senior" else contra_tags
     if sns_contra_check.intersection(_SNS_CONTRAINDICATION_TAGS):
         return None
 
@@ -924,10 +925,72 @@ _SYMPTOM_CATEGORY_BOOST: dict[str, list[str]] = {
 }
 
 
-def _build_contra_set(user_profile: dict, age_group: str = "adult") -> set:
+# The free-text limitation box. `physical_limitations_detail` is a yoga *preference*
+# — "frozen shoulder, cannot raise left arm" typed by the user — and until now it was
+# collected, stored, and read by no code at all. `injuries_or_limitations` on the
+# profile went through the maps below; the sentence the user actually wrote did not.
+#
+# It is folded into the same injury list rather than given a parallel path, because
+# the maps already match by substring and a typed "shoulder" should exclude exactly
+# what a picked "shoulder" excludes.
+# Words people type for injuries the maps already know under a different name.
+# Only unambiguous ones: "ACL" is a knee, "rotator cuff" is a shoulder. Vague terms
+# like "surgery" or "pain everywhere" are deliberately absent — they should fall
+# through to `unmatched_limitations` and be shown to the user, not guessed at.
+_LIMITATION_ALIASES = {
+    "acl": "knee", "mcl": "knee", "meniscus": "knee", "patella": "knee", "kneecap": "knee",
+    "rotator cuff": "shoulder", "frozen shoulder": "shoulder", "impingement": "shoulder",
+    "sciatica": "lower_back", "slipped disc": "lower_back", "herniated disc": "lower_back",
+    "lumbar": "lower_back", "disc": "lower_back",
+    "carpal tunnel": "wrist", "cervical": "neck", "whiplash": "neck",
+    "plantar": "ankle", "achilles": "ankle", "sprained ankle": "ankle",
+    "sacroiliac": "hip", "si joint": "hip", "labral": "hip",
+}
+
+
+def _expand_aliases(term: str) -> str:
+    """Append the canonical injury word so the substring maps can see it."""
+    low = term.lower()
+    extra = [v for k, v in _LIMITATION_ALIASES.items() if k in low]
+    return f"{term} {' '.join(extra)}" if extra else term
+
+
+def _limitation_terms(user_profile: dict, yoga_prefs: dict | None) -> list[str]:
+    terms = list(user_profile.get("injuries_or_limitations") or [])
+    detail = (yoga_prefs or {}).get("physical_limitations_detail")
+    if detail:
+        # Split on the separators people actually type, so "frozen shoulder, cannot
+        # raise left arm" is two phrases rather than one string that matches nothing.
+        for part in re.split(r"[,;/]|\band\b|\n", str(detail)):
+            part = part.strip()
+            if part:
+                terms.append(_expand_aliases(part))
+    return terms
+
+
+def unmatched_limitations(user_profile: dict, yoga_prefs: dict | None) -> list[str]:
+    """Typed limitations that matched no injury the engine knows how to act on.
+
+    Silence here would be the worst outcome: the user has told us about an injury in
+    their own words and every filter passed it by, exactly as an unmapped condition
+    passes a contraindication gate. The plan says so instead of implying it was read.
+    """
+    known = set(_INJURY_CONTRA_MAP) | set(_INJURY_RISK_TAGS) | set(_LIMITATION_ALIASES)
+    unmatched = []
+    detail = (yoga_prefs or {}).get("physical_limitations_detail")
+    if not detail:
+        return unmatched
+    for part in re.split(r"[,;/]|\band\b|\n", str(detail)):
+        part = part.strip()
+        if part and not any(k in part.lower() for k in known):
+            unmatched.append(part)
+    return unmatched
+
+
+def _build_contra_set(user_profile: dict, age_group: str = "adult", yoga_prefs: dict | None = None) -> set:
     contra = set()
 
-    for inj in (user_profile.get("injuries_or_limitations") or []):
+    for inj in _limitation_terms(user_profile, yoga_prefs):
         key = inj.lower()
         for k, tags in _INJURY_CONTRA_MAP.items():
             if k in key:
@@ -946,7 +1009,7 @@ def _build_contra_set(user_profile: dict, age_group: str = "adult") -> set:
     return contra
 
 
-def _build_risk_set(user_profile: dict, age_group: str = "adult") -> set:
+def _build_risk_set(user_profile: dict, age_group: str = "adult", yoga_prefs: dict | None = None) -> set:
     """Pose mechanisms this user must avoid, derived from conditions and injuries."""
     risks: set[str] = set()
 
@@ -956,7 +1019,7 @@ def _build_risk_set(user_profile: dict, age_group: str = "adult") -> set:
             if k in key:
                 risks.update(tags)
 
-    for inj in (user_profile.get("injuries_or_limitations") or []):
+    for inj in _limitation_terms(user_profile, yoga_prefs):
         key = str(inj).lower()
         for k, tags in _INJURY_RISK_TAGS.items():
             if k in key:
@@ -1067,9 +1130,19 @@ def filter_poses(user_profile, yoga_prefs, poses, max_allowed_levels=None, proto
     elif age_group == "youth":
         allowed_levels = [l for l in allowed_levels if l != "advanced"]
 
+    # `flexibility_level` was collected and read by nothing. It is a real constraint
+    # independent of experience — an experienced but stiff practitioner should not be
+    # given deep forward folds — but the pose KB has no flexibility dimension, only
+    # `level`. So `level` is used as an explicit PROXY, and only in the restricting
+    # direction: low flexibility drops the top tier, high flexibility does NOT unlock
+    # one. Expanding what a user is offered on the strength of a proxy would be
+    # adding risk on a guess, which is not a trade this engine should make.
+    if (yoga_prefs.get("flexibility_level") or "moderate").lower() == "low" and len(allowed_levels) > 1:
+        allowed_levels = [level for level in allowed_levels if level != allowed_levels[-1]] or [allowed_levels[0]]
+
     is_pregnant, _is_nursing, trimester = _pregnancy_state(user_profile)
-    contra_tags = _build_contra_set(user_profile, age_group)
-    risk_tags = _build_risk_set(user_profile, age_group)
+    contra_tags = _build_contra_set(user_profile, age_group, yoga_prefs)
+    risk_tags = _build_risk_set(user_profile, age_group, yoga_prefs)
     if is_pregnant:
         risk_tags |= _TRIMESTER_RISK_TAGS[trimester]
     blocked_categories = _TRIMESTER_BLOCKED_CATEGORIES[trimester] if is_pregnant else set()
@@ -3013,7 +3086,7 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
         prog_levels = {1: ["beginner"], 2: ["beginner"], 3: ["beginner"], 4: ["beginner"]}
 
     # Build contra set once (reused by Surya Namaskar checker)
-    user_contra_tags = _build_contra_set(user_profile, age_group)
+    user_contra_tags = _build_contra_set(user_profile, age_group, yoga_prefs)
 
     # Filter and score the full pose pool once
     filtered_poses = filter_poses(user_profile, yoga_prefs, yp,
@@ -3154,6 +3227,7 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
     # When a condition decided the third breath, say so. Otherwise the plan
     # quietly serves a technique the practitioner never asked for next to two
     # they did, and the reason lives only in the code.
+    _unmatched_limits = unmatched_limitations(user_profile, yoga_prefs)
     _prana_protocol_note = None
     if _prana_protocol_id:
         _proto_names = [p["protocol_name"] for p in active_protocols if p.get("protocol_name")]
@@ -3346,6 +3420,25 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
         "pranayama_safety_exclusions": _prana_exclusions or None,
         "pranayama_cooling_note": _prana_cooling_note,
         "pranayama_protocol_note": _prana_protocol_note,
+        # Free-text limitations the injury vocabulary could not act on. Silence here
+        # would be the worst outcome: the user described an injury in their own words
+        # and every filter passed it by, exactly as an unmapped condition passes a
+        # contraindication gate. The plan says which words it could not use.
+        "unrecognised_limitations": (
+            {
+                "phrases": _unmatched_limits,
+                "notice": (
+                    "You told us about: "
+                    + "; ".join(_unmatched_limits)
+                    + ". This plan could not act on that — no pose was excluded for it. "
+                    "Poses were filtered for everything else you recorded. Check the "
+                    "sequence with a teacher before practising, or re-enter the "
+                    "limitation using a body part (knee, shoulder, wrist, neck, "
+                    "lower back, hip, ankle) so the filter can apply it."
+                ),
+            }
+            if _unmatched_limits else None
+        ),
         "disclaimer":         disclaimer,
         "enriched":           False,
     }

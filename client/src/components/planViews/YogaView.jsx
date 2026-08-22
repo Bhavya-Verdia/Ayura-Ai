@@ -248,6 +248,16 @@ export function YogaView({ plan: planProp }) {
         </div>
       )}
 
+      {/* A limitation the user typed that no filter could act on. It sits with the
+          pool notice rather than lower down because it changes whether the sequence
+          below is safe for them, and a plan they scroll past is a plan they practise. */}
+      {plan.unrecognised_limitations && (
+        <div className="yoga-pool-notice yoga-unrecognised-notice">
+          <AlertTriangle size={12} />
+          <span>{plan.unrecognised_limitations.notice}</span>
+        </div>
+      )}
+
       {/* ── Vitals bar ── */}
       <div className="yoga-vitals">
         {goalLabel && (
