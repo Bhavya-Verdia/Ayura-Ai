@@ -757,7 +757,16 @@ def _select_aushadha(
 # ── Samsarjana Krama ──────────────────────────────────────────────────────────
 
 def _samsarjana_krama(pradhana_karma: str, protocols: dict) -> list[dict]:
-    """Post-PK dietary re-entry stages — different per Pradhana Karma type."""
+    """Post-PK dietary re-entry stages — different per Pradhana Karma type.
+
+    Nasya and Raktamokshana get none. Samsarjana Krama exists to rekindle an Agni
+    left weak by an emptied Koshtha; neither of those empties one, and the
+    post-Virechana ladder that used to be the catch-all opens with "Laja Peya —
+    replaces fluids lost in purgation". Handed to a patient whose Virechana had just
+    been withheld for low Ojas, that described a procedure they had specifically not
+    undergone, and put them on a hypocaloric ladder for the depletion it was meant
+    to protect them from.
+    """
     sk = protocols.get("paschat_karma", {}).get("samsarjana_krama", {})
     if pradhana_karma == "vamana":
         return sk.get("post_vamana", {}).get("stages", [])
@@ -765,7 +774,7 @@ def _samsarjana_krama(pradhana_karma: str, protocols: dict) -> list[dict]:
         return sk.get("post_virechana", {}).get("stages", [])
     if pradhana_karma in ("basti", "basti_matra"):
         return sk.get("post_basti", {}).get("post_course", [])
-    return sk.get("post_virechana", {}).get("stages", [])
+    return []
 
 
 # ── Shamana (Palliative) Protocol ─────────────────────────────────────────────
@@ -866,8 +875,301 @@ def _brimhana_action(vikriti_dom: str, aushadha: dict) -> dict:
     }
 
 
-def _therapy_row(t: dict) -> dict:
+# ── Goal ──────────────────────────────────────────────────────────────────────
+# `panchakarma_goal` is offered in the UI, validated by the schema, echoed into
+# `user_summary` — and was read by no engine code. Picking "Stress Relief" instead
+# of "Weight Loss" changed nothing about the plan produced.
+#
+# Each goal moves something the classical texts would move for that aim: which
+# therapies the pool prefers, how long the in-plan Rasayana tail runs, and for a
+# seasonal cleanse, whether the Karma follows the Vikriti or the Ritu calendar.
+_GOAL_PROFILES: dict[str, dict] = {
+    "detox": {
+        "label": "Detox",
+        "boost": {},
+        "rasayana_tail": 3,
+        "karma_source": "vikriti",
+        "note": "Standard Shodhana-forward course: the Karma follows your Vikriti.",
+    },
+    "rejuvenation": {
+        "label": "Rejuvenation (Rasayana)",
+        # Brimhana therapies — the nourishing ones — lead the pool.
+        "boost": {"abhyanga_clinic": 3, "abhyanga_self": 3, "shirodhara": 3,
+                  "rasayana_herbs": 4, "yoga_nidra": 2, "udvartana": -2, "udvartana_home": -2},
+        "rasayana_tail": 7,
+        "karma_source": "vikriti",
+        "note": (
+            "Rasayana-weighted: Shodhana is the preliminary here, not the aim. Nourishing "
+            "therapies lead, and the Rasayana phase runs at its full in-plan length — "
+            "Rasayana works over months, so treat the plan's end as its beginning."
+        ),
+    },
+    "stress_relief": {
+        "label": "Stress Relief (Manovaha Srotas)",
+        "boost": {"shirodhara": 5, "yoga_nidra": 4, "gentle_pranayama": 4,
+                  "abhyanga_clinic": 2, "abhyanga_self": 2,
+                  "udvartana": -3, "udvartana_home": -3, "bashpa_sweda_clinic": -1},
+        "rasayana_tail": 5,
+        "karma_source": "vikriti",
+        "note": (
+            "Manovaha Srotas focus: Shirodhara (Murdha Taila), Yoga Nidra and Anulom Vilom "
+            "lead. Stimulating and Ruksha therapies such as Udvartana are demoted — they "
+            "raise Vata, which is what an anxious Manas least needs."
+        ),
+    },
+    "seasonal_cleanse": {
+        "label": "Seasonal Cleanse (Ritu Shodhana)",
+        "boost": {},
+        "rasayana_tail": 3,
+        "karma_source": "ritu",
+        "note": (
+            "Ritu Shodhana: the Karma follows the season's own indication from the "
+            "Ritu-Shodhana calendar rather than your Vikriti — which is what a seasonal "
+            "cleanse means. Doshas accumulate on a seasonal cycle and are expelled on one."
+        ),
+    },
+    "specific_condition": {
+        "label": "Specific Condition",
+        "boost": {},
+        "rasayana_tail": 5,
+        "karma_source": "vikriti",
+        "note": (
+            "Condition-led: the Karma follows your Vikriti, and the Aushadha is selected "
+            "against your recorded conditions — see the Aushadha section for the "
+            "Srotas-specific formulations added for them."
+        ),
+    },
+}
+
+
+def _goal_profile(pk_prefs: dict) -> dict:
+    goal = pk_prefs.get("panchakarma_goal") or "detox"
+    return {**_GOAL_PROFILES.get(goal, _GOAL_PROFILES["detox"]), "goal": goal}
+
+
+def _apply_seasonal_karma(pradhana: dict, ritu_ctx: dict, setting: str, protocols: dict) -> tuple[dict, str | None]:
+    """Point the Karma at the season's indication for a Ritu Shodhana cleanse."""
+    seasonal = ritu_ctx.get("primary_shodhana")
+    if not seasonal or seasonal == pradhana.get("primary"):
+        return pradhana, None
+
+    # Raktamokshana has no home form; a seasonal cleanse must not become the reason
+    # a home user is scheduled for bloodletting.
+    if setting == "home" and seasonal in ("raktamokshana", "vamana"):
+        return pradhana, (
+            f"{ritu_ctx.get('ritu_name', ritu_ctx.get('ritu', 'This season'))} indicates "
+            f"{seasonal.title()}, which has no home form. The Karma follows your Vikriti instead — "
+            "book a clinic if you want the seasonal cleanse."
+        )
+
+    data = protocols.get("pradhana_karma", {}).get(seasonal, {})
+    return (
+        {
+            **pradhana,
+            "primary": seasonal,
+            "reason": (
+                f"Ritu Shodhana — {ritu_ctx.get('ritu_name', ritu_ctx.get('ritu', ''))} indicates "
+                f"{seasonal.title()}. {ritu_ctx.get('reason', '')}"
+            ).strip(),
+            "protocol": data or pradhana.get("protocol", {}),
+            "seasonal_selection": True,
+            "vikriti_karma": pradhana.get("primary"),
+        },
+        None,
+    )
+
+
+# ── Phase Sequencers ──────────────────────────────────────────────────────────
+# Each phase used to be laid out by repeating pool[0] on every day. A 21-day Vata
+# plan therefore scheduled Niruha Basti — the depleting one — eight days running,
+# under a card reading "Yoga Basti (8-Basti Schedule) — 3 Niruha + 5 Anuvasana".
+# It delivered 8 Niruha and 4 Anuvasana: exactly inverted, and the number on the
+# card and the calendar beneath it were different plans.
+
+
+def _basti_sequence(subtype: str, days: int, protocols: dict) -> list[dict]:
+    """The per-day Anuvasana/Niruha pattern for a Basti course.
+
+    Yoga Basti's day-by-day schedule is authored in
+    `pradhana_karma.basti.subtypes.yoga_basti.schedule` and is used verbatim when it
+    fits. Kala (6 Niruha of 16) and Karma (12 of 30) give totals but no pattern, so
+    they are generated by the rule the authored schedule itself follows: Niruha on
+    the even days up to twice the Niruha count, Anuvasana everywhere else. That
+    starts the course on oil, alternates through the middle, and closes on oil —
+    Anuvasana before and after each Niruha is the classical safeguard, because
+    Niruha alone is Lekhana and Vata rises without the Sneha around it. A test
+    checks the rule reproduces the authored schedule exactly.
+    """
+    subtypes = protocols.get("pradhana_karma", {}).get("basti", {}).get("subtypes", {})
+    entry = subtypes.get(subtype, {})
+
+    authored = entry.get("schedule")
+    if authored and len(authored) >= days:
+        return [
+            {"type": d.get("type", "anuvasana"), "note": d.get("note", "")}
+            for d in authored[:days]
+        ]
+
+    # Niruha count from the subtype's own totals, scaled if the course is short.
+    total = entry.get("total_days") or days
+    niruha_total = {"yoga_basti": 3, "kala_basti": 6, "karma_basti": 12}.get(subtype, 3)
+    if isinstance(total, int) and total > 0 and days < total:
+        niruha_total = max(1, round(niruha_total * days / total))
+
+    sequence = []
+    for day in range(1, days + 1):
+        is_niruha = day % 2 == 0 and day <= niruha_total * 2
+        sequence.append({
+            "type": "niruha" if is_niruha else "anuvasana",
+            "note": (
+                "Start with oil — lubricates and prepares" if day == 1
+                else "End with oil — soothes and nourishes" if day == days
+                else "Decoction expels Doshas" if is_niruha
+                else ""
+            ),
+        })
+    return sequence
+
+
+def _basti_day_action(day_index: int, sequence: list[dict], aushadha: dict,
+                      basti_info: dict, protocols: dict) -> dict:
+    """The pinned action for one day of a Basti course — the day's own procedure."""
+    step = sequence[day_index] if day_index < len(sequence) else {"type": "anuvasana", "note": ""}
+    kind = step["type"]
+    basti_kb = protocols.get("pradhana_karma", {}).get("basti", {})
+
+    oil = aushadha.get("basti_oil", "Tila Taila")
+    oil_str = oil if isinstance(oil, str) else "Tila Taila"
+    course = basti_info.get("name", "Basti course")
+    position = f"Day {day_index + 1} of {len(sequence)} — {course}"
+
+    if kind == "niruha":
+        kashayam = aushadha.get("basti_kashayam", {})
+        kash_name = kashayam.get("name", "Dashamoola Kashayam") if isinstance(kashayam, dict) else str(kashayam)
+        formula = basti_kb.get("niruha_basti", {}).get("classical_formula", {})
+        mix = " → ".join(i["item"] for i in formula.get("ingredients", [])) or "Madhu → Saindhava → Sneha → Kalka → Kashayam"
+        return {
+            "id": "basti_niruha_day",
+            "name": f"Niruha Basti (Decoction) — {kash_name}",
+            "duration_minutes": 60,
+            "benefits": "Vata Shodhana from Pakvashaya — the decoction expels, where the oil days nourish.",
+            "is_pradhana_karma": True,
+            "timing": "Morning, empty stomach — administered by a Vaidya",
+            "pradhana_notes": (
+                f"{position}. {step['note']} "
+                f"Formula ({formula.get('total_volume', '~550ml')}, {formula.get('temperature', 'warm — 38°C')}): "
+                f"{kash_name} with {oil_str}. Mix in sequence: {mix}. "
+                "Lie on the left side; the Netra is inserted and the enema given slowly. "
+                "Retain 30–60 min; expulsion follows naturally. Rest 1–2 hours afterwards. "
+                "Light warm food only for the rest of the day — Khichdi, moong dal, warm soup."
+            ),
+        }
+
+    return {
+        "id": "basti_anuvasana_day",
+        "name": f"Anuvasana Basti (Oil) — {oil_str}",
+        "duration_minutes": 30,
+        "benefits": "Brimhana — nourishes and lubricates Pakwashaya, and protects against the Vata a Niruha day raises.",
+        "is_pradhana_karma": True,
+        "timing": "Evening, after a light meal",
+        "pradhana_notes": (
+            f"{position}. {step['note']} "
+            f"{basti_kb.get('anuvasana_basti', {}).get('formula', '60–120ml warm medicated oil')} — {oil_str}, "
+            "warmed to body temperature. Given after food, not before. "
+            "Retain until morning or until the urge to defecate. No expulsion is forced: "
+            "the oil is absorbed, which is the point of the day."
+        ),
+    }
+
+
+def _samsarjana_day_action(day_index: int, stages: list[dict], total_days: int) -> dict | None:
+    """The Samsarjana stage that belongs on one Paschat day.
+
+    The engine already computed the staged re-entry — Peya → Vilepi → Yusha → rice
+    — and then scheduled a row called "Strict Samsarjana Krama (Dietary Re-entry)"
+    identically on eight consecutive days. The whole clinical content of Samsarjana
+    is that it is graded; a flat repeat of its name is the one form that carries none
+    of it. Agni is at its lowest immediately after Shodhana, so the early stages get
+    one day each and the last stage absorbs whatever days remain.
+    """
+    if not stages:
+        return None
+    stage = stages[min(day_index, len(stages) - 1)]
+    is_last = day_index >= len(stages) - 1
+    n = stage.get("stage", day_index + 1)
+    food = stage.get("food", "Light, warm, easily digestible food")
+    recipe = stage.get("recipe", "")
+    note = stage.get("note", "")
+
+    tail = (
+        "Hold at this stage until normal appetite returns, then resume a Pathya diet."
+        if is_last and total_days > len(stages) else
+        "Move to the next stage only when this one digests comfortably. "
+        "Rushing Samsarjana is what undoes the Shodhana — Agni is at its weakest now."
+    )
+    return {
+        "id": f"samsarjana_stage_{n}",
+        "name": f"Samsarjana Krama — Stage {n}: {food}",
+        "duration_minutes": None,
+        "benefits": "Rekindles Agni by graded steps. The re-entry is as much of the treatment as the cleanse.",
+        "is_samsarjana": True,
+        "timing": stage.get("timing", "All meals today"),
+        "pradhana_notes": " ".join(x for x in (recipe, note, tail) if x),
+    }
+
+
+_TIME_BUDGET_MINUTES = {"15 min": 15, "30 min": 30, "1 hour": 60, "2+ hours": 120}
+
+
+def _trim_day_to_time_budget(schedule: list[dict], pk_prefs: dict, pkt: list) -> list[str]:
+    """Cap each day's self-care minutes at the budget the patient gave.
+
+    The field is described as "Time available daily for therapies" and was applied
+    per-therapy: a 30-minute budget admitted four 15-minute therapies. Since every
+    self-care row in the KB is 15 minutes or less, no budget ever excluded anything,
+    and the question could not change a plan whatever the answer.
+
+    Clinician-administered rows are exempt — the clinic allots that time, not the
+    patient. The Karma itself is never trimmed: it is the appointment, not an extra.
+    """
+    budget = _TIME_BUDGET_MINUTES.get(pk_prefs.get("self_care_time_per_day", "30 min"), 30)
+    by_id = {t["id"]: t for t in pkt}
+    dropped: set[str] = set()
+
+    for day in schedule:
+        spent, kept = 0, []
+        for row in day["therapies"]:
+            kb = by_id.get(row["id"], {})
+            pinned = row.get("core") or any(
+                row.get(k) for k in ("is_pradhana_karma", "is_deepana_pachana",
+                                     "is_brimhana", "is_samsarjana")
+            )
+            self_care = "home" in (kb.get("setting_required") or [])
+            minutes = row.get("duration_minutes") or 0
+            if pinned:
+                spent += minutes if self_care else 0
+                kept.append(row)
+                continue
+            if not self_care:
+                kept.append(row)
+                continue
+            if spent + minutes > budget and kept:
+                dropped.add(row["name"])
+                continue
+            spent += minutes
+            kept.append(row)
+        day["therapies"] = kept
+
+    return sorted(dropped)
+
+
+def _therapy_row(t: dict, core: bool = False) -> dict:
     """The shape a therapy takes on a scheduled day.
+
+    `core` marks a row the phase is defined by — the Abhyanga and Swedana of
+    Purvakarma, the lead therapy of a rotation. The time budget trims around it but
+    never through it: a 15-minute budget that drops Swedana leaves Purvakarma as
+    half a procedure, which is the fault the pair exists to prevent.
 
     `cautions` is carried through deliberately. A relative contraindication that
     stays in the engine and never reaches the day is the same defect as one that
@@ -878,6 +1180,8 @@ def _therapy_row(t: dict) -> dict:
         "id": t["id"], "name": t["name"],
         "duration_minutes": t["duration_minutes"], "benefits": t["benefits"],
     }
+    if core:
+        row["core"] = True
     if t.get("cautions"):
         row["cautions"] = t["cautions"]
     return row
@@ -899,7 +1203,7 @@ def _assemble_rotating_phase(pool, target_days, start_day, phase_name, pinned=No
         if pinned:
             therapies.append(pinned)
         if pool:
-            therapies.append(_therapy_row(pool[i % len(pool)]))
+            therapies.append(_therapy_row(pool[i % len(pool)], core=True))
             if len(pool) > 1:
                 therapies.append(_therapy_row(pool[(i + 1) % len(pool)]))
         schedule.append({"day": start_day + i, "phase": phase_name, "therapies": therapies})
@@ -1041,7 +1345,12 @@ def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list,
     diet_ab    = pk_prefs.get("diet_adherence_ability", "partial")
     time_str   = pk_prefs.get("self_care_time_per_day", "30 min")
 
-    max_dur = 15 if "15" in time_str else 60 if "1" in time_str else 120 if "2" in time_str else 30
+    # Explicit map. The chain it replaces worked only because "15" was tested before
+    # "1" — every one of the schema's four values contains a "1" or a "2" somewhere,
+    # so any reordering would silently have given "15 min" a 60-minute budget.
+    max_dur = {"15 min": 15, "30 min": 30, "1 hour": 60, "2+ hours": 120}.get(time_str, 30)
+
+    goal = _goal_profile(pk_prefs)
 
     # Every filter above this line is a preference filter — setting, experience,
     # herb access, diet adherence, time. Until this gate there was not one clinical
@@ -1080,7 +1389,14 @@ def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list,
         if herbs == "no" and t["herb_requirement"] == "specific_ayurvedic": continue
         if diet_ab == "lifestyle_only" and t["diet_strictness"] in ("strict", "partial"): continue
         if diet_ab == "partial" and t["diet_strictness"] == "strict": continue
-        if t["duration_minutes"] > max_dur and setting != "clinic": continue
+        # `self_care_time_per_day` is a budget on the therapies the patient performs
+        # themselves. Skipping the whole check in a clinic made the field dead for
+        # clinic users while the UI still asked for it; applying it to everything
+        # would have cut clinician-administered therapies whose time the clinic
+        # allots, not the patient. Clinic-only rows are exempt; self-care is not,
+        # wherever the patient happens to be.
+        is_self_care = "home" in t["setting_required"]
+        if is_self_care and t["duration_minutes"] > max_dur: continue
 
         contra = _therapy_contraindications(t["id"])
         if _match_contraindications(medical_history, contra["hard"]):
@@ -1098,6 +1414,10 @@ def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list,
         # not, so the pool prefers the option needing no modification.
         if soft_hits:
             score -= 1
+        # The goal reorders what remains. Dosha suitability still dominates — a goal
+        # is a preference, and a therapy that aggravates the vitiated Dosha does not
+        # become right because the patient asked for stress relief.
+        score += goal["boost"].get(t["id"], 0)
         scored.append((score, t))
 
     scored.sort(key=lambda x: x[0], reverse=True)
@@ -1228,16 +1548,23 @@ def _pradhana_day_action(pradhana_karma: str, aushadha: dict, basti_info: dict |
     return {}
 
 
-def assemble_phase(pool, target_days, start_day, phase_name):
+def assemble_phase(pool, target_days, start_day, phase_name, always_both=False):
+    """Lay the pool's first two therapies across a phase.
+
+    `always_both` puts both on every day rather than alternating. Purvakarma needs
+    it: Snehana and Swedana are a pair performed daily, not two options to trade off
+    — Swedana is what opens the Srotas the oil has just loosened, so a day with the
+    oil and no sudation is half a procedure.
+    """
     if not pool:
         return []
     primary   = pool[0]
     secondary = pool[1] if len(pool) > 1 else None
     schedule  = []
     for i in range(target_days):
-        day_therapies = [_therapy_row(primary)]
-        if secondary and i % 2 == 0:
-            day_therapies.append(_therapy_row(secondary))
+        day_therapies = [_therapy_row(primary, core=True)]
+        if secondary and (always_both or i % 2 == 0):
+            day_therapies.append(_therapy_row(secondary, core=always_both))
         schedule.append({"day": start_day + i, "phase": phase_name, "therapies": day_therapies})
     return schedule
 
@@ -1330,6 +1657,8 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         }
 
     is_shamana = eligibility.get("type") == "shamana"
+    goal = _goal_profile(pk_prefs)
+    goal_notes: list[str] = [goal["note"]]
 
     # `contraindication_matrix.acute_fever` is the one row whose "allowed" list is
     # not a therapy: "nothing — wait for fever to resolve completely". Every other
@@ -1380,6 +1709,10 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         safety_warnings: list[str] = []
     else:
         pradhana = _select_pradhana_karma(vikriti_dom, vikriti_sec, karma_setting, protocols)
+        if goal["karma_source"] == "ritu":
+            pradhana, seasonal_note = _apply_seasonal_karma(pradhana, ritu_ctx, karma_setting, protocols)
+            if seasonal_note:
+                goal_notes.append(seasonal_note)
         pradhana, safety_warnings = _restrict_to_brimhana(pradhana, eligibility)
         # Safety gate: substitute karma if hard contraindicated by medical history
         pradhana, karma_warnings = _validate_karma_safety(pradhana, medical_history)
@@ -1414,45 +1747,94 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     # that began with Snehana on day 1.
     deepana_days = 0
     duration_notice = None
+    # Every notice quotes the number the PATIENT gave. `total_days` is adjusted more
+    # than once on the way through — once at the phase floor, once against the sum
+    # of the phases — and a notice reading "extended from 8" to someone who asked
+    # for 7 reports an intermediate the patient never saw.
+    requested_days = total_days
     if is_shamana:
         purva_days = pradhana_days = paschat_days = 0
         basti_info = None
     else:
-        # A Shodhana course has a floor: Purvakarma cannot be shorter than 2 days,
-        # the Karma needs its own day, and Samsarjana Krama is 2 days at the very
-        # least. Below that the phase minimums simply overran the budget in silence —
-        # a 3-day request returned a 5-day schedule while `total_days` still read 3,
-        # so the duration on the card and the calendar under it were different plans.
-        _MIN_SHODHANA_DAYS = 5
-        if total_days < _MIN_SHODHANA_DAYS:
-            duration_notice = (
-                f"Extended from {total_days} to {_MIN_SHODHANA_DAYS} days: Purvakarma, the Karma "
-                "itself and Samsarjana Krama cannot be compressed further without making the "
-                "course unsafe. Shortening any of them is what causes post-Shodhana complications."
-            )
-            total_days = _MIN_SHODHANA_DAYS
+        # Every phase has a floor and a ceiling, both classical, and the course
+        # length is what they sum to — not a budget divided up. Splitting the
+        # requested days instead produced two opposite failures at once: a 21-day
+        # Virechana course was 5 days of preparation, ONE day of Karma and FIFTEEN
+        # days of Paschat, while a 3-day request silently returned a 5-day schedule
+        # with `total_days` still reading 3.
+        #
+        # Paschat's floor is the one that is easy to miss: the Samsarjana ladder has
+        # as many days as it has stages, and post-Vamana has seven. A Paschat phase
+        # shorter than that cannot deliver the re-entry it names.
+        _stages = _samsarjana_krama(pradhana["primary"], protocols)
+        # In-plan only; the Rasayana itself runs for months after. The rejuvenation
+        # goal is the one that earns a longer tail here, because for that goal the
+        # Rasayana IS the treatment and the Shodhana was the preparation.
+        _RASAYANA_TAIL = goal["rasayana_tail"]
+        paschat_min = max(2, len(_stages))
+        paschat_max = paschat_min + _RASAYANA_TAIL
 
-        if eligibility.get("ama_correction_needed") or eligibility.get("agni_correction_needed"):
-            # Capped so the correction can never crowd out the cleanse it prepares for.
-            deepana_days = min(max(3, min(7, int(total_days * 0.25))), max(0, total_days - _MIN_SHODHANA_DAYS))
+        is_basti = pradhana["primary"] in ("basti", "basti_matra")
+        deepana_needed = bool(
+            eligibility.get("ama_correction_needed") or eligibility.get("agni_correction_needed")
+        )
+        deepana_min = 3 if deepana_needed else 0
+        purva_min = 2
+
+        floor = deepana_min + purva_min + 1 + paschat_min
+        if total_days < floor:
+            duration_notice = (
+                f"Extended from {requested_days} to {floor} days. "
+                + (f"Deepana-Pachana needs {deepana_min} days, " if deepana_needed else "")
+                + f"Purvakarma at least {purva_min}, the Karma its own day, and Samsarjana Krama "
+                f"{paschat_min} — its re-entry has {paschat_min} stages and cannot be delivered in "
+                "fewer. Compressing any of them is what causes post-Shodhana complications."
+            )
+            total_days = floor
+
+        if deepana_needed:
+            deepana_days = min(max(3, min(7, int(total_days * 0.25))), total_days - (floor - deepana_min))
 
         shodhana_days = total_days - deepana_days
-        purva_days = _purvakarma_days(vikriti_dom, shodhana_days, protocols)
+        purva_days = max(purva_min, _purvakarma_days(vikriti_dom, shodhana_days, protocols))
 
-        remaining = shodhana_days - purva_days
-        if pradhana["primary"] in ("basti", "basti_matra"):
-            bs = _basti_subtype(karma_setting, remaining - 2)
-            pradhana_days = min(bs["days"], remaining - 2)
+        budget = shodhana_days - purva_days
+
+        # The Basti subtype is chosen from the days actually available, and then the
+        # phase is exactly as long as the subtype it names. Picking the subtype from
+        # an unbounded budget and clipping the phase afterwards produced an 11-day
+        # course labelled "Kala Basti (16-Basti Schedule)" — the card and the calendar
+        # disagreeing for the third time in this file.
+        if is_basti:
+            basti_info = _basti_subtype(karma_setting, max(1, budget - paschat_min))
+            pradhana_days = basti_info["days"]
         else:
-            # Vamana = 1 day; Virechana = 1 day; Nasya = 5–7 days
-            pradhana_days = min(5 if pradhana["primary"] == "nasya" else 1, remaining - 2)
-        pradhana_days = max(1, pradhana_days)
-        paschat_days  = max(2, shodhana_days - purva_days - pradhana_days)
+            basti_info = None
+            karma_natural = 5 if pradhana["primary"] == "nasya" else 1
+            pradhana_days = max(1, min(karma_natural, budget - paschat_min))
+        paschat_days  = max(paschat_min, min(budget - pradhana_days, paschat_max))
 
-        basti_info = (
-            _basti_subtype(karma_setting, remaining - 2)
-            if pradhana["primary"] in ("basti", "basti_matra") else None
-        )
+        # The phases sum to the course length; the request does not set it. Both
+        # directions must be reported — the requested figure was previously printed
+        # on the card whichever way the schedule had actually gone.
+        natural_total = deepana_days + purva_days + pradhana_days + paschat_days
+        if natural_total < total_days:
+            duration_notice = (
+                f"This course runs {natural_total} days, not the {requested_days} you have available. "
+                f"{(pradhana['primary'] or '').replace('_', ' ').title()} takes {pradhana_days} "
+                f"day{'s' if pradhana_days != 1 else ''}, and Purvakarma and Samsarjana Krama have "
+                "classical lengths that padding would not improve. Continue the Rasayana afterwards — "
+                "it is meant to run for months, well past the end of this plan."
+            )
+        elif natural_total > total_days:
+            duration_notice = (
+                f"Extended from {requested_days} to {natural_total} days. "
+                f"Purvakarma needs {purva_days} for your Vikriti, "
+                f"{(pradhana['primary'] or '').replace('_', ' ').title()} needs {pradhana_days}, "
+                f"and the Samsarjana Krama re-entry has {paschat_min} stages. "
+                "Compressing any of them is what causes post-Shodhana complications."
+            )
+        total_days = natural_total
 
     # Koshtha: check user_profile first, then pk_prefs (PreferencesModal asks it for PK context)
     koshtha = user_profile.get("koshtha") or pk_prefs.get("koshtha") or "sama"
@@ -1529,9 +1911,60 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
                            "sub": "Kindle Agni, digest Ama — before Snehana", "days": deepana_days})
             offset += deepana_days
 
-        schedule.extend(assemble_phase(purva_pool,    purva_days,    offset,                              "Purvakarma (Preparation)"))
-        schedule.extend(assemble_phase(pradhana_pool, pradhana_days, offset + purva_days,                 "Pradhana Karma (Main Cleanse)"))
-        schedule.extend(assemble_phase(paschat_pool,  paschat_days,  offset + purva_days + pradhana_days, "Paschat Karma (Rejuvenation)"))
+        purva_start   = offset
+        pradhana_start = offset + purva_days
+        paschat_start  = offset + purva_days + pradhana_days
+
+        # Purvakarma is Snehana + Swedana every day, in that order — Swedana after
+        # Abhyanga is what opens the Srotas the oil has loosened (CS Sutrasthana 14).
+        # Taking pool[0] and pool[1] gave the two highest-scoring rows, which for a
+        # Vata patient were both Abhyanga: two oil massages a day and no sudation at
+        # all, in the phase whose definition is the pair.
+        purva_abhyanga = next((t for t in purva_pool if "abhyanga" in t["id"]), None)
+        purva_swedana  = next((t for t in purva_pool if "sweda" in t["id"]), None)
+        purva_extras   = [t for t in purva_pool if t not in (purva_abhyanga, purva_swedana)]
+        schedule.extend(assemble_phase(
+            [t for t in (purva_abhyanga, purva_swedana) if t] or purva_pool,
+            purva_days, purva_start, "Purvakarma (Preparation)",
+            always_both=True,
+        ))
+        # Shirodhara, Udvartana and the like rotate on top rather than displacing
+        # the pair — they are adjuncts to Purvakarma, not substitutes for it.
+        #
+        # A therapy the goal weights heavily is the reason the patient chose that
+        # goal, so it runs every day rather than taking its turn in the rotation:
+        # Shirodhara once in five days is not a stress-relief protocol, it is a
+        # stress-relief mention.
+        _GOAL_DAILY_THRESHOLD = 4
+        goal_daily = next(
+            (t for t in purva_extras if goal["boost"].get(t["id"], 0) >= _GOAL_DAILY_THRESHOLD),
+            None,
+        )
+        rotating = [t for t in purva_extras if t is not goal_daily]
+        if purva_extras:
+            for i, day_entry in enumerate(d for d in schedule if "Purvakarma" in d.get("phase", "")):
+                if goal_daily:
+                    day_entry["therapies"].append(_therapy_row(goal_daily, core=True))
+                if rotating:
+                    day_entry["therapies"].append(_therapy_row(rotating[i % len(rotating)]))
+
+        schedule.extend(assemble_phase(pradhana_pool, pradhana_days, pradhana_start, "Pradhana Karma (Main Cleanse)"))
+
+        # Samsarjana rows are dropped from the Paschat pool because the staged action
+        # below replaces them; leaving them in meant the phase had nothing else and
+        # the days after the stages ran out were empty.
+        paschat_rest = [t for t in paschat_pool if not t["id"].startswith("samsarjana")]
+        schedule.extend(_assemble_rotating_phase(
+            paschat_rest, paschat_days, paschat_start, "Paschat Karma (Rejuvenation)"))
+
+        # Purvakarma: the Snehapana dose escalates 30 → 60 → 90 → 120ml and steps
+        # back down on the last day. The plan carried that ladder in a summary block
+        # while every Purvakarma day on the calendar read the same, so the day a
+        # patient was on told them nothing about the dose they were due.
+        for i, day_entry in enumerate(d for d in schedule if "Purvakarma" in d.get("phase", "")):
+            if i < len(dose_schedule):
+                day_entry["snehapana"] = dose_schedule[i]
+            day_entry["snehana_signs"] = snehana_int.get("signs_adequate_snehana", [])
 
         # The pinned action IS the Pradhana Karma, fully described. The therapy pool
         # holds a row for every Karma in the KB and was never filtered by the one
@@ -1539,11 +1972,45 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         # whose Virechana had been withheld for low Ojas still had "Virechana
         # (Clinical Purgation)" on the calendar beside the Nasya that replaced it.
         # A substitution that leaves the original on the schedule is not a substitution.
-        pk_action = _pradhana_day_action(pradhana["primary"], aushadha, basti_info, karma_setting, ritu_ctx.get("ritu", ""))
-        if pk_action:
-            for day_entry in schedule:
-                if "Pradhana" in day_entry.get("phase", ""):
+        #
+        # Basti is the one Karma that runs for days rather than one, and its days are
+        # not interchangeable: the course alternates oil and decoction to a pattern
+        # the KB authors day by day. One pinned action repeated across it produced
+        # eight identical Niruha days under a card promising three.
+        pradhana_entries = [d for d in schedule if "Pradhana" in d.get("phase", "")]
+        if pradhana["primary"] in ("basti", "basti_matra") and basti_info:
+            basti_sequence = _basti_sequence(basti_info["subtype"], pradhana_days, protocols)
+            basti_info = {**basti_info, "sequence": basti_sequence}
+            for i, day_entry in enumerate(pradhana_entries):
+                if pradhana["primary"] == "basti_matra":
+                    # Matra Basti is a single repeated oil administration by design —
+                    # no Niruha, nothing to alternate. Its day action is already right.
+                    day_entry["therapies"] = [_pradhana_day_action(
+                        pradhana["primary"], aushadha, basti_info, karma_setting, ritu_ctx.get("ritu", ""))]
+                else:
+                    day_entry["therapies"] = [
+                        _basti_day_action(i, basti_sequence, aushadha, basti_info, protocols)
+                    ]
+        else:
+            pk_action = _pradhana_day_action(pradhana["primary"], aushadha, basti_info, karma_setting, ritu_ctx.get("ritu", ""))
+            if pk_action:
+                for day_entry in pradhana_entries:
                     day_entry["therapies"] = [pk_action]
+
+        # Paschat: Samsarjana Krama is graded — Peya → Vilepi → Yusha → rice. The
+        # stages were computed and then a row named "Strict Samsarjana Krama" was
+        # scheduled identically on every day of the phase. The grading is the entire
+        # clinical content; a flat repeat of the name carries none of it.
+        # Once the stages are exhausted the phase is Rasayana, not a fourth day of
+        # "Stage 3". `rasayana_integration.timing` puts Rasayana at day 3-5 after the
+        # Karma, which is exactly where the ladder ends.
+        for i, day_entry in enumerate(d for d in schedule if "Paschat" in d.get("phase", "")):
+            if samsarjana and i < len(samsarjana):
+                pinned = _samsarjana_day_action(i, samsarjana, paschat_days)
+            else:
+                pinned = _brimhana_action(vikriti_dom, aushadha)
+            if pinned:
+                day_entry["therapies"].insert(0, pinned)
 
         phases += [
             {"key": "purvakarma", "label": "Purvakarma",
@@ -1553,6 +2020,14 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             {"key": "paschat", "label": "Paschat Karma",
              "sub": "Samsarjana Krama + Rasayana", "days": paschat_days},
         ]
+
+    time_dropped = _trim_day_to_time_budget(schedule, pk_prefs, pkt)
+    if time_dropped:
+        goal_notes.append(
+            f"Trimmed to your {pk_prefs.get('self_care_time_per_day', '30 min')} daily self-care "
+            f"budget: {', '.join(time_dropped)} left out. Raise the budget to include them — "
+            "clinic-administered therapies are unaffected."
+        )
 
     # ── Ritu Compatibility Warning ────────────────────────────────────────────
     # Only meaningful when a Karma was selected; the Ritu calendar schedules
@@ -1582,6 +2057,7 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             "basti_subtype":          basti_info,
             "safety_warnings":        safety_warnings,
             "deferral":               deferral,
+            "goal":                   {"id": goal["goal"], "label": goal["label"], "notes": goal_notes},
             "unmapped_conditions":    unmapped_conditions,
             "vaidya_review_required": vaidya_review_required,
         },

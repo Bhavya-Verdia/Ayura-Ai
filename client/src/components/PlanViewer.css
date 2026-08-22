@@ -925,6 +925,21 @@
   border-radius: 999px;
 }
 
+.pk-day-dose {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: fit-content;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ayura-text-secondary);
+  background: color-mix(in srgb, var(--ayura-accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ayura-accent) 18%, transparent);
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+}
+.pk-day-dose svg { flex-shrink: 0; color: var(--ayura-accent); }
+
 /* A cautioned therapy still runs — it just runs modified, so the chip carries the
    modification rather than a bare warning colour. */
 .pk-therapy-chip-wrap {
