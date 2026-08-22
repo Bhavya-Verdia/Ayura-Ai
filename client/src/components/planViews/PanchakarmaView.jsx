@@ -226,6 +226,15 @@ export function PanchakarmaView({ plan }) {
         )}
       </div>
 
+      {/* What the chosen goal actually changed. The field used to be collected and
+          then read by no engine code, so there was nothing to show. */}
+      {cd.goal?.notes?.length > 0 && (
+        <div className="pk-rationale">
+          <span className="pk-rationale-label">Goal — {cd.goal.label}</span>
+          {cd.goal.notes.map((n, i) => <p key={i}>{n}</p>)}
+        </div>
+      )}
+
       {/* ── Pradhana Karma + Ritu row ── */}
       <div className="pk-info-row">
         <div className="pk-info-card">
@@ -467,14 +476,24 @@ export function PanchakarmaView({ plan }) {
                 <div className="pk-day-num">Day {day.day}</div>
                 <div className="pk-day-phase">{(day.phase || '').split(' (')[0]}</div>
                 <div className="pk-day-therapies">
+                  {/* The Snehapana ladder escalates 30 → 60 → 90 → 120ml. It lived
+                      in a summary block while every Purvakarma day read the same,
+                      so the day you were on never told you the dose you were due. */}
+                  {day.snehapana && (
+                    <span className="pk-day-dose">
+                      <Droplets size={11} /> Snehapana {day.snehapana.dose_ml}ml
+                      {day.snehapana.time ? ` · ${day.snehapana.time}` : ''}
+                      {day.snehapana.vehicle ? ` · ${day.snehapana.vehicle}` : ''}
+                    </span>
+                  )}
                   {/* Deepana-Pachana and Brimhana are pinned day actions just as
                       the Pradhana Karma is; rendering only the Karma variant dropped
                       their instructions to a bare chip and lost the notes entirely. */}
                   {(day.therapies || []).map((t, i) =>
-                    (t.is_pradhana_karma || t.is_deepana_pachana || t.is_brimhana) ? (
+                    (t.is_pradhana_karma || t.is_deepana_pachana || t.is_brimhana || t.is_samsarjana) ? (
                       <div key={i} className="pk-pradhana-action">
                         <div className="pk-pradhana-action-header">
-                          {t.is_brimhana
+                          {(t.is_brimhana || t.is_samsarjana)
                             ? <Sparkles size={12} className="pk-pradhana-flame" />
                             : <Flame size={12} className="pk-pradhana-flame" />}
                           <span className="pk-pradhana-action-name">{t.name}</span>
