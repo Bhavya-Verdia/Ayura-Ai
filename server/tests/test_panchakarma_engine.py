@@ -234,3 +234,87 @@ def test_a_shamana_plan_does_not_advertise_the_therapy_it_withheld():
     plan = generate_panchakarma_plan(_profile(age=78), _prefs())
     assert plan["clinical_decisions"]["ritu_warning"] is None
     assert "SHAMANA PROTOCOL" in plan["disclaimer"]
+
+
+# ── Rare and unmapped conditions ──────────────────────────────────────────────
+
+@pytest.mark.parametrize("condition", [
+    "dialysis", "kidney_failure", "renal_failure", "hiv", "heart_failure",
+])
+def test_a_severe_condition_is_caught_even_when_the_vocabulary_knows_it(condition):
+    """Severity was checked only across UNMAPPED conditions, so a severe diagnosis
+    the vocabulary recognised cleared the check by being recognised.
+
+    "dialysis", "kidney_failure" and "renal_failure" all normalise to
+    chronic_kidney_disease, and "hiv" maps to itself. Every one of them was routed
+    to a full Niruha Basti course with no Vaidya-review flag raised. Being mapped
+    means the engine knows which Dosha the disease disturbs; it says nothing about
+    whether the patient can withstand purification.
+    """
+    plan = generate_panchakarma_plan(_profile(medical_history=[condition]), _prefs())
+    cd = plan["clinical_decisions"]
+
+    assert cd["shodhana_or_shamana"]["type"] == "shamana"
+    assert cd["pradhana_karma_selected"]["primary"] is None
+    assert cd["vaidya_review_required"] is True
+    assert any("VAIDYA REVIEW REQUIRED" in w for w in cd["safety_warnings"])
+    assert not [w for w in SHODHANA_INSTRUCTIONS if w in _all_text(plan)]
+
+
+@pytest.mark.parametrize("condition", [
+    "wilsons_disease", "sjogrens", "sarcoidosis", "myasthenia_gravis", "behcets",
+])
+def test_an_unmapped_condition_gets_a_plan_that_admits_what_it_did_not_check(condition):
+    """Every Aushadha gate matches condition TOKENS, so an unmapped condition matches
+    none of them and therefore passes all of them. A Wilson's patient (copper
+    accumulation) clears the Shilajit check because "wilsons_disease" is not a token
+    any entry lists — the gate did not decide they were safe, it never saw them.
+
+    The plan is still produced: withholding every medicine on an unrecognised word
+    would strip the plan for a large and ordinary set of diagnoses. What it must not
+    do is imply a clean check.
+    """
+    plan = generate_panchakarma_plan(_profile(medical_history=[condition]), _prefs())
+    cd = plan["clinical_decisions"]
+
+    assert cd["vaidya_review_required"] is True
+    assert condition in cd["unmapped_conditions"]
+
+    unverified = plan["aushadha"].get("unverified_against")
+    assert unverified, "the plan must say the medicines were not checked against it"
+    assert condition in unverified["conditions"]
+    assert "NOT been checked" in unverified["notice"]
+
+    # And it is still a usable plan, not an empty one.
+    assert len(plan["daily_schedule"]) == plan["phase_breakdown"]["total_days"]
+    assert all(d["therapies"] for d in plan["daily_schedule"])
+
+
+def test_a_recognised_condition_carries_no_unverified_notice():
+    """The counterweight: the notice must mean something, so it cannot appear on
+    every plan."""
+    for condition in ([], ["ankylosing_spondylitis"], ["diabetes_type2"], ["pcos"]):
+        plan = generate_panchakarma_plan(_profile(medical_history=condition), _prefs())
+        assert "unverified_against" not in plan["aushadha"]
+        assert plan["clinical_decisions"]["vaidya_review_required"] is False
+
+
+def test_ankylosing_spondylitis_gets_a_condition_specific_plan():
+    """AS is the case the question was asked about. It is fully mapped, and the plan
+    should reach the Asthi-Majja Gata Vata protocol rather than a generic Vata one:
+    Basti (Ardhachikitsa for Vata), the AS-specific Kashayam, a joint-indicated oil
+    and the bone/joint Rasayana."""
+    plan = generate_panchakarma_plan(
+        _profile(age=38, gender="male", dominant_dosha="vata", vikriti_dominant="vata",
+                 medical_history=["ankylosing_spondylitis"]),
+        _prefs(panchakarma_goal="specific_condition"))
+    cd, aushadha = plan["clinical_decisions"], plan["aushadha"]
+
+    assert cd["pradhana_karma_selected"]["primary"] in ("basti", "basti_matra")
+    assert cd["vaidya_review_required"] is False
+
+    generic = generate_panchakarma_plan(
+        _profile(dominant_dosha="vata", vikriti_dominant="vata"), _prefs())["aushadha"]
+    assert aushadha["basti_kashayam"]["name"] != generic["basti_kashayam"]["name"]
+    assert aushadha["abhyanga_oil"]["name"] != generic["abhyanga_oil"]["name"]
+    assert aushadha["rasayana"]["herb"] != generic["rasayana"]["herb"]

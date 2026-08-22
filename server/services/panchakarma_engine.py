@@ -1747,11 +1747,18 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         "als_", "motor_neuron", "failure", "transplant", "dialysis",
         "immunodeficiency", "hiv", "multiple_myeloma", "goodpasture",
     }
-    severe_unmapped = [
-        c for c in unmapped_conditions
+    # Severity is checked across EVERY condition, not only the unmapped ones. Being
+    # mapped means the engine knows which Dosha the disease disturbs; it says nothing
+    # about whether the patient can withstand Shodhana. "dialysis", "kidney_failure"
+    # and "renal_failure" all normalise to chronic_kidney_disease and "hiv" maps to
+    # itself, so every one of them cleared this check by being *recognised* — a
+    # dialysis patient was routed to a full Niruha Basti course with no Vaidya-review
+    # flag raised, on the strength of the vocabulary knowing the word.
+    severe_conditions = [
+        c for c in medical_history
         if any(kw in c.lower() for kw in _SEVERE_KEYWORDS)
     ]
-    vaidya_review_required = len(unmapped_conditions) > 0
+    vaidya_review_required = bool(unmapped_conditions or severe_conditions)
 
     # Derive Agni type if not explicitly stored (from digestion quality — Charaka Sutrasthana 15).
     # Normalise to a canonical key so both dosha-keyed and classical-keyed agni_type values
@@ -1773,11 +1780,11 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     # Severe unmapped condition override — conservative Shamana.
     # Applied before any Karma is selected, so the override cannot be outrun by a
     # Pradhana Karma that was already chosen.
-    if severe_unmapped and eligibility.get("type") != "shamana":
+    if severe_conditions and eligibility.get("type") != "shamana":
         blocking = [
-            f"Severe systemic condition(s) detected outside classical disease mapping: "
-            f"{', '.join(severe_unmapped)}. Conservative Shamana applied — Vaidya assessment required "
-            "before any Shodhana. Ref: CS Sutrasthana 15 (Bala Pareeksha mandatory)."
+            f"Severe systemic condition(s) present: {', '.join(severe_conditions)}. "
+            "Conservative Shamana applied — Vaidya assessment required before any Shodhana. "
+            "Ref: CS Sutrasthana 15 (Bala Pareeksha mandatory)."
         ]
         eligibility = {
             **eligibility,
@@ -1866,9 +1873,9 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
                 "blocking_reasons": [*eligibility.get("blocking_reasons", []), no_karma_reason],
             }
 
-    if severe_unmapped:
+    if severe_conditions:
         safety_warnings.append(
-            f"⚠ VAIDYA REVIEW REQUIRED: Unmapped severe conditions ({', '.join(severe_unmapped)}) "
+            f"⚠ VAIDYA REVIEW REQUIRED: Severe systemic conditions ({', '.join(severe_conditions)}) "
             "require clinical assessment before PK. Plan uses conservative Shamana protocol."
         )
 
@@ -1979,6 +1986,30 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         medications=(user_profile.get("current_medications") or []),
         pregnancy=bool(user_profile.get("pregnancy_or_nursing")),
     )
+
+    # Every Aushadha gate — the herb table, the therapy contraindications, the
+    # per-Karma matrix — matches CONDITION TOKENS. An unmapped condition matches
+    # none of them, so it passes all of them: a Wilson's disease patient (copper
+    # accumulation) clears the Shilajit check because "wilsons_disease" is not a
+    # token any entry lists, and a Sjögren's patient clears Ashwagandha's autoimmune
+    # caution because the caution is keyed on "autoimmune". The gate did not decide
+    # they were safe; it never saw them.
+    #
+    # Saying so is the honest output. Withholding every medicine on an unrecognised
+    # word would strip the plan for a large, ordinary set of diagnoses, and claiming
+    # a clean check is worse than either.
+    if unmapped_conditions:
+        aushadha["unverified_against"] = {
+            "conditions": unmapped_conditions,
+            "notice": (
+                f"The medicines above were selected for your Vikriti and your recognised "
+                f"conditions. They have NOT been checked against "
+                f"{', '.join(unmapped_conditions)} — that diagnosis is outside this "
+                "formulary's vocabulary, so every contraindication check passed it by "
+                "default rather than clearing it. Confirm each medicine with a Vaidya "
+                "before taking any of them."
+            ),
+        }
     # Samsarjana Krama is the graded re-entry from a Shodhana-emptied Koshtha. With
     # no Shodhana there is nothing to re-enter from, and printing its stages would
     # put a mono-diet ladder in a plan whose whole purpose is to stop depleting.

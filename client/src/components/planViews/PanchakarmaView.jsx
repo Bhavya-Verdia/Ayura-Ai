@@ -77,7 +77,9 @@ export function PanchakarmaView({ plan }) {
 
   // `withheld_aushadha` is a list of dropped formulations, rendered separately
   // below — it is not itself an Aushadha row.
-  const aushadhaRows = Object.entries(aus).filter(([k, v]) => v && k !== 'withheld_aushadha')
+  const aushadhaRows = Object.entries(aus).filter(
+    ([k, v]) => v && !['withheld_aushadha', 'unverified_against'].includes(k)
+  )
 
   // Which protocol sections are open. All closed on arrival — see PkSection.
   const [openSections, setOpenSections] = useState(new Set())
@@ -485,6 +487,19 @@ export function PanchakarmaView({ plan }) {
                 </div>
               )
             })}
+
+            {/* Every Aushadha gate matches condition tokens, so an unmapped
+                diagnosis passes all of them by never being seen. The plan says so
+                rather than implying a clean check. */}
+            {aus.unverified_against && (
+              <div className="pk-aus-card pk-aus-card-withheld">
+                <div className="pk-aus-label">Not verified against</div>
+                <div className="pk-aus-name">
+                  {aus.unverified_against.conditions.map(c => c.replace(/_/g, ' ')).join(', ')}
+                </div>
+                <div className="pk-aus-sub">{aus.unverified_against.notice}</div>
+              </div>
+            )}
 
             {(aus.withheld_aushadha || []).map((w, i) => (
               <div key={`dropped${i}`} className="pk-aus-card pk-aus-card-withheld">
