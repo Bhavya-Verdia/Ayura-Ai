@@ -375,5 +375,343 @@
         "recent_surgery": "Deep diaphragmatic movement pulls on abdominal or thoracic wounds."
       }
     }
-  }
+  },
+  "herbs": {
+    "amalaki": {
+      "display": "Amalaki (Amla)",
+      "hard": {
+        "hemochromatosis": "Vitamin C content markedly enhances non-haem iron absorption."
+      },
+      "soft": {
+        "acid_reflux": "Sour (Amla Rasa) — take with food or after it, never on an empty stomach.",
+        "bleeding_disorder": "Mild antiplatelet effect; stop a week before any procedure.",
+        "diabetes_type2": "Lowers blood glucose; monitor with oral hypoglycaemics."
+      },
+      "medication_classes": [
+        "blood_thinners",
+        "diabetes_meds"
+      ]
+    },
+    "arjuna": {
+      "display": "Arjuna",
+      "hard": {},
+      "soft": {
+        "hypotension": "Mildly hypotensive and negatively chronotropic.",
+        "heart_disease": "Cardioactive — must be added to, never substituted for, prescribed cardiac medication."
+      },
+      "medication_classes": [
+        "blood_pressure_meds"
+      ]
+    },
+    "ashoka": {
+      "display": "Ashoka",
+      "hard": {},
+      "soft": {
+        "fibroids": "Phytoestrogenic — review with the treating physician where an oestrogen-sensitive tumour is present.",
+        "amenorrhea": "Raktasthambhaka (styptic) — indicated for heavy bleeding, and the wrong direction for absent menses."
+      },
+      "medication_classes": [
+        "oral_contraceptives"
+      ]
+    },
+    "ashwagandha": {
+      "display": "Ashwagandha",
+      "hard": {
+        "hyperthyroidism": "Raises T3 and T4; adding it to a thyrotoxic state worsens it.",
+        "pregnancy": "Traditionally abortifacient in higher doses; withheld pending Vaidya supervision."
+      },
+      "soft": {
+        "autoimmune": "Immunostimulant — may aggravate autoimmune activity. Introduce alone and monitor.",
+        "hypothyroidism": "Raises thyroid hormone, so thyroxine dose may need review — check TFTs at 6 weeks.",
+        "depression": "Sedating at higher doses; take the evening dose only and review if fatigue worsens."
+      },
+      "medication_classes": [
+        "thyroid_hormone",
+        "sedatives",
+        "immunosuppressants"
+      ]
+    },
+    "bilva": {
+      "display": "Bilva",
+      "hard": {
+        "constipation_chronic": "Grahi — binding, and aggravates constipation."
+      },
+      "soft": {
+        "diabetes_type2": "Lowers blood glucose; monitor with oral hypoglycaemics."
+      },
+      "medication_classes": [
+        "diabetes_meds"
+      ]
+    },
+    "brahmi": {
+      "display": "Brahmi (Bacopa)",
+      "hard": {},
+      "soft": {
+        "hypothyroidism": "Raises T4 in animal studies — check TFTs if taken long term.",
+        "bradycardia": "Can slow the heart rate further.",
+        "asthma": "Cholinergic effect may aggravate bronchospasm; stop at any tightness."
+      },
+      "medication_classes": [
+        "thyroid_hormone",
+        "sedatives"
+      ]
+    },
+    "chyawanprash": {
+      "display": "Chyawanprash",
+      "hard": {},
+      "soft": {
+        "diabetes_type2": "Sugar-based — use the sugar-free preparation and monitor glucose.",
+        "hemochromatosis": "Amalaki-rich and therefore iron-absorption-enhancing."
+      },
+      "medication_classes": [
+        "diabetes_meds"
+      ]
+    },
+    "dadima": {
+      "display": "Dadima (Pomegranate)",
+      "hard": {},
+      "soft": {
+        "hypertension": "Inhibits CYP3A4 and can raise levels of several antihypertensives."
+      },
+      "medication_classes": [
+        "blood_pressure_meds"
+      ]
+    },
+    "dashamoola": {
+      "display": "Dashamoola",
+      "hard": {},
+      "soft": {
+        "pregnancy": "Used postnatally in the tradition; during pregnancy only under Vaidya supervision."
+      },
+      "medication_classes": []
+    },
+    "guduchi": {
+      "display": "Guduchi (Tinospora)",
+      "hard": {},
+      "soft": {
+        "autoimmune": "Immunomodulatory — may aggravate autoimmune activity; introduce alone.",
+        "fatty_liver": "Rare idiosyncratic hepatitis is reported with prolonged use; limit to 6 weeks and check LFTs.",
+        "hepatitis": "As fatty liver — monitor LFTs and stop at any rise.",
+        "diabetes_type2": "Lowers blood glucose; monitor with oral hypoglycaemics."
+      },
+      "medication_classes": [
+        "diabetes_meds",
+        "immunosuppressants"
+      ]
+    },
+    "guggulu": {
+      "display": "Guggulu",
+      "hard": {
+        "pregnancy": "Uterine stimulant — contraindicated throughout pregnancy.",
+        "hyperthyroidism": "Guggulsterones are thyroid-stimulating and worsen a thyrotoxic state.",
+        "ibd_crohns": "Gastric irritant; aggravates active inflammatory bowel disease.",
+        "ulcerative_colitis": "As IBD — irritant to inflamed bowel mucosa."
+      },
+      "soft": {
+        "hypothyroidism": "Thyroid-stimulating, so it may reduce the thyroxine requirement — check TFTs.",
+        "gastritis": "Take after food; Guggulu is a known gastric irritant.",
+        "bleeding_disorder": "Mild antiplatelet effect — avoid around any procedure."
+      },
+      "medication_classes": [
+        "thyroid_hormone",
+        "blood_thinners"
+      ]
+    },
+    "haridra": {
+      "display": "Haridra (Turmeric)",
+      "hard": {
+        "gallstones": "Stimulates gallbladder contraction and can impact a stone in the cystic duct."
+      },
+      "soft": {
+        "bleeding_disorder": "Antiplatelet effect at therapeutic doses; stop before any procedure.",
+        "acid_reflux": "Can aggravate reflux at higher doses; take with food."
+      },
+      "medication_classes": [
+        "blood_thinners"
+      ]
+    },
+    "jatamansi": {
+      "display": "Jatamansi",
+      "hard": {},
+      "soft": {
+        "hypotension": "Sedative and mildly hypotensive; rise slowly.",
+        "depression": "Sedating — take at night only and review if daytime fatigue worsens."
+      },
+      "medication_classes": [
+        "sedatives",
+        "antidepressants"
+      ]
+    },
+    "kantakari": {
+      "display": "Kantakari",
+      "hard": {
+        "pregnancy": "Solanaceous and traditionally avoided in pregnancy."
+      },
+      "soft": {},
+      "medication_classes": []
+    },
+    "kapikacchu": {
+      "display": "Kapikacchu (Mucuna)",
+      "hard": {
+        "parkinson": "Contains L-DOPA. Taken alongside prescribed levodopa it stacks the dose unpredictably — a Vaidya and the treating neurologist must set this together.",
+        "psychosis": "Dopaminergic — can precipitate or worsen psychosis."
+      },
+      "soft": {
+        "depression": "Dopaminergic; may interact with antidepressants — introduce alone."
+      },
+      "medication_classes": [
+        "antidepressants"
+      ]
+    },
+    "khadiradi_vati": {
+      "display": "Khadiradi Vati",
+      "hard": {},
+      "soft": {
+        "dry_mouth": "Astringent and drying; sip water between doses."
+      },
+      "medication_classes": []
+    },
+    "kutaja": {
+      "display": "Kutaja",
+      "hard": {
+        "constipation_chronic": "Grahi (astringent, binding) — worsens constipation directly."
+      },
+      "soft": {},
+      "medication_classes": []
+    },
+    "manjistha": {
+      "display": "Manjistha",
+      "hard": {
+        "pregnancy": "Emmenagogue — traditionally avoided in pregnancy."
+      },
+      "soft": {
+        "chronic_kidney_disease": "Colours the urine red, which can mask haematuria — warn the patient and their physician."
+      },
+      "medication_classes": []
+    },
+    "punarnava": {
+      "display": "Punarnava",
+      "hard": {},
+      "soft": {
+        "chronic_kidney_disease": "Diuretic — monitor electrolytes and fluid balance.",
+        "hypotension": "Diuretic action can lower blood pressure further."
+      },
+      "medication_classes": [
+        "blood_pressure_meds"
+      ]
+    },
+    "sarpagandha": {
+      "display": "Sarpagandha (Rauwolfia)",
+      "hard": {
+        "depression": "Reserpine depletes central monoamines and is a documented cause of drug-induced depression, including suicidality. This is the sharpest entry in the table: the formulation was previously given on a hypertension match with no check for a psychiatric history.",
+        "bipolar": "As depression — reserpine can precipitate a depressive episode.",
+        "ptsd": "As depression — monoamine depletion in a patient with active psychiatric illness.",
+        "hypotension": "Potent antihypertensive; the formulation's own caution field said so and nothing read it.",
+        "pregnancy": "Crosses the placenta; associated with neonatal depression and nasal congestion.",
+        "peptic_ulcer": "Increases gastric acid secretion.",
+        "parkinson": "Monoamine depletion worsens parkinsonism directly."
+      },
+      "soft": {
+        "hypertension": "Only under qualified Vaidya supervision, and only if BP remains raised after Panchakarma — not as a first measure."
+      },
+      "medication_classes": [
+        "blood_pressure_meds",
+        "antidepressants",
+        "sedatives"
+      ]
+    },
+    "shankhpushpi": {
+      "display": "Shankhpushpi",
+      "hard": {},
+      "soft": {
+        "hypotension": "Mildly hypotensive and sedative.",
+        "epilepsy": "Reported to reduce phenytoin levels — do not take within 2 hours of an anticonvulsant."
+      },
+      "medication_classes": [
+        "sedatives",
+        "anticonvulsants"
+      ]
+    },
+    "shatapushpa": {
+      "display": "Shatapushpa",
+      "hard": {
+        "pregnancy": "Emmenagogue and uterine stimulant."
+      },
+      "soft": {},
+      "medication_classes": []
+    },
+    "shatavari": {
+      "display": "Shatavari",
+      "hard": {
+        "fibroids": "Phytoestrogenic; contraindicated where an oestrogen-sensitive tumour is present."
+      },
+      "soft": {
+        "pcos": "Phytoestrogenic — beneficial in Artava Kshaya but review with the treating physician in oestrogen-dominant PCOS.",
+        "obesity": "Guru and Brimhana; increases Kapha and weight."
+      },
+      "medication_classes": [
+        "oral_contraceptives"
+      ]
+    },
+    "shilajit": {
+      "display": "Shilajit",
+      "hard": {
+        "chronic_kidney_disease": "Mineral pitch with a substantial mineral and fulvic acid load that a reduced GFR cannot clear.",
+        "kidney_disease": "As chronic kidney disease — mineral load requires intact renal clearance.",
+        "hemochromatosis": "Iron-rich; contraindicated where iron already accumulates.",
+        "gout": "Purine and mineral load can precipitate an attack."
+      },
+      "soft": {
+        "hypertension": "Some preparations carry a sodium load — use a purified (Shodhita) grade and monitor BP.",
+        "diabetes_type2": "Lowers blood glucose; monitor alongside oral hypoglycaemics."
+      },
+      "medication_classes": [
+        "diabetes_meds"
+      ]
+    },
+    "sitopaladi": {
+      "display": "Sitopaladi Churna",
+      "hard": {},
+      "soft": {
+        "diabetes_type2": "Sugar-based (Sita) and classically taken with honey — use the sugar-free preparation and monitor glucose."
+      },
+      "medication_classes": [
+        "diabetes_meds"
+      ]
+    },
+    "talisadi": {
+      "display": "Talisadi Churna",
+      "hard": {},
+      "soft": {
+        "diabetes_type2": "Sugar-based — use the sugar-free preparation.",
+        "acid_reflux": "Contains Maricha and Pippali; can aggravate reflux."
+      },
+      "medication_classes": [
+        "diabetes_meds"
+      ]
+    },
+    "tikta_ghrita": {
+      "display": "Tikta Ghrita",
+      "hard": {
+        "high_ama": "Ghrita over undigested Ama binds it deeper into the Srotas — Deepana-Pachana first.",
+        "acute_pancreatitis": "A fat load is directly contraindicated in pancreatitis."
+      },
+      "soft": {
+        "high_cholesterol": "A daily ghee-based preparation needs lipid monitoring.",
+        "obesity": "Guru and Snigdha — increases Kapha and Meda."
+      },
+      "medication_classes": []
+    },
+    "vasaka": {
+      "display": "Vasaka (Adhatoda)",
+      "hard": {
+        "pregnancy": "Oxytocic — contraindicated throughout pregnancy."
+      },
+      "soft": {
+        "bleeding_disorder": "Mild antiplatelet effect."
+      },
+      "medication_classes": []
+    }
+  },
+  "_herbs_note": "Per-HERB safety, not per-formulation. Ashwagandha's thyroid interaction is a fact about Ashwagandha and applies in the Manovaha adjuvant, the vata_neurological Rasayana and the reproductive_male Rasayana alike; keying it to the herb means one entry rather than three that can drift. It also gives the right remedy: a contraindication against one component withholds THAT component, not the four-herb formulation around it. AUTHORED, NOT CLINICALLY REVIEWED."
 }

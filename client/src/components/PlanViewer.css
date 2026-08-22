@@ -792,6 +792,36 @@
   color: var(--ayura-muted);
 }
 
+/* A withheld constituent is the actionable half of the prescription: the patient
+   is buying a compound preparation and has to know what to leave out of it. */
+.pk-aus-withheld {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: #fbbf24;
+  margin-top: 0.4rem;
+}
+.pk-aus-withheld svg { flex-shrink: 0; margin-top: 0.25em; }
+.pk-aus-withheld strong { color: #fcd34d; }
+
+.pk-aus-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--ayura-text-secondary);
+  margin-top: 0.35rem;
+}
+.pk-aus-note svg { flex-shrink: 0; margin-top: 0.25em; color: #fbbf24; }
+
+.pk-aus-card-withheld {
+  border-color: color-mix(in srgb, #f59e0b 32%, transparent);
+  background: color-mix(in srgb, #f59e0b 6%, transparent);
+}
+
 /* Snehana signs */
 .pk-signs {
   background: color-mix(in srgb, var(--ayura-card-bg) 80%, var(--ayura-surface));
@@ -5842,6 +5872,8 @@
 [data-theme='light'] .yoga-pose-modification { color: #92400e; }
 [data-theme='light'] .rv-practitioner-note,
 [data-theme='light'] .mv-dose-note { color: #92400e; }
+[data-theme='light'] .pk-aus-withheld,
+[data-theme='light'] .pk-aus-withheld strong,
 [data-theme='light'] .pk-shamana,
 [data-theme='light'] .pk-shamana-reassess,
 [data-theme='light'] .pk-deferral-text strong,

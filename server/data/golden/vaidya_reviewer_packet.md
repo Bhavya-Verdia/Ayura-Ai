@@ -17,12 +17,14 @@ Open **`vaidya_medicine_review.csv`** (157 formulations). For each row, tick:
 Sort by `type` or `indications` to review related formulations together. Anything marked N with a correction is gold — it goes straight back into the KB.
 
 ## Part 2 — Panchakarma contraindications  (`vaidya_panchakarma_contraindications.csv`)
-183 authored contraindications gating Vamana, Virechana, Basti, Nasya, Raktamokshana and the 23 supporting therapies. **None has been clinically reviewed** — `contraindications_reviewed` is false on the whole file. Part 1 carries the larger credibility risk; this part carries the larger safety risk, because these are the only procedures in the app that can injure a patient directly.
+260 authored contraindications gating Vamana, Virechana, Basti, Nasya, Raktamokshana, the 23 supporting therapies, and the individual herbs in every Aushadha the plan prescribes. **None has been clinically reviewed** — `contraindications_reviewed` is false on the whole file. Part 1 carries the larger credibility risk; this part carries the larger safety risk, because these are the only procedures in the app that can injure a patient directly.
 
 Each row states the *mechanism* by which the condition and the procedure conflict, so you can reject a single claim without discarding the file. Columns to fill:
 - **severity_ok** — is `hard` (withhold + substitute) vs `soft` (proceed modified) right?
 - **mechanism_ok** — is the stated reason correct?
 - **should_be** — `hard`, `soft` or `remove` if the severity is wrong.
+
+Rows with scope `herb` are per-constituent: a `hard` row withholds that herb from whichever formulation contains it and leaves the rest, so severity here decides between dropping one ingredient and dropping a whole preparation.
 
 Missing entries matter as much as wrong ones: if a condition should bar a procedure and is not listed, add a row.
 
@@ -66,7 +68,7 @@ Below are 30 synthetic patient cases run through the engines (deterministic, no 
 
 - Reviewer (name, BAMS/MD reg. no.): ____________________
 - Date: ____________  
-- Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/183 · cases reviewed ___/30
+- Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/260 · cases reviewed ___/30
 - Summary judgement (1–5) on classical accuracy of: Medicines __ · Panchakarma __ · Diet __ · Yoga __ · Routine __
 
 > Return the filled CSV + this page; corrections are folded back into the knowledge base.
