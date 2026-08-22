@@ -357,3 +357,51 @@ def test_a_full_length_snehana_still_points_at_the_signs():
     assert adequacy["truncated"] is False
     assert "signs" in adequacy["instruction"].lower()
     assert adequacy["signs"]
+
+
+# ── Preference sweep ──────────────────────────────────────────────────────────
+
+@pytest.mark.parametrize("experience", ["none", "some", "experienced"])
+@pytest.mark.parametrize("setting", ["home", "clinic", "both"])
+@pytest.mark.parametrize("dosha", DOSHAS)
+def test_the_karma_day_survives_every_experience_level(experience, setting, dosha):
+    """The bug this file's other tests all missed by using `experienced` throughout.
+
+    Every clinical Pradhana row in the therapy KB requires prior PK experience, so
+    `detox_experience: "none"` — the schema DEFAULT, and the commonest real profile —
+    emptied the clinic Pradhana pool. `assemble_phase` returns nothing for an empty
+    pool, so the Karma day vanished from the calendar while the phase strip above
+    still claimed it: the plan skipped from Day 5 to Day 7 with the cleanse itself
+    missing and nothing saying so.
+
+    The Pradhana phase is built from its day count, not from pool availability. Its
+    content is the pinned Karma action; the pool only ever supplied supporting rows
+    that the pinning replaces.
+    """
+    plan = generate_panchakarma_plan(
+        _profile(dominant_dosha=dosha, vikriti_dominant=dosha),
+        _prefs(setting=setting, detox_experience=experience, available_time_days=14))
+    pb = plan["phase_breakdown"]
+
+    assert [d["day"] for d in plan["daily_schedule"]] == list(range(1, pb["total_days"] + 1))
+    assert all(d["therapies"] for d in plan["daily_schedule"]), \
+        f"empty day: {[d['day'] for d in plan['daily_schedule'] if not d['therapies']]}"
+
+    pradhana_days = [d for d in plan["daily_schedule"] if "Pradhana" in d["phase"]]
+    if pb["pradhana_karma_days"]:
+        assert len(pradhana_days) == pb["pradhana_karma_days"]
+        assert all(d["therapies"] for d in pradhana_days)
+
+
+@pytest.mark.parametrize("herbs", ["yes", "no", "willing_to_buy"])
+@pytest.mark.parametrize("diet", ["strict", "partial", "lifestyle_only"])
+def test_a_restrictive_preference_set_still_produces_a_whole_plan(herbs, diet):
+    """Preference filters narrow the therapy pool and must never be able to punch a
+    hole in the calendar — the failure mode is a missing day, not a visible error."""
+    plan = generate_panchakarma_plan(
+        _profile(),
+        _prefs(setting="home", detox_experience="none", access_to_ayurvedic_herbs=herbs,
+               diet_adherence_ability=diet, self_care_time_per_day="15 min"))
+    pb = plan["phase_breakdown"]
+    assert [d["day"] for d in plan["daily_schedule"]] == list(range(1, pb["total_days"] + 1))
+    assert all(d["therapies"] for d in plan["daily_schedule"])

@@ -2166,7 +2166,20 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
                 if rotating:
                     day_entry["therapies"].append(_therapy_row(rotating[i % len(rotating)]))
 
-        schedule.extend(assemble_phase(pradhana_pool, pradhana_days, pradhana_start, "Pradhana Karma (Main Cleanse)"))
+        # The Pradhana phase is built from its day count, never from pool
+        # availability. Its content is the pinned Karma action, and the pool only
+        # ever supplied supporting rows that the pinning replaces — but
+        # `assemble_phase` returns nothing for an empty pool, so the Karma DAY
+        # disappeared while the phase strip above still claimed it.
+        #
+        # `detox_experience: "none"` is the schema default and empties the clinic
+        # Pradhana pool (every clinical Karma row requires prior experience), so the
+        # commonest profile in the product got a plan that skipped from Day 5 to
+        # Day 7 with the cleanse itself missing and no indication anything was gone.
+        schedule.extend(
+            {"day": pradhana_start + i, "phase": "Pradhana Karma (Main Cleanse)", "therapies": []}
+            for i in range(pradhana_days)
+        )
 
         # Samsarjana rows are dropped from the Paschat pool because the staged action
         # below replaces them; leaving them in meant the phase had nothing else and
