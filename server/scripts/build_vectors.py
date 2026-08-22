@@ -316,6 +316,38 @@ def _food_docs(food: dict) -> list[dict]:
             for t in (ayurvedic, practical)]
 
 
+_PLACEHOLDER_PROSE = {
+    "drug_name": "the prescribed drug", "dose": "the prescribed dose",
+    "dose_note": "", "oil_name": "the prescribed oil",
+    "kashayam_name": "the prescribed Kashayam", "herb_name": "the prescribed herb",
+    "alternatives": "the listed alternatives", "diet": "the prescribed diet",
+    "signs": "the listed signs", "duration": "the prescribed duration",
+    "timing": "the prescribed timing", "position": "", "sequence_note": "",
+    "total_volume": "the classical volume", "temperature": "body temperature",
+    "mix_order": "the classical sequence", "anuvasana_formula": "the oil formula",
+    "koshtha_note": "", "stage": "", "food": "the stage's food",
+    "recipe": "", "note": "",
+}
+
+
+def _strip_placeholders(text: str) -> str:
+    """Turn a procedure template into retrievable prose.
+
+    A retrieved chunk reading "Administer 6-8 drops of {oil_name}" would surface a
+    brace to whatever reads it, and de-underscoring the variable name gives "drops
+    of oil name" — no better. Each placeholder maps to the generic noun it stands
+    for, so the corpus holds the shape of the instruction rather than one patient's
+    filled copy. Empty parentheses and doubled spaces left behind are cleaned up.
+    """
+    import re
+    out = re.sub(r"\{(\w+)\}",
+                 lambda m: _PLACEHOLDER_PROSE.get(m.group(1), m.group(1).replace("_", " ")),
+                 text)
+    out = re.sub(r"\(\s*\)", "", out)
+    out = re.sub(r"\s+([,.;:])", r"\1", out)
+    return re.sub(r"\s{2,}", " ", out).strip(" .,;:") + ("." if out.strip().endswith(".") else "")
+
+
 def _therapy_docs(therapy: dict) -> list[dict]:
     """One Panchakarma therapy as the engine schedules it.
 
@@ -699,6 +731,44 @@ def get_documents_for_collection() -> dict[str, list[dict]]:
         therapy_list = therapies if isinstance(therapies, list) else therapies.get("therapies", [])
         for therapy in therapy_list:
             docs["panchakarma"].extend(_therapy_docs(therapy))
+
+    # Panchakarma procedures → panchakarma
+    # The step-by-step instructions, which used to be string literals inside
+    # `panchakarma_engine.py` and so could not be retrieved at all. These are the
+    # most concrete text the domain has — what is actually done, in what order —
+    # and are exactly what the enricher should be grounded on rather than
+    # paraphrasing from memory. Templates are stripped of their placeholders so a
+    # retrieved chunk never shows a brace.
+    if (KNOWLEDGE_DIR / "panchakarma_procedures.json").exists():
+        procedures = json.loads((KNOWLEDGE_DIR / "panchakarma_procedures.json").read_text(encoding="utf-8"))
+        for key, spec in (procedures or {}).items():
+            if key.startswith("_") or not isinstance(spec, dict):
+                continue
+            if key == "shamana_regimen":
+                for dosha, regimen in spec.items():
+                    if not isinstance(regimen, dict):
+                        continue
+                    docs["panchakarma"].append({
+                        "id": f"pk_shamana_regimen_{dosha}",
+                        "text": (f"Shamana regimen for {dosha.title()} Vikriti. "
+                                 f"{regimen.get('principle','')} "
+                                 f"Sneha: {regimen.get('sneha_matra','')} "
+                                 f"Ahara: {regimen.get('ahara','')} "
+                                 f"Vihara: {regimen.get('vihara','')}"),
+                        "dosha": dosha, "source": "panchakarma_procedures"})
+                continue
+            # A step that is nothing but placeholders ("{position}. {sequence_note}")
+            # collapses to punctuation — drop it rather than seed an empty sentence.
+            steps = [t for t in (_strip_placeholders(x) for x in spec.get("steps", [])) if len(t) > 8]
+            if not steps:
+                continue
+            name = _strip_placeholders(spec.get("name", key))
+            docs["panchakarma"].append({
+                "id": f"pk_procedure_{key}",
+                "text": (f"{name}. {spec.get('benefits','')} "
+                         f"Timing: {_strip_placeholders(spec.get('timing',''))}. "
+                         f"Procedure: {' '.join(steps)}"),
+                "dosha": "", "source": "panchakarma_procedures"})
 
     # Panchakarma protocol document → panchakarma
     # A structured 52 KB document rather than a list of records: eligibility,

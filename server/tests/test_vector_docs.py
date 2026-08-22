@@ -407,3 +407,36 @@ def test_no_legacy_gym_routines_documents():
     It must not come back as semantic context."""
     assert not [d for d in get_documents_for_collection()["fitness"]
                 if d.get("source") == "gym_routines"]
+
+
+def test_panchakarma_procedures_reach_the_corpus_without_braces():
+    """The step-by-step instructions used to be string literals inside
+    `panchakarma_engine.py`, so they could not be retrieved at all. They are the most
+    concrete text the domain has — what is actually done, in what order — and are
+    what the enricher should be grounded on rather than paraphrasing from memory.
+
+    They are templates, so the seeder has to render them as generic prose: a chunk
+    reading "Administer 6-8 drops of {oil_name}" would surface a brace to whatever
+    reads it.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("_bv", SCRIPTS / "build_vectors.py")
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+    except SystemExit:
+        pass
+
+    procedures = json.loads(
+        (KNOWLEDGE_DIR / "panchakarma_procedures.json").read_text(encoding="utf-8"))
+    rendered = [
+        module._strip_placeholders(step)
+        for key, entry in procedures.items()
+        if not key.startswith("_") and isinstance(entry, dict)
+        for step in entry.get("steps", [])
+    ]
+    assert rendered
+    for text in rendered:
+        assert "{" not in text and "}" not in text, f"brace survived: {text}"
+        assert "_" not in text, f"raw placeholder name survived: {text}"

@@ -508,7 +508,16 @@ export function PanchakarmaView({ plan }) {
                           <span className="pk-pradhana-action-name">{t.name}</span>
                           {t.timing && <span className="pk-pradhana-timing">{t.timing}</span>}
                         </div>
-                        {t.pradhana_notes && (
+                        {/* Steps are discrete now that the prose lives in the KB.
+                            A procedure the patient performs on themselves — warm
+                            the oil, lie on the left side, retain, watch for these
+                            signs — is a sequence to follow, and a single paragraph
+                            is the one shape that hides which step you are on. */}
+                        {t.steps?.length > 0 ? (
+                          <ol className="pk-pradhana-steps">
+                            {t.steps.map((s, j) => <li key={j}>{s}</li>)}
+                          </ol>
+                        ) : t.pradhana_notes && (
                           <p className="pk-pradhana-action-notes">{t.pradhana_notes}</p>
                         )}
                       </div>
