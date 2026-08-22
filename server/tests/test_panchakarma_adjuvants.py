@@ -255,6 +255,7 @@ def test_the_authoring_script_is_reproducible():
     """The herb table and the component lists are generated; re-running must be a
     no-op, so the committed KB and the authoring record cannot drift."""
     import subprocess
+    import sys
 
     root = Path(__file__).resolve().parent.parent
     before = {
@@ -262,7 +263,9 @@ def test_the_authoring_script_is_reproducible():
         for name in ("panchakarma_clinical.json", "panchakarma_protocols.json")
     }
     subprocess.run(
-        [str(root / "venv" / "bin" / "python"), str(root / "scripts" / "author_herb_safety.py")],
+        # `sys.executable`, not a hardcoded venv path: CI runs on the system Python
+        # and this test passed locally while failing every run on the server.
+        [sys.executable, str(root / "scripts" / "author_herb_safety.py")],
         cwd=root, check=True, capture_output=True,
     )
     for name, text in before.items():
