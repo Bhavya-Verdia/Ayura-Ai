@@ -1872,6 +1872,57 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
              "vehicle": "Warm ginger water (Kapha: avoid plain warm water — use Ushna Dravya)"}
             for d in dose_schedule
         ]
+    # The ladder is meant to end on a reduced dose — the KB's day 7 reads "Reduce
+    # dose on final day", halving the 120ml peak to 60. Slicing the first N entries
+    # dropped that step whenever the course was shorter than seven days, handing the
+    # patient from a climbing dose straight into the Karma.
+    #
+    # Only from three days up: a two-day course has no plateau to step down from,
+    # and forcing one there flattens the ladder to 30ml twice, which is not oleation
+    # at all — worse than the missing step-down it was meant to fix.
+    if len(dose_schedule) >= 3:
+        peak = max(d["dose_ml"] for d in dose_schedule)
+        dose_schedule = dose_schedule[:-1] + [{
+            **dose_schedule[-1],
+            "dose_ml": max(30, peak // 2),
+            "time": "Reduce dose on final day",
+        }]
+
+    # Snehapana is titrated to Samyak Snigdha lakshana, not to a day count. When the
+    # course is shorter than classical for this Vikriti, that gap has to reach the
+    # patient: inadequate Snehana before Shodhana is the textbook cause of
+    # post-Shodhana complications, and `purvakarma_classical_snehana_days` reported
+    # the classical figure as a bare number beside a phase half its length — a card
+    # reading 7 above a two-day schedule.
+    classical_snehana = snehana_int.get("duration_by_prakriti", {}).get(vikriti_dom, 5)
+    snehana_truncated = bool(dose_schedule) and purva_days < classical_snehana
+    snehana_adequacy = {
+        "classical_days":  classical_snehana,
+        "scheduled_days":  purva_days if not is_shamana else 0,
+        "truncated":       snehana_truncated,
+        "signs":           snehana_int.get("signs_adequate_snehana", []),
+        "instruction": (
+            (
+                f"This course schedules {purva_days} days of Snehapana; {classical_snehana} is "
+                f"classical for {vikriti_dom.title()} Vikriti. Snehapana is judged by the signs "
+                "of Samyak Snigdha, never by the calendar — do not proceed to the main Karma "
+                "until they are present. If they are not, extend Snehana and move the Karma back "
+                "by the same number of days. Proceeding without adequate oleation is the "
+                "textbook cause of post-Shodhana complications."
+            ) if snehana_truncated else (
+                "Confirm the signs of Samyak Snigdha before the main Karma. Snehapana is judged "
+                "by the signs, not by the calendar — if they are absent on the last scheduled "
+                "day, extend Snehana and move the Karma back with it."
+            )
+        ) if dose_schedule else "",
+    }
+    if snehana_truncated:
+        safety_warnings.append(
+            f"SNEHANA SHORTER THAN CLASSICAL: {purva_days} days scheduled vs "
+            f"{classical_snehana} for {vikriti_dom.title()} Vikriti — confirm Samyak Snigdha "
+            "lakshana before the Karma, and extend if absent."
+        )
+
     # Dosha-specific Snehana oil
     snehana_oils = snehana_int.get("oleation_agents_by_dosha", {}).get(
         vikriti_dom, snehana_int.get("oleation_agents_by_dosha", {}).get("vata", {})
@@ -2085,6 +2136,7 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             "diet_during":        snehana_int.get("diet_during_snehana", ""),
             "abhyanga_oil":       abhyanga_oils,
             "abhyanga_technique": snehana_ext.get("technique", ""),
+            "adequacy":           snehana_adequacy,
         },
 
         # ── Shamana arm detail (present only when Shodhana is withheld) ───────
