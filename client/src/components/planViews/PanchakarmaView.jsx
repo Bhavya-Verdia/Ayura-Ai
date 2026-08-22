@@ -408,6 +408,15 @@ export function PanchakarmaView({ plan }) {
               <ul className="pk-signs-list">
                 {sn.signs_adequate.map((s, i) => <li key={i}>{s}</li>)}
               </ul>
+              {/* Snehapana is judged by these signs, not by the calendar. The
+                  classical day count used to be printed as a bare number beside a
+                  phase half its length — a card reading 7 above a 2-day schedule. */}
+              {sn.adequacy?.instruction && (
+                <p className={sn.adequacy.truncated ? 'pk-signs-warn' : 'pk-signs-note'}>
+                  {sn.adequacy.truncated && <AlertTriangle size={12} />}
+                  {' '}{sn.adequacy.instruction}
+                </p>
+              )}
             </div>
           )}
         </PkSection>

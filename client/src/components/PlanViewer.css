@@ -823,6 +823,19 @@
   color: var(--ayura-text);
 }
 
+.pk-signs-note,
+.pk-signs-warn {
+  font-size: 0.76rem;
+  line-height: 1.55;
+  margin: 0.6rem 0 0;
+}
+.pk-signs-note { color: var(--ayura-text-secondary); }
+/* Amber: a course shorter than classical is a finding the patient must act on,
+   not a footnote — inadequate Snehana before Shodhana is what causes the
+   complications the whole Purvakarma phase exists to prevent. */
+.pk-signs-warn { color: #fbbf24; }
+.pk-signs-warn svg { vertical-align: -2px; }
+
 /* Samsarjana Krama */
 .pk-sk-intro {
   font-size: 0.8rem;
@@ -5819,6 +5832,7 @@
 [data-theme='light'] .pk-shamana,
 [data-theme='light'] .pk-shamana-reassess,
 [data-theme='light'] .pk-deferral-text strong,
+[data-theme='light'] .pk-signs-warn,
 [data-theme='light'] .pk-therapy-chip-caution { color: #92400e; }
 [data-theme='light'] .pk-deferral-icon,
 [data-theme='light'] .pk-therapy-caution svg { color: #b45309; }

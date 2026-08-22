@@ -309,3 +309,51 @@ def test_the_phase_strip_and_the_calendar_are_the_same_plan(days, dosha, setting
     assert all(d["therapies"] for d in plan["daily_schedule"])
     if pb["total_days"] != days:
         assert pb["duration_notice"], f"{days}d silently became {pb['total_days']}d"
+
+
+# ── Snehana adequacy ──────────────────────────────────────────────────────────
+
+@pytest.mark.parametrize("dosha", DOSHAS)
+@pytest.mark.parametrize("days", [5, 7, 10, 14, 21])
+def test_the_snehapana_ladder_always_climbs_then_steps_down(dosha, days):
+    """The KB's day 7 reads "Reduce dose on final day" — 120ml halved to 60. Slicing
+    the first N entries of the seven-day ladder dropped that step for every shorter
+    course, handing the patient from a climbing dose straight into the Karma."""
+    plan = generate_panchakarma_plan(
+        _profile(dominant_dosha=dosha, vikriti_dominant=dosha),
+        _prefs(available_time_days=days))
+    doses = [d["snehapana"]["dose_ml"] for d in plan["daily_schedule"] if d.get("snehapana")]
+    if len(doses) < 2:
+        return
+    assert doses[1] > doses[0], f"{doses} does not escalate"
+    if len(doses) >= 3:
+        assert doses[-1] < max(doses), f"{doses} has no final-day reduction"
+        # A two-day course has no plateau to step down from; forcing one there
+        # flattened the ladder to 30ml twice, which is not oleation at all.
+        assert len(set(doses)) > 1
+
+
+def test_a_short_snehana_says_so_and_says_what_to_do_about_it():
+    """Snehapana is titrated to Samyak Snigdha lakshana, not to a day count.
+    `purvakarma_classical_snehana_days` reported the classical figure as a bare
+    number beside a phase half its length — a card reading 7 above a 2-day
+    schedule — and inadequate Snehana before Shodhana is the textbook cause of
+    post-Shodhana complications."""
+    plan = generate_panchakarma_plan(_profile(), _prefs(available_time_days=7))
+    adequacy = plan["snehana_protocol"]["adequacy"]
+
+    assert adequacy["truncated"] is True
+    assert adequacy["scheduled_days"] < adequacy["classical_days"]
+    assert adequacy["signs"], "the signs are what the patient judges by"
+    assert str(adequacy["classical_days"]) in adequacy["instruction"]
+    assert any("SNEHANA SHORTER THAN CLASSICAL" in w
+               for w in plan["clinical_decisions"]["safety_warnings"])
+
+
+def test_a_full_length_snehana_still_points_at_the_signs():
+    """Even at classical length the calendar is not the criterion."""
+    plan = generate_panchakarma_plan(_profile(), _prefs(available_time_days=21))
+    adequacy = plan["snehana_protocol"]["adequacy"]
+    assert adequacy["truncated"] is False
+    assert "signs" in adequacy["instruction"].lower()
+    assert adequacy["signs"]
