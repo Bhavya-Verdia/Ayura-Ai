@@ -316,14 +316,79 @@ def _strip_withheld_practices(timeline: list, is_pregnant: bool) -> list:
     return out
 
 
-def _get_base_timeline(dosha: str, season: str, if_window: str, agni_type: str, occupation: str) -> list:
+# ── Wake preference ───────────────────────────────────────────────────────────
+# `wake_preference` (early / natural / late) was declared in the schema with the
+# bands it targets spelled out in its own description, and read by no code. Every
+# user got the wake time their Dosha and season dictated, whatever they had said.
+#
+# It is honoured because the classical time is an ideal and the user's life is a
+# fact — shift work, small children, a partner on a different schedule. What it must
+# not do is honour the preference and keep the classical LABEL: 7:00 AM is not
+# Brahma Muhurta, and calling it that is the same fault as a card that disagrees
+# with the schedule under it.
+_WAKE_SHIFT_MINUTES = {"early": -45, "natural": 0, "late": +60}
+
+# Brahma Muhurta is roughly the 96 minutes before sunrise; practically, before 6 AM.
+# Kapha Kala runs 6–10 AM, which is what the Kapha routine exists to get ahead of.
+_BRAHMA_MUHURTA_ENDS_MIN = 6 * 60
+
+
+def _minutes(t: str) -> int:
+    h, m = map(int, t.split(":"))
+    return h * 60 + m
+
+
+def _wake_for_preference(base_wake: str, preference: str | None) -> tuple[str, str, str | None]:
+    """(wake_time, label, notice) for the user's stated preference.
+
+    The label degrades honestly: a wake time past 6 AM is no longer Brahma Muhurta
+    and stops being called it. For Kapha the notice is sharper, because the Kapha
+    routine's whole premise is rising before Kapha Kala — its own description calls
+    that non-negotiable, and a preference that contradicts it should say so rather
+    than quietly winning.
+    """
+    shift = _WAKE_SHIFT_MINUTES.get((preference or "natural").lower(), 0)
+    wake = _shift_wake(base_wake, shift) if shift else base_wake
+    late = _minutes(wake) >= _BRAHMA_MUHURTA_ENDS_MIN
+
+    label = "Wake up" if late else "Brahma Muhurta — Wake up"
+    notice = None
+    if late:
+        notice = (
+            f"You asked for a later start, so this routine wakes you at {wake} AM. "
+            "That is past Brahma Muhurta, the pre-dawn window the morning practices "
+            "are built around, so expect less of their benefit. Everything else in "
+            "the day shifts with it."
+        )
+    return wake, label, notice
+
+
+def _kapha_wake_description(wake: str) -> str:
+    """Kapha's wake instruction, which cannot be printed unchanged at every hour.
+
+    It reads "Rise BEFORE Kapha Kala (6-10 AM) ... Non-negotiable." Once a wake
+    preference puts the time inside that window, printing it unchanged asserts the
+    opposite of the schedule beside it — and calls the thing it is doing
+    non-negotiable while doing it.
+    """
+    if _minutes(wake) < _BRAHMA_MUHURTA_ENDS_MIN:
+        return ("Rise BEFORE Kapha Kala (6–10 AM). Waking inside it causes grogginess "
+                "all day. Non-negotiable.")
+    return (f"You have asked to wake later, so this rises at {wake} AM — inside Kapha "
+            "Kala (6–10 AM), the window Kapha routines exist to get ahead of. Expect "
+            "morning heaviness. If you can move it earlier by even 30 minutes, that is "
+            "the single highest-value change in this plan for your constitution.")
+
+
+def _get_base_timeline(dosha: str, season: str, if_window: str, agni_type: str, occupation: str,
+                       wake_preference: str | None = None) -> list:
     sd = _SEASON_MAP.get((season or "sharad").lower(), _DEFAULT_SEASON)
-    wake = sd["wake"].get(dosha, "6:00")
+    wake, wake_label, _ = _wake_for_preference(sd["wake"].get(dosha, "6:00"), wake_preference)
     agni_notes = _AGNI_NOTES.get(agni_type or "sama", _AGNI_NOTES["sama"])
 
     if dosha == "vata":
         slots = [
-            {"time": wake + " AM",  "activity": "Brahma Muhurta — Wake up",         "description": "Rise gently. Lie still for 2 minutes. Set an intention before leaving bed. Same time every day — regularity is the #1 Vata medicine.", "type": "morning_routine", "icon": "sun"},
+            {"time": wake + " AM",  "activity": wake_label,         "description": "Rise gently. Lie still for 2 minutes. Set an intention before leaving bed. Same time every day — regularity is the #1 Vata medicine.", "type": "morning_routine", "icon": "sun"},
             {"time": "6:15 AM",     "activity": "Dinacharya Rituals",               "description": "Warm water, tongue scraping, Nasya, Kavala Gandusha. See Dinacharya Protocol for full details.", "type": "self_care", "icon": "ritual"},
             {"time": "6:45 AM",     "activity": "Abhyanga + Warm Bath",             "description": "Warm sesame oil self-massage (15–20 min) followed by warm shower.", "type": "self_care", "icon": "massage"},
             {"time": "7:30 AM",     "activity": "Morning Movement",                  "description": "See today's specific activity above.", "type": "exercise", "icon": "yoga"},
@@ -340,7 +405,7 @@ def _get_base_timeline(dosha: str, season: str, if_window: str, agni_type: str, 
         ]
     elif dosha == "pitta":
         slots = [
-            {"time": wake + " AM",  "activity": "Brahma Muhurta — Wake up",         "description": "Rise before Pitta Kala peaks. Splash cool water on face and eyes.", "type": "morning_routine", "icon": "sun"},
+            {"time": wake + " AM",  "activity": wake_label,         "description": "Rise before Pitta Kala peaks. Splash cool water on face and eyes.", "type": "morning_routine", "icon": "sun"},
             {"time": "5:45 AM",     "activity": "Dinacharya Rituals",               "description": "Cool water, tongue scraping (yellow Pitta Ama), rose water Anjana, ghee Nasya, Kavala. See Protocol panel.", "type": "self_care", "icon": "ritual"},
             {"time": "6:15 AM",     "activity": "Morning Movement",                  "description": "See today's specific activity below.", "type": "exercise", "icon": "yoga"},
             {"time": "7:30 AM",     "activity": "Abhyanga + Cool Shower",           "description": "Coconut or sunflower oil, cooler strokes. Followed by a genuinely cool shower.", "type": "self_care", "icon": "massage"},
@@ -357,7 +422,7 @@ def _get_base_timeline(dosha: str, season: str, if_window: str, agni_type: str, 
         ]
     else:  # kapha
         slots = [
-            {"time": wake + " AM",  "activity": "Brahma Muhurta — Wake up",         "description": "Rise BEFORE Kapha Kala (6–10 AM). Waking inside it causes grogginess all day. Non-negotiable.", "type": "morning_routine", "icon": "sun"},
+            {"time": wake + " AM",  "activity": wake_label,         "description": _kapha_wake_description(wake), "type": "morning_routine", "icon": "sun"},
             {"time": "5:15 AM",     "activity": "Dinacharya Rituals",               "description": "Hot ginger-lemon water, heavy tongue scraping (white Kapha Ama), Nasya with warm mustard oil.", "type": "self_care", "icon": "ritual"},
             {"time": "5:30 AM",     "activity": "Morning Movement",                  "description": "See today's specific activity below. Minimum 45 min with sweating — non-negotiable for Kapha.", "type": "exercise", "icon": "gym"},
             {"time": "6:45 AM",     "activity": "Garshana + Abhyanga + Bath",        "description": "5 min dry brushing → 10 min warm mustard oil → energising shower with Udwartana (chickpea flour + turmeric).", "type": "self_care", "icon": "massage"},
@@ -448,12 +513,17 @@ def _apply_condition_notes(timeline: list, conditions: list, gender: str, age: i
 # ── Build dinacharya protocol block ──────────────────────────────────────────
 def _build_dinacharya_protocol(dosha: str, secondary: str, vikriti: str, season: str,
                                 conditions: list, gender: str, age: int, agni_type: str,
-                                is_pregnant: bool = False) -> dict:
+                                is_pregnant: bool = False, wake_preference: str | None = None) -> dict:
     ab = _age_band(age)
     sd = _SEASON_MAP.get((season or "sharad").lower(), _DEFAULT_SEASON)
-    wake = sd["wake"].get(dosha, "6:00") + " AM"
+    # The dinacharya block computed its own wake time from the same table and would
+    # otherwise print the classical hour beside a timeline showing the shifted one.
+    _base_wake = sd["wake"].get(dosha, "6:00")
+    if ab == "vriddha":
+        _base_wake = _shift_wake(_base_wake, +30)
+    _wake_time, _wake_label, wake_notice = _wake_for_preference(_base_wake, wake_preference)
+    wake = _wake_time + " AM"
     sleep_time = "10:30 PM" if dosha == "vata" else "10:00 PM"
-    if ab == "vriddha": wake = _shift_wake(sd["wake"].get(dosha, "6:00"), +30) + " AM"
 
     rituals = [dict(r) for r in _MORNING_RITUALS_BASE.get(dosha, _MORNING_RITUALS_BASE["vata"])]
     rituals = _apply_age_modifications(rituals, ab, dosha)
@@ -485,6 +555,7 @@ def _build_dinacharya_protocol(dosha: str, secondary: str, vikriti: str, season:
 
     return {
         "wake_time":             wake,
+        "wake_notice":           wake_notice,
         "sleep_time":            sleep_time,
         "age_band":              ab,
         "agni_type":             agni_type or "sama",
@@ -653,7 +724,8 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
                            agni_type: str, occupation: str,
                            fasting_days: list,
                            gym_schedule: dict, yoga_schedule: dict,
-                           is_pregnant: bool = False) -> list:
+                           is_pregnant: bool = False,
+                           wake_preference: str | None = None) -> list:
     ab        = _age_band(age)
     fasting   = {d.lower().strip() for d in (fasting_days or [])}
     week_plan = _DEFAULT_WEEK.get(dosha, _DEFAULT_WEEK["vata"])
@@ -665,7 +737,8 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
         week_plan = [{**d, "ex_label": re.sub(r"\s*\+?\s*Nasya", "", d.get("ex_label", ""),
                                               flags=re.I).strip(" +—-")}
                      for d in week_plan]
-    base_tl   = _get_base_timeline(dosha, season, if_window, agni_type, occupation)
+    base_tl   = _get_base_timeline(dosha, season, if_window, agni_type, occupation,
+                                   wake_preference)
     base_tl   = _strip_withheld_practices(base_tl, is_pregnant)
 
     weekly = []
@@ -779,10 +852,11 @@ def generate_routine_plan(user_profile: dict, prefs: dict, diet_foods_db=None,
 
     is_pregnant = bool(user_profile.get("pregnancy_or_nursing"))
     dinacharya = _build_dinacharya_protocol(dosha, secondary, vikriti, season, conditions,
-                                            gender, age, agni_type, is_pregnant)
+                                            gender, age, agni_type, is_pregnant,
+                                            rp.get("wake_preference"))
     weekly     = _build_weekly_routine(dosha, secondary, season, if_window, conditions, gender, age,
                                         agni_type, occupation, fasting_days, gym_sched, yoga_sched,
-                                        is_pregnant)
+                                        is_pregnant, rp.get("wake_preference"))
     seasonal   = _build_seasonal_ritucharya(season, dosha, is_pregnant)
     meal_guide = _build_meal_guidance(dosha, season, agni_type)
     summary    = _weekly_summary(weekly)

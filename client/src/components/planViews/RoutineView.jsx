@@ -183,6 +183,16 @@ export function RoutineView({ plan }) {
         </m.div>
       )}
 
+      {/* A later wake is honoured — the classical hour is an ideal, the user's life
+          is a fact — but it costs the pre-dawn window the morning practices are built
+          around, and the plan says so rather than quietly moving the time. */}
+      {din.wake_notice && (
+        <div className="din-wake-notice">
+          <TriangleAlert size={12} />
+          <span>{din.wake_notice}</span>
+        </div>
+      )}
+
       {/* ── Time anchors row ── */}
       <m.div className="din-anchors" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
         <div className="din-anchor">
