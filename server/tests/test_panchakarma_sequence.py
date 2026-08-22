@@ -267,14 +267,11 @@ def test_a_seasonal_cleanse_follows_the_ritu_not_the_vikriti():
 def test_a_seasonal_cleanse_at_home_is_not_scheduled_for_bloodletting():
     """Grishma's seasonal indication is Raktamokshana, which has no home form. A goal
     must not become the reason a home user is scheduled for leech therapy."""
-    import unittest.mock as mock
-
-    import services.panchakarma_engine as engine
-
-    with mock.patch.object(engine, "_current_ritu", lambda: "grishma"):
-        plan = engine.generate_panchakarma_plan(
-            _profile(dominant_dosha="pitta", vikriti_dominant="pitta"),
-            _prefs(setting="home", panchakarma_goal="seasonal_cleanse"))
+    # Uses the `current_season` preference rather than monkeypatching the clock —
+    # that preference is honoured now, so this exercises the real path.
+    plan = generate_panchakarma_plan(
+        _profile(dominant_dosha="pitta", vikriti_dominant="pitta"),
+        _prefs(setting="home", panchakarma_goal="seasonal_cleanse", current_season="grishma"))
     assert plan["clinical_decisions"]["pradhana_karma_selected"]["primary"] != "raktamokshana"
     text = " ".join(
         t["name"] for d in plan["daily_schedule"] for t in d["therapies"]).lower()

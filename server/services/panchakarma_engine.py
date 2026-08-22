@@ -39,18 +39,46 @@ if PROCEDURES_PATH.exists():
 
 # ── Ritu (Season) ─────────────────────────────────────────────────────────────
 
-def _current_ritu() -> str:
-    month = datetime.now().month
-    if month in (1, 2):  return "shishira"
-    if month in (3, 4):  return "vasanta"
-    if month in (5, 6):  return "grishma"
-    if month in (7, 8):  return "varsha"
-    if month in (9, 10): return "sharad"
-    return "hemanta"
+# The Ritu names as `ritu_shodhana_calendar` keys them, against the names
+# `engine/seasonal.py` returns.
+_SEASON_TO_RITU = {
+    "shishir": "shishira", "vasant": "vasanta", "grishma": "grishma",
+    "varsha": "varsha", "sharad": "sharad", "hemant": "hemanta",
+}
+_VALID_RITUS = set(_SEASON_TO_RITU.values())
 
 
-def _get_ritu_context(protocols: dict) -> dict:
-    ritu = _current_ritu()
+def _current_ritu(override: str | None = None) -> str:
+    """The current Ayurvedic season, from the one seasonal engine the app has.
+
+    This used to compute its own from `datetime.now().month` on whole-month
+    boundaries while `engine/seasonal.py` — which yoga, diet and routine all read —
+    uses mid-month transitions. **The two disagreed on a quarter of the year**: the
+    first half of every odd month. On 10 March a user's yoga plan said Shishira and
+    their Panchakarma plan said Vasanta, on the same day, from the same profile.
+
+    It is not cosmetic here. The Ritu selects the season's Shodhana from
+    `ritu_shodhana_calendar`, so on that date a seasonal cleanse chose Vamana
+    (Vasanta's Karma) when the rest of the app considered it still winter.
+
+    `override` honours the `current_season` preference, which was declared for
+    exactly this and read by nothing — the server's clock is not necessarily in the
+    user's hemisphere.
+    """
+    if override:
+        key = str(override).strip().lower()
+        if key in _VALID_RITUS:
+            return key
+        if key in _SEASON_TO_RITU:
+            return _SEASON_TO_RITU[key]
+
+    from engine.seasonal import get_current_season
+    name = get_current_season().name.strip().lower()
+    return _SEASON_TO_RITU.get(name, name if name in _VALID_RITUS else "sharad")
+
+
+def _get_ritu_context(protocols: dict, override: str | None = None) -> dict:
+    ritu = _current_ritu(override)
     calendar = protocols.get("ritu_shodhana_calendar", {})
     return {"ritu": ritu, **calendar.get(ritu, {})}
 
@@ -611,8 +639,47 @@ def _basti_subtype(setting: str, available_days: int) -> dict:
 
 # ── Aushadha Selection ────────────────────────────────────────────────────────
 
+def _already_taking(components: list[str], existing: list[str]) -> list[dict]:
+    """Constituents the patient is already taking under another name.
+
+    `current_ayurvedic_medicines` is declared in the schema as "Currently taken
+    Ayurvedic medicines to ensure therapy safety" and was collected by no UI and
+    read by no code. The interaction gate added in the previous change checks
+    ALLOPATHIC medication only, so a patient already on Ashwagandha who is
+    prescribed the Manovaha adjuvant — Brahmi + Ashwagandha + Jatamansi +
+    Shankhpushpi — takes Ashwagandha twice and nothing notices.
+
+    Doubling is flagged rather than withheld: the right response is usually to stop
+    the one they are self-administering, not to drop the constituent from a
+    prescribed formulation, and that is a decision for the patient and their Vaidya.
+    """
+    herbs = pk_clinical.get("herbs", {})
+    hits = []
+    for key in components:
+        display = herbs.get(key, {}).get("display", key.replace("_", " ").title())
+        stem = display.split(" (")[0].lower()
+        for taken in existing:
+            t = str(taken).strip().lower()
+            if not t:
+                continue
+            # Match either way: "ashwagandha" against "Ashwagandha Churna", and
+            # "Ashwagandha Churna 5g" against "ashwagandha".
+            if stem in t or t in stem or key in t.replace(" ", "_"):
+                hits.append({
+                    "herb": display,
+                    "already_taking": str(taken),
+                    "note": (
+                        f"You are already taking {taken}. This plan prescribes "
+                        f"{display} as part of a formulation, so following both would "
+                        "double the dose. Confirm with a Vaidya which to keep."
+                    ),
+                })
+                break
+    return hits
+
+
 def _gate_formulation(components: list[str], conditions: list[str],
-                      medications: list[str]) -> dict:
+                      medications: list[str], existing_ayurvedic: list[str] | None = None) -> dict:
     """Withhold the contraindicated constituents of a compound formulation.
 
     The Sahayoga Dravya adjuvants and the Rasayana passed no contraindication gate
@@ -701,6 +768,7 @@ def _gate_formulation(components: list[str], conditions: list[str],
         "withheld": withheld,
         "cautions": cautions,
         "interactions": interactions,
+        "duplicates": _already_taking(kept, existing_ayurvedic or []),
     }
 
 
@@ -766,8 +834,10 @@ def _select_aushadha(
     bala: str = "madhyama",
     medications: list[str] | None = None,
     pregnancy: bool = False,
+    existing_ayurvedic: list[str] | None = None,
 ) -> dict:
     medications = medications or []
+    existing_ayurvedic = existing_ayurvedic or []
     # Pregnancy is a profile flag, not a `medical_history` entry, and the herb table
     # keys on conditions — so without this the pregnancy bars on Guggulu, Vasaka,
     # Manjistha and Shatapushpa could never fire. `filter_and_score_therapies` makes
@@ -858,7 +928,8 @@ def _select_aushadha(
         if not any(term_in_condition(c, t)
                    for c in medical_history for t in (adjuvant.get("indications") or [])):
             continue
-        gate = _gate_formulation(adjuvant.get("components", []), medical_history, medications)
+        gate = _gate_formulation(adjuvant.get("components", []), medical_history,
+                                 medications, existing_ayurvedic)
         if not gate["kept"]:
             # Nothing in the formulation is safe for this patient. Recording it is
             # the point: a silently absent adjuvant looks identical to one that was
@@ -885,6 +956,7 @@ def _select_aushadha(
                 ("components_withheld", gate["withheld"]),
                 ("component_cautions", gate["cautions"]),
                 ("drug_interactions", gate["interactions"]),
+                ("already_taking", gate["duplicates"]),
             ) if v},
         }
 
@@ -906,7 +978,8 @@ def _select_aushadha(
         # + Guggulu" — and dropping Shilajit from the component list does not change
         # the string the patient reads, so a trimmed Rasayana still tells a CKD
         # patient to take Shilajit. Nothing to trim means nothing but skip.
-        gate = _gate_formulation(entry.get("components", []), medical_history, medications)
+        gate = _gate_formulation(entry.get("components", []), medical_history,
+                                 medications, existing_ayurvedic)
         return bool(gate["kept"]) and not gate["withheld"]
 
     # The Rasayana is gated harder than the adjuvants and skipped rather than
@@ -934,11 +1007,13 @@ def _select_aushadha(
             break
 
     if chosen:
-        gate = _gate_formulation(chosen.get("components", []), medical_history, medications)
+        gate = _gate_formulation(chosen.get("components", []), medical_history,
+                                 medications, existing_ayurvedic)
         result["rasayana"] = {
             **{k: v for k, v in chosen.items() if k not in ("components", "indications")},
             **({"cautions": gate["cautions"]} if gate["cautions"] else {}),
             **({"drug_interactions": gate["interactions"]} if gate["interactions"] else {}),
+            **({"already_taking": gate["duplicates"]} if gate["duplicates"] else {}),
             **({"substitution_note": rasayana_note} if rasayana_note else {}),
         }
     else:
@@ -1774,7 +1849,10 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     bala_type, bala_note = _FITNESS_TO_BALA.get(fitness, ("madhyama", "Madhyama Bala"))
 
     # ── Clinical Decisions ────────────────────────────────────────────────────
-    ritu_ctx    = _get_ritu_context(protocols)
+    ritu_ctx    = _get_ritu_context(
+        protocols,
+        pk_prefs.get("current_season") or user_profile.get("current_season"),
+    )
     eligibility = _determine_shodhana_or_shamana(user_profile, pk_prefs, protocols)
 
     # Severe unmapped condition override — conservative Shamana.
@@ -1985,6 +2063,7 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         koshtha, gender=(user_profile.get("gender") or None), bala=bala_type,
         medications=(user_profile.get("current_medications") or []),
         pregnancy=bool(user_profile.get("pregnancy_or_nursing")),
+        existing_ayurvedic=(pk_prefs.get("current_ayurvedic_medicines") or []),
     )
 
     # Every Aushadha gate — the herb table, the therapy contraindications, the

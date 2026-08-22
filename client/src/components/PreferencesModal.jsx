@@ -230,6 +230,9 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       payload.access_to_ayurvedic_herbs = payload.access_to_ayurvedic_herbs || 'willing_to_buy';
       payload.diet_adherence_ability = payload.diet_adherence_ability || 'partial';
     } else if (typeId === 'remedies' || typeId === 'medicines') {
+      payload.current_ayurvedic_medicines = payload.current_ayurvedic_medicines
+        ? payload.current_ayurvedic_medicines.split(',').map(s => s.trim()).filter(Boolean)
+        : [];
       payload.previous_ayurvedic_medicines = payload.previous_ayurvedic_medicines 
         ? payload.previous_ayurvedic_medicines.split(',').map(s => s.trim()).filter(Boolean)
         : [];
@@ -783,6 +786,24 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                 </select>
               </div>
 
+              {/* Currently taken, as against previously tried. The schema has asked
+                  for this since it was written — "to ensure therapy safety" — and no
+                  form collected it, so the herb-duplication check had nothing to read:
+                  a patient already on Ashwagandha could be prescribed a formulation
+                  containing it and take the dose twice. */}
+              <div className="pref-input-group">
+                <label>Ayurvedic Medicines You Take Now <span className="pref-hint">(optional, comma-separated)</span></label>
+                <input
+                  type="text"
+                  name="current_ayurvedic_medicines"
+                  placeholder="e.g. Ashwagandha Churna, Brahmi Ghrita"
+                  value={form.current_ayurvedic_medicines || ''}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="pref-row">
               {/* ── Previous medicines ── */}
               <div className="pref-input-group">
                 <label>Previously Tried Ayurvedic Medicines <span className="pref-hint">(optional, comma-separated)</span></label>

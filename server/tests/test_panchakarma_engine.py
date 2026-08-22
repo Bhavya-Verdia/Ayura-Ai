@@ -318,3 +318,45 @@ def test_ankylosing_spondylitis_gets_a_condition_specific_plan():
     assert aushadha["basti_kashayam"]["name"] != generic["basti_kashayam"]["name"]
     assert aushadha["abhyanga_oil"]["name"] != generic["abhyanga_oil"]["name"]
     assert aushadha["rasayana"]["herb"] != generic["rasayana"]["herb"]
+
+
+# ── Season ────────────────────────────────────────────────────────────────────
+
+def test_the_ritu_agrees_with_the_seasonal_engine_the_rest_of_the_app_uses():
+    """Panchakarma computed its own Ritu from `datetime.now().month` on whole-month
+    boundaries while `engine/seasonal.py` — which yoga, diet and routine all read —
+    uses mid-month transitions. The two disagreed on a QUARTER of the year: the first
+    half of every odd month. On 10 March a user's yoga plan said Shishira and their
+    Panchakarma plan said Vasanta, same day, same profile.
+
+    It is not cosmetic. The Ritu selects the season's Shodhana from
+    `ritu_shodhana_calendar`, so on that date a seasonal cleanse chose Vamana
+    (Vasanta's Karma) while the rest of the app considered it still winter.
+    """
+    from datetime import date
+    from unittest import mock
+
+    import services.panchakarma_engine as engine
+    from engine.seasonal import get_current_season
+
+    alias = {"shishir": "shishira", "vasant": "vasanta", "hemant": "hemanta"}
+    for month in range(1, 13):
+        for day in (1, 10, 20, 28):
+            with mock.patch("engine.seasonal.date") as fake:
+                fake.today.return_value = date(2026, month, day)
+                shared = get_current_season().name.lower()
+                shared = alias.get(shared, shared)
+                assert engine._current_ritu() == shared, f"{month:02d}-{day:02d}"
+
+
+def test_the_season_preference_overrides_the_clock():
+    """`current_season` was declared for exactly this and read by nothing. The
+    server's clock is not necessarily in the user's hemisphere."""
+    import services.panchakarma_engine as engine
+
+    assert engine._current_ritu("grishma") == "grishma"
+    assert engine._current_ritu("Vasant") == "vasanta"     # the seasonal engine's spelling
+    assert engine._current_ritu("nonsense") == engine._current_ritu()  # falls back, never crashes
+
+    plan = generate_panchakarma_plan(_profile(), _prefs(current_season="grishma"))
+    assert plan["clinical_decisions"]["ritu_context"]["ritu"] == "grishma"
