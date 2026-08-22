@@ -505,14 +505,42 @@
   width: fit-content;
 }
 .pk-shodhana { color: #34d399; }
+/* Mridu sits between the two: a real cleanse, at reduced strength. */
+.pk-mridu    { color: #38bdf8; }
+/* Amber, because this verdict withholds purification rather than granting a
+   gentler one — the badge has to read as a limit, not as reassurance. */
 .pk-shamana  { color: #fbbf24; }
 
+.pk-shamana-reasons {
+  margin: 0;
+  padding-left: 1.05rem;
+  display: grid;
+  gap: 0.2rem;
+}
 .pk-shamana-reason {
   font-size: 0.8rem;
   color: var(--ayura-muted);
   margin: 0;
   font-style: italic;
 }
+
+.pk-shamana-why {
+  font-size: 0.84rem;
+  line-height: 1.6;
+  color: var(--ayura-text);
+  margin: 0 0 0.75rem;
+}
+
+.pk-shamana-reassess {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: #fbbf24;
+  margin: 0.75rem 0 0;
+}
+.pk-shamana-reassess svg { flex-shrink: 0; margin-top: 0.2em; }
 
 .pk-safety-sub {
   display: flex;
@@ -5727,8 +5755,10 @@
 [data-theme='light'] .yoga-pose-modification { color: #92400e; }
 [data-theme='light'] .rv-practitioner-note,
 [data-theme='light'] .mv-dose-note { color: #92400e; }
-[data-theme='light'] .pk-shamana { color: #92400e; }
+[data-theme='light'] .pk-shamana,
+[data-theme='light'] .pk-shamana-reassess { color: #92400e; }
 [data-theme='light'] .pk-shodhana { color: #166534; }
+[data-theme='light'] .pk-mridu { color: #075985; }
 /* Amber icons: 3:1 graphics floor on cream */
 [data-theme='light'] .sns-sun-icon,
 [data-theme='light'] .yoga-seasonal-note svg,

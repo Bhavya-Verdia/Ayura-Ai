@@ -76,76 +76,178 @@ def _derive_agni(digestion_quality: str | None, dominant_dosha: str | None) -> s
     return "sama"
 
 
+# Atidurbala (extreme depletion) is listed among the Shamana-only criteria in
+# `shodhana_eligibility.shamana_only_criteria`. BMI < 17 is the WHO threshold for
+# moderate-to-severe thinness and is the only objective depletion signal the
+# profile carries.
+_ATIDURBALA_BMI = 17.0
+
+# Conditions that forbid Shodhana at any strength, in any setting.
+_SHODHANA_ABSOLUTE_CONTRA = {
+    "anemia", "rectal_bleeding", "bleeding_disorder", "hemophilia",
+    "severe_cardiac", "heart_failure", "active_fever",
+}
+
+
 def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols: dict) -> dict:
     """
     Classically: Shodhana (purification) only if Bala is adequate, Agni is correctable,
     Ama is cleared, and no absolute contraindications. Ref: CS Sutrasthana 15.
+
+    Returns one of three verdicts, which are NOT interchangeable:
+
+      shodhana        clinically eligible, clinical setting — full classical protocol
+      mridu_shodhana  clinically eligible, home setting — the mild home protocol the KB
+                      sanctions (`home_panchakarma_protocol`): Triphala/Eranda purgation,
+                      Matra Basti, Pratimarsha Nasya
+      shamana         clinically INELIGIBLE — no Shodhana at any strength, in any setting
+
+    The clinical criteria are evaluated before the setting is considered. Returning
+    early on `setting == "home"` meant a home user's age, Ama, Ojas, Bala, pregnancy
+    and contraindications were never examined at all: a 78-year-old with severe Ama
+    got mild Virechana with no assessment, because "home" and "too depleted to purify"
+    both produced the string "shamana" and nothing downstream could tell them apart.
     """
-    reasons_shamana: list[str] = []
     setting     = pk_prefs.get("setting", "home")
     experience  = pk_prefs.get("detox_experience", "none")  # none | some | experienced
 
-    # Home setting: no full Shodhana (Vamana / Niruha Basti require clinical supervision)
-    if setting == "home":
-        return {
-            "type": "shamana",
-            "shodhana_eligible": False,
-            "reasons": ["Home setting — full Shodhana (Vamana/Niruha Basti) requires Vaidya supervision. Plan uses safe home adaptations."],
-            "ama_correction_needed": False,
-        }
+    # ── Clinical criteria — evaluated for EVERY setting ───────────────────────
+    # Two tiers, because the KB draws the line in two places:
+    #   blocking     forbids Shodhana at ANY strength → Shamana
+    #   restricting  forbids FULL Shodhana but permits the mild protocol the KB
+    #                sanctions (Matra Basti, Pratimarsha Nasya, mild Virechana)
+    blocking: list[str] = []
+    restricting: list[str] = []
 
     age = int(user_profile.get("age") or 30)
     if age < 7 or age > 70:
-        reasons_shamana.append(f"Age {age} outside Shodhana range (7–70 years)")
+        blocking.append(f"Age {age} outside Shodhana range (7–70 years)")
+    elif age < 12:
+        # `pradhana_karma.vamana.contraindications.absolute` bars children under 12
+        # outright, and Virechana bars "very young". 7–11 is inside the eligibility
+        # window but outside the window for the forceful Karmas, so it restricts.
+        restricting.append(
+            f"Age {age} — Vamana is contraindicated under 12 and strong Virechana in the very young. "
+            "Mridu (mild) Shodhana only, under Vaidya supervision."
+        )
 
     if user_profile.get("pregnancy_or_nursing", False):
-        reasons_shamana.append("Pregnancy / nursing — Shodhana contraindicated")
+        blocking.append("Pregnancy / nursing — Shodhana contraindicated")
 
     ama = user_profile.get("ama_indicator", "none")
     # High or Severe Ama: Shodhana drives Ama deeper into Srotas (CS Sutrasthana 15)
     if ama in ("high", "severe"):
-        reasons_shamana.append("High Ama present — Deepana-Pachana must precede Shodhana; Ama must be cleared first")
+        blocking.append("High Ama present — Deepana-Pachana must precede Shodhana; Ama must be cleared first")
 
+    # Low Ojas restricts to the Brimhana (nourishing) routes rather than blocking
+    # outright. `contraindication_matrix.atidurbala` allows exactly Matra Basti,
+    # Pratimarsha Nasya and Abhyanga for the depleted — and Matra Basti IS the
+    # nourishing Basti, the classical treatment for that state. Barring it would
+    # withhold the indicated therapy from the patients it was written for.
+    # Expulsive routes (Vamana, Virechana, Raktamokshana) stay barred: those
+    # deplete, which is the objection to Shodhana here in the first place.
     ojas = user_profile.get("ojas_level", "medium")
-    if ojas == "low":
-        reasons_shamana.append("Low Ojas — Brimhana (nourishing) Rasayana required before Shodhana")
+    brimhana_only = ojas == "low"
+    if brimhana_only:
+        restricting.append(
+            "Low Ojas — Brimhana (nourishing) routes only: Matra Basti, Pratimarsha Nasya, "
+            "Abhyanga. No expulsive Karma, and Rasayana required before any future Shodhana."
+        )
 
-    # Bala (strength) from fitness_level — CS Sutrasthana 15: Manda Bala → Shamana only
+    # Atidurbala — `contraindication_matrix.atidurbala` blocks Vamana, strong
+    # Virechana and Niruha Basti outright; only Matra Basti, Pratimarsha Nasya,
+    # Abhyanga and Shamana remain.
+    bmi = user_profile.get("bmi")
+    if isinstance(bmi, (int, float)) and 0 < bmi < _ATIDURBALA_BMI:
+        blocking.append(
+            f"Atidurbala (BMI {bmi:.1f}) — Shodhana would cause Dhatu Kshaya. "
+            "Brimhana required first."
+        )
+
+    # Bala (strength) from fitness_level — CS Sutrasthana 15 (Bala Pareeksha).
+    # Manda Bala restricts rather than blocks: `contraindication_matrix.atidurbala`
+    # withholds Vamana, strong Virechana and Niruha Basti from the depleted while
+    # explicitly *allowing* Matra Basti, Pratimarsha Nasya and Abhyanga. Manda Bala
+    # is low reserve, not Atidurbala, so treating it as an absolute bar would deny
+    # the mild protocol to the users the KB wrote that protocol for.
     fitness = user_profile.get("fitness_level", "intermediate")
     bala_type, bala_note = _FITNESS_TO_BALA.get(fitness, ("madhyama", "Madhyama Bala"))
     if bala_type == "manda" and experience == "none":
-        reasons_shamana.append(
+        restricting.append(
             "Manda Bala (beginner fitness) without prior PK experience — "
-            "Shodhana risk of Ativyapada. Brimhana + Shamana recommended first."
+            "full Shodhana carries Ativyapada risk. Mridu (mild) Shodhana only."
         )
 
-    _contra = {
-        "anemia", "rectal_bleeding", "bleeding_disorder", "hemophilia",
-        "severe_cardiac", "heart_failure", "active_fever",
-    }
     # Precise, case-insensitive matching (was `k in c`, which was case-sensitive —
     # a capitalised "Anemia" silently bypassed this contraindication set).
     flagged = [c for c in (user_profile.get("medical_history") or [])
-               if any(term_in_condition(c, k) for k in _contra)]
+               if any(term_in_condition(c, k) for k in _SHODHANA_ABSOLUTE_CONTRA)]
     if flagged:
-        reasons_shamana.append(f"Medical contraindication: {', '.join(flagged)}")
+        blocking.append(f"Medical contraindication: {', '.join(flagged)}")
 
-    if reasons_shamana:
+    # Manda Agni is correction-first, not an absolute block:
+    # `contraindication_matrix.manda_agni` blocks strong Virechana and early Niruha
+    # Basti and requires Dipana (Trikatu / Chitrakadi Vati) for 5–7 days.
+    agni = _AGNI_CANON.get(
+        str(user_profile.get("agni_type")
+            or _derive_agni(user_profile.get("digestion_quality"),
+                            user_profile.get("vikriti_dominant") or user_profile.get("dominant_dosha"))).lower(),
+        "sama",
+    )
+    agni_correction_needed = agni == "manda"
+
+    ama_info = protocols.get("shodhana_eligibility", {}).get("ama_correction_first", {})
+
+    # ── Verdict ───────────────────────────────────────────────────────────────
+    if blocking:
         return {
             "type": "shamana",
             "shodhana_eligible": False,
-            "reasons": reasons_shamana,
+            "clinically_ineligible": True,
+            "reasons": blocking,
+            "blocking_reasons": blocking,
+            "restricting_reasons": restricting,
+            "brimhana_only": brimhana_only,
             "bala": bala_type,
             "bala_note": bala_note,
-            "ama_correction_needed": False,
+            "agni": agni,
+            "agni_correction_needed": agni_correction_needed,
+            # A blocked patient still needs Ama cleared — it is the reason many of
+            # them are blocked — so the correction herbs travel with the verdict.
+            "ama_correction_needed": ama != "none",
+            "ama_correction_herbs": ama_info.get("herbs", []),
+            "ama_correction_duration": ama_info.get("duration_days", "3–7 days"),
+            "ama_correction_signs": ama_info.get("signs_ama_cleared", []),
         }
 
-    # Eligible for Shodhana — check if Ama correction needed first
     needs_ama = ama in ("mild", "moderate")
-    ama_info = (
-        protocols.get("shodhana_eligibility", {}).get("ama_correction_first", {})
-        if needs_ama else {}
-    )
+
+    if setting == "home" or restricting:
+        reasons = list(restricting)
+        if setting == "home":
+            reasons.append(
+                "Home setting — full Shodhana (Vamana / Niruha Basti) requires Vaidya supervision. "
+                "Mridu (mild) Shodhana applied per the classical home protocol."
+            )
+        if needs_ama or agni_correction_needed:
+            reasons.append("Deepana-Pachana scheduled before the mild cleanse.")
+        return {
+            "type": "mridu_shodhana",
+            "shodhana_eligible": False,   # not FULL Shodhana
+            "clinically_ineligible": False,
+            "reasons": reasons,
+            "blocking_reasons": [],
+            "restricting_reasons": restricting,
+            "brimhana_only": brimhana_only,
+            "bala": bala_type,
+            "bala_note": bala_note,
+            "agni": agni,
+            "agni_correction_needed": agni_correction_needed,
+            "ama_correction_needed": needs_ama,
+            "ama_correction_herbs": ama_info.get("herbs", []) if needs_ama else [],
+            "ama_correction_duration": ama_info.get("duration_days", "3–7 days"),
+            "ama_correction_signs": ama_info.get("signs_ama_cleared", []),
+        }
 
     shodhana_reasons = ["Patient meets all Shodhana eligibility criteria (CS Sutrasthana 15)"]
     if experience == "experienced":
@@ -156,11 +258,17 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
     return {
         "type": "shodhana",
         "shodhana_eligible": True,
+        "clinically_ineligible": False,
         "reasons": shodhana_reasons,
+        "blocking_reasons": [],
+        "restricting_reasons": [],
+        "brimhana_only": False,
         "bala": bala_type,
         "bala_note": bala_note,
+        "agni": agni,
+        "agni_correction_needed": agni_correction_needed,
         "ama_correction_needed": needs_ama,
-        "ama_correction_herbs": ama_info.get("herbs", []),
+        "ama_correction_herbs": ama_info.get("herbs", []) if needs_ama else [],
         "ama_correction_duration": ama_info.get("duration_days", "3–7 days"),
         "ama_correction_signs": ama_info.get("signs_ama_cleared", []),
     }
@@ -223,6 +331,47 @@ _KARMA_CONTRAINDICATIONS: dict[str, dict[str, set[str]]] = {
         "fallback_reason": "Raktamokshana contraindicated — Virechana (blood-purifying Tikta Ghrita) substituted",
     },
 }
+
+
+# The Brimhana routes — the only Pradhana Karma a depleted patient may receive.
+# `contraindication_matrix.atidurbala` names exactly these as still allowed when
+# Vamana, strong Virechana and Niruha Basti are withheld.
+_BRIMHANA_KARMAS = {"basti_matra", "nasya"}
+
+_BRIMHANA_SUBSTITUTE = {
+    "basti":         ("basti_matra", "Matra Basti (nourishing oil enema) replaces Niruha — Niruha is Lekhana and depletes further"),
+    "vamana":        ("nasya",       "Vamana withheld — emesis depletes Ojas. Pratimarsha Nasya substituted"),
+    "virechana":     ("nasya",       "Virechana withheld — purgation depletes Ojas. Pratimarsha Nasya substituted"),
+    "raktamokshana": ("nasya",       "Raktamokshana withheld — blood loss depletes Ojas. Pratimarsha Nasya substituted"),
+}
+
+
+def _restrict_to_brimhana(pradhana: dict, eligibility: dict) -> tuple[dict, list[str]]:
+    """Force the Karma onto a Brimhana (nourishing) route when Ojas is depleted.
+
+    Low Ojas is not a reason to withhold Panchakarma entirely — Matra Basti is the
+    classical treatment for exactly that state — but it is a reason to withhold
+    every route that expels. Without this, a low-Ojas Pitta patient was routed to
+    Virechana by the dosha mapping and the depletion finding never reached the
+    therapy: the eligibility block said "Brimhana required" and the schedule said
+    "castor oil".
+    """
+    if not eligibility.get("brimhana_only"):
+        return pradhana, []
+    primary = pradhana.get("primary")
+    if primary in _BRIMHANA_KARMAS or primary is None:
+        return pradhana, []
+    fallback, why = _BRIMHANA_SUBSTITUTE.get(primary, ("nasya", "Expulsive Karma withheld — Ojas depleted"))
+    return (
+        {
+            **pradhana,
+            "primary": fallback,
+            "reason": f"⚠ {primary.title()} withheld (low Ojas). {why}.",
+            "brimhana_substitution": True,
+            "original_karma": primary,
+        },
+        [f"BRIMHANA RESTRICTION: {primary} → {fallback} (low Ojas — expulsive Karma depletes further)"],
+    )
 
 
 def _validate_karma_safety(pradhana: dict, medical_history: list[str]) -> dict:
@@ -539,6 +688,259 @@ def _samsarjana_krama(pradhana_karma: str, protocols: dict) -> list[dict]:
     return sk.get("post_virechana", {}).get("stages", [])
 
 
+# ── Shamana (Palliative) Protocol ─────────────────────────────────────────────
+# Reached when `_determine_shodhana_or_shamana` returns a clinically ineligible
+# verdict. Shamana is not "Shodhana with the cleanse removed" — it is a distinct
+# classical treatment arm (CS Sutrasthana 15): correct Agni, pacify the vitiated
+# Dosha in place, then rebuild. None of it expels anything, so nothing here may
+# emit a Pradhana Karma instruction at any strength.
+
+# Snehapana is Shodhanartha Sneha — an escalating dose titrated to Samyak Snigdha
+# so that Doshas liquefy and move toward expulsion. In a plan with no expulsion
+# step that is the wrong procedure: it mobilises Doshas with nowhere to send them.
+# Shamana uses Shamana-matra Sneha, a small fixed dose, described separately below.
+#
+# Samsarjana Krama is excluded for the matching reason: it is the graded re-entry
+# from a Koshtha emptied by Shodhana. Zeroing the `samsarjana_krama` block was not
+# enough — the same procedure also sits in the therapy KB as a schedulable row, so
+# it kept appearing on the calendar as "Strict Samsarjana Krama (Dietary Re-entry)".
+# Blocking the summary and leaving the day is how prose defects survive a fix.
+_SHAMANA_EXCLUDED_THERAPIES = {
+    "snehapana_home", "snehapana_clinic",
+    "samsarjana_krama_strict", "samsarjana_krama_mild",
+}
+
+# The Deepana-Pachana phase excludes the same oleation rows for its own reason:
+# `ama_correction_first` places the herbs "before starting Snehana", so Snehapana
+# inside that phase oils an Ama-laden Srotas — the exact sequencing the phase exists
+# to prevent. The two sets coincide today; they are named separately because the
+# reasons are different and either could change alone.
+_DEEPANA_EXCLUDED_THERAPIES = {"snehapana_home", "snehapana_clinic"}
+
+_SHAMANA_BY_DOSHA = {
+    "vata": {
+        "principle": "Snigdha–Ushna Shamana — unctuous, warm, grounding. Vata is Ruksha, Sheeta and Chala; it is pacified by its opposites.",
+        "sneha_matra": "Shamana-matra Sneha: 10–15 ml warm Tila Taila or Bala Taila with warm water, once daily before food. A pacifying dose — not the escalating Snehapana ladder, which prepares for an expulsion this plan does not perform.",
+        "ahara": "Warm, moist, well-cooked, mildly oily. Madhura–Amla–Lavana Rasa. Moong dal khichdi with ghee, root vegetables, warm milk with nutmeg. Avoid raw salads, dried and frozen food, carbonated drinks.",
+        "vihara": "Regular hours above all. Early sleep, no travel, no fasting, no vigorous exercise. Warm oil to the soles and scalp before bed.",
+    },
+    "pitta": {
+        "principle": "Sheeta–Madhura–Tikta Shamana — cooling, sweet and bitter. Pitta is Ushna, Tikshna and Drava; it is pacified by cool and mild.",
+        "sneha_matra": "Shamana-matra Sneha: 10 ml Tikta Ghrita or Shatavari Ghrita with warm water in the morning. A pacifying dose — not the escalating Snehapana ladder, which prepares for an expulsion this plan does not perform.",
+        "ahara": "Cool to lukewarm, sweet, bitter and astringent. Rice, coconut, cucumber, coriander, sweet fruit, ghee. Avoid sour, fermented, salty, pungent, chilli, alcohol and the midday sun.",
+        "vihara": "Cool the evening, not the day. Moonlight, cool baths, Sheetali pranayama. Avoid arguments, deadlines late at night, and exercise in heat.",
+    },
+    "kapha": {
+        "principle": "Ruksha–Ushna–Laghu Shamana — drying, warming, light. Kapha is Guru, Snigdha and Sheeta; it is pacified by dry, warm and light.",
+        "sneha_matra": "Shamana-matra Sneha: Kapha needs the least oleation. 5–10 ml Sarshapa Taila (mustard) or Trikatu-infused ghee, or omit internal Sneha entirely and keep only external Udvartana. Never the escalating Snehapana ladder.",
+        "ahara": "Warm, dry, light, well-spiced. Barley, millet, steamed greens, ginger, black pepper, honey (never heated). Avoid dairy, wheat, sugar, cold drinks, curd and daytime sleep.",
+        "vihara": "Movement is the medicine. Rise before sunrise, brisk walking, dry brushing before bathing, no daytime sleep at all.",
+    },
+}
+
+
+def _deepana_pachana_action(elig: dict, protocols: dict) -> dict:
+    """The pinned daily action for the Agni-correction phase."""
+    herbs = elig.get("ama_correction_herbs") or (
+        protocols.get("shodhana_eligibility", {})
+        .get("ama_correction_first", {}).get("herbs", [])
+    )
+    ama_info = protocols.get("shodhana_eligibility", {}).get("ama_correction_first", {})
+    signs = elig.get("ama_correction_signs") or ama_info.get("signs_ama_cleared", [])
+    primary = herbs[0] if herbs else "Trikatu (Ginger + Black Pepper + Pippali)"
+    return {
+        "id": "deepana_pachana_main",
+        "name": f"Deepana-Pachana — {primary}",
+        "duration_minutes": None,
+        "benefits": "Kindles Agni and digests Ama. Until Ama is digested no other therapy can reach the Dhatus.",
+        "is_deepana_pachana": True,
+        "timing": "Morning, empty stomach",
+        "pradhana_notes": (
+            f"{primary} on an empty stomach with warm water. "
+            f"Alternatives if unavailable: {', '.join(herbs[1:3]) if len(herbs) > 1 else 'Chitrakadi Vati'}. "
+            f"Diet: {ama_info.get('diet_during', 'Light, warm, easily digestible food. Avoid heavy, cold, raw and fermented.')} "
+            f"Ama is cleared when: {'; '.join(signs) if signs else 'the tongue coating clears and appetite returns'}. "
+            "Do not progress to the next phase before those signs appear — the days below are a guide, not a deadline."
+        ),
+    }
+
+
+def _brimhana_action(vikriti_dom: str, aushadha: dict) -> dict:
+    """The pinned daily action for the Brimhana (nourishing) phase."""
+    ras = aushadha.get("rasayana") or {}
+    herb = ras.get("herb", "Chyawanprash")
+    dose = ras.get("dose", "1 tsp twice daily with warm milk")
+    return {
+        "id": "brimhana_main",
+        "name": f"Brimhana Rasayana — {herb}",
+        "duration_minutes": None,
+        "benefits": "Rebuilds Dhatu and Ojas. This is the phase that makes a future Shodhana possible.",
+        "is_brimhana": True,
+        "timing": ras.get("timing", "Daily, with warm milk"),
+        "pradhana_notes": (
+            f"{herb} — {dose}. Continue for {ras.get('duration', '3 months')} beyond the end of this plan; "
+            "Rasayana works over months, not days. "
+            "Nourishing food, unhurried meals, sleep before 10pm, and no fasting of any kind. "
+            "Re-assess Bala, Agni, Ama and Ojas with a Vaidya before considering Shodhana."
+        ),
+    }
+
+
+def _assemble_rotating_phase(pool, target_days, start_day, phase_name, pinned=None):
+    """Lay a therapy pool across a phase, rotating so consecutive days differ.
+
+    `assemble_phase` repeats pool[0] every single day, which is how a 21-day plan
+    came to schedule the same therapy eight times in a row. Here each day takes the
+    next therapy in the pool and the one after it, so a pool of four fills four
+    distinct days before it repeats.
+    """
+    if target_days <= 0:
+        return []
+    schedule = []
+    for i in range(target_days):
+        therapies = []
+        if pinned:
+            therapies.append(pinned)
+        if pool:
+            primary = pool[i % len(pool)]
+            therapies.append({
+                "id": primary["id"], "name": primary["name"],
+                "duration_minutes": primary["duration_minutes"], "benefits": primary["benefits"],
+            })
+            if len(pool) > 1:
+                secondary = pool[(i + 1) % len(pool)]
+                therapies.append({
+                    "id": secondary["id"], "name": secondary["name"],
+                    "duration_minutes": secondary["duration_minutes"], "benefits": secondary["benefits"],
+                })
+        schedule.append({"day": start_day + i, "phase": phase_name, "therapies": therapies})
+    return schedule
+
+
+def _build_shamana_plan(
+    user_profile: dict,
+    pk_prefs: dict,
+    protocols: dict,
+    pkt: list,
+    elig: dict,
+    vikriti_dom: str,
+    aushadha: dict,
+    total_days: int,
+) -> dict:
+    """Assemble the three-phase Shamana arm: Agni correction → pacification → nourishment.
+
+    Returns the phase list, the day-by-day schedule and the `shamana_protocol`
+    detail block. The caller must not add a Pradhana Karma to any of it.
+    """
+    ama_needed  = bool(elig.get("ama_correction_needed"))
+    agni_needed = bool(elig.get("agni_correction_needed"))
+    deepana_needed = ama_needed or agni_needed
+
+    # Deepana-Pachana runs 3–7 days classically (`ama_correction_first.duration_days`)
+    # and is scaled to the plan, never past 40% of it.
+    deepana_days = 0
+    if deepana_needed:
+        deepana_days = max(3, min(7, int(total_days * 0.40)))
+        deepana_days = min(deepana_days, max(1, total_days - 2))
+
+    # Brimhana closes every Shamana plan — depletion is why most users land here.
+    brimhana_days = max(2, int(round((total_days - deepana_days) * 0.35)))
+    shamana_days  = total_days - deepana_days - brimhana_days
+    if shamana_days < 1:
+        # Very short plan: the pacification body is the part that must survive.
+        shamana_days = 1
+        brimhana_days = max(1, total_days - deepana_days - shamana_days)
+
+    pool = [
+        t for t in (
+            filter_and_score_therapies(user_profile, pk_prefs, "purvakarma", pkt, vikriti_dom)
+            + filter_and_score_therapies(user_profile, pk_prefs, "paschat", pkt, vikriti_dom)
+        )
+        if t["id"] not in _SHAMANA_EXCLUDED_THERAPIES
+    ]
+    # No therapy from the `pradhana` phase may appear — that is the whole point.
+    gentle_pool = [t for t in pool if t.get("phase") != "pradhana"]
+
+    schedule: list[dict] = []
+    phases: list[dict] = []
+    day = 1
+
+    if deepana_days:
+        label = "Deepana-Pachana (Agni Correction)"
+        schedule += _assemble_rotating_phase(
+            gentle_pool, deepana_days, day, label,
+            pinned=_deepana_pachana_action(elig, protocols),
+        )
+        phases.append({
+            "key": "deepana_pachana", "label": "Deepana-Pachana",
+            "sub": "Kindle Agni, digest Ama", "days": deepana_days,
+        })
+        day += deepana_days
+
+    label = "Shamana Chikitsa (Pacification)"
+    schedule += _assemble_rotating_phase(gentle_pool, shamana_days, day, label)
+    phases.append({
+        "key": "shamana", "label": "Shamana Chikitsa",
+        "sub": f"{vikriti_dom.title()} pacification — no expulsion", "days": shamana_days,
+    })
+    day += shamana_days
+
+    label = "Brimhana Rasayana (Nourishment)"
+    schedule += _assemble_rotating_phase(
+        gentle_pool, brimhana_days, day, label,
+        pinned=_brimhana_action(vikriti_dom, aushadha),
+    )
+    phases.append({
+        "key": "brimhana", "label": "Brimhana Rasayana",
+        "sub": "Rebuild Dhatu and Ojas", "days": brimhana_days,
+    })
+
+    sd = _SHAMANA_BY_DOSHA.get(vikriti_dom, _SHAMANA_BY_DOSHA["vata"])
+    ama_info = protocols.get("shodhana_eligibility", {}).get("ama_correction_first", {})
+
+    return {
+        "schedule": schedule,
+        "phases": phases,
+        "days": {"deepana": deepana_days, "shamana": shamana_days, "brimhana": brimhana_days},
+        "protocol": {
+            "why": (
+                "Shodhana (Vamana, Virechana, Basti, Nasya, Raktamokshana) is withheld for the "
+                "reasons listed above. This plan treats the same imbalance by the Shamana route: "
+                "correct Agni, pacify the Dosha where it sits, then rebuild what is depleted. "
+                "Nothing in it expels Doshas, and no purgative, emetic or enema appears at any strength."
+            ),
+            "blocking_reasons": elig.get("blocking_reasons", []),
+            "deepana_pachana": ({
+                "needed":   True,
+                "why":      ("Ama present — Shodhana would drive it deeper into the Srotas"
+                             if ama_needed else
+                             "Manda Agni — purification cannot occur if Agni cannot process dislodged Doshas"),
+                "herbs":    elig.get("ama_correction_herbs") or ama_info.get("herbs", []),
+                "duration": ama_info.get("duration_days", "3–7 days"),
+                "signs_cleared": elig.get("ama_correction_signs") or ama_info.get("signs_ama_cleared", []),
+                "diet":     ama_info.get("diet_during", ""),
+            } if deepana_needed else {"needed": False}),
+            "shamana_chikitsa": {
+                "principle":   sd["principle"],
+                "sneha_matra": sd["sneha_matra"],
+                "ahara":       sd["ahara"],
+                "vihara":      sd["vihara"],
+            },
+            "brimhana": {
+                "why": (
+                    "Every Shamana plan ends in Brimhana because depletion — of Bala, Ojas or Dhatu — "
+                    "is why most patients are here. This is the phase that makes a future Shodhana possible."
+                ),
+                "rasayana": aushadha.get("rasayana", {}),
+            },
+            "reassessment": (
+                "Re-assess Bala, Agni, Ama and Ojas with a Vaidya before considering Shodhana. "
+                "The verdict above is a snapshot of the profile on file, not a permanent finding."
+            ),
+        },
+    }
+
+
 # ── Therapy Schedule Helpers (unchanged logic) ─────────────────────────────────
 
 def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list, vikriti_dom=None):
@@ -783,55 +1185,122 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     # ── Clinical Decisions ────────────────────────────────────────────────────
     ritu_ctx    = _get_ritu_context(protocols)
     eligibility = _determine_shodhana_or_shamana(user_profile, pk_prefs, protocols)
-    pradhana    = _select_pradhana_karma(vikriti_dom, vikriti_sec, setting, protocols)
 
-    # Safety gate: substitute karma if hard contraindicated by medical history
-    pradhana, safety_warnings = _validate_karma_safety(pradhana, medical_history)
-
-    # Severe unmapped condition override — conservative Shamana
+    # Severe unmapped condition override — conservative Shamana.
+    # Applied before any Karma is selected, so the override cannot be outrun by a
+    # Pradhana Karma that was already chosen.
     if severe_unmapped and eligibility.get("type") != "shamana":
+        blocking = [
+            f"Severe systemic condition(s) detected outside classical disease mapping: "
+            f"{', '.join(severe_unmapped)}. Conservative Shamana applied — Vaidya assessment required "
+            "before any Shodhana. Ref: CS Sutrasthana 15 (Bala Pareeksha mandatory)."
+        ]
         eligibility = {
+            **eligibility,
             "type": "shamana",
             "shodhana_eligible": False,
-            "reasons": [
-                f"Severe systemic condition(s) detected outside classical disease mapping: "
-                f"{', '.join(severe_unmapped)}. Conservative Shamana applied — Vaidya assessment required "
-                "before any Shodhana. Ref: CS Sutrasthana 15 (Bala Pareeksha mandatory)."
-            ],
-            "bala": bala_type,
-            "bala_note": bala_note,
-            "ama_correction_needed": False,
+            "clinically_ineligible": True,
+            "reasons": blocking,
+            "blocking_reasons": blocking,
             "vaidya_override": True,
         }
+
+    is_shamana = eligibility.get("type") == "shamana"
+
+    # Mridu Shodhana takes the home-adaptation branch wherever the patient is.
+    # A Manda Bala patient who books a clinic is still a Manda Bala patient: the
+    # verdict has to reach Karma selection, Basti subtype AND drug strength, or
+    # "mild" is a label on a plan that schedules Vamana with a clinic-strength
+    # purgative. This is the setting the *therapy* is chosen for; `setting` stays
+    # the setting the patient is actually in, which still governs the therapy pool.
+    karma_setting = "home" if eligibility.get("type") == "mridu_shodhana" else setting
+
+    # A Shamana plan has no Pradhana Karma at all — not a substituted one, not a
+    # milder one. Selecting a Karma here and relying on later code not to print it
+    # is exactly how a 78-year-old with severe Ama and a cancer diagnosis came to be
+    # handed a castor-oil purgation schedule under a badge reading "Shamana".
+    if is_shamana:
+        pradhana = {
+            "primary": None,
+            "secondary": None,
+            "reason": "No Pradhana Karma — patient is not eligible for Shodhana at any strength.",
+            "sequence": "",
+            "clinical_note": "",
+            "protocol": {},
+        }
+        safety_warnings: list[str] = []
+    else:
+        pradhana = _select_pradhana_karma(vikriti_dom, vikriti_sec, karma_setting, protocols)
+        pradhana, safety_warnings = _restrict_to_brimhana(pradhana, eligibility)
+        # Safety gate: substitute karma if hard contraindicated by medical history
+        pradhana, karma_warnings = _validate_karma_safety(pradhana, medical_history)
+        safety_warnings += karma_warnings
+
+    if severe_unmapped:
         safety_warnings.append(
             f"⚠ VAIDYA REVIEW REQUIRED: Unmapped severe conditions ({', '.join(severe_unmapped)}) "
             "require clinical assessment before PK. Plan uses conservative Shamana protocol."
         )
 
     # ── Phase Duration Splits ─────────────────────────────────────────────────
-    purva_days = _purvakarma_days(vikriti_dom, total_days, protocols)
-
-    remaining = total_days - purva_days
-    if pradhana["primary"] in ("basti", "basti_matra"):
-        bs = _basti_subtype(setting, remaining - 2)
-        pradhana_days = min(bs["days"], remaining - 2)
+    # Deepana-Pachana precedes Snehana whenever Ama is present or Agni is Manda —
+    # `ama_correction_first` is explicit that the herbs run "3-7 days ... before
+    # starting Snehana". It used to produce a banner and no days, so a patient with
+    # moderate Ama was told Ama must be cleared first and then handed a schedule
+    # that began with Snehana on day 1.
+    deepana_days = 0
+    duration_notice = None
+    if is_shamana:
+        purva_days = pradhana_days = paschat_days = 0
+        basti_info = None
     else:
-        # Vamana = 1 day; Virechana = 1 day; Nasya = 5–7 days
-        pradhana_days = min(5 if pradhana["primary"] == "nasya" else 1, remaining - 2)
-    pradhana_days = max(1, pradhana_days)
-    paschat_days  = max(2, total_days - purva_days - pradhana_days)
+        # A Shodhana course has a floor: Purvakarma cannot be shorter than 2 days,
+        # the Karma needs its own day, and Samsarjana Krama is 2 days at the very
+        # least. Below that the phase minimums simply overran the budget in silence —
+        # a 3-day request returned a 5-day schedule while `total_days` still read 3,
+        # so the duration on the card and the calendar under it were different plans.
+        _MIN_SHODHANA_DAYS = 5
+        if total_days < _MIN_SHODHANA_DAYS:
+            duration_notice = (
+                f"Extended from {total_days} to {_MIN_SHODHANA_DAYS} days: Purvakarma, the Karma "
+                "itself and Samsarjana Krama cannot be compressed further without making the "
+                "course unsafe. Shortening any of them is what causes post-Shodhana complications."
+            )
+            total_days = _MIN_SHODHANA_DAYS
 
-    basti_info = (
-        _basti_subtype(setting, remaining - 2)
-        if pradhana["primary"] in ("basti", "basti_matra") else None
-    )
+        if eligibility.get("ama_correction_needed") or eligibility.get("agni_correction_needed"):
+            # Capped so the correction can never crowd out the cleanse it prepares for.
+            deepana_days = min(max(3, min(7, int(total_days * 0.25))), max(0, total_days - _MIN_SHODHANA_DAYS))
+
+        shodhana_days = total_days - deepana_days
+        purva_days = _purvakarma_days(vikriti_dom, shodhana_days, protocols)
+
+        remaining = shodhana_days - purva_days
+        if pradhana["primary"] in ("basti", "basti_matra"):
+            bs = _basti_subtype(karma_setting, remaining - 2)
+            pradhana_days = min(bs["days"], remaining - 2)
+        else:
+            # Vamana = 1 day; Virechana = 1 day; Nasya = 5–7 days
+            pradhana_days = min(5 if pradhana["primary"] == "nasya" else 1, remaining - 2)
+        pradhana_days = max(1, pradhana_days)
+        paschat_days  = max(2, shodhana_days - purva_days - pradhana_days)
+
+        basti_info = (
+            _basti_subtype(karma_setting, remaining - 2)
+            if pradhana["primary"] in ("basti", "basti_matra") else None
+        )
 
     # Koshtha: check user_profile first, then pk_prefs (PreferencesModal asks it for PK context)
     koshtha = user_profile.get("koshtha") or pk_prefs.get("koshtha") or "sama"
 
     # ── Aushadha & Samsarjana ─────────────────────────────────────────────────
-    aushadha   = _select_aushadha(vikriti_dom, medical_history, pradhana["primary"], setting, protocols, koshtha)
-    samsarjana = _samsarjana_krama(pradhana["primary"], protocols)
+    aushadha = _select_aushadha(
+        vikriti_dom, medical_history, pradhana["primary"] or "shamana", karma_setting, protocols, koshtha
+    )
+    # Samsarjana Krama is the graded re-entry from a Shodhana-emptied Koshtha. With
+    # no Shodhana there is nothing to re-enter from, and printing its stages would
+    # put a mono-diet ladder in a plan whose whole purpose is to stop depleting.
+    samsarjana = [] if is_shamana else _samsarjana_krama(pradhana["primary"], protocols)
 
     # ── Snehana Protocol ──────────────────────────────────────────────────────
     snehana_int = (
@@ -843,8 +1312,11 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         .get("snehana", {}).get("types", {}).get("external", {})
     )
 
-    # Dose schedule clipped to actual Purvakarma days
-    dose_schedule = snehana_int.get("dose_schedule", [])[:purva_days]
+    # Dose schedule clipped to actual Purvakarma days. Empty under Shamana: the
+    # escalating ladder is Shodhanartha Sneha, given to liquefy Doshas so they can
+    # be expelled. In a plan with no expulsion step it mobilises them with nowhere
+    # to go. Shamana-matra Sneha replaces it (see shamana_protocol.shamana_chikitsa).
+    dose_schedule = [] if is_shamana else snehana_int.get("dose_schedule", [])[:purva_days]
     # Kapha: classical Avara Snehana — max 60ml; avoid heavy oleation for already-heavy Kapha
     # Sarshapa Taila (mustard oil) or Trikatu-infused Ghrita preferred over plain Ghrita
     if vikriti_dom == "kapha":
@@ -863,27 +1335,68 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     )
 
     # ── Daily Schedule Assembly ───────────────────────────────────────────────
-    purva_pool    = filter_and_score_therapies(user_profile, pk_prefs, "purvakarma", pkt, vikriti_dom)
-    pradhana_pool = filter_and_score_therapies(user_profile, pk_prefs, "pradhana",   pkt, vikriti_dom)
-    paschat_pool  = filter_and_score_therapies(user_profile, pk_prefs, "paschat",    pkt, vikriti_dom)
+    shamana_build: dict = {}
+    if is_shamana:
+        shamana_build = _build_shamana_plan(
+            user_profile, pk_prefs, protocols, pkt, eligibility, vikriti_dom, aushadha, total_days,
+        )
+        schedule = shamana_build["schedule"]
+        phases   = shamana_build["phases"]
+        sd       = shamana_build["days"]
+        purva_days, pradhana_days, paschat_days = 0, 0, sd["brimhana"]
+    else:
+        purva_pool    = filter_and_score_therapies(user_profile, pk_prefs, "purvakarma", pkt, vikriti_dom)
+        pradhana_pool = filter_and_score_therapies(user_profile, pk_prefs, "pradhana",   pkt, vikriti_dom)
+        paschat_pool  = filter_and_score_therapies(user_profile, pk_prefs, "paschat",    pkt, vikriti_dom)
 
-    schedule = []
-    schedule.extend(assemble_phase(purva_pool,    purva_days,    1,                              "Purvakarma (Preparation)"))
-    schedule.extend(assemble_phase(pradhana_pool, pradhana_days, 1 + purva_days,                 "Pradhana Karma (Main Cleanse)"))
-    schedule.extend(assemble_phase(paschat_pool,  paschat_days,  1 + purva_days + pradhana_days, "Paschat Karma (Rejuvenation)"))
+        schedule = []
+        phases = []
+        offset = 1
+        if deepana_days:
+            # Snehana is what Deepana-Pachana precedes ("3-7 days ... before starting
+            # Snehana"), so the oleation rows cannot appear inside the phase that
+            # exists to come first. Oiling an Ama-laden Srotas is the specific error.
+            deepana_pool = [t for t in purva_pool if t["id"] not in _DEEPANA_EXCLUDED_THERAPIES]
+            schedule.extend(_assemble_rotating_phase(
+                deepana_pool, deepana_days, offset, "Deepana-Pachana (Agni Correction)",
+                pinned=_deepana_pachana_action(eligibility, protocols),
+            ))
+            phases.append({"key": "deepana_pachana", "label": "Deepana-Pachana",
+                           "sub": "Kindle Agni, digest Ama — before Snehana", "days": deepana_days})
+            offset += deepana_days
 
-    # Inject the main Pradhana Karma action as the first entry on every Pradhana day
-    pk_action = _pradhana_day_action(pradhana["primary"], aushadha, basti_info, setting, ritu_ctx.get("ritu", ""))
-    if pk_action:
-        for day_entry in schedule:
-            if "Pradhana" in day_entry.get("phase", ""):
-                day_entry["therapies"].insert(0, pk_action)
+        schedule.extend(assemble_phase(purva_pool,    purva_days,    offset,                              "Purvakarma (Preparation)"))
+        schedule.extend(assemble_phase(pradhana_pool, pradhana_days, offset + purva_days,                 "Pradhana Karma (Main Cleanse)"))
+        schedule.extend(assemble_phase(paschat_pool,  paschat_days,  offset + purva_days + pradhana_days, "Paschat Karma (Rejuvenation)"))
+
+        # The pinned action IS the Pradhana Karma, fully described. The therapy pool
+        # holds a row for every Karma in the KB and was never filtered by the one
+        # selected, so a Virechana day also listed "Clinical Nasya", and a patient
+        # whose Virechana had been withheld for low Ojas still had "Virechana
+        # (Clinical Purgation)" on the calendar beside the Nasya that replaced it.
+        # A substitution that leaves the original on the schedule is not a substitution.
+        pk_action = _pradhana_day_action(pradhana["primary"], aushadha, basti_info, karma_setting, ritu_ctx.get("ritu", ""))
+        if pk_action:
+            for day_entry in schedule:
+                if "Pradhana" in day_entry.get("phase", ""):
+                    day_entry["therapies"] = [pk_action]
+
+        phases += [
+            {"key": "purvakarma", "label": "Purvakarma",
+             "sub": "Snehana + Swedana (Preparation)", "days": purva_days},
+            {"key": "pradhana", "label": "Pradhana Karma",
+             "sub": (pradhana["primary"] or "").replace("_", " "), "days": pradhana_days},
+            {"key": "paschat", "label": "Paschat Karma",
+             "sub": "Samsarjana Krama + Rasayana", "days": paschat_days},
+        ]
 
     # ── Ritu Compatibility Warning ────────────────────────────────────────────
+    # Only meaningful when a Karma was selected; the Ritu calendar schedules
+    # Shodhana, and a Shamana plan performs none.
     pk_primary = pradhana["primary"]
     ritu_avoid = ritu_ctx.get("avoid", [])
     ritu_warning = None
-    if any(pk_primary in a for a in ritu_avoid):
+    if pk_primary and any(pk_primary in a for a in ritu_avoid):
         ritu_warning = (
             f"⚠ {pk_primary.title()} is not ideal in {ritu_ctx.get('ritu_name', ritu_ctx.get('ritu', ''))}. "
             f"Preferred therapy this season: {ritu_ctx.get('primary_shodhana', 'virechana').title()}. "
@@ -909,7 +1422,13 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         },
 
         # ── Phase breakdown ───────────────────────────────────────────────────
+        # `phases` is the authoritative ordered list — the Shamana arm has three
+        # differently named phases, and the three fixed *_days keys below cannot
+        # describe them. They are kept for the callers that still read them.
         "phase_breakdown": {
+            "phases":                          phases,
+            "deepana_pachana_days":            deepana_days,
+            "duration_notice":                 duration_notice,
             "purvakarma_days":                 purva_days,
             "purvakarma_classical_snehana_days": snehana_int.get("duration_by_prakriti", {}).get(vikriti_dom, 5),
             "pradhana_karma_days":             pradhana_days,
@@ -926,6 +1445,9 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             "abhyanga_oil":       abhyanga_oils,
             "abhyanga_technique": snehana_ext.get("technique", ""),
         },
+
+        # ── Shamana arm detail (present only when Shodhana is withheld) ───────
+        "shamana_protocol": shamana_build.get("protocol") if is_shamana else None,
 
         # ── Aushadha (medicines/oils) ─────────────────────────────────────────
         "aushadha": aushadha,
@@ -954,6 +1476,10 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         },
 
         "disclaimer": (
+            "SHAMANA PROTOCOL: Shodhana is withheld — see the reasons above. This plan contains "
+            "no Vamana, Virechana, Basti, Nasya or Raktamokshana at any strength. Re-assess with a "
+            "qualified Vaidya (BAMS/MD Ayurveda) before considering purification."
+            if is_shamana else
             "HOME PROTOCOL: Full Shodhana (Vamana, Niruha Basti) requires clinical supervision. "
             "This plan uses safe home adaptations (Matra Basti, mild Virechana, Pratimarsha Nasya)."
             if setting == "home" else
