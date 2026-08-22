@@ -2109,9 +2109,10 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         sd       = shamana_build["days"]
         purva_days, pradhana_days, paschat_days = 0, 0, sd["brimhana"]
     else:
-        purva_pool    = filter_and_score_therapies(user_profile, pk_prefs, "purvakarma", pkt, vikriti_dom)
-        pradhana_pool = filter_and_score_therapies(user_profile, pk_prefs, "pradhana",   pkt, vikriti_dom)
-        paschat_pool  = filter_and_score_therapies(user_profile, pk_prefs, "paschat",    pkt, vikriti_dom)
+        purva_pool   = filter_and_score_therapies(user_profile, pk_prefs, "purvakarma", pkt, vikriti_dom)
+        paschat_pool = filter_and_score_therapies(user_profile, pk_prefs, "paschat",    pkt, vikriti_dom)
+        # No `pradhana` pool: that phase's content is the pinned Karma action, and
+        # drawing a pool for it is what let an empty pool delete the cleanse day.
 
         schedule = []
         phases = []
