@@ -1042,6 +1042,19 @@
   margin: 0;
 }
 
+/* Numbered, because these are steps performed in order on a body. */
+.pk-pradhana-steps {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--ayura-text-secondary);
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.3rem;
+}
+.pk-pradhana-steps li { padding-left: 0.15rem; }
+.pk-pradhana-steps li::marker { color: var(--plan-orange); font-weight: 700; }
+
 /* Unmapped conditions banner */
 .pk-unmapped-banner {
   background: rgba(239,68,68,0.06);

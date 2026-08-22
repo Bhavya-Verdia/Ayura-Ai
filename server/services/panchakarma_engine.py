@@ -8,11 +8,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 THERAPIES_PATH = BASE_DIR / "data" / "knowledge_base" / "panchakarma_therapies.json"
 PROTOCOLS_PATH = BASE_DIR / "data" / "knowledge_base" / "panchakarma_protocols.json"
 CLINICAL_PATH  = BASE_DIR / "data" / "knowledge_base" / "panchakarma_clinical.json"
+PROCEDURES_PATH = BASE_DIR / "data" / "knowledge_base" / "panchakarma_procedures.json"
 
 pk_therapies: list[dict] = []
 pk_protocols: dict = {}
 # The single contraindication source — see its `_meta.why_this_file_exists`.
 pk_clinical: dict = {}
+# The step-by-step instructions. Previously ~500 words of string literals in this
+# file, which meant the how-to for emesis, purgation, enema, nasal instillation and
+# bloodletting could not be reviewed as data, handed to a vaidya, translated, or
+# checked by a test.
+pk_procedures: dict = {}
 
 if THERAPIES_PATH.exists():
     with open(THERAPIES_PATH, "r", encoding="utf-8") as _f:
@@ -25,6 +31,10 @@ if PROTOCOLS_PATH.exists():
 if CLINICAL_PATH.exists():
     with open(CLINICAL_PATH, "r", encoding="utf-8") as _f:
         pk_clinical = json.load(_f)
+
+if PROCEDURES_PATH.exists():
+    with open(PROCEDURES_PATH, "r", encoding="utf-8") as _f:
+        pk_procedures = json.load(_f)
 
 
 # ── Ritu (Season) ─────────────────────────────────────────────────────────────
@@ -55,6 +65,8 @@ _FITNESS_TO_BALA = {
 
 # Canonical Agni vocabulary. agni_type may be stored either dosha-keyed
 # (vata/pitta/kapha) or classical-keyed (vishama/tikshna/manda); normalise both.
+_BALA_LABEL = {"uttama": "Uttama Bala", "madhyama": "Madhyama Bala", "manda": "Manda Bala"}
+
 _AGNI_CANON = {
     "sama": "sama",
     "vata": "vishama", "vishama": "vishama",
@@ -295,7 +307,10 @@ _KARMA_FALLBACK: dict[str, tuple[str, str]] = {
     "virechana":     ("basti",     "Virechana contraindicated — Basti (enema route) substituted to avoid GI stress"),
     "basti":         ("nasya",     "Basti contraindicated — Nasya + Shamana substituted"),
     "nasya":         ("nasya",     ""),
-    "raktamokshana": ("virechana", "Raktamokshana contraindicated — Virechana (blood-purifying Tikta Ghrita) substituted"),
+    # The reason names the route, not the drug: the Aushadha for the substituted
+    # Karma is chosen separately from the compendium, and naming one here was a
+    # second source that could contradict it.
+    "raktamokshana": ("virechana", "Raktamokshana contraindicated — Virechana substituted to clear Rakta by the Pitta route"),
 }
 
 
@@ -570,12 +585,18 @@ def _purvakarma_days(vikriti_dom: str, total_days: int, protocols: dict) -> int:
 def _basti_subtype(setting: str, available_days: int) -> dict:
     """Select Yoga / Kala / Karma / Matra Basti based on setting and days available."""
     if setting == "home":
+        # Dose and timing come from the KB's own `matra_basti` subtype, which carries
+        # both. They were restated here as literals, naming two oils while the actual
+        # oil is chosen from the compendium — a third description of the same thing.
+        kb = (pk_protocols.get("pradhana_karma", {}).get("basti", {})
+              .get("subtypes", {}).get("matra_basti", {}))
         return {
             "subtype": "matra_basti",
             "name": "Matra Basti (Home Oil Enema)",
             "days": min(8, available_days),
-            "dose": "50–80 ml warm sesame oil or Bala Taila",
-            "timing": "Night, after light dinner. Retain overnight.",
+            "dose": kb.get("dose", "50–80 ml"),
+            "timing": kb.get("timing", "Night, after light dinner"),
+            "retention": kb.get("retention", "Retain overnight if possible"),
             "note": "Safest home Basti. Oil is absorbed — no forced expulsion needed.",
         }
     if available_days >= 16:
@@ -590,6 +611,57 @@ def _basti_subtype(setting: str, available_days: int) -> dict:
 
 # ── Aushadha Selection ────────────────────────────────────────────────────────
 
+def _matches_dosha(entry: dict, dosha: str) -> bool:
+    """`dosha` on a compendium entry is one of vata / pitta / kapha / pitta_vata /
+    pitta_rakta / all — a compound string, not a list."""
+    field = entry.get("dosha", "")
+    return field == "all" or field == dosha or dosha in field.split("_")
+
+
+def _select_from_compendium(
+    entries: list[dict], conditions: list[str], dosha: str, gender: str | None = None
+) -> dict:
+    """Pick the entry whose *indication* fits the patient, falling back to dosha.
+
+    Selection used to be `next(e for e in entries if dosha matches)` — the first
+    hit and nothing else. Six of the eleven external oils are Vata oils, so only
+    Tila Taila, the first of them, could ever be chosen; Ksheerabala, Mahanarayana,
+    Bala, Dashamoola and Dhanvantara were authored, cited and unreachable. Across
+    5,400 generated plans covering every dosha, setting, goal, Koshtha and
+    condition, 19 of 32 compendium entries were never selected once.
+
+    The indication for each was already written down — in the `use` prose, which no
+    matcher reads. `indications` now carries the same knowledge as tokens.
+
+    Order: a condition-specific entry that also suits the Dosha, then any
+    condition-specific entry, then the Dosha default, then the first entry. The
+    Dosha still outranks a bare indication match, because an oil that aggravates
+    the vitiated Dosha does not become correct through treating the complaint.
+    """
+    if not entries:
+        return {}
+
+    def indicated(e):
+        return any(
+            term_in_condition(c, t) for c in conditions for t in (e.get("indications") or [])
+        ) and (e.get("gender") in (None, gender) if gender else e.get("gender") is None)
+
+    dosha_ok = [e for e in entries if _matches_dosha(e, dosha)]
+    return next(
+        # 1. Suits the Dosha AND treats the condition — the answer when there is one.
+        (e for e in dosha_ok if indicated(e)),
+        next(
+            # 2. Suits the Dosha. Ranked above a wrong-Dosha entry that happens to
+            #    name the condition: Sarshapa Taila is indicated for obesity and is
+            #    a Kapha oil, and giving it to an obese Pitta patient treats the
+            #    complaint by aggravating the Dosha. Vikriti is what a Panchakarma
+            #    plan is built on; the complaint is the reason for building it.
+            iter(dosha_ok),
+            next((e for e in entries if indicated(e)), entries[0]),
+        ),
+    )
+
+
 def _select_aushadha(
     vikriti_dom: str,
     medical_history: list[str],
@@ -597,27 +669,18 @@ def _select_aushadha(
     setting: str,
     protocols: dict,
     koshtha: str = "sama",
+    gender: str | None = None,
+    bala: str = "madhyama",
 ) -> dict:
     aus = protocols.get("aushadha_compendium", {})
     result: dict = {}
 
-    # Abhyanga oil
-    oils = aus.get("oils_external", [])
-    result["abhyanga_oil"] = next(
-        (o for o in oils if o.get("dosha") == vikriti_dom or vikriti_dom in o.get("dosha", "")),
-        oils[0] if oils else {}
-    )
-
-    # Internal Snehana ghrita
-    ghrita = aus.get("ghrita_internal", [])
-    result["internal_ghrita"] = next(
-        (g for g in ghrita if g.get("dosha") == vikriti_dom or vikriti_dom in g.get("dosha", "")),
-        ghrita[0] if ghrita else {}
-    )
+    result["abhyanga_oil"] = _select_from_compendium(
+        aus.get("oils_external", []), medical_history, vikriti_dom)
+    result["internal_ghrita"] = _select_from_compendium(
+        aus.get("ghrita_internal", []), medical_history, vikriti_dom)
 
     # Pradhana-specific Aushadha
-    med_lower = [m.lower() for m in medical_history]
-
     if pradhana_karma == "virechana":
         drugs = aus.get("virechana_drugs", [])
         # Koshtha (bowel tendency) is the primary determinant of Virechana drug strength
@@ -633,123 +696,89 @@ def _select_aushadha(
             strength = "mild"
         else:
             strength = "mild" if setting == "home" else "moderate"
-        result["pradhana_aushadha"] = next(
-            (d for d in drugs if d.get("strength") == strength), drugs[-1] if drugs else {}
+        # Koshtha fixes the strength — that is not negotiable, since Atiyoga in a
+        # Mridu Koshtha is the risk the rule exists for. Within a strength band the
+        # indication decides, which is what makes Avipattikara reachable: it and
+        # Eranda are both "moderate", and taking the first match meant an acidity
+        # patient got castor oil while the drug authored for acidity went unused.
+        band = [d for d in drugs if d.get("strength") == strength]
+        result["pradhana_aushadha"] = (
+            _select_from_compendium(band, medical_history, vikriti_dom)
+            if band else (drugs[-1] if drugs else {})
         )
         result["koshtha_virechana_note"] = _KOSHTHA_NOTES.get(koshtha, _KOSHTHA_NOTES["sama"])
 
     elif pradhana_karma == "vamana":
         vam = aus.get("vamana_drugs", [])
-        result["pradhana_aushadha"] = vam[0] if vam else {}
+        # Bala decides the emetic's strength — CS Sutrasthana 15, Bala Pareeksha.
+        # Taking vam[0] unconditionally handed every patient Madanaphala, the strong
+        # one, and left Vacha and Neem unreachable. Keying it on the setting instead
+        # was no better: Vamana is clinic-only, so the mild band was still dead, and
+        # "which room you are in" is not what decides how hard to purge someone.
+        strength = {"uttama": "strong", "madhyama": "moderate", "manda": "mild"}.get(bala, "moderate")
+        band = [d for d in vam if d.get("strength") == strength] or vam
+        result["pradhana_aushadha"] = _select_from_compendium(band, medical_history, vikriti_dom)
+        result["vamana_bala_note"] = (
+            f"{_BALA_LABEL.get(bala, 'Madhyama Bala')} — {strength} emetic selected. "
+            "Dose is titrated to Vega, not to volume; see the drug's dose note."
+        )
 
     elif pradhana_karma in ("basti", "basti_matra"):
-        kash = aus.get("kashayam_basti", [])
-        if any("ankylos" in m or "spondyl" in m for m in med_lower):
-            result["basti_kashayam"] = {"name": "Rasna Saptak + Bala Kashayam", "use": "Asthi-Majja Gata Vata — AS / Spondylosis"}
-            result["basti_oil"]      = "Ksheerabala Taila — nourishes Asthi-Majja Dhatu"
-        elif any("sciatica" in m or "neuropath" in m or "parkinson" in m for m in med_lower):
-            result["basti_kashayam"] = {"name": "Bala + Dashamoola Kashayam", "use": "Neurological Vata disorders — Gridhrasi / Kampavata"}
-            result["basti_oil"]      = "Mahanarayana Taila — penetrates Majja Dhatu, Vata Nadi Shodhana"
-        elif any("arthritis" in m or "rheuma" in m or "joint" in m or "gout" in m for m in med_lower):
-            result["basti_kashayam"] = {"name": "Dashamoola + Rasna + Eranda Kashayam", "use": "Amavata / Sandhivata / Vatarakta"}
-            result["basti_oil"]      = "Ksheerabala Taila 101 — Sandhi (joint) Brimhana, Vata Shodhana"
-        elif any("ibs" in m or "constipation" in m or "bloat" in m for m in med_lower):
-            result["basti_kashayam"] = {"name": "Dashamoola + Bilva Kashayam", "use": "Grahani / Pakwashaya Vata — IBS, chronic constipation"}
-            result["basti_oil"]      = "Tila Taila (sesame) — Pachana, Vata Anulomana"
-        elif any("pcos" in m or "endometri" in m or "fibroid" in m or "dysmenorrh" in m for m in med_lower):
-            result["basti_kashayam"] = {"name": "Dashamoola + Shatavari + Ashoka Kashayam", "use": "Artavavaha Srotas Shuddhi — gynaecological Vata-Kapha"}
-            result["basti_oil"]      = "Shatavari Ghrita + Tila Taila — Artava Dhatu Brimhana"
-        elif any("kidney" in m or "renal" in m or "uti" in m for m in med_lower):
-            result["basti_kashayam"] = {"name": "Gokshura + Varuna Kashayam", "use": "Mutravaha Srotas — kidney / UTI Vata pacification"}
-            result["basti_oil"]      = "Matra Basti — mild sesame oil only (Niruha avoided in renal disease)"
-        else:
-            result["basti_kashayam"] = kash[0] if kash else {"name": "Dashamoola Kashayam", "use": "General Vata Basti"}
-            result["basti_oil"]      = "Tila Taila or Bala Taila — general Vata Basti"
+        # The six condition-specific Niruha formulations that used to be an if/elif
+        # chain here are now KB rows with `indications`. Two things were wrong with
+        # the chain beyond its being hardcoded: it matched by raw substring while
+        # every safety gate in this file uses `term_in_condition`, and its oil names
+        # duplicated compendium entries that carried their own `use` text — two
+        # descriptions of Ksheerabala Taila that could drift apart.
+        result["basti_kashayam"] = _select_from_compendium(
+            aus.get("kashayam_basti", []), medical_history, vikriti_dom)
+        result["basti_oil"] = _select_from_compendium(
+            aus.get("oils_external", []), medical_history, vikriti_dom)
 
     elif pradhana_karma == "nasya":
-        if any("migraine" in m or "headache" in m or "sinus" in m for m in med_lower):
-            result["nasya_oil"] = "Shadbindu Taila (Kapha/sinus) or Ksheerabala Taila 101 (Vata migraine)"
-        elif any("anxiety" in m or "insomni" in m or "depression" in m or "ptsd" in m for m in med_lower):
-            result["nasya_oil"] = "Brahmi Ghrita (Manovaha Srotas, Majja Dhatu nourishment) — 4–8 drops each nostril"
-        elif any("hair" in m or "alopec" in m for m in med_lower):
-            result["nasya_oil"] = "Bhringaraja + Ksheerabala Taila — Shiro Brimhana, Keshavardhana"
-        else:
-            nasya_map = {
-                "vata":  "Anu Taila — lubricating, warming, Vata Anulomana",
-                "pitta": "Brahmi Ghrita or Shatavari Ghrita — cooling, Pitta Shamana",
-                "kapha": "Shadbindu Taila — stimulating, Kapha Sthana Shuddhi in head",
-            }
-            result["nasya_oil"] = nasya_map.get(vikriti_dom, "Anu Taila")
+        # Nasya oils were likewise hardcoded, including three — Anu Taila,
+        # Shadbindu Taila, Brahmi Ghrita — that exist in the compendium.
+        nasal = [
+            o for o in aus.get("oils_external", [])
+            if "nasya" in o.get("use", "").lower() or o.get("dosha") == "all"
+        ] or aus.get("oils_external", [])
+        result["nasya_oil"] = _select_from_compendium(nasal, medical_history, vikriti_dom)
 
     # ── Disease-specific adjuvant Aushadha (Sahayoga Dravya) ─────────────────
-    # Skin conditions — Kushtha group
-    if any("psoriasis" in m or "eczema" in m or "urticaria" in m or "vitiligo" in m or "rosacea" in m or "acne" in m for m in med_lower):
-        result["kushtha_aushadha"] = {
-            "name": "Tikta Ghrita + Khadiradi Vati + Manjistha Churna",
-            "use": "Rakta-Pitta Shuddhi (blood purification) — classical Kushtha Chikitsa",
-            "classical_ref": "CS Chikitsa 7 — Tikta Ghrita for all Mahakushtha",
-            "additional": "Nimbadi Churna 3g BD or Sariva (Hemidesmus) decoction 100ml AM"
-        }
-        result["skin_pathya"] = "Avoid incompatible foods (Viruddha Ahara). No milk+fish, no hot water after honey."
+    # Seven formulations that were an if/elif chain of dict literals here, matched
+    # by raw substring — `"kidney" in m` — while every safety gate in this file uses
+    # `term_in_condition`. They are `aushadha_compendium.sahayoga_dravya` now: they
+    # match precisely, and they can be reviewed with the rest of the compendium
+    # rather than by reading Python.
+    for adjuvant in aus.get("sahayoga_dravya", []):
+        if any(term_in_condition(c, t)
+               for c in medical_history for t in (adjuvant.get("indications") or [])):
+            result[adjuvant["id"]] = {
+                k: v for k, v in adjuvant.items() if k not in ("id", "indications")
+            }
 
-    # Metabolic conditions
-    if any("diabetes" in m or "obesity" in m or "hypothyroid" in m or "cholesterol" in m or "metabolic" in m for m in med_lower):
-        result["medovaha_aushadha"] = {
-            "name": "Guduchi + Haridra + Amalaki (Triphala Churna) + Shilajit",
-            "use": "Medovaha Srotas Shuddhi — Prameha / Sthoulya / Galaganda Chikitsa",
-            "classical_ref": "CS Chikitsa 6 — Shilajit is Pramehaghna; Guduchi for Medhya + Tridoshahara",
-            "dosage": "Triphala Churna 3g at bedtime with warm water; Guduchi Kwatha 30ml AM empty stomach"
-        }
-
-    # Gynaecological conditions
-    if any("pcos" in m or "endometri" in m or "fibroid" in m or "dysmenorrh" in m or "amenorrh" in m or "menorrh" in m or "infertilit" in m for m in med_lower):
-        result["artava_aushadha"] = {
-            "name": "Shatavari + Ashoka Twak + Dashamoola + Shatapushpa",
-            "use": "Artavavaha Srotas — Artava Dushti, Vata-Kapha Artava Vikara",
-            "classical_ref": "CS Chikitsa 30 — Shatavari for Artava Kshaya; Ashoka for Raktasthambhana",
-            "dosage": "Shatavari Kalpa 5g in warm milk BD; Dashamoola Kashayam 30ml before food"
-        }
-
-    # Mental health / Manovaha Srotas
-    if any("anxiety" in m or "depression" in m or "ptsd" in m or "insomni" in m or "adhd" in m or "ocd" in m or "bipolar" in m for m in med_lower):
-        result["manovaha_aushadha"] = {
-            "name": "Brahmi + Ashwagandha + Jatamansi + Shankhpushpi",
-            "use": "Manovaha Srotas Shuddhi — Vataja/Kaphaja Manas Vikara",
-            "classical_ref": "CS Chikitsa 9 — Medhya Rasayana; AH Uttara 1 — Unmada Chikitsa",
-            "dosage": "Brahmi Ghrita 5g with warm milk AM; Ashwagandha Churna 3g PM; Jatamansi decoction for sleep"
-        }
-
-    # Respiratory / Pranavaha Srotas
-    if any("asthma" in m or "copd" in m or "bronchit" in m or "rhinit" in m or "sinusit" in m for m in med_lower):
-        result["pranavaha_aushadha"] = {
-            "name": "Vasaka + Kantakari + Sitopaladi Churna (Kapha) / Talisadi Churna (Vata-Kapha)",
-            "use": "Pranavaha Srotas Shuddhi — Shwasa / Kasa / Pratishyaya Chikitsa",
-            "classical_ref": "CS Chikitsa 17 — Vasaka for Kaphaja Shwasa; AH Chikitsa 3",
-            "dosage": "Sitopaladi Churna 3g with honey TDS; Vasaka Swarasa 10ml AM; steam inhalation with Ajwain"
-        }
-
-    # Digestive / Hepatic conditions
-    if any("ibs" in m or "liver" in m or "fatty" in m or "hepatit" in m or "peptic" in m or "ulcer" in m or "crohn" in m or "pancreat" in m for m in med_lower):
-        result["annavaha_aushadha"] = {
-            "name": "Kutaja + Bilva + Dadima + Amalaki + Guduchi Sattva",
-            "use": "Annavaha / Purishavaha Srotas — Grahani / Yakrit Vikara Chikitsa",
-            "classical_ref": "CS Chikitsa 15 — Kutaja is Grahi, Sangrahiya; Guduchi for Yakrit Shodhana",
-            "dosage": "Kutajarishta 15ml after food BD; Guduchi Kwatha 30ml AM; Tikta Ghrita 5g before food for liver"
-        }
-
-    # Cardiovascular / Raktavaha Srotas
-    if any("hypertension" in m or "heart" in m or "cardiac" in m or "varicose" in m or "cholesterol" in m for m in med_lower):
-        result["raktavaha_aushadha"] = {
-            "name": "Arjuna Twak Churna + Punarnava + Sarpagandha (for hypertension only if BP normal post-PK)",
-            "use": "Raktavaha Srotas — Hridaya Roga, Rakta Dushti, Vata-Pitta Shonita Vikara",
-            "classical_ref": "CS Chikitsa 26 — Arjuna Hridya; AH Chikitsa 6 — Punarnava Raktapitta",
-            "caution": "Sarpagandha only under qualified Vaidya supervision; avoid in hypotension"
-        }
-
-    # Rasayana (post-PK)
+    # Rasayana (post-PK). The KB keys this block BY CONDITION —
+    # `reproductive_female`, `bone_joint`, `medhya_brain` — and selection was by
+    # dosha alone, so a PCOS patient and an osteoarthritis patient both received the
+    # generic dosha Rasayana while Shatavari and Laksha Guggulu, authored for
+    # exactly them, went unused. Three of the eight keys were reachable.
     ras = protocols.get("paschat_karma", {}).get("rasayana_integration", {}).get("rasayana_by_condition", {})
-    ras_key = {"vata": "vata_neurological", "pitta": "pitta_inflammatory", "kapha": "kapha_metabolic"}.get(vikriti_dom, "general_immunity")
-    result["rasayana"] = ras.get(ras_key, ras.get("general_immunity", {}))
+    ras_dosha_key = {
+        "vata": "vata_neurological", "pitta": "pitta_inflammatory", "kapha": "kapha_metabolic",
+    }.get(vikriti_dom, "general_immunity")
+
+    # `reproductive_female` and `reproductive_male` both list infertility; gender is
+    # what separates them, and without it the first would always win.
+    matched = next(
+        (
+            entry for key, entry in ras.items()
+            if any(term_in_condition(c, t)
+                   for c in medical_history for t in (entry.get("indications") or []))
+            and entry.get("gender") in (None, gender)
+        ),
+        None,
+    )
+    result["rasayana"] = matched or ras.get(ras_dosha_key, ras.get("general_immunity", {}))
 
     return result
 
@@ -806,73 +835,42 @@ _SHAMANA_EXCLUDED_THERAPIES = {
 # reasons are different and either could change alone.
 _DEEPANA_EXCLUDED_THERAPIES = {"snehapana_home", "snehapana_clinic"}
 
-_SHAMANA_BY_DOSHA = {
-    "vata": {
-        "principle": "Snigdha–Ushna Shamana — unctuous, warm, grounding. Vata is Ruksha, Sheeta and Chala; it is pacified by its opposites.",
-        "sneha_matra": "Shamana-matra Sneha: 10–15 ml warm Tila Taila or Bala Taila with warm water, once daily before food. A pacifying dose — not the escalating Snehapana ladder, which prepares for an expulsion this plan does not perform.",
-        "ahara": "Warm, moist, well-cooked, mildly oily. Madhura–Amla–Lavana Rasa. Moong dal khichdi with ghee, root vegetables, warm milk with nutmeg. Avoid raw salads, dried and frozen food, carbonated drinks.",
-        "vihara": "Regular hours above all. Early sleep, no travel, no fasting, no vigorous exercise. Warm oil to the soles and scalp before bed.",
-    },
-    "pitta": {
-        "principle": "Sheeta–Madhura–Tikta Shamana — cooling, sweet and bitter. Pitta is Ushna, Tikshna and Drava; it is pacified by cool and mild.",
-        "sneha_matra": "Shamana-matra Sneha: 10 ml Tikta Ghrita or Shatavari Ghrita with warm water in the morning. A pacifying dose — not the escalating Snehapana ladder, which prepares for an expulsion this plan does not perform.",
-        "ahara": "Cool to lukewarm, sweet, bitter and astringent. Rice, coconut, cucumber, coriander, sweet fruit, ghee. Avoid sour, fermented, salty, pungent, chilli, alcohol and the midday sun.",
-        "vihara": "Cool the evening, not the day. Moonlight, cool baths, Sheetali pranayama. Avoid arguments, deadlines late at night, and exercise in heat.",
-    },
-    "kapha": {
-        "principle": "Ruksha–Ushna–Laghu Shamana — drying, warming, light. Kapha is Guru, Snigdha and Sheeta; it is pacified by dry, warm and light.",
-        "sneha_matra": "Shamana-matra Sneha: Kapha needs the least oleation. 5–10 ml Sarshapa Taila (mustard) or Trikatu-infused ghee, or omit internal Sneha entirely and keep only external Udvartana. Never the escalating Snehapana ladder.",
-        "ahara": "Warm, dry, light, well-spiced. Barley, millet, steamed greens, ginger, black pepper, honey (never heated). Avoid dairy, wheat, sugar, cold drinks, curd and daytime sleep.",
-        "vihara": "Movement is the medicine. Rise before sunrise, brisk walking, dry brushing before bathing, no daytime sleep at all.",
-    },
-}
+def _shamana_regimen(vikriti_dom: str) -> dict:
+    """The Ahara and Vihara a Shamana plan prescribes, from the procedures KB.
+
+    This was a dict literal here. It is dietary and lifestyle instruction given to a
+    patient — data, not control flow — and holding it in Python meant it could not be
+    translated, reviewed as a document, or checked against the rest of the KB.
+    """
+    regimen = pk_procedures.get("shamana_regimen", {})
+    return regimen.get(vikriti_dom) or regimen.get("vata") or {}
 
 
 def _deepana_pachana_action(elig: dict, protocols: dict) -> dict:
     """The pinned daily action for the Agni-correction phase."""
-    herbs = elig.get("ama_correction_herbs") or (
-        protocols.get("shodhana_eligibility", {})
-        .get("ama_correction_first", {}).get("herbs", [])
-    )
     ama_info = protocols.get("shodhana_eligibility", {}).get("ama_correction_first", {})
+    herbs = elig.get("ama_correction_herbs") or ama_info.get("herbs", [])
     signs = elig.get("ama_correction_signs") or ama_info.get("signs_ama_cleared", [])
-    primary = herbs[0] if herbs else "Trikatu (Ginger + Black Pepper + Pippali)"
-    return {
-        "id": "deepana_pachana_main",
-        "name": f"Deepana-Pachana — {primary}",
-        "duration_minutes": None,
-        "benefits": "Kindles Agni and digests Ama. Until Ama is digested no other therapy can reach the Dhatus.",
-        "is_deepana_pachana": True,
-        "timing": "Morning, empty stomach",
-        "pradhana_notes": (
-            f"{primary} on an empty stomach with warm water. "
-            f"Alternatives if unavailable: {', '.join(herbs[1:3]) if len(herbs) > 1 else 'Chitrakadi Vati'}. "
-            f"Diet: {ama_info.get('diet_during', 'Light, warm, easily digestible food. Avoid heavy, cold, raw and fermented.')} "
-            f"Ama is cleared when: {'; '.join(signs) if signs else 'the tongue coating clears and appetite returns'}. "
-            "Do not progress to the next phase before those signs appear — the days below are a guide, not a deadline."
-        ),
-    }
+    action = _render_procedure("deepana_pachana", {
+        "herb_name": herbs[0] if herbs else "Trikatu (Ginger + Black Pepper + Pippali)",
+        "alternatives": ", ".join(herbs[1:3]) if len(herbs) > 1 else "Chitrakadi Vati",
+        "diet": ama_info.get("diet_during",
+                             "Light, warm, easily digestible food. Avoid heavy, cold, raw and fermented."),
+        "signs": "; ".join(signs) if signs else "the tongue coating clears and appetite returns",
+    })
+    return {**action, "id": "deepana_pachana_main", "is_deepana_pachana": True}
 
 
 def _brimhana_action(vikriti_dom: str, aushadha: dict) -> dict:
     """The pinned daily action for the Brimhana (nourishing) phase."""
     ras = aushadha.get("rasayana") or {}
-    herb = ras.get("herb", "Chyawanprash")
-    dose = ras.get("dose", "1 tsp twice daily with warm milk")
-    return {
-        "id": "brimhana_main",
-        "name": f"Brimhana Rasayana — {herb}",
-        "duration_minutes": None,
-        "benefits": "Rebuilds Dhatu and Ojas. This is the phase that makes a future Shodhana possible.",
-        "is_brimhana": True,
+    action = _render_procedure("brimhana", {
+        "herb_name": ras.get("herb", "Chyawanprash"),
+        "dose": ras.get("dose", "1 tsp twice daily with warm milk"),
+        "duration": ras.get("duration", "3 months"),
         "timing": ras.get("timing", "Daily, with warm milk"),
-        "pradhana_notes": (
-            f"{herb} — {dose}. Continue for {ras.get('duration', '3 months')} beyond the end of this plan; "
-            "Rasayana works over months, not days. "
-            "Nourishing food, unhurried meals, sleep before 10pm, and no fasting of any kind. "
-            "Re-assess Bala, Agni, Ama and Ojas with a Vaidya before considering Shodhana."
-        ),
-    }
+    })
+    return {**action, "id": "brimhana_main", "is_brimhana": True}
 
 
 # ── Goal ──────────────────────────────────────────────────────────────────────
@@ -987,6 +985,53 @@ def _apply_seasonal_karma(pradhana: dict, ritu_ctx: dict, setting: str, protocol
 # card and the calendar beneath it were different plans.
 
 
+def _render_procedure(key: str, fields: dict, extra_steps: list[str] | None = None) -> dict:
+    """Build a pinned day action from `panchakarma_procedures.json`.
+
+    Steps whose placeholders cannot be filled are dropped rather than printed with a
+    brace in them, and a test asserts every placeholder in the file is one some call
+    site supplies — so a dropped step means a bug caught in CI, not a silently
+    shorter instruction reaching a patient.
+    """
+    spec = pk_procedures.get(key)
+    if not spec:
+        return {}
+
+    def fill(text: str) -> str | None:
+        try:
+            return text.format(**fields).strip()
+        except (KeyError, IndexError):
+            return None
+
+    steps = [t for t in (fill(s) for s in spec.get("steps", [])) if t]
+    steps += [t for t in (extra_steps or []) if t]
+
+    name = fill(spec.get("name", "")) or spec.get("name", "")
+    return {
+        "name": name,
+        "duration_minutes": spec.get("duration_minutes"),
+        "benefits": spec.get("benefits", ""),
+        "timing": fill(spec.get("timing", "")) or spec.get("timing", ""),
+        "pradhana_notes": " ".join(steps),
+        "steps": steps,
+    }
+
+
+def _aushadha_name(value, default: str) -> str:
+    """Compendium selections are dicts; several call sites still accept a bare string.
+
+    The dict branches used to discard the value and return a hardcoded default, so
+    every Basti day printed "Tila Taila" no matter which oil had been selected —
+    a condition-specific choice made correctly and thrown away one line before it
+    reached the patient.
+    """
+    if isinstance(value, str):
+        return value or default
+    if isinstance(value, dict):
+        return value.get("name") or default
+    return default
+
+
 def _basti_sequence(subtype: str, days: int, protocols: dict) -> list[dict]:
     """The per-day Anuvasana/Niruha pattern for a Basti course.
 
@@ -1035,51 +1080,31 @@ def _basti_day_action(day_index: int, sequence: list[dict], aushadha: dict,
                       basti_info: dict, protocols: dict) -> dict:
     """The pinned action for one day of a Basti course — the day's own procedure."""
     step = sequence[day_index] if day_index < len(sequence) else {"type": "anuvasana", "note": ""}
-    kind = step["type"]
     basti_kb = protocols.get("pradhana_karma", {}).get("basti", {})
-
-    oil = aushadha.get("basti_oil", "Tila Taila")
-    oil_str = oil if isinstance(oil, str) else "Tila Taila"
-    course = basti_info.get("name", "Basti course")
-    position = f"Day {day_index + 1} of {len(sequence)} — {course}"
-
-    if kind == "niruha":
-        kashayam = aushadha.get("basti_kashayam", {})
-        kash_name = kashayam.get("name", "Dashamoola Kashayam") if isinstance(kashayam, dict) else str(kashayam)
-        formula = basti_kb.get("niruha_basti", {}).get("classical_formula", {})
-        mix = " → ".join(i["item"] for i in formula.get("ingredients", [])) or "Madhu → Saindhava → Sneha → Kalka → Kashayam"
-        return {
-            "id": "basti_niruha_day",
-            "name": f"Niruha Basti (Decoction) — {kash_name}",
-            "duration_minutes": 60,
-            "benefits": "Vata Shodhana from Pakvashaya — the decoction expels, where the oil days nourish.",
-            "is_pradhana_karma": True,
-            "timing": "Morning, empty stomach — administered by a Vaidya",
-            "pradhana_notes": (
-                f"{position}. {step['note']} "
-                f"Formula ({formula.get('total_volume', '~550ml')}, {formula.get('temperature', 'warm — 38°C')}): "
-                f"{kash_name} with {oil_str}. Mix in sequence: {mix}. "
-                "Lie on the left side; the Netra is inserted and the enema given slowly. "
-                "Retain 30–60 min; expulsion follows naturally. Rest 1–2 hours afterwards. "
-                "Light warm food only for the rest of the day — Khichdi, moong dal, warm soup."
-            ),
-        }
-
-    return {
-        "id": "basti_anuvasana_day",
-        "name": f"Anuvasana Basti (Oil) — {oil_str}",
-        "duration_minutes": 30,
-        "benefits": "Brimhana — nourishes and lubricates Pakwashaya, and protects against the Vata a Niruha day raises.",
-        "is_pradhana_karma": True,
-        "timing": "Evening, after a light meal",
-        "pradhana_notes": (
-            f"{position}. {step['note']} "
-            f"{basti_kb.get('anuvasana_basti', {}).get('formula', '60–120ml warm medicated oil')} — {oil_str}, "
-            "warmed to body temperature. Given after food, not before. "
-            "Retain until morning or until the urge to defecate. No expulsion is forced: "
-            "the oil is absorbed, which is the point of the day."
-        ),
+    common = {
+        "oil_name": _aushadha_name(aushadha.get("basti_oil"), "Tila Taila"),
+        "position": f"Day {day_index + 1} of {len(sequence)} — {basti_info.get('name', 'Basti course')}",
+        "sequence_note": step.get("note", ""),
     }
+
+    if step["type"] == "niruha":
+        formula = basti_kb.get("niruha_basti", {}).get("classical_formula", {})
+        action = _render_procedure("basti_niruha", {
+            **common,
+            "kashayam_name": _aushadha_name(aushadha.get("basti_kashayam"), "Dashamoola Kashayam"),
+            "total_volume": formula.get("total_volume", "~550 ml"),
+            "temperature": formula.get("temperature", "warm — 38°C"),
+            "mix_order": " → ".join(i["item"] for i in formula.get("ingredients", []))
+                         or "Madhu → Saindhava → Sneha → Kalka → Kashayam",
+        })
+        return {**action, "id": "basti_niruha_day", "is_pradhana_karma": True}
+
+    action = _render_procedure("basti_anuvasana", {
+        **common,
+        "anuvasana_formula": basti_kb.get("anuvasana_basti", {}).get(
+            "formula", "60–120 ml warm medicated oil"),
+    })
+    return {**action, "id": "basti_anuvasana_day", "is_pradhana_karma": True}
 
 
 def _samsarjana_day_action(day_index: int, stages: list[dict], total_days: int) -> dict | None:
@@ -1096,26 +1121,25 @@ def _samsarjana_day_action(day_index: int, stages: list[dict], total_days: int) 
         return None
     stage = stages[min(day_index, len(stages) - 1)]
     is_last = day_index >= len(stages) - 1
-    n = stage.get("stage", day_index + 1)
-    food = stage.get("food", "Light, warm, easily digestible food")
-    recipe = stage.get("recipe", "")
-    note = stage.get("note", "")
+    holding = is_last and total_days > len(stages)
+    number = stage.get("stage", day_index + 1)
 
-    tail = (
-        "Hold at this stage until normal appetite returns, then resume a Pathya diet."
-        if is_last and total_days > len(stages) else
-        "Move to the next stage only when this one digests comfortably. "
-        "Rushing Samsarjana is what undoes the Shodhana — Agni is at its weakest now."
-    )
-    return {
-        "id": f"samsarjana_stage_{n}",
-        "name": f"Samsarjana Krama — Stage {n}: {food}",
-        "duration_minutes": None,
-        "benefits": "Rekindles Agni by graded steps. The re-entry is as much of the treatment as the cleanse.",
-        "is_samsarjana": True,
-        "timing": stage.get("timing", "All meals today"),
-        "pradhana_notes": " ".join(x for x in (recipe, note, tail) if x),
-    }
+    action = _render_procedure("samsarjana", {
+        "stage": number,
+        "food": stage.get("food", "Light, warm, easily digestible food"),
+        "recipe": stage.get("recipe", ""),
+        "note": stage.get("note", ""),
+    })
+    if holding:
+        # "Move to the next stage" is wrong on the last one — there is no next stage.
+        hold = pk_procedures.get("samsarjana", {}).get("final_stage_step", "")
+        action["steps"] = [x for x in action["steps"] if not x.startswith("Move to the next stage")]
+        if hold:
+            action["steps"].append(hold)
+        action["pradhana_notes"] = " ".join(action["steps"])
+
+    return {**action, "id": f"samsarjana_stage_{number}", "is_samsarjana": True,
+            "timing": stage.get("timing", action.get("timing", "All meals today"))}
 
 
 _TIME_BUDGET_MINUTES = {"15 min": 15, "30 min": 30, "1 hour": 60, "2+ hours": 120}
@@ -1288,7 +1312,7 @@ def _build_shamana_plan(
         "sub": "Rebuild Dhatu and Ojas", "days": brimhana_days,
     })
 
-    sd = _SHAMANA_BY_DOSHA.get(vikriti_dom, _SHAMANA_BY_DOSHA["vata"])
+    sd = _shamana_regimen(vikriti_dom)
     ama_info = protocols.get("shodhana_eligibility", {}).get("ama_correction_first", {})
 
     return {
@@ -1425,125 +1449,61 @@ def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list,
 
 
 def _pradhana_day_action(pradhana_karma: str, aushadha: dict, basti_info: dict | None, setting: str, ritu: str = "") -> dict:
-    """Builds a pinned 'main karma' action injected as the first therapy on every Pradhana day."""
+    """The pinned 'main karma' action for every Pradhana day.
+
+    All of the procedural prose this used to hold inline now lives in
+    `panchakarma_procedures.json`; this function only gathers the values the
+    templates need.
+    """
     pk = pradhana_karma
+    drug = aushadha.get("pradhana_aushadha", {})
+    if not isinstance(drug, dict):
+        drug = {"name": str(drug)}
 
     if pk == "virechana":
-        drug = aushadha.get("pradhana_aushadha", {})
-        drug_name = drug.get("name", "Virechana drug") if isinstance(drug, dict) else str(drug)
-        dose      = drug.get("dose", "as directed") if isinstance(drug, dict) else ""
-        kn        = aushadha.get("koshtha_virechana_note", "")
-        notes = (
-            f"Take {drug_name} ({dose}) in the evening after a light dinner. "
-            "Stay home — purgation begins in 4–8 hours. Keep warm water available. "
-            "Count Vegas (episodes): 5–10 for mild home Virechana; 20–30 for full clinical. "
-            "After completion rest in supine position; sip warm water if thirsty."
-        )
-        if kn:
-            notes += f" | Koshtha note: {kn}"
+        spec = pk_procedures.get("virechana", {})
+        conditional = spec.get("conditional_steps", {})
+        extra = []
+        if aushadha.get("koshtha_virechana_note"):
+            extra.append(conditional.get("koshtha", "").format(
+                koshtha_note=aushadha["koshtha_virechana_note"]))
         if ritu == "grishma":
-            notes += " | Grishma Ritu (Summer): Bala is reduced in summer heat — use mild dose only. Trivrit Churna is contraindicated; Eranda (castor oil) or Triphala only. Avoid vigorous Swedana on Virechana day."
-        return {
-            "id": "virechana_main",
-            "name": f"Virechana — {drug_name}",
-            "duration_minutes": None,
-            "benefits": "Expels excess Pitta from Pakvashaya (colon). Clears Raktavaha and Pittavaha Srotas.",
-            "is_pradhana_karma": True,
-            "timing": "Evening — after light dinner",
-            "pradhana_notes": notes,
-        }
+            extra.append(conditional.get("grishma", ""))
+        action = _render_procedure("virechana", {
+            "drug_name": drug.get("name", "Virechana drug"),
+            "dose": drug.get("dose", "as directed"),
+        }, extra_steps=extra)
+        return {**action, "id": "virechana_main", "is_pradhana_karma": True}
 
     if pk == "vamana":
-        return {
-            "id": "vamana_main",
-            "name": "Vamana — Therapeutic Emesis",
-            "duration_minutes": None,
-            "benefits": "Expels accumulated Kapha from Amashaya (stomach). Clears Pranavaha and Annavaha Srotas.",
-            "is_pradhana_karma": True,
-            "timing": "Morning — under Vaidya supervision (clinic only)",
-            "pradhana_notes": (
-                "Performed by a qualified Vaidya. Morning, empty stomach, after Purvakarma is complete. "
-                "Madanaphala Phanta administered. Patient drinks 6–8 glasses warm milk/sugarcane juice beforehand. "
-                "Count Vegas: 8–12 for Samyak Yoga (adequate purification). "
-                "Atiyoga (>12 Vegas or bleeding): stop immediately — give Ghrita + warm milk. "
-                "Complete rest for 24 hours post-procedure."
-            ),
-        }
+        action = _render_procedure("vamana", {
+            "drug_name": drug.get("name", "Madanaphala Phanta"),
+            "dose": drug.get("dose", "as directed by the Vaidya"),
+            "dose_note": drug.get("dose_note", ""),
+        })
+        return {**action, "id": "vamana_main", "is_pradhana_karma": True}
 
     if pk == "nasya":
-        oil = aushadha.get("nasya_oil", "Anu Taila")
-        oil_str = oil if isinstance(oil, str) else oil.get("name", "Anu Taila")
-        return {
-            "id": "nasya_main",
-            "name": f"Navana Nasya — {oil_str}",
-            "duration_minutes": 15,
-            "benefits": "Clears Kapha and Vata from Urdhvanga (head, neck, sinuses). Reaches Manovaha Srotas via Sringataka Marma.",
-            "is_pradhana_karma": True,
-            "timing": "Morning — 30 min after face Abhyanga and steam",
-            "pradhana_notes": (
-                f"Warm face with steam or hot towel for 5 min. Lie supine, head tilted back slightly. "
-                f"Administer 6–8 drops {oil_str} in each nostril. Sniff gently upward. "
-                "Remain supine for 5 min. Spit out any drainage — do not swallow. "
-                "Avoid eating for 30 min after. Repeat daily for all Nasya phase days."
-            ),
-        }
+        action = _render_procedure("nasya", {
+            "oil_name": _aushadha_name(aushadha.get("nasya_oil"), "the prescribed nasal oil"),
+        })
+        return {**action, "id": "nasya_main", "is_pradhana_karma": True}
 
     if pk == "basti_matra":
-        oil = aushadha.get("basti_oil", "Sesame oil (Tila Taila)")
-        oil_str = oil if isinstance(oil, str) else "Sesame oil"
-        return {
-            "id": "basti_matra_main",
-            "name": f"Matra Basti — {oil_str}",
-            "duration_minutes": 10,
-            "benefits": "Lubricates Pakwashaya, nourishes Vata-dominant Srotas. Safest home Basti — no forced expulsion.",
-            "is_pradhana_karma": True,
-            "timing": "Night — after light dinner",
-            "pradhana_notes": (
-                f"Night, after light dinner. Warm 50–80 ml {oil_str} to body temperature (38°C). "
-                "Use enema bulb (Netra). Lie on left side. Administer slowly over 1–2 min. "
-                "Remain lying — retain overnight if possible; oil is absorbed, no Vega (expulsion) needed. "
-                "Repeat nightly for all Basti phase days."
-            ),
-        }
+        action = _render_procedure("basti_matra", {
+            "oil_name": _aushadha_name(aushadha.get("basti_oil"), "warm sesame oil"),
+        })
+        return {**action, "id": "basti_matra_main", "is_pradhana_karma": True}
 
     if pk == "basti":
-        kashayam = aushadha.get("basti_kashayam", {})
-        oil      = aushadha.get("basti_oil", "Tila Taila")
-        kash_name = kashayam.get("name", "Dashamoola Kashayam") if isinstance(kashayam, dict) else str(kashayam)
-        oil_str   = oil if isinstance(oil, str) else "Tila Taila"
-        bs_name   = (basti_info or {}).get("name", "Yoga Basti")
-        bs_note   = (basti_info or {}).get("note", "")
-        return {
-            "id": "basti_main",
-            "name": f"Basti — {bs_name}",
-            "duration_minutes": 60,
-            "benefits": "Vata Shodhana from Pakvashaya — the seat of Vata. Ardhachikitsa (half of all treatment for Vata).",
-            "is_pradhana_karma": True,
-            "timing": "Morning (Niruha) + Evening (Anuvasana) per Basti day schedule",
-            "pradhana_notes": (
-                f"{bs_name} ({bs_note}). "
-                f"Niruha Basti (decoction): {kash_name} + {oil_str} + Madhu + Saindhava per classical formula. "
-                "Administered by Vaidya — patient lies on left side, Netra inserted, enema given slowly. "
-                "Retain 30–60 min; expulsion occurs naturally. Rest 1–2 hours post-Niruha. "
-                f"Anuvasana Basti (oil): {oil_str} 60–120 ml same evening — retained overnight."
-            ),
-        }
+        # A multi-day Basti course is rendered per day by `_basti_day_action`; this
+        # is the single-entry fallback for a course of one.
+        return _basti_day_action(0, [{"type": "anuvasana", "note": ""}], aushadha,
+                                 basti_info or {}, pk_protocols)
 
     if pk == "raktamokshana":
-        return {
-            "id": "rakta_main",
-            "name": "Raktamokshana — Blood Purification",
-            "duration_minutes": 30,
-            "benefits": "Purifies Rakta Dhatu — removes Pitta-Rakta vitiation from Raktavaha Srotas.",
-            "is_pradhana_karma": True,
-            "timing": "Morning — under Vaidya supervision",
-            "pradhana_notes": (
-                "Performed by qualified Vaidya. Jalaukavacharana (leech therapy) or Shringa (cupping) per indication. "
-                "Morning, light stomach. Leeches applied to affected site; removed when engorged (20–30 min). "
-                "Post-procedure: wash site with Haridra (turmeric) water; monitor 2 hours. "
-                "Avoid sour/pungent food for 3 days post-procedure."
-            ),
-        }
+        action = _render_procedure("raktamokshana", {})
+        return {**action, "id": "rakta_main", "is_pradhana_karma": True}
 
     return {}
 
@@ -1841,7 +1801,8 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
 
     # ── Aushadha & Samsarjana ─────────────────────────────────────────────────
     aushadha = _select_aushadha(
-        vikriti_dom, medical_history, pradhana["primary"] or "shamana", karma_setting, protocols, koshtha
+        vikriti_dom, medical_history, pradhana["primary"] or "shamana", karma_setting, protocols,
+        koshtha, gender=(user_profile.get("gender") or None), bala=bala_type,
     )
     # Samsarjana Krama is the graded re-entry from a Shodhana-emptied Koshtha. With
     # no Shodhana there is nothing to re-enter from, and printing its stages would

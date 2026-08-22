@@ -1,0 +1,173 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "purpose": "The step-by-step instructions a patient or practitioner follows on the day a procedure is performed. One entry per pinned day action the engine schedules.",
+    "why_this_file_exists": "None of the 23 rows in panchakarma_therapies.json carried an instructions field, so every how-to in the feature — roughly 500 words of procedural prose covering emesis, purgation, two kinds of enema, nasal instillation and bloodletting — lived as string literals inside panchakarma_engine.py. Prose in code cannot be reviewed as data, cannot be handed to a vaidya as a document, cannot be translated by the i18n layer, and cannot be checked by a test. This is the same state the gym library was in before scripts/gym_library/prose.py.",
+    "contraindications_reviewed": false,
+    "review_status": "AUTHORED, NOT CLINICALLY REVIEWED. Text was carried across from the engine literals and corrected where the move exposed a defect (noted per entry). Needs BAMS/MD (Ayurveda) sign-off alongside panchakarma_clinical.json.",
+    "templating": "`steps` entries may contain {placeholders}. The engine fills them from the selected Aushadha and the Basti course; a test asserts every placeholder in this file is one the engine supplies, because an unfilled placeholder would print a brace to a patient.",
+    "sources": [
+      "Charaka Samhita — Siddhi Sthana 1-2 (Vamana/Virechana Vyapat), Siddhi Sthana 3-12 (Basti)",
+      "Ashtanga Hridayam — Sutrasthana 20 (Nasya Vidhi)",
+      "Sushruta Samhita — Sutrasthana 13-14 (Jalaukavacharana)"
+    ]
+  },
+  "virechana": {
+    "name": "Virechana — {drug_name}",
+    "benefits": "Expels excess Pitta from Pakvashaya (colon). Clears Raktavaha and Pittavaha Srotas.",
+    "timing": "Evening — after light dinner",
+    "duration_minutes": null,
+    "steps": [
+      "Take {drug_name} ({dose}) in the evening after a light dinner.",
+      "Stay within reach of a toilet — purgation begins in 4–8 hours. Keep warm water available.",
+      "Count Vegas (episodes). Samyak Yoga is 5–10 for mild Virechana and 20–30 for a full clinical course; the number is the measure of adequacy, not the volume of the drug.",
+      "Stop and seek help at blood in the stool, cramping that does not settle between Vegas, faintness, or Vegas continuing past the expected count — these are Atiyoga.",
+      "After completion rest supine; sip warm water if thirsty. Do not eat until the Samsarjana Krama stage for tomorrow."
+    ],
+    "_step_4_note": "The Atiyoga line is new. The engine's version gave the Samyak Yoga counts and no failure signs at all — it told the patient what success looks like and nothing about what going wrong looks like, for a procedure they perform unsupervised at home.",
+    "conditional_steps": {
+      "koshtha": "Koshtha note: {koshtha_note}",
+      "grishma": "Grishma Ritu (summer): Bala is reduced in summer heat — mild dose only. Trivrit Churna is contraindicated in this season; use Eranda or Triphala. Avoid vigorous Swedana on the Virechana day."
+    }
+  },
+  "vamana": {
+    "name": "Vamana — Therapeutic Emesis",
+    "benefits": "Expels accumulated Kapha from Amashaya (stomach). Clears Pranavaha and Annavaha Srotas.",
+    "timing": "Morning — under Vaidya supervision (clinic only)",
+    "duration_minutes": null,
+    "steps": [
+      "Performed by a qualified Vaidya. Morning, empty stomach, only after Purvakarma is complete and Samyak Snigdha signs are present.",
+      "Patient drinks 6–8 glasses of warm milk or sugarcane juice (Akantha Pana) beforehand.",
+      "{drug_name} administered — {dose}. {dose_note}",
+      "Count Vegas: 8 is Samyak Yoga (adequate purification); the sequence should end with Kapha, then Pitta, then froth.",
+      "Atiyoga — more than 12 Vegas, blood in the vomitus, or collapse: stop immediately, give Ghrita with warm milk, and treat as a Vyapat (CS Siddhi Sthana 6).",
+      "Complete rest for 24 hours. Dhoomapana and the Samsarjana Krama follow."
+    ],
+    "_step_3_note": "Was 'Madanaphala Phanta administered' — the drug name hardcoded, so the engine printed Madanaphala regardless of which emetic the Bala assessment had selected. It now names the drug that was chosen."
+  },
+  "nasya": {
+    "name": "Navana Nasya — {oil_name}",
+    "benefits": "Clears Kapha and Vata from Urdhvanga (head, neck, sinuses). Reaches Manovaha Srotas via the Sringataka Marma.",
+    "timing": "Morning — 30 min after face Abhyanga and steam",
+    "duration_minutes": 15,
+    "steps": [
+      "Warm the face with steam or a hot towel for 5 minutes, then massage the forehead, temples and sinuses.",
+      "Lie supine with the head tilted back slightly, shoulders supported.",
+      "Administer 6–8 drops of {oil_name} into each nostril, sniffing gently upward.",
+      "Remain supine for 5 minutes. Spit out any drainage — do not swallow it.",
+      "Avoid food, cold water and wind for 30 minutes afterwards. Repeat daily for every day of the Nasya phase."
+    ]
+  },
+  "basti_matra": {
+    "name": "Matra Basti — {oil_name}",
+    "benefits": "Lubricates Pakwashaya and nourishes Vata-dominant Srotas. The safest home Basti — the oil is absorbed, so no expulsion is forced.",
+    "timing": "Night — after light dinner",
+    "duration_minutes": 10,
+    "steps": [
+      "Night, after a light dinner. Empty the bladder and bowels first.",
+      "Warm 50–80 ml of {oil_name} to body temperature (38°C) — warm to the wrist, never hot.",
+      "Using an enema bulb (Netra), lie on the left side with the right knee drawn up. Administer slowly over 1–2 minutes.",
+      "Remain lying down. Retain overnight if possible; the oil is absorbed and no Vega is needed.",
+      "If the oil is expelled within an hour on three consecutive nights, or there is pain or bleeding, stop and consult a Vaidya.",
+      "Repeat nightly for every day of the Basti phase."
+    ],
+    "_step_5_note": "New. The engine's version described only the success case, for a procedure the patient self-administers."
+  },
+  "basti_niruha": {
+    "name": "Niruha Basti (Decoction) — {kashayam_name}",
+    "benefits": "Vata Shodhana from Pakvashaya — the decoction expels, where the oil days nourish.",
+    "timing": "Morning, empty stomach — administered by a Vaidya",
+    "duration_minutes": 60,
+    "steps": [
+      "{position}. {sequence_note}",
+      "Formula ({total_volume}, {temperature}): {kashayam_name} with {oil_name}. Mix in sequence: {mix_order}. The order is not decorative — Madhu and Saindhava are emulsified first, or the Sneha separates.",
+      "Patient lies on the left side, right knee drawn up. Netra inserted and the enema given slowly.",
+      "Retain 30–60 minutes; expulsion follows naturally. Rest 1–2 hours afterwards.",
+      "Light warm food only for the rest of the day — Khichdi, moong dal, warm soup. Nothing cold, heavy, raw or dry."
+    ]
+  },
+  "basti_anuvasana": {
+    "name": "Anuvasana Basti (Oil) — {oil_name}",
+    "benefits": "Brimhana — nourishes and lubricates Pakwashaya, and protects against the Vata a Niruha day raises.",
+    "timing": "Evening, after a light meal",
+    "duration_minutes": 30,
+    "steps": [
+      "{position}. {sequence_note}",
+      "{anuvasana_formula} — {oil_name}, warmed to body temperature.",
+      "Given after food, never before: an empty Koshtha absorbs the oil too fast and the Basti is wasted.",
+      "Retain until morning or until the urge to defecate. No expulsion is forced — the oil is absorbed, which is the point of the day."
+    ]
+  },
+  "raktamokshana": {
+    "name": "Raktamokshana — Blood Purification",
+    "benefits": "Purifies Rakta Dhatu — removes Pitta-Rakta vitiation from Raktavaha Srotas.",
+    "timing": "Morning — under Vaidya supervision",
+    "duration_minutes": 30,
+    "steps": [
+      "Performed by a qualified Vaidya. Jalaukavacharana (leech therapy) or Shringa (cupping) per indication.",
+      "Morning, light stomach. Leeches are applied to the affected site and removed when engorged (20–30 minutes).",
+      "Post-procedure: wash the site with Haridra (turmeric) water and dress it. Monitor for 2 hours.",
+      "Expect mild oozing for a few hours; bleeding that does not stop, spreading redness, or fever within 48 hours needs immediate review.",
+      "Avoid sour and pungent food for 3 days afterwards."
+    ],
+    "_step_4_note": "New. Leech sites ooze by design, which makes it hard for a patient to judge when bleeding has become a problem — so the threshold is stated."
+  },
+  "deepana_pachana": {
+    "name": "Deepana-Pachana — {herb_name}",
+    "benefits": "Kindles Agni and digests Ama. Until Ama is digested no other therapy can reach the Dhatus.",
+    "timing": "Morning, empty stomach",
+    "duration_minutes": null,
+    "steps": [
+      "{herb_name} on an empty stomach with warm water.",
+      "Alternatives if unavailable: {alternatives}.",
+      "Diet: {diet}",
+      "Ama is cleared when: {signs}.",
+      "Do not progress to the next phase before those signs appear — the days below are a guide, not a deadline."
+    ]
+  },
+  "brimhana": {
+    "name": "Brimhana Rasayana — {herb_name}",
+    "benefits": "Rebuilds Dhatu and Ojas. This is the phase that makes a future Shodhana possible.",
+    "timing": "{timing}",
+    "duration_minutes": null,
+    "steps": [
+      "{herb_name} — {dose}.",
+      "Continue for {duration} beyond the end of this plan; Rasayana works over months, not days.",
+      "Nourishing food, unhurried meals, sleep before 10pm, and no fasting of any kind.",
+      "Re-assess Bala, Agni, Ama and Ojas with a Vaidya before considering Shodhana."
+    ]
+  },
+  "samsarjana": {
+    "name": "Samsarjana Krama — Stage {stage}: {food}",
+    "benefits": "Rekindles Agni by graded steps. The re-entry is as much of the treatment as the cleanse.",
+    "timing": "All meals today",
+    "duration_minutes": null,
+    "steps": [
+      "{recipe}",
+      "{note}",
+      "Move to the next stage only when this one digests comfortably. Rushing Samsarjana is what undoes the Shodhana — Agni is at its weakest now."
+    ],
+    "final_stage_step": "Hold at this stage until normal appetite returns, then resume a Pathya diet."
+  },
+  "shamana_regimen": {
+    "_note": "The Ahara and Vihara a Shamana plan prescribes per Vikriti. Moved out of _SHAMANA_BY_DOSHA in panchakarma_engine.py: it is dietary and lifestyle instruction given to a patient, which is data, not control flow.",
+    "kapha": {
+      "principle": "Ruksha–Ushna–Laghu Shamana — drying, warming, light. Kapha is Guru, Snigdha and Sheeta; it is pacified by dry, warm and light.",
+      "sneha_matra": "Shamana-matra Sneha: Kapha needs the least oleation. 5–10 ml Sarshapa Taila (mustard) or Trikatu-infused ghee, or omit internal Sneha entirely and keep only external Udvartana. Never the escalating Snehapana ladder.",
+      "ahara": "Warm, dry, light, well-spiced. Barley, millet, steamed greens, ginger, black pepper, honey (never heated). Avoid dairy, wheat, sugar, cold drinks, curd and daytime sleep.",
+      "vihara": "Movement is the medicine. Rise before sunrise, brisk walking, dry brushing before bathing, no daytime sleep at all."
+    },
+    "pitta": {
+      "principle": "Sheeta–Madhura–Tikta Shamana — cooling, sweet and bitter. Pitta is Ushna, Tikshna and Drava; it is pacified by cool and mild.",
+      "sneha_matra": "Shamana-matra Sneha: 10 ml Tikta Ghrita or Shatavari Ghrita with warm water in the morning. A pacifying dose — not the escalating Snehapana ladder, which prepares for an expulsion this plan does not perform.",
+      "ahara": "Cool to lukewarm, sweet, bitter and astringent. Rice, coconut, cucumber, coriander, sweet fruit, ghee. Avoid sour, fermented, salty, pungent, chilli, alcohol and the midday sun.",
+      "vihara": "Cool the evening, not the day. Moonlight, cool baths, Sheetali pranayama. Avoid arguments, deadlines late at night, and exercise in heat."
+    },
+    "vata": {
+      "principle": "Snigdha–Ushna Shamana — unctuous, warm, grounding. Vata is Ruksha, Sheeta and Chala; it is pacified by its opposites.",
+      "sneha_matra": "Shamana-matra Sneha: 10–15 ml warm Tila Taila or Bala Taila with warm water, once daily before food. A pacifying dose — not the escalating Snehapana ladder, which prepares for an expulsion this plan does not perform.",
+      "ahara": "Warm, moist, well-cooked, mildly oily. Madhura–Amla–Lavana Rasa. Moong dal khichdi with ghee, root vegetables, warm milk with nutmeg. Avoid raw salads, dried and frozen food, carbonated drinks.",
+      "vihara": "Regular hours above all. Early sleep, no travel, no fasting, no vigorous exercise. Warm oil to the soles and scalp before bed."
+    }
+  }
+}
