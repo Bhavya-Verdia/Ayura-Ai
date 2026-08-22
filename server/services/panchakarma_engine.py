@@ -611,6 +611,99 @@ def _basti_subtype(setting: str, available_days: int) -> dict:
 
 # ── Aushadha Selection ────────────────────────────────────────────────────────
 
+def _gate_formulation(components: list[str], conditions: list[str],
+                      medications: list[str]) -> dict:
+    """Withhold the contraindicated constituents of a compound formulation.
+
+    The Sahayoga Dravya adjuvants and the Rasayana passed no contraindication gate
+    at all: they were selected on an indication match and handed over. Shilajit went
+    to patients with chronic kidney disease, Guggulu to patients on thyroxine, and
+    Sarpagandha — a reserpine source, and a documented cause of drug-induced
+    depression — to anyone whose recorded conditions included hypertension. The
+    formulation's own `caution` field read "avoid in hypotension" and nothing read it.
+
+    The unit is the herb, not the formulation. A contraindication against one
+    constituent is a reason to withhold that constituent, not the four-herb
+    preparation around it: dropping the whole thing would deny a psoriasis patient
+    their Kushtha Chikitsa because one component interacts with their warfarin.
+    A formulation only falls entirely when nothing safe is left in it.
+    """
+    herbs = pk_clinical.get("herbs", {})
+    kept, withheld, cautions = [], [], []
+
+    for key in components:
+        entry = herbs.get(key)
+        if not entry:
+            kept.append(key)
+            continue
+        display = entry.get("display", key.replace("_", " ").title())
+        hard = _match_contraindications(conditions, entry.get("hard") or {})
+        if hard:
+            withheld.append({
+                "herb": display,
+                "reasons": [{"condition": c, "mechanism": m} for c, m in hard],
+            })
+            continue
+        soft = _match_contraindications(conditions, entry.get("soft") or {})
+        if soft:
+            cautions.append({
+                "herb": display,
+                "notes": [{"condition": c, "mechanism": m} for c, m in soft],
+            })
+        kept.append(key)
+
+    # Drug-herb interactions, via the checker the chat agent and the interaction
+    # tool already use — one interaction KB, not a second one grown here.
+    #
+    # A `major` interaction withholds the herb rather than warning beside it. The
+    # KB's own recommendation for Haridra on Warfarin reads "AVOID turmeric/curcumin
+    # supplements", and printing AVOID next to a formulation the plan still tells the
+    # patient to take is the same defect as an ungated contraindication wearing a
+    # warning label. Moderate and minor stay as cautions.
+    interactions, interaction_withheld = [], []
+    if medications and kept:
+        try:
+            from engine.condition_filter import ConditionFilter
+            checker = ConditionFilter()
+            # Pass the herb table's KEY, not its display name. The interaction KB
+            # keys are compound ("turmeric_haridra_high_dose") and the checker
+            # matches by substring either way round, so the bare token "haridra"
+            # matches while "Haridra (Turmeric)" — the display string — matches
+            # nothing. A gloss in parentheses silently disabled the whole check.
+            found = checker.check_drug_herb_interactions(medications, list(kept))
+            interactions = [
+                {**hit, "herb": herbs.get(hit.get("herb"), {}).get("display", hit.get("herb"))}
+                for hit in (found.get("interactions") or found.get("warnings") or [])
+            ]
+            by_key = {herbs.get(k, {}).get("display", k): k for k in kept}
+        except Exception:  # noqa: BLE001 — a checker failure must not drop the plan
+            interactions = []
+
+        for hit in interactions:
+            # "high" is what the checker's category path emits for blood thinners;
+            # "major" is what the per-medication KB emits. Both mean withhold.
+            if str(hit.get("severity", "")).lower() not in ("major", "severe", "high", "contraindicated"):
+                continue
+            key = by_key.get(hit.get("herb"))
+            if key and key in kept:
+                kept.remove(key)
+                interaction_withheld.append({
+                    "herb": hit.get("herb"),
+                    "reasons": [{
+                        "condition": f"interaction with {hit.get('medication_category', 'your medication')}",
+                        "mechanism": hit.get("effect") or hit.get("recommendation") or "",
+                    }],
+                })
+        withheld += interaction_withheld
+
+    return {
+        "kept": kept,
+        "withheld": withheld,
+        "cautions": cautions,
+        "interactions": interactions,
+    }
+
+
 def _matches_dosha(entry: dict, dosha: str) -> bool:
     """`dosha` on a compendium entry is one of vata / pitta / kapha / pitta_vata /
     pitta_rakta / all — a compound string, not a list."""
@@ -671,7 +764,16 @@ def _select_aushadha(
     koshtha: str = "sama",
     gender: str | None = None,
     bala: str = "madhyama",
+    medications: list[str] | None = None,
+    pregnancy: bool = False,
 ) -> dict:
+    medications = medications or []
+    # Pregnancy is a profile flag, not a `medical_history` entry, and the herb table
+    # keys on conditions — so without this the pregnancy bars on Guggulu, Vasaka,
+    # Manjistha and Shatapushpa could never fire. `filter_and_score_therapies` makes
+    # the same injection for the same reason.
+    if pregnancy:
+        medical_history = list(medical_history) + ["pregnancy"]
     aus = protocols.get("aushadha_compendium", {})
     result: dict = {}
 
@@ -750,12 +852,41 @@ def _select_aushadha(
     # `term_in_condition`. They are `aushadha_compendium.sahayoga_dravya` now: they
     # match precisely, and they can be reviewed with the rest of the compendium
     # rather than by reading Python.
+    # Each is gated per constituent — see `_gate_formulation`. Until this, they
+    # passed no contraindication check whatsoever.
     for adjuvant in aus.get("sahayoga_dravya", []):
-        if any(term_in_condition(c, t)
-               for c in medical_history for t in (adjuvant.get("indications") or [])):
-            result[adjuvant["id"]] = {
-                k: v for k, v in adjuvant.items() if k not in ("id", "indications")
-            }
+        if not any(term_in_condition(c, t)
+                   for c in medical_history for t in (adjuvant.get("indications") or [])):
+            continue
+        gate = _gate_formulation(adjuvant.get("components", []), medical_history, medications)
+        if not gate["kept"]:
+            # Nothing in the formulation is safe for this patient. Recording it is
+            # the point: a silently absent adjuvant looks identical to one that was
+            # never indicated, and the Vaidya needs to know it was considered.
+            #
+            # This branch does not fire against the herb table as it stands — every
+            # one of the seven formulations contains at least one constituent with no
+            # hard contraindication, so something always survives. It is kept because
+            # that is a property of the current authoring, not of the design, and a
+            # reviewer marking one more herb `hard` would make it reachable. Covered
+            # at unit level in test_panchakarma_adjuvants rather than end to end,
+            # because there is presently no profile that reaches it.
+            result.setdefault("withheld_aushadha", []).append({
+                "id": adjuvant["id"],
+                "name": adjuvant.get("name"),
+                "reason": "Every constituent is contraindicated for this patient.",
+                "withheld": gate["withheld"],
+            })
+            continue
+        result[adjuvant["id"]] = {
+            **{k: v for k, v in adjuvant.items()
+               if k not in ("id", "indications", "components")},
+            **{k: v for k, v in (
+                ("components_withheld", gate["withheld"]),
+                ("component_cautions", gate["cautions"]),
+                ("drug_interactions", gate["interactions"]),
+            ) if v},
+        }
 
     # Rasayana (post-PK). The KB keys this block BY CONDITION —
     # `reproductive_female`, `bone_joint`, `medhya_brain` — and selection was by
@@ -769,16 +900,58 @@ def _select_aushadha(
 
     # `reproductive_female` and `reproductive_male` both list infertility; gender is
     # what separates them, and without it the first would always win.
-    matched = next(
-        (
-            entry for key, entry in ras.items()
-            if any(term_in_condition(c, t)
-                   for c in medical_history for t in (entry.get("indications") or []))
-            and entry.get("gender") in (None, gender)
-        ),
-        None,
-    )
-    result["rasayana"] = matched or ras.get(ras_dosha_key, ras.get("general_immunity", {}))
+    def _rasayana_is_safe(entry: dict) -> bool:
+        # ANY withheld constituent disqualifies the entry, where an adjuvant would
+        # simply lose that constituent. A Rasayana is one `herb` string — "Shilajit
+        # + Guggulu" — and dropping Shilajit from the component list does not change
+        # the string the patient reads, so a trimmed Rasayana still tells a CKD
+        # patient to take Shilajit. Nothing to trim means nothing but skip.
+        gate = _gate_formulation(entry.get("components", []), medical_history, medications)
+        return bool(gate["kept"]) and not gate["withheld"]
+
+    # The Rasayana is gated harder than the adjuvants and skipped rather than
+    # trimmed: most entries are a single herb, so withholding a constituent leaves
+    # nothing, and this is the one prescription the plan tells the patient to
+    # continue for MONTHS after the course ends. A hyperthyroid patient handed
+    # Ashwagandha "for 3 months" is taking it long after anyone is watching.
+    candidates = [
+        entry for key, entry in ras.items()
+        if any(term_in_condition(c, t)
+               for c in medical_history for t in (entry.get("indications") or []))
+        and entry.get("gender") in (None, gender)
+    ]
+    fallbacks = [ras.get(ras_dosha_key), ras.get("general_immunity")]
+
+    chosen, rasayana_note = None, None
+    for entry in candidates + [f for f in fallbacks if f]:
+        if entry and _rasayana_is_safe(entry):
+            if entry is not (candidates[0] if candidates else fallbacks[0]):
+                rasayana_note = (
+                    "The Rasayana indicated for your condition is contraindicated for you; "
+                    "a safe alternative is given instead. Discuss the substitution with a Vaidya."
+                )
+            chosen = entry
+            break
+
+    if chosen:
+        gate = _gate_formulation(chosen.get("components", []), medical_history, medications)
+        result["rasayana"] = {
+            **{k: v for k, v in chosen.items() if k not in ("components", "indications")},
+            **({"cautions": gate["cautions"]} if gate["cautions"] else {}),
+            **({"drug_interactions": gate["interactions"]} if gate["interactions"] else {}),
+            **({"substitution_note": rasayana_note} if rasayana_note else {}),
+        }
+    else:
+        # Every Rasayana in the KB is contraindicated. Saying so is the answer;
+        # picking the least-bad one to fill the field is not.
+        result["rasayana"] = {
+            "herb": None,
+            "unavailable_reason": (
+                "No Rasayana in the formulary is safe alongside your recorded conditions "
+                "and medications. A Vaidya must select one individually — do not substitute "
+                "an over-the-counter tonic."
+            ),
+        }
 
     return result
 
@@ -1803,6 +1976,8 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     aushadha = _select_aushadha(
         vikriti_dom, medical_history, pradhana["primary"] or "shamana", karma_setting, protocols,
         koshtha, gender=(user_profile.get("gender") or None), bala=bala_type,
+        medications=(user_profile.get("current_medications") or []),
+        pregnancy=bool(user_profile.get("pregnancy_or_nursing")),
     )
     # Samsarjana Krama is the graded re-entry from a Shodhana-emptied Koshtha. With
     # no Shodhana there is nothing to re-enter from, and printing its stages would

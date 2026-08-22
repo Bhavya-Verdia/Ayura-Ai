@@ -1121,7 +1121,10 @@
           "duration": "3-6 months",
           "indications": [],
           "fallback": true,
-          "fallback_note": "The declared default. Chyawanprash is the classical general Rasayana and is correct when nothing more specific applies; with a known Vikriti the dosha-specific Rasayana is preferred, so this is reachable only as the fallback and that is intended."
+          "fallback_note": "The declared default. Chyawanprash is the classical general Rasayana and is correct when nothing more specific applies; with a known Vikriti the dosha-specific Rasayana is preferred, so this is reachable only as the fallback and that is intended.",
+          "components": [
+            "chyawanprash"
+          ]
         },
         "vata_neurological": {
           "herb": "Ashwagandha Churna",
@@ -1133,6 +1136,9 @@
             "parkinson",
             "paralysis",
             "multiple_sclerosis"
+          ],
+          "components": [
+            "ashwagandha"
           ]
         },
         "pitta_inflammatory": {
@@ -1145,6 +1151,9 @@
             "eczema",
             "gastritis",
             "colitis"
+          ],
+          "components": [
+            "amalaki"
           ]
         },
         "kapha_metabolic": {
@@ -1157,6 +1166,10 @@
             "hypothyroidism",
             "high_cholesterol",
             "fatty_liver"
+          ],
+          "components": [
+            "shilajit",
+            "guggulu"
           ]
         },
         "reproductive_female": {
@@ -1170,7 +1183,10 @@
             "dysmenorrhea",
             "amenorrhea"
           ],
-          "gender": "female"
+          "gender": "female",
+          "components": [
+            "shatavari"
+          ]
         },
         "reproductive_male": {
           "herb": "Ashwagandha + Kapikacchu",
@@ -1181,7 +1197,11 @@
             "low_libido",
             "oligospermia"
           ],
-          "gender": "male"
+          "gender": "male",
+          "components": [
+            "ashwagandha",
+            "kapikacchu"
+          ]
         },
         "bone_joint": {
           "herb": "Laksha Guggulu",
@@ -1193,6 +1213,9 @@
             "ankylosing_spondylitis",
             "gout",
             "fracture"
+          ],
+          "components": [
+            "guggulu"
           ]
         },
         "medhya_brain": {
@@ -1206,6 +1229,9 @@
             "adhd",
             "migraine",
             "memory_loss"
+          ],
+          "components": [
+            "brahmi"
           ]
         }
       }
@@ -1699,6 +1725,11 @@
           "rosacea",
           "acne",
           "dermatitis"
+        ],
+        "components": [
+          "tikta_ghrita",
+          "khadiradi_vati",
+          "manjistha"
         ]
       },
       {
@@ -1713,6 +1744,12 @@
           "hypothyroidism",
           "high_cholesterol",
           "metabolic_syndrome"
+        ],
+        "components": [
+          "guduchi",
+          "haridra",
+          "amalaki",
+          "shilajit"
         ]
       },
       {
@@ -1729,6 +1766,12 @@
           "amenorrhea",
           "menorrhagia",
           "infertility"
+        ],
+        "components": [
+          "shatavari",
+          "ashoka",
+          "dashamoola",
+          "shatapushpa"
         ]
       },
       {
@@ -1745,6 +1788,12 @@
           "adhd",
           "ocd",
           "bipolar"
+        ],
+        "components": [
+          "brahmi",
+          "ashwagandha",
+          "jatamansi",
+          "shankhpushpi"
         ]
       },
       {
@@ -1759,6 +1808,12 @@
           "bronchitis",
           "rhinitis",
           "sinusitis"
+        ],
+        "components": [
+          "vasaka",
+          "kantakari",
+          "sitopaladi",
+          "talisadi"
         ]
       },
       {
@@ -1775,6 +1830,13 @@
           "colitis",
           "pancreatitis",
           "gastritis"
+        ],
+        "components": [
+          "kutaja",
+          "bilva",
+          "dadima",
+          "amalaki",
+          "guduchi"
         ]
       },
       {
@@ -1788,6 +1850,11 @@
           "heart_disease",
           "varicose_veins",
           "high_cholesterol"
+        ],
+        "components": [
+          "arjuna",
+          "punarnava",
+          "sarpagandha"
         ]
       }
     ],

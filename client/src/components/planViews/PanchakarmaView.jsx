@@ -75,7 +75,9 @@ export function PanchakarmaView({ plan }) {
     { key: 'paschat',    label: 'Paschat Karma', days: ph.paschat_karma_days, sub: 'Samsarjana Krama + Rasayana' },
   ]
 
-  const aushadhaRows = Object.entries(aus).filter(([, v]) => v)
+  // `withheld_aushadha` is a list of dropped formulations, rendered separately
+  // below — it is not itself an Aushadha row.
+  const aushadhaRows = Object.entries(aus).filter(([k, v]) => v && k !== 'withheld_aushadha')
 
   // Which protocol sections are open. All closed on arrival — see PkSection.
   const [openSections, setOpenSections] = useState(new Set())
@@ -434,15 +436,69 @@ export function PanchakarmaView({ plan }) {
             {aushadhaRows.map(([k, v]) => {
               const name = typeof v === 'object' ? (v.name || v.herb || v.primary || '') : v
               const desc = typeof v === 'object' ? (v.use || v.dose || v.rationale || '') : ''
-              if (!name) return null
+              const withheld = v?.components_withheld || []
+              const cautions = v?.component_cautions || []
+              const interactions = v?.drug_interactions || []
+              // A formulation with no safe constituent left is reported rather than
+              // omitted: an absent adjuvant looks identical to one that was never
+              // indicated, and the Vaidya needs to know it was considered.
+              if (!name) {
+                if (k === 'rasayana' && v?.unavailable_reason) {
+                  return (
+                    <div key={k} className="pk-aus-card pk-aus-card-withheld">
+                      <div className="pk-aus-label">Rasayana</div>
+                      <div className="pk-aus-name">Not prescribed</div>
+                      <div className="pk-aus-sub">{v.unavailable_reason}</div>
+                    </div>
+                  )
+                }
+                return null
+              }
               return (
                 <div key={k} className="pk-aus-card">
                   <div className="pk-aus-label">{k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</div>
                   <div className="pk-aus-name">{name}</div>
                   {desc && <div className="pk-aus-sub">{String(desc).slice(0, 80)}</div>}
+                  {v?.substitution_note && (
+                    <div className="pk-aus-note"><AlertTriangle size={11} /> {v.substitution_note}</div>
+                  )}
+                  {/* Which constituent was removed and why. Naming the formulation
+                      without naming the omission would have the patient buy the
+                      preparation off a shelf with the withheld herb still in it. */}
+                  {withheld.map((w, i) => (
+                    <div key={`w${i}`} className="pk-aus-withheld">
+                      <AlertTriangle size={11} />
+                      <span><strong>Omit {w.herb}</strong> — {w.reasons?.[0]?.mechanism}</span>
+                    </div>
+                  ))}
+                  {cautions.map((c, i) => (
+                    <div key={`c${i}`} className="pk-aus-note">
+                      {c.herb}: {c.notes?.[0]?.mechanism}
+                    </div>
+                  ))}
+                  {interactions.map((x, i) => (
+                    <div key={`i${i}`} className="pk-aus-withheld">
+                      <AlertTriangle size={11} />
+                      <span><strong>{x.herb} × your medication</strong> — {x.effect || x.recommendation}</span>
+                    </div>
+                  ))}
                 </div>
               )
             })}
+
+            {(aus.withheld_aushadha || []).map((w, i) => (
+              <div key={`dropped${i}`} className="pk-aus-card pk-aus-card-withheld">
+                <div className="pk-aus-label">{w.id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</div>
+                <div className="pk-aus-name">Withheld — {w.name}</div>
+                <div className="pk-aus-sub">{w.reason}</div>
+                {(w.withheld || []).map((h, j) => (
+                  <div key={j} className="pk-aus-withheld">
+                    <AlertTriangle size={11} />
+                    <span><strong>{h.herb}</strong> — {h.reasons?.[0]?.mechanism}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         </PkSection>
       )}

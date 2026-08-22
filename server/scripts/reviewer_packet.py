@@ -63,6 +63,12 @@ def build_panchakarma_contraindication_csv():
     for tid, entry in clinical.get("therapies", {}).items():
         if isinstance(entry, dict):
             emit("therapy", tid, entry)
+    # Per-herb safety for the Sahayoga Dravya adjuvants and the Rasayana. These gate
+    # the same patients as the procedure rows above and must not reach the reviewer
+    # by a different route — or, as they did until now, by none at all.
+    for herb, entry in clinical.get("herbs", {}).items():
+        if isinstance(entry, dict):
+            emit("herb", entry.get("display", herb), entry)
 
     path = os.path.join(OUT, "vaidya_panchakarma_contraindications.csv")
     with open(path, "w", newline="", encoding="utf-8") as f:
@@ -129,8 +135,9 @@ def build_packet_md(n_meds, n_pk=0):
         "marked N with a correction is gold — it goes straight back into the KB.",
         "",
         "## Part 2 — Panchakarma contraindications  (`vaidya_panchakarma_contraindications.csv`)",
-        f"{n_pk} authored contraindications gating Vamana, Virechana, Basti, Nasya, Raktamokshana "
-        "and the 23 supporting therapies. **None has been clinically reviewed** — "
+        f"{n_pk} authored contraindications gating Vamana, Virechana, Basti, Nasya, Raktamokshana, "
+        "the 23 supporting therapies, and the individual herbs in every Aushadha the plan "
+        "prescribes. **None has been clinically reviewed** — "
         "`contraindications_reviewed` is false on the whole file. Part 1 carries the larger "
         "credibility risk; this part carries the larger safety risk, because these are the "
         "only procedures in the app that can injure a patient directly.",
@@ -140,6 +147,10 @@ def build_packet_md(n_meds, n_pk=0):
         "- **severity_ok** — is `hard` (withhold + substitute) vs `soft` (proceed modified) right?",
         "- **mechanism_ok** — is the stated reason correct?",
         "- **should_be** — `hard`, `soft` or `remove` if the severity is wrong.",
+        "",
+        "Rows with scope `herb` are per-constituent: a `hard` row withholds that herb from "
+        "whichever formulation contains it and leaves the rest, so severity here decides "
+        "between dropping one ingredient and dropping a whole preparation.",
         "",
         "Missing entries matter as much as wrong ones: if a condition should bar a procedure and "
         "is not listed, add a row.",
