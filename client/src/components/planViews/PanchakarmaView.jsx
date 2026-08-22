@@ -5,7 +5,10 @@ import {
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 
-const PHASE_ICON  = { purvakarma: Droplets, pradhana: Flame, paschat: Sparkles }
+const PHASE_ICON  = {
+  purvakarma: Droplets, pradhana: Flame, paschat: Sparkles,
+  deepana_pachana: Flame, shamana: Leaf, brimhana: Sparkles,
+}
 
 
 // A protocol section that opens on click. The view used to render all five
@@ -52,8 +55,25 @@ export function PanchakarmaView({ plan }) {
   const vikritiDom = cd.vikriti_dominant || us.vikriti_dominant || '—'
   const doshaColor = DOSHA_COLOR[vikritiDom] || DOSHA_COLOR.default
   const doshaText = doshaInk(vikritiDom)
+  // Three verdicts, not two. "Shamana" used to mean both "you are at home" and
+  // "you are too depleted to purify", so the badge could not distinguish a mild
+  // home cleanse from a withheld one — and read as reassurance either way.
+  const isShamana  = elig.type === 'shamana'
+  const isMridu    = elig.type === 'mridu_shodhana'
   const isShodhana = elig.type === 'shodhana'
   const isClinic = us.setting === 'clinic'
+  const sp = plan.shamana_protocol || null
+  const VERDICT = isShamana
+    ? { cls: 'pk-shamana',  label: 'Shamana (Purification Withheld)' }
+    : isMridu
+      ? { cls: 'pk-mridu',  label: 'Mridu Shodhana (Mild Purification)' }
+      : { cls: 'pk-shodhana', label: 'Shodhana (Purification)' }
+
+  const phaseList = ph.phases?.length ? ph.phases : [
+    { key: 'purvakarma', label: 'Purvakarma', days: ph.purvakarma_days, sub: 'Snehana + Swedana (Preparation)' },
+    { key: 'pradhana',   label: 'Pradhana Karma', days: ph.pradhana_karma_days, sub: (pk.primary || '').replace(/_/g, ' ') },
+    { key: 'paschat',    label: 'Paschat Karma', days: ph.paschat_karma_days, sub: 'Samsarjana Krama + Rasayana' },
+  ]
 
   const aushadhaRows = Object.entries(aus).filter(([, v]) => v)
 
@@ -65,6 +85,7 @@ export function PanchakarmaView({ plan }) {
     return next
   })
   const sectionKeys = [
+    sp && 'shamana',
     (sn.internal_ghrita || sn.abhyanga_oil) && 'snehana',
     aushadhaRows.length > 0 && 'aushadha',
     sk.length > 0 && 'samsarjana',
@@ -101,9 +122,9 @@ export function PanchakarmaView({ plan }) {
             Vikriti: {vikritiDom.toUpperCase()}
             {cd.vikriti_secondary ? ` + ${cd.vikriti_secondary.toUpperCase()}` : ''}
           </div>
-          <div className={`pk-eligibility-badge ${isShodhana ? 'pk-shodhana' : 'pk-shamana'}`}>
+          <div className={`pk-eligibility-badge ${VERDICT.cls}`}>
             <ShieldCheck size={13} />
-            {isShodhana ? 'Shodhana (Purification)' : 'Shamana (Palliative)'}
+            {VERDICT.label}
           </div>
         </div>
 
@@ -143,8 +164,12 @@ export function PanchakarmaView({ plan }) {
           )}
         </div>
 
+        {/* Every reason, not just the first. A patient blocked on three counts
+            saw one of them, which made the verdict look like a technicality. */}
         {!isShodhana && elig.reasons?.length > 0 && (
-          <p className="pk-shamana-reason">{elig.reasons[0]}</p>
+          <ul className="pk-shamana-reasons">
+            {elig.reasons.map((r, i) => <li key={i} className="pk-shamana-reason">{r}</li>)}
+          </ul>
         )}
 
         {elig.ama_correction_needed && (
@@ -191,13 +216,24 @@ export function PanchakarmaView({ plan }) {
       <div className="pk-info-row">
         <div className="pk-info-card">
           <div className="pk-info-label"><Beaker size={12} /> Selected Therapy</div>
-          <div className="pk-info-value">{(pk.primary || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</div>
-          {bs && <div className="pk-info-sub">{bs.name}</div>}
+          <div className="pk-info-value">
+            {isShamana
+              ? 'None — Shamana'
+              : (pk.primary || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+          </div>
+          {isShamana
+            ? <div className="pk-info-sub">No Pradhana Karma</div>
+            : bs && <div className="pk-info-sub">{bs.name}</div>}
         </div>
         <div className="pk-info-card">
           <div className="pk-info-label"><Calendar size={12} /> Season (Ritu)</div>
           <div className="pk-info-value">{ritu.ritu_name || ritu.ritu || '—'}</div>
-          <div className="pk-info-sub">Ideal: {(ritu.primary_shodhana || '—').toUpperCase()}</div>
+          {/* The season's ideal Shodhana is reference data, not a recommendation.
+              Printing "Ideal: VIRECHANA" on a plan that withholds Virechana names
+              the therapy this plan just refused. */}
+          {!isShamana && (
+            <div className="pk-info-sub">Ideal: {(ritu.primary_shodhana || '—').toUpperCase()}</div>
+          )}
         </div>
         <div className="pk-info-card">
           <div className="pk-info-label"><Sun size={12} /> Duration</div>
@@ -212,6 +248,13 @@ export function PanchakarmaView({ plan }) {
         </div>
       )}
 
+      {/* The course can run longer than requested; it may never do so silently. */}
+      {ph.duration_notice && (
+        <div className="pk-ritu-warning">
+          <AlertTriangle size={13} /> {ph.duration_notice}
+        </div>
+      )}
+
       {pk.reason && (
         <div className="pk-rationale">
           <span className="pk-rationale-label">Clinical Rationale</span>
@@ -221,11 +264,10 @@ export function PanchakarmaView({ plan }) {
 
       {/* ── Phase Timeline ── */}
       <div className="pk-phases">
-        {[
-          { key: 'purvakarma', label: 'Purvakarma', days: ph.purvakarma_days, sub: 'Snehana + Swedana (Preparation)' },
-          { key: 'pradhana',   label: 'Pradhana Karma', days: ph.pradhana_karma_days, sub: (pk.primary || '').replace(/_/g, ' ') },
-          { key: 'paschat',    label: 'Paschat Karma', days: ph.paschat_karma_days, sub: 'Samsarjana Krama + Rasayana' },
-        ].map((phase, i) => {
+        {/* Driven by the engine's own phase list. The Shamana arm has differently
+            named phases (Deepana-Pachana → Shamana Chikitsa → Brimhana), and a
+            hardcoded Purvakarma/Pradhana/Paschat strip could only mislabel them. */}
+        {phaseList.map((phase, i) => {
           const Icon = PHASE_ICON[phase.key] || Sparkles
           return (
             <React.Fragment key={phase.key}>
@@ -235,7 +277,7 @@ export function PanchakarmaView({ plan }) {
                 <div className="pk-phase-name">{phase.label}</div>
                 <div className="pk-phase-sub">{phase.sub}</div>
               </div>
-              {i < 2 && <ArrowRight size={16} className="pk-phase-arrow" />}
+              {i < phaseList.length - 1 && <ArrowRight size={16} className="pk-phase-arrow" />}
             </React.Fragment>
           )
         })}
@@ -249,6 +291,57 @@ export function PanchakarmaView({ plan }) {
             {allSectionsOpen ? 'Collapse all' : 'Expand all'}
           </button>
         </div>
+      )}
+
+      {sp && (
+        <PkSection
+          icon={Leaf}
+          title="Shamana Protocol — what replaces the cleanse"
+          summary={sp.deepana_pachana?.needed ? 'Agni · pacification · Brimhana' : 'pacification · Brimhana'}
+          {...sec('shamana')}
+        >
+          <p className="pk-shamana-why">{sp.why}</p>
+
+          {sp.deepana_pachana?.needed && (
+            <div className="pk-aus-card">
+              <div className="pk-aus-label">Deepana-Pachana (Agni correction)</div>
+              <div className="pk-aus-name">{(sp.deepana_pachana.herbs || []).join(' · ')}</div>
+              <div className="pk-aus-use">{sp.deepana_pachana.why}</div>
+              <div className="pk-aus-use">Duration: {sp.deepana_pachana.duration}</div>
+              {sp.deepana_pachana.signs_cleared?.length > 0 && (
+                <div className="pk-aus-use">
+                  Cleared when: {sp.deepana_pachana.signs_cleared.join('; ')}
+                </div>
+              )}
+              {sp.deepana_pachana.diet && <div className="pk-aus-use">{sp.deepana_pachana.diet}</div>}
+            </div>
+          )}
+
+          {sp.shamana_chikitsa && (
+            <div className="pk-aus-card">
+              <div className="pk-aus-label">Shamana Chikitsa</div>
+              <div className="pk-aus-name">{sp.shamana_chikitsa.principle}</div>
+              <div className="pk-aus-use"><strong>Sneha:</strong> {sp.shamana_chikitsa.sneha_matra}</div>
+              <div className="pk-aus-use"><strong>Ahara:</strong> {sp.shamana_chikitsa.ahara}</div>
+              <div className="pk-aus-use"><strong>Vihara:</strong> {sp.shamana_chikitsa.vihara}</div>
+            </div>
+          )}
+
+          {sp.brimhana && (
+            <div className="pk-aus-card">
+              <div className="pk-aus-label">Brimhana Rasayana</div>
+              <div className="pk-aus-name">
+                {sp.brimhana.rasayana?.herb || '—'}
+                {sp.brimhana.rasayana?.dose ? ` — ${sp.brimhana.rasayana.dose}` : ''}
+              </div>
+              <div className="pk-aus-use">{sp.brimhana.why}</div>
+            </div>
+          )}
+
+          <p className="pk-shamana-reassess">
+            <AlertTriangle size={13} /> {sp.reassessment}
+          </p>
+        </PkSection>
       )}
 
       {(sn.internal_ghrita || sn.abhyanga_oil) && (
