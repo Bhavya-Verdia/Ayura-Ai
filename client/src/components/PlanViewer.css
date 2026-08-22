@@ -925,6 +925,52 @@
   border-radius: 999px;
 }
 
+/* A cautioned therapy still runs — it just runs modified, so the chip carries the
+   modification rather than a bare warning colour. */
+.pk-therapy-chip-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  max-width: 100%;
+}
+.pk-therapy-chip-caution {
+  background: color-mix(in srgb, #fbbf24 12%, transparent);
+  border-color: color-mix(in srgb, #fbbf24 32%, transparent);
+  color: #fbbf24;
+}
+.pk-therapy-caution {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: var(--ayura-text-secondary);
+  padding-left: 0.15rem;
+}
+.pk-therapy-caution svg { flex-shrink: 0; margin-top: 0.25em; color: #fbbf24; }
+
+/* Amber rather than lavender: this banner says do not begin. */
+.pk-deferral-banner {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  background: color-mix(in srgb, #f59e0b 10%, var(--ayura-card-bg) 90%);
+  border: 1.5px solid color-mix(in srgb, #f59e0b 45%, transparent);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+.pk-deferral-icon { color: #fbbf24; flex-shrink: 0; margin-top: 2px; }
+.pk-deferral-text { display: flex; flex-direction: column; gap: 0.3rem; }
+.pk-deferral-text strong { color: #fbbf24; font-size: 0.82rem; letter-spacing: 0.01em; }
+.pk-deferral-text p {
+  color: var(--ayura-text-secondary);
+  font-size: 0.76rem;
+  line-height: 1.55;
+  margin: 0;
+}
+.pk-deferral-resume { color: var(--ayura-text); }
+
 .pk-pradhana-action {
   width: 100%;
   background: color-mix(in srgb, var(--plan-orange) 8%, var(--ayura-card-bg) 92%);
@@ -5756,7 +5802,11 @@
 [data-theme='light'] .rv-practitioner-note,
 [data-theme='light'] .mv-dose-note { color: #92400e; }
 [data-theme='light'] .pk-shamana,
-[data-theme='light'] .pk-shamana-reassess { color: #92400e; }
+[data-theme='light'] .pk-shamana-reassess,
+[data-theme='light'] .pk-deferral-text strong,
+[data-theme='light'] .pk-therapy-chip-caution { color: #92400e; }
+[data-theme='light'] .pk-deferral-icon,
+[data-theme='light'] .pk-therapy-caution svg { color: #b45309; }
 [data-theme='light'] .pk-shodhana { color: #166534; }
 [data-theme='light'] .pk-mridu { color: #075985; }
 /* Amber icons: 3:1 graphics floor on cream */

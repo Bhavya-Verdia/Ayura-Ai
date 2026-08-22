@@ -322,6 +322,11 @@ NOT_IN_CORPUS = {
     "drug_herb_interactions.json",
     "condition_protocols.json",
     "medical_constraints.json",
+    # A gate, deliberately not narrative. The engine already attaches each matched
+    # mechanism to the plan it hands the enricher, so embedding the file would only
+    # let RAG surface contraindications for procedures the plan does not contain —
+    # the LLM reciting why Vamana is barred in a plan that never proposed Vamana.
+    "panchakarma_clinical.json",
 }
 
 
