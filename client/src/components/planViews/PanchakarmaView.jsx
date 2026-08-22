@@ -478,6 +478,15 @@ export function PanchakarmaView({ plan }) {
                       {c.herb}: {c.notes?.[0]?.mechanism}
                     </div>
                   ))}
+                  {/* Already taking a constituent under another name — doubling the
+                      dose. Flagged rather than withheld: the usual answer is to stop
+                      the self-administered one, which is theirs to decide. */}
+                  {(v?.already_taking || []).map((d, i) => (
+                    <div key={`d${i}`} className="pk-aus-note">
+                      <AlertTriangle size={11} />
+                      <span><strong>Already taking {d.already_taking}</strong> — {d.note}</span>
+                    </div>
+                  ))}
                   {interactions.map((x, i) => (
                     <div key={`i${i}`} className="pk-aus-withheld">
                       <AlertTriangle size={11} />

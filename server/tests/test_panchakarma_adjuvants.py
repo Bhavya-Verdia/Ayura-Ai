@@ -301,3 +301,54 @@ def test_the_clinical_file_is_still_valid_json():
         (Path(__file__).resolve().parent.parent / "data" / "knowledge_base"
          / "panchakarma_clinical.json").read_text(encoding="utf-8"))
     assert raw["herbs"] and raw["pradhana_karma"] and raw["therapies"]
+
+
+# ── Already-taken Ayurvedic medicines ─────────────────────────────────────────
+
+def test_a_herb_the_patient_already_takes_is_flagged_as_doubling():
+    """`current_ayurvedic_medicines` is declared in the schema as "Currently taken
+    Ayurvedic medicines to ensure therapy safety", and was collected by no UI and
+    read by no code. The interaction gate checks ALLOPATHIC medication only, so a
+    patient already on Ashwagandha who is prescribed Brahmi + Ashwagandha +
+    Jatamansi + Shankhpushpi takes Ashwagandha twice and nothing notices."""
+    aushadha = _select_aushadha(
+        "vata", ["anxiety"], "basti", "clinic", pk_protocols,
+        existing_ayurvedic=["Ashwagandha Churna"])
+    dupes = aushadha["manovaha_aushadha"]["already_taking"]
+    assert dupes
+    assert any("Ashwagandha" in d["herb"] for d in dupes)
+    assert "double the dose" in dupes[0]["note"]
+
+
+def test_duplication_is_flagged_not_withheld():
+    """The right response is usually to stop the one they are self-administering,
+    not to drop a constituent from a prescribed formulation. That is a decision for
+    the patient and their Vaidya, so the plan states it rather than acting on it."""
+    aushadha = _select_aushadha(
+        "vata", ["anxiety"], "basti", "clinic", pk_protocols,
+        existing_ayurvedic=["Ashwagandha Churna"])
+    manovaha = aushadha["manovaha_aushadha"]
+    assert manovaha["name"], "the formulation must survive"
+    assert not manovaha.get("components_withheld")
+
+
+def test_the_match_works_in_both_directions():
+    """"ashwagandha" must match "Ashwagandha Churna" and vice versa — people type
+    the herb or the preparation interchangeably."""
+    for typed in ("ashwagandha", "Ashwagandha Churna", "ASHWAGANDHA churna 5g"):
+        aushadha = _select_aushadha(
+            "vata", ["anxiety"], "basti", "clinic", pk_protocols, existing_ayurvedic=[typed])
+        assert aushadha["manovaha_aushadha"].get("already_taking"), typed
+
+
+def test_an_unrelated_herb_raises_nothing():
+    aushadha = _select_aushadha(
+        "vata", ["anxiety"], "basti", "clinic", pk_protocols, existing_ayurvedic=["Punarnava"])
+    assert not aushadha["manovaha_aushadha"].get("already_taking")
+
+
+def test_the_rasayana_is_checked_too():
+    """It is the one prescription continued for months after the plan ends."""
+    aushadha = _select_aushadha(
+        "vata", ["sciatica"], "basti", "clinic", pk_protocols, existing_ayurvedic=["ashwagandha"])
+    assert aushadha["rasayana"].get("already_taking")
