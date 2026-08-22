@@ -4520,6 +4520,20 @@
   border: 1px solid rgba(245,158,11,0.2);
 }
 
+/* A taste clash is information, not a warning — the remedy still stands and the
+   note tells you how to take it. Neutral surface, unlike the amber practitioner
+   note directly above. */
+.rv-taste-note {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ayura-text-secondary);
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--border-light);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
 /* ── Info cards (shared) ── */
 .rv-info-card {
   padding: 16px 18px;
