@@ -636,12 +636,26 @@ async def generate_remedies_plan(
     # Remedies don't have a preference_hash cache, but still need lock + semaphore
     # Cache miss — this run hits the LLM, so it bills the daily allowance.
     await consume_plan_quota(db, user)
+    # The Remedies page sends severity and duration per symptom. Anything else
+    # calling this endpoint — and the stored preferences the holistic path uses —
+    # would otherwise fall through to `mild` / `recent` inside `filter_remedies`,
+    # silently disabling the gate that turns a severe symptom into a referral.
+    prefs_doc = await db.user_preferences.find_one({"user_id": user.id}) or {}
+    stored = prefs_doc.get("remedies") or {}
+    symptom_input = {
+        **req,
+        "severity": req.get("severity") or stored.get("symptom_severity") or {},
+        "duration": req.get("duration") or stored.get("symptom_duration") or {},
+        "preference_taste_smell": req.get("preference_taste_smell")
+                                  or stored.get("preference_taste_smell") or [],
+    }
+
     async with _plan_guard(user.id, "remedies"):
         # 1. Engine Filter
-        filtered_remedies = filter_remedies(user_profile, req)
+        filtered_remedies = filter_remedies(user_profile, symptom_input)
 
         # 2. Engine Build
-        raw_plan = build_remedy_plan(filtered_remedies, user_profile, req)
+        raw_plan = build_remedy_plan(filtered_remedies, user_profile, symptom_input)
 
         # 3. LLM Enrichment
         enriched_plan = await enrich_remedies_plan(raw_plan, user_profile)
