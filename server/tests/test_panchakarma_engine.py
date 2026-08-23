@@ -58,17 +58,79 @@ SHODHANA_INSTRUCTIONS = [
 
 # Profiles the KB's `shamana_only_criteria` and `contraindication_matrix` place
 # outside Shodhana at any strength.
+#
+# High and severe Ama used to be listed here and are not, because the criterion
+# they were read from is qualified: `shamana_only_criteria` bars "High Ama
+# **without prior Deepana-Pachana**", exactly as it bars "Manda Agni **without
+# correction**". They belong to CORRECTION_FIRST below. Listing them here is what
+# these tests originally asserted, and the assertion passed while the engine issued
+# a plan containing seven days of the very correction it had just ruled impossible.
 INELIGIBLE = [
     pytest.param(_profile(age=78), id="elderly"),
     pytest.param(_profile(age=5), id="very_young"),
-    pytest.param(_profile(ama_indicator="high"), id="high_ama"),
-    pytest.param(_profile(ama_indicator="severe"), id="severe_ama"),
     pytest.param(_profile(pregnancy_or_nursing=True), id="pregnancy"),
     pytest.param(_profile(bmi=15.2), id="atidurbala"),
     pytest.param(_profile(medical_history=["anemia"]), id="anemia"),
     pytest.param(_profile(medical_history=["active_fever"]), id="active_fever"),
     pytest.param(_profile(medical_history=["cancer"]), id="severe_unmapped"),
 ]
+
+# States the KB requires to be CORRECTED before Shodhana, not states that forbid it.
+# Every one of them is a reason to schedule Deepana-Pachana first.
+CORRECTION_FIRST = [
+    pytest.param(_profile(ama_indicator="high"), "ama_correction_needed", id="high_ama"),
+    pytest.param(_profile(ama_indicator="severe"), "ama_correction_needed", id="severe_ama"),
+    pytest.param(_profile(digestion_quality="poor"), "agni_correction_needed", id="manda_agni"),
+]
+
+
+@pytest.mark.parametrize("profile,flag", CORRECTION_FIRST)
+def test_a_correctable_state_is_corrected_rather_than_used_to_refuse(profile, flag):
+    """The correction is scheduled AND the verdict waits for it.
+
+    High Ama blocked Shodhana outright while the plan it produced still opened with
+    a Deepana-Pachana phase: the correction ran, and the verdict taken before the
+    correction still stood. A Kapha patient with high Ama, high Ojas, Uttama Bala
+    and three prior courses — the textbook Vamana candidate, high Ama being the
+    substance Vamana exists to expel — was told he was clinically ineligible.
+    """
+    plan = generate_panchakarma_plan(profile, _prefs(available_time_days=21))
+    elig = plan["clinical_decisions"]["shodhana_or_shamana"]
+
+    assert elig["type"] != "shamana", "a correctable state is not an eligibility bar"
+    assert elig[flag], "the state must still be recorded as needing correction"
+
+    phases = plan["phase_breakdown"]["phases"]
+    assert phases[0]["key"] == "deepana_pachana", "the correction must come first"
+    assert plan["phase_breakdown"]["deepana_pachana_days"] >= 3
+
+
+def test_high_ama_earns_a_longer_correction_than_mild():
+    """`ama_correction_first` gives a 3-7 day range; the grade decides where in it.
+
+    The floor and the scheduled length have to be the same number. They were not:
+    the phase was costed at five days and three were scheduled.
+    """
+    prefs = _prefs(available_time_days=10)
+    mild = generate_panchakarma_plan(_profile(ama_indicator="mild"), prefs)
+    high = generate_panchakarma_plan(_profile(ama_indicator="high"), prefs)
+
+    assert high["phase_breakdown"]["deepana_pachana_days"] > \
+        mild["phase_breakdown"]["deepana_pachana_days"]
+
+    deepana = next(p for p in high["phase_breakdown"]["phases"] if p["key"] == "deepana_pachana")
+    assert deepana["days"] == high["phase_breakdown"]["deepana_pachana_days"]
+
+
+def test_the_ama_verdict_names_the_sign_that_gates_it_not_only_the_days():
+    """Days are a guide; `signs_ama_cleared` is the gate, and the patient needs it."""
+    plan = generate_panchakarma_plan(_profile(ama_indicator="high"), _prefs())
+    elig = plan["clinical_decisions"]["shodhana_or_shamana"]
+
+    assert elig["ama_correction_mandatory"] is True
+    assert elig["ama_correction_signs"], "the signs must travel with the verdict"
+    assert any("sign" in r.lower() for r in elig["reasons"]), \
+        "the verdict must say the course waits on the signs, not on the day count"
 
 
 @pytest.mark.parametrize("profile", INELIGIBLE)
@@ -360,3 +422,23 @@ def test_the_season_preference_overrides_the_clock():
 
     plan = generate_panchakarma_plan(_profile(), _prefs(current_season="grishma"))
     assert plan["clinical_decisions"]["ritu_context"]["ritu"] == "grishma"
+
+
+def test_an_extension_notice_accounts_for_every_day_it_added():
+    """The phases the notice names must add up to the number in the same sentence.
+
+    Deepana-Pachana was missing from this breakdown, so a patient who asked for 3
+    days and was extended to 14 was told "Purvakarma 3, Virechana 1, Samsarjana 5"
+    — five days short, in the sentence that quotes the total.
+    """
+    plan = generate_panchakarma_plan(
+        _profile(ama_indicator="high"), _prefs(available_time_days=3))
+    pb = plan["phase_breakdown"]
+
+    notice = pb["duration_notice"]
+    assert notice and notice.startswith("Extended from 3 to")
+
+    named = {p["key"]: p["days"] for p in pb["phases"]}
+    assert sum(named.values()) == pb["total_days"]
+    assert named.get("deepana_pachana"), "the correction phase is part of the extension"
+    assert "Deepana-Pachana" in notice, "a phase that added days must appear in the notice"

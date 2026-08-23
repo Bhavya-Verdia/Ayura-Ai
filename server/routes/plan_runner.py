@@ -307,7 +307,12 @@ async def _generate_feature_via_engine_impl(
                 return {"error": "Panchakarma is not available during pregnancy or nursing.", "blocked": True}
             from services.panchakarma_engine import generate_panchakarma_plan
             from services.panchakarma_enricher import enrich_panchakarma_plan
-            raw = generate_panchakarma_plan(profile, prefs, _kb("panchakarma_protocols"))
+            # Same triage the per-feature endpoint runs — the holistic path must not
+            # be the one that still hands an unassessed diagnosis a Vamana schedule.
+            from routes.plans import _triage_unmapped_conditions
+            triage = await _triage_unmapped_conditions(profile)
+            raw = generate_panchakarma_plan(profile, prefs, _kb("panchakarma_protocols"),
+                                            condition_triage=triage)
             return await enrich_panchakarma_plan(raw, profile, prefs)
 
         if plan_type == "remedies":

@@ -96,6 +96,37 @@ def test_every_token_is_matchable_by_the_condition_vocabulary():
     assert not unmatchable, f"tokens the vocabulary cannot match: {unmatchable}"
 
 
+def test_no_token_is_dead_under_the_apps_own_name_for_the_condition():
+    """Self-matchability is not reachability.
+
+    The test above asks whether a token matches itself, which `hypotension` does —
+    while the app records that condition as `low_blood_pressure` and the HARD bar on
+    bloodletting for a hypotensive patient had therefore never once fired. Two more
+    were dead the same way: `gerd` (app: `acid_reflux`) and `hypercholesterolemia`
+    (app: `high_cholesterol`).
+
+    So the question this test asks is the one that matters: for a token naming a
+    condition the app ALSO names, does the gate fire when a real user has it?
+    """
+    from engine.condition_vocab import condition_matches_term, normalize_condition
+    from engine.dosha_analyzer import _DISEASE_DOSHA_SIGNAL
+
+    vocabulary = set(_DISEASE_DOSHA_SIGNAL)
+    dead = []
+    for section in ("pradhana_karma", "therapies"):
+        for key, entry in pk_clinical[section].items():
+            if not isinstance(entry, dict):
+                continue
+            for severity in ("hard", "soft"):
+                for term in (entry.get(severity) or {}):
+                    canon = normalize_condition(term)
+                    if not canon or canon not in vocabulary:
+                        continue  # not a condition the app has its own name for
+                    if not any(condition_matches_term(c, term) for c in vocabulary):
+                        dead.append(f"{section}.{key}.{severity}.{term} (app calls it {canon})")
+    assert not dead, f"contraindications no real user can trip: {dead}"
+
+
 def test_every_therapy_in_the_kb_has_a_clinical_entry():
     """A therapy the engine can schedule but the clinical layer does not know about
     passes every gate by default. 15 of 23 were in that state."""
@@ -278,3 +309,97 @@ def test_the_clinical_file_is_valid_json_on_disk():
     silently, because the engine's loader tolerates a missing file."""
     raw = json.loads((KB_DIR / "panchakarma_clinical.json").read_text(encoding="utf-8"))
     assert raw["pradhana_karma"].keys() == pk_protocols["pradhana_karma"].keys()
+
+
+def test_every_disease_the_app_knows_is_accounted_for():
+    """A disease nobody looked at is indistinguishable from one found safe.
+
+    Measured before this guard existed: of the 102 diseases in the central map, 23
+    changed nothing in the plan on any of 24 profiles — lupus, scleroderma, sickle
+    cell, thalassaemia and pulmonary fibrosis among them, each receiving the
+    byte-identical plan a healthy patient gets, ending in therapeutic emesis.
+
+    A disease is accounted for if it does ONE of three things:
+      1. changes the plan on one of the sampled profiles, or
+      2. appears as a contraindication token, so it gates on a route this sample
+         does not reach (Raktamokshana is selected for well under 1% of profiles),
+      3. or is declared in `assessed_no_contraindication`, with a stated reason.
+
+    Silence is not one of the three.
+    """
+    import hashlib
+    import itertools
+    import json as _json
+
+    from engine.condition_vocab import condition_matches_term
+    from engine.dosha_analyzer import _DISEASE_DOSHA_SIGNAL
+    from services.panchakarma_engine import generate_panchakarma_plan
+
+    def fingerprint(plan):
+        stripped = {k: v for k, v in plan.items() if k not in ("plan_id", "generated_at")}
+        return hashlib.sha256(_json.dumps(stripped, sort_keys=True, default=str).encode()).hexdigest()
+
+    profiles = [
+        (dict(id="t", age=40, gender="female", dominant_dosha=dosha, vikriti_dominant=dosha,
+              fitness_level="advanced", ama_indicator="none", ojas_level="high",
+              digestion_quality="good"),
+         dict(setting=setting, available_time_days=21, detox_experience="experienced",
+              panchakarma_goal="detox"))
+        for dosha, setting in itertools.product(("vata", "pitta", "kapha"), ("home", "clinic"))
+    ]
+    controls = [fingerprint(generate_panchakarma_plan({**pr, "medical_history": []}, pf))
+                for pr, pf in profiles]
+
+    tokens = set()
+    for section in ("pradhana_karma", "therapies"):
+        for entry in pk_clinical[section].values():
+            if isinstance(entry, dict):
+                for severity in ("hard", "soft"):
+                    tokens |= set(entry.get(severity) or {})
+
+    declared = set(pk_clinical.get("assessed_no_contraindication", {})) - {"_note"}
+
+    unaccounted = []
+    for disease in sorted(_DISEASE_DOSHA_SIGNAL):
+        if disease in declared:
+            continue
+        if any(condition_matches_term(disease, t) for t in tokens):
+            continue
+        changed = any(
+            fingerprint(generate_panchakarma_plan({**pr, "medical_history": [disease]}, pf)) != control
+            for (pr, pf), control in zip(profiles, controls)
+        )
+        if not changed:
+            unaccounted.append(disease)
+
+    assert not unaccounted, (
+        "diseases that change nothing and are not declared safe — either gate them "
+        f"or add them to assessed_no_contraindication with a reason: {unaccounted}"
+    )
+
+
+def test_nothing_is_both_declared_safe_and_contraindicated():
+    """The two records would be a file disagreeing with itself, which is the exact
+    condition `_meta.why_this_file_exists` was written about."""
+    from engine.condition_vocab import condition_matches_term
+
+    declared = set(pk_clinical.get("assessed_no_contraindication", {})) - {"_note"}
+    contradictions = []
+    for section in ("pradhana_karma", "therapies"):
+        for key, entry in pk_clinical[section].items():
+            if not isinstance(entry, dict):
+                continue
+            for severity in ("hard", "soft"):
+                for term in (entry.get(severity) or {}):
+                    for safe in declared:
+                        if condition_matches_term(safe, term):
+                            contradictions.append(f"{safe} declared safe but gated at {section}.{key}.{severity}.{term}")
+    assert not contradictions, contradictions
+
+
+def test_every_assessed_safe_record_states_a_reason():
+    declared = {k: v for k, v in pk_clinical.get("assessed_no_contraindication", {}).items()
+                if k != "_note"}
+    assert declared, "the section must not be empty — it is a record, not a placeholder"
+    thin = [k for k, v in declared.items() if not isinstance(v, str) or len(v) < 40]
+    assert not thin, f"assessed-safe records with no usable reason: {thin}"

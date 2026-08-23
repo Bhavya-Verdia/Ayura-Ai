@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from engine.condition_vocab import term_in_condition
+from engine.condition_vocab import condition_matches_term, term_in_condition
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 THERAPIES_PATH = BASE_DIR / "data" / "knowledge_base" / "panchakarma_therapies.json"
@@ -182,9 +182,22 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
         blocking.append("Pregnancy / nursing — Shodhana contraindicated")
 
     ama = user_profile.get("ama_indicator", "none")
-    # High or Severe Ama: Shodhana drives Ama deeper into Srotas (CS Sutrasthana 15)
-    if ama in ("high", "severe"):
-        blocking.append("High Ama present — Deepana-Pachana must precede Shodhana; Ama must be cleared first")
+    # `shamana_only_criteria` bars "High Ama **without prior Deepana-Pachana** —
+    # Shodhana drives Ama deeper into Srotas". The qualifier is the whole criterion.
+    # It was read as an absolute bar, and the plan the bar produced then scheduled
+    # three to seven days of Deepana-Pachana anyway: the correction ran, and the
+    # verdict taken *before* the correction still stood. A Kapha patient with high
+    # Ama, high Ojas, Uttama Bala, no conditions and three prior courses — the
+    # textbook Vamana candidate, since high Ama is the substance Vamana exists to
+    # expel — was told he was clinically ineligible for purification.
+    #
+    # The criterion directly beneath it in the same list, "Manda Agni **without
+    # correction**", carries the identical qualifier and is already implemented
+    # correctly here as `agni_correction_needed`. High Ama now follows it: a
+    # mandatory precondition that the Deepana-Pachana phase discharges, not a bar.
+    # It raises that phase's floor and gates progression on the KB's own
+    # `signs_ama_cleared`; it does not decide eligibility.
+    ama_correction_mandatory = ama in ("high", "severe")
 
     # Low Ojas restricts to the Brimhana (nourishing) routes rather than blocking
     # outright. `contraindication_matrix.atidurbala` allows exactly Matra Basti,
@@ -262,12 +275,17 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
             # A blocked patient still needs Ama cleared — it is the reason many of
             # them are blocked — so the correction herbs travel with the verdict.
             "ama_correction_needed": ama != "none",
+            "ama_correction_mandatory": ama_correction_mandatory,
             "ama_correction_herbs": ama_info.get("herbs", []),
             "ama_correction_duration": ama_info.get("duration_days", "3–7 days"),
             "ama_correction_signs": ama_info.get("signs_ama_cleared", []),
         }
 
-    needs_ama = ama in ("mild", "moderate")
+    # Every grade of Ama needs correcting before Shodhana; the grades differ in how
+    # long it takes and whether the course may start without it, not in whether the
+    # correction happens. Restricting this to mild/moderate is what left high Ama
+    # with a phase floor of zero on the one path where it mattered most.
+    needs_ama = ama != "none"
 
     if setting == "home" or restricting:
         reasons = list(restricting)
@@ -276,7 +294,12 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
                 "Home setting — full Shodhana (Vamana / Niruha Basti) requires Vaidya supervision. "
                 "Mridu (mild) Shodhana applied per the classical home protocol."
             )
-        if needs_ama or agni_correction_needed:
+        if ama_correction_mandatory:
+            reasons.append(
+                f"{ama.title()} Ama — the mild cleanse proceeds only once Deepana-Pachana has "
+                "cleared it. Do not begin Snehana until the signs of cleared Ama have appeared."
+            )
+        elif needs_ama or agni_correction_needed:
             reasons.append("Deepana-Pachana scheduled before the mild cleanse.")
         return {
             "type": "mridu_shodhana",
@@ -291,12 +314,22 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
             "agni": agni,
             "agni_correction_needed": agni_correction_needed,
             "ama_correction_needed": needs_ama,
+            "ama_correction_mandatory": ama_correction_mandatory,
             "ama_correction_herbs": ama_info.get("herbs", []) if needs_ama else [],
             "ama_correction_duration": ama_info.get("duration_days", "3–7 days"),
             "ama_correction_signs": ama_info.get("signs_ama_cleared", []),
         }
 
     shodhana_reasons = ["Patient meets all Shodhana eligibility criteria (CS Sutrasthana 15)"]
+    if ama_correction_mandatory:
+        # Stated on the verdict, not only in the phase, because this is the one
+        # eligibility criterion the patient can still fail *after* the plan is
+        # issued — the days are a guide, the signs are the gate.
+        shodhana_reasons.append(
+            f"{ama.title()} Ama — Shodhana proceeds only once Deepana-Pachana has cleared it. "
+            "Do not begin Snehana until the signs of cleared Ama have appeared, however many "
+            "days that takes."
+        )
     if experience == "experienced":
         shodhana_reasons.append("Prior PK experience (3+ courses) — full classical protocol applicable")
     elif experience == "some":
@@ -315,6 +348,7 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
         "agni": agni,
         "agni_correction_needed": agni_correction_needed,
         "ama_correction_needed": needs_ama,
+        "ama_correction_mandatory": ama_correction_mandatory,
         "ama_correction_herbs": ama_info.get("herbs", []) if needs_ama else [],
         "ama_correction_duration": ama_info.get("duration_days", "3–7 days"),
         "ama_correction_signs": ama_info.get("signs_ama_cleared", []),
@@ -441,21 +475,142 @@ def _match_contraindications(medical_history: list[str], terms: dict) -> list[tu
     hits: list[tuple[str, str]] = []
     for condition in medical_history:
         for term, mechanism in terms.items():
-            if term_in_condition(condition, term):
+            # Synonym-aware: the safety gate has to ask the vocabulary whether two
+            # names are the same disease, not compare the strings. See
+            # `condition_matches_term` — three contraindications, one of them a hard
+            # bar on bloodletting, had never fired for exactly this reason.
+            if condition_matches_term(condition, term):
                 hits.append((condition, mechanism))
                 break
     return hits
 
 
-def _validate_karma_safety(pradhana: dict, medical_history: list[str]) -> dict:
+# ── LLM triage for unrecognised diagnoses ─────────────────────────────────────
+# `services/condition_triage.py` explains why this layer exists and why the
+# enricher could not do the job. Here is the contract it is held to:
+#
+#   RESTRICT ONLY.  Triage findings are merged UNDER the authored KB entries, and
+#     the merge only ever adds tokens. There is no representation for removing a
+#     contraindication, so no answer from a language model can lift a bar a vaidya
+#     wrote — the worst it can do is add one that was not needed.
+#   FAIL CLOSED.  A condition the KB does not recognise and triage could not assess
+#     withholds Shodhana. Before this existed, that same case proceeded to full
+#     Vamana: fifteen of fifteen dangerous unmapped diagnoses — chemotherapy, active
+#     tuberculosis, DVT, cardiac stent, gestational diabetes — received the
+#     byte-identical plan a healthy forty-year-old gets.
+
+_TRIAGE_KARMA_KEYS = ("vamana", "virechana", "basti", "nasya", "raktamokshana")
+
+
+def _triage_karma_terms(condition_triage: dict | None) -> dict[str, dict[str, dict]]:
+    """Triage findings reshaped into the hard/soft token→mechanism maps the gate reads.
+
+    The token is the patient's own condition string, which is what makes this work
+    without a new matcher: `_match_contraindications` already matches a condition
+    against a token, and here they are the same word.
+    """
+    out: dict[str, dict[str, dict]] = {k: {"hard": {}, "soft": {}} for k in _TRIAGE_KARMA_KEYS}
+    for condition, finding in (condition_triage or {}).items():
+        if not isinstance(finding, dict) or finding.get("status") != "ok":
+            continue
+        for severity in ("hard", "soft"):
+            for karma, mechanism in (finding.get(severity) or {}).items():
+                if karma in out:
+                    out[karma][severity][condition] = mechanism
+    return out
+
+
+def _triage_eligibility_findings(unmapped: list[str], condition_triage: dict | None) -> dict:
+    """What the triage says about Shodhana as a whole, per unrecognised condition."""
+    blocking: list[str] = []
+    restricting: list[str] = []
+    assessed: list[dict] = []
+
+    for condition in unmapped:
+        finding = (condition_triage or {}).get(condition)
+        display = condition.replace("_", " ")
+
+        if isinstance(finding, dict) and finding.get("status") == "not_a_diagnosis":
+            # A symptom, not a diagnosis. It is not an eligibility finding and must
+            # not withhold anything — the plan handles symptoms elsewhere — but it
+            # is still recorded, because the patient wrote it down, and a plan that
+            # neither uses an answer nor mentions it reads as though it never asked.
+            assessed.append({"condition": condition, "status": "not_a_diagnosis",
+                             "outcome": "not_a_diagnosis",
+                             "note": finding.get("reason") or "",
+                             "reviewed": False, "source": "llm_triage"})
+            continue
+
+        if not isinstance(finding, dict) or finding.get("status") != "ok":
+            reason = (finding or {}).get("reason") if isinstance(finding, dict) else None
+            blocking.append(
+                f"'{display}' is not in this engine's disease vocabulary and could not be "
+                f"assessed{f' — {reason}' if reason else ''}. Shodhana is withheld rather than "
+                "performed on a diagnosis nothing has checked: every contraindication gate "
+                "matches on recognised conditions, so an unrecognised one passes them all by "
+                "default rather than clearing them. A Vaidya can assess this in person."
+            )
+            assessed.append({"condition": condition,
+                             "status": (finding or {}).get("status", "unavailable"),
+                             "outcome": "shodhana_withheld"})
+            continue
+
+        verdict = finding.get("shodhana")
+        if verdict == "contraindicated":
+            mech = "; ".join((finding.get("hard") or {}).values()) or finding.get("note") or ""
+            blocking.append(
+                f"'{display}' — assessed as contraindicating Shodhana"
+                f"{f': {mech}' if mech else ''}. Assessment is AI-generated and unreviewed; "
+                "confirm with a Vaidya."
+            )
+        elif verdict == "mridu_only":
+            restricting.append(
+                f"'{display}' — assessed as tolerating only Mridu (mild) Shodhana. "
+                "Assessment is AI-generated and unreviewed; confirm with a Vaidya."
+            )
+        assessed.append({
+            "condition": condition,
+            "status": "ok",
+            "outcome": verdict,
+            "classical_analogue": finding.get("classical_analogue"),
+            "dosha": finding.get("dosha"),
+            "srotas": finding.get("srotas"),
+            "monitoring": finding.get("monitoring"),
+            "confidence": finding.get("confidence"),
+            "karma_restrictions": {
+                **{k: {"severity": "hard", "mechanism": m} for k, m in (finding.get("hard") or {}).items()},
+                **{k: {"severity": "soft", "mechanism": m} for k, m in (finding.get("soft") or {}).items()},
+            },
+            "reviewed": False,
+            "source": "llm_triage",
+        })
+
+    return {"blocking": blocking, "restricting": restricting, "assessed": assessed}
+
+
+def _validate_karma_safety(pradhana: dict, medical_history: list[str],
+                           triage_terms: dict | None = None) -> dict:
     """
     Post-selection safety gate: checks if chosen Pradhana Karma is contraindicated
     by the user's medical conditions. Hard contraindications trigger substitution.
     Ref: CS Kalpasthana 12, Siddhisthana 1.
+
+    `triage_terms` carries findings for diagnoses the KB does not recognise. They
+    are merged UNDER the authored entries — additively, and losing every collision —
+    so the LLM layer can only ever narrow what this gate permits.
     """
+    def contraindications(key: str) -> dict:
+        kb = _karma_contraindications(key)
+        extra = (triage_terms or {}).get(key) or {}
+        return {
+            **kb,
+            "hard": {**(extra.get("hard") or {}), **kb["hard"]},
+            "soft": {**(extra.get("soft") or {}), **kb["soft"]},
+        }
+
     primary = pradhana.get("primary", "virechana")
     karma_key = "basti" if primary == "basti_matra" else primary
-    contra = _karma_contraindications(karma_key)
+    contra = contraindications(karma_key)
 
     hard_hits = _match_contraindications(medical_history, contra["hard"])
     soft_hits = _match_contraindications(medical_history, contra["soft"])
@@ -477,7 +632,7 @@ def _validate_karma_safety(pradhana: dict, medical_history: list[str]) -> dict:
             if candidate == old_primary:
                 continue
             if not _match_contraindications(
-                medical_history, _karma_contraindications(key)["hard"]
+                medical_history, contraindications(key)["hard"]
             ):
                 chosen = candidate
                 break
@@ -506,7 +661,7 @@ def _validate_karma_safety(pradhana: dict, medical_history: list[str]) -> dict:
             )
         else:
             fallback_reason = (
-                _karma_contraindications(
+                contraindications(
                     "basti" if old_primary == "basti_matra" else old_primary
                 )["fallback_reason"]
                 if chosen == contra["fallback"]
@@ -539,6 +694,151 @@ def _validate_karma_safety(pradhana: dict, medical_history: list[str]) -> dict:
         ]
 
     return pradhana, warnings
+
+
+# ── Declared-capability gate ───────────────────────────────────────────────────
+# Every Pradhana row in `panchakarma_therapies.json` states what the patient has to
+# be able to supply: `diet_strictness` and `herb_requirement`.
+# `filter_and_score_therapies` reads both fields — but it is only ever called with
+# `"purvakarma"` and `"paschat"`, so all nine `pradhana` rows sit outside the only
+# gate that reads them. Both preferences were therefore honoured on the supporting
+# therapies and ignored on the cleanse: a patient who answered "lifestyle changes
+# only" had Udvartana and the Kitchari mono-diet withheld from the rotating pool and
+# was then handed a seven-stage Samsarjana Krama opening on Peya — a 1:14 rice-water
+# fast — with no part of the plan acknowledging the answer.
+#
+# Which rows belong to which Karma. `basti_matra` is the home adaptation of Basti
+# and shares its row; the mapping is here rather than derived from the id prefix
+# because `basti_niruha` and `basti_anuvasana` are two halves of one course while
+# `basti_home` is a different therapy that happens to share the stem.
+_KARMA_ROWS: dict[str, tuple[str, ...]] = {
+    "vamana":        ("vamana",),
+    "virechana":     ("virechana_clinic", "virechana_home"),
+    "basti":         ("basti_niruha", "basti_anuvasana"),
+    "basti_matra":   ("basti_home",),
+    "nasya":         ("nasya_clinic", "nasya_home"),
+    "raktamokshana": ("raktamokshana",),
+}
+
+_DIET_RANK = {"lifestyle_only": 0, "partial": 1, "strict": 2}
+
+
+def _capability_shortfall(row: dict, pk_prefs: dict) -> str:
+    """Why this patient's own declared capabilities cannot support this row, or "".
+
+    Clinician-administered rows are exempt from both checks: the clinic serves the
+    diet and stocks the pharmacy, so neither answer describes anything the patient
+    has to do. `filter_and_score_therapies` already draws this exact line for the
+    time budget — "Clinic-only rows are exempt; self-care is not, wherever the
+    patient happens to be" — and the two gates would contradict each other if this
+    one drew it anywhere else.
+    """
+    if "home" not in (row.get("setting_required") or []):
+        return ""
+
+    diet_ab = pk_prefs.get("diet_adherence_ability", "partial")
+    # Only `lifestyle_only` gates here, and the asymmetry with the pool filter (which
+    # also excludes `strict` from a `partial` answer) is deliberate. `partial` is a
+    # statement about difficulty; `lifestyle_only` is a statement about refusal, and
+    # a Shodhana whose Samsarjana Krama will not be followed is the specific thing
+    # that causes post-purification complications. Dropping a supporting therapy over
+    # a difficulty rating costs the patient a massage; dropping the Karma over one
+    # would cost them the treatment, and a preference must not do that.
+    if diet_ab == "lifestyle_only" and _DIET_RANK.get(row.get("diet_strictness"), 0) > 0:
+        return (
+            f"it needs a {row.get('diet_strictness')} therapeutic diet — the Samsarjana Krama "
+            "re-entry is part of the treatment, not an optional extra, and you have said you "
+            "can make lifestyle changes only"
+        )
+
+    if pk_prefs.get("access_to_ayurvedic_herbs") == "no" \
+            and row.get("herb_requirement") == "specific_ayurvedic":
+        return "it needs specific Ayurvedic formulations you have said you cannot obtain"
+
+    return ""
+
+
+def _validate_karma_capability(pradhana: dict, karma_setting: str, pk_prefs: dict,
+                               therapies: list[dict] | None = None) -> tuple[dict, list[str]]:
+    """Withdraw a Karma the patient has said they cannot carry out, and say so.
+
+    Runs AFTER `_validate_karma_safety`, never before: a clinical contraindication
+    and a declared preference are not the same kind of finding, and a substitution
+    made for a preference must not be able to reinstate a route safety withdrew.
+
+    `therapies` is the list the rest of the plan was built from. It matters that it
+    is passed rather than read from the module: in production the route hands the
+    engine `kb_cache.panchakarma_protocols` from Mongo, and a gate reading the
+    bundled file instead would be deciding from data the schedule never saw.
+    """
+    primary = pradhana.get("primary")
+    if not primary:
+        return pradhana, []
+
+    by_id = {t["id"]: t for t in (therapies if therapies is not None else pk_therapies)}
+
+    def shortfall(karma: str) -> str:
+        rows = [by_id[r] for r in _KARMA_ROWS.get(karma, ()) if r in by_id]
+        rows = [r for r in rows
+                if {karma_setting, "both"} & set(r.get("setting_required") or [])]
+        if not rows:
+            # No row delivers this Karma where the patient is. Silence here would
+            # have let the substitution chain answer a home patient's withdrawn
+            # Virechana with clinical Niruha Basti, which has no home row at all.
+            return f"there is no {karma.replace('_', ' ')} route for a {karma_setting} setting"
+        # A Karma survives if ANY of its rows does — Basti is one course delivered
+        # by two rows, and Virechana has a clinic form and a home form.
+        reasons = [_capability_shortfall(r, pk_prefs) for r in rows]
+        return "" if any(not r for r in reasons) else reasons[0]
+
+    why = shortfall(primary)
+    if not why:
+        return pradhana, []
+
+    original = primary
+    chosen = None
+    for candidate in (_KARMA_FALLBACK.get(primary, ("nasya", ""))[0], "nasya", "basti_matra"):
+        # The fallback table names the classical route, not the setting's form of
+        # it. `_select_pradhana_karma` applies the home adaptations on the way in
+        # and the substitution chain has to apply the same ones, or a preference
+        # substitution quietly promotes a home patient to a clinical procedure.
+        if karma_setting == "home":
+            candidate = {"vamana": "nasya", "basti": "basti_matra"}.get(candidate, candidate)
+        if candidate == original:
+            continue
+        if not shortfall(candidate):
+            chosen = candidate
+            break
+
+    if chosen is None:
+        return {
+            **pradhana,
+            "primary": None,
+            "reason": (
+                f"No Pradhana Karma is possible with what you have told us you can do: "
+                f"{why}. Shodhana is not withheld for a clinical reason — this plan takes the "
+                "Shamana route instead."
+            ),
+            "capability_substitution": True,
+            "original_karma": original,
+        }, [
+            f"NO KARMA AVAILABLE: every Pradhana route needs something you have said you "
+            f"cannot do — {why}. The plan falls back to Shamana."
+        ]
+
+    return {
+        **pradhana,
+        "primary": chosen,
+        "reason": (
+            f"{original.replace('_', ' ').title()} withdrawn — {why}. "
+            f"{chosen.replace('_', ' ').title()} substituted; it asks less of you and treats the "
+            "same imbalance by a gentler route."
+        ),
+        "capability_substitution": True,
+        "original_karma": original,
+    }, [
+        f"PREFERENCE SUBSTITUTION: {original} → {chosen} — {why}"
+    ]
 
 
 # ── Pradhana Karma Selection ───────────────────────────────────────────────────
@@ -1779,7 +2079,8 @@ def assemble_phase(pool, target_days, start_day, phase_name, always_both=False):
 
 # ── Main Entry Point ──────────────────────────────────────────────────────────
 
-def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_db=None) -> dict:
+def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_db=None,
+                             condition_triage: dict | None = None) -> dict:
     """
     Full Panchakarma plan generator using classical protocol KB.
     Clinical decisions: Shodhana/Shamana, Pradhana Karma per Vikriti,
@@ -1874,6 +2175,33 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             "vaidya_override": True,
         }
 
+    # ── Diagnoses the KB does not recognise ───────────────────────────────────
+    # Placed beside the severe-condition override because it is the same kind of
+    # finding: something about this patient that the classical criteria never saw.
+    triage = _triage_eligibility_findings(unmapped_conditions, condition_triage)
+    triage_terms = _triage_karma_terms(condition_triage)
+
+    if triage["blocking"] and eligibility.get("type") != "shamana":
+        eligibility = {
+            **eligibility,
+            "type": "shamana",
+            "shodhana_eligible": False,
+            # Not a clinical bar: nobody found this patient unfit. The engine could
+            # not read the diagnosis, which a Vaidya can resolve in one appointment.
+            "clinically_ineligible": False,
+            "unassessed_condition": True,
+            "reasons": [*eligibility.get("reasons", []), *triage["blocking"]],
+            "blocking_reasons": [*eligibility.get("blocking_reasons", []), *triage["blocking"]],
+        }
+    elif triage["restricting"] and eligibility.get("type") == "shodhana":
+        eligibility = {
+            **eligibility,
+            "type": "mridu_shodhana",
+            "shodhana_eligible": False,
+            "reasons": [*eligibility.get("reasons", []), *triage["restricting"]],
+            "restricting_reasons": [*eligibility.get("restricting_reasons", []), *triage["restricting"]],
+        }
+
     is_shamana = eligibility.get("type") == "shamana"
     goal = _goal_profile(pk_prefs)
     goal_notes: list[str] = [goal["note"]]
@@ -1933,20 +2261,34 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
                 goal_notes.append(seasonal_note)
         pradhana, safety_warnings = _restrict_to_brimhana(pradhana, eligibility)
         # Safety gate: substitute karma if hard contraindicated by medical history
-        pradhana, karma_warnings = _validate_karma_safety(pradhana, medical_history)
+        pradhana, karma_warnings = _validate_karma_safety(pradhana, medical_history, triage_terms)
         safety_warnings += karma_warnings
 
-        # The gate can conclude that no Karma is safe for this patient. That is a
-        # Shamana verdict arrived at from the other direction, and it has to reach
-        # the plan the same way — otherwise the schedule is built for a Karma of None.
+        # Second gate, and second only: what the patient has told us they can supply.
+        # It runs after the clinical one so that a preference can never reinstate a
+        # route safety has already withdrawn.
+        pradhana, capability_warnings = _validate_karma_capability(
+            pradhana, karma_setting, pk_prefs, pkt)
+        safety_warnings += capability_warnings
+
+        # Either gate can conclude that no Karma remains. That is a Shamana verdict
+        # arrived at from the other direction, and it has to reach the plan the same
+        # way — otherwise the schedule is built for a Karma of None.
         if pradhana["primary"] is None:
             is_shamana = True
             no_karma_reason = pradhana["reason"].lstrip("⚠ ")
+            # A patient who cannot follow the diet is not clinically ineligible for
+            # purification, and the plan must not tell them they are — changing the
+            # answer is enough, where a clinical bar needs a Vaidya. The distinction
+            # travels in `reasons`, which the view renders; `clinically_ineligible`
+            # is set correctly beside it but is currently read by nothing, here or
+            # in the client, and this is not the change that should wire it up.
+            by_preference = bool(pradhana.get("capability_substitution"))
             eligibility = {
                 **eligibility,
                 "type": "shamana",
                 "shodhana_eligible": False,
-                "clinically_ineligible": True,
+                "clinically_ineligible": not by_preference,
                 "reasons": [*eligibility.get("reasons", []), no_karma_reason],
                 "blocking_reasons": [*eligibility.get("blocking_reasons", []), no_karma_reason],
             }
@@ -1996,7 +2338,14 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         deepana_needed = bool(
             eligibility.get("ama_correction_needed") or eligibility.get("agni_correction_needed")
         )
-        deepana_min = 3 if deepana_needed else 0
+        # `ama_correction_first.duration_days` gives "3-7 days of Deepana-Pachana
+        # herbs before starting Snehana". Mild and moderate Ama, and Manda Agni, take
+        # the floor of that range; high and severe take the middle, because for them
+        # the phase is not preparation that improves the result — it is the
+        # precondition the Shodhana verdict is conditional on. On a long course the
+        # proportional term raises both to the same number; the floors are what
+        # separate them when the course is short.
+        deepana_min = (5 if eligibility.get("ama_correction_mandatory") else 3) if deepana_needed else 0
         purva_min = 2
 
         floor = deepana_min + purva_min + 1 + paschat_min
@@ -2011,7 +2360,11 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             total_days = floor
 
         if deepana_needed:
-            deepana_days = min(max(3, min(7, int(total_days * 0.25))), total_days - (floor - deepana_min))
+            # The floor is the same number the phase was costed at above. Hardcoding
+            # 3 here while the floor said 5 would have reserved five days for the
+            # phase and then scheduled three of them.
+            deepana_days = min(max(deepana_min, min(7, int(total_days * 0.25))),
+                               total_days - (floor - deepana_min))
 
         shodhana_days = total_days - deepana_days
         purva_days = max(purva_min, _purvakarma_days(vikriti_dom, shodhana_days, protocols))
@@ -2045,9 +2398,16 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
                 "it is meant to run for months, well past the end of this plan."
             )
         elif natural_total > total_days:
+            # The phases named have to account for the days added. Deepana-Pachana
+            # was left out of this breakdown, so a patient who asked for 3 days and
+            # was extended to 14 read "Purvakarma 3, Virechana 1, Samsarjana 5" and
+            # was five days short of the number in the same sentence. High Ama makes
+            # that phase the largest single addition, so the gap is now the rule.
             duration_notice = (
                 f"Extended from {requested_days} to {natural_total} days. "
-                f"Purvakarma needs {purva_days} for your Vikriti, "
+                + (f"Deepana-Pachana needs {deepana_days} to clear Ama before Snehana, "
+                   if deepana_days else "")
+                + f"Purvakarma needs {purva_days} for your Vikriti, "
                 f"{(pradhana['primary'] or '').replace('_', ' ').title()} needs {pradhana_days}, "
                 f"and the Samsarjana Krama re-entry has {paschat_min} stages. "
                 "Compressing any of them is what causes post-Shodhana complications."
@@ -2065,6 +2425,37 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         pregnancy=bool(user_profile.get("pregnancy_or_nursing")),
         existing_ayurvedic=(pk_prefs.get("current_ayurvedic_medicines") or []),
     )
+
+    # `access_to_ayurvedic_herbs` reached the therapy pool and stopped there. Every
+    # Pradhana row the KB marks `specific_ayurvedic` is clinician-administered and
+    # every home Karma row is `readily_available`, so the answer never costs the
+    # patient the cleanse itself — which is why it is not an eligibility input. What
+    # it does cost them is the compendium: Madanaphala Phanta, Brahmi Ghrita and
+    # Dashamoola Kashayam were named to a patient who had just said they cannot
+    # obtain Ayurvedic formulations, with nothing in the plan acknowledging it.
+    #
+    # Named, not withheld. Substituting on a procurement answer would change the
+    # drug for a non-clinical reason, and the compendium's entries are chosen for
+    # the Dosha, the Koshtha and the Bala; a patient who finds a supplier after all
+    # should receive the formulation their profile actually indicates.
+    procurement_notice = None
+    if pk_prefs.get("access_to_ayurvedic_herbs") == "no":
+        named = sorted({
+            v["name"] for v in aushadha.values()
+            if isinstance(v, dict) and v.get("name")
+        })
+        if named:
+            procurement_notice = (
+                "You have said you cannot obtain specific Ayurvedic formulations. This plan "
+                f"still names {', '.join(named)}, because they are what your Vikriti and Koshtha "
+                "indicate and substituting on availability would change the medicine for a reason "
+                "that is not clinical. "
+                + ("The clinic supplies the ones used during your therapies; the Rasayana "
+                   "continues at home for months after this plan ends, so that one you will need "
+                   "to source." if karma_setting == "clinic" else
+                   "You will need to source these, or ask a Vaidya for a substitution — do not "
+                   "begin the Karma without the drug it calls for.")
+            )
 
     # Every Aushadha gate — the herb table, the therapy contraindications, the
     # per-Karma matrix — matches CONDITION TOKENS. An unmapped condition matches
@@ -2093,6 +2484,31 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     # no Shodhana there is nothing to re-enter from, and printing its stages would
     # put a mono-diet ladder in a plan whose whole purpose is to stop depleting.
     samsarjana = [] if is_shamana else _samsarjana_krama(pradhana["primary"], protocols)
+
+    # The Samsarjana ladder is the strictest diet in the feature — post-Vamana it
+    # opens on Peya, rice boiled at 1:14 and strained. `diet_adherence_ability` was
+    # read only by the therapy pool, so a patient who answered "lifestyle changes
+    # only" had the Kitchari mono-diet withheld from their rotating therapies and
+    # was handed the seven-stage ladder anyway, unremarked.
+    #
+    # Where the Karma is clinician-administered the ladder is too, and the answer
+    # describes nothing the patient has to arrange — but it is still an answer they
+    # gave, and a plan that neither honours it nor mentions it reads as though the
+    # question was never asked.
+    samsarjana_notice = None
+    if samsarjana and _DIET_RANK.get(pk_prefs.get("diet_adherence_ability", "partial"), 1) < 2:
+        who = ("These meals are prepared and served by the clinic — this phase is administered, "
+               "not self-managed." if karma_setting == "clinic" else
+               "You prepare these yourself, and the stages are the treatment.")
+        samsarjana_notice = (
+            f"You have told us your dietary adherence is "
+            f"'{pk_prefs.get('diet_adherence_ability', 'partial').replace('_', ' ')}'. {who} "
+            "The Samsarjana Krama is not the negotiable part of a Panchakarma: Agni is at its "
+            "weakest in the days straight after purification, and returning to ordinary food "
+            "before the ladder is finished is the specific thing that causes the complications "
+            "the phase exists to prevent. If you cannot commit to it, say so before the Karma "
+            "day rather than during the re-entry."
+        )
 
     # ── Snehana Protocol ──────────────────────────────────────────────────────
     snehana_int = (
@@ -2370,6 +2786,7 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             "deferral":               deferral,
             "goal":                   {"id": goal["goal"], "label": goal["label"], "notes": goal_notes},
             "unmapped_conditions":    unmapped_conditions,
+            "condition_triage":       triage["assessed"],
             "vaidya_review_required": vaidya_review_required,
         },
 
@@ -2404,9 +2821,11 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
 
         # ── Aushadha (medicines/oils) ─────────────────────────────────────────
         "aushadha": aushadha,
+        "procurement_notice": procurement_notice,
 
         # ── Post-PK dietary re-entry ──────────────────────────────────────────
         "samsarjana_krama": samsarjana,
+        "samsarjana_notice": samsarjana_notice,
 
         # ── Daily therapy schedule ────────────────────────────────────────────
         "daily_schedule": schedule,
