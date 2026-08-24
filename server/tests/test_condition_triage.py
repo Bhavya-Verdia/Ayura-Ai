@@ -238,3 +238,128 @@ def test_common_phrasings_of_a_known_disease_never_reach_the_triage():
     for phrasing in ("diabetes_type_2", "diabetes type 2", "type 2 diabetes",
                      "diabetes_type2", "low bp", "ckd", "high bp"):
         assert disease_signal(phrasing) is not None, f"{phrasing!r} fell through to triage"
+
+
+# ── The assessed Dosha steers the pool, and only the pool ────────────────────
+#
+# A disease the KB knows contributes its Dosha through `disease_signal`. A disease
+# it does not know contributed nothing: two patients with two different unmapped
+# diagnoses got byte-identical schedules, because the only thing their diagnosis
+# changed was the sentence naming it. The triage has always returned a Dosha for
+# the conditions it can place; the engine only ever printed it.
+
+def _tri(condition, dosha, verdict="permitted", hard=None):
+    return {condition: {"condition": condition, "status": "ok", "kind": "disease",
+                        "shodhana": verdict, "dosha": dosha,
+                        "hard": hard or {}, "soft": {},
+                        "source": "llm_triage", "reviewed": False}}
+
+
+def _pk_profile(**over):
+    base = dict(id="t", age=40, gender="male", dominant_dosha="vata", vikriti_dominant="vata",
+                fitness_level="advanced", ama_indicator="none", ojas_level="high",
+                digestion_quality="good", medical_history=["some rare disease"])
+    base.update(over)
+    return base
+
+
+def _pk_prefs(**over):
+    base = dict(setting="home", available_time_days=14, detox_experience="experienced",
+                access_to_ayurvedic_herbs="yes", diet_adherence_ability="strict",
+                self_care_time_per_day="2 hours", panchakarma_goal="detox")
+    base.update(over)
+    return base
+
+
+def test_assessed_dosha_changes_the_schedule():
+    """Otherwise the field is decoration — which is what it was."""
+    import json
+    from services.panchakarma_engine import generate_panchakarma_plan
+    plans = {
+        d: json.dumps(generate_panchakarma_plan(
+            _pk_profile(), _pk_prefs(), None,
+            condition_triage=_tri("some rare disease", d))["daily_schedule"],
+            sort_keys=True, default=str)
+        for d in ("vata", "pitta", "kapha")
+    }
+    assert len(set(plans.values())) > 1, \
+        "every assessed Dosha produced the same schedule — the signal is inert"
+
+
+def test_assessed_dosha_never_outranks_the_vitiated_dosha():
+    """It is a preference-strength signal. A therapy that aggravates the Dosha the
+    patient is actually vitiated in must not be promoted over one that pacifies it,
+    however the triage reads the disease."""
+    from services.panchakarma_engine import filter_and_score_therapies, pk_therapies
+    for vikriti in ("vata", "pitta", "kapha"):
+        for triage_dosha in ("vata", "pitta", "kapha"):
+            pool = filter_and_score_therapies(
+                _pk_profile(dominant_dosha=vikriti, vikriti_dominant=vikriti),
+                _pk_prefs(), "purvakarma", pk_therapies, vikriti,
+                [("some rare disease", triage_dosha)])
+            aggravating = [i for i, t in enumerate(pool)
+                           if t.get("dosha_effect", {}).get(vikriti, 0) > 0]
+            pacifying = [i for i, t in enumerate(pool)
+                         if t.get("dosha_effect", {}).get(vikriti, 0) < 0]
+            if aggravating and pacifying:
+                assert min(aggravating) > max(pacifying), (
+                    f"vikriti={vikriti} triage={triage_dosha}: a therapy that aggravates "
+                    "the vitiated Dosha was ranked above one that pacifies it")
+
+
+def test_assessed_dosha_does_not_choose_the_karma():
+    """Karma follows Vikriti or Ritu — never an AI reading of a diagnosis."""
+    from services.panchakarma_engine import generate_panchakarma_plan
+    karmas = {
+        d: generate_panchakarma_plan(
+            _pk_profile(), _pk_prefs(setting="clinic"), None,
+            condition_triage=_tri("some rare disease", d)
+        )["clinical_decisions"]["pradhana_karma_selected"]["primary"]
+        for d in ("vata", "pitta", "kapha")
+    }
+    assert len(set(karmas.values())) == 1, f"the triage Dosha moved the Karma: {karmas}"
+
+
+def test_assessed_dosha_cannot_lift_a_contraindication():
+    """Restrict-only holds for this field too: an answer that places the disease in
+    a convenient Dosha must not soften a bar the same answer declares."""
+    from services.panchakarma_engine import generate_panchakarma_plan
+    plan = generate_panchakarma_plan(
+        _pk_profile(dominant_dosha="kapha", vikriti_dominant="kapha"),
+        _pk_prefs(setting="clinic"), None,
+        condition_triage=_tri("some rare disease", "kapha", verdict="contraindicated",
+                              hard={"vamana": "a stated mechanism long enough to count"}))
+    cd = plan["clinical_decisions"]
+    assert cd["shodhana_or_shamana"]["type"] == "shamana"
+    assert cd["pradhana_karma_selected"]["primary"] is None
+
+
+def test_the_influence_is_stated_and_labelled():
+    """A signal that changes the plan and is not stated is one nobody can argue
+    with — and this one is AI-derived."""
+    from services.panchakarma_engine import generate_panchakarma_plan
+    plan = generate_panchakarma_plan(
+        _pk_profile(), _pk_prefs(), None,
+        condition_triage=_tri("some rare disease", "pitta"))
+    influence = plan["clinical_decisions"]["triage_dosha_influence"]
+    assert influence and influence[0]["dosha"] == "pitta"
+    assert influence[0]["source"] == "llm_triage"
+    assert influence[0]["reviewed"] is False
+
+
+def test_no_triage_leaves_scoring_untouched():
+    import json
+    from services.panchakarma_engine import generate_panchakarma_plan
+    a = generate_panchakarma_plan(_pk_profile(medical_history=[]), _pk_prefs(), None)
+    b = generate_panchakarma_plan(_pk_profile(medical_history=[]), _pk_prefs(), None,
+                                  condition_triage={})
+    assert (json.dumps(a["daily_schedule"], sort_keys=True, default=str)
+            == json.dumps(b["daily_schedule"], sort_keys=True, default=str))
+    assert a["clinical_decisions"]["triage_dosha_influence"] == []
+
+
+def test_an_unplaceable_dosha_is_ignored_not_guessed():
+    from services.panchakarma_engine import _triage_dosha_signals
+    assert _triage_dosha_signals({"x": {"status": "ok", "dosha": "tridosha"}}) == []
+    assert _triage_dosha_signals({"x": {"status": "unavailable", "dosha": "vata"}}) == []
+    assert _triage_dosha_signals({"x": {"status": "ok", "dosha": "vata"}}) == [("x", "vata")]

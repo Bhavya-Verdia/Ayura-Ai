@@ -50,6 +50,10 @@ export function PanchakarmaView({ plan }) {
   // `rare_disease_assessment`, which is narrative the enricher adds afterwards:
   // these findings ran BEFORE the plan and are the reason it looks as it does.
   const triage = cd.condition_triage || []
+  // Which of those assessments actually steered the therapy pool. Shown beside the
+  // condition, because a signal that changes the plan and is never stated is one the
+  // patient and their Vaidya cannot argue with.
+  const doshaInfluence = cd.triage_dosha_influence || []
   const sn   = plan.snehana_protocol || {}
   const aus  = plan.aushadha || {}
   const sk   = plan.samsarjana_krama || []
@@ -693,6 +697,12 @@ export function PanchakarmaView({ plan }) {
                   {t.srotas && (
                     <div className="pk-rare-row"><span className="pk-rare-k">Srotas</span><span>{t.srotas}</span></div>
                   )}
+                  {doshaInfluence.filter(i => i.condition === t.condition).map((i, n) => (
+                    <div key={n} className="pk-rare-row">
+                      <span className="pk-rare-k">Effect on this plan</span>
+                      <span>{i.effect}</span>
+                    </div>
+                  ))}
                   <div className="pk-rare-row">
                     <span className="pk-rare-k">Shodhana</span>
                     <span>{String(t.outcome || '').replace(/_/g, ' ')}</span>
