@@ -46,9 +46,19 @@ export function PanchakarmaView({ plan }) {
   const ph      = plan.phase_breakdown || {}
   const unmapped = cd.unmapped_conditions || []
   const rareAssessment = plan.rare_disease_assessment || null
+  // The safety triage for diagnoses outside the engine's vocabulary. Distinct from
+  // `rare_disease_assessment`, which is narrative the enricher adds afterwards:
+  // these findings ran BEFORE the plan and are the reason it looks as it does.
+  const triage = cd.condition_triage || []
   const sn   = plan.snehana_protocol || {}
   const aus  = plan.aushadha || {}
   const sk   = plan.samsarjana_krama || []
+  // Two answers the plan used to take and never mention. `diet_adherence_ability`
+  // and `access_to_ayurvedic_herbs` reached the therapy pool and stopped there, so
+  // a patient could decline the therapeutic diet and be handed a seven-stage Peya
+  // ladder, or say they cannot obtain formulations and be prescribed three.
+  const samsarjanaNotice = plan.samsarjana_notice || null
+  const procurementNotice = plan.procurement_notice || null
   const sch  = plan.daily_schedule || []
   const us   = plan.user_summary || {}
 
@@ -434,6 +444,11 @@ export function PanchakarmaView({ plan }) {
           summary={`${aushadhaRows.length} item${aushadhaRows.length === 1 ? '' : 's'}`}
           {...sec('aushadha')}
         >
+          {procurementNotice && (
+            <div className="pk-ritu-warning">
+              <AlertTriangle size={13} /> {procurementNotice}
+            </div>
+          )}
           <div className="pk-aus-grid">
             {aushadhaRows.map(([k, v]) => {
               const name = typeof v === 'object' ? (v.name || v.herb || v.primary || '') : v
@@ -536,6 +551,11 @@ export function PanchakarmaView({ plan }) {
           {...sec('samsarjana')}
         >
           <p className="pk-sk-intro">Critical post-Shodhana re-feeding protocol. Skipping this risks Dhatu Kshaya.</p>
+          {samsarjanaNotice && (
+            <div className="pk-ritu-warning">
+              <AlertTriangle size={13} /> {samsarjanaNotice}
+            </div>
+          )}
           <div className="pk-sk-stages">
             {sk.map((stage, i) => (
               <div key={i} className="pk-sk-stage">
@@ -622,6 +642,61 @@ export function PanchakarmaView({ plan }) {
               </div>
             ))}
           </div>
+        </PkSection>
+      )}
+
+      {/* ── Safety triage for unrecognised diagnoses ── */}
+      {triage.length > 0 && (
+        <PkSection
+          icon={AlertTriangle}
+          title="Unrecognised Diagnosis — Safety Assessment"
+          summary={`${triage.length} condition${triage.length === 1 ? '' : 's'}`}
+          {...sec('triage')}
+        >
+          <p className="pk-sk-intro">
+            These diagnoses are outside the engine&rsquo;s classical vocabulary. Every contraindication
+            check matches on recognised conditions, so an unrecognised one would otherwise pass every
+            check by default rather than clearing it. Each was assessed before this plan was built.
+            The assessments are AI-generated and clinically unreviewed &mdash; confirm with a Vaidya.
+          </p>
+          {triage.map((t) => (
+            <div key={t.condition} className="pk-rare-card">
+              <div className="pk-rare-name">
+                {t.condition.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </div>
+              {t.outcome === 'shodhana_withheld' ? (
+                <div className="pk-rare-row">
+                  <span className="pk-rare-k">Outcome</span>
+                  <span>Could not be assessed &mdash; purification withheld rather than performed unchecked.</span>
+                </div>
+              ) : (
+                <>
+                  {t.classical_analogue && (
+                    <div className="pk-rare-row"><span className="pk-rare-k">Classical Analogue</span><span>{t.classical_analogue}</span></div>
+                  )}
+                  {t.srotas && (
+                    <div className="pk-rare-row"><span className="pk-rare-k">Srotas</span><span>{t.srotas}</span></div>
+                  )}
+                  <div className="pk-rare-row">
+                    <span className="pk-rare-k">Shodhana</span>
+                    <span>{String(t.outcome || '').replace(/_/g, ' ')}</span>
+                  </div>
+                  {Object.entries(t.karma_restrictions || {}).map(([karma, r]) => (
+                    <div key={karma} className="pk-rare-row">
+                      <span className="pk-rare-k">{karma.replace(/_/g, ' ')} &mdash; {r.severity}</span>
+                      <span>{r.mechanism}</span>
+                    </div>
+                  ))}
+                  {t.monitoring && (
+                    <div className="pk-rare-row"><span className="pk-rare-k">Vaidya must monitor</span><span>{t.monitoring}</span></div>
+                  )}
+                  {t.confidence && (
+                    <div className="pk-rare-row"><span className="pk-rare-k">Confidence</span><span>{t.confidence}</span></div>
+                  )}
+                </>
+              )}
+            </div>
+          ))}
         </PkSection>
       )}
 

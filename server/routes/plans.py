@@ -522,6 +522,23 @@ async def generate_gym_plan(
     return enriched_plan
 
 
+async def _triage_unmapped_conditions(user_profile: dict) -> dict:
+    """Assess the conditions the KB does not recognise, before any plan is built.
+
+    Returns {} when there is nothing unrecognised — the overwhelmingly common case,
+    since all 71 conditions the onboarding checklist offers are mapped. Only the
+    free-text box reaches this, so the LLM call is not on the ordinary path.
+    """
+    from engine.dosha_analyzer import disease_signal
+    from services.condition_triage import triage_conditions
+
+    unmapped = [c for c in (user_profile.get("medical_history") or [])
+                if disease_signal(c) is None]
+    if not unmapped:
+        return {}
+    return await triage_conditions(unmapped)
+
+
 @router.post("/panchakarma")
 async def generate_panchakarma_plan(
     req: dict = Body(default={}),
@@ -555,7 +572,13 @@ async def generate_panchakarma_plan(
         panchakarma_therapies = kb_cache.panchakarma_protocols
         # None triggers the engine's bundled-JSON fallback (kb_* Mongo collections
         # have no seeder, so kb_cache is empty unless populated externally).
-        raw_plan = engine_generate(user_profile, panchakarma_prefs, panchakarma_therapies or None)
+        # Diagnoses outside the engine's vocabulary are assessed before the plan is
+        # built, not narrated after it. The enricher's `rare_disease_assessment` can
+        # only annotate a finished plan, so it could state that Vamana was
+        # contraindicated while the calendar still scheduled it on day four.
+        triage = await _triage_unmapped_conditions(user_profile)
+        raw_plan = engine_generate(user_profile, panchakarma_prefs, panchakarma_therapies or None,
+                                   condition_triage=triage)
         enriched_plan = await enrich_panchakarma_plan(raw_plan, user_profile, panchakarma_prefs)
 
         plan_id = enriched_plan.get("plan_id")

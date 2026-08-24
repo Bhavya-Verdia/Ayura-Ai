@@ -70,6 +70,19 @@ def build_panchakarma_contraindication_csv():
         if isinstance(entry, dict):
             emit("herb", entry.get("display", herb), entry)
 
+    # "This disease contraindicates nothing" is a clinical claim like any other, and
+    # the one most likely to be wrong by omission — it is what 23 diseases in the
+    # central map were implicitly asserting before anyone had assessed them. The
+    # reviewer sees the assertion and the reason for it, in the same sheet.
+    for condition, reason in sorted(clinical.get("assessed_no_contraindication", {}).items()):
+        if condition == "_note":
+            continue
+        rows.append({
+            "scope": "assessed_no_contraindication", "procedure": "(all five Karma)",
+            "severity": "none", "condition": condition, "stated_mechanism": reason,
+            "severity_ok": "", "mechanism_ok": "", "should_be": "", "vaidya_notes": "",
+        })
+
     path = os.path.join(OUT, "vaidya_panchakarma_contraindications.csv")
     with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=cols)
