@@ -1791,6 +1791,7 @@ def _build_shamana_plan(
     vikriti_dom: str,
     aushadha: dict,
     total_days: int,
+    triage_doshas: list[tuple[str, str]] | None = None,
 ) -> dict:
     """Assemble the three-phase Shamana arm: Agni correction → pacification → nourishment.
 
@@ -1818,8 +1819,10 @@ def _build_shamana_plan(
 
     pool = [
         t for t in (
-            filter_and_score_therapies(user_profile, pk_prefs, "purvakarma", pkt, vikriti_dom)
-            + filter_and_score_therapies(user_profile, pk_prefs, "paschat", pkt, vikriti_dom)
+            filter_and_score_therapies(user_profile, pk_prefs, "purvakarma", pkt, vikriti_dom,
+                                       triage_doshas)
+            + filter_and_score_therapies(user_profile, pk_prefs, "paschat", pkt, vikriti_dom,
+                                         triage_doshas)
         )
         if t["id"] not in _SHAMANA_EXCLUDED_THERAPIES
     ]
@@ -1908,7 +1911,38 @@ def _build_shamana_plan(
 
 # ── Therapy Schedule Helpers (unchanged logic) ─────────────────────────────────
 
-def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list, vikriti_dom=None):
+def _triage_dosha_signals(condition_triage: dict | None) -> list[tuple[str, str]]:
+    """(condition, dosha) for unrecognised diagnoses the triage could place.
+
+    A disease the KB knows contributes its Dosha to the picture through
+    `disease_signal`. A disease it does not know contributed nothing at all: two
+    patients with two different unmapped diagnoses received byte-identical
+    schedules, because the only thing their diagnosis changed was the sentence
+    naming it.
+
+    The triage already returns a Dosha for each condition it can place, and the
+    engine only ever printed it. This is the one field of the three it returns
+    that the knowledge base can act on — every therapy row carries `dosha_effect`,
+    while none carries a Srotas tag, and nothing keys off `classical_analogue`.
+    Wiring the other two means authoring clinical claims, which is a Vaidya's job,
+    not a code change.
+
+    It is a preference-strength signal only: it reorders the therapy pool and is
+    outranked by the assessed Vikriti. It never selects the Karma, never lifts a
+    contraindication, and is labelled as AI-derived wherever it shows.
+    """
+    out: list[tuple[str, str]] = []
+    for condition, finding in (condition_triage or {}).items():
+        if not isinstance(finding, dict) or finding.get("status") != "ok":
+            continue
+        dosha = finding.get("dosha")
+        if dosha in ("vata", "pitta", "kapha"):
+            out.append((condition, dosha))
+    return out
+
+
+def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list, vikriti_dom=None,
+                               triage_doshas: list[tuple[str, str]] | None = None):
     scored = []
     dominant = vikriti_dom or user_profile.get("dominant_dosha", "vata") or "vata"
     setting   = pk_prefs.get("setting", "home")
@@ -1990,6 +2024,17 @@ def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list,
         # is a preference, and a therapy that aggravates the vitiated Dosha does not
         # become right because the patient asked for stress relief.
         score += goal["boost"].get(t["id"], 0)
+
+        # An unrecognised diagnosis the triage was able to place contributes its
+        # Dosha here, at +1 — half the weight of the assessed Vikriti's -1 effect
+        # (+2) and never enough to raise a therapy that aggravates the vitiated
+        # Dosha (-2) above one that pacifies it. It reorders; it does not decide.
+        for _cond, td in (triage_doshas or []):
+            if t.get("dosha_effect", {}).get(td, 0) < 0:
+                score += 1
+                t = {**t, "triage_dosha_match": td}
+                break
+
         scored.append((score, t))
 
     scored.sort(key=lambda x: x[0], reverse=True)
@@ -2180,6 +2225,7 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     # finding: something about this patient that the classical criteria never saw.
     triage = _triage_eligibility_findings(unmapped_conditions, condition_triage)
     triage_terms = _triage_karma_terms(condition_triage)
+    triage_doshas = _triage_dosha_signals(condition_triage)
 
     if triage["blocking"] and eligibility.get("type") != "shamana":
         eligibility = {
@@ -2598,14 +2644,17 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     if is_shamana:
         shamana_build = _build_shamana_plan(
             user_profile, pk_prefs, protocols, pkt, eligibility, vikriti_dom, aushadha, total_days,
+            triage_doshas,
         )
         schedule = shamana_build["schedule"]
         phases   = shamana_build["phases"]
         sd       = shamana_build["days"]
         purva_days, pradhana_days, paschat_days = 0, 0, sd["brimhana"]
     else:
-        purva_pool   = filter_and_score_therapies(user_profile, pk_prefs, "purvakarma", pkt, vikriti_dom)
-        paschat_pool = filter_and_score_therapies(user_profile, pk_prefs, "paschat",    pkt, vikriti_dom)
+        purva_pool   = filter_and_score_therapies(user_profile, pk_prefs, "purvakarma", pkt,
+                                                  vikriti_dom, triage_doshas)
+        paschat_pool = filter_and_score_therapies(user_profile, pk_prefs, "paschat",    pkt,
+                                                  vikriti_dom, triage_doshas)
         # No `pradhana` pool: that phase's content is the pinned Karma action, and
         # drawing a pool for it is what let an empty pool delete the cleanse day.
 
@@ -2787,6 +2836,15 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             "goal":                   {"id": goal["goal"], "label": goal["label"], "notes": goal_notes},
             "unmapped_conditions":    unmapped_conditions,
             "condition_triage":       triage["assessed"],
+            # Which unrecognised diagnoses actually steered the therapy pool, and
+            # by how much. A signal that changes the plan and is not stated is a
+            # signal nobody can argue with — and this one is AI-derived.
+            "triage_dosha_influence": [
+                {"condition": c, "dosha": d, "effect": "therapy pool re-ranked toward "
+                 f"{d.title()}-pacifying therapies (below your assessed Vikriti)",
+                 "source": "llm_triage", "reviewed": False}
+                for c, d in triage_doshas
+            ],
             "vaidya_review_required": vaidya_review_required,
         },
 
