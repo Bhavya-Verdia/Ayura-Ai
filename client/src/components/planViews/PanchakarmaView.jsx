@@ -195,9 +195,25 @@ export function PanchakarmaView({ plan }) {
         {/* Every reason, not just the first. A patient blocked on three counts
             saw one of them, which made the verdict look like a technicality. */}
         {!isShodhana && elig.reasons?.length > 0 && (
-          <ul className="pk-shamana-reasons">
-            {elig.reasons.map((r, i) => <li key={i} className="pk-shamana-reason">{r}</li>)}
-          </ul>
+          <>
+            {/* Why purification was withheld, and by whom. The engine has always
+                distinguished a clinical bar (a Vaidya has to clear it) from a
+                verdict reached because the answers given leave no Karma to run —
+                but it wrote `clinically_ineligible` five times and nothing, here
+                or on the server, ever read it. A patient who could qualify by
+                changing one answer was left reading the same wall as a patient
+                who cannot. */}
+            <div className="pk-shamana-kind">
+              {elig.clinically_ineligible !== false
+                ? 'Purification is withheld on clinical grounds. A qualified Vaidya has to clear these before Shodhana.'
+                : elig.unassessed_condition
+                  ? 'Nobody has found you unfit for purification — a diagnosis you entered could not be assessed against the classical criteria. A Vaidya can settle it in one consultation.'
+                  : 'Purification is withheld by the preferences this plan was built from, not by a clinical bar — changing those answers may open it up.'}
+            </div>
+            <ul className="pk-shamana-reasons">
+              {elig.reasons.map((r, i) => <li key={i} className="pk-shamana-reason">{r}</li>)}
+            </ul>
+          </>
         )}
 
         {elig.ama_correction_needed && (
