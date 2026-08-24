@@ -238,6 +238,10 @@ async def health_check():
         "status": "healthy" if mongo_ok else "degraded",
         "app": settings.APP_NAME,
         "version": "1.0.0",
+        # Which commit this container was built from. `CLAUDE.md` requires a deploy
+        # to be verified by something other than the workflow's own success line;
+        # for a backend-only change this is that something.
+        "git_sha": os.getenv("GIT_SHA", "unknown"),
         "mongodb": "connected" if mongo_ok else "unavailable",
         "chromadb": "connected" if chroma_ok else "unavailable",
     }
