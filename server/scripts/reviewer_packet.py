@@ -10,6 +10,9 @@ classical content quickly (target: ~2 days):
   data/golden/vaidya_panchakarma_contraindications.csv — 1 row per authored
        Panchakarma contraindication with its stated mechanism, so a reviewer can
        confirm or reject one claim at a time. The whole file is unreviewed.
+  data/golden/vaidya_contraindication_tokens.csv — 1 row per contraindication token
+       in the medicines / home-remedy KBs with what a non-clinician decided it means,
+       because making these fire at all required interpreting them.
   data/golden/vaidya_reviewer_packet.md    — instructions, summary stats, and the
        golden-case clinical sign-off section.
 
@@ -91,6 +94,74 @@ def build_panchakarma_contraindication_csv():
     return path, len(rows)
 
 
+def build_contraindication_token_csv():
+    """One row per contraindication token in the medicines / home-remedy KBs, with
+    what it was decided to mean.
+
+    The KBs' contraindication lists were written as prose and fed to a gate that
+    compared them to `medical_history` as strings, so 140 of the 164 distinct tokens
+    could never match anything. Making them fire meant *deciding* what each one
+    means — that `autoimmune_disease` covers type 1 diabetes, that `uncontrolled_
+    diabetes` has to bar every diabetic because the app cannot know how controlled
+    anyone is, that `pitta_excess` reads an assessed Vikriti and not a constitution.
+
+    Each of those is a clinical judgement made by a non-clinician, and each is the
+    difference between a formulation being withheld and being prescribed. They are
+    listed here for the same row-by-row confirmation the Panchakarma sheet gets.
+    """
+    from engine.contraindication_tokens import (
+        CAUTION_TOKENS, CONDITION_TOKENS, DERIVED_TOKENS, RED_FLAG_TOKENS, classify,
+    )
+
+    kb = os.path.join(DATA, "knowledge_base")
+    users: dict[str, list[str]] = {}
+
+    def walk(node, name=None):
+        if isinstance(node, dict):
+            label = node.get("name") or node.get("symptom_display") or node.get("symptom_id") or name
+            for key, value in node.items():
+                if key == "contraindications" and isinstance(value, list):
+                    for tok in value:
+                        users.setdefault(str(tok).lower(), []).append(str(label))
+                else:
+                    walk(value, label)
+        elif isinstance(node, list):
+            for item in node:
+                walk(item, name)
+
+    for fname in ("ayurvedic_medicines.json", "home_remedies.json"):
+        walk(json.load(open(os.path.join(kb, fname), encoding="utf-8")))
+
+    cols = ["token", "kind", "interpreted_as", "entries_affected", "example_entries",
+            "interpretation_ok", "should_be", "vaidya_notes"]
+    rows = []
+    for token in sorted(users):
+        kind = classify(token)
+        if kind == "condition":
+            meaning = "bars: " + ", ".join(CONDITION_TOKENS[token])
+        elif kind == "derived":
+            meaning = "derived state: " + DERIVED_TOKENS[token][1]
+        elif kind == "caution":
+            meaning = "shown to the user: " + CAUTION_TOKENS[token]
+        elif kind == "red_flag":
+            meaning = "shown to the user: " + RED_FLAG_TOKENS[token]
+        else:
+            meaning = "matched directly — the app records this condition under this name"
+        entries = sorted(set(users[token]))
+        rows.append({
+            "token": token, "kind": kind, "interpreted_as": meaning,
+            "entries_affected": len(entries), "example_entries": "; ".join(entries[:4]),
+            "interpretation_ok": "", "should_be": "", "vaidya_notes": "",
+        })
+
+    path = os.path.join(OUT, "vaidya_contraindication_tokens.csv")
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=cols)
+        w.writeheader()
+        w.writerows(rows)
+    return path, len(rows)
+
+
 def build_medicine_csv():
     meds = json.load(open(os.path.join(DATA, "knowledge_base", "ayurvedic_medicines.json"), encoding="utf-8"))
     meds = sorted(meds, key=lambda m: m.get("name", ""))
@@ -120,7 +191,7 @@ def build_medicine_csv():
     return path, len(meds)
 
 
-def build_packet_md(n_meds, n_pk=0):
+def build_packet_md(n_meds, n_pk=0, n_tokens=0):
     golden_path = os.path.join(OUT, "golden_cases.json")
     cases = json.load(open(golden_path, encoding="utf-8")) if os.path.exists(golden_path) else []
 
@@ -168,7 +239,19 @@ def build_packet_md(n_meds, n_pk=0):
         "Missing entries matter as much as wrong ones: if a condition should bar a procedure and "
         "is not listed, add a row.",
         "",
-        "## Part 3 — Clinical case sign-off",
+        "## Part 3 — Contraindication tokens  (`vaidya_contraindication_tokens.csv`)",
+        f"{n_tokens} tokens appear in the medicines and home-remedy contraindication "
+        "lists. They were written as notes for a human and then used as a machine gate, "
+        "which matched them against the patient's history as plain strings — so most of "
+        "them never fired. Making them work required deciding what each one means: which "
+        "recorded diagnoses `autoimmune_disease` covers, whether `uncontrolled_diabetes` "
+        "must bar every diabetic when the app cannot know how controlled anyone is, "
+        "whether `pitta_excess` may be read off a constitution when no Vikriti assessment "
+        "exists. **Those decisions were made by a non-clinician**, and each one moves a "
+        "formulation between prescribed and withheld. Tick `interpretation_ok`, or write "
+        "what it should be.",
+        "",
+        "## Part 4 — Clinical case sign-off",
         f"Below are {len(cases)} synthetic patient cases run through the engines (deterministic, "
         "no AI). For each, confirm the core decisions are what you would prescribe, or note the "
         "correction. Full per-case detail with a grading grid is in **`golden_review.md`**.",
@@ -184,12 +267,13 @@ def build_packet_md(n_meds, n_pk=0):
         )
     lines += [
         "",
-        "## Part 4 — Sign-off",
+        "## Part 5 — Sign-off",
         "",
         "- Reviewer (name, BAMS/MD reg. no.): ____________________",
         "- Date: ____________  ",
-        "- Overall: medicines reviewed ___/%d · PK contraindications reviewed ___/%d · cases reviewed ___/%d"
-        % (n_meds, n_pk, len(cases)),
+        "- Overall: medicines reviewed ___/%d · PK contraindications reviewed ___/%d · "
+        "contraindication tokens reviewed ___/%d · cases reviewed ___/%d"
+        % (n_meds, n_pk, n_tokens, len(cases)),
         "- Summary judgement (1–5) on classical accuracy of: "
         "Medicines __ · Panchakarma __ · Diet __ · Yoga __ · Routine __",
         "",
@@ -205,12 +289,14 @@ def build_packet_md(n_meds, n_pk=0):
 def main():
     csv_path, n = build_medicine_csv()
     pk_path, n_pk = build_panchakarma_contraindication_csv()
-    md_path = build_packet_md(n, n_pk)
+    tok_path, n_tok = build_contraindication_token_csv()
+    md_path = build_packet_md(n, n_pk, n_tok)
     print("Vaidya reviewer packet generated:")
     print(f"  {csv_path}  ({n} medicines)")
     print(f"  {pk_path}  ({n_pk} panchakarma contraindications)")
+    print(f"  {tok_path}  ({n_tok} contraindication tokens)")
     print(f"  {md_path}")
-    print("\nGive all three to a BAMS Vaidya. Filled CSV corrections fold straight back into the KB.")
+    print("\nGive all four to a BAMS Vaidya. Filled CSV corrections fold straight back into the KB.")
 
 
 if __name__ == "__main__":
