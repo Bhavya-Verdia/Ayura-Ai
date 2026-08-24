@@ -363,3 +363,92 @@ def test_an_unplaceable_dosha_is_ignored_not_guessed():
     assert _triage_dosha_signals({"x": {"status": "ok", "dosha": "tridosha"}}) == []
     assert _triage_dosha_signals({"x": {"status": "unavailable", "dosha": "vata"}}) == []
     assert _triage_dosha_signals({"x": {"status": "ok", "dosha": "vata"}}) == [("x", "vata")]
+
+
+# ── Grounding ────────────────────────────────────────────────────────────────
+#
+# This was the only LLM call in the plan path with no retrieval. Every other one is
+# grounded — `panchakarma_enricher` pulls six documents from ChromaDB before writing
+# a sentence of narrative. This call decides whether a patient is barred from
+# therapeutic emesis, and it answered from model priors. The ordering was backwards.
+
+_ANSWER = json.dumps({
+    "kind": "disease", "note": "n", "classical_analogue": "Mamsagata Vata",
+    "dosha": "vata", "srotas": "Mamsavaha", "shodhana": "contraindicated",
+    "karma": {"vamana": "hard", "virechana": "none", "basti": "none",
+              "nasya": "none", "raktamokshana": "none"},
+    "mechanisms": {"vamana": "Neuromuscular weakness makes airway reflexes unreliable"},
+    "monitoring": None, "confidence": "medium",
+})
+
+
+def _no_cache():
+    return (patch.object(ct.cache_manager, "get_plan", AsyncMock(return_value=None)),
+            patch.object(ct.cache_manager, "set_plan", AsyncMock()))
+
+
+async def _run_triage(condition, rag_side_effect=None, rag_return=None, capture=None):
+    import ai.rag_pipeline as rp
+
+    async def fake_gen(prompt, system_prompt, temperature, json_mode):
+        if capture is not None:
+            capture["prompt"] = prompt
+        return _ANSWER
+
+    get_p, set_p = _no_cache()
+    rag_kw = {"side_effect": rag_side_effect} if rag_side_effect else {"return_value": rag_return or []}
+    with patch.object(ct.llm_client, "generate", side_effect=fake_gen), get_p, set_p, \
+            patch.object(rp.rag_pipeline, "query", AsyncMock(**rag_kw)):
+        return await ct._triage_one(condition)
+
+
+@pytest.mark.asyncio
+async def test_the_assessment_is_grounded_in_the_corpus():
+    capture = {}
+    result = await _run_triage(
+        "myasthenia gravis",
+        rag_return=[{"content": "Vamana expels Kapha; withheld in depleted Bala.",
+                     "metadata": {"source": "panchakarma_protocols"}}],
+        capture=capture)
+    assert result["grounded"] is True
+    assert result["context_sources"] == ["panchakarma_protocols"]
+    assert "CLASSICAL CONTEXT" in capture["prompt"]
+
+
+@pytest.mark.asyncio
+async def test_retrieved_context_is_framed_as_background_not_evidence():
+    """The corpus cannot contain the disease — that is what makes it unrecognised.
+    A retrieval that looks relevant and is not is worse than none, so the prompt has
+    to say what the context is and is not."""
+    capture = {}
+    await _run_triage("myasthenia gravis",
+                      rag_return=[{"content": "x", "metadata": {"source": "s"}}],
+                      capture=capture)
+    assert "NOT necessarily about the diagnosis" in capture["prompt"]
+
+
+@pytest.mark.asyncio
+async def test_a_missing_corpus_degrades_but_does_not_withhold():
+    """Retrieval failure is not assessment failure. Failing closed on an unreachable
+    ChromaDB would cost the cleanse to everyone with an off-list diagnosis whenever
+    the vector store hiccups — the LLM is still reachable and still answering."""
+    capture = {}
+    result = await _run_triage("myasthenia gravis",
+                               rag_side_effect=RuntimeError("chroma down"),
+                               capture=capture)
+    assert result["status"] == "ok"
+    assert result["grounded"] is False
+    assert result["hard"] == {"vamana": "Neuromuscular weakness makes airway reflexes unreliable"}
+    assert "no higher" in capture["prompt"], "an ungrounded answer must cap its own confidence"
+
+
+@pytest.mark.asyncio
+async def test_grounding_does_not_loosen_restrict_only():
+    """Context is background, not permission. The bars the answer declares survive
+    whether or not anything was retrieved."""
+    grounded = await _run_triage("myasthenia gravis",
+                                 rag_return=[{"content": "Vamana is the Kapha cleanse.",
+                                              "metadata": {"source": "s"}}])
+    ungrounded = await _run_triage("myasthenia gravis", rag_side_effect=RuntimeError("down"))
+    assert grounded["hard"] == ungrounded["hard"]
+    assert grounded["shodhana"] == ungrounded["shodhana"] == "contraindicated"

@@ -43,6 +43,16 @@ exactly as if a human had authored it.
 3. **Never authored, always labelled.** Every entry carries `source: "llm_triage"`
    and `reviewed: false`, and travels to the patient as a Vaidya-review flag. This
    is a floor under an unrecognised diagnosis, not a substitute for a vaidya.
+
+## Grounding
+
+This was the only LLM call in the plan path with no retrieval — it answered from
+model priors while `panchakarma_enricher`, which merely writes narrative, pulled six
+documents from ChromaDB first. The ungrounded call was the one making binding safety
+decisions. It now retrieves the Shodhana material its answer has to be consistent
+with, framed explicitly as background rather than as evidence about the diagnosis,
+since the corpus by definition does not contain the disease it failed to recognise.
+`grounded` on the result records which kind of assessment it was.
 """
 import json
 import logging
@@ -101,6 +111,8 @@ Respond ONLY with valid JSON matching the schema given. No preamble, no markdown
 
 _USER_PROMPT = """Diagnosis as the patient entered it: "{condition}"
 
+{context}
+
 Return exactly this JSON:
 
 {{
@@ -123,6 +135,23 @@ Return exactly this JSON:
   "monitoring": "What a supervising Vaidya must watch specifically for this diagnosis, or null",
   "confidence": "high" | "medium" | "low"
 }}"""
+
+
+def _context_block(rag_context: str) -> str:
+    """The retrieved material, framed so it cannot be mistaken for a description of
+    the diagnosis being assessed."""
+    if not rag_context:
+        return ("(No classical context could be retrieved. Assess from your own training "
+                "and set `confidence` no higher than \"medium\".)")
+    return (
+        "CLASSICAL CONTEXT — retrieved from this system's own knowledge base.\n"
+        "This is the Shodhana material your assessment must be consistent with. It was "
+        "retrieved by similarity and is NOT necessarily about the diagnosis above: treat "
+        "it as background on the procedures and the classical categories, never as "
+        "evidence about this disease. If nothing here bears on the diagnosis, say so in "
+        "`note` and assess from your training.\n\n"
+        f"{rag_context}"
+    )
 
 
 def _validate(raw: dict, condition: str) -> dict | None:
@@ -177,6 +206,44 @@ def _validate(raw: dict, condition: str) -> dict | None:
     }
 
 
+async def _retrieve_context(condition: str) -> tuple[str, list[str]]:
+    """Classical material to assess this diagnosis against, and where it came from.
+
+    This was the only LLM call in the plan path with no retrieval. Every other one
+    is grounded — `panchakarma_enricher` pulls four Panchakarma docs and two dosha
+    docs from ChromaDB before it writes a sentence of *narrative*. This call decides
+    whether a patient is barred from therapeutic emesis, and it was answering from
+    model priors alone. That ordering was backwards.
+
+    The corpus will not contain the unrecognised disease — that is what makes it
+    unrecognised. What it contains is the Shodhana material the assessment has to be
+    consistent with: which Karma expels which Dosha, what each procedure does to
+    Bala, which classical categories exist to place a disease in. The prompt is
+    explicit that the context is background and not a description of this diagnosis,
+    because a retrieval that looks relevant and is not is worse than none.
+
+    Retrieval failure is not assessment failure: a missing corpus degrades this to
+    the ungrounded call it already was, rather than withholding the cleanse.
+    """
+    from ai.rag_pipeline import rag_pipeline
+
+    sources: list[str] = []
+    docs: list[dict] = []
+    try:
+        pk = await rag_pipeline.query(
+            f"{condition} — Shodhana eligibility, contraindications, Bala and Dosha assessment",
+            "panchakarma", n_results=4)
+        ayur = await rag_pipeline.query(
+            f"{condition} — Dosha involvement, Srotas, classical disease classification",
+            "ayurveda", n_results=3)
+        docs = pk + ayur
+        sources = [str((d.get("metadata") or {}).get("source") or "") for d in docs]
+        return rag_pipeline.format_context(docs, max_chars=2200), [s for s in sources if s]
+    except Exception as e:
+        logger.warning(f"condition triage retrieval failed for {condition!r}: {e}")
+        return "", []
+
+
 async def _triage_one(condition: str) -> dict:
     cache_key = {"condition": condition.strip().lower()}
     try:
@@ -185,9 +252,11 @@ async def _triage_one(condition: str) -> dict:
     except Exception as e:                                   # cache is never load-bearing
         logger.warning(f"condition triage cache read failed for {condition!r}: {e}")
 
+    rag_context, rag_sources = await _retrieve_context(condition)
+
     try:
         text = await llm_client.generate(
-            prompt=_USER_PROMPT.format(condition=condition),
+            prompt=_USER_PROMPT.format(condition=condition, context=_context_block(rag_context)),
             system_prompt=_SYSTEM_PROMPT,
             temperature=0.2,     # a safety assessment is not a place for variety
             json_mode=True,
@@ -218,7 +287,11 @@ async def _triage_one(condition: str) -> dict:
         return {"condition": condition, "status": "unassessable",
                 "reason": note or "the assessment could not read this as a diagnosis it can evaluate"}
 
-    result = {**validated, "status": "ok"}
+    # Recorded so a reviewer can tell a grounded assessment from one the model
+    # produced unaided — the two deserve different amounts of trust, and after this
+    # change both still occur (an unseeded or unreachable corpus yields the latter).
+    result = {**validated, "status": "ok",
+              "grounded": bool(rag_context), "context_sources": sorted(set(rag_sources))[:6]}
     try:
         await cache_manager.set_plan(CACHE_PREFIX, cache_key, result, expire=CACHE_TTL_SECONDS)
     except Exception as e:
