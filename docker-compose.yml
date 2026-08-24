@@ -3,6 +3,10 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+      args:
+        # Set by the deploy workflow from github.sha; `unknown` for local builds,
+        # which is honest — a local image was not built from a known commit.
+        - GIT_SHA=${GIT_SHA:-unknown}
     container_name: ayura_api
     ports:
       - "8000:8000"
@@ -61,6 +65,8 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+      args:
+        - GIT_SHA=${GIT_SHA:-unknown}
     container_name: ayura_worker
     command: ["arq", "worker.WorkerSettings"]
     env_file:

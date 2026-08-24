@@ -70,4 +70,18 @@ ENV WEB_CONCURRENCY=4
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
     CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=4)"]
 
+# The commit this image was built from, surfaced by /api/health.
+#
+# Deploys are verified from outside, and until now a backend deploy could not be:
+# `/api/health` reported a hardcoded "1.0.0", so a successful workflow run and a
+# container still running last week's image were indistinguishable over HTTP. The
+# frontend was always checkable — grep the served bundle for a string only the new
+# build contains — and the backend had no equivalent.
+#
+# Declared last on purpose. An ARG invalidates every layer beneath it, and this one
+# changes on every single commit; up here it would rebuild the dependency install
+# and the ONNX model download every deploy.
+ARG GIT_SHA=unknown
+ENV GIT_SHA=$GIT_SHA
+
 CMD ["gunicorn", "main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
