@@ -72,6 +72,69 @@ def _document_index(domain: str, docs: list[dict]) -> dict[str, dict]:
 
 EMBEDDER_WINDOW = 256
 
+def _assert_window_matches_embedder(embedder) -> None:
+    """Fail if a chromadb upgrade moves the window out from under EMBEDDER_WINDOW.
+
+    1.x exposes `max_tokens()`; the pinned 0.6.3 does not, so this is a no-op today
+    and becomes a real check the moment the pin moves. Where it is available it is the
+    authority, and a mismatch means every length is measured against the wrong budget
+    — which would pass chunks the model then truncates in silence.
+    """
+    declared = getattr(embedder, "max_tokens", None)
+    if not callable(declared):
+        return
+    actual = declared()
+    if actual != EMBEDDER_WINDOW:
+        raise RuntimeError(
+            f"Embedder reports a {actual}-token window but EMBEDDER_WINDOW is "
+            f"{EMBEDDER_WINDOW}. Update the constant before seeding."
+        )
+
+
+def _embedder_tokenizer(embedder):
+    """The tokenizer behind `embedder`, or raise.
+
+    We pin chromadb 0.6.3, where `DefaultEmbeddingFunction` exposes `.tokenizer`
+    directly. In 1.x it does not: that class became a thin protocol stub and the real
+    MiniLM implementation (which still has one) moved behind
+    `onnx_mini_lm_l6_v2.ONNXMiniLM_L6_V2`. Measured on 1.5.9, not read in a changelog.
+
+    That mattered more than it looks. This function used to answer "no tokenizer" by
+    printing a warning and returning `[]`, which the caller reads as "no chunk
+    overflows" — so merely upgrading chromadb would have turned the guard below into a
+    no-op and re-armed, silently, the exact truncation bug the docstring above is a
+    record of. The test covering it self-skipped on the same missing attribute, so
+    nothing would have gone red either.
+
+    A guard that cannot run must not report success, so this raises instead, and it
+    follows the class to its 1.x home so the upgrade stays a one-line pin change. The
+    one embedder this project uses is the bundled ONNX one (see
+    `database.chromadb_client.get_embedding_function`) — if that ever stops being
+    true, the seed should stop and someone should decide, not default to unchecked.
+    """
+    tokenizer = getattr(embedder, "tokenizer", None)
+    if tokenizer is not None:
+        return tokenizer
+
+    try:
+        from chromadb.utils.embedding_functions.onnx_mini_lm_l6_v2 import ONNXMiniLM_L6_V2
+    except ImportError as exc:
+        raise RuntimeError(
+            "Cannot measure chunk lengths: no tokenizer on the embedder and the bundled "
+            f"ONNX implementation is not importable ({exc}). Refusing to seed unchecked."
+        ) from exc
+
+    if isinstance(embedder, ONNXMiniLM_L6_V2):
+        raise RuntimeError("ONNXMiniLM_L6_V2 exposed no tokenizer. Refusing to seed unchecked.")
+
+    tokenizer = getattr(ONNXMiniLM_L6_V2(), "tokenizer", None)
+    if tokenizer is None:
+        raise RuntimeError(
+            "Cannot measure chunk lengths: the bundled ONNX embedder exposed no "
+            "tokenizer. Refusing to seed unchecked."
+        )
+    return tokenizer
+
 
 def _overflowing_chunks(embedder, doc_sets: dict[str, list[dict]]) -> list[str]:
     """Chunks the embedder will silently truncate, as `domain/source: length — text`.
@@ -94,10 +157,7 @@ def _overflowing_chunks(embedder, doc_sets: dict[str, list[dict]]) -> list[str]:
     long; turning that off in place would break the fixed input shape the ONNX
     call depends on.
     """
-    tokenizer = getattr(embedder, "tokenizer", None)
-    if tokenizer is None:  # not the bundled ONNX embedder — nothing to measure with
-        print("  ⚠️  Embedder exposes no tokenizer — chunk lengths unchecked")
-        return []
+    tokenizer = _embedder_tokenizer(embedder)
 
     from tokenizers import Tokenizer
 
@@ -843,6 +903,7 @@ def build_vectors(check_only: bool = False):
     # Refuse to seed a corpus that would be truncated on the way in. Fails in
     # --check too: a chunk past the window is wrong in the store as much as it is
     # wrong on the way to it, and it reports identical to a healthy one.
+    _assert_window_matches_embedder(embedder)
     overflowing = _overflowing_chunks(embedder, doc_sets)
     if overflowing:
         raise SystemExit(
