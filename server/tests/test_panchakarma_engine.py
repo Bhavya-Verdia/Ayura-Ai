@@ -442,3 +442,62 @@ def test_an_extension_notice_accounts_for_every_day_it_added():
     assert sum(named.values()) == pb["total_days"]
     assert named.get("deepana_pachana"), "the correction phase is part of the extension"
     assert "Deepana-Pachana" in notice, "a phase that added days must appear in the notice"
+
+
+# ── The declared second Karma is deferred, not dropped ───────────────────────
+
+def _deferral(plan):
+    return (plan.get("clinical_decisions") or {}).get("secondary_karma_deferred")
+
+
+def test_the_declared_secondary_karma_reaches_the_plan():
+    """The classical mapping authors a second Karma per Vikriti — for Pitta,
+    Raktamokshana, with a stated reason and a Charaka reference. The engine computed
+    it into `pradhana_karma_selected["secondary"]` and then nothing read it, so a
+    cited clinical claim vanished between the KB and the patient.
+
+    It still is not scheduled — that needs a Vaidya — but it is now stated.
+    """
+    plan = generate_panchakarma_plan(_profile(vikriti_dominant="pitta"), _prefs())
+    karma = (plan["clinical_decisions"]["pradhana_karma_selected"] or {}).get("secondary")
+    if not karma:
+        pytest.skip("no secondary declared for this Vikriti/route")
+    d = _deferral(plan)
+    assert d is not None, "a declared secondary Karma must not disappear silently"
+    assert d["karma"] == karma
+    assert d["reviewed"] is False
+
+
+def test_the_deferral_never_claims_to_schedule_anything():
+    """The whole point is that it is NOT performed. If this ever reports
+    `scheduled: True`, the plan is telling a patient to undergo a second Pradhana
+    Karma — bloodletting, for Pitta — that nothing sequenced, prepared or gated."""
+    for dosha in ("vata", "pitta", "kapha"):
+        plan = generate_panchakarma_plan(_profile(vikriti_dominant=dosha), _prefs())
+        d = _deferral(plan)
+        if d:
+            assert d["scheduled"] is False
+            assert d["karma"] != plan["clinical_decisions"]["pradhana_karma_selected"]["primary"]
+
+
+def test_no_deferral_is_announced_for_a_karma_already_being_performed():
+    """A seasonal override or a safety substitution can collapse the secondary onto
+    the primary. Announcing a "deferred" Karma the plan already performs would be
+    noise that reads as a second treatment."""
+    from services.panchakarma_engine import _secondary_karma_deferral
+
+    assert _secondary_karma_deferral({"primary": "vamana", "secondary": "vamana"}) is None
+    assert _secondary_karma_deferral({"primary": "basti_matra", "secondary": "basti"}) is None
+    assert _secondary_karma_deferral({"primary": "virechana", "secondary": None}) is None
+    assert _secondary_karma_deferral(
+        {"primary": "virechana", "secondary": "raktamokshana"})["karma"] == "raktamokshana"
+
+
+def test_a_shamana_plan_defers_nothing():
+    """No Pradhana Karma means no secondary either. A patient told they are not
+    eligible for purification must not also be handed a second one to ask about."""
+    plan = generate_panchakarma_plan(
+        _profile(age=82, ama_indicator="severe", ojas_level="low",
+                 medical_history=["heart_disease"]), _prefs())
+    if plan["clinical_decisions"]["shodhana_or_shamana"]["type"] == "shamana":
+        assert _deferral(plan) is None

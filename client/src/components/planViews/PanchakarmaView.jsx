@@ -54,6 +54,7 @@ export function PanchakarmaView({ plan }) {
   // condition, because a signal that changes the plan and is never stated is one the
   // patient and their Vaidya cannot argue with.
   const doshaInfluence = cd.triage_dosha_influence || []
+  const secondaryDeferred = cd.secondary_karma_deferred || null
   const sn   = plan.snehana_protocol || {}
   const aus  = plan.aushadha || {}
   const sk   = plan.samsarjana_krama || []
@@ -316,6 +317,28 @@ export function PanchakarmaView({ plan }) {
         <div className="pk-rationale">
           <span className="pk-rationale-label">Clinical Rationale</span>
           <p>{pk.reason}</p>
+        </div>
+      )}
+
+      {/* The classical mapping names a SECOND Karma for this Vikriti — for Pitta,
+          Raktamokshana. The engine computed it and dropped it, so a cited clinical
+          claim never reached the person it was about. It is deliberately not
+          scheduled (sequencing a second Pradhana Karma needs a Vaidya), which is
+          exactly why it has to say so rather than simply be absent — and why the
+          copy leads with "not part of this plan" instead of naming the procedure
+          first. */}
+      {secondaryDeferred && (
+        <div className="pk-deferred">
+          <span className="pk-deferred-label">Not part of this plan</span>
+          <p>
+            <strong>{(secondaryDeferred.karma || '').replace(/_/g, ' ')}</strong> is
+            classically indicated alongside your primary Karma for this Vikriti, and
+            this plan does <strong>not</strong> include it.
+          </p>
+          <p className="pk-deferred-why">{secondaryDeferred.deferral}</p>
+          {secondaryDeferred.clinical_note && (
+            <p className="pk-deferred-note">{secondaryDeferred.clinical_note}</p>
+          )}
         </div>
       )}
 
