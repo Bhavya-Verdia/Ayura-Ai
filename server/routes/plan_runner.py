@@ -323,7 +323,19 @@ async def _generate_feature_via_engine_impl(
                 return []
             from services.remedy_engine import filter_remedies, build_remedy_plan
             from services.remedy_enricher import enrich_remedies_plan
-            symptom_input = {"symptoms": symptoms}
+            # Severity and duration come from the stored preferences here. The
+            # per-feature endpoint receives them in the request body, where the
+            # Remedies page collects them per symptom; this path had neither, so
+            # every symptom defaulted to `mild` / `recent` inside `filter_remedies`
+            # and the severity gate — which returns a doctor referral instead of a
+            # remedy — could not fire on the holistic plan at all. A user whose
+            # recorded symptom was severe was handed a home remedy for it.
+            symptom_input = {
+                "symptoms": symptoms,
+                "severity": (prefs or {}).get("symptom_severity") or {},
+                "duration": (prefs or {}).get("symptom_duration") or {},
+                "preference_taste_smell": (prefs or {}).get("preference_taste_smell") or [],
+            }
             filtered = filter_remedies(profile, symptom_input)
             raw = build_remedy_plan(filtered, profile, symptom_input)
             return await enrich_remedies_plan(raw, profile)

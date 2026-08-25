@@ -26,7 +26,7 @@ function RemedyCard({ result }) {
   const [open, setOpen] = useState(false)
   const {
     remedy, symptom_display, severity, dosha_cause, dosha_used, requires_practitioner,
-    ayurvedic_rationale, usage_cautions, red_flags,
+    ayurvedic_rationale, usage_cautions, red_flags, taste_notices,
   } = result
   if (!remedy) return null
   const doshaColor = DOSHA_COLORS_R[dosha_used] || DOSHA_COLORS_R.universal
@@ -108,6 +108,14 @@ function RemedyCard({ result }) {
               Chronic/long-duration symptom — follow up with an Ayurvedic practitioner
             </div>
           )}
+
+          {/* Where the remedy clashes with a stated taste or smell preference. It
+              is never removed for one — each symptom has a single remedy per Dosha,
+              and a preference must not cost somebody their treatment — so the note
+              carries the classical Anupana masking instead. */}
+          {(taste_notices || []).map((n, i) => (
+            <div key={i} className="rv-taste-note">{n}</div>
+          ))}
         </div>
       )}
     </div>

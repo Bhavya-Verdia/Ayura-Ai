@@ -120,6 +120,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
     symptoms = symptom_input.get("symptoms") or []
     severity = symptom_input.get("severity") or {}
     duration = symptom_input.get("duration") or {}
+    taste_prefs = symptom_input.get("preference_taste_smell") or []
 
     pregnancy_or_nursing = user_profile.get("pregnancy_or_nursing", False)
     current_meds = user_profile.get("current_medications") or []
@@ -297,6 +298,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
             "dosha_cause": remedy_kb.get("dosha_cause", {}).get(dosha_used, ""),
             "remedy": selected_remedy,
             "requires_practitioner": requires_practitioner,
+            "taste_notices": _taste_notices(selected_remedy, taste_prefs),
             "drug_interaction_warning": interaction_warning,
             "source": remedy_kb.get("source", "Traditional"),
             "dosha_used": dosha_used,
@@ -375,6 +377,98 @@ def _gate_guidelines(guidelines: dict, medical_history) -> tuple[dict, list]:
     return out, notices
 
 
+# `follow_up` was one fixed sentence — "If symptoms persist beyond 7 days, consult
+# an Ayurvedic practitioner" — printed to everyone. Told to somebody whose symptom
+# has run for three months it is advice eleven weeks out of date, and it reads as
+# reassurance at the exact moment the plan should be escalating.
+_FOLLOW_UP_BY_DURATION = {
+    "recent": "If symptoms persist beyond 7 days, consult an Ayurvedic practitioner.",
+    "weeks": ("These symptoms have already run for weeks, so the 7-day rule has passed. "
+              "Book an Ayurvedic practitioner rather than waiting further, and use these "
+              "remedies as support in the meantime."),
+    "months": ("A symptom lasting months is not a self-care case. See an Ayurvedic "
+               "practitioner and a doctor — persistent symptoms need a diagnosis before "
+               "they need a remedy. Use these only alongside that."),
+    "chronic": ("A chronic symptom needs a practitioner who can follow it over time. "
+                "These remedies support the picture; they do not replace the assessment. "
+                "Book one, and see a doctor for anything undiagnosed."),
+}
+
+_DURATION_RANK = {"recent": 0, "weeks": 1, "months": 2, "chronic": 3}
+
+
+def _follow_up_advice(symptom_input: dict, referred: list) -> str:
+    """Follow-up keyed to the longest-running symptom, and to any referral.
+
+    The longest one governs because it is the one the 7-day rule has already failed;
+    telling somebody with a three-month complaint and a three-day one to "wait a
+    week" answers only the easier half.
+    """
+    durations = (symptom_input.get("duration") or {}).values()
+    worst = max(durations, key=lambda d: _DURATION_RANK.get(d, 0), default="recent")
+    advice = _FOLLOW_UP_BY_DURATION.get(worst, _FOLLOW_UP_BY_DURATION["recent"])
+    if referred:
+        advice = ("One or more of your symptoms needs medical attention now — see the "
+                  "referrals above before starting anything here. ") + advice
+    return advice
+
+
+# ── Taste and smell preference ────────────────────────────────────────────────
+# `preference_taste_smell` ("no_bitter", "no_strong_smell") was declared and read by
+# nothing. The remedy KB carries no Rasa field, so this is an authored ingredient map
+# rather than KB data — and it is deliberately small, covering only ingredients whose
+# taste or smell is not in dispute.
+#
+# It FLAGS rather than filters. Each symptom usually has one remedy per Dosha, so
+# excluding on taste would often leave nothing, and a preference must not cost
+# somebody their treatment. Ayurveda has a better answer anyway: Anupana — the
+# vehicle a medicine is taken with — is chosen partly to make it palatable, so the
+# notice names the classical masking rather than just reporting the clash.
+#
+# AUTHORED, NOT CLINICALLY REVIEWED.
+_BITTER_INGREDIENTS = {
+    "neem", "guduchi", "triphala", "karela", "bitter gourd", "kalmegh", "kutki",
+    "aloe vera", "punarnava", "manjistha", "chirata", "vasaka", "turmeric",
+}
+_STRONG_SMELL_INGREDIENTS = {
+    "hing", "asafoetida", "mustard oil", "eucalyptus", "garlic", "camphor",
+    "neem", "onion", "clove oil", "ajwain",
+}
+
+_TASTE_MASKING = {
+    "no_bitter": ("Bitter (Tikta) is the active principle in these, so it cannot be removed "
+                  "without removing the effect. Take it with the Anupana already listed — "
+                  "honey, warm milk or mishri — which is what classically carries a bitter "
+                  "medicine, and follow immediately with warm water."),
+    "no_strong_smell": ("Take it in a well-ventilated room and follow with warm water or a "
+                        "cardamom pod. For oils, warm slightly less — heat is what drives "
+                        "the smell off."),
+}
+
+
+def _taste_notices(remedy: dict, preferences: list[str]) -> list[str]:
+    """Where a chosen remedy clashes with a stated taste or smell preference."""
+    if not preferences or not isinstance(remedy, dict):
+        return []
+    text = " ".join(
+        str(i.get("item", "")).lower() for i in (remedy.get("ingredients") or [])
+    )
+    notices = []
+    for preference, terms, label in (
+        ("no_bitter", _BITTER_INGREDIENTS, "bitter"),
+        ("no_strong_smell", _STRONG_SMELL_INGREDIENTS, "strongly scented"),
+    ):
+        if preference not in preferences:
+            continue
+        hits = sorted({t for t in terms if t in text})
+        if hits:
+            notices.append(
+                f"You asked to avoid {label} remedies, and this one contains "
+                f"{', '.join(hits)}. {_TASTE_MASKING[preference]}"
+            )
+    return notices
+
+
 def build_remedy_plan(filtered_remedies: list, user_profile: dict, symptom_input: dict) -> dict:
     plan_id = f"remedy_{user_profile.get('id', 'usr')}_{int(datetime.now(timezone.utc).timestamp())}"
     dominant_dosha = user_profile.get("dominant_dosha", "vata").lower()
@@ -420,7 +514,7 @@ def build_remedy_plan(filtered_remedies: list, user_profile: dict, symptom_input
         "general_guidelines": guidelines,
         "guideline_notices": guideline_notices,
         "ayurvedic_context": "",
-        "follow_up": "If symptoms persist beyond 7 days, consult an Ayurvedic practitioner",
+        "follow_up": _follow_up_advice(symptom_input, doctor_referrals),
         "disclaimer": "These are traditional home remedies for general wellness only. They are not a substitute for medical treatment. Consult a qualified healthcare provider for persistent, severe, or worsening symptoms.",
         "enriched": False
     }
