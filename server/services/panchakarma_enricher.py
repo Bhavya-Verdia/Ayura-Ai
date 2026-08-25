@@ -16,6 +16,10 @@ CRITICAL CLASSICAL ACCURACY — never violate these in any coaching text:
 - Kati Basti is a regional Snehana technique (Bahya Chikitsa) — NOT Panchakarma.
 - Calling Abhyanga or Shirodhara "Panchakarma" is a common commercial error — it is classically incorrect and must never appear in your coaching text.
 
+THE DETERMINISTIC LAYER HAS THE LAST WORD:
+- `declared_capabilities` records what the patient told us they can do. `samsarjana_notice` and `procurement_notice` are the engine's position on it. Where either is present, your coaching must agree with it — do not talk a patient enthusiastically through a therapeutic diet or a formulation they have just said they cannot manage, and do not soften a notice that says a phase is not optional.
+- Where a notice is absent, do not invent one.
+
 Respond ONLY with valid JSON. No preamble, no markdown fences.
 """
 
@@ -165,6 +169,17 @@ async def enrich_panchakarma_plan(raw_plan: dict, user_profile: dict, pk_prefs: 
                 for d in raw_plan.get("daily_schedule", [])
             ],
             "rasayana": aushadha.get("rasayana", {}),
+            # What the patient said they can do, and what the engine did about it.
+            # Without these the narrative coaches somebody enthusiastically through
+            # a Peya fast they have just declined, or through sourcing formulations
+            # they have just said they cannot obtain — the deterministic layer
+            # states the position and the prose contradicts it in the next section.
+            "declared_capabilities": {
+                "diet_adherence_ability": pk_prefs.get("diet_adherence_ability"),
+                "access_to_ayurvedic_herbs": pk_prefs.get("access_to_ayurvedic_herbs"),
+            },
+            "samsarjana_notice": raw_plan.get("samsarjana_notice"),
+            "procurement_notice": raw_plan.get("procurement_notice"),
         }
 
         unmapped = cd.get("unmapped_conditions", [])
@@ -174,6 +189,17 @@ async def enrich_panchakarma_plan(raw_plan: dict, user_profile: dict, pk_prefs: 
                 unmapped_list=", ".join(unmapped),
                 pradhana_karma=pradhana.get("primary", "selected therapy"),
             )
+            # The safety triage has already ruled on these conditions, and its ruling
+            # is the one the schedule was built from. Asking for a second opinion
+            # without showing the first is how you get a narrative that calls a
+            # therapy contraindicated while the calendar still schedules it.
+            if triage := cd.get("condition_triage"):
+                rare_block += (
+                    "\n\nA SAFETY TRIAGE HAS ALREADY RULED ON THESE CONDITIONS, and the plan "
+                    "above was built from its ruling. Your assessment must agree with it — "
+                    "explain and expand on it, never contradict or soften it:\n"
+                    + json.dumps(triage, indent=2)
+                )
 
         prompt = _USER_PROMPT.format(
             ritu_name=ritu_ctx.get("ritu_name", ritu_ctx.get("ritu", "current season")),

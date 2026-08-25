@@ -758,6 +758,18 @@ _DHATU_THERAPY: dict[str, dict] = {
 }
 
 
+_DISEASE_COMPACT: dict[str, dict] = {}
+
+
+def _build_disease_compact() -> None:
+    import re as _re
+    for _k, _v in _DISEASE_DOSHA_SIGNAL.items():
+        _DISEASE_COMPACT.setdefault(_re.sub(r"[^a-z0-9]+", "", _k.lower()), _v)
+
+
+_build_disease_compact()
+
+
 def disease_signal(condition: str) -> dict | None:
     """Look up a condition in the central disease→dosha map, resolving synonyms and
     classical names via the condition vocabulary — so 'high blood pressure', 'gerd',
@@ -772,8 +784,18 @@ def disease_signal(condition: str) -> dict | None:
     from engine.condition_vocab import normalize_condition
     canon = normalize_condition(condition)
     if canon and canon != key:
-        return _DISEASE_DOSHA_SIGNAL.get(canon)
-    return None
+        if (mapping := _DISEASE_DOSHA_SIGNAL.get(canon)) is not None:
+            return mapping
+    # Last chance: separators only. "diabetes type 2" and the table's own
+    # "diabetes_type2" differ by one underscore, and the first resolved to nothing —
+    # which, now that an unrecognised diagnosis withholds Shodhana, turned a typing
+    # variant of one of the commonest diseases in the product into a blocked plan.
+    return _DISEASE_COMPACT.get(_compact_key(key))
+
+
+def _compact_key(value: str) -> str:
+    import re as _re
+    return _re.sub(r"[^a-z0-9]+", "", (value or "").lower())
 
 
 def _dhatu_from_conditions(conditions: list[str]) -> list[dict]:

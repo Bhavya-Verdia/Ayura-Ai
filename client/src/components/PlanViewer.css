@@ -511,6 +511,13 @@
    gentler one — the badge has to read as a limit, not as reassurance. */
 .pk-shamana  { color: #fbbf24; }
 
+.pk-shamana-kind {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ayura-text);
+  margin-bottom: 0.4rem;
+}
+
 .pk-shamana-reasons {
   margin: 0;
   padding-left: 1.05rem;
@@ -4829,6 +4836,19 @@
   color: var(--plan-orange);
   border: 1px solid rgba(249,115,22,0.2);
 }
+.mv-safety-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.81rem;
+  line-height: 1.45;
+  color: var(--ayura-muted);
+}
+.mv-safety-list li::marker { color: var(--plan-amber); }
+.mv-safety-list--danger { color: #c0392b; }
+.mv-safety-list--danger li::marker { color: #c0392b; }
 .mv-interaction-chip {
   padding: 3px 10px;
   border-radius: 20px;

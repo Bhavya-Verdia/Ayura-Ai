@@ -37,12 +37,23 @@
         "anorexia": "As Atidurbala — Vamana in a depleted patient causes Dhatu Kshaya.",
         "peptic_ulcer": "Gastric acid driven repeatedly across an ulcerated mucosa risks perforation and bleeding.",
         "emaciation": "Atidurbala — as underweight.",
-        "atidurbala": "Extreme depletion — as underweight."
+        "atidurbala": "Extreme depletion — as underweight.",
+        "scleroderma": "Oesophageal dysmotility and stricture are near-universal in systemic sclerosis; forceful emesis against a fibrosed oesophagus risks perforation, and impaired clearance makes aspiration likely.",
+        "sickle_cell": "The fluid loss of Vamana haemoconcentrates the blood, which is the classic precipitant of a vaso-occlusive crisis.",
+        "pulmonary_fibrosis": "Emesis demands respiratory reserve and carries aspiration risk into lungs that have none; hypoxia during repeated retching is not recoverable by breathing harder.",
+        "lupus": "Active SLE is a Dhatu Kshaya state, and serositis or pulmonary involvement makes the repeated Valsalva of emesis dangerous. Conservative by intent — SLE ranges from mild to organ-threatening and this layer cannot tell which."
       },
       "soft": {
         "anxiety": "Vamana is a frightening procedure; the KB names severe psychological fragility as relative. Sattvavajaya preparation is required first.",
         "ptsd": "Loss of bodily control during emesis is a common trigger. Prepare with Sattvavajaya and stop at the patient's word.",
-        "gerd": "Reflux is aggravated for days afterwards; use the mildest Madanaphala dose and extend Samsarjana Krama."
+        "gerd": "Reflux is aggravated for days afterwards; use the mildest Madanaphala dose and extend Samsarjana Krama.",
+        "thalassemia": "Chronic anaemia is reduced Bala; use the mildest emetic, and not at all if transfusion-dependent.",
+        "sleep_apnea": "The airway is already prone to collapse; emesis needs it held open and protected, so the procedure requires positioning and observation it does not normally get.",
+        "macular_degeneration": "Each retch spikes venous and intraocular pressure. In neovascular (wet) AMD this risks a subretinal bleed — obtain ophthalmology clearance before proceeding.",
+        "menieres_disease": "Emesis during an attack is indistinguishable from the attack; the vertigo makes falls likely and can extend the episode. Schedule only between attacks.",
+        "hashimoto": "Levothyroxine taken that morning is vomited with the Kapha, and the dose is lost. Move the tablet to the evening for the Karma day and the days around it.",
+        "adrenal_fatigue": "The label is not a recognised diagnosis, but what it reports is low reserve, and that is what is acted on here: treat as reduced Bala and use the mildest effective dose.",
+        "common_cold": "Vamana is classically indicated for Kapha in the chest, so this is not a bar — but an acute Pratishyaya is not the moment to begin a multi-week course. Let the acute phase settle first."
       }
     },
     "virechana": {
@@ -65,7 +76,8 @@
         "diarrhoea": "British spelling of the same finding.",
         "tb": "Abbreviation for tuberculosis (Rajayakshma).",
         "emaciation": "Atidurbala — as underweight.",
-        "atidurbala": "Extreme depletion — as underweight."
+        "atidurbala": "Extreme depletion — as underweight.",
+        "sickle_cell": "Purgative fluid loss haemoconcentrates the blood and precipitates vaso-occlusive crisis."
       },
       "soft": {
         "liver_disease": "Use Triphala only — the mildest Virechaka. Avoid Trivrit and Eranda entirely.",
@@ -74,7 +86,13 @@
         "diabetes_type1": "Fasting plus fluid loss destabilises glucose; monitor hourly and reduce insulin per the treating physician.",
         "hemorrhoids": "The KB marks active haemorrhoids RELATIVE, not absolute. The engine treated it as hard and silently substituted Basti — which is the worse choice for haemorrhoids. Use mild Virechaka and Snehana support instead.",
         "chronic_kidney_disease": "Fluid and electrolyte shifts are poorly tolerated; mild dose with close monitoring only.",
-        "elderly": "Reduced Bala and slower fluid compensation — mild dose, extended Samsarjana."
+        "elderly": "Reduced Bala and slower fluid compensation — mild dose, extended Samsarjana.",
+        "scleroderma": "GI dysmotility in systemic sclerosis makes pseudo-obstruction a real risk; purgation on an atonic bowel can precipitate ileus rather than evacuation.",
+        "lupus": "Lupus nephritis makes the fluid and electrolyte shifts of purgation risky; check renal function first and use the mildest effective drug.",
+        "celiac": "Chronic malabsorption means lower reserve and slower recovery; the Samsarjana Krama itself is rice and dal and so is safe, but the purgation compounds an existing deficit.",
+        "thalassemia": "Chronic anaemia is reduced Bala; the fluid loss is tolerated poorly.",
+        "hashimoto": "Purgation flushes levothyroxine taken that morning before it is absorbed; separate the dose from the Karma day.",
+        "adrenal_fatigue": "As for Vamana — the state described is low reserve, and a purgative is a depleting procedure."
       }
     },
     "basti": {
@@ -101,7 +119,12 @@
         "diabetes_type1": "Monitor glucose around each Basti; prefer Anuvasana (oil) over Niruha.",
         "chronic_kidney_disease": "Matra Basti only — Niruha's electrolyte load is poorly cleared.",
         "hemorrhoids": "Netra insertion is uncomfortable and can bleed; use a soft catheter and oil Basti only.",
-        "hypertension": "Saindhava in the Niruha formula adds a sodium load; substitute or reduce."
+        "hypertension": "Saindhava in the Niruha formula adds a sodium load; substitute or reduce.",
+        "bph": "Rectal distension against an enlarged prostate can precipitate acute urinary retention.",
+        "interstitial_cystitis": "Rectal distension refers directly to an inflamed bladder and can trigger a flare.",
+        "urinary_incontinence": "Anuvasana Basti is retained for hours. The pelvic floor weakness that presents as urinary incontinence commonly extends to anal sphincter tone, so the oil may not be held and the dose is lost — this is a delivery problem, not a danger.",
+        "scleroderma": "Anorectal involvement reduces compliance and sphincter function, so retention of Anuvasana is unreliable and Niruha may not be evacuated.",
+        "lupus": "Immunosuppressive therapy is common in SLE, and rectal instrumentation in a neutropenic patient is a bacteraemia risk."
       }
     },
     "nasya": {
@@ -136,10 +159,15 @@
         "elderly": "The KB lists 'very old' as absolute; reduced marrow reserve and slower haemodynamic compensation.",
         "peripheral_vascular_disease": "Sites heal poorly and ulcerate.",
         "warfarin": "Anticoagulant — the puncture site will not close.",
-        "blood thinner": "Anticoagulant — the puncture site will not close."
+        "blood thinner": "Anticoagulant — the puncture site will not close.",
+        "sickle_cell": "Removing blood from a chronic haemolytic anaemia deepens it, and the volume loss itself precipitates crisis.",
+        "thalassemia": "Chronic anaemia, often transfusion-dependent. Bloodletting is directly opposed to the patient's baseline problem.",
+        "lupus": "Thrombocytopenia and autoimmune haemolysis are common in SLE; the patient may be cytopenic without symptoms.",
+        "scleroderma": "Raynaud's and digital ischaemia are near-universal; leeching a poorly perfused extremity produces an ulcer that will not heal."
       },
       "soft": {
-        "hypertension": "Historically an indication rather than a contraindication, but volume loss on antihypertensives can overshoot — monitor BP for two hours."
+        "hypertension": "Historically an indication rather than a contraindication, but volume loss on antihypertensives can overshoot — monitor BP for two hours.",
+        "restless_leg_syndrome": "RLS is frequently a marker of iron deficiency. Check ferritin before any bloodletting — if it is low, Raktamokshana makes the presenting complaint worse."
       },
       "seasonal_hard": {
         "shishira": "The KB lists winter (Shishira) as an absolute contraindication for Raktamokshana — Rakta is naturally condensed and Vata is high."
@@ -161,7 +189,8 @@
         "indigestion": "Abhyanga on a full or dyspeptic stomach diverts Agni; wait two hours after food.",
         "obesity": "Kapha-increasing. Use Udvartana instead, or a light Sarshapa Taila application.",
         "hypothyroidism": "Kapha-predominant state; prefer dry Udvartana over heavy oleation.",
-        "skin_infection": "Avoid the affected area entirely; oil spreads superficial fungal and bacterial infection."
+        "skin_infection": "Avoid the affected area entirely; oil spreads superficial fungal and bacterial infection.",
+        "scleroderma": "Sclerotic skin is fragile and tears under the pressure of a standard stroke; use light effleurage only."
       }
     },
     "abhyanga_clinic": {
@@ -183,7 +212,8 @@
         "heart_failure": "As severe cardiac — fluid shift and tachycardia are not tolerated.",
         "hypotension": "Vasodilation causes syncope.",
         "emaciation": "Atidurbala — as underweight.",
-        "atidurbala": "Extreme depletion — as underweight."
+        "atidurbala": "Extreme depletion — as underweight.",
+        "sickle_cell": "Heat and sweating dehydrate, and dehydration is the commonest trigger of a vaso-occlusive crisis."
       },
       "soft": {
         "hypertension": "Vasodilation combined with antihypertensives risks a fall; sit rather than stand, and keep it under 10 minutes.",
@@ -202,7 +232,9 @@
         "claustrophobia": "Full-body steam chambers enclose the patient to the neck."
       },
       "soft": {
-        "asthma": "Herbal steam constituents can trigger bronchospasm in reactive airways; test tolerance briefly first."
+        "asthma": "Herbal steam constituents can trigger bronchospasm in reactive airways; test tolerance briefly first.",
+        "pulmonary_fibrosis": "An enclosed steam chamber in restrictive lung disease reduces the reserve further; use a shortened exposure with continuous observation.",
+        "sickle_cell": "As for home Swedana — keep the session short and hydrate throughout."
       }
     },
     "snehapana_home": {
@@ -713,5 +745,15 @@
       "medication_classes": []
     }
   },
-  "_herbs_note": "Per-HERB safety, not per-formulation. Ashwagandha's thyroid interaction is a fact about Ashwagandha and applies in the Manovaha adjuvant, the vata_neurological Rasayana and the reproductive_male Rasayana alike; keying it to the herb means one entry rather than three that can drift. It also gives the right remedy: a contraindication against one component withholds THAT component, not the four-herb formulation around it. AUTHORED, NOT CLINICALLY REVIEWED."
+  "_herbs_note": "Per-HERB safety, not per-formulation. Ashwagandha's thyroid interaction is a fact about Ashwagandha and applies in the Manovaha adjuvant, the vata_neurological Rasayana and the reproductive_male Rasayana alike; keying it to the herb means one entry rather than three that can drift. It also gives the right remedy: a contraindication against one component withholds THAT component, not the four-herb formulation around it. AUTHORED, NOT CLINICALLY REVIEWED.",
+  "assessed_no_contraindication": {
+    "_note": "Diseases in the central disease map that were assessed against all five Pradhana Karma and found to contraindicate none of them. Recorded rather than omitted: a disease absent from this file is indistinguishable from one nobody looked at, which is the failure that let fifteen dangerous diagnoses through by default. Each line states why no restriction applies, so a reviewer can disagree with a specific claim.",
+    "alopecia": "Nasya and Shirodhara are indicated for it. No Karma is contraindicated by hair loss.",
+    "arthritis": "A generic term, not a diagnosis. Vata arthritis is an indication for Basti, not a bar; the specific forms (rheumatoid_arthritis, osteoarthritis, gout, ankylosing_spondylitis) carry their own entries.",
+    "carpal_tunnel": "A local nerve entrapment with no systemic interaction with any Karma.",
+    "chronic_tonsillitis": "Kapha lodged in the throat is a classical indication for Vamana, not a contraindication to it.",
+    "erectile_dysfunction": "An indication for Vajikarana Rasayana. No procedural conflict with any Karma.",
+    "hearing_loss": "Karnapurana and Nasya are indicated. No Karma is contraindicated.",
+    "tinnitus": "As hearing loss — Vata in the Shabdavaha Srotas is treated by Nasya and Karnapurana, and no Karma is barred."
+  }
 }

@@ -24,7 +24,10 @@ function RemedyIngredient({ item }) {
 
 function RemedyCard({ result }) {
   const [open, setOpen] = useState(false)
-  const { remedy, symptom_display, severity, dosha_cause, dosha_used, requires_practitioner, ayurvedic_rationale, taste_notices } = result
+  const {
+    remedy, symptom_display, severity, dosha_cause, dosha_used, requires_practitioner,
+    ayurvedic_rationale, usage_cautions, red_flags, taste_notices,
+  } = result
   if (!remedy) return null
   const doshaColor = DOSHA_COLORS_R[dosha_used] || DOSHA_COLORS_R.universal
   const doshaText = doshaInk(dosha_used === 'universal' ? '' : dosha_used)
@@ -77,6 +80,28 @@ function RemedyCard({ result }) {
             {remedy.duration   && <div className="rv-meta-chip"><Calendar size={11} />{remedy.duration}</div>}
             {remedy.expected_relief && <div className="rv-meta-chip"><Zap size={11} />Relief in {remedy.expected_relief}</div>}
           </div>
+          {usage_cautions?.length > 0 && (
+            <div className="rv-section">
+              <div className="rv-section-label">Before you use this</div>
+              <ul className="mv-safety-list">
+                {usage_cautions.map((c, i) => <li key={i}>{c}</li>)}
+              </ul>
+            </div>
+          )}
+
+          {/* Every remedy entry carries a contraindication list and nothing read
+              it. The half that names something the app cannot observe — a fever
+              over 103, a wound that needs stitches — only ever works by being
+              read, so it is shown rather than filtered on. */}
+          {red_flags?.length > 0 && (
+            <div className="rv-section">
+              <div className="rv-section-label" style={{ color: '#c0392b' }}>Stop and seek care if</div>
+              <ul className="mv-safety-list mv-safety-list--danger">
+                {red_flags.map((c, i) => <li key={i}>{c}</li>)}
+              </ul>
+            </div>
+          )}
+
           {requires_practitioner && (
             <div className="rv-practitioner-note">
               <TriangleAlert size={13} />

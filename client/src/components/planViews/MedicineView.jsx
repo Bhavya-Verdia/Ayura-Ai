@@ -230,6 +230,31 @@ function MedCard({ med, rationale }) {
             </div>
           )}
 
+          {/* How the preparation is taken. These lines lived inside
+              `contraindications` — a field only a filter read — so a warning like
+              "external use only" reached nobody. */}
+          {med.usage_cautions?.length > 0 && (
+            <div className="mv-section">
+              <h4 className="mv-section-label" style={{ color: '#f59e0b' }}>
+                <TriangleAlert size={11} /> Before you take this
+              </h4>
+              <ul className="mv-safety-list">
+                {med.usage_cautions.map((c, i) => <li key={i}>{c}</li>)}
+              </ul>
+            </div>
+          )}
+
+          {med.red_flags?.length > 0 && (
+            <div className="mv-section">
+              <h4 className="mv-section-label" style={{ color: '#c0392b' }}>
+                <TriangleAlert size={11} /> Do not use if
+              </h4>
+              <ul className="mv-safety-list mv-safety-list--danger">
+                {med.red_flags.map((c, i) => <li key={i}>{c}</li>)}
+              </ul>
+            </div>
+          )}
+
           {med.drug_interactions?.length > 0 ? (
             <div className="mv-section">
               <h4 className="mv-section-label" style={{ color: '#c0392b' }}>

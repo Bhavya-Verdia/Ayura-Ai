@@ -100,10 +100,29 @@ jobs:
             ./ "root@$DEPLOY_HOST:$REMOTE_DIR/"
 
       - name: Build & restart on server
+        # GIT_SHA is baked into the api/worker images and returned by /api/health,
+        # so a backend deploy can be verified from outside instead of being taken on
+        # trust. `.git` is excluded from the rsync above, so the droplet cannot work
+        # the commit out for itself — it has to be handed over.
         run: |
           ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=accept-new "root@$DEPLOY_HOST" \
             "cd $REMOTE_DIR \
+             && export GIT_SHA=${{ github.sha }} \
              && docker compose build api web worker \
              && docker compose up -d --force-recreate api web worker \
              && sleep 10 \
              && curl --fail http://localhost:8000/api/health"
+
+      - name: Verify the deployed commit is this one
+        # The workflow's own success line is not evidence — CLAUDE.md is explicit
+        # about that, and it is explicit because a deploy has silently left the site
+        # serving an older image before. This asks the running container what it is.
+        run: |
+          served=$(ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=accept-new "root@$DEPLOY_HOST" \
+            "curl -s http://localhost:8000/api/health" | python3 -c "import json,sys; print(json.load(sys.stdin).get('git_sha',''))")
+          echo "served git_sha: $served"
+          echo "expected      : ${{ github.sha }}"
+          if [ "$served" != "${{ github.sha }}" ]; then
+            echo "::error::/api/health reports $served, not ${{ github.sha }} — the running container is not this build"
+            exit 1
+          fi

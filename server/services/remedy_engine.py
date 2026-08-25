@@ -2,7 +2,13 @@ from datetime import datetime, timezone
 import json
 import os
 from core.kb_cache import kb_cache
-from engine.condition_vocab import term_in_condition, normalize_condition
+from engine.condition_vocab import condition_matches_term, normalize_condition
+from engine.contraindication_tokens import (
+    assumed_state_notes,
+    build_derived_states,
+    contraindication_hit,
+    usage_notes,
+)
 
 
 def _med_covers_condition(med: dict, user_cond: str) -> bool:
@@ -81,6 +87,17 @@ _CONDITION_ALIAS: dict[str, str] = {
     "cervical": "cervical_spondylosis",
 }
 
+# Ingredient blocks for home remedies: (canonical conditions, blocked ingredients).
+# Written as canonical condition names so `condition_matches_term` resolves the
+# synonyms — "thyroid" alone used to be matched as a substring, which caught
+# hyperthyroidism and hypothyroidism but nothing a user typed by hand.
+_REMEDY_INGREDIENT_BLOCKS: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
+    (("diabetes_type1", "diabetes_type2"), ("guggulu", "honey")),
+    (("hypertension",), ("salt", "ajwain", "stimulant")),
+    (("hypothyroidism", "hyperthyroidism", "hashimoto"), ("ashwagandha",)),
+    (("ibs", "ulcerative_colitis", "ibd_crohns"), ("pippali", "trikatu")),
+)
+
 # Drug-herb interactions — herb key (partial match) → blocked medication categories
 _DRUG_HERB_MAP: dict[str, list[str]] = {
     "ashwagandha": ["thyroid_medication", "immunosuppressants", "sedatives"],
@@ -145,6 +162,41 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
             })
             continue
 
+        # d) Symptom-level contraindications.
+        #
+        # Every one of the 60 remedy entries carries a `contraindications` list and
+        # 41 of them are non-empty — and nothing in this engine had ever read the
+        # field. The hyperacidity remedy is barred during an active ulcer, the
+        # oedema remedy when the swelling is cardiac or renal, the diarrhoea
+        # remedy in dysentery. All of it was inert.
+        #
+        # The symptom being treated is removed from the derived state first: the
+        # fever remedy lists `high_fever_above_103`, which reads the reported fever,
+        # and would otherwise withhold the fever remedy from everyone with a fever.
+        # Temperature is a number this app never sees, so that one is shown to the
+        # user as a red flag instead of being guessed at.
+        remedy_states = build_derived_states(
+            user_profile, symptoms=[s for s in symptoms if s != sym_id])
+        remedy_contra = remedy_kb.get("contraindications") or []
+        blocked_by = next(
+            (hit for tok in remedy_contra
+             if (hit := contraindication_hit(tok, medical_history, remedy_states))),
+            None,
+        )
+        if blocked_by:
+            filtered_results.append({
+                "symptom_id": sym_id,
+                "symptom_display": remedy_kb.get("symptom_display", sym_id),
+                "action": "consult_doctor",
+                "message": (
+                    f"Home treatment is not appropriate here: {blocked_by.replace('_', ' ')}. "
+                    "Please see a practitioner."
+                ),
+            })
+            continue
+
+        remedy_cautions, remedy_red_flags = usage_notes(remedy_contra)
+
         # dosha selection helper
         def is_safe(cand_remedy):
             if not cand_remedy:
@@ -154,24 +206,29 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
             ingredients_list = cand_remedy.get("ingredients") or []
             ingredients_text = " ".join([i.get("item", "").lower() for i in ingredients_list])
 
-            # e) Medical contraindication
-            blocks = {
-                "diabetes": ["guggulu", "honey"],
-                "hypertension": ["salt", "ajwain", "stimulant"],
-                "thyroid": ["ashwagandha"],
-                "ibs": ["pippali", "trikatu"]
-            }
-
-            for cond in medical_history:
-                cond_l = cond.lower()
-                for key, blocked_items in blocks.items():
-                    if key in cond_l:
-                        for item in blocked_items:
-                            if item in ingredients_text:
-                                if key == "thyroid" and item == "ashwagandha":
-                                    cand_remedy["caution_note"] = "Use Ashwagandha with caution due to thyroid history."
-                                else:
-                                    return False, f"Contraindicated for {cond}"
+            # e) Ingredient-level contraindication.
+            #
+            # The keys used to be matched with `key in condition`, which is the
+            # substring test this codebase has removed everywhere else. It caught
+            # "diabetes" inside "diabetes_type2" by luck and missed "hypertension"
+            # in "high_blood_pressure" entirely — the form the app actually stores
+            # when someone ticks high blood pressure. Each group now names the
+            # canonical conditions it covers.
+            for group, blocked_items in _REMEDY_INGREDIENT_BLOCKS:
+                cond = next(
+                    (c for c in medical_history
+                     if any(condition_matches_term(c, g) for g in group)),
+                    None,
+                )
+                if not cond:
+                    continue
+                for item in blocked_items:
+                    if item not in ingredients_text:
+                        continue
+                    if item == "ashwagandha":
+                        cand_remedy["caution_note"] = "Use Ashwagandha with caution due to thyroid history."
+                    else:
+                        return False, f"Contraindicated for {cond}"
 
             # d) Drug interaction
             drug_interaction_map = {
@@ -244,7 +301,12 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
             "taste_notices": _taste_notices(selected_remedy, taste_prefs),
             "drug_interaction_warning": interaction_warning,
             "source": remedy_kb.get("source", "Traditional"),
-            "dosha_used": dosha_used
+            "dosha_used": dosha_used,
+            # The half of the KB's contraindication list that names a state the
+            # app cannot observe — "vomiting blood needs emergency care", "do not
+            # apply to broken skin". Being read is the only way these ever work.
+            "usage_cautions": remedy_cautions,
+            "red_flags": remedy_red_flags,
         })
 
     return filtered_results
@@ -664,19 +726,31 @@ def _check_medicine_safety(
     current_meds: list[str],
     allergies: list[str],
     medical_history: list[str],
+    derived_states: dict | None = None,
 ) -> tuple[bool, str | None]:
     """4-layer safety gate. Returns (is_safe, reason_if_blocked)."""
     if is_pregnant and not med.get("pregnancy_safe", False):
         return False, "Not safe during pregnancy"
 
-    # Contraindications vs medical history — precise word/phrase matching
-    # (naive substring matched 'heart' inside 'heartburn'; word-boundary does not).
+    # Contraindications vs medical history and derived state.
+    #
+    # This used to be a raw `term_in_condition`, which compares STRINGS and never
+    # consults the alias table — so a contraindication authored under one of two
+    # names for a disease never fired against the other. Measured across both KBs:
+    # 7 tokens were dead that way, including `hypotension` on Arjuna Churna (the
+    # app records `low_blood_pressure`), `renal_disease` on Abhraka Bhasma (a mica
+    # preparation, app records `chronic_kidney_disease`) and `hyperthyroid` on
+    # Ashwagandha — the exact interaction the herb-level safety work was built for.
+    # Same defect the Panchakarma gate had; `condition_matches_term` is the fix.
+    #
+    # `contraindication_hit` also reaches the ~50 uses that are derived states
+    # rather than diagnoses (`pitta_excess`, `ama_condition`, `fever`, `children`).
+    # Those can never appear in `medical_history` and so had never matched anything.
     med_contraindications = med.get("contraindications", [])
-    for hist in medical_history:
-        for contra in med_contraindications:
-            # bidirectional: contra may be broader OR narrower than the user's term
-            if term_in_condition(hist, contra) or term_in_condition(contra, hist):
-                return False, f"Contraindicated: {hist}"
+    for contra in med_contraindications:
+        hit = contraindication_hit(contra, medical_history, derived_states)
+        if hit:
+            return False, f"Contraindicated: {hit}"
 
     # Drug interactions — structured field + global herb map
     all_ingredients_text = " ".join(med.get("ingredients", [])).lower()
@@ -879,6 +953,30 @@ def generate_medicines_plan(
         gs = med.get("gender_specific")
         return gs is None or gs.lower() == gender
 
+    # ── Derived states the contraindication gate could not previously see ──
+    # `pitta_excess` guards 31 formulations, `ama_condition` 3, `children` 8 —
+    # none of which can ever appear in `medical_history`, which was the only thing
+    # the gate read. Everything here is already computed a few lines above.
+    # Note: NOT `vikriti={vikriti_dominant, vikriti_secondary}` — those two already
+    # fall back to Prakriti a few lines up, and the gate has to know the difference
+    # between an assessed imbalance and a constitution standing in for one.
+    derived_states = build_derived_states(
+        user_profile,
+        ama_level=ama_level,
+        # Symptoms arrive by two different vocabularies. The remedies preferences
+        # are keyed by remedy-KB symptom id (`fever_mild`, `diarrhea`) — the same
+        # ids the KB's own contraindications name. `current_symptoms` on the
+        # profile holds the Vikriti clusters onboarding collects (`heartburn_
+        # acidity`), which name none of the acute states these tokens are about;
+        # it is included because it costs nothing, not because it will match.
+        symptoms=[
+            *(medicines_prefs.get("symptom_severity") or {}),
+            *(medicines_prefs.get("symptom_duration") or {}),
+            *(medicines_prefs.get("symptoms") or []),
+            *(user_profile.get("current_symptoms") or []),
+        ],
+    )
+
     # ── Score and filter ──────────────────────────────────────────────────
     scored:  list[tuple[int, dict]] = []
     blocked: list[dict] = []
@@ -892,7 +990,8 @@ def generate_medicines_plan(
             continue
         if not gender_ok(med):
             continue
-        is_safe, reason = _check_medicine_safety(med, is_pregnant, current_meds, allergies, medical_history)
+        is_safe, reason = _check_medicine_safety(
+            med, is_pregnant, current_meds, allergies, medical_history, derived_states)
         if not is_safe:
             blocked.append({"name": med["name"], "reason": reason})
             continue
@@ -948,6 +1047,13 @@ def generate_medicines_plan(
         anupana_map[med["id"]] = _select_anupana(med, primary_condition, agni_type)
         med["selected_anupana"] = anupana_map[med["id"]]
         med["previously_tried"] = med["name"].lower() in previous_tried
+        # The half of `contraindications` that is not a user state: "external use
+        # only", "authenticated source only", "do not swallow the camphor". They
+        # were filed in a field only a filter read, so a filter that could not
+        # match them dropped them — and nobody was ever told. They belong with the
+        # medicine, not in the gate.
+        med["usage_cautions"], med["red_flags"] = usage_notes(med.get("contraindications"))
+        med["usage_cautions"] += assumed_state_notes(med.get("contraindications"), derived_states)
 
     # ── Build schedules and protocol ──────────────────────────────────────
     dosage_schedule    = _build_dosage_schedule(primary_formulations + supporting_formulations, anupana_map)
