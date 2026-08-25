@@ -164,12 +164,36 @@ jobs:
         with:
           python-version: "3.12"
 
-        # Blocking gate: production deps are CVE-free. CVE-2025-71176 (pytest,
-        # a test-only dependency never shipped to production) is the sole
-        # ignored finding — bump pytest>=9 to drop it, once pytest-asyncio
-        # supports it.
+        # Blocking gate. Every ignored finding is individually reviewed below, with
+        # the reason it cannot bite us here and the condition that should send
+        # someone back to re-audit it. Nothing goes in this list to make CI green.
+        #
+        # CVE-2025-71176 — pytest, a test-only dependency never shipped to
+        #   production. RE-AUDIT: never; drop it by bumping pytest>=9, once
+        #   pytest-asyncio supports it.
+        #
+        # CVE-2026-45830 / -45831 / -45833 — chromadb 0.6.3. All three need a caller
+        #   that can reach the Chroma HTTP API, and it is published on
+        #   127.0.0.1:8001 only (see docker-compose.yml) — not internet-reachable.
+        #   Beyond that each needs something this deployment does not have:
+        #     45830  cross-tenant read/write — we run a single default_tenant.
+        #     45831  SimpleRBACAuthorizationProvider ignores tenant scope — no auth
+        #            provider is configured, so that provider is not in use.
+        #     45833  RCE via trust_remote_code — needs an authenticated caller
+        #            holding UPDATE_COLLECTION.
+        #   There is no fixed version: the advisories cover 0.4.17+ / 0.5.0+, and
+        #   1.5.9 carries all three PLUS PYSEC-2026-311, a PRE-authentication RCE
+        #   that does not exist on 0.6.3. Upgrading is a strictly worse trade, which
+        #   is why the pin stays put — measured 2026-08-25, not assumed.
+        #   RE-AUDIT IF: Chroma is published beyond 127.0.0.1, a second tenant is
+        #   introduced, an auth provider is configured, or a genuinely fixed release
+        #   ships.
       - name: pip-audit (known CVEs in Python deps)
         working-directory: server
         run: |
           python -m pip install --upgrade pip pip-audit
-          pip-audit -r requirements.txt --ignore-vuln CVE-2025-71176
+          pip-audit -r requirements.txt \
+            --ignore-vuln CVE-2025-71176 \
+            --ignore-vuln CVE-2026-45830 \
+            --ignore-vuln CVE-2026-45831 \
+            --ignore-vuln CVE-2026-45833

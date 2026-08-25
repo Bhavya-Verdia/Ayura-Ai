@@ -298,11 +298,18 @@ def test_the_real_corpus_fits_the_embedder_window():
     """
     from build_vectors import _overflowing_chunks
 
+    from build_vectors import _embedder_tokenizer
+
     try:
         from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 
         embedder = DefaultEmbeddingFunction()
-        assert embedder.tokenizer is not None
+        # Liveness only: can we obtain a tokenizer at all (i.e. is the 79 MB model
+        # present)? This probed `embedder.tokenizer` directly, which chromadb 1.x
+        # relocates — so on 1.x the probe raises, this test skips itself, and the
+        # assertion below quietly stops running. Ask the seeder's own resolver
+        # instead, so the test can only skip for the reason it documents.
+        _embedder_tokenizer(embedder)
     except Exception as exc:  # noqa: BLE001 — model not present is the only case
         pytest.skip(f"ONNX embedder unavailable: {exc}")
 
@@ -440,3 +447,61 @@ def test_panchakarma_procedures_reach_the_corpus_without_braces():
     for text in rendered:
         assert "{" not in text and "}" not in text, f"brace survived: {text}"
         assert "_" not in text, f"raw placeholder name survived: {text}"
+
+
+# ── The overflow guard must fail loudly when it cannot measure ────────────────
+
+class _NoTokenizer:
+    """An embedder with no `.tokenizer` — the shape chromadb 1.x's
+    DefaultEmbeddingFunction has. Before the fix this made the guard return
+    "nothing overflows"."""
+
+
+def test_the_guard_refuses_to_pass_when_it_cannot_measure(monkeypatch):
+    """The regression that motivated these two tests.
+
+    `_overflowing_chunks` used to answer "no tokenizer" with a warning and `[]`,
+    which the seeder reads as a clean corpus. So a chromadb upgrade that moved
+    `.tokenizer` would not have failed anything — it would have quietly stopped
+    checking, and the next over-long chunk would have lost its tail in the store
+    with nothing logged. A guard that cannot run must not report success.
+    """
+    import build_vectors
+
+    monkeypatch.setattr(
+        build_vectors, "_embedder_tokenizer",
+        lambda e: (_ for _ in ()).throw(RuntimeError("no tokenizer")),
+    )
+    with pytest.raises(RuntimeError):
+        build_vectors._overflowing_chunks(_NoTokenizer(), {})
+
+
+def test_the_tokenizer_resolver_finds_the_bundled_onnx_one():
+    """Resolves on the pinned 0.6.3, where `.tokenizer` is on the embedder itself.
+    It moves to `onnx_mini_lm_l6_v2.ONNXMiniLM_L6_V2` in 1.x and the resolver follows
+    it there, so this passes on both — which is the point: the pin can move without
+    the guard going quiet."""
+    from build_vectors import _embedder_tokenizer
+
+    try:
+        from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
+        tokenizer = _embedder_tokenizer(DefaultEmbeddingFunction())
+    except Exception as exc:  # noqa: BLE001 — 79 MB model absent in CI
+        pytest.skip(f"ONNX embedder unavailable: {exc}")
+    assert tokenizer.encode("triphala").ids
+
+
+def test_the_declared_window_matches_the_constant():
+    """chromadb 1.x publishes the model's token budget; 0.6.3 does not. If an upgrade
+    moves the window, every length is measured against the wrong number and over-long
+    chunks pass. Both shapes are exercised so the check is correct before and after."""
+    from build_vectors import _assert_window_matches_embedder, EMBEDDER_WINDOW
+
+    class _Declares:
+        def __init__(self, n): self._n = n
+        def max_tokens(self): return self._n
+
+    _assert_window_matches_embedder(_Declares(EMBEDDER_WINDOW))  # agrees: no raise
+    with pytest.raises(RuntimeError, match="window"):
+        _assert_window_matches_embedder(_Declares(EMBEDDER_WINDOW + 1))
+    _assert_window_matches_embedder(_NoTokenizer())  # 0.6.x shape: nothing to check
