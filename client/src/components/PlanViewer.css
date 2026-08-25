@@ -626,6 +626,45 @@
   border-radius: 8px;
 }
 
+/* The declared-but-withheld second Karma. Deliberately NOT styled as a
+   prescription card: it is set apart with a muted left rule and a "not part of this
+   plan" label so it cannot be skimmed as another therapy to undergo. For Pitta this
+   names Raktamokshana, and a patient who reads it as an instruction has been
+   misled. */
+.pk-deferred {
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--ayura-border);
+  border-left: 3px solid var(--ayura-muted);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-top: 0.75rem;
+}
+
+.pk-deferred-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--ayura-muted);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.pk-deferred p {
+  font-size: 0.84rem;
+  color: var(--ayura-text);
+  margin: 0 0 0.4rem;
+  line-height: 1.6;
+}
+
+.pk-deferred p:last-child { margin-bottom: 0; }
+
+.pk-deferred .pk-deferred-why,
+.pk-deferred .pk-deferred-note {
+  font-size: 0.8rem;
+  color: var(--ayura-muted);
+}
+
 .pk-rationale {
   background: var(--ayura-card-bg);
   border: 1px solid var(--ayura-border);

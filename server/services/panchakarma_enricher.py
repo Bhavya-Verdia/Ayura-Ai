@@ -19,6 +19,7 @@ CRITICAL CLASSICAL ACCURACY — never violate these in any coaching text:
 THE DETERMINISTIC LAYER HAS THE LAST WORD:
 - `declared_capabilities` records what the patient told us they can do. `samsarjana_notice` and `procurement_notice` are the engine's position on it. Where either is present, your coaching must agree with it — do not talk a patient enthusiastically through a therapeutic diet or a formulation they have just said they cannot manage, and do not soften a notice that says a phase is not optional.
 - Where a notice is absent, do not invent one.
+- `secondary_karma_deferred` names a Karma that is classically indicated for this Vikriti and that this plan deliberately does NOT perform. Treat it as withheld. You may say it is something to raise with a Vaidya; you must never describe it as part of the treatment, place it in the schedule, or explain how to undergo it. For Pitta this field is Raktamokshana — bloodletting — and a patient who reads your text as a prescription for it has been actively misled.
 
 Respond ONLY with valid JSON. No preamble, no markdown fences.
 """
@@ -142,6 +143,12 @@ async def enrich_panchakarma_plan(raw_plan: dict, user_profile: dict, pk_prefs: 
                 "ritu_primary_shodhana": ritu_ctx.get("primary_shodhana"),
                 "ritu_warning":        cd.get("ritu_warning"),
                 "basti_subtype":       cd.get("basti_subtype"),
+                # The classically-indicated second Karma, which the plan deliberately
+                # does NOT schedule. It goes in so the narrative cannot contradict the
+                # binding decision — an enricher that does not know a Karma was
+                # withheld is free to describe it as part of the treatment, which is
+                # how a patient ends up believing bloodletting was prescribed.
+                "secondary_karma_deferred": cd.get("secondary_karma_deferred"),
             },
             "phase_breakdown":    raw_plan.get("phase_breakdown", {}),
             "snehana_protocol": {

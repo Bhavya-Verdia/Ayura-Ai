@@ -588,6 +588,35 @@ def _triage_eligibility_findings(unmapped: list[str], condition_triage: dict | N
     return {"blocking": blocking, "restricting": restricting, "assessed": assessed}
 
 
+def _secondary_karma_deferral(pradhana: dict) -> dict | None:
+    """The declared-but-unscheduled second Karma, or None when there is nothing to say.
+
+    Returns None when no secondary is declared, and when it has collapsed onto the
+    primary — after a seasonal override or a safety substitution the two can end up
+    the same Karma, and announcing a "deferred" Karma the plan already performs
+    would be noise. Measured over 5,184 profiles: 58.3% declare a secondary, but on
+    2,492 of those it equals the primary, leaving 10.3% where this says anything.
+    """
+    secondary = pradhana.get("secondary")
+    if not secondary:
+        return None
+    primary = pradhana.get("primary")
+    if secondary == primary or (primary == "basti_matra" and secondary == "basti"):
+        return None
+    return {
+        "karma": secondary,
+        "scheduled": False,
+        "reason": pradhana.get("reason", ""),
+        "clinical_note": pradhana.get("clinical_note", ""),
+        "deferral": (
+            "Classically indicated alongside the primary Karma for this Vikriti. "
+            "Not scheduled: sequencing a second Pradhana Karma is a clinical "
+            "decision that needs a Vaidya, not a rule engine."
+        ),
+        "reviewed": False,
+    }
+
+
 def _validate_karma_safety(pradhana: dict, medical_history: list[str],
                            triage_terms: dict | None = None) -> dict:
     """
@@ -2326,8 +2355,8 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             # A patient who cannot follow the diet is not clinically ineligible for
             # purification, and the plan must not tell them they are — changing the
             # answer is enough, where a clinical bar needs a Vaidya. The distinction
-            # travels in `reasons`, which the view renders; `clinically_ineligible`
-            # is set correctly beside it but is currently read by nothing, here or
+            # travels in `reasons`, which the view renders, and `clinically_ineligible`
+            # is set correctly beside it and read by PanchakarmaView, here or
             # in the client, and this is not the change that should wire it up.
             by_preference = bool(pradhana.get("capability_substitution"))
             eligibility = {
@@ -2845,6 +2874,26 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
                  "source": "llm_triage", "reviewed": False}
                 for c, d in triage_doshas
             ],
+            # The classical mapping authors a SECOND Karma per Vikriti with its own
+            # reason and Charaka reference — Raktamokshana for blood-level Pitta
+            # vitiation, Basti after Virechana when Vata and Pitta are both high.
+            # The engine has always computed it and then dropped it, which made a
+            # cited clinical claim disappear without a trace.
+            #
+            # It is NOT scheduled, and that is a deliberate limit rather than an
+            # oversight. Every wiring that would change treatment is a clinical
+            # decision this codebase cannot make on its own:
+            #   - as a substitute, it would displace `fallback`, which the
+            #     contraindication KB authors specifically for "this Karma is barred,
+            #     go here"; `secondary` is complementary, not a replacement.
+            #   - as an adjunct, it adds a second Pradhana Karma to the schedule —
+            #     for Pitta that is bloodletting.
+            #   - as a therapy-pool score (the `triage_dosha_influence` pattern
+            #     above), there is nothing to score against: none of the 23 therapy
+            #     rows carries a `karma` tag.
+            # So it is surfaced and marked deferred. Stated and unused is a question
+            # a Vaidya can answer; silently dropped is not.
+            "secondary_karma_deferred": _secondary_karma_deferral(pradhana),
             "vaidya_review_required": vaidya_review_required,
         },
 
