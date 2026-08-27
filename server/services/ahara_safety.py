@@ -120,6 +120,22 @@ VIRUDDHA_RULES: list[dict] = [
         "reason": "Classical Viruddha Ahara — leads to Ama and skin disorders (Charaka Sutrasthana 26).",
     },
     {
+        # The two Kushtha Viruddha combinations the psoriasis Apathya names and this
+        # list did not carry. Charaka Chikitsa 7 gives Viruddha Ahara as a Nidana of
+        # Kushtha, and the psoriasis brief hint lists "sesame + milk" and
+        # "salt + milk" alongside the fish/meat pairs `milk_fish_meat` already covers.
+        "id": "milk_sesame",
+        "groups": [_MILK, ["sesame", "til", "tahini", "gingelly", "tilkut"]],
+        "warning": "Milk with sesame",
+        "reason": "Classical Viruddha Ahara — a stated Nidana of Kushtha (Charaka Chikitsa 7).",
+    },
+    {
+        "id": "milk_salt",
+        "groups": [_MILK, ["salted", "namkeen", "papad", "pickle", "rock salt"]],
+        "warning": "Milk with salt",
+        "reason": "Classical Viruddha Ahara — Rasa-Viruddha; named in the Kushtha Nidana (Charaka Chikitsa 7).",
+    },
+    {
         "id": "milk_banana",
         "groups": [_MILK, ["banana", "kela", "kadali"]],
         "warning": "Milk with banana",
@@ -408,6 +424,81 @@ _CONDITION_APATHYA_TERMS: dict[str, dict] = {
         "reason": "Heavy / gas-forming — aggravate Grahani.",
         "terms": ["deep fried", "rajma", "chole", "raw salad", "cabbage"],
     },
+    # ── The eight that fell between the two tables ────────────────────────────
+    # `PATHYA_APATHYA_HINTS` in diet_brief_builder curates 21 conditions and sends
+    # each one's classical Pathya-Apathya to the model. This table curated 12. The
+    # two were maintained separately, and `uncurated_conditions()` skips the LLM
+    # Apathya classifier for anything the brief has a hint for — so a condition with
+    # a brief hint and no entry here got the curated floor from neither table and the
+    # classifier from neither path. It fell through the intersection, which is a hole
+    # neither table's author could see by reading their own table.
+    #
+    # Verified before the fix: an Amavata patient served curd, pickle, deep-fried
+    # pakora and rajma returned `condition_food_safe: True`. Curd is the textbook
+    # Apathya of Amavata — Madhava Nidana 25 names it first.
+    #
+    # These are NOT auto-derived from the brief's phrases. `_food_headword` exists and
+    # extracts one word per phrase, which is right for the conflict detector it was
+    # built for and wrong here: "new rice" yields `rice`, which flags every khichdi,
+    # and "black gram" yields `black`, which flags black pepper and black salt. It
+    # also yields `sitting`, `suppression`, `travel` and `skipping` from the
+    # behavioural Apathya entries. Deriving would have traded a coverage hole for a
+    # false-positive flood, and a floor that flags everything is a floor nobody reads.
+    #
+    # So each is authored from the same classical Apathya the brief already states,
+    # made specific enough to scan. AUTHORED, NOT CLINICALLY REVIEWED.
+    "amavata": {
+        "name": "Amavata (rheumatoid arthritis)",
+        "reason": "Ama-forming and Srotas-blocking; curd is the first Apathya named.",
+        "terms": ["curd", "dahi", "yogurt", "lassi", "raita", "black gram", "urad",
+                  "fish", "fermented", "idli", "dosa", "deep fried", "ice cream",
+                  "cold drink"],
+        # "new rice" is deliberately not a term. The Apathya is new rice specifically,
+        # and no scan can tell new rice from old in a meal name — `rice` would flag
+        # every khichdi in the plan, including the ones prescribed for this patient.
+    },
+    "arsha": {
+        "name": "Arsha (haemorrhoids)",
+        "reason": "Pungent, fried and flatulent foods aggravate Arsha.",
+        "terms": ["deep fried", "extra chilli", "pickle", "rajma", "chole", "urad",
+                  "alcohol"],
+    },
+    "anemia": {
+        "name": "Pandu Roga (anaemia)",
+        "reason": "Sour, alkaline and Viruddha foods obstruct Rasa-Rakta formation.",
+        "terms": ["clay", "alcohol", "raw salad", "cold drink"],
+        # Curd-with-milk, the other classical Apathya here, is a combination rather
+        # than an ingredient and is already caught by the `milk_sour` Viruddha rule.
+    },
+    "asthma": {
+        "name": "Tamaka Shwasa (asthma)",
+        "reason": "Cold, heavy and Kapha-increasing foods provoke Shwasa.",
+        "terms": ["curd", "dahi", "banana", "ice cream", "cold drink", "deep fried",
+                  "fish"],
+    },
+    "constipation": {
+        "name": "Vibandha (constipation)",
+        "reason": "Dry, rough and cold foods harden the stool and increase Vata.",
+        # Thin on purpose. Most of this condition's classical Apathya is behavioural —
+        # suppressing the urge, excess travel, exertion — and belongs in the brief's
+        # advice rather than in a scan of what is on the plate.
+        "terms": ["raw salad", "cold drink"],
+    },
+    "migraine": {
+        "name": "Ardhavabhedaka (migraine)",
+        "reason": "Aged, fermented and sour foods are the classical and modern triggers.",
+        "terms": ["aged cheese", "cheese", "chocolate", "red wine", "alcohol",
+                  "pickle", "vinegar"],
+    },
+    "psoriasis": {
+        "name": "Kitibha Kushtha (psoriasis)",
+        "reason": "Viruddha Ahara is the stated Nidana of Kushtha; sour aggravates Rakta.",
+        "terms": ["fish", "sour", "pickle", "vinegar", "curd"],
+        # The rest of this condition's Apathya is combinations — fish+milk, meat+milk,
+        # sesame+milk, salt+milk. Those are Viruddha rules, not single terms; the
+        # first two already exist as `milk_fish_meat` and the other two are added
+        # below.
+    },
     # Pregnancy is not a `medical_history` entry — it arrives as the separate
     # `pregnancy_or_nursing` flag on the profile, so it reached this table through no
     # route at all. `build_brief` does list the abortifacient risks to the model as a
@@ -446,6 +537,11 @@ _COND_CANON: dict[str, str] = {
     "ckd": "kidney_disease", "kidney_failure": "kidney_disease", "chronic_kidney_disease": "kidney_disease",
     "acid_reflux": "acidity", "gerd": "acidity", "heartburn": "acidity", "amlapitta": "acidity",
     "irritable_bowel_syndrome": "ibs", "grahani": "ibs",
+    # The brief carries `amavata` and `rheumatoid_arthritis` as separate hints with
+    # different Apathya lists. They are one disease — the brief itself names Amavata
+    # as the Ayurvedic name of rheumatoid arthritis — so they resolve to one entry
+    # here rather than drifting as two.
+    "rheumatoid_arthritis": "amavata", "ra": "amavata", "amavata_roga": "amavata",
 }
 
 
