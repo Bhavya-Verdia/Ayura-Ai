@@ -139,6 +139,43 @@ def test_the_oleation_and_re_entry_rows_are_route_specific():
         assert "raktamokshana" not in by_id[row]["karma"]
 
 
+def test_every_unreviewed_karma_claim_reaches_the_vaidya_packet():
+    """A claim nobody can review is worse than one nobody has reviewed yet.
+
+    `karma_reviewed: false` is a promise that a Vaidya will be asked. That promise is
+    only kept if the claim is in `vaidya_panchakarma_karma_tags.csv`, which is the
+    sheet they are handed — 197 flags across the knowledge base are currently
+    unreviewed and not one is marked reviewed, so the packet is the whole mechanism.
+
+    This fails when a `karma` tag is authored or changed without regenerating the
+    packet (`python scripts/reviewer_packet.py`), which is the drift that would
+    otherwise leave a live scoring rule outside the review instrument.
+    """
+    import csv
+
+    packet = (THERAPIES_PATH.parent.parent / "golden"
+              / "vaidya_panchakarma_karma_tags.csv")
+    assert packet.exists(), "run scripts/reviewer_packet.py"
+
+    with open(packet, newline="", encoding="utf-8") as f:
+        rows = {r["therapy_id"]: r for r in csv.DictReader(f)}
+
+    claims = {t["id"]: t for t in pk_therapies if t.get("karma_reviewed") is False}
+    assert set(rows) == set(claims), (
+        f"packet out of date — missing {sorted(set(claims) - set(rows))}, "
+        f"stale {sorted(set(rows) - set(claims))}"
+    )
+
+    for tid, row in rows.items():
+        claimed = [k.strip() for k in row["karma_claimed"].split(";") if k.strip()]
+        assert claimed == list(claims[tid]["karma"]), f"{tid} claim differs from the KB"
+        # The exclusions are the half that changes a plan, so they are a column
+        # rather than something the reviewer has to work out.
+        excluded = [k.strip() for k in row["karma_excluded"].split(";") if k.strip()]
+        assert set(claimed) | set(excluded) == KARMA_VOCAB, f"{tid} does not account for all six"
+        assert row["stated_basis"], f"{tid} reaches the reviewer with no basis"
+
+
 def test_the_file_is_authored_not_generated():
     """`scripts/seed_panchakarma_therapies.py` is a refusing stub. It held a Python
     copy of these rows and would delete every authored field on a run."""

@@ -13,6 +13,9 @@ classical content quickly (target: ~2 days):
   data/golden/vaidya_contraindication_tokens.csv — 1 row per contraindication token
        in the medicines / home-remedy KBs with what a non-clinician decided it means,
        because making these fire at all required interpreting them.
+  data/golden/vaidya_panchakarma_karma_tags.csv — 1 row per Purvakarma/Paschat therapy
+       with the Pradhana Karma courses it was tagged to AND the ones it was excluded
+       from, since the exclusion is the half that changes a plan.
   data/golden/vaidya_reviewer_packet.md    — instructions, summary stats, and the
        golden-case clinical sign-off section.
 
@@ -162,6 +165,55 @@ def build_contraindication_token_csv():
     return path, len(rows)
 
 
+KARMA_VOCAB = ("vamana", "virechana", "basti", "basti_matra", "nasya", "raktamokshana")
+
+
+def build_karma_tag_csv():
+    """One row per Purvakarma/Paschat therapy and the Karma courses it belongs to.
+
+    Every row in `panchakarma_therapies.json` carries a `karma` list naming the
+    Pradhana Karma courses it is part of, and the engine scores the therapy pool with
+    it — a Nasya plan now leads its preparation with Shirodhara and a Basti plan no
+    longer opens on Snehapana. The nine `pradhana` rows are excluded here: their karma
+    is an identity (the Vamana row performs Vamana) and carries no `karma_reviewed`
+    flag, because there is nothing in it for a reviewer to accept or reject.
+
+    The 14 rows that remain each assert a classical indication, `karma_reviewed` is
+    false on all of them, and they were authored by a non-clinician from the classical
+    references quoted in `karma_basis`.
+
+    `karma_excluded` is a column rather than an omission because the exclusions are
+    what actually move a plan. Snehapana tagged to Vamana and Virechana is unremarkable;
+    Snehapana *withheld* from the Basti and Nasya courses is the claim — that Basti's
+    Purvakarma is Abhyanga plus Swedana and its internal sneha arrives as Anuvasana.
+    A reviewer who only saw the inclusions would be reading half of each decision.
+    """
+    therapies = json.load(open(os.path.join(DATA, "knowledge_base", "panchakarma_therapies.json"), encoding="utf-8"))
+    cols = ["therapy_id", "therapy_name", "phase", "karma_claimed", "karma_excluded",
+            "stated_basis", "claim_ok (Y/N)", "should_be", "vaidya_notes"]
+    rows = []
+    for t in therapies:
+        if t.get("phase") == "pradhana":
+            continue
+        claimed = list(t.get("karma") or ())
+        rows.append({
+            "therapy_id": t.get("id", ""),
+            "therapy_name": t.get("name", ""),
+            "phase": t.get("phase", ""),
+            "karma_claimed": _fmt_list(claimed),
+            "karma_excluded": _fmt_list([k for k in KARMA_VOCAB if k not in claimed]),
+            "stated_basis": t.get("karma_basis", ""),
+            "claim_ok (Y/N)": "", "should_be": "", "vaidya_notes": "",
+        })
+
+    path = os.path.join(OUT, "vaidya_panchakarma_karma_tags.csv")
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=cols)
+        w.writeheader()
+        w.writerows(rows)
+    return path, len(rows)
+
+
 def build_medicine_csv():
     meds = json.load(open(os.path.join(DATA, "knowledge_base", "ayurvedic_medicines.json"), encoding="utf-8"))
     meds = sorted(meds, key=lambda m: m.get("name", ""))
@@ -191,7 +243,7 @@ def build_medicine_csv():
     return path, len(meds)
 
 
-def build_packet_md(n_meds, n_pk=0, n_tokens=0):
+def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0):
     golden_path = os.path.join(OUT, "golden_cases.json")
     cases = json.load(open(golden_path, encoding="utf-8")) if os.path.exists(golden_path) else []
 
@@ -251,7 +303,30 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0):
         "formulation between prescribed and withheld. Tick `interpretation_ok`, or write "
         "what it should be.",
         "",
-        "## Part 4 — Clinical case sign-off",
+        "## Part 4 — Panchakarma Karma tags  (`vaidya_panchakarma_karma_tags.csv`)",
+        f"{n_karma} preparation and aftercare therapies, each tagged with the Pradhana "
+        "Karma courses it belongs to. The engine scores its therapy pool with this tag, so "
+        "it decides what a patient is actually prepared with: a Nasya plan now leads with "
+        "Shirodhara (Murdha Taila) rather than internal ghee, and a Basti plan no longer "
+        "opens on Snehapana. Measured across 9,720 Shodhana plans, 10.4% changed schedule.",
+        "",
+        "The nine Pradhana rows are not here — that the Vamana row performs Vamana is an "
+        "identity, not a claim. These 14 are claims, authored by a non-clinician from the "
+        "references quoted in `stated_basis`, and `karma_reviewed` is false on all of them.",
+        "",
+        "**Read `karma_excluded` as carefully as `karma_claimed`.** The exclusions are what "
+        "move a plan. Snehapana tagged to Vamana and Virechana is unremarkable; Snehapana "
+        "*withheld* from the Basti and Nasya courses is the actual assertion — that Basti's "
+        "Purvakarma is Abhyanga plus Swedana and its internal sneha arrives as Anuvasana, and "
+        "that neither Nasya nor Raktamokshana takes internal oleation. Likewise Samsarjana "
+        "Krama is withheld from Nasya and Raktamokshana on the grounds that neither empties a "
+        "Koshtha. If any of those exclusions is wrong, a patient is being prepared for the "
+        "wrong procedure.",
+        "",
+        "- **claim_ok** — is the set of courses right, inclusions and exclusions together?",
+        "- **should_be** — the corrected list, if not.",
+        "",
+        "## Part 5 — Clinical case sign-off",
         f"Below are {len(cases)} synthetic patient cases run through the engines (deterministic, "
         "no AI). For each, confirm the core decisions are what you would prescribe, or note the "
         "correction. Full per-case detail with a grading grid is in **`golden_review.md`**.",
@@ -267,13 +342,14 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0):
         )
     lines += [
         "",
-        "## Part 5 — Sign-off",
+        "## Part 6 — Sign-off",
         "",
         "- Reviewer (name, BAMS/MD reg. no.): ____________________",
         "- Date: ____________  ",
         "- Overall: medicines reviewed ___/%d · PK contraindications reviewed ___/%d · "
-        "contraindication tokens reviewed ___/%d · cases reviewed ___/%d"
-        % (n_meds, n_pk, n_tokens, len(cases)),
+        "contraindication tokens reviewed ___/%d · Karma tags reviewed ___/%d · "
+        "cases reviewed ___/%d"
+        % (n_meds, n_pk, n_tokens, n_karma, len(cases)),
         "- Summary judgement (1–5) on classical accuracy of: "
         "Medicines __ · Panchakarma __ · Diet __ · Yoga __ · Routine __",
         "",
@@ -290,13 +366,15 @@ def main():
     csv_path, n = build_medicine_csv()
     pk_path, n_pk = build_panchakarma_contraindication_csv()
     tok_path, n_tok = build_contraindication_token_csv()
-    md_path = build_packet_md(n, n_pk, n_tok)
+    karma_path, n_karma = build_karma_tag_csv()
+    md_path = build_packet_md(n, n_pk, n_tok, n_karma)
     print("Vaidya reviewer packet generated:")
     print(f"  {csv_path}  ({n} medicines)")
     print(f"  {pk_path}  ({n_pk} panchakarma contraindications)")
     print(f"  {tok_path}  ({n_tok} contraindication tokens)")
+    print(f"  {karma_path}  ({n_karma} Karma tags)")
     print(f"  {md_path}")
-    print("\nGive all four to a BAMS Vaidya. Filled CSV corrections fold straight back into the KB.")
+    print("\nGive all five to a BAMS Vaidya. Filled CSV corrections fold straight back into the KB.")
 
 
 if __name__ == "__main__":
