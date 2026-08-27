@@ -31,7 +31,17 @@ Missing entries matter as much as wrong ones: if a condition should bar a proced
 ## Part 3 — Contraindication tokens  (`vaidya_contraindication_tokens.csv`)
 164 tokens appear in the medicines and home-remedy contraindication lists. They were written as notes for a human and then used as a machine gate, which matched them against the patient's history as plain strings — so most of them never fired. Making them work required deciding what each one means: which recorded diagnoses `autoimmune_disease` covers, whether `uncontrolled_diabetes` must bar every diabetic when the app cannot know how controlled anyone is, whether `pitta_excess` may be read off a constitution when no Vikriti assessment exists. **Those decisions were made by a non-clinician**, and each one moves a formulation between prescribed and withheld. Tick `interpretation_ok`, or write what it should be.
 
-## Part 4 — Clinical case sign-off
+## Part 4 — Panchakarma Karma tags  (`vaidya_panchakarma_karma_tags.csv`)
+14 preparation and aftercare therapies, each tagged with the Pradhana Karma courses it belongs to. The engine scores its therapy pool with this tag, so it decides what a patient is actually prepared with: a Nasya plan now leads with Shirodhara (Murdha Taila) rather than internal ghee, and a Basti plan no longer opens on Snehapana. Measured across 9,720 Shodhana plans, 10.4% changed schedule.
+
+The nine Pradhana rows are not here — that the Vamana row performs Vamana is an identity, not a claim. These 14 are claims, authored by a non-clinician from the references quoted in `stated_basis`, and `karma_reviewed` is false on all of them.
+
+**Read `karma_excluded` as carefully as `karma_claimed`.** The exclusions are what move a plan. Snehapana tagged to Vamana and Virechana is unremarkable; Snehapana *withheld* from the Basti and Nasya courses is the actual assertion — that Basti's Purvakarma is Abhyanga plus Swedana and its internal sneha arrives as Anuvasana, and that neither Nasya nor Raktamokshana takes internal oleation. Likewise Samsarjana Krama is withheld from Nasya and Raktamokshana on the grounds that neither empties a Koshtha. If any of those exclusions is wrong, a patient is being prepared for the wrong procedure.
+
+- **claim_ok** — is the set of courses right, inclusions and exclusions together?
+- **should_be** — the corrected list, if not.
+
+## Part 5 — Clinical case sign-off
 Below are 30 synthetic patient cases run through the engines (deterministic, no AI). For each, confirm the core decisions are what you would prescribe, or note the correction. Full per-case detail with a grading grid is in **`golden_review.md`**.
 
 | # | Case | Pradhana Karma | Shodhana/Shamana | Agni | Prescribe as-is? (Y/N) | Correction |
@@ -67,11 +77,11 @@ Below are 30 synthetic patient cases run through the engines (deterministic, no 
 | 29 | Vata, healthy active baseline (no conditions) | basti_matra | shamana | Sama Agni |  |  |
 | 30 | Senior, multiple conditions (HTN + diabetes + arthritis) | basti_matra | shamana | Vishama Agni |  |  |
 
-## Part 5 — Sign-off
+## Part 6 — Sign-off
 
 - Reviewer (name, BAMS/MD reg. no.): ____________________
 - Date: ____________  
-- Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/299 · contraindication tokens reviewed ___/164 · cases reviewed ___/30
+- Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/299 · contraindication tokens reviewed ___/164 · Karma tags reviewed ___/14 · cases reviewed ___/30
 - Summary judgement (1–5) on classical accuracy of: Medicines __ · Panchakarma __ · Diet __ · Yoga __ · Routine __
 
 > Return the filled CSV + this page; corrections are folded back into the knowledge base.
