@@ -90,10 +90,10 @@ VEGAN_PROTEIN = [
 
     F("Nutritional Yeast", id="nutritional_yeast",
       rasa=("kashaya", "tikta"), guna=("laghu", "ruksha"), virya="ushna", vipaka="katu",
-      # Pitta is left at 0 rather than raised. The validator refused +1 against a
-      # kashaya-tikta rasa and it was right to: the Pitta claim would have rested on
-      # the food being fermented, not on anything in its rasa or virya, and for a
-      # dravya with no classical entry that is a guess wearing a number. The
+      # Pitta is left at 0 rather than raised. The validator refused +1 when its rule
+      # read rasa alone, and although the ushna virya would license it now, the row
+      # stays conservative: the Pitta claim rested on the food being fermented rather
+      # than on anything the texts say about a dravya they never describe. The
       # fermentation concern is stated where it belongs, as an apathya.
       dosha=(1, 0, -2), ritu=("varsha", "sharad", "hemanta"),
       pathya_for=("anemia",), apathya_for=("migraine", "psoriasis", "amavata"),

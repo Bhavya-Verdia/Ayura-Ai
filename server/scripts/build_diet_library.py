@@ -31,6 +31,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from diet_library import schema  # noqa: E402
 from diet_library.beverages import BEVERAGES  # noqa: E402
 from diet_library.dairy import DAIRY  # noqa: E402
+from diet_library.grains import GRAINS  # noqa: E402
+from diet_library.legumes import LEGUMES  # noqa: E402
 from diet_library.oils import OILS  # noqa: E402
 from diet_library.spices import SPICES  # noqa: E402
 from diet_library.vegan_protein import VEGAN_PROTEIN  # noqa: E402
@@ -46,6 +48,8 @@ TRANCHES: list[tuple[str, list]] = [
     ("beverage", BEVERAGES),
     ("dairy", DAIRY),
     ("vegan_protein", VEGAN_PROTEIN),
+    ("grain", GRAINS),
+    ("legume", LEGUMES),
 ]
 
 

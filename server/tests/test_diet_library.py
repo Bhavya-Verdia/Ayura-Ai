@@ -101,17 +101,40 @@ def test_vipaka_must_follow_rasa_unless_a_prabhava_says_otherwise():
     assert licensed["vipaka"] == "madhura"
 
 
-def test_dosha_effect_must_follow_rasa_unless_a_prabhava_says_otherwise():
+def test_dosha_effect_must_follow_rasa_or_virya_unless_a_prabhava_says_otherwise():
     """A rule engine may not decide that a sweet food reduces Kapha. Barley does, and
     honey does, and the texts say so under Prabhava — so the rule is not "never
-    contradict", it is "contradict only out loud"."""
-    # vipaka moves with the rasa so that only the dosha rule is under test.
-    with pytest.raises(schema.SpecError, match="contradicts rasa"):
-        _ok(rasa=("madhura",), vipaka="madhura", dosha=(-1, -1, -1))
+    contradict", it is "contradict only out loud".
 
-    licensed = _ok(rasa=("madhura",), vipaka="madhura", dosha=(-1, -1, -1),
+    Yava is the case: madhura rasa raises Kapha, shita virya raises Kapha, and Yava
+    reduces it anyway. Both rungs of the hierarchy disagree with the claim, which is
+    exactly when a reviewer needs a sentence to argue with.
+    """
+    # vipaka moves with the rasa so that only the dosha rule is under test.
+    with pytest.raises(schema.SpecError, match="runs against rasa"):
+        _ok(rasa=("madhura",), vipaka="madhura", virya="shita", dosha=(-1, -1, -1))
+
+    licensed = _ok(rasa=("madhura",), vipaka="madhura", virya="shita", dosha=(-1, -1, -1),
                    prabhava="Yava is kapha-hara despite madhura rasa (BPN Dhanya Varga).")
     assert licensed["dosha_effect"]["kapha"] == -1
+
+
+def test_virya_licenses_what_rasa_alone_would_forbid():
+    """Rasa, then Virya, then Vipaka, then Prabhava — Ashtanga Hridaya Sutrasthana 9.
+
+    The rule read rasa alone at first and demanded a prabhava from every ushna-virya
+    food that reduced Vata: Jiraka, Maricha, Yavani, Methika. Those rows are not
+    exceptions to the classical system, they are the system one rung up, and a rule
+    that fires on ordinary rows teaches authors to satisfy it with a sentence rather
+    than a reason.
+    """
+    # katu rasa raises Vata; ushna virya lowers it. No prabhava needed.
+    assert _ok(rasa=("katu",), virya="ushna", dosha=(-1, 1, -1))
+    # madhura rasa lowers Pitta; ushna virya raises it. No prabhava needed.
+    assert _ok(rasa=("madhura",), vipaka="madhura", virya="ushna", dosha=(-1, 1, 1))
+    # Both rungs say Kapha rises. Claiming it falls needs the sentence.
+    with pytest.raises(schema.SpecError, match="runs against rasa"):
+        _ok(rasa=("madhura",), vipaka="madhura", virya="shita", dosha=(0, 0, -1))
 
 
 def test_the_rule_caught_four_rows_in_the_first_tranche():

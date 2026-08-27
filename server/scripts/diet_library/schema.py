@@ -89,6 +89,20 @@ RASA_AGGRAVATES = {
 }
 DOSHAS = ("vata", "pitta", "kapha")
 
+# Virya acts on the Doshas too, and outranks Rasa when they disagree — the classical
+# order is Rasa, then Virya, then Vipaka, then Prabhava (Ashtanga Hridaya Sutrasthana 9).
+# Ushna is Vata-hara, Kapha-hara and Pitta-vardhaka; shita is the reverse.
+#
+# This map was not here at first, and the validator demanded a prabhava from every
+# ushna-virya food that reduced Vata — Jiraka, Maricha, Yavani, Methika. Those rows are
+# not exceptions to the system; they ARE the system, one rung up. Requiring a prabhava
+# for them made the rule cry wolf, and a rule that fires on ordinary rows is a rule
+# authors learn to satisfy with a sentence rather than a reason.
+VIRYA_DIRECTION = {
+    "ushna": {"vata": -1, "pitta": +1, "kapha": -1},
+    "shita": {"vata": +1, "pitta": -1, "kapha": +1},
+}
+
 # -1/0/+1 was the old range and it could not tell "mildly increases" from "is
 # contraindicated". Basmati rice and green chilli were both `pitta: -1` and `+1`.
 DOSHA_RANGE = (-2, -1, 0, 1, 2)
@@ -192,12 +206,17 @@ def validate(food: dict) -> None:
     for d, v in effect.items():
         if v not in DOSHA_RANGE:
             bad(f"dosha_effect[{d}] = {v!r}, expected one of {DOSHA_RANGE}")
-        contradicts = (
+        against_rasa = (
             (v < 0 and set(rasa) <= RASA_AGGRAVATES[d]) or
             (v > 0 and set(rasa) <= RASA_PACIFIES[d])
         )
-        if contradicts and not prabhava:
-            bad(f"{d} {v:+d} contradicts rasa {list(rasa)} and no prabhava explains it")
+        # Virya licenses what rasa alone would forbid. Only an effect that runs against
+        # BOTH needs a prabhava — that is the one place a claim has left the classical
+        # system entirely, and the one place a reviewer needs a sentence to argue with.
+        with_virya = VIRYA_DIRECTION[food["virya"]][d] * v > 0
+        if against_rasa and not with_virya and not prabhava:
+            bad(f"{d} {v:+d} runs against rasa {list(rasa)} and against {food['virya']} "
+                f"virya, and no prabhava explains it")
 
     prep = food.get("prep_state")
     if prep not in PREP_STATES:
