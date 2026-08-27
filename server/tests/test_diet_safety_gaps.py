@@ -20,6 +20,8 @@ import pytest
 
 from services.ahara_safety import (
     ALLERGEN_TERMS,
+    VIRUDDHA_RULES,
+    _canon_condition,
     _CONDITION_APATHYA_TERMS,
     _collect_meal_units,
     apply_ahara_safety,
@@ -217,3 +219,91 @@ def test_the_existing_false_friends_still_hold():
         "dinner": {"meal_name": "Masoor Lentil Soup", "key_ingredients": ["lentil"]},
     })
     assert apply_ahara_safety(plan, ["eggs", "sesame"], [])["allergen_safe"] is True
+
+
+# ── 5. The eight conditions that fell between the two tables ──────────────────
+
+def test_every_brief_curated_condition_has_a_safety_floor():
+    """The drift guard for a hole neither table's author could see.
+
+    `PATHYA_APATHYA_HINTS` curates the conditions the brief describes to the model.
+    `_CONDITION_APATHYA_TERMS` curates the ones the deterministic scan enforces.
+    `uncurated_conditions()` sends a condition to the LLM Apathya classifier only
+    when the brief has NO hint for it — so a condition present in the first table and
+    absent from the second gets the curated floor from neither and the classifier
+    from neither path. Eight conditions sat there, Amavata among them.
+
+    Adding a hint without adding an entry now fails here.
+    """
+    from services.diet_brief_builder import PATHYA_APATHYA_HINTS
+
+    uncovered = sorted(c for c in PATHYA_APATHYA_HINTS
+                       if _canon_condition(c) not in _CONDITION_APATHYA_TERMS)
+    assert not uncovered, (
+        "curated in the brief but enforced by nothing — these reach neither the "
+        f"curated floor nor the LLM classifier: {uncovered}"
+    )
+
+
+@pytest.mark.parametrize("condition,food", [
+    ("amavata", "curd"),
+    ("rheumatoid_arthritis", "curd"),   # the same disease, canonicalised onto Amavata
+    ("arsha", "rajma"),
+    ("asthma", "curd"),
+    ("migraine", "pickle"),
+    ("psoriasis", "pickle"),
+])
+def test_the_eight_now_fire(condition, food):
+    """Reproduces the reported case: curd, pickle, deep-fried pakora and rajma
+    served to an Amavata patient returned `condition_food_safe: True`. Curd is the
+    first Apathya Madhava Nidana 25 names for Amavata."""
+    plan = _plan({
+        "breakfast": {"meal_name": "Curd Rice with Pickle", "key_ingredients": ["curd", "pickle"]},
+        "lunch": {"meal_name": "Deep Fried Pakora with Rajma", "key_ingredients": ["deep fried", "rajma"]},
+    })
+    out = apply_condition_food_safety(plan, [condition])
+    assert out["condition_food_safe"] is False
+    assert food in {a["food"] for a in out["condition_safety_alerts"]}
+
+
+def test_rheumatoid_arthritis_and_amavata_are_one_entry():
+    """The brief carries both with different Apathya lists; they are one disease and
+    must not drift as two."""
+    assert _canon_condition("rheumatoid_arthritis") == "amavata"
+
+
+def test_new_rice_did_not_become_the_term_rice():
+    """`_food_headword("new rice")` returns `rice`, which is right for the conflict
+    detector it was built for and would flag every khichdi here — including the ones
+    prescribed for this patient. The Amavata entry is authored, not derived."""
+    plan = _plan({"lunch": {"meal_name": "Moong Dal Khichdi", "key_ingredients": ["rice", "moong dal"]}})
+    assert apply_condition_food_safety(plan, ["amavata"])["condition_food_safe"] is True
+
+
+def test_no_condition_flags_an_ordinary_vegetarian_day():
+    from services.diet_brief_builder import PATHYA_APATHYA_HINTS
+
+    for cond in PATHYA_APATHYA_HINTS:
+        out = apply_condition_food_safety(_plan(drink=CCF_TEA), [cond])
+        assert out["condition_food_safe"] is True, (
+            f"{cond} flags a plain day of Upma, Khichdi, Makhana and Lauki Sabzi: "
+            f"{[a['food'] for a in out['condition_safety_alerts']]}"
+        )
+
+
+def test_the_two_kushtha_viruddha_pairs_exist():
+    """Psoriasis's remaining Apathya is combinations, not ingredients. fish+milk and
+    meat+milk were already covered by `milk_fish_meat`; sesame+milk and salt+milk
+    were not."""
+    ids = {r["id"] for r in VIRUDDHA_RULES}
+    assert {"milk_sesame", "milk_salt"} <= ids
+
+    for meal, expect in [
+        ({"meal_name": "Til Ladoo served with warm milk"}, "Milk with sesame"),
+        ({"meal_name": "Kheer with roasted papad"}, "Milk with salt"),
+    ]:
+        out = apply_ahara_safety(_plan({"dinner": meal}), [], [])
+        assert expect in {v["combination"] for v in out["viruddha_ahara_detected"]}
+
+    plain = apply_ahara_safety(_plan({"dinner": {"meal_name": "Rice Kheer"}}), [], [])
+    assert not plain["viruddha_ahara_detected"]
