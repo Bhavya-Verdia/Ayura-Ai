@@ -119,8 +119,17 @@ NUTRITION_SOURCES = ("ifct2017", "usda", "authored_estimate")
 
 # The nighantu a claim is drawn from, so a reviewer can check one food at a time
 # rather than accepting or rejecting the file.
+#
+# `modern_extrapolated` is not a text and is not a hedge. Roughly a fifth of the 150
+# foods this library replaces have no classical entry at all — quinoa, oats, broccoli,
+# kiwi, tofu, tempeh, soy milk, nutritional yeast, olive oil. The old generator gave
+# them a rasa and a virya from their category exactly as confidently as it gave
+# Shunthi one, and nothing in the row recorded the difference. A row using this value
+# must put the basis of the extrapolation in `varga` — the dravya it is reasoned from
+# and why — so a Vaidya reviewing the library can see at a glance which claims are
+# cited and which are argued.
 NIGHANTU = ("bhavaprakasha", "dhanvantari", "raja", "kaiyadeva",
-            "charaka", "sushruta", "ashtanga_hridaya")
+            "charaka", "sushruta", "ashtanga_hridaya", "modern_extrapolated")
 
 
 class SpecError(ValueError):
@@ -212,8 +221,14 @@ def validate(food: dict) -> None:
     ref = food.get("nighantu_ref") or {}
     if ref.get("text") not in NIGHANTU:
         bad(f"nighantu_ref.text must be one of {NIGHANTU}, got {ref.get('text')!r}")
-    if not (ref.get("varga") or "").strip():
+    varga = (ref.get("varga") or "").strip()
+    if not varga:
         bad("nighantu_ref needs a varga so a reviewer can find the entry")
+    # An extrapolation has to show its reasoning, or it is a citation-shaped guess —
+    # which is what the generator produced for every modern food.
+    if ref["text"] == "modern_extrapolated" and len(varga) < 25:
+        bad("modern_extrapolated needs the basis of the extrapolation in `varga` "
+            f"(the dravya it is reasoned from, and why) — got {varga!r}")
 
     if food.get("reviewed") is not False:
         bad("reviewed must be False — nothing here has been seen by a Vaidya")
