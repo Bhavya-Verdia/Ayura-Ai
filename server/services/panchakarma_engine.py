@@ -736,18 +736,46 @@ def _validate_karma_safety(pradhana: dict, medical_history: list[str],
 # was then handed a seven-stage Samsarjana Krama opening on Peya — a 1:14 rice-water
 # fast — with no part of the plan acknowledging the answer.
 #
-# Which rows belong to which Karma. `basti_matra` is the home adaptation of Basti
-# and shares its row; the mapping is here rather than derived from the id prefix
-# because `basti_niruha` and `basti_anuvasana` are two halves of one course while
-# `basti_home` is a different therapy that happens to share the stem.
-_KARMA_ROWS: dict[str, tuple[str, ...]] = {
-    "vamana":        ("vamana",),
-    "virechana":     ("virechana_clinic", "virechana_home"),
-    "basti":         ("basti_niruha", "basti_anuvasana"),
-    "basti_matra":   ("basti_home",),
-    "nasya":         ("nasya_clinic", "nasya_home"),
-    "raktamokshana": ("raktamokshana",),
+# Which Karma courses each row belongs to, and its inverse: which rows deliver a
+# Karma. `basti_matra` is the home adaptation of Basti and shares its stem; the
+# mapping cannot be taken from the id prefix, because `basti_niruha` and
+# `basti_anuvasana` are two halves of one course while `basti_home` is a different
+# therapy that happens to start with the same word.
+#
+# Both maps are now derived from the `karma` tag every row in
+# `panchakarma_therapies.json` carries, rather than restated here. A hand-written
+# copy of the KB beside the KB is a copy that drifts from it, and this one governs
+# which Karmas the capability gate can withdraw.
+#
+# Read from the bundled file by id, never from the row the schedule was built
+# from. In production the route hands the engine `kb_cache.panchakarma_protocols`
+# out of Mongo, and a Mongo collection seeded before this tag existed carries rows
+# with no `karma` at all — taking the tag off those rows would switch the whole
+# mechanism off silently, the exact failure `_therapy_contraindications` avoids by
+# reading `panchakarma_clinical.json` by id for the same reason.
+_ROW_KARMA: dict[str, tuple[str, ...]] = {
+    t["id"]: tuple(t.get("karma") or ()) for t in pk_therapies
 }
+
+
+def _derive_karma_rows() -> dict[str, tuple[str, ...]]:
+    """Karma -> the Pradhana rows that deliver it, in knowledge-base order.
+
+    Only `phase: pradhana` rows deliver a Karma. A Purvakarma or Paschat row also
+    carries `karma`, but it names the courses it *supports* — Abhyanga belongs to
+    all six and delivers none of them, and letting it into this map would tell the
+    capability gate that oil massage is a route to Vamana.
+    """
+    out: dict[str, list[str]] = {}
+    for t in pk_therapies:
+        if t.get("phase") != "pradhana":
+            continue
+        for karma in t.get("karma") or ():
+            out.setdefault(karma, []).append(t["id"])
+    return {k: tuple(v) for k, v in out.items()}
+
+
+_KARMA_ROWS: dict[str, tuple[str, ...]] = _derive_karma_rows()
 
 _DIET_RANK = {"lifestyle_only": 0, "partial": 1, "strict": 2}
 
@@ -1971,7 +1999,8 @@ def _triage_dosha_signals(condition_triage: dict | None) -> list[tuple[str, str]
 
 
 def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list, vikriti_dom=None,
-                               triage_doshas: list[tuple[str, str]] | None = None):
+                               triage_doshas: list[tuple[str, str]] | None = None,
+                               pradhana_karma: str | None = None):
     scored = []
     dominant = vikriti_dom or user_profile.get("dominant_dosha", "vata") or "vata"
     setting   = pk_prefs.get("setting", "home")
@@ -2063,6 +2092,24 @@ def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list,
                 score += 1
                 t = {**t, "triage_dosha_match": td}
                 break
+
+        # The Karma the plan is building toward. Purvakarma and Paschat rows are
+        # not interchangeable across routes: Snehapana is the mandatory oleation of
+        # Vamana and Virechana and no part of a Basti or Nasya course, Samsarjana
+        # Krama re-enters a Koshtha only some routes empty, Udvartana is the
+        # Kapha-directed Rukshana that belongs to Vamana. Until the rows carried
+        # `karma` the pool had no way to tell, so it was ordered by Dosha, goal and
+        # preference alone and a Nasya patient was prepared exactly like a Vamana
+        # patient.
+        #
+        # +1, the same weight the triage Dosha carries and for the same reason: it
+        # reorders the pool, it does not decide it. Belonging to the right course
+        # must not lift a therapy that aggravates the vitiated Dosha (-2) above one
+        # that pacifies it (+2). A Shamana plan passes no Karma, because it
+        # performs none and there is nothing to prepare for.
+        if pradhana_karma and pradhana_karma in _ROW_KARMA.get(t["id"], ()):
+            score += 1
+            t = {**t, "karma_match": pradhana_karma}
 
         scored.append((score, t))
 
@@ -2681,9 +2728,18 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         purva_days, pradhana_days, paschat_days = 0, 0, sd["brimhana"]
     else:
         purva_pool   = filter_and_score_therapies(user_profile, pk_prefs, "purvakarma", pkt,
-                                                  vikriti_dom, triage_doshas)
+                                                  vikriti_dom, triage_doshas,
+                                                  pradhana_karma=pradhana["primary"])
+        # The Paschat pool takes the Karma for the same reason, but be clear about
+        # what that buys today: the only rows its ordering moves are the two
+        # Samsarjana rows, and `paschat_rest` below strips those out because the
+        # staged Samsarjana action replaces them. The remaining three — Rasayana,
+        # Yoga Nidra, Pranayama — belong to all six Karmas, so nothing reorders. It
+        # is passed because the tag means the same thing on both phases, not because
+        # a schedule visibly changes.
         paschat_pool = filter_and_score_therapies(user_profile, pk_prefs, "paschat",    pkt,
-                                                  vikriti_dom, triage_doshas)
+                                                  vikriti_dom, triage_doshas,
+                                                  pradhana_karma=pradhana["primary"])
         # No `pradhana` pool: that phase's content is the pinned Karma action, and
         # drawing a pool for it is what let an empty pool delete the cleanse day.
 

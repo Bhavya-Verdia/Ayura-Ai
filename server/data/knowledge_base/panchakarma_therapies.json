@@ -21,7 +21,17 @@
       "Relieves fatigue",
       "Pacifies Vata",
       "Improves sleep"
-    ]
+    ],
+    "karma": [
+      "vamana",
+      "virechana",
+      "basti",
+      "basti_matra",
+      "nasya",
+      "raktamokshana"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Bahya Snehana. External oleation opens every Purvakarma (CS Sutrasthana 13, AH Sutrasthana 2), and Sushruta prescribes Snehana then Swedana of the part before Siravyadha (SS Sharirasthana 8) — so it belongs to all six routes, including the two that take no internal oleation."
   },
   {
     "id": "abhyanga_clinic",
@@ -42,7 +52,17 @@
     "benefits": [
       "Deep tissue release",
       "Mobilizes toxins"
-    ]
+    ],
+    "karma": [
+      "vamana",
+      "virechana",
+      "basti",
+      "basti_matra",
+      "nasya",
+      "raktamokshana"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Bahya Snehana. External oleation opens every Purvakarma (CS Sutrasthana 13, AH Sutrasthana 2), and Sushruta prescribes Snehana then Swedana of the part before Siravyadha (SS Sharirasthana 8) — so it belongs to all six routes, including the two that take no internal oleation."
   },
   {
     "id": "swedana_home",
@@ -65,7 +85,17 @@
     "benefits": [
       "Opens pores",
       "Liquefies toxins"
-    ]
+    ],
+    "karma": [
+      "vamana",
+      "virechana",
+      "basti",
+      "basti_matra",
+      "nasya",
+      "raktamokshana"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Swedana follows Snehana in every Purvakarma and is what opens the Srotas the oil has loosened (CS Sutrasthana 14). Basti is preceded by local abdominal and lumbar Swedana, Nasya by Nadi Sweda of the face and neck, Siravyadha by Swedana of the part (SS Sharirasthana 8) — all six routes."
   },
   {
     "id": "bashpa_sweda_clinic",
@@ -86,7 +116,17 @@
     "benefits": [
       "Deep vasodilation",
       "Cellular toxin release"
-    ]
+    ],
+    "karma": [
+      "vamana",
+      "virechana",
+      "basti",
+      "basti_matra",
+      "nasya",
+      "raktamokshana"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Swedana follows Snehana in every Purvakarma and is what opens the Srotas the oil has loosened (CS Sutrasthana 14). Basti is preceded by local abdominal and lumbar Swedana, Nasya by Nadi Sweda of the face and neck, Siravyadha by Swedana of the part (SS Sharirasthana 8) — all six routes."
   },
   {
     "id": "snehapana_home",
@@ -108,7 +148,13 @@
     "benefits": [
       "Lubricates GI tract",
       "Binds fat-soluble toxins"
-    ]
+    ],
+    "karma": [
+      "vamana",
+      "virechana"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Abhyantara Snehana titrated to Samyak Snigdha is the mandatory Purvakarma of Vamana and Virechana (CS Sutrasthana 13, CS Kalpasthana 1). It is deliberately NOT tagged to the other four: Basti's own Purvakarma is Abhyanga plus Swedana and its internal oleation is delivered as Anuvasana rather than as Snehapana, while Nasya and Raktamokshana take no internal oleation at all."
   },
   {
     "id": "snehapana_clinic",
@@ -128,7 +174,13 @@
     "herb_requirement": "specific_ayurvedic",
     "benefits": [
       "Deep cellular binding of ama"
-    ]
+    ],
+    "karma": [
+      "vamana",
+      "virechana"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Abhyantara Snehana titrated to Samyak Snigdha is the mandatory Purvakarma of Vamana and Virechana (CS Sutrasthana 13, CS Kalpasthana 1). It is deliberately NOT tagged to the other four: Basti's own Purvakarma is Abhyanga plus Swedana and its internal oleation is delivered as Anuvasana rather than as Snehapana, while Nasya and Raktamokshana take no internal oleation at all."
   },
   {
     "id": "shirodhara",
@@ -149,7 +201,12 @@
     "benefits": [
       "Profound stress relief",
       "Balances nervous system"
-    ]
+    ],
+    "karma": [
+      "nasya"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Murdha Taila — oleation of the head (AH Sutrasthana 22). As the preparation of a Karma's own course it belongs to the Urdhvanga route, which is Nasya. It remains schedulable in every other plan as a goal-weighted adjunct; this tag says which course it is part of, not where it is allowed."
   },
   {
     "id": "udvartana",
@@ -171,7 +228,12 @@
       "Reduces cellulite",
       "Stimulates lymphatic system",
       "Pacifies Kapha"
-    ]
+    ],
+    "karma": [
+      "vamana"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Udvartana is Rukshana — dry, Kapha-hara, Medohara (AH Sutrasthana 2). The Kapha-directed course is Vamana. It is not tagged to the oleation-led routes because Ruksha therapy works against the Snigdha state they are prepared into."
   },
   {
     "id": "udvartana_home",
@@ -193,7 +255,12 @@
     "benefits": [
       "Lymphatic drainage",
       "Invigorating"
-    ]
+    ],
+    "karma": [
+      "vamana"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Udvartana is Rukshana — dry, Kapha-hara, Medohara (AH Sutrasthana 2). The Kapha-directed course is Vamana. It is not tagged to the oleation-led routes because Ruksha therapy works against the Snigdha state they are prepared into."
   },
   {
     "id": "vamana",
@@ -219,7 +286,11 @@
       "nursing"
     ],
     "contraindications_reviewed": false,
-    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed.",
+    "karma": [
+      "vamana"
+    ],
+    "karma_basis": "Identity, not a clinical indication: this row performs the named Karma. `basti_home` carries `basti_matra` rather than `basti` because Matra Basti is the mild retained-oil home route, a different therapy from the Niruha plus Anuvasana course that `basti_niruha` and `basti_anuvasana` deliver together. No `karma_reviewed` flag — there is nothing here for a Vaidya to review."
   },
   {
     "id": "virechana_clinic",
@@ -245,7 +316,11 @@
       "nursing"
     ],
     "contraindications_reviewed": false,
-    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed.",
+    "karma": [
+      "virechana"
+    ],
+    "karma_basis": "Identity, not a clinical indication: this row performs the named Karma. `basti_home` carries `basti_matra` rather than `basti` because Matra Basti is the mild retained-oil home route, a different therapy from the Niruha plus Anuvasana course that `basti_niruha` and `basti_anuvasana` deliver together. No `karma_reviewed` flag — there is nothing here for a Vaidya to review."
   },
   {
     "id": "virechana_home",
@@ -267,7 +342,11 @@
     "benefits": [
       "Gentle bowel cleanse",
       "Safe for home use"
-    ]
+    ],
+    "karma": [
+      "virechana"
+    ],
+    "karma_basis": "Identity, not a clinical indication: this row performs the named Karma. `basti_home` carries `basti_matra` rather than `basti` because Matra Basti is the mild retained-oil home route, a different therapy from the Niruha plus Anuvasana course that `basti_niruha` and `basti_anuvasana` deliver together. No `karma_reviewed` flag — there is nothing here for a Vaidya to review."
   },
   {
     "id": "basti_niruha",
@@ -294,7 +373,11 @@
       "nursing"
     ],
     "contraindications_reviewed": false,
-    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed.",
+    "karma": [
+      "basti"
+    ],
+    "karma_basis": "Identity, not a clinical indication: this row performs the named Karma. `basti_home` carries `basti_matra` rather than `basti` because Matra Basti is the mild retained-oil home route, a different therapy from the Niruha plus Anuvasana course that `basti_niruha` and `basti_anuvasana` deliver together. No `karma_reviewed` flag — there is nothing here for a Vaidya to review."
   },
   {
     "id": "basti_anuvasana",
@@ -321,7 +404,11 @@
       "nursing"
     ],
     "contraindications_reviewed": false,
-    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed.",
+    "karma": [
+      "basti"
+    ],
+    "karma_basis": "Identity, not a clinical indication: this row performs the named Karma. `basti_home` carries `basti_matra` rather than `basti` because Matra Basti is the mild retained-oil home route, a different therapy from the Niruha plus Anuvasana course that `basti_niruha` and `basti_anuvasana` deliver together. No `karma_reviewed` flag — there is nothing here for a Vaidya to review."
   },
   {
     "id": "basti_home",
@@ -348,7 +435,11 @@
       "nursing"
     ],
     "contraindications_reviewed": false,
-    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed.",
+    "karma": [
+      "basti_matra"
+    ],
+    "karma_basis": "Identity, not a clinical indication: this row performs the named Karma. `basti_home` carries `basti_matra` rather than `basti` because Matra Basti is the mild retained-oil home route, a different therapy from the Niruha plus Anuvasana course that `basti_niruha` and `basti_anuvasana` deliver together. No `karma_reviewed` flag — there is nothing here for a Vaidya to review."
   },
   {
     "id": "nasya_clinic",
@@ -375,7 +466,11 @@
       "nursing"
     ],
     "contraindications_reviewed": false,
-    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed.",
+    "karma": [
+      "nasya"
+    ],
+    "karma_basis": "Identity, not a clinical indication: this row performs the named Karma. `basti_home` carries `basti_matra` rather than `basti` because Matra Basti is the mild retained-oil home route, a different therapy from the Niruha plus Anuvasana course that `basti_niruha` and `basti_anuvasana` deliver together. No `karma_reviewed` flag — there is nothing here for a Vaidya to review."
   },
   {
     "id": "nasya_home",
@@ -403,7 +498,11 @@
       "nursing"
     ],
     "contraindications_reviewed": false,
-    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed.",
+    "karma": [
+      "nasya"
+    ],
+    "karma_basis": "Identity, not a clinical indication: this row performs the named Karma. `basti_home` carries `basti_matra` rather than `basti` because Matra Basti is the mild retained-oil home route, a different therapy from the Niruha plus Anuvasana course that `basti_niruha` and `basti_anuvasana` deliver together. No `karma_reviewed` flag — there is nothing here for a Vaidya to review."
   },
   {
     "id": "raktamokshana",
@@ -429,7 +528,11 @@
       "nursing"
     ],
     "contraindications_reviewed": false,
-    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed."
+    "contraindications_basis": "Shodhana is contraindicated in pregnancy and lactation — the rule panchakarma_engine already applies. Added so the data agrees with the engine; NOT a complete contraindication list and not clinically reviewed.",
+    "karma": [
+      "raktamokshana"
+    ],
+    "karma_basis": "Identity, not a clinical indication: this row performs the named Karma. `basti_home` carries `basti_matra` rather than `basti` because Matra Basti is the mild retained-oil home route, a different therapy from the Niruha plus Anuvasana course that `basti_niruha` and `basti_anuvasana` deliver together. No `karma_reviewed` flag — there is nothing here for a Vaidya to review."
   },
   {
     "id": "samsarjana_krama_strict",
@@ -450,7 +553,15 @@
     "herb_requirement": "readily_available",
     "benefits": [
       "Reignites Agni safely after deep cleanse"
-    ]
+    ],
+    "karma": [
+      "vamana",
+      "virechana",
+      "basti",
+      "basti_matra"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Samsarjana Krama is the graded dietary re-entry from a Koshtha emptied by Shodhana (CS Sutrasthana 15). Nasya and Raktamokshana empty no Koshtha and take none — the same line `_samsarjana_krama` in the engine already draws."
   },
   {
     "id": "samsarjana_krama_mild",
@@ -473,7 +584,15 @@
     "benefits": [
       "Gives digestion a rest",
       "Nourishing"
-    ]
+    ],
+    "karma": [
+      "vamana",
+      "virechana",
+      "basti",
+      "basti_matra"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Samsarjana Krama is the graded dietary re-entry from a Koshtha emptied by Shodhana (CS Sutrasthana 15). Nasya and Raktamokshana empty no Koshtha and take none — the same line `_samsarjana_krama` in the engine already draws."
   },
   {
     "id": "rasayana_herbs",
@@ -496,7 +615,17 @@
     "benefits": [
       "Tissue rejuvenation",
       "Immunity building"
-    ]
+    ],
+    "karma": [
+      "vamana",
+      "virechana",
+      "basti",
+      "basti_matra",
+      "nasya",
+      "raktamokshana"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Rasayana follows every completed Shodhana, whichever Karma was performed (CS Chikitsasthana 1.1) — the emptied and rekindled body is the field Rasayana is given into."
   },
   {
     "id": "yoga_nidra",
@@ -519,7 +648,17 @@
     "benefits": [
       "Nervous system reset",
       "Integration of detox"
-    ]
+    ],
+    "karma": [
+      "vamana",
+      "virechana",
+      "basti",
+      "basti_matra",
+      "nasya",
+      "raktamokshana"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Paschat Karma rest. CS Sutrasthana 15 closes every Shodhana with Ashwasana — rest, no exertion, no suppression of natural urges — regardless of route, so this belongs to all six."
   },
   {
     "id": "gentle_pranayama",
@@ -542,6 +681,16 @@
     "benefits": [
       "Restores Prana",
       "Balances nadis"
-    ]
+    ],
+    "karma": [
+      "vamana",
+      "virechana",
+      "basti",
+      "basti_matra",
+      "nasya",
+      "raktamokshana"
+    ],
+    "karma_reviewed": false,
+    "karma_basis": "Paschat Karma rest. CS Sutrasthana 15 closes every Shodhana with Ashwasana — rest, no exertion, no suppression of natural urges — regardless of route, so this belongs to all six."
   }
 ]
