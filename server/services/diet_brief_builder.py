@@ -576,11 +576,23 @@ def flag_allergens(weekly_plan: dict, allergies: list[str], intolerances: list[s
     for day_data in weekly_plan.values():
         if not isinstance(day_data, dict):
             continue
-        for meal_key in ("breakfast", "lunch", "snack", "dinner"):
+        # The daily drink is scanned here too. It had its own copy of the four-slot
+        # list, so the badge `DietView` renders on an unsafe meal could never appear
+        # on an unsafe drink.
+        for meal_key in ("breakfast", "lunch", "snack", "dinner", "special_drink"):
             meal = day_data.get(meal_key)
             if not isinstance(meal, dict):
                 continue
-            text = (meal.get("meal_name", "") + " " + " ".join(meal.get("key_ingredients", []))).lower()
+            # A drink names its contents in `name` + `recipe`; a meal in
+            # `meal_name` + `key_ingredients`. Read both shapes rather than
+            # duplicating the slot list again.
+            text = " ".join([
+                str(meal.get("meal_name", "")),
+                str(meal.get("name", "")),
+                str(meal.get("description", "")),
+                str(meal.get("recipe", "")),
+                " ".join(meal.get("key_ingredients", []) or []),
+            ]).lower()
             found = [t for t in allergen_terms if _term_in_text(t, text)]
             if found:
                 meal["allergen_warning"] = True

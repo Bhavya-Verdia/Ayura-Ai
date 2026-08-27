@@ -61,6 +61,38 @@ ALLERGEN_TERMS: dict[str, list[str]] = {
              "sardine", "surmai", "bangda"],
     "sesame": ["sesame", "til", "tahini", "gingelly"],
     "mustard": ["mustard", "sarson", "rai"],
+
+    # ── Intolerances ──────────────────────────────────────────────────────────
+    # `DietPreferences.food_intolerances` declares exactly four values —
+    # lactose / fructose / histamine / fodmap — and not one of them had an entry
+    # here. `flag_allergens` and `apply_ahara_safety` both resolve an unknown key
+    # with `ALLERGEN_TERMS.get(key, [key])`, so each fell back to searching meal
+    # text for its own literal name: a lactose-intolerant patient was scanned for
+    # the word "lactose", which no meal has ever contained. All four were declared,
+    # sent to the LLM as a hard constraint, and enforced by nothing — measured on a
+    # day of Paneer Paratha, Mango Lassi and Kheer, which returned
+    # `allergen_safe: True`.
+    #
+    # AUTHORED, NOT CLINICALLY REVIEWED. These lists are a food-safety floor, not a
+    # diagnosis, and they flag rather than remove — the same contract the allergy
+    # terms above keep.
+    "lactose": ["milk", "curd", "yogurt", "yoghurt", "cream", "paneer", "cheese",
+                "lassi", "buttermilk", "kheer", "raita", "mawa", "khoa", "dahi",
+                "payasam", "ice cream", "condensed milk"],
+    # Ghee is deliberately absent: clarified butter is all but lactose-free, and
+    # Ayurveda treats it as a distinct dravya from dugdha. Listing it would flag the
+    # one dairy the classical texts prescribe most and train the user to ignore the
+    # warning.
+    "fructose": ["honey", "high fructose", "corn syrup", "agave", "mango", "apple",
+                 "pear", "watermelon", "cherries", "dates", "raisin", "fig", "anjeer",
+                 "jaggery", "fruit juice", "sugar"],
+    "histamine": ["fermented", "idli", "dosa", "dhokla", "pickle", "achar", "vinegar",
+                  "aged cheese", "cheese", "curd", "yogurt", "dahi", "kombucha",
+                  "soy sauce", "leftover", "tomato", "spinach", "brinjal", "eggplant"],
+    "fodmap": ["wheat", "atta", "roti", "chapati", "onion", "garlic", "rajma",
+               "chole", "chickpea", "kidney bean", "cabbage", "cauliflower", "milk",
+               "curd", "apple", "pear", "mango", "watermelon", "honey", "cashew",
+               "pistachio"],
 }
 
 # ── Viruddha Ahara rules ──────────────────────────────────────────────────────
@@ -138,8 +170,15 @@ def _meal_text(meal) -> str:
     if isinstance(meal, dict):
         parts = [
             str(meal.get("meal_name", "")),
-            str(meal.get("name", "")),          # rule-engine food items use 'name'
+            str(meal.get("name", "")),          # rule-engine food items AND drinks use 'name'
             str(meal.get("description", "")),
+            # A special drink states its contents in `recipe` ("warm cow's milk with
+            # soaked almonds"), which is the only place its ingredients appear — it
+            # has no key_ingredients list. `rationale` and `when` are deliberately
+            # NOT read: they are explanatory prose, and a note reading "avoids dairy"
+            # would flag the very drink that avoids it. Same line `ayurvedic_note`
+            # sits on the wrong side of for meals.
+            str(meal.get("recipe", "")),
             " ".join(meal.get("key_ingredients", []) or []),
         ]
         return _norm(" ".join(parts))
@@ -180,6 +219,22 @@ def scan_meal_for_viruddha(meal, slot: str) -> list[dict]:
 
 _MEAL_SLOTS = ("breakfast", "lunch", "snack", "dinner")
 
+# The daily drink is a fifth consumed item and was in none of the three scans.
+# `SYSTEM_PROMPT` rule 9 in `diet_llm_generator` makes it mandatory — "Include a
+# special Ayurvedic drink ... for each day" — so it appears on every day of every
+# LLM plan, `DietView` renders its name, timing, recipe and rationale, and until now
+# `_collect_meal_units` returned only the four meal slots.
+#
+# The measured consequence: a patient declaring dairy AND tree-nut allergies could be
+# prescribed "Badam Milk with Saffron — warm cow's milk with soaked almonds" at
+# bedtime for 28 days, on a plan reporting `allergen_safe: True` with zero alerts.
+# Milk plus a sour Kashaya is Viruddha Ahara by the same silence.
+#
+# It is a slot rather than a special case so that all three scans — allergen,
+# Viruddha and condition-Apathya — pick it up from the one collector they share.
+_DRINK_SLOT = "special_drink"
+_CONSUMED_SLOTS = _MEAL_SLOTS + (_DRINK_SLOT,)
+
 
 def _collect_meal_units(plan: dict) -> list[tuple[str, str, str, object]]:
     """Flatten every meal across ALL diet plan shapes into
@@ -193,7 +248,7 @@ def _collect_meal_units(plan: dict) -> list[tuple[str, str, str, object]]:
         for day_label, day_data in daily.items():
             if not isinstance(day_data, dict):
                 continue
-            for slot in _MEAL_SLOTS:
+            for slot in _CONSUMED_SLOTS:
                 if day_data.get(slot) is not None:
                     units.append((week_label, str(day_label), slot, day_data.get(slot)))
 
@@ -353,6 +408,26 @@ _CONDITION_APATHYA_TERMS: dict[str, dict] = {
         "reason": "Heavy / gas-forming — aggravate Grahani.",
         "terms": ["deep fried", "rajma", "chole", "raw salad", "cabbage"],
     },
+    # Pregnancy is not a `medical_history` entry — it arrives as the separate
+    # `pregnancy_or_nursing` flag on the profile, so it reached this table through no
+    # route at all. `build_brief` does list the abortifacient risks to the model as a
+    # hard constraint ("absolutely avoid: papaya (raw/ripe), pineapple, excess
+    # fenugreek seeds, excess aloe vera ...") — and nothing checked the answer, which
+    # is the one thing this module exists to stop. Of the four gaps found together
+    # this is the one whose failure is not an allergy but a pregnancy loss.
+    #
+    # AUTHORED, NOT CLINICALLY REVIEWED. Terms are kept specific enough to stay
+    # believable: a floor that flags every meal teaches the user to scroll past it.
+    "pregnancy": {
+        "name": "Pregnancy / nursing (Garbhini)",
+        "reason": (
+            "Garbhini Paricharya bars uterine stimulants and sharp purgatives; "
+            "raw papaya (papain) and aloe (anthraquinone) are the classical examples."
+        ),
+        "terms": ["papaya", "pineapple", "aloe vera", "fenugreek", "methi seeds",
+                  "unpasteurised", "unpasteurized", "raw milk", "alcohol", "wine",
+                  "liver", "ajwain water"],
+    },
 }
 
 # Normalise common variants to the keys above (mirrors diet COND_ALIASES so this
@@ -470,8 +545,86 @@ async def classify_condition_apathya_llm(conditions: list[str]) -> dict[str, dic
     return out
 
 
+# ── Dietary type ──────────────────────────────────────────────────────────────
+# `DietPreferences.dietary_type` is annotated in the schema as "CRITICAL, filters
+# entire food selection". On the rule-engine path it does filter — one line, and
+# only for `vegan`. On the LLM-primary path that actually serves users it was a
+# sentence in the prompt: "Dietary type: vegetarian (STRICTLY honour ...)". Nothing
+# read the generated plan back. The field the schema calls critical was enforced by
+# asking the model politely, which is the arrangement `apply_ahara_safety` was
+# written to end for allergies and never extended to cover.
+_DIET_TYPE_FORBIDDEN: dict[str, list[str]] = {
+    "vegetarian":     ["chicken", "mutton", "lamb", "beef", "pork", "meat", "fish",
+                       "prawn", "shrimp", "crab", "egg", "omelette", "omelet", "keema",
+                       "gelatin", "bacon", "ham"],
+    "eggetarian":     ["chicken", "mutton", "lamb", "beef", "pork", "meat", "fish",
+                       "prawn", "shrimp", "crab", "keema", "gelatin", "bacon", "ham"],
+    "pescatarian":    ["chicken", "mutton", "lamb", "beef", "pork", "keema",
+                       "gelatin", "bacon", "ham"],
+    "vegan":          ["chicken", "mutton", "lamb", "beef", "pork", "meat", "fish",
+                       "prawn", "shrimp", "crab", "egg", "omelette", "omelet", "keema",
+                       "gelatin", "bacon", "ham",
+                       "milk", "curd", "yogurt", "yoghurt", "ghee", "butter", "cream",
+                       "paneer", "cheese", "lassi", "buttermilk", "kheer", "raita",
+                       "mawa", "khoa", "dahi", "honey"],
+    # `non_vegetarian` forbids nothing and is absent deliberately — an empty entry
+    # here would read as "unchecked" rather than "nothing to check".
+}
+
+
+def apply_dietary_type_safety(plan: dict, dietary_type: str | None) -> dict:
+    """Flag any meal or drink that contradicts the declared dietary type.
+
+    Adds:
+      plan["dietary_type_alerts"] → plan-level list of {week, day, meal_slot, food}
+      plan["dietary_type_safe"]   → bool
+      per-meal: meal["dietary_type_warnings"]
+
+    Flags rather than removes, like every other scan in this module: deleting the
+    dinner from a day leaves the patient with no dinner, and a plan that silently
+    drops meals is harder to notice than one that says what is wrong with them.
+    """
+    try:
+        dtype = (dietary_type or "vegetarian").strip().lower()
+        forbidden = _DIET_TYPE_FORBIDDEN.get(dtype)
+        if not forbidden:
+            plan["dietary_type_safe"] = True
+            plan["dietary_type_alerts"] = []
+            plan["dietary_type_checked"] = True
+            return plan
+
+        alerts: list[dict] = []
+        for week_label, day_label, slot, meal in _collect_meal_units(plan):
+            text = _meal_text(meal)
+            if not text:
+                continue
+            hits = [t for t in forbidden if _term_in_text(t, text)]
+            if not hits:
+                continue
+            for term in hits:
+                alerts.append({
+                    "week": week_label, "day": day_label, "meal_slot": slot,
+                    "food": term, "dietary_type": dtype,
+                    "message": (
+                        f"{week_label} {day_label} {slot}: contains '{term}', which is "
+                        f"not {dtype.replace('_', ' ')}. Substitute before following this meal."
+                    ),
+                })
+            if isinstance(meal, dict):
+                meal["dietary_type_warnings"] = hits
+                meal["requires_substitution"] = True
+
+        plan["dietary_type_alerts"] = alerts
+        plan["dietary_type_safe"] = (len(alerts) == 0)
+        plan["dietary_type_checked"] = True
+    except Exception:
+        plan["dietary_type_checked"] = False
+    return plan
+
+
 def apply_condition_food_safety(
     plan: dict, medical_history: list[str], extra_terms: dict | None = None,
+    pregnant: bool = False,
 ) -> dict:
     """Flag foods classically contraindicated for the user's conditions.
 
@@ -493,6 +646,12 @@ def apply_condition_food_safety(
             proto = _CONDITION_APATHYA_TERMS.get(canon) or extra_terms.get(canon)
             if proto:
                 active[canon] = proto
+        # `pregnancy_or_nursing` is a profile flag, not a history entry, so it has to
+        # be added here or it reaches the scan by no route. A user who typed
+        # "pregnancy" into their history keeps working through the loop above; this
+        # covers the ones who answered the question the app actually asks.
+        if pregnant:
+            active["pregnancy"] = _CONDITION_APATHYA_TERMS["pregnancy"]
         if not active:
             plan["condition_food_safe"] = True
             plan["condition_safety_alerts"] = []

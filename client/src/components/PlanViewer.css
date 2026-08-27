@@ -4202,14 +4202,22 @@
 .diet-allergen-warning {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #c0392b;
-  background: #fdecea;
+  /* Was a hardcoded #c0392b on #fdecea — a light-mode-only pair on a surface whose
+     whole job is to be read. It now uses the same alpha treatment as
+     .diet-safety-card.allergen, which resolves against the card in both themes. */
+  color: var(--ayura-rose);
+  background: rgba(229, 115, 115, 0.14);
   border-radius: 6px 6px 0 0;
   padding: 0.3rem 0.75rem;
   letter-spacing: 0.01em;
 }
-.diet-meal-card.has-allergen {
-  border-color: #e57373;
+.diet-allergen-warning + .diet-allergen-warning {
+  border-radius: 0;
+  border-top: 1px solid rgba(229, 115, 115, 0.28);
+}
+.diet-meal-card.has-allergen,
+.diet-drink-card.has-allergen {
+  border-color: rgba(229, 115, 115, 0.55);
 }
 
 /* ── Deterministic Ahara safety banner ── */
