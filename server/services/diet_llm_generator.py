@@ -290,9 +290,14 @@ async def generate_diet_plan_llm(
 
         # Deterministic Ahara safety layer (Viruddha + allergens, all 4 weeks)
         from services.ahara_safety import (
-            apply_ahara_safety, apply_condition_food_safety, classify_condition_apathya_llm,
+            apply_ahara_safety, apply_condition_food_safety, apply_dietary_type_safety,
+            classify_condition_apathya_llm,
         )
         result = apply_ahara_safety(result, allergies, intolerances)
+        # The declared dietary type, checked rather than requested. Until now the
+        # only thing standing between a vegetarian and a chicken curry was a line in
+        # the prompt.
+        result = apply_dietary_type_safety(result, diet_prefs.get("dietary_type"))
         # Condition-contraindicated food floor — enforce each condition's Apathya
         # deterministically instead of trusting the LLM to have honoured it. Rare /
         # uncurated conditions get their Apathya classified by the LLM first, so the
@@ -302,7 +307,10 @@ async def generate_diet_plan_llm(
         # Only classify conditions with no curated hint — curated ones are vetted
         # and must not be overwritten by an LLM guess.
         _extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(_conds))
-        result = apply_condition_food_safety(result, _conds, extra_terms=_extra_apathya)
+        result = apply_condition_food_safety(
+            result, _conds, extra_terms=_extra_apathya,
+            pregnant=bool(user_profile.get("pregnancy_or_nursing")),
+        )
 
         return result
 

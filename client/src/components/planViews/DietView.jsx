@@ -46,6 +46,11 @@ function LLMMealCard({ mealName, meal }) {
           Allergen detected: {meal.allergen_terms?.join(', ')}
         </div>
       )}
+      {meal.dietary_type_warnings?.length > 0 && (
+        <div className="diet-allergen-warning">
+          Does not match your dietary type: {meal.dietary_type_warnings.join(', ')}
+        </div>
+      )}
       <h3 className="diet-meal-heading">
         <button
           type="button"
@@ -163,12 +168,13 @@ function DietSafetyBanner({ plan }) {
   const alerts = plan.safety_alerts || []
   const viruddha = plan.viruddha_ahara_detected || []
   const condAlerts = plan.condition_safety_alerts || []
+  const dietTypeAlerts = plan.dietary_type_alerts || []
 
-  if (!alerts.length && !viruddha.length && !condAlerts.length) {
+  if (!alerts.length && !viruddha.length && !condAlerts.length && !dietTypeAlerts.length) {
     return (
       <div className="diet-safety-ok">
         <ShieldCheck size={13} />
-        <span>Checked for allergens, incompatible combinations (Viruddha Ahara) &amp; condition-contraindicated foods — none found.</span>
+        <span>Every meal and daily drink checked for allergens, intolerances, incompatible combinations (Viruddha Ahara), condition-contraindicated foods &amp; your dietary type — none found.</span>
       </div>
     )
   }
@@ -197,6 +203,20 @@ function DietSafetyBanner({ plan }) {
             {condAlerts.map((c, i) => (
               <li key={i}>
                 <strong>{c.week} · {c.day} · {c.meal_slot}</strong>: contains {c.food} — {c.condition}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {dietTypeAlerts.length > 0 && (
+        <div className="diet-safety-card allergen">
+          <h3 className="diet-safety-title">
+            <TriangleAlert size={13} /> Does not match your dietary type — substitute before following these meals
+          </h3>
+          <ul className="diet-safety-list">
+            {dietTypeAlerts.map((d, i) => (
+              <li key={i}>
+                <strong>{d.week} · {d.day} · {d.meal_slot}</strong>: contains {d.food} — not {(d.dietary_type || '').replace(/_/g, ' ')}
               </li>
             ))}
           </ul>
@@ -493,7 +513,24 @@ export function DietView({ plan }) {
 
       {/* ── Special Ayurvedic drink (LLM, week 1 full detail only) ── */}
       {isLLM && dayData.special_drink && (!isMultiWeek || activeWeek === 0) && (
-        <div className="diet-drink-card">
+        <div className={`diet-drink-card${dayData.special_drink.allergen_warning || dayData.special_drink.requires_substitution ? ' has-allergen' : ''}`}>
+          {/* The drink is consumed like any meal and is scanned like one. Its
+              warnings were invisible here while the scans could not see it. */}
+          {dayData.special_drink.allergen_warning && (
+            <div className="diet-allergen-warning">
+              Allergen detected: {dayData.special_drink.allergen_terms?.join(', ')}
+            </div>
+          )}
+          {dayData.special_drink.condition_warnings?.length > 0 && (
+            <div className="diet-allergen-warning">
+              Not advised for your conditions: {dayData.special_drink.condition_warnings.map(w => w.food).join(', ')}
+            </div>
+          )}
+          {dayData.special_drink.dietary_type_warnings?.length > 0 && (
+            <div className="diet-allergen-warning">
+              Not {us.dietary_type?.replace(/_/g, ' ')}: {dayData.special_drink.dietary_type_warnings.join(', ')}
+            </div>
+          )}
           <div className="diet-drink-header">
             <CupSoda size={13} className="diet-drink-icon" />
             <span className="diet-drink-name">{dayData.special_drink.name}</span>
