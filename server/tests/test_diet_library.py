@@ -190,3 +190,77 @@ def test_coverage_is_honest_about_how_much_is_still_derived():
     assert done, "no authored food matches an id in the knowledge base"
     assert todo, "coverage claims the library is complete — check the gate"
     assert len(done) + len(todo) == 150
+
+
+# ── The library as it grows ───────────────────────────────────────────────────
+
+def test_every_authored_row_validates_and_ids_are_unique():
+    """`library()` re-validates rather than trusting `spec.F`, because a tranche is a
+    list of plain dicts and an edit after construction would otherwise slip past."""
+    rows = builder.library()
+    ids = [r["id"] for r in rows]
+    assert len(ids) == len(set(ids)), "duplicate id across tranches"
+
+
+def test_every_authored_id_exists_in_the_knowledge_base():
+    """Ids match the keys already in `diet_foods.json` so the migration maps
+    one-to-one and `coverage()` counts something real. A typo makes a row that is
+    authored, valid, and connected to nothing."""
+    import json
+    kb = json.loads((Path(__file__).resolve().parent.parent / "data" /
+                     "knowledge_base" / "diet_foods.json").read_text(encoding="utf-8"))
+    existing = {f["id"] for f in kb}
+    orphans = sorted({r["id"] for r in builder.library()} - existing)
+    assert not orphans, f"authored rows matching no knowledge-base id: {orphans}"
+
+
+def test_sour_vipaka_now_occurs():
+    """Amla Vipaka is one of the three classical values and appears on none of the
+    150 derived rows, because `seed_diet_foods.py` can only write madhura or katu.
+    Every sour food in the current library is therefore mislabelled."""
+    rows = builder.library()
+    sour = [r["id"] for r in rows if r["ayurvedic"]["vipaka"] == "sour"]
+    assert sour, "the value the derived library cannot reach is still unreached"
+
+
+def test_the_library_is_more_various_than_the_thing_it_replaces():
+    """The derived library has six distinct rasa combinations across 150 foods and one
+    distinct `season_suitable` value. Those numbers are the signature of a category
+    table, and they are what this library exists to beat — not a target, a floor."""
+    rows = builder.library()
+    rasa_combos = {tuple(r["ayurvedic"]["rasa"]) for r in rows}
+    ritu_sets = {tuple(r["season_suitable"]) for r in rows}
+    assert len(rasa_combos) > 6, f"only {len(rasa_combos)} rasa combinations authored"
+    assert len(ritu_sets) > 1, "every authored food suits every season — check the ritu field"
+
+
+def test_no_authored_row_carries_a_placeholder_macro_block():
+    """109 of 150 derived rows share a per-category constant — 27 vegetables report
+    identical calories. Provenance is what makes that visible, so it is required."""
+    for row in builder.library():
+        assert row["nutrition_source"] in schema.NUTRITION_SOURCES
+
+
+def test_modern_foods_say_so_and_show_their_reasoning():
+    """A fifth of this knowledge base is twentieth-century food with no entry in any
+    nighantu. The generator gave those rows a rasa and a virya with exactly the
+    confidence it gave Shunthi one, and nothing recorded the difference."""
+    rows = builder.library()
+    extrapolated = [r for r in rows if r["nighantu_ref"]["text"] == "modern_extrapolated"]
+    assert extrapolated, "no row admits to being an extrapolation — check the vocabulary"
+    for row in extrapolated:
+        varga = row["nighantu_ref"]["varga"]
+        assert len(varga) >= 25, f"{row['id']} extrapolates without showing its reasoning"
+        assert "xtrapolated" in varga, f"{row['id']} does not say it is extrapolated"
+
+
+def test_curd_and_buttermilk_are_not_the_same_row():
+    """Made from the same milk and opposite prescriptions: Dadhi is guru, abhishyandi
+    and the first Apathya named for Amavata; Takra is laghu, deepana and the classical
+    Grahani medicine. Under one `dairy` category profile they differed only by name."""
+    by_id = {r["id"]: r for r in builder.library()}
+    dadhi, takra = by_id["curd_yogurt"], by_id["buttermilk_chaas"]
+    assert dadhi["ayurvedic"]["dosha_effect"]["kapha"] > 0
+    assert takra["ayurvedic"]["dosha_effect"]["kapha"] < 0
+    assert "amavata" in dadhi["apathya_for"]
+    assert "grahani" in takra["pathya_for"]

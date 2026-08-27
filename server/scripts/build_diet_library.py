@@ -29,7 +29,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from diet_library import schema  # noqa: E402
+from diet_library.beverages import BEVERAGES  # noqa: E402
+from diet_library.dairy import DAIRY  # noqa: E402
+from diet_library.oils import OILS  # noqa: E402
 from diet_library.spices import SPICES  # noqa: E402
+from diet_library.vegan_protein import VEGAN_PROTEIN  # noqa: E402
 
 BASE = Path(__file__).resolve().parent.parent
 OUT = BASE / "data" / "knowledge_base" / "diet_foods.json"
@@ -38,6 +42,10 @@ OUT = BASE / "data" / "knowledge_base" / "diet_foods.json"
 # so a reviewer works through a category at a time and a diff stays readable.
 TRANCHES: list[tuple[str, list]] = [
     ("spice", SPICES),
+    ("oil", OILS),
+    ("beverage", BEVERAGES),
+    ("dairy", DAIRY),
+    ("vegan_protein", VEGAN_PROTEIN),
 ]
 
 
