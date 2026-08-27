@@ -18,14 +18,9 @@ That remains the clinical decision `_secondary_karma_deferral` names — for Pit
 secondary is Raktamokshana, and which conditions justify bloodletting is a Vaidya's
 call, not a tag's. This file guards the data and the primary-Karma wiring only.
 """
-import json
-
-import pytest
-
 from services.panchakarma_engine import (
     THERAPIES_PATH,
     _KARMA_ROWS,
-    _ROW_KARMA,
     filter_and_score_therapies,
     pk_therapies,
 )
