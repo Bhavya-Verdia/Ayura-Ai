@@ -98,3 +98,117 @@ def test_a_swapped_guideline_says_that_it_was_swapped():
              "medical_history": ["type_2_diabetes"]}, {})
     assert plan["guideline_notices"]
     assert "sweet fruits" in plan["guideline_notices"][0]
+
+
+# ── Paediatric dosing, and the shared-KB mutation it exposed ──────────────────
+
+import threading  # noqa: E402
+
+
+def _child(**over):
+    p = {"id": "c", "age": 11, "gender": "male", "dominant_dosha": "vata",
+         "vikriti_dominant": "vata", "medical_history": ["constipation"],
+         "agni_type": "sama"}
+    p.update(over)
+    return p
+
+
+def test_a_child_is_never_served_an_adult_dose():
+    """Onboarding accepts age from 10, so children reach this engine. Every
+    formulation authored a `dosage_pediatric` — 95 of 157 — and it was read by the
+    vector seeder and by the medicine card, as a footnote UNDER the adult dose. The
+    `dosage_schedule`, which is the list a patient actually follows, used the adult
+    figure at every age."""
+    from services.remedy_engine import generate_medicines_plan
+    import itertools
+    for cond, dosha, age in itertools.product(
+            ["constipation", "acidity", "cough", "anxiety", "low_immunity", "asthma"],
+            ["vata", "pitta", "kapha"], [10, 11]):
+        plan = generate_medicines_plan(
+            _child(age=age, dominant_dosha=dosha, vikriti_dominant=dosha,
+                   medical_history=[cond]), {}, [])
+        meds = (plan.get("primary_formulations") or []) + (plan.get("supporting_formulations") or [])
+        assert meds, f"child plan empty for {cond}/{dosha}/{age}"
+        for m in meds:
+            paed = (m.get("dosage_pediatric") or "").strip()
+            assert paed, f"{m['id']} served to a child with no paediatric dose"
+            assert m["dosage"] == paed, f"{m['id']} served the adult dose to a child"
+            assert m.get("dosage_basis") == "paediatric"
+
+
+def test_the_schedule_a_child_follows_carries_the_paediatric_dose():
+    """The card and the schedule disagreeing is the actual harm: an 11-year-old read
+    one figure on the card, another in the schedule, and a third in a note."""
+    from services.remedy_engine import generate_medicines_plan
+    plan = generate_medicines_plan(_child(), {}, [])
+    served = {m["name"]: m for m in (plan.get("primary_formulations") or [])
+              + (plan.get("supporting_formulations") or [])}
+    printed = [line for slot in (plan.get("dosage_schedule") or []) for line in slot["medicines"]]
+    assert printed
+    for line in printed:
+        name = line.split(" — ")[0]
+        if name in served:
+            assert served[name]["dosage_pediatric"] in line, \
+                f"schedule line used a non-paediatric dose: {line}"
+
+
+def test_a_formulation_with_no_paediatric_dose_is_withheld_and_said():
+    """62 of 157 have no paediatric dose, and they were 29% of the medicine slots a
+    child was served. Printing the adult figure is the one option that is definitely
+    wrong; printing none asks a parent to guess. It is withheld into
+    `blocked_medicines`, which the view already renders."""
+    from services.remedy_engine import generate_medicines_plan
+    plan = generate_medicines_plan(_child(), {}, [])
+    reasons = [b["reason"] for b in (plan.get("blocked_medicines") or [])]
+    assert any("No paediatric dose is established" in r for r in reasons), \
+        "nothing was withheld for want of a paediatric dose"
+
+
+def test_an_adult_plan_is_unchanged_by_the_paediatric_path():
+    from services.remedy_engine import generate_medicines_plan
+    adult = _child(age=40)
+    plan = generate_medicines_plan(adult, {}, [])
+    for m in (plan.get("primary_formulations") or []):
+        assert m.get("dosage_basis") != "paediatric"
+        assert "dosage_adult" not in m
+
+
+def test_a_plan_build_does_not_write_to_the_shared_medicine_kb():
+    """`_MEDICINES_KB` is a module-level singleton and the annotations are
+    per-patient. Writing them onto the KB entry publishes one patient's data to
+    every other request in the process."""
+    from services.remedy_engine import generate_medicines_plan, _MEDICINES_KB
+    before = {m["id"]: dict(m) for m in _MEDICINES_KB}
+    generate_medicines_plan(_child(age=40), {"previous_ayurvedic_medicines": ["Triphala Churna"]}, [])
+    changed = [i for i, m in ((m["id"], m) for m in _MEDICINES_KB) if before[i] != m]
+    assert not changed, f"a plan build mutated shared KB entries: {changed[:5]}"
+
+
+def test_two_concurrent_users_do_not_see_each_others_answers():
+    """`generate_medicines_plan` is synchronous and FastAPI runs sync endpoints in a
+    threadpool, so builds genuinely interleave. Before the copy, a user who declared
+    nothing was shown a medicine badged "Tried before" from the other user's answers
+    — about once in eighty builds, which is rare enough that no single-plan test
+    catches it and no bug report reproduces it."""
+    from services.remedy_engine import generate_medicines_plan
+    base = {"age": 40, "gender": "female", "dominant_dosha": "vata",
+            "vikriti_dominant": "vata", "medical_history": ["constipation"],
+            "agni_type": "sama"}
+    wrong = []
+
+    def run(uid, tried, n):
+        for _ in range(n):
+            plan = generate_medicines_plan(
+                {**base, "id": uid}, {"previous_ayurvedic_medicines": tried}, [])
+            for m in (plan.get("primary_formulations") or []):
+                expected = m["name"].lower() in [t.lower() for t in tried]
+                if m.get("previously_tried") != expected:
+                    wrong.append((uid, m["name"], m.get("previously_tried"), expected))
+
+    threads = [threading.Thread(target=run, args=("A", ["Triphala Churna"], 40)),
+               threading.Thread(target=run, args=("B", [], 40))]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert not wrong, f"one user's answers appeared in another's plan: {wrong[:3]}"

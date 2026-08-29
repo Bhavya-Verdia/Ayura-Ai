@@ -862,6 +862,40 @@ def _build_treatment_protocol(
     }
 
 
+# Onboarding accepts an age from 10, so children reach this engine. `engine/
+# contraindication_tokens.py` already draws the line at 12 — `children` and
+# `children_without_supervision` both resolve to `_age_below(12)` — and
+# `restrict_bhasma` uses the same boundary, so paediatric dosing uses it too rather
+# than inventing a third definition of "child" in the same file.
+PAEDIATRIC_AGE = 12
+
+
+def _apply_patient_dosage(med: dict, age: int) -> None:
+    """Put the dose this patient should actually take on `dosage`.
+
+    `dosage_pediatric` is authored on 95 of the 157 formulations and, before this,
+    was read by `scripts/build_vectors.py` and the medicine card — as a footnote
+    beneath the adult dose. The `dosage_schedule`, which is the list a patient
+    actually follows morning by morning, was built from the adult figure at every
+    age. An 11-year-old prescribed Agastya Rasayana read "3–5g" in one place,
+    "10–15g twice daily" in the schedule, and "1g with honey" in a note.
+
+    Mutates a COPY — see `_annotate`. Never hand this a `_MEDICINES_KB` entry.
+    """
+    if age >= PAEDIATRIC_AGE:
+        return
+    paediatric = (med.get("dosage_pediatric") or "").strip()
+    if paediatric:
+        med["dosage_adult"] = med.get("dosage", "")
+        med["dosage"] = paediatric
+        med["dosage_basis"] = "paediatric"
+
+
+def _has_paediatric_dose(med: dict, age: int) -> bool:
+    """Whether this formulation can be dosed for this patient at all."""
+    return age >= PAEDIATRIC_AGE or bool((med.get("dosage_pediatric") or "").strip())
+
+
 def _build_dosage_schedule(formulations: list[dict], anupana_map: dict[str, str] | None = None) -> list[dict]:
     """Build a structured time-of-day schedule using condition-optimised Anupana."""
     anupana_map = anupana_map or {}
@@ -1023,6 +1057,19 @@ def generate_medicines_plan(
         if restrict_bhasma and med.get("type", "").lower() in ("bhasma (ash)", "pishti (powder of gems/minerals)") and tier == 2:
             blocked.append({"name": med["name"], "reason": "Mineral preparations require extra caution for your age group — consult a Vaidya"})
             continue
+        # No authored paediatric dose means there is no dose we can print for this
+        # patient. Serving it with the adult figure is what happened before and is
+        # the one option that is definitely wrong; serving it with no figure asks a
+        # parent to guess. It is withheld and SAID, the way `blocked_medicines`
+        # already surfaces the rest — 62 of 157 formulations have no paediatric
+        # dose, and they were 29% of the medicine slots a child was being served.
+        if not _has_paediatric_dose(med, age):
+            blocked.append({
+                "name": med["name"],
+                "reason": ("No paediatric dose is established for this formulation — "
+                           "a Vaidya must set the dose for this age"),
+            })
+            continue
         if not gender_ok(med):
             continue
         is_safe, reason = _check_medicine_safety(
@@ -1078,17 +1125,42 @@ def generate_medicines_plan(
 
     # ── Condition-optimised Anupana per medicine ──────────────────────────
     anupana_map: dict[str, str] = {}
-    for med in primary_formulations + supporting_formulations + external_oils:
-        anupana_map[med["id"]] = _select_anupana(med, primary_condition, agni_type)
-        med["selected_anupana"] = anupana_map[med["id"]]
-        med["previously_tried"] = med["name"].lower() in previous_tried
-        # The half of `contraindications` that is not a user state: "external use
-        # only", "authenticated source only", "do not swallow the camphor". They
-        # were filed in a field only a filter read, so a filter that could not
-        # match them dropped them — and nobody was ever told. They belong with the
-        # medicine, not in the gate.
-        med["usage_cautions"], med["red_flags"] = usage_notes(med.get("contraindications"))
-        med["usage_cautions"] += assumed_state_notes(med.get("contraindications"), derived_states)
+
+    def _annotate(meds: list[dict]) -> list[dict]:
+        """Annotate COPIES. `_MEDICINES_KB` is a module-level singleton and these
+        values are per-patient, so writing them onto the KB entry publishes one
+        patient's data to every other request in the process.
+
+        That was not theoretical. `generate_medicines_plan` is synchronous and
+        FastAPI runs sync endpoints in a threadpool, so two requests genuinely
+        interleave here. Two concurrent users, one declaring Triphala as previously
+        tried and one declaring nothing, over 80 builds: the second user was shown
+        Triphala badged "Tried before" — the first user's declaration, read off the
+        shared dict. Once in 80, so it is rare rather than constant, which is worse
+        than constant: it cannot be reproduced from a bug report and every test that
+        builds one plan at a time passes. `selected_anupana` — the condition
+        -optimised liquid to take the medicine with — crosses over the same way.
+        """
+        out = []
+        for med in meds:
+            m = dict(med)
+            anupana_map[m["id"]] = _select_anupana(m, primary_condition, agni_type)
+            m["selected_anupana"] = anupana_map[m["id"]]
+            m["previously_tried"] = m["name"].lower() in previous_tried
+            # The half of `contraindications` that is not a user state: "external use
+            # only", "authenticated source only", "do not swallow the camphor". They
+            # were filed in a field only a filter read, so a filter that could not
+            # match them dropped them — and nobody was ever told. They belong with the
+            # medicine, not in the gate.
+            m["usage_cautions"], m["red_flags"] = usage_notes(m.get("contraindications"))
+            m["usage_cautions"] += assumed_state_notes(m.get("contraindications"), derived_states)
+            _apply_patient_dosage(m, age)
+            out.append(m)
+        return out
+
+    primary_formulations    = _annotate(primary_formulations)
+    supporting_formulations = _annotate(supporting_formulations)
+    external_oils           = _annotate(external_oils)
 
     # ── Build schedules and protocol ──────────────────────────────────────
     dosage_schedule    = _build_dosage_schedule(primary_formulations + supporting_formulations, anupana_map)
