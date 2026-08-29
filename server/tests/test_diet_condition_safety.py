@@ -166,3 +166,59 @@ def test_stored_canonical_forms_resolve_and_conflict():
     # anemia has a curated hint → must NOT be sent to the LLM classifier
     assert "anemia" not in uncurated_conditions(stored)
     assert all(normalize_condition_key(c) in PATHYA_APATHYA_HINTS for c in stored)
+
+
+# ── The engine's food ids must name foods that exist ──────────────────────────
+#
+# `avoid_ids` is a hard filter and `boost_ids` a score bonus, both matched by exact
+# id against `diet_foods.json`. A misspelt id is therefore not a visible error — it
+# is a clinical rule that silently never fires, and nothing downstream can tell the
+# difference between "this rule did not apply" and "this rule does not work".
+#
+# When these were first measured, 17 of 22 `avoid_ids` and 16 of 60 `boost_ids` were
+# dead. The whole avoid list for hypertension, hypothyroid and thyroid did nothing.
+
+def _library_ids():
+    import json
+    from pathlib import Path
+    kb = Path(__file__).resolve().parent.parent / "data" / "knowledge_base" / "diet_foods.json"
+    return {r["id"] for r in json.loads(kb.read_text(encoding="utf-8"))}
+
+
+def test_condition_protocol_ids_all_exist():
+    from services.diet_plan_engine import _CONDITION_PROTOCOLS
+    ids = _library_ids()
+    dead = {
+        f"{condition}.{key}": sorted((protocol.get(key) or set()) - ids)
+        for condition, protocol in _CONDITION_PROTOCOLS.items()
+        for key in ("avoid_ids", "boost_ids")
+        if (protocol.get(key) or set()) - ids
+    }
+    assert not dead, (
+        "condition protocols name foods that are not in the library, so these rules "
+        f"can never fire: {dead}")
+
+
+def test_item_portion_ids_all_exist():
+    """A dead portion key falls through to the category default without complaint,
+    and the difference reaches the user: flax was served at the nut_seed default of
+    30 g instead of the 10 g this table intends, and the engine sums portions into
+    the macro bar."""
+    from services.diet_plan_engine import _ITEM_PORTIONS
+    dead = sorted(set(_ITEM_PORTIONS) - _library_ids())
+    assert not dead, f"portion overrides for foods not in the library: {dead}"
+
+
+def test_the_crucifer_avoid_stays_empty_until_a_vaidya_rules():
+    """`hypothyroid` and `thyroid` avoided `broccoli_raw`/`cabbage_raw`/
+    `cauliflower_raw`, which never existed — the library carries only cooked rows.
+
+    Whether the goitrogen caution applies to the cooked form is a clinical question,
+    asked in `data/golden/vaidya_diet_packet.md`. Pointing these at the cooked rows
+    would answer it by fiat, so the set stays empty — which is exactly what the dead
+    ids already did — and this test records that the emptiness is a decision rather
+    than an oversight for someone to 'fix'.
+    """
+    from services.diet_plan_engine import _CONDITION_PROTOCOLS
+    for condition in ("hypothyroid", "thyroid"):
+        assert _CONDITION_PROTOCOLS[condition]["avoid_ids"] == set()
