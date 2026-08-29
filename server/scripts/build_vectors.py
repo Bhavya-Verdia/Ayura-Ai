@@ -344,9 +344,22 @@ def _food_docs(food: dict) -> list[dict]:
     pacifies = [d for d, v in effect.items() if isinstance(v, (int, float)) and v < 0]
     increases = [d for d, v in effect.items() if isinstance(v, (int, float)) and v > 0]
 
+    # Guna, Prabhava and the preparation state exist on the authored library and were
+    # absent from the derived file this replaces. Guna matters most: the diet system
+    # prompt requires every meal to cite "Rasa (taste), Guna (quality), Virya (potency),
+    # Vipaka (post-digestive effect)", and the corpus it is grounded on could not supply
+    # the second of the four, so the model invented that axis on every meal of every plan.
+    #
+    # `nighantu_ref` is printed too, and `modern_extrapolated` is printed as what it is.
+    # A retrieved passage that reads like a citation when nothing was cited is the exact
+    # failure this library was authored to end; the corpus must not restore it.
+    ref = food.get("nighantu_ref") or {}
+    prep = food.get("prep_state")
     ayurvedic = " ".join(bit for bit in (
         f"Food: {name} ({food.get('category')}).",
+        f"Preparation: {prep}." if prep and prep != "prepared" else "",
         f"Rasa (taste): {_humanise(ayur['rasa'])}." if ayur.get("rasa") else "",
+        f"Guna (qualities): {_humanise(ayur['guna'])}." if ayur.get("guna") else "",
         f"Virya (potency): {ayur['virya']}." if ayur.get("virya") else "",
         f"Vipaka (post-digestive effect): {ayur['vipaka']}." if ayur.get("vipaka") else "",
         f"Pacifies: {', '.join(pacifies)}." if pacifies else "",
@@ -354,8 +367,28 @@ def _food_docs(food: dict) -> list[dict]:
         f"Effect on agni (digestive fire): {_humanise([ayur['agni_effect']])} to digest."
         if ayur.get("agni_effect") else "",
         f"Particularly good for: {_humanise(ayur['best_for'])}." if ayur.get("best_for") else "",
+        f"Not advised in: {_humanise(food['apathya_for'])}." if food.get("apathya_for") else "",
         f"Suits the seasons: {_humanise(food['season_suitable'])}."
         if food.get("season_suitable") else "",
+    ) if bit)
+
+    # Prabhava and provenance are a THIRD document rather than a longer first one.
+    # Inline, they pushed two entries — flax milk at 276 word-pieces and whole wheat
+    # bread at 262 — past the embedder's 256-word-piece window, and
+    # `_overflowing_chunks` refused the seed. That guard was fixed in PR #56 to raise
+    # rather than report clean, and this is the first change it has caught.
+    #
+    # Splitting is the better fix regardless. "Why is Yava Kapha-reducing when its rasa
+    # is sweet" is a different question from "what is Yava", and a Prabhava that
+    # retrieves on its own answers it.
+    provenance = " ".join(bit for bit in (
+        f"Food {name} — classical basis.",
+        f"Prabhava (specific action): {ayur['prabhava']}" if ayur.get("prabhava") else "",
+        (f"Source: {ref['varga']}"
+         if ref.get("text") == "modern_extrapolated"
+         else f"Source: {ref['text'].replace('_', ' ').title()} Nighantu, "
+              f"{ref['varga']} Varga.")
+        if ref.get("text") else "",
     ) if bit)
 
     nutrition = food.get("nutrition_per_100g") or {}
@@ -372,8 +405,13 @@ def _food_docs(food: dict) -> list[dict]:
         "A common allergen." if food.get("common_allergen") else "",
     ) if bit)
 
+    texts = [ayurvedic, practical]
+    # Only when there is something to say — a row with neither a prabhava nor a
+    # reference would otherwise contribute a document consisting of its own heading.
+    if ayur.get("prabhava") or ref.get("text"):
+        texts.append(provenance)
     return [{"text": t, "dosha": pacifies[0] if pacifies else "", "source": "diet_foods"}
-            for t in (ayurvedic, practical)]
+            for t in texts]
 
 
 _PLACEHOLDER_PROSE = {
