@@ -27,58 +27,92 @@ _PORTION: dict[str, tuple[str, int]] = {
 }
 
 # Per-item overrides for condiment-type foods (oils, ghee, honey, etc.)
+# Keyed by food id, and a key that matches nothing falls through to the category
+# portion — silently, and in the direction that overstates. `flaxseeds` was never
+# `flax_seeds`, so flax was served at the nut_seed default of 30 g rather than the
+# 10 g intended here, and the engine sums that into the macro bar the user reads.
+# `honey` and `jaggery` are not in the library at all and are dropped rather than
+# left as decoration. Guarded by `test_item_portion_ids_all_exist`.
 _ITEM_PORTIONS: dict[str, tuple[str, int]] = {
-    "ghee":            ("1 tsp (5g)", 5),
-    "coconut_oil":     ("1 tsp (5g)", 5),
-    "sesame_oil":      ("1 tsp (5g)", 5),
-    "mustard_oil":     ("1 tsp (5g)", 5),
-    "olive_oil":       ("1 tsp (5g)", 5),
-    "honey":           ("1 tsp (7g)", 7),
-    "jaggery":         ("1 tsp (10g)", 10),
-    "turmeric":        ("1 tsp (3g)", 3),
-    "cumin_jeera":     ("1 tsp (3g)", 3),
-    "cinnamon":        ("½ tsp (2g)", 2),
-    "black_pepper":    ("½ tsp (2g)", 2),
-    "fenugreek_seeds": ("1 tsp (5g)", 5),
-    "ajwain":          ("1 tsp (3g)", 3),
-    "flaxseeds":       ("1 tbsp (10g)", 10),
-    "chia_seeds":      ("1 tbsp (10g)", 10),
-    "hemp_seeds":      ("1 tbsp (10g)", 10),
+    "ghee":                  ("1 tsp (5g)", 5),
+    "coconut_oil":           ("1 tsp (5g)", 5),
+    "sesame_oil":            ("1 tsp (5g)", 5),
+    "mustard_oil":           ("1 tsp (5g)", 5),
+    "olive_oil":             ("1 tsp (5g)", 5),
+    "turmeric":              ("1 tsp (3g)", 3),
+    "cumin_jeera":           ("1 tsp (3g)", 3),
+    "cinnamon_dalchini":     ("½ tsp (2g)", 2),
+    "black_pepper":          ("½ tsp (2g)", 2),
+    "fenugreek_seeds_methi": ("1 tsp (5g)", 5),
+    "ajwain":                ("1 tsp (3g)", 3),
+    "flax_seeds":            ("1 tbsp (10g)", 10),
+    "chia_seeds":            ("1 tbsp (10g)", 10),
+    "hemp_seeds":            ("1 tbsp (10g)", 10),
 }
 
 # ── Condition-specific food rules ──────────────────────────────────────────────
+#
+# Every id here must exist in `diet_foods.json`. `avoid_ids` is a hard filter and
+# `boost_ids` a score bonus, both matched by exact id — so a misspelt id is not a
+# no-op that someone notices, it is a rule that silently never fires. 17 of the 22
+# `avoid_ids` and 16 of the 60 `boost_ids` were dead when this was measured, which
+# meant the entire avoid list for hypertension, hypothyroid and thyroid did nothing.
+# `test_condition_protocol_ids_all_exist` now fails the build on a dead id.
+#
+# Two kinds of dead id were found, and they needed opposite fixes:
+#
+#   * The food is in the library under a different id — `beet` for `beetroot`,
+#     `flaxseeds` for `flax_seeds`, `sesame_seeds` for `sesame_seeds_til`,
+#     `lentils` for `lentils_brown`, `rice_white` for `white_rice`. These were live
+#     bugs: a real clinical rule that never applied. They are corrected in place.
+#
+#   * The food is not in the library at all — `sugar`, `jaggery`, `maida`,
+#     `refined_flour`, `papad`, `pickle`, `processed_cheese`, `avocado`. This
+#     library holds foods a plan is composed FROM, so a refined sugar row does not
+#     exist to exclude. Removed rather than invented: the intent is already carried
+#     by `ahara_safety._CONDITION_APATHYA_TERMS`, which scans generated meal TEXT
+#     and is the layer that can actually catch them on the LLM path. Each of the
+#     eight was checked against that table before being dropped here.
+#
+# The crucifer case is neither, and is left empty on purpose. `hypothyroid` and
+# `thyroid` avoided `broccoli_raw`, `cabbage_raw` and `cauliflower_raw`; the library
+# carries only cooked rows, and whether the goitrogen caution applies to the cooked
+# form is a clinical question, not a naming one. It is asked directly in
+# `data/golden/vaidya_diet_packet.md`. Retargeting these to the cooked rows would
+# answer it by fiat, so this stays empty — which is what the dead ids already did —
+# until a Vaidya rules. The library's own `apathya_for` records the claim meanwhile.
 _CONDITION_PROTOCOLS: dict[str, dict] = {
     "diabetes": {
-        "avoid_ids": {"white_rice", "refined_flour", "maida", "sugar", "jaggery"},
+        "avoid_ids": {"white_rice"},
         "avoid_categories": set(),
-        "boost_ids": {"bitter_gourd", "fenugreek_seeds", "amla", "brown_rice",
+        "boost_ids": {"bitter_gourd_karela", "fenugreek_seeds_methi", "amla", "brown_rice",
                       "barley", "millet_bajra", "millet_jowar", "oats",
-                      "turmeric", "cinnamon"},
+                      "turmeric", "cinnamon_dalchini"},
         "score_adjust": {"grain": -1, "fruit": -1},
     },
     "hypertension": {
-        "avoid_ids": {"pickle", "papad", "processed_cheese"},
+        "avoid_ids": set(),
         "avoid_categories": set(),
         "boost_ids": {"banana", "sweet_potato", "spinach", "amla",
-                      "garlic", "flaxseeds", "beetroot", "cucumber",
+                      "garlic", "flax_seeds", "beetroot", "cucumber",
                       "watermelon", "pomegranate"},
         "score_adjust": {},
     },
     "pcos": {
-        "avoid_ids": {"white_rice", "refined_flour", "maida", "sugar"},
+        "avoid_ids": {"white_rice"},
         "avoid_categories": set(),
-        "boost_ids": {"flaxseeds", "fenugreek_seeds", "amla", "turmeric",
+        "boost_ids": {"flax_seeds", "fenugreek_seeds_methi", "amla", "turmeric",
                       "brown_rice", "quinoa", "millet_bajra", "spinach"},
         "score_adjust": {"grain": -1},
     },
     "hypothyroid": {
-        "avoid_ids": {"cabbage_raw", "broccoli_raw", "cauliflower_raw"},
+        "avoid_ids": set(),  # see note above: the raw rows do not exist
         "avoid_categories": set(),
         "boost_ids": {"pumpkin_seeds", "ginger", "turmeric", "coconut_oil"},
         "score_adjust": {},
     },
     "thyroid": {
-        "avoid_ids": {"cabbage_raw", "broccoli_raw", "cauliflower_raw"},
+        "avoid_ids": set(),  # see note above: the raw rows do not exist
         "avoid_categories": set(),
         "boost_ids": {"pumpkin_seeds", "ginger", "turmeric"},
         "score_adjust": {},
@@ -86,27 +120,28 @@ _CONDITION_PROTOCOLS: dict[str, dict] = {
     "obesity": {
         "avoid_ids": set(),
         "avoid_categories": set(),
-        "boost_ids": {"moong_dal", "toor_dal", "spinach", "bitter_gourd",
-                      "cucumber", "oats", "flaxseeds", "amla"},
+        "boost_ids": {"moong_dal_yellow", "toor_dal", "spinach", "bitter_gourd_karela",
+                      "cucumber", "oats", "flax_seeds", "amla"},
         "score_adjust": {"nut_seed": -1, "oil": -2, "dairy": -1},
     },
     "fatty_liver": {
         "avoid_ids": set(),
         "avoid_categories": {"oil"},
-        "boost_ids": {"turmeric", "amla", "garlic", "leafy_greens", "moong_dal"},
+        "boost_ids": {"turmeric", "amla", "garlic", "spinach", "palak",
+                      "methi_fenugreek_leaves", "moong_dal_yellow"},
         "score_adjust": {"dairy": -1},
     },
     "kidney_disease": {
-        "avoid_ids": {"banana", "tomato", "potato", "avocado"},
+        "avoid_ids": {"banana", "tomato", "potato"},
         "avoid_categories": set(),
-        "boost_ids": {"rice_white", "basmati_rice", "apple", "cabbage"},
+        "boost_ids": {"white_rice", "basmati_rice", "apple", "cabbage"},
         "score_adjust": {"legume": -2, "nut_seed": -1},
     },
     "anemia": {
         "avoid_ids": set(),
         "avoid_categories": set(),
-        "boost_ids": {"spinach", "beet", "dates", "pomegranate", "amla",
-                      "fenugreek_seeds", "sesame_seeds", "lentils"},
+        "boost_ids": {"spinach", "beetroot", "dates", "pomegranate", "amla",
+                      "fenugreek_seeds_methi", "sesame_seeds_til", "lentils_brown"},
         "score_adjust": {},
     },
 }
