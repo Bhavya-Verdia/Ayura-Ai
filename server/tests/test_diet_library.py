@@ -10,6 +10,7 @@ All 150 rows are authored now and that generator is retired. This file is what h
 the knowledge base and the spec together: it enforces the vocabulary on new rows, and
 it asserts that none of the four measurements above can come back.
 """
+import re
 import sys
 from pathlib import Path
 
@@ -252,6 +253,29 @@ def test_no_food_still_carries_the_generators_signature():
     assert all(r["ayurvedic"]["guna"] for r in rows), "a row lost its guna"
     assert not [r for r in rows if r["ayurvedic"]["best_for"] == []
                 and r["apathya_for"] == []], "a row indicates and contraindicates nothing"
+
+
+def test_no_corpus_bound_prose_talks_about_this_repo():
+    """`prabhava` and `nighantu_ref.varga` are seeded verbatim into the nutrition
+    collection by `build_vectors._food_docs`, and `varga` is printed as the source
+    line — so a sentence written for a code reviewer is read back by
+    `diet_llm_generator` as background context while it writes someone's diet.
+
+    Seven strings did exactly that: barley's prabhava explained what the old
+    generator hardcoded, and four `varga` fields described the migration under the
+    heading `Source:`. Why a row exists belongs in the module docstring, which the
+    corpus never sees. This asserts the separation rather than trusting it.
+    """
+    leak = re.compile(r"generator|derived librar|seed_diet|this librar|"
+                      r"the file this replaces|hardcod|second id|two rows here|"
+                      r"migration|category list", re.I)
+    offenders = []
+    for row in builder.library():
+        for field, value in (("prabhava", row["ayurvedic"].get("prabhava")),
+                             ("varga", (row.get("nighantu_ref") or {}).get("varga"))):
+            if value and leak.search(value):
+                offenders.append(f"{row['id']}.{field}: {value[:70]}")
+    assert not offenders, "corpus-bound prose references this repo:\n" + "\n".join(offenders)
 
 
 def test_the_generator_is_retired():
