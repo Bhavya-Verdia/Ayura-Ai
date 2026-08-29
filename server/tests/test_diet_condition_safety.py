@@ -222,3 +222,112 @@ def test_the_crucifer_avoid_stays_empty_until_a_vaidya_rules():
     from services.diet_plan_engine import _CONDITION_PROTOCOLS
     for condition in ("hypothyroid", "thyroid"):
         assert _CONDITION_PROTOCOLS[condition]["avoid_ids"] == set()
+
+
+# ── The library's own Apathya, wired into the engine ──────────────────────────
+#
+# Before this, `apathya_for` was read by `build_vectors.py` and nothing else. 708
+# authored clinical claims reached the model as retrieved prose and decided nothing
+# deterministically, while the engine excluded 5 (condition, food) pairs from a
+# hand-kept list whose ids had drifted until 17 of 22 named nothing.
+
+def _foods():
+    import json
+    from pathlib import Path
+    kb = Path(__file__).resolve().parent.parent / "data" / "knowledge_base" / "diet_foods.json"
+    return json.loads(kb.read_text(encoding="utf-8"))
+
+
+_PROFILES = [
+    ["acidity"], ["ibs"], ["psoriasis"], ["amavata"], ["obesity"],
+    ["acidity", "ibs"],
+    ["obesity", "diabetes", "hypothyroid"],
+    ["ibs", "grahani", "arsha", "amavata"],
+    ["amavata", "psoriasis", "acidity"],
+    ["obesity", "diabetes", "hypothyroid", "high_cholesterol", "fatty_liver"],
+]
+
+
+def test_no_apathya_food_survives_the_filter():
+    from services.diet_plan_engine import _build_condition_rules, filter_and_score_foods
+    foods = _foods()
+    for history in _PROFILES:
+        rules = _build_condition_rules(history)
+        pool = filter_and_score_foods({"dominant_dosha": "vata"}, {}, foods, cond_rules=rules)
+        leaked = sorted({f["id"] for f in pool
+                         if set(f.get("apathya_for") or ()) & rules["conditions"]})
+        assert not leaked, f"{history}: Apathya foods survived the filter: {leaked}"
+
+
+def test_no_apathya_food_reaches_a_generated_plan():
+    """The filter is one layer; this asserts the property that actually matters —
+    that no meal, on any day of any of the four weeks, serves a food the library
+    says is Apathya in a condition the user declared."""
+    from services.diet_plan_engine import generate_diet_plan
+    foods = _foods()
+    apathya = {f["id"]: set(f.get("apathya_for") or ()) for f in foods}
+    for history in _PROFILES:
+        plan = generate_diet_plan(
+            {"id": "t", "dominant_dosha": "pitta", "medical_history": history}, {}, foods)
+        declared = {c.lower().replace(" ", "_") for c in history}
+        served = set()
+        for week in plan["four_week_plan"]:
+            for day in week["days"]:
+                for items in day["meals"].values():
+                    served |= {item["id"] for item in items}
+        bad = sorted({fid for fid in served if apathya.get(fid, set()) & declared})
+        assert not bad, f"{history}: plan served Apathya foods {bad}"
+
+
+def test_conditions_without_a_protocol_are_still_filtered():
+    """`active` lists only conditions that have a `_CONDITION_PROTOCOLS` entry. Eleven
+    of the twenty conditions the library carries Apathya rows for have no protocol —
+    acidity (51 foods), IBS (44), psoriasis (29) among them — and those are precisely
+    the conditions with no other deterministic food rule. Keying the filter off
+    `active` would have silently excluded nothing for any of them."""
+    from services.diet_plan_engine import _build_condition_rules, _CONDITION_PROTOCOLS
+    rules = _build_condition_rules(["acidity", "psoriasis"])
+    assert rules["conditions"] == {"acidity", "psoriasis"}
+    assert not set(rules["active"]) & {"acidity", "psoriasis"}, \
+        "test assumes neither has a protocol; if one was added, widen the assertion"
+    assert "acidity" not in _CONDITION_PROTOCOLS
+
+
+def test_a_cond_rules_dict_without_the_conditions_key_still_works():
+    """`filter_and_score_foods` takes `cond_rules` as a public parameter. A caller
+    holding a dict built before this key existed must degrade to 'no conditions
+    declared', not raise KeyError part-way through building a plan."""
+    from services.diet_plan_engine import filter_and_score_foods
+    legacy = {"avoid_ids": set(), "avoid_categories": set(), "boost_ids": set(),
+              "score_adjust": {}, "active": []}
+    pool = filter_and_score_foods({"dominant_dosha": "vata"}, {}, _foods(), cond_rules=legacy)
+    assert pool
+
+
+def test_the_filter_does_not_empty_a_meal_slot_that_had_food_in_it():
+    """Measured before wiring: the Apathya filter empties zero meal slots that were
+    not already empty with no conditions declared. Three slots are empty at baseline
+    (`fasting` lunch/dinner fruit, `tikshna` snack grain) because no food in those
+    categories is `meal_suitable` for those meals — a pre-existing `_MEAL_CONFIGS`
+    mismatch, not something this filter caused. This pins the distinction so a future
+    library edit cannot quietly starve a slot and have it blamed on the config."""
+    import collections
+    from services.diet_plan_engine import _build_condition_rules, _MEAL_CONFIGS
+    foods = _foods()
+
+    def empty_slots(surviving):
+        out = set()
+        for cfg_name, cfg in _MEAL_CONFIGS.items():
+            for meal, cats in cfg.items():
+                per = collections.Counter(
+                    f["category"] for f in surviving if meal in (f.get("meal_suitable") or []))
+                out |= {(cfg_name, meal, c) for c in cats if per[c] == 0}
+        return out
+
+    baseline = empty_slots(foods)
+    assert len(baseline) == 3, f"baseline emptiness changed: {sorted(baseline)}"
+    for history in _PROFILES:
+        conds = _build_condition_rules(history)["conditions"]
+        surviving = [f for f in foods if not set(f.get("apathya_for") or ()) & conds]
+        assert not (empty_slots(surviving) - baseline), \
+            f"{history} newly empties {sorted(empty_slots(surviving) - baseline)}"

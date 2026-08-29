@@ -303,10 +303,18 @@ def _build_condition_rules(medical_history: list[str]) -> dict:
         "boost_ids": set(),
         "score_adjust": {},
         "active": [],
+        # Every declared condition, canonicalised — NOT only the ones with a protocol
+        # in `_CONDITION_PROTOCOLS`. `active` is that narrower list, and keying the
+        # Apathya filter off it would have dropped 11 of the 20 conditions the food
+        # library actually carries Apathya rows for, including acidity (51 foods),
+        # IBS (44) and psoriasis (29) — the conditions with no protocol are exactly
+        # the ones with no other deterministic food rule, so they need this most.
+        "conditions": set(),
     }
     for cond in (medical_history or []):
         key = cond.lower().replace(" ", "_")
         key = _COND_ALIASES.get(key, key)
+        combined["conditions"].add(key)
         if key in _CONDITION_PROTOCOLS:
             combined["active"].append(key)
             proto = _CONDITION_PROTOCOLS[key]
@@ -356,8 +364,10 @@ def filter_and_score_foods(user_profile: dict, diet_prefs: dict,
     preferred_rasas = set(_SEASON_RASAS.get(season, []))
     agni_info = _AGNI_ADJUST.get(agni_type, _AGNI_ADJUST["sama"])
 
+    # `rice_white` was the same dead-id bug as the protocol tables: harmless only
+    # because `white_rice` sits beside it and does the work.
     gluten_free_ids = {"oats", "quinoa", "millet_bajra", "millet_jowar",
-                       "rice_white", "basmati_rice", "brown_rice", "white_rice",
+                       "basmati_rice", "brown_rice", "white_rice",
                        "amaranth", "buckwheat"}
 
     scored: list[tuple[int, dict]] = []
@@ -368,6 +378,17 @@ def filter_and_score_foods(user_profile: dict, diet_prefs: dict,
 
         # Hard filters
         if fid in cond_rules["avoid_ids"]:
+            continue
+        # The library's own Apathya. Until this was wired, `apathya_for` was read by
+        # `build_vectors.py` and nothing else: 708 authored clinical claims reached the
+        # model as retrieved prose and decided nothing deterministically, while the
+        # engine excluded 5 (condition, food) pairs from a hand-kept list that had
+        # drifted until 17 of its 22 ids named foods that did not exist.
+        #
+        # `.get` rather than `[...]`, because `cond_rules` is a public parameter and a
+        # caller may pass a dict built before this key existed — a missing key must
+        # mean "no conditions declared", never a KeyError mid-plan.
+        if set(food.get("apathya_for") or ()) & cond_rules.get("conditions", set()):
             continue
         if cat in blocked_categories:
             if "gluten" in food_allergies and cat == "grain":
