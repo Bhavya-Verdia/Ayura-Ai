@@ -103,6 +103,29 @@ barbell and two that instructed holding your breath under load. Contraindication
 pregnancy and dosha are authored per movement in `scripts/gym_library/clinical.py`,
 each with a stated mechanism — they differ from the old derived rules on 89 of 173.
 
+#### Diet library: authored, not derived
+`data/knowledge_base/diet_foods.json` is **generated** by
+`scripts/build_diet_library.py` from the curated spec in `scripts/diet_library/`
+(150 foods). Never hand-edit the JSON — `--check` and a test enforce that it
+matches the spec. `scripts/seed_diet_foods.py` is a retired stub that refuses to
+run: it produced the entire Ayurvedic layer from a ten-row table of category
+defaults plus substring matches on the food's id, and its values differ from the
+authored ones on 83 of 150 rows for rasa, 46 for vipaka, 42 for virya, 134 for
+dosha effect, 128 for nutrition and all 150 for ritu.
+
+What the generator could not express is why the spec exists: it emitted six rasa
+combinations for 150 foods, `season_suitable: ["all"]` on every row (so the
+Ritucharya scoring in `diet_plan_engine` had nothing to score against), no `guna`
+axis at all — while `diet_llm_generator`'s prompt requires every meal to cite it,
+so the model invented it — and **no sour vipaka at all**, which is unreachable in
+its category table and wrong for every sour food. `prep_state` is part of a food's
+identity, not a note: Ardraka and Shunthi are `ginger_fresh` and `ginger_dry`,
+two rows with opposite virya, not one `ginger`. A row that departs from the rasa
+rule must state a `prabhava` giving the reason, or `schema.validate` refuses it.
+
+Rows are `reviewed: false` — authored, **not clinically reviewed**. They belong in
+the Vaidya packet alongside the gym and Panchakarma flags.
+
 `routes/plans._generate_feature_via_engine` is the single entry point both the holistic and per-feature paths use — it runs the engine + enricher and applies pregnancy/safety gating. The per-feature endpoints (`POST /api/plans/{gym,yoga,diet,routine,panchakarma,remedies,medicines}`) return the plan **synchronously**. The holistic `POST /api/plans/generate` is offloaded to an **ARQ background worker** (`server/worker.py`) via Redis and returns a `job_id` to poll at `/api/plans/job/{jobId}`; if Redis/ARQ is unavailable it falls back to running the job in-process via FastAPI `BackgroundTasks`.
 
 ### Chat Agent (`server/ai/agents/health_agent.py`)
