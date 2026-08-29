@@ -326,7 +326,20 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0):
         "- **claim_ok** — is the set of courses right, inclusions and exclusions together?",
         "- **should_be** — the corrected list, if not.",
         "",
-        "## Part 5 — Clinical case sign-off",
+        "## Part 5 — Diet food library  (separate packet)",
+        "The 150-food library is large enough to need its own document and its own "
+        "ordering, so it ships as **`vaidya_diet_packet.md`** with six CSVs beside it. "
+        "It holds 708 clinical claims — this food is Pathya in that condition, that "
+        "food is Apathya in this one — across 20 conditions, and `reviewed` is false "
+        "on every one of the 150 rows.",
+        "",
+        "Start with `vaidya_diet_screened_claims.csv` (12 rows). Those are the claims "
+        "that disagree with the food carrying them, and most of them are the same "
+        "question: a modern indication entered into a classical field. Olive oil is "
+        "Pathya in high cholesterol while being guru, snigdha and Kapha-raising. "
+        "Answering that once settles a whole condition at a time.",
+        "",
+        "## Part 6 — Clinical case sign-off",
         f"Below are {len(cases)} synthetic patient cases run through the engines (deterministic, "
         "no AI). For each, confirm the core decisions are what you would prescribe, or note the "
         "correction. Full per-case detail with a grading grid is in **`golden_review.md`**.",
@@ -342,7 +355,7 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0):
         )
     lines += [
         "",
-        "## Part 6 — Sign-off",
+        "## Part 7 — Sign-off",
         "",
         "- Reviewer (name, BAMS/MD reg. no.): ____________________",
         "- Date: ____________  ",
@@ -374,7 +387,9 @@ def main():
     print(f"  {tok_path}  ({n_tok} contraindication tokens)")
     print(f"  {karma_path}  ({n_karma} Karma tags)")
     print(f"  {md_path}")
-    print("\nGive all five to a BAMS Vaidya. Filled CSV corrections fold straight back into the KB.")
+    print("\nGive these to a BAMS Vaidya, along with the diet packet built separately by")
+    print("scripts/build_diet_review_packet.py. Filled CSV corrections fold straight back")
+    print("into the KB — for diet, into scripts/diet_library/, which the KB is built from.")
 
 
 if __name__ == "__main__":

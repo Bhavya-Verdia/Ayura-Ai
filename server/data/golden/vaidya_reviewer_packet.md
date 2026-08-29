@@ -41,7 +41,12 @@ The nine Pradhana rows are not here — that the Vamana row performs Vamana is a
 - **claim_ok** — is the set of courses right, inclusions and exclusions together?
 - **should_be** — the corrected list, if not.
 
-## Part 5 — Clinical case sign-off
+## Part 5 — Diet food library  (separate packet)
+The 150-food library is large enough to need its own document and its own ordering, so it ships as **`vaidya_diet_packet.md`** with six CSVs beside it. It holds 708 clinical claims — this food is Pathya in that condition, that food is Apathya in this one — across 20 conditions, and `reviewed` is false on every one of the 150 rows.
+
+Start with `vaidya_diet_screened_claims.csv` (12 rows). Those are the claims that disagree with the food carrying them, and most of them are the same question: a modern indication entered into a classical field. Olive oil is Pathya in high cholesterol while being guru, snigdha and Kapha-raising. Answering that once settles a whole condition at a time.
+
+## Part 6 — Clinical case sign-off
 Below are 30 synthetic patient cases run through the engines (deterministic, no AI). For each, confirm the core decisions are what you would prescribe, or note the correction. Full per-case detail with a grading grid is in **`golden_review.md`**.
 
 | # | Case | Pradhana Karma | Shodhana/Shamana | Agni | Prescribe as-is? (Y/N) | Correction |
@@ -77,7 +82,7 @@ Below are 30 synthetic patient cases run through the engines (deterministic, no 
 | 29 | Vata, healthy active baseline (no conditions) | basti_matra | shamana | Sama Agni |  |  |
 | 30 | Senior, multiple conditions (HTN + diabetes + arthritis) | basti_matra | shamana | Vishama Agni |  |  |
 
-## Part 6 — Sign-off
+## Part 7 — Sign-off
 
 - Reviewer (name, BAMS/MD reg. no.): ____________________
 - Date: ____________  
