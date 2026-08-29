@@ -32,7 +32,7 @@ GRAINS = [
       rasa=("madhura",), guna=("laghu", "snigdha", "mridu"), virya="shita",
       vipaka="madhura",
       prabhava="Purana Shali — aged rice — is laghu where new rice is guru, which is "
-               "why the texts specify the age and the derived library could not.",
+               "why the texts specify the age.",
       dosha=(-1, -1, 1), ritu=("grishma", "sharad", "varsha"),
       pathya_for=("acidity", "grahani", "ibs"),
       apathya_for=("diabetes", "obesity", "hypothyroid"),
@@ -91,8 +91,8 @@ GRAINS = [
     F("Prithuka (Rice Flakes, Dry)", id="rice_flakes", prep_state="dry",
       rasa=("madhura",), guna=("guru", "picchila"), virya="shita", vipaka="madhura",
       prabhava="Prithuka is guru and Kapha-vardhaka in Bhavaprakasha despite coming "
-               "from laghu Shali — the flattening and drying change the dravya, which "
-               "is why the dry flake and the cooked dish are two rows here.",
+               "from laghu Shali — the flattening and drying change the dravya, so the "
+               "dry flake and the cooked dish do not share a guna.",
       dosha=(-1, -1, 2), ritu=("vasanta", "grishma"),
       apathya_for=("diabetes", "obesity", "hypothyroid"),
       nutrition=N(346, 6.6, 77.0, 1.2, 2.4, source="usda"), **_G),
@@ -187,10 +187,13 @@ GRAINS = [
     F("Yava (Barley)", id="barley", prep_state="cooked",
       rasa=("madhura", "kashaya"), guna=("laghu", "ruksha", "chala"), virya="shita",
       vipaka="katu",
+      # No note about the old generator here: `prabhava` is seeded verbatim into the
+      # nutrition corpus and read back as background context when a plan is written,
+      # so a sentence about this repo would reach the model mid-diagnosis. Why the
+      # field exists belongs in the module docstring, which is where it is.
       prabhava="Medohara and Kapha-hara despite madhura rasa — the textbook Prabhava, "
                "and the reason Yava is the grain prescribed in Sthaulya and Prameha "
-               "while Shali is withheld. The generator hardcoded barley into a "
-               "Kapha-pacifying list and the reason lived nowhere.",
+               "while Shali is withheld.",
       dosha=(1, -1, -2), ritu=("vasanta", "grishma", "sharad"),
       pathya_for=("obesity", "diabetes", "high_cholesterol", "hypothyroid", "pcos"),
       apathya_for=("constipation",), allergen=True,

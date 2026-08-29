@@ -3016,7 +3016,7 @@
       "virya_sanskrit": "shita",
       "vipaka": "sweet",
       "vipaka_sanskrit": "madhura",
-      "prabhava": "Purana Shali — aged rice — is laghu where new rice is guru, which is why the texts specify the age and the derived library could not.",
+      "prabhava": "Purana Shali — aged rice — is laghu where new rice is guru, which is why the texts specify the age.",
       "dosha_effect": {
         "vata": -1,
         "pitta": -1,
@@ -3455,7 +3455,7 @@
       "virya_sanskrit": "shita",
       "vipaka": "sweet",
       "vipaka_sanskrit": "madhura",
-      "prabhava": "Prithuka is guru and Kapha-vardhaka in Bhavaprakasha despite coming from laghu Shali — the flattening and drying change the dravya, which is why the dry flake and the cooked dish are two rows here.",
+      "prabhava": "Prithuka is guru and Kapha-vardhaka in Bhavaprakasha despite coming from laghu Shali — the flattening and drying change the dravya, so the dry flake and the cooked dish do not share a guna.",
       "dosha_effect": {
         "vata": -1,
         "pitta": -1,
@@ -4101,7 +4101,7 @@
       "virya_sanskrit": "shita",
       "vipaka": "pungent",
       "vipaka_sanskrit": "katu",
-      "prabhava": "Medohara and Kapha-hara despite madhura rasa — the textbook Prabhava, and the reason Yava is the grain prescribed in Sthaulya and Prameha while Shali is withheld. The generator hardcoded barley into a Kapha-pacifying list and the reason lived nowhere.",
+      "prabhava": "Medohara and Kapha-hara despite madhura rasa — the textbook Prabhava, and the reason Yava is the grain prescribed in Sthaulya and Prameha while Shali is withheld.",
       "dosha_effect": {
         "vata": 1,
         "pitta": -1,
@@ -5453,7 +5453,7 @@
     "common_allergen": false,
     "nighantu_ref": {
       "text": "modern_extrapolated",
-      "varga": "Duplicate of `rajma` under a second id, inherited from the generator's category list. Same dravya, same reasoning; kept so the migration maps one-to-one. Extrapolated, not cited."
+      "varga": "No classical entry. Reasoned from the Shimbi Varga as a guru, ruksha, kashaya-madhura legume. Extrapolated, not cited."
     },
     "reviewed": false
   },
@@ -5662,7 +5662,7 @@
     "common_allergen": true,
     "nighantu_ref": {
       "text": "modern_extrapolated",
-      "varga": "Duplicate of `vegan_paneer_tofu` under a second id and a second category, inherited from the generator's lists. Reasoned from the Shimbi Varga curdled as Kilata is. Extrapolated, not cited."
+      "varga": "No classical entry. Reasoned from the Shimbi Varga curdled as Kilata is. Extrapolated, not cited."
     },
     "reviewed": false
   },
@@ -8550,7 +8550,7 @@
     "common_allergen": false,
     "nighantu_ref": {
       "text": "bhavaprakasha",
-      "varga": "Shaka — duplicate of `spinach` under a second id, inherited from the generator's category list. Same dravya, same reasoning."
+      "varga": "Shaka"
     },
     "reviewed": false
   },
@@ -10953,7 +10953,7 @@
     "common_allergen": false,
     "nighantu_ref": {
       "text": "bhavaprakasha",
-      "varga": "Kudhanya — duplicate of the `corn` row in the grain category, inherited from the generator listing maize in both. Same dravya, same reasoning."
+      "varga": "Kudhanya"
     },
     "reviewed": false
   }

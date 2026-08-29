@@ -14,6 +14,12 @@ it is handed.
 Macros are per 100 g **cooked**, matching the engine's 100 g legume portion. Peanut and
 besan are the exceptions and are recorded as eaten — raw and as flour.
 
+`kidney_beans` and `rajma` are one dravya under two ids, as are `tofu_firm` and
+`vegan_paneer_tofu` across two categories; both pairs are inherited from the file this
+replaces and carried forward so the migration maps one-to-one. That fact belongs here
+and not in the rows' `nighantu_ref`, which is seeded verbatim into the nutrition corpus
+and read back as a source line when a plan is written.
+
 AUTHORED, NOT CLINICALLY REVIEWED. Macros from USDA FoodData Central unless marked.
 """
 
@@ -146,9 +152,8 @@ LEGUMES = [
       apathya_for=("ibs", "grahani", "arsha", "amavata"),
       nutrition=N(127, 8.7, 22.8, 0.5, 6.4, source="usda"),
       **{**_L, "ref": "modern_extrapolated",
-         "varga": "Duplicate of `rajma` under a second id, inherited from the "
-                  "generator's category list. Same dravya, same reasoning; kept so the "
-                  "migration maps one-to-one. Extrapolated, not cited."}),
+         "varga": "No classical entry. Reasoned from the Shimbi Varga as a guru, "
+                  "ruksha, kashaya-madhura legume. Extrapolated, not cited."}),
 
     F("Black Beans", id="black_beans", prep_state="cooked",
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha"), virya="shita", vipaka="katu",
@@ -178,9 +183,8 @@ LEGUMES = [
       apathya_for=("hypothyroid", "thyroid", "ibs", "pcos"), allergen=True,
       nutrition=N(76, 8.1, 1.9, 4.8, 0.3, source="usda"),
       **{**_L, "ref": "modern_extrapolated",
-         "varga": "Duplicate of `vegan_paneer_tofu` under a second id and a second "
-                  "category, inherited from the generator's lists. Reasoned from the "
-                  "Shimbi Varga curdled as Kilata is. Extrapolated, not cited."}),
+         "varga": "No classical entry. Reasoned from the Shimbi Varga curdled as "
+                  "Kilata is. Extrapolated, not cited."}),
 
     F("Tempeh", id="tempeh", prep_state="fermented",
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha"), virya="ushna", vipaka="katu",

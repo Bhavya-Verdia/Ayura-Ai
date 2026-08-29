@@ -49,8 +49,7 @@ VEGETABLES = [
       pathya_for=("anemia", "obesity", "diabetes"),
       apathya_for=("amavata", "kidney_disease", "ibs"),
       nutrition=N(23, 2.9, 3.6, 0.4, 2.2, source="usda"),
-      **{**_V, "varga": "Shaka — duplicate of `spinach` under a second id, inherited "
-                        "from the generator's category list. Same dravya, same reasoning."}),
+      **{**_V, "varga": "Shaka"}),
 
     F("Methika Patra (Fenugreek Leaves)", id="methi_fenugreek_leaves",
       rasa=("tikta", "kashaya"), guna=("laghu", "ruksha"), virya="ushna", vipaka="katu",
@@ -362,7 +361,5 @@ VEGETABLES = [
       dosha=(1, 1, -1), ritu=("varsha", "sharad"),
       apathya_for=("ibs", "grahani", "acidity"),
       nutrition=N(96, 3.4, 21.0, 1.5, 2.4, source="usda"),
-      **{**_V, "varga": "Kudhanya — duplicate of the `corn` row in the grain category, "
-                        "inherited from the generator listing maize in both. Same "
-                        "dravya, same reasoning."}),
+      **{**_V, "varga": "Kudhanya"}),
 ]
