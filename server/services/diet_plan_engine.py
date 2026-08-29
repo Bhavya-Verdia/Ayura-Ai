@@ -476,9 +476,39 @@ def filter_and_score_foods(user_profile: dict, diet_prefs: dict,
 
 
 # ── Meal assembly ──────────────────────────────────────────────────────────────
+# `meal_suitable` says when a food is eaten on an ORDINARY day, and three slots ask for
+# something it therefore refuses — leaving the slot unfilled rather than erroring:
+#
+#   fasting lunch/dinner want a fruit, and fruit is `breakfast`/`snack` only. That is
+#     right for an ordinary day — fruit alongside a meal is classically discouraged —
+#     and wrong here, because on an Upavasa day the fruit IS the meal. A Phalahar is
+#     shaped like a snack whatever hour it falls at.
+#   tikshna snack wants a grain, and grain is never `snack`. A Tikshna Agni is fed four
+#     substantial meals; its snack is Poha or Upma, a breakfast-shaped dish eaten at
+#     four o'clock.
+#
+# Nothing went red, because `_get_meal_foods` skips a category it cannot fill and
+# backfills from whatever else is eligible. The meal was never empty — it just never
+# contained the thing it was designed around. A fasting lunch came out as paneer and
+# whey, on a day whose whole point is fruit.
+#
+# So the slot, not the food, decides which suitability windows apply. Each entry only
+# ever ADDS a window, so no food that used to be eligible for a slot stops being.
+# Widening `meal_suitable` on the foods themselves would have been the wrong lever: it
+# would have made fruit eligible beside an ordinary lunch, which is exactly what the
+# narrow value was protecting against.
+_SLOT_SUITABILITY: dict[tuple[str, str], tuple[str, ...]] = {
+    ("fasting", "lunch"):  ("lunch", "snack"),
+    ("fasting", "dinner"): ("dinner", "snack"),
+    ("tikshna", "snack"):  ("snack", "breakfast"),
+}
+
+
 def _get_meal_foods(pool: list[dict], meal_type: str, cats: list[str],
-                    rng: random.Random) -> list[dict]:
-    candidates = [f for f in pool if meal_type in (f.get("meal_suitable") or [])]
+                    rng: random.Random, config_key: str = "") -> list[dict]:
+    windows = _SLOT_SUITABILITY.get((config_key, meal_type), (meal_type,))
+    candidates = [f for f in pool
+                  if set(windows) & set(f.get("meal_suitable") or ())]
     selected: list[dict] = []
     for cat in cats:
         items = [f for f in candidates if f.get("category") == cat and f not in selected]
@@ -569,7 +599,7 @@ def _build_day(pool: list[dict], is_fasting: bool, agni_type: str,
     }
 
     for meal_name, cats in config.items():
-        items = _get_meal_foods(active_pool, meal_name, cats, rng)
+        items = _get_meal_foods(active_pool, meal_name, cats, rng, config_key)
         formatted = []
         for food in items:
             fmt = _format_food(food)
