@@ -305,29 +305,90 @@ def test_a_cond_rules_dict_without_the_conditions_key_still_works():
 
 
 def test_the_filter_does_not_empty_a_meal_slot_that_had_food_in_it():
-    """Measured before wiring: the Apathya filter empties zero meal slots that were
-    not already empty with no conditions declared. Three slots are empty at baseline
-    (`fasting` lunch/dinner fruit, `tikshna` snack grain) because no food in those
-    categories is `meal_suitable` for those meals — a pre-existing `_MEAL_CONFIGS`
-    mismatch, not something this filter caused. This pins the distinction so a future
-    library edit cannot quietly starve a slot and have it blamed on the config."""
+    """The Apathya filter empties zero meal slots that were not already empty with no
+    conditions declared.
+
+    Three slots used to be empty at baseline — `fasting` lunch/dinner fruit and
+    `tikshna` snack grain — because no food in those categories was `meal_suitable`
+    for those meals. That was a `_MEAL_CONFIGS`/`meal_suitable` mismatch rather than
+    anything the filter did, and `_SLOT_SUITABILITY` has since resolved it, so the
+    baseline is now zero. Measuring against the baseline rather than against zero is
+    what kept the two apart while they differed."""
     import collections
-    from services.diet_plan_engine import _build_condition_rules, _MEAL_CONFIGS
+    from services.diet_plan_engine import (
+        _build_condition_rules, _MEAL_CONFIGS, _SLOT_SUITABILITY)
     foods = _foods()
 
     def empty_slots(surviving):
         out = set()
         for cfg_name, cfg in _MEAL_CONFIGS.items():
             for meal, cats in cfg.items():
+                windows = set(_SLOT_SUITABILITY.get((cfg_name, meal), (meal,)))
                 per = collections.Counter(
-                    f["category"] for f in surviving if meal in (f.get("meal_suitable") or []))
+                    f["category"] for f in surviving
+                    if windows & set(f.get("meal_suitable") or ()))
                 out |= {(cfg_name, meal, c) for c in cats if per[c] == 0}
         return out
 
     baseline = empty_slots(foods)
-    assert len(baseline) == 3, f"baseline emptiness changed: {sorted(baseline)}"
+    assert not baseline, f"a meal slot asks for a category no food can fill: {sorted(baseline)}"
     for history in _PROFILES:
         conds = _build_condition_rules(history)["conditions"]
         surviving = [f for f in foods if not set(f.get("apathya_for") or ()) & conds]
         assert not (empty_slots(surviving) - baseline), \
             f"{history} newly empties {sorted(empty_slots(surviving) - baseline)}"
+
+
+# ── Every meal slot serves the category it asks for ───────────────────────────
+
+def test_every_meal_slot_can_be_filled_by_some_food():
+    """`_MEAL_CONFIGS` names the categories a meal is built from, and a category no
+    food is `meal_suitable` for does not error — `_get_meal_foods` skips it and
+    backfills from whatever else is available. So the failure was invisible: the meal
+    was never empty, it just never contained the thing it was designed around, and a
+    fasting lunch quietly became dairy and nuts with no fruit in it."""
+    import collections
+    from services.diet_plan_engine import _MEAL_CONFIGS, _SLOT_SUITABILITY
+    foods = _foods()
+    unfillable = []
+    for cfg_name, cfg in _MEAL_CONFIGS.items():
+        for meal, cats in cfg.items():
+            windows = set(_SLOT_SUITABILITY.get((cfg_name, meal), (meal,)))
+            per = collections.Counter(
+                f["category"] for f in foods if windows & set(f.get("meal_suitable") or ()))
+            unfillable += [f"{cfg_name}.{meal} wants {c}" for c in cats if per[c] == 0]
+    assert not unfillable, unfillable
+
+
+def test_slot_suitability_only_ever_widens():
+    """Each entry adds a suitability window to a slot. If one ever narrowed instead,
+    foods that used to be eligible would silently stop appearing — the same invisible
+    failure this table was written to fix, in the other direction."""
+    from services.diet_plan_engine import _SLOT_SUITABILITY
+    for (cfg_name, meal), windows in _SLOT_SUITABILITY.items():
+        assert meal in windows, f"{cfg_name}.{meal} drops its own suitability window"
+        assert len(windows) > 1, f"{cfg_name}.{meal} adds nothing; remove the entry"
+
+
+def test_a_fasting_day_actually_serves_fruit_and_a_tikshna_snack_serves_grain():
+    """The property the fix exists for, asserted on generated plans rather than on the
+    tables. Before `_SLOT_SUITABILITY`, these were 0/8, 0/8 and 0/28."""
+    from services.diet_plan_engine import generate_diet_plan
+    foods = _foods()
+
+    plan = generate_diet_plan(
+        {"id": "b", "dominant_dosha": "vata", "agni_type": "sama"},
+        {"fasting_days": ["Monday", "Thursday"]}, foods)
+    fasting_days = [d for w in plan["four_week_plan"] for d in w["days"] if d["is_fasting_day"]]
+    assert fasting_days
+    for day in fasting_days:
+        for meal in ("lunch", "dinner"):
+            assert any(i["category"] == "fruit" for i in day["meals"][meal]), \
+                f"fasting {meal} has no fruit: {[i['id'] for i in day['meals'][meal]]}"
+
+    plan = generate_diet_plan(
+        {"id": "a", "dominant_dosha": "pitta", "agni_type": "tikshna"}, {}, foods)
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            assert any(i["category"] == "grain" for i in day["meals"]["snack"]), \
+                f"tikshna snack has no grain: {[i['id'] for i in day['meals']['snack']]}"
