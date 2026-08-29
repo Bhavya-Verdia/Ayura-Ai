@@ -253,3 +253,78 @@ def test_severity_gate_is_surfaced_as_a_label_and_gates_nothing():
         served[sev] = out[0]["remedy"]["name"]
         assert out[0]["symptom_seriousness"] == mild_gated["severity_gate"]
     assert served["mild"] == served["moderate"]
+
+
+# ── Severity is no longer a badge ─────────────────────────────────────────────
+
+def test_moderate_severity_decided_nothing_and_now_does():
+    """`severity` is a three-value field and `moderate` was inert: `severe` was a
+    referral, and everything below it produced byte-identical output at every
+    duration. The practitioner threshold is the only lever it has left — `severe` is
+    already referred, and the KB holds exactly one remedy per (symptom, dosha) plus a
+    universal, so there is no stronger preparation to escalate a moderate case to."""
+    from services.remedy_engine import filter_remedies
+    prof = {"dominant_dosha": "pitta", "secondary_dosha": "vata"}
+
+    def triage(sev, dur):
+        out = filter_remedies(prof, {"symptoms": ["headache"],
+                                     "severity": {"headache": sev},
+                                     "duration": {"headache": dur}})[0]
+        return out.get("action"), out.get("requires_practitioner")
+
+    # the cell the change exists for
+    assert triage("mild", "weeks") == (None, False)
+    assert triage("moderate", "weeks") == (None, True)
+
+    # and nothing else moved
+    assert triage("mild", "recent") == (None, False)
+    assert triage("moderate", "recent") == (None, False)
+    for dur in ("months", "chronic"):
+        assert triage("mild", dur) == (None, True)
+        assert triage("moderate", dur) == (None, True)
+    for dur in ("recent", "weeks", "months", "chronic"):
+        assert triage("severe", dur)[0] == "see_doctor"
+
+
+def test_the_practitioner_note_says_which_trigger_fired():
+    """The view printed "Chronic/long-duration symptom" whatever the cause, which is
+    the wrong sentence for a moderate complaint of a fortnight."""
+    from services.remedy_engine import filter_remedies
+    prof = {"dominant_dosha": "pitta", "secondary_dosha": "vata"}
+
+    weeks = filter_remedies(prof, {"symptoms": ["headache"],
+                                   "severity": {"headache": "moderate"},
+                                   "duration": {"headache": "weeks"}})[0]
+    assert "moderate" in weeks["practitioner_reason"].lower()
+    assert "weeks" in weeks["practitioner_reason"].lower()
+
+    months = filter_remedies(prof, {"symptoms": ["headache"],
+                                    "severity": {"headache": "mild"},
+                                    "duration": {"headache": "months"}})[0]
+    assert "months" in months["practitioner_reason"].lower()
+    assert months["practitioner_reason"] != weeks["practitioner_reason"]
+
+
+def test_no_reason_is_emitted_when_no_note_is_shown():
+    """A reason without a note is dead text that a future view might render."""
+    from services.remedy_engine import filter_remedies
+    out = filter_remedies({"dominant_dosha": "pitta", "secondary_dosha": "vata"},
+                          {"symptoms": ["headache"], "severity": {"headache": "mild"},
+                           "duration": {"headache": "recent"}})[0]
+    assert out["requires_practitioner"] is False
+    assert out["practitioner_reason"] == ""
+
+
+def test_every_severity_duration_pair_has_a_defined_outcome():
+    """A triage matrix with an undefined cell is where a symptom falls through."""
+    import itertools
+    from services.remedy_engine import filter_remedies
+    prof = {"dominant_dosha": "pitta", "secondary_dosha": "vata"}
+    for sev, dur in itertools.product(["mild", "moderate", "severe"],
+                                      ["recent", "weeks", "months", "chronic"]):
+        out = filter_remedies(prof, {"symptoms": ["headache"],
+                                     "severity": {"headache": sev},
+                                     "duration": {"headache": dur}})
+        assert out, f"{sev}/{dur} produced nothing at all"
+        r = out[0]
+        assert r.get("action") == "see_doctor" or "requires_practitioner" in r

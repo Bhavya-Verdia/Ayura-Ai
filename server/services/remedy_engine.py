@@ -170,8 +170,22 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
         if not remedy_kb:
             continue
 
-        # b) Duration gate
-        requires_practitioner = (sym_dur in ["chronic", "months"])
+        # b) Duration gate, calibrated by severity.
+        #
+        # This was `sym_dur in ["chronic", "months"]` — duration alone — which left
+        # `moderate` as the one severity value that decided nothing: a moderate
+        # symptom and a mild one produced byte-identical output at every duration.
+        # `severe` is already a referral above, so the practitioner threshold is the
+        # only lever severity has left. It is also the only one available: the KB
+        # holds exactly one remedy per (symptom, dosha) plus a universal, so there is
+        # no stronger preparation to escalate a moderate case TO.
+        #
+        # The rule is that severity buys down the duration you are allowed to wait:
+        # mild still waits for months, moderate stops at weeks. Only one combination
+        # changes — moderate + weeks — and it changes towards review, not away.
+        requires_practitioner = (
+            _DURATION_RANK.get(sym_dur, 0) >= _PRACTITIONER_DURATION_FLOOR.get(sym_sev, 2))
+        practitioner_reason = _practitioner_reason(sym_sev, sym_dur) if requires_practitioner else ""
 
         # c) Pregnancy filter
         if pregnancy_or_nursing and not remedy_kb.get("pregnancy_safe", False):
@@ -320,6 +334,10 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
             "dosha_cause": remedy_kb.get("dosha_cause", {}).get(dosha_used, ""),
             "remedy": selected_remedy,
             "requires_practitioner": requires_practitioner,
+            # Which trigger fired. The note in the view said "Chronic/long-duration
+            # symptom" whatever the cause, which is wrong copy for a moderate
+            # complaint that has run a fortnight.
+            "practitioner_reason": practitioner_reason,
             "taste_notices": _taste_notices(selected_remedy, taste_prefs),
             "drug_interaction_warning": interaction_warning,
             "source": remedy_kb.get("source", "Traditional"),
@@ -430,6 +448,21 @@ _FOLLOW_UP_BY_DURATION = {
 }
 
 _DURATION_RANK = {"recent": 0, "weeks": 1, "months": 2, "chronic": 3}
+
+# How long a symptom may run before it wants a practitioner, by how bad it is.
+# `severe` is absent because it never reaches this test — it is referred outright.
+_PRACTITIONER_DURATION_FLOOR = {"mild": 2, "moderate": 1}
+
+
+def _practitioner_reason(severity: str, duration: str) -> str:
+    """Why the practitioner note is showing, in the words that fit the trigger."""
+    if severity == "moderate" and _DURATION_RANK.get(duration, 0) == 1:
+        return ("A moderate symptom that has already run for weeks is past the point "
+                "where self-care should be carrying it on its own.")
+    if _DURATION_RANK.get(duration, 0) >= 2:
+        return ("A symptom running for months or longer needs a practitioner who can "
+                "follow it over time.")
+    return "This symptom warrants review by an Ayurvedic practitioner."
 
 
 def _follow_up_advice(symptom_input: dict, referred: list) -> str:
