@@ -110,6 +110,15 @@ _DRUG_HERB_MAP: dict[str, list[str]] = {
     "kanchanara":  ["thyroid_medication", "blood_thinners"],
 }
 
+def _escalation(remedy_kb: dict | None) -> str:
+    """The KB's authored "consult a doctor if…" line for a symptom.
+
+    Tolerates a missing entry because the severity gate runs for symptoms the KB does
+    not hold, where there is no line to give and a referral is issued anyway.
+    """
+    return ((remedy_kb or {}).get("consult_doctor_if") or "").strip()
+
+
 def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
     filtered_results = []
 
@@ -135,18 +144,29 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
         sym_sev = severity.get(sym_id, "mild")
         sym_dur = duration.get(sym_id, "recent")
 
+        # Find remedy in KB (resolve onboarding labels to KB ids; fall back to raw).
+        #
+        # Resolved BEFORE the severity gate so a referral can carry the KB's own
+        # escalation line. The gate still fires for a symptom that is not in the KB —
+        # a severe complaint we hold no remedy for is exactly when a referral matters
+        # — so the `not remedy_kb` bail stays below it, not above.
+        _sid = _SYMPTOM_ALIASES.get(str(sym_id).lower(), str(sym_id).lower())
+        remedy_kb = next((r for r in all_remedies if r.get("symptom_id") == _sid), None)
+
         # a) Severity gate
         if sym_sev == "severe":
             filtered_results.append({
                 "symptom_id": sym_id,
                 "action": "see_doctor",
-                "message": "This symptom requires immediate medical attention. Please consult a doctor."
+                "message": "This symptom requires immediate medical attention. Please consult a doctor.",
+                # The specific thing to watch for, which the generic sentence above
+                # cannot say: "vision loss, numbness, or vomiting" for a migraine,
+                # "stools contain blood" for diarrhoea. Every one of the 60 entries
+                # carries one and it reached the user through no channel at all.
+                "consult_doctor_if": _escalation(remedy_kb),
             })
             continue
 
-        # Find remedy in KB (resolve onboarding labels to KB ids; fall back to raw)
-        _sid = _SYMPTOM_ALIASES.get(str(sym_id).lower(), str(sym_id).lower())
-        remedy_kb = next((r for r in all_remedies if r.get("symptom_id") == _sid), None)
         if not remedy_kb:
             continue
 
@@ -158,7 +178,8 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
             filtered_results.append({
                 "symptom_id": sym_id,
                 "action": "consult_doctor",
-                "message": "Safe remedy not available during pregnancy. Please consult your Ayurvedic practitioner."
+                "message": "Safe remedy not available during pregnancy. Please consult your Ayurvedic practitioner.",
+                "consult_doctor_if": _escalation(remedy_kb),
             })
             continue
 
@@ -192,6 +213,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                     f"Home treatment is not appropriate here: {blocked_by.replace('_', ' ')}. "
                     "Please see a practitioner."
                 ),
+                "consult_doctor_if": _escalation(remedy_kb),
             })
             continue
 
@@ -307,6 +329,19 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
             # apply to broken skin". Being read is the only way these ever work.
             "usage_cautions": remedy_cautions,
             "red_flags": remedy_red_flags,
+            # Authored on all 60 entries and, until now, read by exactly one thing —
+            # `build_vectors.py`. The escalation guidance was embedded for the model
+            # and shown to nobody. For 38 of the served remedies no other field
+            # carried it either: their `red_flags` are empty.
+            "consult_doctor_if": _escalation(remedy_kb),
+            # `severity_gate` in the KB. It is NOT a ceiling on treatment — it labels
+            # how serious the complaint itself is, which is why `ojas_building` and
+            # `seasonal_detox` carry "mild" (they have no severity at all) and why the
+            # graver complaints correlate with `use_with_caution` remedies rather than
+            # against them. Gating on it would withhold the headache remedy at moderate
+            # while still serving the migraine remedy at moderate. Surfaced under an
+            # honest name so the next reader is not invited to make that mistake.
+            "symptom_seriousness": remedy_kb.get("severity_gate") or "",
         })
 
     return filtered_results

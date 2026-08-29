@@ -4670,6 +4670,21 @@
   line-height: 1.5;
   color: var(--ayura-ink);
 }
+/* The KB's own "consult a doctor if…" line. Set apart from the generic referral
+   message above it, because the specific trigger is the part worth reading. */
+.rv-referral-escalation {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #c0392b;
+  padding-left: 9px;
+  border-left: 2px solid #c0392b55;
+}
+.rv-escalation {
+  margin: 0;
+  font-size: 0.81rem;
+  line-height: 1.55;
+  color: #c0392b;
+}
 
 /* ── Disclaimer ── */
 .rv-disclaimer {
