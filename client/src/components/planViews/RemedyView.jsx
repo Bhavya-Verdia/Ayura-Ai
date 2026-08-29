@@ -27,6 +27,7 @@ function RemedyCard({ result }) {
   const {
     remedy, symptom_display, severity, dosha_cause, dosha_used, requires_practitioner,
     ayurvedic_rationale, usage_cautions, red_flags, taste_notices,
+    consult_doctor_if,
   } = result
   if (!remedy) return null
   const doshaColor = DOSHA_COLORS_R[dosha_used] || DOSHA_COLORS_R.universal
@@ -102,6 +103,18 @@ function RemedyCard({ result }) {
             </div>
           )}
 
+          {/* The KB authors one of these for every symptom — "if the migraine comes
+              with vision loss, numbness or vomiting". It was read only by the vector
+              seeder, so it was embedded for the model and shown to no one, and for 38
+              of the 60 remedies no other field carried it either. It is the sentence
+              that tells someone the home remedy has stopped being the right answer. */}
+          {consult_doctor_if && (
+            <div className="rv-section">
+              <div className="rv-section-label" style={{ color: '#c0392b' }}>When to see a doctor</div>
+              <p className="rv-escalation">{consult_doctor_if}</p>
+            </div>
+          )}
+
           {requires_practitioner && (
             <div className="rv-practitioner-note">
               <TriangleAlert size={13} />
@@ -159,6 +172,11 @@ export function RemedyView({ plan }) {
             <div key={i} className="rv-referral-card">
               <span className="rv-referral-sym">{r.symptom_id || r.symptom_display || 'Symptom'}</span>
               <span className="rv-referral-msg">{r.message}</span>
+              {/* A referral is where the specific warning matters most, and the
+                  generic message is the one thing that cannot carry it. */}
+              {r.consult_doctor_if && (
+                <span className="rv-referral-escalation">{r.consult_doctor_if}</span>
+              )}
             </div>
           ))}
         </div>

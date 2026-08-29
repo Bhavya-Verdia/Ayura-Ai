@@ -170,3 +170,86 @@ def test_a_taste_preference_never_changes_which_remedy_is_chosen():
     fussy = filter_remedies(
         _profile(), {"symptoms": ["acidity"], "preference_taste_smell": ["no_bitter"]})
     assert plain[0]["remedy"]["name"] == fussy[0]["remedy"]["name"]
+
+
+# ── The KB's escalation line reaches the user ─────────────────────────────────
+#
+# `consult_doctor_if` is authored on all 60 home-remedy entries and was read by
+# exactly one thing: `scripts/build_vectors.py`. It was embedded into the RAG corpus
+# for the model and rendered to nobody. For 38 of the served remedies no other field
+# carried the same information either — their `red_flags` are empty — so the sentence
+# telling someone the home remedy has stopped being the right answer reached them
+# through no channel at all.
+
+def _kb():
+    from services.remedy_engine import _REMEDIES_FALLBACK
+    return _REMEDIES_FALLBACK
+
+
+def _profile(**over):
+    p = {"dominant_dosha": "pitta", "secondary_dosha": "vata"}
+    p.update(over)
+    return p
+
+
+def test_every_kb_entry_still_carries_an_escalation_line():
+    """The fix is only worth anything while the KB holds these. If an entry loses its
+    line, the card silently renders without one."""
+    missing = [r["symptom_id"] for r in _kb() if not (r.get("consult_doctor_if") or "").strip()]
+    assert not missing, f"entries with no consult_doctor_if: {missing}"
+
+
+def test_a_served_remedy_carries_its_escalation_line():
+    from services.remedy_engine import filter_remedies
+    for entry in _kb():
+        sym = entry["symptom_id"]
+        out = filter_remedies(_profile(), {"symptoms": [sym], "severity": {sym: "mild"}})
+        if not out or out[0].get("action"):
+            continue          # referred rather than served; covered below
+        assert out[0].get("consult_doctor_if") == entry["consult_doctor_if"], \
+            f"{sym}: served remedy did not carry its escalation line"
+
+
+def test_a_referral_carries_the_specific_warning_not_only_the_generic_one():
+    """A referral is where the specific trigger matters most, and the generic
+    "requires immediate medical attention" is the one sentence that cannot carry it."""
+    from services.remedy_engine import filter_remedies
+    out = filter_remedies(_profile(), {"symptoms": ["migraine"], "severity": {"migraine": "severe"}})
+    assert out and out[0]["action"] == "see_doctor"
+    assert "vision loss" in out[0]["consult_doctor_if"]
+
+
+def test_a_severe_symptom_the_kb_does_not_hold_is_still_referred():
+    """The KB lookup moved above the severity gate so a referral could carry the
+    escalation line. The gate must still fire for a symptom with no KB entry — that
+    is precisely when a referral matters — and must not crash looking for a line
+    that does not exist."""
+    from services.remedy_engine import filter_remedies
+    out = filter_remedies(_profile(), {"symptoms": ["not_a_known_symptom"],
+                                       "severity": {"not_a_known_symptom": "severe"}})
+    assert out and out[0]["action"] == "see_doctor"
+    assert out[0]["consult_doctor_if"] == ""
+
+
+def test_severity_gate_is_surfaced_as_a_label_and_gates_nothing():
+    """`severity_gate` is NOT a ceiling on treatment, and reading it as one would be a
+    safety error in the confident direction.
+
+    The evidence is in the KB: `ojas_building` and `seasonal_detox` carry "mild" and
+    have no severity at all; `diabetes_lifestyle` carries "moderate" while
+    `hypothyroid_support` carries "mild", which as a ceiling would mean home-treating
+    moderate diabetes but only mild hypothyroidism; and the graver complaints
+    correlate WITH `use_with_caution` remedies rather than against them. It labels how
+    serious the complaint is. So it is surfaced under an honest name and no remedy is
+    withheld on it — a moderate report is served exactly as a mild one is.
+    """
+    from services.remedy_engine import filter_remedies
+    mild_gated = next(r for r in _kb()
+                      if r["severity_gate"] == "mild" and r["symptom_id"] == "headache")
+    served = {}
+    for sev in ("mild", "moderate"):
+        out = filter_remedies(_profile(), {"symptoms": ["headache"], "severity": {"headache": sev}})
+        assert out and not out[0].get("action"), f"headache was withheld at {sev}"
+        served[sev] = out[0]["remedy"]["name"]
+        assert out[0]["symptom_seriousness"] == mild_gated["severity_gate"]
+    assert served["mild"] == served["moderate"]
