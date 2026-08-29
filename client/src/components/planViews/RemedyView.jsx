@@ -27,7 +27,7 @@ function RemedyCard({ result }) {
   const {
     remedy, symptom_display, severity, dosha_cause, dosha_used, requires_practitioner,
     ayurvedic_rationale, usage_cautions, red_flags, taste_notices,
-    consult_doctor_if,
+    consult_doctor_if, practitioner_reason,
   } = result
   if (!remedy) return null
   const doshaColor = DOSHA_COLORS_R[dosha_used] || DOSHA_COLORS_R.universal
@@ -115,10 +115,14 @@ function RemedyCard({ result }) {
             </div>
           )}
 
+          {/* The note used to read "Chronic/long-duration symptom" whatever fired it,
+              which is the wrong sentence for a moderate complaint that has run a
+              fortnight — the case the severity threshold now catches. The engine
+              says which trigger fired; the old line stays as the fallback. */}
           {requires_practitioner && (
             <div className="rv-practitioner-note">
               <TriangleAlert size={13} />
-              Chronic/long-duration symptom — follow up with an Ayurvedic practitioner
+              {practitioner_reason || 'Chronic/long-duration symptom — follow up with an Ayurvedic practitioner'}
             </div>
           )}
 
