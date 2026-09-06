@@ -28,7 +28,7 @@ concurrency:
 # Requires one repo secret: DEPLOY_SSH_KEY = the private SSH key for the droplet.
 # Host/dir are not secret (already committed in deploy.sh).
 env:
-  DEPLOY_HOST: 64.227.191.87
+  DEPLOY_HOST: 34.14.208.155
   REMOTE_DIR: /opt/ayuraai
 
 jobs:

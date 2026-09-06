@@ -32,7 +32,7 @@ MSG
 fi
 [[ "${1:-}" == "--break-glass" ]] && shift
 
-SERVER="root@64.227.191.87"
+SERVER="root@34.14.208.155"
 REMOTE_DIR="/opt/ayuraai"
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 COMMIT=$(git rev-parse --short HEAD)
