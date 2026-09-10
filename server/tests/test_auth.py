@@ -113,3 +113,69 @@ def test_get_current_user_profile(client):
     data = response.json()
     assert data["name"] == "Test User"
     assert data["email"] == "test@ayura.com"
+
+
+# ── Account pre-hijacking via OAuth linking ────────────────────────────────
+#
+# register() writes a password_hash before anyone proves they own the address.
+# Linking flips auth_provider, and the login gate used to read
+# `auth_provider == "local" and not is_verified` — so linking switched the gate
+# off and the stranger's password opened the account.
+
+from datetime import datetime, timezone  # noqa: E402
+from routes.auth import _adopt_oauth_identity, _pick_verified_github_email  # noqa: E402
+from schemas.user_schema import UserDocument  # noqa: E402
+
+NOW = datetime.now(timezone.utc)
+
+
+def _user(**over):
+    base = dict(
+        _id="victim-uuid", email="victim@gmail.com", name="Victim",
+        password_hash=hash_password("AttackerPass123!"),
+        auth_provider="local", is_verified=False,
+        created_at=NOW, updated_at=NOW,
+    )
+    base.update(over)
+    return UserDocument(**base)
+
+
+def test_linking_drops_a_password_nobody_verified():
+    user = _user()
+    fields = _adopt_oauth_identity(user, "google_id", "g-123", "google")
+    assert fields["password_hash"] is None and user.password_hash is None
+    assert fields["is_verified"] is True
+    assert fields["google_id"] == "g-123"
+    # Never the whole document — that used to carry `_id` into every $set.
+    assert "_id" not in fields and "email" not in fields
+
+
+def test_linking_keeps_a_password_the_owner_did_verify():
+    user = _user(is_verified=True)
+    fields = _adopt_oauth_identity(user, "google_id", "g-123", "google")
+    assert "password_hash" not in fields and user.password_hash is not None
+
+
+def test_login_gate_survives_the_provider_flip(client):
+    """The exact post-link row: provider flipped, address still unverified."""
+    mock_db = client.app.dependency_overrides[get_mongodb]()
+    doc = _user(auth_provider="google", google_id="g-123").model_dump(by_alias=True)
+    doc["password_hash"] = hash_password("AttackerPass123!")
+    mock_db.users.find_one = AsyncMock(return_value=doc)
+
+    res = client.post("/api/auth/login",
+                      json={"email": "victim@gmail.com", "password": "AttackerPass123!"})
+    assert res.status_code == 403
+    assert "verify" in res.json()["detail"].lower()
+
+
+def test_github_email_must_be_one_github_confirmed():
+    emails = [
+        {"email": "typed-in@victim.com", "primary": True, "verified": False},
+        {"email": "real@example.com", "primary": False, "verified": True},
+    ]
+    assert _pick_verified_github_email(emails) == "real@example.com"
+    assert _pick_verified_github_email(
+        [{"email": "typed-in@victim.com", "primary": True, "verified": False}]
+    ) is None
+    assert _pick_verified_github_email([]) is None

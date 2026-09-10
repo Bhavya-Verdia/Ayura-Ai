@@ -94,6 +94,64 @@ def _clear_auth_cookies(response: Response) -> None:
     response.delete_cookie(settings.REFRESH_TOKEN_COOKIE, path="/")
 
 
+def _pick_verified_github_email(emails) -> str | None:
+    """The primary address GitHub has confirmed, else any confirmed one.
+
+    `verified` was ignored here, and the fallback took `emails[0]` whatever it
+    was — so an address a user had merely typed into GitHub, and never proved
+    they could read, was enough to name an account. Since an email match is what
+    binds an OAuth login to an existing account, that address could claim one
+    belonging to whoever actually owns the mailbox.
+    """
+    if not isinstance(emails, list):
+        return None
+    verified = [e for e in emails if isinstance(e, dict) and e.get("verified") and e.get("email")]
+    return next(
+        (e["email"] for e in verified if e.get("primary")),
+        verified[0]["email"] if verified else None,
+    )
+
+
+def _adopt_oauth_identity(
+    user: UserDocument, id_field: str, provider_id: str, provider: str
+) -> dict:
+    """Attach a provider identity to an existing account; returns the `$set` fields.
+
+    The provider has just proved this person controls the mailbox, so the account
+    is verified from here on. `is_verified` stayed False on every OAuth user
+    before this, which made the field a lie about exactly the accounts whose
+    address was best attested.
+
+    The password is the dangerous part. `register` writes a `password_hash`
+    before anyone proves they own the address, and login's gate used to read
+    `auth_provider == "local" and not is_verified` — so linking, which flips
+    `auth_provider`, switched that gate off. Anyone could register a stranger's
+    address, wait for them to sign in with Google, and then log in with the
+    password they had chosen, into that person's account and health data.
+
+    An unverified password on an account someone else has just proved they own is
+    not a credential. Drop it. The owner loses nothing: the provider they just
+    signed in with is their credential, and it is the one they came here with.
+    (`forgot_password` returns its generic message without sending for anything
+    that is not `auth_provider == "local"`, so it is not a route back in here.)
+    """
+    fields: dict = {
+        id_field: provider_id,
+        "auth_provider": provider,
+        "is_verified": True,
+        "updated_at": datetime.now(timezone.utc),
+    }
+    if user.password_hash and not user.is_verified:
+        fields["password_hash"] = None
+        logger.warning(
+            "Dropped an unverified local password while linking %s to account %s",
+            provider, user.id,
+        )
+    for key, value in fields.items():
+        setattr(user, key, value)
+    return fields
+
+
 async def _issue_tokens(user: UserDocument, response: Response, db: AsyncIOMotorDatabase) -> TokenResponse:
     access_token = create_access_token(
         user.id,
@@ -219,9 +277,12 @@ async def login(req: LoginRequest, response: Response, db: AsyncIOMotorDatabase 
 
     user = UserDocument(**user_dict)
 
-    # Email-verification gate for password accounts. OAuth/phone users are
-    # implicitly verified by their provider, so this only applies to "local".
-    if user.auth_provider == "local" and not user.is_verified:
+    # Email-verification gate, keyed on the credential rather than the provider.
+    # It read `auth_provider == "local"`, and linking an OAuth identity flips
+    # auth_provider — so linking turned the gate off and let a password nobody
+    # had verified open the account. A password on an unverified address is
+    # never good enough, whatever the row says the provider is.
+    if user.password_hash and not user.is_verified:
         raise HTTPException(
             status_code=403,
             detail="Please verify your email before logging in. Check your inbox for the verification link.",
@@ -315,6 +376,17 @@ async def google_auth(
     if "id" not in google_user or "email" not in google_user:
         raise HTTPException(status_code=400, detail="Google auth failed: invalid user profile data.")
 
+    # Google tells us whether it has confirmed the address; we never asked.
+    # Only an explicit False is a refusal — a missing field means the userinfo
+    # payload changed shape, and this is defence in depth (the account-linking
+    # rules below are what actually contain an unverified address), so it must
+    # not take every Google sign-in down with it.
+    if google_user.get("verified_email") is False:
+        raise HTTPException(
+            status_code=400,
+            detail="Your Google account's email address is not verified with Google.",
+        )
+
     # Find or create user
     user_dict = await db.users.find_one({
         "$or": [{"google_id": google_user["id"]}, {"email": google_user["email"]}]
@@ -330,23 +402,29 @@ async def google_auth(
             avatar_url=google_user.get("picture"),
             auth_provider="google",
             google_id=google_user["id"],
+            is_verified=True,
             created_at=now,
             updated_at=now
         )
         await db.users.insert_one(user.model_dump(by_alias=True))
     else:
         user = UserDocument(**user_dict)
+        updates: dict = {}
         if not user.google_id:
             # Link Google account to existing email user
-            user.google_id = google_user["id"]
-            user.auth_provider = "google"
+            updates = _adopt_oauth_identity(user, "google_id", google_user["id"], "google")
             if google_user.get("picture"):
                 user.avatar_url = google_user["picture"]
-            user.updated_at = now
-            await db.users.update_one(
-                {"_id": user.id},
-                {"$set": user.model_dump(by_alias=True)}
-            )
+                updates["avatar_url"] = user.avatar_url
+        elif not user.is_verified:
+            # Accounts this route created before it set the flag. Google verified
+            # them all along; the record just never said so.
+            user.is_verified = True
+            updates = {"is_verified": True, "updated_at": now}
+        if updates:
+            # Explicit fields, not a whole model_dump — that carried `_id` into
+            # every `$set` and wrote back every field the request never touched.
+            await db.users.update_one({"_id": user.id}, {"$set": updates})
 
     return await _issue_tokens(user, response, db)
 
@@ -611,12 +689,7 @@ async def github_auth(
                     "https://api.github.com/user/emails",
                     headers={"Authorization": f"Bearer {access_token}"},
                 )
-                emails = emails_resp.json()
-                primary_email = next((e["email"] for e in emails if e.get("primary")), None)
-                if primary_email:
-                    email = primary_email
-                elif len(emails) > 0:
-                    email = emails[0]["email"]
+                email = _pick_verified_github_email(emails_resp.json())
 
     except httpx.HTTPError:
         raise HTTPException(status_code=500, detail="Failed to communicate with GitHub")
@@ -640,23 +713,25 @@ async def github_auth(
             avatar_url=github_user.get("avatar_url"),
             auth_provider="github",
             github_id=github_id_str,
+            is_verified=True,
             created_at=now,
             updated_at=now
         )
         await db.users.insert_one(user.model_dump(by_alias=True))
     else:
         user = UserDocument(**user_dict)
+        updates: dict = {}
         if not user.github_id:
             # Link GitHub account to existing email user
-            user.github_id = github_id_str
-            user.auth_provider = "github"
+            updates = _adopt_oauth_identity(user, "github_id", github_id_str, "github")
             if github_user.get("avatar_url") and not user.avatar_url:
                 user.avatar_url = github_user["avatar_url"]
-            user.updated_at = now
-            await db.users.update_one(
-                {"_id": user.id},
-                {"$set": user.model_dump(by_alias=True)}
-            )
+                updates["avatar_url"] = user.avatar_url
+        elif not user.is_verified:
+            user.is_verified = True
+            updates = {"is_verified": True, "updated_at": now}
+        if updates:
+            await db.users.update_one({"_id": user.id}, {"$set": updates})
 
     return await _issue_tokens(user, response, db)
 
