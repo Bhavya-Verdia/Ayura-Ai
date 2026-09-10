@@ -148,7 +148,7 @@ function AdminRoute({ children }) {
 }
 
 function OnboardingRoute({ children }) {
-  const { user, loading } = useAuth()
+  const { user, profile, loading } = useAuth()
   const location = useLocation()
 
   if (loading) return <LoadingScreen />
@@ -156,7 +156,13 @@ function OnboardingRoute({ children }) {
   // Allow re-entry if navigated explicitly (Settings page can link here)
   const isRetake = new URLSearchParams(location.search).get('retake') === 'true'
   if (user.onboarding_complete && location.pathname === '/onboarding' && !isRetake) {
-    return <Navigate to="/dashboard" replace />
+    // Finishing onboarding flips onboarding_complete while this route is still
+    // mounted, so this redirect fires in the same tick as the wizard's own
+    // navigate('/dosha-quiz') — and won. Every user onboarded since 2026-06-27
+    // landed on the dashboard with no Prakriti assessment behind their plans.
+    // Somebody who has not been assessed belongs in the assessment either way.
+    const assessed = Boolean(profile?.prakriti_locked || profile?.dosha_scores)
+    return <Navigate to={assessed ? '/dashboard' : '/dosha-quiz'} replace />
   }
   return children
 }
