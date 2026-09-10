@@ -143,6 +143,15 @@ def compute_vikriti_update(
     if ama is not None:
         update["ama_indicator"] = ama
 
+    # Rajaswala. This was consumed above to raise Pitta and then dropped, which made
+    # it the only thing the check-in asks about that no plan could ever see —
+    # including the one feature that schedules emesis, purgation and bloodletting.
+    # Persisted with its observation time: `False` is as load-bearing as `True`,
+    # because reporting the end of a period is what lifts the Panchakarma gate.
+    if menstrual_phase is not None and getattr(user, "gender", None) == "female":
+        update["menstrual_phase"] = bool(menstrual_phase)
+        update["menstrual_phase_at"] = now
+
     return update, old_vikriti
 
 

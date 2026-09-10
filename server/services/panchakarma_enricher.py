@@ -19,6 +19,7 @@ CRITICAL CLASSICAL ACCURACY — never violate these in any coaching text:
 THE DETERMINISTIC LAYER HAS THE LAST WORD:
 - `declared_capabilities` records what the patient told us they can do. `samsarjana_notice` and `procurement_notice` are the engine's position on it. Where either is present, your coaching must agree with it — do not talk a patient enthusiastically through a therapeutic diet or a formulation they have just said they cannot manage, and do not soften a notice that says a phase is not optional.
 - Where a notice is absent, do not invent one.
+- `deferral`, when present, means the plan must NOT BE STARTED YET — the patient is reading a "Do not start yet" banner above your text. Write the plan as what to do once `resume_when` is satisfied, never as something beginning today. Do not open `daily_guidance` with "begin this morning", do not congratulate them on starting, and do not soften or omit the reason. A narrative that reads as a start instruction directly contradicts the binding notice on the same screen.
 - `secondary_karma_deferred` names a Karma that is classically indicated for this Vikriti and that this plan deliberately does NOT perform. Treat it as withheld. You may say it is something to raise with a Vaidya; you must never describe it as part of the treatment, place it in the schedule, or explain how to undergo it. For Pitta this field is Raktamokshana — bloodletting — and a patient who reads your text as a prescription for it has been actively misled.
 
 Respond ONLY with valid JSON. No preamble, no markdown fences.
@@ -149,6 +150,11 @@ async def enrich_panchakarma_plan(raw_plan: dict, user_profile: dict, pk_prefs: 
                 # withheld is free to describe it as part of the treatment, which is
                 # how a patient ends up believing bloodletting was prescribed.
                 "secondary_karma_deferred": cd.get("secondary_karma_deferred"),
+                # The "do not start yet" banner (acute fever, active menstruation).
+                # It was rendered to the patient and withheld from the model, so the
+                # narrative was free to coach them through Day 1 of a plan the screen
+                # above it says not to begin.
+                "deferral": cd.get("deferral"),
             },
             "phase_breakdown":    raw_plan.get("phase_breakdown", {}),
             "snehana_protocol": {

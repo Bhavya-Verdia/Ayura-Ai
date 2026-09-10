@@ -72,6 +72,15 @@ class UserDocument(BaseModel):
     ojas_level: Optional[str] = None                   # high | medium | low
     disease_stages: Optional[dict] = None              # {condition_id: {duration, trajectory, kriya_kala}}
     koshtha: Optional[str] = None                      # krura | sama | mridu — bowel tendency (CS Kalpa 1); determines Virechana drug strength
+    # Rajaswala (active menstruation). Collected on the weekly check-in for female
+    # users, where it nudged the Pitta score and was then DISCARDED — it was a
+    # request field only, on no document, so `user.model_dump()` could not carry it
+    # and no plan engine could read it. `contraindication_matrix.menstruation` blocks
+    # Vamana, strong Virechana and Raktamokshana; it was the one entry in that matrix
+    # nothing read. Persisted with the moment it was observed because unlike Koshtha
+    # or Agni this state expires — see `_MENSTRUAL_OBSERVATION_DAYS`.
+    menstrual_phase: Optional[bool] = None
+    menstrual_phase_at: Optional[datetime] = None       # when the flag above was reported
 
     # ── Physical & Activity ────────────────────────────────────────────────────
     fitness_level: Optional[str] = None
@@ -306,6 +315,8 @@ class UserProfileResponse(BaseModel):
     ojas_level: Optional[str] = None
     disease_stages: Optional[dict] = None
     koshtha: Optional[str] = None
+    menstrual_phase: Optional[bool] = None
+    menstrual_phase_at: Optional[datetime] = None
 
     needs_reassessment: bool = False
 

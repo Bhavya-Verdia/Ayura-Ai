@@ -129,6 +129,59 @@ def _derive_agni(digestion_quality: str | None, dominant_dosha: str | None) -> s
 # profile carries.
 _ATIDURBALA_BMI = 17.0
 
+# Rajaswala (active menstruation). How long a reported `menstrual_phase` is treated
+# as still describing the patient.
+#
+# This is the one eligibility input that EXPIRES. Age, Koshtha and Prakriti are
+# durable; "I am menstruating" was true on the day of a weekly check-in and says
+# nothing about the day a plan is generated. Left unbounded, one check-in would bar
+# a woman from Shodhana indefinitely — a gate that never lifts is not a safety
+# feature, it is a lockout.
+#
+# 5 days: the check-in field means "menstruating within 3 days" (its own
+# description), and typical menses runs 3–7. Beyond that the observation is an
+# assumption, not a report, so the gate opens rather than guessing — and the notice
+# it carries tells her the check-in is what lifts or reapplies it. Reporting
+# `False` clears it immediately at any point, which is the fast path.
+_MENSTRUAL_OBSERVATION_DAYS = 5
+
+
+def _menstruation_active(user_profile: dict) -> bool:
+    """True when the profile carries a fresh report of active menstruation.
+
+    `contraindication_matrix.menstruation` blocks Vamana, strong Virechana and
+    Raktamokshana, and `shamana_only_criteria` lists "Active menstruation (delay
+    Shodhana 2-3 days)" beside Atidurbala, pregnancy and acute fever. Every other
+    entry in both lists was wired; this one was not, and the input it needs was
+    being collected and thrown away.
+
+    An undated flag is honoured — a profile written before `menstrual_phase_at`
+    existed, or a caller passing the state directly — because failing open on a
+    contraindication because a timestamp is missing is the wrong direction.
+    """
+    if not user_profile.get("menstrual_phase"):
+        return False
+
+    at = user_profile.get("menstrual_phase_at")
+    if at is None:
+        return True
+
+    if isinstance(at, str):
+        try:
+            at = datetime.fromisoformat(at.replace("Z", "+00:00"))
+        except ValueError:
+            return True
+    if not isinstance(at, datetime):
+        return True
+
+    # Mongo hands back naive UTC datetimes; comparing those to an aware `now` raises.
+    if at.tzinfo is None:
+        at = at.replace(tzinfo=timezone.utc)
+
+    age_days = (datetime.now(timezone.utc) - at).total_seconds() / 86400
+    return age_days <= _MENSTRUAL_OBSERVATION_DAYS
+
+
 # Conditions that forbid Shodhana at any strength, in any setting.
 _SHODHANA_ABSOLUTE_CONTRA = {
     "anemia", "rectal_bleeding", "bleeding_disorder", "hemophilia",
@@ -180,6 +233,31 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
 
     if user_profile.get("pregnancy_or_nursing", False):
         blocking.append("Pregnancy / nursing — Shodhana contraindicated")
+
+    # Rajaswala. Blocking rather than restricting, because the mild protocol
+    # `restricting` grants — Matra Basti and Triphala/Eranda purgation — is not in
+    # what the matrix permits here. `contraindication_matrix.menstruation.allowed`
+    # names Pratimarsha Nasya, Abhyanga and Shirodhara only, none of which is a
+    # Pradhana Karma, and `shamana_only_criteria` puts active menstruation in the
+    # Shamana list outright. Every therapy on that allowed list survives in the
+    # Shamana arm, so blocking withholds the cleanse without withholding treatment.
+    #
+    # Unlike every other blocking reason this one expires on its own, so it carries
+    # `deferral` and says so in the reason itself — a woman reading "Shodhana
+    # contraindicated" beside cancer and Atidurbala would reasonably conclude she is
+    # not a candidate at all.
+    menstruating = _menstruation_active(user_profile)
+    menstrual_rule = (protocols.get("contraindication_matrix", {}) or {}).get("menstruation", {})
+    if menstruating:
+        # The KB authors `delay` as a bare instruction with no terminator; it is
+        # concatenated here, so supply one rather than assuming the data has it.
+        delay = (menstrual_rule.get("delay")
+                 or "Wait 2-3 days after menstruation ends for Shodhana").rstrip(" .") + "."
+        blocking.append(
+            f"Active menstruation (Rajaswala) — Vamana, strong Virechana and Raktamokshana are "
+            f"withheld during the period. {delay} This is a deferral, not a disqualification: "
+            "record the end of your period on the weekly check-in and regenerate this plan."
+        )
 
     ama = user_profile.get("ama_indicator", "none")
     # `shamana_only_criteria` bars "High Ama **without prior Deepana-Pachana** —
@@ -2351,6 +2429,41 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             ),
             "resume_when": "Fever fully resolved, appetite returned, no residual weakness.",
             "source": "contraindication_matrix.acute_fever — blocked: all_shodhana",
+        }
+    elif _menstruation_active(user_profile):
+        # The same shape, for the same reason: menstruation postpones the cleanse, it
+        # does not narrow it. The classical delay is 2–3 days, so answering it with a
+        # full palliative course instead of "wait until the week is out" would be a
+        # worse answer than the one the KB gives.
+        #
+        # `elif`: fever and menstruation can coexist and there is one banner. Fever
+        # wins — it is the more urgent instruction and its wait is open-ended, while
+        # this one resolves on a known schedule. The menstruation block still stands
+        # in `blocking_reasons` either way, so nothing is lost by not being the
+        # banner.
+        _m_rule = (protocols.get("contraindication_matrix", {}) or {}).get("menstruation", {})
+        # The matrix keys therapies by id; this string is read by a patient.
+        _allowed = [str(a).replace("_", " ").title() for a in _m_rule.get("allowed", [])]
+        deferral = {
+            "reason": "Active menstruation (Rajaswala)",
+            "notice": (
+                "Vamana, strong Virechana and Raktamokshana are withheld during the period — "
+                "Shodhana adds an expulsive force to one the body is already exerting. "
+                # What the KB permits, stated as a permission and not as a promise:
+                # Pratimarsha Nasya is on this list and the Shamana arm schedules no
+                # Pradhana row, so it will not appear below. Writing "your plan
+                # includes these" would have been a claim the schedule does not keep.
+                + (f"Classically still permitted meanwhile: {', '.join(_allowed)} — "
+                   "ask your Vaidya about any of these that the palliative plan below "
+                   "does not already cover. " if _allowed else "")
+                + "This is a deferral, not a disqualification."
+            ),
+            "resume_when": (_m_rule.get("delay")
+                            or "Wait 2-3 days after menstruation ends for Shodhana").rstrip(" .")
+                           + " — record the end of your period on the weekly check-in "
+                             "and regenerate this plan.",
+            "source": "contraindication_matrix.menstruation — blocked: "
+                      + ", ".join(_m_rule.get("blocked", [])),
         }
 
     # Mridu Shodhana takes the home-adaptation branch wherever the patient is.
