@@ -106,6 +106,20 @@ export default function Onboarding() {
       setError('Please enter valid age, height, and weight values.')
       return
     }
+    // The per-step rules are enforced by "Continue" — which the LAST step never
+    // shows, so goal and dosha were the only required answers nothing checked.
+    // Unanswered, they went to the API as "" and failed its enum patterns: a 422
+    // that saved nothing and (before the detail flattening in api/client.js) blew
+    // the page away. Run the same rules here before sending anything.
+    for (const s of STEPS.keys()) {
+      const stepMsg = getStepValidationMessage(s)
+      if (stepMsg) {
+        setError(stepMsg)
+        setDirection(s > step ? 1 : -1)
+        setStep(s)
+        return
+      }
+    }
     setSaving(true)
     try {
       await updateProfile({
@@ -118,7 +132,11 @@ export default function Onboarding() {
         current_medications: medications
           ? medications.split(',').map(e => e.trim()).filter(Boolean)
           : [],
-        goal, dominant_dosha: dosha,
+        // Omit rather than send "" — every one of these is an optional field with
+        // a strict enum pattern server-side, where an empty string is a 422, not
+        // a "not answered".
+        goal: goal || undefined,
+        dominant_dosha: dosha || undefined,
         pregnancy_or_nursing: gender === 'female' ? pregnancyOrNursing : false,
         pregnancy_status: gender === 'female' && pregnancyOrNursing
           ? (pregnancyStatus || undefined) : undefined,
@@ -149,14 +167,14 @@ export default function Onboarding() {
     }
   }
 
-  function getStepValidationMessage() {
-    if (step === 0) {
+  function getStepValidationMessage(which = step) {
+    if (which === 0) {
       if (!name)         return 'Please enter your name.'
       if (!hasValidAge)  return 'Please enter a valid age.'
       if (!gender)       return 'Please select your gender.'
     }
-    if (step === 1 && !hasValidPhysicalStats) return 'Please enter valid height and weight values.'
-    if (step === 2) {
+    if (which === 1 && !hasValidPhysicalStats) return 'Please enter valid height and weight values.'
+    if (which === 2) {
       if (!goal)  return 'Please choose your primary wellness goal.'
       if (!dosha) return 'Please select your dosha.'
     }

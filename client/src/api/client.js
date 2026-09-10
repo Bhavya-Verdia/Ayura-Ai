@@ -31,6 +31,31 @@ const API = axios.create({
 // This interceptor is intentionally removed.
 
 
+/**
+ * FastAPI returns a 422 `detail` as a LIST of error objects, not a string.
+ * Every call site does `setError(err.response?.data?.detail || '…')` and renders
+ * that straight into JSX — and an array of objects thrown at React throws
+ * "Objects are not valid as a React child", which takes out the whole page via
+ * the ErrorBoundary. That is how one unselected onboarding tile turned into
+ * "Something went wrong." with the form (and everything typed into it) gone,
+ * instead of "Please choose your primary wellness goal."
+ *
+ * Flatten it once, here, so no call site can hit that again.
+ */
+function flattenErrorDetail(data) {
+  const detail = data?.detail
+  if (typeof detail === 'string' || detail == null) return
+  const one = (e) => {
+    if (typeof e === 'string') return e
+    const field = Array.isArray(e?.loc)
+      ? e.loc.filter((p) => p !== 'body' && typeof p === 'string').join('.')
+      : ''
+    const msg = e?.msg || e?.message || 'Invalid value'
+    return field ? `${field}: ${msg}` : msg
+  }
+  data.detail = Array.isArray(detail) ? detail.map(one).join(' · ') : one(detail)
+}
+
 let isRefreshing = false
 let refreshSubscribers = []
 
@@ -47,6 +72,7 @@ function onRefreshed(token) {
 API.interceptors.response.use(
   (res) => res,
   async (err) => {
+    flattenErrorDetail(err.response?.data)
     const originalRequest = err.config
     const isAuthRequest = originalRequest?.url?.includes('/auth/')
     const isProfileBootstrap = originalRequest?.url?.includes('/profile/me')

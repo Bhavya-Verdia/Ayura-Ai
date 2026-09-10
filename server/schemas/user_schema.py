@@ -231,6 +231,23 @@ class UserProfileUpdate(BaseModel):
         description="DEPRECATED: Use per-feature goals via POST /api/preferences/{feature}"
     )
 
+    # An unanswered picker in the client is an empty string, not an absent key —
+    # and "" matches none of the enum patterns above, so the whole profile save
+    # came back 422 and nothing was written. Every one of these fields is
+    # optional: "" carries exactly as much information as omitting it, so read it
+    # that way rather than failing the request that carries the rest of the form.
+    @field_validator(
+        "gender", "fitness_level", "activity_level", "stress_level",
+        "digestion_quality", "sleep_quality", "satmya", "koshtha",
+        "dominant_dosha", "goal", "pregnancy_status", "timezone",
+        mode="before",
+    )
+    @classmethod
+    def _blank_to_none(cls, v):
+        if isinstance(v, str) and not v.strip():
+            return None
+        return v
+
 
 class UserProfileResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
