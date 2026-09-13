@@ -64,6 +64,10 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
     if force_regenerate:
         return None, None
 
+    # This key is an allowlist, so a newly wired profile field is invisible to it
+    # until named here — the plan changes and the cache serves the old one.
+    from services.panchakarma_engine import _menstruation_active
+
     relevant_data = {
         "dosha": user_profile.get("dominant_dosha"),
         "vikriti": user_profile.get("vikriti_dominant"),
@@ -71,6 +75,11 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
         "allergies": user_profile.get("allergies"),
         "symptoms": user_profile.get("current_symptoms"),
         "injuries": user_profile.get("injuries_or_limitations"),
+        # The *effective* gate state, not the raw flag. Menstruation is the one
+        # eligibility input that expires, so `menstrual_phase` alone would hold a
+        # Shamana plan in cache after the observation went stale, and the raw
+        # `menstrual_phase_at` would bust every user's cache on every check-in.
+        "menstruation_active": _menstruation_active(user_profile),
         "feature_prefs": feature_prefs
     }
     pref_hash = hashlib.sha256(json.dumps(relevant_data, sort_keys=True).encode()).hexdigest()
