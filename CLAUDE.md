@@ -126,6 +126,39 @@ rule must state a `prabhava` giving the reason, or `schema.validate` refuses it.
 Rows are `reviewed: false` — authored, **not clinically reviewed**. They belong in
 the Vaidya packet alongside the gym and Panchakarma flags.
 
+#### Diet arc: the four-week progression is chosen, not fixed
+`services/diet_plan_arc.py` picks the sequence from the patient's Ama, Bala, Ojas and
+build. It used to be four literals in the prompt — Ama Pachana, Agni Deepana,
+Brimhana, Rasayana — for every patient the app has ever had, computed *after* the
+profile and reading none of it.
+
+Two ways that was wrong rather than merely unpersonalised. Charaka Sutrasthana 23
+names Prameha, Medoroga and Kushtha as the diseases of over-nourishment, and week 3
+handed exactly those patients a Brimhana week of ghee, nuts and root vegetables. And
+week 1 handed a depleted patient a clearing week — the model noticed and wrote it into
+the plan: *"Although Ama is reported as absent, this first week keeps meals light…"*.
+
+Five arcs: Garbhini Paricharya (pregnancy, nourishing throughout),
+Brimhana-pradhana (depleted), Langhana-pradhana (Santarpana-caused disease or heavy
+build), Deepana-pradhana (depleted **and** Ama-laden — the Ama is burned by kindling
+Agni, not by reducing a patient with no Bala to spend), and Samatva. Rasayana is only
+scheduled where the weeks before it can clear what was there at the start, since
+Rasayana on an Ama-laden Srotas feeds the Ama.
+
+**Low Ojas is not depletion in a heavy patient.** Ojas Kshaya is ordinary in Medoroga
+— the Srotas are obstructed, not empty — and reading it as depletion sent an obese
+diabetic down the Brimhana arc, which is the error this module exists to prevent.
+
+`withheld` names a phase the patient must *not* be given, with its reason, so the
+absence is legible in the prompt and in `DietView` rather than looking like an
+oversight. Phase labels on the returned plan are stamped from the arc: the arc is the
+app's prescription, not the model's echo.
+
+Related: nothing checked that the model returned four weeks — only that the `weeks`
+key existed — and it drops one now and then, shipping a one-week "4-week plan" into a
+UI that renders four tabs. A short or misnumbered response is now a failed generation
+and falls back to the rule engine.
+
 #### Diet conditions: every recognised disease has a rule, and one table names it
 `engine/condition_vocab` accepts 38 canonical conditions. **21 had no dietary rule of
 any kind** — no `PATHYA_APATHYA_HINTS` entry, no `_CONDITION_APATHYA_TERMS` entry, no

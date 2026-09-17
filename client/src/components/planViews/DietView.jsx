@@ -407,6 +407,21 @@ export function DietView({ plan }) {
         </div>
       )}
 
+      {/* ── Therapeutic arc ── which progression this patient was given, and why.
+           The sequence used to be the same four phases for everyone. */}
+      {plan.therapeutic_arc?.arc && (
+        <div className="diet-arc-card">
+          <div className="diet-arc-head">
+            <Flower2 size={13} className="diet-vital-icon" />
+            <span className="diet-arc-name">{plan.therapeutic_arc.arc}</span>
+          </div>
+          <p className="diet-arc-basis">{plan.therapeutic_arc.basis}</p>
+          {(plan.therapeutic_arc.withheld || []).map((note, i) => (
+            <p key={i} className="diet-arc-withheld">{note}</p>
+          ))}
+        </div>
+      )}
+
       {/* ── Week tabs (LLM 4-week plan) ── */}
       {isMultiWeek && (
         <div className="diet-week-tabs">
