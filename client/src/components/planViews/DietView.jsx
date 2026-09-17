@@ -170,7 +170,25 @@ function DietSafetyBanner({ plan }) {
   const condAlerts = plan.condition_safety_alerts || []
   const dietTypeAlerts = plan.dietary_type_alerts || []
 
+  const unscanned = plan.conditions_without_food_floor || []
+
   if (!alerts.length && !viruddha.length && !condAlerts.length && !dietTypeAlerts.length) {
+    if (unscanned.length) {
+      // "Everything checked" would be false here: these conditions reached no
+      // curated rule, no library claim and no usable classification.
+      return (
+        <div className="diet-safety-ok is-partial">
+          <TriangleAlert size={13} />
+          <span>
+            Checked for allergens, intolerances, incompatible combinations (Viruddha
+            Ahara) and your dietary type — none found. We could not derive a food-safety
+            rule for {unscanned.map(c => c.replace(/_/g, ' ')).join(', ')}, so this plan
+            has not been screened against {unscanned.length > 1 ? 'those conditions' : 'that condition'}.
+            Please review it with your practitioner.
+          </span>
+        </div>
+      )
+    }
     return (
       <div className="diet-safety-ok">
         <ShieldCheck size={13} />

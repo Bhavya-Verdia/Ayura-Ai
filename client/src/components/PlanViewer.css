@@ -3744,6 +3744,13 @@
   color: var(--ayura-amber);
 }
 
+/* A partial all-clear. Saying "everything checked" when a condition reached no
+   rule at all is the failure this state exists to prevent. */
+.diet-safety-ok.is-partial {
+  color: var(--ayura-amber);
+  border-color: color-mix(in srgb, var(--ayura-amber) 40%, transparent);
+}
+
 /* ── Therapeutic arc ── the progression was the same four phases for every
    patient; showing which one this is, and what it deliberately leaves out. */
 .diet-arc-card {
