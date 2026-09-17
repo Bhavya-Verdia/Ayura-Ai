@@ -364,6 +364,171 @@ def apply_ahara_safety(plan: dict, allergies: list[str], intolerances: list[str]
 # user's conditions. High-signal, low-false-positive terms only; we FLAG (not
 # delete) so a spurious match is a harmless warning, never a broken plan.
 _CONDITION_APATHYA_TERMS: dict[str, dict] = {
+    # ── Floors for the twenty-one conditions that had none ──────────────────────
+    # Each mirrors an entry added to `PATHYA_APATHYA_HINTS`; the guard test
+    # `test_every_brief_curated_condition_has_a_safety_floor` requires both.
+    #
+    # Only concrete, matchable food words belong here. The Apathya prose beside these
+    # includes behaviours — "sleeping during the day", "holding the urge to urinate",
+    # "standing up abruptly after eating" — and deriving terms from that phrasing is
+    # how a scan ends up searching meals for `sitting` and `travel`. Terms broad
+    # enough to match a prescribed food are left out for the same reason: `salt` is in
+    # every meal and `tea` is the form half these conditions' medicines take, so the
+    # entries say `extra salt`, `salted`, `black tea` and `strong tea` instead.
+    "gout": {
+        "name": "Gout (Vatarakta)",
+        "reason": "Purine-rich, fermented and sour foods aggravate Rakta and Vata in Vatarakta.",
+        "terms": ["red meat", "mutton", "beef", "pork", "liver", "organ meat", "kidney meat",
+                  "prawn", "shrimp", "crab", "shellfish", "sardine", "anchovy", "mackerel",
+                  "beer", "alcohol", "whisky", "wine", "urad dal", "masha", "curd", "dahi",
+                  "pickle", "achar", "extra salt", "salted", "vinegar"],
+    },
+    "kidney_stones": {
+        "name": "Kidney stones (Mutrashmari)",
+        "reason": "High-oxalate and high-sodium foods feed stone formation in Mutrashmari.",
+        "terms": ["spinach", "palak", "beetroot", "chocolate", "cocoa", "black tea",
+                  "strong tea", "extra salt", "salted", "pickle", "papad", "red meat",
+                  "organ meat", "rhubarb", "sweet potato", "cashew", "almond",
+                  "peanut", "soya"],
+    },
+    "gallstones": {
+        "name": "Gallstones (Pittashmari)",
+        "reason": "A high-fat meal contracts the gallbladder; fried and rich foods provoke an attack.",
+        "terms": ["deep fried", "deep-fried", "puri", "bhatura", "samosa", "pakora",
+                  "butter", "cream", "cheese", "paneer", "egg yolk", "red meat",
+                  "mutton", "vanaspati", "margarine", "mayonnaise"],
+    },
+    "heart_disease": {
+        "name": "Heart disease (Hridroga)",
+        "reason": "Sodium, saturated fat and alcohol burden the Hridaya and the Rasavaha srotas.",
+        "terms": ["extra salt", "salted", "pickle", "achar", "papad", "processed",
+                  "canned", "deep fried", "deep-fried", "butter", "cream", "cheese",
+                  "vanaspati", "margarine", "red meat", "mutton", "beef", "bacon",
+                  "sausage", "alcohol", "whisky", "beer", "wine"],
+    },
+    "hyperthyroidism": {
+        "name": "Hyperthyroidism (Atyagni / Bhasmaka with Galaganda)",
+        "reason": ("Stimulants and concentrated iodine drive an already excessive Agni. "
+                   "Note this is the mirror of hypothyroidism: the goitrogenic brassicas "
+                   "restricted there are Pathya here."),
+        "terms": ["coffee", "espresso", "black tea", "strong tea", "energy drink",
+                  "cola", "alcohol", "whisky", "beer", "wine", "chilli", "red chilli",
+                  "seaweed", "kelp", "nori", "iodised salt"],
+    },
+    "osteoarthritis": {
+        "name": "Osteoarthritis (Sandhigata Vata)",
+        "reason": "Cold, dry and fermented foods increase Vata in the Sandhi.",
+        "terms": ["curd", "dahi", "yogurt", "cold drink", "soft drink", "soda",
+                  "ice cream", "chilled", "refrigerated", "raw salad", "rajma",
+                  "kidney bean", "chana", "chickpea", "pickle", "vinegar"],
+    },
+    "sciatica": {
+        "name": "Sciatica (Gridhrasi)",
+        "reason": "Cold, dry and Vata-increasing foods aggravate Gridhrasi.",
+        "terms": ["curd", "dahi", "yogurt", "cold drink", "soft drink", "soda",
+                  "ice cream", "chilled", "refrigerated", "raw salad", "rajma",
+                  "kidney bean", "chana", "chickpea", "pickle"],
+    },
+    "cervical_spondylosis": {
+        "name": "Cervical spondylosis (Griva Sandhigata Vata)",
+        "reason": "Cold, dry and fermented foods increase Vata in the cervical Sandhi.",
+        "terms": ["curd", "dahi", "yogurt", "cold drink", "soft drink", "soda",
+                  "ice cream", "chilled", "refrigerated", "raw salad", "pickle"],
+    },
+    "ankylosing_spondylitis": {
+        "name": "Ankylosing spondylitis (Asthi-Majjagata Vata with Ama)",
+        "reason": "Ama-forming and Vata-increasing foods drive the Asthi-Majjagata process.",
+        "terms": ["curd", "dahi", "yogurt", "cold drink", "ice cream", "chilled",
+                  "refrigerated", "fermented", "idli", "dosa", "dhokla", "urad dal",
+                  "masha", "rajma", "kidney bean", "deep fried", "deep-fried", "pickle"],
+    },
+    "fibromyalgia": {
+        "name": "Fibromyalgia (Mamsagata Vata with Ama)",
+        "reason": "Cold, raw and fermented foods deepen Ama and aggravate Vata in Mamsa dhatu.",
+        "terms": ["curd", "dahi", "yogurt", "cold drink", "ice cream", "chilled",
+                  "refrigerated", "raw salad", "fermented", "coffee", "black tea",
+                  "energy drink"],
+    },
+    "anxiety": {
+        "name": "Anxiety (Chittodvega)",
+        "reason": "Stimulants and dry, cold, irregular food aggravate Vata in the Manovaha srotas.",
+        "terms": ["coffee", "espresso", "black tea", "strong tea", "energy drink",
+                  "cola", "soft drink", "alcohol", "whisky", "beer", "wine",
+                  "raw salad", "chilled"],
+    },
+    "depression": {
+        "name": "Depression (Vishada)",
+        "reason": "Heavy, cold and stale foods increase Kapha and Tamas in the Manovaha srotas.",
+        "terms": ["alcohol", "whisky", "beer", "wine", "leftover", "stale", "reheated",
+                  "ice cream", "cold drink", "soft drink", "deep fried", "deep-fried"],
+    },
+    "epilepsy": {
+        "name": "Epilepsy (Apasmara)",
+        "reason": "Alcohol, stale and incompatible foods disturb the Manovaha srotas in Apasmara.",
+        "terms": ["alcohol", "whisky", "beer", "wine", "leftover", "stale", "reheated",
+                  "fermented", "red meat", "mutton", "beef", "pork"],
+    },
+    "eczema": {
+        "name": "Eczema (Vicharchika)",
+        "reason": "Sour, salty and Viruddha foods provoke Kushtha; milk with fish is the classical pair.",
+        "terms": ["curd", "dahi", "yogurt", "pickle", "achar", "vinegar", "tamarind",
+                  "imli", "extra salt", "salted", "fish", "prawn", "shrimp", "brinjal",
+                  "eggplant", "fermented"],
+    },
+    "sinusitis": {
+        "name": "Sinusitis (Dushta Pratishyaya)",
+        "reason": "Cold and Kapha-increasing foods thicken and retain Kapha in the Nasa srotas.",
+        "terms": ["curd", "dahi", "yogurt", "banana", "cold drink", "soft drink",
+                  "ice cream", "chilled", "refrigerated", "deep fried", "deep-fried",
+                  "cheese", "paneer"],
+        # The library keeps the ripe and unripe banana apart and only the ripe one is
+        # Kapha-increasing; the same exemption the diabetes entry carries applies.
+        "exempt": ["raw banana", "kadali kanda", "unripe banana"],
+    },
+    "common_cold": {
+        "name": "Common cold (Pratishyaya)",
+        "reason": "Cold and heavy foods increase Kapha and prolong Pratishyaya.",
+        "terms": ["curd", "dahi", "yogurt", "banana", "cold drink", "soft drink",
+                  "ice cream", "chilled", "refrigerated", "deep fried", "deep-fried",
+                  "cheese"],
+        "exempt": ["raw banana", "kadali kanda", "unripe banana"],
+    },
+    "recurrent_uti": {
+        "name": "Recurrent UTI (Mutrakrichra)",
+        "reason": "Pungent, sour and fermented foods aggravate Pitta in the Mutravaha srotas.",
+        "terms": ["chilli", "red chilli", "pickle", "achar", "vinegar", "tamarind",
+                  "imli", "alcohol", "whisky", "beer", "wine", "coffee", "espresso",
+                  "fermented"],
+    },
+    "glaucoma": {
+        "name": "Glaucoma (Adhimantha)",
+        "reason": "Sodium, caffeine and alcohol raise intraocular pressure; Pitta-provoking food worsens Adhimantha.",
+        "terms": ["extra salt", "salted", "pickle", "papad", "processed", "coffee",
+                  "espresso", "black tea", "strong tea", "energy drink", "alcohol",
+                  "whisky", "beer", "wine"],
+    },
+    "vertigo": {
+        "name": "Vertigo (Bhrama)",
+        "reason": "Sodium, stimulants and very sour foods aggravate Bhrama.",
+        "terms": ["extra salt", "salted", "pickle", "papad", "coffee", "espresso",
+                  "black tea", "strong tea", "alcohol", "whisky", "beer", "wine",
+                  "vinegar", "tamarind", "imli"],
+    },
+    "low_blood_pressure": {
+        "name": "Low blood pressure (Nyuna Rakta Chapa)",
+        "reason": ("Alcohol and prolonged fasting lower pressure further. Salt is "
+                   "deliberately absent from these terms: restricting it here would be "
+                   "the opposite of the advice, and it is the one condition in this "
+                   "table where that is true."),
+        "terms": ["alcohol", "whisky", "beer", "wine"],
+    },
+    "long_covid": {
+        "name": "Long COVID (post-viral Dhatu Kshaya with residual Ama)",
+        "reason": "Heavy, cold and fermented foods deepen residual Ama while Agni is still weak.",
+        "terms": ["deep fried", "deep-fried", "puri", "bhatura", "samosa", "pakora",
+                  "cold drink", "soft drink", "ice cream", "chilled", "refrigerated",
+                  "fermented", "leftover", "stale"],
+    },
     "diabetes": {
         "name": "Diabetes (Prameha / Madhumeha)",
         "reason": "High-glycaemic / sweet — Apathya in Prameha.",
@@ -537,24 +702,73 @@ _CONDITION_APATHYA_TERMS: dict[str, dict] = {
 # Normalise common variants to the keys above (mirrors diet COND_ALIASES so this
 # module stays self-contained and can't circular-import).
 _COND_CANON: dict[str, str] = {
-    "type2_diabetes": "diabetes", "type_2_diabetes": "diabetes", "diabetes_type2": "diabetes",
-    "diabetes_type1": "diabetes", "prediabetes": "diabetes", "insulin_resistance": "diabetes",
-    "madhumeha": "diabetes", "prameha": "diabetes", "sugar": "diabetes",
-    "bp": "hypertension", "high_blood_pressure": "hypertension", "high_bp": "hypertension",
-    "polycystic_ovary": "pcos", "polycystic_ovarian_syndrome": "pcos",
-    "hypothyroidism": "hypothyroid", "hashimoto": "hypothyroid", "thyroid_disorder": "thyroid",
-    "obese": "obesity", "overweight": "obesity", "weight_management": "obesity",
-    "liver_disease": "fatty_liver", "nafld": "fatty_liver",
-    "cholesterol": "high_cholesterol", "dyslipidemia": "high_cholesterol",
-    "hyperlipidemia": "high_cholesterol", "high_lipids": "high_cholesterol",
-    "ckd": "kidney_disease", "kidney_failure": "kidney_disease", "chronic_kidney_disease": "kidney_disease",
-    "acid_reflux": "acidity", "gerd": "acidity", "heartburn": "acidity", "amlapitta": "acidity",
-    "irritable_bowel_syndrome": "ibs", "grahani": "ibs",
-    # The brief carries `amavata` and `rheumatoid_arthritis` as separate hints with
-    # different Apathya lists. They are one disease — the brief itself names Amavata
-    # as the Ayurvedic name of rheumatoid arthritis — so they resolve to one entry
-    # here rather than drifting as two.
-    "rheumatoid_arthritis": "amavata", "ra": "amavata", "amavata_roga": "amavata",
+    # The one canonical-condition table for the diet feature.
+    #
+    # There were two. This one resolved the scan's conditions and `COND_ALIASES` in
+    # `diet_brief_builder` resolved the brief's, and they disagreed on 22 inputs. The
+    # disagreements were not harmless: `uncurated_conditions()` sends a condition to
+    # the LLM Apathya classifier only when the BRIEF has no hint for it, so an input
+    # the brief canonicalised and the scan did not got the curated floor from neither
+    # table and the classifier from neither path. "piles", "hemorrhoids",
+    # "iron_deficiency", "ulcerative_colitis", "crohns", "ibd", "rheumatoid",
+    # "skin_disease" and "thyroidism" all sat in that hole — the same shape as the
+    # eight conditions PR #62 found between these two tables, reopened by a second
+    # alias map nobody thought of as one.
+    #
+    # Chains are resolved here rather than by double-passing at the call site, so one
+    # lookup is always enough and an alias-of-an-alias cannot behave differently
+    # depending on which caller resolved it.
+    "acid_reflux": "acidity",
+    "amlapitta": "acidity",
+    "gerd": "acidity",
+    "heartburn": "acidity",
+    "amavata_roga": "amavata",
+    "ra": "amavata",
+    "rheumatoid": "amavata",
+    "rheumatoid_arthritis": "amavata",
+    "iron_deficiency": "anemia",
+    "iron_deficiency_anemia": "anemia",
+    "haemorrhoids": "arsha",
+    "hemorrhoids": "arsha",
+    "piles": "arsha",
+    "constipation_chronic": "constipation",
+    "diabetes_type1": "diabetes",
+    "diabetes_type2": "diabetes",
+    "insulin_resistance": "diabetes",
+    "madhumeha": "diabetes",
+    "prameha": "diabetes",
+    "prediabetes": "diabetes",
+    "sugar": "diabetes",
+    "type2_diabetes": "diabetes",
+    "type_2_diabetes": "diabetes",
+    "liver_disease": "fatty_liver",
+    "nafld": "fatty_liver",
+    "cholesterol": "high_cholesterol",
+    "dyslipidemia": "high_cholesterol",
+    "high_lipids": "high_cholesterol",
+    "hyperlipidemia": "high_cholesterol",
+    "bp": "hypertension",
+    "high_blood_pressure": "hypertension",
+    "high_bp": "hypertension",
+    "hashimoto": "hypothyroid",
+    "hypothyroidism": "hypothyroid",
+    "crohns": "ibs",
+    "grahani": "ibs",
+    "ibd": "ibs",
+    "ibd_crohns": "ibs",
+    "irritable_bowel_syndrome": "ibs",
+    "ulcerative_colitis": "ibs",
+    "chronic_kidney_disease": "kidney_disease",
+    "ckd": "kidney_disease",
+    "kidney_failure": "kidney_disease",
+    "obese": "obesity",
+    "overweight": "obesity",
+    "weight_management": "obesity",
+    "polycystic_ovarian_syndrome": "pcos",
+    "polycystic_ovary": "pcos",
+    "skin_disease": "psoriasis",
+    "thyroid_disorder": "thyroid",
+    "thyroidism": "thyroid",
 }
 
 

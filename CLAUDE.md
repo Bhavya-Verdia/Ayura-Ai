@@ -126,6 +126,36 @@ rule must state a `prabhava` giving the reason, or `schema.validate` refuses it.
 Rows are `reviewed: false` — authored, **not clinically reviewed**. They belong in
 the Vaidya packet alongside the gym and Panchakarma flags.
 
+#### Diet conditions: every recognised disease has a rule, and one table names it
+`engine/condition_vocab` accepts 38 canonical conditions. **21 had no dietary rule of
+any kind** — no `PATHYA_APATHYA_HINTS` entry, no `_CONDITION_APATHYA_TERMS` entry, no
+library claim — so the brief said "use your classical Ayurvedic knowledge" and the
+deterministic floor was whatever `classify_condition_apathya_llm` invented. Gout and
+kidney stones were among them. All 21 are now authored in both tables and carried in
+`data/golden/vaidya_diet_condition_protocols.csv` (packet tier 7) — authored, **not
+clinically reviewed**, like the library rows.
+
+Scan terms hold only concrete food words. The Apathya prose beside them names
+behaviours ("sleeping during the day", "holding the urge to urinate") and deriving
+terms from that phrasing is how a scan ends up searching meals for `sitting`. Terms
+broad enough to match a prescribed food are out for the same reason: `salt` is in
+every meal and `tea` is the form half these conditions' medicines take, so the
+entries say `extra salt` and `black tea`. Two conditions have no classical Nidana and
+say so via `modern_extrapolated` rather than citing a chapter that does not describe
+them. Hyperthyroidism is authored as the **mirror** of hypothyroidism, not a copy —
+the brassicas restricted in one are Pathya in the other — and hypotension is the one
+entry here that does not restrict salt.
+
+**There is one canonical-condition table**, `ahara_safety._COND_CANON`;
+`diet_brief_builder.COND_ALIASES` and `normalize_condition_key` delegate to it. There
+were two, disagreeing on 22 inputs, and that was not cosmetic: `uncurated_conditions()`
+skips the LLM classifier whenever the *brief* recognises a condition, so anything the
+brief canonicalised and the scan did not got the curated floor from neither table and
+the classifier from neither path — `piles`, `iron_deficiency`, `ulcerative_colitis`,
+`rheumatoid` and five others sat there. It is the same hole PR #62 closed between
+these two tables, reopened by a second alias map nobody thought of as one. Chains
+resolve inside the table so one lookup is always enough.
+
 #### Diet conditions: the library's claims gate the primary path
 `services/diet_condition_foods.py` turns `diet_foods.json`'s 370 authored
 (condition, food) Apathya claims and 338 Pathya claims into two things the

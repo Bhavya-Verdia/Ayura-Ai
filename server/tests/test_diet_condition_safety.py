@@ -72,19 +72,26 @@ def test_cholesterol_now_curated_scan():
 @pytest.mark.asyncio
 async def test_rare_disease_apathya_classified_then_scanned():
     """A rare, uncurated disease gets its Apathya from the LLM, then the
-    deterministic scan flags those foods — the safety floor now covers all diseases."""
+    deterministic scan flags those foods — the safety floor now covers all diseases.
+
+    The example used to be ankylosing spondylitis, which is no longer rare to this
+    app: it is one of the 21 conditions the app recognised and had no dietary rule
+    for, and it is now authored in both tables. The classifier is for what the
+    authored tables genuinely do not cover, so the test needs a disease that is
+    actually outside them.
+    """
     import services.ahara_safety as a
     a._CONDITION_APATHYA_CACHE.clear()
-    fake = json.dumps({"Ankylosing Spondylitis": {
-        "name": "Ankylosing Spondylitis (Amavata)",
-        "reason": "Ama-forming, Vata-aggravating foods worsen Amavata.",
+    fake = json.dumps({"Takayasu Arteritis": {
+        "name": "Takayasu Arteritis (Rakta Dushti with Vata)",
+        "reason": "Sour, fermented and Pitta-provoking foods aggravate Rakta Dushti.",
         "apathya_foods": ["curd", "fried", "cold drinks"]}})
     with patch("ai.llm_client.llm_client") as m:
         m.generate = AsyncMock(return_value=fake)
-        extra = await classify_condition_apathya_llm(["ankylosing spondylitis"])
-    assert "ankylosing_spondylitis" in extra
+        extra = await classify_condition_apathya_llm(["takayasu arteritis"])
+    assert "takayasu_arteritis" in extra
     plan = _plan({"lunch": {"meal_name": "Fried Pakora with Curd", "key_ingredients": ["besan", "curd"]}})
-    res = apply_condition_food_safety(plan, ["ankylosing spondylitis"], extra_terms=extra)
+    res = apply_condition_food_safety(plan, ["takayasu arteritis"], extra_terms=extra)
     assert res["condition_food_safe"] is False
     assert any("AI-inferred" in a2["condition"] for a2 in res["condition_safety_alerts"])
 
