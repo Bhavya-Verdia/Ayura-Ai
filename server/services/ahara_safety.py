@@ -370,6 +370,15 @@ _CONDITION_APATHYA_TERMS: dict[str, dict] = {
         "terms": ["sugar", "jaggery", "white rice", "maida", "refined flour",
                   "gulab jamun", "jalebi", "halwa", "laddu", "barfi", "ice cream",
                   "cold drink", "soft drink", "soda", "mango", "banana", "grapes"],
+                  # The library splits these by ripeness and contraindicates only the
+                  # ripe form: unripe banana and raw mango are low-glycaemic and raw
+                  # banana is authored Pathya in Prameha. A bare "banana" flags the
+                  # Kadali Kanda sabzi the same plan was told to serve. Narrowing the
+                  # term to "ripe banana" would be worse — a meal that just says
+                  # "banana" is usually the ripe one — so the term still fires and the
+                  # permitted sibling is exempted by name.
+                  "exempt": ["raw banana", "kadali kanda", "unripe banana",
+                             "raw mango", "green mango", "kacha aam"],
     },
     "hypertension": {
         "name": "Hypertension (Uchcha Rakta Chapa)",
@@ -475,6 +484,10 @@ _CONDITION_APATHYA_TERMS: dict[str, dict] = {
         "reason": "Cold, heavy and Kapha-increasing foods provoke Shwasa.",
         "terms": ["curd", "dahi", "banana", "ice cream", "cold drink", "deep fried",
                   "fish"],
+        # Only the ripe banana is Kapha-increasing and authored Apathya here; the
+        # unripe one is a vegetable. See the diabetes entry for why the term stays
+        # broad and the sibling is exempted instead.
+        "exempt": ["raw banana", "kadali kanda", "unripe banana"],
     },
     "constipation": {
         "name": "Vibandha (constipation)",
@@ -735,11 +748,34 @@ def apply_condition_food_safety(
     Non-destructive: flags only, and never raises (safety layer must not break gen).
     """
     try:
+        from services.diet_condition_foods import condition_food_rules
+
         extra_terms = extra_terms or {}
         active: dict[str, dict] = {}
         for cond in (medical_history or []):
             canon = _canon_condition(cond)
             proto = _CONDITION_APATHYA_TERMS.get(canon) or extra_terms.get(canon)
+            # The authored library's own Apathya for this disease, which until now
+            # gated only `diet_plan_engine` — the fallback. Measured against the
+            # curated table above, 333 of the library's 370 (condition, food)
+            # exclusions were unenforced on the LLM-primary path: an acidity patient
+            # could be served green tea, lemon water, curd and dry ginger, all of
+            # them authored as Apathya for acidity. The curated table is not replaced
+            # by it — the two were authored separately and each names foods the other
+            # does not, so the floor is their union.
+            lib_terms = condition_food_rules(canon)["apathya_terms"]
+            if lib_terms:
+                if proto:
+                    proto = {
+                        **proto,
+                        "terms": sorted(set(proto.get("terms") or ()) | set(lib_terms)),
+                    }
+                else:
+                    proto = {
+                        "name": canon.replace("_", " ").title(),
+                        "reason": "Apathya for this condition in the authored food library.",
+                        "terms": sorted(lib_terms),
+                    }
             if proto:
                 active[canon] = proto
         # `pregnancy_or_nursing` is a profile flag, not a history entry, so it has to
@@ -762,7 +798,13 @@ def apply_condition_food_safety(
             meal_hits: list[dict] = []
             for canon, proto in active.items():
                 _ai = " (AI-inferred)" if proto.get("ai") else ""
+                # A term may name a food the library splits by preparation. The
+                # permitted sibling is exempted by name rather than by narrowing the
+                # term, so an unqualified mention still fires.
+                _exempt = any(_term_in_text(e, text) for e in (proto.get("exempt") or ()))
                 for term in proto["terms"]:
+                    if _exempt and _term_in_text(term, text):
+                        continue
                     if _term_in_text(term, text):
                         meal_hits.append({"condition": proto["name"] + _ai, "food": term, "reason": proto["reason"]})
                         alerts.append({

@@ -29,9 +29,17 @@ from services.ahara_safety import (
     apply_dietary_type_safety,
 )
 
+# A day that no condition in the library contraindicates, so that a flag raised on it
+# is over-restriction and nothing else. It used to open on Vegetable Upma and carry
+# ghee at lunch. Both were correct flags once the authored library was wired into the
+# scan — rava is a refined carbohydrate and is Apathya in Prameha, and ghee is guru
+# and snigdha and Apathya in Sthaulya, Yakrit Roga and high cholesterol. Keeping them
+# here would have meant loosening the canary to accommodate claims that are right;
+# the ghee behaviour is pinned separately in
+# `test_ghee_is_flagged_in_the_fat_restricted_conditions`.
 SAFE_MEALS = {
-    "breakfast": {"meal_name": "Vegetable Upma", "key_ingredients": ["semolina", "carrot"]},
-    "lunch": {"meal_name": "Moong Dal Khichdi with Ghee", "key_ingredients": ["moong dal", "rice", "ghee"]},
+    "breakfast": {"meal_name": "Moong Dal Chilla", "key_ingredients": ["moong dal", "coriander"]},
+    "lunch": {"meal_name": "Moong Dal Khichdi", "key_ingredients": ["moong dal", "rice"]},
     "snack": {"meal_name": "Roasted Makhana", "key_ingredients": ["makhana"]},
     "dinner": {"meal_name": "Lauki Sabzi with Roti", "key_ingredients": ["bottle gourd", "wheat"]},
 }
@@ -286,9 +294,24 @@ def test_no_condition_flags_an_ordinary_vegetarian_day():
     for cond in PATHYA_APATHYA_HINTS:
         out = apply_condition_food_safety(_plan(drink=CCF_TEA), [cond])
         assert out["condition_food_safe"] is True, (
-            f"{cond} flags a plain day of Upma, Khichdi, Makhana and Lauki Sabzi: "
+            f"{cond} flags a plain day of Chilla, Khichdi, Makhana and Lauki Sabzi: "
             f"{[a['food'] for a in out['condition_safety_alerts']]}"
         )
+
+
+def test_ghee_is_flagged_in_the_fat_restricted_conditions():
+    """Pinned, not hidden. The library authors ghee as Apathya in Sthaulya, Yakrit
+    Roga and high cholesterol — guru and snigdha, and Santarpana where the treatment
+    is Langhana. That means a khichdi finished with ghee flags for those patients
+    every day it appears, which is a real cost and a deliberate claim. It belongs in
+    the Vaidya packet's screened tier beside the other fat calls, not in a quietly
+    loosened canary."""
+    ghee_lunch = dict(SAFE_MEALS)
+    ghee_lunch["lunch"] = {"meal_name": "Moong Dal Khichdi with Ghee",
+                           "key_ingredients": ["moong dal", "rice", "ghee"]}
+    for cond in ("obesity", "fatty_liver", "high_cholesterol"):
+        out = apply_condition_food_safety(_plan(meals=ghee_lunch), [cond])
+        assert "ghee" in {a["food"] for a in out["condition_safety_alerts"]}
 
 
 def test_the_two_kushtha_viruddha_pairs_exist():

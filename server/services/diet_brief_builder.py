@@ -6,6 +6,7 @@ knowledge constants and brief logic are independently testable and importable.
 """
 
 from services.ahara_safety import _term_in_text
+from services.diet_condition_foods import condition_food_rules
 
 # ── Dosha-based meal timing ────────────────────────────────────────────────────
 MEAL_TIMING: dict[str, dict] = {
@@ -479,6 +480,28 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
             block = (
                 f"  • {cond.replace('_', ' ').title()} — use your classical Ayurvedic knowledge "
                 f"to determine Pathya-Apathya. Cite the relevant Samhita chapter."
+            )
+        # The authored library's own claims for this disease, by name. The hint above
+        # is prose written per condition; these are the 150 rows of
+        # `diet_foods.json`, where each (condition, food) pair was authored
+        # individually. They reached the model only as scattered RAG passages before
+        # — `apathya_for` was read by `diet_plan_engine`, which is the fallback, and
+        # `pathya_for` by nothing at all.
+        lib = condition_food_rules(canon)
+        if lib["apathya_names"]:
+            block += (
+                f"\n    DO NOT USE (library Apathya for this disease — "
+                f"{len(lib['apathya_names'])} foods): "
+                f"{', '.join(lib['apathya_names'])}"
+            )
+        if lib["pathya_names"]:
+            # Pathya is advisory, so it is capped; Apathya above is not, because a
+            # truncated list of things to avoid is a list that fails silently.
+            shown = lib["pathya_names"][:30]
+            block += (
+                f"\n    PREFER (library Pathya): {', '.join(shown)}"
+                + (f" (+{len(lib['pathya_names']) - len(shown)} more)"
+                   if len(lib["pathya_names"]) > len(shown) else "")
             )
         cond_blocks.append(block)
 

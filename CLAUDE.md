@@ -126,6 +126,38 @@ rule must state a `prabhava` giving the reason, or `schema.validate` refuses it.
 Rows are `reviewed: false` — authored, **not clinically reviewed**. They belong in
 the Vaidya packet alongside the gym and Panchakarma flags.
 
+#### Diet conditions: the library's claims gate the primary path
+`services/diet_condition_foods.py` turns `diet_foods.json`'s 370 authored
+(condition, food) Apathya claims and 338 Pathya claims into two things the
+LLM-primary path can use — named foods in the brief, and scan terms in
+`apply_condition_food_safety`. Before it, `apathya_for` gated only
+`diet_plan_engine` (the **fallback**) and `pathya_for` gated nothing: 333 of the 370
+exclusions were unenforced on the path every user gets, so **the fallback was
+clinically stricter than the primary path**. An acidity patient could be served green
+tea, lemon water, curd and dry ginger, all authored Apathya for acidity.
+
+The curated `_CONDITION_APATHYA_TERMS` is **not** replaced — the two tables were
+authored separately and each names foods the other does not, so the floor is their
+union.
+
+**Deriving a scan term from a food name is where this goes wrong.** A term is used
+for a condition only when every library food it matches agrees about that condition.
+That is what keeps `banana`/`raw_banana` and `ginger_fresh`/`ginger_dry` apart, and
+what stops the same-food-entered-twice rows (`kidney_beans`/`rajma`,
+`chana_dal`/`chhole`, `lentils_brown`/`masoor_dal` — all disagreeing clinically)
+speaking for a condition their own rows cannot agree on. A parenthetical is usually
+the English translation, but `Tofu (Firm)` is a variant, so modifier-only surfaces
+are dropped — "firm" fired on a hypothyroid patient for a word describing texture.
+
+Where the *curated* table is prep-state blind, the fix is an `exempt` list on the
+entry, not a narrowed term: a meal that just says "banana" is usually the ripe one,
+so the term still fires and the permitted sibling is let through by name.
+
+As with energy, the lever that works is the **brief** — naming the Apathya foods
+before generation took a 3-condition plan from 20 post-hoc alerts to 8, and an
+acidity+piles plan (65 Apathya foods) to 2, with variety holding at 28/28 distinct
+meals.
+
 #### Diet energy: the target is computed, and the plan is checked against it
 `services/diet_energy.py` is the diet path's nutrition arithmetic, and
 `services/diet_portion_reconciler.py` verifies the generated plan delivers it. Before
