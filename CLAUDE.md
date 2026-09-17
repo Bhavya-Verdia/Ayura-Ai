@@ -128,6 +128,34 @@ the Vaidya packet alongside the gym and Panchakarma flags.
 
 `routes/plans._generate_feature_via_engine` is the single entry point both the holistic and per-feature paths use — it runs the engine + enricher and applies pregnancy/safety gating. The per-feature endpoints (`POST /api/plans/{gym,yoga,diet,routine,panchakarma,remedies,medicines}`) return the plan **synchronously**. The holistic `POST /api/plans/generate` is offloaded to an **ARQ background worker** (`server/worker.py`) via Redis and returns a `job_id` to poll at `/api/plans/job/{jobId}`; if Redis/ARQ is unavailable it falls back to running the job in-process via FastAPI `BackgroundTasks`.
 
+### Prakriti instrument
+The live quiz is **`client/src/pages/DoshaQuiz.jsx`** — 21 constitutional traits, a
+`temperature_check` consistency probe, a Manas Prakriti block and a Vikriti symptom
+list. `engine/dosha_analyzer._TRAIT_WEIGHTS` weights all 21 (0.7-2.0) and
+`_PHYSICAL_TRAITS`/`_MENTAL_TRAITS` split them for body-versus-mind dominance.
+
+The question set and the weights live on opposite sides of the front/back boundary
+with no shared schema, so `tests/test_dosha_instrument.py` parses the JSX and holds
+them in step: a trait the quiz stops asking contributes nothing silently, and
+`_TRAIT_WEIGHTS.get(trait, 1.0)` gives an unweighted one the default. The structural
+fix is to serve the instrument from the backend; until then that test is the only
+place the two can be compared.
+
+`dosha_profiles.json` used to carry a superseded 20-item set under
+`doshaQuizQuestions`, seeded into a `dosha_quiz_questions` collection nothing read.
+Its ids differed from the live ones (`skin_type` for `skin`, `body_temperature` for
+`temperature`, `learning` for `memory`), so comparing that copy against
+`_TRAIT_WEIGHTS` showed 15 weighted axes never asked and 14 asked axes unweighted —
+a convincing false positive, entirely an artefact of reading the dead file. It is
+removed and the test fails if it returns.
+
+**No public dataset can validate this instrument.** The Prakriti datasets label
+records with their own rule-based scoring, not a practitioner's assessment — the
+largest says its scoring "may differ from clinical evaluations made by expert
+practitioners". Comparing our scorer against theirs compares two rule engines over
+two different questionnaires. Clinical accuracy needs a blind Vaidya study, specified
+as Part 7 of `data/golden/vaidya_reviewer_packet.md`.
+
 ### Chat Agent (`server/ai/agents/health_agent.py`)
 The conversational chatbot (`POST /api/chat`, mounted in `main.py`) **is** a LangGraph ReAct agent (`create_react_agent`) with a small tool set (`get_plan_detail`, `set_reminder`, `check_my_medicine_interactions`, `adapt_plan`, `get_health_trend`). This is the *only* place LangGraph is used — the removed 4-agent pipeline noted above was for **plan authoring**, which is now purely engine-backed. Chat may read/adapt plans and trigger side effects but never authors them from free text. LangSmith tracing is enabled when a key is configured.
 
