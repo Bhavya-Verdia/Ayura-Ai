@@ -275,9 +275,6 @@ async def generate_diet_plan(
     user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
-    from services.diet_plan_engine import generate_diet_plan as engine_generate
-    from services.diet_plan_enricher import enrich_diet_plan
-
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
@@ -296,7 +293,7 @@ async def generate_diet_plan(
     # Cache miss — this run hits the LLM, so it bills the daily allowance.
     await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "diet"):
-        from services.diet_llm_generator import generate_diet_plan_llm
+        from services.diet_llm_generator import build_diet_plan
 
         # Inject season (same as yoga route) so Ritucharya block is populated
         from engine.seasonal import get_current_season
@@ -306,32 +303,11 @@ async def generate_diet_plan(
         # Inject pregnancy flag so LLM brief adds hard constraints
         user_profile["pregnancy_or_nursing"] = user.pregnancy_or_nursing or False
 
-        # Primary path: LLM-generated clinical plan
-        enriched_plan = await generate_diet_plan_llm(user_profile, diet_prefs)
-
-        # Fallback: rule engine + enricher if LLM fails
-        if enriched_plan is None:
-            from core.logger import logger
-            logger.warning(f"LLM diet generation failed for {user.id}; falling back to rule engine")
-            diet_foods = kb_cache.diet_foods or None
-            raw_plan = engine_generate(user_profile, diet_prefs, diet_foods)
-            enriched_plan = await enrich_diet_plan(raw_plan, user_profile, diet_prefs)
-            # Same deterministic Ahara safety scans the LLM path gets
-            from services.ahara_safety import (
-                apply_ahara_safety, apply_condition_food_safety, apply_dietary_type_safety,
-                classify_condition_apathya_llm,
-            )
-            enriched_plan = apply_ahara_safety(
-                enriched_plan, diet_prefs.get("food_allergies") or [],
-                diet_prefs.get("food_intolerances") or [])
-            enriched_plan = apply_dietary_type_safety(
-                enriched_plan, diet_prefs.get("dietary_type"))
-            from services.diet_brief_builder import uncurated_conditions
-            _conds = user_profile.get("medical_history") or []
-            _extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(_conds))
-            enriched_plan = apply_condition_food_safety(
-                enriched_plan, _conds, extra_terms=_extra_apathya,
-                pregnant=bool(user_profile.get("pregnancy_or_nursing")))
+        # LLM primary, rule engine fallback, and the same safety and energy layers
+        # on both — see `build_diet_plan`, which exists because this sequence had
+        # been copied into the holistic worker and the two had drifted apart.
+        enriched_plan = await build_diet_plan(
+            user_profile, diet_prefs, kb_cache.diet_foods or None)
 
         plan_id = enriched_plan.get("plan_id")
         model_used = enriched_plan.get("enrichment_model", "services.diet_plan_engine")

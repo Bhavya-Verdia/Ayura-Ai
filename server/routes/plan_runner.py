@@ -299,17 +299,12 @@ async def _generate_feature_via_engine_impl(
             return await enrich_gym_plan(raw, profile, prefs)
 
         if plan_type == "diet":
-            from services.diet_llm_generator import generate_diet_plan_llm
-            enriched = await generate_diet_plan_llm(profile, prefs)
-            if enriched is None:
-                from services.diet_plan_engine import generate_diet_plan
-                from services.diet_plan_enricher import enrich_diet_plan
-                from services.ahara_safety import apply_ahara_safety
-                raw = generate_diet_plan(profile, prefs, _kb("diet_foods"))
-                enriched = await enrich_diet_plan(raw, profile, prefs)
-                enriched = apply_ahara_safety(
-                    enriched, prefs.get("food_allergies") or [], prefs.get("food_intolerances") or [])
-            return enriched
+            # This used to be a second copy of the per-feature route's sequence, and
+            # the copies had drifted: the fallback here ran only `apply_ahara_safety`,
+            # so a holistic plan skipped the dietary-type check and the condition
+            # food floor that the per-feature endpoint applied.
+            from services.diet_llm_generator import build_diet_plan
+            return await build_diet_plan(profile, prefs, _kb("diet_foods"))
 
         if plan_type == "panchakarma":
             if is_prenatal:
