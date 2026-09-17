@@ -35,6 +35,14 @@ OUT = os.path.join(DATA, "golden")
 os.makedirs(OUT, exist_ok=True)
 
 
+# Figures for Part 7 come from the scorer itself, so the packet cannot describe an
+# instrument the code no longer has.
+from engine.dosha_analyzer import (  # noqa: E402
+    DOSHA_SCORING_VERSION as SCORING_VERSION,
+    _TRAIT_WEIGHTS as TRAIT_WEIGHTS,
+)
+
+
 def _fmt_list(v):
     if isinstance(v, list):
         return "; ".join(str(x) for x in v)
@@ -90,8 +98,11 @@ def build_panchakarma_contraindication_csv():
         })
 
     path = os.path.join(OUT, "vaidya_panchakarma_contraindications.csv")
+    # `lineterminator` matters: csv writes \r\n per RFC 4180, `.gitattributes`
+    # normalises it to \n on commit, and a regenerated packet then shows as dirty
+    # with an empty diff. `newline=""` only stops Python translating what csv wrote.
     with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=cols)
+        w = csv.DictWriter(f, fieldnames=cols, lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     return path, len(rows)
@@ -159,7 +170,7 @@ def build_contraindication_token_csv():
 
     path = os.path.join(OUT, "vaidya_contraindication_tokens.csv")
     with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=cols)
+        w = csv.DictWriter(f, fieldnames=cols, lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     return path, len(rows)
@@ -208,7 +219,7 @@ def build_karma_tag_csv():
 
     path = os.path.join(OUT, "vaidya_panchakarma_karma_tags.csv")
     with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=cols)
+        w = csv.DictWriter(f, fieldnames=cols, lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     return path, len(rows)
@@ -227,7 +238,7 @@ def build_medicine_csv():
     ]
     path = os.path.join(OUT, "vaidya_medicine_review.csv")
     with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
+        w = csv.writer(f, lineterminator="\n")
         w.writerow(cols)
         for m in meds:
             w.writerow([
@@ -355,7 +366,62 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0):
         )
     lines += [
         "",
-        "## Part 7 — Sign-off",
+        "## Part 7 — Prakriti instrument validation  (a study to commission, not a checklist)",
+        "Prakriti is the root input to every engine in this app. Diet, yoga, gym, "
+        "routine and Panchakarma all branch on it, so an instrument that leans one "
+        "way propagates that lean into every plan and shows up in none of them.",
+        "",
+        f"What is already machine-verified: the quiz collects {len(TRAIT_WEIGHTS)} "
+        "constitutional traits plus one consistency probe, the scorer weights every "
+        f"one of them ({min(TRAIT_WEIGHTS.values())}-{max(TRAIT_WEIGHTS.values())}, "
+        "differentiated by how diagnostic each trait is held to be), and "
+        "`test_dosha_instrument.py` fails if the two ever drift apart. Results carry "
+        f"`dosha_scoring_version` (currently {SCORING_VERSION}) so a cohort can be "
+        "tied to the scorer that produced it. A self-report ceiling caps the dominant "
+        "dosha at 55% because people answer questionnaires about themselves more "
+        "decisively than their constitution warrants.",
+        "",
+        "What none of that establishes is whether the result is **correct**. That is "
+        "not a gap a dataset can close, and we checked: the public Prakriti datasets "
+        "label their records with their own rule-based scoring rather than a "
+        "practitioner's assessment. The largest of them says so plainly — its scoring "
+        "\"may differ from clinical evaluations made by expert practitioners using "
+        "methods such as pulse diagnosis\" and \"represents a questionnaire-based view "
+        "of Prakriti rather than a complete clinical assessment\". Comparing our "
+        "scorer against theirs would compare two rule engines over two different "
+        "questionnaires, and neither agreement nor disagreement would mean anything.",
+        "",
+        "So it needs a Vaidya. The protocol we are asking for:",
+        "",
+        "1. **Participants.** 40 is a useful minimum and 100 is comfortable. Spread "
+        "across age and build deliberately — the constitutions that go wrong are the "
+        "ones at the edges, and a cohort of healthy young adults will hide exactly "
+        "those. Include dual-dosha and Vata-dominant elderly participants on purpose.",
+        "2. **Blind assessment.** The practitioner assesses Prakriti by traditional "
+        "means — Darshana, Sparshana, Prashna, Nadi Pareeksha as they normally would "
+        "— **without seeing the app's output or the participant's answers**. If the "
+        "app's answer is visible first, the study measures agreement with a suggestion "
+        "rather than agreement with an assessment, and it cannot be re-run.",
+        "3. **Record both.** Practitioner verdict (dominant dosha, and secondary where "
+        "Dvidoshaja), app verdict, the app's confidence, and `dosha_scoring_version`.",
+        "4. **Report three things, not one.** Agreement on the dominant dosha; "
+        "agreement on the full constitution including the secondary; and **which "
+        "traits the disagreements cluster on**. The third is the only one that tells "
+        "us what to change: if the misses concentrate on, say, `nadi_rhythm` or "
+        "`mutra_pattern`, those are traits a patient cannot self-report reliably and "
+        "the weight or the wording is wrong.",
+        "",
+        "A disagreement rate is not a failure. An unmeasured instrument is.",
+        "",
+        "| | |",
+        "|---|---|",
+        "| Participants assessed | ____ |",
+        "| Dominant dosha agreement | ____ / ____ |",
+        "| Full constitution agreement (incl. secondary) | ____ / ____ |",
+        "| Traits the disagreements concentrated on | ____________________ |",
+        "| Scoring version under test | ____ |",
+        "",
+        "## Part 8 — Sign-off",
         "",
         "- Reviewer (name, BAMS/MD reg. no.): ____________________",
         "- Date: ____________  ",
@@ -365,6 +431,8 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0):
         % (n_meds, n_pk, n_tokens, n_karma, len(cases)),
         "- Summary judgement (1–5) on classical accuracy of: "
         "Medicines __ · Panchakarma __ · Diet __ · Yoga __ · Routine __",
+        "- Prakriti instrument study (Part 7): commissioned ☐ · scheduled ☐ · "
+        "completed ☐ — participants ____",
         "",
         "> Return the filled CSV + this page; corrections are folded back into the knowledge base.",
         "",

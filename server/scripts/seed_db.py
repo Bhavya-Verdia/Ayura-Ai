@@ -59,10 +59,16 @@ async def seed_all():
     await db["dosha_profiles"].insert_many([
         {"dosha": k, **v} for k, v in dosha_data.get("doshas", {}).items()
     ])
-    await db["dosha_quiz_questions"].delete_many({})
-    await db["dosha_quiz_questions"].insert_many(dosha_data.get("doshaQuizQuestions", []))
+    # `doshaQuizQuestions` used to be seeded here into `dosha_quiz_questions`, a
+    # collection nothing ever read. It held a superseded 20-item instrument whose
+    # trait ids differed from the live one — `skin_type` for `skin`,
+    # `body_temperature` for `temperature`, `learning` for `memory` — so comparing it
+    # against `dosha_analyzer._TRAIT_WEIGHTS` showed 15 weighted axes apparently never
+    # asked and 14 asked axes apparently unweighted. That reads exactly like a serious
+    # scoring bug and is entirely an artefact of reading the dead copy. The live
+    # instrument is `client/src/pages/DoshaQuiz.jsx`; `test_dosha_instrument.py` holds
+    # the two in step.
     print("  ✅ dosha_profiles: 3 documents seeded")
-    print(f"  ✅ dosha_quiz_questions: {len(dosha_data.get('doshaQuizQuestions', []))} questions seeded")
 
     client.close()
     print("\n🎉 MongoDB seeding complete!")

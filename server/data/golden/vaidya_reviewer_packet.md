@@ -82,11 +82,36 @@ Below are 30 synthetic patient cases run through the engines (deterministic, no 
 | 29 | Vata, healthy active baseline (no conditions) | basti_matra | shamana | Sama Agni |  |  |
 | 30 | Senior, multiple conditions (HTN + diabetes + arthritis) | basti_matra | shamana | Vishama Agni |  |  |
 
-## Part 7 — Sign-off
+## Part 7 — Prakriti instrument validation  (a study to commission, not a checklist)
+Prakriti is the root input to every engine in this app. Diet, yoga, gym, routine and Panchakarma all branch on it, so an instrument that leans one way propagates that lean into every plan and shows up in none of them.
+
+What is already machine-verified: the quiz collects 21 constitutional traits plus one consistency probe, the scorer weights every one of them (0.7-2.0, differentiated by how diagnostic each trait is held to be), and `test_dosha_instrument.py` fails if the two ever drift apart. Results carry `dosha_scoring_version` (currently 2) so a cohort can be tied to the scorer that produced it. A self-report ceiling caps the dominant dosha at 55% because people answer questionnaires about themselves more decisively than their constitution warrants.
+
+What none of that establishes is whether the result is **correct**. That is not a gap a dataset can close, and we checked: the public Prakriti datasets label their records with their own rule-based scoring rather than a practitioner's assessment. The largest of them says so plainly — its scoring "may differ from clinical evaluations made by expert practitioners using methods such as pulse diagnosis" and "represents a questionnaire-based view of Prakriti rather than a complete clinical assessment". Comparing our scorer against theirs would compare two rule engines over two different questionnaires, and neither agreement nor disagreement would mean anything.
+
+So it needs a Vaidya. The protocol we are asking for:
+
+1. **Participants.** 40 is a useful minimum and 100 is comfortable. Spread across age and build deliberately — the constitutions that go wrong are the ones at the edges, and a cohort of healthy young adults will hide exactly those. Include dual-dosha and Vata-dominant elderly participants on purpose.
+2. **Blind assessment.** The practitioner assesses Prakriti by traditional means — Darshana, Sparshana, Prashna, Nadi Pareeksha as they normally would — **without seeing the app's output or the participant's answers**. If the app's answer is visible first, the study measures agreement with a suggestion rather than agreement with an assessment, and it cannot be re-run.
+3. **Record both.** Practitioner verdict (dominant dosha, and secondary where Dvidoshaja), app verdict, the app's confidence, and `dosha_scoring_version`.
+4. **Report three things, not one.** Agreement on the dominant dosha; agreement on the full constitution including the secondary; and **which traits the disagreements cluster on**. The third is the only one that tells us what to change: if the misses concentrate on, say, `nadi_rhythm` or `mutra_pattern`, those are traits a patient cannot self-report reliably and the weight or the wording is wrong.
+
+A disagreement rate is not a failure. An unmeasured instrument is.
+
+| | |
+|---|---|
+| Participants assessed | ____ |
+| Dominant dosha agreement | ____ / ____ |
+| Full constitution agreement (incl. secondary) | ____ / ____ |
+| Traits the disagreements concentrated on | ____________________ |
+| Scoring version under test | ____ |
+
+## Part 8 — Sign-off
 
 - Reviewer (name, BAMS/MD reg. no.): ____________________
 - Date: ____________  
 - Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/299 · contraindication tokens reviewed ___/164 · Karma tags reviewed ___/14 · cases reviewed ___/30
 - Summary judgement (1–5) on classical accuracy of: Medicines __ · Panchakarma __ · Diet __ · Yoga __ · Routine __
+- Prakriti instrument study (Part 7): commissioned ☐ · scheduled ☐ · completed ☐ — participants ____
 
 > Return the filled CSV + this page; corrections are folded back into the knowledge base.
