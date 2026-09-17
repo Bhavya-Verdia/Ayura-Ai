@@ -786,6 +786,62 @@ def _canon_condition(cond: str) -> str:
 _CONDITION_APATHYA_CACHE: dict[str, dict | None] = {}
 
 
+# Words that describe conduct rather than a food. The classifier is asked for foods
+# and returns these anyway, because Apathya in the classical sources is a regimen:
+# "day sleep", "suppression of urges", "eating before the previous meal is digested".
+# As scan terms they search meal text for `sitting` and `travel` and match nothing, or
+# worse, match a dish that happens to contain the word.
+_BEHAVIOUR_WORDS = frozenset({
+    "sleep", "sleeping", "nap", "daysleep", "sitting", "standing", "walking",
+    "travel", "travelling", "traveling", "exertion", "exercise", "suppression",
+    "suppressing", "holding", "skipping", "fasting", "overeating", "eating",
+    "irregular", "late", "night", "stress", "anger", "bathing", "smoking",
+})
+
+# Terms with no food in them. Each of these matches most of the plans this app
+# generates: `tea` is the form half of Ayurvedic medicine takes, `water` appears in
+# every drink recipe, and `oil` is in every tadka. A term this broad does not warn a
+# patient, it trains them to stop reading warnings.
+_CONTENTLESS_TERMS = frozenset({
+    "water", "food", "foods", "meal", "meals", "drink", "drinks", "beverage",
+    "beverages", "liquid", "liquids", "snack", "snacks", "spice", "spices", "herb",
+    "herbs", "oil", "oils", "fat", "fats", "tea", "juice", "diet", "nutrition",
+    "anything", "everything", "all", "none", "any", "some", "other", "others",
+    "hot", "cold", "warm", "heavy", "light", "sour", "sweet", "salty", "bitter",
+    "pungent", "astringent", "raw", "fresh", "dry", "stale",
+})
+
+
+# Real foods whose bare name appears in almost every savoury meal, so a scan term
+# made of it flags the whole plan. The authored tables say `extra salt` and `salted`
+# for exactly this reason, and a term the model invents is held to the same standard.
+# Note the asymmetry with `sugar`, which stays: a recipe mentions salt by default and
+# sugar only when it is actually there.
+_TOO_COMMON_TERMS = frozenset({"salt"})
+
+
+def _term_is_usable(term: str) -> bool:
+    """Whether a classifier-proposed term can be matched against meal text.
+
+    The validator's comment has always said "keep only concrete, matchable food
+    words" and the code checked length and nothing else, so `day sleep`, `tea` and
+    `heavy` all became scan terms. The authored condition tables have to satisfy these
+    same two rules — see `test_no_scan_term_describes_a_behaviour` — and a term the
+    model invents is held to them too.
+    """
+    if not term or len(term) < 3 or len(term) > 30:
+        return False
+    words = set(re.split(r"[\s/&,+-]+", term))
+    if words & _BEHAVIOUR_WORDS:
+        return False
+    if term in _CONTENTLESS_TERMS or term in _TOO_COMMON_TERMS:
+        return False
+    # A multi-word term made only of qualifiers ("cold heavy") names no food either.
+    if words and words <= _CONTENTLESS_TERMS:
+        return False
+    return True
+
+
 def _validate_apathya_classification(raw: dict, cond_label: str) -> dict | None:
     """Coerce an LLM Apathya classification into a safe scan entry, or None."""
     if not isinstance(raw, dict):
@@ -796,8 +852,7 @@ def _validate_apathya_classification(raw: dict, cond_label: str) -> dict | None:
     terms = []
     for t in terms_in:
         s = str(t).strip().lower()
-        # Keep only concrete, matchable food words; drop empties and long phrases.
-        if s and len(s) <= 30 and s not in terms:
+        if s and s not in terms and _term_is_usable(s):
             terms.append(s)
     terms = terms[:20]
     if not terms:
@@ -847,14 +902,25 @@ async def classify_condition_apathya_llm(conditions: list[str]) -> dict[str, dic
         '"apathya_foods":["food1","food2", ...]}\n'
         "Only concrete food words. No prose outside JSON."
     )
+    # 700 tokens was the budget for the whole batch. One condition's name, reason and
+    # twenty food names is most of it, so a batch of six truncated mid-object, the
+    # JSON failed to parse, and every condition in it came back unscanned — measured
+    # on six real rare diseases, which produced zero entries. The budget now scales
+    # with the request.
+    budget = min(4000, 400 + 320 * len(todo))
+    answered = False
     try:
         resp = await llm_client.generate(
             prompt=user_prompt, system_prompt=system_prompt,
-            max_tokens=700, temperature=0.2, json_mode=True,
+            max_tokens=budget, temperature=0.2, json_mode=True,
         )
         parsed = json.loads(resp) if resp else {}
+        answered = isinstance(parsed, dict)
     except Exception as exc:
-        logger.warning(f"LLM Apathya classification failed ({exc}); {len(todo)} conditions unscanned.")
+        logger.warning(
+            f"LLM Apathya classification failed ({exc}); {len(todo)} conditions "
+            "unscanned. Not cached — this will be retried."
+        )
         parsed = {}
 
     parsed_norm = {_norm(str(k)).replace(" ", "").replace("_", ""): v
@@ -862,9 +928,20 @@ async def classify_condition_apathya_llm(conditions: list[str]) -> dict[str, dic
     for lbl, canon in label_to_canon.items():
         key = _norm(lbl).replace(" ", "").replace("_", "")
         entry = _validate_apathya_classification(parsed_norm.get(key), lbl)
-        _CONDITION_APATHYA_CACHE[canon] = entry  # cache hit OR miss (None)
+        # A negative is cached only when the model actually answered and had nothing
+        # usable for this condition. A transport error or a truncated response is not
+        # evidence about the disease, and caching it as one turned a single bad
+        # request into a permanent "no floor" for every condition in that batch, for
+        # the life of the process.
+        if answered:
+            _CONDITION_APATHYA_CACHE[canon] = entry
         if entry:
             out[canon] = entry
+        else:
+            logger.info(
+                f"no deterministic Apathya floor for {lbl!r} "
+                f"({'model returned nothing usable' if answered else 'request failed'})"
+            )
     return out
 
 
@@ -998,6 +1075,18 @@ def apply_condition_food_safety(
         # covers the ones who answered the question the app actually asks.
         if pregnant:
             active["pregnancy"] = _CONDITION_APATHYA_TERMS["pregnancy"]
+        # A condition the app could give no deterministic floor for. Silence here
+        # reads as "checked and clear", which is the opposite of what happened: the
+        # curated tables do not cover it, the library has no claim about it, and the
+        # classifier either failed or returned nothing usable. Saying so is the only
+        # honest option, and it is what the disclaimer elsewhere in this plan already
+        # does for the claims it cannot stand behind.
+        unscanned = sorted(
+            {str(c) for c in (medical_history or [])
+             if _canon_condition(c) not in active}
+        )
+        plan["conditions_without_food_floor"] = unscanned
+
         if not active:
             plan["condition_food_safe"] = True
             plan["condition_safety_alerts"] = []

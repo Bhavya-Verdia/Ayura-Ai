@@ -126,6 +126,26 @@ rule must state a `prabhava` giving the reason, or `schema.validate` refuses it.
 Rows are `reviewed: false` — authored, **not clinically reviewed**. They belong in
 the Vaidya packet alongside the gym and Panchakarma flags.
 
+#### Diet: the floor for diseases outside the vocabulary
+`ahara_safety.classify_condition_apathya_llm` covers what the 38-condition vocabulary
+does not. Run on six real rare diseases it returned **zero** entries: the whole batch
+shared a 700-token budget, six conditions truncated the JSON mid-object, and the parse
+failure zeroed all of them. Worse, the failure was cached as a negative — so one bad
+request meant a permanent absence of a floor for every condition in that batch, for
+the life of the process. A negative is now cached only when the model actually
+answered; a transport or parse error is not evidence about a disease.
+
+Classifier terms are held to the same rules as the authored tables: no behaviour words
+(Apathya in the sources is a regimen, so the model returns "day sleep" when asked for
+foods) and nothing contentless (`tea` is the form half of Ayurvedic medicine takes,
+`water` is in every drink recipe, `oil` is in every tadka, `salt` is in every savoury
+meal — `sugar` stays, because a recipe mentions salt by default and sugar only when it
+is there). Staples are **not** rejected: `wheat` is the whole point of a celiac floor.
+
+`conditions_without_food_floor` names what could not be covered, and `DietView` shows
+a partial all-clear off it. Silence there read as "checked and clear", which is the
+opposite of what had happened.
+
 #### Diet arc: the four-week progression is chosen, not fixed
 `services/diet_plan_arc.py` picks the sequence from the patient's Ama, Bala, Ojas and
 build. It used to be four literals in the prompt — Ama Pachana, Agni Deepana,
