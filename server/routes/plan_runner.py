@@ -66,7 +66,7 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
 
     # This key is an allowlist, so a newly wired profile field is invisible to it
     # until named here — the plan changes and the cache serves the old one.
-    from services.panchakarma_engine import _menstruation_active
+    from services.panchakarma_engine import _menstruation_active, _kriya_kala_assessment
 
     relevant_data = {
         "dosha": user_profile.get("dominant_dosha"),
@@ -80,6 +80,13 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
         # Shamana plan in cache after the observation went stale, and the raw
         # `menstrual_phase_at` would bust every user's cache on every check-in.
         "menstruation_active": _menstruation_active(user_profile),
+        # Kriya Kala changes the rendered advisory and the narrative, so a cached
+        # plan must not outlive a stage change. Keyed on the governing stage rather
+        # than the raw `disease_stages` dict: the dict carries the duration and
+        # trajectory the stage is derived from, so keying on it would bust the cache
+        # when a patient re-answers the selects with a pair that maps to the same
+        # stage — and adds a condition id to the key for a plan that reads only one.
+        "kriya_kala_stage": ((_kriya_kala_assessment(user_profile) or {}).get("governing_stage")),
         "feature_prefs": feature_prefs
     }
     pref_hash = hashlib.sha256(json.dumps(relevant_data, sort_keys=True).encode()).hexdigest()

@@ -228,6 +228,31 @@ export function PanchakarmaView({ plan }) {
           </div>
         )}
 
+        {/* Kriya Kala. The stage was computed from the patient's own check-in
+            answers, persisted, handed to the engine and read by nothing — while the
+            enricher prompt required the narrative to justify the verdict "in
+            classical terms (Bala, Agni, Ama, Ritu, Kriya Kala)", so that one term
+            was the model's invention. It is ADVISORY: `shamana_only_criteria`,
+            which is what decides eligibility, does not mention Kriya Kala at all.
+            Rendered here rather than left to the narrative alone so it is not a
+            second claim shown to nobody. */}
+        {elig.kriya_kala && (
+          <div className={elig.kriya_kala.alignment === 'in_window' ? 'pk-kriyakala' : 'pk-kriyakala pk-kriyakala-off'}>
+            {elig.kriya_kala.alignment !== 'in_window' && <AlertTriangle size={13} />}
+            <div>
+              <span className="pk-kriyakala-stage">Disease stage: {elig.kriya_kala.governing_stage_label}</span>
+              <p className="pk-kriyakala-note">{elig.kriya_kala.note}</p>
+              {elig.kriya_kala.out_of_window_conditions?.length > 1 && (
+                <p className="pk-kriyakala-note">
+                  Also outside the window: {elig.kriya_kala.out_of_window_conditions
+                    .filter(c => c.condition !== elig.kriya_kala.governing_condition)
+                    .map(c => `${c.condition} (${c.stage_label})`).join(', ')}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Safety substitution alert */}
         {pk.safety_substitution && (
           <div className="pk-safety-sub">

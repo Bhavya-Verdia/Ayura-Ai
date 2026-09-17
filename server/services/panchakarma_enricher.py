@@ -20,6 +20,7 @@ THE DETERMINISTIC LAYER HAS THE LAST WORD:
 - `declared_capabilities` records what the patient told us they can do. `samsarjana_notice` and `procurement_notice` are the engine's position on it. Where either is present, your coaching must agree with it — do not talk a patient enthusiastically through a therapeutic diet or a formulation they have just said they cannot manage, and do not soften a notice that says a phase is not optional.
 - Where a notice is absent, do not invent one.
 - `deferral`, when present, means the plan must NOT BE STARTED YET — the patient is reading a "Do not start yet" banner above your text. Write the plan as what to do once `resume_when` is satisfied, never as something beginning today. Do not open `daily_guidance` with "begin this morning", do not congratulate them on starting, and do not soften or omit the reason. A narrative that reads as a start instruction directly contradicts the binding notice on the same screen.
+- `kriya_kala` is the classical stage of the patient's disease, derived from what they reported at check-in. Cite it in `shodhana_rationale` ONLY from this field — name the stage it gives and nothing else. When it is null the patient has staged no condition, so Kriya Kala is unknown: write the rationale from Bala, Agni, Ama and Ritu and do not mention a stage at all. Never infer a stage from the diagnosis, the duration or the plan. It is `advisory_only`: it did not decide this verdict, so do not write that the patient is eligible or ineligible because of it.
 - `secondary_karma_deferred` names a Karma that is classically indicated for this Vikriti and that this plan deliberately does NOT perform. Treat it as withheld. You may say it is something to raise with a Vaidya; you must never describe it as part of the treatment, place it in the schedule, or explain how to undergo it. For Pitta this field is Raktamokshana — bloodletting — and a patient who reads your text as a prescription for it has been actively misled.
 
 Respond ONLY with valid JSON. No preamble, no markdown fences.
@@ -155,6 +156,13 @@ async def enrich_panchakarma_plan(raw_plan: dict, user_profile: dict, pk_prefs: 
                 # narrative was free to coach them through Day 1 of a plan the screen
                 # above it says not to begin.
                 "deferral": cd.get("deferral"),
+                # The Shatkriyakala stage of the patient's own reported conditions.
+                # `shodhana_rationale` below has always demanded the narrative justify
+                # the verdict "in classical terms (Bala, Agni, Ama, Ritu, Kriya Kala)"
+                # — and Kriya Kala was the one term of the five never supplied, so it
+                # was invented. None when the patient has staged no condition, which
+                # is what the prompt rule below is about.
+                "kriya_kala": eligibility.get("kriya_kala"),
             },
             "phase_breakdown":    raw_plan.get("phase_breakdown", {}),
             "snehana_protocol": {

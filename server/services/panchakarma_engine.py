@@ -182,6 +182,151 @@ def _menstruation_active(user_profile: dict) -> bool:
     return age_days <= _MENSTRUAL_OBSERVATION_DAYS
 
 
+# ── Shatkriyakala (Kriya Kala) ─────────────────────────────────────────────────
+# The six stages of disease progression, Sushruta Sutrasthana 21, in order. The
+# stage itself is already computed for every condition the patient reports a
+# duration and trajectory for: `CheckIn.jsx` collects the two selects,
+# `vikriti_service._KRIYA_KALA_MAP` maps the pair to a stage, and it is persisted on
+# `UserDocument.disease_stages` and handed to every engine in the profile dict.
+#
+# Nothing read it. `shodhana_candidate_criteria` names Kriya Kala as one of its six
+# criteria and was itself the only sub-key of `shodhana_eligibility` that no code
+# touched — while `panchakarma_enricher` required the narrative to justify the
+# verdict "in classical terms (Bala, Agni, Ama, Ritu, Kriya Kala)" without ever
+# being told the stage, so that one term of the five was the model's invention.
+_KRIYA_KALA_ORDER: tuple[str, ...] = (
+    "sanchaya", "prakopa", "prasara", "sthana", "vyakti", "bheda",
+)
+
+_KRIYA_KALA_LABELS: dict[str, str] = {
+    "sanchaya": "Sanchaya (accumulation)",
+    "prakopa":  "Prakopa (aggravation)",
+    "prasara":  "Prasara (spread)",
+    "sthana":   "Sthana Samshraya (localisation)",
+    "vyakti":   "Vyakti (manifestation)",
+    "bheda":    "Bheda (differentiation / complication)",
+}
+
+# `shodhana_candidate_criteria` names Prasara, Sthana and Vyakti as the window in
+# which "disease has manifested enough for expulsion". Held here rather than parsed
+# from that prose, with a test asserting the two still agree — the same anti-drift
+# convention the machine contraindication layer uses against the protocol prose.
+_KRIYA_KALA_SHODHANA_WINDOW: frozenset[str] = frozenset({"prasara", "sthana", "vyakti"})
+
+
+def _kriya_kala_assessment(user_profile: dict) -> dict | None:
+    """Stage the patient's reported conditions against the classical Shodhana window.
+
+    **Advisory, not a gate — deliberately, and this is the whole judgement call.**
+
+    `shodhana_candidate_criteria` lists Kriya Kala among the marks of a good
+    Shodhana candidate. `shamana_only_criteria` — the list that actually decides
+    ineligibility, and the list every implemented bar in this function comes from —
+    does not mention it at all. Every criterion that blocks or restricts appears in
+    BOTH lists: Bala, Agni, Ama, age, pregnancy, menstruation. Exactly two criteria
+    appear only in the candidate list, Kriya Kala and Season, and Season is
+    implemented as pool scoring plus `ritu_warning` — an advisory — never as a bar.
+
+    So this reports the stage, names the window, and says plainly when the two
+    disagree. It changes no verdict, withholds no therapy and alters no schedule.
+    Turning a candidate criterion into a bar is the error the high-Ama handling
+    already made once in this same function, and the reason 461 of 1,169 Shamana
+    verdicts were refusals of a correctable state.
+
+    Returns None when the patient has reported no staged condition, which is the
+    common case — `disease_stages` is only written for conditions the user answered
+    the duration/trajectory selects for.
+    """
+    stages_raw = user_profile.get("disease_stages") or {}
+    if not isinstance(stages_raw, dict):
+        return None
+
+    staged: list[dict] = []
+    for cid, data in stages_raw.items():
+        if not isinstance(data, dict):
+            continue
+        stage = str(data.get("kriya_kala") or "").lower().strip()
+        if stage not in _KRIYA_KALA_ORDER:
+            # An unrecognised stage is dropped rather than guessed at. `vikriti_service`
+            # already defaults an unmappable (duration, trajectory) pair to `vyakti`,
+            # so a value arriving here outside the vocabulary came from somewhere else.
+            continue
+        staged.append({
+            "condition": cid,
+            "stage": stage,
+            "stage_label": _KRIYA_KALA_LABELS[stage],
+            "in_window": stage in _KRIYA_KALA_SHODHANA_WINDOW,
+            "duration": data.get("duration"),
+            "trajectory": data.get("trajectory"),
+        })
+
+    if not staged:
+        return None
+
+    staged.sort(key=lambda s: _KRIYA_KALA_ORDER.index(s["stage"]))
+    most_advanced = staged[-1]
+    in_window = [s for s in staged if s["in_window"]]
+
+    # Which condition governs the note, when several are staged at once. The window
+    # is a middle band, not a severity threshold, so "worst" is not well defined:
+    # Sanchaya is too early and Bheda is past it, and neither is simply "more".
+    #
+    # Bheda governs whenever it is present, even alongside an in-window condition.
+    # It is the stage at which the texts describe structural change, and it is the
+    # one finding here a Vaidya must see; letting an in-window condition mask it
+    # would hide the more serious observation behind the more convenient one.
+    bheda = [s for s in staged if s["stage"] == "bheda"]
+    if bheda:
+        governing, alignment = bheda[-1], "advanced"
+    elif in_window:
+        governing, alignment = in_window[-1], "in_window"
+    else:
+        governing, alignment = most_advanced, "premature"
+
+    window_label = "Prasara, Sthana Samshraya or Vyakti"
+    if alignment == "in_window":
+        note = (
+            f"{governing['stage_label']} — within the classical window for Shodhana "
+            f"({window_label}), where the dosha has manifested enough to be expelled."
+        )
+    elif alignment == "premature":
+        note = (
+            f"{governing['stage_label']} — earlier than the classical window for Shodhana "
+            f"({window_label}). At this stage the texts emphasise Nidana Parivarjana "
+            "(removing the cause), Deepana-Pachana and Shamana over expulsion, because "
+            "there is not yet a localised dosha to expel. "
+            "Raise this with a Vaidya; it does not change this plan."
+        )
+    else:
+        note = (
+            f"{governing['stage_label']} — beyond the classical window for Shodhana "
+            f"({window_label}). Bheda describes disease that has progressed to structural "
+            "change or complication, where the classical texts treat the complication "
+            "before considering purification. "
+            "Raise this with a Vaidya; it does not change this plan."
+        )
+
+    out_of_window = [s for s in staged if not s["in_window"]]
+    return {
+        "stages": staged,
+        "window": sorted(_KRIYA_KALA_SHODHANA_WINDOW, key=_KRIYA_KALA_ORDER.index),
+        "governing_stage": governing["stage"],
+        "governing_stage_label": governing["stage_label"],
+        "governing_condition": governing["condition"],
+        "alignment": alignment,
+        "note": note,
+        # Named so the reader can see it is derived from their own check-in answers
+        # rather than assessed by a clinician, and so it joins the Vaidya packet on
+        # the same footing as every other unreviewed clinical claim in this feature.
+        "out_of_window_conditions": [
+            {"condition": s["condition"], "stage_label": s["stage_label"]} for s in out_of_window
+        ],
+        "source": "checkin_disease_stage",
+        "advisory_only": True,
+        "reviewed": False,
+    }
+
+
 # Conditions that forbid Shodhana at any strength, in any setting.
 _SHODHANA_ABSOLUTE_CONTRA = {
     "anemia", "rectal_bleeding", "bleeding_disorder", "hemophilia",
@@ -336,6 +481,12 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
 
     ama_info = protocols.get("shodhana_eligibility", {}).get("ama_correction_first", {})
 
+    # Advisory only — see `_kriya_kala_assessment`. Computed before the branch and
+    # attached to all three verdicts because it describes the patient, not the
+    # verdict: a Shamana patient's disease has a stage too, and the enricher is
+    # required to cite it whichever arm it narrates.
+    kriya_kala = _kriya_kala_assessment(user_profile)
+
     # ── Verdict ───────────────────────────────────────────────────────────────
     if blocking:
         return {
@@ -357,6 +508,7 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
             "ama_correction_herbs": ama_info.get("herbs", []),
             "ama_correction_duration": ama_info.get("duration_days", "3–7 days"),
             "ama_correction_signs": ama_info.get("signs_ama_cleared", []),
+            "kriya_kala": kriya_kala,
         }
 
     # Every grade of Ama needs correcting before Shodhana; the grades differ in how
@@ -396,6 +548,7 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
             "ama_correction_herbs": ama_info.get("herbs", []) if needs_ama else [],
             "ama_correction_duration": ama_info.get("duration_days", "3–7 days"),
             "ama_correction_signs": ama_info.get("signs_ama_cleared", []),
+            "kriya_kala": kriya_kala,
         }
 
     shodhana_reasons = ["Patient meets all Shodhana eligibility criteria (CS Sutrasthana 15)"]
@@ -430,6 +583,7 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
         "ama_correction_herbs": ama_info.get("herbs", []) if needs_ama else [],
         "ama_correction_duration": ama_info.get("duration_days", "3–7 days"),
         "ama_correction_signs": ama_info.get("signs_ama_cleared", []),
+        "kriya_kala": kriya_kala,
     }
 
 
