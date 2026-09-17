@@ -5,7 +5,7 @@ allergen-scanning utilities.  Extracted from diet_llm_generator.py so the
 knowledge constants and brief logic are independently testable and importable.
 """
 
-from services.ahara_safety import _term_in_text
+from services.ahara_safety import _canon_condition, _COND_CANON, _term_in_text
 from services.diet_condition_foods import condition_food_rules
 
 # ── Dosha-based meal timing ────────────────────────────────────────────────────
@@ -100,6 +100,214 @@ AYUR_TIPS: dict[str, str] = {
 
 # ── Condition Pathya-Apathya hints ────────────────────────────────────────────
 PATHYA_APATHYA_HINTS: dict[str, dict] = {
+    # ── The twenty-one conditions the app recognised and said nothing about ──────
+    # `engine/condition_vocab` accepts 38 canonical conditions. Twenty-one of them
+    # had no entry here, no entry in `_CONDITION_APATHYA_TERMS`, and no claim in the
+    # authored food library — so the brief told the model to "use your classical
+    # Ayurvedic knowledge to determine Pathya-Apathya" and the deterministic floor
+    # was whatever `classify_condition_apathya_llm` invented for them. Gout and
+    # kidney stones were among them, which are the two conditions here where diet is
+    # most of the treatment.
+    #
+    # AUTHORED, NOT CLINICALLY REVIEWED — they go into the Vaidya packet with the
+    # library's 708 claims. Where a condition has no classical counterpart the entry
+    # says so in `modern_extrapolated` rather than inventing a Samhita chapter for it.
+    "gout": {
+        "ayurvedic_name": "Vatarakta",
+        "pathya": ["old rice (Puranashali)", "barley (Yava)", "moong dal (Mudga)",
+                   "bitter gourd (Karela)", "pointed gourd (Patola)", "amla (Amalaki)",
+                   "cow's ghee", "cow's milk", "plenty of warm water"],
+        "apathya": ["red meat", "organ meat", "shellfish and prawns", "alcohol and beer",
+                    "urad dal (Masha)", "curd (Dadhi)", "excess salt", "fermented and sour foods"],
+        "classical_ref": "Charaka Chikitsa 29 (Vatashonita); Ashtanga Hridayam Nidana 16",
+    },
+    "kidney_stones": {
+        "ayurvedic_name": "Mutrashmari",
+        "pathya": ["horse gram (Kulattha) — the classical Ashmari dravya", "barley (Yava)",
+                   "plenty of water throughout the day", "tender coconut water",
+                   "banana stem (Kadali Kanda)", "pomegranate (Dadima)",
+                   "Gokshura and Punarnava preparations", "cucumber (Trapusha)"],
+        "apathya": ["spinach and other high-oxalate greens", "tomato seeds", "excess salt",
+                    "red meat", "beetroot", "chocolate and cocoa", "strong black tea",
+                    "excess nuts"],
+        "classical_ref": "Sushruta Nidana 3 (Ashmari); Charaka Chikitsa 26 (Trimarmiya)",
+    },
+    "gallstones": {
+        "ayurvedic_name": "Pittashmari / Yakrit Vikara",
+        "pathya": ["barley (Yava)", "moong dal", "bitter greens", "turmeric (Haridra)",
+                   "amla (Amalaki)", "warm water", "light early dinner",
+                   "pointed gourd (Patola)"],
+        "apathya": ["deep-fried foods", "butter and cream", "excess ghee", "red meat",
+                    "egg yolk", "full-fat cheese and paneer", "heavy late-night meals"],
+        "classical_ref": "Sushruta Nidana 3 (Ashmari); Charaka Chikitsa 26",
+    },
+    "heart_disease": {
+        "ayurvedic_name": "Hridroga",
+        "pathya": ["Arjuna bark preparations", "garlic (Lasuna)", "amla (Amalaki)",
+                   "pomegranate (Dadima)", "barley (Yava)", "oats", "moong dal",
+                   "flax seeds (Atasi)"],
+        "apathya": ["excess salt", "deep-fried foods", "red meat", "butter, cream and cheese",
+                    "alcohol", "very heavy meals", "sleeping immediately after eating"],
+        "classical_ref": "Charaka Chikitsa 26 (Trimarmiya — Hridroga); Sushruta Uttara 43",
+    },
+    "hyperthyroidism": {
+        "ayurvedic_name": "Atyagni / Bhasmaka with Galaganda",
+        "pathya": ["cow's milk", "cow's ghee", "sweet ripe fruits", "fresh coconut",
+                   "almonds (Badama)", "oats", "cabbage, cauliflower and broccoli",
+                   "rice and other grounding grains"],
+        "apathya": ["strong coffee and black tea", "chilli and excess pungent spices",
+                    "alcohol", "seaweed and other concentrated iodine sources",
+                    "skipping meals", "excess bitter and astringent foods"],
+        "classical_ref": "Charaka Nidana 11 (Galaganda); Charaka Chikitsa 15 (Bhasmaka)",
+    },
+    "osteoarthritis": {
+        "ayurvedic_name": "Sandhigata Vata",
+        "pathya": ["cow's ghee", "sesame oil (Tila Taila)", "garlic (Lasuna)",
+                   "ginger (Ardraka)", "turmeric (Haridra)", "warm cooked moong",
+                   "old rice", "warm milk"],
+        "apathya": ["cold and refrigerated foods", "dry and raw foods", "curd (Dadhi)",
+                    "fermented foods", "rajma and chana in excess", "carbonated drinks"],
+        "classical_ref": "Charaka Chikitsa 28 (Vatavyadhi); Ashtanga Hridayam Nidana 15",
+    },
+    "sciatica": {
+        "ayurvedic_name": "Gridhrasi",
+        "pathya": ["cow's ghee", "sesame oil", "castor oil (Eranda Taila) — the classical "
+                   "Gridhrasi dravya", "garlic", "dry ginger (Shunthi)", "moong dal",
+                   "old rice", "warm unctuous food"],
+        "apathya": ["cold and refrigerated foods", "dry and raw foods", "curd",
+                    "fermented foods", "heavy legumes", "carbonated drinks"],
+        "classical_ref": "Charaka Chikitsa 28 (Vatavyadhi — Gridhrasi); Sushruta Nidana 1",
+    },
+    "cervical_spondylosis": {
+        "ayurvedic_name": "Griva Sandhigata Vata / Manyastambha",
+        "pathya": ["cow's ghee", "sesame oil", "warm milk", "garlic", "ginger",
+                   "moong dal", "old rice", "warm cooked vegetables"],
+        "apathya": ["cold and refrigerated foods", "curd at night", "dry and raw foods",
+                    "fermented foods", "carbonated drinks"],
+        "classical_ref": "Charaka Chikitsa 28 (Vatavyadhi); Ashtanga Hridayam Nidana 15",
+    },
+    "ankylosing_spondylitis": {
+        "ayurvedic_name": "Asthi-Majjagata Vata with Ama",
+        "pathya": ["warm freshly cooked food", "cow's ghee", "dry ginger (Shunthi)",
+                   "turmeric (Haridra)", "garlic", "moong dal", "old rice",
+                   "Guggulu preparations"],
+        "apathya": ["curd (Dadhi)", "cold and refrigerated foods", "fermented foods",
+                    "urad dal and rajma", "deep-fried foods", "incompatible combinations "
+                    "(Viruddha Ahara)"],
+        "classical_ref": "Charaka Chikitsa 28 (Vatavyadhi); Charaka Chikitsa 29 (Vatashonita)",
+    },
+    "fibromyalgia": {
+        "ayurvedic_name": "Mamsagata Vata with Ama",
+        "pathya": ["warm easily digestible food", "cow's ghee", "dry ginger", "turmeric",
+                   "moong soup", "old rice", "warm water"],
+        "apathya": ["cold and raw foods", "curd", "fermented foods",
+                    "strong coffee and black tea", "irregular meal times"],
+        "classical_ref": "Charaka Chikitsa 28 (Vatavyadhi); Charaka Chikitsa 15 (Ama)",
+    },
+    "anxiety": {
+        "ayurvedic_name": "Chittodvega",
+        "pathya": ["warm milk with nutmeg", "cow's ghee", "soaked almonds", "dates (Kharjura)",
+                   "Brahmi and Ashwagandha preparations", "rice", "sesame seeds",
+                   "regular meal times"],
+        "apathya": ["coffee and strong black tea", "alcohol", "energy drinks",
+                    "dry and raw cold foods", "skipping meals", "excess pungent food"],
+        "classical_ref": "Charaka Sutra 11 (Manasa); Charaka Chikitsa 9 (Unmada)",
+    },
+    "depression": {
+        "ayurvedic_name": "Vishada / Manasa Avasada",
+        "pathya": ["warm light freshly cooked food", "cow's ghee", "saffron milk",
+                   "dates", "Brahmi and Jatamansi preparations", "sesame seeds",
+                   "warming spices"],
+        "apathya": ["heavy cold Kapha-increasing foods", "excess sweets", "alcohol",
+                    "stale and reheated food", "sleeping during the day"],
+        "classical_ref": "Charaka Chikitsa 9 (Unmada); Charaka Sutra 11",
+    },
+    "epilepsy": {
+        "ayurvedic_name": "Apasmara",
+        "pathya": ["Brahmi ghrita and other medicated ghee", "cow's milk", "old rice",
+                   "moong dal", "light sattvic food", "regular meals"],
+        "apathya": ["alcohol", "heavy meat", "stale and fermented food",
+                    "incompatible combinations (Viruddha Ahara)", "excess pungent food",
+                    "fasting to exhaustion"],
+        "classical_ref": "Charaka Chikitsa 10 (Apasmara); Ashtanga Hridayam Uttara 7",
+    },
+    "eczema": {
+        "ayurvedic_name": "Vicharchika (Kshudra Kushtha)",
+        "pathya": ["bitter vegetables", "neem (Nimba)", "turmeric (Haridra)", "moong dal",
+                   "old rice", "cow's ghee", "pointed gourd (Patola)"],
+        "apathya": ["milk with fish — the classical Viruddha pair", "curd", "sour foods",
+                    "excess salt", "seafood", "brinjal", "sour fruits"],
+        "classical_ref": "Charaka Chikitsa 7 (Kushtha); Sushruta Nidana 5",
+    },
+    "sinusitis": {
+        "ayurvedic_name": "Dushta Pratishyaya / Peenasa",
+        "pathya": ["warm water through the day", "dry ginger (Shunthi)", "tulsi",
+                   "black pepper (Maricha)", "turmeric", "honey", "light warm khichdi"],
+        "apathya": ["curd (Dadhi)", "banana", "cold drinks", "ice cream", "heavy dairy",
+                    "refrigerated food", "sleeping during the day"],
+        "classical_ref": "Ashtanga Hridayam Uttara 24 (Nasaroga); Charaka Chikitsa 26",
+    },
+    "common_cold": {
+        "ayurvedic_name": "Pratishyaya",
+        "pathya": ["warm water", "ginger and tulsi decoction", "black pepper", "honey",
+                   "turmeric milk", "light khichdi", "warm soups"],
+        "apathya": ["curd", "banana", "cold drinks", "ice cream", "deep-fried foods",
+                    "heavy dairy", "sleeping during the day"],
+        "classical_ref": "Ashtanga Hridayam Uttara 24 (Nasaroga); Charaka Chikitsa 26",
+    },
+    "recurrent_uti": {
+        "ayurvedic_name": "Mutrakrichra",
+        "pathya": ["plenty of water", "tender coconut water", "barley water (Yava)",
+                   "Gokshura and Punarnava preparations", "cucumber (Trapusha)",
+                   "coriander seed water", "amla (Amalaki)"],
+        "apathya": ["chilli and excess pungent spices", "alcohol", "coffee",
+                    "pickles and fermented food", "sour foods", "holding the urge to urinate"],
+        "classical_ref": "Charaka Chikitsa 26 (Mutrakrichra); Sushruta Uttara 59",
+    },
+    "glaucoma": {
+        "ayurvedic_name": "Adhimantha",
+        "pathya": ["Triphala preparations", "amla (Amalaki)", "cow's ghee",
+                   "green leafy vegetables", "carrot (Garjara)", "cooling sweet foods"],
+        "apathya": ["excess salt", "coffee and strong black tea", "alcohol",
+                    "large volumes of fluid at one time", "very hot and pungent food",
+                    "suppression of natural urges"],
+        "classical_ref": "Sushruta Uttara 6 (Netraroga); Ashtanga Hridayam Uttara 15",
+    },
+    "vertigo": {
+        "ayurvedic_name": "Bhrama",
+        "pathya": ["cow's milk", "cow's ghee", "amla", "coriander (Dhanyaka)",
+                   "grapes (Draksha)", "adequate water", "small frequent meals"],
+        "apathya": ["excess salt", "coffee and strong black tea", "alcohol",
+                    "fasting", "very sour foods", "heavy meals at night"],
+        "classical_ref": "Charaka Chikitsa 28 (Vatavyadhi — Bhrama); Ashtanga Hridayam Sutra 17",
+    },
+    "low_blood_pressure": {
+        "ayurvedic_name": "Nyuna Rakta Chapa (no direct classical counterpart; "
+                          "treated as Ojas and Bala Kshaya)",
+        "modern_extrapolated": True,
+        "pathya": ["adequate salt — unlike hypertension, this is not restricted",
+                   "soaked raisins (Draksha)", "dates (Kharjura)", "cow's milk",
+                   "cow's ghee", "Ashwagandha and Yashtimadhu preparations",
+                   "small frequent meals", "adequate fluids"],
+        "apathya": ["fasting and skipping meals", "alcohol",
+                    "excess bitter and astringent foods", "dehydration",
+                    "standing up abruptly after eating"],
+        "classical_ref": "Extrapolated from Charaka Sutra 21 (Ojas) and Charaka Sutra 11; "
+                         "no classical Nidana describes this entity directly",
+    },
+    "long_covid": {
+        "ayurvedic_name": "Post-viral Dhatu Kshaya with residual Ama "
+                          "(closest classical parallel: Jirna Jwara)",
+        "modern_extrapolated": True,
+        "pathya": ["warm easily digestible food", "moong soup", "rice gruel (Peya)",
+                   "dry ginger (Shunthi)", "tulsi", "amla (Amalaki)",
+                   "adequate protein once Agni returns", "Rasayana once Ama has cleared"],
+        "apathya": ["heavy and deep-fried foods", "cold and refrigerated food",
+                    "fermented foods", "Rasayana given before Ama has cleared",
+                    "sleeping during the day", "exertion beyond capacity"],
+        "classical_ref": "Extrapolated from Charaka Chikitsa 3 (Jwara — Jirna Jwara and "
+                         "Jwaramukti); no classical Nidana describes this entity directly",
+    },
     "diabetes": {
         "ayurvedic_name": "Prameha / Madhumeha",
         "pathya": ["bitter gourd (Karela)", "fenugreek seeds (Methi)", "barley (Yava)", "moong dal (Mudga)", "amla (Amalaki)", "turmeric (Haridra)", "neem leaves (Nimba)"],
@@ -124,10 +332,13 @@ PATHYA_APATHYA_HINTS: dict[str, dict] = {
         "apathya": ["raw crucifers (cabbage, broccoli, cauliflower, kale)", "soy in excess", "gluten (if sensitive)", "refined sugar"],
         "classical_ref": "Charaka Nidana 11 (Galaganda); Sushruta Nidana 11",
     },
+    # Carries what the separate `thyroid_disorder` entry held, for the same reason
+    # as `ibs` above.
     "thyroid": {
         "ayurvedic_name": "Galaganda",
-        "pathya": ["ginger", "black pepper", "coconut oil", "pumpkin seeds", "tulsi"],
-        "apathya": ["raw crucifers", "soy"],
+        "pathya": ["ginger", "black pepper", "coconut oil", "pumpkin seeds", "tulsi",
+                   "selenium-rich foods"],
+        "apathya": ["raw crucifers", "soy", "refined sugar"],
         "classical_ref": "Charaka Nidana 11; Sushruta Nidana 11",
     },
     "obesity": {
@@ -136,17 +347,20 @@ PATHYA_APATHYA_HINTS: dict[str, dict] = {
         "apathya": ["new rice", "heavy wheat", "sugar", "excess dairy", "sweets", "cold foods", "sleeping after meals"],
         "classical_ref": "Charaka Sutra 21 (Sthoulya Nidana); Charaka Chikitsa 15",
     },
-    "grahani": {
-        "ayurvedic_name": "Grahani (Irritable Bowel / Malabsorption)",
-        "pathya": ["Peya (thin rice gruel)", "Yavagu (thick gruel)", "pomegranate (Dadima)", "moong dal soup (thin)", "buttermilk (Takra) with ginger and rock salt", "bael fruit (Bilwa)"],
-        "apathya": ["raw vegetables", "sour foods (curd, sour fruits)", "heavy dairy", "fried foods", "cold water", "incompatible food combinations (Viruddha Ahara)", "eating before previous meal is digested"],
-        "classical_ref": "Charaka Chikitsa 15 (Grahani Chikitsa); Ashtanga Hridayam Nidana 8",
-    },
+    # Carries what the separate `grahani` entry held: the two were near-duplicate
+    # hints for one disease, and `grahani` now canonicalises onto this key, which
+    # would have left its Pathya unreachable.
     "ibs": {
         "ayurvedic_name": "Grahani / Atisara",
-        "pathya": ["bael fruit (Bilwa)", "pomegranate", "Peya", "ginger tea", "moong dal soup", "cumin water (Jeeraka Jala)"],
-        "apathya": ["raw vegetables", "gas-forming foods (cabbage, broccoli, beans)", "cold milk", "fried foods"],
-        "classical_ref": "Charaka Chikitsa 15; Ashtanga Hridayam Chikitsa 9",
+        "pathya": ["bael fruit (Bilwa)", "pomegranate (Dadima)", "Peya (thin rice gruel)",
+                   "Yavagu (thick gruel)", "ginger tea", "moong dal soup (thin)",
+                   "buttermilk (Takra) with ginger and rock salt", "cumin water (Jeeraka Jala)"],
+        "apathya": ["raw vegetables", "gas-forming foods (cabbage, broccoli, beans)",
+                    "sour foods (curd, sour fruits)", "heavy dairy", "cold milk",
+                    "cold water", "fried foods",
+                    "incompatible food combinations (Viruddha Ahara)",
+                    "eating before the previous meal is digested"],
+        "classical_ref": "Charaka Chikitsa 15 (Grahani Chikitsa); Ashtanga Hridayam Nidana 8",
     },
     "arsha": {
         "ayurvedic_name": "Arsha (Haemorrhoids / Piles)",
@@ -184,12 +398,6 @@ PATHYA_APATHYA_HINTS: dict[str, dict] = {
         "apathya": ["curd (Dadhi)", "fish", "black gram (Urad)", "new rice", "cold foods", "refrigerated food", "incompatible food combinations"],
         "classical_ref": "Madhava Nidana 25 (Amavata Nidana); Yogaratnakara Amavata Chikitsa",
     },
-    "rheumatoid_arthritis": {
-        "ayurvedic_name": "Amavata",
-        "pathya": ["ginger", "garlic", "horse gram soup", "turmeric milk", "moong dal"],
-        "apathya": ["curd", "black gram", "cold foods", "fried foods", "fermented foods"],
-        "classical_ref": "Madhava Nidana 25",
-    },
     "asthma": {
         "ayurvedic_name": "Tamaka Shwasa",
         "pathya": ["ginger (Shunthi)", "black pepper (Maricha)", "long pepper (Pippali)", "honey (Madhu)", "warm foods", "Tulsi tea", "light easily digestible foods"],
@@ -220,35 +428,14 @@ PATHYA_APATHYA_HINTS: dict[str, dict] = {
         "apathya": ["sour foods", "fermented foods", "chilli", "garlic", "onion", "coffee", "alcohol", "eating before previous meal digests"],
         "classical_ref": "Charaka Chikitsa 15 (Amlapitta); Ashtanga Hridayam Chikitsa 10",
     },
-    "thyroid_disorder": {
-        "ayurvedic_name": "Galaganda",
-        "pathya": ["coconut oil", "ginger", "black pepper", "pumpkin seeds", "selenium-rich foods"],
-        "apathya": ["raw crucifers", "excess soy", "refined sugar"],
-        "classical_ref": "Charaka Nidana 11",
-    },
 }
 
-COND_ALIASES: dict[str, str] = {
-    "type2_diabetes": "diabetes", "prediabetes": "diabetes", "insulin_resistance": "diabetes",
-    # Onboarding / condition_vocab canonical forms (as stored on the profile)
-    "diabetes_type2": "diabetes", "diabetes_type1": "diabetes", "madhumeha": "diabetes",
-    "bp": "hypertension", "high_blood_pressure": "hypertension",
-    "polycystic_ovary": "pcos", "polycystic_ovarian_syndrome": "pcos",
-    "hypothyroidism": "hypothyroid", "hashimoto": "hypothyroid", "thyroidism": "thyroid",
-    "overweight": "obesity", "weight_management": "obesity",
-    "liver_disease": "fatty_liver", "nafld": "fatty_liver",
-    "cholesterol": "high_cholesterol", "dyslipidemia": "high_cholesterol",
-    "hyperlipidemia": "high_cholesterol", "high_lipids": "high_cholesterol",
-    "ckd": "kidney_disease", "kidney_failure": "kidney_disease",
-    "chronic_kidney_disease": "kidney_disease",
-    "iron_deficiency": "anemia", "iron_deficiency_anemia": "anemia",
-    "ibd": "grahani", "crohns": "grahani", "ibd_crohns": "grahani", "ulcerative_colitis": "grahani",
-    "irritable_bowel_syndrome": "ibs",
-    "piles": "arsha", "hemorrhoids": "arsha", "haemorrhoids": "arsha",
-    "rheumatoid": "amavata", "ra": "amavata", "rheumatoid_arthritis": "amavata",
-    "acid_reflux": "acidity", "gerd": "acidity", "heartburn": "acidity",
-    "skin_disease": "psoriasis", "eczema": "psoriasis",
-}
+# Canonical condition keys live in `ahara_safety`, which is the layer that enforces
+# them. This module kept its own map, and the two disagreed on 22 inputs — and because
+# `uncurated_conditions()` skips the LLM classifier whenever the BRIEF recognises a
+# condition, every input the brief canonicalised and the scan did not was left with no
+# deterministic floor at all. See `_COND_CANON` for the list.
+COND_ALIASES = _COND_CANON
 
 AGNI_DESC: dict[str, str] = {
     "sama":    "balanced and strong — can handle a varied diet with regular timing",
@@ -314,10 +501,13 @@ _GENERIC_FOOD_WORDS = frozenset({
 
 
 def normalize_condition_key(cond: str) -> str:
-    """Canonical diet key for a stored/free-text condition (double-passed aliases)."""
-    key = str(cond).lower().replace(" ", "_")
-    canon = COND_ALIASES.get(key, key)
-    return COND_ALIASES.get(canon, canon)
+    """Canonical diet key for a stored or free-text condition.
+
+    Delegates to `ahara_safety._canon_condition` so the brief and the scan cannot
+    reach different conclusions about which disease the patient has. It used to
+    double-pass its own alias map; chains are now resolved in the table itself.
+    """
+    return _canon_condition(cond)
 
 
 def uncurated_conditions(conditions: list[str]) -> list[str]:

@@ -44,6 +44,7 @@ from collections import defaultdict
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE))
 OUT = BASE / "data" / "golden"
 KB = BASE / "data" / "knowledge_base" / "diet_foods.json"
 
@@ -238,15 +239,59 @@ def build_foods(rows):
     return out
 
 
+def build_condition_protocols(_rows):
+    """One row per condition per Pathya/Apathya item, from the two curated tables.
+
+    These are not food-library claims — they are disease protocols, and 21 of the
+    conditions here were authored in one go to close the gap where the app recognised
+    a disease and had no dietary rule for it at all. Gout and kidney stones were in
+    that gap, which are the two conditions in the vocabulary where diet is most of the
+    treatment.
+
+    `enforced` says whether the deterministic scan can act on the item: the Pathya
+    side is advice to the model and the Apathya side is prose, while
+    `_CONDITION_APATHYA_TERMS` is what actually fires. A Vaidya rejecting an Apathya
+    item that is enforced changes what a patient is served; rejecting one that is not
+    changes what the model is told.
+    """
+    from services.ahara_safety import _CONDITION_APATHYA_TERMS
+    from services.diet_brief_builder import PATHYA_APATHYA_HINTS
+
+    out = []
+    for condition, hint in sorted(PATHYA_APATHYA_HINTS.items()):
+        proto = _CONDITION_APATHYA_TERMS.get(condition) or {}
+        terms = proto.get("terms") or []
+        for kind, items in (("pathya", hint["pathya"]), ("apathya", hint["apathya"])):
+            for item in items:
+                enforced = ""
+                if kind == "apathya":
+                    low = item.lower()
+                    enforced = "yes" if any(t in low or low in t for t in terms) else "no"
+                out.append({
+                    "condition": condition,
+                    "ayurvedic_name": hint["ayurvedic_name"],
+                    "kind": kind,
+                    "item": item,
+                    "enforced_by_scan": enforced,
+                    "modern_extrapolated": "yes" if hint.get("modern_extrapolated") else "",
+                    "classical_ref": hint["classical_ref"],
+                    "mechanism": proto.get("reason", ""),
+                    "item_ok": "", "vaidya_notes": "",
+                })
+    return out
+
+
 def _write(name, rows):
     path = OUT / name
     if not rows:
         return path, 0
-    # newline="\n", not "" — csv writes \r\n per RFC 4180, git normalises it to \n on
-    # commit, and the file is then dirty the moment it is regenerated. The drift test
-    # would be comparing line endings rather than content.
-    with path.open("w", newline="\n", encoding="utf-8") as fh:
-        w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+    # csv writes \r\n per RFC 4180 and `.gitattributes` normalises it to \n on commit,
+    # so a regenerated packet shows as dirty with an empty diff. `newline="\n"` on the
+    # open does not prevent that — it only stops Python translating what csv already
+    # wrote — so the terminator has to be set on the writer itself. Every CSV here was
+    # CRLF in the working copy and LF in the repository until this was fixed.
+    with path.open("w", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()), lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     return path, len(rows)
@@ -368,6 +413,21 @@ is why it is grouped this way rather than by food.
 The six Ayurvedic axes per food, for whole-row sign-off. Tick columns are per axis, so
 a row can be accepted on Rasa and rejected on Vipaka.
 
+### 7. `vaidya_diet_condition_protocols.csv` — {counts['protocol_items']} rows across {counts['protocols']} diseases
+
+Disease protocols rather than food properties: the Pathya and Apathya the brief states
+to the model for each condition. **Twenty-one of these diseases had no dietary rule of
+any kind** until recently — the app recognised them, and the plan was written from
+whatever the model knew. Gout and kidney stones were among them, which are the two
+conditions in this vocabulary where diet is most of the treatment, so those two are
+worth reading first.
+
+`enforced_by_scan` says whether an Apathya item can actually withhold food: rejecting
+an enforced item changes what a patient is served, rejecting an unenforced one changes
+what the model is told. Two conditions — long COVID and hypotension — have no classical
+Nidana and are marked `modern_extrapolated`; their `classical_ref` says so rather than
+naming a chapter that does not describe them.
+
 ## How to record a verdict
 
 Every CSV has empty `*_ok` columns and a `vaidya_notes` column. Use:
@@ -410,6 +470,10 @@ def main() -> int:
         "viruddha_foods": sum(1 for r in rows if r.get("viruddha_with")),
     }
 
+    protocols = build_condition_protocols(rows)
+    counts["protocol_items"] = len(protocols)
+    counts["protocols"] = len({r["condition"] for r in protocols})
+
     OUT.mkdir(parents=True, exist_ok=True)
     written = [
         _write("vaidya_diet_screened_claims.csv", screened),
@@ -418,6 +482,7 @@ def main() -> int:
         _write("vaidya_diet_viruddha.csv", build_viruddha(rows)),
         _write("vaidya_diet_clinical_claims.csv", claims),
         _write("vaidya_diet_foods.csv", build_foods(rows)),
+        _write("vaidya_diet_condition_protocols.csv", protocols),
     ]
     md = OUT / "vaidya_diet_packet.md"
     md.write_text(build_packet_md(rows, counts, screened), encoding="utf-8")

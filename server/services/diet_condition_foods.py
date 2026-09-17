@@ -138,18 +138,16 @@ def _by_id() -> dict[str, dict]:
 # vocabulary (`engine/condition_vocab`) and the library's tags were authored
 # separately and do not line up everywhere:
 #
-# * `hemorrhoids` and `constipation_chronic` are canonical app conditions with no
-#   library key of their own, while the library holds 15 Apathya claims under `arsha`
-#   and 9 under `constipation` — the same diseases under their classical names. A
-#   patient who entered "piles" was reaching none of them.
+# The `hemorrhoids` -> `arsha` and `constipation_chronic` -> `constipation` entries
+# that used to live here have moved to `ahara_safety._COND_CANON`, which is now the
+# single canonical-condition table for the whole diet feature; they belonged there,
+# not in a library-specific map. What remains is genuinely library-specific:
+#
 # * `grahani` is reachable from no app condition at all. Its 22 Apathya foods are a
 #   strict subset of `ibs`'s 44 and its Pathya list adds 11 foods `ibs` does not
 #   carry, so the library's own tagging treats it as the classical companion label
 #   for the same territory, and 11 authored recommendations were unreachable.
 _LIBRARY_CONDITION_ALIASES: dict[str, tuple[str, ...]] = {
-    "hemorrhoids": ("arsha",),
-    "piles": ("arsha",),
-    "constipation_chronic": ("constipation",),
     "ibs": ("ibs", "grahani"),
     "grahani": ("grahani", "ibs"),
 }

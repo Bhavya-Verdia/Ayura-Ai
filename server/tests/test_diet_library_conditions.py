@@ -128,18 +128,26 @@ def test_the_ripe_form_still_fires():
 # Conditions the app recognises but the library could not be reached for
 # --------------------------------------------------------------------------
 
-@pytest.mark.parametrize("app_condition,library_key", [
-    ("hemorrhoids", "arsha"),
-    ("constipation_chronic", "constipation"),
+@pytest.mark.parametrize("app_condition,library_key,meal", [
+    ("piles", "arsha", "Rajma Chawal"),
+    ("hemorrhoids", "arsha", "Rajma Chawal"),
+    ("constipation_chronic", "constipation", "Green Tea"),
 ])
-def test_a_classical_library_key_is_reachable_from_the_app_vocabulary(app_condition, library_key):
+def test_a_classical_library_key_is_reachable_from_the_app_vocabulary(
+        app_condition, library_key, meal):
     """`hemorrhoids` and `constipation_chronic` are canonical app conditions with no
     library key of their own, while the library holds the same diseases under their
     classical names. A patient who entered "piles" reached none of the 15 Apathya
-    claims authored for Arsha."""
-    assert (condition_food_rules(app_condition)["apathya_names"]
-            == condition_food_rules(library_key)["apathya_names"])
-    assert condition_food_rules(app_condition)["apathya_names"]
+    claims authored for Arsha.
+
+    Asserted end to end rather than on `condition_food_rules` directly, because the
+    canonicalisation is now the caller's and a unit-level check would pass while the
+    patient still got nothing.
+    """
+    from services.ahara_safety import _canon_condition
+    assert _canon_condition(app_condition) == library_key
+    out = apply_condition_food_safety(_plan(meal), [app_condition])
+    assert out["condition_food_safe"] is False, f"{meal} passed for {app_condition}"
 
 
 def test_grahani_claims_are_reachable():

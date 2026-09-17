@@ -110,6 +110,21 @@ is why it is grouped this way rather than by food.
 The six Ayurvedic axes per food, for whole-row sign-off. Tick columns are per axis, so
 a row can be accepted on Rasa and rejected on Vipaka.
 
+### 7. `vaidya_diet_condition_protocols.csv` — 525 rows across 39 diseases
+
+Disease protocols rather than food properties: the Pathya and Apathya the brief states
+to the model for each condition. **Twenty-one of these diseases had no dietary rule of
+any kind** until recently — the app recognised them, and the plan was written from
+whatever the model knew. Gout and kidney stones were among them, which are the two
+conditions in this vocabulary where diet is most of the treatment, so those two are
+worth reading first.
+
+`enforced_by_scan` says whether an Apathya item can actually withhold food: rejecting
+an enforced item changes what a patient is served, rejecting an unenforced one changes
+what the model is told. Two conditions — long COVID and hypotension — have no classical
+Nidana and are marked `modern_extrapolated`; their `classical_ref` says so rather than
+naming a chapter that does not describe them.
+
 ## How to record a verdict
 
 Every CSV has empty `*_ok` columns and a `vaidya_notes` column. Use:
