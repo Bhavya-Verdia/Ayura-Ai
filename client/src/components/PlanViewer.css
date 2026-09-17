@@ -3744,6 +3744,37 @@
   color: var(--ayura-amber);
 }
 
+/* ── Therapeutic arc ── the progression was the same four phases for every
+   patient; showing which one this is, and what it deliberately leaves out. */
+.diet-arc-card {
+  margin: 0.75rem 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--ayura-border);
+  border-left: 3px solid var(--ayura-teal);
+  border-radius: 12px;
+}
+.diet-arc-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.diet-arc-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ayura-text);
+}
+.diet-arc-basis,
+.diet-arc-withheld {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ayura-muted);
+}
+.diet-arc-withheld {
+  padding-left: 0.6rem;
+  border-left: 2px solid var(--ayura-amber);
+}
+
 /* ── Energy prescription ── */
 .diet-energy-card {
   margin: 0.75rem 0 1rem;

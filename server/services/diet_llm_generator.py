@@ -42,11 +42,12 @@ RULES — these are non-negotiable:
 9. Include a special Ayurvedic drink (Kashaya, Kwatha, herbal milk, or medicinal water) \
    for each day with timing and rationale.
 10. Meals should reflect genuine Indian culinary tradition — realistic, preparable at home.
-11. Structure the plan as a 4-week Ayurvedic progression: \
-    Week 1 (Ama Pachana): Light, Deepaniya-Pachana foods — clear Ama. Avoid heavy, sour, fermented. \
-    Week 2 (Agni Deepana): Kindle Agni with warming spices. Gradually richer meals. \
-    Week 3 (Brimhana): Nourishing foods — Ojas-building. Ghee, nuts, root vegetables where appropriate. \
-    Week 4 (Rasayana): Rejuvenating, seasonal, maintenance. Introduce Rasayana ingredients (amla, ashwagandha milk, dates). \
+11. Follow the THERAPEUTIC PROGRESSION given in the patient brief exactly, and \
+    return its phase names verbatim. It is chosen from this patient's Ama, Bala, Ojas \
+    and build, and it is not the same for every patient: Langhana and Brimhana are \
+    opposite lines of treatment and giving the wrong one is a clinical error, not a \
+    stylistic one. Where the brief says a phase is deliberately absent, do not \
+    reintroduce it under another name. \
     Week 1 must be FULL DETAIL (all meal fields). Weeks 2-4 are COMPACT (meal names only as strings).
 
 Respond ONLY with valid JSON. No preamble. No markdown fences. No explanation outside JSON.
@@ -70,7 +71,7 @@ Return this exact JSON structure — no extra keys, no preamble, no markdown fen
   "weeks": [
     {{
       "week_number": 1,
-      "phase": "Ama Pachana",
+      "phase": "<<PHASE_1>>",
       "phase_description": "string — 1-2 sentences on this week's therapeutic focus",
       "daily_plan": {{
         "Monday": {{
@@ -103,7 +104,7 @@ Return this exact JSON structure — no extra keys, no preamble, no markdown fen
     }},
     {{
       "week_number": 2,
-      "phase": "Agni Deepana",
+      "phase": "<<PHASE_2>>",
       "phase_description": "string — 1-2 sentences on this week's therapeutic focus",
       "daily_plan": {{
         "Monday": {{"theme": "string", "breakfast": "Indian meal name", "lunch": "Indian meal name", "snack": "Indian meal name", "dinner": "Indian meal name", "special_drink": "drink name — timing"}},
@@ -117,7 +118,7 @@ Return this exact JSON structure — no extra keys, no preamble, no markdown fen
     }},
     {{
       "week_number": 3,
-      "phase": "Brimhana",
+      "phase": "<<PHASE_3>>",
       "phase_description": "string",
       "daily_plan": {{
         "Monday": {{"theme": "string", "breakfast": "string", "lunch": "string", "snack": "string", "dinner": "string", "special_drink": "string"}},
@@ -131,7 +132,7 @@ Return this exact JSON structure — no extra keys, no preamble, no markdown fen
     }},
     {{
       "week_number": 4,
-      "phase": "Rasayana",
+      "phase": "<<PHASE_4>>",
       "phase_description": "string",
       "daily_plan": {{
         "Monday": {{"theme": "string", "breakfast": "string", "lunch": "string", "snack": "string", "dinner": "string", "special_drink": "string"}},
@@ -198,7 +199,19 @@ async def generate_diet_plan_llm(
         if rag_context:
             brief = brief + f"\n\nCLASSICAL KNOWLEDGE BASE (cite these references where relevant):\n{rag_context}"
 
+        # The four-week progression. It used to be four literals in the prompt, the
+        # same for every patient the app has ever had — so a Kapha-dominant obese
+        # diabetic got a Brimhana week (Charaka Sutrasthana 23 names exactly that
+        # group as the diseases of over-nourishment) and a depleted underweight
+        # patient got a clearing week they had no Bala for.
+        from services.diet_plan_arc import arc_prompt_block, choose_arc
+        arc = choose_arc(user_profile, diet_prefs)
+        brief = brief + "\n\n" + arc_prompt_block(arc)
+
         prompt = USER_PROMPT_TEMPLATE.replace("{brief}", brief)
+        for _week in arc["weeks"]:
+            prompt = prompt.replace(
+                f"<<PHASE_{_week['week_number']}>>", _week["phase"])
 
         # A full 4-week plan (Week 1 detailed + Weeks 2-4 compact) exceeds the
         # 4096-token default — that truncated the JSON mid-string, so json.loads
@@ -216,6 +229,17 @@ async def generate_diet_plan_llm(
             raise ValueError(f"LLM returned error: {data['error']}")
         if "weeks" not in data or not isinstance(data["weeks"], list):
             raise ValueError("LLM response missing 'weeks' array")
+        # A "4-week plan" with fewer than four weeks was shipping to the UI, which
+        # renders four week tabs. The length was never checked — only that the key
+        # existed — and the model drops a week now and then. Each missing week is
+        # also a missing therapeutic phase, so this is a failed generation rather
+        # than a short one: the caller falls back to the rule engine, which always
+        # produces four.
+        weeks_in = [w for w in data["weeks"] if isinstance(w, dict)]
+        numbers = sorted(w.get("week_number") for w in weeks_in)
+        if numbers != [1, 2, 3, 4]:
+            raise ValueError(f"LLM returned weeks {numbers}, expected [1, 2, 3, 4]")
+        data["weeks"] = sorted(weeks_in, key=lambda w: w["week_number"])
 
         dominant_dosha = (user_profile.get("dominant_dosha") or "vata").lower()
         agni_type = (user_profile.get("agni_type") or "sama").lower()
@@ -246,6 +270,19 @@ async def generate_diet_plan_llm(
         if weeks:
             weeks[0]["daily_plan"] = week1_daily
 
+        # The phase labels are the app's prescription, so they come from the arc and
+        # not from whatever the model echoed back. A disagreement is logged rather
+        # than shown: the arc names the sequence, and a week displayed under a phase
+        # the patient was not prescribed is the defect this whole module addresses.
+        for _week, _prescribed in zip(weeks, arc["weeks"]):
+            _returned = _week.get("phase")
+            if _returned and _returned != _prescribed["phase"]:
+                logger.info(
+                    f"diet arc: model returned phase {_returned!r} for week "
+                    f"{_prescribed['week_number']}, prescribed {_prescribed['phase']!r}"
+                )
+            _week["phase"] = _prescribed["phase"]
+
         weekly_plan = week1_daily  # backward-compat alias
 
         result = {
@@ -268,6 +305,7 @@ async def generate_diet_plan_llm(
             "plan_title": data.get("plan_title", "Personalised Ayurvedic Diet Plan"),
             "plan_description": data.get("plan_description", ""),
             "pathya_apathya": data.get("pathya_apathya", {}),
+            "therapeutic_arc": arc,
             "weekly_plan": weekly_plan,
             "diet_weeks": weeks,
             "condition_coaching": data.get("condition_coaching", ""),
