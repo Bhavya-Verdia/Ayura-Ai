@@ -126,6 +126,29 @@ rule must state a `prabhava` giving the reason, or `schema.validate` refuses it.
 Rows are `reviewed: false` — authored, **not clinically reviewed**. They belong in
 the Vaidya packet alongside the gym and Panchakarma flags.
 
+#### Diet energy: the target is computed, and the plan is checked against it
+`services/diet_energy.py` is the diet path's nutrition arithmetic, and
+`services/diet_portion_reconciler.py` verifies the generated plan delivers it. Before
+these, `target_calories` was `1800 if female else 2000` nudged by BMI category and
+goal — it read neither height, weight nor activity level — and nothing compared the
+stated target with what came back: measured plans ran at 585-720 kcal against a stated
+1200, and 1240-1410 against a stated 2400 for an *underweight* patient.
+`engine/calorie_calculator.py`, a documented Tier-1 engine, was called only by its own
+unit test and is now the BMR/TDEE source.
+
+A deficit is floored at the larger of the sex floor and the patient's own BMR;
+underweight and pregnancy override a stated weight-loss goal; the combined surplus is
+bounded. The brief carries a **per-meal** kcal budget, which is what actually moved
+delivery into band — the reconciler is the backstop, scaling `macros_approx` **and the
+portion text together** (raising one without the other produces a plan that lies to
+the person cooking it). Fasting days are exempt: Upavasa is the therapy, not a miss.
+
+`services.diet_llm_generator.build_diet_plan` is the single diet entry point — LLM
+primary, rule engine fallback, same safety and energy layers on both. It exists
+because the per-feature route and the holistic worker each held a copy of that
+sequence and had drifted: the holistic fallback ran only `apply_ahara_safety`, so
+which endpoint a user came through decided how much of the safety model applied.
+
 `routes/plans._generate_feature_via_engine` is the single entry point both the holistic and per-feature paths use — it runs the engine + enricher and applies pregnancy/safety gating. The per-feature endpoints (`POST /api/plans/{gym,yoga,diet,routine,panchakarma,remedies,medicines}`) return the plan **synchronously**. The holistic `POST /api/plans/generate` is offloaded to an **ARQ background worker** (`server/worker.py`) via Redis and returns a `job_id` to poll at `/api/plans/job/{jobId}`; if Redis/ARQ is unavailable it falls back to running the job in-process via FastAPI `BackgroundTasks`.
 
 ### Chat Agent (`server/ai/agents/health_agent.py`)

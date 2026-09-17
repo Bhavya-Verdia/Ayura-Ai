@@ -273,21 +273,13 @@ SEASON_GUIDANCE: dict[str, str] = {
 }
 
 # ── Allergen term lookup for post-LLM safety scan ─────────────────────────────
-ALLERGEN_TERMS: dict[str, list[str]] = {
-    "gluten": ["wheat", "gluten", "maida", "atta", "bread", "roti", "chapati", "poha", "semolina",
-               "suji", "rava", "barley", "oats", "seitan", "naan", "paratha"],
-    "dairy": ["milk", "curd", "yogurt", "ghee", "butter", "cream", "paneer", "cheese", "lassi",
-              "buttermilk", "kheer", "raita", "mawa", "khoa"],
-    "nuts_tree": ["almond", "cashew", "walnut", "pistachio", "pine nut", "hazelnut", "chestnut",
-                  "badam", "kaju", "akhrot"],
-    "peanuts": ["peanut", "groundnut", "mungphali"],
-    "soy": ["soy", "tofu", "tempeh", "edamame", "soybean"],
-    "eggs": ["egg", "omelet", "omelette", "anda"],
-    "shellfish": ["shrimp", "prawn", "crab", "lobster", "scallop"],
-    "fish": ["fish", "salmon", "tuna", "mackerel", "pomfret", "rohu", "hilsa", "sardine"],
-    "sesame": ["sesame", "til", "tahini", "gingelly"],
-    "mustard": ["mustard", "sarson", "rai"],
-}
+# The allergen and intolerance term lists live in `ahara_safety`, which is the layer
+# that enforces them. This module kept its own copy, and the copies drifted: the copy
+# here was missing every one of the four `food_intolerances` values, so `flag_allergens`
+# resolved `lactose` through `.get(key, [key])` and scanned meal text for the literal
+# word "lactose" — the exact failure PR #61 fixed in `apply_ahara_safety` and only
+# there. It also disagreed with the live list on 8 of the 10 keys it did have.
+from services.ahara_safety import ALLERGEN_TERMS  # noqa: E402  (re-exported below)
 
 
 # ── Multi-condition conflict resolution ───────────────────────────────────────
@@ -428,26 +420,14 @@ def _conflict_section(norm_conditions: list[str]) -> str:
 
 
 def target_calories(user_profile: dict, diet_prefs: dict) -> int:
-    age = int(user_profile.get("age") or 30)
-    gender = (user_profile.get("gender") or "male").lower()
-    bmi = (user_profile.get("bmi_category") or "normal").lower()
-    goal = diet_prefs.get("diet_goal") or "general_wellness"
+    """Deprecated — kept only so callers outside this module keep working.
 
-    base = 1800 if gender == "female" else 2000
-    if bmi in ("overweight", "obese"):
-        base -= 300
-    if bmi == "underweight":
-        base += 200
-    if age > 60:
-        base -= 100
-    if age < 20:
-        base += 100
-    if goal == "weight_loss":
-        base -= 300
-    elif goal == "muscle_support":
-        base += 200
-
-    return max(1200, min(3000, base))
+    This read neither height, weight nor activity level: a very active 82 kg woman and
+    a sedentary 78 kg woman were both told 1200 kcal. `services.diet_energy` computes
+    the target from the patient's actual body, and `build_brief` now uses that.
+    """
+    from services.diet_energy import energy_target
+    return energy_target(user_profile, diet_prefs)["target_calories"]
 
 
 def build_brief(user_profile: dict, diet_prefs: dict) -> str:
@@ -529,7 +509,31 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
         "madhyama": "Madhyama Koshtha (balanced bowel) — general Ayurvedic diet applies",
     }
     koshtha_line = f"\n  Koshtha (bowel constitution): {_KOSHTHA_DESC.get(koshtha, koshtha.title())}" if koshtha else ""
-    cal = target_calories(user_profile, diet_prefs)
+
+    # The brief used to end on "TARGET CALORIES: approximately N kcal/day" and nothing
+    # else, and the model divided that by eye: measured plans came back at 585-720 kcal
+    # against a stated 1200, and 1240-1410 against a stated 2400. A per-meal budget
+    # gives each meal an anchor instead of leaving the split to the model.
+    from services.diet_energy import energy_target
+    energy = energy_target(user_profile, diet_prefs)
+    mb = energy["meal_budget"]
+    energy_block = f"""ENERGY PRESCRIPTION (a clinical target, not a suggestion):
+  Daily total: {energy['target_calories']} kcal. Every day of every week must land \
+within {energy['band'][0]}-{energy['band'][1]} kcal.
+  A day totalling far less than this is a failed plan, not a light one.
+  Per-meal budget: breakfast ~{mb['breakfast']} kcal | lunch ~{mb['lunch']} kcal | \
+snack ~{mb['snack']} kcal | dinner ~{mb['dinner']} kcal
+  Minimum protein: {energy['protein_floor_g']} g/day across the four meals.
+  Portions must be sized to deliver this. State the portion in a measurable unit
+  (katori/ml/g/pieces) and make `macros_approx` honest for that portion — the figures
+  are shown to the patient and are summed into a daily total on screen."""
+    if energy["basis"] == "measured":
+        energy_block += (
+            f"\n  Basis: BMR {energy['bmr']} kcal, maintenance {energy['tdee']} kcal at the "
+            f"patient's stated activity level."
+        )
+    for _note in energy["notes"]:
+        energy_block += f"\n  Note: {_note}"
 
     return f"""PATIENT: {name} | Age: {age} | Gender: {gender}{' | PREGNANT/NURSING' if is_pregnant else ''}
 
@@ -562,7 +566,8 @@ HARD DIETARY CONSTRAINTS (never violate these):
 
 THERAPEUTIC GOAL: {goal.replace('_', ' ').title()}
 WATER INTAKE: {water} per day
-TARGET CALORIES: approximately {cal} kcal/day"""
+
+{energy_block}"""
 
 
 def flag_allergens(weekly_plan: dict, allergies: list[str], intolerances: list[str]) -> dict:

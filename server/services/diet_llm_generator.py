@@ -288,6 +288,15 @@ async def generate_diet_plan_llm(
             ),
         }
 
+        # Energy reconciliation. The brief now carries a per-meal kcal budget, but a
+        # stated target and a delivered plan were never compared: measured plans came
+        # back at 585-720 kcal against a stated 1200, and 1240-1410 against a stated
+        # 2400 for an underweight patient. Portions are scaled toward the budget and
+        # the residual is reported rather than left on screen as a day total.
+        from services.diet_energy import energy_target
+        from services.diet_portion_reconciler import reconcile_plan_energy
+        result = reconcile_plan_energy(result, energy_target(user_profile, diet_prefs))
+
         # Deterministic Ahara safety layer (Viruddha + allergens, all 4 weeks)
         from services.ahara_safety import (
             apply_ahara_safety, apply_condition_food_safety, apply_dietary_type_safety,
@@ -317,3 +326,50 @@ async def generate_diet_plan_llm(
     except Exception as e:
         logger.error(f"LLM diet generation failed: {e}")
         return None
+
+
+async def build_diet_plan(
+    user_profile: dict,
+    diet_prefs: dict,
+    diet_foods: list[dict] | None = None,
+) -> dict:
+    """The whole diet path: LLM primary, rule engine fallback, same layers on both.
+
+    There were two copies of this sequence — one in `routes/plans.py` for the
+    per-feature endpoint and one in `routes/plan_runner.py` for the holistic worker —
+    and they had drifted. The holistic fallback ran only `apply_ahara_safety`, so a
+    plan produced there skipped the dietary-type check and the condition-contraindicated
+    food floor entirely: which endpoint the user came through decided how much of the
+    safety model applied to them. One function so that cannot happen again.
+    """
+    plan = await generate_diet_plan_llm(user_profile, diet_prefs)
+    if plan is not None:
+        return plan
+
+    logger.warning("LLM diet generation failed; falling back to the rule engine")
+    from services.ahara_safety import (
+        apply_ahara_safety, apply_condition_food_safety, apply_dietary_type_safety,
+        classify_condition_apathya_llm,
+    )
+    from services.diet_brief_builder import uncurated_conditions
+    from services.diet_energy import energy_target
+    from services.diet_plan_engine import generate_diet_plan
+    from services.diet_plan_enricher import enrich_diet_plan
+    from services.diet_portion_reconciler import reconcile_plan_energy
+
+    raw = generate_diet_plan(user_profile, diet_prefs, diet_foods)
+    plan = await enrich_diet_plan(raw, user_profile, diet_prefs)
+    plan = apply_ahara_safety(
+        plan, diet_prefs.get("food_allergies") or [],
+        diet_prefs.get("food_intolerances") or [])
+    plan = apply_dietary_type_safety(plan, diet_prefs.get("dietary_type"))
+    conds = user_profile.get("medical_history") or []
+    extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(conds))
+    plan = apply_condition_food_safety(
+        plan, conds, extra_terms=extra_apathya,
+        pregnant=bool(user_profile.get("pregnancy_or_nursing")))
+    # The engine fills category quotas with no energy target of its own — measured at
+    # 580-1031 kcal against a 1490 kcal target, with 22-40 g of protein against an
+    # 84 g floor.
+    plan = reconcile_plan_energy(plan, energy_target(user_profile, diet_prefs))
+    return plan

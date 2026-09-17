@@ -239,6 +239,62 @@ function DietSafetyBanner({ plan }) {
 }
 
 
+function EnergyPrescriptionCard({ plan }) {
+  const rx = plan.energy_prescription
+  if (!rx?.target_calories) return null
+  const rec = plan.energy_reconciliation || {}
+  const mb = rx.meal_budget || {}
+  const adjusted = rec.days_adjusted > 0
+
+  return (
+    <div className="diet-energy-card">
+      <div className="diet-energy-head">
+        <Flame size={13} className="diet-vital-icon" />
+        <span className="diet-energy-target">{rx.target_calories} kcal / day</span>
+        {rx.protein_floor_g ? (
+          <span className="diet-energy-sub">at least {rx.protein_floor_g} g protein</span>
+        ) : null}
+      </div>
+
+      {rx.basis === 'measured' ? (
+        <p className="diet-energy-basis">
+          From your own measurements: {rx.bmr} kcal at rest, {rx.tdee} kcal at your
+          stated activity level.
+        </p>
+      ) : (
+        <p className="diet-energy-basis is-estimated">
+          Estimated — add your height and weight in your profile to make this exact.
+        </p>
+      )}
+
+      <div className="diet-energy-split">
+        {['breakfast', 'lunch', 'snack', 'dinner'].map(slot => (
+          mb[slot] ? (
+            <span key={slot} className="diet-energy-slot">
+              <b>{slot}</b> {mb[slot]}
+            </span>
+          ) : null
+        ))}
+      </div>
+
+      {(rx.notes || []).map((note, i) => (
+        <p key={i} className="diet-energy-note">{note}</p>
+      ))}
+
+      {adjusted ? (
+        <p className="diet-energy-note">
+          Portions on {rec.days_adjusted} {rec.days_adjusted === 1 ? 'day' : 'days'} were
+          resized to meet this target — the meals and their Ayurvedic reasoning are
+          unchanged.
+        </p>
+      ) : null}
+      {(rec.residual_notes || []).slice(0, 3).map((note, i) => (
+        <p key={`r${i}`} className="diet-energy-note is-warn">{note}</p>
+      ))}
+    </div>
+  )
+}
+
 export function DietView({ plan }) {
   const [activeDay, setActiveDay] = useState(0)
   const [activeWeek, setActiveWeek] = useState(0)
@@ -282,6 +338,11 @@ export function DietView({ plan }) {
       {plan.plan_description && (
         <p className="diet-description">{plan.plan_description}</p>
       )}
+
+      {/* ── Energy prescription ── the target the plan was built against, and how
+           it was arrived at. Day totals were previously shown with nothing to read
+           them against. */}
+      <EnergyPrescriptionCard plan={plan} />
 
       {/* ── Vitals bar ── */}
       <div className="diet-vitals">
@@ -425,12 +486,33 @@ export function DietView({ plan }) {
                 fat_g: acc.fat_g + (ma.fat_g || 0),
               }
             }, { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 })
-            return total.calories > 0 ? (
+            if (!(total.calories > 0)) return null
+            // The day total used to be shown alone, so a day delivering 600 kcal
+            // against a 1490 kcal prescription read as a fact rather than a miss.
+            const rx = plan.energy_prescription
+            const target = rx?.target_calories
+            const band = rx?.band
+            const offBand = band && (total.calories < band[0] || total.calories > band[1])
+            const lowProtein = rx?.protein_floor_g && total.protein_g < rx.protein_floor_g * 0.9
+            return (
               <div className="diet-day-macros">
-                <span className="diet-day-macros-label">Day totals (approx.)</span>
+                <span className="diet-day-macros-label">
+                  Day totals (approx.)
+                  {target ? (
+                    <span className={`diet-day-target${offBand ? ' is-off' : ''}`}>
+                      target {target} kcal
+                    </span>
+                  ) : null}
+                </span>
                 <MacroBar macros={total} />
+                {lowProtein ? (
+                  <p className="diet-day-flag">
+                    Protein is below your {rx.protein_floor_g} g daily floor on this day —
+                    add dal, paneer or curd to the meal that suits your Agni best.
+                  </p>
+                ) : null}
               </div>
-            ) : null
+            )
           })()}
         </>
       )}
