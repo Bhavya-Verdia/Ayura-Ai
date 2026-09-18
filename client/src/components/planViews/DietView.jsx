@@ -356,6 +356,22 @@ function EnergyPrescriptionCard({ plan }) {
       {(rec.residual_notes || []).slice(0, 3).map((note, i) => (
         <p key={`r${i}`} className="diet-energy-note is-warn">{note}</p>
       ))}
+      {/* The reconciler checks protein on every non-fasting day and records the ones
+          that fall short. A day's own view flags it, but only for the day being
+          looked at — so a plan short on protein across several days read as fine
+          unless you clicked through all of them. Energy shortfalls were summarised
+          here and protein was not, which is the asymmetry rather than the check. */}
+      {(rec.days_below_protein_floor || []).length > 0 ? (
+        <p className="diet-energy-note is-warn">
+          Protein is below your {rx.protein_floor_g} g floor on{' '}
+          {rec.days_below_protein_floor.length}{' '}
+          {rec.days_below_protein_floor.length === 1 ? 'day' : 'days'}
+          {rec.days_below_protein_floor.length <= 3
+            ? ` (${rec.days_below_protein_floor.map(d => `${d.week} ${d.day}`).join(', ')})`
+            : ''}
+          . Add dal, paneer or curd to the meal that suits your Agni best.
+        </p>
+      ) : null}
     </div>
   )
 }

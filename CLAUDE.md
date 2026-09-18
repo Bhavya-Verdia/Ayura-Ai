@@ -422,6 +422,58 @@ knowledge-base file actually moved. It runs **after** the commit-verification st
 a seeding failure cannot mask a deploy that shipped the wrong image, and is followed by
 `--check`, because the seeder's own success line is not evidence either.
 
+#### Diet: the gates are English, the prompt asks for Hindi
+`diet_llm_generator`'s system prompt says **"Generate REAL Indian meal names"**, and
+every scan term is English or Sanskrit. `_term_in_text` is a word match, so the same
+food was caught or missed on the model's choice of word:
+
+    curd -> caught      dahi        -> missed
+    tamarind -> caught  imli        -> missed
+    pickle -> caught    achar       -> missed
+    jaggery -> caught   gud         -> missed
+    cabbage -> caught   patta gobhi -> missed
+
+The library carries **Sanskrit** because its rows are named that way (`dadhi`), and
+the curated tables carry **English**. Neither carried the Hindi-Urdu register the
+prompt actually requests — which is the one a meal name is most likely to be in.
+
+`_VERNACULAR` maps ~83 of those words onto the canonical form, and
+`_expand_vernacular` **appends** it to the searchable text rather than substituting,
+so a term that already matched cannot stop matching and the displayed meal name is
+untouched. It sits in `_meal_text`, which all three meal scans share, so they gain it
+together.
+
+**Every canonical must be a word some gate actually holds**, or the entry is
+decoration: `chole -> chickpeas` looked right and fired nothing, because the tables
+say `chana`. Thirteen entries were inert on the first pass —
+`test_no_vernacular_entry_is_inert` runs the real matcher over the whole term
+vocabulary. And words the tables exclude on purpose stay out for the same reason they
+were excluded there: `namak -> salt`, `chai -> tea`, `chawal -> rice` and
+`nimbu -> lemon` would each reintroduce, through the back door, a term that fires on
+every other meal.
+
+**A short vernacular word swallows the longer ones.** `_term_regex` allows a suffix on
+purpose — "milk" has to match "milkshake" — so `makhan` (butter) matched **makhana**,
+the fox nut this app prescribes as a light snack, and flagged a plain day of Chilla,
+Khichdi, Makhana and Lauki Sabzi as containing butter. `alu` (potato) matched
+**alubukhara**, a dried plum. Both went into `_ALLERGEN_FALSE_FRIENDS`, which
+`_term_in_text` already consulted and which is therefore general, not allergen-only.
+
+Most such collisions are benign because the longer word is the *same food in
+Sanskrit* — `badam`/`badama`, `palak`/`palakya`, `til`/`tila`, `chana`/`chanaka` — so
+the guard test carries a `same_food` allowlist and fails only on two different foods.
+The two real ones were found by the existing `test_no_condition_flags_an_ordinary_
+vegetarian_day`, which is what that test is for.
+
+**Non-Latin script is a wall, not a gap.** Measured: a meal written as
+`दही चावल` or `தயிர் சாதம்` raises **zero** alerts from every gate — condition,
+allergen and dietary type alike. The app ships eight locales and translates its
+chrome; the plan is English-only and has no language input. Translating patient-facing
+plan text is therefore not a localisation task but a **safety-model redesign** — the
+structured fields a gate reads would have to stay in a scannable script, or the
+scanning would have to move. Nothing is broken today because nothing is translated;
+the trap is that the obvious next feature disables the safety layer silently.
+
 #### The plan cache key is an allowlist, and it was missing most of the plan
 `routes/plan_runner._check_plan_cache` hashes a hand-written dict of "relevant"
 profile fields, and its own comment says a newly wired field is invisible until named
