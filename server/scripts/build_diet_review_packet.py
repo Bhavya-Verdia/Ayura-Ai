@@ -80,6 +80,69 @@ def _profile(row):
             f"V{d['vata']:+d} P{d['pitta']:+d} K{d['kapha']:+d}")
 
 
+# ── Claims where two frameworks disagree ─────────────────────────────────────
+# `screen` asks whether a claim contradicts the row carrying it. These contradict
+# something else: the classical reading and the modern one reach opposite conclusions
+# about the same food, and both have standing.
+#
+# This library is authored classically, so the classical reading is what the rows say
+# and the modern one is recorded here rather than silently losing. A reviewer rules;
+# an author should not, and picking one framework quietly is how a contested claim
+# starts looking settled.
+_CONTESTED: dict[tuple[str, str], dict[str, str]] = {
+    ("bloating", "garlic"): {
+        "library_says": "pathya",
+        "classical": "Lashuna is tikshna, ushna and V-2 — the great Vatahara, used in "
+                     "Gulma and Anaha, and one of the few dravyas named for exactly "
+                     "this complaint.",
+        "modern": "Garlic is a fructan and one of the two canonical high-FODMAP "
+                  "triggers for bloating; it is the first thing a modern elimination "
+                  "diet removes.",
+    },
+    ("bloating", "onion"): {
+        "library_says": "no claim",
+        "classical": "Palandu is V-1 and Vatahara cooked; classically it is not "
+                     "restricted in Adhmana.",
+        "modern": "Onion is the other canonical high-FODMAP trigger, and raw onion is "
+                  "reported as a bloating trigger more often than any other vegetable.",
+    },
+    ("bloating", "roti_whole_wheat"): {
+        "library_says": "no claim",
+        "classical": "Godhuma is guru and sthira but V-2, and wheat roti is the staple "
+                     "anna; classical Anaha Apathya names the Shimbi varga, not wheat.",
+        "modern": "Wheat is a fructan source and is restricted alongside garlic and "
+                  "onion in a FODMAP protocol.",
+    },
+}
+
+
+def build_contested_claims(rows):
+    """One row per claim two frameworks disagree about, with both readings stated."""
+    by_id = {r["id"]: r for r in rows}
+    out = []
+    for (condition, food_id), entry in sorted(_CONTESTED.items()):
+        row = by_id.get(food_id)
+        if row is None:
+            continue
+        _, _, dosha = _profile(row)
+        a = row["ayurvedic"]
+        out.append({
+            "condition": condition,
+            "food": row["name"],
+            "food_id": food_id,
+            "library_says": entry["library_says"],
+            "classical_reading": entry["classical"],
+            "modern_reading": entry["modern"],
+            "rasa": _fmt(a["rasa"]),
+            "guna": _fmt(a.get("guna")),
+            "virya": a["virya"],
+            "dosha_effect": dosha,
+            "vaidya_ruling": "",
+            "vaidya_notes": "",
+        })
+    return out
+
+
 def screen(row, condition, kind):
     """Does this clinical claim disagree with the row carrying it?
 
@@ -363,7 +426,23 @@ The count did not reset; it was always zero.
 The tiers are ordered by what a wrong answer costs and by how far the claim sits from
 a citable source — not by size. The first two are small and decisive.
 
-### 1. `vaidya_diet_screened_claims.csv` — {counts['screened']} rows · start here
+### 0. `vaidya_diet_contested_claims.csv` — {counts['contested']} rows · rule on these first
+
+Claims where the classical reading and the modern one reach **opposite** conclusions
+about the same food, and both have standing. The rest of this packet asks whether a
+claim is right; this file asks which framework decides.
+
+The library is authored classically, so the classical reading is what the rows
+currently say and the modern one is recorded beside it rather than quietly losing.
+All three are Adhmana: garlic is Pathya here because Lashuna is the great Vatahara
+named for Gulma and Anaha, and is the first food a modern FODMAP protocol removes.
+Onion and wheat roti carry no claim for the same reason and are contested the same
+way.
+
+Fill `vaidya_ruling` with the framework that should decide, per row. This is the one
+file where an author declining to choose is the correct behaviour.
+
+### 1. `vaidya_diet_screened_claims.csv` — {counts['screened']} rows
 
 Claims that disagree with the food carrying them. The library already requires that a
 dosha effect running against both rasa and virya state a Prabhava; these are the
@@ -480,6 +559,7 @@ def main() -> int:
         "apathya": sum(1 for r in claims if r["claim"] == "apathya"),
         "conditions": len({r["condition"] for r in claims}),
         "screened": len(screened),
+        "contested": len(_CONTESTED),
         "extrapolations": len(extrap),
         "extrapolations_gating": sum(1 for r in extrap if r["gates_a_condition"] == "yes"),
         "prabhava": sum(1 for r in rows if r["ayurvedic"].get("prabhava")),
@@ -494,6 +574,7 @@ def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     written = [
         _write("vaidya_diet_screened_claims.csv", screened),
+        _write("vaidya_diet_contested_claims.csv", build_contested_claims(rows)),
         _write("vaidya_diet_extrapolations.csv", extrap),
         _write("vaidya_diet_prabhava.csv", build_prabhava(rows)),
         _write("vaidya_diet_viruddha.csv", build_viruddha(rows)),

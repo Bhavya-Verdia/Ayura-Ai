@@ -39,7 +39,23 @@ The count did not reset; it was always zero.
 The tiers are ordered by what a wrong answer costs and by how far the claim sits from
 a citable source — not by size. The first two are small and decisive.
 
-### 1. `vaidya_diet_screened_claims.csv` — 12 rows · start here
+### 0. `vaidya_diet_contested_claims.csv` — 3 rows · rule on these first
+
+Claims where the classical reading and the modern one reach **opposite** conclusions
+about the same food, and both have standing. The rest of this packet asks whether a
+claim is right; this file asks which framework decides.
+
+The library is authored classically, so the classical reading is what the rows
+currently say and the modern one is recorded beside it rather than quietly losing.
+All three are Adhmana: garlic is Pathya here because Lashuna is the great Vatahara
+named for Gulma and Anaha, and is the first food a modern FODMAP protocol removes.
+Onion and wheat roti carry no claim for the same reason and are contested the same
+way.
+
+Fill `vaidya_ruling` with the framework that should decide, per row. This is the one
+file where an author declining to choose is the correct behaviour.
+
+### 1. `vaidya_diet_screened_claims.csv` — 12 rows
 
 Claims that disagree with the food carrying them. The library already requires that a
 dosha effect running against both rasa and virya state a Prabhava; these are the
