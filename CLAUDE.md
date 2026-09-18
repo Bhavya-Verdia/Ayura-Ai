@@ -342,7 +342,8 @@ Renames go in `diet_library.spec.RENAMED`. `build_diet_library --write` refuses 
 row in the KB is no longer authored — that is how a food gets silently dropped from
 the engine and from the RAG corpus, and a corpus that returns less is not an error —
 and a rename is indistinguishable from a drop from outside, so it has to be written
-down to be accepted. **A rename changes the seeded nutrition corpus: reseed.**
+down to be accepted. A rename changes the seeded nutrition corpus, which the deploy now handles itself
+(see below).
 
 #### Diet: a retrieval outage degrades the plan, it does not replace it
 The five `rag_pipeline.query` calls in `generate_diet_plan_llm` sat directly under the
@@ -352,6 +353,74 @@ budget and the condition coaching — everything the LLM path adds — with noth
 screen to say why. Retrieval has its own handler now, partial context is kept, and
 `test_diet_rag_degrades` parses the AST, because no behavioural test notices this
 until ChromaDB is actually down in production.
+
+#### Diet engine: composition first, portion scaling second
+`_MEAL_CONFIGS` builds a meal from a list of categories and knew nothing about energy.
+Measured on a Manda-Agni patient with a 2100 kcal target: breakfast came back as green
+tea and an orange — **58 kcal** — snack as a single amla (53), dinner as zucchini and
+quinoa (206), for a day of 918. Across 28 days the plan ran 1082-1585 kcal with 22-40 g
+of protein against a 48 g floor.
+
+`reconcile_plan_energy` could not repair that and was right not to: it scales portions,
+and no multiplier turns two oranges into a breakfast. **A slot 8.99x short is short of
+food.** `_top_up_slot` adds energy-bearing food first, and the reconciler does the fine
+scaling on something it can work with. All 28 days land in band now.
+
+Three things that went wrong while building it, each found by reading the output rather
+than the totals:
+
+* **Rank by the portion served, never by kcal/100g.** Density picks condiments — it
+  chose mustard oil at 44 kcal a teaspoon, and nutritional yeast, which it served at
+  **100 g twice a day for 28 days** because a deterministic argmax never loses. Ranking
+  is on `_format_food(...)["macros"]["calories"]` and the pick is `rng.choice` over the
+  strongest few.
+* **Dedup across the day, not the slot.** Without the day's set a food is added to
+  breakfast and picked again for lunch — 25 repeats in a four-week plan. In
+  `_get_meal_foods` it is a *preference*, not a filter: passed over while the category
+  has anything else, taken anyway when it is the only thing left, or a narrow pool
+  leaves the slot empty instead.
+* **Fasting days are exempt**, as they are in the reconciler. Upavasa is the therapy.
+
+The top-up draws from `pool`, which has already passed every dosha, season, allergy,
+dietary-type and condition-Apathya filter, so it cannot buy calories by reintroducing a
+food the patient must not have. A test asserts that directly.
+
+#### Diet portions: what the patient is actually served
+`_PORTION` gives a dairy food 150 ml and a grain a 150 g katori — right for milk and
+rice, absurd for butter and for a flour. **Navanita came out at 1076 kcal a serving**,
+besan at a 100 g "katori cooked" it is never eaten in, and nutritional yeast — a
+condiment measured in spoons — at 100 g and 45 g of protein. Thirteen foods were like
+this and `_ITEM_PORTIONS` now covers them all. The portion text is shown to the patient
+and `macros_approx` is summed into a day total on screen, so an unreal portion is both
+a wrong number and an instruction to eat something nobody would serve.
+`test_no_single_portion_is_one_nobody_would_eat` fails on any row over 300 kcal.
+
+#### Diet packet: the claims two frameworks disagree about
+`screen` asks whether a claim contradicts the row carrying it. Some claims contradict
+something else: garlic is Pathya in Adhmana because Lashuna is tikshna, ushna and V-2 —
+the great Vatahara, named for Gulma and Anaha — and it is the first food a modern FODMAP
+protocol removes. `screen` cannot catch that, because garlic's claim agrees with
+garlic's own profile perfectly.
+
+`vaidya_diet_contested_claims.csv` is tier 0 of the packet, with both readings stated
+and an empty `vaidya_ruling` column. Three rows, all Adhmana: garlic, onion and wheat
+roti. **This is the one file where an author declining to choose is the correct
+behaviour** — the library is authored classically, so the classical reading is what the
+rows say, and picking a framework quietly is how a contested claim starts looking
+settled.
+
+#### Deploy: the RAG corpus is seeded by the deploy now
+It was not, and that was the standing instruction to remember a manual step. The
+corpus went stale for real in this branch — renaming `upma` changed three nutrition
+documents and authoring Adhmana changed 99 more — and **nothing would have failed**:
+plans are built by the deterministic engines, so only RAG context drifts, and a corpus
+answering from a food the engine no longer has is not an error anywhere.
+
+`build_vectors.py` is content-addressed and idempotent, writing only what changed and
+never emptying a collection, so running it every deploy is a no-op except when a
+knowledge-base file actually moved. It runs **after** the commit-verification step, so
+a seeding failure cannot mask a deploy that shipped the wrong image, and is followed by
+`--check`, because the seeder's own success line is not evidence either.
 
 #### Diet inputs: one list per declaration, built in one place
 Two helpers in `diet_brief_builder` are the only way the diet path builds a list of
