@@ -973,19 +973,23 @@ _DIET_TYPE_FORBIDDEN: dict[str, list[str]] = {
     "vegetarian":     ["chicken", "mutton", "lamb", "beef", "pork", "meat", "fish",
                        "prawn", "shrimp", "crab", "egg", "omelette", "omelet", "keema",
                        "gelatin", "bacon", "ham"],
-    "eggetarian":     ["chicken", "mutton", "lamb", "beef", "pork", "meat", "fish",
-                       "prawn", "shrimp", "crab", "keema", "gelatin", "bacon", "ham"],
-    "pescatarian":    ["chicken", "mutton", "lamb", "beef", "pork", "keema",
-                       "gelatin", "bacon", "ham"],
     "vegan":          ["chicken", "mutton", "lamb", "beef", "pork", "meat", "fish",
                        "prawn", "shrimp", "crab", "egg", "omelette", "omelet", "keema",
                        "gelatin", "bacon", "ham",
                        "milk", "curd", "yogurt", "yoghurt", "ghee", "butter", "cream",
                        "paneer", "cheese", "lassi", "buttermilk", "kheer", "raita",
                        "mawa", "khoa", "dahi", "honey"],
-    # `non_vegetarian` forbids nothing and is absent deliberately — an empty entry
-    # here would read as "unchecked" rather than "nothing to check".
 }
+
+# Withdrawn dietary types, and anything else that reaches this scan without having
+# passed the schema. The library has no animal-food row, so the app serves only
+# vegetarian and vegan plans; an unrecognised type gets the vegetarian floor rather
+# than none. It used to be the other way round — `non_vegetarian` mapped to no entry,
+# and the `if not forbidden` branch below reported `dietary_type_safe = True` for it.
+# That was right when the value was offered and meant "nothing to check". Now an
+# unknown value means a stale or malformed preference, and answering "safe, checked"
+# to one is the failure this module exists to prevent.
+_DIETARY_TYPE_FALLBACK = "vegetarian"
 
 
 def apply_dietary_type_safety(plan: dict, dietary_type: str | None) -> dict:
@@ -1001,13 +1005,10 @@ def apply_dietary_type_safety(plan: dict, dietary_type: str | None) -> dict:
     drops meals is harder to notice than one that says what is wrong with them.
     """
     try:
-        dtype = (dietary_type or "vegetarian").strip().lower()
-        forbidden = _DIET_TYPE_FORBIDDEN.get(dtype)
-        if not forbidden:
-            plan["dietary_type_safe"] = True
-            plan["dietary_type_alerts"] = []
-            plan["dietary_type_checked"] = True
-            return plan
+        dtype = (dietary_type or _DIETARY_TYPE_FALLBACK).strip().lower()
+        if dtype not in _DIET_TYPE_FORBIDDEN:
+            dtype = _DIETARY_TYPE_FALLBACK
+        forbidden = _DIET_TYPE_FORBIDDEN[dtype]
 
         alerts: list[dict] = []
         for week_label, day_label, slot, meal in _collect_meal_units(plan):

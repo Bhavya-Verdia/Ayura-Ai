@@ -774,7 +774,12 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
     cond_section += _conflict_section(norm_conditions)
     season_guidance = SEASON_GUIDANCE.get(season, "No specific season provided — use general Ayurvedic diet principles.")
 
-    hard_constraints = [f"Dietary type: {diet_type} (STRICTLY honour — never recommend non-{diet_type} items)"]
+    hard_constraints = [
+        f"Dietary type: {diet_type} (STRICTLY honour — never recommend non-{diet_type} items). "
+        f"Ayura serves vegetarian and vegan plans only: the authored food library has no "
+        f"egg, fish or meat row, so an animal-food meal reaches the patient screened "
+        f"against none of their conditions."
+    ]
     if allergies:
         hard_constraints.append(f"ALLERGIES (absolutely avoid): {', '.join(allergies)}")
     if intolerances:

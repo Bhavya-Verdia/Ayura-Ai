@@ -36,6 +36,10 @@ RULES — these are non-negotiable:
 3. For every medical condition, provide classical Pathya-Apathya with Samhita references.
 4. Flag all Viruddha Ahara (incompatible food combinations) relevant to this patient.
 5. STRICTLY honour all hard constraints — dietary type, allergies, intolerances.
+5a. Every meal is vegetarian or vegan. No egg, fish, poultry or meat in any meal, \
+   drink, Pathya list or line of guidance, whatever the patient's stated type. The \
+   food library this plan is screened against holds no animal food, so such a meal \
+   would be served without being checked against the patient's diseases at all.
 6. Use the patient's Agni type to determine meal heaviness and frequency.
 7. High Ama = all meals must be Deepaniya + Pachana; no heavy, sour, or fermented foods.
 8. Each day should have a therapeutic theme (e.g., "Ama Pachana", "Agni Deepana", "Ojas Building").

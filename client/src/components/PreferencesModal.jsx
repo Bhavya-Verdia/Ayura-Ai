@@ -97,12 +97,16 @@ const YOGA_SUGGESTED_MINUTES = {
 // Keep in step with `pranayama_minutes()` in yoga_plan_engine.py.
 const YOGA_PRANAYAMA_MINUTES = { none: 5, beginner: 5, intermediate: 5, advanced: 10 };
 
+// The two the food library can actually serve. All 150 authored rows in
+// diet_foods.json are vegetarian, so the 708 (condition, food) claims that gate the
+// plan said nothing about any egg, fish or meat dish — a non-vegetarian meal passed
+// that layer unscreened, and the rule-engine fallback answered a muscle-support goal
+// with black beans. Offering a choice the data cannot honour is worse than not
+// offering it. Saved preferences using the withdrawn values are coerced server-side,
+// never rejected.
 const DIETARY_TYPES = [
   { value: 'vegetarian', label: 'Vegetarian' },
-  { value: 'vegan', label: 'Vegan' },
-  { value: 'eggetarian', label: 'Eggetarian' },
-  { value: 'non_vegetarian', label: 'Non-Vegetarian' },
-  { value: 'pescatarian', label: 'Pescatarian' }
+  { value: 'vegan', label: 'Vegan' }
 ];
 
 export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSuccess }) {
@@ -564,6 +568,11 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                 <option value="">Select your diet...</option>
                 {DIETARY_TYPES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
               </select>
+              <p className="pref-hint">
+                Ayura&apos;s food library is a vegetarian Nighantu — every food in it is
+                screened against your conditions by name. We would rather offer two
+                diets we can screen than five we cannot.
+              </p>
             </div>
             <div className="pref-row">
               <div className="pref-input-group">
