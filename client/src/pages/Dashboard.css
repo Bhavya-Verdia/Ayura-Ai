@@ -786,6 +786,13 @@
 [data-theme='light'] .dash-ritu-risk--high   { color: #9a3412; }
 [data-theme='light'] .dash-ritu-risk--medium { color: #92400e; }
 [data-theme='light'] .dash-ritu-risk--low    { color: #166534; }
+/* A seasonal line removed by the safety screen. Muted: it is a note about what is
+   absent, not a warning about what is present. */
+.dash-ritu-withheld {
+  margin: 10px 0 0; font-size: 0.74rem; line-height: 1.45;
+  color: var(--ayura-muted); font-style: italic;
+}
+
 .dash-ritu-cols { display: flex; gap: 24px; margin-top: 14px; flex-wrap: wrap; }
 .dash-ritu-col { flex: 1; min-width: 160px; }
 .dash-ritu-col-label { font-size: 0.78rem; font-weight: 700; }

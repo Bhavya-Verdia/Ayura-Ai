@@ -1459,11 +1459,25 @@ def apply_advisory_safety(
     """
     try:
         active = _active_condition_protocols(medical_history, extra_terms, pregnant)
+        # A string where a list was expected iterates into single characters, and a
+        # one-letter term matches every word there is — `allergies="dairy"` instead
+        # of `["dairy"]` withheld every recommendation on the card rather than
+        # degrading. Same shape as a one-element tuple written without its comma.
+        # Guarded here rather than at each caller, because this is where the damage
+        # would be done.
+        def _declared(value):
+            if isinstance(value, str):
+                return [value]
+            return list(value or [])
+
         allergen_terms: dict[str, str] = {}
-        for a in list(allergies or []) + list(intolerances or []):
-            key = str(a).lower()
+        for a in _declared(allergies) + _declared(intolerances):
+            key = str(a).strip().lower()
+            if len(key) < 2:
+                continue
             for t in ALLERGEN_TERMS.get(key, [key]):
-                allergen_terms[t] = key
+                if len(t) >= 2:
+                    allergen_terms[t] = key
 
         def _hits(text: str, *, negation_aware: bool,
                   allergens_absolute: bool = False) -> list[dict]:

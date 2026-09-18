@@ -173,6 +173,11 @@ function RitucharyaCard() {
   const rec = data.recommendations || data
   const favour = (rec.diet_adjustments || []).slice(0, 3)
   const avoid = (rec.avoid || []).slice(0, 3)
+  // Seasonal advice named specific foods and knew nothing about the reader — a Sharad
+  // card recommended white rice and cow ghee to everyone, including diabetics and the
+  // dairy-allergic. It is screened now, and a line removed by that screen is said
+  // rather than silently missing.
+  const withheld = rec.withheld_for_you || []
   const SeasonIcon = SEASON_ICON[data.season] || Leaf
 
   return (
@@ -209,6 +214,13 @@ function RitucharyaCard() {
             </div>
           )}
         </div>
+      )}
+      {withheld.length > 0 && (
+        <p className="dash-ritu-withheld">
+          {withheld.length} seasonal {withheld.length === 1 ? 'suggestion' : 'suggestions'} for
+          this Ritu {withheld.length === 1 ? 'was' : 'were'} left out because
+          {withheld.length === 1 ? ' it names' : ' they name'} a food you should avoid.
+        </p>
       )}
     </m.div>
   )

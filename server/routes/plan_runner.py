@@ -451,7 +451,7 @@ async def _run_plan_job(
                 try:
                     from services.seasonal_service import build_seasonal_guidance
                     dosha = user_profile.get("vikriti_dominant") or user_profile.get("dominant_dosha") or "vata"
-                    seasonal_guidance = await build_seasonal_guidance(dosha)
+                    seasonal_guidance = await build_seasonal_guidance(dosha, user_profile)
                 except Exception:
                     pass
 

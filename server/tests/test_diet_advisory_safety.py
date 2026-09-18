@@ -190,3 +190,26 @@ def test_both_generation_paths_apply_it():
     fallback_src = inspect.getsource(g.build_diet_plan)
     assert "apply_advisory_safety" in llm_src
     assert "apply_advisory_safety" in fallback_src
+
+
+@pytest.mark.parametrize("allergies", ["dairy", ["dairy"], ("dairy",)])
+def test_a_string_where_a_list_belongs_does_not_empty_the_list(allergies):
+    """`allergies="dairy"` iterates into 'd','a','i','r','y', and a one-letter term
+    matches every word there is — so a malformed profile field withheld *every*
+    recommendation instead of the one naming dairy. Same shape as a one-element tuple
+    written without its trailing comma, and guarded here because this is where the
+    damage lands rather than at each caller."""
+    plan = {"pathya_apathya": {"pathya": [
+        "Warm milk at bedtime",
+        "Bitter gourd and coconut water",
+    ]}}
+    out = apply_advisory_safety(plan, [], allergies, [], {}, False)
+    assert out["pathya_apathya"]["pathya"] == ["Bitter gourd and coconut water"]
+    assert len(out["withheld_recommendations"]) == 1
+
+
+def test_single_character_declarations_are_ignored():
+    """Whatever produced them, a one-letter term is not a food."""
+    plan = {"pathya_apathya": {"pathya": ["Bitter gourd and coconut water"]}}
+    out = apply_advisory_safety(plan, [], ["d", "a", ""], [], {}, False)
+    assert out["withheld_recommendations"] == []
