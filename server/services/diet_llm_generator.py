@@ -18,8 +18,8 @@ from services.diet_brief_builder import (
     MEAL_TIMING,
     DOSHA_SPICES,
     AYUR_TIPS,
-    COND_ALIASES,
     build_brief,
+    diet_conditions,
     flag_allergens,
 )
 
@@ -168,7 +168,7 @@ async def generate_diet_plan_llm(
         # RAG: pull classical text passages relevant to this patient's profile
         dominant_dosha_q = (user_profile.get("dominant_dosha") or "vata").lower()
         agni_type_q = (user_profile.get("agni_type") or "sama").lower()
-        conditions_q = user_profile.get("medical_history") or []
+        conditions_q = diet_conditions(user_profile, diet_prefs)
         rag_context_parts: list[str] = []
 
         # Query 1: dosha + agni general diet guidance
@@ -243,8 +243,7 @@ async def generate_diet_plan_llm(
 
         dominant_dosha = (user_profile.get("dominant_dosha") or "vata").lower()
         agni_type = (user_profile.get("agni_type") or "sama").lower()
-        conditions = user_profile.get("medical_history") or []
-        norm_conds = [COND_ALIASES.get(c.lower().replace(" ", "_"), c.lower().replace(" ", "_")) for c in conditions]
+        norm_conds = diet_conditions(user_profile, diet_prefs)
 
         user_id = str(user_profile.get("id") or user_profile.get("_id") or "anon")
 
@@ -350,7 +349,7 @@ async def generate_diet_plan_llm(
         # uncurated conditions get their Apathya classified by the LLM first, so the
         # floor covers ALL diseases, not just the hardcoded common ones.
         from services.diet_brief_builder import uncurated_conditions
-        _conds = user_profile.get("medical_history") or []
+        _conds = diet_conditions(user_profile, diet_prefs)
         # Only classify conditions with no curated hint — curated ones are vetted
         # and must not be overwritten by an LLM guess.
         _extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(_conds))
@@ -401,7 +400,7 @@ async def build_diet_plan(
         plan, diet_prefs.get("food_allergies") or [],
         diet_prefs.get("food_intolerances") or [])
     plan = apply_dietary_type_safety(plan, diet_prefs.get("dietary_type"))
-    conds = user_profile.get("medical_history") or []
+    conds = diet_conditions(user_profile, diet_prefs)
     extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(conds))
     plan = apply_condition_food_safety(
         plan, conds, extra_terms=extra_apathya,

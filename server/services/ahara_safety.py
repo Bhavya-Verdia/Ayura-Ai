@@ -654,6 +654,22 @@ _CONDITION_APATHYA_TERMS: dict[str, dict] = {
         # broad and the sibling is exempted instead.
         "exempt": ["raw banana", "kadali kanda", "unripe banana"],
     },
+    # Adhmana — the fourth `gut_health_issue` value, and the only one that was not
+    # already a canonical condition. Its Samprapti is Vata obstructed by Ama in the
+    # Pakvashaya, so the floor is the Vatala and gas-forming foods; it is not IBS's
+    # sour-and-raw floor and not constipation's dry-and-cold one.
+    #
+    # `chana` and `rajma` are named rather than a blanket `legume`: moong is Pathya
+    # here and a term broad enough to catch it would withhold the one pulse this
+    # condition is meant to be fed. `soda` and `carbonated` are the same food by two
+    # names, which is how meals actually spell it.
+    "bloating": {
+        "name": "Adhmana / Anaha (bloating, distension)",
+        "reason": "Vatala and gas-forming foods distend the Pakvashaya where Vata is already obstructed by Ama.",
+        "terms": ["raw salad", "cabbage", "cauliflower", "broccoli", "rajma",
+                  "kidney beans", "chana", "carbonated", "soda", "cold water",
+                  "curd"],
+    },
     "constipation": {
         "name": "Vibandha (constipation)",
         "reason": "Dry, rough and cold foods harden the stool and increase Vata.",

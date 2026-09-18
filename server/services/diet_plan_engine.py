@@ -4,6 +4,8 @@ import random
 from datetime import datetime, timezone
 from pathlib import Path
 
+from services.diet_brief_builder import diet_conditions as _diet_conditions
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 FOODS_PATH = BASE_DIR / "data" / "knowledge_base" / "diet_foods.json"
 
@@ -344,7 +346,7 @@ def filter_and_score_foods(user_profile: dict, diet_prefs: dict,
     stress = (user_profile.get("stress_level") or "moderate").lower()
 
     if cond_rules is None:
-        cond_rules = _build_condition_rules(user_profile.get("medical_history") or [])
+        cond_rules = _build_condition_rules(_diet_conditions(user_profile, diet_prefs))
 
     allergy_map: dict[str, list[str]] = {
         "dairy": ["dairy"],
@@ -624,7 +626,11 @@ def generate_diet_plan(user_profile: dict, diet_prefs: dict,
     season = (user_profile.get("current_season") or "").lower()
     fasting_days = {d.lower() for d in (diet_prefs.get("fasting_days") or [])}
 
-    cond_rules = _build_condition_rules(user_profile.get("medical_history") or [])
+    # The diet form's `gut_health_issue` is a disease too — acidity, constipation and
+    # IBS are all keys this engine's Apathya filter already knows. It only ever saw
+    # `medical_history`, so the answer the patient gave on the diet form itself
+    # withheld nothing.
+    cond_rules = _build_condition_rules(_diet_conditions(user_profile, diet_prefs))
     food_pool = filter_and_score_foods(user_profile, diet_prefs, df, cond_rules=cond_rules)
 
     days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday",

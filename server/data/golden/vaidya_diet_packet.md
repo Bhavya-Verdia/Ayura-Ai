@@ -110,7 +110,7 @@ is why it is grouped this way rather than by food.
 The six Ayurvedic axes per food, for whole-row sign-off. Tick columns are per axis, so
 a row can be accepted on Rasa and rejected on Vipaka.
 
-### 7. `vaidya_diet_condition_protocols.csv` — 525 rows across 39 diseases
+### 7. `vaidya_diet_condition_protocols.csv` — 541 rows across 40 diseases
 
 Disease protocols rather than food properties: the Pathya and Apathya the brief states
 to the model for each condition. **Twenty-one of these diseases had no dietary rule of
