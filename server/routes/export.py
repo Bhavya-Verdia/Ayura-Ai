@@ -227,6 +227,98 @@ def _build_pdf(user: UserDocument, plan_data: dict, generated_at: str) -> bytes:
             ("medicines",         "💊  Ayurvedic Medicines",      HexColor("#818CF8")),
         ]
 
+        def _render_diet(plan: dict) -> None:
+            """The nutrition plan, written out rather than JSON-dumped.
+
+            The generic dict renderer below turns each key into one table row holding
+            `json.dumps(value)[:400]`. For a diet plan that is 6 KB of `diet_weeks`
+            shown at **7%** — the Vaidya got four hundred characters of escaped JSON
+            where the twenty-eight days of meals should be — and the safety findings
+            truncated as soon as there were more than about two of them.
+
+            This is the artifact the whole clinical review depends on, and the diet
+            plan is the largest thing in it.
+            """
+            rx = plan.get("energy_prescription") or {}
+            if rx.get("target_calories"):
+                line = f"<b>Energy prescription:</b> {rx['target_calories']} kcal/day"
+                if rx.get("band"):
+                    line += f" (acceptable {rx['band'][0]}-{rx['band'][1]})"
+                if rx.get("protein_floor_g"):
+                    line += f", at least {rx['protein_floor_g']} g protein"
+                if rx.get("basis"):
+                    line += f" — basis: {rx['basis']}"
+                story.append(Paragraph(line, BODY))
+
+            arc = (plan.get("therapeutic_arc") or {}).get("weeks") or []
+            if arc:
+                phases = " → ".join(str(w.get("phase")) for w in arc if w.get("phase"))
+                story.append(Paragraph(f"<b>Therapeutic arc:</b> {phases}", BODY))
+            for w in (plan.get("therapeutic_arc") or {}).get("withheld") or []:
+                story.append(Paragraph(f"<b>Phase withheld:</b> {w}", SMALL))
+
+            # Safety findings in full. These are the rows a reviewer is here for, and
+            # a truncated list of them is worse than none: it reads as the whole list.
+            for field, label in (
+                ("condition_safety_alerts", "Foods flagged against a declared condition"),
+                ("safety_alerts", "Allergen / intolerance flags"),
+                ("dietary_type_alerts", "Dietary-type conflicts"),
+                ("withheld_recommendations", "Withheld from the patient's Pathya list"),
+                ("advisory_prose_alerts", "Guidance text naming a contraindicated food"),
+            ):
+                rows = plan.get(field) or []
+                if not rows:
+                    continue
+                story.append(Paragraph(f"{label} ({len(rows)})", H3))
+                for r in rows[:25]:
+                    if not isinstance(r, dict):
+                        story.append(Paragraph(f"• {r}", SMALL))
+                        continue
+                    where = " ".join(str(r[k]) for k in ("week", "day", "meal_slot") if r.get(k))
+                    # `item` first: a withheld recommendation is a whole sentence and
+                    # the food word alone ("figs") loses what was actually removed.
+                    what = (r.get("item") or r.get("food")
+                            or ", ".join(r.get("matched_terms") or []))
+                    why = r.get("condition") or r.get("reason") or ""
+                    story.append(Paragraph(f"• <b>{where or 'plan'}</b>: {what} — {why}"[:600], SMALL))
+                if len(rows) > 25:
+                    story.append(Paragraph(f"… and {len(rows) - 25} more", SMALL))
+
+            for field, label in (
+                ("conditions_without_food_floor", "No food-safety rule could be derived for"),
+                ("conditions_screened_by_terms_only", "Screened against a term list only, not food by food"),
+            ):
+                vals = plan.get(field) or []
+                if vals:
+                    story.append(Paragraph(
+                        f"<b>{label}:</b> {', '.join(str(v).replace('_', ' ') for v in vals)}", SMALL))
+
+            # The meals themselves.
+            for week in plan.get("diet_weeks") or []:
+                if not isinstance(week, dict):
+                    continue
+                wk = week.get("week_number", "?")
+                story.append(Paragraph(f"Week {wk} — {week.get('phase', '')}".strip(" —"), H3))
+                for day, day_data in (week.get("daily_plan") or {}).items():
+                    if not isinstance(day_data, dict):
+                        continue
+                    bits = []
+                    for slot in ("breakfast", "lunch", "snack", "dinner"):
+                        meal = day_data.get(slot)
+                        if isinstance(meal, dict):
+                            name = meal.get("meal_name") or meal.get("name") or ""
+                        else:
+                            name = str(meal or "")
+                        if name:
+                            bits.append(f"{slot[:2]}: {name}")
+                    drink = day_data.get("special_drink")
+                    if isinstance(drink, dict) and drink.get("name"):
+                        bits.append(f"drink: {drink['name']}")
+                    if bits:
+                        fasting = " [fasting]" if day_data.get("is_fasting") else ""
+                        story.append(Paragraph(f"<b>{day}</b>{fasting} — {'; '.join(bits)}", SMALL))
+                story.append(Spacer(1, 0.2 * cm))
+
         for key, title, color in PLAN_SECTIONS:
             value = plan_data.get(key)
             if not value:
@@ -234,6 +326,11 @@ def _build_pdf(user: UserDocument, plan_data: dict, generated_at: str) -> bytes:
 
             story.append(HRFlowable(width="100%", thickness=0.5, color=color, spaceAfter=4))
             story.append(Paragraph(title, H2))
+
+            if key == "diet_plan" and isinstance(value, dict):
+                _render_diet(value)
+                story.append(Spacer(1, 0.3 * cm))
+                continue
 
             if isinstance(value, list):
                 for idx, item in enumerate(value[:12]):   # cap at 12 items
