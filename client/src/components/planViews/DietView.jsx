@@ -171,6 +171,9 @@ function DietSafetyBanner({ plan }) {
   const dietTypeAlerts = plan.dietary_type_alerts || []
 
   const unscanned = plan.conditions_without_food_floor || []
+  // Screened against a curated term list, but not against the food library food by
+  // food. A thinner check than the one the badge below implies, so it says so.
+  const termsOnly = plan.conditions_screened_by_terms_only || []
   // The plan's food-recommending prose, held to the same floor as its meals.
   // `withheld` was removed from the Pathya card before it reached this component;
   // saying so is the point — a recommendation that vanishes with no explanation
@@ -180,7 +183,7 @@ function DietSafetyBanner({ plan }) {
 
   if (!alerts.length && !viruddha.length && !condAlerts.length && !dietTypeAlerts.length
       && !withheld.length && !proseAlerts.length) {
-    if (unscanned.length) {
+    if (unscanned.length || termsOnly.length) {
       // "Everything checked" would be false here: these conditions reached no
       // curated rule, no library claim and no usable classification.
       return (
@@ -188,10 +191,19 @@ function DietSafetyBanner({ plan }) {
           <TriangleAlert size={13} />
           <span>
             Checked for allergens, intolerances, incompatible combinations (Viruddha
-            Ahara) and your dietary type — none found. We could not derive a food-safety
-            rule for {unscanned.map(c => c.replace(/_/g, ' ')).join(', ')}, so this plan
-            has not been screened against {unscanned.length > 1 ? 'those conditions' : 'that condition'}.
-            Please review it with your practitioner.
+            Ahara) and your dietary type — none found.
+            {unscanned.length > 0 && (
+              <> We could not derive a food-safety rule for{' '}
+              {unscanned.map(c => c.replace(/_/g, ' ')).join(', ')}, so this plan
+              has not been screened against {unscanned.length > 1 ? 'those conditions' : 'that condition'}.</>
+            )}
+            {termsOnly.length > 0 && (
+              <> For {termsOnly.map(c => c.replace(/_/g, ' ')).join(', ')} we screened
+              against a curated list of foods to avoid, but our food library has not yet
+              been reviewed food-by-food for {termsOnly.length > 1 ? 'these conditions' : 'this condition'} —
+              a lighter check than the one we run for conditions like acidity or diabetes.</>
+            )}
+            {' '}Please review this plan with your practitioner.
           </span>
         </div>
       )

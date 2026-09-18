@@ -785,12 +785,127 @@ _COND_CANON: dict[str, str] = {
     "skin_disease": "psoriasis",
     "thyroid_disorder": "thyroid",
     "thyroidism": "thyroid",
+    # Found by probing free-text phrasings a user actually types.
+    "gouty_arthritis": "gout",
+    "uric_acid": "gout",
+    "high_uric_acid": "gout",
+    "renal_stone": "kidney_stones",
+    "renal_calculi": "kidney_stones",
+    "gall_stone": "gallstones",
+    "gall_bladder_stone": "gallstones",
+    "spondylitis": "cervical_spondylosis",
+    "slip_disc": "sciatica",
+    "acidity_gas": "acidity",
+    "gas_trouble": "bloating",
+    "gastritis": "acidity",
+    "piles_bleeding": "arsha",
+    "fissure": "arsha",
+    "sugar_disease": "diabetes",
+    "bp_high": "hypertension",
+    "bp_low": "low_blood_pressure",
+    "cholesterol": "high_cholesterol",
+    "thyroid_under": "hypothyroid",
+    "thyroid_over": "hyperthyroidism",
 }
 
 
+# Qualifiers a person appends to a disease name that carry no diagnostic content.
+# Onboarding has a free-text "Not listed? Add here" field, so the app receives
+# "crohn's disease", "thyroid problem" and "sugar issue" — and `_COND_CANON` was an
+# exact-match table, so `crohns` resolved to IBS and `crohns disease` resolved to
+# nothing. The curated floor a user got was decided by how they phrased it.
+_COND_QUALIFIERS = (
+    "disease", "diseases", "disorder", "disorders", "syndrome", "problem",
+    "problems", "condition", "conditions", "issue", "issues", "illness",
+    "complaint", "complaints", "trouble",
+)
+
+
 def _canon_condition(cond: str) -> str:
-    key = str(cond).strip().lower().replace(" ", "_").replace("-", "_")
-    return _COND_CANON.get(key, key)
+    """The diet path's canonical key for a stored or free-text condition.
+
+    Three sources, tried in order, because each knows something the others do not:
+
+      1. `_COND_CANON` directly — the diet vocabulary, which maps to the keys this
+         feature's tables are written in (`arsha`, `acidity`, `amavata`).
+      2. `engine.condition_vocab.normalize_condition` — 193 aliases, compact forms
+         and depluralization, mapping into ITS key space (`hemorrhoids`,
+         `acid_reflux`, `hypothyroidism`), whose output is then run back through
+         `_COND_CANON`. The two vocabularies are not interchangeable: it calls
+         `arsha` `hemorrhoids` and the diet tables call `hemorrhoids` `arsha`, so
+         this composes them rather than replacing one with the other.
+      3. The same two again with trailing qualifiers stripped, so "crohn's disease"
+         reaches what "crohns" already reached.
+
+    Stripping is a last resort, after both exact lookups have failed, so a real key
+    that happens to end in a qualifier — `heart_disease`, `kidney_disease` — is
+    matched whole and never shortened to `heart`.
+    """
+    import re
+
+    raw = str(cond or "")
+    # Apostrophes are dropped rather than turned into separators: "crohn's" is
+    # "crohns", not "crohn s".
+    text = re.sub(r"[''`]", "", raw).strip().lower()
+    text = re.sub(r"[^a-z0-9]+", " ", text).strip()
+    if not text:
+        return ""
+
+    def _direct(t: str) -> str | None:
+        key = t.replace(" ", "_")
+        return _COND_CANON.get(key) or (key if key in _CONDITION_APATHYA_TERMS else None)
+
+    def _viavocab(t: str) -> str | None:
+        try:
+            from engine.condition_vocab import normalize_condition
+        except Exception:
+            return None
+        key = normalize_condition(t)
+        if not key:
+            return None
+        return _COND_CANON.get(key) or (key if key in _CONDITION_APATHYA_TERMS else None)
+
+    for candidate in (text, _strip_qualifier(text)):
+        if not candidate:
+            continue
+        # The candidate, then its other number. `kidney stone` and `kidney stones`
+        # are the same disease and a user writes either; `_COND_CANON` happened to
+        # hold only the plural. Tried last so a real key is never reshaped first.
+        for variant in (candidate, *_number_variants(candidate)):
+            for lookup in (_direct, _viavocab):
+                hit = lookup(variant)
+                if hit:
+                    return hit
+    return text.replace(" ", "_")
+
+
+def _number_variants(text: str) -> tuple[str, ...]:
+    """The singular and plural of the last word, for a table that holds one of them.
+
+    Only the last word, and only where a trailing `s` is plausibly a plural — `ibs`
+    and `ss` endings are left alone, the same rule `condition_vocab._singularize`
+    applies, for the same reason: `ibs` is not the plural of `ib`.
+    """
+    words = text.split()
+    if not words:
+        return ()
+    last = words[-1]
+    out = []
+    if len(last) > 3 and last.endswith("s") and not last.endswith("ss"):
+        out.append(" ".join(words[:-1] + [last[:-1]]))
+    elif not last.endswith("s"):
+        out.append(" ".join(words[:-1] + [last + "s"]))
+    return tuple(out)
+
+
+def _strip_qualifier(text: str) -> str:
+    """"crohns disease" -> "crohns"; "heart disease" is left alone by the caller,
+    which only reaches here after an exact lookup has already matched it."""
+    words = text.split()
+    while len(words) > 1 and words[-1] in _COND_QUALIFIERS:
+        words = words[:-1]
+    out = " ".join(words)
+    return out if out != text else ""
 
 
 # ── LLM Apathya classifier for uncurated / rare conditions ────────────────────
@@ -1110,6 +1225,19 @@ def apply_condition_food_safety(
         plan["conditions_without_food_floor"] = sorted(
             {str(c) for c in (medical_history or [])
              if _canon_condition(c) not in active}
+        )
+        # Depth, not just presence. Twenty-one conditions have been judged against
+        # every one of the library's 150 foods individually; the other nineteen have
+        # a curated term list and nothing more. Both currently produce the same
+        # "every meal checked — none found" badge, so a gout patient (27 terms, no
+        # per-food claims) reads the same reassurance as an acidity patient (101
+        # terms, 95 of them authored food by food) while being materially less
+        # protected. Saying which is which is the honest version of that badge.
+        from services.diet_condition_foods import condition_food_rules as _rules
+        plan["conditions_screened_by_terms_only"] = sorted(
+            {str(c) for c in (medical_history or [])
+             if _canon_condition(c) in active
+             and not _rules(_canon_condition(c))["apathya_terms"]}
         )
 
         if not active:

@@ -422,6 +422,105 @@ knowledge-base file actually moved. It runs **after** the commit-verification st
 a seeding failure cannot mask a deploy that shipped the wrong image, and is followed by
 `--check`, because the seeder's own success line is not evidence either.
 
+#### The plan cache key is an allowlist, and it was missing most of the plan
+`routes/plan_runner._check_plan_cache` hashes a hand-written dict of "relevant"
+profile fields, and its own comment says a newly wired field is invisible until named
+there. Seven of the eight profile edits that change a diet plan did not bust it:
+
+    medical_history += diabetes   the newly diagnosed patient got their old plan
+    weight 70 -> 58 kg            target 2240 -> 2070, cache unchanged
+    activity -> sedentary         target 2240 -> 1730, cache unchanged
+    age 35 -> 17                  paediatric equation, cache unchanged
+    gender -> other               sex-neutral equation, cache unchanged
+    agni -> manda                 the whole brief changes, cache unchanged
+    season -> grishma             Ritucharya changes, cache unchanged
+
+`medical_history` is the single largest input to any plan this app makes and was not
+in the key at all. This is not diet-specific — the key is shared by every feature.
+
+**`weight_kg` is bucketed to 2 kg**, and that is the interesting part. It is the one
+field a user changes daily; the energy target moves ~10-15 kcal per kilo, well inside
+the plan's own ±10% acceptance band, so keying on the raw value would regenerate every
+plan on every weigh-in and bill an LLM call for a difference nobody could see. Same
+principle as `menstruation_active`: **key on the state that changes the answer, not on
+the raw reading.**
+
+`test_the_key_names_every_profile_field_the_diet_brief_reads` parses `build_brief` and
+`energy_target` for `user_profile.get(...)` and fails on anything the key does not
+name, with an `exempt` set carrying a reason per entry. It found `stress_level`,
+`sleep_quality` and `vikriti_secondary` the moment it was written.
+
+#### Diet: who the plan is actually for
+The profile accepts age 10-120 and sex male/female/other, and the energy model treated
+all of it as one adult male.
+
+**Age.** Mifflin-St Jeor and Harris-Benedict are derived from and validated on adults.
+A 10-year-old at 150 cm / 45 kg was handed 1990 kcal from the adult formula, with
+nothing in the brief to say a child was being fed. Under 18 now uses **Schofield
+(WHO/FAO)** for the 10-17 band, takes **no energy deficit** whatever the stated goal
+(childhood weight management belongs with a paediatrician), and gets a `VAYAH — BALYA`
+block telling the model to build rather than restrict. Over 65 gets `VAYAH — VRIDDHA`:
+soft, warm, moist textures, smaller meals for a reduced Agni, and protein at every
+meal.
+
+**Protein followed neither end of life.** It was a flat 0.8 g/kg from the goal table,
+so the two groups that can least afford it — the growing and the old — were on the
+lowest floor in it. Now 1.0 g/kg under 18 and **1.1 g/kg over 65**, because the
+requirement rises with age while appetite falls and muscle loss is the main
+nutritional risk of that stage.
+
+**Fasting is withheld from a child in all three places, not just the brief.** The
+brief is a request; `diet_plan_engine` reads `fasting_days` itself and builds a
+Phalahar day, and `generate_diet_plan_llm` stamps `is_fasting` from the same list.
+`fasting_days_for()` is the one function all three use, and it returns `[]` under 18 —
+otherwise a twelve-year-old gets a fruit-only Monday in a plan whose own brief forbids
+fasting them.
+
+**Sex.** `_bmr` was `if female else male`, so a user who chose `other` — and everyone
+who answered nothing, because the default was `"male"` — silently got the male
+equation (2410 kcal against 2190 on the same body) while `_SEX_FLOOR` handed them the
+*female* floor. Half of one and half of the other, chosen by nobody. `other` and unset
+now take the **mean of the two equations**, for Harris-Benedict and Schofield alike,
+and the plan says so rather than presenting an average as a measurement.
+
+#### Diet conditions: the phrasing must not decide the floor
+`_COND_CANON` was exact-match, so `crohns` resolved to IBS and `crohns disease`
+resolved to nothing. Onboarding has a free-text *"Not listed? Add here"* field, so what
+a user got was decided by how they typed it.
+
+`_canon_condition` now composes three sources in order: `_COND_CANON` directly, then
+`engine.condition_vocab.normalize_condition` (193 aliases, compact forms,
+depluralization) with its output run **back through** `_COND_CANON`, then both again
+with trailing qualifiers stripped and with the last word's other number tried.
+
+The two vocabularies are **not interchangeable** — `condition_vocab` calls `arsha`
+`hemorrhoids` and the diet tables call `hemorrhoids` `arsha` — which is why this
+composes them instead of replacing one with the other. Stripping runs only after both
+exact lookups fail, so `heart_disease` and `kidney_disease` match whole and are never
+shortened to `heart`.
+
+Measured over 239 known inputs: **0 regressions, 0 silent reassignments, 109 newly
+resolving** — including the Sanskrit the vocab knew and the diet path could not reach
+(`apasmara`, `ardhavabhedaka`, `bawaseer`, `bhrama`). `test_the_normalizer_only_ever_
+adds` is the differential guard, and a set of junk inputs asserts nothing resolves to a
+protocol by accident: a false positive applies a whole disease's Apathya to someone who
+does not have it, which is the worse failure.
+
+#### Diet: how deeply a condition was screened is part of the answer
+Twenty-one conditions have been judged against every one of the library's 150 foods
+individually. The other nineteen — gout, kidney stones, heart disease among them — have
+a curated term list and nothing more. Both produced the same *"every meal checked —
+none found"* badge, so a gout patient (27 terms, no per-food claims) read the same
+reassurance as an acidity patient (101 terms, 95 authored food by food) while being
+materially less protected.
+
+`conditions_screened_by_terms_only` reports that, beside the existing
+`conditions_without_food_floor`, and `DietView` distinguishes the two: *"we could not
+derive a rule"* and *"we checked, less thoroughly"* are different statements and a
+patient is owed the difference. **The fix for the nineteen is a Vaidya, not more
+authoring** — adding 19 × 150 unreviewed judgements to make a number look better is the
+opposite of progress.
+
 #### Diet inputs: one list per declaration, built in one place
 Two helpers in `diet_brief_builder` are the only way the diet path builds a list of
 what the patient declared, and the brief, the RAG query, the arc, the rule engine and
