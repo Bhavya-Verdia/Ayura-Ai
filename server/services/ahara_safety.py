@@ -1189,6 +1189,10 @@ _AVOID_MARKERS = (
     "omit", "restrict", "forbidden", "apathya", "contraindicated", "don't",
     "do not", "without", "instead of", "rather than", "in place of", "replace",
     "substitute", "swap", "less ",
+    # Comparatives. A recommendation may name the food it displaces — "lighter than
+    # white rice", "unlike maida" — and in "X than Y" the food after `than` is always
+    # the one being moved away from.
+    "than ", "unlike",
 )
 
 # Sentence-ish boundaries. A clause is the unit a negation governs: "take warm water,
@@ -1242,7 +1246,8 @@ def apply_advisory_safety(
             for t in ALLERGEN_TERMS.get(key, [key]):
                 allergen_terms[t] = key
 
-        def _hits(text: str, *, negation_aware: bool) -> list[dict]:
+        def _hits(text: str, *, negation_aware: bool,
+                  allergens_absolute: bool = False) -> list[dict]:
             out: list[dict] = []
             low = str(text or "").lower()
             if not low:
@@ -1264,7 +1269,19 @@ def apply_advisory_safety(
             for term, declared in allergen_terms.items():
                 if not _term_in_text(term, low):
                     continue
-                if negation_aware and _governed_by_avoidance(low, term):
+                # On the Pathya card an allergen is absolute: a declared allergen has
+                # no business in a list of things to eat, in any phrasing. The
+                # comparative markers are what makes this necessary — "nothing is
+                # better than warm milk at bedtime" reads as displacement to the
+                # clause rule and cleared for a dairy-allergic patient. Over-
+                # withholding one entry costs a line of advice; the other way costs
+                # more than that.
+                #
+                # Prose stays negation-aware, because there "avoid dairy" is the
+                # correct sentence to write for exactly this patient and flagging it
+                # is noise.
+                if negation_aware and not allergens_absolute \
+                        and _governed_by_avoidance(low, term):
                     continue
                 out.append({
                     "food": term,
@@ -1279,7 +1296,12 @@ def apply_advisory_safety(
         if isinstance(pa, dict) and isinstance(pa.get("pathya"), list):
             kept = []
             for item in pa["pathya"]:
-                found = _hits(str(item), negation_aware=False)
+                # Negation-aware here too. A `pathya` entry is a recommendation, but a
+                # recommendation may name the food it *displaces*: a real one read
+                # "Quinoa or brown rice congee in small portions — lighter than white
+                # rice", and withholding it took correct advice off the card for
+                # naming the thing it was steering the patient away from.
+                found = _hits(str(item), negation_aware=True, allergens_absolute=True)
                 if found:
                     withheld.append({
                         "item": item, "source": "pathya_apathya.pathya",

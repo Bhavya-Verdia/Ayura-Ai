@@ -53,6 +53,52 @@ def test_a_contradicted_recommendation_is_withheld_not_merely_flagged():
     assert "Amlapitta" in w["reason"]
 
 
+@pytest.mark.parametrize("item,condition,withheld", [
+    # The defect: recommends it outright.
+    ("Curd (Dadhi) — cooling, soothes the stomach lining", "acidity", True),
+    ("Green tea — light and digestive", "acidity", True),
+    # Names the food it DISPLACES. A real generation produced the first of these, and
+    # withholding it took correct advice off the card for naming the thing it was
+    # steering the patient away from.
+    ("Quinoa or brown rice congee — lighter than white rice", "diabetes", False),
+    ("Barley roti instead of maida paratha", "diabetes", False),
+    ("Unlike sugar, stevia does not raise blood glucose", "diabetes", False),
+    # Names nothing contraindicated.
+    ("Coconut water (Narikela Jala) — Pitta-pacifying", "acidity", False),
+])
+def test_a_pathya_entry_may_name_the_food_it_displaces(item, condition, withheld):
+    out = apply_advisory_safety({"pathya_apathya": {"pathya": [item]}},
+                                [condition], [], [], {}, False)
+    assert bool(out["withheld_recommendations"]) is withheld, item
+
+
+def test_an_allergen_on_the_pathya_card_is_absolute():
+    """The comparative markers that let a recommendation name the food it displaces
+    also read "nothing is better than warm milk at bedtime" as displacement, which
+    cleared it for a dairy-allergic patient. On a list of things to EAT, a declared
+    allergen is withheld in any phrasing: over-withholding one entry costs a line of
+    advice, and the other way costs more than that."""
+    for item in ("Nothing is better than warm milk at bedtime",
+                 "Warm milk with nutmeg at bedtime",
+                 "Oat milk instead of dairy milk"):
+        out = apply_advisory_safety({"pathya_apathya": {"pathya": [item]}},
+                                    [], ["dairy"], [], {}, False)
+        assert out["withheld_recommendations"], item
+
+
+def test_prose_about_an_allergen_stays_negation_aware():
+    """"Avoid all dairy" is the correct sentence to write for exactly this patient.
+    Flagging it is noise, and the remedy for prose is a flag rather than removal."""
+    clean = apply_advisory_safety(
+        {"condition_coaching": "Avoid all dairy — it is a declared allergen for you."},
+        [], ["dairy"], [], {}, False)
+    assert clean["advisory_prose_alerts"] == []
+
+    bad = apply_advisory_safety({"condition_coaching": "Take warm milk at bedtime."},
+                                [], ["dairy"], [], {}, False)
+    assert bad["advisory_prose_alerts"]
+
+
 def test_the_apathya_list_is_never_touched():
     """It exists to name these foods. Scanning it would withhold the warning."""
     out = apply_advisory_safety(_plan(), ["acidity"], [], [], {}, False)
