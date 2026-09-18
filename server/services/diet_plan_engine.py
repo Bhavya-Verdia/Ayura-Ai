@@ -53,6 +53,28 @@ _ITEM_PORTIONS: dict[str, tuple[str, int]] = {
     "flax_seeds":            ("1 tbsp (10g)", 10),
     "chia_seeds":            ("1 tbsp (10g)", 10),
     "hemp_seeds":            ("1 tbsp (10g)", 10),
+
+    # Foods whose category default served a portion nobody eats. `_PORTION` gives a
+    # dairy food 150ml and a grain a 150g katori, which is right for milk and for
+    # rice and absurd for butter and for a flour: Navanita came out at **1076 kcal a
+    # serving**, besan at a 100g "katori cooked" it is never eaten in, and
+    # nutritional yeast — a condiment measured in spoons — at 100g and 45g of
+    # protein. The portion text is shown to the patient and `macros_approx` is summed
+    # into a day total on screen, so an unreal portion is both a wrong number and an
+    # instruction to eat something no one would serve.
+    "butter":                ("1 tsp (5g)", 5),
+    "cream":                 ("1 tbsp (15g)", 15),
+    "paneer":                ("60g (small serving)", 60),
+    "nutritional_yeast":     ("1 tbsp (8g)", 8),
+    "coconut_cream":         ("2 tbsp (30g)", 30),
+    "chickpea_flour_besan":  ("30g (batter for 1 chilla)", 30),
+    "peanuts":               ("30g (1 handful)", 30),
+    "coconut":               ("30g (a few pieces)", 30),
+    "dates":                 ("3 dates (24g)", 24),
+    "rice_flakes":           ("40g dry (1 katori)", 40),
+    "roti_whole_wheat":      ("1 roti (40g)", 40),
+    "paratha":               ("1 paratha (60g)", 60),
+    "bread_whole_wheat":     ("2 slices (60g)", 60),
 }
 
 # ── Condition-specific food rules ──────────────────────────────────────────────
@@ -512,20 +534,36 @@ _SLOT_SUITABILITY: dict[tuple[str, str], tuple[str, ...]] = {
 
 
 def _get_meal_foods(pool: list[dict], meal_type: str, cats: list[str],
-                    rng: random.Random, config_key: str = "") -> list[dict]:
+                    rng: random.Random, config_key: str = "",
+                    used_today: set | None = None) -> list[dict]:
+    """Compose one slot from its category quotas.
+
+    `used_today` is a preference, not a filter: a food already eaten today is passed
+    over while the category has anything else to offer, and taken anyway when it is
+    the only thing left. Without it a patient reads the same grain at breakfast and
+    again at lunch — 25 repeats across a four-week plan when this was measured — and
+    with it as a hard filter a narrow pool would leave the slot empty instead.
+    """
     windows = _SLOT_SUITABILITY.get((config_key, meal_type), (meal_type,))
     candidates = [f for f in pool
                   if set(windows) & set(f.get("meal_suitable") or ())]
+    used = used_today or set()
     selected: list[dict] = []
+
+    def _pick(items):
+        fresh = [f for f in items if f["id"] not in used]
+        return rng.choice(fresh or items)
+
     for cat in cats:
         items = [f for f in candidates if f.get("category") == cat and f not in selected]
         if items:
-            selected.append(rng.choice(items))
+            selected.append(_pick(items))
     remaining = len(cats) - len(selected)
     if remaining > 0:
         available = sorted([f for f in candidates if f not in selected], key=lambda x: x["id"])
         rng.shuffle(available)
-        selected.extend(available[:remaining])
+        unused = [f for f in available if f["id"] not in used]
+        selected.extend((unused + [f for f in available if f["id"] in used])[:remaining])
     return selected
 
 
@@ -585,8 +623,89 @@ _MEAL_CONFIGS: dict[str, dict[str, list[str]]] = {
 }
 
 
+# ── The energy a meal has to be able to carry ─────────────────────────────────
+# `_MEAL_CONFIGS` composes a meal from category quotas and knows nothing about
+# energy. Measured on a Manda-Agni patient with a 2100 kcal target: breakfast came
+# back as green tea and an orange — **58 kcal** — snack as a single amla (53) and
+# dinner as zucchini and quinoa (206), for a day of 918.
+#
+# `reconcile_plan_energy` cannot repair that, and it is right not to: it scales
+# portions, and no multiplier turns two oranges into a breakfast. A meal that is
+# 8.99x short is short of *food*, not of portion size. So composition is topped up
+# here first, and the reconciler does the fine scaling afterwards on something it can
+# actually work with.
+#
+# The clinical config stays the base. A Manda Agni breakfast is meant to be light —
+# but light is a quality, not half the day's energy, and the patient still needs the
+# 2100 kcal in a form they can digest. The top-up draws from `pool`, which has already
+# passed every dosha, season, allergy, dietary-type and condition-Apathya filter, so
+# it cannot reintroduce a food the patient must not have.
+_ENERGY_BEARING = ("grain", "legume", "nut_seed", "dairy", "vegan_protein", "oil")
+
+# Below this fraction of its budget a slot is treated as missing food rather than
+# needing a bigger portion. At 0.6 a slot that only needs a ~1.6x portion is left to
+# the reconciler, which is what it is for.
+_COMPOSITION_FLOOR = 0.6
+_MAX_TOPUP_ITEMS = 2
+# How many of the ranked candidates to choose among, so the same food does not win
+# every day for four weeks.
+_TOPUP_CHOICES = 5
+
+
+def _slot_kcal(items: list[dict]) -> float:
+    return sum((i.get("macros") or {}).get("calories", 0) for i in items)
+
+
+def _top_up_slot(formatted: list[dict], pool: list[dict], meal_type: str,
+                 budget: float, rng: random.Random, config_key: str,
+                 used_today: set | None = None) -> list[dict]:
+    """Add energy-bearing food to a slot that has too little to scale.
+
+    Returns the items to append, formatted. Prefers the most energy-dense candidate
+    the patient may actually have, so one addition usually closes the gap and a meal
+    does not become a list of six things.
+    """
+    if not budget or _slot_kcal(formatted) >= budget * _COMPOSITION_FLOOR:
+        return []
+    windows = _SLOT_SUITABILITY.get((config_key, meal_type), (meal_type,))
+    # Everything already on the plate today, not just in this slot: without the day's
+    # set, one food is added to breakfast and again to lunch, and the patient reads
+    # buckwheat twice in one day.
+    chosen_ids = {i["id"] for i in formatted} | (used_today or set())
+    candidates = [
+        f for f in pool
+        if f["id"] not in chosen_ids
+        and f.get("category") in _ENERGY_BEARING
+        and set(windows) & set(f.get("meal_suitable") or ())
+    ]
+    # Ranked by the energy of the portion the patient is actually served, never by
+    # kcal per 100g. Density alone picks condiments and flours — it chose mustard oil
+    # (44 kcal a teaspoon) and nutritional yeast, and served the yeast at 100g twice a
+    # day for 28 days because the sort is deterministic and it never lost.
+    scored = [(_format_food(f), f) for f in candidates]
+    scored.sort(key=lambda pair: (-pair[0]["macros"]["calories"], pair[1]["id"]))
+
+    # Choose from the strongest few rather than always the top one. A deterministic
+    # argmax gives every day of every week the same addition, which is how one food
+    # ends up on 56 of 28 days' plates. `rng` is seeded per (user, week, day), so this
+    # stays reproducible.
+    added: list[dict] = []
+    while scored and len(added) < _MAX_TOPUP_ITEMS:
+        shortfall = budget * _COMPOSITION_FLOOR - _slot_kcal(formatted + added)
+        if shortfall <= 0:
+            break
+        # Anything that closes the gap on its own is a candidate; if nothing does,
+        # take from the densest handful and go round again.
+        enough = [pair for pair in scored if pair[0]["macros"]["calories"] >= shortfall]
+        choices = enough[-_TOPUP_CHOICES:] if enough else scored[:_TOPUP_CHOICES]
+        pick = rng.choice(choices)
+        added.append(pick[0])
+        scored.remove(pick)
+    return added
+
+
 def _build_day(pool: list[dict], is_fasting: bool, agni_type: str,
-               rng: random.Random) -> dict:
+               rng: random.Random, meal_budget: dict | None = None) -> dict:
     if is_fasting:
         config_key = "fasting"
         fasting_pool = [f for f in pool if f.get("category") in
@@ -605,12 +724,22 @@ def _build_day(pool: list[dict], is_fasting: bool, agni_type: str,
         "calories": 0.0, "protein_g": 0.0, "carbs_g": 0.0, "fat_g": 0.0, "fiber_g": 0.0
     }
 
+    used_today: set[str] = set()
     for meal_name, cats in config.items():
-        items = _get_meal_foods(active_pool, meal_name, cats, rng, config_key)
+        items = _get_meal_foods(active_pool, meal_name, cats, rng, config_key,
+                                used_today)
         formatted = []
         for food in items:
-            fmt = _format_food(food)
-            formatted.append(fmt)
+            formatted.append(_format_food(food))
+        # A fasting day is meant to be light: Upavasa is the therapy, and topping one
+        # up to a full day's energy would undo the thing the day is for. The
+        # reconciler exempts them for the same reason.
+        if not is_fasting:
+            formatted.extend(_top_up_slot(
+                formatted, active_pool, meal_name,
+                (meal_budget or {}).get(meal_name, 0), rng, config_key, used_today))
+        used_today.update(i["id"] for i in formatted)
+        for fmt in formatted:
             for k in totals:
                 totals[k] += fmt["macros"].get(k, 0)
         meals[meal_name] = formatted
@@ -638,6 +767,12 @@ def generate_diet_plan(user_profile: dict, diet_prefs: dict,
     cond_rules = _build_condition_rules(_diet_conditions(user_profile, diet_prefs))
     food_pool = filter_and_score_foods(user_profile, diet_prefs, df, cond_rules=cond_rules)
 
+    # The same per-meal budget the brief gives the model, so this path composes
+    # against the target instead of filling category quotas and leaving the
+    # arithmetic to a portion multiplier that cannot reach it.
+    from services.diet_energy import energy_target
+    meal_budget = energy_target(user_profile, diet_prefs)["meal_budget"]
+
     days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday",
                     "Friday", "Saturday", "Sunday"]
     week_themes = ["Foundation", "Rhythm", "Deepen", "Consolidate"]
@@ -653,7 +788,7 @@ def generate_diet_plan(user_profile: dict, diet_prefs: dict,
             rng.shuffle(day_pool)
 
             is_fasting = day_name.lower() in fasting_days
-            day_data = _build_day(day_pool, is_fasting, agni_type, rng)
+            day_data = _build_day(day_pool, is_fasting, agni_type, rng, meal_budget)
 
             # Rotate spices across days
             day_spice = spices[day_idx % len(spices)]
