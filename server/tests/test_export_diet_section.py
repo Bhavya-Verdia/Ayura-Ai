@@ -10,25 +10,21 @@ This is the artifact the whole clinical review depends on, and the diet plan is 
 largest thing in it.
 """
 
-import io
 from datetime import datetime, timezone
 
-import pytest
-
-from routes.export import _build_pdf
+from routes.export import _build_pdf, diet_report_lines
 from schemas.user_schema import UserDocument
 
 
-def _pdf_text(plan_data):
-    now = datetime.now(timezone.utc)
-    user = UserDocument(_id="u1", email="t@t.com", name="Meera",
-                        hashed_password="x", created_at=now, updated_at=now)
-    raw = _build_pdf(user, plan_data, now.isoformat())
-    try:
-        from pypdf import PdfReader
-    except ImportError:                      # pragma: no cover
-        from PyPDF2 import PdfReader
-    return "\n".join(p.extract_text() or "" for p in PdfReader(io.BytesIO(raw)).pages)
+def _lines(plan):
+    """The diet section's content, without a PDF parser.
+
+    `reportlab` writes PDFs and does not read them, and adding a reader to
+    `requirements.txt` would put a production dependency on a test-only need — so the
+    content is asserted where it is built. One test below still renders a real PDF, to
+    keep the wiring between the two honest.
+    """
+    return "\n".join(text for _style, text in diet_report_lines(plan))
 
 
 def _diet_plan():
@@ -66,7 +62,7 @@ def _diet_plan():
 
 
 def test_the_meals_reach_the_practitioner():
-    text = _pdf_text({"diet_plan": _diet_plan()})
+    text = _lines(_diet_plan())
     for probe in ("Moong Dal Chilla", "Khichdi", "Roasted Makhana",
                   "Coriander-Fennel Water"):
         assert probe in text, probe
@@ -78,40 +74,53 @@ def test_the_meals_reach_the_practitioner():
 def test_every_safety_finding_survives_not_the_first_two():
     """A truncated list of flagged meals is worse than none — it reads as the whole
     list."""
-    text = _pdf_text({"diet_plan": _diet_plan()})
+    text = _lines(_diet_plan())
     for i in range(7):
         assert f"flagged{i}" in text, i
 
 
 def test_the_withheld_item_is_named_not_just_its_food_word():
     """"figs" alone loses what was actually taken off the patient's list."""
-    assert "Soaked figs" in _pdf_text({"diet_plan": _diet_plan()})
+    assert "Soaked figs" in _lines(_diet_plan())
 
 
 def test_the_coverage_caveats_reach_the_reviewer():
     """The two statements a reviewer most needs: what could not be screened at all,
     and what was screened only against a term list."""
-    text = _pdf_text({"diet_plan": _diet_plan()})
+    text = _lines(_diet_plan())
     assert "lupus" in text
     assert "gout" in text
 
 
 def test_the_prescription_and_the_arc_are_stated():
-    text = _pdf_text({"diet_plan": _diet_plan()})
+    text = _lines(_diet_plan())
     assert "1440" in text
     assert "Ama Pachana" in text
     assert "Brimhana" in text          # the phase withheld, and why
 
 
 def test_a_plan_with_nothing_flagged_still_renders():
-    text = _pdf_text({"diet_plan": {
-        "diet_weeks": [{"week_number": 1, "daily_plan": {
-            "Monday": {"lunch": {"meal_name": "Khichdi"}}}}]}})
-    assert "Khichdi" in text
+    assert "Khichdi" in _lines({"diet_weeks": [{"week_number": 1, "daily_plan": {
+        "Monday": {"lunch": {"meal_name": "Khichdi"}}}}]})
+
+
+def test_the_lines_actually_reach_a_rendered_pdf():
+    """The content tests above assert on the lines; this one keeps them honest by
+    building a real PDF and checking it grew by roughly what the diet section adds.
+    A section that is built and never appended would pass every test above."""
+    now = datetime.now(timezone.utc)
+    user = UserDocument(_id="u1", email="t@t.com", name="Meera",
+                        hashed_password="x", created_at=now, updated_at=now)
+    empty = _build_pdf(user, {}, now.isoformat())
+    full = _build_pdf(user, {"diet_plan": _diet_plan()}, now.isoformat())
+    assert len(full) > len(empty) + 1500, (len(empty), len(full))
 
 
 def test_the_other_features_keep_the_generic_renderer():
-    """Only the diet section is special-cased; a gym plan must still render."""
-    text = _pdf_text({"gym_plan": {"weekly_schedule": [{"day_name": "Monday",
-                                                       "focus": "Upper body"}]}})
-    assert "Fitness" in text or "Upper body" in text
+    """Only the diet section is special-cased; a gym plan must still build."""
+    now = datetime.now(timezone.utc)
+    user = UserDocument(_id="u1", email="t@t.com", name="Meera",
+                        hashed_password="x", created_at=now, updated_at=now)
+    pdf = _build_pdf(user, {"gym_plan": {"weekly_schedule": [
+        {"day_name": "Monday", "focus": "Upper body"}]}}, now.isoformat())
+    assert len(pdf) > 1000

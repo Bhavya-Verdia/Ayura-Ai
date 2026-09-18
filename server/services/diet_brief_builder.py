@@ -770,7 +770,6 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
     # own `gut_health_issue`. The second used to reach the model as the single line
     # `GUT HEALTH: Acidity` and nothing else.
     norm_conditions = diet_conditions(user_profile, diet_prefs)
-    conditions = norm_conditions
 
     cond_blocks = []
     seen: set = set()

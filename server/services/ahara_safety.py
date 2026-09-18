@@ -894,7 +894,6 @@ _COND_CANON: dict[str, str] = {
     "sugar_disease": "diabetes",
     "bp_high": "hypertension",
     "bp_low": "low_blood_pressure",
-    "cholesterol": "high_cholesterol",
     "thyroid_under": "hypothyroid",
     "thyroid_over": "hyperthyroidism",
 }
