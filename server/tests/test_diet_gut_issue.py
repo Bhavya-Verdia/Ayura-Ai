@@ -148,3 +148,106 @@ def test_the_rule_engine_fallback_sees_the_gut_issue_too():
     open_pool = {f["id"] for f in filter_and_score_foods(
         _PROFILE, _prefs(gut_health_issue="healthy"), diet_foods)}
     assert open_pool & apathya
+
+
+# ── Adhmana in the library ────────────────────────────────────────────────────
+
+def test_the_library_carries_adhmana_claims():
+    """`bloating` was the one gut issue with a curated protocol and no library claims,
+    so its floor was the curated table alone — thinner than the other three, which
+    carry authored (condition, food) claims across all 150 rows."""
+    from services.diet_condition_foods import condition_food_rules
+
+    rules = condition_food_rules("bloating")
+    assert len(rules["apathya_names"]) > 50
+    assert len(rules["pathya_names"]) > 25
+
+
+def test_the_shimbi_varga_is_withheld_and_mudga_is_not():
+    """The clinical centre of the condition. Adhmana is Apana Vata obstructed by Ama,
+    and the Shimbi varga is what obstructs it — but Mudga is the varga's permitted
+    pulse and Mudga yusha is the Pathya this protocol is built on. Withholding it
+    would take away the one thing the patient is meant to be fed."""
+    import json
+    from pathlib import Path
+
+    rows = {r["id"]: r for r in json.loads(
+        (Path(__file__).resolve().parent.parent / "data" / "knowledge_base"
+         / "diet_foods.json").read_text(encoding="utf-8"))}
+
+    for heavy in ("rajma", "chhole", "chana_dal", "black_beans", "urad_dal",
+                  "sprouted_moong", "soya_chunks"):
+        assert "bloating" in rows[heavy]["apathya_for"], heavy
+    assert "bloating" in rows["moong_dal_yellow"]["pathya_for"]
+    assert "bloating" not in (rows["moong_dal_yellow"].get("apathya_for") or [])
+
+
+def test_urad_is_withheld_through_obstruction_not_through_vata():
+    """The judgement that makes this an authored library rather than a derived one.
+    Masha is V-2 — Vata-PACIFYING by its own dosha effect — and is the pulse most
+    associated with Anaha, because it is guru, snigdha and picchila. A rule reading
+    `dosha_effect` alone gets this backwards."""
+    import json
+    from pathlib import Path
+
+    rows = {r["id"]: r for r in json.loads(
+        (Path(__file__).resolve().parent.parent / "data" / "knowledge_base"
+         / "diet_foods.json").read_text(encoding="utf-8"))}
+    urad = rows["urad_dal"]
+    assert urad["ayurvedic"]["dosha_effect"]["vata"] < 0
+    assert {"guru", "picchila"} <= set(urad["ayurvedic"]["guna"])
+    assert "bloating" in urad["apathya_for"]
+
+
+def test_every_adhmana_claim_is_carried_by_one_of_the_two_limbs():
+    """The packet's screen rule, asserted here so it cannot be added and then left
+    unenforced. A Pathya that raises Vata needs a Prabhava; an Apathya that lowers it
+    must be guru or picchila, or neither limb of the Samprapti explains it."""
+    import json
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+    from build_diet_review_packet import screen
+
+    rows = json.loads((Path(__file__).resolve().parent.parent / "data"
+                       / "knowledge_base" / "diet_foods.json").read_text(encoding="utf-8"))
+    flagged = []
+    for row in rows:
+        for kind in ("pathya", "apathya"):
+            if "bloating" in (row.get(f"{kind}_for") or []):
+                rule, saw = screen(row, "bloating", kind)
+                if rule:
+                    flagged.append((row["id"], kind, rule))
+    assert not flagged, flagged
+
+
+def test_the_screen_rule_is_not_vacuous():
+    """It has to be able to fire, or asserting that nothing trips it says nothing."""
+    import json
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+    from build_diet_review_packet import screen
+
+    rows = {r["id"]: r for r in json.loads(
+        (Path(__file__).resolve().parent.parent / "data" / "knowledge_base"
+         / "diet_foods.json").read_text(encoding="utf-8"))}
+    # Cabbage is V+2: indicating it in a condition of obstructed Apana must flag.
+    rule, _ = screen(rows["cabbage"], "bloating", "pathya")
+    assert rule == "indicated_in_adhmana_but_vata_raising"
+
+
+def test_the_curated_terms_and_the_library_agree_about_moong():
+    """`_CONDITION_APATHYA_TERMS["bloating"]` names `rajma` and `chana` individually
+    rather than a blanket `legume`, precisely so the curated floor cannot withhold the
+    pulse the library prescribes."""
+    from services.ahara_safety import _CONDITION_APATHYA_TERMS
+    from services.diet_condition_foods import condition_food_rules
+
+    terms = set(_CONDITION_APATHYA_TERMS["bloating"]["terms"])
+    pathya = {n.lower() for n in condition_food_rules("bloating")["pathya_names"]}
+    for term in terms:
+        assert not any(term in name for name in pathya), (
+            f"curated term {term!r} matches a food the library prescribes here")

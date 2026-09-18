@@ -56,6 +56,13 @@ _KAPHA_MEDA = {"obesity", "hypothyroid", "thyroid", "fatty_liver", "high_cholest
 # Grahani and IBS admit ruksha, Vata-raising foods through the Grahi (binding) action —
 # which is exactly the kind of departure the library requires a Prabhava for.
 _GRAHI = {"grahani", "ibs", "diarrhea"}
+# Adhmana is Apana Vata obstructed by Ama in the Pakvashaya, so its claims can be read
+# two ways and only one of them is the dosha effect. A Pathya that raises Vata needs a
+# reason. An Apathya that LOWERS Vata is not thereby wrong — Masha is V-2 and is the
+# pulse most associated with Anaha — but it is only defensible through the obstruction
+# limb, so the row has to be guru or picchila to carry it. That is the rule below, and
+# it is the one a reviewer should argue with first.
+_VATA_OBSTRUCTED = {"bloating"}
 
 
 def _load():
@@ -98,6 +105,16 @@ def screen(row, condition, kind):
             return ("indicated_in_grahani_but_ruksha_vata_raising",
                     "ruksha and Vata-raising; defensible through Grahi action, but "
                     "no Prabhava states it")
+    if condition in _VATA_OBSTRUCTED:
+        if kind == "pathya" and d["vata"] > 0 and not has_reason:
+            return ("indicated_in_adhmana_but_vata_raising",
+                    "Vata-raising in a condition of obstructed Apana, with no "
+                    "Prabhava stating why it is given")
+        if kind == "apathya" and d["vata"] < 0 and not ({"guru", "picchila"} & guna) \
+                and not has_reason:
+            return ("withheld_in_adhmana_but_neither_vatala_nor_obstructing",
+                    "Vata-reducing, and neither guru nor picchila — so neither limb "
+                    "of the Samprapti explains the restriction")
     if condition == "acidity" and kind == "pathya" and d["pitta"] > 0:
         return ("indicated_in_amlapitta_but_pitta_raising",
                 "raises Pitta by its own dosha effect")

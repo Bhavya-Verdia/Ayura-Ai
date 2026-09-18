@@ -258,6 +258,59 @@ delivery into band — the reconciler is the backstop, scaling `macros_approx` *
 portion text together** (raising one without the other produces a plan that lies to
 the person cooking it). Fasting days are exempt: Upavasa is the therapy, not a miss.
 
+#### Diet: Adhmana is authored across the library
+`bloating` was the one `gut_health_issue` value with a curated protocol and no library
+claims, so its deterministic floor was the curated table alone — six terms, against
+95 for acidity. It is authored on all 150 rows now: **64 Apathya, 35 Pathya**, from
+each row's own stated qualities rather than its name. 63 and 34 of those reach the
+brief; the rest are lost to the owner-disagreement rule below, which is the point of
+that rule.
+
+Adhmana has **two limbs**, and a food can be Apathya by either:
+
+* **Vatala** — the food adds Vata where Vata is already trapped (`dosha_effect.vata`
+  > 0, ruksha/khara/chala, kashaya rasa).
+* **Srotorodha** — the food obstructs, so Apana cannot move at all (guru, picchila,
+  sthira). **This limb is why the library has to be authored.** Masha (`urad_dal`) is
+  **V-2** — Vata-*pacifying* by its own dosha effect — and is the pulse most
+  associated with Anaha, because it is guru, snigdha and picchila. A rule reading
+  `dosha_effect` alone gets that exactly backwards.
+
+The Shimbi varga is the condition, so most of it is withheld — but **Mudga is the
+varga's permitted pulse** and Mudga yusha is the Pathya the protocol is built on.
+`moong_dal_yellow` is Pathya; only `sprouted_moong` is withheld, for chala guna. The
+curated `_CONDITION_APATHYA_TERMS` names `rajma` and `chana` individually rather than
+a blanket `legume` for the same reason, and a test asserts no curated term matches a
+food the library prescribes.
+
+`build_diet_review_packet.screen` gained a `_VATA_OBSTRUCTED` rule: a Pathya that
+raises Vata needs a Prabhava, and an Apathya that *lowers* it must be guru or picchila
+or neither limb explains the restriction. All 99 claims pass it, and a test asserts
+the rule can still fire so that is not a vacuous result.
+
+**Over-restriction is measured, and Adhmana is the exception that proves the rule.**
+`test_no_condition_is_left_with_nothing_to_eat` requires 90 of 150 foods to survive
+any single condition. Adhmana leaves 87, and is registered in `_MOST_RESTRICTIVE` with
+its reason rather than trimmed to fit: the floor was calibrated when nothing exceeded
+obesity's 53, and cutting earned claims to meet a number set by other diseases is the
+over-restriction guard causing under-restriction. Conditions carrying an exception get
+a second, functional check — the engine must still build four weeks with no empty slot
+and draw from grain, legume and vegetable.
+
+**A term going quiet is a cost, not a neutral outcome.** Seven bloating terms are
+withheld by owner disagreement, all genuine prep-state splits (`mudga`, `takra`,
+`prithuka`, `coconut`, `watermelon`, `kalinga`, `kanda`). Three more went quiet during
+a trim and were bought back by restoring the claim that had been dropped — `potato`
+had stopped firing because sweet potato lost its claim, and Aluka is the archetypal
+Vatala kanda. Read the list when the pin moves; do not just re-pin it.
+
+**`("ibs")` is a string, not a one-tuple.** Written without its trailing comma it
+spreads into `['i', 'b', 's']`, so the row silently claims three conditions that do
+not exist and loses the one it meant. Two rows lost their IBS claim that way during
+this pass, and nothing downstream treats an unknown condition key as an error — it
+surfaced only in a diff of the built KB against the previous one. `schema.validate`
+rejects it now.
+
 #### Diet: a dish form is not a dravya
 `diet_foods.json` rows are named for the dravya, and where the preparation changes the
 clinical answer the preparation is part of the **id** — `ginger_fresh` / `ginger_dry`,

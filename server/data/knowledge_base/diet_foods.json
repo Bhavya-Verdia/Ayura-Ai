@@ -44,14 +44,16 @@
         "psoriasis",
         "diabetes",
         "amavata",
-        "high_cholesterol"
+        "high_cholesterol",
+        "bloating"
       ]
     },
     "pathya_for": [
       "psoriasis",
       "diabetes",
       "amavata",
-      "high_cholesterol"
+      "high_cholesterol",
+      "bloating"
     ],
     "apathya_for": [
       "pregnancy"
@@ -121,13 +123,15 @@
       "best_for": [
         "ibs",
         "grahani",
-        "constipation"
+        "constipation",
+        "bloating"
       ]
     },
     "pathya_for": [
       "ibs",
       "grahani",
-      "constipation"
+      "constipation",
+      "bloating"
     ],
     "apathya_for": [],
     "viruddha_with": [],
@@ -199,13 +203,15 @@
       "best_for": [
         "acidity",
         "migraine",
-        "kidney_disease"
+        "kidney_disease",
+        "bloating"
       ]
     },
     "pathya_for": [
       "acidity",
       "migraine",
-      "kidney_disease"
+      "kidney_disease",
+      "bloating"
     ],
     "apathya_for": [],
     "viruddha_with": [],
@@ -277,13 +283,15 @@
       "best_for": [
         "acidity",
         "ibs",
-        "grahani"
+        "grahani",
+        "bloating"
       ]
     },
     "pathya_for": [
       "acidity",
       "ibs",
-      "grahani"
+      "grahani",
+      "bloating"
     ],
     "apathya_for": [],
     "viruddha_with": [],
@@ -352,12 +360,14 @@
       "agni_effect": "easy",
       "best_for": [
         "acidity",
-        "asthma"
+        "asthma",
+        "bloating"
       ]
     },
     "pathya_for": [
       "acidity",
-      "asthma"
+      "asthma",
+      "bloating"
     ],
     "apathya_for": [],
     "viruddha_with": [],
@@ -430,13 +440,15 @@
       "best_for": [
         "diabetes",
         "obesity",
-        "hypothyroid"
+        "hypothyroid",
+        "bloating"
       ]
     },
     "pathya_for": [
       "diabetes",
       "obesity",
-      "hypothyroid"
+      "hypothyroid",
+      "bloating"
     ],
     "apathya_for": [],
     "viruddha_with": [],
@@ -503,13 +515,15 @@
       "best_for": [
         "obesity",
         "hypothyroid",
-        "asthma"
+        "asthma",
+        "bloating"
       ]
     },
     "pathya_for": [
       "obesity",
       "hypothyroid",
-      "asthma"
+      "asthma",
+      "bloating"
     ],
     "apathya_for": [
       "acidity",
@@ -580,7 +594,8 @@
         "grahani",
         "obesity",
         "amavata",
-        "asthma"
+        "asthma",
+        "bloating"
       ]
     },
     "pathya_for": [
@@ -588,7 +603,8 @@
       "grahani",
       "obesity",
       "amavata",
-      "asthma"
+      "asthma",
+      "bloating"
     ],
     "apathya_for": [
       "acidity",
@@ -662,14 +678,16 @@
         "diabetes",
         "pcos",
         "high_cholesterol",
-        "amavata"
+        "amavata",
+        "bloating"
       ]
     },
     "pathya_for": [
       "diabetes",
       "pcos",
       "high_cholesterol",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "apathya_for": [
       "pregnancy"
@@ -740,14 +758,16 @@
         "ibs",
         "grahani",
         "constipation",
-        "asthma"
+        "asthma",
+        "bloating"
       ]
     },
     "pathya_for": [
       "ibs",
       "grahani",
       "constipation",
-      "asthma"
+      "asthma",
+      "bloating"
     ],
     "apathya_for": [
       "acidity"
@@ -822,13 +842,15 @@
       "best_for": [
         "constipation",
         "amavata",
-        "arsha"
+        "arsha",
+        "bloating"
       ]
     },
     "pathya_for": [
       "constipation",
       "amavata",
-      "arsha"
+      "arsha",
+      "bloating"
     ],
     "apathya_for": [
       "acidity",
@@ -970,12 +992,14 @@
       "agni_effect": "easy",
       "best_for": [
         "obesity",
-        "hypothyroid"
+        "hypothyroid",
+        "bloating"
       ]
     },
     "pathya_for": [
       "obesity",
-      "hypothyroid"
+      "hypothyroid",
+      "bloating"
     ],
     "apathya_for": [
       "acidity",
@@ -1044,14 +1068,16 @@
         "constipation",
         "acidity",
         "anemia",
-        "migraine"
+        "migraine",
+        "bloating"
       ]
     },
     "pathya_for": [
       "constipation",
       "acidity",
       "anemia",
-      "migraine"
+      "migraine",
+      "bloating"
     ],
     "apathya_for": [
       "obesity",
@@ -1272,13 +1298,15 @@
       "best_for": [
         "asthma",
         "migraine",
-        "hypothyroid"
+        "hypothyroid",
+        "bloating"
       ]
     },
     "pathya_for": [
       "asthma",
       "migraine",
-      "hypothyroid"
+      "hypothyroid",
+      "bloating"
     ],
     "apathya_for": [
       "acidity"
@@ -1346,14 +1374,16 @@
         "ibs",
         "grahani",
         "asthma",
-        "obesity"
+        "obesity",
+        "bloating"
       ]
     },
     "pathya_for": [
       "ibs",
       "grahani",
       "asthma",
-      "obesity"
+      "obesity",
+      "bloating"
     ],
     "apathya_for": [
       "acidity",
@@ -1490,12 +1520,14 @@
       "agni_effect": "easy",
       "best_for": [
         "constipation",
-        "obesity"
+        "obesity",
+        "bloating"
       ]
     },
     "pathya_for": [
       "constipation",
-      "obesity"
+      "obesity",
+      "bloating"
     ],
     "apathya_for": [
       "acidity",
@@ -1582,7 +1614,8 @@
       "obesity",
       "asthma",
       "hypothyroid",
-      "fatty_liver"
+      "fatty_liver",
+      "bloating"
     ],
     "viruddha_with": [
       "curd_yogurt",
@@ -1666,7 +1699,8 @@
       "asthma",
       "acidity",
       "obesity",
-      "anemia"
+      "anemia",
+      "bloating"
     ],
     "viruddha_with": [
       "milk_full_fat",
@@ -1736,7 +1770,8 @@
         "ibs",
         "arsha",
         "obesity",
-        "fatty_liver"
+        "fatty_liver",
+        "bloating"
       ]
     },
     "pathya_for": [
@@ -1744,7 +1779,8 @@
       "ibs",
       "arsha",
       "obesity",
-      "fatty_liver"
+      "fatty_liver",
+      "bloating"
     ],
     "apathya_for": [
       "acidity"
@@ -1822,7 +1858,8 @@
       "obesity",
       "high_cholesterol",
       "hypothyroid",
-      "asthma"
+      "asthma",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -1887,14 +1924,16 @@
         "constipation",
         "acidity",
         "anemia",
-        "migraine"
+        "migraine",
+        "bloating"
       ]
     },
     "pathya_for": [
       "constipation",
       "acidity",
       "anemia",
-      "migraine"
+      "migraine",
+      "bloating"
     ],
     "apathya_for": [
       "obesity",
@@ -2045,13 +2084,15 @@
       "best_for": [
         "obesity",
         "constipation",
-        "fatty_liver"
+        "fatty_liver",
+        "bloating"
       ]
     },
     "pathya_for": [
       "obesity",
       "constipation",
-      "fatty_liver"
+      "fatty_liver",
+      "bloating"
     ],
     "apathya_for": [
       "acidity"
@@ -2129,7 +2170,8 @@
       "obesity",
       "high_cholesterol",
       "fatty_liver",
-      "hypothyroid"
+      "hypothyroid",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -2196,7 +2238,8 @@
     "apathya_for": [
       "obesity",
       "hypothyroid",
-      "asthma"
+      "asthma",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -2269,7 +2312,8 @@
       "obesity",
       "hypothyroid",
       "asthma",
-      "fatty_liver"
+      "fatty_liver",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -2477,7 +2521,8 @@
       "hypothyroid",
       "thyroid",
       "ibs",
-      "pcos"
+      "pcos",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -2542,7 +2587,8 @@
     "pathya_for": [],
     "apathya_for": [
       "diabetes",
-      "obesity"
+      "obesity",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -2611,7 +2657,8 @@
       "amavata",
       "psoriasis",
       "acidity",
-      "obesity"
+      "obesity",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -2679,7 +2726,8 @@
       "hypothyroid",
       "thyroid",
       "ibs",
-      "pcos"
+      "pcos",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -2750,7 +2798,8 @@
     "apathya_for": [
       "migraine",
       "psoriasis",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -2822,7 +2871,8 @@
       "obesity",
       "high_cholesterol",
       "hypothyroid",
-      "fatty_liver"
+      "fatty_liver",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -2888,7 +2938,8 @@
       "acidity",
       "obesity",
       "high_cholesterol",
-      "psoriasis"
+      "psoriasis",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -2963,7 +3014,8 @@
     ],
     "apathya_for": [
       "acidity",
-      "psoriasis"
+      "psoriasis",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -3026,13 +3078,15 @@
       "best_for": [
         "acidity",
         "grahani",
-        "ibs"
+        "ibs",
+        "bloating"
       ]
     },
     "pathya_for": [
       "acidity",
       "grahani",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "apathya_for": [
       "diabetes",
@@ -3100,12 +3154,14 @@
       "agni_effect": "easy",
       "best_for": [
         "acidity",
-        "grahani"
+        "grahani",
+        "bloating"
       ]
     },
     "pathya_for": [
       "acidity",
-      "grahani"
+      "grahani",
+      "bloating"
     ],
     "apathya_for": [
       "diabetes",
@@ -3186,7 +3242,8 @@
     ],
     "apathya_for": [
       "grahani",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -3330,7 +3387,8 @@
       "high_cholesterol",
       "fatty_liver",
       "acidity",
-      "arsha"
+      "arsha",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -3468,7 +3526,8 @@
     "apathya_for": [
       "diabetes",
       "obesity",
-      "hypothyroid"
+      "hypothyroid",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -3534,7 +3593,8 @@
     "apathya_for": [
       "diabetes",
       "obesity",
-      "hypothyroid"
+      "hypothyroid",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -3611,7 +3671,8 @@
     ],
     "apathya_for": [
       "hypothyroid",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -3761,7 +3822,8 @@
     ],
     "apathya_for": [
       "acidity",
-      "psoriasis"
+      "psoriasis",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -3836,7 +3898,8 @@
     ],
     "apathya_for": [
       "constipation",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -3899,13 +3962,15 @@
       "best_for": [
         "constipation",
         "anemia",
-        "grahani"
+        "grahani",
+        "bloating"
       ]
     },
     "pathya_for": [
       "constipation",
       "anemia",
-      "grahani"
+      "grahani",
+      "bloating"
     ],
     "apathya_for": [
       "obesity"
@@ -3975,7 +4040,8 @@
     "apathya_for": [
       "diabetes",
       "obesity",
-      "hypothyroid"
+      "hypothyroid",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -4046,7 +4112,8 @@
       "psoriasis",
       "acidity",
       "obesity",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -4271,7 +4338,8 @@
     ],
     "apathya_for": [
       "acidity",
-      "psoriasis"
+      "psoriasis",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -4339,7 +4407,8 @@
     "apathya_for": [
       "ibs",
       "grahani",
-      "acidity"
+      "acidity",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -4407,7 +4476,8 @@
       "diabetes",
       "obesity",
       "hypothyroid",
-      "fatty_liver"
+      "fatty_liver",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -4475,7 +4545,8 @@
         "anemia",
         "obesity",
         "diabetes",
-        "amavata"
+        "amavata",
+        "bloating"
       ]
     },
     "pathya_for": [
@@ -4484,7 +4555,8 @@
       "anemia",
       "obesity",
       "diabetes",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "apathya_for": [],
     "viruddha_with": [],
@@ -4635,7 +4707,8 @@
     "apathya_for": [
       "ibs",
       "grahani",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -4855,7 +4928,8 @@
     "apathya_for": [
       "ibs",
       "grahani",
-      "arsha"
+      "arsha",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -4929,7 +5003,8 @@
       "ibs",
       "grahani",
       "arsha",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -4999,7 +5074,8 @@
     ],
     "apathya_for": [
       "ibs",
-      "grahani"
+      "grahani",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -5149,7 +5225,8 @@
       "psoriasis",
       "high_cholesterol",
       "hypothyroid",
-      "arsha"
+      "arsha",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -5222,7 +5299,8 @@
     "apathya_for": [
       "ibs",
       "grahani",
-      "arsha"
+      "arsha",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -5295,7 +5373,8 @@
     "apathya_for": [
       "ibs",
       "grahani",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -5369,7 +5448,8 @@
       "ibs",
       "grahani",
       "arsha",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -5438,7 +5518,8 @@
       "ibs",
       "grahani",
       "arsha",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -5511,7 +5592,8 @@
     "apathya_for": [
       "ibs",
       "grahani",
-      "arsha"
+      "arsha",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -5579,7 +5661,8 @@
       "hypothyroid",
       "thyroid",
       "ibs",
-      "pcos"
+      "pcos",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -5647,7 +5730,8 @@
       "hypothyroid",
       "thyroid",
       "ibs",
-      "pcos"
+      "pcos",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -5715,7 +5799,8 @@
       "amavata",
       "psoriasis",
       "hypothyroid",
-      "migraine"
+      "migraine",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -5782,7 +5867,8 @@
     "apathya_for": [
       "hypothyroid",
       "thyroid",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -5851,7 +5937,8 @@
       "psoriasis",
       "obesity",
       "high_cholesterol",
-      "migraine"
+      "migraine",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -6193,7 +6280,8 @@
       "psoriasis",
       "obesity",
       "migraine",
-      "high_cholesterol"
+      "high_cholesterol",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -6258,13 +6346,15 @@
       "best_for": [
         "constipation",
         "anemia",
-        "amavata"
+        "amavata",
+        "bloating"
       ]
     },
     "pathya_for": [
       "constipation",
       "anemia",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "apathya_for": [
       "psoriasis",
@@ -6347,7 +6437,8 @@
     ],
     "apathya_for": [
       "acidity",
-      "psoriasis"
+      "psoriasis",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -6764,7 +6855,9 @@
       "diabetes",
       "acidity"
     ],
-    "apathya_for": [],
+    "apathya_for": [
+      "bloating"
+    ],
     "viruddha_with": [],
     "meal_suitable": [
       "snack"
@@ -6978,7 +7071,8 @@
       "diabetes",
       "obesity",
       "asthma",
-      "hypothyroid"
+      "hypothyroid",
+      "bloating"
     ],
     "viruddha_with": [
       "milk_full_fat",
@@ -7055,7 +7149,8 @@
     ],
     "apathya_for": [
       "ibs",
-      "grahani"
+      "grahani",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -7186,13 +7281,15 @@
       "best_for": [
         "constipation",
         "grahani",
-        "obesity"
+        "obesity",
+        "bloating"
       ]
     },
     "pathya_for": [
       "constipation",
       "grahani",
-      "obesity"
+      "obesity",
+      "bloating"
     ],
     "apathya_for": [
       "pregnancy",
@@ -7264,7 +7361,8 @@
         "anemia",
         "acidity",
         "hypertension",
-        "ibs"
+        "ibs",
+        "bloating"
       ]
     },
     "pathya_for": [
@@ -7272,7 +7370,8 @@
       "anemia",
       "acidity",
       "hypertension",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "apathya_for": [],
     "viruddha_with": [],
@@ -7342,7 +7441,8 @@
         "anemia",
         "psoriasis",
         "high_cholesterol",
-        "hypothyroid"
+        "hypothyroid",
+        "bloating"
       ]
     },
     "pathya_for": [
@@ -7351,7 +7451,8 @@
       "anemia",
       "psoriasis",
       "high_cholesterol",
-      "hypothyroid"
+      "hypothyroid",
+      "bloating"
     ],
     "apathya_for": [],
     "viruddha_with": [],
@@ -7648,7 +7749,8 @@
     ],
     "apathya_for": [
       "ibs",
-      "grahani"
+      "grahani",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -7720,7 +7822,8 @@
     "apathya_for": [
       "diabetes",
       "obesity",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -7941,7 +8044,8 @@
     ],
     "apathya_for": [
       "ibs",
-      "grahani"
+      "grahani",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -8019,7 +8123,8 @@
     ],
     "apathya_for": [
       "constipation",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -8456,7 +8561,8 @@
     "apathya_for": [
       "amavata",
       "kidney_disease",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -8534,7 +8640,8 @@
     "apathya_for": [
       "amavata",
       "kidney_disease",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -8600,14 +8707,16 @@
         "diabetes",
         "obesity",
         "amavata",
-        "high_cholesterol"
+        "high_cholesterol",
+        "bloating"
       ]
     },
     "pathya_for": [
       "diabetes",
       "obesity",
       "amavata",
-      "high_cholesterol"
+      "high_cholesterol",
+      "bloating"
     ],
     "apathya_for": [
       "acidity",
@@ -8687,7 +8796,8 @@
       "hypothyroid",
       "thyroid",
       "ibs",
-      "grahani"
+      "grahani",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -8762,7 +8872,8 @@
       "thyroid",
       "ibs",
       "grahani",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -8837,7 +8948,8 @@
       "thyroid",
       "ibs",
       "grahani",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -8901,13 +9013,15 @@
       "best_for": [
         "anemia",
         "grahani",
-        "constipation"
+        "constipation",
+        "bloating"
       ]
     },
     "pathya_for": [
       "anemia",
       "grahani",
-      "constipation"
+      "constipation",
+      "bloating"
     ],
     "apathya_for": [
       "acidity"
@@ -9048,7 +9162,8 @@
       "diabetes",
       "obesity",
       "ibs",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -9120,7 +9235,8 @@
     "apathya_for": [
       "diabetes",
       "obesity",
-      "hypothyroid"
+      "hypothyroid",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -9260,7 +9376,8 @@
       "amavata",
       "ibs",
       "diabetes",
-      "obesity"
+      "obesity",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -9396,7 +9513,8 @@
         "obesity",
         "kidney_disease",
         "hypertension",
-        "fatty_liver"
+        "fatty_liver",
+        "bloating"
       ]
     },
     "pathya_for": [
@@ -9404,7 +9522,8 @@
       "obesity",
       "kidney_disease",
       "hypertension",
-      "fatty_liver"
+      "fatty_liver",
+      "bloating"
     ],
     "apathya_for": [],
     "viruddha_with": [],
@@ -9770,7 +9889,8 @@
     "apathya_for": [
       "ibs",
       "grahani",
-      "amavata"
+      "amavata",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -9832,13 +9952,15 @@
       "best_for": [
         "obesity",
         "acidity",
-        "kidney_disease"
+        "kidney_disease",
+        "bloating"
       ]
     },
     "pathya_for": [
       "obesity",
       "acidity",
-      "kidney_disease"
+      "kidney_disease",
+      "bloating"
     ],
     "apathya_for": [],
     "viruddha_with": [],
@@ -9980,7 +10102,8 @@
         "high_cholesterol",
         "hypothyroid",
         "asthma",
-        "obesity"
+        "obesity",
+        "bloating"
       ]
     },
     "pathya_for": [
@@ -9988,7 +10111,8 @@
       "high_cholesterol",
       "hypothyroid",
       "asthma",
-      "obesity"
+      "obesity",
+      "bloating"
     ],
     "apathya_for": [
       "acidity",
@@ -10060,7 +10184,8 @@
         "grahani",
         "amavata",
         "asthma",
-        "constipation"
+        "constipation",
+        "bloating"
       ]
     },
     "pathya_for": [
@@ -10068,7 +10193,8 @@
       "grahani",
       "amavata",
       "asthma",
-      "constipation"
+      "constipation",
+      "bloating"
     ],
     "apathya_for": [
       "acidity",
@@ -10282,7 +10408,8 @@
         "obesity",
         "diabetes",
         "anemia",
-        "hypothyroid"
+        "hypothyroid",
+        "bloating"
       ]
     },
     "pathya_for": [
@@ -10290,7 +10417,8 @@
       "obesity",
       "diabetes",
       "anemia",
-      "hypothyroid"
+      "hypothyroid",
+      "bloating"
     ],
     "apathya_for": [
       "acidity",
@@ -10368,7 +10496,8 @@
     ],
     "apathya_for": [
       "constipation",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -10437,7 +10566,8 @@
       "obesity",
       "ibs",
       "grahani",
-      "hypothyroid"
+      "hypothyroid",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -10573,13 +10703,15 @@
       "best_for": [
         "constipation",
         "obesity",
-        "grahani"
+        "grahani",
+        "bloating"
       ]
     },
     "pathya_for": [
       "constipation",
       "obesity",
-      "grahani"
+      "grahani",
+      "bloating"
     ],
     "apathya_for": [
       "pregnancy",
@@ -10733,7 +10865,8 @@
       "ibs",
       "grahani",
       "amavata",
-      "constipation"
+      "constipation",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -10871,7 +11004,8 @@
     "apathya_for": [
       "amavata",
       "psoriasis",
-      "ibs"
+      "ibs",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -10938,7 +11072,8 @@
     "apathya_for": [
       "ibs",
       "grahani",
-      "acidity"
+      "acidity",
+      "bloating"
     ],
     "viruddha_with": [],
     "meal_suitable": [

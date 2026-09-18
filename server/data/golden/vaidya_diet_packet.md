@@ -20,8 +20,8 @@ them, and the LLM path is grounded on a corpus built from them, so:
 - a wrong **Apathya** withholds a food from a patient who could have eaten it
 - a wrong **Pathya** puts a food in front of a patient who should not
 
-There are **709 clinical claims** (338 Pathya,
-371 Apathya) across **20 conditions**.
+There are **808 clinical claims** (373 Pathya,
+435 Apathya) across **21 conditions**.
 
 ## What replaced the derived library
 
@@ -81,7 +81,7 @@ for whom a goitrogen restriction may be exactly backwards. Worth one ruling.
 
 Foods with **no classical entry**, where an analogy stood in for a citation. The
 `stated_reasoning` column is the analogy and the reason it was drawn, written to be
-rejected in one read. **35 of them withhold a food from at
+rejected in one read. **36 of them withhold a food from at
 least one condition** on that basis, and those sort first.
 
 Two questions per row: is the analogy sound, and does the profile follow from it.
@@ -99,7 +99,7 @@ Authored Viruddha Ahara pairs. Also tell us what is **missing**: the
 `missing_pairs` column is for combinations that should be here and are not, which is
 the failure this file cannot show you on its own.
 
-### 5. `vaidya_diet_clinical_claims.csv` — 709 rows
+### 5. `vaidya_diet_clinical_claims.csv` — 808 rows
 
 The full Pathya/Apathya matrix, sorted **by condition** so each is one screen. This is
 the long tier; it is also the one where an outlier is obvious next to its peers, which
