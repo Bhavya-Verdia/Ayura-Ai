@@ -170,33 +170,51 @@ async def generate_diet_plan_llm(
     try:
         brief = build_brief(user_profile, diet_prefs)
 
-        # RAG: pull classical text passages relevant to this patient's profile
+        # RAG: pull classical text passages relevant to this patient's profile.
+        #
+        # Supplementary grounding, in its own try. These five calls used to sit
+        # directly under the outer `except`, which returns None and sends the caller
+        # to the rule engine — so a ChromaDB restart did not cost the plan its
+        # classical citations, it cost the plan. Every diet generation during the
+        # outage silently lost the LLM path entirely: the therapeutic arc, the
+        # per-meal energy budget, the condition coaching, all of it, with nothing on
+        # screen to say why.
+        #
+        # An outage degrades, it does not withhold — the same rule the remedies
+        # triage follows for the same retrieval layer.
         dominant_dosha_q = (user_profile.get("dominant_dosha") or "vata").lower()
         agni_type_q = (user_profile.get("agni_type") or "sama").lower()
         conditions_q = diet_conditions(user_profile, diet_prefs)
-        rag_context_parts: list[str] = []
-
-        # Query 1: dosha + agni general diet guidance
-        general_query = f"{dominant_dosha_q} dosha diet Ahara Pathya Apathya {agni_type_q} Agni Ayurvedic food"
-        general_docs = await rag_pipeline.query(general_query, "nutrition", n_results=5, dosha_filter=dominant_dosha_q)
-        if general_docs:
-            rag_context_parts.append(rag_pipeline.format_context(general_docs, max_chars=1200))
-
-        # Query 2: condition-specific diet — retrieve for EACH condition (capped),
-        # not just the first, so multi-condition patients get classical grounding
-        # for every diagnosis rather than only conditions_q[0].
-        for _cond in conditions_q[:3]:
-            cond_query = f"{_cond} Pathya Apathya diet Ayurvedic classical"
-            cond_docs = await rag_pipeline.query(cond_query, "nutrition", n_results=3)
-            if cond_docs:
-                rag_context_parts.append(rag_pipeline.format_context(cond_docs, max_chars=600))
-
-        # Query 3: seasonal diet
         season = (user_profile.get("current_season") or "").lower()
-        if season:
-            season_docs = await rag_pipeline.query(f"{season} Ritucharya diet seasonal Ayurveda", "nutrition", n_results=3)
-            if season_docs:
-                rag_context_parts.append(rag_pipeline.format_context(season_docs, max_chars=600))
+        rag_context_parts: list[str] = []
+        try:
+            # Query 1: dosha + agni general diet guidance
+            general_query = f"{dominant_dosha_q} dosha diet Ahara Pathya Apathya {agni_type_q} Agni Ayurvedic food"
+            general_docs = await rag_pipeline.query(general_query, "nutrition", n_results=5, dosha_filter=dominant_dosha_q)
+            if general_docs:
+                rag_context_parts.append(rag_pipeline.format_context(general_docs, max_chars=1200))
+
+            # Query 2: condition-specific diet — retrieve for EACH condition (capped),
+            # not just the first, so multi-condition patients get classical grounding
+            # for every diagnosis rather than only conditions_q[0].
+            for _cond in conditions_q[:3]:
+                cond_query = f"{_cond} Pathya Apathya diet Ayurvedic classical"
+                cond_docs = await rag_pipeline.query(cond_query, "nutrition", n_results=3)
+                if cond_docs:
+                    rag_context_parts.append(rag_pipeline.format_context(cond_docs, max_chars=600))
+
+            # Query 3: seasonal diet
+            if season:
+                season_docs = await rag_pipeline.query(f"{season} Ritucharya diet seasonal Ayurveda", "nutrition", n_results=3)
+                if season_docs:
+                    rag_context_parts.append(rag_pipeline.format_context(season_docs, max_chars=600))
+        except Exception as _rag_err:
+            # Partial context is kept: a condition query that succeeded before the
+            # failure is still grounding for that condition.
+            logger.warning(
+                f"diet RAG retrieval degraded ({_rag_err}); generating with "
+                f"{len(rag_context_parts)} of the usual context blocks"
+            )
 
         rag_context = "\n\n".join(rag_context_parts) if rag_context_parts else ""
 
