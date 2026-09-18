@@ -21,6 +21,7 @@ from services.diet_brief_builder import (
     build_brief,
     diet_allergies,
     diet_conditions,
+    fasting_days_for,
     flag_allergens,
 )
 
@@ -278,7 +279,7 @@ async def generate_diet_plan_llm(
         }
 
         # Tag fasting days and run allergen check on week 1 (full detail)
-        fasting_days_raw = diet_prefs.get("fasting_days") or []
+        fasting_days_raw = fasting_days_for(user_profile, diet_prefs)
         fasting_set = {d.lower() for d in fasting_days_raw}
         weeks = data["weeks"]
         week1_daily = weeks[0].get("daily_plan", {}) if weeks else {}

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from services.diet_brief_builder import (
     diet_allergies as _diet_allergies,
+    fasting_days_for as _fasting_days_for,
     diet_conditions as _diet_conditions,
 )
 
@@ -758,7 +759,7 @@ def generate_diet_plan(user_profile: dict, diet_prefs: dict,
     dominant_dosha = (user_profile.get("dominant_dosha") or "vata").lower()
     agni_type = (user_profile.get("agni_type") or "sama").lower()
     season = (user_profile.get("current_season") or "").lower()
-    fasting_days = {d.lower() for d in (diet_prefs.get("fasting_days") or [])}
+    fasting_days = {d.lower() for d in _fasting_days_for(user_profile, diet_prefs)}
 
     # The diet form's `gut_health_issue` is a disease too — acidity, constipation and
     # IBS are all keys this engine's Apathya filter already knows. It only ever saw
