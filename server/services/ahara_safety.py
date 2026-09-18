@@ -1038,6 +1038,52 @@ def apply_dietary_type_safety(plan: dict, dietary_type: str | None) -> dict:
     return plan
 
 
+def _active_condition_protocols(
+    medical_history: list[str], extra_terms: dict | None = None,
+    pregnant: bool = False,
+) -> dict[str, dict]:
+    """The Apathya protocols in force for this patient, keyed by canonical condition.
+
+    Factored out of `apply_condition_food_safety` so that the meal scan and the
+    advisory-prose scan cannot be built from different term sets. A second copy of
+    this assembly is exactly how the curated table and the library table came to
+    disagree before, and how the drink came to be in none of the three scans.
+    """
+    from services.diet_condition_foods import condition_food_rules
+
+    extra_terms = extra_terms or {}
+    active: dict[str, dict] = {}
+    for cond in (medical_history or []):
+        canon = _canon_condition(cond)
+        proto = _CONDITION_APATHYA_TERMS.get(canon) or extra_terms.get(canon)
+        # The authored library's own Apathya for this disease, which until it was
+        # wired gated only `diet_plan_engine` — the fallback. Measured against the
+        # curated table, 333 of the library's 370 (condition, food) exclusions were
+        # unenforced on the LLM-primary path. The curated table is not replaced by
+        # it — the two were authored separately and each names foods the other does
+        # not, so the floor is their union.
+        lib_terms = condition_food_rules(canon)["apathya_terms"]
+        if lib_terms:
+            if proto:
+                proto = {
+                    **proto,
+                    "terms": sorted(set(proto.get("terms") or ()) | set(lib_terms)),
+                }
+            else:
+                proto = {
+                    "name": canon.replace("_", " ").title(),
+                    "reason": "Apathya for this condition in the authored food library.",
+                    "terms": sorted(lib_terms),
+                }
+        if proto:
+            active[canon] = proto
+    # `pregnancy_or_nursing` is a profile flag, not a history entry, so it has to be
+    # added here or it reaches the scan by no route.
+    if pregnant:
+        active["pregnancy"] = _CONDITION_APATHYA_TERMS["pregnancy"]
+    return active
+
+
 def apply_condition_food_safety(
     plan: dict, medical_history: list[str], extra_terms: dict | None = None,
     pregnant: bool = False,
@@ -1055,53 +1101,15 @@ def apply_condition_food_safety(
     Non-destructive: flags only, and never raises (safety layer must not break gen).
     """
     try:
-        from services.diet_condition_foods import condition_food_rules
-
-        extra_terms = extra_terms or {}
-        active: dict[str, dict] = {}
-        for cond in (medical_history or []):
-            canon = _canon_condition(cond)
-            proto = _CONDITION_APATHYA_TERMS.get(canon) or extra_terms.get(canon)
-            # The authored library's own Apathya for this disease, which until now
-            # gated only `diet_plan_engine` — the fallback. Measured against the
-            # curated table above, 333 of the library's 370 (condition, food)
-            # exclusions were unenforced on the LLM-primary path: an acidity patient
-            # could be served green tea, lemon water, curd and dry ginger, all of
-            # them authored as Apathya for acidity. The curated table is not replaced
-            # by it — the two were authored separately and each names foods the other
-            # does not, so the floor is their union.
-            lib_terms = condition_food_rules(canon)["apathya_terms"]
-            if lib_terms:
-                if proto:
-                    proto = {
-                        **proto,
-                        "terms": sorted(set(proto.get("terms") or ()) | set(lib_terms)),
-                    }
-                else:
-                    proto = {
-                        "name": canon.replace("_", " ").title(),
-                        "reason": "Apathya for this condition in the authored food library.",
-                        "terms": sorted(lib_terms),
-                    }
-            if proto:
-                active[canon] = proto
-        # `pregnancy_or_nursing` is a profile flag, not a history entry, so it has to
-        # be added here or it reaches the scan by no route. A user who typed
-        # "pregnancy" into their history keeps working through the loop above; this
-        # covers the ones who answered the question the app actually asks.
-        if pregnant:
-            active["pregnancy"] = _CONDITION_APATHYA_TERMS["pregnancy"]
+        active = _active_condition_protocols(medical_history, extra_terms, pregnant)
         # A condition the app could give no deterministic floor for. Silence here
         # reads as "checked and clear", which is the opposite of what happened: the
         # curated tables do not cover it, the library has no claim about it, and the
-        # classifier either failed or returned nothing usable. Saying so is the only
-        # honest option, and it is what the disclaimer elsewhere in this plan already
-        # does for the claims it cannot stand behind.
-        unscanned = sorted(
+        # classifier either failed or returned nothing usable.
+        plan["conditions_without_food_floor"] = sorted(
             {str(c) for c in (medical_history or [])
              if _canon_condition(c) not in active}
         )
-        plan["conditions_without_food_floor"] = unscanned
 
         if not active:
             plan["condition_food_safe"] = True
@@ -1143,4 +1151,164 @@ def apply_condition_food_safety(
         plan["condition_safety_checked"] = True
     except Exception:
         plan["condition_safety_checked"] = False
+    return plan
+
+
+# ── The advisory prose, held to the same floor as the meals ───────────────────
+# The three scans above read five consumed slots and nothing else. A diet plan also
+# ships six free-text surfaces that *recommend food by name*, and `DietView` renders
+# them: `pathya_apathya.pathya` under the heading "Pathya — Recommended", plus
+# `hydration_guidance`, `condition_coaching`, `ahar_vidhi`, `seasonal_note` and
+# `fasting_guidance`.
+#
+# Measured on an acidity patient: the word `curd` in a meal raised an alert and set
+# `condition_food_safe = False`; the same word in the Pathya card passed untouched,
+# alongside "Green tea" and "Lemon water on waking" — three foods the library itself
+# authors as Apathya for that disease. It is PR #72's shape from the other side:
+# there, prose was embedded for the model and shown to nobody; here it is written by
+# the model, shown to the patient, and read by no gate.
+#
+# Two different remedies, because the surfaces are different:
+#
+#   * A `pathya` entry is a recommendation by construction — it exists to be
+#     followed. A contradicted one is WITHHELD, moved off the card into
+#     `withheld_recommendations` with its reason. Leaving it on screen under
+#     "Recommended" next to an alert saying the opposite is worse than removing it;
+#     this is the lesson of #57 and #70 — say that it was withheld and why.
+#
+#   * Free prose is mixed: "avoid curd and sour fruit" is correct advice for exactly
+#     the patient whose terms would match it. Rewriting a sentence is not something
+#     this layer can do safely, so prose is FLAGGED, and only where the food is not
+#     already governed by an avoid-word in its own clause. Flagging correct advice
+#     is how a safety badge gets trained out of a reader.
+_AVOID_MARKERS = (
+    "avoid", "avoiding", "avoided", "no ", "not ", "never", "skip", "skipping",
+    "limit", "limited", "reduce", "reducing", "minimise", "minimize", "cut out",
+    "cut back", "stay away", "steer clear", "refrain", "abstain", "exclude",
+    "omit", "restrict", "forbidden", "apathya", "contraindicated", "don't",
+    "do not", "without", "instead of", "rather than", "in place of", "replace",
+    "substitute", "swap", "less ",
+)
+
+# Sentence-ish boundaries. A clause is the unit a negation governs: "take warm water,
+# avoid curd" must not clear `warm water`, and must clear `curd`.
+_CLAUSE_SPLIT = re.compile(r"[.;:!?\n]|\s+(?:but|however|whereas|while)\s+|,\s*(?=avoid|no |not |never|skip|limit|reduce|instead|rather|without|exclude|omit|restrict)")
+
+_PROSE_FIELDS = (
+    "condition_coaching", "hydration_guidance", "fasting_guidance",
+    "seasonal_note", "ahar_vidhi", "plan_description",
+)
+
+
+def _governed_by_avoidance(text: str, term: str) -> bool:
+    """True when every mention of `term` in `text` sits in a clause that tells the
+    reader to avoid it."""
+    clauses = [c for c in _CLAUSE_SPLIT.split(text.lower()) if c and c.strip()]
+    mentions = [c for c in clauses if _term_in_text(term, c)]
+    if not mentions:
+        return False
+    # The whole clause, not the text before the mention: "curd is best avoided" puts
+    # the marker after the food and is still advice to avoid it. Scanning only the
+    # prefix made the answer depend on where in the clause the word happened to fall
+    # — it cleared "curd is best avoided" (prefix empty, so the whole clause was
+    # scanned) and flagged "fresh curd is best avoided" (prefix "fresh ").
+    #
+    # What stops that clearing a genuine recommendation is the splitter: a comma
+    # before an avoid-word is a clause boundary, so "curd is excellent, avoid
+    # pickles" is two clauses and the curd one has no marker.
+    return all(any(m in clause for m in _AVOID_MARKERS) for clause in mentions)
+
+
+def apply_advisory_safety(
+    plan: dict, medical_history: list[str], allergies: list[str] | None = None,
+    intolerances: list[str] | None = None, extra_terms: dict | None = None,
+    pregnant: bool = False,
+) -> dict:
+    """Hold the plan's food-recommending prose to the same floor as its meals.
+
+    Adds:
+      plan["withheld_recommendations"] → [{item, source, reason, condition}] removed
+                                          from `pathya_apathya.pathya`
+      plan["advisory_prose_alerts"]    → [{field, food, condition, message}]
+      plan["advisory_safety_checked"]  → bool
+    Never raises: a safety layer must not break generation.
+    """
+    try:
+        active = _active_condition_protocols(medical_history, extra_terms, pregnant)
+        allergen_terms: dict[str, str] = {}
+        for a in list(allergies or []) + list(intolerances or []):
+            key = str(a).lower()
+            for t in ALLERGEN_TERMS.get(key, [key]):
+                allergen_terms[t] = key
+
+        def _hits(text: str, *, negation_aware: bool) -> list[dict]:
+            out: list[dict] = []
+            low = str(text or "").lower()
+            if not low:
+                return out
+            for canon, proto in active.items():
+                exempt = any(_term_in_text(e, low) for e in (proto.get("exempt") or ()))
+                for term in proto["terms"]:
+                    if not _term_in_text(term, low):
+                        continue
+                    if exempt:
+                        continue
+                    if negation_aware and _governed_by_avoidance(low, term):
+                        continue
+                    out.append({
+                        "food": term,
+                        "condition": proto["name"] + (" (AI-inferred)" if proto.get("ai") else ""),
+                        "reason": proto["reason"],
+                    })
+            for term, declared in allergen_terms.items():
+                if not _term_in_text(term, low):
+                    continue
+                if negation_aware and _governed_by_avoidance(low, term):
+                    continue
+                out.append({
+                    "food": term,
+                    "condition": f"Declared {declared.replace('_', ' ')} allergy/intolerance",
+                    "reason": "The patient declared this; it must not be recommended.",
+                })
+            return out
+
+        # 1. The Pathya card — withheld, not merely flagged.
+        withheld: list[dict] = []
+        pa = plan.get("pathya_apathya")
+        if isinstance(pa, dict) and isinstance(pa.get("pathya"), list):
+            kept = []
+            for item in pa["pathya"]:
+                found = _hits(str(item), negation_aware=False)
+                if found:
+                    withheld.append({
+                        "item": item, "source": "pathya_apathya.pathya",
+                        "condition": found[0]["condition"], "food": found[0]["food"],
+                        "reason": (
+                            f"Withheld: names '{found[0]['food']}', which is Apathya here — "
+                            f"{found[0]['reason']}"
+                        ),
+                    })
+                else:
+                    kept.append(item)
+            pa["pathya"] = kept
+        plan["withheld_recommendations"] = withheld
+
+        # 2. The free prose — flagged where it is not already telling them to avoid it.
+        alerts: list[dict] = []
+        for field in _PROSE_FIELDS:
+            value = plan.get(field)
+            if not isinstance(value, str):
+                continue
+            for hit in _hits(value, negation_aware=True):
+                alerts.append({
+                    "field": field, "food": hit["food"], "condition": hit["condition"],
+                    "message": (
+                        f"{field.replace('_', ' ')} recommends '{hit['food']}' — "
+                        f"{hit['reason']} Do not follow this line without substituting."
+                    ),
+                })
+        plan["advisory_prose_alerts"] = alerts
+        plan["advisory_safety_checked"] = True
+    except Exception:
+        plan["advisory_safety_checked"] = False
     return plan

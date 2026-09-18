@@ -336,8 +336,8 @@ async def generate_diet_plan_llm(
 
         # Deterministic Ahara safety layer (Viruddha + allergens, all 4 weeks)
         from services.ahara_safety import (
-            apply_ahara_safety, apply_condition_food_safety, apply_dietary_type_safety,
-            classify_condition_apathya_llm,
+            apply_advisory_safety, apply_ahara_safety, apply_condition_food_safety,
+            apply_dietary_type_safety, classify_condition_apathya_llm,
         )
         result = apply_ahara_safety(result, allergies, intolerances)
         # The declared dietary type, checked rather than requested. Until now the
@@ -355,6 +355,13 @@ async def generate_diet_plan_llm(
         _extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(_conds))
         result = apply_condition_food_safety(
             result, _conds, extra_terms=_extra_apathya,
+            pregnant=bool(user_profile.get("pregnancy_or_nursing")),
+        )
+        # The same floor, applied to the prose that recommends food by name. The
+        # scans above read the five consumed slots; `pathya_apathya.pathya` is
+        # rendered under the heading "Pathya — Recommended" and was read by nothing.
+        result = apply_advisory_safety(
+            result, _conds, allergies, intolerances, extra_terms=_extra_apathya,
             pregnant=bool(user_profile.get("pregnancy_or_nursing")),
         )
 
@@ -385,8 +392,8 @@ async def build_diet_plan(
 
     logger.warning("LLM diet generation failed; falling back to the rule engine")
     from services.ahara_safety import (
-        apply_ahara_safety, apply_condition_food_safety, apply_dietary_type_safety,
-        classify_condition_apathya_llm,
+        apply_advisory_safety, apply_ahara_safety, apply_condition_food_safety,
+        apply_dietary_type_safety, classify_condition_apathya_llm,
     )
     from services.diet_brief_builder import uncurated_conditions
     from services.diet_energy import energy_target
@@ -404,6 +411,10 @@ async def build_diet_plan(
     extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(conds))
     plan = apply_condition_food_safety(
         plan, conds, extra_terms=extra_apathya,
+        pregnant=bool(user_profile.get("pregnancy_or_nursing")))
+    plan = apply_advisory_safety(
+        plan, conds, diet_prefs.get("food_allergies") or [],
+        diet_prefs.get("food_intolerances") or [], extra_terms=extra_apathya,
         pregnant=bool(user_profile.get("pregnancy_or_nursing")))
     # The engine fills category quotas with no energy target of its own — measured at
     # 580-1031 kcal against a 1490 kcal target, with 22-40 g of protein against an

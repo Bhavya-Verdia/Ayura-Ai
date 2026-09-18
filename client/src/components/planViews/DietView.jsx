@@ -171,8 +171,15 @@ function DietSafetyBanner({ plan }) {
   const dietTypeAlerts = plan.dietary_type_alerts || []
 
   const unscanned = plan.conditions_without_food_floor || []
+  // The plan's food-recommending prose, held to the same floor as its meals.
+  // `withheld` was removed from the Pathya card before it reached this component;
+  // saying so is the point — a recommendation that vanishes with no explanation
+  // looks like an oversight, which is the lesson of the withheld Panchakarma Karma.
+  const withheld = plan.withheld_recommendations || []
+  const proseAlerts = plan.advisory_prose_alerts || []
 
-  if (!alerts.length && !viruddha.length && !condAlerts.length && !dietTypeAlerts.length) {
+  if (!alerts.length && !viruddha.length && !condAlerts.length && !dietTypeAlerts.length
+      && !withheld.length && !proseAlerts.length) {
     if (unscanned.length) {
       // "Everything checked" would be false here: these conditions reached no
       // curated rule, no library claim and no usable classification.
@@ -192,7 +199,7 @@ function DietSafetyBanner({ plan }) {
     return (
       <div className="diet-safety-ok">
         <ShieldCheck size={13} />
-        <span>Every meal and daily drink checked for allergens, intolerances, incompatible combinations (Viruddha Ahara), condition-contraindicated foods &amp; your dietary type — none found.</span>
+        <span>Every meal, daily drink and line of food guidance checked for allergens, intolerances, incompatible combinations (Viruddha Ahara), condition-contraindicated foods &amp; your dietary type — none found.</span>
       </div>
     )
   }
@@ -235,6 +242,34 @@ function DietSafetyBanner({ plan }) {
             {dietTypeAlerts.map((d, i) => (
               <li key={i}>
                 <strong>{d.week} · {d.day} · {d.meal_slot}</strong>: contains {d.food} — not {(d.dietary_type || '').replace(/_/g, ' ')}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {withheld.length > 0 && (
+        <div className="diet-safety-card allergen">
+          <h3 className="diet-safety-title">
+            <TriangleAlert size={13} /> Withheld from your Pathya list — recommended in general, not for you
+          </h3>
+          <ul className="diet-safety-list">
+            {withheld.map((w, i) => (
+              <li key={i}>
+                <strong>{w.item}</strong> — names {w.food}, Apathya for {w.condition}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {proseAlerts.length > 0 && (
+        <div className="diet-safety-card allergen">
+          <h3 className="diet-safety-title">
+            <TriangleAlert size={13} /> Guidance text that names a food you should avoid
+          </h3>
+          <ul className="diet-safety-list">
+            {proseAlerts.map((a, i) => (
+              <li key={i}>
+                <strong>{(a.field || '').replace(/_/g, ' ')}</strong>: mentions {a.food} — {a.condition}
               </li>
             ))}
           </ul>
