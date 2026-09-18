@@ -422,6 +422,57 @@ knowledge-base file actually moved. It runs **after** the commit-verification st
 a seeding failure cannot mask a deploy that shipped the wrong image, and is followed by
 `--check`, because the seeder's own success line is not evidence either.
 
+#### The Vaidya handoff PDF rendered the diet plan as truncated JSON
+`routes/export._build_pdf` turns each plan key into one table row holding
+`json.dumps(value)[:400]`. A diet plan's `diet_weeks` is ~6 KB, so the practitioner got
+**7% of it** — four hundred characters of escaped JSON where twenty-eight days of meals
+should be — and the safety findings truncated as soon as there were more than about
+two. **A truncated list of flagged meals is worse than none: it reads as the whole
+list.**
+
+This is the artifact the entire clinical review depends on, and the diet plan is the
+largest thing in it. `_render_diet` writes it out: the energy prescription, the
+therapeutic arc *including the withheld phase and its reason*, every safety finding in
+full, both coverage caveats (`conditions_without_food_floor` and
+`conditions_screened_by_terms_only`), then the meals for all four weeks. Only diet is
+special-cased; the other five features keep the generic renderer.
+
+#### Diet energy: the unmeasured days are counted, not implied
+Weeks 2-4 of an LLM plan are meal names with no macros, so nothing there can be summed
+or corrected — `reconcile_plan_energy` checks 7 of 28 days. It reported
+`days_quantified` and no denominator, and the energy card showed a target and a clean
+tick over all four weeks, so a partial check read as a finished one.
+`days_unquantified` sits beside it now and `DietView` says which weeks are unmeasured.
+
+#### The Ritucharya card is the other surface that names food
+`services/seasonal_service.build_seasonal_guidance` took a **dosha and nothing else**,
+and `diet_adjustments` is LLM-written and names specific foods. A real Sharad card read
+*"Favor sweet, bitter, and astringent foods such as pomegranate, **white rice**, and
+leafy greens"* and *"Use **cow ghee**"* — shown identically to every Pitta user. White
+rice is Apathya in Prameha and cow ghee is a declared dairy allergen; the endpoint knew
+about neither and nothing read its output.
+
+The second food-recommending surface in this app with that shape, after the plan's own
+Pathya card. Fixed the same way and in the same order: **prevention in the prompt**
+(the patient's conditions, allergies, dietary type and pregnancy now reach it) and
+`apply_advisory_safety` as the **backstop** on the way out. `diet_adjustments` maps
+onto `pathya` — a contradicted entry is withheld — and `avoid` onto `apathya`, which
+is never scanned because it exists to name those foods.
+
+Both call sites pass the profile: the `/plans/seasonal` endpoint and the holistic
+worker. A card generated on one path must not be blinder than the other, which is the
+asymmetry `build_diet_plan` exists to prevent.
+
+`withheld_for_you` is surfaced on the Dashboard card, because a suggestion removed by
+a screen and a suggestion that was never generated look identical otherwise.
+
+**A string where a list belongs empties the card.** `allergies="dairy"` instead of
+`["dairy"]` iterates into `d,a,i,r,y`, and a one-letter term matches every word there
+is — so a malformed profile field withheld *every* recommendation rather than the one
+naming dairy. Guarded inside `apply_advisory_safety`, where the damage lands, rather
+than at each caller. Same shape as the one-element tuple written without its comma
+that cost two library rows their IBS claim.
+
 #### Diet: the gates are English, the prompt asks for Hindi
 `diet_llm_generator`'s system prompt says **"Generate REAL Indian meal names"**, and
 every scan term is English or Sanskrit. `_term_in_text` is a word match, so the same

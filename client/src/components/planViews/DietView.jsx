@@ -353,6 +353,19 @@ function EnergyPrescriptionCard({ plan }) {
           unchanged.
         </p>
       ) : null}
+      {/* Weeks 2-4 are meal names with no macros, so nothing there can be summed or
+          corrected. The card showed a target and a clean tick over all four weeks
+          regardless — "7 days checked" reads as a finished check unless the other 21
+          are named. */}
+      {rec.days_unquantified > 0 ? (
+        <p className="diet-energy-note">
+          Checked against this target on {rec.days_quantified}{' '}
+          {rec.days_quantified === 1 ? 'day' : 'days'}. Weeks 2-4 are given as meal
+          names without portion figures, so {rec.days_unquantified} further{' '}
+          {rec.days_unquantified === 1 ? 'day is' : 'days are'} not measured — keep the
+          week 1 portions as your guide.
+        </p>
+      ) : null}
       {(rec.residual_notes || []).slice(0, 3).map((note, i) => (
         <p key={`r${i}`} className="diet-energy-note is-warn">{note}</p>
       ))}

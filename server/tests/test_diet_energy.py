@@ -396,3 +396,49 @@ def test_onboarding_collects_every_activity_level_the_engine_scores():
         f"onboarding offers {sorted(offered)}; the engine scores "
         f"{sorted(ACTIVITY_MULTIPLIERS)}"
     )
+
+
+def test_the_unmeasured_days_are_counted_not_implied():
+    """Weeks 2-4 of an LLM plan are meal names with no macros, so nothing there can be
+    summed or corrected. `days_quantified` was reported without a denominator — "7 days
+    checked" on a 28-day plan reads as a finished check unless the other 21 are named,
+    and the energy card showed a target and a clean tick over all four weeks either
+    way."""
+    profile = dict(dominant_dosha="vata", agni_type="sama", age=35, gender="female",
+                   height_cm=162, weight_kg=62, activity_level="moderate",
+                   bmi_category="normal", medical_history=[])
+    prefs = {"dietary_type": "vegetarian", "diet_goal": "general_wellness",
+             "food_allergies": [], "food_intolerances": [],
+             "gut_health_issue": "healthy", "intermittent_fasting": "no",
+             "water_intake": "2-3L", "fasting_days": []}
+    quantified_day = {
+        "breakfast": {"meal_name": "Poha", "macros_approx": {"calories": 400, "protein_g": 10}},
+        "lunch": {"meal_name": "Khichdi", "macros_approx": {"calories": 600, "protein_g": 20}},
+        "snack": {"meal_name": "Fruit", "macros_approx": {"calories": 150, "protein_g": 3}},
+        "dinner": {"meal_name": "Soup", "macros_approx": {"calories": 500, "protein_g": 15}},
+    }
+    plan = {"diet_weeks": [
+        {"week_number": 1, "daily_plan": {d: dict(quantified_day) for d in ("Mon", "Tue")}},
+        {"week_number": 2, "daily_plan": {"Mon": {"breakfast": "Upma", "lunch": "Dal rice"}}},
+        {"week_number": 3, "daily_plan": {"Mon": {"breakfast": "Poha", "lunch": "Khichdi"}}},
+    ]}
+    rec = reconcile_plan_energy(plan, energy_target(profile, prefs))["energy_reconciliation"]
+    assert rec["days_quantified"] == 2
+    assert rec["days_unquantified"] == 2
+
+
+def test_a_fully_quantified_plan_reports_nothing_unmeasured():
+    """The rule-engine path quantifies every day, so the disclosure must not appear
+    there and turn a complete check into a hedge."""
+    from services.diet_plan_engine import generate_diet_plan
+
+    profile = dict(dominant_dosha="vata", agni_type="manda", age=35, gender="female",
+                   height_cm=162, weight_kg=60, activity_level="moderate",
+                   bmi_category="normal", medical_history=[], current_season="varsha")
+    prefs = {"dietary_type": "vegetarian", "diet_goal": "gut_health",
+             "food_allergies": [], "food_intolerances": [],
+             "gut_health_issue": "healthy", "intermittent_fasting": "no",
+             "water_intake": "2-3L", "fasting_days": []}
+    plan = reconcile_plan_energy(generate_diet_plan(profile, prefs, None),
+                                 energy_target(profile, prefs))
+    assert plan["energy_reconciliation"]["days_unquantified"] == 0
