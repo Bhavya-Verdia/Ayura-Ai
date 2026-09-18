@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../providers/AuthContext';
 import { m, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { preferencesAPI } from '../api/client';
@@ -110,6 +111,7 @@ const DIETARY_TYPES = [
 ];
 
 export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSuccess }) {
+  const { user } = useAuth();
   const [form, setForm] = useState({});
   const [loading, setLoading] = useState(false);
   // Whether the practitioner has set the session length themselves. Once they
@@ -124,11 +126,19 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
   // Initialize defaults when modal opens
   useEffect(() => {
     if (isOpen && typeId) {
-      setForm({});
+      // Seed the diet form's allergy chips from what onboarding already recorded, so
+      // the person is not asked a second time for the one answer where forgetting to
+      // repeat it is dangerous. The server unions the two lists regardless — this is
+      // so the form shows what is actually being enforced, rather than empty chips
+      // beside a plan that is withholding peanuts.
+      const seeded = typeId === 'diet' && Array.isArray(user?.allergies)
+        ? { food_allergies: [...user.allergies] }
+        : {};
+      setForm(seeded);
       setDurationTouched(false);
       setStyleTouched(false);
     }
-  }, [isOpen, typeId]);
+  }, [isOpen, typeId, user]);
 
   if (!isOpen) return null;
 

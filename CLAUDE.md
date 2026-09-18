@@ -258,6 +258,89 @@ delivery into band — the reconciler is the backstop, scaling `macros_approx` *
 portion text together** (raising one without the other produces a plan that lies to
 the person cooking it). Fasting days are exempt: Upavasa is the therapy, not a miss.
 
+#### Diet inputs: one list per declaration, built in one place
+Two helpers in `diet_brief_builder` are the only way the diet path builds a list of
+what the patient declared, and the brief, the RAG query, the arc, the rule engine and
+every scan take it from them:
+
+* `diet_conditions(profile, prefs)` — `medical_history` **plus the diet form's own
+  `gut_health_issue`**. Its four values are diseases, and three of them (acidity,
+  constipation, ibs) were already canonical keys with a hint block, a scan floor and
+  authored library claims. None of it reached them: the answer was rendered as the
+  line `GUT HEALTH: Acidity` and went nowhere else. Same patient, same disease —
+  declared on the diet form, brief 1,812 chars and 0 Apathya foods named; declared in
+  `medical_history`, 3,789 and 50. `bloating` (Adhmana) is authored in both tables
+  rather than aliased onto IBS or constipation: Vata obstructed by Ama in the
+  Pakvashaya takes the Vatala foods, not IBS's sour-and-raw list. `rajma` and `chana`
+  are named individually because moong is this condition's Pathya.
+* `diet_allergies(profile, prefs)` — the diet form's `food_allergies` **union**
+  `profile["allergies"]`. An allergy is the one declaration where asking twice and
+  honouring one answer is not acceptable.
+
+`profile["allergies"]` was `null` for every user in production and no screen collected
+it, while `condition_filter.filter_by_allergies`, the chat agent's system prompt and
+the Vaidya PDF export all read it. It is collected in onboarding now, in the same
+vocabulary as the diet form, and `filter_by_allergies` expands each key through
+`ALLERGEN_TERMS` — its substring matching could not see through a canonical key at
+all (`"nuts_tree" in "tree nuts"` is False in both directions), so a declared tree-nut
+allergy matched an almond by no route.
+
+**Counting trap:** `{"allergies": {"$ne": []}}` matches nulls, and said 11 of 12 users
+had declared one. With `$size` it is zero.
+
+#### Diet: the advisory prose is held to the same floor as the meals
+The three scans read five consumed slots. A plan also ships six free-text surfaces
+that recommend food *by name* and `DietView` renders all of them —
+`pathya_apathya.pathya` under the heading "Pathya — Recommended" above the rest. For
+an acidity patient, `curd` in a meal raised an alert and set `condition_food_safe =
+False`; the same word in the card passed untouched, beside green tea and lemon water.
+
+`apply_advisory_safety` closes it, with two different remedies because the surfaces
+differ. A `pathya` entry is a recommendation by construction, so a contradicted one is
+**withheld** into `withheld_recommendations` and shown as withheld. Free prose is
+mixed — "avoid curd and sour fruit" is correct advice for exactly the patient whose
+terms match it — so it is flagged, and only where the food is not already governed by
+an avoid-word **in its own clause**. Flagging correct advice is how a safety badge
+gets trained out of a reader. `pathya_apathya.apathya` is never scanned: it exists to
+name these foods.
+
+The clause, not the prefix, is the unit: scanning only the text *before* the mention
+made the answer depend on where the word fell, clearing "curd is best avoided" and
+flagging "fresh curd is best avoided". What keeps that from clearing a genuine
+recommendation is the splitter — a comma before an avoid-word is a clause boundary,
+so "curd is excellent, avoid pickles" is two clauses.
+
+`_active_condition_protocols` is shared by the meal scan and the prose scan rather
+than copied. A second copy of that assembly is how the curated and library tables came
+to disagree, and how the daily drink came to be in none of the three scans.
+
+#### Diet: vegetarian and vegan only, because that is what the library holds
+All 150 authored rows of `diet_foods.json` are vegetarian — no egg, fish or meat. The
+form offered five dietary types. For the three with no data behind them the 708
+authored (condition, food) claims said nothing, so a non-vegetarian patient's meals
+were screened against the curated table alone; the rule engine answered a
+`non_vegetarian` + `muscle_support` patient with black beans and edamame; and
+`_DIET_TYPE_FORBIDDEN` had no `non_vegetarian` entry, so the scan reported
+`dietary_type_safe = True`.
+
+`DIETARY_TYPES` is `{vegetarian, vegan}`. The three withdrawn values are **coerced,
+never rejected** — a stored preference that 422s is a user who cannot regenerate their
+plan — and an unrecognised value now takes the vegetarian floor rather than an
+all-clear, because it no longer means "nothing to check". `test_the_library_holds_no_
+animal_food` fails if an animal row is ever authored, so reopening those types is a
+decision someone makes on purpose.
+
+#### Diet energy: `activity_level` is asked, not assumed
+`Onboarding.jsx` sent `activity_level: 'moderate'` as a literal for every user it ever
+created, and 9 of 12 in production had no value at all — while it is the largest
+single lever in the plan: same body, same goal, **2040 kcal** at `sedentary` and
+**3220** at `very_active`. The hardcoded value was the middle one, so the error was
+silent in both directions. Onboarding asks for it now ("how active", which is a
+different question from `fitness_level`, which it already asked and the diet path does
+not read), and `test_onboarding_collects_every_activity_level_the_engine_scores`
+parses the JSX to hold the offered answers and `ACTIVITY_MULTIPLIERS` in step — the
+same front/back gap `test_dosha_instrument` exists to close.
+
 `services.diet_llm_generator.build_diet_plan` is the single diet entry point — LLM
 primary, rule engine fallback, same safety and energy layers on both. It exists
 because the per-feature route and the holistic worker each held a copy of that

@@ -4,7 +4,10 @@ import random
 from datetime import datetime, timezone
 from pathlib import Path
 
-from services.diet_brief_builder import diet_conditions as _diet_conditions
+from services.diet_brief_builder import (
+    diet_allergies as _diet_allergies,
+    diet_conditions as _diet_conditions,
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FOODS_PATH = BASE_DIR / "data" / "knowledge_base" / "diet_foods.json"
@@ -334,7 +337,9 @@ def filter_and_score_foods(user_profile: dict, diet_prefs: dict,
     dominant_dosha = (user_profile.get("dominant_dosha") or "vata").lower()
     vikriti = (user_profile.get("vikriti_dominant") or dominant_dosha).lower()
     dietary_type = (diet_prefs.get("dietary_type") or "vegetarian").lower()
-    food_allergies = set(diet_prefs.get("food_allergies") or [])
+    # Both places the app stores an allergy — the diet form and onboarding's health
+    # step. The engine read the form alone.
+    food_allergies = set(_diet_allergies(user_profile, diet_prefs))
     food_intolerances = set(diet_prefs.get("food_intolerances") or [])
     diet_goal = diet_prefs.get("diet_goal") or "general_wellness"
     gut_issue = diet_prefs.get("gut_health_issue") or "healthy"

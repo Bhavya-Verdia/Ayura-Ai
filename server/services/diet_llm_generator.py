@@ -19,6 +19,7 @@ from services.diet_brief_builder import (
     DOSHA_SPICES,
     AYUR_TIPS,
     build_brief,
+    diet_allergies,
     diet_conditions,
     flag_allergens,
 )
@@ -267,7 +268,10 @@ async def generate_diet_plan_llm(
             if isinstance(day_data, dict):
                 canonical = _DAY_ALIASES.get(day_name.lower(), day_name.lower())
                 day_data["is_fasting"] = canonical in fasting_set
-        allergies = diet_prefs.get("food_allergies") or []
+        # Both places the app stores an allergy. It read the diet form alone, so an
+        # allergy declared in onboarding's health step was honoured by the remedies
+        # engine and by nothing in the feature that is entirely about food.
+        allergies = diet_allergies(user_profile, diet_prefs)
         intolerances = diet_prefs.get("food_intolerances") or []
         week1_daily = flag_allergens(week1_daily, allergies, intolerances)
         if weeks:
@@ -408,7 +412,7 @@ async def build_diet_plan(
     raw = generate_diet_plan(user_profile, diet_prefs, diet_foods)
     plan = await enrich_diet_plan(raw, user_profile, diet_prefs)
     plan = apply_ahara_safety(
-        plan, diet_prefs.get("food_allergies") or [],
+        plan, diet_allergies(user_profile, diet_prefs),
         diet_prefs.get("food_intolerances") or [])
     plan = apply_dietary_type_safety(plan, diet_prefs.get("dietary_type"))
     conds = diet_conditions(user_profile, diet_prefs)
@@ -417,7 +421,7 @@ async def build_diet_plan(
         plan, conds, extra_terms=extra_apathya,
         pregnant=bool(user_profile.get("pregnancy_or_nursing")))
     plan = apply_advisory_safety(
-        plan, conds, diet_prefs.get("food_allergies") or [],
+        plan, conds, diet_allergies(user_profile, diet_prefs),
         diet_prefs.get("food_intolerances") or [], extra_terms=extra_apathya,
         pregnant=bool(user_profile.get("pregnancy_or_nursing")))
     # The engine fills category quotas with no energy target of its own — measured at

@@ -581,6 +581,29 @@ def diet_conditions(user_profile: dict, diet_prefs: dict | None = None) -> list[
     return out
 
 
+def diet_allergies(user_profile: dict, diet_prefs: dict | None = None) -> list[str]:
+    """Every allergy the app holds for this patient, from both places it stores one.
+
+    `diet_prefs["food_allergies"]` (the diet form) and `user_profile["allergies"]`
+    (onboarding). The diet path read only the first, so an allergy declared once, in
+    the health step, was enforced by the remedies engine and by nothing in the one
+    feature that is entirely about food.
+
+    An allergy is the one declaration where asking twice and honouring one answer is
+    not acceptable, so this is a union and never a choice between them.
+    """
+    out: list[str] = []
+    seen: set[str] = set()
+    for source in ((diet_prefs or {}).get("food_allergies") or [],
+                   user_profile.get("allergies") or []):
+        for a in source:
+            key = str(a).strip().lower().replace(" ", "_")
+            if key and key not in seen:
+                seen.add(key)
+                out.append(key)
+    return out
+
+
 def uncurated_conditions(conditions: list[str]) -> list[str]:
     """Conditions with NO curated Pathya/Apathya hint — the only ones that should
     be sent to the LLM Apathya classifier. Curated conditions are authoritative and
@@ -711,7 +734,7 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
     name = user_profile.get("name") or user_profile.get("full_name") or "the patient"
 
     diet_type = diet_prefs.get("dietary_type") or "vegetarian"
-    allergies = diet_prefs.get("food_allergies") or []
+    allergies = diet_allergies(user_profile, diet_prefs)
     intolerances = diet_prefs.get("food_intolerances") or []
     gut = diet_prefs.get("gut_health_issue") or "healthy"
     goal = diet_prefs.get("diet_goal") or "general_wellness"
