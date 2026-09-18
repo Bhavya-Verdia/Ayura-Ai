@@ -97,10 +97,22 @@ GRAINS = [
       apathya_for=("diabetes", "obesity", "hypothyroid"),
       nutrition=N(346, 6.6, 77.0, 1.2, 2.4, source="usda"), **_G),
 
-    F("Upma", id="upma", prep_state="cooked",
+    # The base grain is this row's whole clinical content, so it belongs in the
+    # identity — the same reason Ardraka and Shunthi are two rows and not one
+    # `ginger`. Named `upma` alone, the derived scan term was the bare word, and it
+    # fired on "Vegetable Oats Upma" for a diabetic: a meal whose base is Yava, which
+    # the library prescribes for exactly that patient. Upma is a dish form; semolina
+    # is the dravya, and only the semolina one is Apathya in Prameha.
+    F("Rava Upma (Semolina Upma)", id="upma_rava", prep_state="cooked",
       rasa=("madhura",), guna=("guru", "snigdha"), virya="ushna", vipaka="madhura",
       dosha=(-1, 0, 1), ritu=("shishira", "hemanta", "varsha"),
-      apathya_for=("diabetes", "obesity"), allergen=True,
+      # `hypothyroid` is inherited from `semolina_rava`, this row's own base. The
+      # preparation is a tadka on sooji and adds nothing that changes the gluten, so
+      # a row that is Apathya as the grain cannot be Pathya as the dish. The two
+      # disagreed until the rename made them collide, and the term-agreement rule
+      # then withheld `rava` and `semolina` for hypothyroid from both — a claim going
+      # quiet, which is what that rule exists to make visible.
+      apathya_for=("diabetes", "obesity", "hypothyroid"), allergen=True,
       nutrition=N(145, 3.5, 24.0, 4.0, 1.5, source="authored_estimate"),
       **{**_G, "ref": "modern_extrapolated",
          "varga": "A preparation, not a dravya. Reasoned from Godhuma sooji with a "

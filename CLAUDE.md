@@ -258,6 +258,48 @@ delivery into band — the reconciler is the backstop, scaling `macros_approx` *
 portion text together** (raising one without the other produces a plan that lies to
 the person cooking it). Fasting days are exempt: Upavasa is the therapy, not a miss.
 
+#### Diet: a dish form is not a dravya
+`diet_foods.json` rows are named for the dravya, and where the preparation changes the
+clinical answer the preparation is part of the **id** — `ginger_fresh` / `ginger_dry`,
+not one `ginger`. `upma` broke that rule: the row is authored from Godhuma sooji (its
+own `nighantu_ref` says so) and is Apathya in Prameha for the semolina, but the
+derived scan term was the bare word, which fired on **"Vegetable Oats Upma"** for a
+diabetic — a meal whose base is Yava, which the library prescribes for exactly that
+patient. It is `upma_rava` now, and oats, millet and daliya upma pass.
+
+`paratha` is the near-miss that is *not* the same bug: its clinical driver is the
+sneha every paratha is cooked in, not the flour, so the bare term is right there.
+
+Renaming it surfaced a second thing. `_term_owners` matches by substring, so `rava`
+(owned by `semolina_rava`) now also matched `upma_rava`, and the two rows **disagreed
+about hypothyroid** — the grain carried it, the dish made of the grain did not. The
+term-agreement rule did exactly what it is for and withheld `rava` and `semolina` for
+hypothyroid from both, and `test_the_number_of_withheld_claims_is_pinned` went 69 → 71
+to say so. The fix is in the data: a preparation that adds nothing but a tadka cannot
+be Pathya where its base is Apathya, so `upma_rava` inherits the claim and the count
+returns to 69.
+
+**Still open for the reviewer:** the hypothyroid-gluten claim is carried by 2 of the 6
+wheat rows (`roti_whole_wheat`, `semolina_rava`, and now `upma_rava`) and not by
+`paratha`, `daliya` or `bread_whole_wheat`. It is a modern extrapolation rather than a
+classical one, so whether it belongs on all of them is a clinical call and is left in
+the packet rather than settled here.
+
+Renames go in `diet_library.spec.RENAMED`. `build_diet_library --write` refuses when a
+row in the KB is no longer authored — that is how a food gets silently dropped from
+the engine and from the RAG corpus, and a corpus that returns less is not an error —
+and a rename is indistinguishable from a drop from outside, so it has to be written
+down to be accepted. **A rename changes the seeded nutrition corpus: reseed.**
+
+#### Diet: a retrieval outage degrades the plan, it does not replace it
+The five `rag_pipeline.query` calls in `generate_diet_plan_llm` sat directly under the
+function's outer `except`, which returns None and sends the caller to the rule engine.
+A ChromaDB restart therefore cost the plan the therapeutic arc, the per-meal energy
+budget and the condition coaching — everything the LLM path adds — with nothing on
+screen to say why. Retrieval has its own handler now, partial context is kept, and
+`test_diet_rag_degrades` parses the AST, because no behavioural test notices this
+until ChromaDB is actually down in production.
+
 #### Diet inputs: one list per declaration, built in one place
 Two helpers in `diet_brief_builder` are the only way the diet path builds a list of
 what the patient declared, and the brief, the RAG query, the arc, the rule engine and
