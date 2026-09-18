@@ -21,12 +21,26 @@ from __future__ import annotations
 import re
 from functools import lru_cache
 
-# Words that merely START with a short allergen term but are NOT that allergen.
-# Prefix matching alone would flag an egg allergy on "eggplant"/"eggless" or a
-# mustard ("rai") allergy on "raita"/"raisin"; these are dropped explicitly.
+# Words that merely START with a short term but are NOT that food. `_term_regex`
+# allows a suffix on purpose — "milk" has to match "milkshake" — so every short term
+# needs checking against the longer words it swallows. Prefix matching alone would
+# flag an egg allergy on "eggplant"/"eggless", a mustard ("rai") allergy on
+# "raita"/"raisin", and butter ("makhan") on "makhana", which is a fox nut.
+#
+# Read by `_term_in_text`, so it covers the vernacular expansion below as well as the
+# allergen terms it was written for. Most prefix collisions there are benign because
+# the longer word is the SAME food in Sanskrit — `badam`/`badama`, `palak`/`palakya`,
+# `til`/`tila`, `chana`/`chanaka` — and only a collision between two different foods
+# belongs here.
 _ALLERGEN_FALSE_FRIENDS: dict[str, frozenset[str]] = {
     "egg": frozenset({"eggplant", "eggplants", "eggless"}),
     "rai": frozenset({"raita", "raisin", "raisins"}),
+    # Makhana is Phool Makhana, the fox nut — a different food from Makhan, butter,
+    # and one this app prescribes as a light snack. It flagged a plain day of
+    # Chilla, Khichdi, Makhana and Lauki Sabzi as containing butter.
+    "makhan": frozenset({"makhana", "makhane", "makhani"}),
+    # Alubukhara is a dried plum, not Alu the potato.
+    "alu": frozenset({"alubukhara", "alubukhare"}),
 }
 
 
@@ -173,6 +187,83 @@ def _norm(text: str) -> str:
     return (text or "").lower()
 
 
+# ── The vernacular the prompt asks for, and the English the gates are written in ──
+# `diet_llm_generator`'s system prompt says "Generate REAL Indian meal names", so the
+# model writes "Dahi Bhalla with imli chutney" and "Gud ki Kheer". Every scan term is
+# English or Sanskrit, and `_term_in_text` is a word match — so the SAME FOOD was
+# caught or missed depending on which name the model happened to reach for:
+#
+#     curd -> caught        dahi  -> missed
+#     tamarind -> caught    imli  -> missed
+#     pickle -> caught      achar -> missed
+#     jaggery -> caught     gud   -> missed
+#     cabbage -> caught     patta gobhi -> missed
+#
+# The library carries Sanskrit (`dadhi`) because its rows are named that way, and the
+# curated tables carry English. Neither carries the Hindi-Urdu register the prompt
+# actually requests, which is the one a meal name is most likely to be written in.
+#
+# Canonical forms are APPENDED to the searchable text rather than substituted, so a
+# term that already matched cannot stop matching. Display text is untouched — this
+# only affects what the scans read.
+#
+# Every canonical here must be a word some gate actually holds, or the entry is
+# decoration: `chole -> chickpeas` looked right and fired nothing, because the tables
+# say `chana`. `test_no_vernacular_entry_is_inert` runs the real matcher over the
+# whole term vocabulary. Words the tables exclude ON PURPOSE stay out of this table
+# for the same reason they are excluded there — `namak -> salt`, `chai -> tea`,
+# `chawal -> rice` and `nimbu -> lemon` are each in every other meal.
+_VERNACULAR: dict[str, str] = {
+    # dairy
+    "dahi": "curd", "dahee": "curd", "chaach": "buttermilk", "chhach": "buttermilk",
+    "chaas": "buttermilk", "makhan": "butter", "malai": "cream", "khoya": "mawa",
+    "doodh": "milk", "dudh": "milk", "ghee": "ghee", "paneer": "paneer",
+    # souring and preserving
+    "imli": "tamarind", "achar": "pickle", "aachar": "pickle", "achaar": "pickle",
+    "sirka": "vinegar", "kachcha aam": "raw mango",
+    # sweeteners
+    "gud": "jaggery", "gur": "jaggery", "shakkar": "sugar", "cheeni": "sugar",
+    "chini": "sugar", "misri": "sugar", "sharkara": "sugar",
+    # pulses — the Shimbi varga this app restricts most
+    "chole": "chana chhole", "chhole": "chana", "chana": "chana",
+    "kabuli chana": "chana", "kala chana": "chana", "besan": "chickpea flour",
+    "rajma": "kidney beans", "lobia": "black eyed peas", "urad": "urad dal",
+    "arhar": "toor dal", "tuvar": "toor dal", "masoor": "masoor dal",
+    "matar": "green peas",
+    # vegetables
+    "patta gobhi": "cabbage", "bandh gobhi": "cabbage", "phool gobhi": "cauliflower",
+    "aloo": "potato", "alu": "potato", "arbi": "colocasia", "arvi": "colocasia",
+    "kachalu": "colocasia", "palak": "spinach", "baingan": "brinjal", "kaddu": "pumpkin", "karela": "bitter gourd",
+    "shakarkandi": "sweet potato", "shakarkand": "sweet potato", "kela": "banana", "chukandar": "beetroot",
+    "kathal": "jackfruit", "kheera": "cucumber", "khira": "cucumber",
+    # grains and preparations "atta": "wheat", "maida": "refined flour", "suji": "semolina",
+    "sooji": "semolina", "rava": "semolina", "dalia": "broken wheat",
+    "bhature": "fried bread", "puri": "fried bread", "poori": "fried bread",
+    "pakora": "deep fried", "pakoda": "deep fried", "samosa": "deep fried",
+    "bhujia": "deep fried", "tali": "deep fried", "talahua": "deep fried",
+    # other "kadak chai": "strong tea",
+    "mirch": "chilli", "lal mirch": "chilli", "hari mirch": "chilli",
+    "kaju": "cashew", "badam": "almond", "akhrot": "walnut", "pista": "pistachio",
+    "mungfali": "peanut", "moongphali": "peanut", "til": "sesame",
+    "anda": "egg", "murgh": "chicken", "machli": "fish", "gosht": "meat",
+}
+
+# Longest first, so "patta gobhi" is matched before "gobhi" could be.
+_VERNACULAR_ORDER = tuple(sorted(_VERNACULAR, key=len, reverse=True))
+
+
+def _expand_vernacular(text: str) -> str:
+    """Append the canonical English for any vernacular food word present.
+
+    Appended, never substituted: the original text keeps matching whatever it already
+    matched, and the canonical form adds what it could not.
+    """
+    if not text:
+        return text
+    found = [_VERNACULAR[v] for v in _VERNACULAR_ORDER if _term_in_text(v, text)]
+    return f"{text} {' '.join(found)}" if found else text
+
+
 def _meal_text(meal) -> str:
     """Flatten a meal into a single lowercase searchable string.
 
@@ -182,7 +273,7 @@ def _meal_text(meal) -> str:
       - list of food-item dicts (rule engine four_week_plan: [{name, id, ...}])
     """
     if isinstance(meal, str):
-        return _norm(meal)
+        return _expand_vernacular(_norm(meal))
     if isinstance(meal, dict):
         parts = [
             str(meal.get("meal_name", "")),
@@ -197,7 +288,7 @@ def _meal_text(meal) -> str:
             str(meal.get("recipe", "")),
             " ".join(meal.get("key_ingredients", []) or []),
         ]
-        return _norm(" ".join(parts))
+        return _expand_vernacular(_norm(" ".join(parts)))
     if isinstance(meal, list):
         parts = []
         for item in meal:
@@ -206,7 +297,7 @@ def _meal_text(meal) -> str:
                 parts.append(" ".join(item.get("key_ingredients", []) or []))
             elif isinstance(item, str):
                 parts.append(item)
-        return _norm(" ".join(parts))
+        return _expand_vernacular(_norm(" ".join(parts)))
     return ""
 
 
@@ -1377,7 +1468,7 @@ def apply_advisory_safety(
         def _hits(text: str, *, negation_aware: bool,
                   allergens_absolute: bool = False) -> list[dict]:
             out: list[dict] = []
-            low = str(text or "").lower()
+            low = _expand_vernacular(str(text or "").lower())
             if not low:
                 return out
             for canon, proto in active.items():
