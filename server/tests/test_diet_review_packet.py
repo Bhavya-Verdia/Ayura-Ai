@@ -123,3 +123,40 @@ def test_the_packet_does_not_claim_anything_is_reviewed():
     assert not [r for r in KB if r.get("reviewed")], "a row is marked reviewed"
     md = (GOLDEN / "vaidya_diet_packet.md").read_text(encoding="utf-8")
     assert "`reviewed: false`" in md
+
+
+def test_contested_claims_reach_the_reviewer():
+    """Garlic is Pathya in Adhmana because Lashuna is the great Vatahara named for
+    Gulma and Anaha; it is also the first food a modern FODMAP protocol removes. Two
+    frameworks, opposite conclusions, both with standing.
+
+    `screen` cannot catch this — it asks whether a claim contradicts the row carrying
+    it, and garlic's claim agrees with garlic's own profile perfectly. Picking a
+    framework quietly is how a contested claim starts looking settled, so these go in
+    front of the Vaidya with both readings stated and an empty ruling column.
+    """
+    import csv
+    from pathlib import Path
+
+    path = (Path(__file__).resolve().parent.parent / "data" / "golden"
+            / "vaidya_diet_contested_claims.csv")
+    rows = list(csv.DictReader(path.open(encoding="utf-8")))
+    assert rows, "the contested tier is empty"
+
+    by_food = {r["food_id"]: r for r in rows}
+    assert "garlic" in by_food and by_food["garlic"]["library_says"] == "pathya"
+    for row in rows:
+        assert row["classical_reading"].strip()
+        assert row["modern_reading"].strip()
+        assert row["vaidya_ruling"] == "", (
+            f"{row['food_id']} already carries a ruling — this column is the "
+            f"reviewer's, not the author's")
+
+
+def test_the_packet_tells_the_reviewer_to_start_with_the_contested_file():
+    from pathlib import Path
+
+    md = (Path(__file__).resolve().parent.parent / "data" / "golden"
+          / "vaidya_diet_packet.md").read_text(encoding="utf-8")
+    assert "vaidya_diet_contested_claims.csv" in md
+    assert "rule on these first" in md

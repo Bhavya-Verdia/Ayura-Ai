@@ -17,6 +17,23 @@ const STEPS = ['Basics', 'Physical', 'Goals & Dosha']
 
 // Canonical Vikriti symptom clusters — unified with the Dosha Quiz and weekly
 // Check-In so stored current_symptoms always match the dosha engine + yoga boosts.
+// The canonical keys of `FOOD_ALLERGIES` in preferences_schema, which is also what
+// `ALLERGEN_TERMS` in ahara_safety expands. One vocabulary, so an allergy declared
+// here is enforceable everywhere rather than being a free-text string that substring
+// matching cannot see through.
+const FOOD_ALLERGIES = [
+  { id: 'dairy',      label: 'Dairy' },
+  { id: 'gluten',     label: 'Gluten / wheat' },
+  { id: 'nuts_tree',  label: 'Tree nuts' },
+  { id: 'peanuts',    label: 'Peanuts' },
+  { id: 'soy',        label: 'Soy' },
+  { id: 'eggs',       label: 'Eggs' },
+  { id: 'fish',       label: 'Fish' },
+  { id: 'shellfish',  label: 'Shellfish' },
+  { id: 'sesame',     label: 'Sesame' },
+  { id: 'mustard',    label: 'Mustard' },
+]
+
 const SYMPTOMS = [
   { id: 'anxiety_worry',          label: 'Anxiety or worry' },
   { id: 'trouble_sleeping',       label: 'Trouble sleeping' },
@@ -81,6 +98,15 @@ export default function Onboarding() {
   const [symptoms, setSymptoms]           = useState([])
   const [medications, setMedications]     = useState('')
   const [fitnessLevel, setFitnessLevel]   = useState('')
+  // How much the patient MOVES, which is a different question from how trained they
+  // are. It was hardcoded to 'moderate' below and is the largest single lever in the
+  // diet plan: same body, same goal, the target runs 2040 kcal at `sedentary` and
+  // 3220 at `very_active`. A sedentary desk worker was being prescribed 2630.
+  const [activityLevel, setActivityLevel] = useState('')
+  // Read by the remedies safety filter, the chat agent's system prompt and the Vaidya
+  // PDF export — and collected by no screen, so it was null for every user in
+  // production and none of those three had ever seen one.
+  const [allergies, setAllergies] = useState([])
   const [goal, setGoal]                   = useState('')
   const [dosha, setDosha]                 = useState('')
 
@@ -129,6 +155,7 @@ export default function Onboarding() {
           ...otherCondition.split(',').map(s => s.trim().toLowerCase().replace(/\s+/g, '_')).filter(Boolean),
         ],
         current_symptoms: symptoms,
+        allergies,
         current_medications: medications
           ? medications.split(',').map(e => e.trim()).filter(Boolean)
           : [],
@@ -143,7 +170,7 @@ export default function Onboarding() {
         pregnancy_trimester: gender === 'female' && pregnancyStatus === 'pregnant'
           ? (Number(pregnancyTrimester) || undefined) : undefined,
         fitness_level:  fitnessLevel  || 'beginner',
-        activity_level: 'moderate',
+        activity_level: activityLevel || 'moderate',
         satmya: satmya || undefined,
         // Device IANA timezone — lets the backend seed the default morning
         // reminder at the user's local 07:00 (and future local-time features).
@@ -173,7 +200,12 @@ export default function Onboarding() {
       if (!hasValidAge)  return 'Please enter a valid age.'
       if (!gender)       return 'Please select your gender.'
     }
-    if (which === 1 && !hasValidPhysicalStats) return 'Please enter valid height and weight values.'
+    if (which === 1) {
+      if (!hasValidPhysicalStats) return 'Please enter valid height and weight values.'
+      // Asked rather than assumed: it sets the calorie target the diet plan calls
+      // "a clinical target, not a suggestion".
+      if (!activityLevel) return 'Please choose how active your usual week is.'
+    }
     if (which === 2) {
       if (!goal)  return 'Please choose your primary wellness goal.'
       if (!dosha) return 'Please select your dosha.'
@@ -416,6 +448,32 @@ export default function Onboarding() {
                     </div>
                   </div>
                   <div>
+                    <label>How active is your usual week?</label>
+                    <p className="onb-field-note">
+                      Not how fit you are — how much you move. This sets your daily
+                      calorie target.
+                    </p>
+                    <div className="onb-grid-3" style={{ marginTop: 8 }}>
+                      {[
+                        { id: 'sedentary',   label: 'Desk-bound',  note: 'little or no exercise' },
+                        { id: 'light',       label: 'Light',       note: '1–2 days a week' },
+                        { id: 'moderate',    label: 'Moderate',    note: '3–5 days a week' },
+                        { id: 'active',      label: 'Active',      note: '6–7 days a week' },
+                        { id: 'very_active', label: 'Very active',  note: 'physical job or twice daily' },
+                      ].map(a => (
+                        <m.button
+                          key={a.id} type="button"
+                          onClick={() => setActivityLevel(a.id)}
+                          className={`onb-tile ${activityLevel === a.id ? 'selected' : ''}`}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          {a.label}
+                          <span className="onb-tile-note">{a.note}</span>
+                        </m.button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
                     <label>Medical Conditions (optional)</label>
                     <input
                       className="onb-condition-search"
@@ -468,6 +526,24 @@ export default function Onboarding() {
                           key={id} type="button"
                           onClick={() => toggleItem(symptoms, setSymptoms, id)}
                           className={`onb-chip ${symptoms.includes(id) ? 'selected' : ''}`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label>Food Allergies (optional)</label>
+                    <p className="onb-field-note">
+                      These are withheld from every meal, remedy and recommendation we
+                      generate for you.
+                    </p>
+                    <div className="onb-chip-wrap">
+                      {FOOD_ALLERGIES.map(({ id, label }) => (
+                        <button
+                          key={id} type="button"
+                          onClick={() => toggleItem(allergies, setAllergies, id)}
+                          className={`onb-chip ${allergies.includes(id) ? 'selected' : ''}`}
                         >
                           {label}
                         </button>

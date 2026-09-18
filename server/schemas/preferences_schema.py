@@ -25,7 +25,27 @@ EQUIPMENT_OPTIONS = {"bodyweight", "dumbbells", "barbell", "machines", "cables",
                      "kettlebell", "resistance_bands", "cardio_machines", "pool",
                      "jump_rope", "full_gym"}
 YOGA_STYLES = {"hatha", "vinyasa", "restorative", "yin", "power", "ashtanga", "kundalini"}
-DIETARY_TYPES = {"vegetarian", "vegan", "eggetarian", "non_vegetarian", "pescatarian"}
+# The two the app has data for. `data/knowledge_base/diet_foods.json` is 150 authored
+# rows and every one of them is vegetarian — there is no egg, fish or meat row in it,
+# so `apathya_for` / `pathya_for`, the 708 authored (condition, food) claims that gate
+# the primary path, said nothing about any animal food. A `non_vegetarian` patient was
+# offered a choice the library could not honour: the rule engine answered a
+# muscle-support goal with black beans and edamame, and on the LLM path the model
+# invented meals that the authored claim layer could not screen.
+#
+# Offering only what the data can support is the honest version of that. The three
+# withdrawn values are still canonicalised rather than rejected — see
+# `_LEGACY_DIETARY_TYPES` — because a stored preference must not lock a user out of
+# their own plan.
+DIETARY_TYPES = {"vegetarian", "vegan"}
+
+# Withdrawn values, mapped to the strictest thing the library can actually serve.
+# Coerced, never raised: a 422 here is a user who cannot regenerate their diet plan.
+_LEGACY_DIETARY_TYPES = {
+    "eggetarian": "vegetarian",
+    "non_vegetarian": "vegetarian",
+    "pescatarian": "vegetarian",
+}
 FOOD_ALLERGIES = {"gluten", "dairy", "nuts_tree", "peanuts", "soy", "eggs", "shellfish", "fish", "sesame", "mustard"}
 FOOD_INTOLERANCES = {"lactose", "fructose", "histamine", "fodmap"}
 
@@ -187,7 +207,7 @@ class DietPreferences(BaseModel):
     # Dietary type — CRITICAL, filters entire food selection
     dietary_type: str = Field(
         "vegetarian",
-        description="vegetarian / vegan / eggetarian / non_vegetarian / pescatarian"
+        description="vegetarian / vegan"
     )
 
     # Safety filters — NEVER passed to LLM, always hardcoded exclusion
@@ -232,9 +252,12 @@ class DietPreferences(BaseModel):
     @field_validator("dietary_type")
     @classmethod
     def validate_dietary_type(cls, v: str) -> str:
-        if v not in DIETARY_TYPES:
+        key = str(v or "").strip().lower()
+        if key in _LEGACY_DIETARY_TYPES:
+            return _LEGACY_DIETARY_TYPES[key]
+        if key not in DIETARY_TYPES:
             raise ValueError(f"dietary_type must be one of {DIETARY_TYPES}")
-        return v
+        return key
 
     @field_validator("food_allergies")
     @classmethod

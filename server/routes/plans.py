@@ -1002,7 +1002,9 @@ async def get_seasonal_guidance(user: UserDocument = Depends(get_current_user)):
 
     dosha = user.dominant_dosha or "pitta"
     try:
-        return await build_seasonal_guidance(dosha)
+        # The profile, not just the dosha: this card names specific foods and was
+        # blind to the reader's diseases and allergies.
+        return await build_seasonal_guidance(dosha, user.model_dump())
     except Exception as e:
         logger.error("Failed to generate seasonal guidance, returning static fallback: %s", e)
         season = get_current_season()

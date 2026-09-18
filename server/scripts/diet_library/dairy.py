@@ -36,7 +36,7 @@ DAIRY = [
                "rather than a food (Charaka Sutrasthana 27).",
       dosha=(-2, -2, 2), ritu=ALL_RITU,
       pathya_for=("acidity", "anemia", "constipation"),
-      apathya_for=("obesity", "asthma", "hypothyroid", "fatty_liver"),
+      apathya_for=("obesity", "asthma", "hypothyroid", "fatty_liver", "bloating"),
       viruddha_with=("curd_yogurt", "lemon_water", "banana", "fish"),
       nutrition=N(61, 3.2, 4.8, 3.3, 0.0, source="usda"), **_DAIRY),
 
@@ -45,7 +45,7 @@ DAIRY = [
       virya="ushna", vipaka="amla",
       dosha=(-1, 2, 2), ritu=("shishira", "hemanta"),
       pathya_for=("grahani",),
-      apathya_for=("amavata", "psoriasis", "asthma", "acidity", "obesity", "anemia"),
+      apathya_for=("amavata", "psoriasis", "asthma", "acidity", "obesity", "anemia", "bloating"),
       viruddha_with=("milk_full_fat", "banana", "fish"),
       nutrition=N(61, 3.5, 4.7, 3.3, 0.0, source="usda"), **_DAIRY),
 
@@ -55,7 +55,7 @@ DAIRY = [
                "Takra is prescribed where Dadhi, made from the same milk, is withheld "
                "(Charaka Chikitsa 15).",
       dosha=(-1, 0, -1), ritu=ALL_RITU,
-      pathya_for=("grahani", "ibs", "arsha", "obesity", "fatty_liver"),
+      pathya_for=("grahani", "ibs", "arsha", "obesity", "fatty_liver", "bloating"),
       apathya_for=("acidity",),
       nutrition=N(40, 3.3, 4.8, 0.9, 0.0, source="usda"), **_DAIRY),
 
@@ -64,7 +64,7 @@ DAIRY = [
       vipaka="madhura",
       dosha=(-1, -1, 2), ritu=("shishira", "hemanta", "vasanta"),
       pathya_for=("anemia",),
-      apathya_for=("obesity", "high_cholesterol", "hypothyroid", "asthma"),
+      apathya_for=("obesity", "high_cholesterol", "hypothyroid", "asthma", "bloating"),
       nutrition=N(265, 18.3, 1.2, 20.8, 0.0, source="usda"), **_DAIRY),
 
     F("Goghrita (Cow's Ghee)", id="ghee",
@@ -74,7 +74,7 @@ DAIRY = [
                "that makes Ghrita the one fat given to a weak Agni rather than withheld "
                "from it (Charaka Sutrasthana 13). Ojas-vardhaka.",
       dosha=(-2, -2, 1), ritu=ALL_RITU,
-      pathya_for=("constipation", "acidity", "anemia", "migraine"),
+      pathya_for=("constipation", "acidity", "anemia", "migraine", "bloating"),
       apathya_for=("obesity", "high_cholesterol", "fatty_liver"),
       viruddha_with=("honey",),
       nutrition=N(900, 0.0, 0.0, 99.5, 0.0, source="usda"), **_DAIRY),
@@ -94,7 +94,7 @@ DAIRY = [
       prabhava="Srotoshodhaka — it clears the channels, which is why the watery part "
                "of curd is given where curd itself blocks them.",
       dosha=(-1, 0, -1), ritu=ALL_RITU,
-      pathya_for=("obesity", "constipation", "fatty_liver"),
+      pathya_for=("obesity", "constipation", "fatty_liver", "bloating"),
       apathya_for=("acidity",),
       nutrition=N(27, 0.85, 5.1, 0.36, 0.0, source="usda"), **_DAIRY),
 
@@ -103,13 +103,13 @@ DAIRY = [
       vipaka="madhura",
       dosha=(-2, -1, 2), ritu=("shishira", "hemanta"),
       pathya_for=("anemia",),
-      apathya_for=("obesity", "high_cholesterol", "fatty_liver", "hypothyroid"),
+      apathya_for=("obesity", "high_cholesterol", "fatty_liver", "hypothyroid", "bloating"),
       nutrition=N(340, 2.8, 2.8, 36.1, 0.0, source="usda"), **_DAIRY),
 
     F("Cottage Cheese", id="cottage_cheese",
       rasa=("madhura", "amla"), guna=("guru", "snigdha"), virya="shita", vipaka="madhura",
       dosha=(-1, 0, 2), ritu=("shishira", "hemanta", "vasanta"),
-      apathya_for=("obesity", "hypothyroid", "asthma"),
+      apathya_for=("obesity", "hypothyroid", "asthma", "bloating"),
       nutrition=N(98, 11.1, 3.4, 4.3, 0.0, source="usda"),
       **{**_DAIRY, "ref": "modern_extrapolated",
          "varga": "No classical entry. Reasoned from Kilata (curdled milk solids), with "
@@ -123,6 +123,6 @@ DAIRY = [
                "Kapha-hara. The preparation, not the milk, decides.",
       dosha=(-1, -1, 2), ritu=("grishma", "sharad"),
       pathya_for=("acidity",),
-      apathya_for=("obesity", "hypothyroid", "asthma", "fatty_liver"),
+      apathya_for=("obesity", "hypothyroid", "asthma", "fatty_liver", "bloating"),
       nutrition=N(110, 3.0, 17.0, 3.0, 0.0, source="authored_estimate"), **_DAIRY),
 ]

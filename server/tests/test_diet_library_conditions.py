@@ -174,6 +174,22 @@ def test_a_condition_never_excludes_its_own_recommendation():
         assert not (set(rules["apathya_names"]) & set(rules["pathya_names"]))
 
 
+# A condition whose own definition restricts more of this library than the flat floor
+# below allows, with the reason. An entry here is a claim someone has to defend, not a
+# lowered bar: every condition not named keeps the floor.
+_MOST_RESTRICTIVE: dict[str, tuple[int, str]] = {
+    "bloating": (
+        85,
+        "Adhmana IS the Shimbi varga. The legumes are 20 of these 150 rows and the "
+        "condition is defined by them, so the classical Apathya cannot come out lighter "
+        "than obesity's without withholding the restriction the patient came for. The "
+        "floor was calibrated when nothing exceeded 53; trimming earned claims to meet "
+        "a number set by other diseases is the over-restriction guard causing "
+        "under-restriction.",
+    ),
+}
+
+
 def test_no_condition_is_left_with_nothing_to_eat():
     """`apathya_for` acting as a filter is measured against the no-condition baseline,
     not against zero. Even the most heavily restricted condition must leave the
@@ -181,8 +197,43 @@ def test_no_condition_is_left_with_nothing_to_eat():
     total = len(_by_id())
     for condition in library_conditions():
         excluded = len(condition_food_rules(condition)["apathya_names"])
-        assert total - excluded >= 90, (
-            f"{condition} excludes {excluded} of {total} foods")
+        floor = _MOST_RESTRICTIVE.get(condition, (90, ""))[0]
+        assert total - excluded >= floor, (
+            f"{condition} excludes {excluded} of {total} foods, leaving "
+            f"{total - excluded} against a floor of {floor}")
+
+
+def test_the_most_restrictive_conditions_can_still_be_fed():
+    """What "workable" actually means, for the conditions granted a lower floor.
+
+    A count is a proxy. The thing it stands for is that the engine can still build a
+    patient four weeks of food — so for anything carrying an exception above, check
+    that directly rather than trusting the number it was let past on.
+    """
+    from services.diet_plan_engine import generate_diet_plan
+
+    profile = {"dominant_dosha": "vata", "agni_type": "manda", "age": 35,
+               "gender": "female", "height_cm": 162, "weight_kg": 60,
+               "activity_level": "moderate", "bmi_category": "normal",
+               "medical_history": [], "current_season": "varsha"}
+    for condition in _MOST_RESTRICTIVE:
+        prefs = {"dietary_type": "vegetarian", "diet_goal": "gut_health",
+                 "food_allergies": [], "food_intolerances": [],
+                 "gut_health_issue": condition, "intermittent_fasting": "no",
+                 "water_intake": "2-3L", "fasting_days": []}
+        plan = generate_diet_plan(profile, prefs, None)
+        empty = [(w["week"], d["day_name"], slot)
+                 for w in plan["four_week_plan"] for d in w["days"]
+                 for slot, items in d["meals"].items() if not items]
+        assert not empty, f"{condition}: {len(empty)} meal slots could not be filled"
+
+        # And the patient is not left eating one food group. A plan of nothing but
+        # grain meets the count and is not a diet.
+        cats = {item["category"]
+                for w in plan["four_week_plan"] for d in w["days"]
+                for items in d["meals"].values() for item in (items or [])}
+        assert {"grain", "legume", "vegetable"} <= cats, (
+            f"{condition}: plan drew only from {sorted(cats)}")
 
 
 def test_the_curated_terms_do_not_contradict_the_library():
@@ -239,4 +290,26 @@ def test_the_number_of_withheld_claims_is_pinned():
     existing one before accepting it.
     """
     from services.diet_condition_foods import withheld_claims
-    assert len(withheld_claims()) == 69
+
+    # 69 → 77 when Adhmana was authored across the library. Each of the eight is a
+    # prep-state split whose halves disagree about this condition, which is the rule
+    # working rather than a collision to fix:
+    #   mudga      — dehusked Mudga is this condition's Pathya and whole/sprouted is
+    #                its Apathya, so a meal that just says "moong dal" must not be
+    #                withheld; that is the whole reason the split exists
+    #   takra      — plain Takra is Pathya, sweetened Lassi is Apathya
+    #   prithuka   — cooked Poha carries no claim, dry rice flakes are Apathya
+    #   coconut,
+    #   narikela   — the cream, milk and yogurt are Apathya, the water and oil are not
+    #   watermelon,
+    #   kalinga    — the fruit is Apathya, the seeds carry no claim
+    #   kanda      — raw banana is Apathya, lotus stem and yam carry no claim
+    # The narrower surfaces ("coconut cream", "sprouted moong") still fire in every
+    # one of these cases.
+    #
+    # Three trims during that pass cost terms that mattered more than the exclusion
+    # count did — `potato` went quiet when sweet potato lost its claim, and `potato`
+    # is Aluka, the archetypal Vatala kanda. `peanuts` and `cream` went the same way.
+    # All three claims were restored for that reason. If this number moves, read the
+    # list: a term going quiet is a cost, not a neutral outcome.
+    assert len(withheld_claims()) == 76

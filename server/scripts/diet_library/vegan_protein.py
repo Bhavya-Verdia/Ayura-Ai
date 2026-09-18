@@ -45,7 +45,7 @@ VEGAN_PROTEIN = [
       rasa=("madhura", "kashaya"), guna=("guru", "picchila"), virya="shita",
       vipaka="madhura",
       dosha=(1, -1, 1), ritu=("grishma", "sharad"),
-      apathya_for=("hypothyroid", "thyroid", "ibs", "pcos"), allergen=True,
+      apathya_for=("hypothyroid", "thyroid", "ibs", "pcos", "bloating"), allergen=True,
       nutrition=N(33, 2.8, 1.8, 1.6, 0.4, source="usda"),
       ref="modern_extrapolated",
       varga="No classical entry; the soybean itself is absent from the nighantus. "
@@ -57,7 +57,7 @@ VEGAN_PROTEIN = [
       rasa=("madhura",), guna=("guru", "snigdha", "picchila"), virya="shita",
       vipaka="madhura",
       dosha=(-1, -1, 2), ritu=("shishira", "hemanta", "vasanta"),
-      apathya_for=("diabetes", "obesity"),
+      apathya_for=("diabetes", "obesity", "bloating"),
       nutrition=N(43, 0.8, 7.0, 1.3, 0.8, source="usda"),
       ref="modern_extrapolated",
       varga="No classical entry. Reasoned from Yava Varga — a madhura, picchila grain "
@@ -68,7 +68,7 @@ VEGAN_PROTEIN = [
     F("Coconut Yogurt", id="coconut_yogurt",
       rasa=("madhura", "amla"), guna=("guru", "snigdha"), virya="ushna", vipaka="amla",
       dosha=(-1, 1, 1), ritu=("shishira", "hemanta"),
-      apathya_for=("amavata", "psoriasis", "acidity", "obesity"),
+      apathya_for=("amavata", "psoriasis", "acidity", "obesity", "bloating"),
       nutrition=N(97, 0.9, 7.4, 7.4, 0.9, source="authored_estimate"),
       ref="modern_extrapolated",
       varga="No classical entry. Reasoned as Narikela Ksheera taken through the "
@@ -80,7 +80,7 @@ VEGAN_PROTEIN = [
       rasa=("madhura", "kashaya"), guna=("guru", "picchila"), virya="shita",
       vipaka="madhura",
       dosha=(1, -1, 1), ritu=("grishma", "sharad"),
-      apathya_for=("hypothyroid", "thyroid", "ibs", "pcos"), allergen=True,
+      apathya_for=("hypothyroid", "thyroid", "ibs", "pcos", "bloating"), allergen=True,
       nutrition=N(76, 8.1, 1.9, 4.8, 0.3, source="usda"),
       ref="modern_extrapolated",
       varga="No classical entry. Reasoned from the Shimbi Varga curdled as Kilata is — "
@@ -96,7 +96,7 @@ VEGAN_PROTEIN = [
       # than on anything the texts say about a dravya they never describe. The
       # fermentation concern is stated where it belongs, as an apathya.
       dosha=(1, 0, -2), ritu=("varsha", "sharad", "hemanta"),
-      pathya_for=("anemia",), apathya_for=("migraine", "psoriasis", "amavata"),
+      pathya_for=("anemia",), apathya_for=("migraine", "psoriasis", "amavata", "bloating"),
       nutrition=N(385, 45.0, 36.0, 5.0, 21.0, source="usda"),
       ref="modern_extrapolated",
       varga="No classical entry. A dried fermented product with no dravya analogue; "
@@ -109,7 +109,7 @@ VEGAN_PROTEIN = [
       vipaka="madhura",
       dosha=(-2, -2, 2), ritu=("grishma", "sharad"),
       pathya_for=("acidity",),
-      apathya_for=("obesity", "high_cholesterol", "hypothyroid", "fatty_liver"),
+      apathya_for=("obesity", "high_cholesterol", "hypothyroid", "fatty_liver", "bloating"),
       nutrition=N(330, 3.6, 6.6, 34.7, 2.2, source="usda"),
       ref="bhavaprakasha", varga="Amradi Phala", **_VP),
 
@@ -119,7 +119,7 @@ VEGAN_PROTEIN = [
                "sweet nut the texts warn against in Pitta, and blending it into a cream "
                "concentrates rather than tempers that.",
       dosha=(-2, 1, 2), ritu=("shishira", "hemanta"),
-      apathya_for=("acidity", "obesity", "high_cholesterol", "psoriasis"), allergen=True,
+      apathya_for=("acidity", "obesity", "high_cholesterol", "psoriasis", "bloating"), allergen=True,
       nutrition=N(250, 8.0, 14.0, 20.0, 1.5, source="authored_estimate"),
       ref="modern_extrapolated",
       varga="No classical entry for the preparation. Reasoned from Kaju (Vatadi Varga) "
@@ -135,7 +135,7 @@ VEGAN_PROTEIN = [
                "carried to the milk by extrapolation.",
       dosha=(-1, 1, 0), ritu=("shishira", "hemanta"),
       pathya_for=("pcos", "constipation", "high_cholesterol"),
-      apathya_for=("acidity", "psoriasis"),
+      apathya_for=("acidity", "psoriasis", "bloating"),
       nutrition=N(25, 0.0, 1.5, 2.5, 0.0, source="usda"),
       ref="modern_extrapolated",
       varga="No classical entry. Reasoned from Atasi (Uma Varga), which is ushna virya "

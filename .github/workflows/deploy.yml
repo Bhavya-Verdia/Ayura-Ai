@@ -126,3 +126,28 @@ jobs:
             echo "::error::/api/health reports $served, not ${{ github.sha }} — the running container is not this build"
             exit 1
           fi
+
+      - name: Seed the RAG corpus from this build's knowledge base
+        # The deploy did not seed. `build_vectors.py` is content-addressed and
+        # idempotent — it writes only what changed and never empties a collection —
+        # so running it every deploy is a no-op except when a knowledge-base file
+        # actually moved, and leaving it manual is how the corpus went stale.
+        #
+        # It went stale for real: renaming `upma` to `upma_rava` changed three
+        # nutrition documents, and authoring Adhmana across the library changed 99
+        # more. Nothing would have failed. Plans are built by the deterministic
+        # engines, so only RAG context drifts, and a corpus that answers from a food
+        # the engine no longer has is not an error anywhere.
+        run: |
+          ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=accept-new "root@$DEPLOY_HOST" \
+            "cd $REMOTE_DIR \
+             && docker compose exec -T api python scripts/build_vectors.py"
+
+      - name: Verify the corpus matches the knowledge base
+        # The seeder's own success line is not evidence, for the same reason the
+        # deploy's is not. `--check` reports drift and exits non-zero without
+        # writing, so this asks the store what it holds.
+        run: |
+          ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=accept-new "root@$DEPLOY_HOST" \
+            "cd $REMOTE_DIR \
+             && docker compose exec -T api python scripts/build_vectors.py --check"

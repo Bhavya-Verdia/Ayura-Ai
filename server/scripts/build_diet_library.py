@@ -30,6 +30,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from diet_library import schema  # noqa: E402
+from diet_library.spec import RENAMED  # noqa: E402
 from diet_library.beverages import BEVERAGES  # noqa: E402
 from diet_library.dairy import DAIRY  # noqa: E402
 from diet_library.fruits import FRUITS  # noqa: E402
@@ -85,7 +86,11 @@ def coverage() -> tuple[set[str], set[str], set[str]]:
     """(authored, still derived, authored-but-not-in-the-current-KB)."""
     authored = {f["id"] for f in library()}
     existing = {f["id"] for f in current_kb()}
-    return authored & existing, existing - authored, authored - existing
+    # A renamed row is not a derived one left behind. Without this, a rename is
+    # indistinguishable from a drop and `--write` refuses forever; with it, the
+    # rename had to be written down in `spec.RENAMED` to be accepted.
+    renamed_away = {old for old, new in RENAMED.items() if new in authored}
+    return authored & existing, (existing - authored) - renamed_away, authored - existing
 
 
 def report() -> int:

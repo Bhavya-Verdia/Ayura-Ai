@@ -35,7 +35,7 @@ FRUITS = [
                "for Kadali, and the reason banana with milk is named Viruddha.",
       dosha=(-1, 0, 2), ritu=("grishma", "sharad"),
       pathya_for=("acidity", "constipation", "hypertension"),
-      apathya_for=("diabetes", "obesity", "asthma", "hypothyroid"),
+      apathya_for=("diabetes", "obesity", "asthma", "hypothyroid", "bloating"),
       viruddha_with=("milk_full_fat", "curd_yogurt"),
       nutrition=N(89, 1.1, 22.8, 0.3, 2.6, source="usda"), **_F),
 
@@ -44,7 +44,7 @@ FRUITS = [
       vipaka="madhura",
       dosha=(1, -1, 0), ritu=("sharad", "hemanta"),
       pathya_for=("high_cholesterol", "diabetes", "acidity"),
-      apathya_for=("ibs", "grahani"),
+      apathya_for=("ibs", "grahani", "bloating"),
       nutrition=N(52, 0.3, 13.8, 0.2, 2.4, source="usda"),
       **{**_F, "prep_state": "raw"}),
 
@@ -64,7 +64,7 @@ FRUITS = [
                "papaya a medicine for a sluggish gut and a uterine stimulant in "
                "pregnancy. Both come from the same Prabhava.",
       dosha=(-1, 1, -1), ritu=("varsha", "sharad"),
-      pathya_for=("constipation", "grahani", "obesity"),
+      pathya_for=("constipation", "grahani", "obesity", "bloating"),
       apathya_for=("pregnancy", "acidity"),
       nutrition=N(43, 0.5, 10.8, 0.3, 1.7, source="usda"), **_F),
 
@@ -75,7 +75,7 @@ FRUITS = [
                "the texts give to all three Doshas, and the one prescribed in Grahani "
                "and in convalescence.",
       dosha=(-1, -1, -1), ritu=("sharad", "hemanta"),
-      pathya_for=("grahani", "anemia", "acidity", "hypertension", "ibs"),
+      pathya_for=("grahani", "anemia", "acidity", "hypertension", "ibs", "bloating"),
       nutrition=N(83, 1.7, 18.7, 1.2, 4.0, source="usda"), **_F),
 
     F("Amalaki (Amla)", id="amla",
@@ -86,7 +86,7 @@ FRUITS = [
                "is given freely in Pitta. Rasayana and tridoshaghna.",
       dosha=(-1, -2, -1), ritu=("sharad", "hemanta", "shishira"),
       pathya_for=("acidity", "diabetes", "anemia", "psoriasis", "high_cholesterol",
-                  "hypothyroid"),
+                  "hypothyroid", "bloating"),
       nutrition=N(44, 0.9, 10.2, 0.6, 4.3, source="usda"), **_F),
 
     F("Narikela (Fresh Coconut)", id="coconut",
@@ -119,7 +119,7 @@ FRUITS = [
       vipaka="madhura",
       dosha=(1, -1, -1), ritu=("hemanta", "shishira"),
       pathya_for=("diabetes", "constipation", "high_cholesterol"),
-      apathya_for=("ibs", "grahani"),
+      apathya_for=("ibs", "grahani", "bloating"),
       nutrition=N(68, 2.6, 14.3, 1.0, 5.4, source="usda"), **_F),
 
     F("Kalinga (Watermelon)", id="watermelon",
@@ -129,7 +129,7 @@ FRUITS = [
                "in urinary heat, and why it is not simply a heavy sweet fruit.",
       dosha=(1, -2, 1), ritu=("grishma",),
       pathya_for=("kidney_disease", "acidity"),
-      apathya_for=("diabetes", "obesity", "ibs"),
+      apathya_for=("diabetes", "obesity", "ibs", "bloating"),
       nutrition=N(30, 0.6, 7.6, 0.2, 0.4, source="usda"), **_F),
 
     F("Nagaranga (Orange)", id="orange",
@@ -155,7 +155,7 @@ FRUITS = [
       vipaka="madhura",
       dosha=(1, -1, 0), ritu=("sharad", "hemanta"),
       pathya_for=("constipation", "high_cholesterol"),
-      apathya_for=("ibs", "grahani"),
+      apathya_for=("ibs", "grahani", "bloating"),
       nutrition=N(57, 0.4, 15.2, 0.1, 3.1, source="usda"), **_F),
 
     F("Jambu (Jamun)", id="jamun",
@@ -166,7 +166,7 @@ FRUITS = [
                "fruit is not.",
       dosha=(2, -1, -2), ritu=("grishma", "varsha"),
       pathya_for=("diabetes", "obesity", "grahani", "high_cholesterol"),
-      apathya_for=("constipation", "ibs"),
+      apathya_for=("constipation", "ibs", "bloating"),
       nutrition=N(60, 0.7, 15.6, 0.2, 0.9, source="ifct2017"), **_F),
 
     F("Draksha (Grapes)", id="grapes",

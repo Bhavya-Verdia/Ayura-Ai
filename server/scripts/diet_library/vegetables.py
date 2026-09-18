@@ -39,7 +39,7 @@ VEGETABLES = [
       vipaka="katu",
       dosha=(2, -1, -1), ritu=("hemanta", "shishira", "vasanta"),
       pathya_for=("anemia", "obesity", "diabetes"),
-      apathya_for=("amavata", "kidney_disease", "ibs"),
+      apathya_for=("amavata", "kidney_disease", "ibs", "bloating"),
       nutrition=N(23, 2.9, 3.6, 0.4, 2.2, source="usda"), **_V),
 
     F("Palakya (Palak)", id="palak",
@@ -47,7 +47,7 @@ VEGETABLES = [
       vipaka="katu",
       dosha=(2, -1, -1), ritu=("hemanta", "shishira", "vasanta"),
       pathya_for=("anemia", "obesity", "diabetes"),
-      apathya_for=("amavata", "kidney_disease", "ibs"),
+      apathya_for=("amavata", "kidney_disease", "ibs", "bloating"),
       nutrition=N(23, 2.9, 3.6, 0.4, 2.2, source="usda"),
       **{**_V, "varga": "Shaka"}),
 
@@ -57,7 +57,7 @@ VEGETABLES = [
                "rule — the leaf is warming where the rasa is not, which is why Methi "
                "greens are a winter Shaka.",
       dosha=(-1, 1, -2), ritu=("hemanta", "shishira"),
-      pathya_for=("diabetes", "obesity", "amavata", "high_cholesterol"),
+      pathya_for=("diabetes", "obesity", "amavata", "high_cholesterol", "bloating"),
       apathya_for=("acidity", "pregnancy"),
       nutrition=N(49, 4.4, 6.0, 0.9, 1.1, source="usda"), **_V),
 
@@ -66,7 +66,7 @@ VEGETABLES = [
       rasa=("tikta", "kashaya"), guna=("laghu", "ruksha"), virya="shita", vipaka="katu",
       dosha=(2, -1, -1), ritu=("hemanta", "shishira"),
       pathya_for=("obesity", "diabetes", "high_cholesterol"),
-      apathya_for=("hypothyroid", "thyroid", "ibs", "grahani"),
+      apathya_for=("hypothyroid", "thyroid", "ibs", "grahani", "bloating"),
       nutrition=N(35, 2.4, 7.2, 0.4, 3.3, source="usda"),
       **{**_V, "ref": "modern_extrapolated",
          "varga": "No nighantu entry. Reasoned from the Shaka Varga at its tikta-kashaya, "
@@ -77,7 +77,7 @@ VEGETABLES = [
       rasa=("kashaya", "madhura"), guna=("laghu", "ruksha"), virya="shita", vipaka="katu",
       dosha=(2, -1, -1), ritu=("hemanta", "shishira"),
       pathya_for=("obesity", "diabetes"),
-      apathya_for=("hypothyroid", "thyroid", "ibs", "grahani", "amavata"),
+      apathya_for=("hypothyroid", "thyroid", "ibs", "grahani", "amavata", "bloating"),
       nutrition=N(25, 1.9, 5.0, 0.3, 2.0, source="usda"),
       **{**_V, "ref": "modern_extrapolated",
          "varga": "No nighantu entry. Reasoned with the other crucifers as laghu, "
@@ -88,7 +88,7 @@ VEGETABLES = [
       rasa=("kashaya", "madhura"), guna=("laghu", "ruksha"), virya="shita", vipaka="katu",
       dosha=(2, -1, -1), ritu=("hemanta", "shishira"),
       pathya_for=("obesity", "diabetes"),
-      apathya_for=("hypothyroid", "thyroid", "ibs", "grahani", "amavata"),
+      apathya_for=("hypothyroid", "thyroid", "ibs", "grahani", "amavata", "bloating"),
       nutrition=N(25, 1.3, 5.8, 0.1, 2.5, source="usda"),
       **{**_V, "ref": "modern_extrapolated",
          "varga": "No nighantu entry. Reasoned with the other crucifers; strongly "
@@ -100,7 +100,7 @@ VEGETABLES = [
       prabhava="Deepana and Grahi — Garjara is warming and binding, which is why it is "
                "a winter root and not the cooling one its madhura rasa suggests.",
       dosha=(-1, 1, -1), ritu=("hemanta", "shishira"),
-      pathya_for=("anemia", "grahani", "constipation"),
+      pathya_for=("anemia", "grahani", "constipation", "bloating"),
       apathya_for=("acidity",),
       nutrition=N(41, 0.9, 9.6, 0.2, 2.8, source="usda"), **_V),
 
@@ -117,14 +117,14 @@ VEGETABLES = [
                "would raise Vata anyway — Aluka is Vatala in the texts, the standard "
                "caution on the tuber, and the reason it is cooked with ajwain.",
       dosha=(2, -1, 1), ritu=("varsha", "sharad", "hemanta"),
-      apathya_for=("diabetes", "obesity", "ibs", "amavata"),
+      apathya_for=("diabetes", "obesity", "ibs", "amavata", "bloating"),
       nutrition=N(77, 2.0, 17.5, 0.1, 2.2, source="usda"), **_V),
 
     F("Shakarkand (Sweet Potato)", id="sweet_potato",
       rasa=("madhura",), guna=("guru", "snigdha"), virya="shita", vipaka="madhura",
       dosha=(-1, -1, 2), ritu=("hemanta", "shishira"),
       pathya_for=("constipation", "anemia"),
-      apathya_for=("diabetes", "obesity", "hypothyroid"),
+      apathya_for=("diabetes", "obesity", "hypothyroid", "bloating"),
       nutrition=N(86, 1.6, 20.1, 0.1, 3.0, source="usda"), **_V),
 
     F("Kanda (Yam)", id="yam",
@@ -142,7 +142,7 @@ VEGETABLES = [
       rasa=("madhura", "kashaya"), guna=("guru", "picchila"), virya="shita",
       vipaka="madhura",
       dosha=(2, -1, 2), ritu=("varsha", "sharad"),
-      apathya_for=("amavata", "ibs", "diabetes", "obesity"),
+      apathya_for=("amavata", "ibs", "diabetes", "obesity", "bloating"),
       nutrition=N(112, 1.5, 26.5, 0.2, 4.1, source="usda"), **_V),
 
     F("Kamala Kanda (Lotus Stem)", id="lotus_stem",
@@ -162,7 +162,7 @@ VEGETABLES = [
                "which is why Alabu is the gourd given in fever, in convalescence and "
                "to a weak Agni.",
       dosha=(0, -2, -1), ritu=("grishma", "varsha", "sharad"),
-      pathya_for=("acidity", "obesity", "kidney_disease", "hypertension", "fatty_liver"),
+      pathya_for=("acidity", "obesity", "kidney_disease", "hypertension", "fatty_liver", "bloating"),
       nutrition=N(14, 0.6, 3.4, 0.0, 0.5, source="usda"), **_V),
 
     F("Koshataki (Ridge Gourd)", id="ridge_gourd",
@@ -203,13 +203,13 @@ VEGETABLES = [
       vipaka="madhura",
       dosha=(1, -2, 1), ritu=("grishma", "sharad"),
       pathya_for=("acidity", "kidney_disease", "hypertension"),
-      apathya_for=("ibs", "grahani", "amavata"),
+      apathya_for=("ibs", "grahani", "amavata", "bloating"),
       nutrition=N(15, 0.7, 3.6, 0.1, 0.5, source="usda"), **_RAW),
 
     F("Zucchini", id="zucchini",
       rasa=("madhura",), guna=("laghu", "drava"), virya="shita", vipaka="madhura",
       dosha=(0, -1, 0), ritu=("grishma", "sharad"),
-      pathya_for=("obesity", "acidity", "kidney_disease"),
+      pathya_for=("obesity", "acidity", "kidney_disease", "bloating"),
       nutrition=N(17, 1.2, 3.1, 0.3, 1.0, source="usda"),
       **{**_V, "ref": "modern_extrapolated",
          "varga": "No nighantu entry. Reasoned from Koshataki and Alabu as a laghu, "
@@ -230,7 +230,7 @@ VEGETABLES = [
                "five of the six rasas and is prescribed where its katu rasa alone would "
                "bar it.",
       dosha=(-2, 2, -2), ritu=("hemanta", "shishira", "varsha"),
-      pathya_for=("amavata", "high_cholesterol", "hypothyroid", "asthma", "obesity"),
+      pathya_for=("amavata", "high_cholesterol", "hypothyroid", "asthma", "obesity", "bloating"),
       apathya_for=("acidity", "psoriasis", "migraine", "pregnancy"),
       nutrition=N(149, 6.4, 33.1, 0.5, 2.1, source="usda"), **_V),
 
@@ -241,7 +241,7 @@ VEGETABLES = [
                "prescribe them differently — this row and `ginger_dry_saunth` are that "
                "distinction.",
       dosha=(-2, 1, -2), ritu=("hemanta", "shishira", "varsha"),
-      pathya_for=("ibs", "grahani", "amavata", "asthma", "constipation"),
+      pathya_for=("ibs", "grahani", "amavata", "asthma", "constipation", "bloating"),
       apathya_for=("acidity", "arsha", "psoriasis"),
       nutrition=N(80, 1.8, 17.8, 0.8, 2.0, source="usda"),
       **{**_V, "prep_state": "fresh", "varga": "Haritakyadi — Ardraka"}),
@@ -277,7 +277,7 @@ VEGETABLES = [
                "given in Amavata and in Shotha where a katu-tikta vegetable would "
                "otherwise be avoided for Vata.",
       dosha=(-1, 1, -2), ritu=("vasanta", "grishma"),
-      pathya_for=("amavata", "obesity", "diabetes", "anemia", "hypothyroid"),
+      pathya_for=("amavata", "obesity", "diabetes", "anemia", "hypothyroid", "bloating"),
       apathya_for=("acidity", "pregnancy"),
       nutrition=N(37, 2.1, 8.5, 0.2, 3.2, source="usda"), **_V),
 
@@ -285,7 +285,7 @@ VEGETABLES = [
       rasa=("kashaya", "madhura"), guna=("guru", "ruksha"), virya="shita", vipaka="katu",
       dosha=(2, -1, -1), ritu=("grishma", "varsha"),
       pathya_for=("grahani", "diabetes", "obesity"),
-      apathya_for=("constipation", "ibs"),
+      apathya_for=("constipation", "ibs", "bloating"),
       nutrition=N(89, 1.1, 22.8, 0.3, 2.6, source="usda"),
       **{**_V, "prep_state": "unripe", "varga": "Shaka — Kadali, unripe"}),
 
@@ -293,7 +293,7 @@ VEGETABLES = [
       rasa=("madhura", "kashaya"), guna=("guru", "picchila"), virya="shita",
       vipaka="madhura",
       dosha=(-1, -1, 2), ritu=("grishma", "varsha"),
-      apathya_for=("diabetes", "obesity", "ibs", "grahani", "hypothyroid"),
+      apathya_for=("diabetes", "obesity", "ibs", "grahani", "hypothyroid", "bloating"),
       nutrition=N(95, 1.7, 23.2, 0.6, 1.5, source="usda"), **_V),
 
     F("Amra (Raw Mango)", id="raw_mango",
@@ -311,7 +311,7 @@ VEGETABLES = [
                "more strongly than the ripe fruit, which is the whole basis of the "
                "pregnancy bar.",
       dosha=(1, 1, -2), ritu=("varsha", "sharad"),
-      pathya_for=("constipation", "obesity", "grahani"),
+      pathya_for=("constipation", "obesity", "grahani", "bloating"),
       apathya_for=("pregnancy", "acidity"),
       nutrition=N(43, 0.5, 10.8, 0.3, 1.7, source="usda"),
       **{**_V, "prep_state": "unripe"}),
@@ -332,7 +332,7 @@ VEGETABLES = [
       vipaka="katu",
       dosha=(2, -1, -1), ritu=("varsha", "sharad"),
       pathya_for=("diabetes", "obesity", "high_cholesterol"),
-      apathya_for=("ibs", "grahani", "amavata", "constipation"),
+      apathya_for=("ibs", "grahani", "amavata", "constipation", "bloating"),
       nutrition=N(16, 3.2, 10.8, 0.4, 3.2, source="ifct2017"), **_V),
 
     F("Asparagus", id="asparagus",
@@ -350,7 +350,7 @@ VEGETABLES = [
       rasa=("madhura", "kashaya"), guna=("guru", "picchila"), virya="shita",
       vipaka="katu",
       dosha=(1, -1, 1), ritu=("varsha", "sharad"),
-      apathya_for=("amavata", "psoriasis", "ibs"),
+      apathya_for=("amavata", "psoriasis", "ibs", "bloating"),
       nutrition=N(22, 3.1, 3.3, 0.3, 1.0, source="usda"),
       **{**_V, "varga": "Shaka — Chatraka. The texts class Chatraka among the foods to "
                         "be avoided, being guru, picchila and Ama-forming; the row "
@@ -359,7 +359,7 @@ VEGETABLES = [
     F("Makka (Sweet Corn)", id="corn_sweet",
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha"), virya="ushna", vipaka="katu",
       dosha=(1, 1, -1), ritu=("varsha", "sharad"),
-      apathya_for=("ibs", "grahani", "acidity"),
+      apathya_for=("ibs", "grahani", "acidity", "bloating"),
       nutrition=N(96, 3.4, 21.0, 1.5, 2.4, source="usda"),
       **{**_V, "varga": "Kudhanya"}),
 ]
