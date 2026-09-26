@@ -976,6 +976,10 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
     # The estimate is the load two reps short of failure, so it is the top of the
     # range: the bottom is where a first session should start.
     lo, hi = _round_load(load * 0.85), _round_load(load)
+    # The bottom of the range cannot be lighter than the bar either: a row quoted
+    # "18–22.5 kg" starts below what an empty bar weighs.
+    if implement == "barbell" and lift in _RACK_LIFTS:
+        lo = max(lo, _EMPTY_BAR_KG)
     # Light isolation rounds to a single plate step and the range collapses —
     # "2–2 kg" reads as a defect rather than a starting point.
     if hi <= lo:

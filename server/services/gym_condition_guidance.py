@@ -69,6 +69,16 @@ CONDITION_GUIDANCE: list[dict] = [
         "source": "ACSM's Guidelines for Exercise Testing and Prescription, 11th ed.",
     },
     {
+        "key": "eye_pressure",
+        "match": ("glaucoma", "retinopathy", "retinal"),
+        "label": "Glaucoma / eye disease",
+        "note": ("Keep your head above your heart — this plan leaves out decline and "
+                 "inverted positions — and breathe out on every effort, because holding "
+                 "your breath raises the pressure inside the eye. Tell your eye doctor you "
+                 "are starting resistance training."),
+        "source": "American Academy of Ophthalmology patient guidance on exercise and glaucoma",
+    },
+    {
         "key": "low_bp",
         "match": ("low_blood_pressure", "hypotension"),
         "label": "Low blood pressure",

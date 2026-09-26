@@ -276,6 +276,7 @@ def test_a_healthy_adult_keeps_the_strength_scheme_they_asked_for():
     ("anemia", "anemia"), ("hyperthyroidism", "thyroid_over"),
     ("chronic_fatigue_syndrome", "fatigue"), ("osteoporosis", "osteoporosis"),
     ("rheumatoid_arthritis", "inflammatory_joint"), ("vertigo", "vertigo"),
+    ("glaucoma", "eye_pressure"),
 ])
 def test_a_condition_where_the_session_is_the_risk_gets_told_so(condition, key):
     """Someone on insulin can do every exercise in the library and still go
@@ -515,3 +516,22 @@ def test_the_prompt_no_longer_asks_for_a_seasonal_cut_the_numbers_do_not_make():
     from services.gym_plan_enricher import SYSTEM_PROMPT
 
     assert "reduce intensity by at least 50%" not in SYSTEM_PROMPT
+
+
+def test_no_barbell_range_starts_below_the_bar():
+    """"Bent Over Barbell Row 18–22.5 kg": the estimate cleared 20 kg, the bottom
+    of the range did not."""
+    import re as _re
+
+    from services.gym_plan_engine import _RACK_LIFTS, _lift_class
+
+    for goal in ("strength", "muscle_gain", "general_fitness", "fat_loss"):
+        plan = generate_gym_plan({**_BASE, "medical_history": ["glaucoma"]},
+                                 {**_PREFS, "gym_goal": goal})
+        for week in plan["four_week_plan"]:
+            for day in week["days"]:
+                for e in day["main_workout"]:
+                    ex = _BY_NAME[e["exercise_name"]]
+                    m = _re.match(r"^([\d.]+)–", e["weight_range"])
+                    if m and ex["equipment"] == "barbell" and _lift_class(ex) in _RACK_LIFTS:
+                        assert float(m.group(1)) >= 20, (goal, e["exercise_name"], e["weight_range"])
