@@ -165,6 +165,49 @@ _COOLDOWN_SUBSTITUTES = [
     _w("Deep belly breathing — 5 breaths"),
 ]
 
+# Balance, for everyone past sixty. WHO's 2020 guidelines ask older adults for
+# "varied multicomponent physical activity that emphasises functional balance and
+# strength training" on three or more days a week, because falls are the injury
+# that ends independence. The engine had strength and nothing else: a 78-year-old
+# got squats and rows and not a minute of standing on one leg. These are the
+# Otago Exercise Programme's balance progressions, which cut falls by about a
+# third in trials, each done beside a counter or a chair back.
+#
+# Four lines a session, rotated by day so the week covers all of them. They pass
+# the same gate as the warm-up.
+_BALANCE_SECONDS = 4 * 60
+_BALANCE = [
+    _w("Supported single-leg stand — hold a counter, 3 × 20 sec each leg; "
+       "progress to fingertip support"),
+    _w("Sit-to-stand from a chair, arms crossed — 2 × 8, slow on the way down",
+       contra=["knee_replacement"]),
+    _w("Heel-to-toe walk beside a wall — 3 lengths of 10 steps", risk=["fall_risk"]),
+    _w("Heel raises holding a chair back — 2 × 12", contra=["bad_ankle"]),
+    _w("Side-stepping along a counter — 2 × 10 steps each way"),
+    _w("Toe raises holding a chair back — 2 × 12", contra=["bad_ankle"]),
+    _w("Clock reach — stand on one leg holding support, touch the other foot to 12, 3 "
+       "and 6 o'clock — 5 each side", risk=["fall_risk"]),
+    _w("Supported backwards walk along a counter — 3 lengths of 10 steps",
+       risk=["fall_risk"]),
+]
+# What remains when the fall-risk progressions are withheld: seated and
+# fully-supported work, which is where Otago starts anyone who needs it.
+_BALANCE_SUBSTITUTES = [
+    _w("Seated marching — 2 × 20, tall posture"),
+    _w("Seated heel and toe raises — 2 × 15"),
+    _w("Supported weight shifts, side to side, both hands on a counter — 2 × 10"),
+    _w("Supported weight shifts, front to back, both hands on a counter — 2 × 10"),
+]
+
+
+def _balance_for(day_num: int, avoid_tags=frozenset(), withhold_impact=False,
+                 is_pregnant=False, risks=frozenset()) -> list:
+    start = ((day_num - 1) * 3) % len(_BALANCE)
+    items = [_BALANCE[(start + i) % len(_BALANCE)] for i in range(4)]
+    return _gate_movements(items, _BALANCE_SUBSTITUTES, frozenset(avoid_tags),
+                           withhold_impact, is_pregnant, frozenset(risks))
+
+
 _FOCUS_WARMUP_TYPE = {
     "full_body": "full", "push": "upper", "pull": "upper",
     "chest_triceps": "upper", "back_biceps": "upper",
@@ -323,9 +366,45 @@ def _intensity_ceiling(user_profile) -> str | None:
             return reason
     if user_profile.get("pregnancy_or_nursing"):
         return "your pregnancy"
-    if _age_group(user_profile.get("age")) == "senior":
+    group = _age_group(user_profile.get("age"))
+    if group == "senior":
         return "joints and blood vessels past sixty"
+    if group == "youth":
+        return "a body that is still growing"
     return None
+
+
+# Under 18. An 11-year-old who had never lifted was written six days a week of
+# 3-5 rep strength sets on a body-part split — the programme of an adult
+# competitor. Youth resistance training is safe and worthwhile (NSCA 2009, AAP
+# 2020, UKSCA 2014), and the same statements agree on its shape: two or three
+# non-consecutive days a week, moderate loads for 8-15 reps, technique before
+# load, and qualified supervision. Older teenagers with a training history can
+# carry a fourth day.
+_YOUTH_MAX_DAYS = 3
+_YOUTH_MAX_DAYS_TRAINED = 4
+_YOUTH_TRAINED_FROM = 16
+
+
+def _youth_day_cap(age, fitness_level) -> int:
+    try:
+        age = int(age)
+    except (TypeError, ValueError):
+        return _YOUTH_MAX_DAYS
+    if age >= _YOUTH_TRAINED_FROM and fitness_level in ("intermediate", "advanced"):
+        return _YOUTH_MAX_DAYS_TRAINED
+    return _YOUTH_MAX_DAYS
+
+
+def _youth_notice(requested: int, built: int) -> str:
+    days = (f"{built} days a week" if built >= requested
+            else f"{built} days a week rather than the {requested} you asked for")
+    return (f"Because you are under 18, this plan trains {days}, with a rest day "
+            "between sessions, uses 8–15 reps at a weight you can move with perfect form, "
+            "and leaves out maximal lifts. That is the guidance for young people who are "
+            "still growing, and resistance training done this way is safe and good for "
+            "you. Learn each lift from a qualified coach or PE teacher and train with an "
+            "adult supervising.")
 
 
 def _resolve_scheme(goal: str, training_style=None, user_profile=None) -> str:
@@ -2966,7 +3045,12 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     # changed the day's core and cost the very continuity the stable core exists
     # to give. A real programme keeps the lifts and moves the volume.
     rx_week1 = _get_goal_prescription(scheme, 1, level, activity)
-    target, primary_slots = _session_shape(duration, scheme, rx_week1)
+    # Past sixty the session carries a balance block, and it comes out of the
+    # time the practitioner gave rather than being added on top of it.
+    is_senior = _age_group(user_profile.get("age")) == "senior"
+    balance_seconds = _BALANCE_SECONDS if is_senior else 0
+    target, primary_slots = _session_shape(
+        max(duration - balance_seconds // 60, 20), scheme, rx_week1)
 
     # The finisher takes a slot rather than being added on top of a session that
     # already fills the clock — the practitioner asked for forty-five minutes.
@@ -3077,16 +3161,19 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         "main_workout": main_workout,
         "cooldown": _cooldown_for(focus, edge_avoid, withhold_impact, is_pregnant,
                                   edge_risks),
+        "balance": (_balance_for(day_num, edge_avoid, withhold_impact, is_pregnant,
+                                 edge_risks) if is_senior else []),
         # What was BUILT, not what was asked for. The client shows this as the
         # session-length chip, and it used to echo the preference straight back —
         # so a 60-minute heading sat above 26 minutes of work. Same lesson the
         # yoga engine learned: the number on the card and the session underneath
         # it were different products.
         "estimated_duration_minutes": round((work_seconds + rest_seconds_total
-                                             + _OVERHEAD_SECONDS) / 60),
+                                             + _OVERHEAD_SECONDS + balance_seconds) / 60),
         "requested_duration_minutes": duration,
         "duration_notice": _duration_notice(
-            round((work_seconds + rest_seconds_total + _OVERHEAD_SECONDS) / 60), duration, scheme),
+            round((work_seconds + rest_seconds_total + _OVERHEAD_SECONDS + balance_seconds) / 60),
+            duration, scheme),
         "calories_burned_estimate": int(total_cals + (_OVERHEAD_SECONDS / 60.0)
                                         * _WARMUP_KCAL_PER_MINUTE),
     }
@@ -3212,8 +3299,18 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         user_profile, "female" if str(gender).lower() in ("female", "f", "woman") else "male")
 
     muscle_focus = gym_prefs.get("target_muscle_focus") or "full_body"
+    requested_days = workout_days
+    is_youth = _age_group(user_profile.get("age")) == "youth"
+    split_level = fitness_level
+    if is_youth:
+        workout_days = min(workout_days, _youth_day_cap(user_profile.get("age"), fitness_level))
+        # Whole-body sessions on alternate days is the youth structure whatever
+        # the training age; a split is for a fourth day, which only a trained
+        # older teenager is given.
+        if workout_days <= _YOUTH_MAX_DAYS:
+            split_level = "beginner"
     schedule_focus = _build_weekly_schedule(
-        workout_days, is_bodyweight_only, fitness_level, muscle_focus)
+        workout_days, is_bodyweight_only, split_level, muscle_focus)
     # The split is chosen before the library is consulted, so it can name days the
     # practitioner's own safety gating has emptied.
     schedule_focus, substitutions = _resolve_untrainable_days(schedule_focus, muscle_split)
@@ -3319,6 +3416,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
             "training_style": gym_prefs.get("training_style") or _GOAL_SCHEME.get(goal),
             "set_scheme": scheme,
             "workout_days": workout_days,
+            "requested_workout_days": requested_days,
             "duration_per_session": gym_prefs.get("workout_duration_minutes", 45),
             # Resolved from the profile and the gym form together, so the
             # coaching written around the plan knows what the gates knew.
@@ -3349,6 +3447,9 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "disclaimer": disclaimer,
         "pool_notice": pool_notice,
         "schedule_notice": _schedule_notice(workout_days, schedule_focus),
+        "age_notice": (_youth_notice(requested_days,
+                                     sum(1 for f in schedule_focus if f != "rest"))
+                       if is_youth else None),
         "focus_notice": _focus_notice(muscle_focus, workout_days, is_bodyweight_only,
                                       fitness_level),
         "cardio_notice": _cardio_notice(goal, cardio_preference, finisher_count,

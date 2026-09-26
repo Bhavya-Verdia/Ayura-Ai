@@ -343,3 +343,69 @@ def test_the_classifier_may_answer_in_mechanisms_and_nothing_else(monkeypatch):
     plan = generate_gym_plan(_BASE, _PREFS, extra_avoid_tags=tags)
     assert not [ex["name"] for ex in _prescribed(plan)
                 if {"intracranial_pressure", "fall_risk"} & set(ex.get("risk_tags", []))]
+
+
+# ── Youth ─────────────────────────────────────────────────────────────────────
+
+def _training_days(plan):
+    return [d for d in plan["four_week_plan"][0]["days"] if d["main_workout"]]
+
+
+@pytest.mark.parametrize("age,level,cap", [(11, "beginner", 3), (14, "intermediate", 3),
+                                           (16, "beginner", 3), (17, "intermediate", 4)])
+def test_a_child_is_not_written_an_adult_competitors_week(age, level, cap):
+    """An untrained 11-year-old got six days a week of 3-5 rep strength sets."""
+    plan = generate_gym_plan(
+        {**_BASE, "age": age, "fitness_level": level, "weight_kg": 40},
+        {**_PREFS, "gym_goal": "strength", "workout_days_per_week": 6,
+         "strength_level": "untrained"})
+    days = _training_days(plan)
+    assert len(days) <= cap, f"age {age}: {len(days)} training days"
+    assert not [r for r in _main_reps(plan) if r in ("3-5", "4-5")]
+    assert plan["age_notice"] and "supervis" in plan["age_notice"]
+
+
+def test_three_youth_sessions_never_fall_on_consecutive_days():
+    plan = generate_gym_plan({**_BASE, "age": 13, "fitness_level": "beginner"},
+                             {**_PREFS, "workout_days_per_week": 5})
+    week = [bool(d["main_workout"]) for d in plan["four_week_plan"][0]["days"]]
+    assert not any(a and b for a, b in zip(week, week[1:])), week
+
+
+def test_an_adult_is_not_given_the_youth_notice():
+    assert _plan()["age_notice"] is None
+
+
+# ── Seniors: balance ─────────────────────────────────────────────────────────
+
+def _senior(**kw):
+    return generate_gym_plan(
+        {**_BASE, "age": 74, "fitness_level": "beginner", "activity_level": "sedentary", **kw},
+        {**_PREFS, "available_equipment": ["dumbbells", "machines"],
+         "workout_days_per_week": 3, "workout_duration_minutes": 30,
+         "strength_level": "untrained"})
+
+
+def test_every_senior_session_trains_balance():
+    """WHO asks older adults for balance and strength on three days a week. A
+    78-year-old got squats and rows and not a minute of standing on one leg."""
+    days = _training_days(_senior())
+    assert days and all(len(d["balance"]) >= 3 for d in days)
+    covered = {line for d in days for line in d["balance"]}
+    assert len(covered) > 4, "the same four lines every session"
+
+
+def test_balance_progressions_respect_fall_risk():
+    plan = _senior(medical_history=["vertigo"])
+    lines = " | ".join(line for d in _training_days(plan) for line in d["balance"]).lower()
+    assert "heel-to-toe" not in lines and "clock reach" not in lines
+    assert all(len(d["balance"]) >= 3 for d in _training_days(plan))
+
+
+def test_the_balance_block_comes_out_of_the_session_not_on_top_of_it():
+    for day in _training_days(_senior()):
+        assert day["estimated_duration_minutes"] <= 30 * 1.15, day["estimated_duration_minutes"]
+
+
+def test_an_adult_session_carries_no_balance_block():
+    assert all(d["balance"] == [] for d in _training_days(_plan()))

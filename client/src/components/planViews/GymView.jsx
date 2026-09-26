@@ -276,6 +276,12 @@ export function GymView({ plan }) {
           <span>{plan.intensity_notice}</span>
         </div>
       )}
+      {plan.age_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.age_notice}</span>
+        </div>
+      )}
 
       {/* ── Day-list toolbar ── */}
       {weekDays.length > 0 && (
@@ -449,6 +455,18 @@ export function GymView({ plan }) {
                           )
                         })}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Balance — past sixty only. Falls are the injury that ends
+                      independence, and a strength plan with no balance work in it
+                      is half of what WHO asks older adults for. */}
+                  {day.balance?.length > 0 && (
+                    <div className="gym-sub-section">
+                      <h4 className="gym-section-label">Balance · beside a counter or chair</h4>
+                      <ul className="gym-sub-list">
+                        {day.balance.map((b, j) => <li key={j} className="gym-list-item">{b}</li>)}
+                      </ul>
                     </div>
                   )}
 
