@@ -148,6 +148,21 @@ the conditions the right ones. Two choices to confirm specifically:
 - **Herniated disc is not mapped to spinal extension**, matching the yoga engine:
   extension is often the therapeutic direction for a posterior herniation.
 
+## Before-you-train notes
+
+`gym_condition_guidance_review.csv`, one row per note. For diabetes, asthma,
+epilepsy, heart disease and a dozen others no movement is the problem — the
+session is — so the plan now shows a short note before the first set, each with
+its published source. **Confirm the wording and the thresholds** (the glucose
+and blood-pressure cut-offs in particular), and say whether any note should stop
+the plan being generated rather than accompany it.
+
+Alongside them, **sets of 3-5 at near-maximal load are replaced with 8-12** for
+hypertension, heart disease, glaucoma and retinopathy, a hernia or recent
+abdominal surgery, pregnancy and everyone over 60. The mechanism is the
+Valsalva manoeuvre. Confirm the list, and whether diabetes (for its retinopathy
+risk) belongs on it.
+
 ## What happens to your answers
 
 Every `N` with a correction goes into the movement spec in

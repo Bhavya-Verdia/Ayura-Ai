@@ -4,6 +4,7 @@ import hashlib
 import random
 import re
 
+from services.gym_condition_guidance import _unfalse, guidance_for
 from engine.movement_risk import (_INJURY_RISK_TAGS, _LIMITATION_ALIASES, RISK_VOCAB,
                                   condition_risk_tags, injury_risk_tags)
 from datetime import datetime, timezone
@@ -289,10 +290,64 @@ _GOAL_SCHEME = {
 }
 
 
-def _resolve_scheme(goal: str, training_style=None) -> str:
+# Sets of 3-5 at near-maximal load are lifted holding the breath against a
+# closed glottis — the Valsalva manoeuvre — whether or not the lifter means to.
+# It sends blood pressure to 300/200 in a trained lifter and raises intraocular
+# and intra-abdominal pressure with it. A hypertensive 50-year-old was written a
+# 4 x 3-5 barbell bench press; a glaucoma patient the same triples. The exercise
+# gates had removed the deadlift for hypertension and left the scheme that makes
+# every lift in the block a maximal one.
+#
+# ACSM's guidance for these populations, and for older adults generally, is
+# moderate loads for 8-12 repetitions. The strength scheme is replaced with the
+# hypertrophy one, which is exactly that, and the plan says why.
+_INTENSITY_CEILING = (
+    ("blood pressure and your heart",
+     ("hypertension", "high_blood_pressure", "heart", "cardiac", "atrial_fibrillation",
+      "arrhythmia", "angina", "stroke", "aneurysm")),
+    ("the pressure inside your eyes",
+     ("glaucoma", "retinopathy", "retinal")),
+    ("the abdominal wall",
+     ("hernia", "abdominal_surgery", "recent_surgery")),
+)
+_CEILING_SCHEMES = {"strength": "muscle_gain"}
+
+
+def _intensity_ceiling(user_profile) -> str | None:
+    """What near-maximal sets would put at risk for this practitioner, if anything."""
+    if not user_profile:
+        return None
+    declared = " ".join(_unfalse(c) for c in _conditions_and_injuries(user_profile))
+    for reason, terms in _INTENSITY_CEILING:
+        if any(t in declared for t in terms):
+            return reason
+    if user_profile.get("pregnancy_or_nursing"):
+        return "your pregnancy"
+    if _age_group(user_profile.get("age")) == "senior":
+        return "joints and blood vessels past sixty"
+    return None
+
+
+def _resolve_scheme(goal: str, training_style=None, user_profile=None) -> str:
     """The `_GOAL_WEEKS` key this block is written in."""
     scheme = _STYLE_SCHEME.get(str(training_style or "").lower())
-    return scheme or _GOAL_SCHEME.get(goal, "general_fitness")
+    scheme = scheme or _GOAL_SCHEME.get(goal, "general_fitness")
+    if scheme in _CEILING_SCHEMES and _intensity_ceiling(user_profile):
+        return _CEILING_SCHEMES[scheme]
+    return scheme
+
+
+def _intensity_notice(goal, training_style, user_profile) -> str | None:
+    requested = (_STYLE_SCHEME.get(str(training_style or "").lower())
+                 or _GOAL_SCHEME.get(goal, "general_fitness"))
+    reason = _intensity_ceiling(user_profile)
+    if requested not in _CEILING_SCHEMES or not reason:
+        return None
+    return (f"Your sets are written as 8–12 reps at a moderate weight rather than 3–5 at "
+            f"a near-maximal one, because of {reason}. Lifting that heavy makes you hold "
+            "your breath and strain, which spikes pressure in the chest, head and belly. "
+            "You still get stronger — breathe out on every effort and never hold your "
+            "breath.")
 
 
 def _get_goal_prescription(goal: str, week: int, level: str = "intermediate",
@@ -2898,7 +2953,7 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     duration = gym_prefs.get("workout_duration_minutes", 45)
     goal = gym_prefs.get("gym_goal", "general_fitness")
     # The goal picks the exercises and the split; the style writes the sets.
-    scheme = _resolve_scheme(goal, gym_prefs.get("training_style"))
+    scheme = _resolve_scheme(goal, gym_prefs.get("training_style"), user_profile)
     level = user_profile.get("fitness_level", "beginner") or "beginner"
     if level not in ["beginner", "intermediate", "advanced"]:
         level = "beginner"
@@ -3124,7 +3179,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     if available_eq & {"dumbbell", "machine", "kettlebell", "cable"}:
         heaviest_reps = _get_goal_prescription(
             _resolve_scheme(gym_prefs.get("gym_goal", "general_fitness"),
-                            gym_prefs.get("training_style")),
+                            gym_prefs.get("training_style"), user_profile),
             1, user_profile.get("fitness_level") or "beginner",
             user_profile.get("activity_level"))["reps"]
         gender_of = user_profile.get("gender", "male") or "male"
@@ -3167,7 +3222,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
     is_pregnant = user_profile.get("pregnancy_or_nursing", False)
     goal = gym_prefs.get("gym_goal", "general_fitness")
-    scheme = _resolve_scheme(goal, gym_prefs.get("training_style"))
+    scheme = _resolve_scheme(goal, gym_prefs.get("training_style"), user_profile)
 
     # Which days end with conditioning, decided once for the week rather than per
     # day, so "light" means two days out of six and not a coin flip six times.
@@ -3302,4 +3357,10 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "adaptation_notice": _adaptation_notice(bmi_group, user_profile.get("activity_level")),
         "substitution_notice": _substitution_notice(substitutions),
         "injury_notice": _injury_notice(unmatched_injuries),
+        "intensity_notice": _intensity_notice(goal, gym_prefs.get("training_style"),
+                                              user_profile),
+        # What a practitioner with a condition needs to know before the session,
+        # where no movement is the problem — hypoglycaemia, an asthma attack, a
+        # seizure. See `services/gym_condition_guidance.py`.
+        "condition_guidance": guidance_for(_conditions_and_injuries(user_profile)),
     }

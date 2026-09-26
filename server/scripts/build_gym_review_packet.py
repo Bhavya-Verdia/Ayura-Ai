@@ -173,6 +173,12 @@ def main():
     _write_csv(OUT / "gym_mechanism_review.csv", coverage)
     _write_csv(OUT / "gym_exercise_review.csv", exercises)
     _write_csv(OUT / "gym_risk_mechanism_review.csv", _risk_mechanism_rows())
+    from services.gym_condition_guidance import CONDITION_GUIDANCE
+    _write_csv(OUT / "gym_condition_guidance_review.csv", [{
+        "key": g["key"], "label": g["label"], "matches": ", ".join(g["match"]),
+        "note_shown_to_the_practitioner": g["note"], "source": g["source"],
+        "vaidya_ruling": "", "corrections": "",
+    } for g in CONDITION_GUIDANCE])
 
     flagged = [r for r in coverage if r["inconsistent"]]
     reviewed = sum(1 for e in gym_exercises if e.get("contraindications_reviewed"))

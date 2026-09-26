@@ -2124,6 +2124,33 @@
 [data-theme='light'] .yoga-unrecognised-notice svg { color: #b45309 !important; }
 .yoga-pool-notice svg,
 .yoga-duration-notice svg,
+.gym-condition-guidance {
+  padding: 0.75rem 0.95rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--plan-amber) 28%, transparent);
+  background: color-mix(in srgb, var(--plan-amber) 7%, var(--ayura-card-bg) 93%);
+  color: var(--ayura-text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+.gym-condition-guidance h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.45rem;
+  font-size: 0.82rem;
+  color: var(--plan-amber);
+}
+.gym-condition-guidance ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.4rem;
+}
+.gym-condition-guidance strong {
+  color: var(--ayura-text-primary, inherit);
+}
+
 .gym-pool-notice svg,
 .gym-duration-notice svg {
   flex-shrink: 0;

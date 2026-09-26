@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import {
   Dumbbell, Leaf, Calendar, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Lightbulb, Info,
+  ShieldAlert,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 
@@ -176,6 +177,23 @@ export function GymView({ plan }) {
         </div>
       )}
 
+      {/* Before-you-train notes for the conditions where no movement is the
+          problem and the session is — hypoglycaemia on insulin, an asthma attack
+          a longer warm-up prevents, a seizure with a bar overhead. Shown above the
+          week, not under it, because they apply before the first set. */}
+      {Array.isArray(plan.condition_guidance) && plan.condition_guidance.length > 0 && (
+        <section className="gym-condition-guidance" aria-label="Before you train">
+          <h4><ShieldAlert size={14} /> Before you train</h4>
+          <ul>
+            {plan.condition_guidance.map(g => (
+              <li key={g.key}>
+                <strong>{g.label}.</strong> {g.note}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Why this plan is narrower than usual — a pregnant practitioner has 19 safe
           exercises at beginner level, and bodyweight-only users can be near that.
           The engine has written this since the pregnancy pass; rendering it is
@@ -250,6 +268,12 @@ export function GymView({ plan }) {
         <div className="gym-pool-notice">
           <Info size={12} />
           <span>{plan.injury_notice}</span>
+        </div>
+      )}
+      {plan.intensity_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.intensity_notice}</span>
         </div>
       )}
 

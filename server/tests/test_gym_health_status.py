@@ -229,3 +229,75 @@ def test_the_form_offers_exactly_what_the_server_accepts():
     offered = set(re.findall(r"value: '([a-z_]+)'", block))
     assert offered == GYM_INJURY_OPTIONS
     assert all(any(k in opt for k in _INJURY_TOKENS) for opt in GYM_INJURY_OPTIONS)
+
+
+# ── Intensity ─────────────────────────────────────────────────────────────────
+
+def _main_reps(plan):
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            for ex in day["main_workout"]:
+                if ex["role"] == "primary":
+                    yield ex["reps"]
+
+
+@pytest.mark.parametrize("profile,prefs", [
+    ({"medical_history": ["hypertension"]}, {}),
+    ({"medical_history": ["heart_disease"]}, {}),
+    ({"medical_history": ["glaucoma"]}, {}),
+    ({}, {"injuries": ["hernia"]}),
+    ({"pregnancy_or_nursing": True}, {}),
+    ({"age": 67}, {}),
+])
+def test_near_maximal_sets_are_not_written_for_whom_they_are_the_risk(profile, prefs):
+    """A hypertensive 50-year-old was written 4 x 3-5 on the barbell bench press.
+    The exercise gate had taken the deadlift out and left the scheme that makes
+    every lift in the block a maximal one."""
+    plan = generate_gym_plan({**_BASE, **profile},
+                             {**_PREFS, "gym_goal": "strength", **prefs})
+    triples = [r for r in _main_reps(plan) if r in ("3-5", "4-5")]
+    assert not triples, f"{profile or prefs}: {triples[:3]}"
+    assert plan["intensity_notice"]
+
+
+def test_a_healthy_adult_keeps_the_strength_scheme_they_asked_for():
+    plan = generate_gym_plan(_BASE, {**_PREFS, "gym_goal": "strength"})
+    assert "3-5" in set(_main_reps(plan))
+    assert plan["intensity_notice"] is None
+
+
+# ── Before-you-train guidance ────────────────────────────────────────────────
+
+@pytest.mark.parametrize("condition,key", [
+    ("diabetes_type1", "diabetes"), ("diabetes_type2", "diabetes"),
+    ("asthma", "respiratory"), ("copd", "respiratory"), ("epilepsy", "epilepsy"),
+    ("heart_disease", "cardiac"), ("atrial_fibrillation", "cardiac"),
+    ("hypertension", "hypertension"), ("low_blood_pressure", "low_bp"),
+    ("anemia", "anemia"), ("hyperthyroidism", "thyroid_over"),
+    ("chronic_fatigue_syndrome", "fatigue"), ("osteoporosis", "osteoporosis"),
+    ("rheumatoid_arthritis", "inflammatory_joint"), ("vertigo", "vertigo"),
+])
+def test_a_condition_where_the_session_is_the_risk_gets_told_so(condition, key):
+    """Someone on insulin can do every exercise in the library and still go
+    hypoglycaemic halfway through it. The plan said nothing."""
+    plan = _plan(medical_history=[condition])
+    assert key in {g["key"] for g in plan["condition_guidance"]}
+
+
+def test_a_healthy_plan_carries_no_guidance():
+    assert _plan()["condition_guidance"] == []
+
+
+def test_heartburn_is_not_a_heart_condition():
+    """"heart" is a substring of "heartburn"."""
+    plan = generate_gym_plan({**_BASE, "medical_history": ["heartburn"]},
+                             {**_PREFS, "gym_goal": "strength"})
+    assert "cardiac" not in {g["key"] for g in plan["condition_guidance"]}
+    assert plan["intensity_notice"] is None
+
+
+def test_every_guidance_entry_names_its_source():
+    from services.gym_condition_guidance import CONDITION_GUIDANCE
+
+    for g in CONDITION_GUIDANCE:
+        assert g["source"] and g["note"] and g["match"], g["key"]
