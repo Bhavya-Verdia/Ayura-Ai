@@ -4,7 +4,8 @@ import hashlib
 import random
 import re
 
-from engine.movement_risk import RISK_VOCAB, condition_risk_tags, injury_risk_tags
+from engine.movement_risk import (_INJURY_RISK_TAGS, _LIMITATION_ALIASES, RISK_VOCAB,
+                                  condition_risk_tags, injury_risk_tags)
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -1125,9 +1126,14 @@ def _conditions_and_injuries(user_profile) -> list:
 
 
 def _avoided_risks(user_profile, extra=()) -> set:
-    """Mechanisms this practitioner's movements must not carry."""
-    risks = condition_risk_tags(user_profile.get("medical_history") or [])
-    risks |= injury_risk_tags(user_profile.get("injuries_or_limitations") or [])
+    """Mechanisms this practitioner's movements must not carry.
+
+    A hernia or a recent abdominal operation is the same mechanism whether it was
+    declared as a condition or ticked as an injury, so both lists go through both
+    maps."""
+    declared = _conditions_and_injuries(user_profile)
+    risks = condition_risk_tags(declared)
+    risks |= injury_risk_tags(declared)
     if _age_group(user_profile.get("age")) == "senior":
         risks |= _SENIOR_RISKS
     risks |= {str(t).lower() for t in extra or ()} & RISK_VOCAB
@@ -1141,6 +1147,75 @@ def _withholds_impact(user_profile) -> bool:
         return True
     return any(term in str(c).lower() for c in _conditions_and_injuries(user_profile)
                for term in _IMPACT_CONDITIONS)
+
+
+# ── Injuries ──────────────────────────────────────────────────────────────────
+#
+# Two vocabularies again, and nothing between them. The profile field describes
+# itself as "bad_knee / lower_back / shoulder / wrist / neck / ankle / hip"; the
+# library's tokens are `bad_knee`, `lower_back_pain`, `shoulder_injury`,
+# `rotator_cuff`, `wrist_injury`, `neck_injury`, `bad_ankle`, `hip_injury`. The
+# filter intersected them directly, so of the seven documented values only
+# `bad_knee` would ever have matched — had any screen collected the field, which
+# none did. The gym form now asks, and this translates.
+_INJURY_TOKENS = {
+    "knee_replacement": {"knee_replacement", "bad_knee"},
+    "knee":             {"bad_knee"},
+    "lower_back":       {"lower_back_pain"},
+    "back":             {"lower_back_pain"},
+    "disc":             {"herniated_disc", "lower_back_pain"},
+    "shoulder":         {"shoulder_injury", "rotator_cuff"},
+    "elbow":            {"elbow_injury"},
+    "wrist":            {"wrist_injury"},
+    "neck":             {"neck_injury", "cervical_spondylosis"},
+    "hip":              {"hip_injury"},
+    "ankle":            {"bad_ankle"},
+    # Mechanisms, not body parts: `engine.movement_risk` reads the words.
+    "hernia":           set(),
+    "abdominal_surgery": set(),
+}
+_INJURY_SPLIT = re.compile(r"[,;/\n]|\band\b", re.I)
+
+
+def _injury_phrases(user_profile, gym_prefs) -> list:
+    phrases = [str(i) for i in (user_profile.get("injuries_or_limitations") or [])]
+    phrases += [str(i) for i in (gym_prefs.get("injuries") or [])]
+    detail = gym_prefs.get("injury_detail")
+    if detail:
+        phrases += [p.strip() for p in _INJURY_SPLIT.split(str(detail)) if p.strip()]
+    return phrases
+
+
+def _resolve_injuries(user_profile, gym_prefs) -> tuple:
+    """(what the gates read, the typed phrases nothing could act on).
+
+    The words themselves are kept beside the tokens, because the mechanism maps
+    match on them — "wrist" and "hernia" reach `engine.movement_risk`, and
+    `hip_replacement` reaches the impact gate."""
+    resolved, unmatched = set(), []
+    for phrase in _injury_phrases(user_profile, gym_prefs):
+        low = phrase.lower().replace("-", "_")
+        low = " ".join([low, *(v for k, v in _LIMITATION_ALIASES.items() if k in low)])
+        hits = {k for k in _INJURY_TOKENS if k in low.replace(" ", "_") or k in low}
+        risky = injury_risk_tags([low]) | condition_risk_tags([low])
+        if not hits and not risky and not any(k in low for k in _INJURY_RISK_TAGS):
+            unmatched.append(phrase)
+            continue
+        resolved.add(low.strip())
+        for k in hits:
+            resolved |= _INJURY_TOKENS[k]
+    return sorted(resolved), unmatched
+
+
+def _injury_notice(unmatched) -> str | None:
+    """Silence would read as "we took that into account"."""
+    if not unmatched:
+        return None
+    named = ", ".join(f"“{u}”" for u in unmatched)
+    return (f"We could not match {named} to anything this plan knows how to adjust "
+            "for, so no exercise was removed because of it. Show the plan to a "
+            "physiotherapist or doctor before starting, and skip anything that "
+            "reproduces the pain.")
 
 
 # ── Equipment ─────────────────────────────────────────────────────────────────
@@ -3031,6 +3106,11 @@ def _vyayama_shakti(dosha: str, age, strength_level: str) -> dict:
 
 def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoid_tags=None):
     ge = gym_exercises_db if gym_exercises_db is not None else gym_exercises
+    # Every gate below reads `injuries_or_limitations`, so it is resolved once
+    # here — the profile's list, the form's ticks and the typed detail, in the
+    # library's own tokens — rather than taught to each of them.
+    injuries, unmatched_injuries = _resolve_injuries(user_profile, gym_prefs)
+    user_profile = {**user_profile, "injuries_or_limitations": injuries}
     preference_report: dict = {}
     filtered = filter_exercises(user_profile, gym_prefs, ge, extra_avoid_tags=extra_avoid_tags,
                                 preference_report=preference_report)
@@ -3185,6 +3265,9 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
             "set_scheme": scheme,
             "workout_days": workout_days,
             "duration_per_session": gym_prefs.get("workout_duration_minutes", 45),
+            # Resolved from the profile and the gym form together, so the
+            # coaching written around the plan knows what the gates knew.
+            "injuries": injuries,
         },
         "weekly_schedule": four_week_plan[0]["days"],
         "four_week_plan": four_week_plan,
@@ -3218,4 +3301,5 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "preference_notice": _preference_notice(preference_report),
         "adaptation_notice": _adaptation_notice(bmi_group, user_profile.get("activity_level")),
         "substitution_notice": _substitution_notice(substitutions),
+        "injury_notice": _injury_notice(unmatched_injuries),
     }

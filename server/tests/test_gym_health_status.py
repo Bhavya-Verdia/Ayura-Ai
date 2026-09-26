@@ -158,3 +158,74 @@ def test_more_than_a_handful_of_onboarding_conditions_change_the_plan():
     base = digest(_plan())
     live = [c for c in ids if digest(_plan(medical_history=[c])) != base]
     assert len(live) >= 25, f"only {len(live)} of {len(ids)} conditions decide anything: {live}"
+
+
+# ── Injuries ──────────────────────────────────────────────────────────────────
+
+@pytest.mark.parametrize("injury,token", [
+    ("shoulder", "shoulder_injury"), ("knee", "bad_knee"), ("wrist", "wrist_injury"),
+    ("lower_back", "lower_back_pain"), ("disc", "herniated_disc"),
+    ("elbow", "elbow_injury"), ("neck", "neck_injury"), ("hip", "hip_injury"),
+    ("ankle", "bad_ankle"), ("knee_replacement", "knee_replacement"),
+])
+def test_an_injury_ticked_on_the_gym_form_removes_what_it_restricts(injury, token):
+    """No screen collected injuries, and the profile field's documented values
+    ("lower_back", "shoulder", "wrist") were not the library's tokens — so only
+    `bad_knee` would have matched even if one had."""
+    carriers = [e for e in gym_exercises if token in e["contraindications"]]
+    assert carriers, f"nothing carries {token}"
+    plan = generate_gym_plan(_BASE, {**_PREFS, "injuries": [injury]})
+    offending = sorted({ex["name"] for ex in _prescribed(plan)
+                        if token in ex["contraindications"]})
+    assert not offending, f"{injury}: {offending}"
+
+
+def test_the_profile_field_is_translated_too():
+    plan = generate_gym_plan({**_BASE, "injuries_or_limitations": ["shoulder"]}, _PREFS)
+    assert not [ex for ex in _prescribed(plan) if "shoulder_injury" in ex["contraindications"]]
+
+
+def test_a_hernia_withholds_abdominal_pressure():
+    plan = generate_gym_plan(_BASE, {**_PREFS, "injuries": ["hernia"]})
+    assert not [ex["name"] for ex in _prescribed(plan)
+                if "abdominal_pressure" in ex.get("risk_tags", [])]
+
+
+def test_typed_detail_is_read_through_the_same_aliases_as_yoga():
+    plan = generate_gym_plan(
+        _BASE, {**_PREFS, "injury_detail": "old ACL tear, tennis elbow"})
+    names = [ex["name"] for ex in _prescribed(plan)]
+    assert not [n for n in names if "bad_knee" in _BY_NAME[n]["contraindications"]]
+    assert not [n for n in names if "elbow_injury" in _BY_NAME[n]["contraindications"]]
+    assert plan["injury_notice"] is None
+
+
+def test_what_cannot_be_matched_is_named_back():
+    """Silence would read as "we took that into account"."""
+    plan = generate_gym_plan(_BASE, {**_PREFS, "injury_detail": "everything hurts"})
+    assert "everything hurts" in (plan["injury_notice"] or "")
+
+
+def test_the_coaching_is_told_about_injuries_from_the_gym_form():
+    from services.gym_plan_enricher import build_plan_summary
+
+    prefs = {**_PREFS, "injuries": ["shoulder"]}
+    plan = generate_gym_plan(_BASE, prefs)
+    summary = build_plan_summary(plan, _BASE, prefs)
+    assert "shoulder_injury" in summary["user"]["injuries"]
+
+
+def test_the_form_offers_exactly_what_the_server_accepts():
+    """The front/back gap `test_dosha_instrument` exists to close, for injuries."""
+    import re
+    from pathlib import Path
+
+    from schemas.preferences_schema import GYM_INJURY_OPTIONS
+    from services.gym_plan_engine import _INJURY_TOKENS
+
+    jsx = (Path(__file__).resolve().parents[2] / "client" / "src" / "components"
+           / "PreferencesModal.jsx").read_text()
+    block = jsx[jsx.index("const GYM_INJURIES"):jsx.index("];", jsx.index("const GYM_INJURIES"))]
+    offered = set(re.findall(r"value: '([a-z_]+)'", block))
+    assert offered == GYM_INJURY_OPTIONS
+    assert all(any(k in opt for k in _INJURY_TOKENS) for opt in GYM_INJURY_OPTIONS)

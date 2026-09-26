@@ -864,19 +864,9 @@ _SYMPTOM_CATEGORY_BOOST: dict[str, list[str]] = {
 # It is folded into the same injury list rather than given a parallel path, because
 # the maps already match by substring and a typed "shoulder" should exclude exactly
 # what a picked "shoulder" excludes.
-# Words people type for injuries the maps already know under a different name.
-# Only unambiguous ones: "ACL" is a knee, "rotator cuff" is a shoulder. Vague terms
-# like "surgery" or "pain everywhere" are deliberately absent — they should fall
-# through to `unmatched_limitations` and be shown to the user, not guessed at.
-_LIMITATION_ALIASES = {
-    "acl": "knee", "mcl": "knee", "meniscus": "knee", "patella": "knee", "kneecap": "knee",
-    "rotator cuff": "shoulder", "frozen shoulder": "shoulder", "impingement": "shoulder",
-    "sciatica": "lower_back", "slipped disc": "lower_back", "herniated disc": "lower_back",
-    "lumbar": "lower_back", "disc": "lower_back",
-    "carpal tunnel": "wrist", "cervical": "neck", "whiplash": "neck",
-    "plantar": "ankle", "achilles": "ankle", "sprained ankle": "ankle",
-    "sacroiliac": "hip", "si joint": "hip", "labral": "hip",
-}
+# Words people type for injuries the maps already know under a different name —
+# shared with the gym engine's free-text box, in `engine.movement_risk`.
+from engine.movement_risk import _LIMITATION_ALIASES  # noqa: E402
 
 
 def _expand_aliases(term: str) -> str:

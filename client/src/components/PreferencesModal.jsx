@@ -74,6 +74,26 @@ const EQUIPMENT = [
 // not a restriction. General Fitness maps to nothing — its own balanced scheme is
 // the answer — so it clears the field rather than borrowing another goal's.
 // Keep in step with `_STYLE_SCHEME` / `_GOAL_SCHEME` in gym_plan_engine.py.
+// Injuries and joint problems. The profile has had `injuries_or_limitations`
+// since the start and no screen ever asked for it, so every shoulder, knee and
+// wrist restriction in the exercise library was reachable by nobody. Values must
+// stay in step with the server's GYM_INJURY_OPTIONS.
+const GYM_INJURIES = [
+  { value: 'knee',              label: 'Knee' },
+  { value: 'knee_replacement',  label: 'Knee replacement' },
+  { value: 'lower_back',        label: 'Lower back' },
+  { value: 'disc',              label: 'Slipped / herniated disc' },
+  { value: 'shoulder',          label: 'Shoulder' },
+  { value: 'elbow',             label: 'Elbow' },
+  { value: 'wrist',             label: 'Wrist' },
+  { value: 'neck',              label: 'Neck' },
+  { value: 'hip',               label: 'Hip' },
+  { value: 'hip_replacement',   label: 'Hip replacement' },
+  { value: 'ankle',             label: 'Ankle' },
+  { value: 'hernia',            label: 'Hernia' },
+  { value: 'abdominal_surgery', label: 'Recent abdominal surgery or C-section' },
+];
+
 const GYM_SUGGESTED_STYLE = {
   fat_loss:        'circuit',
   muscle_gain:     'hypertrophy',
@@ -183,6 +203,8 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       payload.training_style = payload.training_style || null;
       payload.cardio_preference = payload.cardio_preference || 'moderate';
       payload.target_muscle_focus = payload.target_muscle_focus || 'full_body';
+      payload.injuries = Array.isArray(form.injuries) ? form.injuries : [];
+      payload.injury_detail = (form.injury_detail || '').trim() || null;
     } else if (typeId === 'yoga') {
       payload.yoga_goal = payload.yoga_goal || 'flexibility';
       payload.yoga_experience = payload.yoga_experience || 'beginner';
@@ -343,6 +365,37 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
               <p className="pref-hint">
                 Bodyweight movements are always included. Tick nothing and the plan is
                 built from them alone.
+              </p>
+            </div>
+            <div className="pref-input-group">
+              <label>Injuries or joint problems <span className="pref-hint-sub">optional</span></label>
+              <div className="pref-chip-row">
+                {GYM_INJURIES.map(inj => {
+                  const chosen = (form.injuries || []).includes(inj.value)
+                  return (
+                    <button
+                      key={inj.value}
+                      type="button"
+                      aria-pressed={chosen}
+                      className={`pref-chip${chosen ? ' active' : ''}`}
+                      onClick={() => handleToggle('injuries', inj.value)}
+                    >
+                      {inj.label}
+                    </button>
+                  )
+                })}
+              </div>
+              <input
+                type="text"
+                name="injury_detail"
+                maxLength={300}
+                placeholder="Anything else? e.g. old ACL tear, tennis elbow"
+                value={form.injury_detail || ''}
+                onChange={handleChange}
+              />
+              <p className="pref-hint">
+                Exercises that load an injured area are left out. If we cannot match
+                what you type, the plan says so rather than guessing.
               </p>
             </div>
             {/* `exercise_preferences` has been in the schema since the beginning and

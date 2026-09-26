@@ -24,6 +24,14 @@ PK_GOALS = {"detox", "rejuvenation", "stress_relief", "seasonal_cleanse", "speci
 EQUIPMENT_OPTIONS = {"bodyweight", "dumbbells", "barbell", "machines", "cables",
                      "kettlebell", "resistance_bands", "cardio_machines", "pool",
                      "jump_rope", "full_gym"}
+# Injuries and joint problems the gym form offers. Must stay in step with
+# `gym_plan_engine._INJURY_TOKENS`, which translates them into the library's own
+# contraindication tokens. The profile's `injuries_or_limitations` was the only
+# place an injury could be declared, and no screen ever collected it — so the 47
+# movements tagged for a shoulder and 29 for a knee were reachable by nobody.
+GYM_INJURY_OPTIONS = {"knee", "knee_replacement", "lower_back", "disc", "shoulder",
+                      "elbow", "wrist", "neck", "hip", "hip_replacement", "ankle",
+                      "hernia", "abdominal_surgery"}
 YOGA_STYLES = {"hatha", "vinyasa", "restorative", "yin", "power", "ashtanga", "kundalini"}
 DIETARY_TYPES = {"vegetarian", "vegan", "eggetarian", "non_vegetarian", "pescatarian"}
 FOOD_ALLERGIES = {"gluten", "dairy", "nuts_tree", "peanuts", "soy", "eggs", "shellfish", "fish", "sesame", "mustard"}
@@ -83,11 +91,27 @@ class GymPreferences(BaseModel):
         description="Self-assessed lifting strength: untrained | beginner | intermediate | advanced"
     )
 
+    injuries: list[str] = Field(
+        default_factory=list,
+        description="Injuries or joint problems, from GYM_INJURY_OPTIONS.")
+    injury_detail: Optional[str] = Field(
+        None, max_length=300,
+        description="Anything the options do not cover, in the practitioner's words. "
+                    "What the engine cannot act on is named back to them in the plan.")
+
     @field_validator("gym_goal")
     @classmethod
     def validate_gym_goal(cls, v: str) -> str:
         if v not in GYM_GOALS:
             raise ValueError(f"gym_goal must be one of {GYM_GOALS}")
+        return v
+
+    @field_validator("injuries")
+    @classmethod
+    def validate_injuries(cls, v: list[str]) -> list[str]:
+        invalid = set(v) - GYM_INJURY_OPTIONS
+        if invalid:
+            raise ValueError(f"Unknown injury: {invalid}. Valid: {GYM_INJURY_OPTIONS}")
         return v
 
     @field_validator("available_equipment")

@@ -140,7 +140,11 @@ def build_plan_summary(raw_plan: dict, user_profile: dict, gym_prefs: dict) -> d
             "workout_days": gym_prefs.get("workout_days_per_week"),
             "duration_minutes": gym_prefs.get("workout_duration_minutes"),
             "available_equipment": gym_prefs.get("available_equipment"),
-            "injuries": user_profile.get("injuries_or_limitations"),
+            # The plan's own resolved list: the gym form asks about injuries
+            # too, and the profile field alone would leave the coaching blind
+            # to everything declared there.
+            "injuries": ((raw_plan.get("user_summary") or {}).get("injuries")
+                         or user_profile.get("injuries_or_limitations")),
             "medical_history": user_profile.get("medical_history"),
             "activity_level": user_profile.get("activity_level"),
         },

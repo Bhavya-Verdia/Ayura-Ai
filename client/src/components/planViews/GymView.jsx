@@ -246,6 +246,12 @@ export function GymView({ plan }) {
           <span>{plan.substitution_notice}</span>
         </div>
       )}
+      {plan.injury_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.injury_notice}</span>
+        </div>
+      )}
 
       {/* ── Day-list toolbar ── */}
       {weekDays.length > 0 && (

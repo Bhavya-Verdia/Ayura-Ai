@@ -95,6 +95,21 @@ _INJURY_RISK_TAGS: dict[str, set[str]] = {
 }
 
 
+# Words people type for injuries the maps already know under a different name.
+# Only unambiguous ones: "ACL" is a knee, "rotator cuff" is a shoulder. Vague terms
+# like "surgery" or "pain everywhere" are deliberately absent — they should fall
+# through to `unmatched_limitations` and be shown to the user, not guessed at.
+_LIMITATION_ALIASES = {
+    "acl": "knee", "mcl": "knee", "meniscus": "knee", "patella": "knee", "kneecap": "knee",
+    "rotator cuff": "shoulder", "frozen shoulder": "shoulder", "impingement": "shoulder",
+    "sciatica": "lower_back", "slipped disc": "lower_back", "herniated disc": "lower_back",
+    "lumbar": "lower_back", "disc": "lower_back",
+    "carpal tunnel": "wrist", "cervical": "neck", "whiplash": "neck",
+    "plantar": "ankle", "achilles": "ankle", "sprained ankle": "ankle",
+    "sacroiliac": "hip", "si joint": "hip", "labral": "hip",
+}
+
+
 RISK_VOCAB = frozenset(
     tag for tags in (*_CONDITION_RISK_TAGS.values(), *_INJURY_RISK_TAGS.values())
     for tag in tags)
