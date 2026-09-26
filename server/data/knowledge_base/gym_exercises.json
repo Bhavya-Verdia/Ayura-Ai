@@ -2873,7 +2873,7 @@
     "load_class": null,
     "impact": "none",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Sit on the bike, set the seat so the knee is almost straight at the bottom of the stroke.",
       "Take the handles and start turning the pedals easily for a minute to warm up.",
@@ -2885,19 +2885,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -2910,7 +2910,7 @@
     "pregnancy_safe": false,
     "risk_tags": [],
     "dosha_suitability": {
-      "vata": "moderate",
+      "vata": "good",
       "pitta": "moderate",
       "kapha": "good"
     },
@@ -2954,7 +2954,7 @@
     "load_class": null,
     "impact": "none",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Take an end of the rope in each hand and stand facing the anchor, feet shoulder-width apart.",
       "Sit into a quarter squat with the chest up and the trunk braced.",
@@ -2966,19 +2966,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -2992,7 +2992,7 @@
     "pregnancy_safe": false,
     "risk_tags": [],
     "dosha_suitability": {
-      "vata": "moderate",
+      "vata": "good",
       "pitta": "good",
       "kapha": "good"
     },
@@ -3114,7 +3114,7 @@
     "load_class": null,
     "impact": "high",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Stand tall, then squat down and place both hands on the floor in front of the feet.",
       "Jump or step the feet back into a plank with the body in one straight line.",
@@ -3126,19 +3126,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3276,7 +3276,7 @@
     "load_class": null,
     "impact": "high",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Choose four movements you can perform safely without close attention to form.",
       "Work at a hard but controlled effort on the first for the prescribed interval.",
@@ -3288,19 +3288,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3362,7 +3362,7 @@
     "load_class": null,
     "impact": "high",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Stand tall with the feet hip-width apart and the arms bent at your sides.",
       "Drive one knee up toward hip height while pushing off the opposite foot.",
@@ -3374,19 +3374,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3524,7 +3524,7 @@
     "load_class": null,
     "impact": "high",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Hold a handle in each hand with the rope resting on the floor behind your heels.",
       "Set the elbows close to the ribs and turn the rope with the wrists, not the whole arm.",
@@ -3536,19 +3536,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3612,7 +3612,7 @@
     "load_class": null,
     "impact": "high",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Stand tall with the feet together and the arms at your sides.",
       "Jump the feet out wider than the hips while sweeping the arms overhead.",
@@ -3624,19 +3624,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3697,7 +3697,7 @@
     "load_class": null,
     "impact": "low",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Start in a push-up position with the hands under the shoulders and the body in a straight line.",
       "Brace the trunk and draw one knee toward the chest without letting the hips rise.",
@@ -3709,19 +3709,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3737,7 +3737,7 @@
       "wrist_weight_bearing"
     ],
     "dosha_suitability": {
-      "vata": "moderate",
+      "vata": "good",
       "pitta": "good",
       "kapha": "good"
     },
@@ -3864,7 +3864,7 @@
     "load_class": null,
     "impact": "high",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Warm up with three to five minutes of easy jogging or cycling.",
       "Accelerate to near-maximal effort and hold it for twenty to thirty seconds.",
@@ -3876,19 +3876,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [

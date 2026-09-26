@@ -409,3 +409,60 @@ def test_the_balance_block_comes_out_of_the_session_not_on_top_of_it():
 
 def test_an_adult_session_carries_no_balance_block():
     assert all(d["balance"] == [] for d in _training_days(_plan()))
+
+
+# ── Programming ───────────────────────────────────────────────────────────────
+
+_LOWER = {"squat", "hinge", "lunge"}
+
+
+@pytest.mark.parametrize("minutes", [20, 30, 45])
+@pytest.mark.parametrize("equipment", [["bodyweight"], ["full_gym"]])
+def test_every_full_body_day_trains_the_legs(minutes, equipment):
+    """The second full-body day's pattern order was rotated wholesale, so a
+    20-minute home session came out as incline push-ups, doorway rows and a
+    plank."""
+    plan = generate_gym_plan(
+        {**_BASE, "fitness_level": "beginner", "activity_level": "sedentary"},
+        {**_PREFS, "gym_goal": "fat_loss", "available_equipment": equipment,
+         "strength_level": "untrained", "workout_days_per_week": 3,
+         "workout_duration_minutes": minutes})
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            if "Full Body" not in day["focus"]:
+                continue
+            patterns = {_BY_NAME[e["exercise_name"]]["movement_pattern"]
+                        for e in day["main_workout"]}
+            assert patterns & _LOWER, f"{day['day_name']} w{week['week']}: {patterns}"
+
+
+def test_no_interval_modality_is_written_as_continuous_minutes():
+    """Every finisher, burpees and sprints included, was "12-15 min"."""
+    plan = generate_gym_plan(_BASE, {**_PREFS, "gym_goal": "fat_loss"})
+    seen = False
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            for e in day["main_workout"]:
+                if _BY_NAME[e["exercise_name"]].get("rep_style") == "interval":
+                    seen = True
+                    assert "hard" in e["reps"] and e["sets"] >= 4, e
+    assert seen, "no interval finisher reached the plan to check"
+
+
+def test_trunk_stability_work_is_not_given_a_powerlifting_prescription():
+    plan = generate_gym_plan({**_BASE, "age": 27, "fitness_level": "advanced"},
+                             {**_PREFS, "gym_goal": "strength", "strength_level": "advanced"})
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            for e in day["main_workout"]:
+                ex = _BY_NAME[e["exercise_name"]]
+                if ex["bucket"] == "core" and ex["rep_style"] == "reps":
+                    lo_hi = [int(x) for x in e["reps"].split("-")]
+                    assert lo_hi[-1] >= 8, f"{e['exercise_name']} {e['sets']}x{e['reps']}"
+
+
+def test_a_beginners_warm_up_does_not_jump():
+    plan = generate_gym_plan({**_BASE, "fitness_level": "beginner"},
+                             {**_PREFS, "available_equipment": ["bodyweight"]})
+    edges = " | ".join(_edges(plan)).lower()
+    assert "jumping jacks" not in edges and "high knees" not in edges

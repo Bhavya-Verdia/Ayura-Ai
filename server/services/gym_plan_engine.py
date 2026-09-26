@@ -1277,6 +1277,11 @@ def _avoided_risks(user_profile, extra=()) -> set:
 def _withholds_impact(user_profile) -> bool:
     if _bmi_group(user_profile.get("bmi_category")) == "obese":
         return True
+    # The pool has kept jump training from beginners since the plyometrics pass;
+    # the warm-up beside it still opened a sedentary beginner's first session
+    # with jumping jacks and high knees.
+    if (user_profile.get("fitness_level") or "beginner") == "beginner":
+        return True
     if _age_group(user_profile.get("age")) in ("senior", "youth"):
         return True
     return any(term in str(c).lower() for c in _conditions_and_injuries(user_profile)
@@ -2518,6 +2523,26 @@ def _movement_family(ex) -> str:
 _VARIANT_DEPTH = 3
 
 
+# A full-body day that fits three exercises gets two from the pattern list and
+# one rotating. Rotating the whole list by the day's variant turned
+# (squat, push, pull, hinge) into (push, pull, hinge, squat) on the second
+# full-body day, so a 20-minute home session came out as incline push-ups,
+# doorway rows and a plank — a "full body" day with no legs in it. The swap now
+# stays inside each half: squat trades with hinge, push with pull, and the lower
+# body keeps its place at the front.
+_PAIRED_ROTATION = {
+    ("squat", "push_h", "pull_h", "hinge"): ("hinge", "pull_h", "push_h", "squat"),
+}
+
+
+def _rotate_patterns(patterns: tuple, variant: int) -> tuple:
+    paired = _PAIRED_ROTATION.get(patterns)
+    if paired:
+        return paired if variant % 2 else patterns
+    offset = variant % len(patterns)
+    return patterns[offset:] + patterns[:offset]
+
+
 def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=(),
             caps=None, per_muscle=None, muscle_rank=None, preferred_ids=(), variant=0,
             loadable_first=False):
@@ -2567,8 +2592,7 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
     # the pattern order makes one of them a squat day and the other a hinge day,
     # which is what a coach would have written anyway.
     if variant and patterns:
-        offset = variant % len(patterns)
-        patterns = patterns[offset:] + patterns[:offset]
+        patterns = _rotate_patterns(tuple(patterns), variant)
 
     for pattern in patterns:
         if len(picked) >= n:
@@ -2899,6 +2923,10 @@ def _finisher_prescription(ex: dict, level: str, preference: str = "moderate") -
     sets = int(own.get("sets", 1) or 1)
     reps = own.get("reps", "10 min")
     rest = int(own.get("rest_seconds", 0) or 0)
+    if ex.get("rep_style") == "interval":
+        # Rounds, scaled the way the steady-state minutes are.
+        rounds = max(4, round(sets * _MINUTE_SCALE.get(preference, 1.0)))
+        return rounds, f"{reps} hard / {rest} sec easy", 0
     cap = _FINISHER_MINUTES.get(level, 10) * _MINUTE_SCALE.get(preference, 1.0)
     if sets == 1 and _TIMED_REPS.search(str(reps)):
         return 1, f"{max(5, round(cap))} min", 0
@@ -2955,12 +2983,24 @@ def _prescribe(ex: dict, rx: dict, level: str, role: str = "secondary"):
     # The curated library states how a movement is measured. Sniffing the reps
     # string for "min"/"sec" caught holds and cardio but not carries, so a
     # farmer's walk was prescribed as "5 sets of 8-10" — of what, it did not say.
-    if ex.get("rep_style") in ("time", "distance", "isometric"):
+    if ex.get("rep_style") in ("time", "distance", "isometric", "interval"):
         return int(own.get("sets", 1)), own.get("reps"), int(own.get("rest_seconds", 60))
     if own and _TIME_UNITS.search(str(own.get("reps", ""))):
         return int(own.get("sets", 1)), own.get("reps"), int(own.get("rest_seconds", 60))
     r = _role_prescription(rx, role)
+    # Trunk work is trained for control, not for a heavy single effort. A strength
+    # block wrote "Glute Bridge March 5 x 5-7, 135 s rest" and "Standing Cable Wood
+    # Chop 5 x 5-7" — a stability drill given a powerlifting prescription.
+    if ex.get("bucket") == "core":
+        parsed = _parse_reps(r["reps"])
+        if parsed and parsed[1] < _CORE_MIN_REPS[1]:
+            return r["sets"], f"{_CORE_MIN_REPS[0]}-{_CORE_MIN_REPS[1]}", min(
+                r["rest_seconds"], _CORE_MAX_REST)
     return r["sets"], r["reps"], r["rest_seconds"]
+
+
+_CORE_MIN_REPS = (8, 12)
+_CORE_MAX_REST = 60
 
 
 def _load_reps(ex: dict, rx_week1: dict, level: str, role: str):

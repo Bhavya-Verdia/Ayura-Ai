@@ -91,6 +91,13 @@ def _sets_reps(entry: dict) -> dict:
                 for lv, s, t in (("beginner", 1, "8-10 min"),
                                  ("intermediate", 1, "12-15 min"),
                                  ("advanced", 1, "15-20 min"))}
+    if style == "interval":
+        # Rounds of work and easy effort: `sets` is the round count, `reps` the
+        # work interval and `rest_seconds` the easy one.
+        return {lv: {"sets": r, "reps": w, "rest_seconds": e}
+                for lv, r, w, e in (("beginner", 6, "20 sec", 40),
+                                    ("intermediate", 8, "30 sec", 30),
+                                    ("advanced", 10, "30 sec", 30))}
     if style == "distance":
         return {lv: {"sets": s, "reps": d, "rest_seconds": 90}
                 for lv, s, d in (("beginner", 3, "20 m"),
