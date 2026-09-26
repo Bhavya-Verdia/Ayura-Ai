@@ -3,6 +3,8 @@ import json
 import hashlib
 import random
 import re
+
+from engine.movement_risk import RISK_VOCAB, condition_risk_tags, injury_risk_tags
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -31,9 +33,18 @@ if EXERCISES_PATH.exists():
 # `_gate_movements` runs the same checks the exercise pool runs. A line that is
 # withheld is replaced from `_WARMUP_SUBSTITUTES` so the warm-up keeps its length
 # rather than quietly getting shorter.
-def _w(text, impact="none", contra=(), pregnancy_safe=True):
+def _w(text, impact="none", contra=(), pregnancy_safe=True, risk=()):
     return {"text": text, "impact": impact, "contra": frozenset(contra),
-            "pregnancy_safe": pregnancy_safe}
+            "pregnancy_safe": pregnancy_safe, "risk": frozenset(risk)}
+
+
+# Mechanisms the session's edges carry, in `engine.movement_risk`'s vocabulary.
+# A 72-year-old with osteoporosis and hypertension had every flexion exercise
+# removed from her main workout and still opened each session with an inchworm —
+# a forward fold to the floor, head down, weight on the wrists — and closed it
+# with a supine twist and child's pose.
+_FOLD = ("spinal_flexion",)
+_INCHWORM = ("spinal_flexion", "intracranial_pressure", "wrist_weight_bearing")
 
 
 _WARMUP = {
@@ -51,7 +62,8 @@ _WARMUP = {
         _w("Bodyweight squat — 10 slow reps", contra=["bad_knee", "knee_replacement"]),
         _w("Ankle circles — 10 each direction"),
         _w("Glute bridge — 12 reps", pregnancy_safe=False),
-        _w("Walking lunge — 8 each leg", contra=["bad_knee", "knee_replacement"]),
+        _w("Walking lunge — 8 each leg", contra=["bad_knee", "knee_replacement"],
+           risk=["fall_risk"]),
     ],
     "core": [
         _w("Cat-cow — 10 reps"),
@@ -69,7 +81,7 @@ _WARMUP = {
         _w("Bodyweight squat — 10 reps", contra=["bad_knee", "knee_replacement"]),
         _w("High knees — 30 sec", impact="high",
            contra=["hypertension", "heart_disease", "bad_knee"], pregnancy_safe=False),
-        _w("Inchworm — 5 reps", contra=["lower_back_pain", "wrist_injury"]),
+        _w("Inchworm — 5 reps", contra=["lower_back_pain", "wrist_injury"], risk=_INCHWORM),
     ],
     "cardio": [
         _w("Brisk walk or light jog — 3 min"),
@@ -101,7 +113,7 @@ _COOLDOWN = {
         _w("Cross-body shoulder stretch — 30 sec each side", contra=["shoulder_injury"]),
         _w("Overhead tricep stretch — 30 sec each arm", contra=["shoulder_injury"]),
         _w("Lat stretch in doorway — 30 sec each side", contra=["shoulder_injury"]),
-        _w("Child's pose — 60 sec", contra=["bad_knee"]),
+        _w("Child's pose — 60 sec", contra=["bad_knee"], risk=_FOLD),
         _w("Deep belly breathing — 5 breaths"),
     ],
     "lower": [
@@ -111,22 +123,23 @@ _COOLDOWN = {
            contra=["hip_injury", "bad_knee"]),
         _w("Calf stretch against wall — 30 sec each leg"),
         _w("Supine spinal twist — 30 sec each side",
-           contra=["herniated_disc"], pregnancy_safe=False),
-        _w("Child's pose — 60 sec", contra=["bad_knee"]),
+           contra=["herniated_disc"], pregnancy_safe=False, risk=_FOLD),
+        _w("Child's pose — 60 sec", contra=["bad_knee"], risk=_FOLD),
     ],
     "core": [
         _w("Supine spinal twist — 30 sec each side",
-           contra=["herniated_disc"], pregnancy_safe=False),
-        _w("Child's pose — 60 sec", contra=["bad_knee"]),
+           contra=["herniated_disc"], pregnancy_safe=False, risk=_FOLD),
+        _w("Child's pose — 60 sec", contra=["bad_knee"], risk=_FOLD),
         _w("Hip flexor stretch (lunge) — 30 sec each side", contra=["bad_knee"]),
         _w("Cobra stretch — 30 sec",
-           contra=["herniated_disc", "lower_back_pain"], pregnancy_safe=False),
+           contra=["herniated_disc", "lower_back_pain"], pregnancy_safe=False,
+           risk=["spinal_extension"]),
         _w("Deep belly breathing — 5 breaths"),
     ],
     "full": [
-        _w("Child's pose — 60 sec", contra=["bad_knee"]),
+        _w("Child's pose — 60 sec", contra=["bad_knee"], risk=_FOLD),
         _w("Supine spinal twist — 30 sec each side",
-           contra=["herniated_disc"], pregnancy_safe=False),
+           contra=["herniated_disc"], pregnancy_safe=False, risk=_FOLD),
         _w("Quad stretch — 30 sec each leg", contra=["bad_knee"]),
         _w("Shoulder cross-body stretch — 30 sec each arm", contra=["shoulder_injury"]),
         _w("Deep belly breathing — 5 breaths"),
@@ -141,8 +154,10 @@ _COOLDOWN = {
 }
 
 _COOLDOWN_SUBSTITUTES = [
-    _w("Seated forward fold, knees soft — 30 sec"),
-    _w("Seated side bend — 30 sec each side"),
+    _w("Seated forward fold, knees soft — 30 sec", risk=_FOLD),
+    _w("Seated side bend — 30 sec each side", risk=_FOLD),
+    _w("Standing chest opener, hands clasped behind — 30 sec"),
+    _w("Seated knee hug, one leg at a time — 20 sec each side"),
     _w("Neck tilt, ear to shoulder — 20 sec each side"),
     _w("Standing calf stretch — 30 sec each leg"),
     _w("Deep belly breathing — 5 breaths"),
@@ -159,26 +174,32 @@ _FOCUS_WARMUP_TYPE = {
 }
 
 
-def _gate_movements(items, subs, avoid_tags, withhold_impact, is_pregnant):
+def _gate_movements(items, subs, avoid_tags, withhold_impact, is_pregnant,
+                    risks=frozenset()):
     """The same checks the exercise pool runs, applied to the session's edges.
 
     Withheld lines are replaced from `subs` rather than dropped, so a restricted
     practitioner gets a warm-up of the same length as everyone else instead of a
-    visibly shorter one.
+    visibly shorter one. A substitute passes the same gate: the cool-down's
+    fallback was a seated forward fold, which is the movement the osteoporosis
+    restriction that triggered the substitution exists to prevent.
     """
+    def blocked(item):
+        return bool(avoid_tags & item["contra"]
+                    or risks & item["risk"]
+                    or (withhold_impact and item["impact"] == "high")
+                    or (is_pregnant and not item["pregnancy_safe"]))
+
     kept, used = [], set()
     for item in items:
-        blocked = (avoid_tags & item["contra"]
-                   or (withhold_impact and item["impact"] == "high")
-                   or (is_pregnant and not item["pregnancy_safe"]))
-        if not blocked:
+        if not blocked(item):
             kept.append(item["text"])
             used.add(item["text"])
     if len(kept) < len(items):
         for sub in subs:
             if len(kept) >= len(items):
                 break
-            if sub["text"] in used or avoid_tags & sub["contra"]:
+            if sub["text"] in used or blocked(sub):
                 continue
             kept.append(sub["text"])
             used.add(sub["text"])
@@ -186,17 +207,17 @@ def _gate_movements(items, subs, avoid_tags, withhold_impact, is_pregnant):
 
 
 def _warmup_for(focus: str, avoid_tags=frozenset(), withhold_impact=False,
-                is_pregnant=False) -> list:
+                is_pregnant=False, risks=frozenset()) -> list:
     items = _WARMUP.get(_FOCUS_WARMUP_TYPE.get(focus, "full"), _WARMUP["full"])
     return _gate_movements(items, _WARMUP_SUBSTITUTES, frozenset(avoid_tags),
-                           withhold_impact, is_pregnant)
+                           withhold_impact, is_pregnant, frozenset(risks))
 
 
 def _cooldown_for(focus: str, avoid_tags=frozenset(), withhold_impact=False,
-                  is_pregnant=False) -> list:
+                  is_pregnant=False, risks=frozenset()) -> list:
     items = _COOLDOWN.get(_FOCUS_WARMUP_TYPE.get(focus, "full"), _COOLDOWN["full"])
     return _gate_movements(items, _COOLDOWN_SUBSTITUTES, frozenset(avoid_tags),
-                           withhold_impact, is_pregnant)
+                           withhold_impact, is_pregnant, frozenset(risks))
 
 
 # ── Goal-based prescription ───────────────────────────────────────────────────
@@ -871,13 +892,27 @@ _PRACTICE_SUBSTITUTES = {
 }
 
 
-def _gate_practices(lines, conditions, is_pregnant):
+# The same practices by what they do, in `engine.movement_risk`'s vocabulary. A
+# 78-year-old cardiac patient's Kapha rest day prescribed five rounds of sun
+# salutation — repeated forward folds, the head dropped below the heart, the
+# weight on the wrists — because the condition list above names neither age nor
+# the mechanisms. The Vata day's "Legs-Up-The-Wall" is an inversion.
+_PRACTICE_RISK = {
+    "sun salutation": {"spinal_flexion", "intracranial_pressure", "wrist_weight_bearing"},
+    "legs-up-the-wall": {"intracranial_pressure"},
+}
+_PRACTICE_SUBSTITUTES["legs-up-the-wall"] = (
+    "Restorative rest — lie on your side with a pillow between the knees, or sit "
+    "reclined against cushions — 10 min of slow breathing")
+
+
+def _gate_practices(lines, conditions, is_pregnant, risks=frozenset()):
     """Withhold a restricted practice from the practitioner it is restricted for,
     and put something equivalent in its place."""
     tokens = {str(c).lower() for c in conditions if c}
     if is_pregnant:
         tokens.add("pregnancy")
-    if not tokens:
+    if not tokens and not risks:
         return list(lines)
     out = []
     for line in lines:
@@ -889,6 +924,11 @@ def _gate_practices(lines, conditions, is_pregnant):
             if any(tok in uc or uc in tok for tok in contra for uc in tokens):
                 swapped = _PRACTICE_SUBSTITUTES[practice]
                 break
+        if swapped is None:
+            for practice, mechanisms in _PRACTICE_RISK.items():
+                if practice in low and mechanisms & set(risks):
+                    swapped = _PRACTICE_SUBSTITUTES[practice]
+                    break
         out.append(swapped or line)
     return out
 
@@ -1048,6 +1088,59 @@ def _condition_contra_tags(medical_history) -> set:
         tags.add(key)
         tags.update(_CONDITION_TO_EXERCISE_CONTRA.get(key, []))
     return tags
+
+
+# ── Mechanisms ────────────────────────────────────────────────────────────────
+#
+# The contraindication tokens above name body parts, and 62 of the 70 conditions
+# onboarding offers are not body parts — so they changed nothing. A glaucoma
+# patient was given decline push-ups and heavy triples; someone with epilepsy a
+# barbell over the face; osteoporosis kept the crunches, twists and side bends
+# its fracture mechanism is about, because only the axial lifts carried its tag.
+#
+# `risk_tags` on each movement name what it does (`gym_library/mechanisms.py`),
+# and `engine.movement_risk` — the map the yoga engine already used — names the
+# conditions each mechanism endangers. One map, both features.
+#
+# Past sixty, head-below-heart positions are withheld as the yoga engine does.
+# Fall risk is not blanket-applied by age here: a loaded lunge is one thing, but
+# balance and stepping are what older adults most need to keep, and the
+# conditions that make a fall likely — or dangerous — reach it on their own.
+_SENIOR_RISKS = frozenset({"intracranial_pressure"})
+
+# Joint conditions for which landing impact is the aggravating load. Obesity,
+# age and training age already withheld impact; osteoarthritis, the commonest
+# joint disease there is, did not.
+_IMPACT_CONDITIONS = ("arthritis", "gout", "osteoporosis", "osteopenia", "fibromyalgia",
+                      "lupus", "neuropathy", "knee_replacement", "hip_replacement",
+                      "plantar", "chronic_fatigue", "long_covid", "varicose",
+                      # Declared rather than computed: `bmi_category` withheld
+                      # impact, and the same person saying "obesity" did not.
+                      "obes")
+
+
+def _conditions_and_injuries(user_profile) -> list:
+    return [*(user_profile.get("medical_history") or []),
+            *(user_profile.get("injuries_or_limitations") or [])]
+
+
+def _avoided_risks(user_profile, extra=()) -> set:
+    """Mechanisms this practitioner's movements must not carry."""
+    risks = condition_risk_tags(user_profile.get("medical_history") or [])
+    risks |= injury_risk_tags(user_profile.get("injuries_or_limitations") or [])
+    if _age_group(user_profile.get("age")) == "senior":
+        risks |= _SENIOR_RISKS
+    risks |= {str(t).lower() for t in extra or ()} & RISK_VOCAB
+    return risks
+
+
+def _withholds_impact(user_profile) -> bool:
+    if _bmi_group(user_profile.get("bmi_category")) == "obese":
+        return True
+    if _age_group(user_profile.get("age")) in ("senior", "youth"):
+        return True
+    return any(term in str(c).lower() for c in _conditions_and_injuries(user_profile)
+               for term in _IMPACT_CONDITIONS)
 
 
 # ── Equipment ─────────────────────────────────────────────────────────────────
@@ -1231,10 +1324,11 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None,
     # is declining by 60 whether or not anyone has said so, which is the reasoning
     # the yoga engine already uses for its blanket senior exclusions.
     age_group = _age_group(user_profile.get("age"))
-    bmi_group = _bmi_group(user_profile.get("bmi_category"))
     if age_group in ("senior", "youth"):
         allowed_levels = [lv for lv in allowed_levels if lv != "advanced"]
         avoid_tags = avoid_tags | _AGE_AVOID_TAGS
+    risks = _avoided_risks(user_profile, extra_avoid_tags)
+    withhold_impact = _withholds_impact(user_profile)
 
     scored = []
     for ex in exercises:
@@ -1301,13 +1395,13 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None,
         # anything and a 65-year-old was offered jumping jacks. The beginner gate
         # above had the same fault and was fixed; this one was missed, which is
         # why `_is_impact` now backs both rather than each testing its own thing.
-        if age_group in ("senior", "youth") and _is_impact(ex):
-            continue
         # And for a body carrying enough mass that the landing forces are the
-        # limiting factor rather than the muscles. Resistance work is untouched —
-        # squats, lunges and the whole library stay; it is the airborne half that
-        # goes.
-        if bmi_group == "obese" and _is_impact(ex):
+        # limiting factor rather than the muscles, and for the joint conditions
+        # landing aggravates. Resistance work is untouched — squats, lunges and
+        # the whole library stay; it is the airborne half that goes.
+        if withhold_impact and _is_impact(ex):
+            continue
+        if risks.intersection(ex.get("risk_tags") or ()):
             continue
         # Conditioning is exempt from the goal gate. The dataset marks cardio
         # unsuitable for `muscle_gain` and `strength` — true of what it builds,
@@ -2709,14 +2803,15 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
                    week=1, user_id="default", strength_level="beginner", gender="male",
                    dosha="vata", bodyweight=None, with_finisher=False,
                    conditioning_pool=(), preferred_ids=(), variant=0,
-                   loadable_first=False):
+                   loadable_first=False, extra_avoid_tags=()):
     if focus == "rest":
         recovery = dict(_REST_DAY_RECOVERY.get(dosha, _REST_DAY_RECOVERY["vata"]))
         recovery["activities"] = _gate_practices(
             recovery["activities"],
             set(user_profile.get("medical_history") or [])
             | set(user_profile.get("injuries_or_limitations") or []),
-            bool(user_profile.get("pregnancy_or_nursing")))
+            bool(user_profile.get("pregnancy_or_nursing")),
+            _avoided_risks(user_profile, extra_avoid_tags))
         return {
             "day": day_num, "day_name": day_name,
             "focus": "Rest & Recovery", "type": "recovery",
@@ -2758,11 +2853,14 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     # when the caller remembers to say so is not safe.
     edge_avoid = set(user_profile.get("injuries_or_limitations") or [])
     edge_avoid |= _condition_contra_tags(user_profile.get("medical_history") or [])
+    # The rare-condition classifier's tags reached the exercise pool and not the
+    # warm-up beside it.
+    edge_avoid |= {str(t).lower() for t in extra_avoid_tags or ()}
     edge_age = _age_group(user_profile.get("age"))
-    edge_bmi = _bmi_group(user_profile.get("bmi_category"))
     if edge_age in ("senior", "youth"):
         edge_avoid |= _AGE_AVOID_TAGS
-    withhold_impact = edge_bmi == "obese" or edge_age in ("senior", "youth")
+    withhold_impact = _withholds_impact(user_profile)
+    edge_risks = _avoided_risks(user_profile, extra_avoid_tags)
     is_pregnant = bool(user_profile.get("pregnancy_or_nursing"))
 
     pool = []
@@ -2845,9 +2943,10 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         # cardio in it at all.
         "focus": _focus_label(focus, main_workout),
         "type": "cardio" if "cardio" in focus else "strength",
-        "warmup": _warmup_for(focus, edge_avoid, withhold_impact, is_pregnant),
+        "warmup": _warmup_for(focus, edge_avoid, withhold_impact, is_pregnant, edge_risks),
         "main_workout": main_workout,
-        "cooldown": _cooldown_for(focus, edge_avoid, withhold_impact, is_pregnant),
+        "cooldown": _cooldown_for(focus, edge_avoid, withhold_impact, is_pregnant,
+                                  edge_risks),
         # What was BUILT, not what was asked for. The client shows this as the
         # session-length chip, and it used to echo the preference straight back —
         # so a 60-minute heading sat above 26 minutes of work. Same lesson the
@@ -3018,6 +3117,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
                 with_finisher=i in finisher_days, conditioning_pool=conditioning_pool,
                 preferred_ids=preferred_ids, variant=day_variant[i],
                 loadable_first=not is_bodyweight_only,
+                extra_avoid_tags=extra_avoid_tags or (),
             )
             for i, focus in enumerate(schedule_focus)
         ]

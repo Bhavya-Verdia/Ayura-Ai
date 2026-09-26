@@ -22,9 +22,12 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from gym_library import schema  # noqa: E402
 from gym_library.clinical import CLINICAL  # noqa: E402
+from gym_library.mechanisms import MECHANISMS, risk_tags_by_movement  # noqa: E402
+from engine.movement_risk import RISK_VOCAB  # noqa: E402
 from gym_library.prose import INSTRUCTIONS  # noqa: E402
 from gym_library.movements_upper import ARMS, BACK, CHEST, SHOULDERS  # noqa: E402
 from gym_library.movements_lower import (CONDITIONING, CORE, LEGS,  # noqa: E402
@@ -325,6 +328,15 @@ def _modification(entry: dict) -> str:
 # --------------------------------------------------------------- assembly ---
 def build(upstream: dict, legacy: dict) -> tuple:
     out, errors, seen = [], [], set()
+    risk_by_name = risk_tags_by_movement()
+    spec_names = {e["name"] for e in SPEC}
+    for tag, group in MECHANISMS.items():
+        if tag not in RISK_VOCAB:
+            errors.append(f"mechanism {tag!r} is not in engine.movement_risk.RISK_VOCAB "
+                          "— no condition could ever reach it")
+        for name in group["movements"]:
+            if name not in spec_names:
+                errors.append(f"mechanism {tag!r} names {name!r}, which is not a movement")
     for entry in SPEC:
         name = entry["name"]
         if name in seen:
@@ -387,6 +399,10 @@ def build(upstream: dict, legacy: dict) -> tuple:
             "clinical_basis": "authored" if clin else "derived",
             "clinical_rationale": (clin or {}).get("why", ""),
             "pregnancy_safe": (clin["preg"] if clin else _pregnancy_safe(entry)),
+            # What the movement does, in the yoga engine's vocabulary, so a
+            # condition that is not a body part — glaucoma, epilepsy, a hernia —
+            # has something to reach. See `gym_library/mechanisms.py`.
+            "risk_tags": risk_by_name.get(name, []),
             # Derived from the movement's own properties, with any value the
             # clinical file states deliberately laid over the top.
             "dosha_suitability": (entry["dosha_suitability"]

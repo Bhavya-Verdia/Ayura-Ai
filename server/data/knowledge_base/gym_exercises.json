@@ -58,6 +58,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Repeated lumbar extension. Prone position rules it out prenatally.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "spinal_extension"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -139,6 +142,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead, but band tension is lowest at the top where the shoulder is most vulnerable.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -216,6 +220,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Heavy load hanging from the shoulder girdle, transmitted through the neck.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "neck_load"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -294,6 +301,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Unsupported hinge under load.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -370,6 +378,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Self-limiting and light — the resistance is your own lean.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -447,6 +456,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the barbell shrug.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "neck_load"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -526,6 +538,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Light, but performed face down.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "spinal_extension"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -612,6 +627,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Heaviest axial load in the library. Breath-holding against a maximal pull is the mechanism.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -693,6 +711,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "A plank under a rowing load; the trunk and the supporting shoulder both work hard.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -769,6 +790,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Long-lever shoulder extension; the straight arm is what makes it a shoulder movement.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -850,6 +872,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Sustained lumbar extension, performed lying face down.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "spinal_extension"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -930,6 +955,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Neutral close grip is the kindest overhead pull; keeps `shoulder_injury` but not the cuff tag.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1007,6 +1033,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Postural drill against a wall. Suitable for almost everyone, including prenatally.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1083,6 +1110,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Upright, light, and fully self-limiting.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1162,6 +1190,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Sustained loaded spinal flexion hold; the hinge position is also unavailable as the abdomen grows.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -1238,6 +1267,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The bench removes the spinal load entirely. This is the row that survives a back restriction.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1321,6 +1351,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the pull-up, with the supinated grip adding elbow load.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1399,6 +1432,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Bodyweight, spine neutral and supported by the feet. Among the safest pulls in the library.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1476,6 +1510,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The bench takes most of the spinal load, so the disc restriction is dropped; still a hinged position.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1558,6 +1593,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Full overhead hang loads the shoulder at end range; hanging is also avoided as the abdomen loads.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1635,6 +1673,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Seated and supported; the low back still works to hold the torso upright.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1712,6 +1751,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Same hinged position as a barbell row.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -1793,6 +1833,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead start position. Seated and supported, so no prenatal restriction.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1868,6 +1909,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Tension is lowest at full extension, where the elbow is most exposed.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1945,6 +1987,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Fixed supinated grip gives the elbow and wrist no room to adjust.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2020,6 +2063,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Constant tension holds the elbow under load through the whole range.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2093,6 +2137,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Neutral grip with constant tension; the kindest loaded curl.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2170,6 +2215,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Braced arm removes the escape route the standing versions allow.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2245,6 +2291,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Free rotation lets the wrist and elbow find a comfortable path.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2320,6 +2367,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The angled bar eases the wrist; the elbow load is unchanged.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2393,6 +2441,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Neutral grip is the most forgiving curl for the elbow and wrist.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2472,6 +2521,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the inverted row; the supinated grip loads the elbow.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2547,6 +2597,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loads the elbow at full extension, where the joint is least protected.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2622,6 +2673,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The practitioner sets the resistance, so it cannot exceed what they tolerate.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2699,6 +2751,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Pronated grip loads the lateral elbow — the tennis-elbow mechanism.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2774,6 +2827,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As above — self-limiting by construction.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2854,6 +2908,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Self-limiting and non-impact, but the effort ceiling is as high as anything here.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -2935,6 +2990,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Sustained shoulder work at a cardiovascular intensity.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -3012,6 +3068,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The most universally available conditioning there is. No restriction in the library excludes it.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -3100,6 +3157,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Maximal-effort whole-body work combining landing impact with a floor transition.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -3175,6 +3235,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supported, non-impact, and among the better prenatal options. **Flagged for review** — the merged duplicate said otherwise.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -3256,6 +3317,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Sustained high effort with form degrading as the circuit progresses.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -3341,6 +3403,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Running mechanics in place; landing force through knee and ankle.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -3416,6 +3479,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Walking mechanics with the incline raising the effort rather than the impact.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -3501,6 +3567,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Repetitive landing impact at high frequency.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -3586,6 +3653,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Repeated bilateral landing with the arms overhead.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -3665,6 +3733,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Plank position held under a cardiovascular load; shoulders support throughout.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -3747,6 +3818,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Repeated loaded hinge at high cadence, where form fails as fatigue arrives.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -3834,6 +3906,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Near-maximal cardiovascular effort with running impact.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -3912,6 +3985,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Repeated single-leg knee extension under bodyweight.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "fall_risk",
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -3989,6 +4066,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Non-impact and fully supported; resistance is chosen.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -4063,6 +4141,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Non-weight-bearing. Survives essentially every musculoskeletal restriction.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -4137,6 +4218,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine, so not prenatal — but the floor caps the range, which is why it carries no shoulder restriction: it is the press a restricted shoulder keeps.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4216,6 +4300,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Standing, so no supine restriction, but the same end-range shoulder position as a fly.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4300,6 +4385,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Deep shoulder extension under bodyweight — the position most associated with anterior shoulder strain.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4383,6 +4471,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Head-below-heart position with the shoulder near end range.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4463,6 +4555,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Same shoulder position as a dip, with the load chosen rather than fixed.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4537,6 +4630,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As above. Deliberately untagged for the shoulder so that someone with a shoulder problem is left with a pressing option.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4614,6 +4708,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine, and takes the shoulder to end-range horizontal abduction under load.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4694,6 +4791,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Inclined rather than flat, but still a reclined position under a loaded bar.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -4774,6 +4874,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Reclined, and the incline shifts load onto the front of the shoulder.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4851,6 +4954,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Seated and fixed-path at end-range shoulder abduction.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4929,6 +5033,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Upright and light. The mildest press in the library and the one a pregnant practitioner can keep.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5011,6 +5116,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine, and the heaviest horizontal press available. Lying flat is avoided after the first trimester.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -5091,6 +5199,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine. Dumbbells allow a deeper stretch at the bottom than a bar.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5172,6 +5283,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The most prenatal-friendly press: upright, self-limiting, no supine position.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5253,6 +5367,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the push-up, with less load through the wrist and shoulder.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5333,6 +5450,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine and fixed-path; the path is what a restricted shoulder cannot adjust.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5414,6 +5532,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded wrist extension. Trunk stays off the floor, so it is workable in pregnancy for as long as the belly allows.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5495,6 +5616,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The longest anti-extension lever there is, with the shoulders holding the position.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5573,6 +5698,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Quadruped, low load, spine neutral. Safe for essentially everyone, including prenatally.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5650,6 +5776,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Weighted spinal flexion — the highest-load flexion movement in the library.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5729,6 +5859,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Repeated loaded spinal flexion. Abdominal separation makes this unsuitable prenatally.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "neck_load",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5806,6 +5941,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine. One of the better trunk drills for a sensitive back, since the range is set by the back staying flat.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5883,6 +6019,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded lateral flexion of the lumbar spine.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5960,6 +6099,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the crunch, through a longer range.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6037,6 +6180,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Plank on an unstable base; the shoulders support throughout.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6115,6 +6262,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Load hangs from the shoulder girdle through the neck; the spine itself stays neutral and braced.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "neck_load"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6196,6 +6346,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine bridge held while the trunk resists tilt.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6276,6 +6427,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Hanging loads the shoulder throughout; the pelvis must tilt before the legs move.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "seizure_risk",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6357,6 +6513,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine with a long lever; the low back lifts the moment the trunk gives.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6437,6 +6597,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supported on the forearms, so less shoulder load than hanging.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "seizure_risk",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6517,6 +6682,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine with a long lever; the low back arches as soon as the abdominals are outmatched.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6592,6 +6761,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Anti-rotation: the trunk resists movement rather than producing it. Safe prenatally and with most back restrictions.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6671,6 +6841,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The trunk resists extension against gravity — a demand that rises sharply as the abdomen loads.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6753,6 +6924,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded rotation of a flexed spine — the position discs tolerate least.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6831,6 +7006,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The supporting shoulder carries the bodyweight.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6909,6 +7085,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Rotation under load, though driven from the hips rather than the lumbar spine.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6986,6 +7165,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "One-sided load the trunk resists laterally.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7065,6 +7245,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Deep knee flexion in the kneeling position; the spine is unloaded.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7140,6 +7321,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Unloaded spinal movement through a self-selected range. Suitable prenatally.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7214,6 +7396,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded forward fold into a plank; the wrists carry bodyweight at the far end.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "intracranial_pressure",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7284,6 +7470,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Unloaded joint preparation.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7363,6 +7550,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Hinge pattern with the load pulling backwards rather than down — the least spinal compression of any hinge.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7442,6 +7630,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Spine stays neutral and supported, so the disc restriction is dropped; the low back still resists extension at the top.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_extension"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7524,6 +7716,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded single-leg work with a bar on the back — balance fails before the muscles do.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "fall_risk",
+      "neck_load",
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7607,6 +7804,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As above with an axial load and a balance demand on top.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "fall_risk",
+      "neck_load",
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7680,6 +7882,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Lightest ankle loading available.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7761,6 +7964,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded single-leg knee extension; box height decides how much.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "fall_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7847,6 +8053,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the back squat, plus a rack position the shoulder and wrist must hold.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -7922,6 +8132,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine, which rules it out after the first trimester. Otherwise among the gentlest hip movements.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7999,6 +8210,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Quadruped position; the low back arches if the range is chased.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8084,6 +8296,12 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Bar on the back through a hinge — the longest lever against the spine of anything here.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "neck_load",
+      "seizure_risk",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8169,6 +8387,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Ballistic hinge; the spine decelerates the bell at the bottom of every rep.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -8243,6 +8462,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Open-chain knee extension puts shear through the joint that closed-chain work does not.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8316,6 +8536,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Prone position rules it out prenatally; hamstring loading at the knee otherwise.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8389,6 +8610,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Bent knee moves the work to the soleus; ankle range is the same.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8462,6 +8684,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Seated and supported, so it keeps the hamstring work without the prone position.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8540,6 +8763,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine, and the single-leg version asks the low back to resist rotation.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8620,6 +8844,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Both feet planted, so the balance demand is low and the knee path is stable.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8696,6 +8921,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Full ankle range under bodyweight.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8775,6 +9001,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Sustained isometric knee flexion; the position is fixed and the load is bodyweight.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8853,6 +9080,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Lightest hinge in the library; tension is lowest at the bottom where the spine is most flexed.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8933,6 +9161,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Band tension is highest standing and lowest at depth, which is the opposite of where the knee is loaded.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9023,6 +9252,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The heaviest axial pull available, with a brace held against a maximal effort.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -9107,6 +9339,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Sustained loaded hinge; the hamstrings run out before the spine does, which is where it goes wrong.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -9196,6 +9431,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Axial load through the spine with a hard brace; the knee is at end-range flexion under that load.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "neck_load",
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -9277,6 +9517,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "No external load; depth is self-selected.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9354,6 +9595,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The chair sets the depth, so the knee never passes into an unmanaged range.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9435,6 +9677,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Deep single-leg flexion with the rear foot elevated; a demanding position for the front knee.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "fall_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9516,6 +9761,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Single-leg knee flexion under load; the dumbbells can be dropped, which the bar cannot.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "fall_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9597,6 +9845,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Same hinge, lighter load, dumbbells tracking closer to the body.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9677,6 +9926,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The chest-held weight keeps the torso upright and the load light. The squat that survives most restrictions.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9757,6 +10007,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Fixed path holds the knee in one line whether or not that is the practitioner's line.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9837,6 +10090,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Deep knee flexion under heavy load; the low back rounds off the pad at depth.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9918,6 +10174,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Stepping back rather than forward keeps the front shin vertical and is markedly kinder to the knee.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "fall_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10008,6 +10267,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the conventional pull, with the wide stance loading the hip in abduction.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -10081,6 +10343,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Passive stretch against a wall, range self-selected.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10154,6 +10417,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "End-range hip abduction; the load is the weight of the legs.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10227,6 +10491,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "End-range knee flexion, performed lying face down.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10302,6 +10567,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Passive hip external rotation with a forward hinge.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10375,6 +10641,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Unloaded joint preparation through the hip's own range.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10454,6 +10721,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Adds internal-to-external rotation under load, through the arc the cuff is most exposed in.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10528,6 +10796,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Lightest abduction available; band tension is least where the arc is most sensitive.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10599,6 +10868,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Posterior shoulder work, which is generally protective. Hinged position rules it out prenatally.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10678,6 +10948,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the dumbbell version, with tension held at the bottom.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10749,6 +11020,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Standing and upright, so it keeps the posterior work without the hinge.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10822,6 +11094,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "External rotation with abduction — the movement most often prescribed FOR a shoulder, not against it.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10898,6 +11171,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Flexion to shoulder height with a long lever.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10982,6 +11256,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Near-vertical loading with the head well below the heart.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11060,6 +11338,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded wrist extension in a plank; the plank position is unavailable as the abdomen loads.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11134,6 +11415,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Light posterior shoulder work, performed face down.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11210,6 +11492,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the T-raise, with more shoulder flexion.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11281,6 +11564,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the rear delt raise.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11357,6 +11641,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Abduction to shoulder height. Light, but directly through the painful arc.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11436,6 +11721,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Internal rotation with the arm abducted — the classic impingement position.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11520,6 +11806,13 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Full inversion under bodyweight; blood pressure and wrist load are both at their limit.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "neck_load",
+      "seizure_risk",
+      "spinal_extension",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -11600,6 +11893,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead, but band tension is lowest at the bottom and the load is small.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11681,6 +11975,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead pressing with a bar; the bracing required raises intrathoracic pressure.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -11760,6 +12057,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead, but seated and independently loaded so the arms find their own path.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11842,6 +12140,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Less overhead load and less inversion than the floor version.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "intracranial_pressure",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11920,6 +12222,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supported and fixed-path; suitable when balance rather than the shoulder is the limit.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12005,6 +12308,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Bodyweight overhead press with the head below the heart.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12092,6 +12399,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Explosive overhead drive with an axial load and a hard brace.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "seizure_risk",
+      "spinal_extension"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -12164,6 +12476,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Unloaded joint preparation.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12238,6 +12551,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Scapular retraction against light resistance. Safe for essentially everyone.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12309,6 +12623,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Rotator-cuff rehab loading. Deliberately untagged: withholding it from a shoulder problem removes the treatment.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12386,6 +12701,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Scapular rehab drill against a wall. The derived rule withheld it from shoulder problems, which is backwards.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12459,6 +12775,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Lightest elbow extension available.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12544,6 +12861,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Internally rotated shoulder behind the torso — a poor position under load.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12622,6 +12942,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Self-limiting, but the elbow is the only joint working.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12704,6 +13027,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded wrist extension with the elbows tracking close.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12784,6 +13110,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The narrowest hand position puts the wrist at its end range.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12860,6 +13189,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As above; two hands make it steadier, not lighter on the shoulder.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12937,6 +13269,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As above, with the angled bar easing the wrist only.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13012,6 +13347,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine, and loads the elbow at end-range flexion.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13087,6 +13425,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the pushdown, one side at a time.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13163,6 +13502,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead position stretches the long head and loads the shoulder to hold it there.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13236,6 +13576,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Short lever, light load, elbow working in mid-range.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13312,6 +13653,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead under constant cable tension.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13387,6 +13729,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Standing and self-limiting, but the elbow is the working joint.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13468,6 +13811,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine press; the narrow grip concentrates load at the elbow.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -13548,6 +13894,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Elevated hands reduce both the load and the wrist angle.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",

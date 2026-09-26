@@ -130,6 +130,33 @@ def _exercise_rows():
     } for ex in sorted(gym_exercises, key=lambda e: (_lift_class(e) or "zz", e["name"]))]
 
 
+def _risk_mechanism_rows():
+    """One row per mechanism group — the unit a reviewer rules on.
+
+    `risk_tags` are authored by mechanism in `gym_library/mechanisms.py`, each
+    group with its reason stated once, so the review is a confirmation of the
+    group rather than 70 separate rows."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from gym_library.mechanisms import MECHANISMS
+    from engine.movement_risk import _CONDITION_RISK_TAGS, _INJURY_RISK_TAGS
+
+    rows = []
+    for tag, group in sorted(MECHANISMS.items()):
+        rows.append({
+            "mechanism": tag,
+            "why": group["why"],
+            "movements": "; ".join(sorted(group["movements"])),
+            "conditions_that_withhold_it": ", ".join(sorted(
+                k for k, v in _CONDITION_RISK_TAGS.items() if tag in v)),
+            "injuries_that_withhold_it": ", ".join(sorted(
+                k for k, v in _INJURY_RISK_TAGS.items() if tag in v)),
+            "movements_missing__list": "",
+            "movements_wrongly_included__list": "",
+            "vaidya_ruling": "",
+        })
+    return rows
+
+
 def _write_csv(path, rows):
     # lineterminator="\n": csv defaults to CRLF, but .gitattributes normalises the
     # repo to LF, so the default made every regeneration a diff of every row.
@@ -145,6 +172,7 @@ def main():
     exercises = _exercise_rows()
     _write_csv(OUT / "gym_mechanism_review.csv", coverage)
     _write_csv(OUT / "gym_exercise_review.csv", exercises)
+    _write_csv(OUT / "gym_risk_mechanism_review.csv", _risk_mechanism_rows())
 
     flagged = [r for r in coverage if r["inconsistent"]]
     reviewed = sum(1 for e in gym_exercises if e.get("contraindications_reviewed"))
@@ -155,6 +183,8 @@ def main():
         "mechanism_groups": len({(r["movement_class"], r["muscle_group"]) for r in coverage}),
         "tag_rules": len(coverage),
         "tag_rules_applied_inconsistently": len(flagged),
+        "risk_mechanism_groups": len(_risk_mechanism_rows()),
+        "movements_with_a_risk_mechanism": sum(1 for e in gym_exercises if e.get("risk_tags")),
     }
     (OUT / "gym_review_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     print("  wrote gym_review_summary.json")

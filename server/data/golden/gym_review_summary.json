@@ -4,5 +4,7 @@
   "unreviewed": 173,
   "mechanism_groups": 12,
   "tag_rules": 44,
-  "tag_rules_applied_inconsistently": 33
+  "tag_rules_applied_inconsistently": 33,
+  "risk_mechanism_groups": 8,
+  "movements_with_a_risk_mechanism": 70
 }

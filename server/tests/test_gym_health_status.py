@@ -1,0 +1,160 @@
+"""The gym plan for people who are not healthy 30-year-olds.
+
+Before this file, 8 of the 70 conditions onboarding offers changed a gym plan at
+all. The library's contraindication tokens name body parts, and glaucoma,
+epilepsy, vertigo, a hernia and rheumatoid arthritis are not body parts. These
+tests are behavioural — they build the plan and read it — because every earlier
+gate in this engine that was tested as a unit failed open without anyone
+noticing when the data under it changed.
+"""
+import pytest
+
+from engine.movement_risk import RISK_VOCAB, condition_risk_tags
+from services.gym_plan_engine import generate_gym_plan, gym_exercises
+
+_BASE = {"id": "hs", "age": 40, "gender": "female", "weight_kg": 65,
+         "fitness_level": "intermediate", "activity_level": "moderate",
+         "dominant_dosha": "kapha", "medical_history": []}
+_PREFS = {"gym_goal": "general_fitness", "available_equipment": ["full_gym"],
+          "strength_level": "intermediate", "workout_days_per_week": 5,
+          "workout_duration_minutes": 60, "cardio_preference": "heavy"}
+_BY_NAME = {e["name"]: e for e in gym_exercises}
+
+
+def _plan(**profile):
+    return generate_gym_plan({**_BASE, **profile}, _PREFS)
+
+
+def _prescribed(plan):
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            for ex in day["main_workout"]:
+                yield _BY_NAME[ex["exercise_name"]]
+
+
+def _edges(plan):
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            yield from day["warmup"]
+            yield from day["cooldown"]
+            yield from (day.get("rest_day_recovery") or {}).get("activities", [])
+
+
+# The onboarding ids, and the mechanism each must keep out of the plan.
+_CONDITION_MECHANISM = [
+    ("glaucoma", "intracranial_pressure"),
+    ("epilepsy", "seizure_risk"),
+    ("vertigo", "fall_risk"),
+    ("vertigo", "neck_load"),
+    ("osteoporosis", "spinal_flexion"),
+    ("rheumatoid_arthritis", "wrist_weight_bearing"),
+    ("lupus", "wrist_weight_bearing"),
+    ("ibd_crohns", "abdominal_pressure"),
+    ("ulcerative_colitis", "abdominal_pressure"),
+    ("hemorrhoids", "abdominal_pressure"),
+    ("parkinson", "fall_risk"),
+    ("peripheral_neuropathy", "fall_risk"),
+    ("cervical_spondylosis", "neck_load"),
+]
+
+
+@pytest.mark.parametrize("condition,mechanism", _CONDITION_MECHANISM)
+def test_no_prescribed_movement_carries_the_mechanism_a_condition_is_restricted_for(
+        condition, mechanism):
+    assert mechanism in condition_risk_tags([condition]), (
+        f"{condition} does not map to {mechanism} at all")
+    plan = _plan(medical_history=[condition])
+    offending = sorted({ex["name"] for ex in _prescribed(plan)
+                        if mechanism in ex.get("risk_tags", [])})
+    assert not offending, f"{condition}: {mechanism} via {offending}"
+
+
+@pytest.mark.parametrize("condition,mechanism", _CONDITION_MECHANISM)
+def test_the_mechanism_is_withheld_where_it_would_otherwise_appear(condition, mechanism):
+    """A gate that removes nothing is indistinguishable from one that works, if
+    the healthy plan never contained the movement to begin with. Each pairing
+    must be one the library actually carries."""
+    carriers = [e for e in gym_exercises if mechanism in e.get("risk_tags", [])]
+    assert carriers, f"no movement carries {mechanism}; the gate is decorative"
+
+
+def test_every_mechanism_the_library_names_is_one_a_condition_can_reach():
+    named = {t for e in gym_exercises for t in e.get("risk_tags", [])}
+    assert named <= RISK_VOCAB, sorted(named - RISK_VOCAB)
+    reachable = set().union(*(condition_risk_tags([c]) for c in (
+        "glaucoma", "epilepsy", "vertigo", "osteoporosis", "hernia",
+        "rheumatoid_arthritis", "spondylolisthesis", "cervical_spondylosis")))
+    assert named <= reachable, f"unreachable: {sorted(named - reachable)}"
+
+
+def test_osteoporosis_keeps_no_flexion_at_the_edges_of_the_session():
+    """A 72-year-old with osteoporosis had every flexion exercise removed from her
+    workout and still opened with an inchworm and closed with a supine twist and
+    child's pose — and the cool-down's substitute was a seated forward fold."""
+    plan = generate_gym_plan(
+        {**_BASE, "age": 72, "fitness_level": "beginner", "activity_level": "sedentary",
+         "medical_history": ["osteoporosis", "hypertension"]},
+        {**_PREFS, "available_equipment": ["dumbbells", "machines"],
+         "strength_level": "untrained", "workout_days_per_week": 3})
+    lines = " | ".join(_edges(plan)).lower()
+    for flexion in ("inchworm", "child's pose", "spinal twist", "forward fold",
+                    "side bend", "sun salutation"):
+        assert flexion not in lines, f"{flexion} reached an osteoporotic practitioner"
+
+
+def test_an_inversion_does_not_reach_a_glaucoma_patient_on_a_rest_day():
+    plan = _plan(medical_history=["glaucoma"], dominant_dosha="vata")
+    lines = " | ".join(_edges(plan)).lower()
+    assert "legs-up-the-wall" not in lines
+    assert "inchworm" not in lines
+
+
+def test_a_seventy_eight_year_old_cardiac_patient_is_not_given_sun_salutations():
+    plan = generate_gym_plan(
+        {**_BASE, "age": 78, "gender": "male", "fitness_level": "beginner",
+         "activity_level": "sedentary", "medical_history": ["heart_disease"],
+         "dominant_dosha": "kapha"},
+        {**_PREFS, "gym_goal": "endurance", "available_equipment": ["bodyweight"],
+         "strength_level": "untrained", "workout_days_per_week": 3})
+    assert "sun salutation" not in " | ".join(_edges(plan)).lower()
+
+
+@pytest.mark.parametrize("condition", ["osteoarthritis", "rheumatoid_arthritis", "gout",
+                                       "fibromyalgia", "peripheral_neuropathy"])
+def test_joint_conditions_withhold_landing_impact(condition):
+    """Obesity, age and training age withheld jumping; osteoarthritis, the
+    commonest joint disease there is, did not."""
+    plan = _plan(medical_history=[condition])
+    jumping = sorted({ex["name"] for ex in _prescribed(plan) if ex.get("impact") == "high"})
+    assert not jumping, f"{condition}: {jumping}"
+    edges = " | ".join(_edges(plan)).lower()
+    assert "jumping jacks" not in edges and "high knees" not in edges
+
+
+def test_the_gym_and_yoga_engines_read_one_condition_map():
+    """Two copies of a safety list is how they drift apart."""
+    import engine.movement_risk as shared
+    import services.yoga_plan_engine as yoga
+
+    assert yoga._CONDITION_RISK_TAGS is shared._CONDITION_RISK_TAGS
+    assert yoga._INJURY_RISK_TAGS is shared._INJURY_RISK_TAGS
+
+
+def test_more_than_a_handful_of_onboarding_conditions_change_the_plan():
+    """The measurement that found this: 8 of 70. Pinned as a floor so a change
+    that quietly disconnects the mechanism gate fails here."""
+    import hashlib
+    import json
+    import re
+    from pathlib import Path
+
+    src = Path(__file__).resolve().parents[2] / "client" / "src" / "constants" / "conditions.js"
+    ids = sorted(set(re.findall(r"id: *'([a-z_0-9]+)'", src.read_text())))
+
+    def digest(p):
+        p = {k: v for k, v in p.items() if k not in ("plan_id", "generated_at")}
+        return hashlib.md5(json.dumps(p, sort_keys=True, default=str).encode()).hexdigest()
+
+    base = digest(_plan())
+    live = [c for c in ids if digest(_plan(medical_history=[c])) != base]
+    assert len(live) >= 25, f"only {len(live)} of {len(ids)} conditions decide anything: {live}"
