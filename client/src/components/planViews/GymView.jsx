@@ -582,7 +582,7 @@ export function GymView({ plan }) {
       )}
 
       {/* ── Nutrition sync ── */}
-      {Object.keys(nutrition).length > 0 && (
+      {(Object.keys(nutrition).length > 0 || plan.nutrition_withheld?.length > 0) && (
         <div className="gym-nutrition-section">
           <h3 className="gym-tips-title"><Flame size={14} /> Nutrition Sync</h3>
           <div className="gym-nutrition-grid">
@@ -597,6 +597,14 @@ export function GymView({ plan }) {
               </div>
             ) : null)}
           </div>
+          {/* A suggestion removed by the screen and one never written look the
+              same unless the removal is said out loud. */}
+          {plan.nutrition_withheld?.map(w => (
+            <div key={w.field} className="gym-pool-notice">
+              <Info size={12} />
+              <span>A {w.field.replace(/_/g, ' ')} suggestion was withheld: it {w.reason}.</span>
+            </div>
+          ))}
         </div>
       )}
 

@@ -466,3 +466,52 @@ def test_a_beginners_warm_up_does_not_jump():
                              {**_PREFS, "available_equipment": ["bodyweight"]})
     edges = " | ".join(_edges(plan)).lower()
     assert "jumping jacks" not in edges and "high knees" not in edges
+
+
+# ── The coaching around the plan ──────────────────────────────────────────────
+
+def test_the_coaching_is_told_she_is_pregnant_and_what_the_plan_decided():
+    from services.gym_plan_enricher import build_plan_summary
+
+    profile = {**_BASE, "pregnancy_or_nursing": True, "medical_history": ["diabetes_type2"]}
+    plan = generate_gym_plan(profile, {**_PREFS, "gym_goal": "strength"})
+    summary = build_plan_summary(plan, profile, _PREFS)
+    assert summary["user"]["pregnancy_or_nursing"] is True
+    assert summary["safety"]["intensity_notice"]
+    assert "Diabetes" in summary["safety"]["before_you_train"]
+
+
+def test_a_meal_suggestion_naming_a_declared_allergen_is_withheld():
+    from services.gym_plan_enricher import screen_nutrition
+
+    kept, withheld = screen_nutrition(
+        {"pre_workout_meal": "A small bowl of curd with honey",
+         "post_workout_meal": "Moong dal khichdi with vegetables",
+         "hydration": "Warm water with a pinch of rock salt"},
+        {"allergies": ["dairy"]})
+    assert "pre_workout_meal" not in kept
+    assert kept["post_workout_meal"] and kept["hydration"]
+    assert withheld[0]["field"] == "pre_workout_meal" and "dairy" in withheld[0]["reason"]
+
+
+def test_an_animal_food_is_withheld_whatever_is_declared():
+    from services.gym_plan_enricher import screen_nutrition
+
+    kept, withheld = screen_nutrition({"post_workout_meal": "Two boiled eggs and toast"}, {})
+    assert not kept and withheld
+
+
+def test_a_string_allergy_does_not_empty_the_card():
+    """"dairy" iterated is d, a, i, r, y — and a one-letter term matches every
+    word there is."""
+    from services.gym_plan_enricher import screen_nutrition
+
+    kept, _ = screen_nutrition({"hydration": "Warm water through the session"},
+                               {"allergies": "dairy"})
+    assert kept.get("hydration")
+
+
+def test_the_prompt_no_longer_asks_for_a_seasonal_cut_the_numbers_do_not_make():
+    from services.gym_plan_enricher import SYSTEM_PROMPT
+
+    assert "reduce intensity by at least 50%" not in SYSTEM_PROMPT
