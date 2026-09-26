@@ -1126,6 +1126,78 @@ def test_load_scales_with_the_practitioner():
     assert novice[1] < veteran[0], f"training age ignored: {novice} vs {veteran}"
 
 
+def test_a_set_of_twenty_is_lighter_than_a_set_of_five():
+    """`_LIFT_BW` is a one-rep-max standard and the quoted range was that standard
+    ±15% whatever the set was, so an intermediate 75 kg lifter was given the same
+    80-107.5 kg squat for sets of 3-5 and for sets of 15-20 — the top of it their
+    whole 1RM, for twenty reps. A set is priced at the load whose max is its reps
+    plus the two in reserve the card tells them to leave."""
+    from services.gym_plan_engine import _get_weight_range, _rep_fraction
+
+    squat = next(e for e in gym_exercises if e["name"] == "Barbell Squat")
+    heavy = _kg(_get_weight_range(squat, "intermediate", "male", 75, reps="3-5"))
+    light = _kg(_get_weight_range(squat, "intermediate", "male", 75, reps="15-20"))
+    assert light[1] < heavy[0], f"reps ignored: 15-20 at {light}, 3-5 at {heavy}"
+    # Nothing is quoted at or above the lift's own max.
+    assert _rep_fraction("1-1") < 1.0
+    assert _rep_fraction("3-5") < 0.85
+
+
+def test_load_follows_muscle_not_mass():
+    """Strength scales with bodyweight to about the two-thirds, not one for one.
+    Linear scaling priced a 118 kg sedentary beginner's first deadlift as though
+    every extra kilo were muscle."""
+    from services.gym_plan_engine import _estimated_load
+
+    deadlift = next(e for e in gym_exercises if e["name"] == "Barbell Deadlift")
+    at_75 = _estimated_load(deadlift, "untrained", "male", 75, reps="15-20")[0]
+    at_118 = _estimated_load(deadlift, "untrained", "male", 118, reps="15-20")[0]
+    assert at_75 < at_118 < at_75 * (118 / 75) * 0.9, (at_75, at_118)
+
+
+def test_an_eighty_year_old_is_not_quoted_a_twenty_five_year_olds_load():
+    from services.gym_plan_engine import _estimated_load
+
+    bench = next(e for e in gym_exercises if e["name"] == "Dumbbell Bench Press")
+    young = _estimated_load(bench, "beginner", "female", 60, reps="10-12", age=25)[0]
+    old = _estimated_load(bench, "beginner", "female", 60, reps="10-12", age=80)[0]
+    assert old <= young * 0.65, f"age ignored: {old} at 80 vs {young} at 25"
+
+
+@pytest.mark.parametrize("profile", [
+    {"age": 11, "gender": "female", "weight_kg": 35},
+    {"age": 14, "gender": "male", "weight_kg": 45},
+    {"age": 30, "gender": "female", "weight_kg": 50},
+    {"age": 78, "gender": "female", "weight_kg": 55},
+])
+def test_no_barbell_lift_is_lighter_than_the_bar(profile):
+    """The bar weighs 20 kg before a plate goes on. A 14-year-old was prescribed a
+    13-18 kg barbell bench press and an 11-year-old a 6-8 kg one. With dumbbells
+    or a machine available, the bar waits until they have outgrown it."""
+    for goal in ("strength", "muscle_gain", "fat_loss", "general_fitness"):
+        plan = generate_gym_plan(
+            {**_YOGA_BASE_PROFILE, **profile, "fitness_level": "beginner"},
+            {"available_equipment": FULL_GYM, "gym_goal": goal,
+             "strength_level": "untrained", "workout_days_per_week": 3})
+        for week in plan["four_week_plan"]:
+            for day in week["days"]:
+                for ex in day["main_workout"]:
+                    assert not ex["weight_range"].startswith("Empty bar"), (
+                        f"{profile} {goal}: {ex['exercise_name']} {ex['weight_range']}")
+                    kg = _kg(ex["weight_range"])
+                    if kg and ex["equipment"] == "barbell" and "Curl" not in ex["exercise_name"] \
+                            and "Skullcrusher" not in ex["exercise_name"]:
+                        assert kg[0] >= 20, f"{profile} {goal}: {ex['exercise_name']} {kg}"
+
+
+def test_a_goblet_squat_is_one_dumbbell():
+    """Held at the chest in both hands. "per hand" reads as a pair."""
+    from services.gym_plan_engine import _get_weight_range
+
+    goblet = next(e for e in gym_exercises if e["name"] == "Goblet Squat")
+    assert "per hand" not in _get_weight_range(goblet, "intermediate", "male", 75)
+
+
 def test_a_one_arm_dumbbell_press_is_the_same_dumbbell():
     """The practitioner does the sides in turn — it is not half the weight. The
     unilateral discount only applies when the implement is shared between limbs."""

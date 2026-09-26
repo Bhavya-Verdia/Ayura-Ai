@@ -664,36 +664,105 @@ def _week_load_factor(scheme: str, week: int) -> float:
     return factors[min(max(week, 1), len(factors)) - 1]
 
 
-def _get_weight_range(ex: dict, strength_level: str, gender: str,
-                      bodyweight: float | None = None,
-                      week_factor: float = 1.0) -> str:
-    """A starting load for THIS lift, at this bodyweight and this training age."""
+# ── What a set of N costs ────────────────────────────────────────────────────
+#
+# `_LIFT_BW` is a one-rep-max standard, and the quoted load used to be that
+# standard ±15% whatever the set was: an intermediate 75 kg lifter was given the
+# same 80–107.5 kg squat for sets of 3-5 and for sets of 15-20. The top of that
+# range is their whole 1RM, so the plan asked for twenty reps at a weight they
+# could lift once. Every higher-rep scheme — fat loss, endurance, muscle gain,
+# which is most users — was over-prescribed by the whole of the gap.
+#
+# A set of N taken to two reps short of failure (the "last 2 reps are hard" the
+# card already tells them) is lifted at the load whose max is N + 2, and Epley
+# gives the fraction of 1RM that is.
+_REPS_IN_RESERVE = 2
+# What a prescription with no rep range (a direct call, a hold) is priced at.
+_REFERENCE_REPS = 10
+
+# Strength does not scale with bodyweight one for one. It follows muscle cross-
+# section, which grows as mass to the two-thirds — the allometric exponent the
+# strength-sport literature normalises by. Linear scaling priced a 118 kg
+# sedentary beginner's first deadlift at 60-82 kg for sets of fifteen: every
+# extra kilo of bodyweight bought a kilo and a half of bar, as though it were
+# muscle.
+_ALLOMETRIC_EXPONENT = 0.67
+
+# Strength falls about one percent a year from the forties, and faster later. A
+# starting estimate that errs light costs a set; one that errs heavy is how a
+# first session injures someone. An 80-year-old sedentary beginner was quoted the
+# same 32.5–45 kg bench press as a 25-year-old.
+_AGE_LOAD_FROM = 40
+_AGE_LOAD_PER_YEAR = 0.01
+_AGE_LOAD_FLOOR = 0.60
+# A body still growing is started lighter than its bodyweight suggests; the
+# technique is the adaptation being trained, not the load.
+_YOUTH_LOAD_FACTOR = 0.80
+
+# An Olympic bar weighs 20 kg before a plate goes on it. The rack lifts below are
+# done with one; a curl or a skull-crusher usually is not (EZ-bars and fixed
+# barbells go far lighter), so they are not held to it.
+_EMPTY_BAR_KG = 20.0
+_RACK_LIFTS = {"squat", "front_squat", "deadlift", "romanian", "good_morning",
+               "hip_thrust", "bench", "incline_press", "floor_press", "overhead_press",
+               "push_press", "row", "shrug", "upright_row"}
+
+
+def _rep_fraction(reps) -> float:
+    """Share of one-rep max a set of `reps` is lifted at, two reps in reserve."""
+    parsed = _parse_reps(reps)
+    top = parsed[1] if parsed else _REFERENCE_REPS
+    return 1.0 / (1.0 + (top + _REPS_IN_RESERVE) / 30.0)
+
+
+def _age_load_factor(age) -> float:
+    try:
+        age = int(age)
+    except (TypeError, ValueError):
+        return 1.0
+    if age < _YOUTH_AGE:
+        return _YOUTH_LOAD_FACTOR
+    if age <= _AGE_LOAD_FROM:
+        return 1.0
+    return max(_AGE_LOAD_FLOOR, 1.0 - _AGE_LOAD_PER_YEAR * (age - _AGE_LOAD_FROM))
+
+
+def _is_two_handed(ex: dict, lift: str) -> bool:
+    """One implement held in both hands. A goblet squat is one dumbbell at the
+    chest, and was quoted "per hand" — which reads as a pair."""
+    return lift in _TWO_HANDED or bool(_GOBLET.search(ex.get("name", "")))
+
+
+_GOBLET = re.compile(r"\bgoblet\b", re.I)
+
+
+def _estimated_load(ex: dict, strength_level: str, gender: str,
+                    bodyweight: float | None = None, week_factor: float = 1.0,
+                    reps=None, age=None):
+    """The working load for one set of this lift, or None if it is not priced.
+
+    Returns (kg, per_hand, implement, lift)."""
     eq = (ex.get("equipment") or "bodyweight").lower()
     if (ex.get("category") or "").lower() == "cardio":
-        return "Effort-based — see intensity note"
-
-    if eq in ("bodyweight", "other"):
-        return _BODYWEIGHT_PROGRESSIONS.get(
-            _muscle_key(ex), "Bodyweight · Add band/vest to progress")
-    if eq in ("bands", "resistance_bands"):
-        return "Light–heavy band · choose resistance that makes last 2 reps challenging"
-
+        return None
+    if eq in ("bodyweight", "other", "bands", "resistance_bands"):
+        return None
     implement = next(iter(_EQUIPMENT_ALIASES.get(eq, {eq})))
     factor = _IMPLEMENT_FACTOR.get(implement)
     lift = _lift_class(ex)
     if factor is None or lift is None:
-        # An unpriced movement says so rather than guessing. It is the honest
-        # answer, and it is what the old table gave 35–55 kg for.
-        return "Moderate weight · adjust so the last 2 reps are hard and form holds"
+        return None
 
     gender_key = "female" if str(gender).lower() in ("female", "f", "woman") else "male"
     level = strength_level if strength_level in _LIFT_LEVEL else "beginner"
 
-    load = _LIFT_BW[lift] * (bodyweight or _DEFAULT_BODYWEIGHT[gender_key])
+    reference = _DEFAULT_BODYWEIGHT[gender_key]
+    scaled = reference * ((bodyweight or reference) / reference) ** _ALLOMETRIC_EXPONENT
+    load = _LIFT_BW[lift] * scaled
     load *= _LIFT_LEVEL[level]
     if gender_key == "female":
         load *= _LIFT_SEX["lower" if lift in _LOWER_CLASSES else "upper"]
-    per_hand = implement in _PER_HAND and lift not in _TWO_HANDED
+    per_hand = implement in _PER_HAND and not _is_two_handed(ex, lift)
     load *= factor if per_hand else _IMPLEMENT_FACTOR["barbell"]
     if per_hand:
         # A one-arm dumbbell press is the same dumbbell as a two-arm one — the
@@ -705,8 +774,52 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
     elif _UNILATERAL.search(ex.get("name", "")):
         load *= 0.5
 
+    load *= _age_load_factor(age)
+    load *= _rep_fraction(reps)
     load *= week_factor
-    lo, hi = _round_load(load * 0.85), _round_load(load * 1.15)
+    return load, per_hand, implement, lift
+
+
+def _below_the_bar(ex: dict, **kw) -> bool:
+    """A barbell rack lift whose working load is lighter than the bar itself."""
+    est = _estimated_load(ex, **kw)
+    if not est:
+        return False
+    kg, _, implement, lift = est
+    return implement == "barbell" and lift in _RACK_LIFTS and kg < _EMPTY_BAR_KG
+
+
+def _get_weight_range(ex: dict, strength_level: str, gender: str,
+                      bodyweight: float | None = None,
+                      week_factor: float = 1.0, reps=None, age=None) -> str:
+    """A starting load for THIS set of this lift, for this person."""
+    eq = (ex.get("equipment") or "bodyweight").lower()
+    if (ex.get("category") or "").lower() == "cardio":
+        return "Effort-based — see intensity note"
+
+    if eq in ("bodyweight", "other"):
+        return _BODYWEIGHT_PROGRESSIONS.get(
+            _muscle_key(ex), "Bodyweight · Add band/vest to progress")
+    if eq in ("bands", "resistance_bands"):
+        return "Light–heavy band · choose resistance that makes last 2 reps challenging"
+
+    est = _estimated_load(ex, strength_level, gender, bodyweight, week_factor, reps, age)
+    if est is None:
+        # An unpriced movement says so rather than guessing. It is the honest
+        # answer, and it is what the old table gave 35–55 kg for.
+        return "Moderate weight · adjust so the last 2 reps are hard and form holds"
+    load, per_hand, implement, lift = est
+
+    if implement == "barbell" and lift in _RACK_LIFTS and load < _EMPTY_BAR_KG:
+        # Selection keeps these away from anyone with another way to train the
+        # pattern; this is for the practitioner whose only implement is the bar.
+        return (f"Empty bar (20 kg) — heavier than your ~{_fmt_kg(_round_load(load))} kg "
+                "starting estimate, so take fewer reps than written until it moves "
+                "cleanly for all of them")
+
+    # The estimate is the load two reps short of failure, so it is the top of the
+    # range: the bottom is where a first session should start.
+    lo, hi = _round_load(load * 0.85), _round_load(load)
     # Light isolation rounds to a single plate step and the range collapses —
     # "2–2 kg" reads as a defect rather than a starting point.
     if hi <= lo:
@@ -2547,6 +2660,19 @@ def _prescribe(ex: dict, rx: dict, level: str, role: str = "secondary"):
     return r["sets"], r["reps"], r["rest_seconds"]
 
 
+def _load_reps(ex: dict, rx_week1: dict, level: str, role: str):
+    """The rep count a lift's load is priced at: its role's reps in WEEK ONE.
+
+    The block's weekly notes are written against the first week's weight — "same
+    weight as W1, push for extra reps", "reduce weight 15%" — and
+    `_week_load_factor` carries them. Pricing each week at its own reps as well
+    would move the number twice, and in the wrong direction: a volume week's
+    extra reps would lower the quoted load beneath a note saying to hold it."""
+    if role == "conditioning":
+        return None
+    return _prescribe(ex, rx_week1, level, role)[1]
+
+
 def _modification_for(ex: dict) -> str:
     """The coaching note shown under an exercise.
 
@@ -2614,8 +2740,8 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     # made peak weeks (four sets instead of three) drop an exercise, which
     # changed the day's core and cost the very continuity the stable core exists
     # to give. A real programme keeps the lifts and moves the volume.
-    target, primary_slots = _session_shape(
-        duration, scheme, _get_goal_prescription(scheme, 1, level, activity))
+    rx_week1 = _get_goal_prescription(scheme, 1, level, activity)
+    target, primary_slots = _session_shape(duration, scheme, rx_week1)
 
     # The finisher takes a slot rather than being added on top of a session that
     # already fills the clock — the practitioner asked for forty-five minutes.
@@ -2698,7 +2824,9 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
             "role": role,
             "role_label": _ROLE_LABEL.get(role, "Accessory"),
             "weight_range": _get_weight_range(ex, strength_level, gender, bodyweight,
-                                              _week_load_factor(scheme, week)),
+                                              _week_load_factor(scheme, week),
+                                              reps=_load_reps(ex, rx_week1, level, role),
+                                              age=user_profile.get("age")),
             "week_note": rx.get("note", ""),
             "notes": _modification_for(ex),
             # The one sentence a coach would say about the movement. It is the
@@ -2807,6 +2935,28 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     preference_report: dict = {}
     filtered = filter_exercises(user_profile, gym_prefs, ge, extra_avoid_tags=extra_avoid_tags,
                                 preference_report=preference_report)
+    # A barbell lift whose working load is lighter than the empty bar cannot be
+    # performed as written. A 14-year-old was given a 13-18 kg bench press and an
+    # 11-year-old a 6-8 kg one; the bar alone is 20. Where the practitioner has
+    # dumbbells or a machine to train the same pattern with, the bar waits until
+    # they have outgrown it. Where the bar is all they have, it stays, and the
+    # load text says so.
+    available_eq = _normalise_equipment(gym_prefs.get("available_equipment"))
+    if available_eq & {"dumbbell", "machine", "kettlebell", "cable"}:
+        heaviest_reps = _get_goal_prescription(
+            _resolve_scheme(gym_prefs.get("gym_goal", "general_fitness"),
+                            gym_prefs.get("training_style")),
+            1, user_profile.get("fitness_level") or "beginner",
+            user_profile.get("activity_level"))["reps"]
+        gender_of = user_profile.get("gender", "male") or "male"
+        load_kw = dict(
+            strength_level=gym_prefs.get("strength_level",
+                                         user_profile.get("fitness_level") or "beginner"),
+            gender=gender_of,
+            bodyweight=_bodyweight_of(user_profile, "female" if str(gender_of).lower()
+                                      in ("female", "f", "woman") else "male"),
+            reps=heaviest_reps, age=user_profile.get("age"))
+        filtered = [ex for ex in filtered if not _below_the_bar(ex, **load_kw)]
     muscle_split = split_by_muscle_group(filtered)
     # Conditioning reaches a session through the finisher and nowhere else, so
     # `cardio_preference` is the only thing that decides how much of it there is.
@@ -2820,7 +2970,6 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     preferred_ids = {ex["id"] for ex in filtered if _matches_preference(ex, likes)}
 
     workout_days = gym_prefs.get("workout_days_per_week", 4)
-    available_eq = _normalise_equipment(gym_prefs.get("available_equipment"))
     is_bodyweight_only = available_eq <= {"bodyweight", "bands", "jump_rope"}
     fitness_level = user_profile.get("fitness_level", "beginner") or "beginner"
     strength_level = gym_prefs.get("strength_level", fitness_level)
