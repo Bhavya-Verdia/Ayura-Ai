@@ -301,3 +301,45 @@ def test_every_guidance_entry_names_its_source():
 
     for g in CONDITION_GUIDANCE:
         assert g["source"] and g["note"] and g["match"], g["key"]
+
+
+# ── Rare conditions: one path for both routes ────────────────────────────────
+
+def test_both_plan_paths_screen_rare_conditions():
+    """The per-feature route asked the classifier about conditions the engine
+    did not recognise; the holistic worker called the engine without it."""
+    from pathlib import Path
+
+    routes = Path(__file__).resolve().parents[1] / "routes"
+    for name in ("plans.py", "plan_runner.py"):
+        src = (routes / name).read_text()
+        assert "extra_avoid_tags_for" in src, f"{name} builds a gym plan unscreened"
+
+
+def test_a_condition_the_engine_already_acts_on_costs_no_llm_call():
+    from services.gym_condition_fallback import uncovered_conditions
+
+    covered = ["glaucoma", "diabetes_type2", "osteoarthritis", "hypertension", "asthma",
+               "epilepsy", "lupus", "anemia"]
+    assert uncovered_conditions({"medical_history": covered}) == []
+    assert uncovered_conditions({"medical_history": ["moyamoya_disease"]}) == ["moyamoya_disease"]
+
+
+def test_the_classifier_may_answer_in_mechanisms_and_nothing_else(monkeypatch):
+    import asyncio
+    import json
+
+    from services import gym_condition_fallback as fb
+
+    async def fake_generate(**_):
+        return json.dumps({"avoid_categories": [
+            "intracranial_pressure", "hypertension", "made_up_tag", "fall_risk"]})
+
+    monkeypatch.setattr(fb.llm_client, "generate", fake_generate)
+    monkeypatch.setattr(fb, "_CACHE", {})
+    tags = asyncio.run(fb.gym_avoid_tags_for_conditions(["moyamoya_disease"]))
+    assert tags == {"intracranial_pressure", "hypertension", "fall_risk"}
+
+    plan = generate_gym_plan(_BASE, _PREFS, extra_avoid_tags=tags)
+    assert not [ex["name"] for ex in _prescribed(plan)
+                if {"intracranial_pressure", "fall_risk"} & set(ex.get("risk_tags", []))]
