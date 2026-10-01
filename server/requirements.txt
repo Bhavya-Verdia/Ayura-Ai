@@ -21,7 +21,7 @@ chromadb==0.6.3
 # --- Authentication ---
 # OAuth (Google/GitHub) is hand-rolled with httpx + manual CSRF state in
 # routes/auth.py, so authlib is intentionally NOT a dependency.
-pyjwt==2.13.0
+pyjwt==2.15.1
 bcrypt==4.2.1
 httpx==0.28.1
 
