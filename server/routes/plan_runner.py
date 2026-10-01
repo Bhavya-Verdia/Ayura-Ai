@@ -75,6 +75,48 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
         "allergies": user_profile.get("allergies"),
         "symptoms": user_profile.get("current_symptoms"),
         "injuries": user_profile.get("injuries_or_limitations"),
+
+        # Everything below was being read by an engine and was invisible here, so the
+        # plan changed and the cache served the old one. Measured on the diet feature:
+        # of eight profile edits that change the generated plan, seven did not bust
+        # the key — including **adding diabetes to `medical_history`**, which served a
+        # newly diagnosed patient their pre-diagnosis plan, and `activity_level`,
+        # which moves the calorie target by up to 1180 kcal.
+        #
+        # `medical_history` is the single largest input to a plan and belongs first.
+        "conditions": sorted(str(c).lower() for c in (user_profile.get("medical_history") or [])),
+        "medications": sorted(str(m).lower() for m in (user_profile.get("current_medications") or [])),
+
+        # The body. `weight_kg` is bucketed to 2 kg because it is the one field here
+        # that a user changes daily: the energy target moves ~10-15 kcal per kilo,
+        # well inside the plan's own +/-10% acceptance band, so keying on the raw
+        # value would regenerate every plan on every weigh-in and bill an LLM call
+        # for a difference nobody could see. This is the `menstruation_active`
+        # principle — key on the state that changes the answer, not the raw reading.
+        "age": user_profile.get("age"),
+        "gender": user_profile.get("gender"),
+        "height_cm": user_profile.get("height_cm"),
+        "weight_bucket": (round(float(user_profile["weight_kg"]) / 2) * 2
+                          if user_profile.get("weight_kg") else None),
+        "activity": user_profile.get("activity_level"),
+        "fitness": user_profile.get("fitness_level"),
+        "bmi_category": user_profile.get("bmi_category"),
+
+        # The Ayurvedic axes every brief and arc is built from. All coarse enums, so
+        # including them costs nothing and omitting them meant a patient whose Agni or
+        # Ama changed at check-in kept the plan written for the old reading.
+        "agni": user_profile.get("agni_type"),
+        "ama": user_profile.get("ama_indicator"),
+        "ojas": user_profile.get("ojas_level"),
+        "koshtha": user_profile.get("koshtha"),
+        "prakriti_secondary": user_profile.get("secondary_dosha"),
+        "vikriti_secondary": user_profile.get("vikriti_secondary"),
+        "season": user_profile.get("current_season"),
+        "goal": user_profile.get("goal"),
+        # Both are read by the diet brief and set at check-in. Found by the drift
+        # guard rather than by hand, which is the point of having one.
+        "stress_level": user_profile.get("stress_level"),
+        "sleep_quality": user_profile.get("sleep_quality"),
         # The *effective* gate state, not the raw flag. Menstruation is the one
         # eligibility input that expires, so `menstrual_phase` alone would hold a
         # Shamana plan in cache after the observation went stale, and the raw
@@ -409,7 +451,7 @@ async def _run_plan_job(
                 try:
                     from services.seasonal_service import build_seasonal_guidance
                     dosha = user_profile.get("vikriti_dominant") or user_profile.get("dominant_dosha") or "vata"
-                    seasonal_guidance = await build_seasonal_guidance(dosha)
+                    seasonal_guidance = await build_seasonal_guidance(dosha, user_profile)
                 except Exception:
                     pass
 

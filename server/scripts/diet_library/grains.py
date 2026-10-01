@@ -34,14 +34,14 @@ GRAINS = [
       prabhava="Purana Shali — aged rice — is laghu where new rice is guru, which is "
                "why the texts specify the age.",
       dosha=(-1, -1, 1), ritu=("grishma", "sharad", "varsha"),
-      pathya_for=("acidity", "grahani", "ibs"),
+      pathya_for=("acidity", "grahani", "ibs", "bloating"),
       apathya_for=("diabetes", "obesity", "hypothyroid"),
       nutrition=N(130, 2.7, 28.0, 0.3, 0.4, source="usda"), **_G),
 
     F("White Rice", id="white_rice", prep_state="cooked",
       rasa=("madhura",), guna=("laghu", "picchila"), virya="shita", vipaka="madhura",
       dosha=(-1, -1, 2), ritu=("grishma", "sharad"),
-      pathya_for=("acidity", "grahani"),
+      pathya_for=("acidity", "grahani", "bloating"),
       apathya_for=("diabetes", "obesity", "hypothyroid", "fatty_liver"),
       nutrition=N(130, 2.7, 28.0, 0.3, 0.4, source="usda"), **_G),
 
@@ -50,7 +50,7 @@ GRAINS = [
       vipaka="madhura",
       dosha=(1, -1, 0), ritu=("sharad", "hemanta"),
       pathya_for=("diabetes", "high_cholesterol", "constipation"),
-      apathya_for=("grahani", "ibs"),
+      apathya_for=("grahani", "ibs", "bloating"),
       nutrition=N(111, 2.6, 23.0, 0.9, 1.8, source="usda"),
       **{**_G, "varga": "Dhanya — Shali, unpolished"}),
 
@@ -73,7 +73,7 @@ GRAINS = [
                "ushna, which is Vidahi — the same reason fried food is the first "
                "Apathya named in Amlapitta.",
       dosha=(-2, 1, 2), ritu=("shishira", "hemanta"),
-      apathya_for=("obesity", "high_cholesterol", "fatty_liver", "acidity", "arsha"),
+      apathya_for=("obesity", "high_cholesterol", "fatty_liver", "acidity", "arsha", "bloating"),
       allergen=True,
       nutrition=N(320, 7.0, 45.0, 12.0, 5.0, source="authored_estimate"),
       **{**_G, "ref": "modern_extrapolated",
@@ -94,13 +94,25 @@ GRAINS = [
                "from laghu Shali — the flattening and drying change the dravya, so the "
                "dry flake and the cooked dish do not share a guna.",
       dosha=(-1, -1, 2), ritu=("vasanta", "grishma"),
-      apathya_for=("diabetes", "obesity", "hypothyroid"),
+      apathya_for=("diabetes", "obesity", "hypothyroid", "bloating"),
       nutrition=N(346, 6.6, 77.0, 1.2, 2.4, source="usda"), **_G),
 
-    F("Upma", id="upma", prep_state="cooked",
+    # The base grain is this row's whole clinical content, so it belongs in the
+    # identity — the same reason Ardraka and Shunthi are two rows and not one
+    # `ginger`. Named `upma` alone, the derived scan term was the bare word, and it
+    # fired on "Vegetable Oats Upma" for a diabetic: a meal whose base is Yava, which
+    # the library prescribes for exactly that patient. Upma is a dish form; semolina
+    # is the dravya, and only the semolina one is Apathya in Prameha.
+    F("Rava Upma (Semolina Upma)", id="upma_rava", prep_state="cooked",
       rasa=("madhura",), guna=("guru", "snigdha"), virya="ushna", vipaka="madhura",
       dosha=(-1, 0, 1), ritu=("shishira", "hemanta", "varsha"),
-      apathya_for=("diabetes", "obesity"), allergen=True,
+      # `hypothyroid` is inherited from `semolina_rava`, this row's own base. The
+      # preparation is a tadka on sooji and adds nothing that changes the gluten, so
+      # a row that is Apathya as the grain cannot be Pathya as the dish. The two
+      # disagreed until the rename made them collide, and the term-agreement rule
+      # then withheld `rava` and `semolina` for hypothyroid from both — a claim going
+      # quiet, which is what that rule exists to make visible.
+      apathya_for=("diabetes", "obesity", "hypothyroid", "bloating"), allergen=True,
       nutrition=N(145, 3.5, 24.0, 4.0, 1.5, source="authored_estimate"),
       **{**_G, "ref": "modern_extrapolated",
          "varga": "A preparation, not a dravya. Reasoned from Godhuma sooji with a "
@@ -112,7 +124,7 @@ GRAINS = [
       virya="shita", vipaka="madhura",
       dosha=(-1, -1, 1), ritu=("shishira", "hemanta"),
       pathya_for=("high_cholesterol", "constipation", "acidity"),
-      apathya_for=("hypothyroid", "ibs"), allergen=True,
+      apathya_for=("hypothyroid", "ibs", "bloating"), allergen=True,
       nutrition=N(71, 2.5, 12.0, 1.5, 1.7, source="usda"),
       **{**_G, "ref": "modern_extrapolated",
          "varga": "No classical entry. Reasoned from Yava Varga — but unlike Yava it is "
@@ -139,7 +151,7 @@ GRAINS = [
                "it is a winter grain and not a summer one.",
       dosha=(1, 1, -2), ritu=("shishira", "hemanta"),
       pathya_for=("obesity", "diabetes", "hypothyroid"),
-      apathya_for=("acidity", "psoriasis"),
+      apathya_for=("acidity", "psoriasis", "bloating"),
       nutrition=N(119, 3.5, 23.7, 1.0, 1.3, source="usda"),
       **{**_G, "varga": "Kudhanya"}),
 
@@ -148,14 +160,14 @@ GRAINS = [
       vipaka="katu",
       dosha=(1, -1, -2), ritu=("grishma", "sharad"),
       pathya_for=("obesity", "diabetes", "high_cholesterol"),
-      apathya_for=("constipation", "ibs"),
+      apathya_for=("constipation", "ibs", "bloating"),
       nutrition=N(115, 3.5, 25.0, 0.6, 2.2, source="authored_estimate"),
       **{**_G, "varga": "Kudhanya"}),
 
     F("Daliya (Broken Wheat)", id="daliya", prep_state="cooked",
       rasa=("madhura",), guna=("laghu", "snigdha"), virya="shita", vipaka="madhura",
       dosha=(-1, -1, 1), ritu=("shishira", "hemanta", "vasanta"),
-      pathya_for=("constipation", "anemia", "grahani"),
+      pathya_for=("constipation", "anemia", "grahani", "bloating"),
       apathya_for=("obesity",), allergen=True,
       nutrition=N(83, 3.1, 18.6, 0.2, 4.5, source="usda"),
       **{**_G, "varga": "Dhanya — Godhuma, broken"}),
@@ -163,7 +175,7 @@ GRAINS = [
     F("Rava (Semolina)", id="semolina_rava", prep_state="cooked",
       rasa=("madhura",), guna=("guru", "picchila"), virya="shita", vipaka="madhura",
       dosha=(-1, -1, 2), ritu=("shishira", "hemanta"),
-      apathya_for=("diabetes", "obesity", "hypothyroid"), allergen=True,
+      apathya_for=("diabetes", "obesity", "hypothyroid", "bloating"), allergen=True,
       nutrition=N(100, 3.4, 20.5, 0.3, 1.1, source="authored_estimate"),
       **{**_G, "varga": "Dhanya — Godhuma, milled"}),
 
@@ -175,7 +187,7 @@ GRAINS = [
                "snigdha, and Vata follows the guna here rather than the rasa — the "
                "same reason dry, aerated food is withheld in Vata disorders.",
       dosha=(1, 1, 2), ritu=("shishira", "hemanta"),
-      apathya_for=("amavata", "psoriasis", "acidity", "obesity", "ibs"),
+      apathya_for=("amavata", "psoriasis", "acidity", "obesity", "ibs", "bloating"),
       allergen=True,
       nutrition=N(247, 13.0, 41.0, 3.4, 7.0, source="usda"),
       **{**_G, "ref": "modern_extrapolated",
@@ -215,7 +227,7 @@ GRAINS = [
                "Grishma.",
       dosha=(1, 1, -1), ritu=("shishira", "hemanta"),
       pathya_for=("diabetes", "obesity"),
-      apathya_for=("acidity", "psoriasis"),
+      apathya_for=("acidity", "psoriasis", "bloating"),
       nutrition=N(92, 3.4, 19.9, 0.6, 2.7, source="usda"),
       **{**_G, "ref": "modern_extrapolated",
          "varga": "No nighantu entry; a Vrata food of later usage. Reasoned as a laghu, "
@@ -228,7 +240,7 @@ GRAINS = [
       prabhava="Ushna despite madhura rasa, and guru while ruksha — the combination "
                "that makes Makka hard on Vata and on a weak Agni both.",
       dosha=(1, 1, -1), ritu=("varsha", "sharad"),
-      apathya_for=("ibs", "grahani", "acidity"),
+      apathya_for=("ibs", "grahani", "acidity", "bloating"),
       nutrition=N(96, 3.4, 21.0, 1.5, 2.4, source="usda"),
       **{**_G, "varga": "Kudhanya"}),
 
@@ -236,7 +248,7 @@ GRAINS = [
       rasa=("madhura",), guna=("guru", "picchila", "sthira"), virya="shita",
       vipaka="madhura",
       dosha=(-1, -1, 2), ritu=("grishma", "sharad"),
-      apathya_for=("diabetes", "obesity", "hypothyroid", "fatty_liver"),
+      apathya_for=("diabetes", "obesity", "hypothyroid", "fatty_liver", "bloating"),
       nutrition=N(130, 0.2, 32.0, 0.0, 0.3, source="authored_estimate"),
       **{**_G, "ref": "modern_extrapolated",
          "varga": "No nighantu entry — tapioca is a New World root and reaches India "

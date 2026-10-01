@@ -68,11 +68,12 @@ def choose_arc(user_profile: dict, diet_prefs: dict) -> dict:
     agni = str(user_profile.get("agni_type") or "sama").lower()
     age = int(user_profile.get("age") or 30)
     pregnant = bool(user_profile.get("pregnancy_or_nursing"))
-    conditions = {
-        str(c).lower().replace(" ", "_") for c in (user_profile.get("medical_history") or [])
-    }
-    from services.ahara_safety import _canon_condition
-    conditions = {_canon_condition(c) for c in conditions}
+    # Both places a disease is declared, via the one helper the whole diet path uses.
+    # None of the four `gut_health_issue` values is Santarpana-caused, so this changes
+    # no arc today; it is here so that the arc cannot be the one module still reading
+    # half the patient's conditions if that vocabulary grows.
+    from services.diet_brief_builder import diet_conditions
+    conditions = set(diet_conditions(user_profile, diet_prefs))
 
     heavy_ama = ama in _HIGH_AMA
     heavy_build = bmi in ("overweight", "obese")

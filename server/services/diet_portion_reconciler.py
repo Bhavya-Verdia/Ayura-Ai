@@ -287,10 +287,12 @@ def reconcile_plan_energy(plan: dict, energy: dict) -> dict:
 
         fasting_days = 0
         quantified = 0
+        total_days = 0
         protein_short: list[dict] = []
         protein_floor = energy.get("protein_floor_g") or 0
         for _day_rec in _iter_days(plan):
             week_label, day_label = _day_rec["week"], _day_rec["day"]
+            total_days += 1
             before, is_fasting = _day_rec["kcal"], _day_rec["fasting"]
             slot_kcal, scale_slot, finish = (
                 _day_rec["slot_kcal"], _day_rec["scale"], _day_rec["finish"])
@@ -357,6 +359,11 @@ def reconcile_plan_energy(plan: dict, energy: dict) -> dict:
             # there can be summed or corrected. Say how many days were actually
             # measurable rather than implying the whole plan was checked.
             "days_quantified": quantified,
+            # And how many were not. The count of days checked was already here, but
+            # a reader has no denominator for it — "7 days checked" on a 28-day plan
+            # reads as a completed check unless the other 21 are named. The energy
+            # card showed a target and a green tick over all four weeks either way.
+            "days_unquantified": max(0, total_days - quantified - fasting_days),
             "fasting_days_exempt": fasting_days,
             "protein_floor_g": protein_floor,
             "days_below_protein_floor": protein_short,

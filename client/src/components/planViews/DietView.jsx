@@ -171,9 +171,19 @@ function DietSafetyBanner({ plan }) {
   const dietTypeAlerts = plan.dietary_type_alerts || []
 
   const unscanned = plan.conditions_without_food_floor || []
+  // Screened against a curated term list, but not against the food library food by
+  // food. A thinner check than the one the badge below implies, so it says so.
+  const termsOnly = plan.conditions_screened_by_terms_only || []
+  // The plan's food-recommending prose, held to the same floor as its meals.
+  // `withheld` was removed from the Pathya card before it reached this component;
+  // saying so is the point — a recommendation that vanishes with no explanation
+  // looks like an oversight, which is the lesson of the withheld Panchakarma Karma.
+  const withheld = plan.withheld_recommendations || []
+  const proseAlerts = plan.advisory_prose_alerts || []
 
-  if (!alerts.length && !viruddha.length && !condAlerts.length && !dietTypeAlerts.length) {
-    if (unscanned.length) {
+  if (!alerts.length && !viruddha.length && !condAlerts.length && !dietTypeAlerts.length
+      && !withheld.length && !proseAlerts.length) {
+    if (unscanned.length || termsOnly.length) {
       // "Everything checked" would be false here: these conditions reached no
       // curated rule, no library claim and no usable classification.
       return (
@@ -181,10 +191,19 @@ function DietSafetyBanner({ plan }) {
           <TriangleAlert size={13} />
           <span>
             Checked for allergens, intolerances, incompatible combinations (Viruddha
-            Ahara) and your dietary type — none found. We could not derive a food-safety
-            rule for {unscanned.map(c => c.replace(/_/g, ' ')).join(', ')}, so this plan
-            has not been screened against {unscanned.length > 1 ? 'those conditions' : 'that condition'}.
-            Please review it with your practitioner.
+            Ahara) and your dietary type — none found.
+            {unscanned.length > 0 && (
+              <> We could not derive a food-safety rule for{' '}
+              {unscanned.map(c => c.replace(/_/g, ' ')).join(', ')}, so this plan
+              has not been screened against {unscanned.length > 1 ? 'those conditions' : 'that condition'}.</>
+            )}
+            {termsOnly.length > 0 && (
+              <> For {termsOnly.map(c => c.replace(/_/g, ' ')).join(', ')} we screened
+              against a curated list of foods to avoid, but our food library has not yet
+              been reviewed food-by-food for {termsOnly.length > 1 ? 'these conditions' : 'this condition'} —
+              a lighter check than the one we run for conditions like acidity or diabetes.</>
+            )}
+            {' '}Please review this plan with your practitioner.
           </span>
         </div>
       )
@@ -192,7 +211,7 @@ function DietSafetyBanner({ plan }) {
     return (
       <div className="diet-safety-ok">
         <ShieldCheck size={13} />
-        <span>Every meal and daily drink checked for allergens, intolerances, incompatible combinations (Viruddha Ahara), condition-contraindicated foods &amp; your dietary type — none found.</span>
+        <span>Every meal, daily drink and line of food guidance checked for allergens, intolerances, incompatible combinations (Viruddha Ahara), condition-contraindicated foods &amp; your dietary type — none found.</span>
       </div>
     )
   }
@@ -235,6 +254,34 @@ function DietSafetyBanner({ plan }) {
             {dietTypeAlerts.map((d, i) => (
               <li key={i}>
                 <strong>{d.week} · {d.day} · {d.meal_slot}</strong>: contains {d.food} — not {(d.dietary_type || '').replace(/_/g, ' ')}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {withheld.length > 0 && (
+        <div className="diet-safety-card allergen">
+          <h3 className="diet-safety-title">
+            <TriangleAlert size={13} /> Withheld from your Pathya list — recommended in general, not for you
+          </h3>
+          <ul className="diet-safety-list">
+            {withheld.map((w, i) => (
+              <li key={i}>
+                <strong>{w.item}</strong> — names {w.food}, Apathya for {w.condition}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {proseAlerts.length > 0 && (
+        <div className="diet-safety-card allergen">
+          <h3 className="diet-safety-title">
+            <TriangleAlert size={13} /> Guidance text that names a food you should avoid
+          </h3>
+          <ul className="diet-safety-list">
+            {proseAlerts.map((a, i) => (
+              <li key={i}>
+                <strong>{(a.field || '').replace(/_/g, ' ')}</strong>: mentions {a.food} — {a.condition}
               </li>
             ))}
           </ul>
@@ -306,9 +353,38 @@ function EnergyPrescriptionCard({ plan }) {
           unchanged.
         </p>
       ) : null}
+      {/* Weeks 2-4 are meal names with no macros, so nothing there can be summed or
+          corrected. The card showed a target and a clean tick over all four weeks
+          regardless — "7 days checked" reads as a finished check unless the other 21
+          are named. */}
+      {rec.days_unquantified > 0 ? (
+        <p className="diet-energy-note">
+          Checked against this target on {rec.days_quantified}{' '}
+          {rec.days_quantified === 1 ? 'day' : 'days'}. Weeks 2-4 are given as meal
+          names without portion figures, so {rec.days_unquantified} further{' '}
+          {rec.days_unquantified === 1 ? 'day is' : 'days are'} not measured — keep the
+          week 1 portions as your guide.
+        </p>
+      ) : null}
       {(rec.residual_notes || []).slice(0, 3).map((note, i) => (
         <p key={`r${i}`} className="diet-energy-note is-warn">{note}</p>
       ))}
+      {/* The reconciler checks protein on every non-fasting day and records the ones
+          that fall short. A day's own view flags it, but only for the day being
+          looked at — so a plan short on protein across several days read as fine
+          unless you clicked through all of them. Energy shortfalls were summarised
+          here and protein was not, which is the asymmetry rather than the check. */}
+      {(rec.days_below_protein_floor || []).length > 0 ? (
+        <p className="diet-energy-note is-warn">
+          Protein is below your {rx.protein_floor_g} g floor on{' '}
+          {rec.days_below_protein_floor.length}{' '}
+          {rec.days_below_protein_floor.length === 1 ? 'day' : 'days'}
+          {rec.days_below_protein_floor.length <= 3
+            ? ` (${rec.days_below_protein_floor.map(d => `${d.week} ${d.day}`).join(', ')})`
+            : ''}
+          . Add dal, paneer or curd to the meal that suits your Agni best.
+        </p>
+      ) : null}
     </div>
   )
 }

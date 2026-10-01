@@ -164,11 +164,15 @@ def test_ghee_is_not_flagged_for_lactose():
     ("vegetarian", "Paneer Butter Masala", False),
     ("vegan", "Paneer Butter Masala", True),
     ("vegan", "Chana Masala with Rice", False),
-    ("eggetarian", "Masala Omelette", False),
-    ("eggetarian", "Mutton Rogan Josh", True),
-    ("pescatarian", "Fish Curry with Rice", False),
-    ("pescatarian", "Chicken Biryani", True),
-    ("non_vegetarian", "Chicken Biryani", False),
+    # The three withdrawn types, and anything malformed, get the vegetarian floor
+    # rather than none. The library has no animal-food row, so a meal the app cannot
+    # screen against the patient's diseases is flagged whatever type was stored.
+    ("eggetarian", "Masala Omelette", True),
+    ("pescatarian", "Fish Curry with Rice", True),
+    ("non_vegetarian", "Chicken Biryani", True),
+    ("", "Chicken Biryani", True),
+    (None, "Chicken Biryani", True),
+    ("garbage", "Chicken Biryani", True),
 ])
 def test_the_declared_dietary_type_is_checked_not_requested(dtype, meal, expect_flag):
     plan = _plan({"lunch": {"meal_name": meal, "key_ingredients": []}})
@@ -177,11 +181,45 @@ def test_the_declared_dietary_type_is_checked_not_requested(dtype, meal, expect_
     assert out["dietary_type_checked"] is True
 
 
-def test_non_vegetarian_is_checked_rather_than_skipped():
-    """`dietary_type_checked` must be True even when nothing is forbidden, so
-    "no rules apply" is distinguishable from "the scan never ran"."""
-    out = apply_dietary_type_safety(_plan(), "non_vegetarian")
-    assert out["dietary_type_checked"] is True and out["dietary_type_safe"] is True
+def test_a_withdrawn_dietary_type_gets_a_floor_rather_than_an_all_clear():
+    """`non_vegetarian` used to map to no entry, and the `if not forbidden` branch
+    answered `dietary_type_safe = True` for it. That was right while the value was
+    offered and meant "nothing to check". Now an unknown value means a stale or
+    malformed preference, and answering "safe, checked" to one is the failure this
+    module exists to prevent."""
+    plan = _plan({"lunch": {"meal_name": "Chicken Biryani", "key_ingredients": []}})
+    out = apply_dietary_type_safety(plan, "non_vegetarian")
+    assert out["dietary_type_checked"] is True
+    assert out["dietary_type_safe"] is False
+
+
+def test_a_withdrawn_dietary_type_is_coerced_and_never_rejected():
+    """A stored preference must not lock a user out of regenerating their own plan."""
+    from schemas.preferences_schema import DIETARY_TYPES, DietPreferences
+    assert DIETARY_TYPES == {"vegetarian", "vegan"}
+    for legacy in ("non_vegetarian", "pescatarian", "eggetarian"):
+        assert DietPreferences(dietary_type=legacy).dietary_type == "vegetarian"
+    with pytest.raises(Exception):
+        DietPreferences(dietary_type="carnivore")
+
+
+def test_the_library_holds_no_animal_food():
+    """The reason the app offers two dietary types and not five, as a guard rather
+    than a comment. If an animal-food row is ever authored — with its rasa, virya,
+    vipaka, per-condition `pathya_for` / `apathya_for` claims and its Viruddha pairs,
+    milk-and-fish among them — then this fails, and whether to reopen `eggetarian`
+    and `pescatarian` becomes a decision someone makes on purpose."""
+    from services.diet_plan_engine import diet_foods
+
+    animal = {"egg", "fish", "chicken", "mutton", "meat", "prawn", "shrimp", "crab",
+              "lamb", "beef", "pork", "goat"}
+    found = sorted(f["id"] for f in diet_foods
+                   if any(a in f["id"] for a in animal)
+                   or "vegetarian" not in (f.get("dietary_type") or []))
+    assert not found, (
+        f"the library now holds animal food ({found}); the dietary-type vocabulary "
+        f"in preferences_schema was narrowed on the assumption that it does not"
+    )
 
 
 def test_dietary_type_never_raises_on_a_malformed_plan():

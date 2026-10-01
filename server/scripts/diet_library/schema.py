@@ -188,6 +188,21 @@ def validate(food: dict) -> None:
         if a in guna and b in guna:
             bad(f"carries both halves of an opposed pair ({a}/{b})")
 
+    # `("ibs")` is a string, not a one-tuple — the trailing comma is what makes it
+    # one. Written that way, `list(...)` spreads it into ['i', 'b', 's'] and the row
+    # silently claims three conditions that do not exist while losing the one it
+    # meant. It cost two rows their IBS claim during the Adhmana pass and showed up
+    # only in a diff against the previous KB, because nothing downstream treats an
+    # unknown condition key as an error.
+    for field in ("pathya_for", "apathya_for", "viruddha_with"):
+        value = food.get(field)
+        if isinstance(value, str):
+            bad(f"{field} is a string {value!r} — a one-element tuple needs its "
+                f"trailing comma, or it spreads into single characters")
+        for entry in (value or ()):
+            if not isinstance(entry, str) or len(entry) < 2:
+                bad(f"{field} contains {entry!r}, which is not a key")
+
     if food.get("virya") not in VIRYA:
         bad(f"virya must be one of {VIRYA}, got {food.get('virya')!r}")
     if food.get("vipaka") not in VIPAKA:

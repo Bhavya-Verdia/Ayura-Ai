@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../providers/AuthContext';
 import { m, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { preferencesAPI } from '../api/client';
@@ -97,15 +98,20 @@ const YOGA_SUGGESTED_MINUTES = {
 // Keep in step with `pranayama_minutes()` in yoga_plan_engine.py.
 const YOGA_PRANAYAMA_MINUTES = { none: 5, beginner: 5, intermediate: 5, advanced: 10 };
 
+// The two the food library can actually serve. All 150 authored rows in
+// diet_foods.json are vegetarian, so the 708 (condition, food) claims that gate the
+// plan said nothing about any egg, fish or meat dish — a non-vegetarian meal passed
+// that layer unscreened, and the rule-engine fallback answered a muscle-support goal
+// with black beans. Offering a choice the data cannot honour is worse than not
+// offering it. Saved preferences using the withdrawn values are coerced server-side,
+// never rejected.
 const DIETARY_TYPES = [
   { value: 'vegetarian', label: 'Vegetarian' },
-  { value: 'vegan', label: 'Vegan' },
-  { value: 'eggetarian', label: 'Eggetarian' },
-  { value: 'non_vegetarian', label: 'Non-Vegetarian' },
-  { value: 'pescatarian', label: 'Pescatarian' }
+  { value: 'vegan', label: 'Vegan' }
 ];
 
 export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSuccess }) {
+  const { user } = useAuth();
   const [form, setForm] = useState({});
   const [loading, setLoading] = useState(false);
   // Whether the practitioner has set the session length themselves. Once they
@@ -120,11 +126,19 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
   // Initialize defaults when modal opens
   useEffect(() => {
     if (isOpen && typeId) {
-      setForm({});
+      // Seed the diet form's allergy chips from what onboarding already recorded, so
+      // the person is not asked a second time for the one answer where forgetting to
+      // repeat it is dangerous. The server unions the two lists regardless — this is
+      // so the form shows what is actually being enforced, rather than empty chips
+      // beside a plan that is withholding peanuts.
+      const seeded = typeId === 'diet' && Array.isArray(user?.allergies)
+        ? { food_allergies: [...user.allergies] }
+        : {};
+      setForm(seeded);
       setDurationTouched(false);
       setStyleTouched(false);
     }
-  }, [isOpen, typeId]);
+  }, [isOpen, typeId, user]);
 
   if (!isOpen) return null;
 
@@ -564,6 +578,11 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                 <option value="">Select your diet...</option>
                 {DIETARY_TYPES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
               </select>
+              <p className="pref-hint">
+                Ayura&apos;s food library is a vegetarian Nighantu — every food in it is
+                screened against your conditions by name. We would rather offer two
+                diets we can screen than five we cannot.
+              </p>
             </div>
             <div className="pref-row">
               <div className="pref-input-group">

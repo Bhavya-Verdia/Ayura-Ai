@@ -18,8 +18,10 @@ from services.diet_brief_builder import (
     MEAL_TIMING,
     DOSHA_SPICES,
     AYUR_TIPS,
-    COND_ALIASES,
     build_brief,
+    diet_allergies,
+    diet_conditions,
+    fasting_days_for,
     flag_allergens,
 )
 
@@ -36,6 +38,10 @@ RULES — these are non-negotiable:
 3. For every medical condition, provide classical Pathya-Apathya with Samhita references.
 4. Flag all Viruddha Ahara (incompatible food combinations) relevant to this patient.
 5. STRICTLY honour all hard constraints — dietary type, allergies, intolerances.
+5a. Every meal is vegetarian or vegan. No egg, fish, poultry or meat in any meal, \
+   drink, Pathya list or line of guidance, whatever the patient's stated type. The \
+   food library this plan is screened against holds no animal food, so such a meal \
+   would be served without being checked against the patient's diseases at all.
 6. Use the patient's Agni type to determine meal heaviness and frequency.
 7. High Ama = all meals must be Deepaniya + Pachana; no heavy, sour, or fermented foods.
 8. Each day should have a therapeutic theme (e.g., "Ama Pachana", "Agni Deepana", "Ojas Building").
@@ -165,33 +171,51 @@ async def generate_diet_plan_llm(
     try:
         brief = build_brief(user_profile, diet_prefs)
 
-        # RAG: pull classical text passages relevant to this patient's profile
+        # RAG: pull classical text passages relevant to this patient's profile.
+        #
+        # Supplementary grounding, in its own try. These five calls used to sit
+        # directly under the outer `except`, which returns None and sends the caller
+        # to the rule engine — so a ChromaDB restart did not cost the plan its
+        # classical citations, it cost the plan. Every diet generation during the
+        # outage silently lost the LLM path entirely: the therapeutic arc, the
+        # per-meal energy budget, the condition coaching, all of it, with nothing on
+        # screen to say why.
+        #
+        # An outage degrades, it does not withhold — the same rule the remedies
+        # triage follows for the same retrieval layer.
         dominant_dosha_q = (user_profile.get("dominant_dosha") or "vata").lower()
         agni_type_q = (user_profile.get("agni_type") or "sama").lower()
-        conditions_q = user_profile.get("medical_history") or []
-        rag_context_parts: list[str] = []
-
-        # Query 1: dosha + agni general diet guidance
-        general_query = f"{dominant_dosha_q} dosha diet Ahara Pathya Apathya {agni_type_q} Agni Ayurvedic food"
-        general_docs = await rag_pipeline.query(general_query, "nutrition", n_results=5, dosha_filter=dominant_dosha_q)
-        if general_docs:
-            rag_context_parts.append(rag_pipeline.format_context(general_docs, max_chars=1200))
-
-        # Query 2: condition-specific diet — retrieve for EACH condition (capped),
-        # not just the first, so multi-condition patients get classical grounding
-        # for every diagnosis rather than only conditions_q[0].
-        for _cond in conditions_q[:3]:
-            cond_query = f"{_cond} Pathya Apathya diet Ayurvedic classical"
-            cond_docs = await rag_pipeline.query(cond_query, "nutrition", n_results=3)
-            if cond_docs:
-                rag_context_parts.append(rag_pipeline.format_context(cond_docs, max_chars=600))
-
-        # Query 3: seasonal diet
+        conditions_q = diet_conditions(user_profile, diet_prefs)
         season = (user_profile.get("current_season") or "").lower()
-        if season:
-            season_docs = await rag_pipeline.query(f"{season} Ritucharya diet seasonal Ayurveda", "nutrition", n_results=3)
-            if season_docs:
-                rag_context_parts.append(rag_pipeline.format_context(season_docs, max_chars=600))
+        rag_context_parts: list[str] = []
+        try:
+            # Query 1: dosha + agni general diet guidance
+            general_query = f"{dominant_dosha_q} dosha diet Ahara Pathya Apathya {agni_type_q} Agni Ayurvedic food"
+            general_docs = await rag_pipeline.query(general_query, "nutrition", n_results=5, dosha_filter=dominant_dosha_q)
+            if general_docs:
+                rag_context_parts.append(rag_pipeline.format_context(general_docs, max_chars=1200))
+
+            # Query 2: condition-specific diet — retrieve for EACH condition (capped),
+            # not just the first, so multi-condition patients get classical grounding
+            # for every diagnosis rather than only conditions_q[0].
+            for _cond in conditions_q[:3]:
+                cond_query = f"{_cond} Pathya Apathya diet Ayurvedic classical"
+                cond_docs = await rag_pipeline.query(cond_query, "nutrition", n_results=3)
+                if cond_docs:
+                    rag_context_parts.append(rag_pipeline.format_context(cond_docs, max_chars=600))
+
+            # Query 3: seasonal diet
+            if season:
+                season_docs = await rag_pipeline.query(f"{season} Ritucharya diet seasonal Ayurveda", "nutrition", n_results=3)
+                if season_docs:
+                    rag_context_parts.append(rag_pipeline.format_context(season_docs, max_chars=600))
+        except Exception as _rag_err:
+            # Partial context is kept: a condition query that succeeded before the
+            # failure is still grounding for that condition.
+            logger.warning(
+                f"diet RAG retrieval degraded ({_rag_err}); generating with "
+                f"{len(rag_context_parts)} of the usual context blocks"
+            )
 
         rag_context = "\n\n".join(rag_context_parts) if rag_context_parts else ""
 
@@ -243,8 +267,7 @@ async def generate_diet_plan_llm(
 
         dominant_dosha = (user_profile.get("dominant_dosha") or "vata").lower()
         agni_type = (user_profile.get("agni_type") or "sama").lower()
-        conditions = user_profile.get("medical_history") or []
-        norm_conds = [COND_ALIASES.get(c.lower().replace(" ", "_"), c.lower().replace(" ", "_")) for c in conditions]
+        norm_conds = diet_conditions(user_profile, diet_prefs)
 
         user_id = str(user_profile.get("id") or user_profile.get("_id") or "anon")
 
@@ -256,7 +279,7 @@ async def generate_diet_plan_llm(
         }
 
         # Tag fasting days and run allergen check on week 1 (full detail)
-        fasting_days_raw = diet_prefs.get("fasting_days") or []
+        fasting_days_raw = fasting_days_for(user_profile, diet_prefs)
         fasting_set = {d.lower() for d in fasting_days_raw}
         weeks = data["weeks"]
         week1_daily = weeks[0].get("daily_plan", {}) if weeks else {}
@@ -264,7 +287,10 @@ async def generate_diet_plan_llm(
             if isinstance(day_data, dict):
                 canonical = _DAY_ALIASES.get(day_name.lower(), day_name.lower())
                 day_data["is_fasting"] = canonical in fasting_set
-        allergies = diet_prefs.get("food_allergies") or []
+        # Both places the app stores an allergy. It read the diet form alone, so an
+        # allergy declared in onboarding's health step was honoured by the remedies
+        # engine and by nothing in the feature that is entirely about food.
+        allergies = diet_allergies(user_profile, diet_prefs)
         intolerances = diet_prefs.get("food_intolerances") or []
         week1_daily = flag_allergens(week1_daily, allergies, intolerances)
         if weeks:
@@ -337,8 +363,8 @@ async def generate_diet_plan_llm(
 
         # Deterministic Ahara safety layer (Viruddha + allergens, all 4 weeks)
         from services.ahara_safety import (
-            apply_ahara_safety, apply_condition_food_safety, apply_dietary_type_safety,
-            classify_condition_apathya_llm,
+            apply_advisory_safety, apply_ahara_safety, apply_condition_food_safety,
+            apply_dietary_type_safety, classify_condition_apathya_llm,
         )
         result = apply_ahara_safety(result, allergies, intolerances)
         # The declared dietary type, checked rather than requested. Until now the
@@ -350,12 +376,19 @@ async def generate_diet_plan_llm(
         # uncurated conditions get their Apathya classified by the LLM first, so the
         # floor covers ALL diseases, not just the hardcoded common ones.
         from services.diet_brief_builder import uncurated_conditions
-        _conds = user_profile.get("medical_history") or []
+        _conds = diet_conditions(user_profile, diet_prefs)
         # Only classify conditions with no curated hint — curated ones are vetted
         # and must not be overwritten by an LLM guess.
         _extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(_conds))
         result = apply_condition_food_safety(
             result, _conds, extra_terms=_extra_apathya,
+            pregnant=bool(user_profile.get("pregnancy_or_nursing")),
+        )
+        # The same floor, applied to the prose that recommends food by name. The
+        # scans above read the five consumed slots; `pathya_apathya.pathya` is
+        # rendered under the heading "Pathya — Recommended" and was read by nothing.
+        result = apply_advisory_safety(
+            result, _conds, allergies, intolerances, extra_terms=_extra_apathya,
             pregnant=bool(user_profile.get("pregnancy_or_nursing")),
         )
 
@@ -386,8 +419,8 @@ async def build_diet_plan(
 
     logger.warning("LLM diet generation failed; falling back to the rule engine")
     from services.ahara_safety import (
-        apply_ahara_safety, apply_condition_food_safety, apply_dietary_type_safety,
-        classify_condition_apathya_llm,
+        apply_advisory_safety, apply_ahara_safety, apply_condition_food_safety,
+        apply_dietary_type_safety, classify_condition_apathya_llm,
     )
     from services.diet_brief_builder import uncurated_conditions
     from services.diet_energy import energy_target
@@ -398,13 +431,17 @@ async def build_diet_plan(
     raw = generate_diet_plan(user_profile, diet_prefs, diet_foods)
     plan = await enrich_diet_plan(raw, user_profile, diet_prefs)
     plan = apply_ahara_safety(
-        plan, diet_prefs.get("food_allergies") or [],
+        plan, diet_allergies(user_profile, diet_prefs),
         diet_prefs.get("food_intolerances") or [])
     plan = apply_dietary_type_safety(plan, diet_prefs.get("dietary_type"))
-    conds = user_profile.get("medical_history") or []
+    conds = diet_conditions(user_profile, diet_prefs)
     extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(conds))
     plan = apply_condition_food_safety(
         plan, conds, extra_terms=extra_apathya,
+        pregnant=bool(user_profile.get("pregnancy_or_nursing")))
+    plan = apply_advisory_safety(
+        plan, conds, diet_allergies(user_profile, diet_prefs),
+        diet_prefs.get("food_intolerances") or [], extra_terms=extra_apathya,
         pregnant=bool(user_profile.get("pregnancy_or_nursing")))
     # The engine fills category quotas with no energy target of its own — measured at
     # 580-1031 kcal against a 1490 kcal target, with 22-40 g of protein against an

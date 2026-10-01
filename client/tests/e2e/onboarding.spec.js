@@ -62,6 +62,10 @@ async function fillFirstTwoSteps(page) {
 
   await page.locator('#onb-height').fill('175')
   await page.locator('#onb-weight').fill('70')
+  // Required since activity_level stopped being hardcoded to 'moderate'. It sets the
+  // diet plan's calorie target, which swings 2040-3220 kcal across these five
+  // answers for one body.
+  await page.getByRole('button', { name: /Desk-bound/ }).click()
   await page.getByRole('button', { name: 'Continue →' }).click()
 
   await expect(page.getByRole('button', { name: 'Complete Setup →' })).toBeVisible()
@@ -96,7 +100,27 @@ test.describe('onboarding (mocked API)', () => {
     expect(puts[0]).toMatchObject({
       gender: 'male', age: 24, height_cm: 175, weight_kg: 70,
       goal: 'weight_loss', dominant_dosha: 'vata',
+      // The answer, not the constant. This was `activity_level: 'moderate'` for
+      // every user the app has ever had, while the diet plan read it as the basis
+      // of a target it calls "a clinical target, not a suggestion".
+      activity_level: 'sedentary',
     })
+  })
+
+  test('activity level is required, because the calorie target is computed from it', async ({ page }) => {
+    const puts = await mockApi(page)
+    await page.goto('/onboarding')
+    await page.locator('#onb-name').fill('Fresh Signup')
+    await page.locator('#onb-age').fill('24')
+    await page.getByRole('button', { name: 'Male', exact: true }).click()
+    await page.getByRole('button', { name: 'Continue →' }).click()
+
+    await page.locator('#onb-height').fill('175')
+    await page.locator('#onb-weight').fill('70')
+    await page.getByRole('button', { name: 'Continue →' }).click()
+
+    await expect(page.locator('.onb-error')).toHaveText('Please choose how active your usual week is.')
+    expect(puts).toHaveLength(0)
   })
 
   test('a 422 from the API reads as text instead of crashing the page', async ({ page }) => {

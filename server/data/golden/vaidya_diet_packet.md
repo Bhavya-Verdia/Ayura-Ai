@@ -20,8 +20,8 @@ them, and the LLM path is grounded on a corpus built from them, so:
 - a wrong **Apathya** withholds a food from a patient who could have eaten it
 - a wrong **Pathya** puts a food in front of a patient who should not
 
-There are **708 clinical claims** (338 Pathya,
-370 Apathya) across **20 conditions**.
+There are **808 clinical claims** (373 Pathya,
+435 Apathya) across **21 conditions**.
 
 ## What replaced the derived library
 
@@ -39,7 +39,23 @@ The count did not reset; it was always zero.
 The tiers are ordered by what a wrong answer costs and by how far the claim sits from
 a citable source — not by size. The first two are small and decisive.
 
-### 1. `vaidya_diet_screened_claims.csv` — 12 rows · start here
+### 0. `vaidya_diet_contested_claims.csv` — 3 rows · rule on these first
+
+Claims where the classical reading and the modern one reach **opposite** conclusions
+about the same food, and both have standing. The rest of this packet asks whether a
+claim is right; this file asks which framework decides.
+
+The library is authored classically, so the classical reading is what the rows
+currently say and the modern one is recorded beside it rather than quietly losing.
+All three are Adhmana: garlic is Pathya here because Lashuna is the great Vatahara
+named for Gulma and Anaha, and is the first food a modern FODMAP protocol removes.
+Onion and wheat roti carry no claim for the same reason and are contested the same
+way.
+
+Fill `vaidya_ruling` with the framework that should decide, per row. This is the one
+file where an author declining to choose is the correct behaviour.
+
+### 1. `vaidya_diet_screened_claims.csv` — 12 rows
 
 Claims that disagree with the food carrying them. The library already requires that a
 dosha effect running against both rasa and virya state a Prabhava; these are the
@@ -81,7 +97,7 @@ for whom a goitrogen restriction may be exactly backwards. Worth one ruling.
 
 Foods with **no classical entry**, where an analogy stood in for a citation. The
 `stated_reasoning` column is the analogy and the reason it was drawn, written to be
-rejected in one read. **35 of them withhold a food from at
+rejected in one read. **36 of them withhold a food from at
 least one condition** on that basis, and those sort first.
 
 Two questions per row: is the analogy sound, and does the profile follow from it.
@@ -99,7 +115,7 @@ Authored Viruddha Ahara pairs. Also tell us what is **missing**: the
 `missing_pairs` column is for combinations that should be here and are not, which is
 the failure this file cannot show you on its own.
 
-### 5. `vaidya_diet_clinical_claims.csv` — 708 rows
+### 5. `vaidya_diet_clinical_claims.csv` — 808 rows
 
 The full Pathya/Apathya matrix, sorted **by condition** so each is one screen. This is
 the long tier; it is also the one where an outlier is obvious next to its peers, which
@@ -110,7 +126,7 @@ is why it is grouped this way rather than by food.
 The six Ayurvedic axes per food, for whole-row sign-off. Tick columns are per axis, so
 a row can be accepted on Rasa and rejected on Vipaka.
 
-### 7. `vaidya_diet_condition_protocols.csv` — 525 rows across 39 diseases
+### 7. `vaidya_diet_condition_protocols.csv` — 541 rows across 40 diseases
 
 Disease protocols rather than food properties: the Pathya and Apathya the brief states
 to the model for each condition. **Twenty-one of these diseases had no dietary rule of

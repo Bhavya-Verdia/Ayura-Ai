@@ -29,7 +29,7 @@ OILS = [
                "the ushna virya governs here, which is why Tila Taila is the Vata oil "
                "and not the Pitta one.",
       dosha=(-2, 1, 1), ritu=("shishira", "hemanta", "varsha"),
-      pathya_for=("constipation", "amavata", "arsha"),
+      pathya_for=("constipation", "amavata", "arsha", "bloating"),
       apathya_for=("acidity", "psoriasis"),
       diet_types=("vegetarian", "vegan"), vegan=True,
       nutrition=N(884, fat_g=100.0, source="usda", **_FAT), **_OIL),
@@ -50,7 +50,7 @@ OILS = [
                "quality reaches Vata where the rasa alone would raise it. Classically "
                "kapha-vata hara and decidedly Pitta-vardhaka.",
       dosha=(-1, 2, -2), ritu=("shishira", "hemanta", "vasanta"),
-      pathya_for=("obesity", "hypothyroid"),
+      pathya_for=("obesity", "hypothyroid", "bloating"),
       apathya_for=("acidity", "psoriasis", "migraine"),
       diet_types=("vegetarian", "vegan"), vegan=True,
       nutrition=N(884, fat_g=100.0, source="usda", **_FAT), **_OIL),
@@ -63,7 +63,7 @@ OILS = [
                "withheld from it (Charaka Sutrasthana 13). Vata-Pitta hara, "
                "Ojas-vardhaka.",
       dosha=(-2, -2, 1), ritu=ALL_RITU,
-      pathya_for=("constipation", "acidity", "anemia", "migraine"),
+      pathya_for=("constipation", "acidity", "anemia", "migraine", "bloating"),
       apathya_for=("obesity", "high_cholesterol", "fatty_liver"),
       nutrition=N(900, fat_g=99.5, source="usda", **_FAT), **_OIL),
 

@@ -422,6 +422,24 @@ PATHYA_APATHYA_HINTS: dict[str, dict] = {
         "apathya": ["dry, light foods in excess", "cold water", "suppressing the urge to defecate", "excess travel/exertion"],
         "classical_ref": "Charaka Sutra 28; Ashtanga Hridayam Chikitsa 9",
     },
+    # Adhmana is the one `gut_health_issue` value that was not already a canonical
+    # condition. Authored here rather than aliased onto IBS or constipation: its
+    # Samprapti is Vata trapped by Ama in the Pakvashaya, so the Apathya is the
+    # Vatala and Abhishyandi foods — not IBS's sour and raw list, and not
+    # constipation's dry and cold one. Authored, NOT clinically reviewed.
+    "bloating": {
+        "ayurvedic_name": "Adhmana / Anaha (Vata-Ama in the Pakvashaya)",
+        "pathya": ["hing (Hingu) in the tadka", "ajwain (Yavani) water",
+                   "cumin-coriander-fennel water", "ginger with rock salt before meals",
+                   "moong dal (well cooked, thin)", "buttermilk (Takra) with ajwain",
+                   "warm cooked vegetables", "old rice"],
+        "apathya": ["raw salads", "cabbage, cauliflower and broccoli",
+                    "rajma, chana and other heavy legumes", "carbonated drinks",
+                    "curd at night", "cold water with meals",
+                    "eating before the previous meal is digested",
+                    "suppressing the urge to pass flatus"],
+        "classical_ref": "Charaka Sutra 19 (Anaha); Ashtanga Hridayam Nidana 8",
+    },
     "acidity": {
         "ayurvedic_name": "Amlapitta",
         "pathya": ["coconut water (Narikela Jala)", "pomegranate", "coriander seeds water", "amla", "fennel (Shatapushpa)", "old rice", "ghee", "milk (warm)"],
@@ -508,6 +526,106 @@ def normalize_condition_key(cond: str) -> str:
     double-pass its own alias map; chains are now resolved in the table itself.
     """
     return _canon_condition(cond)
+
+
+# ── The diseases the diet path must treat ─────────────────────────────────────
+# `gut_health_issue` is asked on the diet preferences form and its four values are
+# diseases: three of them — acidity, constipation, ibs — are already canonical keys
+# with a `PATHYA_APATHYA_HINTS` block, a `_CONDITION_APATHYA_TERMS` floor and
+# authored `apathya_for` / `pathya_for` claims on the 150 library rows.
+#
+# None of that reached them. The answer was rendered into the brief as the single
+# line `GUT HEALTH: Acidity` and went nowhere else: the condition list came from
+# `medical_history` alone, so the brief carried no Pathya-Apathya block, named none
+# of the library's Apathya foods, and `apply_condition_food_safety` scanned the
+# meals against nothing. Measured on the same patient, the same disease declared on
+# the diet form produced a 1,812-character brief with 0 Apathya foods named; declared
+# in `medical_history` it produced 3,789 characters and 50.
+#
+# It is the shape PR #77 found in Panchakarma — a question asked at check-in whose
+# answer no engine could see — and the fix is the same: one function, used by the
+# brief and by the safety scan, so a disease cannot be visible to one and not the
+# other.
+_GUT_ISSUE_CONDITIONS: dict[str, str] = {
+    "acidity": "acidity",
+    "constipation": "constipation",
+    "bloating": "bloating",
+    "ibs": "ibs",
+    # "healthy" declares no disease and adds nothing.
+}
+
+
+def diet_conditions(user_profile: dict, diet_prefs: dict | None = None) -> list[str]:
+    """Every disease the diet path must treat, from both places the app collects one.
+
+    `medical_history` (onboarding) plus `gut_health_issue` (the diet form). Returns
+    canonical keys, deduplicated, with `medical_history` first so a condition
+    declared in both keeps its original spelling in the brief's heading.
+
+    Every caller that builds a condition list for the diet path goes through here.
+    Passing `diet_prefs=None` gives the medical-history-only list, which is what a
+    caller with no preferences document has.
+    """
+    out: list[str] = []
+    seen: set[str] = set()
+    for cond in (user_profile.get("medical_history") or []):
+        canon = normalize_condition_key(cond)
+        if canon and canon not in seen:
+            seen.add(canon)
+            out.append(canon)
+    gut = str((diet_prefs or {}).get("gut_health_issue") or "healthy").strip().lower()
+    canon = _GUT_ISSUE_CONDITIONS.get(gut)
+    if canon and canon not in seen:
+        seen.add(canon)
+        out.append(canon)
+    return out
+
+
+def diet_allergies(user_profile: dict, diet_prefs: dict | None = None) -> list[str]:
+    """Every allergy the app holds for this patient, from both places it stores one.
+
+    `diet_prefs["food_allergies"]` (the diet form) and `user_profile["allergies"]`
+    (onboarding). The diet path read only the first, so an allergy declared once, in
+    the health step, was enforced by the remedies engine and by nothing in the one
+    feature that is entirely about food.
+
+    An allergy is the one declaration where asking twice and honouring one answer is
+    not acceptable, so this is a union and never a choice between them.
+    """
+    out: list[str] = []
+    seen: set[str] = set()
+    for source in ((diet_prefs or {}).get("food_allergies") or [],
+                   user_profile.get("allergies") or []):
+        for a in source:
+            key = str(a).strip().lower().replace(" ", "_")
+            if key and key not in seen:
+                seen.add(key)
+                out.append(key)
+    return out
+
+
+# Fasting is withheld during Vriddhi. Upavasa is a therapy with a cost, and the cost
+# is paid in growth by a patient who is still doing it.
+PAEDIATRIC_MAX_AGE = 17
+
+
+def fasting_days_for(user_profile: dict, diet_prefs: dict | None = None) -> list[str]:
+    """The fasting days that actually apply to this patient.
+
+    Empty for anyone under 18, whatever their profile says. The brief tells the model
+    not to fast a growing patient, but the brief is a request: `diet_plan_engine`
+    reads `fasting_days` itself and builds a Phalahar day from it, and
+    `generate_diet_plan_llm` stamps `is_fasting` on the returned plan from the same
+    list. Withholding it in one place and not the others is how a twelve-year-old
+    ends up with a fruit-only Monday in a plan whose own brief forbids fasting them.
+    """
+    try:
+        age = int(user_profile.get("age"))
+    except (TypeError, ValueError):
+        age = None
+    if age is not None and age <= PAEDIATRIC_MAX_AGE:
+        return []
+    return list((diet_prefs or {}).get("fasting_days") or [])
 
 
 def uncurated_conditions(conditions: list[str]) -> list[str]:
@@ -640,7 +758,7 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
     name = user_profile.get("name") or user_profile.get("full_name") or "the patient"
 
     diet_type = diet_prefs.get("dietary_type") or "vegetarian"
-    allergies = diet_prefs.get("food_allergies") or []
+    allergies = diet_allergies(user_profile, diet_prefs)
     intolerances = diet_prefs.get("food_intolerances") or []
     gut = diet_prefs.get("gut_health_issue") or "healthy"
     goal = diet_prefs.get("diet_goal") or "general_wellness"
@@ -648,8 +766,10 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
     if_window = diet_prefs.get("intermittent_fasting") or "no"
     water = diet_prefs.get("water_intake") or "1-2L"
 
-    conditions = user_profile.get("medical_history") or []
-    norm_conditions = [COND_ALIASES.get(c.lower().replace(" ", "_"), c.lower().replace(" ", "_")) for c in conditions]
+    # Both places the app collects a disease — `medical_history` and the diet form's
+    # own `gut_health_issue`. The second used to reach the model as the single line
+    # `GUT HEALTH: Acidity` and nothing else.
+    norm_conditions = diet_conditions(user_profile, diet_prefs)
 
     cond_blocks = []
     seen: set = set()
@@ -700,21 +820,90 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
     cond_section += _conflict_section(norm_conditions)
     season_guidance = SEASON_GUIDANCE.get(season, "No specific season provided — use general Ayurvedic diet principles.")
 
-    hard_constraints = [f"Dietary type: {diet_type} (STRICTLY honour — never recommend non-{diet_type} items)"]
+    _age_num = user_profile.get("age")
+    try:
+        _age_num = int(_age_num)
+    except (TypeError, ValueError):
+        _age_num = None
+
+    hard_constraints = [
+        f"Dietary type: {diet_type} (STRICTLY honour — never recommend non-{diet_type} items). "
+        f"Ayura serves vegetarian and vegan plans only: the authored food library has no "
+        f"egg, fish or meat row, so an animal-food meal reaches the patient screened "
+        f"against none of their conditions."
+    ]
     if allergies:
         hard_constraints.append(f"ALLERGIES (absolutely avoid): {', '.join(allergies)}")
     if intolerances:
         hard_constraints.append(f"Intolerances (avoid): {', '.join(intolerances)}")
-    if fasting_days:
-        hard_constraints.append(f"Fasting days: {', '.join(fasting_days)} — only Phalahar (fruits, milk, nuts) on these days")
-    if if_window != "no":
-        hard_constraints.append(f"Intermittent fasting: {if_window} window — adjust meal timing accordingly")
+    # Fasting is withheld from a child rather than argued with. The age block below
+    # tells the model not to fast a growing patient, and leaving the declared window
+    # in the hard constraints at the same time hands it a contradiction to resolve —
+    # which is how a 16:8 window ends up in a twelve-year-old's plan anyway. The same
+    # reasoning as the energy deficit, which `diet_energy` already refuses for them.
+    _is_child = _age_num is not None and _age_num <= 17
+    if _is_child and (fasting_days or if_window != "no"):
+        hard_constraints.append(
+            "NO FASTING: the patient is under 18. Any fasting window or fasting day "
+            "on their profile is deliberately not applied — Upavasa is withheld "
+            "during Vriddhi. Give them three full meals and a snack every day."
+        )
+    else:
+        if fasting_days:
+            hard_constraints.append(f"Fasting days: {', '.join(fasting_days)} — only Phalahar (fruits, milk, nuts) on these days")
+        if if_window != "no":
+            hard_constraints.append(f"Intermittent fasting: {if_window} window — adjust meal timing accordingly")
     if is_pregnant:
         hard_constraints.append(
             "PREGNANCY / NURSING — absolutely avoid: papaya (raw/ripe), pineapple, excess fenugreek seeds, "
             "excess aloe vera, high-dose turmeric, hot spices in large amounts, liver/organ meat, "
             "unpasteurised dairy; all meals must be Satvic, warm, and nourishing (Garbhini Paricharya)"
         )
+
+    # The gut issue is now carried in MEDICAL CONDITIONS with a full Pathya-Apathya
+    # block. This line stays because it says something that list cannot: which of the
+    # patient's diseases is the presenting complaint — the reason they opened the diet
+    # form — as opposed to a comorbidity carried over from onboarding.
+    if gut in _GUT_ISSUE_CONDITIONS:
+        gut_line = (f"GUT HEALTH: {gut.replace('_', ' ').title()} — the presenting digestive "
+                    f"complaint, and the primary target of this plan. Its Pathya-Apathya is "
+                    f"listed under MEDICAL CONDITIONS above.")
+    else:
+        gut_line = f"GUT HEALTH: {gut.replace('_', ' ').title()}"
+
+    # ── Age ──────────────────────────────────────────────────────────────────
+    # The brief said nothing about age beyond the number in the header, so a
+    # 10-year-old and a 78-year-old were described to the model identically and it
+    # wrote the same kind of plan for both. Ayurveda has a name for this axis —
+    # Vayah — and it changes the prescription before any dosha does.
+    if _age_num is not None and _age_num <= 17:
+        age_block = """
+VAYAH (AGE STAGE) — BALYA / GROWING:
+  This is a child or adolescent. Vriddhi (growth) is the governing requirement and
+  Kapha is the natural dosha of this stage.
+  • Every meal must be nourishing and building. Do NOT restrict, fast, or design for
+    weight loss, whatever the stated goal — the energy target already refuses a
+    deficit for this age.
+  • Favour Madhura rasa, warm cooked food, milk and ghee where tolerated, and
+    adequate protein at every meal for growth.
+  • No Upavasa, no long fasting windows, no detox regimens, no strong Pachana herbs.
+  • Familiar, palatable, school-compatible food. A plan a child will not eat has
+    failed regardless of its Ayurvedic merit.
+  • State plainly that this plan should be reviewed with a paediatrician."""
+    elif _age_num is not None and _age_num >= 65:
+        age_block = """
+VAYAH (AGE STAGE) — VRIDDHA / ELDER:
+  Vata is the natural dosha of this stage and Agni is usually reduced.
+  • Warm, soft, moist, well-cooked, easily chewed food. Avoid dry, raw, cold and
+    hard textures — these are Vata-aggravating and often simply not chewable.
+  • Protein at every meal: the requirement rises with age while appetite falls, and
+    muscle loss is the main nutritional risk of this stage.
+  • Smaller, more frequent meals suit a reduced Agni better than three large ones.
+  • Attend to hydration and to Vata-anulomana — thirst is blunted and constipation
+    is near-universal here.
+  • Keep preparations simple and low-effort to cook."""
+    else:
+        age_block = ""
 
     _KOSHTHA_DESC = {
         "krura": "Krura Koshtha (hard bowel — constipation tendency) — use more ghee, warm water, soaked dried fruits; avoid dry/astringent foods",
@@ -755,6 +944,7 @@ PRAKRITI & VIKRITI:
   Vikriti (current imbalance): {vikriti.title()}{(' + ' + vikriti_secondary.title()) if vikriti_secondary else ''}
   (If Prakriti ≠ Vikriti, treat the Vikriti preferentially while supporting Prakriti)
 
+{age_block}
 DIGESTIVE FIRE (AGNI):
   Type: {agni.title()} — {AGNI_DESC.get(agni, 'balanced')}{koshtha_line}
 
@@ -772,7 +962,7 @@ CURRENT SEASON (RITUCHARYA):
 MEDICAL CONDITIONS (Pathya-Apathya required for each):
 {cond_section}
 
-GUT HEALTH: {gut.replace('_', ' ').title()}
+{gut_line}
 
 HARD DIETARY CONSTRAINTS (never violate these):
   {chr(10).join(f'  {i+1}. {c}' for i, c in enumerate(hard_constraints))}

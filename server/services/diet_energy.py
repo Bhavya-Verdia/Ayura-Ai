@@ -32,7 +32,10 @@ from engine.calorie_calculator import calorie_calculator
 
 # Unsupervised intake floors. Below these an adult needs clinical supervision, which
 # is not what this app is: a plan is generated and followed at home.
-_SEX_FLOOR = {"female": 1200, "male": 1500}
+# `other` and an unset gender take the mean, the same way the BMR equation does.
+# It used to be `.get(gender, 1200)` — the female floor — beside a BMR that fell
+# through to the male equation, so a user who chose `other` got half of each.
+_SEX_FLOOR = {"female": 1200, "male": 1500, "other": 1350}
 
 # `diet_goal` (DIET_GOALS in preferences_schema) → the goal vocabulary
 # `calorie_calculator.GOAL_ADJUSTMENTS` speaks. Goals with no energy implication map
@@ -49,6 +52,36 @@ _GOAL_TO_ENERGY_GOAL = {
 
 # g of protein per kg of body weight. A deficit without a protein floor costs lean
 # mass, which is why weight loss sits above maintenance here rather than below.
+# ── Age ──────────────────────────────────────────────────────────────────────
+# The profile accepts age 10-120 and the energy model treated all of it as one adult.
+# Mifflin-St Jeor and Harris-Benedict are derived from and validated on adults; they
+# are not paediatric equations, and a growing child's requirement is not a smaller
+# adult's. Measured before this: a 10-year-old at 150 cm / 45 kg was handed 1990 kcal
+# from the adult formula, with nothing in the brief to say a child was being fed.
+#
+# Schofield (1985) is the WHO/FAO standard for this band and is weight-only, so it
+# needs nothing the profile does not already hold.
+_PAEDIATRIC_MAX_AGE = 17
+_SCHOFIELD_10_17 = {          # BMR kcal/day = a * weight_kg + b
+    "male": (17.686, 658.2),
+    "female": (13.384, 692.6),
+}
+
+# Sarcopenia. Protein requirement RISES with age while appetite falls, so the one
+# group most at risk of losing muscle was being given the lowest floor in the table.
+_GERIATRIC_MIN_AGE = 65
+_GERIATRIC_PROTEIN_PER_KG = 1.1
+_PAEDIATRIC_PROTEIN_PER_KG = 1.0
+
+
+def _schofield_bmr(gender: str, weight_kg: float) -> float:
+    if gender in _SCHOFIELD_10_17:
+        a, b = _SCHOFIELD_10_17[gender]
+        return a * float(weight_kg) + b
+    # `other` or unset — the mean, as the adult equation does.
+    return sum(a * float(weight_kg) + b for a, b in _SCHOFIELD_10_17.values()) / 2
+
+
 _PROTEIN_PER_KG = {
     "weight_loss": 1.0,
     "muscle_support": 1.2,
@@ -92,7 +125,9 @@ def _estimated_target(user_profile: dict, diet_prefs: dict) -> int:
     derived from gender and BMI category beats refusing to plan.
     """
     age = int(user_profile.get("age") or 30)
-    gender = (user_profile.get("gender") or "male").lower()
+    # Unset defaults to the sex-neutral path, not to male. Defaulting an absent
+    # answer to one of the two options is a guess presented as a fact.
+    gender = (user_profile.get("gender") or "other").lower()
     bmi = (user_profile.get("bmi_category") or "normal").lower()
     goal = diet_prefs.get("diet_goal") or "general_wellness"
 
@@ -122,7 +157,9 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
       basis            "measured" when height and weight were available, else "estimated"
       notes            the clinical adjustments applied, in the words shown to the user
     """
-    gender = (user_profile.get("gender") or "male").lower()
+    # Unset defaults to the sex-neutral path, not to male. Defaulting an absent
+    # answer to one of the two options is a guess presented as a fact.
+    gender = (user_profile.get("gender") or "other").lower()
     age = int(user_profile.get("age") or 30)
     height_cm = user_profile.get("height_cm")
     weight_kg = user_profile.get("weight_kg")
@@ -132,7 +169,13 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
     pregnant = bool(user_profile.get("pregnancy_or_nursing"))
 
     notes: list[str] = []
-    sex_floor = _SEX_FLOOR.get(gender, 1200)
+    if gender not in ("male", "female"):
+        notes.append(
+            "Your profile does not record a sex for metabolic purposes, so this target "
+            "is the average of the two standard equations. Setting it in Settings makes "
+            "the figure more exact."
+        )
+    sex_floor = _SEX_FLOOR.get(gender, _SEX_FLOOR["other"])
 
     # Underweight and pregnancy override the stated goal. `diet_goal` has no
     # weight-gain value, so an underweight patient's goal cannot express the surplus
@@ -144,15 +187,37 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
     if pregnant and energy_goal in ("weight_loss", "detox"):
         energy_goal = "general_wellness"
         notes.append("Pregnancy or nursing — no energy deficit is applied.")
+    # A growing child is not put into an energy deficit by an app. Childhood weight
+    # management is a supervised clinical decision, and the same restriction that is
+    # merely uncomfortable for an adult costs a 12-year-old growth.
+    is_child = age <= _PAEDIATRIC_MAX_AGE
+    if is_child and energy_goal in ("weight_loss", "detox"):
+        energy_goal = "general_wellness"
+        notes.append(
+            "Under 18 — no energy deficit is applied. Weight management before "
+            "adulthood belongs with a paediatrician, not a meal plan."
+        )
 
     if height_cm and weight_kg:
         basis = "measured"
-        calc = calorie_calculator.calculate(
-            gender=gender, age=age, weight_kg=float(weight_kg),
-            height_cm=float(height_cm), activity_level=activity, goal=energy_goal,
-        )
-        bmr, tdee = calc["bmr"], calc["tdee"]
-        target = calc["target_calories"]
+        if is_child:
+            # Schofield rather than Mifflin: the adult equations are not validated
+            # below 18, and this band's requirement includes growth.
+            bmr = _schofield_bmr(gender, float(weight_kg))
+            tdee = bmr * calorie_calculator.ACTIVITY_MULTIPLIERS.get(activity, 1.55)
+            target = max(_SEX_FLOOR.get(gender, 1200), round(tdee))
+            notes.append(
+                "Under 18 — energy is calculated with the Schofield (WHO/FAO) equation "
+                "for this age band rather than the adult one, and includes growth. "
+                "Please review this plan with a paediatrician."
+            )
+        else:
+            calc = calorie_calculator.calculate(
+                gender=gender, age=age, weight_kg=float(weight_kg),
+                height_cm=float(height_cm), activity_level=activity, goal=energy_goal,
+            )
+            bmr, tdee = calc["bmr"], calc["tdee"]
+            target = calc["target_calories"]
     else:
         basis = "estimated"
         bmr = tdee = 0
@@ -204,6 +269,16 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
     protein_per_kg = _PROTEIN_PER_KG.get(goal, 0.8)
     if pregnant:
         protein_per_kg = max(protein_per_kg, 1.1)
+    if is_child:
+        protein_per_kg = max(protein_per_kg, _PAEDIATRIC_PROTEIN_PER_KG)
+    if age >= _GERIATRIC_MIN_AGE:
+        # Requirement rises with age while appetite falls, so this group was on the
+        # table's lowest floor and is the one that can least afford to be.
+        protein_per_kg = max(protein_per_kg, _GERIATRIC_PROTEIN_PER_KG)
+        notes.append(
+            f"Over {_GERIATRIC_MIN_AGE} — the protein floor is raised to "
+            f"{_GERIATRIC_PROTEIN_PER_KG} g/kg to protect muscle."
+        )
     if weight_kg:
         protein_floor = int(round(_protein_basis_weight(
             float(weight_kg), height_cm, bmi_category) * protein_per_kg))

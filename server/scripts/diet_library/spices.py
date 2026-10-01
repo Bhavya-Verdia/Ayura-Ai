@@ -31,7 +31,7 @@ SPICES = [
     F("Haridra (Turmeric)", id="turmeric", varga="Haritakyadi",
       rasa=("tikta", "katu"), guna=("ruksha", "laghu"), virya="ushna", vipaka="katu",
       dosha=(0, -1, -2), ritu=ALL_RITU,
-      pathya_for=("psoriasis", "diabetes", "amavata", "high_cholesterol"),
+      pathya_for=("psoriasis", "diabetes", "amavata", "high_cholesterol", "bloating"),
       apathya_for=("pregnancy",),
       nutrition=N(312, 9.7, 67.1, 3.3, 22.7, source="usda"), **_SPICE),
 
@@ -41,7 +41,7 @@ SPICES = [
                "kindling Agni and clearing the Anaha through which Vata accumulates. "
                "Classically vata-kapha hara.",
       dosha=(-1, 1, -2), ritu=ALL_RITU,
-      pathya_for=("ibs", "grahani", "constipation"),
+      pathya_for=("ibs", "grahani", "constipation", "bloating"),
       nutrition=N(375, 17.8, 44.2, 22.3, 10.5, source="usda"), **_SPICE),
 
     F("Dhanyaka (Coriander Seed)", id="coriander_dhania", varga="Haritakyadi",
@@ -51,14 +51,14 @@ SPICES = [
                "action the texts attribute to Dhanyaka specifically, which is why it "
                "is the one warm spice given freely in Pitta conditions.",
       dosha=(-1, -1, -1), ritu=ALL_RITU,
-      pathya_for=("acidity", "migraine", "kidney_disease"),
+      pathya_for=("acidity", "migraine", "kidney_disease", "bloating"),
       nutrition=N(298, 12.4, 55.0, 17.8, 41.9, source="usda"), **_SPICE),
 
     F("Mishreya (Fennel)", id="fennel_saunf", varga="Haritakyadi",
       rasa=("madhura", "tikta", "katu"), guna=("laghu", "snigdha"),
       virya="ushna", vipaka="madhura",
       dosha=(-1, -1, 0), ritu=ALL_RITU,
-      pathya_for=("acidity", "ibs", "grahani"),
+      pathya_for=("acidity", "ibs", "grahani", "bloating"),
       nutrition=N(345, 15.8, 52.3, 14.9, 39.8, source="usda"), **_SPICE),
 
     F("Ela (Green Cardamom)", id="cardamom_elaichi", varga="Karpuradi",
@@ -66,14 +66,14 @@ SPICES = [
       prabhava="Shita virya despite katu rasa — the classical exception that makes Ela "
                "the aromatic given in Pitta conditions where Maricha and Twak are barred.",
       dosha=(-1, -1, -1), ritu=ALL_RITU,
-      pathya_for=("acidity", "asthma"),
+      pathya_for=("acidity", "asthma", "bloating"),
       nutrition=N(311, 10.8, 68.5, 6.7, 28.0, source="usda"), **_SPICE),
 
     F("Twak (Cinnamon)", id="cinnamon_dalchini", varga="Karpuradi",
       rasa=("katu", "tikta", "madhura"), guna=("laghu", "ruksha", "tikshna"),
       virya="ushna", vipaka="katu",
       dosha=(-1, 1, -2), ritu=("shishira", "hemanta", "vasanta", "varsha"),
-      pathya_for=("diabetes", "obesity", "hypothyroid"),
+      pathya_for=("diabetes", "obesity", "hypothyroid", "bloating"),
       nutrition=N(247, 4.0, 80.6, 1.2, 53.1, source="usda"), **_SPICE),
 
     F("Maricha (Black Pepper)", id="black_pepper", varga="Haritakyadi",
@@ -82,7 +82,7 @@ SPICES = [
                "Vata-raising tendency of katu rasa. In quantity the rasa wins — which is "
                "why Maricha is classically a pinch and not a spoon.",
       dosha=(-1, 2, -2), ritu=("shishira", "hemanta", "vasanta", "varsha"),
-      pathya_for=("obesity", "hypothyroid", "asthma"),
+      pathya_for=("obesity", "hypothyroid", "asthma", "bloating"),
       apathya_for=("acidity", "arsha"),
       nutrition=N(251, 10.4, 63.9, 3.3, 25.3, source="usda"), **_SPICE),
 
@@ -92,7 +92,7 @@ SPICES = [
                "and the reason dry ginger nourishes where fresh Ardraka only stimulates. "
                "The same action makes it vata-hara where katu rasa alone would raise Vata.",
       dosha=(-2, 1, -2), ritu=ALL_RITU,
-      pathya_for=("ibs", "grahani", "obesity", "amavata", "asthma"),
+      pathya_for=("ibs", "grahani", "obesity", "amavata", "asthma", "bloating"),
       apathya_for=("acidity", "arsha"),
       nutrition=N(335, 8.98, 71.6, 4.24, 14.1, source="usda"), **_SPICE),
 
@@ -101,7 +101,7 @@ SPICES = [
       prabhava="Vata-kapha hara — the snigdha guna offsets the ruksha tendency its "
                "tikta-katu rasa would otherwise carry into Vata.",
       dosha=(-1, 1, -2), ritu=("shishira", "hemanta", "vasanta"),
-      pathya_for=("diabetes", "pcos", "high_cholesterol", "amavata"),
+      pathya_for=("diabetes", "pcos", "high_cholesterol", "amavata", "bloating"),
       apathya_for=("pregnancy",),
       nutrition=N(323, 23.0, 58.4, 6.4, 24.6, source="usda"), **_SPICE),
 
@@ -111,7 +111,7 @@ SPICES = [
       prabhava="Vata-anulomana and shula-prashamana — the classical carminative. It "
                "clears the Anaha through which its own katu-tikta rasa would aggravate Vata.",
       dosha=(-2, 1, -2), ritu=ALL_RITU,
-      pathya_for=("ibs", "grahani", "constipation", "asthma"),
+      pathya_for=("ibs", "grahani", "constipation", "asthma", "bloating"),
       apathya_for=("acidity",),
       nutrition=N(305, 15.9, 43.2, 21.1, 21.2, source="ifct2017"), **_SPICE),
 ]

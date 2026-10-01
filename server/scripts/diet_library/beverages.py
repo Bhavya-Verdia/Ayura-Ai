@@ -39,7 +39,7 @@ BEVERAGES = [
                "katu-tikta rasa alone would do, which is why it is given as a daily "
                "drink and Maricha is not.",
       dosha=(-1, 1, -2), ritu=("shishira", "hemanta", "varsha", "vasanta"),
-      pathya_for=("asthma", "migraine", "hypothyroid"),
+      pathya_for=("asthma", "migraine", "hypothyroid", "bloating"),
       apathya_for=("acidity",),
       nutrition=N(1, 0.1, 0.2, 0.0, 0.0, source="authored_estimate"),
       ref="bhavaprakasha", varga="Pushpa", **_BEV),
@@ -49,7 +49,7 @@ BEVERAGES = [
       prabhava="Made from Shunthi, and carries its exception: madhura vipaka despite "
                "katu rasa, and vata-hara where the rasa alone would raise Vata.",
       dosha=(-2, 1, -2), ritu=("shishira", "hemanta", "varsha"),
-      pathya_for=("ibs", "grahani", "asthma", "obesity"),
+      pathya_for=("ibs", "grahani", "asthma", "obesity", "bloating"),
       apathya_for=("acidity", "arsha"),
       nutrition=N(3, 0.1, 0.8, 0.0, 0.0, source="authored_estimate"),
       ref="bhavaprakasha", varga="Haritakyadi", **_BEV),
@@ -69,7 +69,7 @@ BEVERAGES = [
                "warm lemon water is the classical morning drink for Ama and not a "
                "Kapha-aggravating one.",
       dosha=(-1, 1, -1), ritu=ALL_RITU,
-      pathya_for=("constipation", "obesity"),
+      pathya_for=("constipation", "obesity", "bloating"),
       apathya_for=("acidity", "psoriasis", "amavata"),
       viruddha_with=("milk", "curd_yogurt"),
       nutrition=N(6, 0.1, 2.0, 0.0, 0.1, source="usda"),

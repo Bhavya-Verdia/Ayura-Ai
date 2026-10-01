@@ -12,6 +12,23 @@ carries a value nobody chose for it.
 
 from diet_library import schema
 
+# Ids that have been renamed, old → new.
+#
+# The builder refuses to write when a row present in the KB is no longer authored,
+# because that is how a food gets silently dropped from `diet_plan_engine` and from
+# the RAG nutrition collection — and a corpus that returns less is not an error, so
+# nothing goes red. A rename looks exactly like a drop from the outside, so it is
+# recorded here rather than waved through with a flag: the entry is the evidence that
+# someone meant it, and it stays as the history of an id that other code may still
+# hold.
+RENAMED: dict[str, str] = {
+    # The base grain is the whole clinical content of this row, so it belongs in the
+    # identity. As the bare word, the derived scan term fired on "Vegetable Oats
+    # Upma" for a diabetic — a meal whose base is Yava, which the library prescribes
+    # for exactly that patient.
+    "upma": "upma_rava",
+}
+
 
 def F(name, *, id=None, category, prep_state, rasa, guna, virya, vipaka, dosha,
       ritu, nutrition, ref, varga, meal=("lunch", "dinner"), prep_minutes=10,
