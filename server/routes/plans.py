@@ -464,12 +464,8 @@ async def generate_gym_plan(
             gym_exercises = kb_cache.gym_exercises or None
         # Rare/uncovered conditions → LLM maps them to KB contraindication
         # categories (validated), giving disease-safety parity with yoga.
-        from services.gym_plan_engine import _condition_contra_tags
-        from services.gym_condition_fallback import gym_avoid_tags_for_conditions, GYM_CONTRA_VOCAB
-        _conds = user.medical_history or []
-        _vocab = set(GYM_CONTRA_VOCAB)
-        _uncovered = [c for c in _conds if not (_condition_contra_tags([c]) & _vocab)]
-        _extra_avoid_tags = await gym_avoid_tags_for_conditions(_uncovered) if _uncovered else set()
+        from services.gym_condition_fallback import extra_avoid_tags_for
+        _extra_avoid_tags = await extra_avoid_tags_for(user_profile)
         raw_plan = engine_generate(user_profile, gym_prefs, gym_exercises, extra_avoid_tags=_extra_avoid_tags)
         enriched_plan = await enrich_gym_plan(raw_plan, user_profile, gym_prefs)
 

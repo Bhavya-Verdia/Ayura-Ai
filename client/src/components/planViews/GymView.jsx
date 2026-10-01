@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import {
   Dumbbell, Leaf, Calendar, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Lightbulb, Info,
+  ShieldAlert,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 
@@ -176,6 +177,23 @@ export function GymView({ plan }) {
         </div>
       )}
 
+      {/* Before-you-train notes for the conditions where no movement is the
+          problem and the session is — hypoglycaemia on insulin, an asthma attack
+          a longer warm-up prevents, a seizure with a bar overhead. Shown above the
+          week, not under it, because they apply before the first set. */}
+      {Array.isArray(plan.condition_guidance) && plan.condition_guidance.length > 0 && (
+        <section className="gym-condition-guidance" aria-label="Before you train">
+          <h4><ShieldAlert size={14} /> Before you train</h4>
+          <ul>
+            {plan.condition_guidance.map(g => (
+              <li key={g.key}>
+                <strong>{g.label}.</strong> {g.note}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Why this plan is narrower than usual — a pregnant practitioner has 19 safe
           exercises at beginner level, and bodyweight-only users can be near that.
           The engine has written this since the pregnancy pass; rendering it is
@@ -244,6 +262,24 @@ export function GymView({ plan }) {
         <div className="gym-pool-notice">
           <Info size={12} />
           <span>{plan.substitution_notice}</span>
+        </div>
+      )}
+      {plan.injury_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.injury_notice}</span>
+        </div>
+      )}
+      {plan.intensity_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.intensity_notice}</span>
+        </div>
+      )}
+      {plan.age_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.age_notice}</span>
         </div>
       )}
 
@@ -422,6 +458,18 @@ export function GymView({ plan }) {
                     </div>
                   )}
 
+                  {/* Balance — past sixty only. Falls are the injury that ends
+                      independence, and a strength plan with no balance work in it
+                      is half of what WHO asks older adults for. */}
+                  {day.balance?.length > 0 && (
+                    <div className="gym-sub-section">
+                      <h4 className="gym-section-label">Balance · beside a counter or chair</h4>
+                      <ul className="gym-sub-list">
+                        {day.balance.map((b, j) => <li key={j} className="gym-list-item">{b}</li>)}
+                      </ul>
+                    </div>
+                  )}
+
                   {/* Cooldown */}
                   {day.cooldown?.length > 0 && (
                     <div className="gym-sub-section">
@@ -534,7 +582,7 @@ export function GymView({ plan }) {
       )}
 
       {/* ── Nutrition sync ── */}
-      {Object.keys(nutrition).length > 0 && (
+      {(Object.keys(nutrition).length > 0 || plan.nutrition_withheld?.length > 0) && (
         <div className="gym-nutrition-section">
           <h3 className="gym-tips-title"><Flame size={14} /> Nutrition Sync</h3>
           <div className="gym-nutrition-grid">
@@ -549,6 +597,14 @@ export function GymView({ plan }) {
               </div>
             ) : null)}
           </div>
+          {/* A suggestion removed by the screen and one never written look the
+              same unless the removal is said out loud. */}
+          {plan.nutrition_withheld?.map(w => (
+            <div key={w.field} className="gym-pool-notice">
+              <Info size={12} />
+              <span>A {w.field.replace(/_/g, ' ')} suggestion was withheld: it {w.reason}.</span>
+            </div>
+          ))}
         </div>
       )}
 

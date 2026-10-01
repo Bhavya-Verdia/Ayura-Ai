@@ -334,10 +334,12 @@ async def _generate_feature_via_engine_impl(
         if plan_type == "gym":
             from services.gym_plan_engine import generate_gym_plan
             from services.gym_plan_enricher import enrich_gym_plan
+            from services.gym_condition_fallback import extra_avoid_tags_for
             ex = _kb("gym_exercises")
             if is_prenatal and ex:
                 ex = [e for e in ex if e.get("pregnancy_safe")] or None
-            raw = generate_gym_plan(profile, prefs, ex)
+            raw = generate_gym_plan(profile, prefs, ex,
+                                    extra_avoid_tags=await extra_avoid_tags_for(profile))
             return await enrich_gym_plan(raw, profile, prefs)
 
         if plan_type == "diet":

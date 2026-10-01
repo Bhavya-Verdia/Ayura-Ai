@@ -3,6 +3,10 @@ import json
 import hashlib
 import random
 import re
+
+from services.gym_condition_guidance import _unfalse, guidance_for
+from engine.movement_risk import (_INJURY_RISK_TAGS, _LIMITATION_ALIASES, RISK_VOCAB,
+                                  condition_risk_tags, injury_risk_tags)
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -31,9 +35,18 @@ if EXERCISES_PATH.exists():
 # `_gate_movements` runs the same checks the exercise pool runs. A line that is
 # withheld is replaced from `_WARMUP_SUBSTITUTES` so the warm-up keeps its length
 # rather than quietly getting shorter.
-def _w(text, impact="none", contra=(), pregnancy_safe=True):
+def _w(text, impact="none", contra=(), pregnancy_safe=True, risk=()):
     return {"text": text, "impact": impact, "contra": frozenset(contra),
-            "pregnancy_safe": pregnancy_safe}
+            "pregnancy_safe": pregnancy_safe, "risk": frozenset(risk)}
+
+
+# Mechanisms the session's edges carry, in `engine.movement_risk`'s vocabulary.
+# A 72-year-old with osteoporosis and hypertension had every flexion exercise
+# removed from her main workout and still opened each session with an inchworm —
+# a forward fold to the floor, head down, weight on the wrists — and closed it
+# with a supine twist and child's pose.
+_FOLD = ("spinal_flexion",)
+_INCHWORM = ("spinal_flexion", "intracranial_pressure", "wrist_weight_bearing")
 
 
 _WARMUP = {
@@ -51,7 +64,8 @@ _WARMUP = {
         _w("Bodyweight squat — 10 slow reps", contra=["bad_knee", "knee_replacement"]),
         _w("Ankle circles — 10 each direction"),
         _w("Glute bridge — 12 reps", pregnancy_safe=False),
-        _w("Walking lunge — 8 each leg", contra=["bad_knee", "knee_replacement"]),
+        _w("Walking lunge — 8 each leg", contra=["bad_knee", "knee_replacement"],
+           risk=["fall_risk"]),
     ],
     "core": [
         _w("Cat-cow — 10 reps"),
@@ -69,7 +83,7 @@ _WARMUP = {
         _w("Bodyweight squat — 10 reps", contra=["bad_knee", "knee_replacement"]),
         _w("High knees — 30 sec", impact="high",
            contra=["hypertension", "heart_disease", "bad_knee"], pregnancy_safe=False),
-        _w("Inchworm — 5 reps", contra=["lower_back_pain", "wrist_injury"]),
+        _w("Inchworm — 5 reps", contra=["lower_back_pain", "wrist_injury"], risk=_INCHWORM),
     ],
     "cardio": [
         _w("Brisk walk or light jog — 3 min"),
@@ -101,7 +115,7 @@ _COOLDOWN = {
         _w("Cross-body shoulder stretch — 30 sec each side", contra=["shoulder_injury"]),
         _w("Overhead tricep stretch — 30 sec each arm", contra=["shoulder_injury"]),
         _w("Lat stretch in doorway — 30 sec each side", contra=["shoulder_injury"]),
-        _w("Child's pose — 60 sec", contra=["bad_knee"]),
+        _w("Child's pose — 60 sec", contra=["bad_knee"], risk=_FOLD),
         _w("Deep belly breathing — 5 breaths"),
     ],
     "lower": [
@@ -111,22 +125,23 @@ _COOLDOWN = {
            contra=["hip_injury", "bad_knee"]),
         _w("Calf stretch against wall — 30 sec each leg"),
         _w("Supine spinal twist — 30 sec each side",
-           contra=["herniated_disc"], pregnancy_safe=False),
-        _w("Child's pose — 60 sec", contra=["bad_knee"]),
+           contra=["herniated_disc"], pregnancy_safe=False, risk=_FOLD),
+        _w("Child's pose — 60 sec", contra=["bad_knee"], risk=_FOLD),
     ],
     "core": [
         _w("Supine spinal twist — 30 sec each side",
-           contra=["herniated_disc"], pregnancy_safe=False),
-        _w("Child's pose — 60 sec", contra=["bad_knee"]),
+           contra=["herniated_disc"], pregnancy_safe=False, risk=_FOLD),
+        _w("Child's pose — 60 sec", contra=["bad_knee"], risk=_FOLD),
         _w("Hip flexor stretch (lunge) — 30 sec each side", contra=["bad_knee"]),
         _w("Cobra stretch — 30 sec",
-           contra=["herniated_disc", "lower_back_pain"], pregnancy_safe=False),
+           contra=["herniated_disc", "lower_back_pain"], pregnancy_safe=False,
+           risk=["spinal_extension"]),
         _w("Deep belly breathing — 5 breaths"),
     ],
     "full": [
-        _w("Child's pose — 60 sec", contra=["bad_knee"]),
+        _w("Child's pose — 60 sec", contra=["bad_knee"], risk=_FOLD),
         _w("Supine spinal twist — 30 sec each side",
-           contra=["herniated_disc"], pregnancy_safe=False),
+           contra=["herniated_disc"], pregnancy_safe=False, risk=_FOLD),
         _w("Quad stretch — 30 sec each leg", contra=["bad_knee"]),
         _w("Shoulder cross-body stretch — 30 sec each arm", contra=["shoulder_injury"]),
         _w("Deep belly breathing — 5 breaths"),
@@ -141,12 +156,57 @@ _COOLDOWN = {
 }
 
 _COOLDOWN_SUBSTITUTES = [
-    _w("Seated forward fold, knees soft — 30 sec"),
-    _w("Seated side bend — 30 sec each side"),
+    _w("Seated forward fold, knees soft — 30 sec", risk=_FOLD),
+    _w("Seated side bend — 30 sec each side", risk=_FOLD),
+    _w("Standing chest opener, hands clasped behind — 30 sec"),
+    _w("Seated knee hug, one leg at a time — 20 sec each side"),
     _w("Neck tilt, ear to shoulder — 20 sec each side"),
     _w("Standing calf stretch — 30 sec each leg"),
     _w("Deep belly breathing — 5 breaths"),
 ]
+
+# Balance, for everyone past sixty. WHO's 2020 guidelines ask older adults for
+# "varied multicomponent physical activity that emphasises functional balance and
+# strength training" on three or more days a week, because falls are the injury
+# that ends independence. The engine had strength and nothing else: a 78-year-old
+# got squats and rows and not a minute of standing on one leg. These are the
+# Otago Exercise Programme's balance progressions, which cut falls by about a
+# third in trials, each done beside a counter or a chair back.
+#
+# Four lines a session, rotated by day so the week covers all of them. They pass
+# the same gate as the warm-up.
+_BALANCE_SECONDS = 4 * 60
+_BALANCE = [
+    _w("Supported single-leg stand — hold a counter, 3 × 20 sec each leg; "
+       "progress to fingertip support"),
+    _w("Sit-to-stand from a chair, arms crossed — 2 × 8, slow on the way down",
+       contra=["knee_replacement"]),
+    _w("Heel-to-toe walk beside a wall — 3 lengths of 10 steps", risk=["fall_risk"]),
+    _w("Heel raises holding a chair back — 2 × 12", contra=["bad_ankle"]),
+    _w("Side-stepping along a counter — 2 × 10 steps each way"),
+    _w("Toe raises holding a chair back — 2 × 12", contra=["bad_ankle"]),
+    _w("Clock reach — stand on one leg holding support, touch the other foot to 12, 3 "
+       "and 6 o'clock — 5 each side", risk=["fall_risk"]),
+    _w("Supported backwards walk along a counter — 3 lengths of 10 steps",
+       risk=["fall_risk"]),
+]
+# What remains when the fall-risk progressions are withheld: seated and
+# fully-supported work, which is where Otago starts anyone who needs it.
+_BALANCE_SUBSTITUTES = [
+    _w("Seated marching — 2 × 20, tall posture"),
+    _w("Seated heel and toe raises — 2 × 15"),
+    _w("Supported weight shifts, side to side, both hands on a counter — 2 × 10"),
+    _w("Supported weight shifts, front to back, both hands on a counter — 2 × 10"),
+]
+
+
+def _balance_for(day_num: int, avoid_tags=frozenset(), withhold_impact=False,
+                 is_pregnant=False, risks=frozenset()) -> list:
+    start = ((day_num - 1) * 3) % len(_BALANCE)
+    items = [_BALANCE[(start + i) % len(_BALANCE)] for i in range(4)]
+    return _gate_movements(items, _BALANCE_SUBSTITUTES, frozenset(avoid_tags),
+                           withhold_impact, is_pregnant, frozenset(risks))
+
 
 _FOCUS_WARMUP_TYPE = {
     "full_body": "full", "push": "upper", "pull": "upper",
@@ -159,26 +219,32 @@ _FOCUS_WARMUP_TYPE = {
 }
 
 
-def _gate_movements(items, subs, avoid_tags, withhold_impact, is_pregnant):
+def _gate_movements(items, subs, avoid_tags, withhold_impact, is_pregnant,
+                    risks=frozenset()):
     """The same checks the exercise pool runs, applied to the session's edges.
 
     Withheld lines are replaced from `subs` rather than dropped, so a restricted
     practitioner gets a warm-up of the same length as everyone else instead of a
-    visibly shorter one.
+    visibly shorter one. A substitute passes the same gate: the cool-down's
+    fallback was a seated forward fold, which is the movement the osteoporosis
+    restriction that triggered the substitution exists to prevent.
     """
+    def blocked(item):
+        return bool(avoid_tags & item["contra"]
+                    or risks & item["risk"]
+                    or (withhold_impact and item["impact"] == "high")
+                    or (is_pregnant and not item["pregnancy_safe"]))
+
     kept, used = [], set()
     for item in items:
-        blocked = (avoid_tags & item["contra"]
-                   or (withhold_impact and item["impact"] == "high")
-                   or (is_pregnant and not item["pregnancy_safe"]))
-        if not blocked:
+        if not blocked(item):
             kept.append(item["text"])
             used.add(item["text"])
     if len(kept) < len(items):
         for sub in subs:
             if len(kept) >= len(items):
                 break
-            if sub["text"] in used or avoid_tags & sub["contra"]:
+            if sub["text"] in used or blocked(sub):
                 continue
             kept.append(sub["text"])
             used.add(sub["text"])
@@ -186,17 +252,17 @@ def _gate_movements(items, subs, avoid_tags, withhold_impact, is_pregnant):
 
 
 def _warmup_for(focus: str, avoid_tags=frozenset(), withhold_impact=False,
-                is_pregnant=False) -> list:
+                is_pregnant=False, risks=frozenset()) -> list:
     items = _WARMUP.get(_FOCUS_WARMUP_TYPE.get(focus, "full"), _WARMUP["full"])
     return _gate_movements(items, _WARMUP_SUBSTITUTES, frozenset(avoid_tags),
-                           withhold_impact, is_pregnant)
+                           withhold_impact, is_pregnant, frozenset(risks))
 
 
 def _cooldown_for(focus: str, avoid_tags=frozenset(), withhold_impact=False,
-                  is_pregnant=False) -> list:
+                  is_pregnant=False, risks=frozenset()) -> list:
     items = _COOLDOWN.get(_FOCUS_WARMUP_TYPE.get(focus, "full"), _COOLDOWN["full"])
     return _gate_movements(items, _COOLDOWN_SUBSTITUTES, frozenset(avoid_tags),
-                           withhold_impact, is_pregnant)
+                           withhold_impact, is_pregnant, frozenset(risks))
 
 
 # ── Goal-based prescription ───────────────────────────────────────────────────
@@ -267,10 +333,100 @@ _GOAL_SCHEME = {
 }
 
 
-def _resolve_scheme(goal: str, training_style=None) -> str:
+# Sets of 3-5 at near-maximal load are lifted holding the breath against a
+# closed glottis — the Valsalva manoeuvre — whether or not the lifter means to.
+# It sends blood pressure to 300/200 in a trained lifter and raises intraocular
+# and intra-abdominal pressure with it. A hypertensive 50-year-old was written a
+# 4 x 3-5 barbell bench press; a glaucoma patient the same triples. The exercise
+# gates had removed the deadlift for hypertension and left the scheme that makes
+# every lift in the block a maximal one.
+#
+# ACSM's guidance for these populations, and for older adults generally, is
+# moderate loads for 8-12 repetitions. The strength scheme is replaced with the
+# hypertrophy one, which is exactly that, and the plan says why.
+_INTENSITY_CEILING = (
+    ("blood pressure and your heart",
+     ("hypertension", "high_blood_pressure", "heart", "cardiac", "atrial_fibrillation",
+      "arrhythmia", "angina", "stroke", "aneurysm")),
+    ("the pressure inside your eyes",
+     ("glaucoma", "retinopathy", "retinal")),
+    ("the abdominal wall",
+     ("hernia", "abdominal_surgery", "recent_surgery")),
+)
+_CEILING_SCHEMES = {"strength": "muscle_gain"}
+
+
+def _intensity_ceiling(user_profile) -> str | None:
+    """What near-maximal sets would put at risk for this practitioner, if anything."""
+    if not user_profile:
+        return None
+    declared = " ".join(_unfalse(c) for c in _conditions_and_injuries(user_profile))
+    for reason, terms in _INTENSITY_CEILING:
+        if any(t in declared for t in terms):
+            return reason
+    if user_profile.get("pregnancy_or_nursing"):
+        return "your pregnancy"
+    group = _age_group(user_profile.get("age"))
+    if group == "senior":
+        return "joints and blood vessels past sixty"
+    if group == "youth":
+        return "a body that is still growing"
+    return None
+
+
+# Under 18. An 11-year-old who had never lifted was written six days a week of
+# 3-5 rep strength sets on a body-part split — the programme of an adult
+# competitor. Youth resistance training is safe and worthwhile (NSCA 2009, AAP
+# 2020, UKSCA 2014), and the same statements agree on its shape: two or three
+# non-consecutive days a week, moderate loads for 8-15 reps, technique before
+# load, and qualified supervision. Older teenagers with a training history can
+# carry a fourth day.
+_YOUTH_MAX_DAYS = 3
+_YOUTH_MAX_DAYS_TRAINED = 4
+_YOUTH_TRAINED_FROM = 16
+
+
+def _youth_day_cap(age, fitness_level) -> int:
+    try:
+        age = int(age)
+    except (TypeError, ValueError):
+        return _YOUTH_MAX_DAYS
+    if age >= _YOUTH_TRAINED_FROM and fitness_level in ("intermediate", "advanced"):
+        return _YOUTH_MAX_DAYS_TRAINED
+    return _YOUTH_MAX_DAYS
+
+
+def _youth_notice(requested: int, built: int) -> str:
+    days = (f"{built} days a week" if built >= requested
+            else f"{built} days a week rather than the {requested} you asked for")
+    return (f"Because you are under 18, this plan trains {days}, with a rest day "
+            "between sessions, uses 8–15 reps at a weight you can move with perfect form, "
+            "and leaves out maximal lifts. That is the guidance for young people who are "
+            "still growing, and resistance training done this way is safe and good for "
+            "you. Learn each lift from a qualified coach or PE teacher and train with an "
+            "adult supervising.")
+
+
+def _resolve_scheme(goal: str, training_style=None, user_profile=None) -> str:
     """The `_GOAL_WEEKS` key this block is written in."""
     scheme = _STYLE_SCHEME.get(str(training_style or "").lower())
-    return scheme or _GOAL_SCHEME.get(goal, "general_fitness")
+    scheme = scheme or _GOAL_SCHEME.get(goal, "general_fitness")
+    if scheme in _CEILING_SCHEMES and _intensity_ceiling(user_profile):
+        return _CEILING_SCHEMES[scheme]
+    return scheme
+
+
+def _intensity_notice(goal, training_style, user_profile) -> str | None:
+    requested = (_STYLE_SCHEME.get(str(training_style or "").lower())
+                 or _GOAL_SCHEME.get(goal, "general_fitness"))
+    reason = _intensity_ceiling(user_profile)
+    if requested not in _CEILING_SCHEMES or not reason:
+        return None
+    return (f"Your sets are written as 8–12 reps at a moderate weight rather than 3–5 at "
+            f"a near-maximal one, because of {reason}. Lifting that heavy makes you hold "
+            "your breath and strain, which spikes pressure in the chest, head and belly. "
+            "You still get stronger — breathe out on every effort and never hold your "
+            "breath.")
 
 
 def _get_goal_prescription(goal: str, week: int, level: str = "intermediate",
@@ -664,36 +820,105 @@ def _week_load_factor(scheme: str, week: int) -> float:
     return factors[min(max(week, 1), len(factors)) - 1]
 
 
-def _get_weight_range(ex: dict, strength_level: str, gender: str,
-                      bodyweight: float | None = None,
-                      week_factor: float = 1.0) -> str:
-    """A starting load for THIS lift, at this bodyweight and this training age."""
+# ── What a set of N costs ────────────────────────────────────────────────────
+#
+# `_LIFT_BW` is a one-rep-max standard, and the quoted load used to be that
+# standard ±15% whatever the set was: an intermediate 75 kg lifter was given the
+# same 80–107.5 kg squat for sets of 3-5 and for sets of 15-20. The top of that
+# range is their whole 1RM, so the plan asked for twenty reps at a weight they
+# could lift once. Every higher-rep scheme — fat loss, endurance, muscle gain,
+# which is most users — was over-prescribed by the whole of the gap.
+#
+# A set of N taken to two reps short of failure (the "last 2 reps are hard" the
+# card already tells them) is lifted at the load whose max is N + 2, and Epley
+# gives the fraction of 1RM that is.
+_REPS_IN_RESERVE = 2
+# What a prescription with no rep range (a direct call, a hold) is priced at.
+_REFERENCE_REPS = 10
+
+# Strength does not scale with bodyweight one for one. It follows muscle cross-
+# section, which grows as mass to the two-thirds — the allometric exponent the
+# strength-sport literature normalises by. Linear scaling priced a 118 kg
+# sedentary beginner's first deadlift at 60-82 kg for sets of fifteen: every
+# extra kilo of bodyweight bought a kilo and a half of bar, as though it were
+# muscle.
+_ALLOMETRIC_EXPONENT = 0.67
+
+# Strength falls about one percent a year from the forties, and faster later. A
+# starting estimate that errs light costs a set; one that errs heavy is how a
+# first session injures someone. An 80-year-old sedentary beginner was quoted the
+# same 32.5–45 kg bench press as a 25-year-old.
+_AGE_LOAD_FROM = 40
+_AGE_LOAD_PER_YEAR = 0.01
+_AGE_LOAD_FLOOR = 0.60
+# A body still growing is started lighter than its bodyweight suggests; the
+# technique is the adaptation being trained, not the load.
+_YOUTH_LOAD_FACTOR = 0.80
+
+# An Olympic bar weighs 20 kg before a plate goes on it. The rack lifts below are
+# done with one; a curl or a skull-crusher usually is not (EZ-bars and fixed
+# barbells go far lighter), so they are not held to it.
+_EMPTY_BAR_KG = 20.0
+_RACK_LIFTS = {"squat", "front_squat", "deadlift", "romanian", "good_morning",
+               "hip_thrust", "bench", "incline_press", "floor_press", "overhead_press",
+               "push_press", "row", "shrug", "upright_row"}
+
+
+def _rep_fraction(reps) -> float:
+    """Share of one-rep max a set of `reps` is lifted at, two reps in reserve."""
+    parsed = _parse_reps(reps)
+    top = parsed[1] if parsed else _REFERENCE_REPS
+    return 1.0 / (1.0 + (top + _REPS_IN_RESERVE) / 30.0)
+
+
+def _age_load_factor(age) -> float:
+    try:
+        age = int(age)
+    except (TypeError, ValueError):
+        return 1.0
+    if age < _YOUTH_AGE:
+        return _YOUTH_LOAD_FACTOR
+    if age <= _AGE_LOAD_FROM:
+        return 1.0
+    return max(_AGE_LOAD_FLOOR, 1.0 - _AGE_LOAD_PER_YEAR * (age - _AGE_LOAD_FROM))
+
+
+def _is_two_handed(ex: dict, lift: str) -> bool:
+    """One implement held in both hands. A goblet squat is one dumbbell at the
+    chest, and was quoted "per hand" — which reads as a pair."""
+    return lift in _TWO_HANDED or bool(_GOBLET.search(ex.get("name", "")))
+
+
+_GOBLET = re.compile(r"\bgoblet\b", re.I)
+
+
+def _estimated_load(ex: dict, strength_level: str, gender: str,
+                    bodyweight: float | None = None, week_factor: float = 1.0,
+                    reps=None, age=None):
+    """The working load for one set of this lift, or None if it is not priced.
+
+    Returns (kg, per_hand, implement, lift)."""
     eq = (ex.get("equipment") or "bodyweight").lower()
     if (ex.get("category") or "").lower() == "cardio":
-        return "Effort-based — see intensity note"
-
-    if eq in ("bodyweight", "other"):
-        return _BODYWEIGHT_PROGRESSIONS.get(
-            _muscle_key(ex), "Bodyweight · Add band/vest to progress")
-    if eq in ("bands", "resistance_bands"):
-        return "Light–heavy band · choose resistance that makes last 2 reps challenging"
-
+        return None
+    if eq in ("bodyweight", "other", "bands", "resistance_bands"):
+        return None
     implement = next(iter(_EQUIPMENT_ALIASES.get(eq, {eq})))
     factor = _IMPLEMENT_FACTOR.get(implement)
     lift = _lift_class(ex)
     if factor is None or lift is None:
-        # An unpriced movement says so rather than guessing. It is the honest
-        # answer, and it is what the old table gave 35–55 kg for.
-        return "Moderate weight · adjust so the last 2 reps are hard and form holds"
+        return None
 
     gender_key = "female" if str(gender).lower() in ("female", "f", "woman") else "male"
     level = strength_level if strength_level in _LIFT_LEVEL else "beginner"
 
-    load = _LIFT_BW[lift] * (bodyweight or _DEFAULT_BODYWEIGHT[gender_key])
+    reference = _DEFAULT_BODYWEIGHT[gender_key]
+    scaled = reference * ((bodyweight or reference) / reference) ** _ALLOMETRIC_EXPONENT
+    load = _LIFT_BW[lift] * scaled
     load *= _LIFT_LEVEL[level]
     if gender_key == "female":
         load *= _LIFT_SEX["lower" if lift in _LOWER_CLASSES else "upper"]
-    per_hand = implement in _PER_HAND and lift not in _TWO_HANDED
+    per_hand = implement in _PER_HAND and not _is_two_handed(ex, lift)
     load *= factor if per_hand else _IMPLEMENT_FACTOR["barbell"]
     if per_hand:
         # A one-arm dumbbell press is the same dumbbell as a two-arm one — the
@@ -705,8 +930,56 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
     elif _UNILATERAL.search(ex.get("name", "")):
         load *= 0.5
 
+    load *= _age_load_factor(age)
+    load *= _rep_fraction(reps)
     load *= week_factor
-    lo, hi = _round_load(load * 0.85), _round_load(load * 1.15)
+    return load, per_hand, implement, lift
+
+
+def _below_the_bar(ex: dict, **kw) -> bool:
+    """A barbell rack lift whose working load is lighter than the bar itself."""
+    est = _estimated_load(ex, **kw)
+    if not est:
+        return False
+    kg, _, implement, lift = est
+    return implement == "barbell" and lift in _RACK_LIFTS and kg < _EMPTY_BAR_KG
+
+
+def _get_weight_range(ex: dict, strength_level: str, gender: str,
+                      bodyweight: float | None = None,
+                      week_factor: float = 1.0, reps=None, age=None) -> str:
+    """A starting load for THIS set of this lift, for this person."""
+    eq = (ex.get("equipment") or "bodyweight").lower()
+    if (ex.get("category") or "").lower() == "cardio":
+        return "Effort-based — see intensity note"
+
+    if eq in ("bodyweight", "other"):
+        return _BODYWEIGHT_PROGRESSIONS.get(
+            _muscle_key(ex), "Bodyweight · Add band/vest to progress")
+    if eq in ("bands", "resistance_bands"):
+        return "Light–heavy band · choose resistance that makes last 2 reps challenging"
+
+    est = _estimated_load(ex, strength_level, gender, bodyweight, week_factor, reps, age)
+    if est is None:
+        # An unpriced movement says so rather than guessing. It is the honest
+        # answer, and it is what the old table gave 35–55 kg for.
+        return "Moderate weight · adjust so the last 2 reps are hard and form holds"
+    load, per_hand, implement, lift = est
+
+    if implement == "barbell" and lift in _RACK_LIFTS and load < _EMPTY_BAR_KG:
+        # Selection keeps these away from anyone with another way to train the
+        # pattern; this is for the practitioner whose only implement is the bar.
+        return (f"Empty bar (20 kg) — heavier than your ~{_fmt_kg(_round_load(load))} kg "
+                "starting estimate, so take fewer reps than written until it moves "
+                "cleanly for all of them")
+
+    # The estimate is the load two reps short of failure, so it is the top of the
+    # range: the bottom is where a first session should start.
+    lo, hi = _round_load(load * 0.85), _round_load(load)
+    # The bottom of the range cannot be lighter than the bar either: a row quoted
+    # "18–22.5 kg" starts below what an empty bar weighs.
+    if implement == "barbell" and lift in _RACK_LIFTS:
+        lo = max(lo, _EMPTY_BAR_KG)
     # Light isolation rounds to a single plate step and the range collapses —
     # "2–2 kg" reads as a defect rather than a starting point.
     if hi <= lo:
@@ -758,13 +1031,27 @@ _PRACTICE_SUBSTITUTES = {
 }
 
 
-def _gate_practices(lines, conditions, is_pregnant):
+# The same practices by what they do, in `engine.movement_risk`'s vocabulary. A
+# 78-year-old cardiac patient's Kapha rest day prescribed five rounds of sun
+# salutation — repeated forward folds, the head dropped below the heart, the
+# weight on the wrists — because the condition list above names neither age nor
+# the mechanisms. The Vata day's "Legs-Up-The-Wall" is an inversion.
+_PRACTICE_RISK = {
+    "sun salutation": {"spinal_flexion", "intracranial_pressure", "wrist_weight_bearing"},
+    "legs-up-the-wall": {"intracranial_pressure"},
+}
+_PRACTICE_SUBSTITUTES["legs-up-the-wall"] = (
+    "Restorative rest — lie on your side with a pillow between the knees, or sit "
+    "reclined against cushions — 10 min of slow breathing")
+
+
+def _gate_practices(lines, conditions, is_pregnant, risks=frozenset()):
     """Withhold a restricted practice from the practitioner it is restricted for,
     and put something equivalent in its place."""
     tokens = {str(c).lower() for c in conditions if c}
     if is_pregnant:
         tokens.add("pregnancy")
-    if not tokens:
+    if not tokens and not risks:
         return list(lines)
     out = []
     for line in lines:
@@ -776,6 +1063,11 @@ def _gate_practices(lines, conditions, is_pregnant):
             if any(tok in uc or uc in tok for tok in contra for uc in tokens):
                 swapped = _PRACTICE_SUBSTITUTES[practice]
                 break
+        if swapped is None:
+            for practice, mechanisms in _PRACTICE_RISK.items():
+                if practice in low and mechanisms & set(risks):
+                    swapped = _PRACTICE_SUBSTITUTES[practice]
+                    break
         out.append(swapped or line)
     return out
 
@@ -935,6 +1227,138 @@ def _condition_contra_tags(medical_history) -> set:
         tags.add(key)
         tags.update(_CONDITION_TO_EXERCISE_CONTRA.get(key, []))
     return tags
+
+
+# ── Mechanisms ────────────────────────────────────────────────────────────────
+#
+# The contraindication tokens above name body parts, and 62 of the 70 conditions
+# onboarding offers are not body parts — so they changed nothing. A glaucoma
+# patient was given decline push-ups and heavy triples; someone with epilepsy a
+# barbell over the face; osteoporosis kept the crunches, twists and side bends
+# its fracture mechanism is about, because only the axial lifts carried its tag.
+#
+# `risk_tags` on each movement name what it does (`gym_library/mechanisms.py`),
+# and `engine.movement_risk` — the map the yoga engine already used — names the
+# conditions each mechanism endangers. One map, both features.
+#
+# Past sixty, head-below-heart positions are withheld as the yoga engine does.
+# Fall risk is not blanket-applied by age here: a loaded lunge is one thing, but
+# balance and stepping are what older adults most need to keep, and the
+# conditions that make a fall likely — or dangerous — reach it on their own.
+_SENIOR_RISKS = frozenset({"intracranial_pressure"})
+
+# Joint conditions for which landing impact is the aggravating load. Obesity,
+# age and training age already withheld impact; osteoarthritis, the commonest
+# joint disease there is, did not.
+_IMPACT_CONDITIONS = ("arthritis", "gout", "osteoporosis", "osteopenia", "fibromyalgia",
+                      "lupus", "neuropathy", "knee_replacement", "hip_replacement",
+                      "plantar", "chronic_fatigue", "long_covid", "varicose",
+                      # Declared rather than computed: `bmi_category` withheld
+                      # impact, and the same person saying "obesity" did not.
+                      "obes")
+
+
+def _conditions_and_injuries(user_profile) -> list:
+    return [*(user_profile.get("medical_history") or []),
+            *(user_profile.get("injuries_or_limitations") or [])]
+
+
+def _avoided_risks(user_profile, extra=()) -> set:
+    """Mechanisms this practitioner's movements must not carry.
+
+    A hernia or a recent abdominal operation is the same mechanism whether it was
+    declared as a condition or ticked as an injury, so both lists go through both
+    maps."""
+    declared = _conditions_and_injuries(user_profile)
+    risks = condition_risk_tags(declared)
+    risks |= injury_risk_tags(declared)
+    if _age_group(user_profile.get("age")) == "senior":
+        risks |= _SENIOR_RISKS
+    risks |= {str(t).lower() for t in extra or ()} & RISK_VOCAB
+    return risks
+
+
+def _withholds_impact(user_profile) -> bool:
+    if _bmi_group(user_profile.get("bmi_category")) == "obese":
+        return True
+    # The pool has kept jump training from beginners since the plyometrics pass;
+    # the warm-up beside it still opened a sedentary beginner's first session
+    # with jumping jacks and high knees.
+    if (user_profile.get("fitness_level") or "beginner") == "beginner":
+        return True
+    if _age_group(user_profile.get("age")) in ("senior", "youth"):
+        return True
+    return any(term in str(c).lower() for c in _conditions_and_injuries(user_profile)
+               for term in _IMPACT_CONDITIONS)
+
+
+# ── Injuries ──────────────────────────────────────────────────────────────────
+#
+# Two vocabularies again, and nothing between them. The profile field describes
+# itself as "bad_knee / lower_back / shoulder / wrist / neck / ankle / hip"; the
+# library's tokens are `bad_knee`, `lower_back_pain`, `shoulder_injury`,
+# `rotator_cuff`, `wrist_injury`, `neck_injury`, `bad_ankle`, `hip_injury`. The
+# filter intersected them directly, so of the seven documented values only
+# `bad_knee` would ever have matched — had any screen collected the field, which
+# none did. The gym form now asks, and this translates.
+_INJURY_TOKENS = {
+    "knee_replacement": {"knee_replacement", "bad_knee"},
+    "knee":             {"bad_knee"},
+    "lower_back":       {"lower_back_pain"},
+    "back":             {"lower_back_pain"},
+    "disc":             {"herniated_disc", "lower_back_pain"},
+    "shoulder":         {"shoulder_injury", "rotator_cuff"},
+    "elbow":            {"elbow_injury"},
+    "wrist":            {"wrist_injury"},
+    "neck":             {"neck_injury", "cervical_spondylosis"},
+    "hip":              {"hip_injury"},
+    "ankle":            {"bad_ankle"},
+    # Mechanisms, not body parts: `engine.movement_risk` reads the words.
+    "hernia":           set(),
+    "abdominal_surgery": set(),
+}
+_INJURY_SPLIT = re.compile(r"[,;/\n]|\band\b", re.I)
+
+
+def _injury_phrases(user_profile, gym_prefs) -> list:
+    phrases = [str(i) for i in (user_profile.get("injuries_or_limitations") or [])]
+    phrases += [str(i) for i in (gym_prefs.get("injuries") or [])]
+    detail = gym_prefs.get("injury_detail")
+    if detail:
+        phrases += [p.strip() for p in _INJURY_SPLIT.split(str(detail)) if p.strip()]
+    return phrases
+
+
+def _resolve_injuries(user_profile, gym_prefs) -> tuple:
+    """(what the gates read, the typed phrases nothing could act on).
+
+    The words themselves are kept beside the tokens, because the mechanism maps
+    match on them — "wrist" and "hernia" reach `engine.movement_risk`, and
+    `hip_replacement` reaches the impact gate."""
+    resolved, unmatched = set(), []
+    for phrase in _injury_phrases(user_profile, gym_prefs):
+        low = phrase.lower().replace("-", "_")
+        low = " ".join([low, *(v for k, v in _LIMITATION_ALIASES.items() if k in low)])
+        hits = {k for k in _INJURY_TOKENS if k in low.replace(" ", "_") or k in low}
+        risky = injury_risk_tags([low]) | condition_risk_tags([low])
+        if not hits and not risky and not any(k in low for k in _INJURY_RISK_TAGS):
+            unmatched.append(phrase)
+            continue
+        resolved.add(low.strip())
+        for k in hits:
+            resolved |= _INJURY_TOKENS[k]
+    return sorted(resolved), unmatched
+
+
+def _injury_notice(unmatched) -> str | None:
+    """Silence would read as "we took that into account"."""
+    if not unmatched:
+        return None
+    named = ", ".join(f"“{u}”" for u in unmatched)
+    return (f"We could not match {named} to anything this plan knows how to adjust "
+            "for, so no exercise was removed because of it. Show the plan to a "
+            "physiotherapist or doctor before starting, and skip anything that "
+            "reproduces the pain.")
 
 
 # ── Equipment ─────────────────────────────────────────────────────────────────
@@ -1118,10 +1542,11 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None,
     # is declining by 60 whether or not anyone has said so, which is the reasoning
     # the yoga engine already uses for its blanket senior exclusions.
     age_group = _age_group(user_profile.get("age"))
-    bmi_group = _bmi_group(user_profile.get("bmi_category"))
     if age_group in ("senior", "youth"):
         allowed_levels = [lv for lv in allowed_levels if lv != "advanced"]
         avoid_tags = avoid_tags | _AGE_AVOID_TAGS
+    risks = _avoided_risks(user_profile, extra_avoid_tags)
+    withhold_impact = _withholds_impact(user_profile)
 
     scored = []
     for ex in exercises:
@@ -1188,13 +1613,13 @@ def filter_exercises(user_profile, gym_prefs, exercises, extra_avoid_tags=None,
         # anything and a 65-year-old was offered jumping jacks. The beginner gate
         # above had the same fault and was fixed; this one was missed, which is
         # why `_is_impact` now backs both rather than each testing its own thing.
-        if age_group in ("senior", "youth") and _is_impact(ex):
-            continue
         # And for a body carrying enough mass that the landing forces are the
-        # limiting factor rather than the muscles. Resistance work is untouched —
-        # squats, lunges and the whole library stay; it is the airborne half that
-        # goes.
-        if bmi_group == "obese" and _is_impact(ex):
+        # limiting factor rather than the muscles, and for the joint conditions
+        # landing aggravates. Resistance work is untouched — squats, lunges and
+        # the whole library stay; it is the airborne half that goes.
+        if withhold_impact and _is_impact(ex):
+            continue
+        if risks.intersection(ex.get("risk_tags") or ()):
             continue
         # Conditioning is exempt from the goal gate. The dataset marks cardio
         # unsuitable for `muscle_gain` and `strength` — true of what it builds,
@@ -2102,6 +2527,26 @@ def _movement_family(ex) -> str:
 _VARIANT_DEPTH = 3
 
 
+# A full-body day that fits three exercises gets two from the pattern list and
+# one rotating. Rotating the whole list by the day's variant turned
+# (squat, push, pull, hinge) into (push, pull, hinge, squat) on the second
+# full-body day, so a 20-minute home session came out as incline push-ups,
+# doorway rows and a plank — a "full body" day with no legs in it. The swap now
+# stays inside each half: squat trades with hinge, push with pull, and the lower
+# body keeps its place at the front.
+_PAIRED_ROTATION = {
+    ("squat", "push_h", "pull_h", "hinge"): ("hinge", "pull_h", "push_h", "squat"),
+}
+
+
+def _rotate_patterns(patterns: tuple, variant: int) -> tuple:
+    paired = _PAIRED_ROTATION.get(patterns)
+    if paired:
+        return paired if variant % 2 else patterns
+    offset = variant % len(patterns)
+    return patterns[offset:] + patterns[:offset]
+
+
 def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=(),
             caps=None, per_muscle=None, muscle_rank=None, preferred_ids=(), variant=0,
             loadable_first=False):
@@ -2151,8 +2596,7 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
     # the pattern order makes one of them a squat day and the other a hinge day,
     # which is what a coach would have written anyway.
     if variant and patterns:
-        offset = variant % len(patterns)
-        patterns = patterns[offset:] + patterns[:offset]
+        patterns = _rotate_patterns(tuple(patterns), variant)
 
     for pattern in patterns:
         if len(picked) >= n:
@@ -2483,6 +2927,10 @@ def _finisher_prescription(ex: dict, level: str, preference: str = "moderate") -
     sets = int(own.get("sets", 1) or 1)
     reps = own.get("reps", "10 min")
     rest = int(own.get("rest_seconds", 0) or 0)
+    if ex.get("rep_style") == "interval":
+        # Rounds, scaled the way the steady-state minutes are.
+        rounds = max(4, round(sets * _MINUTE_SCALE.get(preference, 1.0)))
+        return rounds, f"{reps} hard / {rest} sec easy", 0
     cap = _FINISHER_MINUTES.get(level, 10) * _MINUTE_SCALE.get(preference, 1.0)
     if sets == 1 and _TIMED_REPS.search(str(reps)):
         return 1, f"{max(5, round(cap))} min", 0
@@ -2539,12 +2987,37 @@ def _prescribe(ex: dict, rx: dict, level: str, role: str = "secondary"):
     # The curated library states how a movement is measured. Sniffing the reps
     # string for "min"/"sec" caught holds and cardio but not carries, so a
     # farmer's walk was prescribed as "5 sets of 8-10" — of what, it did not say.
-    if ex.get("rep_style") in ("time", "distance", "isometric"):
+    if ex.get("rep_style") in ("time", "distance", "isometric", "interval"):
         return int(own.get("sets", 1)), own.get("reps"), int(own.get("rest_seconds", 60))
     if own and _TIME_UNITS.search(str(own.get("reps", ""))):
         return int(own.get("sets", 1)), own.get("reps"), int(own.get("rest_seconds", 60))
     r = _role_prescription(rx, role)
+    # Trunk work is trained for control, not for a heavy single effort. A strength
+    # block wrote "Glute Bridge March 5 x 5-7, 135 s rest" and "Standing Cable Wood
+    # Chop 5 x 5-7" — a stability drill given a powerlifting prescription.
+    if ex.get("bucket") == "core":
+        parsed = _parse_reps(r["reps"])
+        if parsed and parsed[1] < _CORE_MIN_REPS[1]:
+            return r["sets"], f"{_CORE_MIN_REPS[0]}-{_CORE_MIN_REPS[1]}", min(
+                r["rest_seconds"], _CORE_MAX_REST)
     return r["sets"], r["reps"], r["rest_seconds"]
+
+
+_CORE_MIN_REPS = (8, 12)
+_CORE_MAX_REST = 60
+
+
+def _load_reps(ex: dict, rx_week1: dict, level: str, role: str):
+    """The rep count a lift's load is priced at: its role's reps in WEEK ONE.
+
+    The block's weekly notes are written against the first week's weight — "same
+    weight as W1, push for extra reps", "reduce weight 15%" — and
+    `_week_load_factor` carries them. Pricing each week at its own reps as well
+    would move the number twice, and in the wrong direction: a volume week's
+    extra reps would lower the quoted load beneath a note saying to hold it."""
+    if role == "conditioning":
+        return None
+    return _prescribe(ex, rx_week1, level, role)[1]
 
 
 def _modification_for(ex: dict) -> str:
@@ -2583,14 +3056,15 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
                    week=1, user_id="default", strength_level="beginner", gender="male",
                    dosha="vata", bodyweight=None, with_finisher=False,
                    conditioning_pool=(), preferred_ids=(), variant=0,
-                   loadable_first=False):
+                   loadable_first=False, extra_avoid_tags=()):
     if focus == "rest":
         recovery = dict(_REST_DAY_RECOVERY.get(dosha, _REST_DAY_RECOVERY["vata"]))
         recovery["activities"] = _gate_practices(
             recovery["activities"],
             set(user_profile.get("medical_history") or [])
             | set(user_profile.get("injuries_or_limitations") or []),
-            bool(user_profile.get("pregnancy_or_nursing")))
+            bool(user_profile.get("pregnancy_or_nursing")),
+            _avoided_risks(user_profile, extra_avoid_tags))
         return {
             "day": day_num, "day_name": day_name,
             "focus": "Rest & Recovery", "type": "recovery",
@@ -2602,7 +3076,7 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     duration = gym_prefs.get("workout_duration_minutes", 45)
     goal = gym_prefs.get("gym_goal", "general_fitness")
     # The goal picks the exercises and the split; the style writes the sets.
-    scheme = _resolve_scheme(goal, gym_prefs.get("training_style"))
+    scheme = _resolve_scheme(goal, gym_prefs.get("training_style"), user_profile)
     level = user_profile.get("fitness_level", "beginner") or "beginner"
     if level not in ["beginner", "intermediate", "advanced"]:
         level = "beginner"
@@ -2614,8 +3088,13 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     # made peak weeks (four sets instead of three) drop an exercise, which
     # changed the day's core and cost the very continuity the stable core exists
     # to give. A real programme keeps the lifts and moves the volume.
+    rx_week1 = _get_goal_prescription(scheme, 1, level, activity)
+    # Past sixty the session carries a balance block, and it comes out of the
+    # time the practitioner gave rather than being added on top of it.
+    is_senior = _age_group(user_profile.get("age")) == "senior"
+    balance_seconds = _BALANCE_SECONDS if is_senior else 0
     target, primary_slots = _session_shape(
-        duration, scheme, _get_goal_prescription(scheme, 1, level, activity))
+        max(duration - balance_seconds // 60, 20), scheme, rx_week1)
 
     # The finisher takes a slot rather than being added on top of a session that
     # already fills the clock — the practitioner asked for forty-five minutes.
@@ -2632,11 +3111,14 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     # when the caller remembers to say so is not safe.
     edge_avoid = set(user_profile.get("injuries_or_limitations") or [])
     edge_avoid |= _condition_contra_tags(user_profile.get("medical_history") or [])
+    # The rare-condition classifier's tags reached the exercise pool and not the
+    # warm-up beside it.
+    edge_avoid |= {str(t).lower() for t in extra_avoid_tags or ()}
     edge_age = _age_group(user_profile.get("age"))
-    edge_bmi = _bmi_group(user_profile.get("bmi_category"))
     if edge_age in ("senior", "youth"):
         edge_avoid |= _AGE_AVOID_TAGS
-    withhold_impact = edge_bmi == "obese" or edge_age in ("senior", "youth")
+    withhold_impact = _withholds_impact(user_profile)
+    edge_risks = _avoided_risks(user_profile, extra_avoid_tags)
     is_pregnant = bool(user_profile.get("pregnancy_or_nursing"))
 
     pool = []
@@ -2698,7 +3180,9 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
             "role": role,
             "role_label": _ROLE_LABEL.get(role, "Accessory"),
             "weight_range": _get_weight_range(ex, strength_level, gender, bodyweight,
-                                              _week_load_factor(scheme, week)),
+                                              _week_load_factor(scheme, week),
+                                              reps=_load_reps(ex, rx_week1, level, role),
+                                              age=user_profile.get("age")),
             "week_note": rx.get("note", ""),
             "notes": _modification_for(ex),
             # The one sentence a coach would say about the movement. It is the
@@ -2717,19 +3201,23 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         # cardio in it at all.
         "focus": _focus_label(focus, main_workout),
         "type": "cardio" if "cardio" in focus else "strength",
-        "warmup": _warmup_for(focus, edge_avoid, withhold_impact, is_pregnant),
+        "warmup": _warmup_for(focus, edge_avoid, withhold_impact, is_pregnant, edge_risks),
         "main_workout": main_workout,
-        "cooldown": _cooldown_for(focus, edge_avoid, withhold_impact, is_pregnant),
+        "cooldown": _cooldown_for(focus, edge_avoid, withhold_impact, is_pregnant,
+                                  edge_risks),
+        "balance": (_balance_for(day_num, edge_avoid, withhold_impact, is_pregnant,
+                                 edge_risks) if is_senior else []),
         # What was BUILT, not what was asked for. The client shows this as the
         # session-length chip, and it used to echo the preference straight back —
         # so a 60-minute heading sat above 26 minutes of work. Same lesson the
         # yoga engine learned: the number on the card and the session underneath
         # it were different products.
         "estimated_duration_minutes": round((work_seconds + rest_seconds_total
-                                             + _OVERHEAD_SECONDS) / 60),
+                                             + _OVERHEAD_SECONDS + balance_seconds) / 60),
         "requested_duration_minutes": duration,
         "duration_notice": _duration_notice(
-            round((work_seconds + rest_seconds_total + _OVERHEAD_SECONDS) / 60), duration, scheme),
+            round((work_seconds + rest_seconds_total + _OVERHEAD_SECONDS + balance_seconds) / 60),
+            duration, scheme),
         "calories_burned_estimate": int(total_cals + (_OVERHEAD_SECONDS / 60.0)
                                         * _WARMUP_KCAL_PER_MINUTE),
     }
@@ -2804,9 +3292,36 @@ def _vyayama_shakti(dosha: str, age, strength_level: str) -> dict:
 
 def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoid_tags=None):
     ge = gym_exercises_db if gym_exercises_db is not None else gym_exercises
+    # Every gate below reads `injuries_or_limitations`, so it is resolved once
+    # here — the profile's list, the form's ticks and the typed detail, in the
+    # library's own tokens — rather than taught to each of them.
+    injuries, unmatched_injuries = _resolve_injuries(user_profile, gym_prefs)
+    user_profile = {**user_profile, "injuries_or_limitations": injuries}
     preference_report: dict = {}
     filtered = filter_exercises(user_profile, gym_prefs, ge, extra_avoid_tags=extra_avoid_tags,
                                 preference_report=preference_report)
+    # A barbell lift whose working load is lighter than the empty bar cannot be
+    # performed as written. A 14-year-old was given a 13-18 kg bench press and an
+    # 11-year-old a 6-8 kg one; the bar alone is 20. Where the practitioner has
+    # dumbbells or a machine to train the same pattern with, the bar waits until
+    # they have outgrown it. Where the bar is all they have, it stays, and the
+    # load text says so.
+    available_eq = _normalise_equipment(gym_prefs.get("available_equipment"))
+    if available_eq & {"dumbbell", "machine", "kettlebell", "cable"}:
+        heaviest_reps = _get_goal_prescription(
+            _resolve_scheme(gym_prefs.get("gym_goal", "general_fitness"),
+                            gym_prefs.get("training_style"), user_profile),
+            1, user_profile.get("fitness_level") or "beginner",
+            user_profile.get("activity_level"))["reps"]
+        gender_of = user_profile.get("gender", "male") or "male"
+        load_kw = dict(
+            strength_level=gym_prefs.get("strength_level",
+                                         user_profile.get("fitness_level") or "beginner"),
+            gender=gender_of,
+            bodyweight=_bodyweight_of(user_profile, "female" if str(gender_of).lower()
+                                      in ("female", "f", "woman") else "male"),
+            reps=heaviest_reps, age=user_profile.get("age"))
+        filtered = [ex for ex in filtered if not _below_the_bar(ex, **load_kw)]
     muscle_split = split_by_muscle_group(filtered)
     # Conditioning reaches a session through the finisher and nowhere else, so
     # `cardio_preference` is the only thing that decides how much of it there is.
@@ -2820,7 +3335,6 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     preferred_ids = {ex["id"] for ex in filtered if _matches_preference(ex, likes)}
 
     workout_days = gym_prefs.get("workout_days_per_week", 4)
-    available_eq = _normalise_equipment(gym_prefs.get("available_equipment"))
     is_bodyweight_only = available_eq <= {"bodyweight", "bands", "jump_rope"}
     fitness_level = user_profile.get("fitness_level", "beginner") or "beginner"
     strength_level = gym_prefs.get("strength_level", fitness_level)
@@ -2829,8 +3343,18 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         user_profile, "female" if str(gender).lower() in ("female", "f", "woman") else "male")
 
     muscle_focus = gym_prefs.get("target_muscle_focus") or "full_body"
+    requested_days = workout_days
+    is_youth = _age_group(user_profile.get("age")) == "youth"
+    split_level = fitness_level
+    if is_youth:
+        workout_days = min(workout_days, _youth_day_cap(user_profile.get("age"), fitness_level))
+        # Whole-body sessions on alternate days is the youth structure whatever
+        # the training age; a split is for a fourth day, which only a trained
+        # older teenager is given.
+        if workout_days <= _YOUTH_MAX_DAYS:
+            split_level = "beginner"
     schedule_focus = _build_weekly_schedule(
-        workout_days, is_bodyweight_only, fitness_level, muscle_focus)
+        workout_days, is_bodyweight_only, split_level, muscle_focus)
     # The split is chosen before the library is consulted, so it can name days the
     # practitioner's own safety gating has emptied.
     schedule_focus, substitutions = _resolve_untrainable_days(schedule_focus, muscle_split)
@@ -2839,7 +3363,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     dominant_dosha = user_profile.get("dominant_dosha", "vata") or "vata"
     is_pregnant = user_profile.get("pregnancy_or_nursing", False)
     goal = gym_prefs.get("gym_goal", "general_fitness")
-    scheme = _resolve_scheme(goal, gym_prefs.get("training_style"))
+    scheme = _resolve_scheme(goal, gym_prefs.get("training_style"), user_profile)
 
     # Which days end with conditioning, decided once for the week rather than per
     # day, so "light" means two days out of six and not a coin flip six times.
@@ -2869,6 +3393,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
                 with_finisher=i in finisher_days, conditioning_pool=conditioning_pool,
                 preferred_ids=preferred_ids, variant=day_variant[i],
                 loadable_first=not is_bodyweight_only,
+                extra_avoid_tags=extra_avoid_tags or (),
             )
             for i, focus in enumerate(schedule_focus)
         ]
@@ -2935,7 +3460,11 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
             "training_style": gym_prefs.get("training_style") or _GOAL_SCHEME.get(goal),
             "set_scheme": scheme,
             "workout_days": workout_days,
+            "requested_workout_days": requested_days,
             "duration_per_session": gym_prefs.get("workout_duration_minutes", 45),
+            # Resolved from the profile and the gym form together, so the
+            # coaching written around the plan knows what the gates knew.
+            "injuries": injuries,
         },
         "weekly_schedule": four_week_plan[0]["days"],
         "four_week_plan": four_week_plan,
@@ -2962,6 +3491,9 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "disclaimer": disclaimer,
         "pool_notice": pool_notice,
         "schedule_notice": _schedule_notice(workout_days, schedule_focus),
+        "age_notice": (_youth_notice(requested_days,
+                                     sum(1 for f in schedule_focus if f != "rest"))
+                       if is_youth else None),
         "focus_notice": _focus_notice(muscle_focus, workout_days, is_bodyweight_only,
                                       fitness_level),
         "cardio_notice": _cardio_notice(goal, cardio_preference, finisher_count,
@@ -2969,4 +3501,11 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "preference_notice": _preference_notice(preference_report),
         "adaptation_notice": _adaptation_notice(bmi_group, user_profile.get("activity_level")),
         "substitution_notice": _substitution_notice(substitutions),
+        "injury_notice": _injury_notice(unmatched_injuries),
+        "intensity_notice": _intensity_notice(goal, gym_prefs.get("training_style"),
+                                              user_profile),
+        # What a practitioner with a condition needs to know before the session,
+        # where no movement is the problem — hypoglycaemia, an asthma attack, a
+        # seizure. See `services/gym_condition_guidance.py`.
+        "condition_guidance": guidance_for(_conditions_and_injuries(user_profile)),
     }

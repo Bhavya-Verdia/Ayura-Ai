@@ -93,6 +93,13 @@
 }
 .pref-row > .pref-input-group {
   flex: 1;
+  /* A flex item will not shrink below its content, and a select's content is its
+     longest option — "Lifting Strength Level" ran past the modal's edge. */
+  min-width: 0;
+}
+.pref-row > .pref-input-group select {
+  min-width: 0;
+  width: 100%;
 }
 
 .pref-notice {

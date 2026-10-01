@@ -103,6 +103,50 @@ barbell and two that instructed holding your breath under load. Contraindication
 pregnancy and dosha are authored per movement in `scripts/gym_library/clinical.py`,
 each with a stated mechanism — they differ from the old derived rules on 89 of 173.
 
+#### Gym: health status is a mechanism, not a body part
+The contraindication tokens (`bad_knee`, `shoulder_injury`, …) name body parts, and
+until 2026-09 only **8 of the 70 conditions onboarding offers changed a gym plan**.
+Glaucoma, epilepsy, vertigo, a hernia and rheumatoid arthritis are not body parts.
+Each movement now also carries `risk_tags`: the mechanism it works through, authored
+per group in `scripts/gym_library/mechanisms.py`. `engine/movement_risk.py` maps
+conditions and injuries onto them, and **yoga and gym read that one map**. Don't add
+a second copy. 27 of 70 conditions are now live. Most of the rest need no movement
+removed (acne, ADHD).
+
+For conditions where no movement is the problem and the session is (diabetes,
+asthma, epilepsy, ME/CFS), `services/gym_condition_guidance.py` gives a
+before-you-train note with its source. Near-maximal sets are replaced with 8-12
+(`_intensity_ceiling`) for these groups, because of the Valsalva manoeuvre:
+- cardiac conditions and hypertension
+- glaucoma
+- a hernia or recent abdominal surgery
+- pregnancy
+- everyone over 60 and under 18
+
+Under 18 also gets at most three alternate whole-body days, and over 60 an Otago
+balance block. The warm-up, cool-down, balance block and rest-day practices pass the
+same gate as the workout, and substitutes pass it too. Every earlier miss in this
+engine was prose that no gate read.
+
+**Injuries are collected on the gym form** (`GymPreferences.injuries` /
+`injury_detail`). No screen had ever collected them, and the profile field's
+documented values were not the library's tokens. `_resolve_injuries` translates
+both once, at the top of `generate_gym_plan`. Anything typed that matches nothing
+comes back in `injury_notice`. Yoga's injuries are still free text on the yoga form;
+putting injuries on the profile would serve both.
+
+**Load is priced per set.** `_LIFT_BW` is a 1RM standard, and the quoted range used
+to be that ±15% regardless of reps, so sets of 20 were priced at the top of the
+lifter's max. Now:
+- Epley with two reps in reserve, priced at week one's reps (the weekly notes are
+  written against week one's weight)
+- bodyweight to the 0.67 power
+- 1%/yr lighter from 40
+- no barbell rack lift below the 20 kg bar
+
+Rare conditions go to the LLM classifier on **both** plan paths
+(`gym_condition_fallback.extra_avoid_tags_for`), and it may answer in mechanisms.
+
 #### Diet library: authored, not derived
 `data/knowledge_base/diet_foods.json` is **generated** by
 `scripts/build_diet_library.py` from the curated spec in `scripts/diet_library/`
