@@ -327,3 +327,14 @@ def test_a_machine_is_not_set_lighter_than_its_stack():
                 m = re.match(r"([\d.]+)–([\d.]+) kg", e["weight_range"])
                 if m and e["equipment"] in ("machine", "cable"):
                     assert float(m.group(2)) >= 4, (e["exercise_name"], e["weight_range"])
+
+
+def test_one_loaded_hinge_a_session():
+    """A Romanian deadlift then a sumo deadlift on one leg day: the lower back
+    takes the heaviest load of the week twice in an hour."""
+    heavy = {"deadlift", "romanian_deadlift", "good_morning"}
+    for _, _, plan in _sweep(n=150, seed=42):
+        for day in _training_days(plan):
+            hinges = [e["exercise_name"] for e in day["main_workout"]
+                      if _BY_ID[e["exercise_id"]].get("load_class") in heavy]
+            assert len(hinges) <= 1, (day["focus"], hinges)

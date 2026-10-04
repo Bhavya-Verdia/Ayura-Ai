@@ -2410,6 +2410,10 @@ _MIN_COMPOUNDS = 2
 # AND a Romanian deadlift after squats.
 _CAPPED_PATTERNS = {"squat", "hinge", "lunge", "push_h", "push_v", "pull_h", "pull_v"}
 _SPREAD_FOCUSES = {"full_body", "upper", "lower", "legs_core"}
+# One loaded hinge a session, whatever the day is called. A glute bridge after a
+# Romanian deadlift is a pairing; a sumo deadlift after one is the lower back
+# taking the heaviest load of the week twice in an hour.
+_HEAVY_HINGES = {"deadlift", "romanian", "good_morning"}
 
 
 def _pattern_cap(focus: str) -> int:
@@ -2762,6 +2766,8 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
         per_muscle[_muscle_key(ex)] = per_muscle.get(_muscle_key(ex), 0) + 1
         if _is_compound(ex):
             pattern_counts[_movement_pattern(ex)] += 1
+        if _lift_class(ex) in _HEAVY_HINGES:
+            pattern_counts["heavy_hinge"] += 1
 
     def _blocked(ex) -> bool:
         cap = (_MAX_PER_FAMILY if _is_compound(ex)
@@ -2776,6 +2782,8 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
             return True
         if (_is_compound(ex) and _movement_pattern(ex) in _CAPPED_PATTERNS
                 and pattern_counts[_movement_pattern(ex)] >= pattern_cap):
+            return True
+        if _lift_class(ex) in _HEAVY_HINGES and pattern_counts["heavy_hinge"] >= 1:
             return True
         key = _muscle_key(ex)
         return key in caps and per_muscle.get(key, 0) >= caps[key]
