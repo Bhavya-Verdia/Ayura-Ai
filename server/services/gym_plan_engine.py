@@ -2363,7 +2363,8 @@ def _focus_to_keys(focus):
     # Shoulders were missing, so no full-body day — the whole week of a novice,
     # a teenager or anyone training two or three days — could contain an
     # overhead press, whatever its pattern list asked for.
-    if "full_body" in focus:        return ["full_body", "chest", "back", "legs", "shoulders", "core"]
+    if "full_body" in focus:        return ["full_body", "chest", "back", "legs", "shoulders",
+                                            "core", "biceps", "triceps"]
     elif focus == "upper":          return ["chest", "back", "shoulders", "biceps", "triceps"]
     elif focus == "lower":          return ["legs", "core"]
     elif "push" in focus:           return ["chest", "shoulders", "triceps"]
@@ -2439,6 +2440,7 @@ _SPREAD_FOCUSES = {"full_body", "upper", "lower", "legs_core"}
 # Romanian deadlift is a pairing; a sumo deadlift after one is the lower back
 # taking the heaviest load of the week twice in an hour.
 _HEAVY_HINGES = {"deadlift", "romanian", "good_morning"}
+_LOW_VALUE_ACCESSORIES = {"shrug", "side_bend"}
 
 
 def _pattern_cap(focus: str) -> int:
@@ -2522,7 +2524,10 @@ _FOCUS_PATTERNS = {
 # The muscle the day is NAMED for gets the majority; the arm or the core it is
 # paired with is there to finish it off.
 _FOCUS_ALLOCATION = {
-    "full_body":       (("legs", 3), ("chest", 2), ("back", 2), ("shoulders", 1), ("core", 1)),
+    # Arms last and lightest: a long full-body day finished on shrugs and side
+    # bends because they were the only accessories its pool held.
+    "full_body":       (("legs", 3), ("chest", 2), ("back", 2), ("shoulders", 1), ("core", 1),
+                        ("biceps", 1), ("triceps", 1)),
     # Upper/lower. A novice needs each muscle two or three times a week, which a
     # body-part split cannot give — it trains everything once. These two days are
     # what makes a four-day beginner week a beginner's week.
@@ -2760,7 +2765,8 @@ def _rotate_patterns(patterns: tuple, variant: int) -> tuple:
 
 def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=(),
             caps=None, per_muscle=None, muscle_rank=None, preferred_ids=(), variant=0,
-            loadable_first=False, pattern_counts=None, pattern_cap=2, headline=None):
+            loadable_first=False, pattern_counts=None, pattern_cap=2, headline=None,
+            prefer_barbell=False, rotate_patterns=True):
     """Pick n exercises, compounds first, without stacking one movement family.
 
     Selection was a plain shuffle-and-take, so nothing preferred a compound or
@@ -2823,7 +2829,7 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
     # deterministic and nothing told the second day it was the second. Rotating
     # the pattern order makes one of them a squat day and the other a hinge day,
     # which is what a coach would have written anyway.
-    if variant and patterns:
+    if variant and patterns and rotate_patterns:
         patterns = _rotate_patterns(tuple(patterns), variant)
 
     for pattern in patterns:
@@ -2857,6 +2863,13 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
             leaders = [ex for ex in shortlist if ex.get("role", "main") == "main"]
             if leaders:
                 shortlist = leaders
+            # A strength block's second upper day opened on dumbbell presses at
+            # 3-5, because rotation reached past the barbell. Heavy triples are
+            # what the bar is for; variety in a strength block belongs in the
+            # supporting work.
+            if prefer_barbell:
+                bars = [ex for ex in shortlist if (ex.get("equipment") or "") == "barbell"]
+                shortlist = bars or shortlist
             if headline and "deadlift" not in headline.get(pattern, {"deadlift"}):
                 shortlist = [ex for ex in shortlist if _lift_class(ex) != "deadlift"] or shortlist
             # Rotation varies WHICH lift opens a repeated day; it should not
@@ -2902,6 +2915,13 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
                 reverse=True)
         else:
             candidates_pass = ordered
+        if not want_compound:
+            # Shrugs and side bends filled the last slot of every session for a
+            # dumbbell-only lifter — legitimate movements, and the last thing a
+            # short session should spend a slot on. They stay available; they
+            # simply wait until nothing more useful is left.
+            candidates_pass = sorted(candidates_pass,
+                                     key=lambda ex: _lift_class(ex) in _LOW_VALUE_ACCESSORIES)
         for ex in candidates_pass:
             if want_compound and have_compounds >= min_compounds:
                 break
@@ -3015,11 +3035,25 @@ def _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids=(
                    caps=caps, per_muscle=per_muscle, muscle_rank=muscle_rank,
                    preferred_ids=preferred_ids, variant=variant,
                    loadable_first=loadable_first, pattern_counts=pattern_counts,
-                   pattern_cap=cap, headline=_headline_lifts(scheme))
+                   pattern_cap=cap, headline=_headline_lifts(scheme),
+                   prefer_barbell=scheme == "strength")
+    # The rotating slot drew accessories only, so a three-exercise session — the
+    # 20-minute one — was a squat, a press and a barbell shrug, every day, and a
+    # hypertensive executive never rowed. A pattern the core left uncovered is
+    # filled first, and the week varies WHICH lift fills it.
+    covered = {_movement_pattern(ex) for ex in core if _is_compound(ex)}
+    # In the order the day itself used, so a day that opened hinge-and-press
+    # takes its pull next, not a second press.
+    day_order = _rotate_patterns(tuple(_FOCUS_PATTERNS.get(focus, ())), variant) \
+        if variant and _FOCUS_PATTERNS.get(focus) else _FOCUS_PATTERNS.get(focus, ())
+    missing = tuple(p for p in day_order if p not in covered)
     rotating = _choose(pool, target - len(core), f"{user_id}-{focus}-d{day_num}-rotate-w{week}",
                        taken, families, caps=caps, per_muscle=per_muscle,
                        preferred_ids=preferred_ids, loadable_first=loadable_first,
-                       pattern_counts=pattern_counts, pattern_cap=cap)
+                       pattern_counts=pattern_counts, pattern_cap=cap,
+                       patterns=missing, variant=week - 1, rotate_patterns=False,
+                       muscle_rank=muscle_rank,
+                       headline=_headline_lifts(scheme), prefer_barbell=scheme == "strength")
     return core + rotating
 
 
@@ -3281,6 +3315,25 @@ _INTERVAL_ROUNDS = (4, 12)
 _STEADY_MINUTES = re.compile(r"^(\d+)\s*min$")
 
 
+def _steady_only(user_profile) -> bool:
+    """Whether hard intervals should wait. A sedentary 96 kg beginner was
+    written mountain-climber intervals in week one. ACSM's starting advice for
+    a sedentary, obese, older or cardiac population is moderate continuous work
+    first; intervals are a progression from a base, not the base."""
+    if not user_profile:
+        return False
+    if str(user_profile.get("activity_level") or "").lower() == "sedentary":
+        return True
+    if _bmi_group(user_profile.get("bmi_category")) == "obese":
+        return True
+    if _age_group(user_profile.get("age")) == "senior":
+        return True
+    if user_profile.get("pregnancy_or_nursing"):
+        return True
+    reason = _intensity_ceiling(user_profile)
+    return bool(reason) and "heart" in reason
+
+
 def _stretches_conditioning(goal: str, preference: str) -> bool:
     """Whether a session's spare time goes to conditioning rather than to sets."""
     if preference == "none":
@@ -3525,7 +3578,7 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     if with_finisher or (is_conditioning_day and _cardio_preference(gym_prefs) != "none"):
         finisher = _pick_finisher(conditioning_pool or [],
                                   user_id, focus, day_num, week,
-                                  steady=is_conditioning_day)
+                                  steady=is_conditioning_day or _steady_only(user_profile))
         if finisher:
             target = max(_MIN_EXERCISES, target - 1)
 
@@ -4121,5 +4174,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         # What a practitioner with a condition needs to know before the session,
         # where no movement is the problem — hypoglycaemia, an asthma attack, a
         # seizure. See `services/gym_condition_guidance.py`.
-        "condition_guidance": guidance_for(_conditions_and_injuries(user_profile)),
+        "condition_guidance": guidance_for(
+            _conditions_and_injuries(user_profile)
+            + (["pregnancy"] if user_profile.get("pregnancy_or_nursing") else [])),
     }

@@ -380,3 +380,55 @@ def test_a_full_body_week_presses_overhead(equipment):
     patterns = {_movement_pattern(_BY_ID[e["exercise_id"]]) for d in _training_days(plan)
                 for e in d["main_workout"]}
     assert "push_v" in patterns
+
+
+# ── From reading ten live plans end to end ───────────────────────────────────
+
+def test_a_twenty_minute_session_pushes_and_pulls():
+    """The third slot of a three-exercise session was the weekly-rotating one,
+    and it drew accessories only: squat, bench, barbell shrug, every day."""
+    plan = generate_gym_plan(
+        {"age": 47, "gender": "male", "weight_kg": 88, "fitness_level": "intermediate",
+         "activity_level": "sedentary", "dominant_dosha": "pitta", "bmi_category": "overweight",
+         "medical_history": ["hypertension"]},
+        {"gym_goal": "fat_loss", "workout_days_per_week": 3, "workout_duration_minutes": 20,
+         "available_equipment": ["full_gym"], "cardio_preference": "light"})
+    for day in _training_days(plan, weeks=(1, 2, 3, 4)):
+        patterns = {_movement_pattern(_BY_ID[e["exercise_id"]]) for e in day["main_workout"]}
+        assert patterns & {"pull_h", "pull_v"}, [e["exercise_name"] for e in day["main_workout"]]
+        assert not any("Shrug" in e["exercise_name"] for e in day["main_workout"])
+
+
+def test_a_sedentary_or_obese_start_gets_steady_conditioning():
+    """A sedentary 96 kg beginner was written mountain-climber intervals."""
+    plan = generate_gym_plan(
+        {"age": 26, "gender": "female", "weight_kg": 96, "height_cm": 160,
+         "fitness_level": "beginner", "activity_level": "sedentary", "dominant_dosha": "kapha",
+         "bmi_category": "obese"},
+        {"gym_goal": "fat_loss", "workout_days_per_week": 4, "workout_duration_minutes": 45,
+         "available_equipment": ["bodyweight", "bands"], "cardio_preference": "heavy"})
+    for day in _training_days(plan, weeks=(1, 2, 3, 4)):
+        for e in day["main_workout"]:
+            if e["role"] == "conditioning":
+                assert _BY_ID[e["exercise_id"]].get("rep_style") != "interval", e["exercise_name"]
+
+
+def test_pregnancy_carries_its_own_before_you_train_note():
+    plan = generate_gym_plan(
+        {"age": 28, "gender": "female", "weight_kg": 63, "fitness_level": "intermediate",
+         "dominant_dosha": "vata", "bmi_category": "normal", "pregnancy_or_nursing": True},
+        {"gym_goal": "general_fitness", "workout_days_per_week": 3,
+         "available_equipment": ["dumbbell", "machine"]})
+    assert "pregnancy" in {g["key"] for g in plan["condition_guidance"]}
+
+
+def test_a_strength_block_leads_with_the_bar_on_every_day():
+    plan = generate_gym_plan(
+        {"age": 29, "gender": "male", "weight_kg": 90, "fitness_level": "advanced",
+         "dominant_dosha": "pitta", "bmi_category": "overweight"},
+        {"gym_goal": "strength", "workout_days_per_week": 4, "workout_duration_minutes": 75,
+         "available_equipment": ["full_gym"], "strength_level": "advanced"})
+    for day in _training_days(plan):
+        primaries = [e for e in day["main_workout"] if e["role"] == "primary"]
+        assert primaries and all(e["equipment"] == "barbell" for e in primaries), \
+            [(e["exercise_name"], e["equipment"]) for e in primaries]

@@ -186,6 +186,21 @@ CONDITION_GUIDANCE: list[dict] = [
     # removed, fall risk gated) and said nothing — and each has a standard
     # instruction a physiotherapist gives before the first session.
     {
+        # Pregnancy changed the plan more than any condition — a third of the
+        # library withheld, a pool notice — and was the one declaration with no
+        # note at all: nothing on when to stop, overheating or lying flat.
+        "key": "pregnancy",
+        "match": ("pregnan", "nursing"),
+        "label": "Pregnancy",
+        "note": ("Get your obstetrician's or midwife's go-ahead first. Stop and seek care for "
+                 "vaginal bleeding, fluid leaking, regular painful contractions, dizziness or "
+                 "feeling faint, chest pain, a headache that will not settle, calf pain or "
+                 "swelling, or breathlessness before you start. After the first trimester avoid "
+                 "lying flat on your back. Keep to an effort where you can still talk, avoid "
+                 "getting overheated, and drink water through the session."),
+        "source": "ACOG Committee Opinion 804, physical activity in pregnancy (2020)",
+    },
+    {
         "key": "osteoarthritis",
         "match": ("osteoarthritis", "arthritis", "sandhivata"),
         # Rheumatoid, psoriatic and lupus arthritis have their own note above;
