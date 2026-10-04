@@ -404,7 +404,7 @@ export function GymView({ plan }) {
                         {day.main_workout.map((ex, j) => {
                           const exId = `${dayIdx}-${j}`
                           const isExpanded = expandedEx.has(exId)
-                          const isBodyweight = /^(Bodyweight|Band|Effort)/.test(ex.weight_range || '')
+                          const isBodyweight = ex.category === 'cardio' || /^(Bodyweight|Band|Effort)/.test(ex.weight_range || '')
                           return (
                             <div key={j} className="gym-exercise-row">
                               <div className="gym-ex-top">
@@ -420,7 +420,8 @@ export function GymView({ plan }) {
                                 </span>
                                 <div className="gym-ex-chips">
                                   <span className="gym-ex-badge">{ex.sets} × {ex.reps}</span>
-                                  {ex.rest_seconds && <span className="gym-ex-rest">{ex.rest_seconds}s rest</span>}
+                                  {/* `0 && …` renders a literal 0: every conditioning row showed one. */}
+                                  {ex.rest_seconds > 0 && <span className="gym-ex-rest">{ex.rest_seconds}s rest</span>}
                                   {ex.equipment && ex.equipment !== 'bodyweight' && (
                                     <span className="gym-ex-equip">{ex.equipment}</span>
                                   )}

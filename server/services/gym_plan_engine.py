@@ -926,6 +926,7 @@ _YOUTH_LOAD_FACTOR = 0.80
 # barbells go far lighter), so they are not held to it.
 _EMPTY_BAR_KG = 20.0
 _LIGHTEST_BAR_KG = 7.5
+_LIGHTEST_STACK_KG = 4.0
 _RACK_LIFTS = {"squat", "front_squat", "deadlift", "romanian", "good_morning",
                "hip_thrust", "bench", "incline_press", "floor_press", "overhead_press",
                "push_press", "row", "shrug", "upright_row"}
@@ -1056,13 +1057,18 @@ def _unloaded_progression(ex: dict) -> str:
     eq = (ex.get("equipment") or "bodyweight").lower()
     head = "Band" if eq in ("bands", "resistance_bands") else "Bodyweight"
     prog = ex.get("progression") or {}
+    # Most movements' authored note already reads "Too hard? Use X. Too easy?
+    # Move to Y" and is shown directly beneath; saying it twice in one card is
+    # how a reader learns to skip both.
+    if prog.get("harder") and prog["harder"] in (ex.get("modification") or ""):
+        return head if head == "Bodyweight" else "Band · choose a band that makes the last 2 reps hard"
     parts = []
     if prog.get("harder"):
-        parts.append(f"when every set reaches the top of the range, move to: {prog['harder']}")
+        parts.append(f"Next step: {prog['harder']} (once every set reaches the top of the range)")
     if prog.get("easier"):
-        parts.append(f"if you cannot reach the bottom of it: {prog['easier']}")
+        parts.append(f"Easier option: {prog['easier']}")
     if parts:
-        return f"{head} · " + "; ".join(parts)
+        return f"{head} · " + " · ".join(parts)
     if head == "Band":
         return "Band · choose a band that makes the last 2 reps hard"
     return _BODYWEIGHT_PROGRESSIONS.get(
@@ -1075,7 +1081,15 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
     """A starting load for THIS set of this lift, for this person."""
     eq = (ex.get("equipment") or "bodyweight").lower()
     if (ex.get("category") or "").lower() == "cardio":
-        return "Effort-based — see intensity note"
+        # It said "see intensity note", and there is no intensity note on the
+        # page for conditioning. The talk test is the effort scale that needs
+        # no equipment and holds under a beta-blocker, which a heart rate does
+        # not (ACSM).
+        if ex.get("rep_style") == "interval":
+            return ("Hard intervals at about 8/10 — too breathless to talk; easy intervals "
+                    "at a walk until your breathing settles")
+        return ("Steady, about 5–6/10 — breathing harder, but you can still talk in "
+                "full sentences")
 
     if eq in ("bodyweight", "other", "bands", "resistance_bands"):
         return _unloaded_progression(ex)
@@ -1093,6 +1107,11 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
         return (f"Empty bar (20 kg) — heavier than your ~{_fmt_kg(_round_load(load))} kg "
                 "starting estimate, so take fewer reps than written until it moves "
                 "cleanly for all of them")
+    if implement in ("machine", "cable") and _round_load(load) < _LIGHTEST_STACK_KG:
+        # A weight stack starts at its first plate. "Dip Machine 1-2 kg" was
+        # written for a 72-year-old; there is no such setting to choose.
+        return ("The lightest setting on the stack — lighter than that is not needed yet; "
+                "add a plate when every set reaches the top of the range")
     if implement == "barbell" and lift not in _RACK_LIFTS and load < _LIGHTEST_BAR_KG:
         return ("The lightest EZ-bar or fixed barbell (about 7.5–10 kg) — heavier than "
                 f"your ~{_fmt_kg(_round_load(load))} kg starting estimate, so take fewer "
@@ -3392,6 +3411,10 @@ _BOILERPLATE_MODIFICATION = "Reduce weight or switch to bodyweight if form break
 
 
 def _focus_label(focus: str, main_workout: list) -> str:
+    if focus == "core_cardio" and any(e.get("category") == "cardio" for e in main_workout):
+        # The aerobic block is most of the session; "Core Cardio" read as a
+        # kind of core work.
+        return "Conditioning & Core"
     label = focus.replace("_", " ").title()
     if "cardio" in focus.lower() and not any(e.get("category") == "cardio" for e in main_workout):
         stripped = " ".join(w for w in label.split() if w.lower() != "cardio").strip()

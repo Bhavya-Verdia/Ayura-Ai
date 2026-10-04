@@ -128,7 +128,9 @@ def test_a_bodyweight_movement_names_its_own_next_step():
                 lib = _BY_ID[e["exercise_id"]]
                 harder = (lib.get("progression") or {}).get("harder")
                 if lib["equipment"] == "bodyweight" and harder:
-                    assert harder in e["weight_range"], (e["exercise_name"], e["weight_range"])
+                    shown = e["weight_range"] + " " + (e.get("notes") or "")
+                    assert harder in shown, (e["exercise_name"], shown)
+                    assert "pistol" not in e["weight_range"].lower() or "squat" in lib["name"].lower()
                     checked += 1
     assert checked > 50
 
@@ -314,3 +316,14 @@ def test_an_unanswered_sex_is_priced_between_the_two_standards():
     kg = {g: float(re.match(r"([\d.]+)–([\d.]+)", _get_weight_range(
         bench, "advanced", g, 80, reps="8-10")).group(2)) for g in ("male", "female", "other")}
     assert kg["female"] < kg["other"] < kg["male"], kg
+
+
+def test_a_machine_is_not_set_lighter_than_its_stack():
+    """"Dip Machine 1-2 kg" for a 72-year-old: a weight stack starts at its first
+    plate."""
+    for _, _, plan in _PLANS:
+        for day in _training_days(plan, weeks=(1, 4)):
+            for e in day["main_workout"]:
+                m = re.match(r"([\d.]+)–([\d.]+) kg", e["weight_range"])
+                if m and e["equipment"] in ("machine", "cable"):
+                    assert float(m.group(2)) >= 4, (e["exercise_name"], e["weight_range"])
