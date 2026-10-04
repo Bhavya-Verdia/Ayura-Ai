@@ -4048,6 +4048,40 @@ def _normalise_inputs(user_profile, gym_prefs) -> tuple:
     return profile, prefs
 
 
+def _next_block(previous_block) -> int:
+    """A block the practitioner mostly did is built on; one they mostly did not
+    is repeated, and keeps its number."""
+    if not previous_block:
+        return 1
+    n = int(previous_block.get("block") or 1)
+    return n + 1 if previous_block.get("progress") else n
+
+
+def _block_notice(previous_block, logged_lifts) -> str | None:
+    """What this block was built from. Without it, a plan that read the log and
+    one that did not look identical."""
+    measured = len(logged_lifts or {})
+    if not previous_block:
+        if measured:
+            return (f"Loads for {measured} exercise{'s' if measured != 1 else ''} come from "
+                    "sets you logged recently.")
+        return None
+    done, planned = previous_block.get("sessions_logged", 0), previous_block.get("sessions_planned", 0)
+    if previous_block.get("progress"):
+        lead = (f"Block {_next_block(previous_block)}. You logged {done} of {planned} sessions "
+                "last block, so this one builds on it")
+    else:
+        lead = (f"You logged {done} of {planned} sessions last block, so this one repeats its "
+                "structure rather than adding to it — finish more of it and the next block "
+                "will build")
+    loads = (f"; loads for {measured} exercise{'s' if measured != 1 else ''} come from your "
+             "logged sets" if measured else "")
+    moved = previous_block.get("progressed") or []
+    gains = ("" if not moved else " Biggest gains: " + ", ".join(
+        f"{m['exercise']} +{m['change_percent']}%" for m in moved[:3]) + ".")
+    return f"{lead}{loads}.{gains}"
+
+
 def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoid_tags=None,
                       logged_lifts=None, previous_block=None):
     """`logged_lifts` is {exercise_id: {one_rm, source}} from the practitioner's
@@ -4111,6 +4145,9 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
 
     likes = _preference_terms((gym_prefs.get("exercise_preferences") or {}).get("likes"))
     preferred_ids = {ex["id"] for ex in filtered if _matches_preference(ex, likes)}
+    # A lift the practitioner logged comes back in the next block. Progressive
+    # overload needs the same movement, and its load is now a measurement.
+    preferred_ids |= {ex["id"] for ex in filtered if ex["id"] in (logged_lifts or {})}
 
     workout_days = gym_prefs.get("workout_days_per_week", 4)
     is_bodyweight_only = available_eq <= {"bodyweight", "bands", "jump_rope"}
@@ -4252,6 +4289,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
             # Resolved from the profile and the gym form together, so the
             # coaching written around the plan knows what the gates knew.
             "injuries": injuries,
+            "block": _next_block(previous_block),
         },
         "weekly_schedule": four_week_plan[0]["days"],
         "four_week_plan": four_week_plan,
@@ -4291,6 +4329,8 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "injury_notice": _injury_notice(unmatched_injuries),
         "intensity_notice": _intensity_notice(goal, gym_prefs.get("training_style"),
                                               user_profile),
+        "block_notice": _block_notice(previous_block, logged_lifts),
+        "previous_block": previous_block,
         # What a practitioner with a condition needs to know before the session,
         # where no movement is the problem — hypoglycaemia, an asthma attack, a
         # seizure. See `services/gym_condition_guidance.py`.

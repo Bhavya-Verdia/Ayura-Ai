@@ -303,7 +303,7 @@ def build_plan_summary(raw_plan: dict, user_profile: dict, gym_prefs: dict) -> d
         # What the engine has already decided about intensity and safety, so the
         # prose around the plan says the same thing as the plan.
         "safety": {k: raw_plan.get(k) for k in (
-            "intensity_notice", "age_notice", "injury_notice", "pool_notice")
+            "intensity_notice", "age_notice", "injury_notice", "pool_notice", "block_notice")
             if raw_plan.get(k)} | {
             "before_you_train": [g["label"] for g in raw_plan.get("condition_guidance") or []]},
         "generated_schedule": [

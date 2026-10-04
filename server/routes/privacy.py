@@ -39,6 +39,13 @@ async def export_user_data(
     cursor = db.weekly_checkins.find({"user_id": user.id}, {"_id": 0})
     checkins = await cursor.to_list(length=100)
 
+    # Collections added after this export was written, and never added to it.
+    extra = {}
+    for name in ("user_preferences", "practice_sessions", "workout_logs",
+                 "plan_reactions", "reminders", "timeline"):
+        cursor = getattr(db, name).find({"user_id": user.id}, {"_id": 0})
+        extra[name] = await cursor.to_list(length=5000)
+
     export_data = {
         "export_date": datetime.now(timezone.utc).isoformat(),
         "profile": user_dict,
@@ -46,6 +53,7 @@ async def export_user_data(
         "chat_messages": messages,
         "progress_logs": progress,
         "weekly_checkins": checkins,
+        **extra,
     }
 
     content = json.dumps(export_data, indent=2, default=str)
@@ -80,6 +88,14 @@ async def delete_account(
     await db.refresh_tokens.delete_many({"user_id": user_id})
     await db.user_preferences.delete_many({"user_id": user_id})
     await db.plan_jobs.delete_many({"user_id": user_id})
+    # Missed by this list until 2026-10: practice history, reported adverse
+    # reactions (health data) and push endpoints all outlived the account.
+    await db.practice_sessions.delete_many({"user_id": user_id})
+    await db.plan_reactions.delete_many({"user_id": user_id})
+    await db.push_subscriptions.delete_many({"user_id": user_id})
+    await db.workout_logs.delete_many({"user_id": user_id})
+    # Feedback is free text written by the user and keyed to them.
+    await db.feedback.delete_many({"user_id": user_id})
     # OTP records are keyed by phone number, not user_id
     if getattr(user, "phone_number", None):
         await db.otps.delete_many({"phone_number": user.phone_number})

@@ -449,8 +449,15 @@ async def generate_gym_plan(
     gym_prefs = prefs_doc.get("gym")
     is_prenatal = user.pregnancy_or_nursing
 
+    # What was actually lifted. Its fingerprint joins the cache key, because a
+    # plan whose loads come from the log is stale the moment a set is logged.
+    from services.workout_log import gym_history
+    history = await gym_history(db, user.id)
+
     # 1. Check Cache
-    cached_plan, pref_hash = await _check_plan_cache(db, user.id, "gym", user_profile, gym_prefs, force_regenerate)
+    cached_plan, pref_hash = await _check_plan_cache(
+        db, user.id, "gym", user_profile, {**gym_prefs, "_log": history["fingerprint"]},
+        force_regenerate)
     if cached_plan:
         return cached_plan
 
@@ -466,7 +473,10 @@ async def generate_gym_plan(
         # categories (validated), giving disease-safety parity with yoga.
         from services.gym_condition_fallback import extra_avoid_tags_for
         _extra_avoid_tags = await extra_avoid_tags_for(user_profile)
-        raw_plan = engine_generate(user_profile, gym_prefs, gym_exercises, extra_avoid_tags=_extra_avoid_tags)
+        raw_plan = engine_generate(user_profile, gym_prefs, gym_exercises,
+                                   extra_avoid_tags=_extra_avoid_tags,
+                                   logged_lifts=history["logged_lifts"],
+                                   previous_block=history["previous_block"])
         enriched_plan = await enrich_gym_plan(raw_plan, user_profile, gym_prefs)
 
         plan_id = enriched_plan.get("plan_id")

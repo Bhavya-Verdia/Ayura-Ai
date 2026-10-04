@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Dumbbell, Leaf, Calendar, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Lightbulb, Info,
   ShieldAlert,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
+import { workoutsAPI } from '../../api/client'
+import { GymSetLogger } from './GymSetLogger'
 
 const WEEK_THEMES = ['Foundation', 'Volume Build', 'Intensity Peak', 'Deload']
 
@@ -15,6 +17,23 @@ export function GymView({ plan }) {
   // Which day cards are open. Rendering every day expanded made one week 8,700px
   // on a phone — ten screens before the tips section. Same disclosure as YogaView.
   const [expandedDays, setExpandedDays] = useState(new Set())
+  // What has been logged against this plan, keyed `${week}:${day}:${exerciseId}`.
+  // The next block reads it; this view shows it beside each exercise.
+  const [logs, setLogs] = useState({})
+  const planId = plan.plan_id
+  useEffect(() => {
+    if (!planId) return
+    let live = true
+    workoutsAPI.list(planId)
+      .then(({ data }) => {
+        if (!live) return
+        const map = {}
+        ;(data?.logs || []).forEach(l => { map[`${l.week}:${l.day}:${l.exercise_id}`] = l })
+        setLogs(map)
+      })
+      .catch(() => {})  // logging is an addition to the plan, never a condition of seeing it
+    return () => { live = false }
+  }, [planId])
 
   const us = plan.user_summary || {}
   const fourWeekPlan = plan.four_week_plan || []
@@ -200,6 +219,16 @@ export function GymView({ plan }) {
           exercises at beginner level, and bodyweight-only users can be near that.
           The engine has written this since the pregnancy pass; rendering it is
           what stops a repetitive plan from looking like the whole library. */}
+      {/* What this block was built from — the last block's logged sessions and
+          the loads measured in it — so a plan that read the log does not look
+          identical to one that did not. */}
+      {plan.block_notice && (
+        <div className="gym-pool-notice gym-block-notice">
+          <Activity size={12} />
+          <span>{plan.block_notice}</span>
+        </div>
+      )}
+
       {plan.pool_notice && (
         <div className="gym-pool-notice">
           <Info size={12} />
@@ -448,6 +477,19 @@ export function GymView({ plan }) {
                                 <p className="gym-ex-cue">{ex.coaching_cue}</p>
                               )}
                               {ex.notes && <p className="gym-ex-notes">{ex.notes}</p>}
+                              <GymSetLogger
+                                planId={planId}
+                                week={activeWeek + 1}
+                                day={day.day}
+                                exercise={ex}
+                                logged={logs[`${activeWeek + 1}:${day.day}:${ex.exercise_id}`]}
+                                onSaved={(entry) => setLogs(prev => {
+                                  const key = `${activeWeek + 1}:${day.day}:${ex.exercise_id}`
+                                  const next = { ...prev }
+                                  if (entry) next[key] = entry; else delete next[key]
+                                  return next
+                                })}
+                              />
                               {ex.instructions?.length > 0 && (
                                 <>
                                   <button className="gym-instructions-toggle" onClick={() => toggleEx(exId)}>

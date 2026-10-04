@@ -28,6 +28,7 @@ from routes import (
     practice,
     preferences,
     privacy,
+    workouts,
     profile,
     progress,
     push,
@@ -217,6 +218,7 @@ app.include_router(feedback.router, prefix="/api/feedback", tags=["Feedback"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(push.router, prefix="/api/push", tags=["Web Push"])
 app.include_router(practice.router, prefix="/api/practice", tags=["Practice Sessions"])
+app.include_router(workouts.router, prefix="/api/workouts", tags=["Workout Logs"])
 
 
 

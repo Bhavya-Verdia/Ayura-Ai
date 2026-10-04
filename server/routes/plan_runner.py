@@ -338,8 +338,14 @@ async def _generate_feature_via_engine_impl(
             ex = _kb("gym_exercises")
             if is_prenatal and ex:
                 ex = [e for e in ex if e.get("pregnancy_safe")] or None
+            # Both paths read the log, or the holistic plan would quietly go
+            # back to bodyweight estimates for someone who has been logging.
+            from services.workout_log import gym_history
+            history = await gym_history(db, user_id) if db is not None and user_id else {}
             raw = generate_gym_plan(profile, prefs, ex,
-                                    extra_avoid_tags=await extra_avoid_tags_for(profile))
+                                    extra_avoid_tags=await extra_avoid_tags_for(profile),
+                                    logged_lifts=history.get("logged_lifts"),
+                                    previous_block=history.get("previous_block"))
             return await enrich_gym_plan(raw, profile, prefs)
 
         if plan_type == "diet":
