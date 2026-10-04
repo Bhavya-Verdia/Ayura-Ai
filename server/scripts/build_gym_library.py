@@ -34,6 +34,7 @@ from gym_library.movements_lower import (CONDITIONING, CORE, LEGS,  # noqa: E402
                                          MOBILITY)
 from gym_library.movements_fill import FILL  # noqa: E402
 from gym_library.movements_home import HOME  # noqa: E402
+from gym_library.movements_kettlebell import KETTLEBELL  # noqa: E402
 
 BASE = Path(__file__).resolve().parent.parent
 OUT = BASE / "data" / "knowledge_base" / "gym_exercises.json"
@@ -52,7 +53,7 @@ UPSTREAM = ("https://raw.githubusercontent.com/yuhonas/free-exercise-db/"
             "main/dist/exercises.json")
 
 SPEC = (CHEST + BACK + SHOULDERS + ARMS + LEGS + CORE + CONDITIONING
-        + MOBILITY + FILL + HOME)
+        + MOBILITY + FILL + HOME + KETTLEBELL)
 
 
 # --------------------------------------------------------------- upstream ---

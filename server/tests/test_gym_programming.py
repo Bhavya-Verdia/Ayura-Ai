@@ -338,3 +338,45 @@ def test_one_loaded_hinge_a_session():
             hinges = [e["exercise_name"] for e in day["main_workout"]
                       if _BY_ID[e["exercise_id"]].get("load_class") in heavy]
             assert len(hinges) <= 1, (day["focus"], hinges)
+
+
+# ── Kettlebell-only, and the overhead press on a full-body day ───────────────
+
+def _week(profile, prefs):
+    plan = generate_gym_plan(profile, prefs)
+    return [[e["exercise_name"] for e in d["main_workout"]] for d in _training_days(plan)]
+
+
+def test_a_kettlebell_owner_gets_a_kettlebell_programme():
+    """The library held one kettlebell movement, so a kettlebell-only lifter got a
+    bodyweight plan with swings on every day."""
+    week = _week({"age": 31, "gender": "male", "weight_kg": 78, "fitness_level": "intermediate",
+                  "dominant_dosha": "pitta", "bmi_category": "normal"},
+                 {"gym_goal": "general_fitness", "workout_days_per_week": 3,
+                  "available_equipment": ["kettlebell"]})
+    names = {n for day in week for n in day}
+    for lift in ("Kettlebell Goblet Squat", "Kettlebell Deadlift", "One-Arm Kettlebell Row",
+                 "Kettlebell Overhead Press"):
+        assert lift in names, (lift, week)
+
+
+def test_a_kettlebell_is_quoted_as_a_bell_that_exists():
+    ex = next(e for e in gym_exercises if e["name"] == "Kettlebell Deadlift")
+    text = _get_weight_range(ex, "intermediate", "male", 78, reps="10-12")
+    kg = [int(n) for n in re.findall(r"(\d+) kg", text)]
+    assert kg and all(k in (4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 48) for k in kg), text
+    assert "per hand" not in text
+
+
+@pytest.mark.parametrize("equipment", [["full_gym"], ["dumbbell"], ["bodyweight"], ["kettlebell"]])
+def test_a_full_body_week_presses_overhead(equipment):
+    """Shoulders were not in a full-body day's pool, so no two- or three-day
+    week — a novice's, a teenager's — ever contained an overhead press."""
+    plan = generate_gym_plan(
+        {"age": 31, "gender": "female", "weight_kg": 62, "fitness_level": "beginner",
+         "dominant_dosha": "pitta", "bmi_category": "normal"},
+        {"gym_goal": "general_fitness", "workout_days_per_week": 3,
+         "workout_duration_minutes": 45, "available_equipment": equipment})
+    patterns = {_movement_pattern(_BY_ID[e["exercise_id"]]) for d in _training_days(plan)
+                for e in d["main_workout"]}
+    assert "push_v" in patterns

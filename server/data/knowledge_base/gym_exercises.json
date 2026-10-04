@@ -1531,6 +1531,84 @@
     "contraindications_reviewed": false
   },
   {
+    "id": "one_arm_kettlebell_row",
+    "name": "One-Arm Kettlebell Row",
+    "category": "strength",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "skill_floor": "beginner",
+    "primary_muscles": [
+      "lats"
+    ],
+    "secondary_muscles": [
+      "middle back",
+      "biceps",
+      "rear deltoids"
+    ],
+    "bucket": "back",
+    "movement_pattern": "pull_h",
+    "mechanic": "compound",
+    "family": "db_row",
+    "role": "main",
+    "canonical": false,
+    "load_class": "chest_supported_row",
+    "impact": "none",
+    "unilateral": true,
+    "rep_style": "reps",
+    "instructions": [
+      "Place one hand and the same-side knee on a bench or sturdy chair, the other foot on the floor.",
+      "Hold the kettlebell in the free hand with the arm hanging straight below the shoulder.",
+      "Keep the back flat and the shoulders square to the floor.",
+      "Pull the bell toward the hip, elbow close to the body, breathing out as you pull.",
+      "Lower it until the arm is straight again, without letting the shoulder drop."
+    ],
+    "coaching_cue": "Row to the hip, not the chest — the elbow travels back, not up.",
+    "progression": {},
+    "sets_reps": {
+      "beginner": {
+        "sets": 3,
+        "reps": "8-12",
+        "rest_seconds": 90
+      },
+      "intermediate": {
+        "sets": 4,
+        "reps": "6-10",
+        "rest_seconds": 120
+      },
+      "advanced": {
+        "sets": 5,
+        "reps": "4-8",
+        "rest_seconds": 180
+      }
+    },
+    "contraindications": [
+      "lower_back_pain"
+    ],
+    "contraindications_derived": [],
+    "clinical_basis": "authored",
+    "clinical_rationale": "As the one-arm dumbbell row: the bench takes most of the spinal load; still a hinged position.",
+    "pregnancy_safe": false,
+    "risk_tags": [],
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true,
+      "flexibility": false
+    },
+    "calories_per_minute": 6,
+    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "prose": "authored",
+    "anatomy_source": "authored",
+    "contraindications_reviewed": false
+  },
+  {
     "id": "pull_up",
     "name": "Pull-Up",
     "category": "strength",
@@ -4897,6 +4975,81 @@
     "contraindications_reviewed": false
   },
   {
+    "id": "kettlebell_floor_press",
+    "name": "Kettlebell Floor Press",
+    "category": "strength",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "skill_floor": "beginner",
+    "primary_muscles": [
+      "chest"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "bucket": "chest",
+    "movement_pattern": "push_h",
+    "mechanic": "compound",
+    "family": "floor_press",
+    "role": "accessory",
+    "canonical": false,
+    "load_class": "floor_press",
+    "impact": "none",
+    "unilateral": true,
+    "rep_style": "reps",
+    "instructions": [
+      "Lie on your back with the knees bent and a kettlebell held in one hand, upper arm on the floor.",
+      "Hold the handle diagonally across the palm with the bell resting on the back of the forearm.",
+      "Press the bell straight up over the shoulder, keeping the wrist straight and breathing out.",
+      "Lower until the upper arm touches the floor, pause, then press again.",
+      "Finish the set before changing sides."
+    ],
+    "coaching_cue": "The floor stops the elbow — the range a sore shoulder can keep.",
+    "progression": {},
+    "sets_reps": {
+      "beginner": {
+        "sets": 2,
+        "reps": "12-15",
+        "rest_seconds": 60
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "10-12",
+        "rest_seconds": 75
+      },
+      "advanced": {
+        "sets": 3,
+        "reps": "8-12",
+        "rest_seconds": 75
+      }
+    },
+    "contraindications": [],
+    "contraindications_derived": [],
+    "clinical_basis": "authored",
+    "clinical_rationale": "As the dumbbell floor press: supine, so not prenatal, and the floor caps the range — the press a restricted shoulder keeps.",
+    "pregnancy_safe": false,
+    "risk_tags": [],
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true,
+      "flexibility": false
+    },
+    "calories_per_minute": 6,
+    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "prose": "authored",
+    "anatomy_source": "authored",
+    "contraindications_reviewed": false
+  },
+  {
     "id": "pec_deck",
     "name": "Pec Deck",
     "category": "strength",
@@ -6532,6 +6685,84 @@
     },
     "calories_per_minute": 4,
     "modification": "Too hard? Use Dead Bug. Too easy? Move to Hollow Body Hold with the arms overhead.",
+    "prose": "authored",
+    "anatomy_source": "authored",
+    "contraindications_reviewed": false
+  },
+  {
+    "id": "kettlebell_suitcase_carry",
+    "name": "Kettlebell Suitcase Carry",
+    "category": "strength",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "skill_floor": "beginner",
+    "primary_muscles": [
+      "core"
+    ],
+    "secondary_muscles": [
+      "forearms",
+      "glutes",
+      "traps"
+    ],
+    "bucket": "core",
+    "movement_pattern": "carry",
+    "mechanic": "compound",
+    "family": "carry",
+    "role": "accessory",
+    "canonical": false,
+    "load_class": "suitcase_carry",
+    "impact": "none",
+    "unilateral": true,
+    "rep_style": "distance",
+    "instructions": [
+      "Stand the kettlebell on the floor beside one foot.",
+      "Hinge at the hips to pick it up in one hand, keeping the chest up.",
+      "Stand tall with the shoulders level and resist being pulled to one side.",
+      "Walk in a straight line for the prescribed distance, then swap hands."
+    ],
+    "coaching_cue": "Staying square against a load on one side is the whole exercise.",
+    "progression": {},
+    "sets_reps": {
+      "beginner": {
+        "sets": 3,
+        "reps": "20 m",
+        "rest_seconds": 90
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "30 m",
+        "rest_seconds": 90
+      },
+      "advanced": {
+        "sets": 4,
+        "reps": "40 m",
+        "rest_seconds": 90
+      }
+    },
+    "contraindications": [
+      "cervical_spondylosis",
+      "lower_back_pain"
+    ],
+    "contraindications_derived": [],
+    "clinical_basis": "authored",
+    "clinical_rationale": "One-sided load the trunk resists laterally.",
+    "pregnancy_safe": true,
+    "risk_tags": [],
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "moderate"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true,
+      "flexibility": false
+    },
+    "calories_per_minute": 8,
+    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
     "prose": "authored",
     "anatomy_source": "authored",
     "contraindications_reviewed": false
@@ -10030,6 +10261,174 @@
     "contraindications_reviewed": false
   },
   {
+    "id": "kettlebell_deadlift",
+    "name": "Kettlebell Deadlift",
+    "category": "strength",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "skill_floor": "beginner",
+    "primary_muscles": [
+      "hamstrings"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "lower back",
+      "forearms"
+    ],
+    "bucket": "legs",
+    "movement_pattern": "hinge",
+    "mechanic": "compound",
+    "family": "kettlebell_deadlift",
+    "role": "main",
+    "canonical": false,
+    "load_class": "romanian_deadlift",
+    "impact": "none",
+    "unilateral": false,
+    "rep_style": "reps",
+    "instructions": [
+      "Stand with the kettlebell on the floor between the feet, in line with the ankles.",
+      "Push the hips back, bend the knees a little and take the handle in both hands.",
+      "Set the back flat and pull the shoulders down away from the ears.",
+      "Stand up by driving the hips forward, keeping the bell close to the legs.",
+      "Lower it the same way — hips back first — until it touches the floor lightly."
+    ],
+    "coaching_cue": "Hips back, not knees forward. This is the hinge the swing is built on.",
+    "progression": {
+      "easier": "Banded Romanian Deadlift",
+      "harder": "Kettlebell Swing"
+    },
+    "sets_reps": {
+      "beginner": {
+        "sets": 3,
+        "reps": "8-12",
+        "rest_seconds": 90
+      },
+      "intermediate": {
+        "sets": 4,
+        "reps": "6-10",
+        "rest_seconds": 120
+      },
+      "advanced": {
+        "sets": 5,
+        "reps": "4-8",
+        "rest_seconds": 180
+      }
+    },
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain"
+    ],
+    "contraindications_derived": [
+      "herniated_disc",
+      "lower_back_pain"
+    ],
+    "clinical_basis": "authored",
+    "clinical_rationale": "The dumbbell Romanian deadlift's hinge, from the floor, with the bell between the feet keeping the load close to the body.",
+    "pregnancy_safe": false,
+    "risk_tags": [],
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true,
+      "flexibility": false
+    },
+    "calories_per_minute": 8,
+    "modification": "Too hard? Use Banded Romanian Deadlift. Too easy? Move to Kettlebell Swing.",
+    "prose": "authored",
+    "anatomy_source": "authored",
+    "contraindications_reviewed": false
+  },
+  {
+    "id": "kettlebell_goblet_squat",
+    "name": "Kettlebell Goblet Squat",
+    "category": "strength",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "skill_floor": "beginner",
+    "primary_muscles": [
+      "quadriceps"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "adductors",
+      "core"
+    ],
+    "bucket": "legs",
+    "movement_pattern": "squat",
+    "mechanic": "compound",
+    "family": "squat",
+    "role": "main",
+    "canonical": false,
+    "load_class": "front_squat",
+    "impact": "none",
+    "unilateral": false,
+    "rep_style": "reps",
+    "instructions": [
+      "Hold the kettlebell by the horns at chest height, elbows pointing down.",
+      "Stand with the feet a little wider than the hips and the toes turned slightly out.",
+      "Sit down between the hips, keeping the chest up and the bell close to the body.",
+      "Go as deep as you can while the heels stay down and the back stays long.",
+      "Drive through the whole foot to stand, breathing out as you rise."
+    ],
+    "coaching_cue": "The bell at the chest is a counterweight — let it keep you upright.",
+    "progression": {
+      "easier": "Box Squat to a Chair",
+      "harder": "Kettlebell Goblet Squat with a pause at the bottom"
+    },
+    "sets_reps": {
+      "beginner": {
+        "sets": 3,
+        "reps": "8-12",
+        "rest_seconds": 90
+      },
+      "intermediate": {
+        "sets": 4,
+        "reps": "6-10",
+        "rest_seconds": 120
+      },
+      "advanced": {
+        "sets": 5,
+        "reps": "4-8",
+        "rest_seconds": 180
+      }
+    },
+    "contraindications": [
+      "bad_knee"
+    ],
+    "contraindications_derived": [
+      "bad_knee"
+    ],
+    "clinical_basis": "authored",
+    "clinical_rationale": "As the goblet squat: the chest-held bell keeps the torso upright and the load light.",
+    "pregnancy_safe": true,
+    "risk_tags": [],
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true,
+      "flexibility": false
+    },
+    "calories_per_minute": 8,
+    "modification": "Too hard? Use Box Squat to a Chair. Too easy? Move to Kettlebell Goblet Squat with a pause at the bottom.",
+    "prose": "authored",
+    "anatomy_source": "authored",
+    "contraindications_reviewed": false
+  },
+  {
     "id": "leg_press",
     "name": "Leg Press",
     "category": "strength",
@@ -12159,6 +12558,89 @@
     },
     "calories_per_minute": 6,
     "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "prose": "authored",
+    "anatomy_source": "authored",
+    "contraindications_reviewed": false
+  },
+  {
+    "id": "kettlebell_overhead_press",
+    "name": "Kettlebell Overhead Press",
+    "category": "strength",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "skill_floor": "beginner",
+    "primary_muscles": [
+      "shoulders"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "core"
+    ],
+    "bucket": "shoulders",
+    "movement_pattern": "push_v",
+    "mechanic": "compound",
+    "family": "overhead_press",
+    "role": "main",
+    "canonical": false,
+    "load_class": "overhead_press",
+    "impact": "none",
+    "unilateral": true,
+    "rep_style": "reps",
+    "instructions": [
+      "Hold the kettlebell in the rack position: handle in the palm, bell resting on the outside of the forearm, elbow tucked in.",
+      "Stand tall with the glutes squeezed and the ribs pulled down.",
+      "Press the bell straight up, turning the palm forward as the arm straightens.",
+      "Finish with the bicep beside the ear and the wrist straight, breathing out on the press.",
+      "Lower under control back to the rack, then change sides after the set."
+    ],
+    "coaching_cue": "Ribs down — if the low back arches, the bell is too heavy.",
+    "progression": {
+      "easier": "Band Overhead Press"
+    },
+    "sets_reps": {
+      "beginner": {
+        "sets": 3,
+        "reps": "8-12",
+        "rest_seconds": 90
+      },
+      "intermediate": {
+        "sets": 4,
+        "reps": "6-10",
+        "rest_seconds": 120
+      },
+      "advanced": {
+        "sets": 5,
+        "reps": "4-8",
+        "rest_seconds": 180
+      }
+    },
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury"
+    ],
+    "contraindications_derived": [
+      "rotator_cuff",
+      "shoulder_injury"
+    ],
+    "clinical_basis": "authored",
+    "clinical_rationale": "Overhead and standing, one arm at a time, so the trunk also resists a sideways pull. The rack position asks for a little more shoulder mobility than a dumbbell.",
+    "pregnancy_safe": true,
+    "risk_tags": [],
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true,
+      "flexibility": false
+    },
+    "calories_per_minute": 6,
+    "modification": "Too hard? Use Band Overhead Press. Too easy? Add load or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "authored",
     "contraindications_reviewed": false

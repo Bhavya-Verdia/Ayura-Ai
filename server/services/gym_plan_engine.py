@@ -848,6 +848,25 @@ def _round_load(kg: float) -> float:
     return max(step, round(kg / step) * step)
 
 
+# Kettlebells come in fixed sizes, and someone training with one owns one or two
+# of them — "25-27.5 kg" is not a bell. The quote names the bells either side of
+# the estimate, lighter first, and never says "per hand": a kettlebell plan is
+# written for a single bell, worked one side at a time where the movement is
+# one-armed.
+_BELL_SIZES = (4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 48)
+
+
+def _bell_for(load: float) -> str:
+    lighter = max([b for b in _BELL_SIZES if b <= load * 1.05] or [_BELL_SIZES[0]])
+    heavier = min([b for b in _BELL_SIZES if b > lighter] or [lighter])
+    if load <= _BELL_SIZES[0] or heavier == lighter:
+        text = f"A {lighter} kg bell"
+    else:
+        text = f"A {lighter} kg bell, moving to {heavier} kg"
+    return (f"{text} · a starting estimate from your bodyweight — move up a bell "
+            "when every set reaches the top of the range with clean form")
+
+
 def _fmt_kg(kg: float) -> str:
     return f"{kg:.1f}".rstrip("0").rstrip(".")
 
@@ -964,7 +983,7 @@ _GOBLET_SHARE = 0.35
 # hands, and was quoted "per hand". One dumbbell lifted by two arms is about
 # two thirds of what a pair would total (Strength Level's two-handed dumbbell
 # triceps extension against their single-arm one).
-_BOTH_HANDS = re.compile(r"\btwo hands?\b|\bboth hands\b", re.I)
+_BOTH_HANDS = re.compile(r"\btwo hands?\b|\bboth hands\b|\bkettlebell deadlift\b", re.I)
 _BOTH_HANDS_SHARE = 0.65
 # Done holding a single dumbbell. "14-16 kg per hand" on a side bend reads as a
 # pair, and the movement is a side bend because the other hand is empty.
@@ -1116,6 +1135,9 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
         return ("The lightest EZ-bar or fixed barbell (about 7.5–10 kg) — heavier than "
                 f"your ~{_fmt_kg(_round_load(load))} kg starting estimate, so take fewer "
                 "reps than written until it moves cleanly")
+
+    if implement == "kettlebell":
+        return _bell_for(load)
 
     # The estimate is the load two reps short of failure, so it is the top of the
     # range: the bottom is where a first session should start.
@@ -2338,7 +2360,10 @@ def _schedule_notice(requested_days: int, schedule: list) -> str | None:
 
 
 def _focus_to_keys(focus):
-    if "full_body" in focus:        return ["full_body", "chest", "back", "legs", "core"]
+    # Shoulders were missing, so no full-body day — the whole week of a novice,
+    # a teenager or anyone training two or three days — could contain an
+    # overhead press, whatever its pattern list asked for.
+    if "full_body" in focus:        return ["full_body", "chest", "back", "legs", "shoulders", "core"]
     elif focus == "upper":          return ["chest", "back", "shoulders", "biceps", "triceps"]
     elif focus == "lower":          return ["legs", "core"]
     elif "push" in focus:           return ["chest", "shoulders", "triceps"]
@@ -2824,6 +2849,14 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
             # Rotation reached past the Romanian deadlift to the conventional one
             # on a hypertrophy block's second lower day — the variety step found
             # the lift `_headline_lifts` exists to keep out of high-rep sets.
+            # Rotation varies between lifts that can lead a session. With a
+            # thin pool the second-best candidate was an accessory: a
+            # kettlebell-only lifter's second day pressed with a chest dip
+            # instead of the press, and hinged with a swing instead of the
+            # deadlift.
+            leaders = [ex for ex in shortlist if ex.get("role", "main") == "main"]
+            if leaders:
+                shortlist = leaders
             if headline and "deadlift" not in headline.get(pattern, {"deadlift"}):
                 shortlist = [ex for ex in shortlist if _lift_class(ex) != "deadlift"] or shortlist
             # Rotation varies WHICH lift opens a repeated day; it should not

@@ -1,10 +1,10 @@
 {
-  "exercises": 173,
+  "exercises": 179,
   "clinically_reviewed": 0,
-  "unreviewed": 173,
+  "unreviewed": 179,
   "mechanism_groups": 12,
   "tag_rules": 44,
-  "tag_rules_applied_inconsistently": 33,
+  "tag_rules_applied_inconsistently": 24,
   "risk_mechanism_groups": 8,
   "movements_with_a_risk_mechanism": 70
 }
