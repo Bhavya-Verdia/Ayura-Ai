@@ -1660,6 +1660,18 @@
 /* The coaching cue reads as the coach talking, so it gets the weight the
    modification note does not: upright, slightly stronger colour, and a rule down
    the side to separate it from the mechanical text around it. */
+/* The coach's line for the day — above the session, in the same voice as the
+   per-exercise cue but set apart as the day's intent. */
+.gym-day-coach-note {
+  font-size: 0.8rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ayura-text);
+  margin: 0 0 0.6rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ayura-accent) 8%, transparent);
+}
 .gym-ex-cue {
   font-size: 0.78rem;
   color: var(--ayura-text);

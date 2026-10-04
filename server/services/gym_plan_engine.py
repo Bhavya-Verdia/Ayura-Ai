@@ -3256,8 +3256,9 @@ def _duration_notice(built: int, requested: int, goal: str) -> str | None:
                 f"would leave the day's muscle groups untrained. Shorten the rests if you are "
                 f"pressed for time — it changes the training effect, but it keeps the session.")
     return (f"This session runs about {built} minutes rather than the {requested} you asked for. "
-            f"Adding exercises past this point stops being productive at these rest intervals — "
-            f"take the extra time over the warm-up and cool-down, or add a walk.")
+            f"It already holds as much lifting as one session can use well — past this, "
+            f"extra sets add fatigue faster than they add results. Spend the remaining time "
+            f"on a longer warm-up, the cool-down stretches, or an easy walk.")
 
 
 # ── Fitting a session to the clock ────────────────────────────────────────────
@@ -3753,20 +3754,36 @@ def _vyayama_shakti(dosha: str, age, strength_level: str) -> dict:
         age_i = int(age or 30)
     except (TypeError, ValueError):
         age_i = 30
-    if age_i >= 60 or dosha == "vata" or strength_level == "beginner":
-        capacity = ("Keep intensity well within Ardhabala — work to roughly half capacity and stop "
-                    "at the first forehead sweat. Vata constitution, beginner strength, and older age "
-                    "all lower exercise tolerance; over-exertion here directly depletes Ojas.")
+    # Ardhabala is a SESSION dose, not a set dose. This card used to say "stop
+    # at the first forehead sweat", beside sets whose own note says the last two
+    # reps must be hard — and in a gym session the forehead sweats during the
+    # warm-up, so the two could not both be followed. The classical sign (sweat
+    # on forehead, nose and joints TOGETHER with mouth-breathing) marks the point
+    # the session has reached its dose; the plan's volume is set to arrive there
+    # near its end, and arriving early is the reason to cut it short.
+    if age_i >= 60 or dosha == "vata" or strength_level in ("untrained", "beginner"):
+        capacity = ("Keep well inside Ardhabala. Each set should end with two reps still in "
+                    "you, and the session as a whole should leave you with energy to spare. "
+                    "If the classical sign — sweat on the forehead, nose and joints together "
+                    "with breathing through the mouth — arrives before the session's end, "
+                    "stop there and skip what is left. Vata constitution, a beginner's "
+                    "strength and older age all lower exercise tolerance, and over-exertion "
+                    "here depletes Ojas directly.")
     elif dosha == "kapha" and strength_level in ("intermediate", "advanced") and age_i < 50:
-        capacity = ("You have higher Vyayama Shakti — you may work up toward the Ardhabala ceiling with "
-                    "good sustained volume. Kapha specifically benefits from exercising until a genuine sweat breaks.")
+        capacity = ("You have higher Vyayama Shakti — you can work up toward the Ardhabala "
+                    "ceiling with good sustained volume, and Kapha benefits from training until "
+                    "a genuine sweat breaks. Still stop the session if you are breathing through "
+                    "the mouth and cannot slow it down between sets.")
     else:
-        capacity = ("Moderate capacity — work to about half-strength. Pitta types must avoid exercising in "
-                    "heat or with a competitive mindset, which pushes past Ardhabala into Pitta aggravation.")
+        capacity = ("Moderate capacity — the sets are hard near their end, the session stops "
+                    "well short of exhaustion. Pitta types should avoid training in heat or with "
+                    "a competitive mindset, which pushes past Ardhabala into Pitta aggravation.")
     return {
-        "principle": ("Exercise should be performed only to Ardhabala — half of one's maximum capacity "
-                      "(Charaka Sutrasthana 7). The classical signal to STOP is sweating on the forehead, "
-                      "nose, and joints together with the onset of mouth-breathing."),
+        "principle": ("Exercise should be performed only to Ardhabala — half of one's maximum "
+                      "capacity (Charaka Sutrasthana 7). It describes the whole session, not a "
+                      "single set: the classical signal that the dose has been reached is sweat "
+                      "on the forehead, nose and joints together with the onset of "
+                      "mouth-breathing."),
         "your_capacity": capacity,
         "signs_adequate": "Sweat on forehead, nose and armpits; lightness in the body; comfortably increased breathing.",
         "signs_overexertion": ("Breathlessness, dizziness, tremor, excessive thirst, joint pain or cough mark "

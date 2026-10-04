@@ -32,6 +32,8 @@ export function GymView({ plan }) {
     ? plan.progression : null
   const nutrition = plan.nutrition_sync || {}
   const recovery = plan.recovery_protocol || {}
+  const focusNotes = plan.weekly_focus_notes || {}
+  const vidhi = plan.vyayama_vidhi || {}
 
   const goalLabel = (us.gym_goal || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
   const doshaColor = DOSHA_COLOR[us.dominant_dosha] || DOSHA_COLOR.default
@@ -377,6 +379,12 @@ export function GymView({ plan }) {
                     </div>
                   )}
 
+                  {/* The coach's line for this day. Generated for every enriched
+                      plan and, until now, rendered nowhere. */}
+                  {focusNotes[day.day_name] && (
+                    <p className="gym-day-coach-note">{focusNotes[day.day_name]}</p>
+                  )}
+
                   <div className="gym-day-meta">
                     {day.estimated_duration_minutes > 0 && (
                       <span className="gym-meta-chip"><Timer size={10} /> {day.estimated_duration_minutes} min</span>
@@ -525,6 +533,44 @@ export function GymView({ plan }) {
           </div>
           {plan.vyayama_shakti.bala_note && (
             <p className="gym-vyayama-bala">{plan.vyayama_shakti.bala_note}</p>
+          )}
+        </div>
+      )}
+
+      {/* ── Vyayama Vidhi: the classical regimen around the session ──
+          Written by the coaching model for every enriched plan and shown
+          nowhere until this. Each line has passed the practice gate and the
+          food floor (`gym_plan_enricher.gate_coaching_prose`). */}
+      {(vidhi.ardhashakti_guideline || vidhi.pre_workout_ritual || vidhi.post_workout_ritual
+        || vidhi.seasonal_adjustment || vidhi.vyayama_contraindications?.length > 0) && (
+        <div className="gym-vyayama-section">
+          <h3 className="gym-tips-title"><Leaf size={14} /> Vyayama Vidhi — Your Exercise Regimen</h3>
+          {vidhi.ardhashakti_guideline && (
+            <p className="gym-vyayama-capacity">{vidhi.ardhashakti_guideline}</p>
+          )}
+          <div className="gym-tips-grid">
+            {[
+              ['pre_workout_ritual', 'Before training'],
+              ['post_workout_ritual', 'After training'],
+              ['seasonal_adjustment', 'This season'],
+              ['dosha_intensity_principle', 'Your constitution'],
+            ].map(([key, label]) => vidhi[key] ? (
+              <div key={key} className="gym-tip-card">
+                <h4 className="gym-tip-label">{label}</h4>
+                <p className="gym-tip-text">{vidhi[key]}</p>
+              </div>
+            ) : null)}
+          </div>
+          {vidhi.vyayama_contraindications?.length > 0 && (
+            <div className="gym-overtraining">
+              <h4 className="gym-tip-label" style={{ marginBottom: '0.4rem' }}>Skip training today if</h4>
+              <ul className="gym-sub-list">
+                {vidhi.vyayama_contraindications.map((s, i) => <li key={i} className="gym-list-item">{s}</li>)}
+              </ul>
+            </div>
+          )}
+          {plan.ayurvedic_lifestyle_sync && (
+            <p className="gym-vyayama-bala">{plan.ayurvedic_lifestyle_sync}</p>
           )}
         </div>
       )}

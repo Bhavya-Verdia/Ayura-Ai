@@ -603,3 +603,28 @@ def test_the_models_active_recovery_line_passes_the_practice_gate():
     out = gate_recovery({"active_recovery": "Kapalabhati for 10 minutes, then a brisk walk"},
                         {"medical_history": ["hypertension"]})
     assert "kapalabhati" not in out["active_recovery"].lower()
+
+
+def test_the_vyayama_rituals_pass_the_practice_gate_and_the_food_floor():
+    """Generated for every plan and shown nowhere, so never screened. Rendered
+    now, so they are."""
+    from services.gym_plan_enricher import gate_coaching_prose
+
+    out = gate_coaching_prose({
+        "vyayama_vidhi": {"pre_workout_ritual": "Five rounds of Kapalabhati, then begin",
+                          "post_workout_ritual": "Rest ten minutes, then warm milk with ghee",
+                          "atiyoga_warning_signs": "breathlessness"},
+        "weekly_focus_notes": {"Monday": "Open with Bhastrika to wake the body up"},
+    }, {"medical_history": ["hypertension"], "allergies": ["dairy"]})
+    assert "kapalabhati" not in out["vyayama_vidhi"]["pre_workout_ritual"].lower()
+    assert "milk" not in out["vyayama_vidhi"]["post_workout_ritual"].lower()
+    assert "bhastrika" not in out["weekly_focus_notes"]["Monday"].lower()
+    assert out["vyayama_vidhi"]["atiyoga_warning_signs"] == ["breathlessness"]
+
+
+def test_ardhabala_does_not_contradict_the_sets():
+    """"Stop at the first forehead sweat" sat beside sets whose note says the
+    last two reps must be hard; the forehead sweats in the warm-up."""
+    plan = _plan(medical_history=[])
+    text = " ".join(plan["vyayama_shakti"].values()).lower()
+    assert "first forehead sweat" not in text and "session" in text

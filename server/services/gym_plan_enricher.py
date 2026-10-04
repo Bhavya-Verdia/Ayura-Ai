@@ -12,7 +12,7 @@ You will receive a gym plan summary, user profile, and relevant fitness/Ayurvedi
 Use the knowledge context to ground your response in both modern exercise science and Ayurvedic principles.
 
 CLASSICAL VYAYAMA VIDHI (Charaka Sutrasthana Ch.7) — incorporate these principles:
-- Ardhashakti rule: Exercise must be performed to only half (Ardha) of maximum capacity (Bala). The sign to STOP is sweating on the forehead, nose, and joints together with onset of mouth-breathing.
+- Ardhashakti rule: Exercise must be performed to only half (Ardha) of maximum capacity (Bala). This is the dose of the SESSION, not of a set — the plan's sets are written to end two reps short of failure, and you must not tell anyone to stop a set at the first sweat. The classical sign that the session's dose is reached is sweating on the forehead, nose and joints together with onset of mouth-breathing; if it comes early, the rest of the session is skipped.
 - Atiyoga (over-exercise) depletes Ojas and aggravates Vata — signs include breathlessness, tremor, dizziness, excessive thirst, joint pain.
 - Dosha intensity principle: Vata types → low intensity, favour stability; Pitta types → moderate, avoid heat and competition; Kapha types → vigorous effort to overcome natural heaviness — always within the limits the plan's safety notices set.
 - Seasonal (Ritu): classical texts advise the least exertion in Grishma (summer) and Varsha (monsoon) and allow the most in Hemanta/Shishira (winter). The plan's sets, reps and loads are fixed and are not yours to change — express the season as effort: stop earlier, rest longer, train in the cooler hours.
@@ -206,6 +206,47 @@ def gate_recovery(recovery: dict, user_profile: dict) -> dict:
     return {**recovery, "active_recovery": gated}
 
 
+def gate_coaching_prose(enrichment: dict, user_profile: dict) -> dict:
+    """The per-day notes, the Vyayama Vidhi rituals and the lifestyle note, held
+    to the gates the engine's own prose passes.
+
+    They were generated for every plan and rendered nowhere, which is the only
+    reason they had never been screened. Rendering them makes them prose a
+    person acts on: a pre-workout ritual is where a model writes "Kapalabhati"
+    and "warm milk with ghee", the two things this plan already withholds from
+    a hypertensive and a dairy-allergic practitioner elsewhere."""
+    from services.gym_plan_engine import _avoided_risks, _gate_practices, _screen_food_line
+
+    conditions = set(_as_list(user_profile.get("medical_history"))) | set(
+        _as_list(user_profile.get("injuries_or_limitations")))
+    pregnant = bool(user_profile.get("pregnancy_or_nursing"))
+    risks = _avoided_risks(user_profile)
+
+    def practice(text):
+        if not isinstance(text, str) or not text.strip():
+            return text
+        return _gate_practices([text], conditions, pregnant, risks)[0]
+
+    notes = enrichment.get("weekly_focus_notes")
+    notes = ({day: practice(text) for day, text in notes.items()}
+             if isinstance(notes, dict) else {})
+    vidhi = enrichment.get("vyayama_vidhi")
+    vidhi = dict(vidhi) if isinstance(vidhi, dict) else {}
+    for key in ("pre_workout_ritual", "post_workout_ritual"):
+        if isinstance(vidhi.get(key), str):
+            vidhi[key] = _screen_food_line(practice(vidhi[key]), user_profile)
+    for key in ("ardhashakti_guideline", "seasonal_adjustment", "dosha_intensity_principle"):
+        if isinstance(vidhi.get(key), str):
+            vidhi[key] = practice(vidhi[key])
+    for key in ("atiyoga_warning_signs", "vyayama_contraindications"):
+        vidhi[key] = [str(v) for v in _as_list(vidhi.get(key))]
+    return {
+        "weekly_focus_notes": notes,
+        "vyayama_vidhi": vidhi,
+        "ayurvedic_lifestyle_sync": practice(enrichment.get("ayurvedic_lifestyle_sync") or ""),
+    }
+
+
 def build_plan_summary(raw_plan: dict, user_profile: dict, gym_prefs: dict) -> dict:
     """What the model is told about the practitioner and the plan it is enriching.
 
@@ -336,7 +377,8 @@ async def enrich_gym_plan(raw_plan: dict, user_profile: dict, gym_prefs: dict) -
         # Merge enrichment
         raw_plan["plan_title"] = enrichment.get("plan_title", "Personalized Gym Plan")
         raw_plan["plan_description"] = enrichment.get("plan_description", "")
-        raw_plan["weekly_focus_notes"] = enrichment.get("weekly_focus_notes", {})
+        gated = gate_coaching_prose(enrichment, user_profile)
+        raw_plan["weekly_focus_notes"] = gated["weekly_focus_notes"]
         raw_plan["nutrition_sync"], raw_plan["nutrition_withheld"] = screen_nutrition(
             enrichment.get("nutrition_sync", {}), user_profile)
         raw_plan["recovery_protocol"] = gate_recovery(
@@ -348,8 +390,8 @@ async def enrich_gym_plan(raw_plan: dict, user_profile: dict, gym_prefs: dict) -
         # four weeks, which is the one the UI renders.
         raw_plan["progression"] = merge_progression(
             raw_plan, enrichment.get("progression_plan") or {})
-        raw_plan["vyayama_vidhi"] = enrichment.get("vyayama_vidhi", {})
-        raw_plan["ayurvedic_lifestyle_sync"] = enrichment.get("ayurvedic_lifestyle_sync", "")
+        raw_plan["vyayama_vidhi"] = gated["vyayama_vidhi"]
+        raw_plan["ayurvedic_lifestyle_sync"] = gated["ayurvedic_lifestyle_sync"]
         raw_plan["classical_transparency_note"] = enrichment.get("classical_transparency_note", "")
         raw_plan["motivational_note"] = enrichment.get("motivational_note", "")
         raw_plan["enriched"] = True
