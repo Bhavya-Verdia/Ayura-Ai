@@ -277,12 +277,24 @@ def test_a_healthy_adult_keeps_the_strength_scheme_they_asked_for():
     ("chronic_fatigue_syndrome", "fatigue"), ("osteoporosis", "osteoporosis"),
     ("rheumatoid_arthritis", "inflammatory_joint"), ("vertigo", "vertigo"),
     ("glaucoma", "eye_pressure"),
+    # Each of these changed the plan's movements and said nothing.
+    ("osteoarthritis", "osteoarthritis"), ("arthritis", "osteoarthritis"),
+    ("sciatica", "back"), ("lumbar_spondylosis", "back"),
+    ("cervical_spondylosis", "neck"), ("parkinson", "parkinson"),
+    ("multiple_sclerosis", "ms"), ("bipolar", "lithium"),
 ])
 def test_a_condition_where_the_session_is_the_risk_gets_told_so(condition, key):
     """Someone on insulin can do every exercise in the library and still go
     hypoglycaemic halfway through it. The plan said nothing."""
     plan = _plan(medical_history=[condition])
     assert key in {g["key"] for g in plan["condition_guidance"]}
+
+
+def test_rheumatoid_arthritis_is_not_given_the_osteoarthritis_note():
+    """"arthritis" is a substring of "rheumatoid_arthritis", and a flare is not
+    managed by the pain-monitoring rule that suits a degenerative joint."""
+    keys = {g["key"] for g in _plan(medical_history=["rheumatoid_arthritis"])["condition_guidance"]}
+    assert "inflammatory_joint" in keys and "osteoarthritis" not in keys
 
 
 def test_a_healthy_plan_carries_no_guidance():
