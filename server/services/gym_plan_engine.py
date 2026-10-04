@@ -280,16 +280,22 @@ _GOAL_WEEKS = {
         {"sets": 4, "reps": "10-12", "rest_seconds": 60, "note": "Peak volume — highest workload week, add weight if form is solid."},
         {"sets": 2, "reps": "8-10",  "rest_seconds": 90, "note": "Deload — reduce weight 15%, prioritise mind-muscle connection."},
     ],
+    # Fat loss was written as sets of 15-20 — the "light weights for toning"
+    # scheme. Under an energy deficit the job of the lifting is to keep the
+    # muscle the diet would otherwise take, and that needs a load heavy enough to
+    # ask for it (ACSM position stand on weight loss, Donnelly 2009; Helms 2014 on
+    # resistance training in a deficit). The metabolic demand comes from the
+    # short rest and the conditioning, not from making the sets light.
     "fat_loss": [
-        {"sets": 3, "reps": "15-20", "rest_seconds": 45, "note": "Keep rest short to maintain elevated heart rate. Moderate weight."},
-        {"sets": 3, "reps": "15-20", "rest_seconds": 35, "note": "Cut rest by 10 sec vs Week 1 to increase metabolic demand."},
-        {"sets": 4, "reps": "15-20", "rest_seconds": 30, "note": "Peak metabolic week — minimum rest, circuit style if possible."},
-        {"sets": 3, "reps": "12-15", "rest_seconds": 45, "note": "Deload — slightly fewer reps, full rest, let connective tissue recover."},
+        {"sets": 3, "reps": "12-15", "rest_seconds": 45, "note": "Keep rest short to keep your heart rate up, with a weight that makes the last 2 reps hard."},
+        {"sets": 3, "reps": "12-15", "rest_seconds": 35, "note": "Cut rest by 10 sec vs Week 1 to increase metabolic demand."},
+        {"sets": 4, "reps": "12-15", "rest_seconds": 30, "note": "Peak metabolic week — minimum rest, circuit style if possible."},
+        {"sets": 3, "reps": "10-12", "rest_seconds": 45, "note": "Deload — slightly fewer reps, full rest, let connective tissue recover."},
     ],
     "endurance": [
         {"sets": 3, "reps": "15-20", "rest_seconds": 30, "note": "Light weight, high reps. Focus on breathing rhythm throughout."},
         {"sets": 4, "reps": "15-20", "rest_seconds": 25, "note": "Add 1 set vs Week 1. Cut rest to challenge aerobic capacity."},
-        {"sets": 4, "reps": "18-22", "rest_seconds": 20, "note": "Peak endurance week — go to near-failure on each set."},
+        {"sets": 4, "reps": "20-25", "rest_seconds": 20, "note": "Peak endurance week — go to near-failure on each set."},
         {"sets": 3, "reps": "12-15", "rest_seconds": 30, "note": "Deload — reduce volume, maintain movement quality."},
     ],
     "general_fitness": [
@@ -522,16 +528,45 @@ def _rep_delta(hi: int, role: str) -> int:
     return 5 if hi <= 8 else (3 if hi <= 12 else 2)
 
 
+# The rep ranges a coach writes, for each tier under a given main-lift range.
+# Shifting the main lift's range by a fixed number of reps produced ranges
+# nobody writes — 11-13, 13-15, 17-22, 5-7 — on 4,587 exercise rows of a
+# 400-plan sweep, which reads as generated before a single movement is looked
+# at. The tiers are the same idea (support work lighter and longer than the
+# main lift, isolation lighter again) expressed in the ranges that exist.
+_TIER_REPS = {
+    "3-5":   ("6-8", "8-12"),
+    "4-5":   ("6-8", "8-12"),
+    "4-6":   ("6-8", "8-12"),
+    "6-8":   ("8-10", "10-12"),
+    "8-10":  ("10-12", "12-15"),
+    "8-12":  ("10-12", "12-15"),
+    "10-12": ("12-15", "12-15"),
+    "12-15": ("12-15", "15-20"),
+    "15-20": ("15-20", "15-20"),
+    "20-25": ("20-25", "20-25"),
+}
+# Support work does not need the main lift's volume on top of it. A strength
+# block wrote 5 x 5-7 on every compound after the first, four of them in one
+# session — twenty heavy pressing sets on a chest day.
+_SECONDARY_MAX_SETS = 4
+
+
 def _role_prescription(rx: dict, role: str) -> dict:
     """The goal's week prescription, shifted for what this exercise is doing."""
     sets = int(rx.get("sets", 3)) + _ROLE_SETS.get(role, 0)
     if role == "accessory":
         sets = min(sets, _ACCESSORY_MAX_SETS)
+    elif role == "secondary":
+        sets = min(sets, _SECONDARY_MAX_SETS)
     sets = max(_MIN_SETS, min(_MAX_SETS, sets))
 
     reps = rx.get("reps", "10-12")
     parsed = _parse_reps(reps)
-    if parsed:
+    tiers = _TIER_REPS.get(str(reps).replace("\u2013", "-"))
+    if tiers and role in ("secondary", "accessory"):
+        reps = tiers[0] if role == "secondary" else tiers[1]
+    elif parsed:
         delta = _rep_delta(parsed[1], role)
         reps = f"{parsed[0] + delta}-{parsed[1] + delta}" if delta else reps
 
@@ -543,7 +578,21 @@ def _role_prescription(rx: dict, role: str) -> dict:
     return {"sets": sets, "reps": reps, "rest_seconds": rest}
 
 
-def _assign_roles(selected: list, primary_slots: int) -> list:
+# What a strength block's main lift is loaded with. A heavy triple is a
+# free-weight or plate-loaded movement; a cable row or a lat pulldown at 3-5
+# reps is a machine set to the top of its stack, and it opened a strength
+# block's second upper day.
+_STRENGTH_MAIN_EQUIPMENT = {"barbell", "dumbbell", "kettlebell", "machine"}
+
+
+def _can_lead(ex: dict, scheme=None) -> bool:
+    if scheme != "strength":
+        return True
+    return ((ex.get("equipment") or "").lower() in _STRENGTH_MAIN_EQUIPMENT
+            and _movement_pattern(ex) != "pull_v")
+
+
+def _assign_roles(selected: list, primary_slots: int, scheme=None) -> list:
     """Label each selected exercise with the job it does in the session."""
     roles = []
     taken = 0
@@ -555,7 +604,8 @@ def _assign_roles(selected: list, primary_slots: int) -> list:
         # library did not state it, and a loaded carry satisfies both — so a core
         # day opened with a farmer's walk, under a header promising 3 x 8-10.
         elif (taken < primary_slots and ex.get("role", "main") == "main"
-              and _is_compound(ex) and _movement_pattern(ex) in _PRIMARY_PATTERNS):
+              and _is_compound(ex) and _movement_pattern(ex) in _PRIMARY_PATTERNS
+              and _can_lead(ex, scheme)):
             roles.append("primary")
             taken += 1
         elif _is_compound(ex):
@@ -626,22 +676,33 @@ _BODYWEIGHT_PROGRESSIONS = {
 # taken from the strength-standards ranges those lifts are ordinarily quoted in.
 # Level and sex scale it; the implement converts it.
 _LIFT_BW = {
+    # Calibrated 2026-10 against Strength Level's published standards
+    # (strengthlevel.com, ~2M logged lifts, read at a 70 kg man and a 60 kg
+    # woman). "Intermediate" here is the midpoint of their Novice and
+    # Intermediate rows — their population is people who log lifts, which runs
+    # stronger than the people this app serves, so their median is not ours.
+    #
+    # The table it replaced was written from memory and ran 15-30% light on the
+    # main lifts and about HALF on isolation work: an untrained woman was told
+    # to hammer-curl 1-2 kg and lateral-raise 1-2 kg, and an intermediate man to
+    # lateral-raise 3-4 kg against a published novice 1RM of 9. A load that is
+    # obviously too light is ignored, and with it the rest of the number column.
     # lower body
-    "squat":         1.25, "front_squat": 1.00, "leg_press": 2.20, "hack_squat": 1.40,
-    "deadlift":      1.50, "romanian":    1.20, "hip_thrust": 1.50, "good_morning": 0.70,
-    "swing":         0.32,
+    "squat":         1.44, "front_squat": 1.15, "leg_press": 2.40, "hack_squat": 1.60,
+    "deadlift":      1.71, "romanian":    1.28, "hip_thrust": 1.60, "good_morning": 0.70,
+    "swing":         0.35,
     "lunge":         0.70, "step_up":     0.55, "calf_raise": 1.00,
-    "leg_extension": 0.55, "leg_curl":    0.45, "hip_abduction": 0.50,
+    "leg_extension": 0.80, "leg_curl":    0.60, "hip_abduction": 0.50,
     # horizontal push
-    "bench":         0.85, "incline_press": 0.70, "chest_press": 0.85, "fly": 0.35,
+    "bench":         1.07, "incline_press": 0.90, "chest_press": 0.98, "fly": 0.50,
     # vertical push
-    "overhead_press": 0.60, "upright_row": 0.45, "lateral_raise": 0.21,
-    "front_raise":   0.20, "rear_delt":   0.20,
+    "overhead_press": 0.66, "upright_row": 0.55, "lateral_raise": 0.43,
+    "front_raise":   0.36, "rear_delt":   0.34,
     # pull
-    "row":           0.80, "pulldown":    0.85, "shrug": 1.20, "face_pull": 0.30,
-    "pullover":      0.35,
+    "row":           0.95, "pulldown":    0.96, "shrug": 1.35, "face_pull": 0.45,
+    "pullover":      0.40,
     # arms and trunk
-    "curl":          0.30, "triceps_extension": 0.35, "pushdown": 0.45,
+    "curl":          0.50, "triceps_extension": 0.42, "pushdown": 0.62,
     "core":          0.30,
     # Classes the curated library names that the name-matcher never had, because
     # a name-matcher can only price what it recognises and everything else fell
@@ -649,11 +710,11 @@ _LIFT_BW = {
     # fallback priced wrongly, and the cuff drill is the extreme of it: four to
     # six kilos for an 80 kg lifter, against the 17-22.5 kg it used to be quoted.
     "external_rotation": 0.06,
-    "floor_press":   0.75, "dip":          0.25, "push_press":   0.75,
-    "straight_arm_pulldown": 0.30,
-    "hammer_curl":   0.28, "preacher_curl": 0.26, "skullcrusher": 0.30,
-    "pallof":        0.25, "side_bend":    0.25, "cable_woodchop": 0.30,
-    "farmers_carry": 0.60, "suitcase_carry": 0.40,
+    "floor_press":   0.95, "dip":          0.25, "push_press":   0.85,
+    "straight_arm_pulldown": 0.45,
+    "hammer_curl":   0.48, "preacher_curl": 0.44, "skullcrusher": 0.42,
+    "pallof":        0.25, "side_bend":    0.90, "cable_woodchop": 0.30,
+    "farmers_carry": 1.00, "suitcase_carry": 0.70,
 }
 
 # The curated library and this table grew their vocabularies separately — the
@@ -716,10 +777,14 @@ _LIFT_PATTERNS = (
 )
 
 # Training age, as a share of the intermediate standard.
-_LIFT_LEVEL = {"untrained": 0.40, "beginner": 0.62, "intermediate": 1.00, "advanced": 1.40}
+# Strength Level's Beginner row sits at 0.61 of the midpoint above on the
+# barbell lifts and their Advanced row at 1.47; untrained and advanced are set a
+# little inside both, because a first-session estimate that errs light costs a
+# set and one that errs heavy costs a back.
+_LIFT_LEVEL = {"untrained": 0.50, "beginner": 0.72, "intermediate": 1.00, "advanced": 1.45}
 # Averages, not ceilings. Lower-body strength is closer between the sexes than
 # upper-body strength, which one flat factor cannot express.
-_LIFT_SEX = {"upper": 0.62, "lower": 0.72}
+_LIFT_SEX = {"upper": 0.62, "lower": 0.67}
 _LOWER_CLASSES = {"squat", "front_squat", "leg_press", "hack_squat", "deadlift", "romanian",
                   "hip_thrust", "good_morning", "lunge", "step_up", "calf_raise",
                   "leg_extension", "leg_curl", "hip_abduction", "swing"}
@@ -728,10 +793,11 @@ _LOWER_CLASSES = {"squat", "front_squat", "leg_press", "hack_squat", "deadlift",
 _TWO_HANDED = {"swing"}
 
 # A dumbbell pair carries about 80% of the barbell load for the same movement, so
-# each hand takes 40% of it. Cable stacks read low against a free weight through
-# the pulley; machines read close to it.
+# each hand takes 40% of it. Cable stacks read a little low against a free
+# weight through the pulley (Strength Level: seated cable row 63 kg against a
+# bent-over row of 66 at the same level); machines read close to it.
 _IMPLEMENT_FACTOR = {"barbell": 1.00, "machine": 1.00, "smith": 1.00,
-                     "cable": 0.70, "dumbbell": 0.40, "kettlebell": 0.40}
+                     "cable": 0.85, "dumbbell": 0.40, "kettlebell": 0.40}
 _PER_HAND = {"dumbbell", "kettlebell"}
 # One limb lifts less than two, and the dataset says so in the name.
 _UNILATERAL = re.compile(r"\b(one.?arm|single.?arm|one.?leg|single.?leg|one arm|"
@@ -859,6 +925,7 @@ _YOUTH_LOAD_FACTOR = 0.80
 # done with one; a curl or a skull-crusher usually is not (EZ-bars and fixed
 # barbells go far lighter), so they are not held to it.
 _EMPTY_BAR_KG = 20.0
+_LIGHTEST_BAR_KG = 7.5
 _RACK_LIFTS = {"squat", "front_squat", "deadlift", "romanian", "good_morning",
                "hip_thrust", "bench", "incline_press", "floor_press", "overhead_press",
                "push_press", "row", "shrug", "upright_row"}
@@ -886,10 +953,21 @@ def _age_load_factor(age) -> float:
 def _is_two_handed(ex: dict, lift: str) -> bool:
     """One implement held in both hands. A goblet squat is one dumbbell at the
     chest, and was quoted "per hand" — which reads as a pair."""
-    return lift in _TWO_HANDED or bool(_GOBLET.search(ex.get("name", "")))
+    return (lift in _TWO_HANDED or bool(_GOBLET.search(ex.get("name", "")))
+            or bool(_BOTH_HANDS.search(ex.get("name", ""))))
 
 
 _GOBLET = re.compile(r"\bgoblet\b", re.I)
+_GOBLET_SHARE = 0.35
+# "Dumbbell Overhead Triceps Extension - Two Hands" is one dumbbell held in both
+# hands, and was quoted "per hand". One dumbbell lifted by two arms is about
+# two thirds of what a pair would total (Strength Level's two-handed dumbbell
+# triceps extension against their single-arm one).
+_BOTH_HANDS = re.compile(r"\btwo hands?\b|\bboth hands\b", re.I)
+_BOTH_HANDS_SHARE = 0.65
+# Done holding a single dumbbell. "14-16 kg per hand" on a side bend reads as a
+# pair, and the movement is a side bend because the other hand is empty.
+_ONE_HAND_LIFTS = {"side_bend", "suitcase_carry"}
 
 
 def _estimated_load(ex: dict, strength_level: str, gender: str,
@@ -920,6 +998,15 @@ def _estimated_load(ex: dict, strength_level: str, gender: str,
         load *= _LIFT_SEX["lower" if lift in _LOWER_CLASSES else "upper"]
     per_hand = implement in _PER_HAND and not _is_two_handed(ex, lift)
     load *= factor if per_hand else _IMPLEMENT_FACTOR["barbell"]
+    if implement in _PER_HAND and _BOTH_HANDS.search(ex.get("name", "")):
+        load = min(load * _BOTH_HANDS_SHARE, _DUMBBELL_CEILING)
+    if implement in _PER_HAND and _GOBLET.search(ex.get("name", "")):
+        # One dumbbell held at the chest, priced until now as the barbell front
+        # squat it shares a load class with: an intermediate 72 kg man was quoted
+        # a 46-51 kg goblet squat, a dumbbell most gyms do not own. The grip and
+        # the upper back give out long before the legs do; Strength Level's
+        # goblet squat sits at about a third of their front squat.
+        load = min(load * _GOBLET_SHARE, _DUMBBELL_CEILING)
     if per_hand:
         # A one-arm dumbbell press is the same dumbbell as a two-arm one — the
         # practitioner just does the sides in turn. Halving it here would have
@@ -937,12 +1024,44 @@ def _estimated_load(ex: dict, strength_level: str, gender: str,
 
 
 def _below_the_bar(ex: dict, **kw) -> bool:
-    """A barbell rack lift whose working load is lighter than the bar itself."""
+    """A barbell lift whose working load is lighter than the bar it is done with.
+
+    The rack lifts use a 20 kg bar. Curls and skull-crushers use an EZ-bar or a
+    fixed barbell, and those start at about 7.5 kg — so an obese 55-year-old was
+    written a "2-3 kg" barbell curl, which is not a weight that exists."""
     est = _estimated_load(ex, **kw)
     if not est:
         return False
     kg, _, implement, lift = est
-    return implement == "barbell" and lift in _RACK_LIFTS and kg < _EMPTY_BAR_KG
+    if implement != "barbell":
+        return False
+    return kg < (_EMPTY_BAR_KG if lift in _RACK_LIFTS else _LIGHTEST_BAR_KG)
+
+
+def _unloaded_progression(ex: dict) -> str:
+    """How a movement with no weight on it gets harder, in its own words.
+
+    The library authors an `easier` and a `harder` step for every bodyweight and
+    band movement, and nothing read them: the load column printed a ladder keyed
+    on the MUSCLE, so a glute bridge, a calf raise and a glute kickback all told
+    the practitioner to progress to a pistol squat, and a wall-angel row to a
+    weighted pull-up. Across a 400-plan sweep that was 574 exercise rows. A
+    bodyweight set has no number to raise, so the next step IS the progression —
+    it is the one thing this field has to get right."""
+    eq = (ex.get("equipment") or "bodyweight").lower()
+    head = "Band" if eq in ("bands", "resistance_bands") else "Bodyweight"
+    prog = ex.get("progression") or {}
+    parts = []
+    if prog.get("harder"):
+        parts.append(f"when every set reaches the top of the range, move to: {prog['harder']}")
+    if prog.get("easier"):
+        parts.append(f"if you cannot reach the bottom of it: {prog['easier']}")
+    if parts:
+        return f"{head} · " + "; ".join(parts)
+    if head == "Band":
+        return "Band · choose a band that makes the last 2 reps hard"
+    return _BODYWEIGHT_PROGRESSIONS.get(
+        _muscle_key(ex), "Bodyweight · slow the tempo or add a pause to progress")
 
 
 def _get_weight_range(ex: dict, strength_level: str, gender: str,
@@ -953,11 +1072,8 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
     if (ex.get("category") or "").lower() == "cardio":
         return "Effort-based — see intensity note"
 
-    if eq in ("bodyweight", "other"):
-        return _BODYWEIGHT_PROGRESSIONS.get(
-            _muscle_key(ex), "Bodyweight · Add band/vest to progress")
-    if eq in ("bands", "resistance_bands"):
-        return "Light–heavy band · choose resistance that makes last 2 reps challenging"
+    if eq in ("bodyweight", "other", "bands", "resistance_bands"):
+        return _unloaded_progression(ex)
 
     est = _estimated_load(ex, strength_level, gender, bodyweight, week_factor, reps, age)
     if est is None:
@@ -966,25 +1082,30 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
         return "Moderate weight · adjust so the last 2 reps are hard and form holds"
     load, per_hand, implement, lift = est
 
-    if implement == "barbell" and lift in _RACK_LIFTS and load < _EMPTY_BAR_KG:
+    if implement == "barbell" and lift in _RACK_LIFTS and _round_load(load) < _EMPTY_BAR_KG:
         # Selection keeps these away from anyone with another way to train the
         # pattern; this is for the practitioner whose only implement is the bar.
         return (f"Empty bar (20 kg) — heavier than your ~{_fmt_kg(_round_load(load))} kg "
                 "starting estimate, so take fewer reps than written until it moves "
                 "cleanly for all of them")
+    if implement == "barbell" and lift not in _RACK_LIFTS and load < _LIGHTEST_BAR_KG:
+        return ("The lightest EZ-bar or fixed barbell (about 7.5–10 kg) — heavier than "
+                f"your ~{_fmt_kg(_round_load(load))} kg starting estimate, so take fewer "
+                "reps than written until it moves cleanly")
 
     # The estimate is the load two reps short of failure, so it is the top of the
     # range: the bottom is where a first session should start.
     lo, hi = _round_load(load * 0.85), _round_load(load)
     # The bottom of the range cannot be lighter than the bar either: a row quoted
     # "18–22.5 kg" starts below what an empty bar weighs.
-    if implement == "barbell" and lift in _RACK_LIFTS:
-        lo = max(lo, _EMPTY_BAR_KG)
+    if implement == "barbell":
+        lo = max(lo, _EMPTY_BAR_KG if lift in _RACK_LIFTS else _LIGHTEST_BAR_KG)
     # Light isolation rounds to a single plate step and the range collapses —
     # "2–2 kg" reads as a defect rather than a starting point.
     if hi <= lo:
         hi = _round_load(lo + (1.0 if lo < 20 else 2.5))
-    unit = " per hand" if per_hand else ""
+    unit = (" in one hand" if lift in _ONE_HAND_LIFTS
+            else " per hand" if per_hand else "")
     return (f"{_fmt_kg(lo)}–{_fmt_kg(hi)} kg{unit} · a starting estimate from your "
             f"bodyweight — adjust so the last 2 reps are hard and form holds")
 
@@ -1832,64 +1953,34 @@ _BEGINNER_FOCUS_SCHEDULES = {
     },
 }
 
-# Only the day counts where the intermediate baseline is strong enough that the
-# general table below no longer beats it. Everything else falls through.
-_INTERMEDIATE_FOCUS_SCHEDULES = {
-    "lower": {
-        6: ["legs", "push", "legs_core", "pull", "legs", "core_cardio", "rest"],
-    },
-    "back": {
-        6: ["pull", "push", "legs", "pull", "back_biceps", "core_cardio", "rest"],
-    },
-}
-
+# Intermediate and advanced. These were body-part weeks — a "lower" emphasis
+# was legs, push, legs-and-core, pull and a core day — and once the balanced
+# week moved to push / pull / legs and upper / lower, which trains everything
+# twice, four of them gave the emphasised region LESS work than not asking:
+# advanced six-day lower came out 42 leg sets against 54 balanced.
+# `test_the_region_you_asked_to_prioritise_gets_more_work` caught it, as it was
+# written to. An emphasis is now the balanced structure with the region trained
+# a third time, never a body-part week.
 _FOCUS_SCHEDULES = {
     "upper": {
-        4: ["upper", "lower", "rest", "upper", "core_cardio", "rest", "rest"],
-        5: ["upper", "lower", "rest", "upper", "core_cardio", "lower", "rest"],
-        6: ["upper", "lower", "core_cardio", "upper", "lower", "upper", "rest"],
-    },
-    "lower": {
-        4: ["lower", "upper", "rest", "lower", "core_cardio", "rest", "rest"],
-        5: ["lower", "upper", "rest", "lower", "core_cardio", "upper", "rest"],
-        6: ["lower", "upper", "core_cardio", "lower", "upper", "lower", "rest"],
-    },
-    "back": {
-        4: ["pull", "lower", "rest", "upper", "core_cardio", "rest", "rest"],
-        5: ["pull", "lower", "rest", "upper", "pull", "core_cardio", "rest"],
-        6: ["pull", "lower", "core_cardio", "upper", "pull", "lower", "rest"],
-    },
-    "core": {
-        4: ["upper", "legs_core", "rest", "upper", "core_cardio", "rest", "rest"],
-        5: ["upper", "legs_core", "rest", "upper", "legs_core", "core_cardio", "rest"],
-        6: ["upper", "legs_core", "core_cardio", "upper", "legs_core", "core_cardio", "rest"],
-    },
-}
-
-_FOCUS_SCHEDULES = {
-    "upper": {
-        4: ["chest_triceps", "rest", "back_biceps", "shoulders_arms", "rest", "legs_core", "rest"],
-        5: ["chest", "back", "rest", "shoulders_arms", "legs_core", "arms", "rest"],
-        # Not chest / back / shoulders / arms / legs / conditioning — that is the
-        # balanced six-day split with the days shuffled, and it produced one set
-        # LESS upper-body volume than no emphasis at all. Six days is enough for
-        # push and pull twice each, which is what an upper emphasis is.
+        4: ["upper", "lower", "rest", "push", "pull", "rest", "rest"],
+        5: ["push", "pull", "lower", "rest", "upper", "shoulders_arms", "rest"],
         6: ["push", "pull", "legs_core", "push", "pull", "arms", "rest"],
     },
     "lower": {
-        4: ["legs", "rest", "push", "legs_core", "rest", "pull", "rest"],
-        5: ["legs", "push", "rest", "legs_core", "pull", "core_cardio", "rest"],
-        6: ["legs", "push", "legs_core", "pull", "shoulders", "core_cardio", "rest"],
+        4: ["lower", "upper", "rest", "legs", "rest", "lower", "rest"],
+        5: ["lower", "push", "legs", "rest", "pull", "lower", "rest"],
+        6: ["legs", "push", "lower", "pull", "legs", "upper", "rest"],
     },
     "back": {
-        4: ["back", "rest", "chest_triceps", "legs_core", "rest", "back_biceps", "rest"],
-        5: ["back", "chest", "rest", "legs", "back_biceps", "core_cardio", "rest"],
-        6: ["back", "chest", "legs", "back_biceps", "shoulders", "core_cardio", "rest"],
+        4: ["pull", "lower", "rest", "upper", "back_biceps", "rest", "rest"],
+        5: ["pull", "push", "legs", "rest", "upper", "back_biceps", "rest"],
+        6: ["pull", "push", "legs", "back_biceps", "upper", "pull", "rest"],
     },
     "core": {
-        4: ["push", "rest", "legs_core", "pull", "rest", "core_cardio", "rest"],
-        5: ["chest", "back", "rest", "legs_core", "shoulders_core", "core_cardio", "rest"],
-        6: ["chest", "back", "legs_core", "shoulders_core", "arms", "core_cardio", "rest"],
+        4: ["upper", "legs_core", "rest", "shoulders_core", "legs_core", "rest", "rest"],
+        5: ["push", "pull", "legs_core", "rest", "upper", "core_cardio", "rest"],
+        6: ["push", "pull", "legs_core", "upper", "legs_core", "core_cardio", "rest"],
     },
 }
 # Below four days there is one balanced rotation and no room for a second day of
@@ -1898,14 +1989,29 @@ _FOCUS_SCHEDULES = {
 _MIN_DAYS_TO_SPECIALISE = 4
 
 
+# A strength block is built around the squat, the bench, the deadlift and the
+# press, each trained heavy at least twice a week — upper/lower or whole-body
+# days, which is how every mainstream strength programme is laid out. A
+# body-part split is a hypertrophy structure: an advanced lifter asking to get
+# STRONGER was written a "Chest" day of four bench-press variants and a
+# "Shoulders & Arms" day, squatting and deadlifting once a week.
+_STRENGTH_SCHEDULES = {
+    2: ["full_body", "rest", "rest", "full_body", "rest", "rest", "rest"],
+    3: ["full_body", "rest", "full_body", "rest", "full_body", "rest", "rest"],
+    4: ["upper", "lower", "rest", "upper", "lower", "rest", "rest"],
+    5: ["upper", "lower", "rest", "upper", "lower", "core_cardio", "rest"],
+    6: ["upper", "lower", "core_cardio", "upper", "lower", "core_cardio", "rest"],
+}
+
+
 def _build_weekly_schedule(workout_days, is_bodyweight_only, fitness_level,
-                           muscle_focus="full_body"):
+                           muscle_focus="full_body", goal=None):
     days = min(workout_days, 6)
+    if (goal == "strength" and fitness_level != "beginner"
+            and muscle_focus in (None, "full_body") and not is_bodyweight_only):
+        return list(_STRENGTH_SCHEDULES.get(max(days, 2)))
     if fitness_level == "beginner":
         specialised = _BEGINNER_FOCUS_SCHEDULES.get(muscle_focus, {}).get(days)
-    elif fitness_level == "intermediate":
-        specialised = (_INTERMEDIATE_FOCUS_SCHEDULES.get(muscle_focus, {}).get(days)
-                       or _FOCUS_SCHEDULES.get(muscle_focus, {}).get(days))
     else:
         specialised = _FOCUS_SCHEDULES.get(muscle_focus, {}).get(days)
     if specialised and not (is_bodyweight_only and fitness_level == "beginner"):
@@ -1945,26 +2051,33 @@ def _base_weekly_schedule(workout_days, is_bodyweight_only, fitness_level):
         elif workout_days >= 6:
             return ["upper", "lower", "core_cardio", "upper", "lower", "core_cardio", "rest"]
 
+    # Three days of push / pull / legs trains each muscle ONCE a week, which is
+    # the frequency the body-part split was taken away from novices for. The
+    # meta-analytic evidence (Schoenfeld, Ogborn & Krieger 2016) favours twice a
+    # week at every training age, and three days affords it only as whole-body
+    # sessions. Five days was push / pull / legs / upper and then a "Core" day —
+    # forty-five minutes of planks and crunches for someone training to grow.
+    # Push / pull / legs then upper / lower trains everything twice.
     if fitness_level == "intermediate":
         if workout_days == 2:
             return ["full_body", "rest", "full_body", "rest", "rest", "rest", "rest"]
         elif workout_days == 3:
-            return ["push", "rest", "pull", "rest", "legs_core", "rest", "rest"]
+            return ["full_body", "rest", "full_body", "rest", "full_body", "rest", "rest"]
         elif workout_days == 4:
             return ["upper", "lower", "rest", "upper", "lower", "rest", "rest"]
         elif workout_days == 5:
-            return ["push", "pull", "rest", "legs", "upper", "core_cardio", "rest"]
+            return ["push", "pull", "legs", "rest", "upper", "lower", "rest"]
         elif workout_days >= 6:
             return ["push", "pull", "legs", "push", "pull", "legs", "rest"]
 
     if workout_days == 2:
         return ["full_body", "rest", "full_body", "rest", "rest", "rest", "rest"]
     elif workout_days == 3:
-        return ["push", "rest", "pull", "rest", "legs_core", "rest", "rest"]
+        return ["upper", "rest", "lower", "rest", "full_body", "rest", "rest"]
     elif workout_days == 4:
         return ["chest_triceps", "rest", "back_biceps", "legs", "rest", "shoulders_core", "rest"]
     elif workout_days == 5:
-        return ["chest", "back", "rest", "legs", "shoulders_arms", "core_cardio", "rest"]
+        return ["push", "pull", "legs", "rest", "upper", "lower", "rest"]
     elif workout_days == 6:
         # Was chest_triceps / back_biceps / legs / shoulders / arms — which hits the
         # triceps on Monday and again on Friday, and the biceps on Tuesday and again
@@ -1972,7 +2085,12 @@ def _base_weekly_schedule(workout_days, is_bodyweight_only, fitness_level):
         # came out 18 sets of triceps against 12 of chest. Once the week is long
         # enough to afford a dedicated arm day, the arms come OFF the push and pull
         # days; that is what the arm day is for.
-        return ["chest", "back", "legs", "shoulders", "arms", "core_cardio", "rest"]
+        #
+        # That split then trained the legs once a week and closed on a core day.
+        # Six days is enough for push / pull / legs twice, which gives every
+        # muscle the twice-weekly frequency at the volume an advanced lifter
+        # carries — the arm and shoulder work rides on the push and pull days.
+        return ["push", "pull", "legs", "push", "pull", "legs", "rest"]
     if workout_days >= 7:
         # The schema accepts 7 and the form offers it, and nothing here handled it
         # — a request for seven training days fell through to the catch-all below
@@ -1984,7 +2102,7 @@ def _base_weekly_schedule(workout_days, is_bodyweight_only, fitness_level):
         # turned into the active-recovery day the engine already writes per dosha
         # — abhyanga and a walk for Vata, a brisk 30 minutes for Kapha — and
         # `_schedule_notice` says that is what happened.
-        return ["chest", "back", "legs", "shoulders", "arms", "core_cardio", "rest"]
+        return ["push", "pull", "legs", "push", "pull", "legs", "rest"]
     return ["full_body", "rest", "full_body", "rest", "full_body", "rest", "rest"]
 
 
@@ -2254,6 +2372,20 @@ _MAX_PER_ISOLATION_FAMILY = 1
 # machine press and then four accessories.
 _MIN_COMPOUNDS = 2
 
+# The patterns a session's main work is built from. A day holds at most
+# `_pattern_cap(focus)` compounds of any one of them: one on a full-body, upper
+# or lower day, whose job is to cover every pattern, and two on a day named for
+# a region. Without it a 400-plan sweep produced 549 days that pressed or rowed
+# the same way two to four times — a strength chest day of bench, floor press,
+# incline bench and dumbbell bench at 5 sets each, and a leg day of a deadlift
+# AND a Romanian deadlift after squats.
+_CAPPED_PATTERNS = {"squat", "hinge", "lunge", "push_h", "push_v", "pull_h", "pull_v"}
+_SPREAD_FOCUSES = {"full_body", "upper", "lower", "legs_core"}
+
+
+def _pattern_cap(focus: str) -> int:
+    return 1 if focus in _SPREAD_FOCUSES else 2
+
 
 # What the movement DOES, as against which muscle it names. A legs day of step-ups,
 # calf press, glute kickback and flutter kicks satisfies "two compounds" and still
@@ -2305,7 +2437,12 @@ _FOCUS_PATTERNS = {
     "shoulders":       ("push_v", "pull_h"),
     "shoulders_core":  ("push_v", "core"),
     "shoulders_arms":  ("push_v",),
-    "full_body":       ("squat", "push_h", "pull_h", "hinge"),
+    # The vertical patterns come last, so a three-exercise home session still
+    # opens on the legs, a push and a pull; a longer one gets an overhead press
+    # and a pulldown rather than a second row. A 14-year-old's three full-body
+    # days used to hold two horizontal presses each and no overhead press all
+    # week.
+    "full_body":       ("squat", "push_h", "pull_h", "hinge", "push_v", "pull_v"),
     "upper":           ("push_h", "pull_h", "push_v", "pull_v"),
     "lower":           ("squat", "hinge", "lunge"),
     "core_cardio":     ("core",),
@@ -2442,7 +2579,8 @@ def _canonical_score(ex) -> tuple:
     )
 
 
-def _pattern_preference(ex, pattern: str, muscle_rank: dict, preferred_ids=()) -> tuple:
+def _pattern_preference(ex, pattern: str, muscle_rank: dict, preferred_ids=(),
+                        headline=None) -> tuple:
     """Sort key for filling a day's movement-pattern slot, best first.
 
     In order: a compound before an isolation movement; a movement the
@@ -2467,7 +2605,7 @@ def _pattern_preference(ex, pattern: str, muscle_rank: dict, preferred_ids=()) -
         # as the barbell row a back day is built around.
         not ex.get("canonical", False),
         muscle_rank.get(_muscle_key(ex), len(muscle_rank)),
-        _lift_class(ex) not in _PATTERN_HEADLINE_LIFT.get(pattern, set()),
+        _lift_class(ex) not in (headline or _PATTERN_HEADLINE_LIFT).get(pattern, set()),
     ) + tuple(-v for v in _canonical_score(ex))
 
 
@@ -2535,21 +2673,36 @@ _VARIANT_DEPTH = 3
 # stays inside each half: squat trades with hinge, push with pull, and the lower
 # body keeps its place at the front.
 _PAIRED_ROTATION = {
-    ("squat", "push_h", "pull_h", "hinge"): ("hinge", "pull_h", "push_h", "squat"),
+    ("squat", "push_h", "pull_h", "hinge", "push_v", "pull_v"): (
+        ("squat", "push_h", "pull_h", "hinge", "push_v", "pull_v"),
+        ("hinge", "push_v", "pull_v", "squat", "push_h", "pull_h"),
+        ("squat", "push_v", "pull_h", "hinge", "push_h", "pull_v"),
+    ),
+    # A second upper day that opened on a row put a cable row at the head of a
+    # strength block. The second day presses overhead and pulls vertically
+    # first, which is the other half of the upper body.
+    ("push_h", "pull_h", "push_v", "pull_v"): (
+        ("push_h", "pull_h", "push_v", "pull_v"),
+        ("push_v", "pull_v", "push_h", "pull_h"),
+    ),
+    ("squat", "hinge", "lunge"): (
+        ("squat", "hinge", "lunge"),
+        ("hinge", "squat", "lunge"),
+    ),
 }
 
 
 def _rotate_patterns(patterns: tuple, variant: int) -> tuple:
     paired = _PAIRED_ROTATION.get(patterns)
     if paired:
-        return paired if variant % 2 else patterns
+        return paired[variant % len(paired)]
     offset = variant % len(patterns)
     return patterns[offset:] + patterns[:offset]
 
 
 def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=(),
             caps=None, per_muscle=None, muscle_rank=None, preferred_ids=(), variant=0,
-            loadable_first=False):
+            loadable_first=False, pattern_counts=None, pattern_cap=2, headline=None):
     """Pick n exercises, compounds first, without stacking one movement family.
 
     Selection was a plain shuffle-and-take, so nothing preferred a compound or
@@ -2567,20 +2720,33 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
         # unaffected: it is re-sorted by what the day needs, further down.
         ordered.sort(key=lambda ex: ex["id"] not in preferred_ids)
     picked = []
+    taken_before = len(taken_ids)
     caps = caps or {}
     per_muscle = per_muscle if per_muscle is not None else {}
     muscle_rank = muscle_rank or {}
+    pattern_counts = pattern_counts if pattern_counts is not None else collections.Counter()
 
     def _take(ex):
         picked.append(ex)
         taken_ids.add(ex["id"])
         families[_movement_family(ex)] += 1
         per_muscle[_muscle_key(ex)] = per_muscle.get(_muscle_key(ex), 0) + 1
+        if _is_compound(ex):
+            pattern_counts[_movement_pattern(ex)] += 1
 
     def _blocked(ex) -> bool:
         cap = (_MAX_PER_FAMILY if _is_compound(ex)
                else _MAX_PER_ISOLATION_FAMILY)
+        # Bodyweight variants of one movement are difficulty levels of it, not a
+        # pairing: a chest day came out Push-Up, Incline Push-Up and Knee Push-Up
+        # — the same exercise at three levels, two of them too easy for whoever
+        # can do the third.
+        if (ex.get("equipment") or "bodyweight").lower() in ("bodyweight", "bands"):
+            cap = 1
         if families[_movement_family(ex)] >= cap:
+            return True
+        if (_is_compound(ex) and _movement_pattern(ex) in _CAPPED_PATTERNS
+                and pattern_counts[_movement_pattern(ex)] >= pattern_cap):
             return True
         key = _muscle_key(ex)
         return key in caps and per_muscle.get(key, 0) >= caps[key]
@@ -2609,7 +2775,7 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
                       if ex["id"] not in taken_ids and _movement_pattern(ex) == pattern
                       and not _blocked(ex)]
         candidates.sort(key=lambda ex: _pattern_preference(ex, pattern, muscle_rank,
-                                                            preferred_ids))
+                                                            preferred_ids, headline))
         if candidates:
             # Vary within the movements a coach would have picked, not past them.
             # Reaching for the third-best hinge is how a second leg day stops
@@ -2618,6 +2784,11 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
             # considered when there is nothing plain left to rotate through.
             plain = [ex for ex in candidates if not _SPECIALTY_NAME.search(ex.get("name", ""))]
             shortlist = plain if len(plain) > 1 else candidates
+            # Rotation reached past the Romanian deadlift to the conventional one
+            # on a hypertrophy block's second lower day — the variety step found
+            # the lift `_headline_lifts` exists to keep out of high-rep sets.
+            if headline and "deadlift" not in headline.get(pattern, {"deadlift"}):
+                shortlist = [ex for ex in shortlist if _lift_class(ex) != "deadlift"] or shortlist
             # Rotation varies WHICH lift opens a repeated day; it should not
             # vary whether the day opens with a lift at all. Reaching for the
             # third-best horizontal push in a fully equipped gym found an
@@ -2666,6 +2837,13 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
                 break
             if len(picked) >= n:
                 break
+            # In a gym, an unloaded drill waits until the loaded compounds have
+            # had their turn. The accessory pass ran before the compound
+            # fallback, so a full-gym pull day took Prone Swimmer and Wall Angel
+            # Row ahead of a cable row and a dumbbell row it never reached.
+            if (loadable_first and not want_compound and ex["id"] not in preferred_ids
+                    and (ex.get("equipment") or "bodyweight").lower() in ("bodyweight", "bands")):
+                continue
             if ex["id"] in taken_ids or _is_compound(ex) is not want_compound:
                 continue
             if _blocked(ex):
@@ -2704,12 +2882,17 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
 
     # A pool too small or too uniform to respect either cap still has to produce a
     # session; both are preferences, not safety rules.
-    if len(picked) < n:
+    # Only as far as the fewest exercises a session can be. Past that a day short
+    # of distinct movements takes more sets of the ones it has (see
+    # `_fill_session`) rather than a third variant of one of them — four bench
+    # presses is not a longer chest day, it is the same one done badly.
+    floor = min(n, max(_MIN_EXERCISES - taken_before, 0))
+    if len(picked) < floor:
         # Family-blocked movements go to the back rather than being skipped: the
         # session still has to exist, but a fourth row variant is the last thing
         # it should reach for, not the first thing in the leftovers.
         for ex in sorted(fallback_order, key=_blocked):
-            if len(picked) >= n:
+            if len(picked) >= floor:
                 break
             if ex["id"] in taken_ids:
                 continue
@@ -2717,8 +2900,19 @@ def _choose(pool, n, seed_key, taken_ids, families, min_compounds=0, patterns=()
     return picked
 
 
+# The conventional deadlift is a strength lift. Written for sets of 8-20 it is
+# the movement whose technique degrades first under fatigue, with the heaviest
+# load in the programme on the spine; the Romanian deadlift trains the same
+# hinge and the same muscles at a load that suits the reps. A hypertrophy leg
+# day opened squat 4x8-10, deadlift 4x8-10; an endurance one, deadlift 4x15-20.
+def _headline_lifts(scheme) -> dict:
+    if scheme == "strength":
+        return _PATTERN_HEADLINE_LIFT
+    return {**_PATTERN_HEADLINE_LIFT, "hinge": {"romanian"}}
+
+
 def _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids=(),
-                    variant=0, loadable_first=False):
+                    variant=0, loadable_first=False, scheme=None):
     """The day's exercises: a stable core, plus one that rotates weekly.
 
     The seed used to include the week, so every week drew a fresh random set —
@@ -2743,15 +2937,19 @@ def _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids=(
     per_muscle: dict = {}
     muscle_rank = {key: i for i, (key, _) in enumerate(_FOCUS_ALLOCATION.get(focus, ()))}
 
+    pattern_counts: collections.Counter = collections.Counter()
+    cap = _pattern_cap(focus)
     core = _choose(pool, core_n, f"{user_id}-{focus}-d{day_num}-v{variant}-core",
                    taken, families, min_compounds=min(_MIN_COMPOUNDS, max(1, core_n - 1)),
                    patterns=_FOCUS_PATTERNS.get(focus, ()),
                    caps=caps, per_muscle=per_muscle, muscle_rank=muscle_rank,
                    preferred_ids=preferred_ids, variant=variant,
-                   loadable_first=loadable_first)
+                   loadable_first=loadable_first, pattern_counts=pattern_counts,
+                   pattern_cap=cap, headline=_headline_lifts(scheme))
     rotating = _choose(pool, target - len(core), f"{user_id}-{focus}-d{day_num}-rotate-w{week}",
                        taken, families, caps=caps, per_muscle=per_muscle,
-                       preferred_ids=preferred_ids, loadable_first=loadable_first)
+                       preferred_ids=preferred_ids, loadable_first=loadable_first,
+                       pattern_counts=pattern_counts, pattern_cap=cap)
     return core + rotating
 
 
@@ -2764,6 +2962,21 @@ _THIN_POOL = 20
 # six movements each. Nine minutes is what they take at a sane pace, and the
 # exercise budget is what is left after them.
 _OVERHEAD_SECONDS = 9 * 60
+# A twenty-minute session cannot spend nine of them warming up and cooling down
+# — that left eleven minutes for the work, and the work then overran the clock
+# by half again. Short sessions keep the first four warm-up drills and the first
+# three cool-down stretches, which is about six minutes.
+_SHORT_SESSION_MINUTES = 30
+_SHORT_OVERHEAD_SECONDS = 6 * 60
+_SHORT_WARMUP_ITEMS, _SHORT_COOLDOWN_ITEMS = 4, 3
+
+
+def _overhead_seconds(duration) -> int:
+    try:
+        short = int(duration) <= _SHORT_SESSION_MINUTES
+    except (TypeError, ValueError):
+        short = False
+    return _SHORT_OVERHEAD_SECONDS if short else _OVERHEAD_SECONDS
 # Rest between sets is not lying down, and a warm-up is real work. Both were
 # counted as zero.
 _REST_KCAL_PER_MINUTE = 2.0
@@ -2822,7 +3035,7 @@ def _session_shape(duration, goal, rx=None):
     # strength session; the accessories after it cost a third of that each. The
     # session is filled in the order it will be performed, and stops when the
     # next exercise would overrun the clock.
-    budget = max(int(duration) * 60 - _OVERHEAD_SECONDS, 300)
+    budget = max(int(duration) * 60 - _overhead_seconds(duration), 300)
 
     def _fits(primary_slots: int) -> int:
         spent = 0
@@ -2937,10 +3150,16 @@ def _finisher_prescription(ex: dict, level: str, preference: str = "moderate") -
     return sets, reps, rest
 
 
-def _pick_finisher(cardio_pool, user_id, focus, day_num, week):
+def _pick_finisher(cardio_pool, user_id, focus, day_num, week, steady=False):
     if not cardio_pool:
         return None
-    picked = _deterministic_select(cardio_pool, 1, f"{user_id}-{focus}-d{day_num}-finisher-w{week}")
+    pool = cardio_pool
+    if steady:
+        # A conditioning day's block is the steady aerobic work the week
+        # otherwise lacks — 20-40 minutes a talking pace can hold. Thirty-five
+        # minutes of burpee intervals is not that session.
+        pool = [ex for ex in cardio_pool if ex.get("rep_style") != "interval"] or cardio_pool
+    picked = _deterministic_select(pool, 1, f"{user_id}-{focus}-d{day_num}-finisher-w{week}")
     return picked[0] if picked else None
 
 
@@ -2969,6 +3188,124 @@ def _duration_notice(built: int, requested: int, goal: str) -> str | None:
     return (f"This session runs about {built} minutes rather than the {requested} you asked for. "
             f"Adding exercises past this point stops being productive at these rest intervals — "
             f"take the extra time over the warm-up and cool-down, or add a walk.")
+
+
+# ── Fitting a session to the clock ────────────────────────────────────────────
+#
+# `_session_shape` decides how many exercises the day gets; it cannot make them
+# fit. Across a 400-plan sweep, 543 training days came out under three quarters
+# of the length asked for and 237 over a quarter beyond it. A 20-minute request
+# built 44-47 minute sessions — three main lifts at five sets each plus a
+# fifteen-minute walk — and a 90-minute endurance request with "heavy" cardio
+# built 55 minutes, closed by a twelve-minute treadmill walk and a note telling
+# the practitioner to "add a walk". Both are things a coach adjusts without
+# being asked: a short session loses sets, a long one gains them, and a long
+# endurance session's extra time is cardio.
+_FIT_TOLERANCE = 0.10
+_CONDITIONING_DAY_EXERCISES = 4
+_CONDITIONING_FLOOR_MINUTES = 5
+_CONDITIONING_CEILING_MINUTES = {"heavy": 40}
+_CONDITIONING_DEFAULT_CEILING = 30
+_INTERVAL_ROUNDS = (4, 12)
+_STEADY_MINUTES = re.compile(r"^(\d+)\s*min$")
+
+
+def _stretches_conditioning(goal: str, preference: str) -> bool:
+    """Whether a session's spare time goes to conditioning rather than to sets."""
+    if preference == "none":
+        return False
+    return (goal in _FINISHER_GOALS or preference == "heavy"
+            or (goal == "general_fitness" and preference == "moderate"))
+
+
+def _fit_to_clock(ordered, rx, budget_seconds, stretch_conditioning=False,
+                  preference="moderate"):
+    """Adjust a session so it runs close to the time it was asked for.
+
+    `ordered` is [(exercise, role)], `rx` the matching [(sets, reps, rest)].
+    Returns per-index set deltas, which exercises to keep, and any rewritten
+    conditioning prescription. Over the clock: conditioning shrinks first, then
+    sets come off accessories before main lifts, then accessories go. Under it:
+    conditioning grows when that is the goal, then each lift gains at most one
+    set — a longer session is not licence to double the volume.
+    """
+    n = len(ordered)
+    delta = [0] * n
+    keep = [True] * n
+    cond_reps: dict = {}
+    cond_sets: dict = {}
+
+    def _cost(i):
+        sets, reps, rest = rx[i]
+        if ordered[i][1] == "conditioning":
+            sets = cond_sets.get(i, sets)
+            reps = cond_reps.get(i, reps)
+        elif sets >= _MIN_SETS:
+            sets = max(_MIN_SETS, sets + delta[i])
+        return _reps_to_seconds(reps, sets) + sets * rest
+
+    def _total():
+        return sum(_cost(i) for i in range(n) if keep[i])
+
+    lo = budget_seconds * (1 - _FIT_TOLERANCE)
+    hi = budget_seconds * (1 + _FIT_TOLERANCE)
+    conditioning = [i for i in range(n) if ordered[i][1] == "conditioning"]
+
+    def _resize_conditioning(target_extra_seconds, ceiling_minutes):
+        for i in conditioning:
+            sets, reps, _ = rx[i]
+            if ordered[i][0].get("rep_style") == "interval":
+                per_round = _reps_to_seconds(reps, 1) or 60
+                lo_r, hi_r = _INTERVAL_ROUNDS
+                rounds = cond_sets.get(i, sets) + int(target_extra_seconds / per_round)
+                cond_sets[i] = max(lo_r, min(hi_r, rounds))
+            else:
+                m = _STEADY_MINUTES.match(str(cond_reps.get(i, reps)).strip())
+                if not m or sets != 1:
+                    continue
+                minutes = int(m.group(1)) + int(target_extra_seconds / 60)
+                minutes = max(_CONDITIONING_FLOOR_MINUTES, min(ceiling_minutes, minutes))
+                cond_reps[i] = f"{minutes} min"
+
+    total = _total()
+    if total > hi:
+        _resize_conditioning(budget_seconds - total, _CONDITIONING_DEFAULT_CEILING)
+        for role in ("accessory", "secondary", "primary"):
+            changed = True
+            while _total() > hi and changed:
+                changed = False
+                for i in reversed(range(n)):
+                    if _total() <= hi:
+                        break
+                    if (keep[i] and ordered[i][1] == role and rx[i][0] >= _MIN_SETS
+                            and rx[i][0] + delta[i] > _MIN_SETS):
+                        delta[i] -= 1
+                        changed = True
+        lifts = [i for i in range(n) if keep[i] and ordered[i][1] != "conditioning"]
+        for i in reversed(lifts):
+            if _total() <= hi or sum(1 for j in lifts if keep[j]) <= _MIN_EXERCISES:
+                break
+            if ordered[i][1] == "accessory":
+                keep[i] = False
+    elif total < lo:
+        if stretch_conditioning and conditioning:
+            _resize_conditioning(budget_seconds - total,
+                                 _CONDITIONING_CEILING_MINUTES.get(
+                                     preference, _CONDITIONING_DEFAULT_CEILING))
+        ceiling = {"secondary": _SECONDARY_MAX_SETS, "accessory": _ACCESSORY_MAX_SETS}
+        # Support work takes the extra sets. The main lift stays at the
+        # prescription the week's header announces and the progression is
+        # written against.
+        for role in ("secondary", "accessory"):
+            for i in range(n):
+                if _total() >= lo:
+                    break
+                sets = rx[i][0]
+                if (ordered[i][1] == role and sets >= _MIN_SETS
+                        and sets + 1 <= max(sets, ceiling[role])):
+                    delta[i] = 1
+    return {"set_delta": delta, "keep": keep,
+            "conditioning_reps": cond_reps, "conditioning_sets": cond_sets}
 
 
 _TIME_UNITS = re.compile(r"\b(min|sec|minute|second)", re.I)
@@ -3099,9 +3436,19 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     # The finisher takes a slot rather than being added on top of a session that
     # already fills the clock — the practitioner asked for forty-five minutes.
     finisher = None
-    if with_finisher:
+    # The conditioning day is named for its conditioning. It used to receive a
+    # finisher only when the week's cardio share happened to land on it, so for
+    # the strength and muscle-gain goals — capped at a third of the week — it
+    # came out as forty-five minutes of planks and crunches under the label
+    # "Core". It always carries the aerobic block unless cardio was declined,
+    # and the trunk work is the part of it that is short.
+    is_conditioning_day = focus == "core_cardio"
+    if is_conditioning_day:
+        target = min(target, _CONDITIONING_DAY_EXERCISES)
+    if with_finisher or (is_conditioning_day and _cardio_preference(gym_prefs) != "none"):
         finisher = _pick_finisher(conditioning_pool or [],
-                                  user_id, focus, day_num, week)
+                                  user_id, focus, day_num, week,
+                                  steady=is_conditioning_day)
         if finisher:
             target = max(_MIN_EXERCISES, target - 1)
 
@@ -3131,7 +3478,7 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         pool = [ex for group in muscle_split.values() for ex in group]
 
     selected = _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids,
-                               variant=variant, loadable_first=loadable_first)
+                               variant=variant, loadable_first=loadable_first, scheme=scheme)
 
     # A session is performed in an order, and the order is the programme: the
     # heaviest compound while the practitioner is fresh, its support after it,
@@ -3142,19 +3489,44 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     # The same number of main lifts the session was costed with. Deciding it again
     # from the length that came out let the day be built to a shape it was not
     # priced for.
-    roles = _assign_roles(selected, primary_slots)
+    roles = _assign_roles(selected, primary_slots, scheme)
     ordered = sorted(zip(selected, roles), key=lambda pair: _ROLE_ORDER.index(pair[1]))
     if finisher and all(ex["id"] != finisher["id"] for ex in selected):
         ordered.append((finisher, "conditioning"))
+
+    overhead = _overhead_seconds(duration)
+    short_session = overhead < _OVERHEAD_SECONDS
+
+    def _rx_for(week_rx):
+        return [(_finisher_prescription(ex, level, _cardio_preference(gym_prefs))
+                 if ex is finisher else _prescribe(ex, week_rx, level, role))
+                for ex, role in ordered]
+
+    # The session is fitted to the clock on week one, and the same adjustment is
+    # carried to every week, so the block's own periodisation — more sets in the
+    # peak week, fewer in the deload — survives the fitting.
+    fit = _fit_to_clock(
+        ordered, _rx_for(rx_week1),
+        duration * 60 - overhead - balance_seconds,
+        stretch_conditioning=(is_conditioning_day
+                              or _stretches_conditioning(goal, _cardio_preference(gym_prefs))),
+        preference=_cardio_preference(gym_prefs))
+    prescriptions = []
+    for i, ((ex, role), (sets, reps, rest)) in enumerate(zip(ordered, _rx_for(rx))):
+        if not fit["keep"][i]:
+            continue
+        if role == "conditioning":
+            reps = fit["conditioning_reps"].get(i, reps)
+            sets = fit["conditioning_sets"].get(i, sets)
+        elif sets >= _MIN_SETS:
+            sets = min(_MAX_SETS, max(_MIN_SETS, sets + fit["set_delta"][i]))
+        prescriptions.append(((ex, role), (sets, reps, rest)))
 
     main_workout = []
     total_cals = 0.0
     work_seconds = 0
     rest_seconds_total = 0
-    for ex, role in ordered:
-        sets, reps, rest = (
-            _finisher_prescription(ex, level, _cardio_preference(gym_prefs))
-            if ex is finisher else _prescribe(ex, rx, level, role))
+    for (ex, role), (sets, reps, rest) in prescriptions:
 
         ex_work = _reps_to_seconds(reps, sets)
         work_seconds += ex_work
@@ -3201,10 +3573,11 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         # cardio in it at all.
         "focus": _focus_label(focus, main_workout),
         "type": "cardio" if "cardio" in focus else "strength",
-        "warmup": _warmup_for(focus, edge_avoid, withhold_impact, is_pregnant, edge_risks),
+        "warmup": _warmup_for(focus, edge_avoid, withhold_impact, is_pregnant,
+                              edge_risks)[:_SHORT_WARMUP_ITEMS if short_session else None],
         "main_workout": main_workout,
         "cooldown": _cooldown_for(focus, edge_avoid, withhold_impact, is_pregnant,
-                                  edge_risks),
+                                  edge_risks)[:_SHORT_COOLDOWN_ITEMS if short_session else None],
         "balance": (_balance_for(day_num, edge_avoid, withhold_impact, is_pregnant,
                                  edge_risks) if is_senior else []),
         # What was BUILT, not what was asked for. The client shows this as the
@@ -3213,12 +3586,12 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         # yoga engine learned: the number on the card and the session underneath
         # it were different products.
         "estimated_duration_minutes": round((work_seconds + rest_seconds_total
-                                             + _OVERHEAD_SECONDS + balance_seconds) / 60),
+                                             + overhead + balance_seconds) / 60),
         "requested_duration_minutes": duration,
         "duration_notice": _duration_notice(
-            round((work_seconds + rest_seconds_total + _OVERHEAD_SECONDS + balance_seconds) / 60),
+            round((work_seconds + rest_seconds_total + overhead + balance_seconds) / 60),
             duration, scheme),
-        "calories_burned_estimate": int(total_cals + (_OVERHEAD_SECONDS / 60.0)
+        "calories_burned_estimate": int(total_cals + (overhead / 60.0)
                                         * _WARMUP_KCAL_PER_MINUTE),
     }
 
@@ -3308,11 +3681,18 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     # load text says so.
     available_eq = _normalise_equipment(gym_prefs.get("available_equipment"))
     if available_eq & {"dumbbell", "machine", "kettlebell", "cable"}:
+        # Priced at the support tier's reps: a barbell lift is as often the
+        # second press of a day as its first, and at 6-8 a 50 kg woman's squat
+        # came out at 17 kg under a 20 kg bar.
+        # And at the deload week's load, which is the lightest the block asks
+        # for — a deadlift that clears the bar in week one and drops under it in
+        # week four is the same defect three weeks later.
+        bar_scheme = _resolve_scheme(gym_prefs.get("gym_goal", "general_fitness"),
+                                     gym_prefs.get("training_style"), user_profile)
         heaviest_reps = _get_goal_prescription(
-            _resolve_scheme(gym_prefs.get("gym_goal", "general_fitness"),
-                            gym_prefs.get("training_style"), user_profile),
-            1, user_profile.get("fitness_level") or "beginner",
+            bar_scheme, 1, user_profile.get("fitness_level") or "beginner",
             user_profile.get("activity_level"))["reps"]
+        heaviest_reps = _TIER_REPS.get(heaviest_reps, (heaviest_reps,))[0]
         gender_of = user_profile.get("gender", "male") or "male"
         load_kw = dict(
             strength_level=gym_prefs.get("strength_level",
@@ -3320,7 +3700,8 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
             gender=gender_of,
             bodyweight=_bodyweight_of(user_profile, "female" if str(gender_of).lower()
                                       in ("female", "f", "woman") else "male"),
-            reps=heaviest_reps, age=user_profile.get("age"))
+            reps=heaviest_reps, age=user_profile.get("age"),
+            week_factor=min(_WEEK_LOAD_FACTOR.get(bar_scheme, (1.0,))))
         filtered = [ex for ex in filtered if not _below_the_bar(ex, **load_kw)]
     muscle_split = split_by_muscle_group(filtered)
     # Conditioning reaches a session through the finisher and nowhere else, so
@@ -3354,7 +3735,8 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         if workout_days <= _YOUTH_MAX_DAYS:
             split_level = "beginner"
     schedule_focus = _build_weekly_schedule(
-        workout_days, is_bodyweight_only, split_level, muscle_focus)
+        workout_days, is_bodyweight_only, split_level, muscle_focus,
+        goal=gym_prefs.get("gym_goal"))
     # The split is chosen before the library is consulted, so it can name days the
     # practitioner's own safety gating has emptied.
     schedule_focus, substitutions = _resolve_untrainable_days(schedule_focus, muscle_split)
@@ -3371,7 +3753,15 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     training_days = [i for i, focus in enumerate(schedule_focus) if focus != "rest"]
     bmi_group = _bmi_group(user_profile.get("bmi_category"))
     finisher_count = _conditioning_days(len(training_days), goal, cardio_preference, bmi_group)
-    finisher_days = {training_days[i] for i in _spread(finisher_count, len(training_days))}
+    # A conditioning day carries its own aerobic block (see `build_day_plan`), so
+    # it counts toward the share rather than on top of it: a strength block
+    # asking for light cardio was conditioning four days in six.
+    conditioning_days = [i for i in training_days if schedule_focus[i] == "core_cardio"]
+    if cardio_preference == "none":
+        conditioning_days = []
+    lifting_days = [i for i in training_days if i not in conditioning_days]
+    finisher_count = max(0, finisher_count - len(conditioning_days))
+    finisher_days = {lifting_days[i] for i in _spread(finisher_count, len(lifting_days))}
 
     # How many earlier days this week already trained the same region. The second
     # leg day of a lower-body block should not be the first one again.

@@ -1553,7 +1553,9 @@ def test_a_short_week_says_it_cannot_specialise(days):
 
 @pytest.mark.parametrize("style,expected_reps", [
     ("strength", "3-5"), ("hypertrophy", "8-10"),
-    ("endurance", "15-20"), ("circuit", "15-20"),
+    # Circuit is the fat-loss table: 12-15, not the 15-20 "toning" sets it used to
+    # be, which were too light to defend muscle in a deficit.
+    ("endurance", "15-20"), ("circuit", "12-15"),
 ])
 def test_training_style_writes_the_sets(style, expected_reps):
     """`training_style` is a required field in the gym form and nothing read it.
@@ -1972,8 +1974,10 @@ def test_a_week_that_trains_a_region_twice_does_not_repeat_the_session():
         {"available_equipment": ["full_gym"], "gym_goal": "muscle_gain",
          "workout_days_per_week": 5, "workout_duration_minutes": 60,
          "target_muscle_focus": "lower"})
+    # "Lower" counts: the intermediate emphasis is upper/lower-based now, with a
+    # dedicated legs day as the third exposure.
     leg_days = [d for d in plan["four_week_plan"][0]["days"]
-                if d["focus"].lower().startswith("legs")]
+                if d["focus"].lower().startswith(("legs", "lower"))]
     assert len(leg_days) >= 2, [d["focus"] for d in plan["four_week_plan"][0]["days"]]
     openers = [tuple(e["exercise_name"] for e in d["main_workout"] if e["role"] == "primary")
                for d in leg_days]

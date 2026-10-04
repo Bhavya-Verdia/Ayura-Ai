@@ -404,7 +404,7 @@ export function GymView({ plan }) {
                         {day.main_workout.map((ex, j) => {
                           const exId = `${dayIdx}-${j}`
                           const isExpanded = expandedEx.has(exId)
-                          const isBodyweight = (ex.weight_range || '').startsWith('Bodyweight') || (ex.weight_range || '').startsWith('Effort')
+                          const isBodyweight = /^(Bodyweight|Band|Effort)/.test(ex.weight_range || '')
                           return (
                             <div key={j} className="gym-exercise-row">
                               <div className="gym-ex-top">
