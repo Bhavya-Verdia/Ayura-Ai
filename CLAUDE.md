@@ -176,7 +176,6 @@ would recognise. Every rule in it came from reading a 400-1,000-plan sweep's out
 - Per-dosha food prose (rest-day `nutrition_note`, pre/post tips) and the enricher's
   meal lines go through diet's `apply_advisory_safety`; the enricher's
   `active_recovery` through `_gate_practices`.
-
 - Kettlebell-only lifters have their own six movements (`movements_kettlebell.py`),
   quoted as real bell sizes. Full-body days include shoulders, so they press overhead.
 - The enricher's `vyayama_vidhi`, per-day notes and lifestyle note are rendered (they
