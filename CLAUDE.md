@@ -177,8 +177,12 @@ would recognise. Every rule in it came from reading a 400-1,000-plan sweep's out
   meal lines go through diet's `apply_advisory_safety`; the enricher's
   `active_recovery` through `_gate_practices`.
 
-Known gap: the library has one kettlebell movement, so a kettlebell-only user gets a
-bodyweight plan plus swings. Fixing it is library authoring, not engine work.
+- Kettlebell-only lifters have their own six movements (`movements_kettlebell.py`),
+  quoted as real bell sizes. Full-body days include shoulders, so they press overhead.
+- The enricher's `vyayama_vidhi`, per-day notes and lifestyle note are rendered (they
+  were generated and shown nowhere) and pass `gate_coaching_prose`. Retrieval failure
+  degrades the coaching rather than removing it. Ardhabala is a session dose — never
+  "stop at the first sweat" beside sets written to two reps in reserve.
 
 #### Diet library: authored, not derived
 `data/knowledge_base/diet_foods.json` is **generated** by
