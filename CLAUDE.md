@@ -183,6 +183,23 @@ would recognise. Every rule in it came from reading a 400-1,000-plan sweep's out
   degrades the coaching rather than removing it. Ardhabala is a session dose — never
   "stop at the first sweat" beside sets written to two reps in reserve.
 
+#### Gym: loads are calibrated, and the next block reads the log
+`_load_calibration` has two inputs. **`known_lifts`** on the gym form ("a weight you can
+lift N times", five anchors) rescales each anchor's family of movements; unanchored
+movements move 60% of the way; a typo is bounded to 0.35-3x. **Logged sets**
+(`db.workout_logs`, `routes/workouts.py`, `services/workout_log.py`) replace an
+exercise's estimate outright with its strongest recent set (Epley, effort as RIR), and
+logged lifts come back in the next plan. Every load says where it came from.
+
+A block counts as finished three weeks after it was written or once week 3 is logged;
+half the sessions logged builds on it (block number +1), less repeats it. Both plan
+paths call `gym_history`, and its fingerprint joins the plan cache key — a plan priced
+from the log is stale the moment a set is logged.
+
+**Erasure:** `test_account_deletion_reaches_every_collection_written_per_user` fails if
+a collection the app writes with a `user_id` is missing from `privacy.delete_account`.
+It found four (practice sessions, adverse-reaction reports, push endpoints, feedback).
+
 #### Diet library: authored, not derived
 `data/knowledge_base/diet_foods.json` is **generated** by
 `scripts/build_diet_library.py` from the curated spec in `scripts/diet_library/`
