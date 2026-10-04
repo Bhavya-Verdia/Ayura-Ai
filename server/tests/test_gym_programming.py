@@ -274,3 +274,43 @@ def test_one_dumbbell_is_not_quoted_per_hand():
         ex = next(e for e in gym_exercises if e["name"] == name)
         assert "per hand" not in _get_weight_range(ex, "intermediate", "male", 75,
                                                    reps="10-12"), name
+
+
+# ── Stored inputs ─────────────────────────────────────────────────────────────
+
+def test_a_stored_preference_of_any_plausible_shape_still_builds_a_plan():
+    """Both plan paths read preferences back from Mongo, not from the validated
+    request. A fuzz of plausible stored shapes found eight crashes — a duration
+    saved as null, days as "4", `exercise_preferences` as a string, an age of
+    "abc" — each one a user who could not regenerate their plan."""
+    rng = random.Random(11)
+    profile_values = {
+        "age": [None, "", "35", 17.5, "abc", 120], "gender": [None, "", "Male", 123, "nonbinary"],
+        "weight_kg": [None, "70", "x", 300], "fitness_level": [None, "", "expert", "Beginner"],
+        "medical_history": [None, "diabetes", ["", None], ["Hypertension"]],
+        "dominant_dosha": [None, "Vata", "vata-pitta"], "pregnancy_or_nursing": [None, "yes", True],
+        "allergies": [None, "dairy", [None]], "injuries_or_limitations": [None, "knee", [""]],
+    }
+    pref_values = {
+        "gym_goal": [None, "", "weight_loss", "strength"], "workout_days_per_week": [None, 0, "4", 8],
+        "workout_duration_minutes": [None, "45", 5, 120], "available_equipment": [None, [], "full_gym"],
+        "strength_level": [None, "pro"], "cardio_preference": [None, "lots"],
+        "target_muscle_focus": [None, "arms"], "training_style": [None, "crossfit"],
+        "injuries": [None, "knee"], "injury_detail": [None, 5],
+        "exercise_preferences": [None, "x", {"likes": "swimming, cycling", "dislikes": None}],
+    }
+    for _ in range(250):
+        profile = {k: rng.choice(v) for k, v in profile_values.items() if rng.random() < 0.8}
+        prefs = {k: rng.choice(v) for k, v in pref_values.items() if rng.random() < 0.8}
+        plan = generate_gym_plan(profile, prefs)
+        for day in _training_days(plan, weeks=(1, 2, 3, 4)):
+            assert day["main_workout"], (profile, prefs)
+
+
+def test_an_unanswered_sex_is_priced_between_the_two_standards():
+    """"Other" and unanswered took the male standard; the diet path made the same
+    mistake with its energy equation and fixed it the same way."""
+    bench = next(e for e in gym_exercises if e["name"] == "Barbell Bench Press")
+    kg = {g: float(re.match(r"([\d.]+)–([\d.]+)", _get_weight_range(
+        bench, "advanced", g, 80, reps="8-10")).group(2)) for g in ("male", "female", "other")}
+    assert kg["female"] < kg["other"] < kg["male"], kg

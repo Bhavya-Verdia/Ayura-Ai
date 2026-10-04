@@ -996,6 +996,11 @@ def _estimated_load(ex: dict, strength_level: str, gender: str,
     load *= _LIFT_LEVEL[level]
     if gender_key == "female":
         load *= _LIFT_SEX["lower" if lift in _LOWER_CLASSES else "upper"]
+    elif str(gender or "").lower() not in ("male", "m", "man"):
+        # "Other" and unanswered took the male standard, as the diet path's
+        # energy equation once did. The midpoint of the two is what an estimate
+        # that does not know should say — the same choice the diet path made.
+        load *= (1 + _LIFT_SEX["lower" if lift in _LOWER_CLASSES else "upper"]) / 2
     per_hand = implement in _PER_HAND and not _is_two_handed(ex, lift)
     load *= factor if per_hand else _IMPLEMENT_FACTOR["barbell"]
     if implement in _PER_HAND and _BOTH_HANDS.search(ex.get("name", "")):
@@ -3709,8 +3714,100 @@ def _vyayama_shakti(dosha: str, age, strength_level: str) -> dict:
 
 # ── Main entry point ──────────────────────────────────────────────────────────
 
+# ── Inputs ────────────────────────────────────────────────────────────────────
+#
+# Both plan paths read the preferences back from Mongo, not from the validated
+# request, so what arrives is whatever was stored — including documents written
+# before a field existed or by an older form. A 1,500-case fuzz of plausible
+# stored shapes found eight crashes: a duration saved as null (`.get(k, 45)`
+# returns None when the key is present), days saved as the string "4",
+# `exercise_preferences` saved as a string, an age of "abc". Each is a user who
+# cannot regenerate their plan. They are coerced here, once, rather than
+# defended against at each of the dozens of places that read them.
+_GOALS = {"fat_loss", "muscle_gain", "endurance", "strength", "general_fitness"}
+_GOAL_ALIASES = {"weight_loss": "fat_loss", "lose_weight": "fat_loss", "toning": "fat_loss",
+                 "bulk": "muscle_gain", "hypertrophy": "muscle_gain", "fitness": "general_fitness"}
+_LEVELS = {"beginner", "intermediate", "advanced"}
+_STRENGTH_LEVELS = {"untrained", "beginner", "intermediate", "advanced"}
+_FOCUSES = {"full_body", "upper", "lower", "core", "back"}
+_STYLES = {"strength", "hypertrophy", "endurance", "circuit"}
+
+
+def _as_int(value, default, lo, hi):
+    try:
+        n = int(float(value))
+    except (TypeError, ValueError):
+        return default
+    return max(lo, min(hi, n))
+
+
+def _as_list_of_str(value) -> list:
+    if value is None or value == "":
+        return []
+    if isinstance(value, str):
+        return [value]
+    try:
+        return [str(v) for v in value if v not in (None, "")]
+    except TypeError:
+        return []
+
+
+def _normalise_inputs(user_profile, gym_prefs) -> tuple:
+    profile = dict(user_profile or {})
+    prefs = dict(gym_prefs or {})
+
+    level = str(profile.get("fitness_level") or "").strip().lower()
+    profile["fitness_level"] = level if level in _LEVELS else "beginner"
+    try:
+        age = int(float(profile.get("age")))
+        profile["age"] = age if 5 <= age <= 120 else None
+    except (TypeError, ValueError):
+        profile["age"] = None
+    gender = profile.get("gender")
+    profile["gender"] = str(gender).strip().lower() if isinstance(gender, str) and gender.strip() else None
+    dosha = str(profile.get("dominant_dosha") or "").strip().lower()
+    dosha = re.split(r"[^a-z]", dosha)[0] if dosha else ""
+    profile["dominant_dosha"] = dosha if dosha in ("vata", "pitta", "kapha") else "vata"
+    for key in ("medical_history", "allergies", "injuries_or_limitations"):
+        profile[key] = _as_list_of_str(profile.get(key))
+    pregnant = profile.get("pregnancy_or_nursing")
+    profile["pregnancy_or_nursing"] = (pregnant is True or str(pregnant).strip().lower()
+                                       in ("true", "yes", "1"))
+    if isinstance(profile.get("bmi_category"), str):
+        profile["bmi_category"] = profile["bmi_category"].strip().lower()
+
+    goal = str(prefs.get("gym_goal") or "").strip().lower()
+    goal = _GOAL_ALIASES.get(goal, goal)
+    prefs["gym_goal"] = goal if goal in _GOALS else "general_fitness"
+    prefs["workout_days_per_week"] = _as_int(prefs.get("workout_days_per_week"), 4, 2, 7)
+    prefs["workout_duration_minutes"] = _as_int(prefs.get("workout_duration_minutes"), 45, 20, 90)
+    prefs["available_equipment"] = _as_list_of_str(prefs.get("available_equipment")) or ["bodyweight"]
+    strength = str(prefs.get("strength_level") or "").strip().lower()
+    prefs["strength_level"] = (strength if strength in _STRENGTH_LEVELS
+                               else profile["fitness_level"])
+    cardio = str(prefs.get("cardio_preference") or "").strip().lower()
+    prefs["cardio_preference"] = cardio if cardio in _CONDITIONING_SHARE else _DEFAULT_CARDIO_PREFERENCE
+    focus = str(prefs.get("target_muscle_focus") or "").strip().lower()
+    prefs["target_muscle_focus"] = focus if focus in _FOCUSES else "full_body"
+    style = str(prefs.get("training_style") or "").strip().lower()
+    prefs["training_style"] = style if style in _STYLES else None
+    prefs["injuries"] = _as_list_of_str(prefs.get("injuries"))
+    detail = prefs.get("injury_detail")
+    prefs["injury_detail"] = detail if isinstance(detail, str) else None
+    liked = prefs.get("exercise_preferences")
+    if not isinstance(liked, dict):
+        liked = {}
+    # A typed string is kept whole: `_preference_terms` splits "swimming, cycling"
+    # itself, and wrapping it in a list first would make it one term.
+    prefs["exercise_preferences"] = {
+        k: (liked.get(k) if isinstance(liked.get(k), str) else _as_list_of_str(liked.get(k)))
+        for k in ("likes", "dislikes")}
+    return profile, prefs
+
+
 def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoid_tags=None):
     ge = gym_exercises_db if gym_exercises_db is not None else gym_exercises
+    user_profile, gym_prefs = _normalise_inputs(user_profile, gym_prefs)
     # Every gate below reads `injuries_or_limitations`, so it is resolved once
     # here — the profile's list, the form's ticks and the typed detail, in the
     # library's own tokens — rather than taught to each of them.
@@ -3739,7 +3836,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
             bar_scheme, 1, user_profile.get("fitness_level") or "beginner",
             user_profile.get("activity_level"))["reps"]
         heaviest_reps = _TIER_REPS.get(heaviest_reps, (heaviest_reps,))[0]
-        gender_of = user_profile.get("gender", "male") or "male"
+        gender_of = user_profile.get("gender") or "unspecified"
         load_kw = dict(
             strength_level=gym_prefs.get("strength_level",
                                          user_profile.get("fitness_level") or "beginner"),
@@ -3765,7 +3862,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     is_bodyweight_only = available_eq <= {"bodyweight", "bands", "jump_rope"}
     fitness_level = user_profile.get("fitness_level", "beginner") or "beginner"
     strength_level = gym_prefs.get("strength_level", fitness_level)
-    gender = user_profile.get("gender", "male") or "male"
+    gender = user_profile.get("gender") or "unspecified"
     bodyweight = _bodyweight_of(
         user_profile, "female" if str(gender).lower() in ("female", "f", "woman") else "male")
 
