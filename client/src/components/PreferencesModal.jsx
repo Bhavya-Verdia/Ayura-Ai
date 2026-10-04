@@ -168,6 +168,31 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       setForm(seeded);
       setDurationTouched(false);
       setStyleTouched(false);
+      // The gym form opened blank, so saving it again wiped what was there —
+      // injuries, equipment and the working weights the loads are built from.
+      // It now starts from what is saved, in the form's own shape.
+      if (typeId === 'gym') {
+        let live = true;
+        preferencesAPI.getFeature('gym')
+          .then(({ data }) => {
+            if (!live || !data?.is_set) return;
+            const saved = data.preferences || {};
+            const join = (v) => (Array.isArray(v) ? v.join(', ') : (v || ''));
+            setForm(prev => ({
+              ...saved,
+              available_equipment: (saved.available_equipment || []).filter(e => e !== 'bodyweight'),
+              likes: join(saved.exercise_preferences?.likes),
+              dislikes: join(saved.exercise_preferences?.dislikes),
+              training_style: saved.training_style || '',
+              known_lifts: saved.known_lifts || {},
+              ...prev,
+            }));
+            if (saved.workout_duration_minutes) setDurationTouched(true);
+            if (saved.training_style) setStyleTouched(true);
+          })
+          .catch(() => {});
+        return () => { live = false; };
+      }
     }
   }, [isOpen, typeId, user]);
 
