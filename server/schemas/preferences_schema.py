@@ -29,6 +29,7 @@ EQUIPMENT_OPTIONS = {"bodyweight", "dumbbells", "barbell", "machines", "cables",
 # contraindication tokens. The profile's `injuries_or_limitations` was the only
 # place an injury could be declared, and no screen ever collected it — so the 47
 # movements tagged for a shoulder and 29 for a knee were reachable by nobody.
+KNOWN_LIFT_OPTIONS = {"squat", "deadlift", "bench", "overhead_press", "row"}
 GYM_INJURY_OPTIONS = {"knee", "knee_replacement", "lower_back", "disc", "shoulder",
                       "elbow", "wrist", "neck", "hip", "hip_replacement", "ankle",
                       "hernia", "abdominal_surgery"}
@@ -118,6 +119,36 @@ class GymPreferences(BaseModel):
         None, max_length=300,
         description="Anything the options do not cover, in the practitioner's words. "
                     "What the engine cannot act on is named back to them in the plan.")
+
+    # What the practitioner can actually lift, when they know. Every load in the
+    # plan was otherwise priced from bodyweight and training age alone — within
+    # published standards on average, and well off for any one trained lifter.
+    # {"squat": {"kg": 60, "reps": 8}, ...}, keys from KNOWN_LIFT_OPTIONS. The
+    # set is "a weight you can lift for that many reps with good form".
+    known_lifts: Optional[dict] = Field(
+        None,
+        description="Optional working sets: {lift: {kg, reps}} for squat, deadlift, bench, "
+                    "overhead_press, row. Calibrates every load in the plan.")
+
+    @field_validator("known_lifts")
+    @classmethod
+    def validate_known_lifts(cls, v):
+        if not v:
+            return None
+        clean = {}
+        for lift, entry in v.items():
+            if lift not in KNOWN_LIFT_OPTIONS:
+                raise ValueError(f"Unknown lift {lift!r}. Valid: {sorted(KNOWN_LIFT_OPTIONS)}")
+            if not entry or entry.get("kg") in (None, "") or entry.get("reps") in (None, ""):
+                continue
+            try:
+                kg, reps = float(entry["kg"]), int(entry["reps"])
+            except (TypeError, ValueError):
+                raise ValueError(f"{lift}: kg and reps must be numbers")
+            if not (1 <= kg <= 400) or not (1 <= reps <= 20):
+                raise ValueError(f"{lift}: kg must be 1-400 and reps 1-20")
+            clean[lift] = {"kg": kg, "reps": reps}
+        return clean or None
 
     @field_validator("gym_goal")
     @classmethod

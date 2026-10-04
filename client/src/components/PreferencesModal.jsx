@@ -79,6 +79,17 @@ const EQUIPMENT = [
 // since the start and no screen ever asked for it, so every shoulder, knee and
 // wrist restriction in the exercise library was reachable by nobody. Values must
 // stay in step with the server's GYM_INJURY_OPTIONS.
+// Optional anchors for the load model. Without them every weight in the plan is
+// inferred from bodyweight and a self-rated level — fine on average, and well off
+// for any one lifter. Each one rescales the movements that share its pattern.
+const KNOWN_LIFTS = [
+  { value: 'squat',          label: 'Squat' },
+  { value: 'deadlift',       label: 'Deadlift' },
+  { value: 'bench',          label: 'Bench press' },
+  { value: 'overhead_press', label: 'Overhead press' },
+  { value: 'row',            label: 'Barbell or dumbbell row' },
+]
+
 const GYM_INJURIES = [
   { value: 'knee',              label: 'Knee' },
   { value: 'knee_replacement',  label: 'Knee replacement' },
@@ -219,6 +230,13 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       payload.target_muscle_focus = payload.target_muscle_focus || 'full_body';
       payload.injuries = Array.isArray(form.injuries) ? form.injuries : [];
       payload.injury_detail = (form.injury_detail || '').trim() || null;
+      // Only complete rows are sent; a half-filled one would be rejected.
+      const known = {};
+      Object.entries(form.known_lifts || {}).forEach(([lift, v]) => {
+        const kg = parseFloat(v?.kg), reps = parseInt(v?.reps, 10);
+        if (kg > 0 && reps > 0) known[lift] = { kg, reps };
+      });
+      payload.known_lifts = Object.keys(known).length ? known : null;
     } else if (typeId === 'yoga') {
       payload.yoga_goal = payload.yoga_goal || 'flexibility';
       payload.yoga_experience = payload.yoga_experience || 'beginner';
@@ -412,6 +430,37 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                 what you type, the plan says so rather than guessing.
               </p>
             </div>
+            <details className="pref-input-group pref-known-lifts" open={!!form.known_lifts && Object.keys(form.known_lifts).length > 0}>
+              <summary>
+                Know your working weights? <span className="pref-hint-sub">optional — makes every load fit you</span>
+              </summary>
+              <p className="pref-hint">
+                A weight you can lift for that many reps with good form. Leave any you
+                do not know blank. For dumbbells, enter the weight of one dumbbell.
+              </p>
+              {KNOWN_LIFTS.map(lift => {
+                const v = (form.known_lifts || {})[lift.value] || {}
+                const set = (field, value) => setForm(p => ({
+                  ...p,
+                  known_lifts: {
+                    ...(p.known_lifts || {}),
+                    [lift.value]: { ...((p.known_lifts || {})[lift.value] || {}), [field]: value },
+                  },
+                }))
+                return (
+                  <div key={lift.value} className="pref-known-row">
+                    <span className="pref-known-label">{lift.label}</span>
+                    <input type="number" inputMode="decimal" min="1" max="400" step="0.5"
+                      aria-label={`${lift.label} kg`} placeholder="kg"
+                      value={v.kg ?? ''} onChange={e => set('kg', e.target.value)} />
+                    <span className="pref-known-x" aria-hidden="true">×</span>
+                    <input type="number" inputMode="numeric" min="1" max="20" step="1"
+                      aria-label={`${lift.label} reps`} placeholder="reps"
+                      value={v.reps ?? ''} onChange={e => set('reps', e.target.value)} />
+                  </div>
+                )
+              })}
+            </details>
             {/* `exercise_preferences` has been in the schema since the beginning and
                 had nowhere to be typed. A term matches on name, movement pattern,
                 lift class or equipment, so "deadlift" takes out the hinge family and

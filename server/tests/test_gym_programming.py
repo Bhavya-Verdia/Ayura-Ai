@@ -432,3 +432,65 @@ def test_a_strength_block_leads_with_the_bar_on_every_day():
         primaries = [e for e in day["main_workout"] if e["role"] == "primary"]
         assert primaries and all(e["equipment"] == "barbell" for e in primaries), \
             [(e["exercise_name"], e["equipment"]) for e in primaries]
+
+
+# ── Known working weights ────────────────────────────────────────────────────
+
+_LIFTER = {"id": "lifter", "age": 29, "gender": "male", "weight_kg": 90,
+           "fitness_level": "advanced", "dominant_dosha": "pitta", "bmi_category": "overweight"}
+_STRENGTH = {"gym_goal": "strength", "workout_days_per_week": 4, "workout_duration_minutes": 75,
+             "available_equipment": ["full_gym"], "strength_level": "advanced"}
+
+
+def _load_of(plan, name):
+    for day in _training_days(plan):
+        for e in day["main_workout"]:
+            if e["exercise_name"] == name:
+                m = re.match(r"([\d.]+)–([\d.]+) kg", e["weight_range"])
+                return float(m.group(2)), e["weight_range"]
+    raise AssertionError(f"{name} not in plan")
+
+
+def test_an_entered_lift_sets_the_load_and_says_so():
+    """An advanced man benching 130 x 5 was quoted 87.5-105 kg for triples."""
+    plan = generate_gym_plan(_LIFTER, {**_STRENGTH,
+                                       "known_lifts": {"bench": {"kg": 130, "reps": 5}}})
+    kg, text = _load_of(plan, "Barbell Bench Press")
+    # 130 x 5 one short of failure -> e1RM 156; a 3-5 set two short -> ~126.
+    assert 120 <= kg <= 132, text
+    assert "130 kg × 5 bench" in text
+
+
+def test_an_anchor_moves_its_family_and_partly_the_rest():
+    base = generate_gym_plan(_LIFTER, _STRENGTH)
+    strong = generate_gym_plan(_LIFTER, {**_STRENGTH,
+                                         "known_lifts": {"squat": {"kg": 200, "reps": 5}}})
+    squat0, _ = _load_of(base, "Barbell Squat")
+    squat1, text = _load_of(strong, "Barbell Squat")
+    assert squat1 > squat0 * 1.15 and "squat" in text
+    bench0, _ = _load_of(base, "Barbell Bench Press")
+    bench1, text = _load_of(strong, "Barbell Bench Press")
+    assert bench0 < bench1 and bench1 / bench0 < squat1 / squat0, (bench0, bench1, text)
+    assert "scaled from the lifts you entered" in text
+
+
+def test_a_typo_cannot_write_a_plan_around_it():
+    """"600" for 60 is bounded rather than believed."""
+    plan = generate_gym_plan(_LIFTER, {**_STRENGTH,
+                                       "known_lifts": {"bench": {"kg": 600, "reps": 10}}})
+    kg, _ = _load_of(plan, "Barbell Bench Press")
+    base, _ = _load_of(generate_gym_plan(_LIFTER, _STRENGTH), "Barbell Bench Press")
+    assert kg <= base * 3.05
+
+
+def test_the_form_rejects_a_lift_it_does_not_know():
+    from pydantic import ValidationError
+    from schemas.preferences_schema import GymPreferences
+
+    assert GymPreferences(known_lifts={"bench": {"kg": "80", "reps": "5"}}).known_lifts == \
+        {"bench": {"kg": 80.0, "reps": 5}}
+    assert GymPreferences(known_lifts={"bench": {"kg": "", "reps": ""}}).known_lifts is None
+    with pytest.raises(ValidationError):
+        GymPreferences(known_lifts={"curl": {"kg": 20, "reps": 10}})
+    with pytest.raises(ValidationError):
+        GymPreferences(known_lifts={"bench": {"kg": 80, "reps": 40}})

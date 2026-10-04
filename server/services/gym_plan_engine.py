@@ -856,15 +856,31 @@ def _round_load(kg: float) -> float:
 _BELL_SIZES = (4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 48)
 
 
-def _bell_for(load: float) -> str:
+def _load_basis(ex: dict, lift, calibration) -> str:
+    """Where the number came from. A load the practitioner logged and a load
+    inferred from their bodyweight deserve different amounts of trust, and the
+    card used to present both as "a starting estimate from your bodyweight"."""
+    cal = calibration or {}
+    logged = (cal.get("by_exercise") or {}).get(ex.get("id"))
+    if logged:
+        return f"from your logged {logged.get('source', 'sets')}"
+    source = (cal.get("source") or {}).get(lift)
+    if source:
+        return f"from {source}"
+    if cal.get("by_class"):
+        return "scaled from the lifts you entered"
+    return "a starting estimate from your bodyweight"
+
+
+def _bell_for(load: float, basis: str = "a starting estimate from your bodyweight") -> str:
     lighter = max([b for b in _BELL_SIZES if b <= load * 1.05] or [_BELL_SIZES[0]])
     heavier = min([b for b in _BELL_SIZES if b > lighter] or [lighter])
     if load <= _BELL_SIZES[0] or heavier == lighter:
         text = f"A {lighter} kg bell"
     else:
         text = f"A {lighter} kg bell, moving to {heavier} kg"
-    return (f"{text} · a starting estimate from your bodyweight — move up a bell "
-            "when every set reaches the top of the range with clean form")
+    return (f"{text} · {basis} — move up a bell when every set reaches the top of the "
+            "range with clean form")
 
 
 def _fmt_kg(kg: float) -> str:
@@ -990,9 +1006,99 @@ _BOTH_HANDS_SHARE = 0.65
 _ONE_HAND_LIFTS = {"side_bend", "suitcase_carry"}
 
 
+def _standard_1rm(lift: str, strength_level: str, gender: str,
+                  bodyweight: float | None = None, age=None) -> float:
+    """The bilateral barbell one-rep max the standards predict for this person."""
+    gender_key = "female" if str(gender).lower() in ("female", "f", "woman") else "male"
+    level = strength_level if strength_level in _LIFT_LEVEL else "beginner"
+    reference = _DEFAULT_BODYWEIGHT[gender_key]
+    scaled = reference * ((bodyweight or reference) / reference) ** _ALLOMETRIC_EXPONENT
+    load = _LIFT_BW[lift] * scaled * _LIFT_LEVEL[level]
+    if gender_key == "female":
+        load *= _LIFT_SEX["lower" if lift in _LOWER_CLASSES else "upper"]
+    elif str(gender or "").lower() not in ("male", "m", "man"):
+        load *= (1 + _LIFT_SEX["lower" if lift in _LOWER_CLASSES else "upper"]) / 2
+    return load * _age_load_factor(age)
+
+
+# ── Calibrating to what the practitioner actually lifts ─────────────────────
+#
+# Every load was priced from bodyweight, sex, age and a self-rated training age.
+# That lands inside published standards on average and can be well off for any
+# one trained lifter — an advanced man benching 140 was quoted 92.5-107.5 kg for
+# triples. Two sources correct it:
+#
+#   * `known_lifts` on the gym form — "a weight you can lift N times with good
+#     form" for five anchor lifts. Each rescales the movements that share its
+#     muscles and pattern; movements no anchor covers move part of the way, by
+#     the average of the anchors given.
+#   * logged sets (`workout_logs`) — the heaviest recent set of THAT exercise,
+#     which replaces the estimate outright. A logged lift is a measurement; an
+#     anchor is still an inference.
+_ANCHOR_FAMILIES = {
+    "squat": {"squat", "front_squat", "leg_press", "hack_squat", "lunge", "step_up",
+              "leg_extension", "calf_raise", "hip_abduction"},
+    "deadlift": {"deadlift", "romanian", "hip_thrust", "good_morning", "swing", "leg_curl"},
+    "bench": {"bench", "incline_press", "chest_press", "floor_press", "fly", "dip",
+              "triceps_extension", "skullcrusher", "pushdown"},
+    "overhead_press": {"overhead_press", "push_press", "lateral_raise", "front_raise",
+                       "upright_row", "rear_delt", "external_rotation"},
+    "row": {"row", "pulldown", "face_pull", "shrug", "straight_arm_pulldown", "pullover",
+            "curl", "hammer_curl", "preacher_curl", "farmers_carry", "suitcase_carry"},
+}
+# A typo ("600" for 60) should not write a plan around it.
+_CALIBRATION_BOUNDS = (0.35, 3.0)
+# The share of an anchor's correction that reaches a movement no anchor covers.
+_UNANCHORED_SHARE = 0.6
+# The entered set is "a weight you can lift N times with good form" — taken as
+# one rep short of failure.
+_ENTERED_RIR = 1
+
+
+def _one_rm(kg: float, reps: int, rir: int = 0) -> float:
+    """Epley, counting the reps left in reserve as reps the set could have had."""
+    return float(kg) * (1.0 + (int(reps) + rir) / 30.0)
+
+
+def _load_calibration(known_lifts, logged=None, *, strength_level="beginner",
+                      gender="male", bodyweight=None, age=None) -> dict | None:
+    """{by_class, default, source, by_exercise} or None when there is nothing to
+    calibrate from."""
+    by_class, sources, ratios = {}, {}, []
+    lo, hi = _CALIBRATION_BOUNDS
+    for anchor, entry in (known_lifts or {}).items():
+        if anchor not in _ANCHOR_FAMILIES or not isinstance(entry, dict):
+            continue
+        try:
+            kg, reps = float(entry["kg"]), int(entry["reps"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        model = _standard_1rm(anchor, strength_level, gender, bodyweight, age)
+        if model <= 0 or kg <= 0 or reps <= 0:
+            continue
+        ratio = max(lo, min(hi, _one_rm(kg, reps, _ENTERED_RIR) / model))
+        ratios.append(ratio)
+        label = anchor.replace("_", " ")
+        for lift in _ANCHOR_FAMILIES[anchor]:
+            by_class[lift] = ratio
+            sources[lift] = f"your {_fmt_kg(kg)} kg × {reps} {label}"
+    default = 1.0
+    if ratios:
+        mean = 1.0
+        for r in ratios:
+            mean *= r
+        mean **= 1.0 / len(ratios)
+        default = 1.0 + (mean - 1.0) * _UNANCHORED_SHARE
+    by_exercise = dict(logged or {})
+    if not by_class and not by_exercise:
+        return None
+    return {"by_class": by_class, "default": default, "source": sources,
+            "by_exercise": by_exercise}
+
+
 def _estimated_load(ex: dict, strength_level: str, gender: str,
                     bodyweight: float | None = None, week_factor: float = 1.0,
-                    reps=None, age=None):
+                    reps=None, age=None, calibration=None):
     """The working load for one set of this lift, or None if it is not priced.
 
     Returns (kg, per_hand, implement, lift)."""
@@ -1007,21 +1113,19 @@ def _estimated_load(ex: dict, strength_level: str, gender: str,
     if factor is None or lift is None:
         return None
 
-    gender_key = "female" if str(gender).lower() in ("female", "f", "woman") else "male"
-    level = strength_level if strength_level in _LIFT_LEVEL else "beginner"
-
-    reference = _DEFAULT_BODYWEIGHT[gender_key]
-    scaled = reference * ((bodyweight or reference) / reference) ** _ALLOMETRIC_EXPONENT
-    load = _LIFT_BW[lift] * scaled
-    load *= _LIFT_LEVEL[level]
-    if gender_key == "female":
-        load *= _LIFT_SEX["lower" if lift in _LOWER_CLASSES else "upper"]
-    elif str(gender or "").lower() not in ("male", "m", "man"):
-        # "Other" and unanswered took the male standard, as the diet path's
-        # energy equation once did. The midpoint of the two is what an estimate
-        # that does not know should say — the same choice the diet path made.
-        load *= (1 + _LIFT_SEX["lower" if lift in _LOWER_CLASSES else "upper"]) / 2
     per_hand = implement in _PER_HAND and not _is_two_handed(ex, lift)
+    logged = ((calibration or {}).get("by_exercise") or {}).get(ex.get("id"))
+    if logged:
+        # A measurement of this exercise, in the units it is performed in (per
+        # hand for a dumbbell pair). Nothing about the model applies to it.
+        return (float(logged["one_rm"]) * _rep_fraction(reps) * week_factor,
+                per_hand, implement, lift)
+
+    # "Other" and unanswered sex take the midpoint of the two standards, as the
+    # diet path's energy equation does. Age is inside the standard too.
+    load = _standard_1rm(lift, strength_level, gender, bodyweight, age)
+    if calibration:
+        load *= (calibration.get("by_class") or {}).get(lift, calibration.get("default", 1.0))
     load *= factor if per_hand else _IMPLEMENT_FACTOR["barbell"]
     if implement in _PER_HAND and _BOTH_HANDS.search(ex.get("name", "")):
         load = min(load * _BOTH_HANDS_SHARE, _DUMBBELL_CEILING)
@@ -1042,7 +1146,6 @@ def _estimated_load(ex: dict, strength_level: str, gender: str,
     elif _UNILATERAL.search(ex.get("name", "")):
         load *= 0.5
 
-    load *= _age_load_factor(age)
     load *= _rep_fraction(reps)
     load *= week_factor
     return load, per_hand, implement, lift
@@ -1096,7 +1199,8 @@ def _unloaded_progression(ex: dict) -> str:
 
 def _get_weight_range(ex: dict, strength_level: str, gender: str,
                       bodyweight: float | None = None,
-                      week_factor: float = 1.0, reps=None, age=None) -> str:
+                      week_factor: float = 1.0, reps=None, age=None,
+                      calibration=None) -> str:
     """A starting load for THIS set of this lift, for this person."""
     eq = (ex.get("equipment") or "bodyweight").lower()
     if (ex.get("category") or "").lower() == "cardio":
@@ -1113,7 +1217,8 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
     if eq in ("bodyweight", "other", "bands", "resistance_bands"):
         return _unloaded_progression(ex)
 
-    est = _estimated_load(ex, strength_level, gender, bodyweight, week_factor, reps, age)
+    est = _estimated_load(ex, strength_level, gender, bodyweight, week_factor, reps, age,
+                          calibration=calibration)
     if est is None:
         # An unpriced movement says so rather than guessing. It is the honest
         # answer, and it is what the old table gave 35–55 kg for.
@@ -1136,8 +1241,9 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
                 f"your ~{_fmt_kg(_round_load(load))} kg starting estimate, so take fewer "
                 "reps than written until it moves cleanly")
 
+    basis = _load_basis(ex, lift, calibration)
     if implement == "kettlebell":
-        return _bell_for(load)
+        return _bell_for(load, basis)
 
     # The estimate is the load two reps short of failure, so it is the top of the
     # range: the bottom is where a first session should start.
@@ -1152,8 +1258,8 @@ def _get_weight_range(ex: dict, strength_level: str, gender: str,
         hi = _round_load(lo + (1.0 if lo < 20 else 2.5))
     unit = (" in one hand" if lift in _ONE_HAND_LIFTS
             else " per hand" if per_hand else "")
-    return (f"{_fmt_kg(lo)}–{_fmt_kg(hi)} kg{unit} · a starting estimate from your "
-            f"bodyweight — adjust so the last 2 reps are hard and form holds")
+    return (f"{_fmt_kg(lo)}–{_fmt_kg(hi)} kg{unit} · {basis} — adjust so the last 2 reps "
+            f"are hard and form holds")
 
 
 # ── Ayurvedic Rest Day Recovery ───────────────────────────────────────────────
@@ -3684,7 +3790,8 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
             "weight_range": _get_weight_range(ex, strength_level, gender, bodyweight,
                                               _week_load_factor(scheme, week),
                                               reps=_load_reps(ex, rx_week1, level, role),
-                                              age=user_profile.get("age")),
+                                              age=user_profile.get("age"),
+                                              calibration=gym_prefs.get("_load_calibration")),
             "week_note": rx.get("note", ""),
             "notes": _modification_for(ex),
             # The one sentence a coach would say about the movement. It is the
@@ -3926,6 +4033,8 @@ def _normalise_inputs(user_profile, gym_prefs) -> tuple:
     style = str(prefs.get("training_style") or "").strip().lower()
     prefs["training_style"] = style if style in _STYLES else None
     prefs["injuries"] = _as_list_of_str(prefs.get("injuries"))
+    known = prefs.get("known_lifts")
+    prefs["known_lifts"] = known if isinstance(known, dict) else None
     detail = prefs.get("injury_detail")
     prefs["injury_detail"] = detail if isinstance(detail, str) else None
     liked = prefs.get("exercise_preferences")
@@ -3939,9 +4048,19 @@ def _normalise_inputs(user_profile, gym_prefs) -> tuple:
     return profile, prefs
 
 
-def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoid_tags=None):
+def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoid_tags=None,
+                      logged_lifts=None, previous_block=None):
+    """`logged_lifts` is {exercise_id: {one_rm, source}} from the practitioner's
+    own logged sets (`services.workout_log.logged_lifts`); `previous_block` is the
+    block they are continuing from, if any."""
     ge = gym_exercises_db if gym_exercises_db is not None else gym_exercises
     user_profile, gym_prefs = _normalise_inputs(user_profile, gym_prefs)
+    _gender = user_profile.get("gender") or "unspecified"
+    gym_prefs["_load_calibration"] = _load_calibration(
+        gym_prefs.get("known_lifts"), logged_lifts,
+        strength_level=gym_prefs["strength_level"], gender=_gender,
+        bodyweight=_bodyweight_of(user_profile, "female" if _gender == "female" else "male"),
+        age=user_profile.get("age"))
     # Every gate below reads `injuries_or_limitations`, so it is resolved once
     # here — the profile's list, the form's ticks and the typed detail, in the
     # library's own tokens — rather than taught to each of them.
@@ -3978,7 +4097,8 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
             bodyweight=_bodyweight_of(user_profile, "female" if str(gender_of).lower()
                                       in ("female", "f", "woman") else "male"),
             reps=heaviest_reps, age=user_profile.get("age"),
-            week_factor=min(_WEEK_LOAD_FACTOR.get(bar_scheme, (1.0,))))
+            week_factor=min(_WEEK_LOAD_FACTOR.get(bar_scheme, (1.0,))),
+            calibration=gym_prefs.get("_load_calibration"))
         filtered = [ex for ex in filtered if not _below_the_bar(ex, **load_kw)]
     muscle_split = split_by_muscle_group(filtered)
     # Conditioning reaches a session through the finisher and nowhere else, so
