@@ -494,3 +494,18 @@ def test_the_form_rejects_a_lift_it_does_not_know():
         GymPreferences(known_lifts={"curl": {"kg": 20, "reps": 10}})
     with pytest.raises(ValidationError):
         GymPreferences(known_lifts={"bench": {"kg": 80, "reps": 40}})
+
+
+def test_a_trimmed_main_lift_is_said_out_loud():
+    """A 20-minute day ran its main lifts a set short of the week's header,
+    in silence."""
+    plan = generate_gym_plan(
+        {"age": 47, "gender": "male", "weight_kg": 88, "fitness_level": "intermediate",
+         "activity_level": "sedentary", "dominant_dosha": "pitta", "bmi_category": "overweight"},
+        {"gym_goal": "fat_loss", "workout_days_per_week": 3, "workout_duration_minutes": 20,
+         "available_equipment": ["full_gym"]})
+    header = plan["four_week_plan"][0]["prescription"]["sets"]
+    for day in _training_days(plan):
+        short = any(e["role"] == "primary" and e["sets"] < header for e in day["main_workout"])
+        if short:
+            assert "short of the week's prescription" in (day.get("duration_notice") or "")

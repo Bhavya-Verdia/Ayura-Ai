@@ -648,3 +648,11 @@ def test_a_retrieval_outage_does_not_take_the_coaching_with_it(monkeypatch):
     plan = asyncio.run(enr.enrich_gym_plan(_plan(medical_history=[]), dict(_BASE), dict(_PREFS)))
     assert plan["enriched"] is True
     assert plan["vyayama_vidhi"]["pre_workout_ritual"] == "A short walk"
+
+
+def test_a_pregnant_rest_day_does_not_lie_her_flat():
+    """Her note says avoid lying flat after the first trimester; the Vata rest
+    day prescribed Supta Baddha Konasana and Legs-Up-The-Wall."""
+    _, rest = _rest_day({"dominant_dosha": "vata", "pregnancy_or_nursing": True})
+    text = " ".join(rest["rest_day_recovery"]["activities"]).lower()
+    assert "supta" not in text and "legs-up-the-wall" not in text

@@ -1294,6 +1294,11 @@ _RESTRICTED_PRACTICE = {
     # The Pitta rest day recommends swimming to every Pitta practitioner, and the
     # epilepsy note beside it says never to swim alone.
     "swimming": ("epilep", "seizure"),
+    # The Vata rest day's restorative line is two supine poses. The pregnancy
+    # note on the same plan says to avoid lying flat on the back after the first
+    # trimester; nothing compared the two.
+    "supta baddha": ("pregnan",),
+    "legs-up-the-wall": ("pregnan",),
 }
 
 # What the line is replaced with when it is withheld — same intent, no
@@ -1306,6 +1311,8 @@ _PRACTICE_SUBSTITUTES = {
     "breath retention": "Even-count breathing without retention — 10 min",
     "swimming": ("Water activity only with someone beside you who knows your condition — "
                  "otherwise an easy evening walk"),
+    "supta baddha": ("Side-lying rest with a pillow between the knees, or sitting reclined "
+                     "against cushions — 10 min of slow breathing"),
 }
 
 
@@ -3440,6 +3447,20 @@ def _steady_only(user_profile) -> bool:
     return bool(reason) and "heart" in reason
 
 
+def _trim_notice(fit: dict, ordered, duration) -> str | None:
+    """Say so when the clock took sets off a main lift. The week's header
+    announces the main-lift prescription, and a 20-minute day that quietly ran
+    them at two sets read as a contradiction of it."""
+    trimmed = [i for i, (_, role) in enumerate(ordered)
+               if role == "primary" and fit["set_delta"][i] < 0 and fit["keep"][i]]
+    if not trimmed:
+        return None
+    cut = -min(fit["set_delta"][i] for i in trimmed)
+    return (f"To fit {duration} minutes, the main lifts today are {cut} set"
+            f"{'s' if cut > 1 else ''} short of the week's prescription. Given more time, "
+            "do the full number.")
+
+
 def _stretches_conditioning(goal: str, preference: str) -> bool:
     """Whether a session's spare time goes to conditioning rather than to sets."""
     if preference == "none":
@@ -3825,7 +3846,7 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         "estimated_duration_minutes": round((work_seconds + rest_seconds_total
                                              + overhead + balance_seconds) / 60),
         "requested_duration_minutes": duration,
-        "duration_notice": _duration_notice(
+        "duration_notice": _trim_notice(fit, ordered, duration) or _duration_notice(
             round((work_seconds + rest_seconds_total + overhead + balance_seconds) / 60),
             duration, scheme),
         "calories_burned_estimate": int(total_cals + (overhead / 60.0)
@@ -4261,8 +4282,8 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
     if is_pregnant:
         pool_notice = (
             f"Only {len(filtered)} exercises in the library are safe to prescribe during "
-            "pregnancy at your level, so this plan repeats them and leans on stretching and "
-            "mobility. It is not a prenatal training programme — for that, work with a "
+            "pregnancy at your level, so this plan repeats some of them across the week. "
+            "It is not a prenatal training programme — for that, work with a "
             "prenatal-qualified instructor."
         )
     elif len(filtered) < _THIN_POOL:
