@@ -147,6 +147,39 @@ lifter's max. Now:
 Rare conditions go to the LLM classifier on **both** plan paths
 (`gym_condition_fallback.extra_avoid_tags_for`), and it may answer in mechanisms.
 
+#### Gym: programming is checked by a sweep, not by reading code
+`tests/test_gym_programming.py` generates ~80 random plans (age, sex, body, level,
+goal, days, length, equipment, conditions, cardio) and asserts the shape a coach
+would recognise. Every rule in it came from reading a 400-1,000-plan sweep's output:
+
+- **Loads are calibrated to Strength Level's published standards** (2026-10):
+  "intermediate" is the midpoint of their Novice and Intermediate rows. The old
+  table was written from memory and ran ~half on isolation (1-2 kg hammer curls).
+  `test_starting_loads_sit_inside_published_standards` pins anchors. Goblet squats,
+  two-handed dumbbells and one-dumbbell lifts (side bend, suitcase carry) have their
+  own factors; no bar or stack is quoted below its lightest real setting. "Other" /
+  unanswered sex takes the midpoint of the two standards, as the diet path does.
+- **One compound per movement pattern** on full-body/upper/lower days, two on a
+  region day, **one loaded hinge per session**, no stacked bodyweight variants.
+- **Sessions are fitted to the clock** (`_fit_to_clock`): sets come off or go on
+  (never on the main lift — the week header describes it) and the conditioning
+  block is sized to what is left. 75-90 min lifting requests stay short with a notice;
+  that is deliberate.
+- **Splits:** strength goal → upper/lower or full-body, never body-part; 3-day
+  intermediates are full-body; 5-6 days are PPL/UL. Emphasis weeks must beat the
+  balanced week (`test_the_region_you_asked_to_prioritise_gets_more_work`) — improving
+  the baseline breaks them, and that is the test doing its job.
+- RDL, not the conventional deadlift, outside strength sets; a strength block is led
+  by a free weight. Rep tiers use `_TIER_REPS` (ranges a coach writes).
+- **Inputs are normalised at entry** (`_normalise_inputs`): both paths read prefs
+  back from Mongo, not the validated request.
+- Per-dosha food prose (rest-day `nutrition_note`, pre/post tips) and the enricher's
+  meal lines go through diet's `apply_advisory_safety`; the enricher's
+  `active_recovery` through `_gate_practices`.
+
+Known gap: the library has one kettlebell movement, so a kettlebell-only user gets a
+bodyweight plan plus swings. Fixing it is library authoring, not engine work.
+
 #### Diet library: authored, not derived
 `data/knowledge_base/diet_foods.json` is **generated** by
 `scripts/build_diet_library.py` from the curated spec in `scripts/diet_library/`
