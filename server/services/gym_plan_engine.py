@@ -1139,6 +1139,9 @@ _RESTRICTED_PRACTICE = {
     "vigorous":    ("heart", "cardiac", "hypertension", "pregnan"),
     "breath retention": ("hypertension", "high_blood_pressure", "heart",
                          "cardiac", "epilep", "pregnan", "glaucoma"),
+    # The Pitta rest day recommends swimming to every Pitta practitioner, and the
+    # epilepsy note beside it says never to swim alone.
+    "swimming": ("epilep", "seizure"),
 }
 
 # What the line is replaced with when it is withheld — same intent, no
@@ -1149,6 +1152,8 @@ _PRACTICE_SUBSTITUTES = {
     "sun salutation": "Gentle joint-mobility sequence — 10 min, moving with the breath",
     "vigorous": "Brisk walk — 30 min at a pace where talking takes effort but stays possible",
     "breath retention": "Even-count breathing without retention — 10 min",
+    "swimming": ("Water activity only with someone beside you who knows your condition — "
+                 "otherwise an easy evening walk"),
 }
 
 
@@ -3402,6 +3407,8 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
             | set(user_profile.get("injuries_or_limitations") or []),
             bool(user_profile.get("pregnancy_or_nursing")),
             _avoided_risks(user_profile, extra_avoid_tags))
+        recovery["nutrition_note"] = _screen_food_line(recovery.get("nutrition_note"),
+                                                       user_profile)
         return {
             "day": day_num, "day_name": day_name,
             "focus": "Rest & Recovery", "type": "recovery",
@@ -3597,6 +3604,45 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
 
 
 # ── Ayurvedic tips ────────────────────────────────────────────────────────────
+
+# What a food line becomes when it names something this person should not be
+# eating. The dosha notes are generic by construction, and the diet plan is the
+# place that has chosen foods for their health details.
+_FOOD_LINE_SUBSTITUTE = ("Eat as your diet plan sets out — it has chosen foods for "
+                         "your health details, which this general note does not know.")
+
+
+def _screen_food_line(text: str, user_profile: dict) -> str:
+    """Hold a line of food advice to the diet path's floor.
+
+    The rest-day nutrition note and the pre/post-workout tips are written per
+    dosha and shown to everyone of that dosha: "Ghee, warm milk" to a Vata
+    practitioner with a dairy allergy, "coconut water" to a Pitta one with
+    kidney disease, "ginger-lemon tea" to a Kapha one with acid reflux. They
+    passed no screen — the same shape as the Kapalabhati that reached a
+    hypertensive through the tips. The screen is `apply_advisory_safety`, the
+    one the diet plan's own Pathya card goes through, so the two features cannot
+    disagree about what a person may eat."""
+    if not text or not user_profile:
+        return text
+    history = user_profile.get("medical_history") or []
+    allergies = user_profile.get("allergies") or []
+    pregnant = bool(user_profile.get("pregnancy_or_nursing"))
+    if not history and not allergies and not pregnant:
+        return text
+    from services.ahara_safety import apply_advisory_safety
+    card = apply_advisory_safety({"pathya_apathya": {"pathya": [text]}},
+                                 list(history) if not isinstance(history, str) else [history],
+                                 allergies=allergies, pregnant=pregnant)
+    if not card.get("advisory_safety_checked") or card.get("withheld_recommendations"):
+        return _FOOD_LINE_SUBSTITUTE
+    return text
+
+
+def _screen_tips(tips: dict, user_profile: dict) -> dict:
+    return {k: (_screen_food_line(v, user_profile) if k in ("pre_workout", "post_workout") else v)
+            for k, v in tips.items()}
+
 
 def get_ayurvedic_tips(dosha, conditions=(), is_pregnant=False):
     """The Kapha tip prescribed Kapalabhati by name, to everybody. Same gate as
@@ -3858,11 +3904,11 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         },
         "weekly_schedule": four_week_plan[0]["days"],
         "four_week_plan": four_week_plan,
-        "ayurvedic_tips": get_ayurvedic_tips(
+        "ayurvedic_tips": _screen_tips(get_ayurvedic_tips(
             dominant_dosha,
             set(user_profile.get("medical_history") or [])
             | set(user_profile.get("injuries_or_limitations") or []),
-            is_pregnant),
+            is_pregnant), user_profile),
         "vyayama_shakti": _vyayama_shakti(dominant_dosha, user_profile.get("age"), strength_level),
         # The block's progression, as facts. The four weeks each carry a theme, a
         # prescription and the rule that moves it, and the main lifts they are

@@ -135,31 +135,75 @@ def screen_nutrition(nutrition: dict, user_profile: dict) -> tuple:
 
     Prevention is the prompt; this is the backstop. A field is withheld whole
     rather than edited, because a sentence with its allergen cut out of it can
-    read as a different recommendation."""
-    from services.ahara_safety import ALLERGEN_TERMS, _term_in_text
+    read as a different recommendation.
 
-    allergies = [a.lower() for a in _as_list(user_profile.get("allergies"))]
+    The meal lines are recommendations of food, so they are held to the diet
+    path's own floor — `ahara_safety.apply_advisory_safety`, the screen the
+    diet plan's Pathya card goes through — rather than a second, smaller one.
+    This screen used to read allergies and nothing else: a diabetic could be
+    told to take a banana-and-honey smoothie, and an acidity patient lemon
+    water, beside a diet plan that withholds both from them."""
+    from services.ahara_safety import apply_advisory_safety
+
+    texts = {k: v for k, v in (nutrition or {}).items() if isinstance(v, str)}
+    lines = [texts[k] for k in _NUTRITION_FIELDS if k in texts]
+    card = apply_advisory_safety(
+        {"pathya_apathya": {"pathya": list(lines)}},
+        _as_list(user_profile.get("medical_history")),
+        allergies=_as_list(user_profile.get("allergies")),
+        pregnant=bool(user_profile.get("pregnancy_or_nursing")))
+    flagged = {}
+    for w in card.get("withheld_recommendations") or []:
+        condition = str(w.get("condition") or "")
+        if condition.lower().startswith("declared"):
+            allergy = condition.split("Declared ", 1)[-1].split(" allergy")[0]
+            reason = f"names {w.get('food')}, and you declared a {allergy} allergy"
+        else:
+            reason = f"names {w.get('food')}, which is not advised with {condition}"
+        flagged.setdefault(w.get("item"), reason)
+    if not card.get("advisory_safety_checked"):
+        # The diet screen never raises, but says when it could not run. A meal
+        # line that was not checked is not shown as though it had been.
+        flagged = {line: "could not be checked against your health details"
+                   for line in lines}
+
     kept, withheld = {}, []
-    for key, text in (nutrition or {}).items():
-        if not isinstance(text, str):
-            continue
-        low = text.lower()
-        reason = None
-        for allergy in allergies:
-            terms = ALLERGEN_TERMS.get(allergy, [allergy])
-            hit = next((t for t in terms if len(t) > 2 and _term_in_text(t, low)), None)
-            if hit:
-                reason = f"names {hit}, and you declared a {allergy.replace('_', ' ')} allergy"
-                break
-        if not reason:
-            hit = next((t for t in _NON_VEGETARIAN if _term_in_text(t, low)), None)
+    for key, text in texts.items():
+        reason = flagged.get(text) if key in _NUTRITION_FIELDS else None
+        if not reason and key in _NUTRITION_FIELDS:
+            hit = next((t for t in _NON_VEGETARIAN if _term_in_text(t, text.lower())), None)
             if hit:
                 reason = f"names {hit}; this app's food guidance is vegetarian"
-        if reason and key in _NUTRITION_FIELDS:
+        if reason:
             withheld.append({"field": key, "reason": reason})
         else:
             kept[key] = text
     return kept, withheld
+
+
+def _term_in_text(term, text):
+    from services.ahara_safety import _term_in_text as match
+    return match(term, text)
+
+
+def gate_recovery(recovery: dict, user_profile: dict) -> dict:
+    """The model's rest-day advice through the gate the engine's own rest day uses.
+
+    `active_recovery` is rendered on the plan, and it is written per dosha by a
+    model that is told the classical Kapha remedy is stimulating breath work —
+    which is Kapalabhati, withheld from a hypertensive, cardiac, glaucoma or
+    pregnant practitioner everywhere else in this plan."""
+    from services.gym_plan_engine import _avoided_risks, _gate_practices
+
+    if not isinstance(recovery, dict) or not isinstance(recovery.get("active_recovery"), str):
+        return recovery or {}
+    conditions = set(_as_list(user_profile.get("medical_history"))) | set(
+        _as_list(user_profile.get("injuries_or_limitations")))
+    line = recovery["active_recovery"]
+    gated = _gate_practices([line], conditions,
+                            bool(user_profile.get("pregnancy_or_nursing")),
+                            _avoided_risks(user_profile))[0]
+    return {**recovery, "active_recovery": gated}
 
 
 def build_plan_summary(raw_plan: dict, user_profile: dict, gym_prefs: dict) -> dict:
@@ -295,7 +339,8 @@ async def enrich_gym_plan(raw_plan: dict, user_profile: dict, gym_prefs: dict) -
         raw_plan["weekly_focus_notes"] = enrichment.get("weekly_focus_notes", {})
         raw_plan["nutrition_sync"], raw_plan["nutrition_withheld"] = screen_nutrition(
             enrichment.get("nutrition_sync", {}), user_profile)
-        raw_plan["recovery_protocol"] = enrichment.get("recovery_protocol", {})
+        raw_plan["recovery_protocol"] = gate_recovery(
+            enrichment.get("recovery_protocol", {}), user_profile)
         # `progression_plan` was written by the model, stored on the plan, and read
         # by nothing — not the plan view, not the export, not the chat agent. The
         # progression the user actually sees came from the engine. Rather than ship

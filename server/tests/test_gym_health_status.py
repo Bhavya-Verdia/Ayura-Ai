@@ -547,3 +547,59 @@ def test_no_barbell_range_starts_below_the_bar():
                     m = _re.match(r"^([\d.]+)–", e["weight_range"])
                     if m and ex["equipment"] == "barbell" and _lift_class(ex) in _RACK_LIFTS:
                         assert float(m.group(1)) >= 20, (goal, e["exercise_name"], e["weight_range"])
+
+
+@pytest.mark.parametrize("condition,line", [
+    ("diabetes_type2", "A ripe banana and honey smoothie"),
+    ("acid_reflux", "Warm lemon water with a pinch of salt"),
+])
+def test_a_meal_suggestion_is_held_to_the_diet_plans_floor(condition, line):
+    """The screen read allergies and nothing else, so a diabetic could be told
+    to take banana and honey and an acidity patient lemon water, beside a diet
+    plan that withholds both from them."""
+    from services.gym_plan_enricher import screen_nutrition
+
+    kept, withheld = screen_nutrition(
+        {"pre_workout_meal": line, "post_workout_meal": "Moong dal khichdi with vegetables"},
+        {"medical_history": [condition]})
+    assert "pre_workout_meal" not in kept, withheld
+    assert kept.get("post_workout_meal")
+
+
+# ── Food and practice prose the engine writes per dosha ─────────────────────
+
+def _rest_day(profile):
+    plan = generate_gym_plan({**_BASE, **profile}, {**_PREFS, "workout_days_per_week": 3})
+    return plan, next(d for d in plan["weekly_schedule"] if d["type"] == "recovery")
+
+
+@pytest.mark.parametrize("dosha,profile", [
+    ("vata", {"allergies": ["dairy"]}),                       # "Ghee, warm milk"
+    ("pitta", {"medical_history": ["chronic_kidney_disease"]}),  # "coconut water"
+    ("kapha", {"medical_history": ["acid_reflux"]}),          # "ginger-lemon tea"
+])
+def test_the_rest_day_food_note_is_held_to_the_diet_floor(dosha, profile):
+    """Written per dosha and shown to everyone of that dosha, through no screen."""
+    _, rest = _rest_day({**profile, "dominant_dosha": dosha})
+    note = rest["rest_day_recovery"]["nutrition_note"]
+    assert "diet plan" in note, note
+
+
+def test_a_healthy_rest_day_keeps_its_dosha_note():
+    _, rest = _rest_day({"dominant_dosha": "vata", "medical_history": []})
+    assert "Ghee" in rest["rest_day_recovery"]["nutrition_note"]
+
+
+def test_swimming_is_not_offered_to_an_epileptic_without_a_companion():
+    _, rest = _rest_day({"dominant_dosha": "pitta", "medical_history": ["epilepsy"]})
+    lines = rest["rest_day_recovery"]["activities"]
+    assert not any(l.startswith("Swimming") for l in lines), lines
+    assert any("someone beside you" in l for l in lines)
+
+
+def test_the_models_active_recovery_line_passes_the_practice_gate():
+    from services.gym_plan_enricher import gate_recovery
+
+    out = gate_recovery({"active_recovery": "Kapalabhati for 10 minutes, then a brisk walk"},
+                        {"medical_history": ["hypertension"]})
+    assert "kapalabhati" not in out["active_recovery"].lower()
