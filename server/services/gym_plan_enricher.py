@@ -349,11 +349,23 @@ async def enrich_gym_plan(raw_plan: dict, user_profile: dict, gym_prefs: dict) -
         goal = gym_prefs.get("gym_goal") or "general_fitness"
         fitness_level = user_profile.get("fitness_level") or "beginner"
 
-        # Fetch grounding context from both fitness and Ayurveda collections
+        # Retrieval has its own handler. It sat under the enrichment's outer
+        # `except`, so a ChromaDB restart cost the plan every line of coaching —
+        # the Vyayama Vidhi, the meal timing, the recovery advice — with nothing
+        # on screen to say why. The diet path had the same defect and the same
+        # fix (`test_diet_rag_degrades`): context is grounding, not a
+        # precondition.
         rag_query = f"{dosha} dosha exercise training recovery {goal} {fitness_level}"
-        fitness_docs = await rag_pipeline.query(rag_query, "fitness", n_results=3)
-        ayur_docs = await rag_pipeline.query(f"{dosha} physical activity lifestyle", "ayurveda", n_results=2, dosha_filter=dosha)
-        rag_context = rag_pipeline.format_context(fitness_docs + ayur_docs, max_chars=1500) or "No specific context retrieved — use classical Ayurvedic and modern fitness principles."
+        try:
+            fitness_docs = await rag_pipeline.query(rag_query, "fitness", n_results=3)
+            ayur_docs = await rag_pipeline.query(f"{dosha} physical activity lifestyle",
+                                                 "ayurveda", n_results=2, dosha_filter=dosha)
+            rag_context = rag_pipeline.format_context(fitness_docs + ayur_docs, max_chars=1500)
+        except Exception as e:  # noqa: BLE001 — retrieval must not take the coaching with it
+            logger.warning(f"Gym enrichment continuing without retrieval: {e}")
+            rag_context = ""
+        rag_context = rag_context or ("No specific context retrieved — use classical Ayurvedic "
+                                      "and modern fitness principles.")
 
         plan_summary = build_plan_summary(raw_plan, user_profile, gym_prefs)
 

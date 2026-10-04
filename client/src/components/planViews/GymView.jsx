@@ -338,6 +338,9 @@ export function GymView({ plan }) {
                 restRecovery ? (
                   <div className="gym-rest-card rich">
                     <h4 className="gym-rest-title">{restRecovery.title}</h4>
+                    {focusNotes[day.day_name] && (
+                      <p className="gym-day-coach-note">{focusNotes[day.day_name]}</p>
+                    )}
                     <ul className="gym-rest-activities">
                       {(showAllActs ? restRecovery.activities : restRecovery.activities?.slice(0, 3))
                         ?.map((act, k) => <li key={k}>{act}</li>)}

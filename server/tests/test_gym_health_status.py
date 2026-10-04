@@ -628,3 +628,23 @@ def test_ardhabala_does_not_contradict_the_sets():
     plan = _plan(medical_history=[])
     text = " ".join(plan["vyayama_shakti"].values()).lower()
     assert "first forehead sweat" not in text and "session" in text
+
+
+def test_a_retrieval_outage_does_not_take_the_coaching_with_it(monkeypatch):
+    """The RAG calls sat under the enrichment's outer `except`, so a ChromaDB
+    restart cost every plan all of its coaching."""
+    import asyncio, json as _json
+    from services import gym_plan_enricher as enr
+
+    async def down(*a, **k):
+        raise RuntimeError("ChromaDB not initialized")
+
+    async def fake_generate(**kwargs):
+        return _json.dumps({"plan_title": "t", "motivational_note": "m",
+                            "vyayama_vidhi": {"pre_workout_ritual": "A short walk"}})
+
+    monkeypatch.setattr(enr.rag_pipeline, "query", down)
+    monkeypatch.setattr(enr.llm_client, "generate", fake_generate)
+    plan = asyncio.run(enr.enrich_gym_plan(_plan(medical_history=[]), dict(_BASE), dict(_PREFS)))
+    assert plan["enriched"] is True
+    assert plan["vyayama_vidhi"]["pre_workout_ritual"] == "A short walk"
