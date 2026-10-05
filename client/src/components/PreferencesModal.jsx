@@ -91,7 +91,9 @@ const KNOWN_LIFTS = [
   { value: 'row',            label: 'Barbell or dumbbell row' },
 ]
 
-const GYM_INJURIES = [
+// Shared by the gym and yoga forms; both engines read the union of the two
+// answers, so an injury ticked once reaches both plans.
+const INJURIES = [
   { value: 'knee',              label: 'Knee' },
   { value: 'knee_replacement',  label: 'Knee replacement' },
   { value: 'lower_back',        label: 'Lower back' },
@@ -167,6 +169,7 @@ function savedToForm(typeId, saved) {
     form.current_ayurvedic_medicines = joinList(saved.current_ayurvedic_medicines);
   } else if (typeId === 'remedies' || typeId === 'medicines') {
     form.previous_ayurvedic_medicines = joinList(saved.previous_ayurvedic_medicines);
+    form.current_ayurvedic_medicines = joinList(saved.current_ayurvedic_medicines);
   }
   // A select bound to null shows nothing and submits nothing; '' is the same
   // answer in the form's terms.
@@ -211,7 +214,16 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       let live = true;
       preferencesAPI.getFeature(typeId)
         .then(({ data }) => {
-          if (!live || !data?.is_set) return;
+          if (!live) return;
+          if (!data?.is_set) {
+            // Injuries are one list across the gym and yoga forms. A form opened
+            // for the first time starts from it, or saving would clear the other's.
+            const shared = data?.preferences?.injuries;
+            if (Array.isArray(shared) && shared.length && (typeId === 'gym' || typeId === 'yoga')) {
+              setForm(prev => ({ injuries: shared, ...prev }));
+            }
+            return;
+          }
           const saved = savedToForm(typeId, data.preferences || {});
           setForm(prev => {
             // Keep only what the person changed; the seeded allergy chips are not
@@ -316,6 +328,8 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       payload.pranayama_interest = payload.pranayama_interest || 'yes';
       payload.meditation_interest = payload.meditation_interest || 'yes';
       payload.indoor_outdoor = payload.indoor_outdoor || 'indoor';
+      payload.injuries = Array.isArray(form.injuries) ? form.injuries : [];
+      payload.physical_limitations_detail = (form.physical_limitations_detail || '').trim() || null;
     } else if (typeId === 'diet') {
       payload.diet_goal = payload.diet_goal || 'general_wellness';
       payload.dietary_type = payload.dietary_type || 'vegetarian';
@@ -349,6 +363,9 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
         ? payload.current_ayurvedic_medicines.split(',').map(s => s.trim()).filter(Boolean)
         : [];
     } else if (typeId === 'remedies' || typeId === 'medicines') {
+      payload.current_ayurvedic_medicines = payload.current_ayurvedic_medicines
+        ? payload.current_ayurvedic_medicines.split(',').map(s => s.trim()).filter(Boolean)
+        : [];
       payload.previous_ayurvedic_medicines = payload.previous_ayurvedic_medicines 
         ? payload.previous_ayurvedic_medicines.split(',').map(s => s.trim()).filter(Boolean)
         : [];
@@ -365,6 +382,25 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       setLoading(false);
     }
   };
+
+  const renderInjuryChips = () => (
+    <div className="pref-chip-row">
+      {INJURIES.map(inj => {
+        const chosen = (form.injuries || []).includes(inj.value)
+        return (
+          <button
+            key={inj.value}
+            type="button"
+            aria-pressed={chosen}
+            className={`pref-chip${chosen ? ' active' : ''}`}
+            onClick={() => handleToggle('injuries', inj.value)}
+          >
+            {inj.label}
+          </button>
+        )
+      })}
+    </div>
+  );
 
   const renderFormFields = () => {
     switch (typeId) {
@@ -463,22 +499,7 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
             </div>
             <div className="pref-input-group">
               <label>Injuries or joint problems <span className="pref-hint-sub">optional</span></label>
-              <div className="pref-chip-row">
-                {GYM_INJURIES.map(inj => {
-                  const chosen = (form.injuries || []).includes(inj.value)
-                  return (
-                    <button
-                      key={inj.value}
-                      type="button"
-                      aria-pressed={chosen}
-                      className={`pref-chip${chosen ? ' active' : ''}`}
-                      onClick={() => handleToggle('injuries', inj.value)}
-                    >
-                      {inj.label}
-                    </button>
-                  )
-                })}
-              </div>
+              {renderInjuryChips()}
               <input
                 type="text"
                 name="injury_detail"
@@ -489,7 +510,8 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
               />
               <p className="pref-hint">
                 Exercises that load an injured area are left out. If we cannot match
-                what you type, the plan says so rather than guessing.
+                what you type, the plan says so rather than guessing. Your yoga plan
+                reads these too.
               </p>
             </div>
             <details className="pref-input-group pref-known-lifts" open={!!form.known_lifts && Object.keys(form.known_lifts).length > 0}>
@@ -632,19 +654,24 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                 </select>
               </div>
             </div>
-            <div className="pref-row">
-              <div className="pref-input-group">
-                <label>Location</label>
-                <select name="indoor_outdoor" value={form.indoor_outdoor || ''} onChange={handleChange} required>
-                  <option value="indoor">Indoor</option>
-                  <option value="outdoor">Outdoor</option>
-                  <option value="both">Both</option>
-                </select>
-              </div>
-              <div className="pref-input-group">
-                <label>Physical Limitations</label>
-                <input type="text" name="physical_limitations_detail" placeholder="e.g. bad knees" value={form.physical_limitations_detail || ''} onChange={handleChange} />
-              </div>
+            <div className="pref-input-group">
+              <label>Location</label>
+              <select name="indoor_outdoor" value={form.indoor_outdoor || ''} onChange={handleChange} required>
+                <option value="indoor">Indoor</option>
+                <option value="outdoor">Outdoor</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <div className="pref-input-group">
+              <label>Injuries or physical limitations <span className="pref-hint-sub">optional</span></label>
+              {renderInjuryChips()}
+              <input type="text" name="physical_limitations_detail" maxLength={300}
+                placeholder="Anything else? e.g. can't kneel"
+                value={form.physical_limitations_detail || ''} onChange={handleChange} />
+              <p className="pref-hint">
+                Poses that load an injured area are left out, and anything we cannot
+                match is named in the plan. Your gym plan reads these too.
+              </p>
             </div>
           </>
         );
@@ -902,11 +929,10 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                 </select>
               </div>
             </div>
-            {/* The herb-duplication check lives in the Panchakarma engine and reads
-                this from the Panchakarma preferences. It used to sit on the remedies
-                form, whose schema has no such field, so every answer was dropped on
-                save and the check had nothing to compare against: a patient already on
-                Ashwagandha could be prescribed the Manovaha adjuvant and take it twice. */}
+            {/* Also asked on the remedies form; the server unions the two, so either
+                answer reaches both herb-doubling checks. It once sat only on the
+                remedies form, whose schema did not declare it, and every answer was
+                dropped on save. */}
             <div className="pref-input-group pref-full">
               <label>Ayurvedic Medicines You Take Now <span className="pref-hint">(optional, comma-separated)</span></label>
               <input
@@ -984,6 +1010,19 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                   <option value="full_access">Full Access incl. Guggulu & Bhasma (Tier 2)</option>
                 </select>
               </div>
+            </div>
+
+            {/* Asked here and on the Panchakarma form; the server unions the two,
+                so either answer reaches both herb-doubling checks. */}
+            <div className="pref-input-group pref-full">
+              <label>Ayurvedic Medicines You Take Now <span className="pref-hint">(optional, comma-separated)</span></label>
+              <input
+                type="text"
+                name="current_ayurvedic_medicines"
+                placeholder="e.g. Ashwagandha Churna, Triphala"
+                value={form.current_ayurvedic_medicines || ''}
+                onChange={handleChange}
+              />
             </div>
 
             <div className="pref-row">

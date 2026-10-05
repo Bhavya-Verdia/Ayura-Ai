@@ -135,3 +135,35 @@ def injury_risk_tags(injuries) -> set:
             if k in key:
                 risks.update(tags)
     return risks
+
+
+# ── Injuries declared on either form ─────────────────────────────────────────
+# The gym form asks with chips and a free-text box, the yoga form with a free-text
+# box (and now the same chips). Each engine read only its own form, so a hernia
+# ticked for the gym plan never reached the yoga plan built from the same body.
+# Both engines take the union, the way the herb-doubling check takes both
+# medicine lists.
+
+def declared_injuries(prefs_doc: dict | None) -> tuple[list[str], str | None]:
+    """(ticked injuries, typed detail) from the gym and yoga forms together."""
+    doc = prefs_doc or {}
+    gym, yoga = doc.get("gym") or {}, doc.get("yoga") or {}
+    chips: list[str] = []
+    for c in [*(gym.get("injuries") or []), *(yoga.get("injuries") or [])]:
+        if c and c not in chips:
+            chips.append(c)
+    typed: list[str] = []
+    for text in (gym.get("injury_detail"), yoga.get("physical_limitations_detail")):
+        text = str(text or "").strip()
+        if text and text.lower() not in (t.lower() for t in typed):
+            typed.append(text)
+    # Both engines split typed detail on ";", so joining on it keeps the two
+    # answers as separate phrases.
+    return chips, ("; ".join(typed) or None)
+
+
+def with_declared_injuries(feature: str, prefs: dict, prefs_doc: dict | None) -> dict:
+    """This feature's preferences, carrying injuries declared on either form."""
+    chips, detail = declared_injuries(prefs_doc)
+    detail_key = "injury_detail" if feature == "gym" else "physical_limitations_detail"
+    return {**(prefs or {}), "injuries": chips, detail_key: detail}

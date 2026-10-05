@@ -85,6 +85,17 @@ function MedCard({ med, rationale }) {
       </button>
       </h3>
 
+      {/* A herb the patient already takes on their own. Shown outside the
+          collapsed body: a doubled dose is the one caution that has to be read
+          before the card is opened, not after. */}
+      {med.already_taking?.length > 0 && (
+        <ul className="mv-doubling" role="note">
+          {med.already_taking.map((d, i) => (
+            <li key={i}><TriangleAlert size={12} /> {d.note}</li>
+          ))}
+        </ul>
+      )}
+
       {/* ── Panchakosha pharmacology strip (always visible) ── */}
       {(hasRasa || med.virya || med.vipaka) && (
         <div className="mv-pharma-strip">

@@ -274,7 +274,16 @@ async def _load_feature_preferences(db: AsyncIOMotorDatabase, user_id: str, plan
     else:
         prefs = schema_cls()  # use defaults
 
-    return prefs.model_dump()
+    out = prefs.model_dump()
+    if storage_key in ("panchakarma", "remedies"):
+        # Asked on both forms, checked by both engines: the per-feature routes
+        # merge the two the same way, so neither path is blinder than the other.
+        from engine.herb_overlap import declared_ayurvedic
+        out["current_ayurvedic_medicines"] = declared_ayurvedic(doc)
+    if storage_key in ("gym", "yoga"):
+        from engine.movement_risk import with_declared_injuries
+        out = with_declared_injuries(storage_key, out, doc)
+    return out
 
 
 # ─── Engine-backed feature generation (shared by holistic + agentic paths) ────

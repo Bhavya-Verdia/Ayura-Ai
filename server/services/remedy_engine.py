@@ -3,6 +3,7 @@ import json
 import os
 from core.kb_cache import kb_cache
 from engine.condition_vocab import condition_matches_term, normalize_condition
+from engine.herb_overlap import already_taking, herbs_in
 from engine.contraindication_tokens import (
     assumed_state_notes,
     build_derived_states,
@@ -987,6 +988,17 @@ _LIFESTYLE_BY_DOSHA = {
 }
 
 
+def _doubling_note(med: dict, hit: dict) -> str:
+    """Says it is the same medicine when every active herb in it is covered."""
+    active = set().union(*(herbs_in(i.split(" (")[0]) for i in med.get("ingredients") or []))
+    taken = hit["already_taking"]
+    if active and active <= herbs_in(taken):
+        return (f"You already take {taken}, which is the same medicine as {med['name']}. "
+                "Taking both doubles the dose. Ask a Vaidya which one to keep.")
+    return (f"You already take {taken}, which shares {', '.join(hit['herbs'])} with "
+            f"{med['name']}. Taking both doubles that dose. Ask a Vaidya which one to keep.")
+
+
 def generate_medicines_plan(
     user_profile: dict,
     medicines_prefs: dict,
@@ -1018,6 +1030,9 @@ def generate_medicines_plan(
     medical_history = [c.lower() for c in (user_profile.get("medical_history") or [])]
     ingredient_access  = (medicines_prefs.get("ingredient_access") or "can_buy_herbs").lower()
     previous_tried     = [m.lower().strip() for m in (medicines_prefs.get("previous_ayurvedic_medicines") or [])]
+    # What they take now, as against what they tried before. Panchakarma checked
+    # this and the medicines plan, which prescribes the most formulations, did not.
+    taking_now         = medicines_prefs.get("current_ayurvedic_medicines") or []
 
     # Ama self-assessment from preferences can override profile value
     ama_override = medicines_prefs.get("ama_self_assessment")
@@ -1180,6 +1195,12 @@ def generate_medicines_plan(
             anupana_map[m["id"]] = _select_anupana(m, primary_condition, agni_type)
             m["selected_anupana"] = anupana_map[m["id"]]
             m["previously_tried"] = m["name"].lower() in previous_tried
+            # Flagged, not withheld: usually the answer is to stop the one being
+            # self-administered, which is for the patient and their Vaidya.
+            m["already_taking"] = [
+                {**hit, "note": _doubling_note(m, hit)}
+                for hit in already_taking(m.get("ingredients") or [], taking_now)
+            ]
             # The half of `contraindications` that is not a user state: "external use
             # only", "authenticated source only", "do not swallow the camphor". They
             # were filed in a field only a filter read, so a filter that could not

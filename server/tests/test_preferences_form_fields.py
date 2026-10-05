@@ -67,10 +67,10 @@ def test_every_field_a_form_collects_is_one_its_schema_keeps(feature):
         "declare, so the answer is accepted and thrown away on save")
 
 
-def test_the_herb_duplication_input_is_on_the_form_its_reader_saves():
+def test_the_herb_doubling_input_is_asked_wherever_herbs_are_prescribed():
     fields = _form_fields()
-    assert "current_ayurvedic_medicines" in fields["panchakarma"]
-    assert "current_ayurvedic_medicines" not in fields["remedies"]
+    for feature in ("panchakarma", "remedies", "medicines"):
+        assert "current_ayurvedic_medicines" in fields[feature], feature
 
 
 def test_koshtha_survives_the_round_trip_the_engine_reads_it_through():

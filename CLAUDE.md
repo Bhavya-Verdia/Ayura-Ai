@@ -132,8 +132,11 @@ engine was prose that no gate read.
 `injury_detail`). No screen had ever collected them, and the profile field's
 documented values were not the library's tokens. `_resolve_injuries` translates
 both once, at the top of `generate_gym_plan`. Anything typed that matches nothing
-comes back in `injury_notice`. Yoga's injuries are still free text on the yoga form;
-putting injuries on the profile would serve both.
+comes back in `injury_notice`. The yoga form asks with the same chips, and **both engines
+read the union of the two forms** (`movement_risk.declared_injuries`, merged by
+`with_declared_injuries` on every gym and yoga path before the cache check). The chips are
+one list: saving either form writes them to the other, but only if that form has been
+saved, because a partial `yoga` document reads as preferences set.
 
 **Load is priced per set.** `_LIFT_BW` is a 1RM standard, and the quoted range used
 to be that ±15% regardless of reps, so sets of 20 were priced at the top of the
@@ -847,6 +850,10 @@ schema does not declare returns 200 and is dropped on save. Koshtha and the Ayur
 medicines already being taken were both lost this way; both are safety inputs.
 `tests/test_preferences_form_fields.py` parses the JSX and fails on any such field. If a
 form edits an answer in its own shape (gym `likes`/`dislikes`), name it in `_FORM_ONLY`.
+
+Two answers are asked on two forms and unioned server-side, so both engines see either:
+the Ayurvedic medicines already taken (Panchakarma + remedies; `herb_overlap.declared_ayurvedic`,
+checked by both engines through one matcher) and injuries (gym + yoga).
 
 The form opens pre-filled from the saved answers (`savedToForm`), so give any new field
 that is stored as a list but edited as text a case there. Without one, saving again

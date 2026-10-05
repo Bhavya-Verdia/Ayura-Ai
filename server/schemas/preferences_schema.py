@@ -231,6 +231,20 @@ class YogaPreferences(BaseModel):
         None,
         description="Specific limitations e.g., can't sit cross-legged"
     )
+    # The gym form's chips, asked here too. Both engines read the union of the
+    # two forms (`engine.movement_risk.declared_injuries`), so an injury ticked
+    # once reaches both plans.
+    injuries: list[str] = Field(
+        default_factory=list,
+        description="Injuries or joint problems, from GYM_INJURY_OPTIONS.")
+
+    @field_validator("injuries")
+    @classmethod
+    def validate_injuries(cls, v: list[str]) -> list[str]:
+        invalid = set(v) - GYM_INJURY_OPTIONS
+        if invalid:
+            raise ValueError(f"Unknown injury: {invalid}. Valid: {GYM_INJURY_OPTIONS}")
+        return v
 
     @field_validator("yoga_goal")
     @classmethod
@@ -422,6 +436,12 @@ class RemedyPreferences(BaseModel):
     )
 
     # History
+    # Also asked on the Panchakarma form; `engine.herb_overlap.declared_ayurvedic`
+    # unions the two, so a medicine declared on either reaches both checks.
+    current_ayurvedic_medicines: list[str] = Field(
+        default=[],
+        description="Ayurvedic medicines taken now, checked against every prescribed formulation",
+    )
     previous_ayurvedic_medicines: list[str] = Field(
         default=[],
         description="Ayurvedic medicines previously tried — avoids repetition, captures what worked"

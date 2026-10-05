@@ -33,6 +33,9 @@ const SAVED = {
     food_intolerances: [],
     fasting_days: ['Monday', 'Ekadashi'],
   },
+  // Never saved: the server answers with defaults, carrying the injuries
+  // already ticked on the gym form.
+  yoga: null,
   panchakarma: {
     panchakarma_goal: 'detox',
     detox_experience: 'some',
@@ -67,6 +70,9 @@ async function mockApi(page, posted) {
       if (req.method() === 'POST') {
         posted[pref[1]] = req.postDataJSON()
         return route.fulfill({ json: { feature: pref[1], preferences: posted[pref[1]], is_set: true } })
+      }
+      if (SAVED[pref[1]] === null) {
+        return route.fulfill({ json: { feature: pref[1], preferences: { injuries: ['hernia'] }, is_set: false } })
       }
       return route.fulfill({ json: { feature: pref[1], preferences: SAVED[pref[1]], is_set: true } })
     }
@@ -123,5 +129,22 @@ test.describe('editing saved preferences (mocked API)', () => {
       detox_experience: 'some',
       current_ayurvedic_medicines: ['Ashwagandha Churna', 'Brahmi Ghrita'],
     })
+  })
+
+  test('the yoga form starts from the injuries the gym form holds', async ({ page }) => {
+    const posted = {}
+    await mockApi(page, posted)
+    await page.goto('/dashboard')
+
+    await page.getByRole('button', { name: 'Edit Yoga & Pranayama preferences' }).click()
+    await expect(page.getByRole('button', { name: 'Hernia', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    await page.getByRole('button', { name: 'Knee', exact: true }).click()
+    await page.locator('select[name="yoga_goal"]').selectOption('flexibility')
+    await page.locator('select[name="yoga_experience"]').selectOption('beginner')
+    await page.locator('input[name="physical_limitations_detail"]').fill('frozen shoulder')
+    await page.getByRole('button', { name: /Save & Generate/ }).click()
+    await expect.poll(() => posted.yoga).toBeTruthy()
+    expect([...posted.yoga.injuries].sort()).toEqual(['hernia', 'knee'])
+    expect(posted.yoga.physical_limitations_detail).toBe('frozen shoulder')
   })
 })
