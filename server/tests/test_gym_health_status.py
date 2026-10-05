@@ -633,7 +633,8 @@ def test_ardhabala_does_not_contradict_the_sets():
 def test_a_retrieval_outage_does_not_take_the_coaching_with_it(monkeypatch):
     """The RAG calls sat under the enrichment's outer `except`, so a ChromaDB
     restart cost every plan all of its coaching."""
-    import asyncio, json as _json
+    import asyncio
+    import json as _json
     from services import gym_plan_enricher as enr
 
     async def down(*a, **k):
