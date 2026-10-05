@@ -7,8 +7,14 @@
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(8px);
   display: flex;
-  justify-content: center;
-  align-items: center;
+  /* The card is centred by its own `margin: auto`, not `align-items: center`:
+     a centred flex child taller than its container overflows both ends
+     equally, and the half above the top cannot be scrolled to. Nothing here
+     scrolled at all, so on a 768-800px laptop the diet and gym forms lost
+     their header and their Save button. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 0;
   z-index: var(--z-modal);
 }
 
@@ -18,6 +24,7 @@
   border-radius: 16px;
   width: 90%;
   max-width: 500px;
+  margin: auto;
   padding: 32px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   display: flex;

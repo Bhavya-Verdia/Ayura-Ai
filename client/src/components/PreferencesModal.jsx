@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../providers/AuthContext';
 import { m, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -141,8 +142,42 @@ const DIETARY_TYPES = [
   { value: 'vegan', label: 'Vegan' }
 ];
 
+// Saved preferences in the shape the form edits them. The form keeps a few
+// answers as comma-separated text and a few as a single choice the schema stores
+// as a list; each is undone here so the saved answer shows, and so submitting it
+// unchanged writes back what was there.
+const joinList = (v) => (Array.isArray(v) ? v.join(', ') : (v || ''));
+
+function savedToForm(typeId, saved) {
+  const form = { ...saved };
+  if (typeId === 'gym') {
+    form.available_equipment = (saved.available_equipment || []).filter(e => e !== 'bodyweight');
+    form.likes = joinList(saved.exercise_preferences?.likes);
+    form.dislikes = joinList(saved.exercise_preferences?.dislikes);
+    delete form.exercise_preferences;
+    form.training_style = saved.training_style || '';
+    form.known_lifts = saved.known_lifts || {};
+  } else if (typeId === 'yoga') {
+    const style = saved.yoga_style_preference;
+    form.yoga_style_preference = Array.isArray(style) ? (style[0] || '') : (style || '');
+    if (saved.time_available_minutes) form.time_available_minutes = String(saved.time_available_minutes);
+  } else if (typeId === 'diet' || typeId === 'routine') {
+    form.fasting_days = joinList(saved.fasting_days);
+  } else if (typeId === 'panchakarma') {
+    form.current_ayurvedic_medicines = joinList(saved.current_ayurvedic_medicines);
+  } else if (typeId === 'remedies' || typeId === 'medicines') {
+    form.previous_ayurvedic_medicines = joinList(saved.previous_ayurvedic_medicines);
+  }
+  // A select bound to null shows nothing and submits nothing; '' is the same
+  // answer in the form's terms.
+  Object.keys(form).forEach(k => { if (form[k] === null) delete form[k]; });
+  return form;
+}
+
 export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSuccess }) {
-  const { user } = useAuth();
+  // `profile`, not `user`: `user` is a trimmed identity mapping with no
+  // allergies on it, so seeding from it showed nothing for every patient.
+  const { profile } = useAuth();
   const [form, setForm] = useState({});
   const [loading, setLoading] = useState(false);
   // Whether the practitioner has set the session length themselves. Once they
@@ -162,39 +197,41 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       // repeat it is dangerous. The server unions the two lists regardless — this is
       // so the form shows what is actually being enforced, rather than empty chips
       // beside a plan that is withholding peanuts.
-      const seeded = typeId === 'diet' && Array.isArray(user?.allergies)
-        ? { food_allergies: [...user.allergies] }
+      const seeded = typeId === 'diet' && Array.isArray(profile?.allergies)
+        ? { food_allergies: [...profile.allergies] }
         : {};
       setForm(seeded);
       setDurationTouched(false);
       setStyleTouched(false);
-      // The gym form opened blank, so saving it again wiped what was there —
-      // injuries, equipment and the working weights the loads are built from.
-      // It now starts from what is saved, in the form's own shape.
-      if (typeId === 'gym') {
-        let live = true;
-        preferencesAPI.getFeature('gym')
-          .then(({ data }) => {
-            if (!live || !data?.is_set) return;
-            const saved = data.preferences || {};
-            const join = (v) => (Array.isArray(v) ? v.join(', ') : (v || ''));
-            setForm(prev => ({
-              ...saved,
-              available_equipment: (saved.available_equipment || []).filter(e => e !== 'bodyweight'),
-              likes: join(saved.exercise_preferences?.likes),
-              dislikes: join(saved.exercise_preferences?.dislikes),
-              training_style: saved.training_style || '',
-              known_lifts: saved.known_lifts || {},
-              ...prev,
-            }));
-            if (saved.workout_duration_minutes) setDurationTouched(true);
-            if (saved.training_style) setStyleTouched(true);
-          })
-          .catch(() => {});
-        return () => { live = false; };
-      }
+      // Every form opened blank, so saving one again to change a single answer
+      // wiped the rest — the gym's injuries and working weights, the diet's
+      // fasting days, the medicines already being taken. Each now starts from
+      // what is saved, in the form's own shape; anything typed before the saved
+      // answers arrive still wins.
+      let live = true;
+      preferencesAPI.getFeature(typeId)
+        .then(({ data }) => {
+          if (!live || !data?.is_set) return;
+          const saved = savedToForm(typeId, data.preferences || {});
+          setForm(prev => {
+            // Keep only what the person changed; the seeded allergy chips are not
+            // an answer, they are merged with the saved list below.
+            const typed = Object.fromEntries(
+              Object.entries(prev).filter(([k, v]) => seeded[k] !== v));
+            const merged = { ...saved, ...typed };
+            if (typeId === 'diet' && !('food_allergies' in typed)) {
+              merged.food_allergies = [...new Set([
+                ...(saved.food_allergies || []), ...(seeded.food_allergies || [])])];
+            }
+            return merged;
+          });
+          if (saved.workout_duration_minutes || saved.time_available_minutes) setDurationTouched(true);
+          if (saved.training_style) setStyleTouched(true);
+        })
+        .catch(() => {});
+      return () => { live = false; };
     }
-  }, [isOpen, typeId, user]);
+  }, [isOpen, typeId, profile]);
 
   if (!isOpen) return null;
 
@@ -308,10 +345,10 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       payload.self_care_time_per_day = payload.self_care_time_per_day || '30 min';
       payload.access_to_ayurvedic_herbs = payload.access_to_ayurvedic_herbs || 'willing_to_buy';
       payload.diet_adherence_ability = payload.diet_adherence_ability || 'partial';
-    } else if (typeId === 'remedies' || typeId === 'medicines') {
       payload.current_ayurvedic_medicines = payload.current_ayurvedic_medicines
         ? payload.current_ayurvedic_medicines.split(',').map(s => s.trim()).filter(Boolean)
         : [];
+    } else if (typeId === 'remedies' || typeId === 'medicines') {
       payload.previous_ayurvedic_medicines = payload.previous_ayurvedic_medicines 
         ? payload.previous_ayurvedic_medicines.split(',').map(s => s.trim()).filter(Boolean)
         : [];
@@ -806,8 +843,8 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
             </div>
             <div className="pref-row">
               <div className="pref-input-group">
-                <label>Available Days (3–30)</label>
-                <input type="number" name="available_time_days" min={3} max={30} value={form.available_time_days || ''} onChange={handleChange} required />
+                <label>Available Days (3–21)</label>
+                <input type="number" name="available_time_days" min={3} max={21} value={form.available_time_days || ''} onChange={handleChange} required />
               </div>
               <div className="pref-input-group">
                 <label>Setting</label>
@@ -829,6 +866,7 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
               <div className="pref-input-group">
                 <label>Koshtha (Bowel Tendency)</label>
                 <select name="koshtha" value={form.koshtha || ''} onChange={handleChange} required>
+                  <option value="">Select...</option>
                   <option value="sama">Sama — Regular (once daily)</option>
                   <option value="krura">Krura — Hard / infrequent (constipated)</option>
                   <option value="mridu">Mridu — Loose / frequent</option>
@@ -863,6 +901,21 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                   <option value="lifestyle_only">Lifestyle Only</option>
                 </select>
               </div>
+            </div>
+            {/* The herb-duplication check lives in the Panchakarma engine and reads
+                this from the Panchakarma preferences. It used to sit on the remedies
+                form, whose schema has no such field, so every answer was dropped on
+                save and the check had nothing to compare against: a patient already on
+                Ashwagandha could be prescribed the Manovaha adjuvant and take it twice. */}
+            <div className="pref-input-group pref-full">
+              <label>Ayurvedic Medicines You Take Now <span className="pref-hint">(optional, comma-separated)</span></label>
+              <input
+                type="text"
+                name="current_ayurvedic_medicines"
+                placeholder="e.g. Ashwagandha Churna, Brahmi Ghrita"
+                value={form.current_ayurvedic_medicines || ''}
+                onChange={handleChange}
+              />
             </div>
           </>
         );
@@ -931,22 +984,6 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                   <option value="full_access">Full Access incl. Guggulu & Bhasma (Tier 2)</option>
                 </select>
               </div>
-
-              {/* Currently taken, as against previously tried. The schema has asked
-                  for this since it was written — "to ensure therapy safety" — and no
-                  form collected it, so the herb-duplication check had nothing to read:
-                  a patient already on Ashwagandha could be prescribed a formulation
-                  containing it and take the dose twice. */}
-              <div className="pref-input-group">
-                <label>Ayurvedic Medicines You Take Now <span className="pref-hint">(optional, comma-separated)</span></label>
-                <input
-                  type="text"
-                  name="current_ayurvedic_medicines"
-                  placeholder="e.g. Ashwagandha Churna, Brahmi Ghrita"
-                  value={form.current_ayurvedic_medicines || ''}
-                  onChange={handleChange}
-                />
-              </div>
             </div>
 
             <div className="pref-row">
@@ -969,7 +1006,10 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
     }
   };
 
-  return (
+  // Portalled to <body>: rendered in place it sat inside the page's stacking
+  // context, so on a phone the bottom tab bar painted over the Save button
+  // whatever z-index the overlay had.
+  return createPortal(
     <AnimatePresence>
       <div className="pref-modal-overlay">
         <m.div 
@@ -1000,6 +1040,7 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
           </form>
         </m.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

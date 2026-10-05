@@ -358,6 +358,15 @@ class PanchakarmaPreferences(BaseModel):
         pattern="^(yes|no|willing_to_buy)$",
         description="Can they procure specific herbs"
     )
+    # The form asked this from the start and the schema did not declare it, so the
+    # answer was dropped on save and every patient was planned as Sama. Koshtha
+    # fixes the Virechana drug's strength: a Mridu Koshtha must get the mild band
+    # only, and read as Sama in a clinic setting it was given the moderate one.
+    koshtha: Optional[str] = Field(
+        None,
+        pattern="^(sama|krura|mridu)$",
+        description="Bowel tendency (Koshtha); decides Virechana drug strength",
+    )
     diet_adherence_ability: str = Field(
         "partial",
         pattern="^(strict|partial|lifestyle_only)$",

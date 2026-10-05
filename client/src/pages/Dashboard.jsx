@@ -22,7 +22,7 @@ import confetti from 'canvas-confetti'
 import {
   Sunrise, Salad, Flower2, Dumbbell, Leaf, Soup, Pill,
   Flame, Snowflake, Sun, CloudRain, Moon, Mail, RefreshCw,
-  TriangleAlert, MessageCircle, TrendingUp, CircleCheck, Sparkles,
+  TriangleAlert, MessageCircle, TrendingUp, CircleCheck, Sparkles, SlidersHorizontal,
 } from 'lucide-react'
 import './Dashboard.css'
 
@@ -934,6 +934,21 @@ const Dashboard = () => {
                   >
                     {generating[type.id] ? '…' : '↻'}
                   </button>
+                  {/* The form only ever opened when nothing was saved, so once a
+                      feature had preferences there was no way back to them: every
+                      field added since — gym injuries, working weights — was out of
+                      reach for anyone who had already answered once. */}
+                  {!REMEDY_PAGE_PATH[type.id] && (
+                    <button
+                      className="dash-plan-prefs-btn"
+                      onClick={() => setPrefModalConfig({ isOpen: true, typeId: type.id })}
+                      disabled={generating[type.id]}
+                      title="Edit preferences"
+                      aria-label={`Edit ${type.title} preferences`}
+                    >
+                      <SlidersHorizontal size={15} strokeWidth={2} />
+                    </button>
+                  )}
                   <button
                     className="dash-plan-react-btn"
                     onClick={() => setReactionFor(type.id)}
