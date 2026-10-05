@@ -988,9 +988,24 @@ _LIFESTYLE_BY_DOSHA = {
 }
 
 
+def _active_herbs(med: dict) -> set[str]:
+    return set().union(*(herbs_in(i.split(" (")[0]) for i in med.get("ingredients") or []))
+
+
+def _repeats_a_herb(a: dict, b: dict) -> bool:
+    """Whether one of the two is a single-herb preparation of a herb the other gives.
+
+    External oils are not compared with internal medicines: Mahanarayana Taila on
+    the skin does not double an Ashwagandha dose taken by mouth."""
+    if (a.get("application_type") == "external") != (b.get("application_type") == "external"):
+        return False
+    ha, hb = _active_herbs(a), _active_herbs(b)
+    return (len(ha) == 1 and ha <= hb) or (len(hb) == 1 and hb <= ha)
+
+
 def _doubling_note(med: dict, hit: dict) -> str:
     """Says it is the same medicine when every active herb in it is covered."""
-    active = set().union(*(herbs_in(i.split(" (")[0]) for i in med.get("ingredients") or []))
+    active = _active_herbs(med)
     taken = hit["already_taking"]
     if active and active <= herbs_in(taken):
         return (f"You already take {taken}, which is the same medicine as {med['name']}. "
@@ -1163,8 +1178,36 @@ def generate_medicines_plan(
     else:
         condition_coverage = "curated"       # all conditions have KB-matched formulations
 
-    primary_formulations    = [m for _, m in condition_matched[:3]]
-    supporting_formulations = [m for _, m in (condition_matched[3:5] + general_wellness[:2])]
+    # One herb, prescribed twice. 33 of 400 sampled plans gave Brahmi Churna and
+    # Brahmi Vati together, and Arjuna Churna beside Arjunarishta, Haritaki Churna
+    # beside Triphala. A single-herb preparation of a herb another formulation in
+    # the plan already gives is the same dose twice under two names, and the slot
+    # goes to the next candidate. Shared herbs between compound formulations
+    # (Triphala's fruits, Trikatu's spices) are ordinary compounding and are left
+    # alone: deciding those is a Vaidya's call, not a set operation.
+    not_doubled: list[dict] = []
+
+    def _pick(candidates: list[dict], n: int, chosen: list[dict]) -> list[dict]:
+        out = []
+        for med in candidates:
+            if len(out) >= n:
+                break
+            clash = next((c for c in chosen + out if _repeats_a_herb(med, c)), None)
+            if clash:
+                not_doubled.append({
+                    "name": med["name"],
+                    "reason": f"Its herb is already in {clash['name']}, so it would double the dose.",
+                })
+                continue
+            out.append(med)
+        return out
+
+    primary_formulations    = _pick([m for _, m in condition_matched], 3, [])
+    rest = [m for _, m in condition_matched if m not in primary_formulations
+            and m["name"] not in {d["name"] for d in not_doubled}]
+    supporting_formulations = _pick(rest, 2, primary_formulations)
+    supporting_formulations += _pick([m for _, m in general_wellness], 2,
+                                     primary_formulations + supporting_formulations)
     all_selected            = primary_formulations + supporting_formulations
 
     external_oils           = [m for m in all_selected if m.get("application_type") == "external"]
@@ -1251,6 +1294,7 @@ def generate_medicines_plan(
         "treatment_protocol":    treatment_protocol,
         "lifestyle_guidance":    lifestyle_guidance,
         "blocked_medicines":     blocked,
+        "not_doubled":           not_doubled,
         "enriched":              False,
         "disclaimer": (
             "These Ayurvedic formulations are recommended based on your personalised profile. "

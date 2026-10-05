@@ -117,3 +117,41 @@ def test_the_holistic_path_merges_them_too(plan_type):
     })
     prefs = asyncio.run(_load_feature_preferences(db, "u", plan_type))
     assert prefs["current_ayurvedic_medicines"] == ["Brahmi Ghrita", "Triphala"]
+
+
+def test_the_plan_does_not_prescribe_one_herb_twice():
+    """33 of 400 sampled plans gave Brahmi Churna and Brahmi Vati together. A
+    single-herb preparation of a herb another formulation already gives is the
+    same dose under two names."""
+    import itertools
+    import random
+
+    from services.remedy_engine import _repeats_a_herb
+
+    conds = sorted({c for m in _MEDICINES_KB for c in (m.get("conditions") or [])})
+    rng = random.Random(7)
+    skipped = 0
+    for _ in range(150):
+        profile = {"id": "u", "age": rng.randint(20, 70), "gender": rng.choice(["male", "female"]),
+                   "dominant_dosha": rng.choice(["vata", "pitta", "kapha"]),
+                   "medical_history": rng.sample(conds, rng.randint(1, 3))}
+        profile["vikriti_dominant"] = profile["dominant_dosha"]
+        plan = generate_medicines_plan(profile, {"ingredient_access": "full_access"}, [])
+        meds = _formulations(plan)
+        for a, b in itertools.combinations(meds, 2):
+            assert not _repeats_a_herb(a, b), (a["name"], b["name"])
+        given = {m["name"] for m in meds}
+        for d in plan["not_doubled"]:
+            assert d["name"] not in given and "double" in d["reason"]
+        skipped += len(plan["not_doubled"])
+    assert skipped, "the sample must exercise the rule"
+
+
+def test_compound_formulations_sharing_a_herb_are_left_alone():
+    """Triphala's fruits and Trikatu's spices run through dozens of formulations.
+    Which of those to combine is a Vaidya's call, not a set operation."""
+    from services.remedy_engine import _repeats_a_herb
+
+    by = {m["name"]: m for m in _MEDICINES_KB}
+    assert not _repeats_a_herb(by["Triphala Churna"], by["Avipattikar Churna"])
+    assert _repeats_a_herb(by["Brahmi Churna"], by["Brahmi Vati"])
