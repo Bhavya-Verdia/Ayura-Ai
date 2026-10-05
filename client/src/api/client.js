@@ -205,6 +205,15 @@ export const preferencesAPI = {
   saveFeature:        (feature, data) => API.post(`/preferences/${feature}`, data),
 }
 
+// ── Workout logs (gym) ─────────────────────────
+// One entry per (plan, week, day, exercise); logging again replaces it and an
+// empty set list removes it. Feeds the next block's loads.
+export const workoutsAPI = {
+  log:     (data)   => API.post('/workouts/logs', data),
+  list:    (planId) => API.get('/workouts/logs', { params: { plan_id: planId } }),
+  summary: (planId) => API.get('/workouts/summary', { params: { plan_id: planId } }),
+}
+
 // ── Progress ───────────────────────────────────
 export const progressAPI = {
   log:        (data)         => API.post('/progress/log', data),

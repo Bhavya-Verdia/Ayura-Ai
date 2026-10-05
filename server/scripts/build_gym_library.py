@@ -34,6 +34,7 @@ from gym_library.movements_lower import (CONDITIONING, CORE, LEGS,  # noqa: E402
                                          MOBILITY)
 from gym_library.movements_fill import FILL  # noqa: E402
 from gym_library.movements_home import HOME  # noqa: E402
+from gym_library.movements_kettlebell import KETTLEBELL  # noqa: E402
 
 BASE = Path(__file__).resolve().parent.parent
 OUT = BASE / "data" / "knowledge_base" / "gym_exercises.json"
@@ -52,7 +53,7 @@ UPSTREAM = ("https://raw.githubusercontent.com/yuhonas/free-exercise-db/"
             "main/dist/exercises.json")
 
 SPEC = (CHEST + BACK + SHOULDERS + ARMS + LEGS + CORE + CONDITIONING
-        + MOBILITY + FILL + HOME)
+        + MOBILITY + FILL + HOME + KETTLEBELL)
 
 
 # --------------------------------------------------------------- upstream ---
@@ -328,8 +329,23 @@ def _modification(entry: dict) -> str:
             "Too easy? Add load or slow the tempo.")
     if entry["role"] in ("mobility", "warmup"):
         return "Ease into the range; never stretch into pain."
+    # One sentence served every remaining movement, so a brisk walk and a
+    # treadmill were told to "slow the tempo or pause a beat", and a barbell
+    # lift was never told the one thing its note is for — when to add weight.
+    if entry["role"] == "finisher":
+        if entry.get("rep_style") == "interval":
+            return ("Scale the pace, not the rounds: if the easy interval is not enough "
+                    "to recover, make the hard one slower.")
+        return ("Build minutes before speed. If you cannot talk in short sentences, "
+                "slow down.")
+    if prog.get("harder"):
+        return (f"Too easy? Move to {prog['harder']}. If form breaks down, shorten the "
+                "range or slow the tempo.")
+    if entry.get("equipment") in ("barbell", "dumbbell", "kettlebell", "machine", "cable"):
+        return ("Add weight once every set reaches the top of the range; take it off the "
+                "moment form breaks down.")
     return ("Slow the tempo or pause a beat to make it harder; shorten the range "
-            "or reduce the load if form breaks down.")
+            "if form breaks down.")
 
 
 # --------------------------------------------------------------- assembly ---

@@ -29,6 +29,7 @@ EQUIPMENT_OPTIONS = {"bodyweight", "dumbbells", "barbell", "machines", "cables",
 # contraindication tokens. The profile's `injuries_or_limitations` was the only
 # place an injury could be declared, and no screen ever collected it — so the 47
 # movements tagged for a shoulder and 29 for a knee were reachable by nobody.
+KNOWN_LIFT_OPTIONS = {"squat", "deadlift", "bench", "overhead_press", "row"}
 GYM_INJURY_OPTIONS = {"knee", "knee_replacement", "lower_back", "disc", "shoulder",
                       "elbow", "wrist", "neck", "hip", "hip_replacement", "ankle",
                       "hernia", "abdominal_surgery"}
@@ -119,6 +120,36 @@ class GymPreferences(BaseModel):
         description="Anything the options do not cover, in the practitioner's words. "
                     "What the engine cannot act on is named back to them in the plan.")
 
+    # What the practitioner can actually lift, when they know. Every load in the
+    # plan was otherwise priced from bodyweight and training age alone — within
+    # published standards on average, and well off for any one trained lifter.
+    # {"squat": {"kg": 60, "reps": 8}, ...}, keys from KNOWN_LIFT_OPTIONS. The
+    # set is "a weight you can lift for that many reps with good form".
+    known_lifts: Optional[dict] = Field(
+        None,
+        description="Optional working sets: {lift: {kg, reps}} for squat, deadlift, bench, "
+                    "overhead_press, row. Calibrates every load in the plan.")
+
+    @field_validator("known_lifts")
+    @classmethod
+    def validate_known_lifts(cls, v):
+        if not v:
+            return None
+        clean = {}
+        for lift, entry in v.items():
+            if lift not in KNOWN_LIFT_OPTIONS:
+                raise ValueError(f"Unknown lift {lift!r}. Valid: {sorted(KNOWN_LIFT_OPTIONS)}")
+            if not entry or entry.get("kg") in (None, "") or entry.get("reps") in (None, ""):
+                continue
+            try:
+                kg, reps = float(entry["kg"]), int(entry["reps"])
+            except (TypeError, ValueError):
+                raise ValueError(f"{lift}: kg and reps must be numbers")
+            if not (1 <= kg <= 400) or not (1 <= reps <= 20):
+                raise ValueError(f"{lift}: kg must be 1-400 and reps 1-20")
+            clean[lift] = {"kg": kg, "reps": reps}
+        return clean or None
+
     @field_validator("gym_goal")
     @classmethod
     def validate_gym_goal(cls, v: str) -> str:
@@ -200,6 +231,20 @@ class YogaPreferences(BaseModel):
         None,
         description="Specific limitations e.g., can't sit cross-legged"
     )
+    # The gym form's chips, asked here too. Both engines read the union of the
+    # two forms (`engine.movement_risk.declared_injuries`), so an injury ticked
+    # once reaches both plans.
+    injuries: list[str] = Field(
+        default_factory=list,
+        description="Injuries or joint problems, from GYM_INJURY_OPTIONS.")
+
+    @field_validator("injuries")
+    @classmethod
+    def validate_injuries(cls, v: list[str]) -> list[str]:
+        invalid = set(v) - GYM_INJURY_OPTIONS
+        if invalid:
+            raise ValueError(f"Unknown injury: {invalid}. Valid: {GYM_INJURY_OPTIONS}")
+        return v
 
     @field_validator("yoga_goal")
     @classmethod
@@ -327,6 +372,15 @@ class PanchakarmaPreferences(BaseModel):
         pattern="^(yes|no|willing_to_buy)$",
         description="Can they procure specific herbs"
     )
+    # The form asked this from the start and the schema did not declare it, so the
+    # answer was dropped on save and every patient was planned as Sama. Koshtha
+    # fixes the Virechana drug's strength: a Mridu Koshtha must get the mild band
+    # only, and read as Sama in a clinic setting it was given the moderate one.
+    koshtha: Optional[str] = Field(
+        None,
+        pattern="^(sama|krura|mridu)$",
+        description="Bowel tendency (Koshtha); decides Virechana drug strength",
+    )
     diet_adherence_ability: str = Field(
         "partial",
         pattern="^(strict|partial|lifestyle_only)$",
@@ -382,6 +436,12 @@ class RemedyPreferences(BaseModel):
     )
 
     # History
+    # Also asked on the Panchakarma form; `engine.herb_overlap.declared_ayurvedic`
+    # unions the two, so a medicine declared on either reaches both checks.
+    current_ayurvedic_medicines: list[str] = Field(
+        default=[],
+        description="Ayurvedic medicines taken now, checked against every prescribed formulation",
+    )
     previous_ayurvedic_medicines: list[str] = Field(
         default=[],
         description="Ayurvedic medicines previously tried — avoids repetition, captures what worked"

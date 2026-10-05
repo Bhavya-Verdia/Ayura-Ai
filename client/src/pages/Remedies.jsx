@@ -430,15 +430,29 @@ const Remedies = () => {
                   {pickerOpen ? 'Hide symptoms' : remedyPlan ? 'Update symptoms' : 'Choose symptoms'}
                 </button>
               ) : (
-                <button
-                  className="btn btn-secondary btn-sm rem-regen-btn"
-                  onClick={() => medicineMutation.mutate(!!medicinePlan)}
-                  disabled={medicineMutation.isPending}
-                >
-                  {medicineMutation.isPending
-                    ? <><RefreshCw size={14} strokeWidth={2} className="rem-spin" /> Generating…</>
-                    : <><RefreshCw size={14} strokeWidth={2} /> {medicinePlan ? 'Regenerate' : 'Generate'}</>}
-                </button>
+                <>
+                  {/* The form only opened when nothing was saved, so the allopathic
+                      medications the interaction check reads could never be updated
+                      after the first answer — a new prescription stayed invisible. */}
+                  {medicinePlan && (
+                    <button
+                      className="btn btn-secondary btn-sm rem-regen-btn"
+                      onClick={() => setPrefModalOpen(true)}
+                      disabled={medicineMutation.isPending}
+                    >
+                      <SlidersHorizontal size={14} strokeWidth={2} /> Medications &amp; access
+                    </button>
+                  )}
+                  <button
+                    className="btn btn-secondary btn-sm rem-regen-btn"
+                    onClick={() => medicineMutation.mutate(!!medicinePlan)}
+                    disabled={medicineMutation.isPending}
+                  >
+                    {medicineMutation.isPending
+                      ? <><RefreshCw size={14} strokeWidth={2} className="rem-spin" /> Generating…</>
+                      : <><RefreshCw size={14} strokeWidth={2} /> {medicinePlan ? 'Regenerate' : 'Generate'}</>}
+                  </button>
+                </>
               )}
             </div>
           </m.div>

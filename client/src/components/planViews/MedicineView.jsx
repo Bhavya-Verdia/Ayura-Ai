@@ -85,6 +85,17 @@ function MedCard({ med, rationale }) {
       </button>
       </h3>
 
+      {/* A herb the patient already takes on their own. Shown outside the
+          collapsed body: a doubled dose is the one caution that has to be read
+          before the card is opened, not after. */}
+      {med.already_taking?.length > 0 && (
+        <ul className="mv-doubling" role="note">
+          {med.already_taking.map((d, i) => (
+            <li key={i}><TriangleAlert size={12} /> {d.note}</li>
+          ))}
+        </ul>
+      )}
+
       {/* ── Panchakosha pharmacology strip (always visible) ── */}
       {(hasRasa || med.virya || med.vipaka) && (
         <div className="mv-pharma-strip">
@@ -300,6 +311,7 @@ export function MedicineView({ plan }) {
   const outcomes   = plan.expected_outcomes || {}
   const lifestyle  = plan.lifestyle_guidance || {}
   const blocked    = plan.blocked_medicines || []
+  const notDoubled = plan.not_doubled || []
   const rationale  = plan.formulation_rationale || {}
   const pathya     = plan.pathya || []
   const apathya    = plan.apathya || []
@@ -547,6 +559,20 @@ export function MedicineView({ plan }) {
         <div className="mv-blocked-section">
           <h3 className="rv-info-label"><TriangleAlert size={14} style={{ color: '#ef4444' }} />Medicines Excluded for Your Safety</h3>
           {blocked.map((b, i) => (
+            <div key={i} className="mv-blocked-item">
+              <span className="mv-blocked-name">{b.name}</span>
+              <span className="mv-blocked-reason">{b.reason}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Left out because the plan already gives their herb. Not a safety
+          exclusion, so not listed with those: it is the same dose twice. */}
+      {notDoubled.length > 0 && (
+        <div className="mv-blocked-section">
+          <h3 className="rv-info-label">Left Out So a Herb Is Not Given Twice</h3>
+          {notDoubled.map((b, i) => (
             <div key={i} className="mv-blocked-item">
               <span className="mv-blocked-name">{b.name}</span>
               <span className="mv-blocked-reason">{b.reason}</span>

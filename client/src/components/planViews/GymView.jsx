@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Dumbbell, Leaf, Calendar, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Lightbulb, Info,
   ShieldAlert,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
+import { workoutsAPI } from '../../api/client'
+import { GymSetLogger } from './GymSetLogger'
 
 const WEEK_THEMES = ['Foundation', 'Volume Build', 'Intensity Peak', 'Deload']
 
@@ -15,6 +17,23 @@ export function GymView({ plan }) {
   // Which day cards are open. Rendering every day expanded made one week 8,700px
   // on a phone — ten screens before the tips section. Same disclosure as YogaView.
   const [expandedDays, setExpandedDays] = useState(new Set())
+  // What has been logged against this plan, keyed `${week}:${day}:${exerciseId}`.
+  // The next block reads it; this view shows it beside each exercise.
+  const [logs, setLogs] = useState({})
+  const planId = plan.plan_id
+  useEffect(() => {
+    if (!planId) return
+    let live = true
+    workoutsAPI.list(planId)
+      .then(({ data }) => {
+        if (!live) return
+        const map = {}
+        ;(data?.logs || []).forEach(l => { map[`${l.week}:${l.day}:${l.exercise_id}`] = l })
+        setLogs(map)
+      })
+      .catch(() => {})  // logging is an addition to the plan, never a condition of seeing it
+    return () => { live = false }
+  }, [planId])
 
   const us = plan.user_summary || {}
   const fourWeekPlan = plan.four_week_plan || []
@@ -32,6 +51,8 @@ export function GymView({ plan }) {
     ? plan.progression : null
   const nutrition = plan.nutrition_sync || {}
   const recovery = plan.recovery_protocol || {}
+  const focusNotes = plan.weekly_focus_notes || {}
+  const vidhi = plan.vyayama_vidhi || {}
 
   const goalLabel = (us.gym_goal || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
   const doshaColor = DOSHA_COLOR[us.dominant_dosha] || DOSHA_COLOR.default
@@ -198,6 +219,16 @@ export function GymView({ plan }) {
           exercises at beginner level, and bodyweight-only users can be near that.
           The engine has written this since the pregnancy pass; rendering it is
           what stops a repetitive plan from looking like the whole library. */}
+      {/* What this block was built from — the last block's logged sessions and
+          the loads measured in it — so a plan that read the log does not look
+          identical to one that did not. */}
+      {plan.block_notice && (
+        <div className="gym-pool-notice gym-block-notice">
+          <Activity size={12} />
+          <span>{plan.block_notice}</span>
+        </div>
+      )}
+
       {plan.pool_notice && (
         <div className="gym-pool-notice">
           <Info size={12} />
@@ -336,6 +367,9 @@ export function GymView({ plan }) {
                 restRecovery ? (
                   <div className="gym-rest-card rich">
                     <h4 className="gym-rest-title">{restRecovery.title}</h4>
+                    {focusNotes[day.day_name] && (
+                      <p className="gym-day-coach-note">{focusNotes[day.day_name]}</p>
+                    )}
                     <ul className="gym-rest-activities">
                       {(showAllActs ? restRecovery.activities : restRecovery.activities?.slice(0, 3))
                         ?.map((act, k) => <li key={k}>{act}</li>)}
@@ -377,6 +411,12 @@ export function GymView({ plan }) {
                     </div>
                   )}
 
+                  {/* The coach's line for this day. Generated for every enriched
+                      plan and, until now, rendered nowhere. */}
+                  {focusNotes[day.day_name] && (
+                    <p className="gym-day-coach-note">{focusNotes[day.day_name]}</p>
+                  )}
+
                   <div className="gym-day-meta">
                     {day.estimated_duration_minutes > 0 && (
                       <span className="gym-meta-chip"><Timer size={10} /> {day.estimated_duration_minutes} min</span>
@@ -404,7 +444,7 @@ export function GymView({ plan }) {
                         {day.main_workout.map((ex, j) => {
                           const exId = `${dayIdx}-${j}`
                           const isExpanded = expandedEx.has(exId)
-                          const isBodyweight = (ex.weight_range || '').startsWith('Bodyweight') || (ex.weight_range || '').startsWith('Effort')
+                          const isBodyweight = ex.category === 'cardio' || /^(Bodyweight|Band|Effort)/.test(ex.weight_range || '')
                           return (
                             <div key={j} className="gym-exercise-row">
                               <div className="gym-ex-top">
@@ -420,7 +460,8 @@ export function GymView({ plan }) {
                                 </span>
                                 <div className="gym-ex-chips">
                                   <span className="gym-ex-badge">{ex.sets} × {ex.reps}</span>
-                                  {ex.rest_seconds && <span className="gym-ex-rest">{ex.rest_seconds}s rest</span>}
+                                  {/* `0 && …` renders a literal 0: every conditioning row showed one. */}
+                                  {ex.rest_seconds > 0 && <span className="gym-ex-rest">{ex.rest_seconds}s rest</span>}
                                   {ex.equipment && ex.equipment !== 'bodyweight' && (
                                     <span className="gym-ex-equip">{ex.equipment}</span>
                                   )}
@@ -436,6 +477,19 @@ export function GymView({ plan }) {
                                 <p className="gym-ex-cue">{ex.coaching_cue}</p>
                               )}
                               {ex.notes && <p className="gym-ex-notes">{ex.notes}</p>}
+                              <GymSetLogger
+                                planId={planId}
+                                week={activeWeek + 1}
+                                day={day.day}
+                                exercise={ex}
+                                logged={logs[`${activeWeek + 1}:${day.day}:${ex.exercise_id}`]}
+                                onSaved={(entry) => setLogs(prev => {
+                                  const key = `${activeWeek + 1}:${day.day}:${ex.exercise_id}`
+                                  const next = { ...prev }
+                                  if (entry) next[key] = entry; else delete next[key]
+                                  return next
+                                })}
+                              />
                               {ex.instructions?.length > 0 && (
                                 <>
                                   <button className="gym-instructions-toggle" onClick={() => toggleEx(exId)}>
@@ -524,6 +578,44 @@ export function GymView({ plan }) {
           </div>
           {plan.vyayama_shakti.bala_note && (
             <p className="gym-vyayama-bala">{plan.vyayama_shakti.bala_note}</p>
+          )}
+        </div>
+      )}
+
+      {/* ── Vyayama Vidhi: the classical regimen around the session ──
+          Written by the coaching model for every enriched plan and shown
+          nowhere until this. Each line has passed the practice gate and the
+          food floor (`gym_plan_enricher.gate_coaching_prose`). */}
+      {(vidhi.ardhashakti_guideline || vidhi.pre_workout_ritual || vidhi.post_workout_ritual
+        || vidhi.seasonal_adjustment || vidhi.vyayama_contraindications?.length > 0) && (
+        <div className="gym-vyayama-section">
+          <h3 className="gym-tips-title"><Leaf size={14} /> Vyayama Vidhi — Your Exercise Regimen</h3>
+          {vidhi.ardhashakti_guideline && (
+            <p className="gym-vyayama-capacity">{vidhi.ardhashakti_guideline}</p>
+          )}
+          <div className="gym-tips-grid">
+            {[
+              ['pre_workout_ritual', 'Before training'],
+              ['post_workout_ritual', 'After training'],
+              ['seasonal_adjustment', 'This season'],
+              ['dosha_intensity_principle', 'Your constitution'],
+            ].map(([key, label]) => vidhi[key] ? (
+              <div key={key} className="gym-tip-card">
+                <h4 className="gym-tip-label">{label}</h4>
+                <p className="gym-tip-text">{vidhi[key]}</p>
+              </div>
+            ) : null)}
+          </div>
+          {vidhi.vyayama_contraindications?.length > 0 && (
+            <div className="gym-overtraining">
+              <h4 className="gym-tip-label" style={{ marginBottom: '0.4rem' }}>Skip training today if</h4>
+              <ul className="gym-sub-list">
+                {vidhi.vyayama_contraindications.map((s, i) => <li key={i} className="gym-list-item">{s}</li>)}
+              </ul>
+            </div>
+          )}
+          {plan.ayurvedic_lifestyle_sync && (
+            <p className="gym-vyayama-bala">{plan.ayurvedic_lifestyle_sync}</p>
           )}
         </div>
       )}

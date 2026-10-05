@@ -60,7 +60,9 @@ async def generate_yoga_plan(
     if not prefs_doc or not prefs_doc.get("yoga"):
         raise HTTPException(status_code=422, detail="Complete yoga preferences first")
 
-    yoga_prefs = prefs_doc.get("yoga")
+    # Injuries are asked on the gym form too; either answer reaches this plan.
+    from engine.movement_risk import with_declared_injuries
+    yoga_prefs = with_declared_injuries("yoga", prefs_doc.get("yoga"), prefs_doc)
     is_prenatal = user.pregnancy_or_nursing
 
     # Inject current Ayurvedic season so engine can apply Ritucharya pose boosts
@@ -198,7 +200,9 @@ async def generate_next_yoga_week(
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
     if not prefs_doc or not prefs_doc.get("yoga"):
         raise HTTPException(status_code=422, detail="Complete yoga preferences first")
-    yoga_prefs = prefs_doc.get("yoga")
+    # Injuries are asked on the gym form too; either answer reaches this plan.
+    from engine.movement_risk import with_declared_injuries
+    yoga_prefs = with_declared_injuries("yoga", prefs_doc.get("yoga"), prefs_doc)
 
     user_profile = user.model_dump()
     from engine.seasonal import get_current_season
@@ -446,11 +450,20 @@ async def generate_gym_plan(
     if not prefs_doc or not prefs_doc.get("gym"):
         raise HTTPException(status_code=422, detail="Complete gym preferences first")
 
-    gym_prefs = prefs_doc.get("gym")
+    # Injuries are asked on the yoga form too; either answer reaches this plan.
+    from engine.movement_risk import with_declared_injuries
+    gym_prefs = with_declared_injuries("gym", prefs_doc.get("gym"), prefs_doc)
     is_prenatal = user.pregnancy_or_nursing
 
+    # What was actually lifted. Its fingerprint joins the cache key, because a
+    # plan whose loads come from the log is stale the moment a set is logged.
+    from services.workout_log import gym_history
+    history = await gym_history(db, user.id)
+
     # 1. Check Cache
-    cached_plan, pref_hash = await _check_plan_cache(db, user.id, "gym", user_profile, gym_prefs, force_regenerate)
+    cached_plan, pref_hash = await _check_plan_cache(
+        db, user.id, "gym", user_profile, {**gym_prefs, "_log": history["fingerprint"]},
+        force_regenerate)
     if cached_plan:
         return cached_plan
 
@@ -466,7 +479,10 @@ async def generate_gym_plan(
         # categories (validated), giving disease-safety parity with yoga.
         from services.gym_condition_fallback import extra_avoid_tags_for
         _extra_avoid_tags = await extra_avoid_tags_for(user_profile)
-        raw_plan = engine_generate(user_profile, gym_prefs, gym_exercises, extra_avoid_tags=_extra_avoid_tags)
+        raw_plan = engine_generate(user_profile, gym_prefs, gym_exercises,
+                                   extra_avoid_tags=_extra_avoid_tags,
+                                   logged_lifts=history["logged_lifts"],
+                                   previous_block=history["previous_block"])
         enriched_plan = await enrich_gym_plan(raw_plan, user_profile, gym_prefs)
 
         plan_id = enriched_plan.get("plan_id")
@@ -534,7 +550,9 @@ async def generate_panchakarma_plan(
     if not prefs_doc or not prefs_doc.get("panchakarma"):
         raise HTTPException(status_code=422, detail="Complete panchakarma preferences first")
 
-    panchakarma_prefs = prefs_doc.get("panchakarma")
+    from engine.herb_overlap import declared_ayurvedic
+    panchakarma_prefs = {**prefs_doc.get("panchakarma"),
+                         "current_ayurvedic_medicines": declared_ayurvedic(prefs_doc)}
 
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "panchakarma", user_profile, panchakarma_prefs, force_regenerate)
@@ -705,7 +723,11 @@ async def generate_medicines_plan(
     if not prefs_doc or not prefs_doc.get("remedies"):
         raise HTTPException(status_code=422, detail="Complete medicines preferences first")
 
-    medicines_prefs = prefs_doc.get("remedies")
+    # The Ayurvedic medicines already being taken are asked on two forms and
+    # checked by two engines; either declaration has to reach this one.
+    from engine.herb_overlap import declared_ayurvedic
+    medicines_prefs = {**prefs_doc.get("remedies"),
+                       "current_ayurvedic_medicines": declared_ayurvedic(prefs_doc)}
 
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "medicines", user_profile, medicines_prefs, force_regenerate)

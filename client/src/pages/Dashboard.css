@@ -824,6 +824,20 @@
   color: #fb923c;
 }
 
+.dash-plan-prefs-btn {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--ayura-muted);
+  border-radius: 8px;
+  width: 38px; flex-shrink: 0;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.dash-plan-prefs-btn:hover,
+.dash-plan-prefs-btn:focus-visible { background: var(--border-subtle); color: var(--ayura-ink); }
+.dash-plan-prefs-btn:disabled { opacity: 0.5; cursor: default; }
+
 .dash-reaction-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.55);

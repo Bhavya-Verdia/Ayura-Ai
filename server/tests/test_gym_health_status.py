@@ -225,7 +225,7 @@ def test_the_form_offers_exactly_what_the_server_accepts():
 
     jsx = (Path(__file__).resolve().parents[2] / "client" / "src" / "components"
            / "PreferencesModal.jsx").read_text()
-    block = jsx[jsx.index("const GYM_INJURIES"):jsx.index("];", jsx.index("const GYM_INJURIES"))]
+    block = jsx[jsx.index("const INJURIES"):jsx.index("];", jsx.index("const INJURIES"))]
     offered = set(re.findall(r"value: '([a-z_]+)'", block))
     assert offered == GYM_INJURY_OPTIONS
     assert all(any(k in opt for k in _INJURY_TOKENS) for opt in GYM_INJURY_OPTIONS)
@@ -277,12 +277,24 @@ def test_a_healthy_adult_keeps_the_strength_scheme_they_asked_for():
     ("chronic_fatigue_syndrome", "fatigue"), ("osteoporosis", "osteoporosis"),
     ("rheumatoid_arthritis", "inflammatory_joint"), ("vertigo", "vertigo"),
     ("glaucoma", "eye_pressure"),
+    # Each of these changed the plan's movements and said nothing.
+    ("osteoarthritis", "osteoarthritis"), ("arthritis", "osteoarthritis"),
+    ("sciatica", "back"), ("lumbar_spondylosis", "back"),
+    ("cervical_spondylosis", "neck"), ("parkinson", "parkinson"),
+    ("multiple_sclerosis", "ms"), ("bipolar", "lithium"),
 ])
 def test_a_condition_where_the_session_is_the_risk_gets_told_so(condition, key):
     """Someone on insulin can do every exercise in the library and still go
     hypoglycaemic halfway through it. The plan said nothing."""
     plan = _plan(medical_history=[condition])
     assert key in {g["key"] for g in plan["condition_guidance"]}
+
+
+def test_rheumatoid_arthritis_is_not_given_the_osteoarthritis_note():
+    """"arthritis" is a substring of "rheumatoid_arthritis", and a flare is not
+    managed by the pain-monitoring rule that suits a degenerative joint."""
+    keys = {g["key"] for g in _plan(medical_history=["rheumatoid_arthritis"])["condition_guidance"]}
+    assert "inflammatory_joint" in keys and "osteoarthritis" not in keys
 
 
 def test_a_healthy_plan_carries_no_guidance():
@@ -535,3 +547,113 @@ def test_no_barbell_range_starts_below_the_bar():
                     m = _re.match(r"^([\d.]+)–", e["weight_range"])
                     if m and ex["equipment"] == "barbell" and _lift_class(ex) in _RACK_LIFTS:
                         assert float(m.group(1)) >= 20, (goal, e["exercise_name"], e["weight_range"])
+
+
+@pytest.mark.parametrize("condition,line", [
+    ("diabetes_type2", "A ripe banana and honey smoothie"),
+    ("acid_reflux", "Warm lemon water with a pinch of salt"),
+])
+def test_a_meal_suggestion_is_held_to_the_diet_plans_floor(condition, line):
+    """The screen read allergies and nothing else, so a diabetic could be told
+    to take banana and honey and an acidity patient lemon water, beside a diet
+    plan that withholds both from them."""
+    from services.gym_plan_enricher import screen_nutrition
+
+    kept, withheld = screen_nutrition(
+        {"pre_workout_meal": line, "post_workout_meal": "Moong dal khichdi with vegetables"},
+        {"medical_history": [condition]})
+    assert "pre_workout_meal" not in kept, withheld
+    assert kept.get("post_workout_meal")
+
+
+# ── Food and practice prose the engine writes per dosha ─────────────────────
+
+def _rest_day(profile):
+    plan = generate_gym_plan({**_BASE, **profile}, {**_PREFS, "workout_days_per_week": 3})
+    return plan, next(d for d in plan["weekly_schedule"] if d["type"] == "recovery")
+
+
+@pytest.mark.parametrize("dosha,profile", [
+    ("vata", {"allergies": ["dairy"]}),                       # "Ghee, warm milk"
+    ("pitta", {"medical_history": ["chronic_kidney_disease"]}),  # "coconut water"
+    ("kapha", {"medical_history": ["acid_reflux"]}),          # "ginger-lemon tea"
+])
+def test_the_rest_day_food_note_is_held_to_the_diet_floor(dosha, profile):
+    """Written per dosha and shown to everyone of that dosha, through no screen."""
+    _, rest = _rest_day({**profile, "dominant_dosha": dosha})
+    note = rest["rest_day_recovery"]["nutrition_note"]
+    assert "diet plan" in note, note
+
+
+def test_a_healthy_rest_day_keeps_its_dosha_note():
+    _, rest = _rest_day({"dominant_dosha": "vata", "medical_history": []})
+    assert "Ghee" in rest["rest_day_recovery"]["nutrition_note"]
+
+
+def test_swimming_is_not_offered_to_an_epileptic_without_a_companion():
+    _, rest = _rest_day({"dominant_dosha": "pitta", "medical_history": ["epilepsy"]})
+    lines = rest["rest_day_recovery"]["activities"]
+    assert not any(l.startswith("Swimming") for l in lines), lines
+    assert any("someone beside you" in l for l in lines)
+
+
+def test_the_models_active_recovery_line_passes_the_practice_gate():
+    from services.gym_plan_enricher import gate_recovery
+
+    out = gate_recovery({"active_recovery": "Kapalabhati for 10 minutes, then a brisk walk"},
+                        {"medical_history": ["hypertension"]})
+    assert "kapalabhati" not in out["active_recovery"].lower()
+
+
+def test_the_vyayama_rituals_pass_the_practice_gate_and_the_food_floor():
+    """Generated for every plan and shown nowhere, so never screened. Rendered
+    now, so they are."""
+    from services.gym_plan_enricher import gate_coaching_prose
+
+    out = gate_coaching_prose({
+        "vyayama_vidhi": {"pre_workout_ritual": "Five rounds of Kapalabhati, then begin",
+                          "post_workout_ritual": "Rest ten minutes, then warm milk with ghee",
+                          "atiyoga_warning_signs": "breathlessness"},
+        "weekly_focus_notes": {"Monday": "Open with Bhastrika to wake the body up"},
+    }, {"medical_history": ["hypertension"], "allergies": ["dairy"]})
+    assert "kapalabhati" not in out["vyayama_vidhi"]["pre_workout_ritual"].lower()
+    assert "milk" not in out["vyayama_vidhi"]["post_workout_ritual"].lower()
+    assert "bhastrika" not in out["weekly_focus_notes"]["Monday"].lower()
+    assert out["vyayama_vidhi"]["atiyoga_warning_signs"] == ["breathlessness"]
+
+
+def test_ardhabala_does_not_contradict_the_sets():
+    """"Stop at the first forehead sweat" sat beside sets whose note says the
+    last two reps must be hard; the forehead sweats in the warm-up."""
+    plan = _plan(medical_history=[])
+    text = " ".join(plan["vyayama_shakti"].values()).lower()
+    assert "first forehead sweat" not in text and "session" in text
+
+
+def test_a_retrieval_outage_does_not_take_the_coaching_with_it(monkeypatch):
+    """The RAG calls sat under the enrichment's outer `except`, so a ChromaDB
+    restart cost every plan all of its coaching."""
+    import asyncio
+    import json as _json
+    from services import gym_plan_enricher as enr
+
+    async def down(*a, **k):
+        raise RuntimeError("ChromaDB not initialized")
+
+    async def fake_generate(**kwargs):
+        return _json.dumps({"plan_title": "t", "motivational_note": "m",
+                            "vyayama_vidhi": {"pre_workout_ritual": "A short walk"}})
+
+    monkeypatch.setattr(enr.rag_pipeline, "query", down)
+    monkeypatch.setattr(enr.llm_client, "generate", fake_generate)
+    plan = asyncio.run(enr.enrich_gym_plan(_plan(medical_history=[]), dict(_BASE), dict(_PREFS)))
+    assert plan["enriched"] is True
+    assert plan["vyayama_vidhi"]["pre_workout_ritual"] == "A short walk"
+
+
+def test_a_pregnant_rest_day_does_not_lie_her_flat():
+    """Her note says avoid lying flat after the first trimester; the Vata rest
+    day prescribed Supta Baddha Konasana and Legs-Up-The-Wall."""
+    _, rest = _rest_day({"dominant_dosha": "vata", "pregnancy_or_nursing": True})
+    text = " ".join(rest["rest_day_recovery"]["activities"]).lower()
+    assert "supta" not in text and "legs-up-the-wall" not in text

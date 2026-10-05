@@ -181,13 +181,97 @@ CONDITION_GUIDANCE: list[dict] = [
                  "starting."),
         "source": "General clinical guidance",
     },
+    # Added 2026-10 after a pass over all 70 onboarding conditions. Each of
+    # these changed the plan's movements (impact withheld, spinal or neck load
+    # removed, fall risk gated) and said nothing — and each has a standard
+    # instruction a physiotherapist gives before the first session.
+    {
+        # Pregnancy changed the plan more than any condition — a third of the
+        # library withheld, a pool notice — and was the one declaration with no
+        # note at all: nothing on when to stop, overheating or lying flat.
+        "key": "pregnancy",
+        "match": ("pregnan", "nursing"),
+        "label": "Pregnancy",
+        "note": ("Get your obstetrician's or midwife's go-ahead first. Stop and seek care for "
+                 "vaginal bleeding, fluid leaking, regular painful contractions, dizziness or "
+                 "feeling faint, chest pain, a headache that will not settle, calf pain or "
+                 "swelling, or breathlessness before you start. After the first trimester avoid "
+                 "lying flat on your back. Keep to an effort where you can still talk, avoid "
+                 "getting overheated, and drink water through the session."),
+        "source": "ACOG Committee Opinion 804, physical activity in pregnancy (2020)",
+    },
+    {
+        "key": "osteoarthritis",
+        "match": ("osteoarthritis", "arthritis", "sandhivata"),
+        # Rheumatoid, psoriatic and lupus arthritis have their own note above;
+        # a flare is managed differently from a degenerative joint.
+        "unless": ("rheumatoid", "psoriatic", "lupus", "gout", "ankylosing"),
+        "label": "Osteoarthritis",
+        "note": ("Exercise is one of the main treatments for osteoarthritis, not something "
+                 "to wait out. Some joint discomfort while training is fine if it stays mild "
+                 "(about 2–3 out of 10) and has settled by the next morning; if the joint is "
+                 "worse the next day, use less weight or a smaller range next session. This "
+                 "plan leaves out jumping and running."),
+        "source": "OARSI 2019 and ACR/Arthritis Foundation 2019 osteoarthritis guidelines; "
+                  "pain-monitoring model (Thomeé, 1997)",
+    },
+    {
+        "key": "back",
+        "match": ("back_pain", "lower_back", "sciatica", "lumbar", "herniated_disc",
+                  "slipped_disc"),
+        "label": "Back pain / sciatica",
+        "note": ("Keep your spine in a neutral position whenever you hold a weight. If pain "
+                 "spreads further down your leg during or after an exercise, stop that "
+                 "exercise; pain that stays in the back, or moves up towards it, is usually "
+                 "safe to keep working through gently. Get urgent care for numbness around "
+                 "the groin, new bladder or bowel problems, or weakness in a leg that is "
+                 "getting worse."),
+        "source": "NICE NG59, low back pain and sciatica (2016, updated 2020)",
+    },
+    {
+        "key": "neck",
+        "match": ("cervical", "neck_pain", "neck_injury"),
+        "label": "Neck condition",
+        "note": ("Keep your neck in line with your spine — no weight resting on the neck, "
+                 "and no looking up under load. Stop and get it checked if pain, tingling or "
+                 "weakness spreads into an arm."),
+        "source": "NICE CKS, neck pain — cervical radiculopathy (2023)",
+    },
+    {
+        "key": "parkinson",
+        "match": ("parkinson",),
+        "label": "Parkinson's",
+        "note": ("Train when your medication is working best. Big, deliberate movements and "
+                 "balance practice are part of the benefit, so take your time with them, "
+                 "and keep a support within reach for standing work."),
+        "source": "European Physiotherapy Guideline for Parkinson's Disease (KNGF/ParkinsonNet, 2014)",
+    },
+    {
+        "key": "ms",
+        "match": ("multiple_sclerosis",),
+        "label": "Multiple sclerosis",
+        "note": ("Getting hot can bring symptoms on for a while — train somewhere cool, keep "
+                 "cold water with you and rest between sets. Symptoms that come with "
+                 "overheating should settle within about an hour of cooling down; if they "
+                 "do not, speak to your MS team."),
+        "source": "National MS Society exercise recommendations (Kalb et al., 2020)",
+    },
+    {
+        "key": "lithium",
+        "match": ("bipolar", "lithium"),
+        "label": "Bipolar disorder",
+        "note": ("If you take lithium, heavy sweating can raise its level in your blood. "
+                 "Drink water steadily before, during and after training, avoid training in "
+                 "heat, and tell your prescriber you have started. Stop and seek advice for "
+                 "a new tremor, unsteadiness, confusion, vomiting or diarrhoea."),
+        "source": "BNF lithium monograph; NICE CG185 (bipolar disorder)",
+    },
 ]
 
+from engine.movement_risk import unfalse  # noqa: E402
 
-def _unfalse(term) -> str:
-    """"heart" is a substring of "heartburn", which is reflux, not a heart
-    condition — and it reached the cardiac note and the intensity ceiling."""
-    return str(term).lower().replace("heartburn", "acid_reflux")
+# Shared with the risk maps and both engines; see engine.movement_risk.unfalse.
+_unfalse = unfalse
 
 
 def guidance_for(declared) -> list[dict]:
@@ -196,4 +280,5 @@ def guidance_for(declared) -> list[dict]:
     text = [_unfalse(d) for d in declared or [] if d]
     return [{"key": g["key"], "label": g["label"], "note": g["note"], "source": g["source"]}
             for g in CONDITION_GUIDANCE
-            if any(m in t for t in text for m in g["match"])]
+            if any(m in t for t in text for m in g["match"])
+            and not any(u in t for t in text for u in g.get("unless", ()))]

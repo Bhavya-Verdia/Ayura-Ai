@@ -1660,6 +1660,18 @@
 /* The coaching cue reads as the coach talking, so it gets the weight the
    modification note does not: upright, slightly stronger colour, and a rule down
    the side to separate it from the mechanical text around it. */
+/* The coach's line for the day — above the session, in the same voice as the
+   per-exercise cue but set apart as the day's intent. */
+.gym-day-coach-note {
+  font-size: 0.8rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ayura-text);
+  margin: 0 0 0.6rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ayura-accent) 8%, transparent);
+}
 .gym-ex-cue {
   font-size: 0.78rem;
   color: var(--ayura-text);
@@ -4927,6 +4939,21 @@
   font-weight: 600;
   font-family: var(--font-body);
 }
+.mv-doubling {
+  list-style: none;
+  margin: 0 16px 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(239,68,68,0.3);
+  background: rgba(239,68,68,0.08);
+  color: var(--ayura-ink);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  display: grid;
+  gap: 6px;
+}
+.mv-doubling li { display: flex; gap: 8px; align-items: flex-start; }
+.mv-doubling svg { color: #f87171; flex-shrink: 0; margin-top: 3px; }
 .mv-type-chip {
   display: inline-block;
   padding: 2px 9px;
@@ -6141,6 +6168,7 @@
    They now paint from --ayura-text-secondary/-primary, which already flip per
    theme, so overriding them to brown would only make light mode disagree with
    dark for no contrast benefit. */
+[data-theme='light'] .mv-doubling svg { color: #b91c1c; }
 [data-theme='light'] .mv-tried-badge,
 [data-theme='light'] .yoga-pose-modification { color: #92400e; }
 [data-theme='light'] .rv-practitioner-note,
@@ -6543,3 +6571,30 @@
 @media (prefers-reduced-motion: reduce) {
   .wf-spin { animation: none; }
 }
+
+/* ── Set logging (GymSetLogger) ── */
+.gym-log-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0.15rem 0 0.35rem; }
+.gym-log-summary { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.74rem; color: var(--ayura-accent); }
+.gym-log-toggle, .gym-log-cancel, .gym-log-save {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-size: 0.74rem; border-radius: 999px; padding: 0.25rem 0.7rem; cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--ayura-accent) 45%, transparent);
+  background: transparent; color: var(--ayura-text);
+}
+.gym-log-save { background: var(--ayura-accent); color: #10140f; border-color: var(--ayura-accent); font-weight: 600; }
+.gym-log-save:disabled { opacity: 0.6; cursor: default; }
+.gym-log-editor {
+  margin: 0.3rem 0 0.5rem; padding: 0.6rem; border-radius: 10px;
+  background: color-mix(in srgb, var(--ayura-accent) 6%, transparent);
+  display: grid; gap: 0.45rem;
+}
+.gym-log-set { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) minmax(0, 1fr); gap: 0.4rem; align-items: center; }
+.gym-log-set input { min-width: 0; width: 100%; padding: 0.35rem 0.5rem; border-radius: 8px;
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.15)); background: transparent; color: var(--ayura-text); font-size: 0.85rem; }
+.gym-log-set-label { font-size: 0.74rem; color: var(--ayura-muted); }
+.gym-log-effort { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.gym-log-chip { font-size: 0.72rem; border-radius: 999px; padding: 0.22rem 0.6rem; cursor: pointer;
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.18)); background: transparent; color: var(--ayura-text); }
+.gym-log-chip.active { border-color: var(--ayura-accent); background: color-mix(in srgb, var(--ayura-accent) 18%, transparent); }
+.gym-log-actions { display: flex; justify-content: flex-end; gap: 0.4rem; }
+.gym-log-error { font-size: 0.74rem; color: #e07a6e; margin: 0; }

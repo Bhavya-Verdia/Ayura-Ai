@@ -132,8 +132,11 @@ engine was prose that no gate read.
 `injury_detail`). No screen had ever collected them, and the profile field's
 documented values were not the library's tokens. `_resolve_injuries` translates
 both once, at the top of `generate_gym_plan`. Anything typed that matches nothing
-comes back in `injury_notice`. Yoga's injuries are still free text on the yoga form;
-putting injuries on the profile would serve both.
+comes back in `injury_notice`. The yoga form asks with the same chips, and **both engines
+read the union of the two forms** (`movement_risk.declared_injuries`, merged by
+`with_declared_injuries` on every gym and yoga path before the cache check). The chips are
+one list: saving either form writes them to the other, but only if that form has been
+saved, because a partial `yoga` document reads as preferences set.
 
 **Load is priced per set.** `_LIFT_BW` is a 1RM standard, and the quoted range used
 to be that ±15% regardless of reps, so sets of 20 were priced at the top of the
@@ -146,6 +149,59 @@ lifter's max. Now:
 
 Rare conditions go to the LLM classifier on **both** plan paths
 (`gym_condition_fallback.extra_avoid_tags_for`), and it may answer in mechanisms.
+
+#### Gym: programming is checked by a sweep, not by reading code
+`tests/test_gym_programming.py` generates ~80 random plans (age, sex, body, level,
+goal, days, length, equipment, conditions, cardio) and asserts the shape a coach
+would recognise. Every rule in it came from reading a 400-1,000-plan sweep's output:
+
+- **Loads are calibrated to Strength Level's published standards** (2026-10):
+  "intermediate" is the midpoint of their Novice and Intermediate rows. The old
+  table was written from memory and ran ~half on isolation (1-2 kg hammer curls).
+  `test_starting_loads_sit_inside_published_standards` pins anchors. Goblet squats,
+  two-handed dumbbells and one-dumbbell lifts (side bend, suitcase carry) have their
+  own factors; no bar or stack is quoted below its lightest real setting. "Other" /
+  unanswered sex takes the midpoint of the two standards, as the diet path does.
+- **One compound per movement pattern** on full-body/upper/lower days, two on a
+  region day, **one loaded hinge per session**, no stacked bodyweight variants.
+- **Sessions are fitted to the clock** (`_fit_to_clock`): sets come off or go on
+  (never on the main lift — the week header describes it) and the conditioning
+  block is sized to what is left. 75-90 min lifting requests stay short with a notice;
+  that is deliberate.
+- **Splits:** strength goal → upper/lower or full-body, never body-part; 3-day
+  intermediates are full-body; 5-6 days are PPL/UL. Emphasis weeks must beat the
+  balanced week (`test_the_region_you_asked_to_prioritise_gets_more_work`) — improving
+  the baseline breaks them, and that is the test doing its job.
+- RDL, not the conventional deadlift, outside strength sets; a strength block is led
+  by a free weight. Rep tiers use `_TIER_REPS` (ranges a coach writes).
+- **Inputs are normalised at entry** (`_normalise_inputs`): both paths read prefs
+  back from Mongo, not the validated request.
+- Per-dosha food prose (rest-day `nutrition_note`, pre/post tips) and the enricher's
+  meal lines go through diet's `apply_advisory_safety`; the enricher's
+  `active_recovery` through `_gate_practices`.
+- Kettlebell-only lifters have their own six movements (`movements_kettlebell.py`),
+  quoted as real bell sizes. Full-body days include shoulders, so they press overhead.
+- The enricher's `vyayama_vidhi`, per-day notes and lifestyle note are rendered (they
+  were generated and shown nowhere) and pass `gate_coaching_prose`. Retrieval failure
+  degrades the coaching rather than removing it. Ardhabala is a session dose — never
+  "stop at the first sweat" beside sets written to two reps in reserve.
+
+#### Gym: loads are calibrated, and the next block reads the log
+`_load_calibration` has two inputs. **`known_lifts`** on the gym form ("a weight you can
+lift N times", five anchors) rescales each anchor's family of movements; unanchored
+movements move 60% of the way; a typo is bounded to 0.35-3x. **Logged sets**
+(`db.workout_logs`, `routes/workouts.py`, `services/workout_log.py`) replace an
+exercise's estimate outright with its strongest recent set (Epley, effort as RIR), and
+logged lifts come back in the next plan. Every load says where it came from.
+
+A block counts as finished three weeks after it was written or once week 3 is logged;
+half the sessions logged builds on it (block number +1), less repeats it. Both plan
+paths call `gym_history`, and its fingerprint joins the plan cache key — a plan priced
+from the log is stale the moment a set is logged.
+
+**Erasure:** `test_account_deletion_reaches_every_collection_written_per_user` fails if
+a collection the app writes with a `user_id` is missing from `privacy.delete_account`.
+It found four (practice sessions, adverse-reaction reports, push endpoints, feedback).
 
 #### Diet library: authored, not derived
 `data/knowledge_base/diet_foods.json` is **generated** by
@@ -786,6 +842,22 @@ largest says its scoring "may differ from clinical evaluations made by expert
 practitioners". Comparing our scorer against theirs compares two rule engines over
 two different questionnaires. Clinical accuracy needs a blind Vaidya study, specified
 as Part 7 of `data/golden/vaidya_reviewer_packet.md`.
+
+### Preferences forms
+`client/src/components/PreferencesModal.jsx` holds every feature's form; the schemas in
+`server/schemas/preferences_schema.py` **do not forbid unknown fields**, so an answer the
+schema does not declare returns 200 and is dropped on save. Koshtha and the Ayurvedic
+medicines already being taken were both lost this way; both are safety inputs.
+`tests/test_preferences_form_fields.py` parses the JSX and fails on any such field. If a
+form edits an answer in its own shape (gym `likes`/`dislikes`), name it in `_FORM_ONLY`.
+
+Two answers are asked on two forms and unioned server-side, so both engines see either:
+the Ayurvedic medicines already taken (Panchakarma + remedies; `herb_overlap.declared_ayurvedic`,
+checked by both engines through one matcher) and injuries (gym + yoga).
+
+The form opens pre-filled from the saved answers (`savedToForm`), so give any new field
+that is stored as a list but edited as text a case there. Without one, saving again
+writes back the wrong shape.
 
 ### Chat Agent (`server/ai/agents/health_agent.py`)
 The conversational chatbot (`POST /api/chat`, mounted in `main.py`) **is** a LangGraph ReAct agent (`create_react_agent`) with a small tool set (`get_plan_detail`, `set_reminder`, `check_my_medicine_interactions`, `adapt_plan`, `get_health_trend`). This is the *only* place LangGraph is used — the removed 4-agent pipeline noted above was for **plan authoring**, which is now purely engine-backed. Chat may read/adapt plans and trigger side effects but never authors them from free text. LangSmith tracing is enabled when a key is configured.

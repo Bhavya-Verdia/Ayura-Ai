@@ -1088,18 +1088,17 @@ def _already_taking(components: list[str], existing: list[str]) -> list[dict]:
     the one they are self-administering, not to drop the constituent from a
     prescribed formulation, and that is a decision for the patient and their Vaidya.
     """
+    from engine.herb_overlap import herbs_in
     herbs = pk_clinical.get("herbs", {})
     hits = []
     for key in components:
         display = herbs.get(key, {}).get("display", key.replace("_", " ").title())
-        stem = display.split(" (")[0].lower()
+        mine = herbs_in(display) | herbs_in(key.replace("_", " "))
         for taken in existing:
-            t = str(taken).strip().lower()
-            if not t:
-                continue
-            # Match either way: "ashwagandha" against "Ashwagandha Churna", and
-            # "Ashwagandha Churna 5g" against "ashwagandha".
-            if stem in t or t in stem or key in t.replace(" ", "_"):
+            # Shared with the medicines plan: words, not substrings, so a
+            # one-letter entry no longer matches every herb, and spellings and
+            # compounds (Triphala, Trikatu) are folded. See engine/herb_overlap.
+            if mine & herbs_in(taken):
                 hits.append({
                     "herb": display,
                     "already_taking": str(taken),
