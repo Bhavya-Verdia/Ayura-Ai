@@ -9,6 +9,7 @@ conditions and injuries each mechanism is dangerous for. Matching is by
 substring over the practitioner's declared condition, so "inguinal_hernia" and
 "hernia" both reach `abdominal_pressure`.
 """
+import re
 
 # Conditions used to be mapped onto whichever pose tag was vaguely nearby:
 # hernia onto knee_injury, epilepsy onto heart_disease, migraine onto
@@ -115,11 +116,23 @@ RISK_VOCAB = frozenset(
     for tag in tags)
 
 
+def unfalse(term) -> str:
+    """A declared condition with the substrings that name a different one removed.
+
+    Every map here matches by substring, and two words contain another condition:
+    "heart" is in "heartburn", which is reflux, and "hernia" is in "herniated
+    disc", which is a spine. A slipped disc was read as an abdominal hernia, which
+    put it under the intensity ceiling, attached the hernia note, blocked Kapalabhati
+    and took every abdominal-pressure pose out of a beginner's yoga pool."""
+    text = str(term).lower().replace("heartburn", "acid_reflux")
+    return re.sub(r"herniat[a-z]*", "slipped", text)
+
+
 def condition_risk_tags(conditions) -> set:
     """Mechanisms to avoid for these declared conditions."""
     risks: set = set()
     for cond in conditions or []:
-        key = str(cond).lower()
+        key = unfalse(cond)
         for k, tags in _CONDITION_RISK_TAGS.items():
             if k in key:
                 risks.update(tags)
@@ -130,7 +143,7 @@ def injury_risk_tags(injuries) -> set:
     """Mechanisms to avoid for these declared injuries or limitations."""
     risks: set = set()
     for inj in injuries or []:
-        key = str(inj).lower()
+        key = unfalse(inj)
         for k, tags in _INJURY_RISK_TAGS.items():
             if k in key:
                 risks.update(tags)

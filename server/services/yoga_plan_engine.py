@@ -795,7 +795,9 @@ _MEDICAL_CONTRA_MAP = {
 # The maps live in `engine.movement_risk`, shared with the gym engine: both
 # features read the same profile, and two copies of a safety list is how they
 # drift apart.
-from engine.movement_risk import _CONDITION_RISK_TAGS, _INJURY_RISK_TAGS  # noqa: E402
+from engine.movement_risk import (  # noqa: E402
+    _CONDITION_RISK_TAGS, _INJURY_RISK_TAGS, condition_risk_tags, injury_risk_tags, unfalse,
+)
 
 _INJURY_CONTRA_MAP = {
     "bad_knee":        {"knee_injury", "knee_replacement"},
@@ -945,20 +947,13 @@ def _build_risk_set(user_profile: dict, age_group: str = "adult", yoga_prefs: di
     """Pose mechanisms this user must avoid, derived from conditions and injuries."""
     risks: set[str] = set()
 
-    for cond in (user_profile.get("medical_history") or []):
-        key = str(cond).lower()
-        for k, tags in _CONDITION_RISK_TAGS.items():
-            if k in key:
-                risks.update(tags)
+    risks |= condition_risk_tags(user_profile.get("medical_history") or [])
 
     # Both maps, as the gym reads them: a hernia or an abdominal operation is the
     # same mechanism whether it was declared as a condition or ticked as an injury,
     # and `abdominal_surgery` is only in the condition map.
-    for inj in _limitation_terms(user_profile, yoga_prefs):
-        key = str(inj).lower()
-        for k, tags in (*_INJURY_RISK_TAGS.items(), *_CONDITION_RISK_TAGS.items()):
-            if k in key:
-                risks.update(tags)
+    limitations = _limitation_terms(user_profile, yoga_prefs)
+    risks |= injury_risk_tags(limitations) | condition_risk_tags(limitations)
 
     # Falls are the dominant injury mechanism over 60, and bone density is
     # already declining — the two risks that most warrant a blanket exclusion.
@@ -1326,10 +1321,13 @@ def _pranayama_hard_blocked(pr: dict, user_conditions: set[str]) -> bool:
         contra_tokens.add(str(c).lower())
     if not contra_tokens:
         return False
+    # `unfalse`: a herniated disc is not a hernia, and Kapalabhati was blocked
+    # for it on the strength of the substring.
+    declared = {unfalse(uc) for uc in user_conditions}
     for tok in contra_tokens:
         if not tok:
             continue
-        for uc in user_conditions:
+        for uc in declared:
             if tok in uc or uc in tok:
                 return True
     return False

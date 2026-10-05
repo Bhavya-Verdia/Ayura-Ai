@@ -225,7 +225,7 @@ def test_the_form_offers_exactly_what_the_server_accepts():
 
     jsx = (Path(__file__).resolve().parents[2] / "client" / "src" / "components"
            / "PreferencesModal.jsx").read_text()
-    block = jsx[jsx.index("const GYM_INJURIES"):jsx.index("];", jsx.index("const GYM_INJURIES"))]
+    block = jsx[jsx.index("const INJURIES"):jsx.index("];", jsx.index("const INJURIES"))]
     offered = set(re.findall(r"value: '([a-z_]+)'", block))
     assert offered == GYM_INJURY_OPTIONS
     assert all(any(k in opt for k in _INJURY_TOKENS) for opt in GYM_INJURY_OPTIONS)

@@ -139,3 +139,26 @@ def test_a_form_opened_for_the_first_time_shows_the_other_forms_chips():
     res = asyncio.run(get_feature_preferences("yoga", user=SimpleNamespace(id="u"), db=db))
     assert res.is_set is False
     assert res.preferences["injuries"] == ["hernia"]
+
+
+def test_a_herniated_disc_is_not_a_hernia():
+    """Every map matches by substring, and "hernia" is in "herniated". A slipped
+    disc was given the hernia note, the intensity ceiling, a Kapalabhati block and
+    the loss of every abdominal-pressure pose. A real hernia still gets all four."""
+    from engine.movement_risk import condition_risk_tags, injury_risk_tags
+    from services.gym_condition_guidance import guidance_for
+    from services.gym_plan_engine import _intensity_ceiling
+    from services.yoga_plan_engine import _pranayama_hard_blocked
+
+    kapalabhati = {"id": "skull_shining"}
+    for disc in ("herniated_disc", "Herniated disc L4-L5", "disc herniation"):
+        assert "abdominal_pressure" not in condition_risk_tags([disc]) | injury_risk_tags([disc])
+        assert "abdominal" not in {g["key"] for g in guidance_for([disc])}
+        assert _intensity_ceiling({"age": 35, "medical_history": [disc]}) is None
+        assert not _pranayama_hard_blocked(kapalabhati, {disc.lower()})
+    assert "back" in {g["key"] for g in guidance_for(["herniated_disc"])}
+
+    for hernia in ("hernia", "inguinal_hernia"):
+        assert "abdominal_pressure" in condition_risk_tags([hernia])
+        assert _intensity_ceiling({"age": 35, "medical_history": [hernia]})
+        assert _pranayama_hard_blocked(kapalabhati, {hernia})

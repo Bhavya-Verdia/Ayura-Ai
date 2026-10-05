@@ -268,11 +268,10 @@ CONDITION_GUIDANCE: list[dict] = [
     },
 ]
 
+from engine.movement_risk import unfalse  # noqa: E402
 
-def _unfalse(term) -> str:
-    """"heart" is a substring of "heartburn", which is reflux, not a heart
-    condition — and it reached the cardiac note and the intensity ceiling."""
-    return str(term).lower().replace("heartburn", "acid_reflux")
+# Shared with the risk maps and both engines; see engine.movement_risk.unfalse.
+_unfalse = unfalse
 
 
 def guidance_for(declared) -> list[dict]:
