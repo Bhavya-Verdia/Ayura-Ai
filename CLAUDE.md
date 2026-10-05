@@ -840,6 +840,18 @@ practitioners". Comparing our scorer against theirs compares two rule engines ov
 two different questionnaires. Clinical accuracy needs a blind Vaidya study, specified
 as Part 7 of `data/golden/vaidya_reviewer_packet.md`.
 
+### Preferences forms
+`client/src/components/PreferencesModal.jsx` holds every feature's form; the schemas in
+`server/schemas/preferences_schema.py` **do not forbid unknown fields**, so an answer the
+schema does not declare returns 200 and is dropped on save. Koshtha and the Ayurvedic
+medicines already being taken were both lost this way; both are safety inputs.
+`tests/test_preferences_form_fields.py` parses the JSX and fails on any such field. If a
+form edits an answer in its own shape (gym `likes`/`dislikes`), name it in `_FORM_ONLY`.
+
+The form opens pre-filled from the saved answers (`savedToForm`), so give any new field
+that is stored as a list but edited as text a case there. Without one, saving again
+writes back the wrong shape.
+
 ### Chat Agent (`server/ai/agents/health_agent.py`)
 The conversational chatbot (`POST /api/chat`, mounted in `main.py`) **is** a LangGraph ReAct agent (`create_react_agent`) with a small tool set (`get_plan_detail`, `set_reminder`, `check_my_medicine_interactions`, `adapt_plan`, `get_health_trend`). This is the *only* place LangGraph is used — the removed 4-agent pipeline noted above was for **plan authoring**, which is now purely engine-backed. Chat may read/adapt plans and trigger side effects but never authors them from free text. LangSmith tracing is enabled when a key is configured.
 
