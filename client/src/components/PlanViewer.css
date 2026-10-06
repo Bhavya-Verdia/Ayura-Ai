@@ -6598,3 +6598,43 @@
 .gym-log-chip.active { border-color: var(--ayura-accent); background: color-mix(in srgb, var(--ayura-accent) 18%, transparent); }
 .gym-log-actions { display: flex; justify-content: flex-end; gap: 0.4rem; }
 .gym-log-error { font-size: 0.74rem; color: #e07a6e; margin: 0; }
+
+/* ── Week check-in + next week's adjusted weights ── */
+.gym-checkin {
+  margin: 1rem 0; padding: 0.85rem 1rem; border-radius: 12px; display: grid; gap: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--ayura-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--ayura-accent) 5%, transparent);
+}
+.gym-checkin-closed { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.gym-checkin-closed .gym-checkin-sub,
+.gym-checkin-closed .gym-checkin-stop,
+.gym-checkin-closed .gym-checkin-rebuild { grid-column: 1; }
+.gym-checkin-closed > .gym-log-toggle { grid-column: 2; grid-row: 1 / span 2; justify-self: end; }
+.gym-checkin-title { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600;
+  font-size: 0.9rem; color: var(--ayura-text-primary); }
+.gym-checkin-sub { font-size: 0.76rem; color: var(--ayura-text-secondary); }
+.gym-checkin-q { margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--ayura-text-secondary); }
+.gym-checkin-check { display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem;
+  color: var(--ayura-text); cursor: pointer; }
+.gym-checkin-check input { width: 1rem; height: 1rem; accent-color: var(--ayura-accent); }
+.gym-checkin-flag.active { border-color: #e07a6e; background: color-mix(in srgb, #e07a6e 16%, transparent); }
+.gym-checkin-stop, .gym-adjust-stop {
+  display: flex; align-items: flex-start; gap: 0.45rem; margin: 0; font-size: 0.8rem; line-height: 1.45;
+  color: #e07a6e; padding: 0.55rem 0.7rem; border-radius: 10px;
+  background: color-mix(in srgb, #e07a6e 10%, transparent);
+}
+.gym-adjust-stop { margin: 0.75rem 0; font-size: 0.86rem; }
+.gym-checkin-rebuild { justify-self: start; }
+.gym-adjusted {
+  margin-top: 0.3rem; padding: 0.4rem 0.6rem; border-radius: 8px; font-size: 0.76rem; line-height: 1.45;
+  border-left: 3px solid var(--ayura-accent);
+  background: color-mix(in srgb, var(--ayura-accent) 7%, transparent); color: var(--ayura-text);
+}
+.gym-adjusted-down, .gym-adjusted-deload { border-left-color: var(--ayura-text-secondary); }
+.gym-adjusted-k { color: var(--ayura-text-secondary); }
+.gym-adjusted-why { display: block; color: var(--ayura-text-secondary); margin-top: 0.1rem; }
+@media (max-width: 520px) {
+  .gym-checkin-closed { grid-template-columns: 1fr; }
+  .gym-checkin-closed > .gym-log-toggle { grid-column: 1; grid-row: auto; justify-self: start; }
+}
+.gym-checkin-stop svg, .gym-adjust-stop svg { flex-shrink: 0; margin-top: 0.12rem; }

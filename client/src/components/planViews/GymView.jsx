@@ -6,11 +6,12 @@ import {
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { workoutsAPI } from '../../api/client'
 import { GymSetLogger } from './GymSetLogger'
+import { GymWeekCheckin } from './GymWeekCheckin'
 
 const WEEK_THEMES = ['Foundation', 'Volume Build', 'Intensity Peak', 'Deload']
 
 
-export function GymView({ plan }) {
+export function GymView({ plan, onRegenerate }) {
   const [activeWeek, setActiveWeek] = useState(0)
   const [expandedEx, setExpandedEx] = useState(new Set())
   const [showAllActivities, setShowAllActivities] = useState(new Set())
@@ -21,6 +22,13 @@ export function GymView({ plan }) {
   // The next block reads it; this view shows it beside each exercise.
   const [logs, setLogs] = useState({})
   const planId = plan.plan_id
+  // Week check-ins, keyed by week number, and what last week's sets and
+  // check-in change in the week on screen. The plan's structure is fixed for
+  // the block; only the weights move, and the server says why for each.
+  const [checkins, setCheckins] = useState({})
+  // Stored with the week it was fetched for, so switching weeks never shows the
+  // previous week's adjustments while the next request is in flight.
+  const [adjusted, setAdjusted] = useState(null)
   useEffect(() => {
     if (!planId) return
     let live = true
@@ -32,8 +40,32 @@ export function GymView({ plan }) {
         setLogs(map)
       })
       .catch(() => {})  // logging is an addition to the plan, never a condition of seeing it
+    workoutsAPI.checkins(planId)
+      .then(({ data }) => {
+        if (!live) return
+        const map = {}
+        ;(data?.checkins || []).forEach(c => { map[c.week] = c })
+        setCheckins(map)
+      })
+      .catch(() => {})
     return () => { live = false }
   }, [planId])
+
+  const prevWeek = activeWeek          // 1-based number of the week before the active one
+  const prevWeekLogs = Object.keys(logs).filter(k => k.startsWith(`${prevWeek}:`))
+    .map(k => `${k}:${logs[k]?.effort}:${(logs[k]?.sets || []).map(s => `${s.kg}x${s.reps}`).join(',')}`)
+    .join('|')
+  const prevCheckin = JSON.stringify(checkins[prevWeek] || null)
+  useEffect(() => {
+    if (!planId || activeWeek < 1) return
+    let live = true
+    const week = activeWeek + 1
+    workoutsAPI.adjustments(planId, week)
+      .then(({ data }) => { if (live) setAdjusted({ week, data }) })
+      .catch(() => { if (live) setAdjusted({ week, data: null }) })
+    return () => { live = false }
+  }, [planId, activeWeek, prevWeekLogs, prevCheckin])
+  const adjust = adjusted?.week === activeWeek + 1 ? adjusted.data : null
 
   const us = plan.user_summary || {}
   const fourWeekPlan = plan.four_week_plan || []
@@ -173,6 +205,28 @@ export function GymView({ plan }) {
           <span className="gym-week-banner-icon"><Lightbulb size={16} strokeWidth={2} /></span>
           <span className="gym-week-banner-text">
             <strong>Week {activeWeek + 1} · {WEEK_THEMES[activeWeek]}:</strong> {weekPrescription.note}
+          </span>
+        </div>
+      )}
+
+      {/* ── What last week changed in this one ── */}
+      {adjust?.stop && (
+        <div className="gym-adjust-stop" role="alert">
+          <ShieldAlert size={16} /> <span>{adjust.stop}</span>
+        </div>
+      )}
+      {adjust?.notices?.map((n, i) => (
+        <div key={i} className="gym-week-banner gym-adjust-notice">
+          <span className="gym-week-banner-icon"><Info size={16} strokeWidth={2} /></span>
+          <span className="gym-week-banner-text">{n}</span>
+        </div>
+      ))}
+      {adjust && !adjust.stop && Object.keys(adjust.exercises || {}).length > 0 && (
+        <div className="gym-week-banner gym-adjust-notice">
+          <span className="gym-week-banner-icon"><Target size={16} strokeWidth={2} /></span>
+          <span className="gym-week-banner-text">
+            <strong>Adjusted from week {adjust.based_on_week}:</strong> {Object.keys(adjust.exercises).length} exercise
+            {Object.keys(adjust.exercises).length === 1 ? ' has' : 's have'} a weight set from what you logged — shown under each one.
           </span>
         </div>
       )}
@@ -473,6 +527,13 @@ export function GymView({ plan }) {
                                   {ex.weight_range}
                                 </div>
                               )}
+                              {!adjust?.stop && adjust?.exercises?.[ex.exercise_id] && (
+                                <div className={`gym-adjusted gym-adjusted-${adjust.exercises[ex.exercise_id].direction}`}>
+                                  <span className="gym-adjusted-k">This week for you:</span>{' '}
+                                  <strong>{adjust.exercises[ex.exercise_id].text}</strong>
+                                  <span className="gym-adjusted-why">{adjust.exercises[ex.exercise_id].reason}</span>
+                                </div>
+                              )}
                               {ex.coaching_cue && (
                                 <p className="gym-ex-cue">{ex.coaching_cue}</p>
                               )}
@@ -539,6 +600,18 @@ export function GymView({ plan }) {
           )
         })}
       </div>
+
+      {/* ── The week's check-in, below the days it is about ── */}
+      {weekDays.length > 0 && (
+        <GymWeekCheckin
+          key={`${planId}:${activeWeek + 1}`}
+          planId={planId}
+          week={activeWeek + 1}
+          saved={checkins[activeWeek + 1]}
+          onSaved={(c) => setCheckins(prev => ({ ...prev, [c.week]: c }))}
+          onRebuild={onRegenerate}
+        />
+      )}
 
       {/* ── Ayurvedic Tips ── */}
       {Object.keys(tips).length > 0 && (

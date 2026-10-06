@@ -110,7 +110,7 @@ function ClassicalBasis({ planType }) {
 }
 
 
-export default function PlanViewer({ plan: rawPlan, planType }) {
+export default function PlanViewer({ plan: rawPlan, planType, onRegenerate }) {
   if (!rawPlan) return <p className="plan-empty">No plan data available.</p>
 
   const sectionKey = planType ? SECTION_KEY_MAP[planType] : null
@@ -196,7 +196,7 @@ export default function PlanViewer({ plan: rawPlan, planType }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         >
-          <GymView plan={plan} />
+          <GymView plan={plan} onRegenerate={onRegenerate} />
         </m.div>
       )}
 

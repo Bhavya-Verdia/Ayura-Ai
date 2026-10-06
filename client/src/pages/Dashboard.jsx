@@ -710,7 +710,17 @@ const Dashboard = () => {
           onBack={() => { setViewingPlan(null); setViewingType(null) }}
         >
           <Suspense fallback={<div className="skeleton-plan-card" style={{ minHeight: 320 }} />}>
-            <PlanViewer plan={viewingPlan} planType={viewingType} />
+            <PlanViewer
+              plan={viewingPlan}
+              planType={viewingType}
+              // A check-in that adds an injury asks for the plan to be rebuilt
+              // around it; the new plan replaces this one on the dashboard.
+              onRegenerate={() => {
+                const type = viewingType
+                setViewingPlan(null); setViewingType(null)
+                generatePlan(type, true)
+              }}
+            />
           </Suspense>
         </SectionBoundary>
       </m.div>
