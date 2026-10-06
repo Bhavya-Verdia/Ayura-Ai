@@ -328,7 +328,7 @@ def test_the_brief_states_the_per_meal_budget():
         _prefs(diet_goal="weight_loss"))
     assert "ENERGY PRESCRIPTION" in brief
     assert "Per-meal budget" in brief
-    assert "Minimum protein" in brief
+    assert "Protein: " in brief and "never under" in brief
 
 
 # --------------------------------------------------------------------------
