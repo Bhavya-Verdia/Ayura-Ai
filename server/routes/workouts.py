@@ -17,7 +17,8 @@ from routes.profile import get_current_user
 from schemas.user_schema import UserDocument
 from schemas.preferences_schema import GYM_INJURY_OPTIONS
 from services.gym_week_adjust import FEELINGS, RED_FLAGS, week_adjustments
-from services.workout_log import block_summary, log_key
+from services.workout_log import (block_history, block_summary, consecutive_progressed,
+                                  level_up_offer, log_key)
 
 router = APIRouter()
 
@@ -208,3 +209,44 @@ async def adjustments(
     checkin = await db.gym_checkins.find_one(
         {"_id": f"{user.id}:{plan_id}:{week - 1}", "user_id": user.id})
     return week_adjustments(plan, entries, checkin, week)
+
+
+
+# ── Block over block ─────────────────────────────────────────────────────────
+
+def _profile_for_offer(user: UserDocument) -> dict:
+    return {"fitness_level": user.fitness_level, "age": user.age,
+            "pregnancy_or_nursing": getattr(user, "pregnancy_or_nursing", False)}
+
+
+@router.get("/blocks")
+async def blocks(
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """Every block trained, oldest first, and whether intermediate programming
+    is on offer. Read from every gym plan rather than the 42-day load window."""
+    history = await block_history(db, user.id)
+    return {"blocks": history, "consecutive": consecutive_progressed(history),
+            "level_up": level_up_offer(history, _profile_for_offer(user))}
+
+
+@router.post("/level-up")
+async def level_up(
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """Accept the offer. Checked again here: the button is a request, and the
+    evidence for it is on the server."""
+    offer = level_up_offer(await block_history(db, user.id), _profile_for_offer(user))
+    if not offer:
+        raise HTTPException(status_code=409, detail="No level change is on offer")
+    now = datetime.now(timezone.utc)
+    await db.users.update_one({"_id": user.id},
+                              {"$set": {"fitness_level": offer["to"], "updated_at": now}})
+    # The gym form's own level prices the unlogged loads; moving one without the
+    # other would program an intermediate split with beginner weights.
+    await db.user_preferences.update_one(
+        {"user_id": user.id, "gym": {"$exists": True}},
+        {"$set": {"gym.strength_level": offer["to"], "updated_at": now}})
+    return {"fitness_level": offer["to"]}

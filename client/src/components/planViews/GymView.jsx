@@ -7,6 +7,8 @@ import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { workoutsAPI } from '../../api/client'
 import { GymSetLogger } from './GymSetLogger'
 import { GymWeekCheckin } from './GymWeekCheckin'
+import { GymBlockComplete, GymBlockHistory } from './GymBlocks'
+import { blockIsOver } from './gymBlock'
 
 const WEEK_THEMES = ['Foundation', 'Volume Build', 'Intensity Peak', 'Deload']
 
@@ -198,6 +200,9 @@ export function GymView({ plan, onRegenerate }) {
           </button>
         ))}
       </div>
+
+      {/* ── The block is over: what it came to, and the next one ── */}
+      {blockIsOver(plan, logs) && <GymBlockComplete plan={plan} over onRegenerate={onRegenerate} />}
 
       {/* ── Week coaching banner ── */}
       {weekPrescription?.note && (
@@ -612,6 +617,13 @@ export function GymView({ plan, onRegenerate }) {
           onRebuild={onRegenerate}
         />
       )}
+
+      {/* ── Week four ends the block: say what comes next before it does ── */}
+      {activeWeek === 3 && !blockIsOver(plan, logs) && (
+        <GymBlockComplete plan={plan} over={false} onRegenerate={onRegenerate} />
+      )}
+
+      <GymBlockHistory onRegenerate={onRegenerate} />
 
       {/* ── Ayurvedic Tips ── */}
       {Object.keys(tips).length > 0 && (

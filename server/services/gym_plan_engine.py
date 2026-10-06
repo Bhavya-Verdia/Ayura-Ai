@@ -552,6 +552,14 @@ _TIER_REPS = {
 _SECONDARY_MAX_SETS = 4
 
 
+def _with_block_sets(rx: dict, role: str, extra: int) -> dict:
+    """The week header's prescription with the block's extra main-lift set, so
+    the header describes the sets underneath it."""
+    if role != "primary" or not extra:
+        return rx
+    return {**rx, "sets": min(_MAX_SETS, int(rx.get("sets", 3)) + extra)}
+
+
 def _role_prescription(rx: dict, role: str) -> dict:
     """The goal's week prescription, shifted for what this exercise is doing."""
     sets = int(rx.get("sets", 3)) + _ROLE_SETS.get(role, 0)
@@ -3115,7 +3123,7 @@ def _headline_lifts(scheme) -> dict:
 
 
 def _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids=(),
-                    variant=0, loadable_first=False, scheme=None):
+                    variant=0, loadable_first=False, scheme=None, block=1):
     """The day's exercises: a stable core, plus one that rotates weekly.
 
     The seed used to include the week, so every week drew a fresh random set —
@@ -3160,7 +3168,11 @@ def _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids=(
     day_order = _rotate_patterns(tuple(_FOCUS_PATTERNS.get(focus, ())), variant) \
         if variant and _FOCUS_PATTERNS.get(focus) else _FOCUS_PATTERNS.get(focus, ())
     missing = tuple(p for p in day_order if p not in covered)
-    rotating = _choose(pool, target - len(core), f"{user_id}-{focus}-d{day_num}-rotate-w{week}",
+    # A new block draws a new rotating slot; the core, and with it the main
+    # lifts, is unchanged. Block 1 keeps the seed it always had.
+    block_key = f"-b{block}" if block > 1 else ""
+    rotating = _choose(pool, target - len(core),
+                       f"{user_id}-{focus}-d{day_num}{block_key}-rotate-w{week}",
                        taken, families, caps=caps, per_muscle=per_muscle,
                        preferred_ids=preferred_ids, loadable_first=loadable_first,
                        pattern_counts=pattern_counts, pattern_cap=cap,
@@ -3735,7 +3747,8 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
         pool = [ex for group in muscle_split.values() for ex in group]
 
     selected = _select_for_day(pool, target, user_id, focus, day_num, week, preferred_ids,
-                               variant=variant, loadable_first=loadable_first, scheme=scheme)
+                               variant=variant, loadable_first=loadable_first, scheme=scheme,
+                               block=int(gym_prefs.get("_block") or 1))
 
     # A session is performed in an order, and the order is the programme: the
     # heaviest compound while the practitioner is fresh, its support after it,
@@ -3754,10 +3767,19 @@ def build_day_plan(day_num, day_name, focus, muscle_split, gym_prefs, user_profi
     overhead = _overhead_seconds(duration)
     short_session = overhead < _OVERHEAD_SECONDS
 
+    extra_sets = int(gym_prefs.get("_block_extra_sets") or 0)
+
     def _rx_for(week_rx):
-        return [(_finisher_prescription(ex, level, _cardio_preference(gym_prefs))
-                 if ex is finisher else _prescribe(ex, week_rx, level, role))
-                for ex, role in ordered]
+        out = []
+        for ex, role in ordered:
+            if ex is finisher:
+                out.append(_finisher_prescription(ex, level, _cardio_preference(gym_prefs)))
+                continue
+            sets, reps, rest = _prescribe(ex, week_rx, level, role)
+            if role == "primary" and extra_sets:
+                sets = min(_MAX_SETS, sets + extra_sets)
+            out.append((sets, reps, rest))
+        return out
 
     # The session is fitted to the clock on week one, and the same adjustment is
     # carried to every week, so the block's own periodisation — more sets in the
@@ -4078,7 +4100,25 @@ def _next_block(previous_block) -> int:
     return n + 1 if previous_block.get("progress") else n
 
 
-def _block_notice(previous_block, logged_lifts) -> str | None:
+# What a block that was built on changes, beyond the loads the log sets. Until
+# this the block number was a label: block 2 had block 1's sets, reps and
+# exercises, and only the weights moved. A coach adds volume to the main lift
+# when the last block was done, and changes some accessory work so the month
+# does not go stale — while the main lifts stay, because they are what the
+# progress is measured on. One set, once: volume does not climb block after
+# block, the loads do. A repeated block keeps its number, so it keeps the
+# volume it had.
+_BLOCK_EXTRA_PRIMARY_SETS = 1
+
+
+def _block_extra_sets(block: int, user_profile: dict) -> int:
+    if block < 2 or user_profile.get("pregnancy_or_nursing"):
+        # Pregnancy is maintained, not progressed (ACOG 804).
+        return 0
+    return _BLOCK_EXTRA_PRIMARY_SETS
+
+
+def _block_notice(previous_block, logged_lifts, extra_sets: int = 0) -> str | None:
     """What this block was built from. Without it, a plan that read the log and
     one that did not look identical."""
     measured = len(logged_lifts or {})
@@ -4090,7 +4130,9 @@ def _block_notice(previous_block, logged_lifts) -> str | None:
     done, planned = previous_block.get("sessions_logged", 0), previous_block.get("sessions_planned", 0)
     if previous_block.get("progress"):
         lead = (f"Block {_next_block(previous_block)}. You logged {done} of {planned} sessions "
-                "last block, so this one builds on it")
+                "last block, so this one builds on it — "
+                + ("main lifts get a set more than block 1 had, " if extra_sets else "")
+                + "the main lifts themselves stay, and one exercise a day is new")
     else:
         lead = (f"You logged {done} of {planned} sessions last block, so this one repeats its "
                 "structure rather than adding to it — finish more of it and the next block "
@@ -4228,6 +4270,11 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         if focus != "rest":
             emphasis_seen[headline] += 1
 
+    block = _next_block(previous_block)
+    extra_sets = _block_extra_sets(block, user_profile)
+    gym_prefs["_block"] = block
+    gym_prefs["_block_extra_sets"] = extra_sets
+
     four_week_plan = []
     for week in range(1, 5):
         week_days = [
@@ -4253,11 +4300,13 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         four_week_plan.append({
             "week": week,
             "theme": {1: "Foundation", 2: "Volume Build", 3: "Intensity Peak", 4: "Deload & Reset"}[week],
-            "prescription": {**_role_prescription(base_rx, "primary"),
+            "prescription": {**_with_block_sets(_role_prescription(base_rx, "primary"),
+                                                "primary", extra_sets),
                              "note": base_rx.get("note", ""),
                              "applies_to": "main lifts"},
             "role_prescriptions": {
-                role: {**_role_prescription(base_rx, role), "label": _ROLE_LABEL[role]}
+                role: {**_with_block_sets(_role_prescription(base_rx, role), role, extra_sets),
+                       "label": _ROLE_LABEL[role]}
                 for role in ("primary", "secondary", "accessory")
             },
             "days": week_days,
@@ -4310,7 +4359,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
             # Resolved from the profile and the gym form together, so the
             # coaching written around the plan knows what the gates knew.
             "injuries": injuries,
-            "block": _next_block(previous_block),
+            "block": block,
         },
         "weekly_schedule": four_week_plan[0]["days"],
         "four_week_plan": four_week_plan,
@@ -4350,7 +4399,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         "injury_notice": _injury_notice(unmatched_injuries),
         "intensity_notice": _intensity_notice(goal, gym_prefs.get("training_style"),
                                               user_profile),
-        "block_notice": _block_notice(previous_block, logged_lifts),
+        "block_notice": _block_notice(previous_block, logged_lifts, extra_sets),
         "previous_block": previous_block,
         # What a practitioner with a condition needs to know before the session,
         # where no movement is the problem — hypoglycaemia, an asthma attack, a
