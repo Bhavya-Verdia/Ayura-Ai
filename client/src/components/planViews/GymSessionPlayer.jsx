@@ -428,9 +428,11 @@ export function GymSessionPlayer({ planId, week, day, adjustments, logs, onLogge
   const logExercise = useCallback(async (ex, entry) => {
     if (entry) {
       await workoutsAPI.log({ plan_id: planId, week, day: day.day, exercise_id: ex.exercise_id, ...entry })
+      // Derived here so the event carries a yes/no, never the weights.
+      const bodyweight = entry.sets.every(s => !s.kg)
       track(EVENTS.GYM_SETS_LOGGED, { week, sets: entry.sets.length, effort: entry.effort,
         minutes: entry.minutes ? Math.round(entry.minutes) : 0,
-        bodyweight: entry.sets.every(s => !s.kg), edited: false, source: 'session' })
+        bodyweight, edited: false, source: 'session' })
       setLogged(n => n + 1)
       onLogged?.(day.day, ex.exercise_id, entry)
     }
