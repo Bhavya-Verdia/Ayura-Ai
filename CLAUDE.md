@@ -203,6 +203,28 @@ from the log is stale the moment a set is logged.
 a collection the app writes with a `user_id` is missing from `privacy.delete_account`.
 It found four (practice sessions, adverse-reaction reports, push endpoints, feedback).
 
+#### Gym: next week's weights move inside the block
+The log used to reach only the next block. `services/gym_week_adjust.week_adjustments`
+sets week N+1's load per exercise from week N's logged sets (`GET
+/api/workouts/adjustments`): top of the range or "easy" → one step up (1 kg below
+20 kg, 2.5 above, next bell); in range and "right" → same weight, more reps; below the
+range → hold; below **and** "very hard" → ~10% down. The block's **structure never
+moves** — only loads, and computed on read; the plan in `plan_history` is never
+rewritten.
+
+The plan's own week-to-week ratio is kept, so a deload stays lighter — and a deload
+week **never adds weight**, because at 4-5 kg the plan's deload rounds to the same
+quote and the ratio alone let it.
+
+The week check-in (`POST /api/workouts/checkins`, `db.gym_checkins`,
+`GymWeekCheckin.jsx`) is separate from the general Vikriti check-in on purpose: it asks
+how hard the week was, where it hurt, whether they were unwell, and four ACSM
+stop-exercise signs. **It can hold or lower a weight, never raise one** — "too easy"
+with nothing logged changes nothing and says why. A red flag replaces every adjustment
+with "see a doctor". Pain becomes an injury only when ticked ("add to my injuries"),
+goes into whichever of the gym/yoga forms exist, and offers a rebuild, because the gates
+read injuries at generation.
+
 #### Diet library: authored, not derived
 `data/knowledge_base/diet_foods.json` is **generated** by
 `scripts/build_diet_library.py` from the curated spec in `scripts/diet_library/`

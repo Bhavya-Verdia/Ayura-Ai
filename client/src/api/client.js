@@ -212,6 +212,9 @@ export const workoutsAPI = {
   log:     (data)   => API.post('/workouts/logs', data),
   list:    (planId) => API.get('/workouts/logs', { params: { plan_id: planId } }),
   summary: (planId) => API.get('/workouts/summary', { params: { plan_id: planId } }),
+  checkin:  (data)   => API.post('/workouts/checkins', data),
+  checkins: (planId) => API.get('/workouts/checkins', { params: { plan_id: planId } }),
+  adjustments: (planId, week) => API.get('/workouts/adjustments', { params: { plan_id: planId, week } }),
 }
 
 // ── Progress ───────────────────────────────────
