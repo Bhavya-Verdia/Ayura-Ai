@@ -919,13 +919,19 @@ VAYAH (AGE STAGE) — VRIDDHA / ELDER:
     from services.diet_energy import energy_target
     energy = energy_target(user_profile, diet_prefs)
     mb = energy["meal_budget"]
+    nt = energy["nutrient_targets"]
+    sat_fat_line = (f" | saturated fat under {nt['sat_fat_g']['max']} g"
+                    if nt.get("sat_fat_g") else "")
+    nt_notes = "".join(f"\n  {n}" for n in nt.get("notes") or [])
     energy_block = f"""ENERGY PRESCRIPTION (a clinical target, not a suggestion):
   Daily total: {energy['target_calories']} kcal. Every day of every week must land \
 within {energy['band'][0]}-{energy['band'][1]} kcal.
   A day totalling far less than this is a failed plan, not a light one.
   Per-meal budget: breakfast ~{mb['breakfast']} kcal | lunch ~{mb['lunch']} kcal | \
 snack ~{mb['snack']} kcal | dinner ~{mb['dinner']} kcal
-  Minimum protein: {energy['protein_floor_g']} g/day across the four meals.
+  Protein: {energy['protein_target_g']} g/day (never under {energy['protein_floor_g']} g), spread across the four meals.
+  Carbohydrate ~{nt['carbs_g']['target']} g ({nt['carbs_g']['pct_energy']}% of energy) | fat ~{nt['fat_g']['target']} g ({nt['fat_g']['pct_energy']}%) | fibre at least {nt['fibre_g']['min']} g{sat_fat_line}
+  Sodium under {nt['sodium_mg']['max']} mg (about {round(nt['sodium_mg']['max'] * 2.5 / 1000, 1)} g salt); added sugar {'none' if nt['added_sugar_g']['max'] == 0 else 'under ' + str(nt['added_sugar_g']['max']) + ' g'}.{nt_notes}
   Portions must be sized to deliver this. State the portion in a measurable unit
   (katori/ml/g/pieces) and make `macros_approx` honest for that portion — the figures
   are shown to the patient and are summed into a daily total on screen."""

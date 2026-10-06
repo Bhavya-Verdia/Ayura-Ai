@@ -58,3 +58,4 @@ client/test-results/
 
 # Reviewer pack output (regenerate with server/scripts/gym_reviewer_pack.py)
 server/scripts/gym_reviewer_pack/
+server/scripts/diet_reviewer_pack/

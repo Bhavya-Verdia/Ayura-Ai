@@ -76,16 +76,22 @@ def test_a_profile_without_measurements_is_estimated_and_says_so():
 # Floors, surpluses and the states that override the stated goal
 # --------------------------------------------------------------------------
 
-def test_a_deficit_never_lands_below_resting_requirement():
-    """`max(1200, ...)` is gender-blind and sits under most adults' BMR. A weight-loss
-    goal on an obese patient produced 1200 kcal against a BMR of 1486."""
-    result = energy_target(
-        _profile(age=52, gender="female", height_cm=157, weight_kg=84,
+def test_a_deficit_follows_the_guideline_and_stops_at_the_sex_floor():
+    """The floor used to be the patient's own BMR — a fitness heuristic, not clinical
+    guidance — which held a sedentary 104 kg diabetic asking to lose weight at
+    maintenance. AHA/ACC/TOS (2013): a 500 kcal deficit, not below 1200 kcal for a
+    woman or 1500 for a man."""
+    obese_man = energy_target(
+        _profile(age=34, gender="male", height_cm=172, weight_kg=104,
                  activity_level="sedentary", bmi_category="obese"),
         _prefs(diet_goal="weight_loss"))
-    assert result["target_calories"] >= result["bmr"]
-    assert result["target_calories"] >= result["floor_calories"]
-    assert any("resting requirement" in note for note in result["notes"])
+    assert obese_man["target_calories"] == pytest.approx(obese_man["tdee"] - 500, abs=10)
+    small_woman = energy_target(
+        _profile(age=52, gender="female", height_cm=150, weight_kg=60,
+                 activity_level="sedentary", bmi_category="overweight"),
+        _prefs(diet_goal="weight_loss"))
+    assert small_woman["target_calories"] == 1200
+    assert any("minimum for an unsupervised plan" in n for n in small_woman["notes"])
 
 
 def test_weight_loss_still_produces_a_deficit_when_there_is_room_for_one():
@@ -442,3 +448,71 @@ def test_a_fully_quantified_plan_reports_nothing_unmeasured():
     plan = reconcile_plan_energy(generate_diet_plan(profile, prefs, None),
                                  energy_target(profile, prefs))
     assert plan["energy_reconciliation"]["days_unquantified"] == 0
+
+
+# --------------------------------------------------------------------------
+# Pregnancy and breastfeeding by stage, and the targets beside the energy
+# --------------------------------------------------------------------------
+
+@pytest.mark.parametrize("trimester,kcal,protein", [(1, 0, 0.0), (2, 350, 9.5), (3, 350, 22.0)])
+def test_pregnancy_is_read_by_trimester(trimester, kcal, protein):
+    """Every pregnant user got +350 kcal, including a first-trimester woman who needs
+    none (ICMR-NIN 2020)."""
+    base = energy_target(_profile(), _prefs())
+    preg = energy_target(_profile(pregnancy_or_nursing=True, pregnancy_status="pregnant",
+                                  pregnancy_trimester=trimester), _prefs())
+    assert preg["target_calories"] - base["target_calories"] == pytest.approx(kcal, abs=10)
+    assert preg["protein_floor_g"] - base["protein_floor_g"] == pytest.approx(protein, abs=1)
+
+
+def test_breastfeeding_gets_the_lactation_addition_not_the_pregnancy_one():
+    base = energy_target(_profile(), _prefs())
+    nursing = energy_target(_profile(pregnancy_or_nursing=True, pregnancy_status="nursing"),
+                            _prefs(diet_goal="weight_loss"))
+    assert nursing["target_calories"] - base["target_calories"] == pytest.approx(600, abs=10)
+    assert any("Breastfeeding" in n for n in nursing["notes"])
+
+
+def test_an_unspecified_pregnancy_is_assumed_second_trimester_and_says_so():
+    e = energy_target(_profile(pregnancy_or_nursing=True), _prefs())
+    assert any("second trimester was assumed" in n for n in e["notes"])
+
+
+def test_kidney_disease_caps_protein_whatever_the_goal():
+    """KDIGO 2020: 0.8 g/kg in CKD not on dialysis. The muscle goal (1.4) and the
+    over-65 floor (1.1) each pushed a renal patient past it."""
+    for age, goal in ((40, "muscle_support"), (70, "general_wellness")):
+        e = energy_target(_profile(age=age, weight_kg=70, medical_history=["ckd"]),
+                          _prefs(diet_goal=goal))
+        assert e["protein_target_g"] <= round(70 * 0.8)
+        assert e["nutrient_targets"]["water_ml"]["target"] is None
+
+
+def test_the_macros_add_up_to_the_energy_and_agree_with_the_protein_target():
+    """The old split was a fixed share of energy: 119 g protein for a 12-year-old
+    whose floor beside it was 40 g, 288 g for an athlete."""
+    for prof, prefs in (
+        (_profile(age=12, weight_kg=40, height_cm=150), _prefs()),
+        (_profile(age=30, gender="male", weight_kg=80, height_cm=182,
+                  activity_level="very_active"), _prefs(diet_goal="muscle_support")),
+        (_profile(age=52, weight_kg=76, height_cm=170,
+                  medical_history=["ckd", "diabetes_type2"]), _prefs()),
+    ):
+        e = energy_target(prof, prefs)
+        m = e["macros"]
+        assert m["protein_g"] == e["protein_target_g"]
+        kcal = m["protein_g"] * 4 + m["carbs_g"] * 4 + m["fat_g"] * 9
+        assert kcal == pytest.approx(e["target_calories"], rel=0.02)
+        assert m["fat_g"] * 9 <= 0.35 * e["target_calories"] + 9
+
+
+def test_diabetes_holds_carbohydrate_to_half_the_energy_and_adds_no_sugar():
+    e = energy_target(_profile(weight_kg=80, height_cm=170, medical_history=["diabetes_type2"]),
+                      _prefs())
+    t = e["nutrient_targets"]
+    assert t["carbs_g"]["pct_energy"] <= 50 and t["added_sugar_g"]["max"] == 0
+
+
+def test_cardiac_conditions_get_a_saturated_fat_limit():
+    e = energy_target(_profile(medical_history=["high_cholesterol"]), _prefs())
+    assert e["nutrient_targets"]["sat_fat_g"]["max"] == round(0.07 * e["target_calories"] / 9)

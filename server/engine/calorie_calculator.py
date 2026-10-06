@@ -49,20 +49,21 @@ class CalorieCalculator:
         }
 
     def _bmr(self, gender: str, age: int, weight_kg: float, height_cm: float) -> float:
-        """Harris-Benedict. `other` and an unset gender take the mean of the two.
+        """Mifflin-St Jeor. `other` and an unset gender take the mean of the two.
 
-        The app offers male / female / other in onboarding and the profile schema
-        accepts all three, but this was `if female else male` — so a user who chose
-        `other`, and every user who answered nothing, silently got the male equation:
-        2410 kcal against 2190 on the same 168 cm / 62 kg body, while
-        `diet_energy._SEX_FLOOR` handed them the *female* floor. Half of one and half
-        of the other, chosen by nobody.
+        It was Harris-Benedict (1919), which overestimates resting expenditure by
+        roughly 5-15% in modern adults; Mifflin-St Jeor (1990) is the equation the
+        Academy of Nutrition and Dietetics found most accurate for healthy and
+        obese adults alike, and the one a dietitian reviewing the plan will
+        recompute by hand.
 
-        The mean is what is normally used when sex is unknown, and it is stated in the
-        plan's notes rather than presented as a measurement.
+        The app offers male / female / other in onboarding. `other`, and every user
+        who answered nothing, take the mean of the two equations — the usual
+        practice when sex is unknown, stated in the plan rather than presented as a
+        measurement.
         """
-        female = 447.593 + (9.247 * weight_kg) + (3.098 * height_cm) - (4.330 * age)
-        male = 88.362 + (13.397 * weight_kg) + (4.799 * height_cm) - (5.677 * age)
+        base = 10.0 * weight_kg + 6.25 * height_cm - 5.0 * age
+        male, female = base + 5.0, base - 161.0
         if gender == "female":
             return female
         if gender == "male":

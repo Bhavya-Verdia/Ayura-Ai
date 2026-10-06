@@ -72,6 +72,10 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
         "dosha": user_profile.get("dominant_dosha"),
         "vikriti": user_profile.get("vikriti_dominant"),
         "pregnancy": user_profile.get("pregnancy_or_nursing"),
+        # Which stage: the energy and protein additions differ by trimester and
+        # between pregnancy and breastfeeding (ICMR-NIN 2020).
+        "pregnancy_status": user_profile.get("pregnancy_status"),
+        "pregnancy_trimester": user_profile.get("pregnancy_trimester"),
         "allergies": user_profile.get("allergies"),
         "symptoms": user_profile.get("current_symptoms"),
         "injuries": user_profile.get("injuries_or_limitations"),
