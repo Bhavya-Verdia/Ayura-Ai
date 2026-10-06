@@ -6638,3 +6638,27 @@
   .gym-checkin-closed > .gym-log-toggle { grid-column: 1; grid-row: auto; justify-self: start; }
 }
 .gym-checkin-stop svg, .gym-adjust-stop svg { flex-shrink: 0; margin-top: 0.12rem; }
+
+/* ── Block complete + block history ── */
+.gym-block-card {
+  margin: 1rem 0; padding: 0.85rem 1rem; border-radius: 12px; display: grid; gap: 0.45rem;
+  border: 1px dashed color-mix(in srgb, var(--ayura-accent) 40%, transparent);
+}
+.gym-block-card.over {
+  border-style: solid; border-color: color-mix(in srgb, var(--ayura-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--ayura-accent) 9%, transparent);
+}
+.gym-block-line { margin: 0; font-size: 0.82rem; line-height: 1.5; color: var(--ayura-text); }
+.gym-block-next { color: var(--ayura-text-secondary); }
+.gym-history { margin: 1.25rem 0; }
+.gym-history-list { list-style: none; margin: 0.5rem 0 0; padding: 0; display: grid; gap: 0.3rem; }
+.gym-history-row {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 0.75rem;
+  padding: 0.45rem 0.7rem; border-radius: 8px; font-size: 0.8rem;
+  background: color-mix(in srgb, var(--ayura-accent) 5%, transparent);
+}
+.gym-history-k { font-weight: 600; color: var(--ayura-text-primary); }
+.gym-history-v { color: var(--ayura-text-secondary); }
+.gym-history-trends { margin-top: 0.6rem; display: grid; gap: 0.2rem; }
+.gym-history-trend { margin: 0; font-size: 0.8rem; color: var(--ayura-text); }
+.gym-history-note { margin: 0.2rem 0 0; font-size: 0.72rem; color: var(--ayura-text-secondary); }

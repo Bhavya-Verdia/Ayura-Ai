@@ -241,6 +241,34 @@ with "see a doctor". Pain becomes an injury only when ticked ("add to my injurie
 goes into whichever of the gym/yoga forms exist, and offers a rebuild, because the gates
 read injuries at generation.
 
+#### Gym: block over block
+The block number used to be a label: block 2 had block 1's sets and exercises, the level
+never moved from the form's answer, nothing marked the end of week four, and month one
+fell out of the 42-day load window by month three.
+
+- **Next block:** a block built on (`_next_block`) gets **one** extra main-lift set
+  (`_block_extra_sets`, once — loads progress after that, not volume; never in
+  pregnancy) and a new rotating slot (block number in that seed only; block 1's seed is
+  unchanged, so the main lifts stay). A repeated block keeps its number and its volume.
+  `_fit_to_clock` absorbs the set.
+- **Long history:** `workout_log.block_history` reads every gym plan (not the 42-day
+  window — that stays right for *loads*), skipping regenerations nothing was logged on.
+  `GET /api/workouts/blocks`.
+- **Level:** `level_up_offer` — beginner → intermediate after three finished blocks in a
+  row, intermediate → advanced after **two finished blocks trained at intermediate**
+  (counted on the level each plan was *programmed* at, `history[].fitness_level`, not
+  today's profile). Both need an adult, not pregnant, each block mostly done, and a
+  measured gain across the run. **No advanced offer past 60**: `filter_exercises` never
+  prescribes an advanced movement there, so the offer would promise what the plan
+  cannot contain. It is an **offer**;
+  `POST /api/workouts/level-up` re-checks the evidence and moves `users.fitness_level`
+  and `gym.strength_level` together (one without the other is an intermediate split
+  priced at beginner loads).
+- **End of block:** `GymBlockComplete` once the plan is 28 days old or week 4 is logged,
+  and the `notify_finished_gym_blocks` cron (03:30 UTC) sends one notification per
+  latest plan, marking `block_end_notified` so it never repeats; plans more than ten
+  days past due are abandoned, not finished, and are not announced.
+
 #### Diet library: authored, not derived
 `data/knowledge_base/diet_foods.json` is **generated** by
 `scripts/build_diet_library.py` from the curated spec in `scripts/diet_library/`
