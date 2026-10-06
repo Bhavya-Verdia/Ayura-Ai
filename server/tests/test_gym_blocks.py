@@ -378,3 +378,20 @@ def test_minutes_can_be_logged_and_nothing_logged_is_a_delete(auth_client, mock_
     assert resp.json()["deleted"] is True
     assert auth_client.post("/api/workouts/logs",
                             json={**body, "minutes": 500}).status_code == 422
+
+
+def test_the_review_packet_states_the_rules_the_code_applies():
+    """The adaptation thresholds are unreviewed coaching defaults; the packet
+    the reviewer reads is generated from the live constants, and must not fall
+    behind them."""
+    import csv
+    from pathlib import Path
+
+    from scripts.build_gym_review_packet import _adaptation_rows
+
+    path = Path(__file__).resolve().parents[1] / "data" / "golden" / \
+        "gym_adaptation_rules_review.csv"
+    with open(path, encoding="utf-8") as f:
+        on_disk = list(csv.DictReader(f))
+    assert on_disk == _adaptation_rows(), \
+        "regenerate: python scripts/build_gym_review_packet.py"
