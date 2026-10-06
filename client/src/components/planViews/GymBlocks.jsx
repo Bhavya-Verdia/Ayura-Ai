@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Award, RefreshCw, TrendingUp, ArrowUpCircle } from 'lucide-react'
 import { workoutsAPI } from '../../api/client'
+import { track, trackOnce, EVENTS } from '../../lib/analytics'
 
 /**
  * The end of a block. Week four used to be the last page of the plan and
@@ -16,6 +17,12 @@ export function GymBlockComplete({ plan, over, onRegenerate }) {
     workoutsAPI.summary(planId).then(({ data }) => { if (live) setSummary(data) }).catch(() => {})
     return () => { live = false }
   }, [planId])
+  const blockNo = plan?.user_summary?.block || 1
+  useEffect(() => {
+    if (over && planId) {
+      trackOnce(`block-over:${planId}`, EVENTS.GYM_BLOCK_COMPLETE_SHOWN, { block: blockNo })
+    }
+  }, [over, planId, blockNo])
 
   const block = plan?.user_summary?.block || 1
   const builds = summary ? summary.progress : true
@@ -42,7 +49,13 @@ export function GymBlockComplete({ plan, over, onRegenerate }) {
           : `Fewer than half the sessions were logged, so the next block repeats this one's structure from the weights you logged. Finish more of it and the one after will build.`}
       </p>
       {onRegenerate && (
-        <button type="button" className="gym-log-save gym-checkin-rebuild" onClick={onRegenerate}>
+        <button type="button" className="gym-log-save gym-checkin-rebuild"
+          onClick={() => {
+            track(EVENTS.GYM_NEXT_BLOCK_STARTED, { from_block: block, builds, early: !over,
+              sessions_logged: summary?.sessions_logged ?? null,
+              sessions_planned: summary?.sessions_planned ?? null })
+            onRegenerate()
+          }}>
           <RefreshCw size={12} /> {builds ? `Start block ${block + 1}` : 'Start the next block'}
         </button>
       )}
@@ -63,7 +76,14 @@ export function GymBlockHistory({ onRegenerate }) {
   const [state, setState] = useState('idle')
   useEffect(() => {
     let live = true
-    workoutsAPI.blocks().then(({ data }) => { if (live) setData(data) }).catch(() => {})
+    workoutsAPI.blocks().then(({ data }) => {
+      if (!live) return
+      setData(data)
+      if (data?.level_up) {
+        trackOnce(`level-up:${data.level_up.to}`, EVENTS.GYM_LEVEL_UP_OFFERED,
+          { to: data.level_up.to, blocks: data.level_up.blocks })
+      }
+    }).catch(() => {})
     return () => { live = false }
   }, [])
 
@@ -87,6 +107,7 @@ export function GymBlockHistory({ onRegenerate }) {
     try {
       await workoutsAPI.levelUp()
       setState('done')
+      track(EVENTS.GYM_LEVEL_UP_ACCEPTED, { to: offer.to })
       onRegenerate?.()
     } catch {
       setState('error')

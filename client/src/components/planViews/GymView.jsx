@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { workoutsAPI } from '../../api/client'
+import { trackOnce, EVENTS } from '../../lib/analytics'
 import { GymSetLogger } from './GymSetLogger'
 import { GymWeekCheckin } from './GymWeekCheckin'
 import { GymBlockComplete, GymBlockHistory } from './GymBlocks'
@@ -63,7 +64,19 @@ export function GymView({ plan, onRegenerate }) {
     let live = true
     const week = activeWeek + 1
     workoutsAPI.adjustments(planId, week)
-      .then(({ data }) => { if (live) setAdjusted({ week, data }) })
+      .then(({ data }) => {
+        if (!live) return
+        setAdjusted({ week, data })
+        const moved = Object.values(data?.exercises || {})
+        if (moved.length) {
+          // Whether the adaptation reached anyone — and in which direction.
+          trackOnce(`adjust:${planId}:${week}`, EVENTS.GYM_ADJUSTMENTS_SHOWN, {
+            week, exercises: moved.length,
+            up: moved.filter(a => a.direction === 'up').length,
+            down: moved.filter(a => a.direction === 'down').length,
+          })
+        }
+      })
       .catch(() => { if (live) setAdjusted({ week, data: null }) })
     return () => { live = false }
   }, [planId, activeWeek, prevWeekLogs, prevCheckin])

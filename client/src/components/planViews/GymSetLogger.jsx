@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Check, PencilLine } from 'lucide-react'
 import { workoutsAPI } from '../../api/client'
+import { track, EVENTS } from '../../lib/analytics'
 
 // How hard the sets felt. "Right" is what the plan asks for — the last two reps
 // hard — and is what the next block's loads assume when nothing is said.
@@ -42,6 +43,10 @@ export function GymSetLogger({ planId, week, day, exercise, logged, onSaved }) {
     try {
       await workoutsAPI.log({ plan_id: planId, week, day, exercise_id: exercise.exercise_id, sets, effort })
       onSaved?.(sets.length ? { sets, effort } : null)
+      if (sets.length) {
+        track(EVENTS.GYM_SETS_LOGGED, { week, sets: sets.length, effort, bodyweight,
+          edited: Boolean(logged), source: 'plan' })
+      }
       setState('saved')
       setOpen(false)
     } catch {
