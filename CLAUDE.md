@@ -238,8 +238,13 @@ fell out of the 42-day load window by month three.
 - **Long history:** `workout_log.block_history` reads every gym plan (not the 42-day
   window — that stays right for *loads*), skipping regenerations nothing was logged on.
   `GET /api/workouts/blocks`.
-- **Level:** `level_up_offer` — beginner, adult, not pregnant, three finished blocks in
-  a row each mostly done, and a measured gain across them. It is an **offer**;
+- **Level:** `level_up_offer` — beginner → intermediate after three finished blocks in a
+  row, intermediate → advanced after **two finished blocks trained at intermediate**
+  (counted on the level each plan was *programmed* at, `history[].fitness_level`, not
+  today's profile). Both need an adult, not pregnant, each block mostly done, and a
+  measured gain across the run. **No advanced offer past 60**: `filter_exercises` never
+  prescribes an advanced movement there, so the offer would promise what the plan
+  cannot contain. It is an **offer**;
   `POST /api/workouts/level-up` re-checks the evidence and moves `users.fitness_level`
   and `gym.strength_level` together (one without the other is an intermediate split
   priced at beginner loads).

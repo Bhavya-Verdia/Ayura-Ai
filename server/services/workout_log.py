@@ -191,7 +191,15 @@ _HISTORY_PLANS = 24          # two years of monthly blocks
 # four-week blocks is the twelve weeks over which novice linear progression
 # ordinarily runs out (Rippetoe & Baker, Practical Programming, 3rd ed.).
 LEVEL_UP_AFTER_BLOCKS = 3
+# Intermediate to advanced: two finished blocks — two months — trained AT
+# intermediate. Shorter than the first step because the evidence is stronger:
+# the person has already shown three months of consistency, and the two
+# months are on the harder programming, not on the beginner one.
+_ADVANCED_AFTER_BLOCKS = 2
+_NEXT_LEVEL = {"beginner": ("intermediate", LEVEL_UP_AFTER_BLOCKS),
+               "intermediate": ("advanced", _ADVANCED_AFTER_BLOCKS)}
 _ADULT_FROM = 18
+_SENIOR_FROM = 60
 
 
 async def block_history(db, user_id: str) -> list[dict]:
@@ -229,38 +237,57 @@ async def block_history(db, user_id: str) -> list[dict]:
             **summary,
             "generated_at": generated.isoformat() if isinstance(generated, datetime) else generated,
             "finished": (not is_latest) or _block_finished(record, plan, logs),
+            # The level the block was PROGRAMMED at — what "two months of
+            # intermediate" is counted on, rather than today's profile.
+            "fitness_level": str((plan.get("user_summary") or {}).get("fitness_level")
+                                 or "beginner").lower(),
             "best_lifts": {k: {**v, "name": names.get(k) or k} for k, v in lifts.items()},
         })
     return rows
 
 
-def consecutive_progressed(history: list[dict]) -> int:
-    """Finished blocks in a row, most recent backwards, that were mostly done."""
+def consecutive_progressed(history: list[dict], level: str | None = None) -> int:
+    """Finished blocks in a row, most recent backwards, that were mostly done —
+    and, given `level`, programmed at that level."""
     n = 0
     for row in reversed([r for r in history if r.get("finished")]):
         if not row.get("progress"):
+            break
+        if level and row.get("fitness_level", "beginner") != level:
             break
         n += 1
     return n
 
 
 def level_up_offer(history: list[dict], profile: dict) -> dict | None:
-    """Whether to offer a beginner intermediate programming, and why.
+    """Whether to offer the next level of programming, and why.
 
-    An OFFER, never a change: the level decides the split and which movements
-    are prescribed, and the person accepts it. Not made to anyone under 18
-    (youth programming stays whole-body), in pregnancy, or without evidence —
-    at least one lift that measurably went up across the run."""
-    level = str((profile or {}).get("fitness_level") or "beginner").lower()
-    if level != "beginner" or (profile or {}).get("pregnancy_or_nursing"):
+    Beginner -> intermediate after three finished blocks in a row; intermediate
+    -> advanced after two finished blocks in a row trained AT intermediate, and
+    not past 60. An
+    OFFER, never a change: the level decides the split and which movements are
+    prescribed, and the person accepts it. Not made to anyone under 18 (youth
+    programming stays whole-body), in pregnancy, or without evidence — at least
+    one lift that measurably went up across the run."""
+    profile = profile or {}
+    level = str(profile.get("fitness_level") or "beginner").lower()
+    if level not in _NEXT_LEVEL or profile.get("pregnancy_or_nursing"):
         return None
     try:
-        if int((profile or {}).get("age") or 0) < _ADULT_FROM:
+        if int(profile.get("age") or 0) < _ADULT_FROM:
             return None
     except (TypeError, ValueError):
         return None
-    run = consecutive_progressed(history)
-    if run < LEVEL_UP_AFTER_BLOCKS:
+    to, needed = _NEXT_LEVEL[level]
+    # The engine never prescribes an advanced-level movement past 60
+    # (`filter_exercises`: bone density, the age gate), so an "advanced" offer
+    # would promise movements the plan will not contain.
+    if to == "advanced" and int(profile.get("age") or 0) >= _SENIOR_FROM:
+        return None
+    # Counted at the current level: blocks trained as a beginner are not two
+    # months of intermediate.
+    run = consecutive_progressed(history, level if level != "beginner" else None)
+    if run < needed:
         return None
     window = [r for r in history if r.get("finished")][-run:]
     first, last = window[0].get("best_lifts") or {}, window[-1].get("best_lifts") or {}
@@ -272,10 +299,17 @@ def level_up_offer(history: list[dict], profile: dict) -> dict | None:
         key=lambda g: -g["change_percent"])
     if not gains:
         return None
-    return {"to": "intermediate", "blocks": run, "gains": gains[:3],
-            "reason": (f"You have finished {run} blocks in a row and your lifts went up across "
-                       "them. Intermediate programming splits the week so each session can "
-                       "do more for fewer muscles, and prescribes harder movements.")}
+    what = {
+        "intermediate": ("Intermediate programming splits the week so each session can do "
+                         "more for fewer muscles, and prescribes harder movements."),
+        "advanced": ("Advanced programming gives each muscle group more weekly volume and "
+                     "uses the most demanding movements in the library. Recovery matters "
+                     "more from here — sleep and food decide whether it works."),
+    }[to]
+    at = "" if level == "beginner" else f" at {level}"
+    return {"to": to, "from": level, "blocks": run, "gains": gains[:3],
+            "reason": (f"You have finished {run} blocks in a row{at} and your lifts went up "
+                       f"across them. {what}")}
 
 
 # ── The end of a block, said to the person ───────────────────────────────────

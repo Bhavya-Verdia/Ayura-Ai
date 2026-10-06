@@ -218,7 +218,7 @@ async def test_no_offer_for_a_child_a_pregnancy_or_someone_already_there(three_b
     rows = await block_history(three_blocks, "u1")
     for profile in ({"fitness_level": "beginner", "age": 16},
                     {"fitness_level": "beginner", "age": 30, "pregnancy_or_nursing": True},
-                    {"fitness_level": "intermediate", "age": 30}):
+                    {"fitness_level": "advanced", "age": 30}):
         assert level_up_offer(rows, profile) is None
 
 
@@ -231,6 +231,43 @@ def test_no_offer_without_evidence_or_with_a_broken_run():
     broken = [row(True, 70), row(False, 75), row(True, 80), row(True, 85)]
     assert consecutive_progressed(broken) == 2
     assert level_up_offer(broken, {"fitness_level": "beginner", "age": 30}) is None
+
+
+def _row(level, kg, progress=True, finished=True):
+    return {"finished": finished, "progress": progress, "fitness_level": level,
+            "best_lifts": {"squat": {"name": "Squat", "one_rm": kg}}}
+
+
+def test_two_months_at_intermediate_offer_advanced():
+    history = [_row("beginner", 60), _row("beginner", 65), _row("beginner", 70),
+               _row("intermediate", 75), _row("intermediate", 82)]
+    offer = level_up_offer(history, {"fitness_level": "intermediate", "age": 30})
+    assert offer["to"] == "advanced" and offer["from"] == "intermediate"
+    assert offer["blocks"] == 2 and "at intermediate" in offer["reason"]
+    # Measured on the intermediate blocks only: 75 -> 82, not 60 -> 82.
+    assert offer["gains"] == [{"exercise": "Squat", "change_percent": 9}]
+
+
+def test_beginner_blocks_do_not_count_as_months_of_intermediate():
+    history = [_row("beginner", 60), _row("beginner", 65), _row("beginner", 70),
+               _row("intermediate", 75)]
+    assert level_up_offer(history, {"fitness_level": "intermediate", "age": 30}) is None
+    # Nor does the block still in progress.
+    history.append(_row("intermediate", 80, finished=False))
+    assert level_up_offer(history, {"fitness_level": "intermediate", "age": 30}) is None
+
+
+def test_advanced_is_not_offered_past_sixty_where_the_engine_would_not_program_it():
+    history = [_row("intermediate", 75), _row("intermediate", 82)]
+    assert level_up_offer(history, {"fitness_level": "intermediate", "age": 64}) is None
+    assert level_up_offer(history, {"fitness_level": "intermediate", "age": 59})["to"] == \
+        "advanced"
+
+
+@pytest.mark.asyncio
+async def test_history_records_the_level_each_block_was_programmed_at(three_blocks):
+    rows = await block_history(three_blocks, "u1")
+    assert {r["fitness_level"] for r in rows} == {"beginner"}
 
 
 # ── The reminder ─────────────────────────────────────────────────────────────

@@ -55,7 +55,8 @@ const fmt = (kg) => `${Math.round(kg)} kg`
 /**
  * Every block trained, read from every gym plan rather than the six-week load
  * window, so month one still counts in month four. And, when the evidence is
- * there, an offer — never an automatic change — of intermediate programming.
+ * there, an offer — never an automatic change — of the next level: intermediate
+ * after three blocks, advanced after two more at intermediate.
  */
 export function GymBlockHistory({ onRegenerate }) {
   const [data, setData] = useState(null)
@@ -97,7 +98,7 @@ export function GymBlockHistory({ onRegenerate }) {
       <h3 id="gym-history-title" className="gym-tips-title"><TrendingUp size={14} /> Your blocks</h3>
       {offer && (
         <div className="gym-block-card over">
-          <span className="gym-checkin-title"><ArrowUpCircle size={16} /> Ready for intermediate programming</span>
+          <span className="gym-checkin-title"><ArrowUpCircle size={16} /> Ready for {offer.to} programming</span>
           <p className="gym-block-line">{offer.reason}</p>
           {offer.gains?.length > 0 && (
             <p className="gym-block-line">
@@ -106,7 +107,7 @@ export function GymBlockHistory({ onRegenerate }) {
           )}
           <button type="button" className="gym-log-save gym-checkin-rebuild" onClick={accept}
             disabled={state === 'saving'}>
-            {state === 'saving' ? 'Saving…' : 'Move to intermediate and rebuild my plan'}
+            {state === 'saving' ? 'Saving…' : `Move to ${offer.to} and rebuild my plan`}
           </button>
           {state === 'error' && <p className="gym-log-error">Could not change it — try again.</p>}
         </div>

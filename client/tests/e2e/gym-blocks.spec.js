@@ -95,4 +95,17 @@ test.describe('gym blocks (mocked API)', () => {
     await expect.poll(() => store.levelUp).toBe(1)
     await expect.poll(() => store.regenerated).toBe(1)
   })
+
+  test('two months at intermediate are offered advanced, in the server\'s words', async ({ page }) => {
+    const store = { regenerated: 0, levelUp: 0 }
+    const offer = { to: 'advanced', from: 'intermediate', blocks: 2, gains: [],
+      reason: 'You have finished 2 blocks in a row at intermediate and your lifts went up across them.' }
+    await mockApi(page, { ...BASE, generated_at: daysAgo(3) }, store, { ...BLOCKS, level_up: offer })
+    await openPlan(page)
+    const history = page.locator('.gym-history')
+    await expect(history.getByText('Ready for advanced programming')).toBeVisible()
+    await expect(history).toContainText('at intermediate')
+    await history.getByRole('button', { name: 'Move to advanced and rebuild my plan' }).click()
+    await expect.poll(() => store.levelUp).toBe(1)
+  })
 })
