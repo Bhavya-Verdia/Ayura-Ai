@@ -122,6 +122,12 @@ def test_any_patient_gets_a_plan_a_dietitian_would_accept(profile, prefs, monkey
                 ok = ok and t["fat_g"] <= nt["fat_g"]["target"] * 1.35
             if not ok:
                 misses.append((w["week_number"], d, t))
+            # Salt is the cook's, and the trim holds it under the limit unless the
+            # foods alone carry the day past it.
+            assert t["sodium_mg"] <= nt["sodium_mg"]["max"], (who, d, t["sodium_mg"])
+    micro = rec["micronutrients"]
+    assert micro["days_counted"] == 28 - rec["fasting_days_exempt"], who
+    assert micro["sodium_mg"]["average"] > 600, (who, "salt missing from the count")
     # A fallback composed from category quotas cannot always reach every target on
     # every day; more than a few misses is a solver or composition fault.
     assert len(misses) <= 3, (who, rx["band"], rx["protein_floor_g"], nt["fat_g"], misses[:3])

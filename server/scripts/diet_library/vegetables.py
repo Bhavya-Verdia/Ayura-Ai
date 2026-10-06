@@ -59,7 +59,8 @@ VEGETABLES = [
       dosha=(-1, 1, -2), ritu=("hemanta", "shishira"),
       pathya_for=("diabetes", "obesity", "amavata", "high_cholesterol", "bloating"),
       apathya_for=("acidity", "pregnancy"),
-      nutrition=N(49, 4.4, 6.0, 0.9, 1.1, source="usda"), **_V),
+      # IFCT 2017 C020. Labelled USDA at 49 kcal, but USDA holds no fenugreek leaf.
+      nutrition=N(34, 3.7, 2.2, 0.8, 4.9, source="ifct2017"), **_V),
 
     # ── Crucifers ─────────────────────────────────────────────────────────────
     F("Broccoli", id="broccoli",
@@ -286,7 +287,8 @@ VEGETABLES = [
       dosha=(2, -1, -1), ritu=("grishma", "varsha"),
       pathya_for=("grahani", "diabetes", "obesity"),
       apathya_for=("constipation", "ibs", "bloating"),
-      nutrition=N(89, 1.1, 22.8, 0.3, 2.6, source="usda"),
+      # IFCT 2017 D063 (plantain, green). It carried ripe banana's 89 kcal.
+      nutrition=N(80, 1.2, 17.6, 0.2, 3.6, source="ifct2017"),
       **{**_V, "prep_state": "unripe", "varga": "Shaka — Kadali, unripe"}),
 
     F("Panasa (Jackfruit)", id="jackfruit",
@@ -333,7 +335,8 @@ VEGETABLES = [
       dosha=(2, -1, -1), ritu=("varsha", "sharad"),
       pathya_for=("diabetes", "obesity", "high_cholesterol"),
       apathya_for=("ibs", "grahani", "amavata", "constipation", "bloating"),
-      nutrition=N(16, 3.2, 10.8, 0.4, 3.2, source="ifct2017"), **_V),
+      # IFCT 2017 D039. It said IFCT at 16 kcal; IFCT 2017 gives 40.
+      nutrition=N(40, 3.6, 4.9, 0.4, 4.8, source="ifct2017"), **_V),
 
     F("Asparagus", id="asparagus",
       rasa=("madhura", "tikta"), guna=("guru", "snigdha"), virya="shita", vipaka="madhura",

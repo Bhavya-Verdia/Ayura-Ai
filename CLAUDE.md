@@ -665,6 +665,41 @@ render` builds the 16 live personas and writes them as a dietitian reads them.
 "fasting" day of 1955 kcal and compounded hing for a coeliac were all found that way,
 not by a test.
 
+#### Diet: minerals are counted, from hand-picked composition rows
+The plan stated a sodium limit and anaemia advice and could check neither. The library
+held energy and four macronutrients. `data/knowledge_base/diet_micronutrients.json`
+adds sodium, potassium, phosphorus, calcium, iron and folate per 100 g for all 186
+foods a plan can name. It is **generated** by `scripts/build_diet_micronutrients.py`
+from USDA SR Legacy and IFCT 2017 rows chosen by hand in `MAP`, never matched by name.
+Never hand-edit the JSON. `--check` needs the two source datasets, whose paths are in
+the script's docstring.
+
+- Rice and flour use the **unenriched** rows: Indian rice and atta are not fortified
+  the way US "enriched" rice is.
+- Cooked grains and pulses use the unsalted rows, because salt is counted where the
+  cook adds it.
+- Eight foods have no trustworthy source (makhana, hing, garam masala, oat milk …).
+  They carry `None` and are named in `unmeasured_foods`, never counted as zero.
+
+Building it found five library macro rows that were wrong:
+- amla was carrying the European gooseberry's figures
+- kachcha kela was carrying ripe banana's
+- methi leaf was labelled USDA, which has no such row
+- gavar was labelled IFCT with the wrong value
+- mosambi was unsourced
+
+**Salt is a component.** The LLM is told to list it. The rule-engine fallback adds
+1.5 g to lunch and dinner, because without it a day's sodium read 160 mg, a
+measurement of nothing. `_trim_salt` then holds each day under its limit, never below
+0.5 g a meal, and rounds down. The targets come from ICMR-NIN 2020 RDAs by life stage,
+and unrecorded sex takes the higher figure. The WHO potassium minimum is set only for
+adults without kidney disease or an ACE inhibitor, ARB or spironolactone. For those
+patients the advice is the opposite.
+
+On the 60-profile sweep, calcium is met on few days for most patients and iron is
+often short for women. **That is reported, not hidden**: `DietView` shows each
+target beside the plan's average and the days it was met.
+
 #### The Ritucharya card is the other surface that names food
 `services/seasonal_service.build_seasonal_guidance` took a **dosha and nothing else**,
 and `diet_adjustments` is LLM-written and names specific foods. A real Sharad card read

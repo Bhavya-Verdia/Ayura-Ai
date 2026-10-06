@@ -310,15 +310,19 @@ def reconcile_plan_energy(plan: dict, energy: dict) -> dict:
             # Protein is checked on every non-fasting day, including days whose
             # energy is already in band: scaling toward a kcal budget cannot fix
             # composition, and a day can hit its calories on rice alone. The brief
-            # states the floor, so something has to verify it was met.
-            if protein_floor and _day_rec["protein_now"]() < protein_floor * 0.9:
-                protein_short.append({
-                    "week": week_label, "day": day_label,
-                    "protein_g": int(round(_day_rec["protein_now"]())),
-                    "floor_g": protein_floor,
-                })
+            # states the floor, so something has to verify it was met. Checked on
+            # the day as served — before scaling, a day that ends at 67 g was
+            # reported short at 41.
+            def _check_protein():
+                if protein_floor and _day_rec["protein_now"]() < protein_floor * 0.9:
+                    protein_short.append({
+                        "week": week_label, "day": day_label,
+                        "protein_g": int(round(_day_rec["protein_now"]())),
+                        "floor_g": protein_floor,
+                    })
 
             if low <= before <= high:
+                _check_protein()
                 continue
 
             for slot in _SLOTS:
@@ -331,6 +335,7 @@ def reconcile_plan_energy(plan: dict, energy: dict) -> dict:
                     continue
                 scale_slot(slot, max(MIN_FACTOR, min(MAX_FACTOR, factor)))
             finish()
+            _check_protein()
 
             after = int(round(sum(slot_kcal(slot) for slot in _SLOTS)))
 

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import math
 import random
 from datetime import datetime, timezone
 
@@ -73,6 +74,8 @@ This week's staples, so the four weeks differ: {staples}.{fasting}
 Per-meal kcal budget: breakfast ~{b} | lunch ~{l} | snack ~{s} | dinner ~{d}. \
 Protein at least {protein} g per day. Carbohydrate about {carbs} g per day. Fat about \
 {fat} g per day in total — ghee or oil 1-2 tsp (5-10 g) per main meal, not more.{carb_rule}
+Salt: list it as a component ("salt", grams) in every savoury meal — about {salt_g} g a day \
+in all; the plan's sodium is counted from it.{micro_rule}
 Real portions: at most 2 katori (300 g) of cooked rice or grain, or 3 roti, per meal; at most \
 2 katori of any one vegetable; at most 40 g nuts. For a high energy target, use denser foods \
 (roti, paratha, poha, paneer or tofu, a glass of milk or plant milk, nuts) — never a mountain of rice.
@@ -176,6 +179,28 @@ def _validate_overview(data):
 
 
 # ── Variety ──────────────────────────────────────────────────────────────────
+
+def _salt_budget(energy: dict) -> str:
+    limit = ((energy.get("nutrient_targets") or {}).get("sodium_mg") or {}).get("max") or 2000
+    # Foods themselves carry roughly 400 mg; the rest is the cook's salt (~388 mg/g).
+    return f"{max(1.5, round((limit - 400) / 388, 1))}"
+
+
+def _micro_rule(energy: dict) -> str:
+    """Where the day's iron, calcium and folate come from, for the groups whose need
+    a plain plate misses: pregnancy, anaemia-prone women and girls, and the old."""
+    nt = energy.get("nutrient_targets") or {}
+    iron, calcium = (nt.get("iron_mg") or {}).get("min"), (nt.get("calcium_mg") or {}).get("min")
+    bits = []
+    if iron and iron >= 27:
+        bits.append(f"iron about {iron} mg a day: ragi, bajra, poha, greens (methi, palak, "
+                    "drumstick leaves), dates, jaggery in place of sugar, sesame; a vitamin C "
+                    "food (amla, guava, lemon) at the same meal; no tea within an hour")
+    if calcium and calcium >= 1000:
+        bits.append(f"calcium about {calcium} mg a day: ragi, milk, curd, paneer, sesame, "
+                    "methi leaves")
+    return ("\nMINERALS — " + "; ".join(bits) + ".") if bits else ""
+
 
 def _carb_rule(energy: dict) -> str:
     """The plate rules portion scaling cannot reach afterwards. A day built on rice
@@ -295,7 +320,7 @@ def _safe_meal(slot: str, allowed: list[dict], budget: int, rng: random.Random) 
         parts = [one("grain", 180), one("fruit", 100), one("nut_seed", 10)]
     else:
         parts = [one("grain", 180), one("legume", 150), one("vegetable", 150),
-                 one("oil", 5)]
+                 one("oil", 5), {"food": "salt", "grams": _COOK_SALT_G}]
     parts = [p for p in parts if p]
     meal = {"meal_name": " with ".join(dn._short(dn.name_of(p["food"])) for p in parts[:3]),
             "description": "A simple plate built from your allowed foods.",
@@ -538,9 +563,40 @@ def _reconcile_day(day: dict, energy: dict) -> dict:
         # solver runs again so other foods can make up the energy if they have room.
         if not _clip_to_caps(day, scale):
             break
+    _trim_salt(day, energy)
     after = _day_totals(day)["calories"]
     return {"factor": round(after / before, 2), "before": round(before), "after": round(after),
             "role_factors": {r: round(v, 2) for r, v in factors.items() if abs(v - 1) > 0.02}}
+
+
+_SALTS = ("salt", "rock_salt")
+_MIN_SALT_PER_MEAL = 0.5
+# Salt in a home-cooked savoury main meal, before any trimming to the day's limit.
+_COOK_SALT_G = 1.5
+
+
+def _trim_salt(day: dict, energy: dict) -> None:
+    """Hold the day under its sodium limit by trimming the salt added in cooking —
+    in an Indian kitchen almost all of it comes from there, and it is the one
+    component that changes no dish. Never below half a gram in a savoury meal."""
+    limit = ((energy.get("nutrient_targets") or {}).get("sodium_mg") or {}).get("max")
+    if not limit:
+        return
+    sodium = _day_totals(day)["sodium_mg"]
+    per_g = (dn.micronutrients().get("salt") or {}).get("sodium_mg", 38758) / 100.0
+    salts = [(s, c) for s in _COUNTED for c in ((day.get(s) or {}).get("components") or [])
+             if c["food"] in _SALTS]
+    salt_g = sum(c["grams"] for _, c in salts)
+    if sodium <= limit or not salt_g:
+        return
+    keep = max(0.0, (salt_g - (sodium - limit) / per_g) / salt_g)
+    for s in {s for s, _ in salts}:
+        for c in day[s]["components"]:
+            if c["food"] in _SALTS:
+                # Down to the tenth of a gram: rounding to nearest put
+                # days 2-24 mg over the limit the trim exists to hold.
+                c["grams"] = max(_MIN_SALT_PER_MEAL, math.floor(c["grams"] * keep * 10) / 10)
+        _finish_meal_inplace(day[s])
 
 
 def _finish_meal_inplace(meal: dict) -> None:
@@ -549,13 +605,40 @@ def _finish_meal_inplace(meal: dict) -> None:
 
 def _day_totals(day: dict) -> dict:
     """The day's nutrition, including the daily drink — a 220 kcal glass of milk was
-    left out of every total."""
-    tot = dict.fromkeys(("calories", "protein_g", "carbs_g", "fat_g", "fiber_g"), 0.0)
+    left out of every total — and its minerals and folate."""
+    tot = dict.fromkeys(("calories", "protein_g", "carbs_g", "fat_g", "fiber_g") + dn.MICROS, 0.0)
     for s in SLOTS + (DRINK,):
         m = (day.get(s) or {}).get("macros_approx") or {}
         for k in tot:
             tot[k] += float(m.get(k) or 0)
     return {k: round(v, 1) for k, v in tot.items()}
+
+
+def _micro_report(weeks: list[dict], energy: dict, fasting: set) -> dict:
+    """Average per day against each mineral target, and on how many days it is met.
+    A food with no data is named, so a short figure is not read as a measured one."""
+    nt = energy.get("nutrient_targets") or {}
+    days = [w["daily_plan"][d] for w in weeks for d in DAYS
+            if d in w["daily_plan"] and not w["daily_plan"][d].get("is_fasting")]
+    out: dict = {}
+    for key in dn.MICROS:
+        vals = [d.get("day_totals", {}).get(key, 0.0) for d in days]
+        if not vals:
+            continue
+        row = {"average": round(sum(vals) / len(vals), 1)}
+        t = nt.get(key) or {}
+        if t.get("max") is not None:
+            row["max"] = t["max"]
+            row["days_over"] = sum(1 for v in vals if v > t["max"])
+        if t.get("min") is not None:
+            row["min"] = t["min"]
+            row["days_met"] = sum(1 for v in vals if v >= t["min"])
+        out[key] = row
+    unmeasured = sorted({f for w in weeks for d in w["daily_plan"].values()
+                         for s in _COUNTED for f in ((d.get(s) or {}).get("micros_unmeasured") or [])})
+    out["unmeasured_foods"] = unmeasured
+    out["days_counted"] = len(days)
+    return out
 
 
 def finalise_weeks(weeks: list[dict], energy: dict, fasting: set) -> dict:
@@ -591,6 +674,7 @@ def finalise_weeks(weeks: list[dict], energy: dict, fasting: set) -> dict:
         "protein_floor_g": energy["protein_floor_g"],
         "days_below_protein_floor": below_protein,
         "days": days_report,
+        "micronutrients": _micro_report(weeks, energy, fasting),
     }
     # Some combinations of targets cannot all be met with ordinary foods — a renal
     # protein ceiling beside a high energy need is the usual one. A plan that misses
@@ -636,6 +720,7 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
             fat=(energy.get("nutrient_targets") or {}).get("fat_g", {}).get("target", "~30% of energy"),
             carbs=(energy.get("nutrient_targets") or {}).get("carbs_g", {}).get("target", "~55% of energy"),
             carb_rule=_carb_rule(energy),
+            salt_g=_salt_budget(energy), micro_rule=_micro_rule(energy),
             drink=_DRINK_SHAPE)
 
     overview_prompt = OVERVIEW_PROMPT.format(
@@ -791,6 +876,12 @@ def _engine_weeks(raw: dict, allowed_ids: set | None = None) -> tuple[list[dict]
                 if allowed_fat and slot != "snack" and not out["is_fasting"] and not any(
                         dn.role(c["food"]) == "fat" for c in comps):
                     comps.append({"food": allowed_fat, "grams": 5})
+                # The cook salts the dal and sabzi. Leaving it out reported a day's
+                # sodium at 160 mg — a measurement of nothing. `_trim_salt` holds the
+                # day to its limit afterwards.
+                if slot in ("lunch", "dinner") and not out["is_fasting"] and not any(
+                        c["food"] in _SALTS for c in comps):
+                    comps.append({"food": "salt", "grams": _COOK_SALT_G})
                 out[slot] = _finish_meal({
                     "meal_name": " with ".join(dn._short(i.get("name") or i["id"]) for i in items[:3]),
                     "description": "Composed from your screened food list.",

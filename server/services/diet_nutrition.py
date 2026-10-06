@@ -32,6 +32,12 @@ from functools import lru_cache
 from pathlib import Path
 
 _LIB_PATH = Path(__file__).resolve().parents[1] / "data" / "knowledge_base" / "diet_foods.json"
+# Sodium, potassium, phosphorus, calcium, iron and folate per 100 g, built by
+# `scripts/build_diet_micronutrients.py` from USDA SR Legacy and IFCT 2017 rows chosen
+# by hand. A food with no trustworthy source carries None and is reported as
+# unmeasured, never counted as zero.
+_MICRO_PATH = _LIB_PATH.parent / "diet_micronutrients.json"
+MICROS = ("sodium_mg", "potassium_mg", "phosphorus_mg", "calcium_mg", "iron_mg", "folate_ug")
 
 # id: (name, kcal, protein, carbs, fat, fibre, source, flags)
 # flags: "nonveg-free" foods are all vegetarian; `animal` marks non-vegan; allergen
@@ -39,43 +45,43 @@ _LIB_PATH = Path(__file__).resolve().parents[1] / "data" / "knowledge_base" / "d
 _E = {
     # ── sweeteners ──
     "sugar": ("Sugar", 387, 0.0, 100.0, 0.0, 0.0, "USDA FDC 169655", ()),
-    "jaggery": ("Jaggery (gur)", 383, 0.4, 95.0, 0.1, 0.0, "estimate (USDA panela / raw cane sugar)", ()),
+    "jaggery": ("Jaggery (gur)", 354, 1.9, 84.9, 0.2, 0.0, "IFCT 2017 I001", ()),
     "honey": ("Honey", 304, 0.3, 82.4, 0.0, 0.2, "USDA FDC 169640", ("animal",)),
     "raisins": ("Raisins (kishmish)", 299, 3.1, 79.2, 0.5, 3.7, "USDA FDC 168165", ()),
     # ── flours, batters and grain products ──
-    "wheat_flour_atta": ("Whole wheat flour (atta), raw", 340, 13.2, 72.0, 2.5, 10.7, "USDA FDC 168944", ("gluten",)),
-    "maida": ("Refined wheat flour (maida), raw", 364, 10.3, 76.3, 1.0, 2.7, "USDA FDC 168936", ("gluten",)),
-    "ragi_flour": ("Ragi (finger millet) flour, raw", 321, 7.2, 66.8, 1.9, 11.2, "IFCT 2017", ()),
-    "jowar_flour": ("Jowar (sorghum) flour, raw", 334, 10.0, 67.7, 1.7, 9.7, "IFCT 2017", ()),
-    "bajra_flour": ("Bajra (pearl millet) flour, raw", 348, 11.0, 61.8, 5.4, 11.5, "IFCT 2017", ()),
-    "rice_raw": ("Rice, raw", 365, 7.1, 80.0, 0.7, 1.3, "USDA FDC 168877", ()),
-    "vermicelli": ("Vermicelli (semiya), dry", 371, 13.0, 74.7, 1.5, 3.2, "USDA FDC 169736 (durum pasta)", ("gluten",)),
-    "sattu": ("Sattu (roasted gram flour)", 369, 22.0, 58.0, 5.2, 10.0, "IFCT 2017 (roasted Bengal gram)", ()),
+    "wheat_flour_atta": ("Whole wheat flour (atta), raw", 340, 13.2, 72.0, 2.5, 10.7, "USDA FDC 168893", ("gluten",)),
+    "maida": ("Refined wheat flour (maida), raw", 364, 10.3, 76.3, 1.0, 2.7, "USDA FDC 169761 (unenriched)", ("gluten",)),
+    "ragi_flour": ("Ragi (finger millet) flour, raw", 321, 7.2, 66.8, 1.9, 11.2, "IFCT 2017 A010", ()),
+    "jowar_flour": ("Jowar (sorghum) flour, raw", 334, 10.0, 67.7, 1.7, 9.7, "IFCT 2017 A005", ()),
+    "bajra_flour": ("Bajra (pearl millet) flour, raw", 348, 11.0, 61.8, 5.4, 11.5, "IFCT 2017 A003", ()),
+    "rice_raw": ("Rice, raw", 365, 7.1, 80.0, 0.7, 1.3, "USDA FDC 169756 (unenriched)", ()),
+    "vermicelli": ("Vermicelli (semiya), dry", 371, 13.0, 74.7, 1.5, 3.2, "USDA FDC 168927 (unenriched pasta)", ("gluten",)),
+    "sattu": ("Sattu (roasted gram flour)", 369, 22.0, 58.0, 5.2, 10.0, "estimate (USDA 173756 raw chickpeas, roasted)", ()),
     "idli": ("Idli, steamed", 140, 4.5, 29.0, 0.5, 1.2, "estimate (rice-urad batter, steamed)", ()),
     "dosa": ("Plain dosa", 165, 3.9, 27.0, 4.4, 1.0, "estimate (rice-urad batter, 1 tsp oil per dosa)", ()),
     "sambar": ("Sambar", 55, 2.8, 8.0, 1.5, 2.2, "estimate (toor dal and vegetables)", ()),
     "coconut_chutney": ("Coconut chutney", 190, 2.5, 7.5, 17.0, 4.5, "estimate (fresh coconut, roasted gram)", ()),
     # ── cooking oils people actually use ──
     "groundnut_oil": ("Groundnut oil", 884, 0.0, 0.0, 100.0, 0.0, "USDA FDC 171410", ("peanuts",)),
-    "sunflower_oil": ("Sunflower oil", 884, 0.0, 0.0, 100.0, 0.0, "USDA FDC 172864", ()),
-    "rice_bran_oil": ("Rice bran oil", 884, 0.0, 0.0, 100.0, 0.0, "USDA FDC 171028", ()),
+    "sunflower_oil": ("Sunflower oil", 884, 0.0, 0.0, 100.0, 0.0, "USDA FDC 171017", ()),
+    "rice_bran_oil": ("Rice bran oil", 884, 0.0, 0.0, 100.0, 0.0, "USDA FDC 171013", ()),
     # ── vegetables the library does not hold ──
     "okra_bhindi": ("Okra (bhindi)", 33, 1.9, 7.5, 0.2, 3.2, "USDA FDC 169260", ()),
     "brinjal_baingan": ("Brinjal (baingan)", 25, 1.0, 5.9, 0.2, 3.0, "USDA FDC 169228", ()),
-    "tinda": ("Tinda (round gourd)", 21, 1.4, 3.4, 0.2, 1.8, "IFCT 2017", ()),
-    "parwal": ("Parwal (pointed gourd)", 20, 2.0, 2.2, 0.3, 3.0, "IFCT 2017", ()),
-    "green_chilli": ("Green chilli", 40, 2.0, 9.5, 0.2, 1.5, "USDA FDC 168576", ()),
+    "tinda": ("Tinda (round gourd)", 14, 1.0, 1.9, 0.2, 2.0, "IFCT 2017 D073", ()),
+    "parwal": ("Parwal (pointed gourd)", 20, 2.0, 2.2, 0.3, 3.0, "IFCT 2017 D060", ()),
+    "green_chilli": ("Green chilli", 40, 2.0, 9.5, 0.2, 1.5, "USDA FDC 170497", ()),
     "lemon_juice": ("Lemon juice", 22, 0.4, 6.9, 0.2, 0.3, "USDA FDC 167747", ()),
     # ── seasonings: present in nearly every meal, near-zero at the amounts used ──
     "salt": ("Salt", 0, 0.0, 0.0, 0.0, 0.0, "USDA FDC 173468", ()),
     "rock_salt": ("Rock salt (saindhava)", 0, 0.0, 0.0, 0.0, 0.0, "USDA FDC 173468", ()),
-    "mustard_seeds": ("Mustard seeds", 508, 26.1, 28.1, 36.2, 12.2, "USDA FDC 172235", ("mustard",)),
+    "mustard_seeds": ("Mustard seeds", 508, 26.1, 28.1, 36.2, 12.2, "USDA FDC 170929", ("mustard",)),
     # Compounded hing is usually cut with wheat flour — a classic hidden gluten.
     "hing": ("Asafoetida (hing)", 297, 4.0, 67.8, 1.1, 4.1, "estimate (compounded hing)", ("gluten",)),
-    "curry_leaves": ("Curry leaves", 108, 6.1, 18.7, 1.0, 6.4, "IFCT 2017", ()),
+    "curry_leaves": ("Curry leaves", 64, 7.4, 4.5, 1.1, 16.8, "IFCT 2017 G010", ()),
     "coriander_leaves": ("Coriander leaves", 23, 2.1, 3.7, 0.5, 2.8, "USDA FDC 169997", ()),
-    "mint_leaves": ("Mint leaves", 70, 3.8, 14.9, 0.9, 8.0, "USDA FDC 173475", ()),
-    "tamarind": ("Tamarind pulp", 239, 2.8, 62.5, 0.6, 5.1, "USDA FDC 168168", ()),
+    "mint_leaves": ("Mint leaves", 70, 3.8, 14.9, 0.9, 8.0, "USDA FDC 173474", ()),
+    "tamarind": ("Tamarind pulp", 239, 2.8, 62.5, 0.6, 5.1, "USDA FDC 167763", ()),
     "red_chilli_powder": ("Red chilli powder", 282, 13.5, 49.7, 14.3, 34.8, "USDA FDC 171319", ()),
     "garam_masala": ("Garam masala", 379, 13.0, 50.0, 15.0, 25.0, "estimate (whole-spice blend)", ()),
     "water": ("Water", 0, 0.0, 0.0, 0.0, 0.0, "—", ()),
@@ -102,6 +108,14 @@ def _library() -> dict:
     data = json.loads(_LIB_PATH.read_text())
     foods = data if isinstance(data, list) else data.get("foods", [])
     return {f["id"]: f for f in foods}
+
+
+@lru_cache(maxsize=1)
+def micronutrients() -> dict:
+    try:
+        return json.loads(_MICRO_PATH.read_text())
+    except FileNotFoundError:
+        return {}
 
 
 def food(food_id: str) -> dict | None:
@@ -226,9 +240,12 @@ def components_of(meal: dict) -> list[dict]:
 
 
 def compute(components: list[dict]) -> dict:
-    """Nutrition of a list of components, and which ids could not be found."""
+    """Nutrition of a list of components, which ids could not be found, and which
+    foods have no micronutrient data (their minerals are not counted)."""
     total = dict.fromkeys(_KEYS, 0.0)
-    unknown = []
+    micro_total = dict.fromkeys(MICROS, 0.0)
+    unknown, unmeasured = [], []
+    table = micronutrients()
     for c in components:
         f = food(c["food"])
         if not f:
@@ -237,10 +254,17 @@ def compute(components: list[dict]) -> dict:
         per = f.get("nutrition_per_100g") or {}
         for k in _KEYS:
             total[k] += float(per.get(k) or 0) * c["grams"] / 100.0
+        m = table.get(c["food"]) or {}
+        if m.get("sodium_mg") is None and c["food"] != "water":
+            unmeasured.append(c["food"])
+        for k in MICROS:
+            if m.get(k) is not None:
+                micro_total[k] += float(m[k]) * c["grams"] / 100.0
     out = {"calories": round(total["calories"]), "protein_g": round(total["protein_g"], 1),
            "carbs_g": round(total["carbs_g"], 1), "fat_g": round(total["fat_g"], 1),
            "fiber_g": round(total["fiber_g"], 1)}
-    return {"nutrition": out, "unknown": unknown}
+    out.update({k: round(v, 1) for k, v in micro_total.items()})
+    return {"nutrition": out, "unknown": unknown, "unmeasured_micros": unmeasured}
 
 
 def name_of(food_id: str) -> str:
@@ -334,6 +358,10 @@ def apply_to_meal(meal: dict) -> dict:
     meal["macros_approx"] = result["nutrition"]
     meal["portion"] = portion_text(comps) or meal.get("portion")
     meal["nutrition_basis"] = "computed" if not result["unknown"] else "partial"
+    if result["unmeasured_micros"]:
+        meal["micros_unmeasured"] = sorted(set(result["unmeasured_micros"]))
+    else:
+        meal.pop("micros_unmeasured", None)
     if result["unknown"]:
         meal["unknown_components"] = result["unknown"]
     return meal
