@@ -143,3 +143,17 @@ def test_a_list_after_an_avoid_word_is_still_avoided():
     assert _governed_by_avoidance(text, "urad dal")
     assert not _governed_by_avoidance(text, "moong")
     assert not _governed_by_avoidance("Curd is excellent, avoid pickles.", "curd")
+
+
+def test_no_caffeine_for_a_child_and_no_compounded_hing_for_a_coeliac():
+    child = allowed_foods({"age": 12}, {})["excluded"]
+    assert "green_tea" in child
+    assert "green_tea" not in allowed_foods({"age": 30}, {})["excluded"]
+    assert "hing" in allowed_foods({"allergies": ["gluten"]}, {})["excluded"]
+
+
+def test_flour_is_shown_as_rotis_and_a_water_drink_reads_as_one():
+    from services.diet_nutrition import household, portion_text
+    assert household("wheat_flour_atta", 60) == "about 2 rotis"
+    assert portion_text([{"food": "fennel_saunf", "grams": 2}, {"food": "water", "grams": 200}]) \
+        == "Mishreya (Fennel) 2 g in a glass of water (200 ml)"

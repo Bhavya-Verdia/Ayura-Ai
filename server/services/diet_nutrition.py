@@ -70,7 +70,8 @@ _E = {
     "salt": ("Salt", 0, 0.0, 0.0, 0.0, 0.0, "USDA FDC 173468", ()),
     "rock_salt": ("Rock salt (saindhava)", 0, 0.0, 0.0, 0.0, 0.0, "USDA FDC 173468", ()),
     "mustard_seeds": ("Mustard seeds", 508, 26.1, 28.1, 36.2, 12.2, "USDA FDC 172235", ("mustard",)),
-    "hing": ("Asafoetida (hing)", 297, 4.0, 67.8, 1.1, 4.1, "estimate (compounded hing)", ()),
+    # Compounded hing is usually cut with wheat flour — a classic hidden gluten.
+    "hing": ("Asafoetida (hing)", 297, 4.0, 67.8, 1.1, 4.1, "estimate (compounded hing)", ("gluten",)),
     "curry_leaves": ("Curry leaves", 108, 6.1, 18.7, 1.0, 6.4, "IFCT 2017", ()),
     "coriander_leaves": ("Coriander leaves", 23, 2.1, 3.7, 0.5, 2.8, "USDA FDC 169997", ()),
     "mint_leaves": ("Mint leaves", 70, 3.8, 14.9, 0.9, 8.0, "USDA FDC 173475", ()),
@@ -125,6 +126,7 @@ _UNIT_BY_ID = {
     "pistachios": ("pistachio", 0.7), "amla": ("amla", 30), "chikoo_sapota": ("chikoo", 100),
     "mosambi_sweet_lime": ("sweet lime", 150), "mango": ("mango", 200),
 }
+_ROTI_FLOURS = {"wheat_flour_atta", "jowar_flour", "bajra_flour"}
 _SPOON_IDS = {"ghee", "ghee_oil", "sesame_oil", "coconut_oil", "mustard_oil", "olive_oil",
               "groundnut_oil", "sunflower_oil", "rice_bran_oil", "butter", "sugar",
               "jaggery", "honey", "flax_seeds", "chia_seeds", "sesame_seeds_til", "raisins"}
@@ -156,6 +158,10 @@ def household(food_id: str, grams: float) -> str | None:
             whole = round(count) if each < 5 else round(count * 2) / 2
             return f"{_fmt(whole)} {unit}{'' if whole == 1 or unit.endswith('s') else 's'}"
         return None
+    if food_id in _ROTI_FLOURS:
+        # Flour is weighed by nobody at the table; ~30 g makes one roti or bhakri.
+        rotis = grams / 30.0
+        return f"about {_fmt(max(1, round(rotis)))} roti" + ("s" if round(rotis) > 1 else "")
     if food_id in _SPOON_IDS:
         tsp = grams / 5.0
         if tsp >= 3:
@@ -278,8 +284,11 @@ def portion_text(components: list[dict]) -> str:
     left out: the patient measures the food, not the salt. A drink made only of
     seasonings (coriander-seed water) is described by them instead of by nothing."""
     if components and all(c["food"] in SEASONINGS for c in components):
-        return " · ".join(f"{name_of(c['food'])} {_fmt(round(c['grams']))} g"
-                          for c in components) + " in a glass of water"
+        water = next((c["grams"] for c in components if c["food"] == "water"), 200)
+        steeped = " · ".join(f"{name_of(c['food'])} {_fmt(round(c['grams']))} g"
+                             for c in components if c["food"] != "water")
+        return f"{steeped} in a glass of water ({_fmt(round(water))} ml)" if steeped \
+            else f"A glass of water ({_fmt(round(water))} ml)"
     parts = []
     for c in sorted(components, key=lambda c: -c["grams"]):
         if c["food"] in SEASONINGS:

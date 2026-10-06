@@ -377,6 +377,10 @@ def _objective(x: dict, A: dict, energy: dict, diabetic: bool) -> float:
     else:
         cost += 2 * max(0.0, abs(tot["carbs_g"] - c_t) / c_t - 0.15) ** 2
     cost += 3 * max(0.0, (tot["fat_g"] - f_t) / f_t - 0.10) ** 2
+    # Fibre minimum. A constipated 78-year-old's day came to 18.5 g against 25.
+    fib_min = (nt.get("fibre_g") or {}).get("min")
+    if fib_min:
+        cost += 4 * max(0.0, (fib_min - tot["fiber_g"]) / fib_min) ** 2
     cost += 1 * max(0.0, (f_t - tot["fat_g"]) / f_t - 0.25) ** 2
     cost += 0.2 * sum((v - 1) ** 2 for v in x.values())
     return cost

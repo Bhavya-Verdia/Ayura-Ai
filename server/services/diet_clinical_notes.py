@@ -122,7 +122,8 @@ CONDITION_NOTES = {
              "ACR gout guideline (2020)"),
     "celiac": ("Coeliac disease",
                "Strictly gluten-free, including cross-contamination: separate flour, tawa "
-               "and utensils. Oats only if certified gluten-free.",
+               "and utensils. Oats only if certified gluten-free. Most hing (asafoetida) "
+               "sold in India is mixed with wheat flour — use a labelled gluten-free one.",
                "ACG coeliac guideline (2023)"),
     "lactose_intolerance": ("Lactose intolerance",
                             "Curd and buttermilk are usually better tolerated than milk; small "
@@ -191,8 +192,17 @@ def medication_matches(user_profile: dict) -> tuple[list[dict], list[str]]:
 
 def screen_protocols(user_profile: dict) -> dict:
     """Medication exclusions in the `extra_terms` shape the food screen reads, keyed by
-    a pseudo-condition so they pass through the same scans as an Apathya."""
+    a pseudo-condition so they pass through the same scans as an Apathya. Also the
+    one age rule that is a food rather than an energy figure: no caffeine under 18
+    (AAP), which put green tea in a 12-year-old's plan."""
     out = {}
+    try:
+        child = int(user_profile.get("age") or 99) < 18
+    except (TypeError, ValueError):
+        child = False
+    if child:
+        out["child_caffeine"] = {"name": "Under 18", "reason": "No caffeine for children (AAP).",
+                                 "terms": ["green tea", "black tea", "coffee", "espresso"]}
     for m in medication_matches(user_profile)[0]:
         if m["avoid"]:
             out[f"med_{m['key']}"] = {"name": m["medication"],
