@@ -1,0 +1,13 @@
+rule,current_value,applies_to,exceptions,basis,question_for_reviewer,reviewer_ruling,corrections
+Effort as reps in reserve,"easy=3, right=2, hard=0",every logged set,,"RIR-based autoregulation (Helms et al., 2016)",Is 'very hard' = 0 reps in reserve the right reading for someone under an intensity ceiling?,,
+Weekly load step up,"+1 kg below 20 kg, +2.5 kg above, or the next kettlebell","an exercise whose logged sets all reached the top of the range, or were rated easy",never in a deload week; never when the check-in says too hard or unwell,double progression,Are these steps safe for the over-60 and adolescent groups?,,
+Weekly load step down,x0.9 (about 10% lighter),an exercise whose sets fell below the range AND were rated very hard,,coaching default,Should a failed set ever prompt a larger reduction or a different exercise?,,
+"Check-in can hold, never raise",too_hard / unwell -> no rise,every user,,"asymmetric by design: lowering on a feeling is safe, raising is not","Is holding enough after an illness week, or should loads come down?",,
+Warning signs stop the load advice,chest pain or pressure; fainting or nearly fainting; a racing or irregular heartbeat; breathlessness out of proportion to the effort,every user,,"ACSM's Guidelines 11th ed., signs to terminate exercise",Is the list complete? Should any of these also trigger an urgent-care message?,,
+Block counts as progressed,>= 50% of planned sessions logged,every user,,coaching default,Is half the block enough evidence to progress?,,
+Block counts as finished,"21 days after it was written, or any week-3 log",every user,,engineering default,,,
+Next block's extra volume,"+1 set on main lifts, once (going into block 2)",a progressed block,"pregnancy (maintained, not progressed — ACOG 804)",coaching default,"Should the over-60, cardiac or hypertensive groups get the extra set?",,
+Beginner -> intermediate offer,"3 finished, progressed blocks in a row + a measured gain",adults (18+),pregnancy; under 18,"novice linear progression runs ~12 weeks (Rippetoe & Baker, Practical Programming)",Is twelve weeks right for people with a chronic condition?,,
+Intermediate -> advanced offer,2 finished blocks at intermediate + a measured gain,adults 18-59,pregnancy; under 18; 60+ (the engine never prescribes advanced movements there),product decision (2026-10-06),Is two months at intermediate enough? Should any condition exclude advanced programming?,,
+End-of-block notification,"once, 28-38 days after the plan",the latest gym plan only,,engineering default,,,
+Loads from the log,"strongest set in the last 42 days, Epley with effort as RIR",every logged exercise,sets of more than 15 reps are not used to estimate a max,Epley (1985),,,

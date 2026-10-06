@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Check, ClipboardCheck, ShieldAlert, RefreshCw } from 'lucide-react'
 import { workoutsAPI } from '../../api/client'
+import { track, EVENTS } from '../../lib/analytics'
 
 const FEELINGS = [
   { value: 'too_easy', label: 'Too easy' },
@@ -68,6 +69,9 @@ export function GymWeekCheckin({ planId, week, saved, onSaved, onRebuild }) {
     try {
       const { data } = await workoutsAPI.checkin(body)
       setRebuild(!!data?.rebuild_recommended)
+      // The week and how hard it felt only — pain, symptoms and injuries are
+      // health answers and are not sent, not even as yes/no.
+      track(EVENTS.GYM_CHECKIN_SUBMITTED, { week, feeling, edited: Boolean(saved) })
       onSaved?.(body)
       setState('saved')
       setOpen(false)
@@ -93,7 +97,8 @@ export function GymWeekCheckin({ planId, week, saved, onSaved, onRebuild }) {
           </p>
         )}
         {rebuild && onRebuild && (
-          <button type="button" className="gym-log-save gym-checkin-rebuild" onClick={onRebuild}>
+          <button type="button" className="gym-log-save gym-checkin-rebuild"
+            onClick={() => { track(EVENTS.GYM_REBUILD_REQUESTED, { source: 'checkin', week }); onRebuild() }}>
             <RefreshCw size={12} /> Rebuild my plan around it
           </button>
         )}

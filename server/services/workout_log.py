@@ -77,6 +77,22 @@ def logged_lifts(entries) -> dict:
     return out
 
 
+def best_bodyweight_reps(entries) -> dict:
+    """{exercise_id: reps} — the best single set of an exercise logged with no
+    weight. `logged_lifts` skips these (there is no load to estimate a max
+    from), so a bodyweight-only practitioner's progress was nowhere."""
+    out: dict = {}
+    for e in entries or []:
+        sets = e.get("sets") or []
+        if not sets or any(float(s.get("kg") or 0) > 0 for s in sets):
+            continue
+        best = max(int(s.get("reps") or 0) for s in sets)
+        ex = e.get("exercise_id")
+        if ex and best > out.get(ex, 0):
+            out[ex] = best
+    return out
+
+
 def planned_sessions(plan: dict) -> int:
     return sum(1 for week in plan.get("four_week_plan") or []
                for day in week.get("days") or [] if day.get("main_workout"))
@@ -89,7 +105,10 @@ def block_summary(plan: dict | None, entries) -> dict | None:
     if not plan:
         return None
     entries = [e for e in entries or [] if e.get("plan_id") == plan.get("plan_id")]
-    sessions = {(e.get("week"), e.get("day")) for e in entries if e.get("sets")}
+    # A day counts if anything in it was done — a conditioning day logged as
+    # minutes is a session as much as a lifting day logged as sets.
+    sessions = {(e.get("week"), e.get("day")) for e in entries
+                if e.get("sets") or e.get("minutes")}
     planned = planned_sessions(plan)
     adherence = len(sessions) / planned if planned else 0.0
 
@@ -119,6 +138,7 @@ def block_summary(plan: dict | None, entries) -> dict | None:
         "progress": adherence >= _ADHERENCE_TO_PROGRESS,
         "exercises_measured": len(best),
         "progressed": progressed[:5],
+        "cardio_minutes": round(sum(float(e.get("minutes") or 0) for e in entries)),
     }
 
 
@@ -230,6 +250,7 @@ async def block_history(db, user_id: str) -> list[dict]:
         plan["plan_id"] = record.get("_id")
         summary = block_summary(plan, logs)
         lifts = logged_lifts(logs)
+        reps = best_bodyweight_reps(logs)
         names = {e.get("exercise_id"): e.get("exercise_name") for e in logs}
         is_latest = i == len(records) - 1
         generated = record.get("generated_at")
@@ -242,6 +263,9 @@ async def block_history(db, user_id: str) -> list[dict]:
             "fitness_level": str((plan.get("user_summary") or {}).get("fitness_level")
                                  or "beginner").lower(),
             "best_lifts": {k: {**v, "name": names.get(k) or k} for k, v in lifts.items()},
+            # Bodyweight work has no weight to estimate a max from, so its
+            # progress is the best set's reps — the plan's own measure of it.
+            "best_reps": {k: {"reps": v, "name": names.get(k) or k} for k, v in reps.items()},
         })
     return rows
 

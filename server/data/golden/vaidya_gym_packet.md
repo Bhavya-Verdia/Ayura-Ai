@@ -163,6 +163,26 @@ abdominal surgery, pregnancy and everyone over 60. The mechanism is the
 Valsalva manoeuvre. Confirm the list, and whether diabetes (for its retinopathy
 risk) belongs on it.
 
+## How the plan changes after it is written
+
+`gym_adaptation_rules_review.csv`, one row per rule, with the value the app uses
+today read from the code. Since 2026-10 a plan is no longer fixed for its four
+weeks: next week's weights move with what was logged and a short weekly
+check-in, and each new four-week block builds on the last, up to an offer of
+intermediate and then advanced programming. **Every threshold in that file is a
+coaching default chosen in engineering** — the load steps, the ~10% reduction,
+"half the sessions logged" as the bar for progressing, three blocks before
+intermediate, two more before advanced, one extra main-lift set going into
+block 2.
+
+What is already fixed, and why: a check-in can hold or lower a weight but never
+raise one; four warning signs (chest pain, fainting, palpitations,
+disproportionate breathlessness) replace all load advice with "see a doctor"
+and pause workout mode; pregnancy is maintained, not progressed; advanced is
+never offered under 18 or from 60. **Confirm each row, and say which groups —
+cardiac, hypertensive, over-60, adolescent — should be held back from any of
+them.**
+
 ## What happens to your answers
 
 Every `N` with a correction goes into the movement spec in

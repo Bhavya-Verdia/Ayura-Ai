@@ -6662,3 +6662,40 @@
 .gym-history-trends { margin-top: 0.6rem; display: grid; gap: 0.2rem; }
 .gym-history-trend { margin: 0; font-size: 0.8rem; color: var(--ayura-text); }
 .gym-history-note { margin: 0.2rem 0 0; font-size: 0.72rem; color: var(--ayura-text-secondary); }
+
+/* ── Gym workout mode (GymSessionPlayer) — shares the sp-* overlay shell ── */
+.gs-start { justify-self: start; margin: 0.25rem 0 0.5rem; padding: 0.45rem 1rem; font-size: 0.82rem; }
+.gs-stage { flex: 1; overflow-y: auto; padding: 1rem 1rem 2rem; width: 100%; max-width: 640px; margin: 0 auto; }
+.gs-exercise { display: grid; gap: 0.6rem; }
+.gs-title { margin: 0; font-size: 1.35rem; line-height: 1.25; color: var(--ayura-text-primary); }
+.gs-rx { margin: 0; font-size: 0.95rem; color: var(--ayura-text-secondary); }
+.gs-target { margin: 0; display: grid; gap: 0.15rem; font-size: 0.82rem; line-height: 1.45; color: var(--ayura-text);
+  padding: 0.5rem 0.7rem; border-radius: 8px; border-left: 3px solid var(--ayura-accent);
+  background: color-mix(in srgb, var(--ayura-accent) 7%, transparent); }
+.gs-target span { color: var(--ayura-text-secondary); }
+.gs-sets { display: grid; gap: 0.45rem; }
+.gs-set { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) minmax(0, 1fr) 2.75rem; gap: 0.45rem; align-items: center; }
+.gs-set:has(> input:only-of-type) { grid-template-columns: 3.4rem minmax(0, 1fr) 2.75rem; }
+.gs-set input { min-width: 0; width: 100%; padding: 0.6rem 0.6rem; border-radius: 10px; font-size: 1rem;
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.15)); background: transparent; color: var(--ayura-text); }
+.gs-set.done input { opacity: 0.65; }
+.gs-set-done { height: 2.75rem; width: 2.75rem; border-radius: 10px; display: grid; place-items: center; cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--ayura-accent) 50%, transparent); background: transparent; color: var(--ayura-text); }
+.gs-set-done.on { background: var(--ayura-accent); color: #10140f; border-color: var(--ayura-accent); }
+.gs-set-done:disabled:not(.on) { opacity: 0.4; cursor: default; }
+.gs-rest, .gs-hold { display: grid; justify-items: center; gap: 0.4rem; padding: 0.9rem; border-radius: 14px;
+  background: color-mix(in srgb, var(--ayura-accent) 10%, transparent); }
+.gs-rest-label { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: var(--ayura-text-secondary); }
+.gs-rest-clock { font-size: 2.6rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ayura-text-primary); }
+.gs-rest-actions { display: flex; gap: 0.5rem; }
+.gs-step-actions { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.gs-next { padding: 0.55rem 1.3rem; font-size: 0.9rem; }
+.gs-next:disabled { opacity: 0.5; cursor: default; }
+.gs-checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.gs-checklist label { display: flex; gap: 0.6rem; align-items: flex-start; font-size: 0.9rem; line-height: 1.45;
+  color: var(--ayura-text); cursor: pointer; padding: 0.45rem 0.6rem; border-radius: 8px;
+  background: color-mix(in srgb, var(--ayura-accent) 5%, transparent); }
+.gs-checklist input { margin-top: 0.2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--ayura-accent); flex-shrink: 0; }
+.gs-hold.hard { background: color-mix(in srgb, #e0a96e 18%, transparent); }
+.gs-minutes { grid-template-columns: 7rem minmax(0, 8rem); }
+.gs-minutes input { font-size: 1rem; padding: 0.55rem 0.6rem; }

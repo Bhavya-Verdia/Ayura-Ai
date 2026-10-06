@@ -35,6 +35,9 @@ class WorkoutLogIn(BaseModel):
     exercise_id: str = Field(..., min_length=1, max_length=120)
     sets: list[LoggedSet] = Field(default_factory=list, max_length=12)
     effort: Optional[Literal["easy", "right", "hard"]] = None
+    # Conditioning is effort and time, not weight for reps: until this it could
+    # not be logged at all, so a plan's cardio was invisible to the block.
+    minutes: Optional[float] = Field(None, ge=0, le=240)
 
 
 def _library_names() -> dict:
@@ -59,7 +62,8 @@ async def log_exercise(
 
     key = log_key(user.id, body.plan_id, body.week, body.day, body.exercise_id)
     sets = [s.model_dump() for s in body.sets if s.reps > 0]
-    if not sets:
+    minutes = round(body.minutes, 1) if body.minutes else None
+    if not sets and not minutes:
         await db.workout_logs.delete_one({"_id": key, "user_id": user.id})
         return {"id": key, "deleted": True}
     now = datetime.now(timezone.utc)
@@ -69,6 +73,8 @@ async def log_exercise(
         "exercise_id": body.exercise_id, "exercise_name": names[body.exercise_id],
         "sets": sets, "effort": body.effort, "updated_at": now,
     }
+    if minutes:
+        doc["minutes"] = minutes
     await db.workout_logs.replace_one({"_id": key, "user_id": user.id}, doc, upsert=True)
     return {"id": key, "deleted": False, "updated_at": now.isoformat()}
 

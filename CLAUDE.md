@@ -269,6 +269,34 @@ fell out of the 42-day load window by month three.
   latest plan, marking `block_end_notified` so it never repeats; plans more than ten
   days past due are abandoned, not finished, and are not announced.
 
+#### Gym: workout mode, cardio, and what is measured
+`GymSessionPlayer.jsx` runs a day: warm-up, one exercise at a time with sets ticked
+as done, the plan's rest counted down, holds and intervals timed (rounds of hard and
+easy), and each exercise **logged when it is finished** so a closed tab costs one
+exercise. It starts from this week's adjusted weight and is **withheld when last week's
+check-in reported a warning sign**. Sessions go through `/practice/session` with
+`feature: "gym"`. Its countdown detects zero in an effect, never inside a state
+updater — React may run an updater twice, and doing so skipped every easy interval.
+
+Conditioning is logged as `minutes` (no weight for reps), a minutes-only day counts as
+a session, and bodyweight progress is the best set's reps (`best_bodyweight_reps`) —
+`logged_lifts` cannot estimate a max without a load.
+
+Gym analytics (`EVENTS.GYM_*`) send training facts only — week, counts, effort, level.
+**Pain areas, warning signs and injuries are never sent, not even as booleans**;
+`test_gym_analytics_privacy.py` greps every gym `track` call. "Shown" events use
+`trackOnce` so a tab switch is not a person.
+
+**No exercise photos from free-exercise-db.** The dataset is Unlicense, but its images
+were scraped (the original author: "I do not own the copyright … advise against using
+them in commercial projects"; reverse search traces them to bodybuilding.com). Images
+need licensed or commissioned content, and all-or-nothing: yoga turned its drawn
+figures off because a partly illustrated list read as broken.
+
+The adaptation thresholds are in the review packet
+(`gym_adaptation_rules_review.csv`, generated from the live constants; a test fails if
+it drifts).
+
 #### Diet library: authored, not derived
 `data/knowledge_base/diet_foods.json` is **generated** by
 `scripts/build_diet_library.py` from the curated spec in `scripts/diet_library/`
