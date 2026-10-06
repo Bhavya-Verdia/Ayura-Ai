@@ -1299,6 +1299,13 @@ _RESTRICTED_PRACTICE = {
     # trimester; nothing compared the two.
     "supta baddha": ("pregnan",),
     "legs-up-the-wall": ("pregnan",),
+    # The same position in the model's own words. A pregnant reviewer persona's
+    # coaching said "a few minutes of legs-elevated rest" on the line the gate
+    # reads, and the names above are all it matched.
+    "legs up the wall": ("pregnan",),
+    "legs-elevated": ("pregnan",),
+    "legs elevated": ("pregnan",),
+    "supine": ("pregnan",),
 }
 
 # What the line is replaced with when it is withheld — same intent, no
@@ -1314,6 +1321,8 @@ _PRACTICE_SUBSTITUTES = {
     "supta baddha": ("Side-lying rest with a pillow between the knees, or sitting reclined "
                      "against cushions — 10 min of slow breathing"),
 }
+for _phrase in ("legs up the wall", "legs-elevated", "legs elevated", "supine"):
+    _PRACTICE_SUBSTITUTES[_phrase] = _PRACTICE_SUBSTITUTES["supta baddha"]
 
 
 # The same practices by what they do, in `engine.movement_risk`'s vocabulary. A
@@ -1570,6 +1579,11 @@ def _withholds_impact(user_profile) -> bool:
     # the warm-up beside it still opened a sedentary beginner's first session
     # with jumping jacks and high knees.
     if (user_profile.get("fitness_level") or "beginner") == "beginner":
+        return True
+    # A sedentary 47-year-old who rated himself intermediate opened every session
+    # with jumping jacks. `_steady_only` already reads a sedentary answer as
+    # "moderate continuous work first"; landing is the same question.
+    if str(user_profile.get("activity_level") or "").lower() == "sedentary":
         return True
     if _age_group(user_profile.get("age")) in ("senior", "youth"):
         return True
@@ -3442,6 +3456,11 @@ def _steady_only(user_profile) -> bool:
     if _age_group(user_profile.get("age")) == "senior":
         return True
     if user_profile.get("pregnancy_or_nursing"):
+        return True
+    # Anaemia's own note tells the practitioner to work below the plan's effort
+    # and stop for breathlessness. The same plan wrote mountain climbers "too
+    # breathless to talk" two lines further down.
+    if any(g["key"] == "anemia" for g in guidance_for(_conditions_and_injuries(user_profile))):
         return True
     reason = _intensity_ceiling(user_profile)
     return bool(reason) and "heart" in reason

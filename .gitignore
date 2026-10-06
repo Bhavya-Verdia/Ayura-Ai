@@ -55,3 +55,6 @@ logs/
 # Playwright
 client/playwright-report/
 client/test-results/
+
+# Reviewer pack output (regenerate with server/scripts/gym_reviewer_pack.py)
+server/scripts/gym_reviewer_pack/

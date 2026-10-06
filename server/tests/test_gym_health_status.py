@@ -657,3 +657,51 @@ def test_a_pregnant_rest_day_does_not_lie_her_flat():
     _, rest = _rest_day({"dominant_dosha": "vata", "pregnancy_or_nursing": True})
     text = " ".join(rest["rest_day_recovery"]["activities"]).lower()
     assert "supta" not in text and "legs-up-the-wall" not in text
+
+
+def test_the_models_own_words_for_lying_on_the_back_are_gated_in_pregnancy():
+    """The named poses were gated; the coaching's "legs-elevated rest" was not,
+    beside a note saying to avoid lying flat after the first trimester."""
+    from services.gym_plan_enricher import gate_recovery
+
+    line = ("On rest days, do gentle walking and a few minutes of legs-elevated rest "
+            "if comfortable.")
+    pregnant = gate_recovery({"active_recovery": line},
+                             {"pregnancy_or_nursing": True, "medical_history": []})
+    assert "legs-elevated" not in pregnant["active_recovery"]
+    assert "Side-lying" in pregnant["active_recovery"]
+    other = gate_recovery({"active_recovery": line},
+                          {"pregnancy_or_nursing": False, "medical_history": []})
+    assert other["active_recovery"] == line
+
+
+def test_anaemia_gets_steady_cardio_not_intervals_its_note_forbids():
+    """The anaemia note says work below the plan's effort and stop for
+    breathlessness; the finisher beside it was intervals "too breathless to talk"."""
+    from services.gym_plan_engine import generate_gym_plan, gym_exercises
+
+    profile = {"id": "a", "age": 22, "gender": "female", "height_cm": 165, "weight_kg": 50,
+               "bmi_category": "normal", "fitness_level": "beginner", "activity_level": "light",
+               "dominant_dosha": "vata", "medical_history": ["anemia"]}
+    prefs = {"gym_goal": "muscle_gain", "workout_days_per_week": 3,
+             "workout_duration_minutes": 45, "strength_level": "beginner",
+             "available_equipment": ["bodyweight", "dumbbells"], "cardio_preference": "light"}
+    plan = generate_gym_plan(profile, prefs, gym_exercises)
+    for week in plan["four_week_plan"]:
+        for day in week["days"]:
+            for ex in day.get("main_workout") or []:
+                assert "hard" not in str(ex.get("reps")), (day["day_name"], ex["exercise_name"])
+
+
+def test_a_sedentary_intermediate_is_not_warmed_up_with_jumping():
+    from services.gym_plan_engine import generate_gym_plan, gym_exercises
+
+    profile = {"id": "s", "age": 47, "gender": "male", "height_cm": 176, "weight_kg": 88,
+               "bmi_category": "overweight", "fitness_level": "intermediate",
+               "activity_level": "sedentary", "dominant_dosha": "pitta", "medical_history": []}
+    prefs = {"gym_goal": "fat_loss", "workout_days_per_week": 3, "workout_duration_minutes": 45,
+             "strength_level": "intermediate", "available_equipment": ["bodyweight", "dumbbells"]}
+    plan = generate_gym_plan(profile, prefs, gym_exercises)
+    for day in plan["four_week_plan"][0]["days"]:
+        for line in day.get("warmup") or []:
+            assert "jump" not in line.lower(), line
