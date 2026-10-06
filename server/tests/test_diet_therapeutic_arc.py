@@ -213,27 +213,16 @@ async def test_a_plan_missing_a_week_is_a_failed_generation(returned, monkeypatc
 
 
 @pytest.mark.asyncio
-async def test_four_weeks_out_of_order_are_accepted_and_sorted(monkeypatch):
-    """Order is the model's presentation, not a clinical error — but the plan has to
-    come out in the prescribed sequence, because week 3 of a reduction-led arc is not
-    interchangeable with week 1."""
-    import json as _json
-
+async def test_the_weeks_come_out_in_order_with_the_prescribed_phases(monkeypatch):
+    """Week 3 of a reduction-led arc is not interchangeable with week 1, and the
+    labels are the prescription, not the model's echo."""
     import services.diet_llm_generator as gen
-
-    payload = {
-        "plan_title": "t", "plan_description": "d", "pathya_apathya": {},
-        "weeks": [{"week_number": n, "phase": "whatever the model said",
-                   "daily_plan": {}} for n in (3, 1, 4, 2)],
-    }
-
-    async def _fake_generate(**kwargs):
-        return _json.dumps(payload)
+    from tests.diet_fake_llm import make_fake
 
     async def _no_rag(*a, **k):
         return []
 
-    monkeypatch.setattr(gen.llm_client, "generate", _fake_generate)
+    monkeypatch.setattr(gen.llm_client, "generate", make_fake([]))
     monkeypatch.setattr(gen.rag_pipeline, "query", _no_rag)
 
     profile = {"id": "u", "ama_indicator": "none", "ojas_level": "low",
@@ -241,6 +230,5 @@ async def test_four_weeks_out_of_order_are_accepted_and_sorted(monkeypatch):
     result = await gen.generate_diet_plan_llm(profile, {"diet_goal": "muscle_support"})
     assert result is not None
     assert [w["week_number"] for w in result["diet_weeks"]] == [1, 2, 3, 4]
-    # And the labels are the prescription, not the model's echo.
     prescribed = [w["phase"] for w in choose_arc(profile, {})["weeks"]]
     assert [w["phase"] for w in result["diet_weeks"]] == prescribed

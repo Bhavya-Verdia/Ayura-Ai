@@ -122,11 +122,10 @@ _UNIT_BY_ID = {
     "walnuts": ("walnut half", 2.5), "cashews": ("cashew", 1.5),
     "pistachios": ("pistachio", 0.7), "amla": ("amla", 30), "chikoo_sapota": ("chikoo", 100),
     "mosambi_sweet_lime": ("sweet lime", 150), "mango": ("mango", 200),
-    "raisins": ("raisin", 0.5),
 }
 _SPOON_IDS = {"ghee", "ghee_oil", "sesame_oil", "coconut_oil", "mustard_oil", "olive_oil",
               "groundnut_oil", "sunflower_oil", "rice_bran_oil", "butter", "sugar",
-              "jaggery", "honey", "flax_seeds", "chia_seeds", "sesame_seeds_til"}
+              "jaggery", "honey", "flax_seeds", "chia_seeds", "sesame_seeds_til", "raisins"}
 _KATORI_CATEGORIES = {"grain", "legume", "vegetable", "dairy"}
 
 
@@ -169,6 +168,36 @@ def household(food_id: str, grams: float) -> str | None:
 # ── Computation ──────────────────────────────────────────────────────────────
 
 _KEYS = ("calories", "protein_g", "carbs_g", "fat_g", "fiber_g")
+
+# What each component does in a meal, for balancing a day without changing its dishes.
+_ROLE_BY_EXTRA = {
+    "wheat_flour_atta": "grain", "maida": "grain", "ragi_flour": "grain", "rice_raw": "grain",
+    "vermicelli": "grain", "idli": "grain", "dosa": "grain", "sattu": "protein",
+    "sambar": "protein", "sugar": "sweet", "jaggery": "sweet", "honey": "sweet",
+    "raisins": "sweet",
+}
+_ROLE_BY_CATEGORY = {"grain": "grain", "legume": "protein", "vegan_protein": "protein",
+                     "dairy": "protein", "vegetable": "vegetable", "fruit": "fruit",
+                     "nut_seed": "nut", "oil": "fat", "spice": "seasoning",
+                     "beverage": "drink"}
+
+
+def role(food_id: str) -> str:
+    if food_id in ADDED_FATS or food_id in ("cream",):
+        return "fat"
+    if food_id in SEASONINGS:
+        return "seasoning"
+    if food_id in _ROLE_BY_EXTRA:
+        return _ROLE_BY_EXTRA[food_id]
+    if food_id in ("dates", "figs", "grapes", "chikoo_sapota", "mango"):
+        return "sweet_fruit"
+    f = food(food_id) or {}
+    return _ROLE_BY_CATEGORY.get(f.get("category"), "other")
+
+
+# Fat added in cooking — the one component a cook changes without changing the dish.
+ADDED_FATS = {"ghee", "ghee_oil", "butter", "sesame_oil", "coconut_oil", "mustard_oil",
+              "olive_oil", "groundnut_oil", "sunflower_oil", "rice_bran_oil"}
 
 
 def components_of(meal: dict) -> list[dict]:
@@ -220,7 +249,8 @@ def portion_text(components: list[dict]) -> str:
         hh = household(c["food"], c["grams"])
         unit = "ml" if c["food"] in _LIQUIDS else "g"
         g = _fmt(round(c["grams"]))
-        parts.append(f"{_short(name_of(c['food']))} {g} {unit}" + (f" ({hh})" if hh else ""))
+        label = name_of(c["food"]) if c["food"] in EXTRAS else _short(name_of(c["food"]))
+        parts.append(f"{label} {g} {unit}" + (f" ({hh})" if hh else ""))
     return " · ".join(parts)
 
 

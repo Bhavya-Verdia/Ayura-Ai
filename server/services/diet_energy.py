@@ -219,9 +219,12 @@ def nutrient_targets(target_kcal: int, protein_target_g: int, protein_floor_g: i
     fibre_g = max(25, round(14 * target_kcal / 1000))                  # 14 g / 1000 kcal
     targets = {
         "energy_kcal": target_kcal,
-        "protein_g": {"target": protein_target_g, "min": protein_floor_g},
+        "protein_g": {"target": protein_target_g, "min": protein_floor_g,
+                      **({"max": protein_target_g} if renal else {})},
+        # In diabetes the target is AVAILABLE carbohydrate (total less fibre).
         "carbs_g": {"target": carbs_g,
-                    "pct_energy": round(carbs_g * 4 * 100 / max(target_kcal, 1))},
+                    "pct_energy": round(carbs_g * 4 * 100 / max(target_kcal, 1)),
+                    **({"basis": "available (total minus fibre)"} if diabetic else {})},
         "fat_g": {"target": fat_g, "pct_energy": round(fat_g * 9 * 100 / max(target_kcal, 1))},
         "fibre_g": {"min": fibre_g if age >= 18 else max(20, round(fibre_g * 0.8))},
         # WHO (2023): < 2 g sodium (5 g salt) a day for every adult.

@@ -118,9 +118,9 @@ def test_an_adult_keeps_their_fasting_days():
 
 def test_both_generation_paths_withhold_a_childs_fasting_days():
     import inspect
-    from services import diet_llm_generator as g
+    from services import diet_week_generator as g
 
-    assert "fasting_days_for" in inspect.getsource(g.generate_diet_plan_llm)
+    assert "fasting_days_for" in inspect.getsource(g.generate_week_by_week)
     from services import diet_plan_engine as e
     assert "_fasting_days_for" in inspect.getsource(e.generate_diet_plan)
 
