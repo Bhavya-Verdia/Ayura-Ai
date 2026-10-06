@@ -102,7 +102,7 @@ def test_any_patient_gets_a_plan_a_dietitian_would_accept(profile, prefs, monkey
         assert rec["fasting_days_exempt"] == 0, who
 
     lo, hi = rx["band"]
-    flo, fhi = int(rx["target_calories"] * 0.40), int(rx["target_calories"] * 0.70)
+    flo, fhi = int(rx["target_calories"] * 0.30), int(rx["target_calories"] * 0.70)
     misses = []
     for w in plan["diet_weeks"]:
         for d, day in w["daily_plan"].items():

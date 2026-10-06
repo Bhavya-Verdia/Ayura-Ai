@@ -46,6 +46,8 @@ _E = {
     "wheat_flour_atta": ("Whole wheat flour (atta), raw", 340, 13.2, 72.0, 2.5, 10.7, "USDA FDC 168944", ("gluten",)),
     "maida": ("Refined wheat flour (maida), raw", 364, 10.3, 76.3, 1.0, 2.7, "USDA FDC 168936", ("gluten",)),
     "ragi_flour": ("Ragi (finger millet) flour, raw", 321, 7.2, 66.8, 1.9, 11.2, "IFCT 2017", ()),
+    "jowar_flour": ("Jowar (sorghum) flour, raw", 334, 10.0, 67.7, 1.7, 9.7, "IFCT 2017", ()),
+    "bajra_flour": ("Bajra (pearl millet) flour, raw", 348, 11.0, 61.8, 5.4, 11.5, "IFCT 2017", ()),
     "rice_raw": ("Rice, raw", 365, 7.1, 80.0, 0.7, 1.3, "USDA FDC 168877", ()),
     "vermicelli": ("Vermicelli (semiya), dry", 371, 13.0, 74.7, 1.5, 3.2, "USDA FDC 169736 (durum pasta)", ("gluten",)),
     "sattu": ("Sattu (roasted gram flour)", 369, 22.0, 58.0, 5.2, 10.0, "IFCT 2017 (roasted Bengal gram)", ()),
@@ -172,6 +174,7 @@ _KEYS = ("calories", "protein_g", "carbs_g", "fat_g", "fiber_g")
 # What each component does in a meal, for balancing a day without changing its dishes.
 _ROLE_BY_EXTRA = {
     "wheat_flour_atta": "grain", "maida": "grain", "ragi_flour": "grain", "rice_raw": "grain",
+    "jowar_flour": "grain", "bajra_flour": "grain",
     "vermicelli": "grain", "idli": "grain", "dosa": "grain", "sattu": "protein",
     "sambar": "protein", "sugar": "sweet", "jaggery": "sweet", "honey": "sweet",
     "raisins": "sweet",
@@ -239,9 +242,44 @@ def name_of(food_id: str) -> str:
     return f.get("name") or food_id.replace("_", " ").title()
 
 
+# What one meal can realistically hold of a single food, in grams as the row states
+# it. Beyond these the plate stops being a meal anyone eats: the solver was free to
+# write 2.75 katori of rice at one sitting, and 199 grain portions across sixteen
+# plans exceeded 2 katori.
+_RAW_FLOURS = {"wheat_flour_atta", "maida", "ragi_flour", "jowar_flour", "bajra_flour",
+               "rice_raw", "vermicelli", "sattu", "chickpea_flour_besan", "rice_flakes"}
+
+
+def meal_cap(food_id: str, scale: float = 1.0) -> float:
+    """A realistic single-meal portion of one food, scaled for a high energy target —
+    a 3700 kcal athlete is served a bigger plate, and capping them at an ordinary
+    one left 23 of 28 days short of target."""
+    return _base_cap(food_id) * max(1.0, min(1.6, scale))
+
+
+def _base_cap(food_id: str) -> float:
+    r = role(food_id)
+    if food_id in _RAW_FLOURS:
+        return 120
+    if food_id in ("paratha", "roti_whole_wheat", "bread_whole_wheat"):
+        return 200
+    if food_id in ("idli", "dosa"):
+        return 300
+    if food_id in ("paneer", "tofu_firm", "vegan_paneer_tofu", "tempeh", "soya_chunks"):
+        return 150 if food_id != "tofu_firm" else 200
+    if food_id in _LIQUIDS:
+        return 400
+    return {"grain": 300, "protein": 250, "vegetable": 300, "fruit": 250,
+            "sweet_fruit": 120, "nut": 40, "fat": 25, "sweet": 15}.get(r, 400)
+
+
 def portion_text(components: list[dict]) -> str:
     """'Moong Dal 150 g (1 katori) · Ghee 5 g (1 tsp)' — main items first, seasonings
-    left out: the patient measures the food, not the salt."""
+    left out: the patient measures the food, not the salt. A drink made only of
+    seasonings (coriander-seed water) is described by them instead of by nothing."""
+    if components and all(c["food"] in SEASONINGS for c in components):
+        return " · ".join(f"{name_of(c['food'])} {_fmt(round(c['grams']))} g"
+                          for c in components) + " in a glass of water"
     parts = []
     for c in sorted(components, key=lambda c: -c["grams"]):
         if c["food"] in SEASONINGS:

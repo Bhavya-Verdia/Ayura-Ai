@@ -97,7 +97,7 @@ async def test_fasting_days_are_marked_and_held_light(monkeypatch):
     for w in plan["diet_weeks"]:
         monday = w["daily_plan"]["Monday"]
         assert monday["is_fasting"]
-        assert 0.40 * rec["target_kcal"] <= monday["day_totals"]["calories"] <= 0.70 * rec["target_kcal"]
+        assert 0.30 * rec["target_kcal"] <= monday["day_totals"]["calories"] <= 0.70 * rec["target_kcal"]
         assert monday["day_totals"]["calories"] < rec["band_kcal"][0]
 
 

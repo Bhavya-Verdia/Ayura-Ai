@@ -73,6 +73,9 @@ This week's staples, so the four weeks differ: {staples}.{fasting}
 Per-meal kcal budget: breakfast ~{b} | lunch ~{l} | snack ~{s} | dinner ~{d}. \
 Protein at least {protein} g per day. Carbohydrate about {carbs} g per day. Fat about \
 {fat} g per day in total — ghee or oil 1-2 tsp (5-10 g) per main meal, not more.{carb_rule}
+Real portions: at most 2 katori (300 g) of cooked rice or grain, or 3 roti, per meal; at most \
+2 katori of any one vegetable; at most 40 g nuts. For a high energy target, use denser foods \
+(roti, paratha, poha, paneer or tofu, a glass of milk or plant milk, nuts) — never a mountain of rice.
 
 Return exactly:
 {{"week_number": {week}, "phase_description": "1-2 sentences on this week's focus",
@@ -197,8 +200,20 @@ def _carb_rule(energy: dict) -> str:
 def _staples(allowed: list[dict], week: int) -> str:
     """Two grains and two pulses featured per week, rotated through the allowed list,
     so four weeks generated in parallel do not all centre on the same khichdi."""
-    grains = [f for f in allowed if f.get("category") == "grain"]
-    pulses = [f for f in allowed if f.get("category") in ("legume", "vegan_protein")]
+    # Everyday Indian staples first, in the order a household rotates them; the
+    # unfamiliar grains and pulses come after, as occasional extras. Alphabetical
+    # order put quinoa and amaranth at the centre of whole weeks.
+    familiar = ["roti_whole_wheat", "basmati_rice", "millet_jowar", "brown_rice", "poha",
+                "millet_bajra", "daliya", "ragi_flour", "oats", "upma_rava", "idli",
+                "white_rice", "barley", "paratha", "dosa", "jowar_flour", "bajra_flour",
+                "moong_dal_yellow", "toor_dal", "masoor_dal", "chana_dal", "moong_dal_green",
+                "rajma", "chhole", "urad_dal", "paneer", "black_eyed_peas", "green_peas",
+                "sprouted_moong", "tofu_firm", "soy_milk", "soya_chunks"]
+    rank = {fid: i for i, fid in enumerate(familiar)}
+    key = lambda f: (rank.get(f["id"], 100), f["id"])  # noqa: E731
+    grains = sorted((f for f in allowed if dn.role(f["id"]) == "grain"), key=key)
+    pulses = sorted((f for f in allowed if f.get("category") in ("legume", "vegan_protein")
+                     or f["id"] == "paneer"), key=key)
 
     def pick(rows, n):
         if not rows:
@@ -367,7 +382,43 @@ def _objective(x: dict, A: dict, energy: dict, diabetic: bool) -> float:
     return cost
 
 
-def _optimise_factors(A: dict, energy: dict, diabetic: bool) -> dict:
+def _cap_scale(energy: dict) -> float:
+    return energy["target_calories"] / 2200.0
+
+
+def _role_ceilings(day: dict, scale: float = 1.0) -> dict:
+    """The largest factor each role can take before some meal's portion of one of its
+    foods passes `meal_cap` — a plate a person would actually be served."""
+    out: dict = {}
+    for s in _COUNTED:
+        for c in (day.get(s) or {}).get("components") or []:
+            r = dn.role(c["food"])
+            if r == "seasoning" or not c["grams"]:
+                continue
+            r = r if r in _ROLE_BOUNDS else "other"
+            out[r] = min(out.get(r, 9.9), dn.meal_cap(c["food"], scale) / c["grams"])
+    return out
+
+
+def _clip_to_caps(day: dict, scale: float = 1.0) -> bool:
+    clipped = False
+    for s in _COUNTED:
+        meal = day.get(s)
+        if not isinstance(meal, dict):
+            continue
+        changed = False
+        for c in meal.get("components") or []:
+            cap = dn.meal_cap(c["food"], scale)
+            if dn.role(c["food"]) != "seasoning" and c["grams"] > cap:
+                c["grams"] = cap
+                changed = True
+        if changed:
+            _finish_meal_inplace(meal)
+            clipped = True
+    return clipped
+
+
+def _optimise_factors(A: dict, energy: dict, diabetic: bool, ceilings: dict | None = None) -> dict:
     """Projected gradient descent over one factor per role. Nine variables at most,
     so a few hundred finite-difference steps settle in milliseconds."""
     x = {r: 1.0 for r in A}
@@ -376,6 +427,10 @@ def _optimise_factors(A: dict, energy: dict, diabetic: bool) -> dict:
         # Under a protein ceiling the protein foods may come well down and the
         # energy they carried is made up in fat, as a renal diet does.
         bounds.update(protein=(0.3, 1.2), fat=(0.3, 2.2), grain=(0.5, 1.4))
+    for r, cap in (ceilings or {}).items():
+        lo, hi = bounds.get(r, (0.8, 1.2))
+        # A portion already over the cap may come down to it; nothing goes up past it.
+        bounds[r] = (min(lo, cap), max(min(hi, cap), min(lo, cap)))
     step, h = 0.05, 1e-4
 
     def project(v: dict) -> dict:
@@ -431,11 +486,11 @@ def _fasting_energy(energy: dict) -> dict:
         nt["fat_g"] = {**nt["fat_g"], "target": round(nt["fat_g"]["target"] * _FASTING_SHARE)}
     if nt.get("carbs_g"):
         nt["carbs_g"] = {**nt["carbs_g"], "target": round(nt["carbs_g"]["target"] * _FASTING_SHARE)}
-    # The band is asymmetric: a Phalahar day under 60% is a stricter fast, not a
+    # The band is asymmetric (30-70%): a Phalahar day under 60% is a stricter fast, not a
     # failure; over 70% it is no longer a fasting day.
     full = energy["target_calories"]
     return {**energy, "target_calories": t,
-            "band": (int(full * 0.40), int(full * 0.70)),
+            "band": (int(full * 0.30), int(full * 0.70)),
             "protein_floor_g": round((energy.get("protein_floor_g") or 0) * _FASTING_SHARE),
             "protein_target_g": round((energy.get("protein_target_g") or 0) * _FASTING_SHARE),
             "meal_budget": {k: round(v * _FASTING_SHARE) for k, v in energy["meal_budget"].items()},
@@ -467,8 +522,18 @@ def _reconcile_day(day: dict, energy: dict) -> dict:
             if abs(f - 1) > 0.08:
                 _rescale(meal, f)
     diabetic = ((energy.get("nutrient_targets") or {}).get("added_sugar_g") or {}).get("max") == 0
-    factors = _optimise_factors(_role_matrix(day), energy, diabetic)
-    _apply_factors(day, factors)
+    factors = {}
+    for _ in range(3):
+        scale = _cap_scale(energy)
+        step_factors = _optimise_factors(_role_matrix(day), energy, diabetic,
+                                         _role_ceilings(day, scale))
+        _apply_factors(day, step_factors)
+        for r, v in step_factors.items():
+            factors[r] = factors.get(r, 1.0) * v
+        # A portion the model wrote past what one plate holds is cut to it, and the
+        # solver runs again so other foods can make up the energy if they have room.
+        if not _clip_to_caps(day, scale):
+            break
     after = _day_totals(day)["calories"]
     return {"factor": round(after / before, 2), "before": round(before), "after": round(after),
             "role_factors": {r: round(v, 2) for r, v in factors.items() if abs(v - 1) > 0.02}}
