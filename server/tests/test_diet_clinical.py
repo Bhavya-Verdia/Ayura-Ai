@@ -157,3 +157,12 @@ def test_flour_is_shown_as_rotis_and_a_water_drink_reads_as_one():
     assert household("wheat_flour_atta", 60) == "about 2 rotis"
     assert portion_text([{"food": "fennel_saunf", "grams": 2}, {"food": "water", "grams": 200}]) \
         == "Mishreya (Fennel) 2 g in a glass of water (200 ml)"
+
+
+def test_absence_words_and_hindi_expansion_stay_inside_their_clause():
+    """'non-sugary fruits' was flagged as recommending sugar to a PCOS patient, and
+    'avoid alcohol and urad-based foods' as recommending urad dal to a gout patient —
+    the Hindi expansion was appended outside the clause that said avoid."""
+    assert _governed_by_avoidance("Build meals on moong and non-sugary fruits.", "sugar")
+    assert _governed_by_avoidance("For gout, avoid alcohol and urad-based foods.", "urad dal")
+    assert not _governed_by_avoidance("Enjoy a little sugar in the evening.", "sugar")

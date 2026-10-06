@@ -1478,7 +1478,12 @@ def _governed_by_avoidance(text: str, term: str) -> bool:
                                                         "prefer", "enjoy") for w in words)
         own = any(m in c for m in _AVOID_MARKERS)
         governed.append(own or (listy and bool(governed) and governed[-1]))
-    mentions = [(c, g) for c, g in zip(clauses, governed) if _term_in_text(term, c)]
+    # Vernacular is expanded clause by clause. The scan expands the whole text once,
+    # appending "urad dal" for "urad" at the END — outside the clause that says
+    # "avoid", so "For gout, avoid alcohol and urad-based foods" read as recommending
+    # urad dal.
+    mentions = [(c, g) for c, g in zip(clauses, governed)
+                if _term_in_text(term, c) or _term_in_text(term, _expand_vernacular(_norm(c)))]
     if not mentions:
         return False
     # The whole clause, not the text before the mention: "curd is best avoided" puts
@@ -1495,7 +1500,9 @@ def _governed_by_avoidance(text: str, term: str) -> bool:
     # gluten. Matched on the word itself, not a bare "free", so "feel free to have
     # curd" still reads as a recommendation.
     free = re.compile(rf"\b{re.escape(term)}\w*[\s-]+free\b")
-    return all(g or free.search(clause) for clause, g in mentions)
+    # "non-sugary fruits", "low-sugar", "no-sugar": the food named by its absence.
+    absent = re.compile(rf"\b(?:non|low|no|zero)[\s-]*{re.escape(term)}")
+    return all(g or free.search(clause) or absent.search(clause) for clause, g in mentions)
 
 
 def apply_advisory_safety(
@@ -1547,7 +1554,9 @@ def apply_advisory_safety(
                         continue
                     if exempt:
                         continue
-                    if negation_aware and _governed_by_avoidance(low, term):
+                    # The text as written, not `low`: the expansion appends its
+                    # canonical words after the last clause, outside any "avoid".
+                    if negation_aware and _governed_by_avoidance(str(text or "").lower(), term):
                         continue
                     out.append({
                         "food": term,
