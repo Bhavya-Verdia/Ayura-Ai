@@ -186,6 +186,22 @@ would recognise. Every rule in it came from reading a 400-1,000-plan sweep's out
   degrades the coaching rather than removing it. Ardhabala is a session dose — never
   "stop at the first sweat" beside sets written to two reps in reserve.
 
+#### Gym: the reviewer pack is generated, and read whole
+The Claude Doc "Ayura AI Gym Plans — Reviewer Pack" shows 12 personas' plans exactly as
+the app builds them, with live AI coaching. `scripts/gym_reviewer_pack.py generate [n …]`
+builds them (real LLM calls, no database) and `render` writes markdown in the doc's
+format. Everything in a section is plan output except `PLEASE_CHECK` in
+`gym_reviewer_pack_render.py`; re-read those questions against new output, because a
+question about behaviour the plan no longer has wastes the reviewer's time. Regenerate
+after any gym engine or enricher change.
+
+Reading the plans whole, rather than grepping them, is what finds things. Each pass so
+far found prose that contradicted the plan's own notes: supine rest poses beside "avoid
+lying flat", then the model's own "legs-elevated rest", hard intervals beside anaemia's
+"work below the plan's effort", and jumping jacks for a sedentary lifter whose cardio was
+already steady-only. `scripts/e2e_gym_logging_local.py` checks logging end to end against
+a local Mongo and refuses any non-localhost target.
+
 #### Gym: loads are calibrated, and the next block reads the log
 `_load_calibration` has two inputs. **`known_lifts`** on the gym form ("a weight you can
 lift N times", five anchors) rescales each anchor's family of movements; unanchored
