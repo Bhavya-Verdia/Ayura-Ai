@@ -609,21 +609,52 @@ def diet_allergies(user_profile: dict, diet_prefs: dict | None = None) -> list[s
 PAEDIATRIC_MAX_AGE = 17
 
 
-def fasting_days_for(user_profile: dict, diet_prefs: dict | None = None) -> list[str]:
-    """The fasting days that actually apply to this patient.
+# Who is not given a planned fast, and why. Each is a state where a meal-free or
+# fruit-only day causes harm that the meal plan has no way to watch for.
+_NO_FAST_CONDITIONS = {
+    # IDF-DAR (2021) and ADA: fasting on insulin or a sulfonylurea risks
+    # hypoglycaemia, and a Phalahar day of fruit spikes glucose either way.
+    "diabetes": "diabetes", "diabetes_type2": "diabetes", "diabetes_type1": "diabetes",
+    "gestational_diabetes": "diabetes", "kidney_disease": "kidney disease",
+    "chronic_kidney_disease": "kidney disease",
+}
 
-    Empty for anyone under 18, whatever their profile says. The brief tells the model
-    not to fast a growing patient, but the brief is a request: `diet_plan_engine`
-    reads `fasting_days` itself and builds a Phalahar day from it, and
-    `generate_diet_plan_llm` stamps `is_fasting` on the returned plan from the same
-    list. Withholding it in one place and not the others is how a twelve-year-old
-    ends up with a fruit-only Monday in a plan whose own brief forbids fasting them.
-    """
+
+def fasting_withheld_reason(user_profile: dict, diet_prefs: dict | None = None) -> str | None:
+    """Why this patient's fasting days are not planned as fasts, or None."""
+    if not (diet_prefs or {}).get("fasting_days"):
+        return None
     try:
         age = int(user_profile.get("age"))
     except (TypeError, ValueError):
         age = None
     if age is not None and age <= PAEDIATRIC_MAX_AGE:
+        return "Under 18 — no planned fasting days for a growing body."
+    if user_profile.get("pregnancy_or_nursing"):
+        return ("Pregnancy or breastfeeding — fasting days are planned as ordinary days. "
+                "Mother and baby both need the energy every day.")
+    if str(user_profile.get("bmi_category") or "").lower() == "underweight":
+        return "Underweight — fasting days are planned as ordinary days."
+    for cond in diet_conditions(user_profile, diet_prefs):
+        why = _NO_FAST_CONDITIONS.get(str(cond).lower())
+        if why:
+            return (f"With {why}, a fasting day can cause dangerously low (or, on fruit, "
+                    "high) blood sugar, especially on insulin or tablets such as a "
+                    "sulfonylurea. Your fasting days are planned as regular, lighter days. "
+                    "Please agree any fast with your doctor first (IDF-DAR 2021).")
+    return None
+
+
+def fasting_days_for(user_profile: dict, diet_prefs: dict | None = None) -> list[str]:
+    """The fasting days that actually apply to this patient.
+
+    Empty when `fasting_withheld_reason` gives a reason: under 18, pregnant or
+    nursing, underweight, diabetic, or with kidney disease. A 62-year-old diabetic on
+    metformin who keeps a Monday fast was planned a fruit-only Monday at 1090 kcal.
+    The brief is a request: `diet_plan_engine` and the week generator each read this
+    list to build and stamp the fasting day, so it is withheld here, once.
+    """
+    if fasting_withheld_reason(user_profile, diet_prefs):
         return []
     return list((diet_prefs or {}).get("fasting_days") or [])
 
@@ -848,11 +879,21 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
             "on their profile is deliberately not applied — Upavasa is withheld "
             "during Vriddhi. Give them three full meals and a snack every day."
         )
+    elif fasting_withheld_reason(user_profile, diet_prefs):
+        # Diabetes, kidney disease, pregnancy or nursing, underweight: the declared
+        # fasting days are planned as ordinary days, and the brief says so rather
+        # than listing them as a constraint the generator then has to overrule.
+        hard_constraints.append(
+            "NO FASTING DAYS: " + fasting_withheld_reason(user_profile, diet_prefs)
+            + " Keep regular meal times every day.")
     else:
         if fasting_days:
             hard_constraints.append(f"Fasting days: {', '.join(fasting_days)} — only Phalahar (fruits, milk, nuts) on these days")
         if if_window != "no":
             hard_constraints.append(f"Intermittent fasting: {if_window} window — adjust meal timing accordingly")
+    from services.diet_clinical_notes import medication_matches
+    for _m in medication_matches(user_profile)[0]:
+        hard_constraints.append(f"MEDICATION — {_m['medication']}: {_m['advice']}")
     if is_pregnant:
         hard_constraints.append(
             "PREGNANCY / NURSING — absolutely avoid: papaya (raw/ripe), pineapple, excess fenugreek seeds, "

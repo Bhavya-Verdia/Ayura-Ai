@@ -1472,7 +1472,13 @@ def _governed_by_avoidance(text: str, term: str) -> bool:
     # What stops that clearing a genuine recommendation is the splitter: a comma
     # before an avoid-word is a clause boundary, so "curd is excellent, avoid
     # pickles" is two clauses and the curd one has no marker.
-    return all(any(m in clause for m in _AVOID_MARKERS) for clause in mentions)
+    # "Gluten-free", "dairy free", "sugar-free": the food named as absent. A coeliac
+    # plan's description reading "strictly gluten-free" was flagged as recommending
+    # gluten. Matched on the word itself, not a bare "free", so "feel free to have
+    # curd" still reads as a recommendation.
+    free = re.compile(rf"\b{re.escape(term)}\w*[\s-]+free\b")
+    return all(any(m in clause for m in _AVOID_MARKERS) or free.search(clause)
+               for clause in mentions)
 
 
 def apply_advisory_safety(

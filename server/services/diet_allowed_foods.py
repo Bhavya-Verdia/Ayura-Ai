@@ -71,14 +71,19 @@ def allowed_foods(user_profile: dict, diet_prefs: dict, extra_terms=None) -> dic
     """{"allowed": [food rows], "excluded": {id: reason}} for this patient."""
     from services.diet_brief_builder import diet_allergies, diet_conditions
 
+    from services.diet_clinical_notes import screen_protocols
+
     foods = _candidates()
+    # Medicine-food interactions that are "avoid this food" go through the same scans
+    # as a condition's Apathya, keyed as pseudo-conditions.
+    meds = screen_protocols(user_profile)
     excluded = screen_foods(
         foods,
         allergies=diet_allergies(user_profile, diet_prefs),
         intolerances=diet_prefs.get("food_intolerances") or [],
         dietary_type=diet_prefs.get("dietary_type"),
-        conditions=diet_conditions(user_profile, diet_prefs),
-        extra_terms=extra_terms,
+        conditions=diet_conditions(user_profile, diet_prefs) + list(meds),
+        extra_terms={**(extra_terms or {}), **meds},
         pregnant=bool(user_profile.get("pregnancy_or_nursing")),
     )
     allowed = [f for f in foods if f["id"] not in excluded]

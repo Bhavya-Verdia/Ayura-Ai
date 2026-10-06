@@ -443,6 +443,12 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
                 f"Over {_GERIATRIC_MIN_AGE} — protein is raised to at least "
                 f"{_GERIATRIC_PROTEIN_PER_KG} g/kg to protect muscle.")
     target_per_kg = max(_PROTEIN_PER_KG.get(goal, 0.8), floor_per_kg)
+    from services.diet_clinical_notes import has_ibd
+    if has_ibd(user_profile):
+        # ESPEN (2023): 1.2-1.5 g/kg in active inflammatory bowel disease, where
+        # losses and catabolism raise the requirement.
+        target_per_kg = max(target_per_kg, 1.2)
+        notes.append("Crohn's / ulcerative colitis — protein raised to 1.2 g/kg (ESPEN 2023).")
     if renal and not flag and target_per_kg > _RENAL_PROTEIN_CAP:
         target_per_kg = _RENAL_PROTEIN_CAP
         floor_per_kg = min(floor_per_kg, _RENAL_PROTEIN_CAP)
