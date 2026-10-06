@@ -340,3 +340,41 @@ def test_blocks_endpoint_returns_history_and_offer(auth_client):
     with patch("routes.workouts.block_history", new=AsyncMock(return_value=rows)):
         body = auth_client.get("/api/workouts/blocks").json()
     assert body["blocks"] == rows and body["consecutive"] == 1 and body["level_up"] is None
+
+
+# ── Cardio and bodyweight progress ───────────────────────────────────────────
+
+def test_a_conditioning_day_logged_as_minutes_is_a_session():
+    from services.workout_log import block_summary
+    plan = generate_gym_plan(dict(_PROFILE), dict(_PREFS))
+    plan["plan_id"] = "p"
+    entries = [{"plan_id": "p", "week": 1, "day": 3, "exercise_id": "air_bike",
+                "sets": [], "minutes": 20, "effort": "right"}]
+    summary = block_summary(plan, entries)
+    assert summary["sessions_logged"] == 1 and summary["cardio_minutes"] == 20
+
+
+def test_bodyweight_progress_is_the_best_set_of_reps():
+    from services.workout_log import best_bodyweight_reps
+    entries = [
+        {"exercise_id": "push_up", "sets": [{"kg": 0, "reps": 10}, {"kg": 0, "reps": 12}]},
+        {"exercise_id": "push_up", "sets": [{"kg": 0, "reps": 15}]},
+        {"exercise_id": "squat", "sets": [{"kg": 60, "reps": 8}]},
+    ]
+    assert best_bodyweight_reps(entries) == {"push_up": 15}
+
+
+def test_minutes_can_be_logged_and_nothing_logged_is_a_delete(auth_client, mock_db):
+    mock_db.plan_history.find_one = AsyncMock(return_value={"_id": "gym_p1"})
+    mock_db.workout_logs = MagicMock()
+    mock_db.workout_logs.replace_one = AsyncMock()
+    mock_db.workout_logs.delete_one = AsyncMock()
+    body = {"plan_id": "gym_p1", "week": 1, "day": 2, "exercise_id": "air_bike",
+            "minutes": 18, "effort": "right"}
+    resp = auth_client.post("/api/workouts/logs", json=body)
+    assert resp.status_code == 200, resp.text
+    assert mock_db.workout_logs.replace_one.await_args.args[1]["minutes"] == 18
+    resp = auth_client.post("/api/workouts/logs", json={**body, "minutes": 0})
+    assert resp.json()["deleted"] is True
+    assert auth_client.post("/api/workouts/logs",
+                            json={**body, "minutes": 500}).status_code == 422

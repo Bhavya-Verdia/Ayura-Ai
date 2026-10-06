@@ -71,13 +71,16 @@ test.describe('gym workout mode (mocked API)', () => {
       sets: [{ kg: 100, reps: 5 }, { kg: 100, reps: 5 }], effort: 'hard' })
 
     for (let i = 0; i < 3; i++) await dlg.getByRole('button', { name: 'Skip exercise' }).click()
-    // Conditioning is timed, not logged.
+    // Conditioning is timed, and logged as minutes — the plan's own by default.
     await expect(dlg.getByRole('heading', { name: 'Mountain Climbers' })).toBeVisible()
+    await expect(dlg.getByLabel('Minutes done')).toHaveValue('4')
     await dlg.getByRole('button', { name: 'Next' }).click()
+    await expect.poll(() => store.logs.length).toBe(2)
+    expect(store.logs[1]).toMatchObject({ exercise_id: 'mountain_climbers', sets: [], minutes: 4, effort: 'right' })
     await expect(dlg.getByRole('heading', { name: 'Cool down' })).toBeVisible()
     await dlg.getByRole('button', { name: 'Finish workout' }).click()
 
-    await expect(dlg.getByText('1 of 5 exercises logged')).toBeVisible()
+    await expect(dlg.getByText('2 of 5 exercises logged')).toBeVisible()
     await expect.poll(() => store.sessions.length).toBe(1)
     expect(store.sessions[0]).toMatchObject({ feature: 'gym', week: 1, day: 1, completed: true })
     await dlg.getByRole('button', { name: 'Back to plan' }).click()

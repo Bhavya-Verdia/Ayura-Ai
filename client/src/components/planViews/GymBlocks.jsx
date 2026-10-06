@@ -100,6 +100,16 @@ export function GymBlockHistory({ onRegenerate }) {
   })
   const trends = Object.values(series).filter(s => s.points.length >= 2)
     .sort((a, b) => b.points.length - a.points.length).slice(0, 4)
+  // Bodyweight work has no weight to estimate a max from; its progress is reps.
+  const repSeries = {}
+  blocks.forEach((b, i) => {
+    Object.entries(b.best_reps || {}).forEach(([id, r]) => {
+      repSeries[id] = repSeries[id] || { name: r.name, points: [] }
+      repSeries[id].points.push({ block: i + 1, reps: r.reps })
+    })
+  })
+  const repTrends = Object.values(repSeries).filter(s => s.points.length >= 2)
+    .sort((a, b) => b.points.length - a.points.length).slice(0, 3)
 
   const offer = data?.level_up
   const accept = async () => {
@@ -139,12 +149,13 @@ export function GymBlockHistory({ onRegenerate }) {
             <span className="gym-history-k">Block {i + 1}{b.finished ? '' : ' · in progress'}</span>
             <span className="gym-history-v">
               {b.sessions_logged} of {b.sessions_planned} sessions
+              {b.cardio_minutes > 0 && ` · ${b.cardio_minutes} min cardio`}
               {b.progressed?.[0] && ` · ${b.progressed[0].exercise} +${b.progressed[0].change_percent}%`}
             </span>
           </li>
         ))}
       </ol>
-      {trends.length > 0 && (
+      {(trends.length > 0 || repTrends.length > 0) && (
         <div className="gym-history-trends">
           {trends.map(t => (
             <p key={t.name} className="gym-history-trend">
@@ -152,7 +163,16 @@ export function GymBlockHistory({ onRegenerate }) {
               {t.points.map(p => fmt(p.one_rm)).join(' → ')}
             </p>
           ))}
-          <p className="gym-history-note">Estimated one-rep max from your best logged set in each block.</p>
+          {repTrends.map(t => (
+            <p key={t.name} className="gym-history-trend">
+              <strong>{t.name}</strong>{' '}
+              {t.points.map(p => `${p.reps}`).join(' → ')} reps
+            </p>
+          ))}
+          <p className="gym-history-note">
+            {trends.length > 0 && 'Weights: estimated one-rep max from your best logged set in each block. '}
+            {repTrends.length > 0 && 'Bodyweight: best set of reps in each block.'}
+          </p>
         </div>
       )}
     </section>

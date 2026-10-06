@@ -6697,3 +6697,5 @@
   background: color-mix(in srgb, var(--ayura-accent) 5%, transparent); }
 .gs-checklist input { margin-top: 0.2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--ayura-accent); flex-shrink: 0; }
 .gs-hold.hard { background: color-mix(in srgb, #e0a96e 18%, transparent); }
+.gs-minutes { grid-template-columns: 7rem minmax(0, 8rem); }
+.gs-minutes input { font-size: 1rem; padding: 0.55rem 0.6rem; }

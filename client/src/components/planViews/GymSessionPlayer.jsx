@@ -209,6 +209,14 @@ function ExerciseStep({ ex, adjusted, prior, onComplete, onSkip }) {
   const [error, setError] = useState(false)
   const interval = !loggable ? intervals(ex.reps) : null
   const timed = !loggable && !interval ? seconds(ex.reps) : null
+  const cardio = ex.role === 'conditioning' || ex.category === 'cardio'
+  // What the plan asked for, as the default the person corrects.
+  const plannedSeconds = interval
+    ? (interval[0] + interval[1]) * Math.max(1, Number(ex.sets) || 1)
+    : (timed || 0) * (cardio ? Math.max(1, Number(ex.sets) || 1) : 1)
+  const [minutes, setMinutes] = useState(() => (
+    prior?.minutes ? String(prior.minutes)
+      : plannedSeconds ? String(Math.max(1, Math.round(plannedSeconds / 60))) : ''))
   const doneCount = rows.filter(r => r.done).length
   const allDone = doneCount === rows.length
 
@@ -224,6 +232,20 @@ function ExerciseStep({ ex, adjusted, prior, onComplete, onSkip }) {
   }
 
   const finish = async () => {
+    if (cardio && !loggable) {
+      const value = parseFloat(minutes) || 0
+      if (!value) { onComplete(null); return }
+      setSaving(true)
+      setError(false)
+      try {
+        await onComplete({ sets: [], minutes: value, effort })
+      } catch {
+        setError(true)
+      } finally {
+        setSaving(false)
+      }
+      return
+    }
     if (!loggable) { onComplete(null); return }
     const sets = rows.filter(r => r.done)
       .map(r => ({ kg: bodyweight ? 0 : parseFloat(r.kg) || 0, reps: parseInt(r.reps, 10) || 0 }))
@@ -291,7 +313,14 @@ function ExerciseStep({ ex, adjusted, prior, onComplete, onSkip }) {
 
       {resting && <RestTimer total={ex.rest_seconds} onFinish={() => setResting(false)} />}
 
-      {loggable && doneCount > 0 && !resting && (
+      {cardio && !loggable && (
+        <div className="gym-log-set gs-minutes">
+          <span className="gym-log-set-label">Minutes done</span>
+          <input type="number" inputMode="decimal" min="0" max="240" step="1" aria-label="Minutes done"
+            value={minutes} onChange={e => setMinutes(e.target.value)} />
+        </div>
+      )}
+      {((loggable && doneCount > 0) || (cardio && !loggable)) && !resting && (
         <div className="gym-log-effort" role="radiogroup" aria-label="How hard did it feel">
           {EFFORT.map(o => (
             <button key={o.value} type="button" role="radio" aria-checked={effort === o.value}
@@ -400,6 +429,7 @@ export function GymSessionPlayer({ planId, week, day, adjustments, logs, onLogge
     if (entry) {
       await workoutsAPI.log({ plan_id: planId, week, day: day.day, exercise_id: ex.exercise_id, ...entry })
       track(EVENTS.GYM_SETS_LOGGED, { week, sets: entry.sets.length, effort: entry.effort,
+        minutes: entry.minutes ? Math.round(entry.minutes) : 0,
         bodyweight: entry.sets.every(s => !s.kg), edited: false, source: 'session' })
       setLogged(n => n + 1)
       onLogged?.(day.day, ex.exercise_id, entry)

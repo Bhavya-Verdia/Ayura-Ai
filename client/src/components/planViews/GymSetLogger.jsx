@@ -32,8 +32,66 @@ export function GymSetLogger({ planId, week, day, exercise, logged, onSaved }) {
   const [rows, setRows] = useState(initialRows)
   const [effort, setEffort] = useState(logged?.effort || 'right')
   const [state, setState] = useState('idle')
+  const [minutes, setMinutes] = useState(logged?.minutes ? String(logged.minutes) : '')
+  // Conditioning is logged as time and effort; there is no weight for reps.
+  const cardio = exercise.role === 'conditioning' || exercise.category === 'cardio'
 
-  if (!planId || exercise.role === 'conditioning' || !isRepRange(exercise.reps)) return null
+  if (!planId || (!cardio && !isRepRange(exercise.reps))) return null
+
+  if (cardio) {
+    const saveMinutes = async () => {
+      setState('saving')
+      const value = parseFloat(minutes) || 0
+      try {
+        await workoutsAPI.log({ plan_id: planId, week, day, exercise_id: exercise.exercise_id,
+          sets: [], minutes: value, effort })
+        onSaved?.(value > 0 ? { sets: [], minutes: value, effort } : null)
+        if (value > 0) {
+          track(EVENTS.GYM_SETS_LOGGED, { week, sets: 0, minutes: Math.round(value), effort,
+            bodyweight: true, edited: Boolean(logged), source: 'plan' })
+        }
+        setState('saved')
+        setOpen(false)
+      } catch {
+        setState('error')
+      }
+    }
+    if (!open) {
+      return (
+        <div className="gym-log-row">
+          {logged?.minutes > 0 && (
+            <span className="gym-log-summary"><Check size={11} /> Logged: {logged.minutes} min</span>
+          )}
+          <button type="button" className="gym-log-toggle" onClick={() => setOpen(true)}>
+            <PencilLine size={11} /> {logged?.minutes ? 'Edit' : 'Log your minutes'}
+          </button>
+        </div>
+      )
+    }
+    return (
+      <div className="gym-log-editor" role="group" aria-label={`Log minutes for ${exercise.exercise_name}`}>
+        <div className="gym-log-set">
+          <span className="gym-log-set-label">Minutes</span>
+          <input type="number" inputMode="decimal" min="0" max="240" step="1" aria-label="Minutes"
+            placeholder="min" value={minutes} onChange={e => setMinutes(e.target.value)} />
+        </div>
+        <div className="gym-log-effort" role="radiogroup" aria-label="How hard did it feel">
+          {EFFORT.map(o => (
+            <button key={o.value} type="button" role="radio" aria-checked={effort === o.value}
+              className={`gym-log-chip${effort === o.value ? ' active' : ''}`}
+              onClick={() => setEffort(o.value)}>{o.label}</button>
+          ))}
+        </div>
+        <div className="gym-log-actions">
+          <button type="button" className="gym-log-cancel" onClick={() => setOpen(false)}>Cancel</button>
+          <button type="button" className="gym-log-save" onClick={saveMinutes} disabled={state === 'saving'}>
+            {state === 'saving' ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+        {state === 'error' && <p className="gym-log-error">Could not save — check your connection and try again.</p>}
+      </div>
+    )
+  }
 
   const save = async () => {
     setState('saving')
