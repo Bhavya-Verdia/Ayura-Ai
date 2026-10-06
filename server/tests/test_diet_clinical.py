@@ -87,3 +87,49 @@ def test_gluten_free_is_not_a_recommendation_of_gluten():
     assert _governed_by_avoidance("This plan is strictly gluten-free.", "gluten")
     assert _governed_by_avoidance("A sugar free kheer.", "sugar")
     assert not _governed_by_avoidance("Feel free to have curd daily.", "curd")
+
+
+# ── What the person will eat ─────────────────────────────────────────────────
+
+def test_jain_removes_root_vegetables_honey_and_mushroom_but_not_raw_banana():
+    excluded = allowed_foods({}, {"dietary_restrictions": ["jain"]})["excluded"]
+    for food in ("onion", "garlic", "potato", "carrot", "beetroot", "honey", "mushroom",
+                 "ginger", "sweet_potato"):
+        assert food in excluded, food
+    assert "raw_banana" not in excluded and "ginger_dry_saunth" not in excluded
+
+
+def test_dislikes_typed_in_hindi_reach_the_library_name():
+    excluded = allowed_foods({}, {"food_dislikes": ["lauki", "Bhindi", "karela"]})["excluded"]
+    assert {"bottle_gourd", "okra_bhindi", "bitter_gourd_karela"} <= set(excluded)
+
+
+def test_cuisine_and_restrictions_reach_the_brief():
+    brief = build_brief(_P, {"cuisine_preference": "south_indian",
+                             "dietary_restrictions": ["no_onion_garlic"],
+                             "food_dislikes": ["mushroom"]})
+    assert "South Indian" in brief and "NO ONION OR GARLIC" in brief and "mushroom" in brief
+
+
+def test_the_form_offers_exactly_the_allergies_and_intolerances_the_server_enforces():
+    """The form offered "Gluten Sensitivity", which no term list knew: declared and
+    enforced by nothing. It did not offer mustard or histamine, which the server
+    accepts."""
+    import re
+    from pathlib import Path
+
+    from schemas.preferences_schema import FOOD_ALLERGIES, FOOD_INTOLERANCES
+    from services.ahara_safety import ALLERGEN_TERMS
+
+    jsx = (Path(__file__).resolve().parents[2] / "client" / "src" / "components" /
+           "PreferencesModal.jsx").read_text()
+
+    def chips(field):
+        i = jsx.index(f"handleToggle('{field}'")
+        block = jsx[jsx.rindex("{[", 0, i):i]
+        return set(re.findall(r"value: '([a-z_]+)'", block))
+
+    assert chips("food_allergies") <= FOOD_ALLERGIES
+    assert chips("food_intolerances") == FOOD_INTOLERANCES
+    for key in FOOD_ALLERGIES | FOOD_INTOLERANCES:
+        assert key in ALLERGEN_TERMS, key

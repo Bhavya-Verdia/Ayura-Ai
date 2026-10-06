@@ -165,6 +165,7 @@ function savedToForm(typeId, saved) {
     if (saved.time_available_minutes) form.time_available_minutes = String(saved.time_available_minutes);
   } else if (typeId === 'diet' || typeId === 'routine') {
     form.fasting_days = joinList(saved.fasting_days);
+    if (typeId === 'diet') form.food_dislikes = joinList(saved.food_dislikes);
   } else if (typeId === 'panchakarma') {
     form.current_ayurvedic_medicines = joinList(saved.current_ayurvedic_medicines);
   } else if (typeId === 'remedies' || typeId === 'medicines') {
@@ -341,6 +342,11 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
       payload.fasting_days = payload.fasting_days
         ? payload.fasting_days.split(',').map(s => s.trim()).filter(Boolean)
         : [];
+      payload.food_dislikes = typeof form.food_dislikes === 'string'
+        ? form.food_dislikes.split(',').map(s => s.trim()).filter(Boolean)
+        : (Array.isArray(form.food_dislikes) ? form.food_dislikes : []);
+      payload.cuisine_preference = payload.cuisine_preference || 'any';
+      payload.dietary_restrictions = Array.isArray(form.dietary_restrictions) ? form.dietary_restrictions : [];
     } else if (typeId === 'routine') {
       payload.wake_preference = payload.wake_preference || 'natural';
       payload.occupation_type = payload.occupation_type || 'moderately_active';
@@ -824,6 +830,7 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                   { value: 'shellfish', label: 'Shellfish' },
                   { value: 'fish', label: 'Fish' },
                   { value: 'sesame', label: 'Sesame / Til' },
+                  { value: 'mustard', label: 'Mustard / Rai' },
                 ].map(opt => (
                   <button
                     key={opt.value}
@@ -843,6 +850,7 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                   { value: 'lactose', label: 'Lactose' },
                   { value: 'fructose', label: 'Fructose' },
                   { value: 'gluten_sensitivity', label: 'Gluten Sensitivity' },
+                  { value: 'histamine', label: 'Histamine' },
                   { value: 'fodmap', label: 'FODMAPs' },
                 ].map(opt => (
                   <button
@@ -850,6 +858,43 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                     type="button"
                     className={`pref-chip${(form.food_intolerances || []).includes(opt.value) ? ' active' : ''}`}
                     onClick={() => handleToggle('food_intolerances', opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* What makes it a plan the person will actually eat. A dietitian asks all
+                three before writing a meal; the form asked none of them. */}
+            <div className="pref-row">
+              <div className="pref-input-group">
+                <label>Cuisine you grew up with</label>
+                <select name="cuisine_preference" value={form.cuisine_preference || 'any'} onChange={handleChange}>
+                  <option value="any">Any Indian</option>
+                  <option value="north_indian">North Indian</option>
+                  <option value="south_indian">South Indian</option>
+                  <option value="east_indian">East Indian</option>
+                  <option value="west_indian">West Indian</option>
+                </select>
+              </div>
+              <div className="pref-input-group">
+                <label>Foods you don&apos;t eat (Optional)</label>
+                <input type="text" name="food_dislikes" placeholder="e.g. karela, baingan, mushroom"
+                  value={form.food_dislikes || ''} onChange={handleChange} />
+              </div>
+            </div>
+            <div className="pref-input-group pref-full">
+              <label className="pref-label-hint">Food restrictions <span>(optional)</span></label>
+              <div className="pref-chip-row">
+                {[
+                  { value: 'jain', label: 'Jain (no root vegetables)' },
+                  { value: 'no_onion_garlic', label: 'No onion or garlic' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`pref-chip${(form.dietary_restrictions || []).includes(opt.value) ? ' active' : ''}`}
+                    onClick={() => handleToggle('dietary_restrictions', opt.value)}
                   >
                     {opt.label}
                   </button>

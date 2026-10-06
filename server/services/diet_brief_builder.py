@@ -891,7 +891,8 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
             hard_constraints.append(f"Fasting days: {', '.join(fasting_days)} — only Phalahar (fruits, milk, nuts) on these days")
         if if_window != "no":
             hard_constraints.append(f"Intermittent fasting: {if_window} window — adjust meal timing accordingly")
-    from services.diet_clinical_notes import medication_matches
+    from services.diet_clinical_notes import medication_matches, preference_brief_lines
+    hard_constraints.extend(preference_brief_lines(diet_prefs))
     for _m in medication_matches(user_profile)[0]:
         hard_constraints.append(f"MEDICATION — {_m['medication']}: {_m['advice']}")
     if is_pregnant:

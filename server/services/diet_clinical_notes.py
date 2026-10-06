@@ -219,3 +219,81 @@ def clinical_notes(user_profile: dict, conditions: list[str]) -> list[dict]:
             label, note, source = CONDITION_NOTES[k]
             notes.append({"topic": label, "note": note, "source": source})
     return notes
+
+
+# ── What the person will eat ─────────────────────────────────────────────────
+
+# Jain: no root or underground vegetables (they are uprooted with the life in them),
+# no honey, no mushrooms or fermented foods kept overnight. Dry ginger (saunth) is
+# taken; fresh ginger is a root and is not.
+_JAIN_TERMS = ("onion", "garlic", "potato", "aloo", "carrot", "beetroot", "radish", "mooli",
+               "sweet potato", "yam", "suran", "colocasia", "arbi", "fresh ginger",
+               "turnip", "honey", "mushroom", "lotus stem")
+# Not "kand": raw banana's library name is Kadali Kanda, and it grows above ground.
+
+# What people type when they say what they will not eat, in the words the food
+# library uses. The scans' own vernacular map carries ~80 words chosen for safety
+# terms; these are the everyday vegetable and staple names a dislike is written in.
+_DISLIKE_WORDS = {
+    "lauki": "bottle gourd", "ghiya": "bottle gourd", "dudhi": "bottle gourd",
+    "turai": "ridge gourd", "tori": "ridge gourd", "tinda": "tinda", "parwal": "parwal",
+    "kaddu": "pumpkin", "bhopla": "pumpkin", "bhindi": "okra", "ladyfinger": "okra",
+    "gobhi": "cauliflower", "phool gobhi": "cauliflower", "patta gobhi": "cabbage",
+    "baingan": "brinjal", "eggplant": "brinjal", "karela": "bitter gourd",
+    "palak": "spinach", "methi": "methi", "arbi": "colocasia", "shakarkandi": "sweet potato",
+    "kathal": "jackfruit", "matar": "peas", "mushroom": "mushroom", "shimla mirch": "capsicum",
+    "rajma": "rajma", "chole": "chhole", "chana": "chana", "arhar": "toor", "toor": "toor",
+    "masoor": "masoor", "moong": "moong", "urad": "urad", "besan": "besan",
+    "suji": "semolina", "rava": "semolina", "dalia": "broken wheat", "daliya": "broken wheat",
+    "sabudana": "sabudana", "makhana": "makhana", "dahi": "curd", "chaas": "buttermilk",
+    "gud": "jaggery", "kela": "banana", "papita": "papaya", "anar": "pomegranate",
+    "amrood": "guava", "ragi": "ragi", "bajra": "bajra", "jowar": "jowar",
+}
+_NO_ONION_GARLIC = ("onion", "garlic", "pyaz", "lehsun")
+_CUISINE = {
+    "north_indian": "North Indian (roti, dal, sabzi, khichdi, kadhi, paratha)",
+    "south_indian": "South Indian (idli, dosa, upma, sambar, rasam, poriyal, curd rice)",
+    "east_indian": "East Indian (rice, dal, shukto, light vegetable jhol, chirer pulao)",
+    "west_indian": "West Indian (bhakri, thepla, dhokla, varan bhat, kadhi, poha)",
+}
+
+
+def preference_protocols(diet_prefs: dict) -> dict:
+    """Dislikes and restrictions as pseudo-condition protocols for the food screen."""
+    out = {}
+    restrictions = set(diet_prefs.get("dietary_restrictions") or [])
+    if "jain" in restrictions:
+        out["pref_jain"] = {"name": "Jain diet", "reason": "Not eaten on a Jain diet.",
+                            "terms": list(_JAIN_TERMS)}
+    elif "no_onion_garlic" in restrictions:
+        out["pref_no_onion_garlic"] = {"name": "No onion or garlic",
+                                       "reason": "You do not eat onion or garlic.",
+                                       "terms": list(_NO_ONION_GARLIC)}
+    dislikes = []
+    for d in diet_prefs.get("food_dislikes") or []:
+        word = str(d).strip().lower()
+        if len(word) >= 3:
+            dislikes.append(word)
+            if word in _DISLIKE_WORDS:
+                dislikes.append(_DISLIKE_WORDS[word])
+    if dislikes:
+        out["pref_dislikes"] = {"name": "Foods you dislike", "reason": "You said you do not eat this.",
+                                "terms": dislikes}
+    return out
+
+
+def preference_brief_lines(diet_prefs: dict) -> list[str]:
+    lines = []
+    cuisine = diet_prefs.get("cuisine_preference") or "any"
+    if cuisine in _CUISINE:
+        lines.append(f"CUISINE: lean toward {_CUISINE[cuisine]} dishes the patient grew up with.")
+    restrictions = set(diet_prefs.get("dietary_restrictions") or [])
+    if "jain" in restrictions:
+        lines.append("JAIN: no root or underground vegetables (onion, garlic, potato, carrot, "
+                     "beetroot, radish, fresh ginger, yam), no honey, no mushrooms; dry ginger "
+                     "is fine. Last meal before sunset.")
+    elif "no_onion_garlic" in restrictions:
+        lines.append("NO ONION OR GARLIC in any meal; use hing, ginger and cumin for flavour.")
+    if diet_prefs.get("food_dislikes"):
+        lines.append("DOES NOT EAT: " + ", ".join(diet_prefs["food_dislikes"]) + ".")
+    return lines
