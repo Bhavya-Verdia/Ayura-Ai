@@ -6,7 +6,7 @@ warfarin and metformin was planned a fruit-only Monday at 1090 kcal.
 import pytest
 
 from services.ahara_safety import _governed_by_avoidance
-from services.diet_allowed_foods import allowed_foods, screen_foods
+from services.diet_allowed_foods import allowed_foods
 from services.diet_brief_builder import build_brief, fasting_days_for, fasting_withheld_reason
 from services.diet_clinical_notes import (CONDITION_NOTES, MEDICATIONS, clinical_notes,
                                           medication_matches, screen_protocols)
