@@ -13,7 +13,7 @@ pydantic-settings==2.7.1
 # --- Databases ---
 
 motor==3.7.0
-pymongo==4.10.1
+pymongo==4.18.2
 
 # --- Vector Database ---
 chromadb==0.6.3
