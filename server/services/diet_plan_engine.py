@@ -753,7 +753,8 @@ def _build_day(pool: list[dict], is_fasting: bool, agni_type: str,
 
 # ── Main entry point ───────────────────────────────────────────────────────────
 def generate_diet_plan(user_profile: dict, diet_prefs: dict,
-                       diet_foods_db: list[dict] | None = None) -> dict:
+                       diet_foods_db: list[dict] | None = None,
+                       extra_terms: dict | None = None) -> dict:
     df = diet_foods_db if diet_foods_db is not None else diet_foods
     user_id = str(user_profile.get("id") or user_profile.get("_id") or "anon")
     dominant_dosha = (user_profile.get("dominant_dosha") or "vata").lower()
@@ -767,6 +768,15 @@ def generate_diet_plan(user_profile: dict, diet_prefs: dict,
     # withheld nothing.
     cond_rules = _build_condition_rules(_diet_conditions(user_profile, diet_prefs))
     food_pool = filter_and_score_foods(user_profile, diet_prefs, df, cond_rules=cond_rules)
+    # The same screen the LLM path composes from. This engine's own filters let milk
+    # through for a declared dairy allergy and for lactose intolerance (12 times in
+    # one plan); the screen runs the allergen, dietary-type and condition scans the
+    # finished plan is checked with, so the two cannot disagree.
+    from services.diet_allowed_foods import allowed_foods
+    _allowed = {f["id"] for f in allowed_foods(user_profile, diet_prefs,
+                                                extra_terms=extra_terms)["allowed"]}
+    screened = [f for f in food_pool if f["id"] in _allowed]
+    food_pool = screened or food_pool
 
     # The same per-meal budget the brief gives the model, so this path composes
     # against the target instead of filling category quotas and leaving the

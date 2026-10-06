@@ -28,6 +28,7 @@ function MacroBar({ macros }) {
       {pro > 0 && <div className="diet-macro-chip pro"><span>P</span>{pro}g</div>}
       {carb > 0 && <div className="diet-macro-chip carb"><span>C</span>{carb}g</div>}
       {fat > 0 && <div className="diet-macro-chip fat"><span>F</span>{fat}g</div>}
+      {macros?.fiber_g > 0 && <div className="diet-macro-chip fib"><span>Fib</span>{macros.fiber_g}g</div>}
     </div>
   )
 }
@@ -90,6 +91,18 @@ function LLMMealCard({ mealName, meal }) {
             <div className="diet-llm-portion">
               <UtensilsCrossed size={11} /> {meal.portion}
             </div>
+          )}
+          {meal.substituted && (
+            <p className="diet-llm-note-plain">
+              The meal first written here broke one of your rules, so it was replaced with
+              this plain plate from your allowed foods.
+            </p>
+          )}
+          {meal.nutrition_basis === 'partial' && (
+            <p className="diet-llm-note-plain">
+              Some of this meal&apos;s ingredients have no nutrition data, so its figures
+              are lower than the real meal.
+            </p>
           )}
           {meal.ayurvedic_note && (
             <div className="diet-llm-ayur-note">
@@ -316,7 +329,12 @@ function EnergyPrescriptionCard({ plan }) {
       <div className="diet-energy-head">
         <Flame size={13} className="diet-vital-icon" />
         <span className="diet-energy-target">{rx.target_calories} kcal / day</span>
-        {rx.protein_floor_g ? (
+        {rx.protein_target_g ? (
+          <span className="diet-energy-sub">
+            {rx.protein_target_g} g protein{rx.protein_floor_g && rx.protein_floor_g < rx.protein_target_g
+              ? ` (never under ${rx.protein_floor_g} g)` : ''}
+          </span>
+        ) : rx.protein_floor_g ? (
           <span className="diet-energy-sub">at least {rx.protein_floor_g} g protein</span>
         ) : null}
       </div>
@@ -346,7 +364,13 @@ function EnergyPrescriptionCard({ plan }) {
         <p key={i} className="diet-energy-note">{note}</p>
       ))}
 
-      {adjusted ? (
+      {rec.method === 'computed_from_components' ? (
+        <p className="diet-energy-note">
+          Every day&apos;s figures are calculated from the foods and grams in its meals,
+          using published food-composition data — not estimated.
+          {adjusted ? ` Portions on ${rec.days_adjusted} ${rec.days_adjusted === 1 ? 'day' : 'days'} were resized so the day meets your targets; the dishes are unchanged.` : ''}
+        </p>
+      ) : adjusted ? (
         <p className="diet-energy-note">
           Portions on {rec.days_adjusted} {rec.days_adjusted === 1 ? 'day' : 'days'} were
           resized to meet this target — the meals and their Ayurvedic reasoning are
@@ -380,11 +404,92 @@ function EnergyPrescriptionCard({ plan }) {
           {rec.days_below_protein_floor.length}{' '}
           {rec.days_below_protein_floor.length === 1 ? 'day' : 'days'}
           {rec.days_below_protein_floor.length <= 3
-            ? ` (${rec.days_below_protein_floor.map(d => `${d.week} ${d.day}`).join(', ')})`
+            ? ` (${rec.days_below_protein_floor.map(d => (typeof d === 'string' ? d : `${d.week} ${d.day}`)).join(', ')})`
             : ''}
           . Add dal, paneer or curd to the meal that suits your Agni best.
         </p>
       ) : null}
+    </div>
+  )
+}
+
+// The figures a dietitian sets beside the energy target, each with its source.
+function NutrientTargetsCard({ plan }) {
+  const [open, setOpen] = useState(false)
+  const t = plan.nutrient_targets
+  if (!t) return null
+  const rows = [
+    t.carbs_g && ['Carbohydrate', `~${t.carbs_g.target} g (${t.carbs_g.pct_energy}% of energy)${t.carbs_g.basis ? ' — available, after fibre' : ''}`],
+    t.fat_g && ['Fat', `~${t.fat_g.target} g (${t.fat_g.pct_energy}%)`],
+    t.sat_fat_g && ['Saturated fat', `under ${t.sat_fat_g.max} g`],
+    t.fibre_g && ['Fibre', `at least ${t.fibre_g.min} g`],
+    t.sodium_mg && ['Sodium', `under ${t.sodium_mg.max} mg (about ${(t.sodium_mg.max * 2.5 / 1000).toFixed(1)} g salt)`],
+    t.added_sugar_g && ['Added sugar', t.added_sugar_g.max === 0 ? 'none' : `under ${t.added_sugar_g.max} g`],
+    t.water_ml && ['Water', t.water_ml.target ? `about ${(t.water_ml.target / 1000).toFixed(1)} L` : 'as your doctor advises'],
+  ].filter(Boolean)
+  return (
+    <div className="diet-targets-card">
+      <div className="diet-energy-head">
+        <Target size={13} className="diet-vital-icon" />
+        <span className="diet-energy-target">Your daily targets</span>
+      </div>
+      <dl className="diet-targets-list">
+        {rows.map(([k, v]) => (
+          <div key={k} className="diet-targets-row"><dt>{k}</dt><dd>{v}</dd></div>
+        ))}
+      </dl>
+      {(t.notes || []).map((n, i) => <p key={i} className="diet-energy-note">{n}</p>)}
+      <button type="button" className="diet-targets-toggle" onClick={() => setOpen(o => !o)} aria-expanded={open}>
+        {open ? <ChevronUp size={11} /> : <ChevronDown size={11} />} Where these numbers come from
+      </button>
+      {open && (
+        <ul className="diet-targets-sources">
+          {Object.entries(t.sources || {}).map(([k, v]) => <li key={k}><b>{k.replace(/_/g, ' ')}:</b> {v}</li>)}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+// Medicines, fasting and the condition notes — what a dietitian writes beside the
+// meals. Each note carries its source.
+function ClinicalNotesCard({ plan }) {
+  const meds = plan.medication_interactions || []
+  const notes = plan.clinical_notes || []
+  const unchecked = plan.medications_not_checked || []
+  if (!meds.length && !notes.length && !plan.fasting_notice && !unchecked.length) return null
+  return (
+    <div className="diet-clinical-card">
+      {plan.fasting_notice && (
+        <div className="diet-clinical-item is-warn">
+          <Moon size={13} /> <div><strong>Fasting</strong><p>{plan.fasting_notice}</p></div>
+        </div>
+      )}
+      {meds.map(m => (
+        <div key={m.key} className="diet-clinical-item">
+          <AlertTriangle size={13} />
+          <div>
+            <strong>{m.medication}</strong>
+            <p>{m.advice}</p>
+            <span className="diet-clinical-source">{m.source}</span>
+          </div>
+        </div>
+      ))}
+      {unchecked.length > 0 && (
+        <p className="diet-energy-note">
+          Not checked for food interactions: {unchecked.join(', ')}. Ask your pharmacist.
+        </p>
+      )}
+      {notes.map(n => (
+        <div key={n.topic} className="diet-clinical-item">
+          <BookOpen size={13} />
+          <div>
+            <strong>{n.topic}</strong>
+            <p>{n.note}</p>
+            <span className="diet-clinical-source">{n.source}</span>
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -413,6 +518,9 @@ export function DietView({ plan }) {
     : (plan.weekly_plan || {})
   const currentDayName = DIET_DAY_FULL[activeDay] || 'Monday'
   const dayData = weeklyPlan[currentDayName] || {}
+  // Every week of a current plan is full detail. Plans generated before that carry
+  // meal NAMES in weeks 2-4, and keep their compact rows.
+  const fullDetail = typeof dayData.lunch === 'object' || typeof dayData.breakfast === 'object'
 
   // Fallback path: four_week_plan array
   const fallbackDays = (plan.four_week_plan?.[0]?.days) || []
@@ -437,6 +545,8 @@ export function DietView({ plan }) {
            it was arrived at. Day totals were previously shown with nothing to read
            them against. */}
       <EnergyPrescriptionCard plan={plan} />
+      <NutrientTargetsCard plan={plan} />
+      <ClinicalNotesCard plan={plan} />
 
       {/* ── Vitals bar ── */}
       <div className="diet-vitals">
@@ -565,14 +675,20 @@ export function DietView({ plan }) {
       )}
 
       {/* ── LLM Meal cards ── */}
-      {isLLM && (!isMultiWeek || activeWeek === 0) && (
+      {isLLM && (!isMultiWeek || activeWeek === 0 || fullDetail) && (
         <>
           {dayData.is_fasting && (
             <div className="diet-fasting-banner">
               <Moon size={16} />
               <div>
                 <strong>Fasting Day</strong>
-                <p>Light fruits, dairy, nuts, and herbal beverages only. Rest the digestive fire.</p>
+                <p>
+                  Phalahar — fruit, milk or plant milk, nuts and herbal drinks, kept light on
+                  purpose
+                  {plan.energy_reconciliation?.fasting_day_target_kcal
+                    ? ` (about ${plan.energy_reconciliation.fasting_day_target_kcal} kcal)` : ''}
+                  . Rest the digestive fire.
+                </p>
               </div>
             </div>
           )}
@@ -586,7 +702,7 @@ export function DietView({ plan }) {
           {/* Day total macros computed from per-meal macros_approx */}
           {(() => {
             const meals = ['breakfast', 'lunch', 'snack', 'dinner']
-            const total = meals.reduce((acc, m) => {
+            const total = dayData.day_totals || meals.reduce((acc, m) => {
               const ma = dayData[m]?.macros_approx || {}
               return {
                 calories: acc.calories + (ma.calories || 0),
@@ -606,7 +722,7 @@ export function DietView({ plan }) {
             return (
               <div className="diet-day-macros">
                 <span className="diet-day-macros-label">
-                  Day totals (approx.)
+                  {dayData.day_totals ? 'Day totals (calculated, incl. drink)' : 'Day totals (approx.)'}
                   {target ? (
                     <span className={`diet-day-target${offBand ? ' is-off' : ''}`}>
                       target {target} kcal
@@ -627,7 +743,7 @@ export function DietView({ plan }) {
       )}
 
       {/* ── Compact meals (weeks 2-4) ── */}
-      {isMultiWeek && activeWeek > 0 && (
+      {isMultiWeek && activeWeek > 0 && !fullDetail && (
         <div className="diet-compact-meals">
           {['breakfast', 'lunch', 'snack', 'dinner'].map(meal => {
             const val = dayData[meal]
@@ -703,7 +819,7 @@ export function DietView({ plan }) {
       )}
 
       {/* ── Special Ayurvedic drink (LLM, week 1 full detail only) ── */}
-      {isLLM && dayData.special_drink && (!isMultiWeek || activeWeek === 0) && (
+      {isLLM && dayData.special_drink && typeof dayData.special_drink === 'object' && (!isMultiWeek || activeWeek === 0 || fullDetail) && (
         <div className={`diet-drink-card${dayData.special_drink.allergen_warning || dayData.special_drink.requires_substitution ? ' has-allergen' : ''}`}>
           {/* The drink is consumed like any meal and is scanned like one. Its
               warnings were invisible here while the scans could not see it. */}
@@ -729,6 +845,13 @@ export function DietView({ plan }) {
           </div>
           {dayData.special_drink.recipe && (
             <p className="diet-drink-recipe">{dayData.special_drink.recipe}</p>
+          )}
+          {dayData.special_drink.portion && (
+            <div className="diet-llm-portion">
+              <UtensilsCrossed size={11} /> {dayData.special_drink.portion}
+              {dayData.special_drink.macros_approx?.calories > 0
+                ? ` · ${Math.round(dayData.special_drink.macros_approx.calories)} kcal` : ''}
+            </div>
           )}
           {dayData.special_drink.rationale && (
             <p className="diet-drink-rationale">{dayData.special_drink.rationale}</p>

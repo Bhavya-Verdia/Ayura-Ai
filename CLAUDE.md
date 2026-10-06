@@ -631,12 +631,39 @@ full, both coverage caveats (`conditions_without_food_floor` and
 `conditions_screened_by_terms_only`), then the meals for all four weeks. Only diet is
 special-cased; the other five features keep the generic renderer.
 
-#### Diet energy: the unmeasured days are counted, not implied
-Weeks 2-4 of an LLM plan are meal names with no macros, so nothing there can be summed
-or corrected — `reconcile_plan_energy` checks 7 of 28 days. It reported
-`days_quantified` and no denominator, and the energy card showed a target and a clean
-tick over all four weeks, so a partial check read as a finished one.
-`days_unquantified` sits beside it now and `DietView` says which weeks are unmeasured.
+#### Diet: composed from components, computed, then solved
+The LLM path (`services/diet_week_generator.py`) is four week calls and an overview call
+in parallel. Every meal is `components` — library or `diet_nutrition.EXTRAS` ids with
+grams — chosen only from the patient's **screened food list** (`diet_allowed_foods`:
+every candidate run through the same allergen / dietary-type / condition / medication /
+dislike / Jain scans as a one-food meal, so the list and the post-check are one set of
+rules). Nutrition is **computed** from the components for all 28 days (it was the model's
+estimate, for 7). A flagged meal goes to one repair call, then to a plain safe
+substitute; a week that fails twice is composed by the rule engine; three failures fall
+back entirely. The rule-engine fallback is screened and converted to the same shape.
+
+Each day is solved, not scaled: meals toward their own budgets, then one factor per
+food role (grain, protein food, vegetable, fruit, nut, fat, sweet) by bounded projected
+gradient descent with backtracking, for energy band, protein floor (and the renal
+ceiling), diabetic **available** carbohydrate (total minus fibre — a 71 g-fibre day is
+not over), fat, and fibre. `meal_cap` bounds every single-meal portion (2 katori cooked
+grain, 120 g flour ...), scaled with the energy target; portions past it are clipped
+and re-solved. Fasting days are held light (30-70% of target), not exempt.
+
+Targets come from `diet_energy.energy_target`: Mifflin-St Jeor; AHA/ACC/TOS deficit
+floored at 1200/1500; pregnancy by trimester and lactation (ICMR-NIN 2020); protein
+floor by life stage and target by goal, macros that sum to energy; renal protein cap
+0.8 g/kg and energy 25-35 kcal/kg of a reference weight (KDOQI); IBD protein 1.2 g/kg.
+`diet_clinical_notes` adds medicine-food interactions (Indian brand names), condition
+notes with sources, no-caffeine-under-18, and fasting is withheld for diabetes, CKD,
+pregnancy/lactation, underweight, under 18 and 70+.
+
+`tests/test_diet_sweep.py` builds 60 random patients end to end on the fallback path
+and holds every plan to those numbers; `scripts/diet_reviewer_pack.py generate|audit|
+render` builds the 16 live personas and writes them as a dietitian reads them.
+**Read the rendered plans whole after any change** — a 2.75-katori rice portion, a
+"fasting" day of 1955 kcal and compounded hing for a coeliac were all found that way,
+not by a test.
 
 #### The Ritucharya card is the other surface that names food
 `services/seasonal_service.build_seasonal_guidance` took a **dosha and nothing else**,

@@ -84,7 +84,10 @@ def _schofield_bmr(gender: str, weight_kg: float) -> float:
 
 _PROTEIN_PER_KG = {
     "weight_loss": 1.0,
-    "muscle_support": 1.2,
+    # ACSM/AND/DC position stand (2016): 1.2-2.0 g/kg for training adults. 1.2 was
+    # the bottom of that range, and a vegan's lower-digestibility protein sits
+    # further from it.
+    "muscle_support": 1.4,
     "general_wellness": 0.8,
     "gut_health": 0.8,
     "energy": 0.9,
@@ -147,16 +150,153 @@ def _estimated_target(user_profile: dict, diet_prefs: dict) -> int:
     return max(1200, min(3000, base))
 
 
+# ── Pregnancy and lactation, by stage ───────────────────────────────────────
+# ICMR-NIN, Nutrient Requirements for Indians (2020). The profile used to carry one
+# combined flag and every pregnant or nursing user got +350 kcal — a first-trimester
+# woman (who needs no addition) was over-fed and a breastfeeding mother (who needs
+# +600 in the first six months) was told to add the rest herself. The profile has
+# recorded `pregnancy_status` and `pregnancy_trimester` since the gym pass; nothing on
+# the diet path read them.
+_PREGNANCY_KCAL = {1: 0, 2: 350, 3: 350}
+_PREGNANCY_PROTEIN_G = {1: 0.0, 2: 9.5, 3: 22.0}
+_LACTATION_KCAL, _LACTATION_PROTEIN_G = 600, 16.9      # 0-6 months postpartum
+_ICMR_2020 = "ICMR-NIN, Nutrient Requirements for Indians (2020)"
+
+# ── Weight loss ──────────────────────────────────────────────────────────────
+# AHA/ACC/TOS (2013): a 500-750 kcal daily deficit, or 1200-1500 kcal for women and
+# 1500-1800 for men. The floor here used to be the patient's own BMR, which is a
+# fitness heuristic rather than clinical guidance: it held a sedentary 104 kg
+# diabetic asking to lose weight at maintenance, 2110 kcal. The sex floors below are
+# the guideline's lower bounds.
+_DEFICIT_KCAL = 500
+
+# ── Disease-specific targets ─────────────────────────────────────────────────
+# Protein per kg is capped in chronic kidney disease (KDIGO 2020: 0.8 g/kg in CKD
+# G3-G5 not on dialysis, avoiding > 1.3 g/kg). The goal table above — 1.0 for weight
+# loss, 1.2 for muscle — and the over-65 floor of 1.1 each pushed a CKD patient past
+# it. A renal cap wins over every raise except pregnancy, which a nephrologist sets.
+_RENAL_PROTEIN_CAP = 0.8
+_RENAL = {"kidney_disease", "chronic_kidney_disease"}
+_DIABETES = {"diabetes", "diabetes_type2", "diabetes_type1", "gestational_diabetes",
+             "prediabetes", "insulin_resistance"}
+_CARDIAC = {"heart_disease", "high_cholesterol", "hypertension", "heart_failure",
+            "dyslipidemia", "fatty_liver"}
+
+
+def _canon(conditions) -> set:
+    return {str(c).strip().lower().replace(" ", "_") for c in conditions or []}
+
+
+def nutrient_targets(target_kcal: int, protein_target_g: int, protein_floor_g: int,
+                     conditions, *, age: int, weight_kg, pregnant_or_nursing: bool,
+                     fluid_weight_kg=None) -> dict:
+    """What a dietitian writes beside the energy figure, for this patient.
+
+    Carbohydrate, fat and fibre follow from the energy and protein targets, so the
+    three macros always sum to the day's energy — the old split was a fixed
+    percentage of energy and contradicted the protein floor beside it (119 g of
+    protein for a 12-year-old whose floor was 40). Each target names its source,
+    because a reviewer checks the figure against it.
+    """
+    conds = _canon(conditions)
+    diabetic, cardiac, renal = conds & _DIABETES, conds & _CARDIAC, conds & _RENAL
+    protein_kcal = protein_target_g * 4
+    # Fat 30% of energy (ICMR-NIN 2020 and the IOM range of 20-35%); 25% where LDL
+    # is the target.
+    fat_pct = 0.25 if cardiac else 0.30
+    fat_g = round(target_kcal * fat_pct / 9)
+    carbs_g = max(0, round((target_kcal - protein_kcal - fat_g * 9) / 4))
+    # Diabetes: carbohydrate held at or under half the energy, the remainder moved
+    # to fat — but never past 35%, the top of the acceptable range. Where both
+    # limits bind (a renal cap holds protein down too) carbohydrate takes the rest:
+    # a diabetic kidney patient came out at 40% fat before this.
+    if diabetic and carbs_g * 4 > 0.50 * target_kcal:
+        carbs_g = round(0.50 * target_kcal / 4)
+        fat_g = round((target_kcal - protein_kcal - carbs_g * 4) / 9)
+        if fat_g * 9 > 0.35 * target_kcal:
+            fat_g = round(0.35 * target_kcal / 9)
+            carbs_g = max(0, round((target_kcal - protein_kcal - fat_g * 9) / 4))
+    fibre_g = max(25, round(14 * target_kcal / 1000))                  # 14 g / 1000 kcal
+    targets = {
+        "energy_kcal": target_kcal,
+        "protein_g": {"target": protein_target_g, "min": protein_floor_g,
+                      **({"max": protein_target_g} if renal else {})},
+        # In diabetes the target is AVAILABLE carbohydrate (total less fibre).
+        "carbs_g": {"target": carbs_g,
+                    "pct_energy": round(carbs_g * 4 * 100 / max(target_kcal, 1)),
+                    **({"basis": "available (total minus fibre)"} if diabetic else {})},
+        "fat_g": {"target": fat_g, "pct_energy": round(fat_g * 9 * 100 / max(target_kcal, 1))},
+        "fibre_g": {"min": fibre_g if age >= 18 else max(20, round(fibre_g * 0.8))},
+        # WHO (2023): < 2 g sodium (5 g salt) a day for every adult.
+        "sodium_mg": {"max": 2000 if age >= 18 else 1500},
+        # WHO (2015): free sugars < 10% of energy, ideally < 5%. Diabetes: none added.
+        "added_sugar_g": {"max": 0 if diabetic else round(0.05 * target_kcal / 4)},
+        "sources": {
+            "protein": ("KDIGO 2020 (CKD)" if renal else _ICMR_2020),
+            "fibre": "14 g per 1000 kcal (Dietary Guidelines for Americans 2020-25; ICMR-NIN 2020 ≥ 25 g)",
+            "sodium": "WHO, sodium intake guideline (2023)",
+            "added_sugar": "WHO, sugars intake guideline (2015)",
+        },
+        "notes": [],
+    }
+    if cardiac:
+        # AHA (2021): saturated fat < 6-7% of energy for LDL lowering.
+        targets["sat_fat_g"] = {"max": round(0.07 * target_kcal / 9)}
+        targets["sources"]["sat_fat"] = "AHA/ACC 2019 primary prevention; AHA dietary guidance 2021"
+    if diabetic:
+        targets["sources"]["carbs"] = "ADA Standards of Care in Diabetes (2024), section 5"
+        pct = targets["carbs_g"]["pct_energy"]
+        if pct <= 50:
+            targets["notes"].append(
+                "Carbohydrate is kept to half the day's energy or less, from whole grains, "
+                "pulses and vegetables, spread evenly across meals.")
+        else:
+            # Only where a renal protein cap and the fat ceiling both bind. Said
+            # outright: a note promising "half or less" beside 55% is the plan
+            # contradicting its own figure.
+            targets["notes"].append(
+                f"Carbohydrate is {pct}% of energy — above the usual half, because protein "
+                "is capped for your kidneys and fat is already at its limit. Take it from "
+                "low-glycaemic whole grains, pulses and vegetables, spread evenly, never "
+                "as sugar or refined flour.")
+    if renal:
+        targets["notes"].append(
+            "Kidney disease: protein is capped at 0.8 g/kg. Potassium and phosphorus "
+            "limits depend on your blood results — ask your nephrologist for them.")
+    # Fluids: 35 ml/kg for adults (ESPEN); the two states where a fixed target can
+    # harm are the ones whose fluid allowance is set by the treating doctor.
+    if renal or "heart_failure" in conds:
+        targets["water_ml"] = {"target": None}
+        targets["notes"].append("Fluids: follow the limit your doctor sets — no target is given here.")
+    elif weight_kg:
+        per_kg = 30 if age >= 65 else 35
+        extra = 700 if pregnant_or_nursing else 0
+        # On the same adjusted weight as protein: 35 ml/kg of a 104 kg man's scale
+        # weight asked for 3.65 L a day.
+        fluid_kg = float(fluid_weight_kg or weight_kg)
+        targets["water_ml"] = {"target": int(round((fluid_kg * per_kg + extra) / 50) * 50)}
+    return targets
+
+
+# A day under 12% of energy from protein reads as a starch-heavy plan however its
+# g/kg figure was reached; for an adult the target is raised to that share.
+_MIN_PROTEIN_SHARE = 0.12
+
+
 def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
-    """Daily energy, macro floors and a per-meal budget for this patient.
+    """Daily energy, protein, the nutrient targets and a per-meal budget.
 
     Keys:
       target_calories  what the plan should deliver per day
-      floor_calories   never prescribe below this (max of sex floor and BMR)
+      floor_calories   never prescribe below this (the guideline floor for the sex)
       band             (low, high) acceptance window for a generated day
       basis            "measured" when height and weight were available, else "estimated"
+      protein_target_g / protein_floor_g
+      nutrient_targets the macro, fibre, sodium, sugar and fluid targets, with sources
       notes            the clinical adjustments applied, in the words shown to the user
     """
+    from services.diet_brief_builder import diet_conditions
+
     # Unset defaults to the sex-neutral path, not to male. Defaulting an absent
     # answer to one of the two options is a guess presented as a fact.
     gender = (user_profile.get("gender") or "other").lower()
@@ -166,7 +306,23 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
     activity = (user_profile.get("activity_level") or "moderate").lower()
     bmi_category = (user_profile.get("bmi_category") or "normal").lower()
     goal = diet_prefs.get("diet_goal") or "general_wellness"
-    pregnant = bool(user_profile.get("pregnancy_or_nursing"))
+    conditions = diet_conditions(user_profile, diet_prefs)
+    renal = bool(_canon(conditions) & _RENAL)
+
+    # Pregnancy or lactation, and which stage. Left unspecified, the flag is read as
+    # pregnancy in the second trimester — the case the old flat figure was written
+    # for — and the plan says that is what it assumed.
+    flag = bool(user_profile.get("pregnancy_or_nursing"))
+    status = str(user_profile.get("pregnancy_status") or "").lower()
+    nursing = flag and status == "nursing"
+    pregnant = flag and not nursing
+    trimester = user_profile.get("pregnancy_trimester")
+    try:
+        trimester = int(trimester) if trimester else None
+    except (TypeError, ValueError):
+        trimester = None
+    if trimester not in (1, 2, 3):
+        trimester = None
 
     notes: list[str] = []
     if gender not in ("male", "female"):
@@ -177,19 +333,14 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
         )
     sex_floor = _SEX_FLOOR.get(gender, _SEX_FLOOR["other"])
 
-    # Underweight and pregnancy override the stated goal. `diet_goal` has no
-    # weight-gain value, so an underweight patient's goal cannot express the surplus
-    # they need, and a weight-loss goal entered during pregnancy must not be honoured.
+    # Underweight, pregnancy, lactation and childhood override the stated goal.
     energy_goal = _GOAL_TO_ENERGY_GOAL.get(goal, "general_wellness")
     if bmi_category == "underweight" and energy_goal in ("weight_loss", "detox"):
         energy_goal = "general_wellness"
         notes.append("Underweight — the weight-loss deficit was not applied.")
-    if pregnant and energy_goal in ("weight_loss", "detox"):
+    if flag and energy_goal in ("weight_loss", "detox"):
         energy_goal = "general_wellness"
-        notes.append("Pregnancy or nursing — no energy deficit is applied.")
-    # A growing child is not put into an energy deficit by an app. Childhood weight
-    # management is a supervised clinical decision, and the same restriction that is
-    # merely uncomfortable for an adult costs a 12-year-old growth.
+        notes.append("Pregnancy or breastfeeding — no energy deficit is applied.")
     is_child = age <= _PAEDIATRIC_MAX_AGE
     if is_child and energy_goal in ("weight_loss", "detox"):
         energy_goal = "general_wellness"
@@ -205,19 +356,22 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
             # below 18, and this band's requirement includes growth.
             bmr = _schofield_bmr(gender, float(weight_kg))
             tdee = bmr * calorie_calculator.ACTIVITY_MULTIPLIERS.get(activity, 1.55)
-            target = max(_SEX_FLOOR.get(gender, 1200), round(tdee))
+            target = round(tdee)
             notes.append(
                 "Under 18 — energy is calculated with the Schofield (WHO/FAO) equation "
                 "for this age band rather than the adult one, and includes growth. "
                 "Please review this plan with a paediatrician."
             )
         else:
-            calc = calorie_calculator.calculate(
-                gender=gender, age=age, weight_kg=float(weight_kg),
-                height_cm=float(height_cm), activity_level=activity, goal=energy_goal,
-            )
-            bmr, tdee = calc["bmr"], calc["tdee"]
-            target = calc["target_calories"]
+            bmr = calorie_calculator._bmr(gender, age, float(weight_kg), float(height_cm))
+            tdee = bmr * calorie_calculator.ACTIVITY_MULTIPLIERS.get(activity, 1.55)
+            adjust = {"weight_loss": -_DEFICIT_KCAL, "detox": -200,
+                      "muscle_gain": 300}.get(energy_goal, 0)
+            target = round(tdee + adjust)
+            if adjust < 0:
+                notes.append(
+                    f"Weight loss — a {-adjust} kcal daily deficit from your maintenance of "
+                    f"{round(tdee)} kcal (AHA/ACC/TOS 2013), for about 0.5 kg a week.")
     else:
         basis = "estimated"
         bmr = tdee = 0
@@ -245,48 +399,100 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
             "stays eatable; gain is steadier this way."
         )
 
-    if pregnant:
-        # The profile carries one combined pregnancy/nursing flag. Second-trimester
-        # pregnancy is the smaller of the two classical additions, so it is the one
-        # used; a nursing mother needs more and is told so rather than under-fed.
-        target += 350
-        notes.append(
-            "Pregnancy or nursing — 350 kcal added. If you are breastfeeding, add a "
-            "further 150-200 kcal and discuss it with your doctor."
-        )
+    # Kidney disease: energy 25-35 kcal/kg (KDOQI 2020), on a reference weight —
+    # ideal body weight for an underweight patient, adjusted weight for an obese one.
+    # Without it a 34.7 kg man with CKD was given 2050+ kcal and a 28 g protein cap,
+    # which no ordinary food can meet together: a vegetarian day carries about 10% of
+    # its energy as protein whatever is chosen.
+    renal_ref = None
+    if renal and weight_kg and height_cm and not is_child:
+        if bmi_category == "underweight":
+            renal_ref = 22.0 * (float(height_cm) / 100.0) ** 2
+        else:
+            renal_ref = _protein_basis_weight(float(weight_kg), height_cm, bmi_category)
+        lo_k, hi_k = 25 * renal_ref, 35 * renal_ref
+        if not lo_k <= target <= hi_k:
+            target = max(lo_k, min(hi_k, target))
+            notes.append(
+                f"Kidney disease — energy set within 25-35 kcal per kg of your reference "
+                f"weight ({round(renal_ref)} kg), as renal guidance advises (KDOQI 2020).")
 
-    # The floor is applied last so that every reduction above is bounded by it.
-    floor = max(sex_floor, round(bmr)) if bmr else sex_floor
+    extra_protein = 0.0
+    if pregnant:
+        stage = trimester or 2
+        target += _PREGNANCY_KCAL[stage]
+        extra_protein = _PREGNANCY_PROTEIN_G[stage]
+        assumed = "" if trimester else (
+            " Your trimester is not on your profile, so the second trimester was assumed — "
+            "add it in Settings for an exact figure.")
+        notes.append(
+            f"Pregnancy, trimester {stage} — {_PREGNANCY_KCAL[stage]} kcal and "
+            f"{extra_protein:g} g protein added ({_ICMR_2020}).{assumed}")
+    elif nursing:
+        target += _LACTATION_KCAL
+        extra_protein = _LACTATION_PROTEIN_G
+        notes.append(
+            f"Breastfeeding — {_LACTATION_KCAL} kcal and {extra_protein:g} g protein added "
+            f"for the first six months ({_ICMR_2020}); from six months the addition is "
+            "520 kcal.")
+
+    # The floor is applied last so that every reduction above is bounded by it. It is
+    # the guideline floor for the sex, not the patient's BMR (see `_DEFICIT_KCAL`).
+    floor = sex_floor if not is_child else max(sex_floor, round(bmr or 0))
     if target < floor:
         notes.append(
             f"The deficit for your goal would have put this plan at {target} kcal, below "
-            f"your resting requirement of {floor} kcal. It has been raised to {floor}."
-        )
+            f"the {floor} kcal minimum for an unsupervised plan. It has been raised to "
+            f"{floor}.")
         target = floor
 
     target = int(round(target / 10.0) * 10)
 
-    protein_per_kg = _PROTEIN_PER_KG.get(goal, 0.8)
-    if pregnant:
-        protein_per_kg = max(protein_per_kg, 1.1)
+    # Two figures. The FLOOR is the requirement for this stage of life — 0.8 g/kg for
+    # an adult, 1.0 growing, 1.1 past 65 when muscle is lost and appetite falls — and
+    # the TARGET is what the goal asks for on top (weight loss and training raise it).
+    floor_per_kg = 0.8
     if is_child:
-        protein_per_kg = max(protein_per_kg, _PAEDIATRIC_PROTEIN_PER_KG)
+        floor_per_kg = _PAEDIATRIC_PROTEIN_PER_KG
     if age >= _GERIATRIC_MIN_AGE:
-        # Requirement rises with age while appetite falls, so this group was on the
-        # table's lowest floor and is the one that can least afford to be.
-        protein_per_kg = max(protein_per_kg, _GERIATRIC_PROTEIN_PER_KG)
+        floor_per_kg = _GERIATRIC_PROTEIN_PER_KG
+        if not renal:
+            notes.append(
+                f"Over {_GERIATRIC_MIN_AGE} — protein is raised to at least "
+                f"{_GERIATRIC_PROTEIN_PER_KG} g/kg to protect muscle.")
+    target_per_kg = max(_PROTEIN_PER_KG.get(goal, 0.8), floor_per_kg)
+    from services.diet_clinical_notes import has_ibd
+    if has_ibd(user_profile):
+        # ESPEN (2023): 1.2-1.5 g/kg in active inflammatory bowel disease, where
+        # losses and catabolism raise the requirement.
+        target_per_kg = max(target_per_kg, 1.2)
+        notes.append("Crohn's / ulcerative colitis — protein raised to 1.2 g/kg (ESPEN 2023).")
+    if renal and not flag and target_per_kg > _RENAL_PROTEIN_CAP:
+        target_per_kg = _RENAL_PROTEIN_CAP
+        floor_per_kg = min(floor_per_kg, _RENAL_PROTEIN_CAP)
         notes.append(
-            f"Over {_GERIATRIC_MIN_AGE} — the protein floor is raised to "
-            f"{_GERIATRIC_PROTEIN_PER_KG} g/kg to protect muscle."
-        )
+            f"Kidney disease — protein is capped at {_RENAL_PROTEIN_CAP} g/kg (KDIGO 2020), "
+            "whatever the goal. Your nephrologist may set it lower.")
     if weight_kg:
-        protein_floor = int(round(_protein_basis_weight(
-            float(weight_kg), height_cm, bmi_category) * protein_per_kg))
+        basis_weight = renal_ref or _protein_basis_weight(float(weight_kg), height_cm, bmi_category)
+        protein_floor = int(round(basis_weight * floor_per_kg + extra_protein))
+        protein_target = int(round(basis_weight * target_per_kg + extra_protein))
+        if not renal and not is_child:
+            # Diabetes: 15-20% of energy is usual (ADA 2024) and it is what lets
+            # carbohydrate stay at half the energy without fat passing 35%.
+            share = 0.15 if (_canon(conditions) & _DIABETES) else _MIN_PROTEIN_SHARE
+            protein_target = max(protein_target, int(round(target * share / 4)))
     else:
         # No weight on file — fall back to a share of energy rather than dropping the
         # floor entirely, since the protein floor is what a low day damages first.
-        protein_floor = int(round(target * 0.15 / 4))
+        protein_target = protein_floor = int(round(target * 0.15 / 4))
+    protein_floor = min(protein_floor, protein_target)
 
+    targets = nutrient_targets(
+        target, protein_target, protein_floor, conditions, age=age, weight_kg=weight_kg,
+        pregnant_or_nursing=flag,
+        fluid_weight_kg=(_protein_basis_weight(float(weight_kg), height_cm, bmi_category)
+                         if weight_kg else None))
     return {
         "target_calories": target,
         "floor_calories": int(floor),
@@ -295,8 +501,12 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
         "tdee": int(tdee),
         "basis": basis,
         "energy_goal": energy_goal,
+        "protein_target_g": protein_target,
         "protein_floor_g": protein_floor,
-        "macros": calorie_calculator._macros(target, energy_goal),
+        "macros": {"protein_g": targets["protein_g"]["target"],
+                   "carbs_g": targets["carbs_g"]["target"],
+                   "fat_g": targets["fat_g"]["target"]},
+        "nutrient_targets": targets,
         "meal_budget": {
             slot: int(round(target * frac)) for slot, frac in MEAL_FRACTIONS.items()
         },

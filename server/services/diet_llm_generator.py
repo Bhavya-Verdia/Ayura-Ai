@@ -8,7 +8,6 @@ plan with real Indian meal names, Pathya-Apathya, and classical text references.
 Knowledge constants, brief builder, and allergen scanner live in diet_brief_builder.py.
 The rule engine is retained as a fallback if the LLM call fails (see routes/plans.py).
 """
-import json
 from datetime import datetime, timezone
 
 from ai.llm_client import llm_client
@@ -21,8 +20,7 @@ from services.diet_brief_builder import (
     build_brief,
     diet_allergies,
     diet_conditions,
-    fasting_days_for,
-    flag_allergens,
+    fasting_withheld_reason,
 )
 
 SYSTEM_PROMPT = """\
@@ -161,6 +159,16 @@ Return this exact JSON structure — no extra keys, no preamble, no markdown fen
 """
 
 
+def _clinical(user_profile: dict, conditions: list[str]) -> dict:
+    """Medicine-food interactions and condition notes, with sources — the same on
+    both generation paths."""
+    from services.diet_clinical_notes import clinical_notes, medication_matches
+    interactions, unmatched = medication_matches(user_profile)
+    return {"medication_interactions": interactions,
+            "medications_not_checked": unmatched,
+            "clinical_notes": clinical_notes(user_profile, conditions)}
+
+
 async def generate_diet_plan_llm(
     user_profile: dict,
     diet_prefs: dict,
@@ -232,89 +240,36 @@ async def generate_diet_plan_llm(
         arc = choose_arc(user_profile, diet_prefs)
         brief = brief + "\n\n" + arc_prompt_block(arc)
 
-        prompt = USER_PROMPT_TEMPLATE.replace("{brief}", brief)
-        for _week in arc["weeks"]:
-            prompt = prompt.replace(
-                f"<<PHASE_{_week['week_number']}>>", _week["phase"])
-
-        # A full 4-week plan (Week 1 detailed + Weeks 2-4 compact) exceeds the
-        # 4096-token default — that truncated the JSON mid-string, so json.loads
-        # always failed and diet silently fell back to the rule engine. Use the
-        # model's max output budget so the "LLM-primary" path actually runs.
-        response_text = await llm_client.generate(
-            prompt=prompt,
-            system_prompt=SYSTEM_PROMPT,
-            json_mode=True,
-            max_tokens=16384,
+        # Rare and uncurated conditions are classified BEFORE generation now, so their
+        # Apathya screens the food list the plan is composed from rather than only
+        # flagging the finished meals.
+        from services.ahara_safety import (
+            apply_advisory_safety, apply_ahara_safety, apply_condition_food_safety,
+            apply_dietary_type_safety, classify_condition_apathya_llm,
         )
+        from services.diet_brief_builder import uncurated_conditions
+        from services.diet_energy import energy_target
+        from services.diet_week_generator import generate_week_by_week
+        _conds = diet_conditions(user_profile, diet_prefs)
+        _extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(_conds))
+        energy = energy_target(user_profile, diet_prefs)
 
-        data = json.loads(response_text)
-        if "error" in data:
-            raise ValueError(f"LLM returned error: {data['error']}")
-        if "weeks" not in data or not isinstance(data["weeks"], list):
-            raise ValueError("LLM response missing 'weeks' array")
-        # A "4-week plan" with fewer than four weeks was shipping to the UI, which
-        # renders four week tabs. The length was never checked — only that the key
-        # existed — and the model drops a week now and then. Each missing week is
-        # also a missing therapeutic phase, so this is a failed generation rather
-        # than a short one: the caller falls back to the rule engine, which always
-        # produces four.
-        weeks_in = [w for w in data["weeks"] if isinstance(w, dict)]
-        numbers = sorted(w.get("week_number") for w in weeks_in)
-        if numbers != [1, 2, 3, 4]:
-            raise ValueError(f"LLM returned weeks {numbers}, expected [1, 2, 3, 4]")
-        data["weeks"] = sorted(weeks_in, key=lambda w: w["week_number"])
+        body = await generate_week_by_week(user_profile, diet_prefs, brief, arc, energy,
+                                           _extra_apathya)
+        weeks = body["diet_weeks"]
+        data = body["overview"] or {}
 
         dominant_dosha = (user_profile.get("dominant_dosha") or "vata").lower()
         agni_type = (user_profile.get("agni_type") or "sama").lower()
-        norm_conds = diet_conditions(user_profile, diet_prefs)
-
         user_id = str(user_profile.get("id") or user_profile.get("_id") or "anon")
-
-        _DAY_ALIASES = {
-            "monday": "monday", "tuesday": "tuesday", "wednesday": "wednesday",
-            "thursday": "thursday", "friday": "friday", "saturday": "saturday", "sunday": "sunday",
-            "mon": "monday", "tue": "tuesday", "wed": "wednesday",
-            "thu": "thursday", "fri": "friday", "sat": "saturday", "sun": "sunday",
-        }
-
-        # Tag fasting days and run allergen check on week 1 (full detail)
-        fasting_days_raw = fasting_days_for(user_profile, diet_prefs)
-        fasting_set = {d.lower() for d in fasting_days_raw}
-        weeks = data["weeks"]
-        week1_daily = weeks[0].get("daily_plan", {}) if weeks else {}
-        for day_name, day_data in week1_daily.items():
-            if isinstance(day_data, dict):
-                canonical = _DAY_ALIASES.get(day_name.lower(), day_name.lower())
-                day_data["is_fasting"] = canonical in fasting_set
-        # Both places the app stores an allergy. It read the diet form alone, so an
-        # allergy declared in onboarding's health step was honoured by the remedies
-        # engine and by nothing in the feature that is entirely about food.
         allergies = diet_allergies(user_profile, diet_prefs)
         intolerances = diet_prefs.get("food_intolerances") or []
-        week1_daily = flag_allergens(week1_daily, allergies, intolerances)
-        if weeks:
-            weeks[0]["daily_plan"] = week1_daily
-
-        # The phase labels are the app's prescription, so they come from the arc and
-        # not from whatever the model echoed back. A disagreement is logged rather
-        # than shown: the arc names the sequence, and a week displayed under a phase
-        # the patient was not prescribed is the defect this whole module addresses.
-        for _week, _prescribed in zip(weeks, arc["weeks"]):
-            _returned = _week.get("phase")
-            if _returned and _returned != _prescribed["phase"]:
-                logger.info(
-                    f"diet arc: model returned phase {_returned!r} for week "
-                    f"{_prescribed['week_number']}, prescribed {_prescribed['phase']!r}"
-                )
-            _week["phase"] = _prescribed["phase"]
-
-        weekly_plan = week1_daily  # backward-compat alias
 
         result = {
             "plan_id": f"diet_{user_id}_{int(datetime.now(timezone.utc).timestamp())}",
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "generation_method": "llm_primary",
+            "nutrition_method": "computed_from_components",
             "enriched": True,
             "enrichment_model": llm_client.provider,
             "user_summary": {
@@ -325,14 +280,14 @@ async def generate_diet_plan_llm(
                 "gut_issue": diet_prefs.get("gut_health_issue", "healthy"),
                 "intermittent_fasting": diet_prefs.get("intermittent_fasting", "no"),
                 "water_intake": diet_prefs.get("water_intake"),
-                "active_condition_protocols": list(set(norm_conds)),
+                "active_condition_protocols": list(set(_conds)),
                 "current_season": (user_profile.get("current_season") or "").lower() or None,
             },
             "plan_title": data.get("plan_title", "Personalised Ayurvedic Diet Plan"),
             "plan_description": data.get("plan_description", ""),
             "pathya_apathya": data.get("pathya_apathya", {}),
             "therapeutic_arc": arc,
-            "weekly_plan": weekly_plan,
+            "weekly_plan": weeks[0]["daily_plan"],
             "diet_weeks": weeks,
             "condition_coaching": data.get("condition_coaching", ""),
             "hydration_guidance": data.get("hydration_guidance", ""),
@@ -340,53 +295,33 @@ async def generate_diet_plan_llm(
             "seasonal_note": data.get("seasonal_note", ""),
             "ahar_vidhi": data.get("ahar_vidhi", ""),
             "motivational_note": data.get("motivational_note", ""),
-            # Deterministic Ayurvedic blocks — same as rule engine, no LLM call needed
             "meal_timing": MEAL_TIMING.get(dominant_dosha, MEAL_TIMING.get("vata", {})),
             "spice_guide": DOSHA_SPICES.get(dominant_dosha, DOSHA_SPICES.get("vata", [])),
             "ayurvedic_tips": AYUR_TIPS.get(dominant_dosha, ""),
+            "energy_prescription": energy,
+            "nutrient_targets": energy["nutrient_targets"],
+            "energy_reconciliation": body["energy_reconciliation"],
+            "composition_report": body["composition_report"],
+            "fasting_notice": fasting_withheld_reason(user_profile, diet_prefs),
+            **_clinical(user_profile, _conds),
             "disclaimer": (
                 "This plan is generated by an AI Vaidya and is for wellness and educational purposes. "
-                "Classical text references are approximate and should be verified. "
-                "Consult a qualified Ayurvedic practitioner before beginning any therapeutic diet, "
+                "Nutrition is calculated from the foods and grams in each meal using published "
+                "composition data; prepared dishes marked as estimates are approximate. "
+                "Consult a qualified practitioner or dietitian before beginning any therapeutic diet, "
                 "especially with existing medical conditions."
             ),
         }
 
-        # Energy reconciliation. The brief now carries a per-meal kcal budget, but a
-        # stated target and a delivered plan were never compared: measured plans came
-        # back at 585-720 kcal against a stated 1200, and 1240-1410 against a stated
-        # 2400 for an underweight patient. Portions are scaled toward the budget and
-        # the residual is reported rather than left on screen as a day total.
-        from services.diet_energy import energy_target
-        from services.diet_portion_reconciler import reconcile_plan_energy
-        result = reconcile_plan_energy(result, energy_target(user_profile, diet_prefs))
-
-        # Deterministic Ahara safety layer (Viruddha + allergens, all 4 weeks)
-        from services.ahara_safety import (
-            apply_advisory_safety, apply_ahara_safety, apply_condition_food_safety,
-            apply_dietary_type_safety, classify_condition_apathya_llm,
-        )
+        # The same deterministic layers as before. Composition from the screened list
+        # and the repair pass mean they should find nothing; they still run, so the
+        # plan reports what was checked rather than assuming it.
         result = apply_ahara_safety(result, allergies, intolerances)
-        # The declared dietary type, checked rather than requested. Until now the
-        # only thing standing between a vegetarian and a chicken curry was a line in
-        # the prompt.
         result = apply_dietary_type_safety(result, diet_prefs.get("dietary_type"))
-        # Condition-contraindicated food floor — enforce each condition's Apathya
-        # deterministically instead of trusting the LLM to have honoured it. Rare /
-        # uncurated conditions get their Apathya classified by the LLM first, so the
-        # floor covers ALL diseases, not just the hardcoded common ones.
-        from services.diet_brief_builder import uncurated_conditions
-        _conds = diet_conditions(user_profile, diet_prefs)
-        # Only classify conditions with no curated hint — curated ones are vetted
-        # and must not be overwritten by an LLM guess.
-        _extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(_conds))
         result = apply_condition_food_safety(
             result, _conds, extra_terms=_extra_apathya,
             pregnant=bool(user_profile.get("pregnancy_or_nursing")),
         )
-        # The same floor, applied to the prose that recommends food by name. The
-        # scans above read the five consumed slots; `pathya_apathya.pathya` is
-        # rendered under the heading "Pathya — Recommended" and was read by nothing.
         result = apply_advisory_safety(
             result, _conds, allergies, intolerances, extra_terms=_extra_apathya,
             pregnant=bool(user_profile.get("pregnancy_or_nursing")),
@@ -426,16 +361,42 @@ async def build_diet_plan(
     from services.diet_energy import energy_target
     from services.diet_plan_engine import generate_diet_plan
     from services.diet_plan_enricher import enrich_diet_plan
-    from services.diet_portion_reconciler import reconcile_plan_energy
-
-    raw = generate_diet_plan(user_profile, diet_prefs, diet_foods)
+    # Rare conditions are classified FIRST, so their Apathya screens the pool this
+    # engine composes from. Asked afterwards, the classifier's answer (which varies
+    # by call) flagged foods the screen had let through — 15 "white rice" alerts on
+    # an osteoporosis plan.
+    conds = diet_conditions(user_profile, diet_prefs)
+    extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(conds))
+    raw = generate_diet_plan(user_profile, diet_prefs, diet_foods, extra_terms=extra_apathya)
     plan = await enrich_diet_plan(raw, user_profile, diet_prefs)
+    # Free-text meal ideas for week 1, rendered by no screen and read by no scan;
+    # the meals below are named from what they are made of.
+    plan.pop("daily_meal_ideas", None)
+    # The engine's food lists become the same component meals the primary path
+    # writes, and are brought to the same targets by the same solver. Its days
+    # missed the protein floor on 26 of 28 before this.
+    from services.diet_week_generator import engine_plan_to_weeks
+    energy = energy_target(user_profile, diet_prefs)
+    from services.diet_allowed_foods import allowed_foods
+    body = engine_plan_to_weeks(plan, energy, {
+        f["id"] for f in allowed_foods(user_profile, diet_prefs,
+                                       extra_terms=extra_apathya)["allowed"]})
+    plan.pop("four_week_plan", None)
+    plan.update({
+        "generation_method": "rule_engine",
+        "nutrition_method": "computed_from_components",
+        "diet_weeks": body["diet_weeks"],
+        "weekly_plan": body["diet_weeks"][0]["daily_plan"] if body["diet_weeks"] else {},
+        "energy_prescription": energy,
+        "nutrient_targets": energy["nutrient_targets"],
+        "energy_reconciliation": body["energy_reconciliation"],
+        "fasting_notice": fasting_withheld_reason(user_profile, diet_prefs),
+        **_clinical(user_profile, conds),
+    })
     plan = apply_ahara_safety(
         plan, diet_allergies(user_profile, diet_prefs),
         diet_prefs.get("food_intolerances") or [])
     plan = apply_dietary_type_safety(plan, diet_prefs.get("dietary_type"))
-    conds = diet_conditions(user_profile, diet_prefs)
-    extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(conds))
     plan = apply_condition_food_safety(
         plan, conds, extra_terms=extra_apathya,
         pregnant=bool(user_profile.get("pregnancy_or_nursing")))
@@ -443,8 +404,4 @@ async def build_diet_plan(
         plan, conds, diet_allergies(user_profile, diet_prefs),
         diet_prefs.get("food_intolerances") or [], extra_terms=extra_apathya,
         pregnant=bool(user_profile.get("pregnancy_or_nursing")))
-    # The engine fills category quotas with no energy target of its own — measured at
-    # 580-1031 kcal against a 1490 kcal target, with 22-40 g of protein against an
-    # 84 g floor.
-    plan = reconcile_plan_energy(plan, energy_target(user_profile, diet_prefs))
     return plan

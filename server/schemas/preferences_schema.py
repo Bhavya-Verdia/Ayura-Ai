@@ -56,7 +56,13 @@ _LEGACY_DIETARY_TYPES = {
     "pescatarian": "vegetarian",
 }
 FOOD_ALLERGIES = {"gluten", "dairy", "nuts_tree", "peanuts", "soy", "eggs", "shellfish", "fish", "sesame", "mustard"}
-FOOD_INTOLERANCES = {"lactose", "fructose", "histamine", "fodmap"}
+# `gluten_sensitivity` is offered on the form and was accepted with no validator,
+# but no term list knew it, so it was declared and enforced by nothing.
+FOOD_INTOLERANCES = {"lactose", "fructose", "histamine", "fodmap", "gluten_sensitivity"}
+CUISINES = {"any", "north_indian", "south_indian", "east_indian", "west_indian"}
+# Restrictions people live by that are not a dietary TYPE: Jain (no root vegetables,
+# honey or mushrooms) and the common no-onion-garlic household.
+DIET_RESTRICTIONS = {"jain", "no_onion_garlic"}
 
 
 # ─── Gym Preferences ─────────────────────────────────────────────────────────
@@ -310,6 +316,16 @@ class DietPreferences(BaseModel):
         default=[],
         description="Specific days user fasts (e.g., Monday, Ekadashi)"
     )
+    # What makes a plan one a person will actually eat. A dietitian asks all three
+    # before writing a single meal; the form asked none of them.
+    food_dislikes: list[str] = Field(
+        default=[], max_length=20,
+        description="Foods the person will not eat, typed; each is screened out of the plan")
+    cuisine_preference: str = Field(
+        "any", pattern="^(any|north_indian|south_indian|east_indian|west_indian)$",
+        description="Regional cuisine the meals should lean toward")
+    dietary_restrictions: list[str] = Field(
+        default=[], description="jain / no_onion_garlic")
 
     @field_validator("diet_goal")
     @classmethod
@@ -334,6 +350,32 @@ class DietPreferences(BaseModel):
         invalid = set(v) - FOOD_ALLERGIES
         if invalid:
             raise ValueError(f"Unknown allergy: {invalid}. Valid: {FOOD_ALLERGIES}")
+        return v
+
+    @field_validator("food_intolerances")
+    @classmethod
+    def validate_intolerances(cls, v: list[str]) -> list[str]:
+        invalid = set(v) - FOOD_INTOLERANCES
+        if invalid:
+            raise ValueError(f"Unknown intolerance: {invalid}. Valid: {FOOD_INTOLERANCES}")
+        return v
+
+    @field_validator("food_dislikes")
+    @classmethod
+    def validate_dislikes(cls, v: list[str]) -> list[str]:
+        cleaned = []
+        for item in v:
+            item = str(item).strip()[:40]
+            if item and item.lower() not in (c.lower() for c in cleaned):
+                cleaned.append(item)
+        return cleaned[:20]
+
+    @field_validator("dietary_restrictions")
+    @classmethod
+    def validate_restrictions(cls, v: list[str]) -> list[str]:
+        invalid = set(v) - DIET_RESTRICTIONS
+        if invalid:
+            raise ValueError(f"Unknown restriction: {invalid}. Valid: {DIET_RESTRICTIONS}")
         return v
 
 
