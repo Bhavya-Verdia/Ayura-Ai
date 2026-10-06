@@ -53,14 +53,39 @@ def _term_regex(term: str) -> "re.Pattern":
     return re.compile(rf"\b{re.escape(term)}\w*")
 
 
+# A dairy word after a plant word is not dairy: soy milk, almond milk, coconut
+# yogurt, vegan paneer and peanut butter are what a vegan or a dairy-allergic
+# patient is meant to eat. Matching the bare word stripped the library's whole
+# plant-protein category out of every vegan plan and flagged the plant milks a vegan
+# plan rightly contains. The plant itself is still screened by its own allergy —
+# "almond" for a tree-nut allergy, "soy" for soy — so nothing is let through.
+_DAIRY_WORDS = frozenset({"milk", "curd", "yogurt", "yoghurt", "butter", "cream",
+                          "paneer", "cheese", "dahi", "lassi", "kheer"})
+_PLANT_QUALIFIERS = frozenset({
+    "soy", "soya", "almond", "badam", "oat", "oats", "coconut", "cashew", "kaju",
+    "flax", "rice", "peanut", "groundnut", "hemp", "vegan", "plant", "tofu", "nut",
+    "cocoa", "sesame", "seed", "seeds", "millet",
+})
+_PREV_WORD = re.compile(r"([a-z]+)[\s-]*$")
+
+
+def _plant_qualified(term: str, text: str, start: int) -> bool:
+    if term not in _DAIRY_WORDS:
+        return False
+    prev = _PREV_WORD.search(text[max(0, start - 24):start])
+    return bool(prev) and prev.group(1) in _PLANT_QUALIFIERS
+
+
 def _term_in_text(term: str, text: str) -> bool:
     friends = _ALLERGEN_FALSE_FRIENDS.get(term, frozenset())
-    return any(m.group(0) not in friends for m in _term_regex(term).finditer(text))
+    return any(m.group(0) not in friends and not _plant_qualified(term, text, m.start())
+               for m in _term_regex(term).finditer(text))
 
 # ── Allergen term lookup ──────────────────────────────────────────────────────
 # Maps a declared allergy key → the ingredient/dish terms that imply it.
 ALLERGEN_TERMS: dict[str, list[str]] = {
-    "gluten": ["wheat", "gluten", "maida", "atta", "bread", "roti", "chapati", "poha",
+    # Not "poha": it is flattened RICE, and a coeliac patient's safest breakfast.
+    "gluten": ["wheat", "gluten", "maida", "atta", "bread", "roti", "chapati",
                "semolina", "suji", "rava", "barley", "oats", "seitan", "naan", "paratha",
                "dalia", "vermicelli", "pasta", "couscous"],
     "dairy": ["milk", "curd", "yogurt", "yoghurt", "ghee", "butter", "cream", "paneer",
@@ -286,8 +311,16 @@ def _meal_text(meal) -> str:
             # would flag the very drink that avoids it. Same line `ayurvedic_note`
             # sits on the wrong side of for meals.
             str(meal.get("recipe", "")),
-            " ".join(meal.get("key_ingredients", []) or []),
+            " ".join(str(x) for x in (meal.get("key_ingredients", []) or [])),
         ]
+        # A meal stated as components is screened on what it is made of, by name and
+        # by id: "ghee" as a component is a dairy food whatever the dish is called.
+        for comp in meal.get("components") or []:
+            if isinstance(comp, dict) and comp.get("food"):
+                from services.diet_nutrition import name_of
+                fid = str(comp["food"])
+                parts.append(name_of(fid))
+                parts.append(fid.replace("_", " "))
         return _expand_vernacular(_norm(" ".join(parts)))
     if isinstance(meal, list):
         parts = []
