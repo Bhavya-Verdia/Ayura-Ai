@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import {
   Dumbbell, Leaf, Calendar, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Lightbulb, Info,
-  ShieldAlert,
+  ShieldAlert, Play,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { workoutsAPI } from '../../api/client'
@@ -9,6 +9,7 @@ import { trackOnce, EVENTS } from '../../lib/analytics'
 import { GymSetLogger } from './GymSetLogger'
 import { GymWeekCheckin } from './GymWeekCheckin'
 import { GymBlockComplete, GymBlockHistory } from './GymBlocks'
+import { GymSessionPlayer } from './GymSessionPlayer'
 import { blockIsOver } from './gymBlock'
 
 const WEEK_THEMES = ['Foundation', 'Volume Build', 'Intensity Peak', 'Deload']
@@ -32,6 +33,8 @@ export function GymView({ plan, onRegenerate }) {
   // Stored with the week it was fetched for, so switching weeks never shows the
   // previous week's adjustments while the next request is in flight.
   const [adjusted, setAdjusted] = useState(null)
+  // The day being trained in workout mode, or null.
+  const [sessionDay, setSessionDay] = useState(null)
   useEffect(() => {
     if (!planId) return
     let live = true
@@ -498,6 +501,19 @@ export function GymView({ plan, onRegenerate }) {
                     )}
                   </div>
 
+                  {/* Workout mode. Withheld when last week's check-in reported a
+                      warning sign: the advice that week is a doctor, not a session. */}
+                  {planId && (adjust?.stop ? (
+                    <p className="gym-checkin-stop" role="note">
+                      <ShieldAlert size={14} /> Workout mode is paused — see the note at the top of this week.
+                    </p>
+                  ) : (
+                    <button type="button" className="gym-log-save gs-start"
+                      onClick={() => setSessionDay(day)}>
+                      <Play size={13} /> Start workout
+                    </button>
+                  ))}
+
                   {/* Warmup */}
                   {day.warmup?.length > 0 && (
                     <div className="gym-sub-section">
@@ -618,6 +634,18 @@ export function GymView({ plan, onRegenerate }) {
           )
         })}
       </div>
+
+      {sessionDay && (
+        <GymSessionPlayer
+          planId={planId}
+          week={activeWeek + 1}
+          day={sessionDay}
+          adjustments={adjust?.exercises}
+          logs={logs}
+          onLogged={(dayNo, exId, entry) => setLogs(prev => ({ ...prev, [`${activeWeek + 1}:${dayNo}:${exId}`]: entry }))}
+          onClose={() => setSessionDay(null)}
+        />
+      )}
 
       {/* ── The week's check-in, below the days it is about ── */}
       {weekDays.length > 0 && (

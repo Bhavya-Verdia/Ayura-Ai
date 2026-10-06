@@ -164,4 +164,6 @@ export const EVENTS = {
   GYM_REBUILD_REQUESTED: 'gym_rebuild_requested',
   GYM_LEVEL_UP_OFFERED: 'gym_level_up_offered',
   GYM_LEVEL_UP_ACCEPTED: 'gym_level_up_accepted',
+  GYM_SESSION_STARTED: 'gym_session_started',
+  GYM_SESSION_FINISHED: 'gym_session_finished',
 }
