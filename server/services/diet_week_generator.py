@@ -421,6 +421,27 @@ def _apply_factors(day: dict, x: dict) -> None:
         _finish_meal_inplace(meal)
 
 
+_FASTING_SHARE = 0.6
+
+
+def _fasting_energy(energy: dict) -> dict:
+    t = int(round(energy["target_calories"] * _FASTING_SHARE))
+    nt = dict(energy.get("nutrient_targets") or {})
+    if nt.get("fat_g"):
+        nt["fat_g"] = {**nt["fat_g"], "target": round(nt["fat_g"]["target"] * _FASTING_SHARE)}
+    if nt.get("carbs_g"):
+        nt["carbs_g"] = {**nt["carbs_g"], "target": round(nt["carbs_g"]["target"] * _FASTING_SHARE)}
+    # The band is asymmetric: a Phalahar day under 60% is a stricter fast, not a
+    # failure; over 70% it is no longer a fasting day.
+    full = energy["target_calories"]
+    return {**energy, "target_calories": t,
+            "band": (int(full * 0.40), int(full * 0.70)),
+            "protein_floor_g": round((energy.get("protein_floor_g") or 0) * _FASTING_SHARE),
+            "protein_target_g": round((energy.get("protein_target_g") or 0) * _FASTING_SHARE),
+            "meal_budget": {k: round(v * _FASTING_SHARE) for k, v in energy["meal_budget"].items()},
+            "nutrient_targets": nt}
+
+
 def _reconcile_day(day: dict, energy: dict) -> dict:
     """Bring the day to its targets: each meal toward its own budget first, then one
     factor per kind of food, solved for energy, protein, carbohydrate and fat together.
@@ -431,8 +452,13 @@ def _reconcile_day(day: dict, energy: dict) -> dict:
     and the ghee on the same plate is how a dietitian corrects that; the dishes are
     unchanged. Fasting days are exempt: Upavasa is the therapy."""
     before = _day_totals(day)["calories"]
-    if day.get("is_fasting") or not before:
-        return {"factor": 1.0, "before": round(before), "after": round(before)}
+    if not before:
+        return {"factor": 1.0, "before": 0, "after": 0}
+    if day.get("is_fasting"):
+        # Upavasa is the therapy, so a fasting day is held LIGHT rather than exempt:
+        # exempt, a "fasting" Monday came to 1955 kcal and 144 g of fat from
+        # coconut-milk bowls. About 60% of the day's energy, the same macro rules.
+        energy = _fasting_energy(energy)
     budget = energy["meal_budget"]
     for s in SLOTS:
         meal, kcal = day.get(s), _slot_kcal(day.get(s))
@@ -486,13 +512,28 @@ def finalise_weeks(weeks: list[dict], energy: dict, fasting: set) -> dict:
         "days_quantified": len(measured), "days_unquantified": 28 - len(measured),
         "days_adjusted": sum(1 for r in days_report if r["factor"] != 1.0),
         "days_in_band": sum(1 for r in measured
-                            if r["day"] in fasting or lo <= r["after"] <= hi),
+                            if (lambda b: b[0] <= r["after"] <= b[1])(
+                                _fasting_energy(energy)["band"] if r["day"] in fasting else (lo, hi))),
+        # Kept under its old name for the screen: these days are held light, at about
+        # 60% of the target, rather than brought up to it.
         "fasting_days_exempt": sum(1 for w in weeks for d in DAYS
                                    if w["daily_plan"][d].get("is_fasting")),
+        "fasting_day_target_kcal": _fasting_energy(energy)["target_calories"],
         "protein_floor_g": energy["protein_floor_g"],
         "days_below_protein_floor": below_protein,
         "days": days_report,
     }
+    # Some combinations of targets cannot all be met with ordinary foods — a renal
+    # protein ceiling beside a high energy need is the usual one. A plan that misses
+    # on most days says so, rather than reading as checked.
+    missed = len(measured) - reconciliation["days_in_band"]
+    if missed > 7 or len(below_protein) > 7:
+        reconciliation["targets_unmet_notice"] = (
+            "Your targets could not all be met with ordinary foods on most days"
+            + (" — a kidney protein limit beside your energy need usually needs specialised "
+               "low-protein products. Please work with a renal dietitian."
+               if ((energy.get("nutrient_targets") or {}).get("protein_g") or {}).get("max")
+               else ". Please review this plan with a dietitian."))
     return reconciliation
 
 
@@ -536,15 +577,35 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
         return_exceptions=True)
     weeks_raw, overview = results[:4], results[4]
     failed = [i + 1 for i, r in enumerate(weeks_raw) if isinstance(r, Exception)]
-    if failed:
+    if len(failed) >= 3:
         raise RuntimeError(f"weeks {failed} could not be generated")
+    # One or two weeks failing twice no longer costs the whole plan: those weeks are
+    # composed by the rule engine from the same screened list and brought to the same
+    # targets below. A breastfeeding mother's whole plan fell to the rule engine
+    # because one week of four came back malformed twice.
+    engine_weeks: dict = {}
+    if failed:
+        from services.diet_plan_engine import generate_diet_plan
+        raw_engine = generate_diet_plan(user_profile, diet_prefs, extra_terms=extra_terms)
+        ew, _ = _engine_weeks(raw_engine, allowed_ids)
+        engine_weeks = {w["week_number"]: w for w in ew}
+        logger.warning(f"diet weeks {failed} composed by the rule engine after two failures")
     if isinstance(overview, Exception):
         logger.warning(f"diet overview failed, plan continues without it: {overview}")
         overview = {}
 
     # Assemble every week in full and compute every meal.
     weeks = []
-    for wr in weeks_raw:
+    for i, wr in enumerate(weeks_raw):
+        if isinstance(wr, Exception):
+            ew = dict(engine_weeks[i + 1])
+            ew["phase"] = next((x["phase"] for x in arc["weeks"] if x["week_number"] == i + 1),
+                               ew.get("phase", ""))
+            ew["composed_by"] = "rule_engine"
+            for d in DAYS:
+                ew["daily_plan"].setdefault(d, {})["is_fasting"] = d in fasting
+            weeks.append(ew)
+            continue
         w = wr["week_number"]
         phase = next((x["phase"] for x in arc["weeks"] if x["week_number"] == w), "")
         daily = {}
@@ -610,6 +671,7 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
     reconciliation = finalise_weeks(weeks, energy, fasting)
     distinct = {(m.get("meal_name") or "").lower() for _, _, s, day in _units(weeks)
                 if s in SLOTS for m in [day[s]]}
+    report["weeks_from_rule_engine"] = failed
     return {
         "diet_weeks": weeks,
         "overview": overview,
@@ -625,6 +687,11 @@ def engine_plan_to_weeks(raw: dict, energy: dict, allowed_ids: set | None = None
     """The rule engine's food lists as the same component meals the LLM path writes,
     brought to the same targets. Its meals were lists of foods with a portion each,
     and they missed the protein floor on 26 of 28 days."""
+    weeks, fasting = _engine_weeks(raw, allowed_ids)
+    return {"diet_weeks": weeks, "energy_reconciliation": finalise_weeks(weeks, energy, fasting)}
+
+
+def _engine_weeks(raw: dict, allowed_ids: set | None = None) -> tuple[list[dict], set]:
     from services.diet_plan_engine import _ITEM_PORTIONS, _PORTION
 
     def grams(item):
@@ -662,4 +729,4 @@ def engine_plan_to_weeks(raw: dict, energy: dict, allowed_ids: set | None = None
             daily[name] = out
         weeks.append({"week_number": w.get("week"), "phase": w.get("week_theme", ""),
                       "phase_description": w.get("agni_note", ""), "daily_plan": daily})
-    return {"diet_weeks": weeks, "energy_reconciliation": finalise_weeks(weeks, energy, fasting)}
+    return weeks, fasting

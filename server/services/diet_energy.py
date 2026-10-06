@@ -399,6 +399,24 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
             "stays eatable; gain is steadier this way."
         )
 
+    # Kidney disease: energy 25-35 kcal/kg (KDOQI 2020), on a reference weight —
+    # ideal body weight for an underweight patient, adjusted weight for an obese one.
+    # Without it a 34.7 kg man with CKD was given 2050+ kcal and a 28 g protein cap,
+    # which no ordinary food can meet together: a vegetarian day carries about 10% of
+    # its energy as protein whatever is chosen.
+    renal_ref = None
+    if renal and weight_kg and height_cm and not is_child:
+        if bmi_category == "underweight":
+            renal_ref = 22.0 * (float(height_cm) / 100.0) ** 2
+        else:
+            renal_ref = _protein_basis_weight(float(weight_kg), height_cm, bmi_category)
+        lo_k, hi_k = 25 * renal_ref, 35 * renal_ref
+        if not lo_k <= target <= hi_k:
+            target = max(lo_k, min(hi_k, target))
+            notes.append(
+                f"Kidney disease — energy set within 25-35 kcal per kg of your reference "
+                f"weight ({round(renal_ref)} kg), as renal guidance advises (KDOQI 2020).")
+
     extra_protein = 0.0
     if pregnant:
         stage = trimester or 2
@@ -456,7 +474,7 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
             f"Kidney disease — protein is capped at {_RENAL_PROTEIN_CAP} g/kg (KDIGO 2020), "
             "whatever the goal. Your nephrologist may set it lower.")
     if weight_kg:
-        basis_weight = _protein_basis_weight(float(weight_kg), height_cm, bmi_category)
+        basis_weight = renal_ref or _protein_basis_weight(float(weight_kg), height_cm, bmi_category)
         protein_floor = int(round(basis_weight * floor_per_kg + extra_protein))
         protein_target = int(round(basis_weight * target_per_kg + extra_protein))
         if not renal and not is_child:

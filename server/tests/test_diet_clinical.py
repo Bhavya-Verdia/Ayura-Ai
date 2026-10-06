@@ -133,3 +133,13 @@ def test_the_form_offers_exactly_the_allergies_and_intolerances_the_server_enfor
     assert chips("food_intolerances") == FOOD_INTOLERANCES
     for key in FOOD_ALLERGIES | FOOD_INTOLERANCES:
         assert key in ALLERGEN_TERMS, key
+
+
+def test_a_list_after_an_avoid_word_is_still_avoided():
+    """'...while avoiding alcohol, urad dal, and overeating' read as recommending urad
+    dal to a gout patient."""
+    text = ("For gout, favour barley, moong and amla while avoiding alcohol, urad dal, "
+            "and overeating.")
+    assert _governed_by_avoidance(text, "urad dal")
+    assert not _governed_by_avoidance(text, "moong")
+    assert not _governed_by_avoidance("Curd is excellent, avoid pickles.", "curd")

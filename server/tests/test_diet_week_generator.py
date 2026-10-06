@@ -85,13 +85,20 @@ async def test_an_unrepairable_meal_is_replaced_with_a_safe_one(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_fasting_days_are_marked_and_not_scaled_up(monkeypatch):
+async def test_fasting_days_are_marked_and_held_light(monkeypatch):
+    """Exempt, a "fasting" Monday came to 1955 kcal and 144 g of fat. Upavasa is the
+    therapy, so the day is held at about 60% of the target — not brought up to it,
+    and not left wherever the model put it."""
     plan, _ = await _plan(monkeypatch, prefs={"fasting_days": ["Monday"]})
     rec = plan["energy_reconciliation"]
     assert rec["fasting_days_exempt"] == 4
+    light = rec["fasting_day_target_kcal"]
+    assert light == round(rec["target_kcal"] * 0.6)
     for w in plan["diet_weeks"]:
-        assert w["daily_plan"]["Monday"]["is_fasting"]
-    assert all(r["factor"] == 1.0 for r in rec["days"] if r["day"] == "Monday")
+        monday = w["daily_plan"]["Monday"]
+        assert monday["is_fasting"]
+        assert 0.40 * rec["target_kcal"] <= monday["day_totals"]["calories"] <= 0.70 * rec["target_kcal"]
+        assert monday["day_totals"]["calories"] < rec["band_kcal"][0]
 
 
 @pytest.mark.asyncio
@@ -151,3 +158,25 @@ async def test_the_rule_engine_fallback_is_screened_measured_and_on_target(monke
     for w in plan["diet_weeks"]:
         for d in w["daily_plan"].values():
             assert d["day_totals"]["fat_g"] >= 0.5 * plan["nutrient_targets"]["fat_g"]["target"]
+
+
+@pytest.mark.asyncio
+async def test_a_week_that_fails_twice_is_composed_by_the_engine_not_the_whole_plan(monkeypatch):
+    """A breastfeeding mother's whole plan fell to the rule engine because one week
+    of four came back malformed twice."""
+    async def no_classify(*a, **k):
+        return {}
+    monkeypatch.setattr("services.ahara_safety.classify_condition_apathya_llm", no_classify)
+    plan, _ = await _plan(monkeypatch, always_fail={3})
+    assert plan["generation_method"] == "llm_primary"
+    assert plan["composition_report"]["weeks_from_rule_engine"] == [3]
+    week3 = plan["diet_weeks"][2]
+    assert week3["composed_by"] == "rule_engine" and week3["week_number"] == 3
+    rec = plan["energy_reconciliation"]
+    assert rec["days_quantified"] == 28 and rec["days_in_band"] == 28
+
+
+@pytest.mark.asyncio
+async def test_three_failed_weeks_fall_back_entirely(monkeypatch):
+    plan, _ = await _plan(monkeypatch, always_fail={1, 2, 4})
+    assert plan is None

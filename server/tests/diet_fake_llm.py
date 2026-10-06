@@ -38,7 +38,7 @@ def _drink(ids):
 
 
 def make_fake(calls: list, bad: dict | None = None, fail_weeks: set | None = None,
-              repair_food: str | None = None):
+              repair_food: str | None = None, always_fail: set | None = None):
     """`bad`: {(week, day, slot): food_id} injected on the FIRST week call only."""
     bad = bad or {}
     fail_weeks = set(fail_weeks or ())
@@ -50,6 +50,8 @@ def make_fake(calls: list, bad: dict | None = None, fail_weeks: set | None = Non
         m = re.search(r"Write WEEK (\d)", prompt)
         if m:
             w = int(m.group(1))
+            if w in (always_fail or ()):
+                return json.dumps({"oops": True})
             if w in fail_weeks:
                 fail_weeks.discard(w)
                 return json.dumps({"oops": True})

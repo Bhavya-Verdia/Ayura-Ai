@@ -1463,7 +1463,22 @@ def _governed_by_avoidance(text: str, term: str) -> bool:
     """True when every mention of `term` in `text` sits in a clause that tells the
     reader to avoid it."""
     clauses = [c for c in _CLAUSE_SPLIT.split(text.lower()) if c and c.strip()]
-    mentions = [c for c in clauses if _term_in_text(term, c)]
+    # A list continues the clause that opened it: in "avoiding alcohol, urad dal, and
+    # overeating" the splitter leaves "urad dal" alone in its own clause, with no
+    # avoid-word, and correct advice read as a recommendation. A short noun-phrase
+    # clause (four words or fewer, "and"/"or" allowed) inherits the governing of the
+    # clause before it. "Curd is excellent, avoid pickles" is unaffected: "curd is
+    # excellent" opens its own clause.
+    governed = []
+    for c in clauses:
+        words = c.strip().split()
+        listy = 0 < len(words) <= 4 and not any(w in ("is", "are", "helps", "supports",
+                                                        "eat", "have", "take", "use",
+                                                        "include", "favour", "favor",
+                                                        "prefer", "enjoy") for w in words)
+        own = any(m in c for m in _AVOID_MARKERS)
+        governed.append(own or (listy and bool(governed) and governed[-1]))
+    mentions = [(c, g) for c, g in zip(clauses, governed) if _term_in_text(term, c)]
     if not mentions:
         return False
     # The whole clause, not the text before the mention: "curd is best avoided" puts
@@ -1480,8 +1495,7 @@ def _governed_by_avoidance(text: str, term: str) -> bool:
     # gluten. Matched on the word itself, not a bare "free", so "feel free to have
     # curd" still reads as a recommendation.
     free = re.compile(rf"\b{re.escape(term)}\w*[\s-]+free\b")
-    return all(any(m in clause for m in _AVOID_MARKERS) or free.search(clause)
-               for clause in mentions)
+    return all(g or free.search(clause) for clause, g in mentions)
 
 
 def apply_advisory_safety(

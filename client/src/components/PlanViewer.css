@@ -6699,3 +6699,25 @@
 .gs-hold.hard { background: color-mix(in srgb, #e0a96e 18%, transparent); }
 .gs-minutes { grid-template-columns: 7rem minmax(0, 8rem); }
 .gs-minutes input { font-size: 1rem; padding: 0.55rem 0.6rem; }
+
+/* ── Diet: targets, clinical notes ── */
+.diet-targets-card, .diet-clinical-card {
+  margin: 0.75rem 0; padding: 0.85rem 1rem; border-radius: 12px; display: grid; gap: 0.45rem;
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.12));
+  background: color-mix(in srgb, var(--ayura-accent) 4%, transparent);
+}
+.diet-targets-list { margin: 0; display: grid; gap: 0.3rem; }
+.diet-targets-row { display: flex; justify-content: space-between; gap: 0.75rem; font-size: 0.82rem; }
+.diet-targets-row dt { color: var(--ayura-text-secondary); }
+.diet-targets-row dd { margin: 0; text-align: right; color: var(--ayura-text); }
+.diet-targets-toggle { justify-self: start; display: inline-flex; align-items: center; gap: 0.25rem;
+  background: none; border: none; padding: 0.2rem 0; font-size: 0.76rem; color: var(--ayura-text-secondary); cursor: pointer; }
+.diet-targets-sources { margin: 0; padding-left: 1rem; font-size: 0.74rem; color: var(--ayura-text-secondary); display: grid; gap: 0.2rem; }
+.diet-clinical-item { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 0.5rem; align-items: start;
+  font-size: 0.82rem; line-height: 1.5; color: var(--ayura-text); }
+.diet-clinical-item svg { margin-top: 0.2rem; color: var(--ayura-text-secondary); }
+.diet-clinical-item p { margin: 0.1rem 0 0; }
+.diet-clinical-item.is-warn svg { color: #e0a96e; }
+.diet-clinical-source { display: block; font-size: 0.7rem; color: var(--ayura-text-secondary); margin-top: 0.15rem; }
+.diet-llm-note-plain { margin: 0.2rem 0; font-size: 0.78rem; color: var(--ayura-text-secondary); }
+.diet-macro-chip.fib { opacity: 0.85; }

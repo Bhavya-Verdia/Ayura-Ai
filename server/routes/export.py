@@ -50,11 +50,49 @@ def diet_report_lines(plan: dict) -> list[tuple[str, str]]:
         line = f"<b>Energy prescription:</b> {rx['target_calories']} kcal/day"
         if rx.get("band"):
             line += f" (acceptable {rx['band'][0]}-{rx['band'][1]})"
-        if rx.get("protein_floor_g"):
+        if rx.get("protein_target_g"):
+            line += f", protein {rx['protein_target_g']} g (floor {rx.get('protein_floor_g')} g)"
+        elif rx.get("protein_floor_g"):
             line += f", at least {rx['protein_floor_g']} g protein"
         if rx.get("basis"):
             line += f" — basis: {rx['basis']}"
         out.append(("body", line))
+
+    nt = plan.get("nutrient_targets") or {}
+    if nt:
+        parts = []
+        if nt.get("carbs_g"):
+            parts.append(f"carbohydrate ~{nt['carbs_g']['target']} g ({nt['carbs_g']['pct_energy']}%"
+                         + (", available" if nt["carbs_g"].get("basis") else "") + ")")
+        if nt.get("fat_g"):
+            parts.append(f"fat ~{nt['fat_g']['target']} g")
+        if nt.get("sat_fat_g"):
+            parts.append(f"sat. fat < {nt['sat_fat_g']['max']} g")
+        if nt.get("fibre_g"):
+            parts.append(f"fibre ≥ {nt['fibre_g']['min']} g")
+        if nt.get("sodium_mg"):
+            parts.append(f"sodium < {nt['sodium_mg']['max']} mg")
+        if nt.get("protein_g", {}).get("max"):
+            parts.append(f"protein ≤ {nt['protein_g']['max']} g")
+        out.append(("body", "<b>Nutrient targets:</b> " + "; ".join(parts)))
+        srcs = "; ".join(f"{k}: {v}" for k, v in (nt.get("sources") or {}).items())
+        if srcs:
+            out.append(("small", f"Sources — {srcs}"))
+    for note in rx.get("notes") or []:
+        out.append(("small", f"• {note}"))
+    if plan.get("fasting_notice"):
+        out.append(("small", f"<b>Fasting:</b> {plan['fasting_notice']}"))
+    for m in plan.get("medication_interactions") or []:
+        out.append(("small", f"<b>Medication — {m.get('medication')}:</b> {m.get('advice')} "
+                             f"({m.get('source')})"))
+    if plan.get("medications_not_checked"):
+        out.append(("small", "<b>Medicines not checked for food interactions:</b> "
+                             + ", ".join(plan["medications_not_checked"])))
+    for n in plan.get("clinical_notes") or []:
+        out.append(("small", f"<b>{n.get('topic')}:</b> {n.get('note')} ({n.get('source')})"))
+    if plan.get("nutrition_method") == "computed_from_components":
+        out.append(("small", "Day figures below are computed from each meal's foods and grams "
+                             "(USDA FDC / IFCT 2017; prepared dishes estimated)."))
 
     arc = (plan.get("therapeutic_arc") or {}).get("weeks") or []
     if arc:
@@ -119,7 +157,11 @@ def diet_report_lines(plan: dict) -> list[tuple[str, str]]:
                 bits.append(f"drink: {drink['name']}")
             if bits:
                 fasting = " [fasting]" if day_data.get("is_fasting") else ""
-                out.append(("small", f"<b>{day}</b>{fasting} — {'; '.join(bits)}"))
+                t = day_data.get("day_totals") or {}
+                totals = (f" — {round(t.get('calories', 0))} kcal, P {t.get('protein_g')} g, "
+                          f"C {t.get('carbs_g')} g, F {t.get('fat_g')} g, fibre {t.get('fiber_g')} g"
+                          if t else "")
+                out.append(("small", f"<b>{day}</b>{fasting} — {'; '.join(bits)}{totals}"))
         out.append(("spacer", ""))
     return out
 

@@ -630,6 +630,11 @@ def fasting_withheld_reason(user_profile: dict, diet_prefs: dict | None = None) 
         age = None
     if age is not None and age <= PAEDIATRIC_MAX_AGE:
         return "Under 18 — no planned fasting days for a growing body."
+    if age is not None and age >= 70:
+        # Upavasa is withheld from the Vriddha in the classical texts, and clinically
+        # a fasting day past 70 costs muscle and risks dizziness and falls.
+        return ("Past 70 — fasting days are planned as ordinary, lighter days: a fast at "
+                "this age costs muscle and risks dizziness.")
     if user_profile.get("pregnancy_or_nursing"):
         return ("Pregnancy or breastfeeding — fasting days are planned as ordinary days. "
                 "Mother and baby both need the energy every day.")
