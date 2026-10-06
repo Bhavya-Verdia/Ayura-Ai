@@ -309,7 +309,7 @@ _COUNTED = SLOTS + (DRINK,)
 # protein foods are where a cook adjusts a plate; added fat and sweet things move
 # down more freely than up; seasonings never move.
 _ROLE_BOUNDS = {
-    "grain": (0.5, 1.6), "protein": (0.6, 1.8), "vegetable": (0.6, 1.6),
+    "grain": (0.5, 1.6), "protein": (0.6, 2.0), "vegetable": (0.6, 1.6),
     "fruit": (0.6, 1.5), "sweet_fruit": (0.4, 1.3), "nut": (0.5, 1.6),
     "fat": (0.3, 1.3), "sweet": (0.0, 1.0), "drink": (0.7, 1.3), "other": (0.8, 1.2),
 }
@@ -346,7 +346,7 @@ def _objective(x: dict, A: dict, energy: dict, diabetic: bool) -> float:
     # Inside the band, energy is one target among several; outside it the day has
     # failed, and that must outweigh keeping every portion where the model put it.
     cost = 12 * err ** 2 + 150 * max(0.0, abs(err) - 0.08) ** 2
-    cost += 8 * max(0.0, (p_floor - tot["protein_g"]) / p_floor) ** 2
+    cost += 18 * max(0.0, (p_floor - tot["protein_g"]) / p_floor) ** 2
     cost += 1 * ((tot["protein_g"] - p_target) / p_target) ** 2
     p_max = (nt.get("protein_g") or {}).get("max")
     if p_max:
@@ -463,6 +463,39 @@ def _day_totals(day: dict) -> dict:
     return {k: round(v, 1) for k, v in tot.items()}
 
 
+def finalise_weeks(weeks: list[dict], energy: dict, fasting: set) -> dict:
+    """Bring every day to its targets and report what was reached. Shared by the LLM
+    path and the rule-engine fallback, so a fallback plan is held to the same numbers."""
+    # Energy: scale each day toward target, then report.
+    days_report, below_protein = [], []
+    for w in weeks:
+        for d in DAYS:
+            day = w["daily_plan"][d]
+            r = _reconcile_day(day, energy)
+            day["day_totals"] = _day_totals(day)
+            days_report.append({"week": w["week_number"], "day": d, **r,
+                                "protein_g": day["day_totals"]["protein_g"]})
+            if not day.get("is_fasting") and day["day_totals"]["protein_g"] < energy["protein_floor_g"]:
+                below_protein.append(f"Week {w['week_number']} {d}")
+
+    lo, hi = energy["band"]
+    measured = [r for r in days_report if r["after"]]
+    reconciliation = {
+        "checked": True, "method": "computed_from_components",
+        "target_kcal": energy["target_calories"], "band_kcal": [lo, hi],
+        "days_quantified": len(measured), "days_unquantified": 28 - len(measured),
+        "days_adjusted": sum(1 for r in days_report if r["factor"] != 1.0),
+        "days_in_band": sum(1 for r in measured
+                            if r["day"] in fasting or lo <= r["after"] <= hi),
+        "fasting_days_exempt": sum(1 for w in weeks for d in DAYS
+                                   if w["daily_plan"][d].get("is_fasting")),
+        "protein_floor_g": energy["protein_floor_g"],
+        "days_below_protein_floor": below_protein,
+        "days": days_report,
+    }
+    return reconciliation
+
+
 # ── Entry point ──────────────────────────────────────────────────────────────
 
 async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str,
@@ -574,33 +607,7 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
                 slot, allowed, mb.get(slot, 0) if slot != DRINK else 0, rng)
             report["substituted"] += 1
 
-    # Energy: scale each day toward target, then report.
-    days_report, below_protein = [], []
-    for w in weeks:
-        for d in DAYS:
-            day = w["daily_plan"][d]
-            r = _reconcile_day(day, energy)
-            day["day_totals"] = _day_totals(day)
-            days_report.append({"week": w["week_number"], "day": d, **r,
-                                "protein_g": day["day_totals"]["protein_g"]})
-            if not day.get("is_fasting") and day["day_totals"]["protein_g"] < energy["protein_floor_g"]:
-                below_protein.append(f"Week {w['week_number']} {d}")
-
-    lo, hi = energy["band"]
-    measured = [r for r in days_report if r["after"]]
-    reconciliation = {
-        "checked": True, "method": "computed_from_components",
-        "target_kcal": energy["target_calories"], "band_kcal": [lo, hi],
-        "days_quantified": len(measured), "days_unquantified": 28 - len(measured),
-        "days_adjusted": sum(1 for r in days_report if r["factor"] != 1.0),
-        "days_in_band": sum(1 for r in measured
-                            if r["day"] in fasting or lo <= r["after"] <= hi),
-        "fasting_days_exempt": sum(1 for w in weeks for d in DAYS
-                                   if w["daily_plan"][d].get("is_fasting")),
-        "protein_floor_g": energy["protein_floor_g"],
-        "days_below_protein_floor": below_protein,
-        "days": days_report,
-    }
+    reconciliation = finalise_weeks(weeks, energy, fasting)
     distinct = {(m.get("meal_name") or "").lower() for _, _, s, day in _units(weeks)
                 if s in SLOTS for m in [day[s]]}
     return {
@@ -612,3 +619,47 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
                                "excluded_foods": screen["excluded"]},
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+def engine_plan_to_weeks(raw: dict, energy: dict, allowed_ids: set | None = None) -> dict:
+    """The rule engine's food lists as the same component meals the LLM path writes,
+    brought to the same targets. Its meals were lists of foods with a portion each,
+    and they missed the protein floor on 26 of 28 days."""
+    from services.diet_plan_engine import _ITEM_PORTIONS, _PORTION
+
+    def grams(item):
+        fid = item.get("id")
+        if fid in _ITEM_PORTIONS:
+            return _ITEM_PORTIONS[fid][1]
+        return _PORTION.get(item.get("category"), ("100g", 100))[1]
+
+    # The engine composes without cooking fat — a day came out at 7.5 g of fat against
+    # 44 — and the solver can only size a component that is there. One teaspoon of an
+    # allowed fat goes into each main meal for it to size.
+    allowed_fat = next((fid for fid in ("ghee", "sesame_oil", "groundnut_oil", "sunflower_oil",
+                                        "mustard_oil", "coconut_oil", "olive_oil")
+                        if fid in (allowed_ids or set())), None)
+    weeks, fasting = [], set()
+    for w in raw.get("four_week_plan") or []:
+        daily = {}
+        for day in w.get("days") or []:
+            name = day.get("day_name")
+            out = {"theme": w.get("week_theme", ""), "is_fasting": bool(day.get("is_fasting_day"))}
+            if out["is_fasting"]:
+                fasting.add(name)
+            for slot in SLOTS:
+                items = (day.get("meals") or {}).get(slot) or []
+                comps = [{"food": i["id"], "grams": grams(i)} for i in items if i.get("id")]
+                if not comps:
+                    continue
+                if allowed_fat and slot != "snack" and not out["is_fasting"] and not any(
+                        dn.role(c["food"]) == "fat" for c in comps):
+                    comps.append({"food": allowed_fat, "grams": 5})
+                out[slot] = _finish_meal({
+                    "meal_name": " with ".join(dn._short(i.get("name") or i["id"]) for i in items[:3]),
+                    "description": "Composed from your screened food list.",
+                    "ayurvedic_note": "", "components": comps})
+            daily[name] = out
+        weeks.append({"week_number": w.get("week"), "phase": w.get("week_theme", ""),
+                      "phase_description": w.get("agni_note", ""), "daily_plan": daily})
+    return {"diet_weeks": weeks, "energy_reconciliation": finalise_weeks(weeks, energy, fasting)}

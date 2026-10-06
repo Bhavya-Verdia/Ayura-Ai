@@ -348,16 +348,40 @@ async def build_diet_plan(
     from services.diet_energy import energy_target
     from services.diet_plan_engine import generate_diet_plan
     from services.diet_plan_enricher import enrich_diet_plan
-    from services.diet_portion_reconciler import reconcile_plan_energy
-
-    raw = generate_diet_plan(user_profile, diet_prefs, diet_foods)
+    # Rare conditions are classified FIRST, so their Apathya screens the pool this
+    # engine composes from. Asked afterwards, the classifier's answer (which varies
+    # by call) flagged foods the screen had let through — 15 "white rice" alerts on
+    # an osteoporosis plan.
+    conds = diet_conditions(user_profile, diet_prefs)
+    extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(conds))
+    raw = generate_diet_plan(user_profile, diet_prefs, diet_foods, extra_terms=extra_apathya)
     plan = await enrich_diet_plan(raw, user_profile, diet_prefs)
+    # Free-text meal ideas for week 1, rendered by no screen and read by no scan;
+    # the meals below are named from what they are made of.
+    plan.pop("daily_meal_ideas", None)
+    # The engine's food lists become the same component meals the primary path
+    # writes, and are brought to the same targets by the same solver. Its days
+    # missed the protein floor on 26 of 28 before this.
+    from services.diet_week_generator import engine_plan_to_weeks
+    energy = energy_target(user_profile, diet_prefs)
+    from services.diet_allowed_foods import allowed_foods
+    body = engine_plan_to_weeks(plan, energy, {
+        f["id"] for f in allowed_foods(user_profile, diet_prefs,
+                                       extra_terms=extra_apathya)["allowed"]})
+    plan.pop("four_week_plan", None)
+    plan.update({
+        "generation_method": "rule_engine",
+        "nutrition_method": "computed_from_components",
+        "diet_weeks": body["diet_weeks"],
+        "weekly_plan": body["diet_weeks"][0]["daily_plan"] if body["diet_weeks"] else {},
+        "energy_prescription": energy,
+        "nutrient_targets": energy["nutrient_targets"],
+        "energy_reconciliation": body["energy_reconciliation"],
+    })
     plan = apply_ahara_safety(
         plan, diet_allergies(user_profile, diet_prefs),
         diet_prefs.get("food_intolerances") or [])
     plan = apply_dietary_type_safety(plan, diet_prefs.get("dietary_type"))
-    conds = diet_conditions(user_profile, diet_prefs)
-    extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(conds))
     plan = apply_condition_food_safety(
         plan, conds, extra_terms=extra_apathya,
         pregnant=bool(user_profile.get("pregnancy_or_nursing")))
@@ -365,8 +389,4 @@ async def build_diet_plan(
         plan, conds, diet_allergies(user_profile, diet_prefs),
         diet_prefs.get("food_intolerances") or [], extra_terms=extra_apathya,
         pregnant=bool(user_profile.get("pregnancy_or_nursing")))
-    # The engine fills category quotas with no energy target of its own — measured at
-    # 580-1031 kcal against a 1490 kcal target, with 22-40 g of protein against an
-    # 84 g floor.
-    plan = reconcile_plan_energy(plan, energy_target(user_profile, diet_prefs))
     return plan
