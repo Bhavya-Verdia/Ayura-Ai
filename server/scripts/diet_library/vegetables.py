@@ -96,20 +96,23 @@ VEGETABLES = [
                   "Vata-vardhaka. Extrapolated, not cited."}),
 
     # ── Roots and tubers ──────────────────────────────────────────────────────
+    # Dietitian decision, 2026-10: not Apathya in acidity. Madhura and not a reflux
+    # trigger; cooked carrot is a staple of an acid-reflux diet. Its ushna virya is mild.
     F("Garjara (Carrot)", id="carrot",
       rasa=("madhura", "tikta"), guna=("laghu", "ruksha"), virya="ushna", vipaka="katu",
       prabhava="Deepana and Grahi — Garjara is warming and binding, which is why it is "
                "a winter root and not the cooling one its madhura rasa suggests.",
       dosha=(-1, 1, -1), ritu=("hemanta", "shishira"),
       pathya_for=("anemia", "grahani", "constipation", "bloating"),
-      apathya_for=("acidity",),
       nutrition=N(41, 0.9, 9.6, 0.2, 2.8, source="usda"), **_V),
 
+    # Dietitian decision, 2026-10: not Apathya in acidity. Madhura rasa and vipaka;
+    # not a reflux trigger in any guideline.
     F("Palanki (Beetroot)", id="beetroot",
       rasa=("madhura",), guna=("guru", "snigdha"), virya="ushna", vipaka="madhura",
       dosha=(-1, 1, 1), ritu=("hemanta", "shishira"),
       pathya_for=("anemia", "constipation", "hypertension"),
-      apathya_for=("diabetes", "acidity"),
+      apathya_for=("diabetes",),
       nutrition=N(44, 1.7, 10.0, 0.2, 2.0, source="usda"), **_V),
 
     F("Aluka (Potato)", id="potato",

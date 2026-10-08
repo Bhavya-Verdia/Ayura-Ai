@@ -6721,3 +6721,45 @@
 .diet-clinical-source { display: block; font-size: 0.7rem; color: var(--ayura-text-secondary); margin-top: 0.15rem; }
 .diet-llm-note-plain { margin: 0.2rem 0; font-size: 0.78rem; color: var(--ayura-text-secondary); }
 .diet-macro-chip.fib { opacity: 0.85; }
+
+/* Diet plan translation bar — the translated text is an overlay of the checked English plan. */
+.diet-translate-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem;
+  margin-bottom: 1rem; padding: 0.55rem 0.8rem;
+  border: 1px solid var(--ayura-border); border-radius: 10px;
+  font-size: 0.78rem; line-height: 1.45; color: var(--ayura-text-secondary);
+}
+.diet-translate-bar > span { flex: 1 1 14rem; }
+.diet-translate-btn {
+  padding: 0.3rem 0.75rem; border-radius: 999px; border: 1px solid var(--ayura-border);
+  background: transparent; color: inherit; font: inherit; font-weight: 600; cursor: pointer;
+}
+.diet-translate-btn:disabled { opacity: 0.6; cursor: progress; }
+
+/* Meal log — what was eaten of the plan; the next plan reads it. */
+.diet-log-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem;
+  padding: 0 0.85rem 0.6rem;
+}
+.diet-log-btn {
+  padding: 0.22rem 0.6rem; min-height: 28px; border-radius: 999px;
+  border: 1px solid var(--ayura-border); background: transparent;
+  color: var(--ayura-text-secondary); font: inherit; font-size: 0.72rem; cursor: pointer;
+}
+.diet-log-btn.is-on {
+  border-color: var(--ayura-accent); color: var(--ayura-text);
+  background: color-mix(in srgb, var(--ayura-accent) 14%, transparent);
+  font-weight: 600;
+}
+.diet-log-swap { display: flex; gap: 0.35rem; flex: 1 1 100%; }
+.diet-log-swap input {
+  flex: 1; min-width: 0; padding: 0.3rem 0.6rem; border-radius: 8px;
+  border: 1px solid var(--ayura-border); background: transparent; color: inherit; font: inherit; font-size: 0.78rem;
+}
+.diet-log-note { font-size: 0.72rem; color: var(--ayura-muted); }
+.diet-log-summary {
+  margin: 0 0 0.75rem; padding: 0.55rem 0.8rem; border-radius: 10px;
+  border: 1px dashed var(--ayura-border); font-size: 0.78rem; line-height: 1.5;
+  color: var(--ayura-text-secondary);
+}
+.diet-log-summary ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }

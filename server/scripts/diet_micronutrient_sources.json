@@ -1,1383 +1,1902 @@
 {
  "ifct": {
   "A003": {
+   "b12_ug": null,
    "calcium_mg": 27.35,
    "folate_ug": 36.11,
    "iron_mg": 6.42,
    "label": "IFCT 2017 A003: Bajra",
    "phosphorus_mg": 289.0,
    "potassium_mg": 365.0,
-   "sodium_mg": 4.11
+   "sodium_mg": 4.11,
+   "vitd_ug": null,
+   "zinc_mg": 2.76
   },
   "A005": {
+   "b12_ug": null,
    "calcium_mg": 27.6,
    "folate_ug": 39.42,
    "iron_mg": 3.95,
    "label": "IFCT 2017 A005: Jowar",
    "phosphorus_mg": 274.0,
    "potassium_mg": 328.0,
-   "sodium_mg": 5.42
+   "sodium_mg": 5.42,
+   "vitd_ug": null,
+   "zinc_mg": 1.96
   },
   "A010": {
+   "b12_ug": null,
    "calcium_mg": 364.0,
    "folate_ug": 34.66,
    "iron_mg": 4.62,
    "label": "IFCT 2017 A010: Ragi",
    "phosphorus_mg": 210.0,
    "potassium_mg": 443.0,
-   "sodium_mg": 4.75
+   "sodium_mg": 4.75,
+   "vitd_ug": null,
+   "zinc_mg": 2.53
   },
   "A011": {
+   "b12_ug": null,
    "calcium_mg": 9.19,
    "folate_ug": 8.46,
    "iron_mg": 4.46,
    "label": "IFCT 2017 A011: Rice, flakes",
    "phosphorus_mg": 195.0,
    "potassium_mg": 148.0,
-   "sodium_mg": 2.58
+   "sodium_mg": 2.58,
+   "vitd_ug": null,
+   "zinc_mg": 1.49
   },
   "C020": {
+   "b12_ug": null,
    "calcium_mg": 274.0,
    "folate_ug": 75.26,
    "iron_mg": 5.69,
    "label": "IFCT 2017 C020: Fenugreek leaves",
    "phosphorus_mg": 53.05,
    "potassium_mg": 226.0,
-   "sodium_mg": 47.01
+   "sodium_mg": 47.01,
+   "vitd_ug": null,
+   "zinc_mg": 0.54
   },
   "D007": {
+   "b12_ug": null,
    "calcium_mg": 15.42,
    "folate_ug": 41.99,
    "iron_mg": 0.26,
    "label": "IFCT 2017 D007: Bottle gourd, elongate, pale green",
    "phosphorus_mg": 16.01,
    "potassium_mg": 124.0,
-   "sodium_mg": 1.46
+   "sodium_mg": 1.46,
+   "vitd_ug": null,
+   "zinc_mg": 0.15
   },
   "D039": {
+   "b12_ug": null,
    "calcium_mg": 121.0,
    "folate_ug": 41.24,
    "iron_mg": 3.9,
    "label": "IFCT 2017 D039: Cluster beans",
    "phosphorus_mg": 45.28,
    "potassium_mg": 301.0,
-   "sodium_mg": 4.05
+   "sodium_mg": 4.05,
+   "vitd_ug": null,
+   "zinc_mg": 0.61
   },
   "D055": {
+   "b12_ug": null,
    "calcium_mg": 37.12,
    "folate_ug": 50.13,
    "iron_mg": 0.29,
    "label": "IFCT 2017 D055: Kovai, small",
    "phosphorus_mg": 26.29,
    "potassium_mg": 167.0,
-   "sodium_mg": 2.2
+   "sodium_mg": 2.2,
+   "vitd_ug": null,
+   "zinc_mg": 0.13
   },
   "D060": {
+   "b12_ug": null,
    "calcium_mg": 30.76,
    "folate_ug": 19.96,
    "iron_mg": 0.5,
    "label": "IFCT 2017 D060: Parwar",
    "phosphorus_mg": 33.81,
    "potassium_mg": 117.0,
-   "sodium_mg": 2.29
+   "sodium_mg": 2.29,
+   "vitd_ug": null,
+   "zinc_mg": 0.23
   },
   "D063": {
+   "b12_ug": null,
    "calcium_mg": 13.8,
    "folate_ug": 18.96,
    "iron_mg": 0.34,
    "label": "IFCT 2017 D063: Plantain, green",
    "phosphorus_mg": 31.69,
    "potassium_mg": 402.0,
-   "sodium_mg": 18.57
+   "sodium_mg": 18.57,
+   "vitd_ug": null,
+   "zinc_mg": 0.23
   },
   "D068": {
+   "b12_ug": null,
    "calcium_mg": 13.7,
    "folate_ug": 29.26,
    "iron_mg": 0.42,
    "label": "IFCT 2017 D068: Ridge gourd",
    "phosphorus_mg": 33.06,
    "potassium_mg": 118.0,
-   "sodium_mg": 4.71
+   "sodium_mg": 4.71,
+   "vitd_ug": null,
+   "zinc_mg": 0.22
   },
   "D073": {
+   "b12_ug": null,
    "calcium_mg": 19.68,
    "folate_ug": 43.23,
    "iron_mg": 0.41,
    "label": "IFCT 2017 D073: Tinda, tender",
    "phosphorus_mg": 30.37,
    "potassium_mg": 56.18,
-   "sodium_mg": 20.61
+   "sodium_mg": 20.61,
+   "vitd_ug": null,
+   "zinc_mg": 0.2
   },
   "E021": {
+   "b12_ug": null,
    "calcium_mg": 20.14,
    "folate_ug": 7.86,
    "iron_mg": 1.25,
    "label": "IFCT 2017 E021: Goosberry",
    "phosphorus_mg": 21.85,
    "potassium_mg": 223.0,
-   "sodium_mg": 1.37
+   "sodium_mg": 1.37,
+   "vitd_ug": null,
+   "zinc_mg": 0.05
   },
   "E034": {
+   "b12_ug": null,
    "calcium_mg": 25.79,
    "folate_ug": 15.38,
    "iron_mg": 0.11,
    "label": "IFCT 2017 E034: Lime, sweet, pulp",
    "phosphorus_mg": 20.55,
    "potassium_mg": 182.0,
-   "sodium_mg": 1.17
+   "sodium_mg": 1.17,
+   "vitd_ug": null,
+   "zinc_mg": 0.05
   },
   "E060": {
+   "b12_ug": null,
    "calcium_mg": 17.87,
    "folate_ug": 10.83,
    "iron_mg": 0.49,
    "label": "IFCT 2017 E060: Sapota",
    "phosphorus_mg": 22.26,
    "potassium_mg": 280.0,
-   "sodium_mg": 4.61
+   "sodium_mg": 4.61,
+   "vitd_ug": null,
+   "zinc_mg": 0.18
   },
   "G010": {
+   "b12_ug": null,
    "calcium_mg": 659.0,
    "folate_ug": 117.0,
    "iron_mg": 8.67,
    "label": "IFCT 2017 G010: Curry leaves",
    "phosphorus_mg": 83.29,
    "potassium_mg": 584.0,
-   "sodium_mg": 18.66
+   "sodium_mg": 18.66,
+   "vitd_ug": null,
+   "zinc_mg": 1.18
+  },
+  "G019": {
+   "b12_ug": null,
+   "calcium_mg": 266.0,
+   "folate_ug": 26.28,
+   "iron_mg": 15.68,
+   "label": "IFCT 2017 G019: Asafoetida",
+   "phosphorus_mg": 69.09,
+   "potassium_mg": 245.0,
+   "sodium_mg": 16.04,
+   "vitd_ug": null,
+   "zinc_mg": 0.98
   },
   "G029": {
+   "b12_ug": null,
    "calcium_mg": 1034.0,
    "folate_ug": 51.79,
    "iron_mg": 13.65,
    "label": "IFCT 2017 G029: Omum",
    "phosphorus_mg": 329.0,
    "potassium_mg": 1692.0,
-   "sodium_mg": 28.58
+   "sodium_mg": 28.58,
+   "vitd_ug": null,
+   "zinc_mg": 5.67
   },
   "I001": {
+   "b12_ug": null,
    "calcium_mg": 107.0,
    "folate_ug": 14.4,
    "iron_mg": 4.63,
    "label": "IFCT 2017 I001: Jaggery, cane",
    "phosphorus_mg": 74.53,
    "potassium_mg": 488.0,
-   "sodium_mg": 25.38
+   "sodium_mg": 25.38,
+   "vitd_ug": null,
+   "zinc_mg": 0.45
   },
   "L003": {
+   "b12_ug": null,
    "calcium_mg": 476.0,
    "folate_ug": 93.31,
    "iron_mg": 0.9,
    "label": "IFCT 2017 L003: Paneer",
    "phosphorus_mg": 330.0,
    "potassium_mg": 63.53,
-   "sodium_mg": 18.04
+   "sodium_mg": 18.04,
+   "vitd_ug": null,
+   "zinc_mg": 2.74
   }
  },
  "sr": {
   "167747": {
+   "b12_ug": 0.0,
    "calcium_mg": 6.0,
    "folate_ug": 20.0,
    "iron_mg": 0.08,
    "label": "USDA SR Legacy 167747: Lemon juice, raw",
    "phosphorus_mg": 8.0,
    "potassium_mg": 103.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.05
   },
   "167762": {
+   "b12_ug": 0.0,
    "calcium_mg": 16.0,
    "folate_ug": 24.0,
    "iron_mg": 0.41,
    "label": "USDA SR Legacy 167762: Strawberries, raw",
    "phosphorus_mg": 24.0,
    "potassium_mg": 153.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.14
   },
   "167763": {
+   "b12_ug": 0.0,
    "calcium_mg": 74.0,
    "folate_ug": 14.0,
    "iron_mg": 2.8,
    "label": "USDA SR Legacy 167763: Tamarinds, raw",
    "phosphorus_mg": 113.0,
    "potassium_mg": 628.0,
-   "sodium_mg": 28.0
+   "sodium_mg": 28.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.1
   },
   "167765": {
+   "b12_ug": 0.0,
    "calcium_mg": 7.0,
    "folate_ug": 3.0,
    "iron_mg": 0.24,
    "label": "USDA SR Legacy 167765: Watermelon, raw",
    "phosphorus_mg": 11.0,
    "potassium_mg": 112.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.1
   },
   "168150": {
+   "b12_ug": 0.0,
    "calcium_mg": 19.0,
    "folate_ug": null,
    "iron_mg": 0.19,
    "label": "USDA SR Legacy 168150: Java-plum, (jambolan), raw",
    "phosphorus_mg": 17.0,
    "potassium_mg": 79.0,
-   "sodium_mg": 14.0
+   "sodium_mg": 14.0,
+   "vitd_ug": null,
+   "zinc_mg": null
   },
   "168153": {
+   "b12_ug": 0.0,
    "calcium_mg": 34.0,
    "folate_ug": 25.0,
    "iron_mg": 0.31,
    "label": "USDA SR Legacy 168153: Kiwifruit, green, raw",
    "phosphorus_mg": 34.0,
    "potassium_mg": 312.0,
-   "sodium_mg": 3.0
+   "sodium_mg": 3.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.14
   },
   "168165": {
+   "b12_ug": 0.0,
    "calcium_mg": 62.0,
    "folate_ug": 5.0,
    "iron_mg": 1.79,
    "label": "USDA SR Legacy 168165: Raisins, dark, seedless (Includes foods for USDA's Food Distribution Program)",
    "phosphorus_mg": 98.0,
    "potassium_mg": 744.0,
-   "sodium_mg": 26.0
+   "sodium_mg": 26.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.36
   },
   "168191": {
+   "b12_ug": null,
    "calcium_mg": 64.0,
    "folate_ug": 15.0,
    "iron_mg": 0.9,
    "label": "USDA SR Legacy 168191: Dates, medjool",
    "phosphorus_mg": 62.0,
    "potassium_mg": 696.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.44
   },
   "168389": {
+   "b12_ug": 0.0,
    "calcium_mg": 24.0,
    "folate_ug": 52.0,
    "iron_mg": 2.14,
    "label": "USDA SR Legacy 168389: Asparagus, raw",
    "phosphorus_mg": 52.0,
    "potassium_mg": 202.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.54
   },
   "168393": {
+   "b12_ug": 0.0,
    "calcium_mg": 19.0,
    "folate_ug": 72.0,
    "iron_mg": 0.43,
    "label": "USDA SR Legacy 168393: Balsam-pear (bitter gourd), pods, raw",
    "phosphorus_mg": 31.0,
    "potassium_mg": 296.0,
-   "sodium_mg": 5.0
+   "sodium_mg": 5.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.8
   },
   "168409": {
+   "b12_ug": 0.0,
    "calcium_mg": 16.0,
    "folate_ug": 7.0,
    "iron_mg": 0.28,
    "label": "USDA SR Legacy 168409: Cucumber, with peel, raw",
    "phosphorus_mg": 24.0,
    "potassium_mg": 147.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.2
   },
   "168411": {
+   "b12_ug": 0.0,
    "calcium_mg": 63.0,
    "folate_ug": 311.0,
    "iron_mg": 2.27,
    "label": "USDA SR Legacy 168411: Edamame, frozen, prepared",
    "phosphorus_mg": 169.0,
    "potassium_mg": 436.0,
-   "sodium_mg": 6.0
+   "sodium_mg": 6.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.37
   },
   "168448": {
+   "b12_ug": 0.0,
    "calcium_mg": 21.0,
    "folate_ug": 16.0,
    "iron_mg": 0.8,
    "label": "USDA SR Legacy 168448: Pumpkin, raw",
    "phosphorus_mg": 44.0,
    "potassium_mg": 340.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.32
   },
   "168462": {
+   "b12_ug": 0.0,
    "calcium_mg": 99.0,
    "folate_ug": 194.0,
    "iron_mg": 2.71,
    "label": "USDA SR Legacy 168462: Spinach, raw",
    "phosphorus_mg": 49.0,
    "potassium_mg": 558.0,
-   "sodium_mg": 79.0
+   "sodium_mg": 79.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.53
   },
   "168482": {
+   "b12_ug": 0.0,
    "calcium_mg": 30.0,
    "folate_ug": 11.0,
    "iron_mg": 0.61,
    "label": "USDA SR Legacy 168482: Sweet potato, raw, unprepared (Includes foods for USDA's Food Distribution Program)",
    "phosphorus_mg": 47.0,
    "potassium_mg": 337.0,
-   "sodium_mg": 55.0
+   "sodium_mg": 55.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.3
   },
   "168871": {
+   "b12_ug": 0.0,
    "calcium_mg": 3.0,
    "folate_ug": 19.0,
    "iron_mg": 0.63,
    "label": "USDA SR Legacy 168871: Millet, cooked",
    "phosphorus_mg": 100.0,
    "potassium_mg": 62.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.91
   },
   "168893": {
+   "b12_ug": 0.0,
    "calcium_mg": 34.0,
    "folate_ug": 44.0,
    "iron_mg": 3.6,
    "label": "USDA SR Legacy 168893: Wheat flour, whole-grain (Includes foods for USDA's Food Distribution Program)",
    "phosphorus_mg": 357.0,
    "potassium_mg": 363.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 2.6
   },
   "168917": {
+   "b12_ug": 0.0,
    "calcium_mg": 17.0,
    "folate_ug": 42.0,
    "iron_mg": 1.49,
    "label": "USDA SR Legacy 168917: Quinoa, cooked",
    "phosphorus_mg": 152.0,
    "potassium_mg": 172.0,
-   "sodium_mg": 7.0
+   "sodium_mg": 7.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.09
   },
   "168927": {
+   "b12_ug": 0.0,
    "calcium_mg": 21.0,
    "folate_ug": 18.0,
    "iron_mg": 1.3,
    "label": "USDA SR Legacy 168927: Pasta, dry, unenriched",
    "phosphorus_mg": 189.0,
    "potassium_mg": 223.0,
-   "sodium_mg": 6.0
+   "sodium_mg": 6.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.41
   },
   "169097": {
+   "b12_ug": 0.0,
    "calcium_mg": 40.0,
    "folate_ug": 30.0,
    "iron_mg": 0.1,
    "label": "USDA SR Legacy 169097: Oranges, raw, all commercial varieties",
    "phosphorus_mg": 14.0,
    "potassium_mg": 181.0,
-   "sodium_mg": 0.0
+   "sodium_mg": 0.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.07
   },
   "169118": {
+   "b12_ug": 0.0,
    "calcium_mg": 9.0,
    "folate_ug": 7.0,
    "iron_mg": 0.18,
    "label": "USDA SR Legacy 169118: Pears, raw",
    "phosphorus_mg": 12.0,
    "potassium_mg": 116.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.1
   },
   "169124": {
+   "b12_ug": 0.0,
    "calcium_mg": 13.0,
    "folate_ug": 18.0,
    "iron_mg": 0.29,
    "label": "USDA SR Legacy 169124: Pineapple, raw, all varieties",
    "phosphorus_mg": 8.0,
    "potassium_mg": 109.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.12
   },
   "169134": {
+   "b12_ug": 0.0,
    "calcium_mg": 10.0,
    "folate_ug": 38.0,
    "iron_mg": 0.3,
    "label": "USDA SR Legacy 169134: Pomegranates, raw",
    "phosphorus_mg": 36.0,
    "potassium_mg": 236.0,
-   "sodium_mg": 3.0
+   "sodium_mg": 3.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.35
   },
   "169145": {
+   "b12_ug": 0.0,
    "calcium_mg": 16.0,
    "folate_ug": 109.0,
    "iron_mg": 0.8,
    "label": "USDA SR Legacy 169145: Beets, raw",
    "phosphorus_mg": 40.0,
    "potassium_mg": 325.0,
-   "sodium_mg": 78.0
+   "sodium_mg": 78.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.35
   },
   "169228": {
+   "b12_ug": 0.0,
    "calcium_mg": 9.0,
    "folate_ug": 22.0,
    "iron_mg": 0.23,
    "label": "USDA SR Legacy 169228: Eggplant, raw",
    "phosphorus_mg": 24.0,
    "potassium_mg": 229.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.16
   },
   "169230": {
+   "b12_ug": 0.0,
    "calcium_mg": 181.0,
    "folate_ug": 3.0,
    "iron_mg": 1.7,
    "label": "USDA SR Legacy 169230: Garlic, raw",
    "phosphorus_mg": 153.0,
    "potassium_mg": 401.0,
-   "sodium_mg": 17.0
+   "sodium_mg": 17.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.16
   },
   "169231": {
+   "b12_ug": 0.0,
    "calcium_mg": 16.0,
    "folate_ug": 11.0,
    "iron_mg": 0.6,
    "label": "USDA SR Legacy 169231: Ginger root, raw",
    "phosphorus_mg": 34.0,
    "potassium_mg": 415.0,
-   "sodium_mg": 13.0
+   "sodium_mg": 13.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.34
   },
   "169250": {
+   "b12_ug": 0.0,
    "calcium_mg": 45.0,
    "folate_ug": 13.0,
    "iron_mg": 1.16,
    "label": "USDA SR Legacy 169250: Lotus root, raw",
    "phosphorus_mg": 100.0,
    "potassium_mg": 556.0,
-   "sodium_mg": 40.0
+   "sodium_mg": 40.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.39
   },
   "169251": {
+   "b12_ug": 0.04,
    "calcium_mg": 3.0,
    "folate_ug": 17.0,
    "iron_mg": 0.5,
    "label": "USDA SR Legacy 169251: Mushrooms, white, raw",
    "phosphorus_mg": 86.0,
    "potassium_mg": 318.0,
-   "sodium_mg": 5.0
+   "sodium_mg": 5.0,
+   "vitd_ug": 0.2,
+   "zinc_mg": 0.52
   },
   "169260": {
+   "b12_ug": 0.0,
    "calcium_mg": 82.0,
    "folate_ug": 60.0,
    "iron_mg": 0.62,
    "label": "USDA SR Legacy 169260: Okra, raw",
    "phosphorus_mg": 61.0,
    "potassium_mg": 299.0,
-   "sodium_mg": 7.0
+   "sodium_mg": 7.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.58
   },
   "169291": {
+   "b12_ug": 0.0,
    "calcium_mg": 16.0,
    "folate_ug": 24.0,
    "iron_mg": 0.37,
    "label": "USDA SR Legacy 169291: Squash, summer, zucchini, includes skin, raw",
    "phosphorus_mg": 38.0,
    "potassium_mg": 261.0,
-   "sodium_mg": 8.0
+   "sodium_mg": 8.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.32
   },
   "169308": {
+   "b12_ug": 0.0,
    "calcium_mg": 43.0,
    "folate_ug": 22.0,
    "iron_mg": 0.55,
    "label": "USDA SR Legacy 169308: Taro, raw",
    "phosphorus_mg": 84.0,
    "potassium_mg": 591.0,
-   "sodium_mg": 11.0
+   "sodium_mg": 11.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.23
   },
   "169407": {
+   "b12_ug": 0.0,
    "calcium_mg": 54.0,
    "folate_ug": 58.0,
    "iron_mg": 7.28,
    "label": "USDA SR Legacy 169407: Seeds, watermelon seed kernels, dried",
    "phosphorus_mg": 755.0,
    "potassium_mg": 648.0,
-   "sodium_mg": 99.0
+   "sodium_mg": 99.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 10.24
   },
   "169414": {
+   "b12_ug": 0.0,
    "calcium_mg": 255.0,
    "folate_ug": 87.0,
    "iron_mg": 5.73,
    "label": "USDA SR Legacy 169414: Seeds, flaxseed",
    "phosphorus_mg": 642.0,
    "potassium_mg": 813.0,
-   "sodium_mg": 30.0
+   "sodium_mg": 30.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 4.34
   },
   "169640": {
+   "b12_ug": 0.0,
    "calcium_mg": 6.0,
    "folate_ug": 2.0,
    "iron_mg": 0.42,
    "label": "USDA SR Legacy 169640: Honey",
    "phosphorus_mg": 4.0,
    "potassium_mg": 52.0,
-   "sodium_mg": 4.0
+   "sodium_mg": 4.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.22
   },
   "169655": {
+   "b12_ug": 0.0,
    "calcium_mg": 1.0,
    "folate_ug": 0.0,
    "iron_mg": 0.05,
    "label": "USDA SR Legacy 169655: Sugars, granulated",
    "phosphorus_mg": 0.0,
    "potassium_mg": 2.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.01
   },
   "169704": {
+   "b12_ug": 0.0,
    "calcium_mg": 3.0,
    "folate_ug": 9.0,
    "iron_mg": 0.56,
    "label": "USDA SR Legacy 169704: Rice, brown, long-grain, cooked (Includes foods for USDA's Food Distribution Program)",
    "phosphorus_mg": 103.0,
    "potassium_mg": 86.0,
-   "sodium_mg": 4.0
+   "sodium_mg": 4.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.71
   },
   "169715": {
+   "b12_ug": 0.0,
    "calcium_mg": 17.0,
    "folate_ug": 261.0,
    "iron_mg": 4.36,
    "label": "USDA SR Legacy 169715: Semolina, enriched",
    "phosphorus_mg": 136.0,
    "potassium_mg": 186.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.05
   },
   "169717": {
+   "b12_ug": 0.0,
    "calcium_mg": 20.0,
    "folate_ug": 4.0,
    "iron_mg": 1.58,
    "label": "USDA SR Legacy 169717: Tapioca, pearl, dry",
    "phosphorus_mg": 7.0,
    "potassium_mg": 11.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.12
   },
   "169756": {
+   "b12_ug": 0.0,
    "calcium_mg": 28.0,
    "folate_ug": 8.0,
    "iron_mg": 0.8,
    "label": "USDA SR Legacy 169756: Rice, white, long-grain, regular, raw, unenriched",
    "phosphorus_mg": 115.0,
    "potassium_mg": 115.0,
-   "sodium_mg": 5.0
+   "sodium_mg": 5.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.09
   },
   "169757": {
+   "b12_ug": 0.0,
    "calcium_mg": 10.0,
    "folate_ug": 3.0,
    "iron_mg": 0.2,
    "label": "USDA SR Legacy 169757: Rice, white, long-grain, regular, unenriched, cooked without salt",
    "phosphorus_mg": 43.0,
    "potassium_mg": 35.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.49
   },
   "169761": {
+   "b12_ug": 0.0,
    "calcium_mg": 15.0,
    "folate_ug": 26.0,
    "iron_mg": 1.17,
    "label": "USDA SR Legacy 169761: Wheat flour, white, all-purpose, unenriched",
    "phosphorus_mg": 108.0,
    "potassium_mg": 107.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.7
   },
   "169910": {
+   "b12_ug": 0.0,
    "calcium_mg": 11.0,
    "folate_ug": 43.0,
    "iron_mg": 0.16,
    "label": "USDA SR Legacy 169910: Mangos, raw",
    "phosphorus_mg": 14.0,
    "potassium_mg": 168.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.09
   },
   "169926": {
+   "b12_ug": 0.0,
    "calcium_mg": 20.0,
    "folate_ug": 37.0,
    "iron_mg": 0.25,
    "label": "USDA SR Legacy 169926: Papayas, raw",
    "phosphorus_mg": 10.0,
    "potassium_mg": 182.0,
-   "sodium_mg": 8.0
+   "sodium_mg": 8.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.08
   },
   "169957": {
+   "b12_ug": 0.0,
    "calcium_mg": 13.0,
    "folate_ug": 61.0,
    "iron_mg": 0.91,
    "label": "USDA SR Legacy 169957: Mung beans, mature seeds, sprouted, raw",
    "phosphorus_mg": 54.0,
    "potassium_mg": 149.0,
-   "sodium_mg": 6.0
+   "sodium_mg": 6.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.41
   },
   "169961": {
+   "b12_ug": 0.0,
    "calcium_mg": 37.0,
    "folate_ug": 33.0,
    "iron_mg": 1.03,
    "label": "USDA SR Legacy 169961: Beans, snap, green, raw",
    "phosphorus_mg": 38.0,
    "potassium_mg": 211.0,
-   "sodium_mg": 6.0
+   "sodium_mg": 6.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.24
   },
   "169967": {
+   "b12_ug": 0.0,
    "calcium_mg": 40.0,
    "folate_ug": 108.0,
    "iron_mg": 0.67,
    "label": "USDA SR Legacy 169967: Broccoli, cooked, boiled, drained, without salt",
    "phosphorus_mg": 67.0,
    "potassium_mg": 293.0,
-   "sodium_mg": 41.0
+   "sodium_mg": 41.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.45
   },
   "169975": {
+   "b12_ug": 0.0,
    "calcium_mg": 40.0,
    "folate_ug": 43.0,
    "iron_mg": 0.47,
    "label": "USDA SR Legacy 169975: Cabbage, raw",
    "phosphorus_mg": 26.0,
    "potassium_mg": 170.0,
-   "sodium_mg": 18.0
+   "sodium_mg": 18.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.18
   },
   "169986": {
+   "b12_ug": 0.0,
    "calcium_mg": 22.0,
    "folate_ug": 57.0,
    "iron_mg": 0.42,
    "label": "USDA SR Legacy 169986: Cauliflower, raw",
    "phosphorus_mg": 44.0,
    "potassium_mg": 299.0,
-   "sodium_mg": 30.0
+   "sodium_mg": 30.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.27
   },
   "169997": {
+   "b12_ug": 0.0,
    "calcium_mg": 67.0,
    "folate_ug": 62.0,
    "iron_mg": 1.77,
    "label": "USDA SR Legacy 169997: Coriander (cilantro) leaves, raw",
    "phosphorus_mg": 48.0,
    "potassium_mg": 521.0,
-   "sodium_mg": 46.0
+   "sodium_mg": 46.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.5
   },
   "169999": {
+   "b12_ug": 0.0,
    "calcium_mg": 3.0,
    "folate_ug": 23.0,
    "iron_mg": 0.45,
    "label": "USDA SR Legacy 169999: Corn, sweet, yellow, cooked, boiled, drained, without salt",
    "phosphorus_mg": 77.0,
    "potassium_mg": 218.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.62
   },
   "170000": {
+   "b12_ug": 0.0,
    "calcium_mg": 23.0,
    "folate_ug": 19.0,
    "iron_mg": 0.21,
    "label": "USDA SR Legacy 170000: Onions, raw",
    "phosphorus_mg": 29.0,
    "potassium_mg": 146.0,
-   "sodium_mg": 4.0
+   "sodium_mg": 4.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.17
   },
   "170026": {
+   "b12_ug": 0.0,
    "calcium_mg": 12.0,
    "folate_ug": 15.0,
    "iron_mg": 0.81,
    "label": "USDA SR Legacy 170026: Potatoes, flesh and skin, raw",
    "phosphorus_mg": 57.0,
    "potassium_mg": 425.0,
-   "sodium_mg": 6.0
+   "sodium_mg": 6.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.3
   },
   "170071": {
+   "b12_ug": 0.0,
    "calcium_mg": 17.0,
    "folate_ug": 23.0,
    "iron_mg": 0.54,
    "label": "USDA SR Legacy 170071: Yam, raw",
    "phosphorus_mg": 55.0,
    "potassium_mg": 816.0,
-   "sodium_mg": 9.0
+   "sodium_mg": 9.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.24
   },
   "170108": {
+   "b12_ug": 0.0,
    "calcium_mg": 7.0,
    "folate_ug": 46.0,
    "iron_mg": 0.43,
    "label": "USDA SR Legacy 170108: Peppers, sweet, red, raw",
    "phosphorus_mg": 26.0,
    "potassium_mg": 211.0,
-   "sodium_mg": 4.0
+   "sodium_mg": 4.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.25
   },
   "170148": {
+   "b12_ug": null,
    "calcium_mg": 70.0,
    "folate_ug": 110.0,
    "iron_mg": 7.95,
    "label": "USDA SR Legacy 170148: Seeds, hemp seed, hulled",
    "phosphorus_mg": 1650.0,
    "potassium_mg": 1200.0,
-   "sodium_mg": 5.0
+   "sodium_mg": 5.0,
+   "vitd_ug": null,
+   "zinc_mg": 9.9
   },
   "170150": {
+   "b12_ug": 0.0,
    "calcium_mg": 975.0,
    "folate_ug": 97.0,
    "iron_mg": 14.55,
    "label": "USDA SR Legacy 170150: Seeds, sesame seeds, whole, dried",
    "phosphorus_mg": 629.0,
    "potassium_mg": 468.0,
-   "sodium_mg": 11.0
+   "sodium_mg": 11.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 7.75
   },
   "170162": {
+   "b12_ug": 0.0,
    "calcium_mg": 37.0,
    "folate_ug": 25.0,
    "iron_mg": 6.68,
    "label": "USDA SR Legacy 170162: Nuts, cashew nuts, raw",
    "phosphorus_mg": 593.0,
    "potassium_mg": 660.0,
-   "sodium_mg": 12.0
+   "sodium_mg": 12.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 5.78
   },
   "170169": {
+   "b12_ug": 0.0,
    "calcium_mg": 14.0,
    "folate_ug": 26.0,
    "iron_mg": 2.43,
    "label": "USDA SR Legacy 170169: Nuts, coconut meat, raw",
    "phosphorus_mg": 113.0,
    "potassium_mg": 356.0,
-   "sodium_mg": 20.0
+   "sodium_mg": 20.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.1
   },
   "170172": {
+   "b12_ug": 0.0,
    "calcium_mg": 16.0,
    "folate_ug": 16.0,
    "iron_mg": 1.64,
    "label": "USDA SR Legacy 170172: Nuts, coconut milk, raw (liquid expressed from grated meat and water)",
    "phosphorus_mg": 100.0,
    "potassium_mg": 263.0,
-   "sodium_mg": 15.0
+   "sodium_mg": 15.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.67
   },
   "170174": {
+   "b12_ug": 0.0,
    "calcium_mg": 24.0,
    "folate_ug": 3.0,
    "iron_mg": 0.29,
    "label": "USDA SR Legacy 170174: Nuts, coconut water (liquid from coconuts)",
    "phosphorus_mg": 20.0,
    "potassium_mg": 250.0,
-   "sodium_mg": 105.0
+   "sodium_mg": 105.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.1
   },
   "170184": {
+   "b12_ug": 0.0,
    "calcium_mg": 105.0,
    "folate_ug": 51.0,
    "iron_mg": 3.92,
    "label": "USDA SR Legacy 170184: Nuts, pistachio nuts, raw",
    "phosphorus_mg": 490.0,
    "potassium_mg": 1025.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 2.2
   },
   "170187": {
+   "b12_ug": 0.0,
    "calcium_mg": 98.0,
    "folate_ug": 98.0,
    "iron_mg": 2.91,
    "label": "USDA SR Legacy 170187: Nuts, walnuts, english",
    "phosphorus_mg": 346.0,
    "potassium_mg": 441.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 3.09
   },
   "170285": {
+   "b12_ug": 0.0,
    "calcium_mg": 11.0,
    "folate_ug": 16.0,
    "iron_mg": 1.33,
    "label": "USDA SR Legacy 170285: Barley, pearled, cooked",
    "phosphorus_mg": 54.0,
    "potassium_mg": 93.0,
-   "sodium_mg": 3.0
+   "sodium_mg": 3.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.82
   },
   "170287": {
+   "b12_ug": 0.0,
    "calcium_mg": 10.0,
    "folate_ug": 18.0,
    "iron_mg": 0.96,
    "label": "USDA SR Legacy 170287: Bulgur, cooked",
    "phosphorus_mg": 40.0,
    "potassium_mg": 68.0,
-   "sodium_mg": 5.0
+   "sodium_mg": 5.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.57
   },
   "170393": {
+   "b12_ug": 0.0,
    "calcium_mg": 33.0,
    "folate_ug": 19.0,
    "iron_mg": 0.3,
    "label": "USDA SR Legacy 170393: Carrots, raw",
    "phosphorus_mg": 35.0,
    "potassium_mg": 320.0,
-   "sodium_mg": 69.0
+   "sodium_mg": 69.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.24
   },
   "170420": {
+   "b12_ug": 0.0,
    "calcium_mg": 27.0,
    "folate_ug": 63.0,
    "iron_mg": 1.54,
    "label": "USDA SR Legacy 170420: Peas, green, cooked, boiled, drained, without salt",
    "phosphorus_mg": 117.0,
    "potassium_mg": 271.0,
-   "sodium_mg": 3.0
+   "sodium_mg": 3.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.19
   },
   "170457": {
+   "b12_ug": 0.0,
    "calcium_mg": 10.0,
    "folate_ug": 15.0,
    "iron_mg": 0.27,
    "label": "USDA SR Legacy 170457: Tomatoes, red, ripe, raw, year round average",
    "phosphorus_mg": 24.0,
    "potassium_mg": 237.0,
-   "sodium_mg": 5.0
+   "sodium_mg": 5.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.17
   },
   "170483": {
+   "b12_ug": 0.0,
    "calcium_mg": 30.0,
    "folate_ug": 44.0,
    "iron_mg": 0.36,
    "label": "USDA SR Legacy 170483: Drumstick pods, raw",
    "phosphorus_mg": 50.0,
    "potassium_mg": 461.0,
-   "sodium_mg": 42.0
+   "sodium_mg": 42.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.45
   },
   "170497": {
+   "b12_ug": 0.0,
    "calcium_mg": 18.0,
    "folate_ug": 23.0,
    "iron_mg": 1.2,
    "label": "USDA SR Legacy 170497: Peppers, hot chili, green, raw",
    "phosphorus_mg": 46.0,
    "potassium_mg": 340.0,
-   "sodium_mg": 7.0
+   "sodium_mg": 7.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.3
   },
   "170554": {
+   "b12_ug": 0.0,
    "calcium_mg": 631.0,
    "folate_ug": 49.0,
    "iron_mg": 7.72,
    "label": "USDA SR Legacy 170554: Seeds, chia seeds, dried",
    "phosphorus_mg": 860.0,
    "potassium_mg": 407.0,
-   "sodium_mg": 16.0
+   "sodium_mg": 16.0,
+   "vitd_ug": null,
+   "zinc_mg": 4.58
   },
   "170556": {
+   "b12_ug": 0.0,
    "calcium_mg": 46.0,
    "folate_ug": 58.0,
    "iron_mg": 8.82,
    "label": "USDA SR Legacy 170556: Seeds, pumpkin and squash seed kernels, dried",
    "phosphorus_mg": 1233.0,
    "potassium_mg": 809.0,
-   "sodium_mg": 7.0
+   "sodium_mg": 7.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 7.81
   },
   "170562": {
+   "b12_ug": 0.0,
    "calcium_mg": 78.0,
    "folate_ug": 227.0,
    "iron_mg": 5.25,
    "label": "USDA SR Legacy 170562: Seeds, sunflower seed kernels, dried",
    "phosphorus_mg": 660.0,
    "potassium_mg": 645.0,
-   "sodium_mg": 9.0
+   "sodium_mg": 9.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 5.0
   },
   "170567": {
+   "b12_ug": 0.0,
    "calcium_mg": 269.0,
    "folate_ug": 44.0,
    "iron_mg": 3.71,
    "label": "USDA SR Legacy 170567: Nuts, almonds",
    "phosphorus_mg": 481.0,
    "potassium_mg": 733.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 3.12
   },
   "170580": {
+   "b12_ug": 0.0,
    "calcium_mg": 11.0,
    "folate_ug": 23.0,
    "iron_mg": 2.28,
    "label": "USDA SR Legacy 170580: Nuts, coconut cream, raw (liquid expressed from grated meat)",
    "phosphorus_mg": 122.0,
    "potassium_mg": 325.0,
-   "sodium_mg": 4.0
+   "sodium_mg": 4.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.96
   },
   "170591": {
+   "b12_ug": 0.0,
    "calcium_mg": 16.0,
    "folate_ug": 34.0,
    "iron_mg": 5.53,
    "label": "USDA SR Legacy 170591: Nuts, pine nuts, dried",
    "phosphorus_mg": 575.0,
    "potassium_mg": 597.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 6.45
   },
   "170683": {
+   "b12_ug": null,
    "calcium_mg": 47.0,
    "folate_ug": 22.0,
    "iron_mg": 2.1,
    "label": "USDA SR Legacy 170683: Amaranth grain, cooked",
    "phosphorus_mg": 148.0,
    "potassium_mg": 135.0,
-   "sodium_mg": 6.0
+   "sodium_mg": 6.0,
+   "vitd_ug": null,
+   "zinc_mg": 0.86
   },
   "170686": {
+   "b12_ug": 0.0,
    "calcium_mg": 7.0,
    "folate_ug": 14.0,
    "iron_mg": 0.8,
    "label": "USDA SR Legacy 170686: Buckwheat groats, roasted, cooked",
    "phosphorus_mg": 70.0,
    "potassium_mg": 88.0,
-   "sodium_mg": 4.0
+   "sodium_mg": 4.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.61
+  },
+  "170851": {
+   "b12_ug": 0.85,
+   "calcium_mg": 206.0,
+   "folate_ug": 4.0,
+   "iron_mg": 0.13,
+   "label": "USDA SR Legacy 170851: Cheese, ricotta, whole milk",
+   "phosphorus_mg": 154.0,
+   "potassium_mg": 219.0,
+   "sodium_mg": 110.0,
+   "vitd_ug": 0.2,
+   "zinc_mg": 0.53
   },
   "170859": {
+   "b12_ug": 0.16,
    "calcium_mg": 66.0,
    "folate_ug": 4.0,
    "iron_mg": 0.1,
    "label": "USDA SR Legacy 170859: Cream, fluid, heavy whipping",
    "phosphorus_mg": 58.0,
    "potassium_mg": 95.0,
-   "sodium_mg": 27.0
+   "sodium_mg": 27.0,
+   "vitd_ug": 1.6,
+   "zinc_mg": 0.24
   },
   "170886": {
+   "b12_ug": 0.56,
    "calcium_mg": 183.0,
    "folate_ug": 11.0,
    "iron_mg": 0.08,
    "label": "USDA SR Legacy 170886: Yogurt, plain, low fat",
    "phosphorus_mg": 144.0,
    "potassium_mg": 234.0,
-   "sodium_mg": 70.0
+   "sodium_mg": 70.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.89
   },
   "170919": {
+   "b12_ug": 0.0,
    "calcium_mg": 383.0,
    "folate_ug": null,
    "iron_mg": 13.97,
    "label": "USDA SR Legacy 170919: Spices, cardamom",
    "phosphorus_mg": 178.0,
    "potassium_mg": 1119.0,
-   "sodium_mg": 18.0
+   "sodium_mg": 18.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 7.47
   },
   "170922": {
+   "b12_ug": 0.0,
    "calcium_mg": 709.0,
    "folate_ug": 0.0,
    "iron_mg": 16.32,
    "label": "USDA SR Legacy 170922: Spices, coriander seed",
    "phosphorus_mg": 409.0,
    "potassium_mg": 1267.0,
-   "sodium_mg": 35.0
+   "sodium_mg": 35.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 4.7
   },
   "170923": {
+   "b12_ug": 0.0,
    "calcium_mg": 931.0,
    "folate_ug": 10.0,
    "iron_mg": 66.36,
    "label": "USDA SR Legacy 170923: Spices, cumin seed",
    "phosphorus_mg": 499.0,
    "potassium_mg": 1788.0,
-   "sodium_mg": 168.0
+   "sodium_mg": 168.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 4.8
   },
   "170926": {
+   "b12_ug": 0.0,
    "calcium_mg": 114.0,
    "folate_ug": 13.0,
    "iron_mg": 19.8,
    "label": "USDA SR Legacy 170926: Spices, ginger, ground",
    "phosphorus_mg": 168.0,
    "potassium_mg": 1320.0,
-   "sodium_mg": 27.0
+   "sodium_mg": 27.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 3.64
   },
   "170929": {
+   "b12_ug": 0.0,
    "calcium_mg": 266.0,
    "folate_ug": 162.0,
    "iron_mg": 9.21,
    "label": "USDA SR Legacy 170929: Spices, mustard seed, ground",
    "phosphorus_mg": 828.0,
    "potassium_mg": 738.0,
-   "sodium_mg": 13.0
+   "sodium_mg": 13.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 6.08
   },
   "170931": {
+   "b12_ug": 0.0,
    "calcium_mg": 443.0,
    "folate_ug": 17.0,
    "iron_mg": 9.71,
    "label": "USDA SR Legacy 170931: Spices, pepper, black",
    "phosphorus_mg": 158.0,
    "potassium_mg": 1329.0,
-   "sodium_mg": 20.0
+   "sodium_mg": 20.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.19
   },
   "171013": {
+   "b12_ug": 0.0,
    "calcium_mg": 0.0,
    "folate_ug": 0.0,
    "iron_mg": 0.07,
    "label": "USDA SR Legacy 171013: Oil, rice bran",
    "phosphorus_mg": 0.0,
    "potassium_mg": 0.0,
-   "sodium_mg": 0.0
+   "sodium_mg": 0.0,
+   "vitd_ug": null,
+   "zinc_mg": 0.0
   },
   "171016": {
+   "b12_ug": 0.0,
    "calcium_mg": 0.0,
    "folate_ug": 0.0,
    "iron_mg": 0.0,
    "label": "USDA SR Legacy 171016: Oil, sesame, salad or cooking",
    "phosphorus_mg": 0.0,
    "potassium_mg": 0.0,
-   "sodium_mg": 0.0
+   "sodium_mg": 0.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.0
   },
   "171017": {
+   "b12_ug": 0.0,
    "calcium_mg": 0.0,
    "folate_ug": 0.0,
    "iron_mg": 0.03,
    "label": "USDA SR Legacy 171017: Oil, sunflower, linoleic (less than 60%)",
    "phosphorus_mg": 0.0,
    "potassium_mg": 0.0,
-   "sodium_mg": 0.0
+   "sodium_mg": 0.0,
+   "vitd_ug": null,
+   "zinc_mg": 0.0
   },
   "171282": {
+   "b12_ug": 0.28,
    "calcium_mg": 47.0,
    "folate_ug": 1.0,
    "iron_mg": 0.06,
    "label": "USDA SR Legacy 171282: Whey, sweet, fluid",
    "phosphorus_mg": 46.0,
    "potassium_mg": 161.0,
-   "sodium_mg": 54.0
+   "sodium_mg": 54.0,
+   "vitd_ug": null,
+   "zinc_mg": 0.13
   },
   "171284": {
+   "b12_ug": 0.37,
    "calcium_mg": 121.0,
    "folate_ug": 7.0,
    "iron_mg": 0.05,
    "label": "USDA SR Legacy 171284: Yogurt, plain, whole milk",
    "phosphorus_mg": 95.0,
    "potassium_mg": 155.0,
-   "sodium_mg": 46.0
+   "sodium_mg": 46.0,
+   "vitd_ug": 0.1,
+   "zinc_mg": 0.59
   },
   "171319": {
+   "b12_ug": 0.0,
    "calcium_mg": 330.0,
    "folate_ug": 28.0,
    "iron_mg": 17.3,
    "label": "USDA SR Legacy 171319: Spices, chili powder",
    "phosphorus_mg": 300.0,
    "potassium_mg": 1950.0,
-   "sodium_mg": 2867.0
+   "sodium_mg": 2867.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 4.3
   },
   "171320": {
+   "b12_ug": 0.0,
    "calcium_mg": 1002.0,
    "folate_ug": 6.0,
    "iron_mg": 8.32,
    "label": "USDA SR Legacy 171320: Spices, cinnamon, ground",
    "phosphorus_mg": 64.0,
    "potassium_mg": 431.0,
-   "sodium_mg": 10.0
+   "sodium_mg": 10.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.83
+  },
+  "171321": {
+   "b12_ug": 0.0,
+   "calcium_mg": 632.0,
+   "folate_ug": 25.0,
+   "iron_mg": 11.83,
+   "label": "USDA SR Legacy 171321: Spices, cloves, ground",
+   "phosphorus_mg": 104.0,
+   "potassium_mg": 1020.0,
+   "sodium_mg": 277.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 2.32
   },
   "171323": {
+   "b12_ug": 0.0,
    "calcium_mg": 1196.0,
    "folate_ug": null,
    "iron_mg": 18.54,
    "label": "USDA SR Legacy 171323: Spices, fennel seed",
    "phosphorus_mg": 487.0,
    "potassium_mg": 1694.0,
-   "sodium_mg": 88.0
+   "sodium_mg": 88.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 3.7
   },
   "171324": {
+   "b12_ug": 0.0,
    "calcium_mg": 176.0,
    "folate_ug": 57.0,
    "iron_mg": 33.53,
    "label": "USDA SR Legacy 171324: Spices, fenugreek seed",
    "phosphorus_mg": 296.0,
    "potassium_mg": 770.0,
-   "sodium_mg": 67.0
+   "sodium_mg": 67.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 2.5
   },
   "171410": {
+   "b12_ug": 0.0,
    "calcium_mg": 0.0,
    "folate_ug": 0.0,
    "iron_mg": 0.03,
    "label": "USDA SR Legacy 171410: Oil, peanut, salad or cooking",
    "phosphorus_mg": 0.0,
    "potassium_mg": 0.0,
-   "sodium_mg": 0.0
+   "sodium_mg": 0.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.01
   },
   "171412": {
+   "b12_ug": 0.0,
    "calcium_mg": 1.0,
    "folate_ug": 0.0,
    "iron_mg": 0.05,
    "label": "USDA SR Legacy 171412: Oil, coconut",
    "phosphorus_mg": 0.0,
    "potassium_mg": 0.0,
-   "sodium_mg": 0.0
+   "sodium_mg": 0.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.02
   },
   "171413": {
+   "b12_ug": 0.0,
    "calcium_mg": 1.0,
    "folate_ug": 0.0,
    "iron_mg": 0.56,
    "label": "USDA SR Legacy 171413: Oil, olive, salad or cooking",
    "phosphorus_mg": 0.0,
    "potassium_mg": 1.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.0
   },
   "171688": {
+   "b12_ug": 0.0,
    "calcium_mg": 6.0,
    "folate_ug": 3.0,
    "iron_mg": 0.12,
    "label": "USDA SR Legacy 171688: Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)",
    "phosphorus_mg": 11.0,
    "potassium_mg": 107.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.04
   },
   "171917": {
+   "b12_ug": 0.0,
    "calcium_mg": 0.0,
    "folate_ug": 0.0,
    "iron_mg": 0.02,
    "label": "USDA SR Legacy 171917: Beverages, tea, green, brewed, regular",
    "phosphorus_mg": 0.0,
    "potassium_mg": 8.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.01
   },
   "172179": {
+   "b12_ug": 0.43,
    "calcium_mg": 83.0,
    "folate_ug": 12.0,
    "iron_mg": 0.07,
    "label": "USDA SR Legacy 172179: Cheese, cottage, creamed, large or small curd",
    "phosphorus_mg": 159.0,
    "potassium_mg": 104.0,
-   "sodium_mg": 315.0
+   "sodium_mg": 315.0,
+   "vitd_ug": 0.1,
+   "zinc_mg": 0.4
   },
   "172217": {
+   "b12_ug": 0.45,
    "calcium_mg": 113.0,
    "folate_ug": 5.0,
    "iron_mg": 0.03,
    "label": "USDA SR Legacy 172217: Milk, whole, 3.25% milkfat, without added vitamin A and vitamin D",
    "phosphorus_mg": 84.0,
    "potassium_mg": 132.0,
-   "sodium_mg": 43.0
+   "sodium_mg": 43.0,
+   "vitd_ug": 0.1,
+   "zinc_mg": 0.37
   },
   "172231": {
+   "b12_ug": 0.0,
    "calcium_mg": 168.0,
    "folate_ug": 20.0,
    "iron_mg": 55.0,
    "label": "USDA SR Legacy 172231: Spices, turmeric, ground",
    "phosphorus_mg": 299.0,
    "potassium_mg": 2080.0,
-   "sodium_mg": 27.0
+   "sodium_mg": 27.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 4.5
   },
   "172337": {
+   "b12_ug": 0.0,
    "calcium_mg": 0.0,
    "folate_ug": 0.0,
    "iron_mg": 0.0,
    "label": "USDA SR Legacy 172337: Oil, mustard",
    "phosphorus_mg": 0.0,
    "potassium_mg": 0.0,
-   "sodium_mg": 0.0
+   "sodium_mg": 0.0,
+   "vitd_ug": null,
+   "zinc_mg": 0.0
   },
   "172421": {
+   "b12_ug": 0.0,
    "calcium_mg": 19.0,
    "folate_ug": 181.0,
    "iron_mg": 3.33,
    "label": "USDA SR Legacy 172421: Lentils, mature seeds, cooked, boiled, without salt",
    "phosphorus_mg": 180.0,
    "potassium_mg": 369.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.27
   },
   "172427": {
+   "b12_ug": 0.0,
    "calcium_mg": 53.0,
    "folate_ug": 94.0,
    "iron_mg": 1.75,
    "label": "USDA SR Legacy 172427: Mungo beans, mature seeds, cooked, boiled, without salt",
    "phosphorus_mg": 156.0,
    "potassium_mg": 231.0,
-   "sodium_mg": 7.0
+   "sodium_mg": 7.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.83
   },
   "172430": {
+   "b12_ug": 0.0,
    "calcium_mg": 92.0,
    "folate_ug": 240.0,
    "iron_mg": 4.58,
    "label": "USDA SR Legacy 172430: Peanuts, all types, raw",
    "phosphorus_mg": 376.0,
    "potassium_mg": 705.0,
-   "sodium_mg": 18.0
+   "sodium_mg": 18.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 3.27
   },
   "172436": {
+   "b12_ug": 0.0,
    "calcium_mg": 130.0,
    "folate_ug": 456.0,
    "iron_mg": 5.23,
    "label": "USDA SR Legacy 172436: Pigeon peas (red gram), mature seeds, raw",
    "phosphorus_mg": 367.0,
    "potassium_mg": 1392.0,
-   "sodium_mg": 17.0
+   "sodium_mg": 17.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 2.76
   },
   "172437": {
+   "b12_ug": 0.0,
    "calcium_mg": 43.0,
    "folate_ug": 111.0,
    "iron_mg": 1.11,
    "label": "USDA SR Legacy 172437: Pigeon peas (red gram), mature seeds, cooked, boiled, without salt",
    "phosphorus_mg": 119.0,
    "potassium_mg": 384.0,
-   "sodium_mg": 5.0
+   "sodium_mg": 5.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.9
+  },
+  "172446": {
+   "b12_ug": 0.0,
+   "calcium_mg": 25.0,
+   "folate_ug": 18.0,
+   "iron_mg": 0.64,
+   "label": "USDA SR Legacy 172446: Soymilk, original and vanilla, unfortified",
+   "phosphorus_mg": 52.0,
+   "potassium_mg": 118.0,
+   "sodium_mg": 51.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.12
   },
   "172476": {
+   "b12_ug": 0.0,
    "calcium_mg": 350.0,
    "folate_ug": 15.0,
    "iron_mg": 5.36,
    "label": "USDA SR Legacy 172476: Tofu, raw, regular, prepared with calcium sulfate",
    "phosphorus_mg": 97.0,
    "potassium_mg": 121.0,
-   "sodium_mg": 7.0
+   "sodium_mg": 7.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.8
   },
   "172688": {
+   "b12_ug": 0.0,
    "calcium_mg": 161.0,
    "folate_ug": 42.0,
    "iron_mg": 2.47,
    "label": "USDA SR Legacy 172688: Bread, whole-wheat, commercially prepared",
    "phosphorus_mg": 212.0,
    "potassium_mg": 254.0,
-   "sodium_mg": 455.0
+   "sodium_mg": 455.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.77
   },
   "173021": {
+   "b12_ug": 0.0,
    "calcium_mg": 35.0,
    "folate_ug": 6.0,
    "iron_mg": 0.37,
    "label": "USDA SR Legacy 173021: Figs, raw",
    "phosphorus_mg": 14.0,
    "potassium_mg": 232.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.15
   },
   "173044": {
+   "b12_ug": 0.0,
    "calcium_mg": 18.0,
    "folate_ug": 49.0,
    "iron_mg": 0.26,
    "label": "USDA SR Legacy 173044: Guavas, common, raw",
    "phosphorus_mg": 40.0,
    "potassium_mg": 417.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.23
   },
   "173232": {
+   "b12_ug": 0.0,
    "calcium_mg": 2.0,
    "folate_ug": 1.0,
    "iron_mg": 0.08,
    "label": "USDA SR Legacy 173232: Beverages, tea, herb, other than chamomile, brewed",
    "phosphorus_mg": 0.0,
    "potassium_mg": 9.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.04
   },
   "173412": {
+   "b12_ug": 0.01,
    "calcium_mg": 4.0,
    "folate_ug": 0.0,
    "iron_mg": 0.0,
    "label": "USDA SR Legacy 173412: Butter oil, anhydrous",
    "phosphorus_mg": 3.0,
    "potassium_mg": 5.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.01
   },
   "173430": {
+   "b12_ug": 0.17,
    "calcium_mg": 24.0,
    "folate_ug": 3.0,
    "iron_mg": 0.02,
    "label": "USDA SR Legacy 173430: Butter, without salt",
    "phosphorus_mg": 24.0,
    "potassium_mg": 24.0,
-   "sodium_mg": 11.0
+   "sodium_mg": 11.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.09
   },
   "173468": {
+   "b12_ug": 0.0,
    "calcium_mg": 24.0,
    "folate_ug": 0.0,
    "iron_mg": 0.33,
    "label": "USDA SR Legacy 173468: Salt, table",
    "phosphorus_mg": 0.0,
    "potassium_mg": 8.0,
-   "sodium_mg": 38758.0
+   "sodium_mg": 38758.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.1
   },
   "173474": {
+   "b12_ug": 0.0,
    "calcium_mg": 243.0,
    "folate_ug": 114.0,
    "iron_mg": 5.08,
    "label": "USDA SR Legacy 173474: Peppermint, fresh",
    "phosphorus_mg": 73.0,
    "potassium_mg": 569.0,
-   "sodium_mg": 31.0
+   "sodium_mg": 31.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.11
   },
   "173735": {
+   "b12_ug": 0.0,
    "calcium_mg": 27.0,
    "folate_ug": 149.0,
    "iron_mg": 2.1,
    "label": "USDA SR Legacy 173735: Beans, black, mature seeds, cooked, boiled, without salt",
    "phosphorus_mg": 140.0,
    "potassium_mg": 355.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.12
   },
   "173740": {
+   "b12_ug": 0.0,
    "calcium_mg": 35.0,
    "folate_ug": 130.0,
    "iron_mg": 2.22,
    "label": "USDA SR Legacy 173740: Beans, kidney, all types, mature seeds, cooked, boiled, without salt",
    "phosphorus_mg": 138.0,
    "potassium_mg": 405.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.0
   },
   "173756": {
+   "b12_ug": 0.0,
    "calcium_mg": 57.0,
    "folate_ug": 557.0,
    "iron_mg": 4.31,
    "label": "USDA SR Legacy 173756: Chickpeas (garbanzo beans, bengal gram), mature seeds, raw",
    "phosphorus_mg": 252.0,
    "potassium_mg": 718.0,
-   "sodium_mg": 24.0
+   "sodium_mg": 24.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 2.76
   },
   "173757": {
+   "b12_ug": 0.0,
    "calcium_mg": 49.0,
    "folate_ug": 172.0,
    "iron_mg": 2.89,
    "label": "USDA SR Legacy 173757: Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
    "phosphorus_mg": 168.0,
    "potassium_mg": 291.0,
-   "sodium_mg": 7.0
+   "sodium_mg": 7.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.53
   },
   "173759": {
+   "b12_ug": 0.0,
    "calcium_mg": 24.0,
    "folate_ug": 208.0,
    "iron_mg": 2.51,
    "label": "USDA SR Legacy 173759: Cowpeas, common (blackeyes, crowder, southern), mature seeds, cooked, boiled, without salt",
    "phosphorus_mg": 156.0,
    "potassium_mg": 278.0,
-   "sodium_mg": 4.0
-  },
-  "173768": {
-   "calcium_mg": 123.0,
-   "folate_ug": 7.0,
-   "iron_mg": 0.46,
-   "label": "USDA SR Legacy 173768: Soymilk, original and vanilla, light, unsweetened, with added calcium, vitamins A and D",
-   "phosphorus_mg": 103.0,
-   "potassium_mg": 117.0,
-   "sodium_mg": 63.0
+   "sodium_mg": 4.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.29
   },
   "173806": {
+   "b12_ug": 0.0,
    "calcium_mg": 58.0,
    "folate_ug": 97.0,
    "iron_mg": 1.58,
    "label": "USDA SR Legacy 173806: Peanuts, all types, dry-roasted, without salt",
    "phosphorus_mg": 363.0,
    "potassium_mg": 634.0,
-   "sodium_mg": 6.0
+   "sodium_mg": 6.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 2.77
+  },
+  "173904": {
+   "b12_ug": 0.0,
+   "calcium_mg": 52.0,
+   "folate_ug": 32.0,
+   "iron_mg": 4.25,
+   "label": "USDA SR Legacy 173904: Cereals, oats, regular and quick, not fortified, dry",
+   "phosphorus_mg": 410.0,
+   "potassium_mg": 362.0,
+   "sodium_mg": 6.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 3.64
   },
   "173905": {
+   "b12_ug": 0.0,
    "calcium_mg": 9.0,
    "folate_ug": 6.0,
    "iron_mg": 0.9,
    "label": "USDA SR Legacy 173905: Cereals, oats, regular and quick, unenriched, cooked with water (includes boiling and microwaving), without salt",
    "phosphorus_mg": 77.0,
    "potassium_mg": 70.0,
-   "sodium_mg": 4.0
+   "sodium_mg": 4.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.0
   },
   "173944": {
+   "b12_ug": 0.0,
    "calcium_mg": 5.0,
    "folate_ug": 20.0,
    "iron_mg": 0.26,
    "label": "USDA SR Legacy 173944: Bananas, raw",
    "phosphorus_mg": 22.0,
    "potassium_mg": 358.0,
-   "sodium_mg": 1.0
+   "sodium_mg": 1.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.15
   },
   "174257": {
+   "b12_ug": 0.0,
    "calcium_mg": 27.0,
    "folate_ug": 159.0,
    "iron_mg": 1.4,
    "label": "USDA SR Legacy 174257: Mung beans, mature seeds, cooked, boiled, without salt",
    "phosphorus_mg": 99.0,
    "potassium_mg": 266.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.84
   },
   "174259": {
+   "b12_ug": 0.0,
    "calcium_mg": 138.0,
    "folate_ug": 216.0,
    "iron_mg": 7.57,
    "label": "USDA SR Legacy 174259: Mungo beans, mature seeds, raw",
    "phosphorus_mg": 379.0,
    "potassium_mg": 983.0,
-   "sodium_mg": 38.0
+   "sodium_mg": 38.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 3.35
   },
   "174272": {
+   "b12_ug": 0.08,
    "calcium_mg": 111.0,
    "folate_ug": 24.0,
    "iron_mg": 2.7,
    "label": "USDA SR Legacy 174272: Tempeh",
    "phosphorus_mg": 266.0,
    "potassium_mg": 412.0,
-   "sodium_mg": 9.0
+   "sodium_mg": 9.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 1.14
+  },
+  "174275": {
+   "b12_ug": 0.0,
+   "calcium_mg": 241.0,
+   "folate_ug": 305.0,
+   "iron_mg": 9.24,
+   "label": "USDA SR Legacy 174275: Soy flour, defatted",
+   "phosphorus_mg": 674.0,
+   "potassium_mg": 2384.0,
+   "sodium_mg": 20.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 2.46
   },
   "174288": {
+   "b12_ug": 0.0,
    "calcium_mg": 45.0,
    "folate_ug": 437.0,
    "iron_mg": 4.86,
    "label": "USDA SR Legacy 174288: Chickpea flour (besan)",
    "phosphorus_mg": 318.0,
    "potassium_mg": 846.0,
-   "sodium_mg": 64.0
+   "sodium_mg": 64.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 2.81
   },
   "174683": {
+   "b12_ug": 0.0,
    "calcium_mg": 10.0,
    "folate_ug": 2.0,
    "iron_mg": 0.36,
    "label": "USDA SR Legacy 174683: Grapes, red or green (European type, such as Thompson seedless), raw",
    "phosphorus_mg": 20.0,
    "potassium_mg": 191.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 0.07
   },
   "174687": {
+   "b12_ug": 0.0,
    "calcium_mg": 24.0,
    "folate_ug": 24.0,
    "iron_mg": 0.23,
    "label": "USDA SR Legacy 174687: Jackfruit, raw",
    "phosphorus_mg": 21.0,
    "potassium_mg": 448.0,
-   "sodium_mg": 2.0
+   "sodium_mg": 2.0,
+   "vitd_ug": null,
+   "zinc_mg": 0.13
   },
-  "174832": {
-   "calcium_mg": 184.0,
-   "folate_ug": 1.0,
-   "iron_mg": 0.28,
-   "label": "USDA SR Legacy 174832: Beverages, almond milk, unsweetened, shelf stable",
-   "phosphorus_mg": 9.0,
-   "potassium_mg": 67.0,
-   "sodium_mg": 72.0
+  "175043": {
+   "b12_ug": 0.07,
+   "calcium_mg": 30.0,
+   "folate_ug": 2340.0,
+   "iron_mg": 2.17,
+   "label": "USDA SR Legacy 175043: Leavening agents, yeast, baker's, active dry",
+   "phosphorus_mg": 637.0,
+   "potassium_mg": 955.0,
+   "sodium_mg": 51.0,
+   "vitd_ug": 0.0,
+   "zinc_mg": 7.94
   }
  }
 }

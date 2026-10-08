@@ -319,6 +319,10 @@ _AYUR_TIPS: dict[str, str] = {
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
+# Dairy with enough lactose per serving to matter (a glass of milk is ~10 g).
+HIGH_LACTOSE_IDS = {"milk_full_fat", "cream", "lassi", "whey", "cottage_cheese"}
+
+
 def _seeded_rng(user_id: str, week: int, day: int) -> random.Random:
     seed = int(hashlib.md5(f"{user_id}|{week}|{day}".encode()).hexdigest(), 16) % (2**32)
     return random.Random(seed)
@@ -386,8 +390,12 @@ def filter_and_score_foods(user_profile: dict, diet_prefs: dict,
     blocked_categories: set[str] = set()
     for alg in food_allergies:
         blocked_categories.update(allergy_map.get(alg, []))
-    if "lactose" in food_intolerances:
-        blocked_categories.add("dairy")
+    # Lactose intolerance removes the high-lactose dairy, not all of it: curd and
+    # chaas are fermented and paneer loses most of its lactose with the whey, and
+    # removing them took a 66-year-old vegetarian with osteoporosis below her protein
+    # floor on all 28 days. The scan term list (`ALLERGEN_TERMS["lactose"]`) is the
+    # same decision.
+    lactose_ids = HIGH_LACTOSE_IDS if "lactose" in food_intolerances else set()
     blocked_categories.update(cond_rules["avoid_categories"])
 
     preferred_virya = _SEASON_VIRYA.get(season, "")
@@ -419,6 +427,8 @@ def filter_and_score_foods(user_profile: dict, diet_prefs: dict,
         # caller may pass a dict built before this key existed — a missing key must
         # mean "no conditions declared", never a KeyError mid-plan.
         if set(food.get("apathya_for") or ()) & cond_rules.get("conditions", set()):
+            continue
+        if fid in lactose_ids:
             continue
         if cat in blocked_categories:
             if "gluten" in food_allergies and cat == "grain":

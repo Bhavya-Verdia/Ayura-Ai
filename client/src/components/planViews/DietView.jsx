@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { mealsAPI, plansAPI } from '../../api/client'
 import {
-  Sun, Leaf, Coffee, AlertTriangle, Star, Droplets, ShieldCheck, Flame, Moon, Timer, Target, ChevronDown, ChevronUp, Flower2, UtensilsCrossed, Clock, Soup, Apple, CupSoda, BookOpen, TriangleAlert,
+  Sun, Leaf, Coffee, AlertTriangle, Star, Droplets, ShieldCheck, Flame, Moon, Timer, Target, ChevronDown, ChevronUp, Flower2, UtensilsCrossed, Clock, Soup, Apple, CupSoda, BookOpen, TriangleAlert, Languages,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { RemedyView } from './RemedyView'
@@ -35,7 +37,87 @@ function MacroBar({ macros }) {
 
 // ── LLM Meal Card (primary — for weekly_plan structure) ───────────────────────
 
-function LLMMealCard({ mealName, meal }) {
+// ── Meal log ──────────────────────────────────────────────────────────────────
+// Eaten / partly / skipped / swapped, per meal. The next plan reads it: a slot that is
+// usually skipped is kept light, foods left uneaten are used rarely, and with
+// weigh-ins the energy target moves (server/services/diet_log.py).
+const LOG_STATUSES = [
+  { key: 'eaten', label: 'Ate it' },
+  { key: 'partly', label: 'Some' },
+  { key: 'skipped', label: 'Skipped' },
+  { key: 'swapped', label: 'Ate something else' },
+]
+
+function MealLogBar({ log, onLog }) {
+  const [swapping, setSwapping] = useState(false)
+  const [text, setText] = useState(log?.swapped_with || '')
+  const status = log?.status
+  const choose = (key) => {
+    if (key === 'swapped') { setSwapping(true); return }
+    setSwapping(false)
+    onLog(status === key ? null : key)
+  }
+  return (
+    <div className="diet-log-bar" role="group" aria-label="Log this meal">
+      {LOG_STATUSES.map(s => (
+        <button key={s.key} type="button" aria-pressed={status === s.key}
+          className={`diet-log-btn${status === s.key ? ' is-on' : ''}`} onClick={() => choose(s.key)}>
+          {s.label}
+        </button>
+      ))}
+      {swapping && (
+        <form className="diet-log-swap" onSubmit={e => { e.preventDefault(); setSwapping(false); onLog('swapped', text) }}>
+          <input value={text} onChange={e => setText(e.target.value)} maxLength={120}
+            placeholder="What did you have instead? (optional)" aria-label="What you ate instead" />
+          <button type="submit" className="diet-log-btn">Save</button>
+        </form>
+      )}
+      {status === 'swapped' && log?.swapped_with && !swapping && (
+        <span className="diet-log-note">Had: {log.swapped_with}</span>
+      )}
+    </div>
+  )
+}
+
+function MealLogSummary({ planId, logs }) {
+  const [adapt, setAdapt] = useState(null)
+  const count = Object.keys(logs).length
+  useEffect(() => {
+    if (!planId) return
+    let live = true
+    mealsAPI.getAdaptation().then(r => { if (live) setAdapt(r.data) }).catch(() => {})
+    return () => { live = false }
+  }, [planId, count])
+  if (!count) {
+    return (
+      <p className="diet-energy-note">
+        Log each meal below — ate it, some, skipped, or something else. Your next plan is
+        built from what you actually ate.
+      </p>
+    )
+  }
+  const a = adapt?.adaptation || {}
+  const s = adapt?.summary || {}
+  const changes = [
+    ...(a.skipped_slots || []).map(slot => `${slot.replace(/_/g, ' ')} kept quick and light — you usually skip it`),
+    a.avoided_foods?.length ? `${a.avoided_foods.map(f => f.replace(/_/g, ' ')).join(', ')} used rarely — often left uneaten` : null,
+    a.energy_adjust_kcal ? `energy ${a.energy_adjust_kcal > 0 ? '+' : ''}${a.energy_adjust_kcal} kcal — ${a.energy_reason}` : null,
+  ].filter(Boolean)
+  return (
+    <div className="diet-log-summary">
+      <span>
+        {s.meals_logged || count} meals logged{s.adherence != null ? ` · ${Math.round(s.adherence * 100)}% eaten as planned` : ''}.
+      </span>
+      {changes.length > 0 ? (
+        <ul>{changes.map(c => <li key={c}>Next plan: {c}.</li>)}</ul>
+      ) : (
+        <span> Your next plan changes once there are 14 logged meals and enough of a pattern to act on.</span>
+      )}
+    </div>
+  )
+}
+
+function LLMMealCard({ mealName, meal, log, onLog }) {
   const [open, setOpen] = useState(false)
   const MealIcon = DIET_MEAL_ICONS[mealName] || UtensilsCrossed
   const label = mealName.charAt(0).toUpperCase() + mealName.slice(1)
@@ -74,6 +156,7 @@ function LLMMealCard({ mealName, meal }) {
           </div>
         </button>
       </h3>
+      {onLog && <MealLogBar log={log} onLog={onLog} />}
 
       {open && (
         <div className="diet-llm-body">
@@ -193,9 +276,11 @@ function DietSafetyBanner({ plan }) {
   // looks like an oversight, which is the lesson of the withheld Panchakarma Karma.
   const withheld = plan.withheld_recommendations || []
   const proseAlerts = plan.advisory_prose_alerts || []
+  // Meals in a script the checks cannot read: never passed as checked.
+  const unscannable = plan.unscannable_alerts || []
 
   if (!alerts.length && !viruddha.length && !condAlerts.length && !dietTypeAlerts.length
-      && !withheld.length && !proseAlerts.length) {
+      && !withheld.length && !proseAlerts.length && !unscannable.length) {
     if (unscanned.length || termsOnly.length) {
       // "Everything checked" would be false here: these conditions reached no
       // curated rule, no library claim and no usable classification.
@@ -240,6 +325,18 @@ function DietSafetyBanner({ plan }) {
               <li key={i}>
                 <strong>{a.week} · {a.day} · {a.meal_slot}</strong>: contains {(a.matched_terms || []).join(', ')}
               </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {unscannable.length > 0 && (
+        <div className="diet-safety-card allergen">
+          <h3 className="diet-safety-title">
+            <TriangleAlert size={13} /> Not verified — written in a script our safety checks cannot read
+          </h3>
+          <ul className="diet-safety-list">
+            {unscannable.map((u, i) => (
+              <li key={i}><strong>{u.week} · {u.day} · {u.meal_slot}</strong>: {u.script} script</li>
             ))}
           </ul>
         </div>
@@ -426,7 +523,9 @@ function NutrientTargetsCard({ plan }) {
     if (!m || m.average == null) return ''
     const days = micro.days_counted
     const hit = m.days_met ?? (m.days_over != null ? days - m.days_over : null)
-    return ` — this plan: ~${Math.round(m.average)} ${unit} a day${hit != null && days ? `, on target ${hit} of ${days} days` : ''}`
+    // B12 and vitamin D are a few micrograms: rounding 1.4 to 1 hides the figure.
+    const avg = m.average < 10 ? Math.round(m.average * 10) / 10 : Math.round(m.average)
+    return ` — this plan: ~${avg} ${unit} a day${hit != null && days ? `, on target ${hit} of ${days} days` : ''}`
   }
   const mineral = (key, label, unit) => t[key] && [label, `at least ${t[key].min} ${unit}${delivered(key, unit)}`]
   const unmeasured = micro.unmeasured_foods || []
@@ -440,6 +539,10 @@ function NutrientTargetsCard({ plan }) {
     mineral('iron_mg', 'Iron', 'mg'),
     mineral('calcium_mg', 'Calcium', 'mg'),
     mineral('folate_ug', 'Folate', 'µg'),
+    mineral('zinc_mg', 'Zinc', 'mg'),
+    mineral('b12_ug', 'Vitamin B12', 'µg'),
+    mineral('vitd_ug', 'Vitamin D', 'µg'),
+    mineral('iodine_ug', 'Iodine (from iodised salt)', 'µg'),
     t.added_sugar_g && ['Added sugar', t.added_sugar_g.max === 0 ? 'none' : `under ${t.added_sugar_g.max} g`],
     t.water_ml && ['Water', t.water_ml.target ? `about ${(t.water_ml.target / 1000).toFixed(1)} L` : 'as your doctor advises'],
   ].filter(Boolean)
@@ -458,7 +561,7 @@ function NutrientTargetsCard({ plan }) {
       {(micro.notices || []).map((n, i) => <p key={`m${i}`} className="diet-energy-note">{n}</p>)}
       {unmeasured.length > 0 && (
         <p className="diet-energy-note">
-          Minerals are not counted for {unmeasured.map(f => f.replace(/_/g, ' ')).join(', ')} — no
+          Minerals and vitamins are not counted for {unmeasured.map(f => f.replace(/_/g, ' ')).join(', ')} — no
           reliable composition data — so the figures above may run a little low.
         </p>
       )}
@@ -517,9 +620,85 @@ function ClinicalNotesCard({ plan }) {
   )
 }
 
-export function DietView({ plan }) {
+// Languages the plan can be READ in. The plan is generated and safety-checked in
+// English; a translation is an overlay of its display text (services/diet_translate.py)
+// and never what the checks read, because they cannot read other scripts.
+const PLAN_LANGUAGES = { hi: 'हिंदी', kn: 'ಕನ್ನಡ', ta: 'தமிழ்', sa: 'संस्कृतम्', es: 'Español', fr: 'Français', zh: '中文' }
+
+function withOverlay(plan, strings) {
+  if (!strings) return plan
+  const out = structuredClone(plan)
+  for (const [path, text] of Object.entries(strings)) {
+    const keys = path.split('.')
+    let node = out
+    for (const k of keys.slice(0, -1)) {
+      node = node?.[/^\d+$/.test(k) && Array.isArray(node) ? Number(k) : k]
+      if (node == null) break
+    }
+    const last = keys[keys.length - 1]
+    if (node != null && typeof node === 'object') node[Array.isArray(node) ? Number(last) : last] = text
+  }
+  return out
+}
+
+export function DietView({ plan: englishPlan }) {
+  const { i18n } = useTranslation()
+  const lang = (i18n.language || 'en').slice(0, 2)
+  const translatable = lang in PLAN_LANGUAGES && !!englishPlan.plan_id
+  const [showTranslated, setShowTranslated] = useState(false)
+  const [overlay, setOverlay] = useState(null)
+  const [translating, setTranslating] = useState(false)
+  const [translateError, setTranslateError] = useState(false)
+  const translated = showTranslated && overlay?.lang === lang
+  const plan = useMemo(
+    () => (translated ? withOverlay(englishPlan, overlay.strings) : englishPlan),
+    [translated, englishPlan, overlay],
+  )
+  const requestTranslation = async () => {
+    if (overlay?.lang === lang) { setShowTranslated(true); return }
+    setTranslating(true)
+    setTranslateError(false)
+    try {
+      const { data } = await plansAPI.translateDiet(englishPlan.plan_id, lang)
+      setOverlay(data)
+      setShowTranslated(true)
+    } catch {
+      setTranslateError(true)
+    } finally {
+      setTranslating(false)
+    }
+  }
   const [activeDay, setActiveDay] = useState(0)
   const [activeWeek, setActiveWeek] = useState(0)
+  // Logs are keyed to the English plan's id: a translation is the same plan.
+  const planId = englishPlan.plan_id
+  const [logs, setLogs] = useState({})
+  useEffect(() => {
+    if (!planId) return
+    let live = true
+    mealsAPI.getLogs(planId).then(r => {
+      if (!live) return
+      const map = {}
+      for (const l of r.data.logs || []) map[`${l.week}:${l.day}:${l.slot}`] = l
+      setLogs(map)
+    }).catch(() => {})
+    return () => { live = false }
+  }, [planId])
+  const logMeal = (week, day, slot) => async (status, swappedWith) => {
+    const k = `${week}:${day}:${slot}`
+    const prev = logs[k]
+    setLogs(m => {
+      const next = { ...m }
+      if (status) next[k] = { week, day, slot, status, swapped_with: swappedWith }
+      else delete next[k]
+      return next
+    })
+    try {
+      await mealsAPI.log({ plan_id: planId, week, day, slot, status, swapped_with: swappedWith || null })
+    } catch {
+      setLogs(m => { const next = { ...m }; if (prev) next[k] = prev; else delete next[k]; return next })
+    }
+  }
   const [timingOpen, setTimingOpen] = useState(false)
   const [spiceOpen, setSpiceOpen] = useState(false)
 
@@ -544,6 +723,10 @@ export function DietView({ plan }) {
   // Every week of a current plan is full detail. Plans generated before that carry
   // meal NAMES in weeks 2-4, and keep their compact rows.
   const fullDetail = typeof dayData.lunch === 'object' || typeof dayData.breakfast === 'object'
+  const weekNumber = currentWeek?.week_number || activeWeek + 1
+  // Only plans whose meals are stated as components can be logged: the log records
+  // which foods were eaten or left, and an older plan's meals name none.
+  const canLog = !!planId && fullDetail && !!dayData.lunch?.components
 
   // Fallback path: four_week_plan array
   const fallbackDays = (plan.four_week_plan?.[0]?.days) || []
@@ -552,6 +735,27 @@ export function DietView({ plan }) {
 
   return (
     <div className="diet-view">
+      {translatable && (
+        <div className="diet-translate-bar">
+          <Languages size={13} />
+          {translated ? (
+            <>
+              <span>
+                Translated into {PLAN_LANGUAGES[lang]} from your English plan. The food-safety
+                checks were run on the English version{overlay.kept_english > 0 ? `; ${overlay.kept_english} lines that could not be verified are left in English` : ''}.
+              </span>
+              <button type="button" className="diet-translate-btn" onClick={() => setShowTranslated(false)}>Show English</button>
+            </>
+          ) : (
+            <>
+              <span>{translateError ? 'Translation failed — the English plan is shown.' : 'This plan is in English.'}</span>
+              <button type="button" className="diet-translate-btn" onClick={requestTranslation} disabled={translating}>
+                {translating ? 'Translating…' : `Read in ${PLAN_LANGUAGES[lang]}`}
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* ── Header ── */}
       {plan.plan_title && (
@@ -715,10 +919,13 @@ export function DietView({ plan }) {
               </div>
             </div>
           )}
+          {canLog && <MealLogSummary planId={planId} logs={logs} />}
           <div className="diet-meals-section">
             {['breakfast', 'lunch', 'snack', 'dinner'].map(meal => (
               dayData[meal] && (
-                <LLMMealCard key={meal} mealName={meal} meal={dayData[meal]} />
+                <LLMMealCard key={meal} mealName={meal} meal={dayData[meal]}
+                  log={logs[`${weekNumber}:${currentDayName}:${meal}`]}
+                  onLog={canLog ? logMeal(weekNumber, currentDayName, meal) : null} />
               )
             ))}
           </div>

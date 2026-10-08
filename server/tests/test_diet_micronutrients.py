@@ -42,13 +42,13 @@ def test_a_missing_value_is_declared_never_a_silent_zero():
     for fid, row in dn.micronutrients().items():
         if row["sodium_mg"] is None:
             assert row["source"].startswith("not available"), fid
-            assert all(row[k] is None for k in dn.MICROS), fid
+            assert all(row[k] is None for k in dn.TABLE_MICROS), fid
         else:
             # A sourced row may lack one nutrient its source did not measure (SR
             # Legacy has no folate for jamun, cardamom or fennel): that one
             # is not counted. Sodium is never the missing one — it marks the row.
-            present = [k for k in dn.MICROS if row[k] is not None]
-            assert len(present) >= 5 and all(row[k] >= 0 for k in present), fid
+            present = [k for k in dn.TABLE_MICROS if row[k] is not None]
+            assert len(present) >= 7 and all(row[k] >= 0 for k in present), fid
 
 
 @pytest.mark.parametrize("fid,key,low,high", [

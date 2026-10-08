@@ -70,6 +70,9 @@ LEGUMES = [
       nutrition=N(30, 3.0, 5.9, 0.2, 1.8, source="usda"),
       **{**_L, "meal": ("breakfast", "snack"), "prep_minutes": 5}),
 
+    # Dietitian decision, 2026-10: not Apathya in acidity. Masura is the pulse the
+    # texts give in Raktapitta, a Pitta disorder; removing it left acidity patients
+    # one dal (moong).
     F("Masura (Masoor Dal)", id="masoor_dal", prep_state="cooked",
       rasa=("madhura", "kashaya"), guna=("laghu", "ruksha"), virya="ushna",
       vipaka="katu",
@@ -77,7 +80,7 @@ LEGUMES = [
                "motions and is the legume withheld in constipation.",
       dosha=(1, 0, -1), ritu=("shishira", "hemanta", "varsha"),
       pathya_for=("grahani", "obesity"),
-      apathya_for=("constipation", "acidity"),
+      apathya_for=("constipation",),
       nutrition=N(116, 9.0, 20.1, 0.4, 7.9, source="usda"), **_L),
 
     F("Masura (Whole Brown Lentil)", id="lentils_brown", prep_state="cooked",
@@ -184,22 +187,31 @@ LEGUMES = [
          "varga": "No nighantu entry — a New World crop. Reasoned from the Shimbi "
                   "Varga as guru, ruksha and Vata-vardhaka. Extrapolated, not cited."}),
 
+    # Dietitian decision, 2026-10: no PCOS or thyroid claim on soy. Soy isoflavones
+    # improve insulin resistance in PCOS (Jamilian & Asemi, JCEM 2016) and do not cause
+    # hypothyroidism with adequate iodine; the levothyroxine note keeps them 4 h from the
+    # tablet instead (ATA 2014). The claims were modern extrapolations the evidence runs against.
     F("Soya Chunks", id="soya_chunks", prep_state="cooked",
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha"), virya="shita", vipaka="katu",
       dosha=(2, 0, 0), ritu=("hemanta", "shishira"),
-      apathya_for=("hypothyroid", "thyroid", "ibs", "pcos", "bloating"), allergen=True,
+      apathya_for=("ibs", "bloating"), allergen=True,
       nutrition=N(105, 15.0, 8.0, 0.5, 4.0, source="authored_estimate"),
       **{**_L, "ref": "modern_extrapolated",
          "varga": "No nighantu entry, and the defatted extrusion has no dravya "
-                  "analogue at all. Reasoned from the Shimbi Varga as guru and ruksha; "
-                  "the thyroid caution is modern and does not come from the texts. "
+                  "analogue at all. Reasoned from the Shimbi Varga as guru and ruksha. "
                   "Extrapolated, not cited."}),
 
+    # Dietitian decision, 2026-10: no PCOS or thyroid claim on soy. Soy isoflavones
+    # improve insulin resistance in PCOS (Jamilian & Asemi, JCEM 2016) and do not cause
+    # hypothyroidism with adequate iodine; the levothyroxine note keeps them 4 h from the
+    # tablet instead (ATA 2014). The claims were modern extrapolations the evidence runs against.
+    # Firm tofu is low-FODMAP (the oligosaccharides go with the whey), so no IBS
+    # claim either (Monash University FODMAP data). Soy milk from whole beans keeps it.
     F("Tofu (Firm)", id="tofu_firm", prep_state="prepared",
       rasa=("madhura", "kashaya"), guna=("guru", "picchila"), virya="shita",
       vipaka="madhura",
       dosha=(1, -1, 1), ritu=("grishma", "sharad"),
-      apathya_for=("hypothyroid", "thyroid", "ibs", "pcos", "bloating"), allergen=True,
+      apathya_for=("bloating",), allergen=True,
       nutrition=N(76, 8.1, 1.9, 4.8, 0.3, source="usda"),
       **{**_L, "ref": "modern_extrapolated",
          "varga": "No classical entry. Reasoned from the Shimbi Varga curdled as "

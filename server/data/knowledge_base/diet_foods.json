@@ -2518,10 +2518,7 @@
     },
     "pathya_for": [],
     "apathya_for": [
-      "hypothyroid",
-      "thyroid",
       "ibs",
-      "pcos",
       "bloating"
     ],
     "viruddha_with": [],
@@ -2723,10 +2720,6 @@
     },
     "pathya_for": [],
     "apathya_for": [
-      "hypothyroid",
-      "thyroid",
-      "ibs",
-      "pcos",
       "bloating"
     ],
     "viruddha_with": [],
@@ -4779,8 +4772,7 @@
       "obesity"
     ],
     "apathya_for": [
-      "constipation",
-      "acidity"
+      "constipation"
     ],
     "viruddha_with": [],
     "meal_suitable": [
@@ -5658,10 +5650,7 @@
     },
     "pathya_for": [],
     "apathya_for": [
-      "hypothyroid",
-      "thyroid",
       "ibs",
-      "pcos",
       "bloating"
     ],
     "viruddha_with": [],
@@ -5678,7 +5667,7 @@
     "common_allergen": true,
     "nighantu_ref": {
       "text": "modern_extrapolated",
-      "varga": "No nighantu entry, and the defatted extrusion has no dravya analogue at all. Reasoned from the Shimbi Varga as guru and ruksha; the thyroid caution is modern and does not come from the texts. Extrapolated, not cited."
+      "varga": "No nighantu entry, and the defatted extrusion has no dravya analogue at all. Reasoned from the Shimbi Varga as guru and ruksha. Extrapolated, not cited."
     },
     "reviewed": false
   },
@@ -5727,10 +5716,6 @@
     },
     "pathya_for": [],
     "apathya_for": [
-      "hypothyroid",
-      "thyroid",
-      "ibs",
-      "pcos",
       "bloating"
     ],
     "viruddha_with": [],
@@ -6006,7 +5991,6 @@
       "constipation"
     ],
     "apathya_for": [
-      "acidity",
       "obesity",
       "high_cholesterol",
       "psoriasis"
@@ -9023,9 +9007,7 @@
       "constipation",
       "bloating"
     ],
-    "apathya_for": [
-      "acidity"
-    ],
+    "apathya_for": [],
     "viruddha_with": [],
     "meal_suitable": [
       "lunch",
@@ -9095,8 +9077,7 @@
       "hypertension"
     ],
     "apathya_for": [
-      "diabetes",
-      "acidity"
+      "diabetes"
     ],
     "viruddha_with": [],
     "meal_suitable": [

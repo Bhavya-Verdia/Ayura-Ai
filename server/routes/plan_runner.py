@@ -67,6 +67,7 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
     # This key is an allowlist, so a newly wired profile field is invisible to it
     # until named here — the plan changes and the cache serves the old one.
     from services.panchakarma_engine import _menstruation_active
+    from services.diet_log import fingerprint as _diet_log_fingerprint
 
     relevant_data = {
         "dosha": user_profile.get("dominant_dosha"),
@@ -126,6 +127,10 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
         # Shamana plan in cache after the observation went stale, and the raw
         # `menstrual_phase_at` would bust every user's cache on every check-in.
         "menstruation_active": _menstruation_active(user_profile),
+        # What the meal log changes in the next diet plan — the adaptation's
+        # fingerprint, not the log: logging a meal must not bill a regeneration.
+        "diet_log": (_diet_log_fingerprint(user_profile["diet_log"])
+                     if user_profile.get("diet_log") else None),
         "feature_prefs": feature_prefs
     }
     pref_hash = hashlib.sha256(json.dumps(relevant_data, sort_keys=True).encode()).hexdigest()
@@ -367,6 +372,12 @@ async def _generate_feature_via_engine_impl(
             # so a holistic plan skipped the dietary-type check and the condition
             # food floor that the per-feature endpoint applied.
             from services.diet_llm_generator import build_diet_plan
+            # Both paths read the meal log, as both gym paths read the workout log.
+            from services.diet_log import diet_history
+            if db is not None and user_id:
+                hist = await diet_history(db, user_id, goal=(prefs or {}).get("diet_goal"),
+                                          bmi_category=profile.get("bmi_category"))
+                profile = {**profile, "diet_log": hist["adaptation"]}
             return await build_diet_plan(profile, prefs, _kb("diet_foods"))
 
         if plan_type == "panchakarma":

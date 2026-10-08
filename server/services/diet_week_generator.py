@@ -75,7 +75,8 @@ Per-meal kcal budget: breakfast ~{b} | lunch ~{l} | snack ~{s} | dinner ~{d}. \
 Protein at least {protein} g per day. Carbohydrate about {carbs} g per day. Fat about \
 {fat} g per day in total — ghee or oil 1-2 tsp (5-10 g) per main meal, not more.{carb_rule}
 Salt: list it as a component ("salt", grams) in every savoury meal — about {salt_g} g a day \
-in all; the plan's sodium is counted from it.{micro_rule}
+in all; the plan's sodium and iodine are counted from it. Use "salt" (iodised) for cooking; \
+"rock_salt" only on a fasting day, because it carries no iodine.{micro_rule}
 Real portions: at most 2 katori (300 g) of cooked rice or grain, or 3 roti, per meal; at most \
 2 katori of any one vegetable; at most 40 g nuts. For a high energy target, use denser foods \
 (roti, paratha, poha, paneer or tofu, a glass of milk or plant milk, nuts) — never a mountain of rice.
@@ -278,15 +279,16 @@ def _scan(plan: dict, allergies, intolerances, dietary_type, conditions, extra_t
           pregnant) -> dict[tuple, list[str]]:
     """{(week, day, slot): [reasons]} from the same three scans the plan ships with."""
     from services.ahara_safety import (apply_ahara_safety, apply_condition_food_safety,
-                                       apply_dietary_type_safety)
+                                       apply_dietary_type_safety, apply_script_guard)
     probe = {"diet_weeks": json.loads(json.dumps(plan["diet_weeks"]))}
+    probe = apply_script_guard(probe)
     probe = apply_ahara_safety(probe, allergies, intolerances)
     probe = apply_dietary_type_safety(probe, dietary_type)
     probe = apply_condition_food_safety(probe, conditions, extra_terms=extra_terms,
                                         pregnant=pregnant)
     found: dict[tuple, list[str]] = {}
     for key in ("safety_alerts", "dietary_type_alerts", "condition_safety_alerts",
-                "viruddha_ahara_detected"):
+                "viruddha_ahara_detected", "unscannable_alerts"):
         for a in probe.get(key) or []:
             wk = str(a.get("week", "")).replace("Week ", "")
             try:
@@ -611,6 +613,21 @@ def _trim_salt(day: dict, energy: dict) -> None:
         _finish_meal_inplace(day[s])
 
 
+def _iodised_salt(day: dict) -> None:
+    """Cook with iodised salt. Saindhava carries no iodine, and a plan salted with it
+    every day leaves the patient's iodine at whatever the dairy happens to bring; it
+    stays on fasting days, where tradition asks for it. The prompt says so too, but a
+    prompt is a request."""
+    for s in _COUNTED:
+        meal = day.get(s)
+        comps = (meal or {}).get("components") or []
+        if any(c["food"] == "rock_salt" for c in comps):
+            for c in comps:
+                if c["food"] == "rock_salt":
+                    c["food"] = "salt"
+            _finish_meal_inplace(meal)
+
+
 # ── Minerals ─────────────────────────────────────────────────────────────────
 # What a dietitian adds when a day is short of calcium, iron or potassium: an
 # ordinary side, in the meal it is usually eaten with. Scaling portions cannot fix
@@ -626,7 +643,10 @@ _MINERAL_SIDES = (
     ("tofu_firm", 80, "dinner", "a side of tofu"),
     ("paneer", 40, "dinner", "a little paneer"),
     ("sesame_seeds_til", 10, "snack", "a spoon of roasted til"),
-    ("ragi_flour", 30, "snack", "a cup of ragi malt"),
+    # Not "ragi malt", its everyday name: "malt" is barley malt in the coeliac
+    # screen, and the phrase is appended after the scans, so it shipped as a gluten
+    # alert on a gluten-free food.
+    ("ragi_flour", 30, "snack", "a cup of ragi kanji"),
     ("methi_fenugreek_leaves", 60, "lunch", "a side of methi saag"),
     ("cluster_beans_gavar", 80, "dinner", "a side of gavar"),
     ("pumpkin_seeds", 10, "snack", "a spoon of pumpkin seeds"),
@@ -634,7 +654,10 @@ _MINERAL_SIDES = (
     ("banana", 100, "snack", "a banana"),
     ("coconut_water", 200, "snack", "a glass of coconut water"),
 )
-_MINERAL_KEYS = ("calcium_mg", "iron_mg", "potassium_mg")
+# Zinc and B12 are closed the same way: dairy carries B12 and seeds and ragi carry
+# zinc. Vitamin D and iodine are not — food carries almost no vitamin D, and iodine
+# comes from iodised salt — so they are reported and explained instead.
+_MINERAL_KEYS = ("calcium_mg", "iron_mg", "potassium_mg", "zinc_mg", "b12_ug")
 # Spinach calcium is bound to oxalate and barely absorbed; it is counted in the
 # totals, as the tables do, but never chosen to supply calcium.
 _POOR_CALCIUM = {"spinach", "palak"}
@@ -744,22 +767,58 @@ def _micro_report(weeks: list[dict], energy: dict, fasting: set) -> dict:
 # (Anaemia Mukt Bharat for iron and folic acid). Where the plan's food falls short
 # the patient is told so, and told who decides about a tablet.
 _MINERAL_ADVICE = {
-    "iron_mg": ("iron", "Ask your doctor whether you need an iron-folic acid tablet, and "
-                "have your haemoglobin checked. Eat a vitamin C food (amla, guava, lemon) "
+    "iron_mg": ("iron", "mg", "Ask your doctor whether you need an iron-folic acid tablet, "
+                "and have your haemoglobin checked. Eat a vitamin C food (amla, guava, lemon) "
                 "with your meals, and keep tea and coffee an hour away from them."),
-    "calcium_mg": ("calcium", "Ask your doctor whether you need a calcium and vitamin D "
-                   "supplement."),
+    "calcium_mg": ("calcium", "mg", "Ask your doctor whether you need a calcium and vitamin "
+                   "D supplement."),
+    "zinc_mg": ("zinc", "mg", "Soaking, sprouting and fermenting pulses and grains frees "
+                "the zinc their phytate holds. Ask your doctor before taking a zinc tablet."),
+    # B12 is made only by bacteria; no plant food is a reliable source, so a vegan
+    # plan is always below target, and dairy reaches it only in generous amounts.
+    "b12_ug": ("vitamin B12", "µg", "There is no reliable plant source of B12 — a vegan or "
+               "low-dairy diet needs a B12 supplement or a B12-fortified food. Ask your "
+               "doctor to check your B12 and advise a dose."),
+    # Food is not where vitamin D comes from; the figure is shown so nobody assumes it is.
+    "vitd_ug": ("vitamin D", "µg", "Vitamin D comes mainly from sunlight on the skin, not "
+                "from food: 15-30 minutes of midday sun on the arms and legs on most days. "
+                "Ask your doctor to check your vitamin D level and whether you need a "
+                "supplement."),
+    "iodine_ug": ("iodine", "µg", "Cook with iodised salt — rock salt (saindhava) and sea "
+                  "salt sold loose carry no added iodine. If your doctor has you on very "
+                  "little salt, ask whether you need iodine from another source."),
 }
+
+
+# Iodine is counted from iodised salt at the legal MINIMUM (15 ppm), and nothing
+# else: at the WHO salt limit that reads as 45-75 ug for every plan, while dairy,
+# grains and salt above the minimum supply the rest. Told to everyone, it would be
+# noise. It is said where it matters — pregnancy and breastfeeding (250 ug), and a
+# plan with under 2 g of iodised salt a day.
+_IODINE_LOW_SALT_UG = 30
+
+
+def _iodine_notice(row: dict) -> bool:
+    lo, avg = row.get("min"), row.get("average")
+    if not lo or avg is None:
+        return False
+    return lo >= 250 or avg < _IODINE_LOW_SALT_UG
 
 
 def _mineral_notices(report: dict) -> list[str]:
     notes = []
-    for key, (label, advice) in _MINERAL_ADVICE.items():
+    for key, (label, unit, advice) in _MINERAL_ADVICE.items():
         row = report.get(key) or {}
         lo, avg = row.get("min"), row.get("average")
+        if key == "iodine_ug":
+            if _iodine_notice(row):
+                notes.append(f"The iodised salt in this plan gives about {round(avg)} µg of "
+                             f"iodine a day; you need about {lo} µg. {advice}")
+            continue
         if lo and avg is not None and avg < 0.9 * lo:
-            notes.append(f"The food in this plan gives about {round(avg)} mg of {label} a "
-                         f"day; you need about {lo} mg. {advice}")
+            shown = round(avg, 1) if unit == "µg" and avg < 10 else round(avg)
+            notes.append(f"The food in this plan gives about {shown} {unit} of {label} a "
+                         f"day; you need about {lo} {unit}. {advice}")
     return notes
 
 
@@ -775,6 +834,8 @@ def finalise_weeks(weeks: list[dict], energy: dict, fasting: set,
     for w in weeks:
         for d in DAYS:
             day = w["daily_plan"][d]
+            if not day.get("is_fasting"):
+                _iodised_salt(day)
             if allowed_ids and not renal and not day.get("is_fasting"):
                 # Sides first, so the solver sizes the whole plate to the energy band;
                 # then once more for what the solver's trimming took back.

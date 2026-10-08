@@ -139,7 +139,7 @@ def test_every_schema_intolerance_has_a_term_list():
 
 
 @pytest.mark.parametrize("intolerance,meal,ingredient", [
-    ("lactose", "Paneer Paratha with Curd", "paneer"),
+    ("lactose", "Kheer with Warm Milk", "milk"),
     ("fructose", "Mango Shrikhand with Honey", "honey"),
     ("histamine", "Idli with Coconut Chutney", "idli"),
     ("fodmap", "Rajma Chawal with Onion Salad", "rajma"),
@@ -148,6 +148,15 @@ def test_a_declared_intolerance_actually_fires(intolerance, meal, ingredient):
     plan = _plan({"lunch": {"meal_name": meal, "key_ingredients": [ingredient]}})
     out = apply_ahara_safety(plan, [], [intolerance])
     assert out["allergen_safe"] is False, f"{intolerance} did not fire on {meal}"
+
+
+def test_fermented_and_strained_dairy_is_not_flagged_for_lactose():
+    """Curd, chaas and paneer carry little lactose per serving (NIH Consensus 2010:
+    most people with lactose intolerance manage 12 g at a sitting). Flagging them
+    left a lactose-intolerant vegetarian with no dairy protein at all."""
+    plan = _plan({"lunch": {"meal_name": "Paneer Bhurji with Curd and Chaas",
+                            "key_ingredients": ["paneer", "curd", "buttermilk"]}})
+    assert apply_ahara_safety(plan, [], ["lactose"])["allergen_safe"] is True
 
 
 def test_ghee_is_not_flagged_for_lactose():

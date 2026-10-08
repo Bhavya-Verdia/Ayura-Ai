@@ -245,7 +245,7 @@ async def generate_diet_plan_llm(
         # flagging the finished meals.
         from services.ahara_safety import (
             apply_advisory_safety, apply_ahara_safety, apply_condition_food_safety,
-            apply_dietary_type_safety, classify_condition_apathya_llm,
+            apply_dietary_type_safety, apply_script_guard, classify_condition_apathya_llm,
         )
         from services.diet_brief_builder import uncurated_conditions
         from services.diet_energy import energy_target
@@ -316,6 +316,7 @@ async def generate_diet_plan_llm(
         # The same deterministic layers as before. Composition from the screened list
         # and the repair pass mean they should find nothing; they still run, so the
         # plan reports what was checked rather than assuming it.
+        result = apply_script_guard(result)
         result = apply_ahara_safety(result, allergies, intolerances)
         result = apply_dietary_type_safety(result, diet_prefs.get("dietary_type"))
         result = apply_condition_food_safety(
@@ -355,7 +356,7 @@ async def build_diet_plan(
     logger.warning("LLM diet generation failed; falling back to the rule engine")
     from services.ahara_safety import (
         apply_advisory_safety, apply_ahara_safety, apply_condition_food_safety,
-        apply_dietary_type_safety, classify_condition_apathya_llm,
+        apply_dietary_type_safety, apply_script_guard, classify_condition_apathya_llm,
     )
     from services.diet_brief_builder import uncurated_conditions
     from services.diet_energy import energy_target
@@ -393,6 +394,7 @@ async def build_diet_plan(
         "fasting_notice": fasting_withheld_reason(user_profile, diet_prefs),
         **_clinical(user_profile, conds),
     })
+    plan = apply_script_guard(plan)
     plan = apply_ahara_safety(
         plan, diet_allergies(user_profile, diet_prefs),
         diet_prefs.get("food_intolerances") or [])
