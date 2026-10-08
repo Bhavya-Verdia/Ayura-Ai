@@ -858,6 +858,16 @@ vegetarian_day`, which is what that test is for.
   survives in Western digits and a portion line keeps its item count. Otherwise it
   stays English. `DietView` offers "Read in …" and always "Show English".
 
+**The screen's own labels are separate from the plan.** `DietView` writes every string as
+`t('diet.key', 'English')`. `scripts/diet_view_strings.py --write` extracts them into
+`en.json`, and `scripts/translate_diet_view.py` produces the other seven locales.
+`tests/test_diet_view_i18n.py` holds all eight to the same keys and placeholders.
+Read the generated set, don't just run the script. The first set had:
+- a Sanskrit "Ate it" that meant "not eaten"
+- Hindi breakfast and snack sharing one word
+- Ayurvedic terms in Latin letters inside Devanagari
+- the Sanskrit for "alkali" where "spice" was meant
+
 Never write a translation into the plan's own fields. The guard would catch it as
 unverified, but the plan would stop being one anyone checked.
 

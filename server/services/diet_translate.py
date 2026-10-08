@@ -39,10 +39,17 @@ _DRINK_FIELDS = ("name", "when", "recipe", "rationale", "portion")
 _SLOTS = ("breakfast", "lunch", "snack", "dinner")
 _PROSE = ("plan_title", "plan_description", "condition_coaching", "hydration_guidance",
           "fasting_guidance", "seasonal_note", "ahar_vidhi", "motivational_note",
-          "fasting_notice")
+          "fasting_notice", "ayurvedic_tips", "disclaimer")
+# Read on screen and missed by the first cut, found when the screen's own labels were
+# translated and these stayed English beside them.
+_NESTED = (("therapeutic_arc", "arc"), ("therapeutic_arc", "basis"),
+           ("meal_timing", "general_note"), ("meal_timing", "wake_up_drink"),
+           ("meal_timing", "bedtime_drink"))
 _LISTS = (("pathya_apathya", "pathya"), ("pathya_apathya", "apathya"),
           ("pathya_apathya", "viruddha_ahara_warnings"), ("nutrient_targets", "notes"),
-          ("energy_reconciliation", "micronutrients", "notices"))
+          ("energy_reconciliation", "micronutrients", "notices"),
+          ("energy_prescription", "notes"), ("energy_reconciliation", "residual_notes"),
+          ("therapeutic_arc", "withheld"))
 _BATCH = 80
 
 SYSTEM = (
@@ -51,7 +58,10 @@ SYSTEM = (
     "ingredient, quantity, time or instruction. Keep every number exactly as written, "
     "in Western digits (0-9), with its unit. Use the everyday local name of each food "
     "a cook in that language would recognise; keep Sanskrit Ayurvedic terms (Agni, "
-    "Pitta, Pathya) in the target script. Keep the ' · ' separators in portion lines. "
+    "Pitta, Pathya, and phase names such as Brimhana or Sthairya) as Sanskrit, but "
+    "written in the target language's script — बृंहण, not Brimhana, in Hindi; never "
+    "leave Latin letters in an Indian-script translation. Keep the ' · ' separators in "
+    "portion lines. "
     "'Vegan' means no animal food at all, dairy included: never translate it with the "
     "word for vegetarian (in Hindi use वीगन, not शाकाहारी).")
 
@@ -80,9 +90,14 @@ def display_strings(plan: dict) -> dict[str, str]:
 
     for f in _PROSE:
         put((f,), plan.get(f))
+    for path in _NESTED:
+        put(path, _get(plan, path))
     for path in _LISTS:
         for i, v in enumerate(_get(plan, path) or []):
             put((*path, i), v)
+    for i, sp in enumerate(plan.get("spice_guide") or []):
+        if isinstance(sp, dict):
+            put(("spice_guide", i, "use"), sp.get("use"))
     for i, n in enumerate(plan.get("clinical_notes") or []):
         if isinstance(n, dict):
             put(("clinical_notes", i, "topic"), n.get("topic"))
@@ -93,6 +108,7 @@ def display_strings(plan: dict) -> dict[str, str]:
             put(("medication_interactions", i, "advice"), m.get("advice"))
     for wi, w in enumerate(plan.get("diet_weeks") or []):
         put(("diet_weeks", wi, "phase_description"), w.get("phase_description"))
+        put(("diet_weeks", wi, "phase"), w.get("phase"))
         for d, day in (w.get("daily_plan") or {}).items():
             put(("diet_weeks", wi, "daily_plan", d, "theme"), day.get("theme"))
             for s in _SLOTS:

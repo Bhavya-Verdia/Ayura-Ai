@@ -75,6 +75,19 @@ def test_every_display_string_is_collected_and_no_component_is():
     assert "pathya_apathya.pathya.0" in s
     # The drink's portion line was left English on screen until it was collected.
     assert "diet_weeks.0.daily_plan.Monday.special_drink.portion" in s
+
+
+def test_the_arc_notes_and_disclaimer_are_translated_too():
+    plan = {**_PLAN, "disclaimer": "AI-generated guidance.",
+            "therapeutic_arc": {"arc": "Samatva", "basis": "Balanced.", "withheld": ["No Rasayana."]},
+            "energy_prescription": {"notes": ["Underweight — 300 kcal added."]},
+            "spice_guide": [{"name": "Jeera", "use": "Kindles Agni."}],
+            "meal_timing": {"general_note": "Eat at fixed times."}}
+    s = dt.display_strings(plan)
+    for path in ("disclaimer", "therapeutic_arc.basis", "therapeutic_arc.withheld.0",
+                 "energy_prescription.notes.0", "spice_guide.0.use",
+                 "meal_timing.general_note", "diet_weeks.0.phase_description"):
+        assert path in s, path
     assert not any("components" in p for p in s)
 
 
