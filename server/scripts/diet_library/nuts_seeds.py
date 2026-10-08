@@ -24,13 +24,17 @@ NUTS_SEEDS = [
     # Dietitian decision, 2026-10: not Apathya in acidity. Soaked and peeled, as its
     # Prabhava note says, a small portion is not a reflux trigger; it is the one nut
     # left to an acidity plan.
+    # Dietitian decision, 2026-10: Pathya, not Apathya, in high cholesterol. About
+    # 40 g a day lowers LDL by ~5 mg/dL (Musa-Veloso, Nutr Rev 2016, 18 trials), almonds
+    # are one of the Portfolio diet's four pillars, and walnuts — the same guru-snigdha
+    # nut — were already Pathya here. The obesity claim stays: the portion is the risk.
     F("Badama (Almonds)", id="almonds",
       rasa=("madhura",), guna=("guru", "snigdha"), virya="ushna", vipaka="madhura",
       prabhava="Medhya, Balya and Vrishya — the actions that make Badama a Rasayana "
                "rather than a fat, and the reason it is soaked and peeled before use.",
       dosha=(-2, 1, 2), ritu=("shishira", "hemanta", "vasanta"),
-      pathya_for=("anemia", "constipation"),
-      apathya_for=("obesity", "high_cholesterol", "psoriasis"),
+      pathya_for=("anemia", "constipation", "high_cholesterol"),
+      apathya_for=("obesity", "psoriasis"),
       nutrition=N(579, 21.2, 21.6, 49.9, 12.5, source="usda"), **_N),
 
     F("Akshota (Walnuts)", id="walnuts",

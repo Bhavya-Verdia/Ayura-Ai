@@ -20,8 +20,8 @@ them, and the LLM path is grounded on a corpus built from them, so:
 - a wrong **Apathya** withholds a food from a patient who could have eaten it
 - a wrong **Pathya** puts a food in front of a patient who should not
 
-There are **790 clinical claims** (373 Pathya,
-417 Apathya) across **21 conditions**.
+There are **790 clinical claims** (374 Pathya,
+416 Apathya) across **21 conditions**.
 
 ## What replaced the derived library
 
