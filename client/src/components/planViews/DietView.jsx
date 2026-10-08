@@ -15,11 +15,14 @@ const DIET_MEAL_ICONS = {
 }
 
 const DIET_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+// Display names, translated; the English names above are the plan's own keys.
+const SLOT_LABEL = { breakfast: 'Breakfast', lunch: 'Lunch', snack: 'Snack', dinner: 'Dinner', special_drink: 'Daily drink' }
 
 const DIET_DAY_FULL   = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 
 function MacroBar({ macros }) {
+  const { t } = useTranslation()
   const cal = macros?.calories || 0
   const pro = macros?.protein_g || 0
   const carb = macros?.carbs_g || 0
@@ -30,7 +33,7 @@ function MacroBar({ macros }) {
       {pro > 0 && <div className="diet-macro-chip pro"><span>P</span>{pro}g</div>}
       {carb > 0 && <div className="diet-macro-chip carb"><span>C</span>{carb}g</div>}
       {fat > 0 && <div className="diet-macro-chip fat"><span>F</span>{fat}g</div>}
-      {macros?.fiber_g > 0 && <div className="diet-macro-chip fib"><span>Fib</span>{macros.fiber_g}g</div>}
+      {macros?.fiber_g > 0 && <div className="diet-macro-chip fib"><span>{t('diet.fibreShort', 'Fib')}</span>{macros.fiber_g}g</div>}
     </div>
   )
 }
@@ -42,13 +45,14 @@ function MacroBar({ macros }) {
 // usually skipped is kept light, foods left uneaten are used rarely, and with
 // weigh-ins the energy target moves (server/services/diet_log.py).
 const LOG_STATUSES = [
-  { key: 'eaten', label: 'Ate it' },
-  { key: 'partly', label: 'Some' },
-  { key: 'skipped', label: 'Skipped' },
-  { key: 'swapped', label: 'Ate something else' },
+  { key: 'eaten', label: 'Ate it', i18n: 'diet.logEaten' },
+  { key: 'partly', label: 'Some', i18n: 'diet.logPartly' },
+  { key: 'skipped', label: 'Skipped', i18n: 'diet.logSkipped' },
+  { key: 'swapped', label: 'Ate something else', i18n: 'diet.logSwapped' },
 ]
 
 function MealLogBar({ log, onLog }) {
+  const { t } = useTranslation()
   const [swapping, setSwapping] = useState(false)
   const [text, setText] = useState(log?.swapped_with || '')
   const status = log?.status
@@ -58,28 +62,30 @@ function MealLogBar({ log, onLog }) {
     onLog(status === key ? null : key)
   }
   return (
-    <div className="diet-log-bar" role="group" aria-label="Log this meal">
+    <div className="diet-log-bar" role="group" aria-label={t('diet.logThisMeal', 'Log this meal')}>
       {LOG_STATUSES.map(s => (
         <button key={s.key} type="button" aria-pressed={status === s.key}
           className={`diet-log-btn${status === s.key ? ' is-on' : ''}`} onClick={() => choose(s.key)}>
-          {s.label}
+          {t(s.i18n, s.label)}
         </button>
       ))}
       {swapping && (
         <form className="diet-log-swap" onSubmit={e => { e.preventDefault(); setSwapping(false); onLog('swapped', text) }}>
           <input value={text} onChange={e => setText(e.target.value)} maxLength={120}
-            placeholder="What did you have instead? (optional)" aria-label="What you ate instead" />
-          <button type="submit" className="diet-log-btn">Save</button>
+            placeholder={t('diet.swapPlaceholder', 'What did you have instead? (optional)')}
+            aria-label={t('diet.swapLabel', 'What you ate instead')} />
+          <button type="submit" className="diet-log-btn">{t('diet.save', 'Save')}</button>
         </form>
       )}
       {status === 'swapped' && log?.swapped_with && !swapping && (
-        <span className="diet-log-note">Had: {log.swapped_with}</span>
+        <span className="diet-log-note">{t('diet.had', 'Had: {{food}}', { food: log.swapped_with })}</span>
       )}
     </div>
   )
 }
 
 function MealLogSummary({ planId, logs }) {
+  const { t } = useTranslation()
   const [adapt, setAdapt] = useState(null)
   const count = Object.keys(logs).length
   useEffect(() => {
@@ -91,47 +97,51 @@ function MealLogSummary({ planId, logs }) {
   if (!count) {
     return (
       <p className="diet-energy-note">
-        Log each meal below — ate it, some, skipped, or something else. Your next plan is
-        built from what you actually ate.
+        {t('diet.logIntro', 'Log each meal below — ate it, some, skipped, or something else. Your next plan is built from what you actually ate.')}
       </p>
     )
   }
   const a = adapt?.adaptation || {}
   const s = adapt?.summary || {}
   const changes = [
-    ...(a.skipped_slots || []).map(slot => `${slot.replace(/_/g, ' ')} kept quick and light — you usually skip it`),
-    a.avoided_foods?.length ? `${a.avoided_foods.map(f => f.replace(/_/g, ' ')).join(', ')} used rarely — often left uneaten` : null,
-    a.energy_adjust_kcal ? `energy ${a.energy_adjust_kcal > 0 ? '+' : ''}${a.energy_adjust_kcal} kcal — ${a.energy_reason}` : null,
+    ...(a.skipped_slots || []).map(slot => t('diet.changeSlot', '{{slot}} kept quick and light — you usually skip it',
+      { slot: t(`diet.slot_${slot}`, SLOT_LABEL[slot] || slot.replace(/_/g, ' ')) })),
+    a.avoided_foods?.length ? t('diet.changeFoods', '{{foods}} used rarely — often left uneaten',
+      { foods: a.avoided_foods.map(f => f.replace(/_/g, ' ')).join(', ') }) : null,
+    a.energy_adjust_kcal ? t('diet.changeEnergy', 'energy {{kcal}} kcal — {{reason}}',
+      { kcal: `${a.energy_adjust_kcal > 0 ? '+' : ''}${a.energy_adjust_kcal}`, reason: a.energy_reason }) : null,
   ].filter(Boolean)
   return (
     <div className="diet-log-summary">
       <span>
-        {s.meals_logged || count} meals logged{s.adherence != null ? ` · ${Math.round(s.adherence * 100)}% eaten as planned` : ''}.
+        {t('diet.mealsLogged', '{{count}} meals logged', { count: s.meals_logged || count })}
+        {s.adherence != null ? ` · ${t('diet.eatenAsPlanned', '{{pct}}% eaten as planned', { pct: Math.round(s.adherence * 100) })}` : ''}.
       </span>
       {changes.length > 0 ? (
-        <ul>{changes.map(c => <li key={c}>Next plan: {c}.</li>)}</ul>
+        <ul>{changes.map(c => <li key={c}>{t('diet.nextPlan', 'Next plan: {{change}}.', { change: c })}</li>)}</ul>
       ) : (
-        <span> Your next plan changes once there are 14 logged meals and enough of a pattern to act on.</span>
+        <span> {t('diet.nextPlanWaits', 'Your next plan changes once there are 14 logged meals and enough of a pattern to act on.')}</span>
       )}
     </div>
   )
 }
 
 function LLMMealCard({ mealName, meal, log, onLog }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const MealIcon = DIET_MEAL_ICONS[mealName] || UtensilsCrossed
-  const label = mealName.charAt(0).toUpperCase() + mealName.slice(1)
+  const label = t(`diet.slot_${mealName}`, SLOT_LABEL[mealName] || mealName)
   if (!meal?.meal_name) return null
   return (
     <div className={`diet-meal-card llm meal-${mealName}${meal.allergen_warning ? ' has-allergen' : ''}`}>
       {meal.allergen_warning && (
         <div className="diet-allergen-warning">
-          Allergen detected: {meal.allergen_terms?.join(', ')}
+          {t('diet.allergenDetected', 'Allergen detected: {{terms}}', { terms: meal.allergen_terms?.join(', ') })}
         </div>
       )}
       {meal.dietary_type_warnings?.length > 0 && (
         <div className="diet-allergen-warning">
-          Does not match your dietary type: {meal.dietary_type_warnings.join(', ')}
+          {t('diet.dietTypeMismatch', 'Does not match your dietary type: {{foods}}', { foods: meal.dietary_type_warnings.join(', ') })}
         </div>
       )}
       <h3 className="diet-meal-heading">
@@ -150,7 +160,7 @@ function LLMMealCard({ mealName, meal, log, onLog }) {
           </div>
           <div className="diet-meal-meta">
             {meal.macros_approx?.calories > 0 && (
-              <span className="diet-meal-cal-badge">{Math.round(meal.macros_approx.calories)} cal</span>
+              <span className="diet-meal-cal-badge">{t('diet.cal', '{{n}} cal', { n: Math.round(meal.macros_approx.calories) })}</span>
             )}
             {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
           </div>
@@ -177,14 +187,12 @@ function LLMMealCard({ mealName, meal, log, onLog }) {
           )}
           {meal.substituted && (
             <p className="diet-llm-note-plain">
-              The meal first written here broke one of your rules, so it was replaced with
-              this plain plate from your allowed foods.
+              {t('diet.substituted', 'The meal first written here broke one of your rules, so it was replaced with this plain plate from your allowed foods.')}
             </p>
           )}
           {meal.nutrition_basis === 'partial' && (
             <p className="diet-llm-note-plain">
-              Some of this meal&apos;s ingredients have no nutrition data, so its figures
-              are lower than the real meal.
+              {t('diet.partialNutrition', "Some of this meal's ingredients have no nutrition data, so its figures are lower than the real meal.")}
             </p>
           )}
           {meal.ayurvedic_note && (
@@ -205,6 +213,7 @@ function LLMMealCard({ mealName, meal, log, onLog }) {
 // ── Pathya-Apathya Card ───────────────────────────────────────────────────────
 
 function PathyaApathyaCard({ pa }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   if (!pa) return null
   const hasContent = pa.pathya?.length || pa.apathya?.length || pa.viruddha_ahara_warnings?.length
@@ -213,7 +222,7 @@ function PathyaApathyaCard({ pa }) {
     <div className="diet-pa-card">
       <button className="diet-timing-toggle" onClick={() => setOpen(o => !o)}>
         <ShieldCheck size={13} className="diet-timing-icon" style={{ color: '#16a34a' }} />
-        <span>Pathya-Apathya — Classical Diet Protocol</span>
+        <span>{t('diet.paTitle', 'Pathya-Apathya — Classical Diet Protocol')}</span>
         {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
       </button>
       {open && (
@@ -225,7 +234,7 @@ function PathyaApathyaCard({ pa }) {
           )}
           {pa.pathya?.length > 0 && (
             <div className="diet-pa-section">
-              <h3 className="diet-pa-section-title pathya">Pathya — Recommended</h3>
+              <h3 className="diet-pa-section-title pathya">{t('diet.pathya', 'Pathya — Recommended')}</h3>
               <ul className="diet-pa-list">
                 {pa.pathya.map((item, i) => <li key={i}>{item}</li>)}
               </ul>
@@ -233,7 +242,7 @@ function PathyaApathyaCard({ pa }) {
           )}
           {pa.apathya?.length > 0 && (
             <div className="diet-pa-section">
-              <h3 className="diet-pa-section-title apathya">Apathya — Avoid</h3>
+              <h3 className="diet-pa-section-title apathya">{t('diet.apathya', 'Apathya — Avoid')}</h3>
               <ul className="diet-pa-list apathya">
                 {pa.apathya.map((item, i) => <li key={i}>{item}</li>)}
               </ul>
@@ -241,7 +250,7 @@ function PathyaApathyaCard({ pa }) {
           )}
           {pa.viruddha_ahara_warnings?.length > 0 && (
             <div className="diet-pa-section">
-              <h3 className="diet-pa-section-title viruddha">Viruddha Ahara Warnings</h3>
+              <h3 className="diet-pa-section-title viruddha">{t('diet.viruddhaWarnings', 'Viruddha Ahara Warnings')}</h3>
               <ul className="diet-pa-list viruddha">
                 {pa.viruddha_ahara_warnings.map((item, i) => (
                   <li key={i}><AlertTriangle size={10} className="diet-pa-warn-icon" />{item}</li>
@@ -260,6 +269,7 @@ function PathyaApathyaCard({ pa }) {
 // where per-meal flags can't be shown). Backend: services/ahara_safety.py.
 
 function DietSafetyBanner({ plan }) {
+  const { t } = useTranslation()
   if (!plan?.ahara_safety_checked) return null
   const alerts = plan.safety_alerts || []
   const viruddha = plan.viruddha_ahara_detected || []
@@ -288,20 +298,16 @@ function DietSafetyBanner({ plan }) {
         <div className="diet-safety-ok is-partial">
           <TriangleAlert size={13} />
           <span>
-            Checked for allergens, intolerances, incompatible combinations (Viruddha
-            Ahara) and your dietary type — none found.
+            {t('diet.safetyPartialChecked', 'Checked for allergens, intolerances, incompatible combinations (Viruddha Ahara) and your dietary type — none found.')}
             {unscanned.length > 0 && (
-              <> We could not derive a food-safety rule for{' '}
-              {unscanned.map(c => c.replace(/_/g, ' ')).join(', ')}, so this plan
-              has not been screened against {unscanned.length > 1 ? 'those conditions' : 'that condition'}.</>
+              <> {t('diet.safetyNoRule', 'We could not derive a food-safety rule for {{conditions}}, so this plan has not been screened against them.',
+                { conditions: unscanned.map(c => c.replace(/_/g, ' ')).join(', ') })}</>
             )}
             {termsOnly.length > 0 && (
-              <> For {termsOnly.map(c => c.replace(/_/g, ' ')).join(', ')} we screened
-              against a curated list of foods to avoid, but our food library has not yet
-              been reviewed food-by-food for {termsOnly.length > 1 ? 'these conditions' : 'this condition'} —
-              a lighter check than the one we run for conditions like acidity or diabetes.</>
+              <> {t('diet.safetyTermsOnly', 'For {{conditions}} we screened against a curated list of foods to avoid, but our food library has not yet been reviewed food-by-food for them — a lighter check than the one we run for conditions like acidity or diabetes.',
+                { conditions: termsOnly.map(c => c.replace(/_/g, ' ')).join(', ') })}</>
             )}
-            {' '}Please review this plan with your practitioner.
+            {' '}{t('diet.reviewWithPractitioner', 'Please review this plan with your practitioner.')}
           </span>
         </div>
       )
@@ -309,7 +315,7 @@ function DietSafetyBanner({ plan }) {
     return (
       <div className="diet-safety-ok">
         <ShieldCheck size={13} />
-        <span>Every meal, daily drink and line of food guidance checked for allergens, intolerances, incompatible combinations (Viruddha Ahara), condition-contraindicated foods &amp; your dietary type — none found.</span>
+        <span>{t('diet.safetyAllClear', 'Every meal, daily drink and line of food guidance checked for allergens, intolerances, incompatible combinations (Viruddha Ahara), condition-contraindicated foods & your dietary type — none found.')}</span>
       </div>
     )
   }
@@ -318,12 +324,12 @@ function DietSafetyBanner({ plan }) {
       {alerts.length > 0 && (
         <div className="diet-safety-card allergen">
           <h3 className="diet-safety-title">
-            <TriangleAlert size={13} /> Allergen conflicts — substitute before following these meals
+            <TriangleAlert size={13} /> {t('diet.alertAllergenTitle', 'Allergen conflicts — substitute before following these meals')}
           </h3>
           <ul className="diet-safety-list">
             {alerts.map((a, i) => (
               <li key={i}>
-                <strong>{a.week} · {a.day} · {a.meal_slot}</strong>: contains {(a.matched_terms || []).join(', ')}
+                <strong>{a.week} · {a.day} · {a.meal_slot}</strong>: {t('diet.contains', 'contains {{what}}', { what: (a.matched_terms || []).join(', ') })}
               </li>
             ))}
           </ul>
@@ -332,11 +338,11 @@ function DietSafetyBanner({ plan }) {
       {unscannable.length > 0 && (
         <div className="diet-safety-card allergen">
           <h3 className="diet-safety-title">
-            <TriangleAlert size={13} /> Not verified — written in a script our safety checks cannot read
+            <TriangleAlert size={13} /> {t('diet.alertScriptTitle', 'Not verified — written in a script our safety checks cannot read')}
           </h3>
           <ul className="diet-safety-list">
             {unscannable.map((u, i) => (
-              <li key={i}><strong>{u.week} · {u.day} · {u.meal_slot}</strong>: {u.script} script</li>
+              <li key={i}><strong>{u.week} · {u.day} · {u.meal_slot}</strong>: {t('diet.scriptName', '{{script}} script', { script: u.script })}</li>
             ))}
           </ul>
         </div>
@@ -344,12 +350,12 @@ function DietSafetyBanner({ plan }) {
       {condAlerts.length > 0 && (
         <div className="diet-safety-card allergen">
           <h3 className="diet-safety-title">
-            <TriangleAlert size={13} /> Foods not advised for your conditions — substitute before following these meals
+            <TriangleAlert size={13} /> {t('diet.alertConditionTitle', 'Foods not advised for your conditions — substitute before following these meals')}
           </h3>
           <ul className="diet-safety-list">
             {condAlerts.map((c, i) => (
               <li key={i}>
-                <strong>{c.week} · {c.day} · {c.meal_slot}</strong>: contains {c.food} — {c.condition}
+                <strong>{c.week} · {c.day} · {c.meal_slot}</strong>: {t('diet.contains', 'contains {{what}}', { what: c.food })} — {c.condition}
               </li>
             ))}
           </ul>
@@ -358,12 +364,12 @@ function DietSafetyBanner({ plan }) {
       {dietTypeAlerts.length > 0 && (
         <div className="diet-safety-card allergen">
           <h3 className="diet-safety-title">
-            <TriangleAlert size={13} /> Does not match your dietary type — substitute before following these meals
+            <TriangleAlert size={13} /> {t('diet.alertDietTypeTitle', 'Does not match your dietary type — substitute before following these meals')}
           </h3>
           <ul className="diet-safety-list">
             {dietTypeAlerts.map((d, i) => (
               <li key={i}>
-                <strong>{d.week} · {d.day} · {d.meal_slot}</strong>: contains {d.food} — not {(d.dietary_type || '').replace(/_/g, ' ')}
+                <strong>{d.week} · {d.day} · {d.meal_slot}</strong>: {t('diet.contains', 'contains {{what}}', { what: d.food })} — {t('diet.notDietType', 'not {{type}}', { type: (d.dietary_type || '').replace(/_/g, ' ') })}
               </li>
             ))}
           </ul>
@@ -372,12 +378,12 @@ function DietSafetyBanner({ plan }) {
       {withheld.length > 0 && (
         <div className="diet-safety-card allergen">
           <h3 className="diet-safety-title">
-            <TriangleAlert size={13} /> Withheld from your Pathya list — recommended in general, not for you
+            <TriangleAlert size={13} /> {t('diet.alertWithheldTitle', 'Withheld from your Pathya list — recommended in general, not for you')}
           </h3>
           <ul className="diet-safety-list">
             {withheld.map((w, i) => (
               <li key={i}>
-                <strong>{w.item}</strong> — names {w.food}, Apathya for {w.condition}
+                <strong>{w.item}</strong> — {t('diet.withheldLine', 'names {{food}}, Apathya for {{condition}}', { food: w.food, condition: w.condition })}
               </li>
             ))}
           </ul>
@@ -386,12 +392,12 @@ function DietSafetyBanner({ plan }) {
       {proseAlerts.length > 0 && (
         <div className="diet-safety-card allergen">
           <h3 className="diet-safety-title">
-            <TriangleAlert size={13} /> Guidance text that names a food you should avoid
+            <TriangleAlert size={13} /> {t('diet.alertProseTitle', 'Guidance text that names a food you should avoid')}
           </h3>
           <ul className="diet-safety-list">
             {proseAlerts.map((a, i) => (
               <li key={i}>
-                <strong>{(a.field || '').replace(/_/g, ' ')}</strong>: mentions {a.food} — {a.condition}
+                <strong>{(a.field || '').replace(/_/g, ' ')}</strong>: {t('diet.mentions', 'mentions {{food}}', { food: a.food })} — {a.condition}
               </li>
             ))}
           </ul>
@@ -400,7 +406,7 @@ function DietSafetyBanner({ plan }) {
       {viruddha.length > 0 && (
         <div className="diet-safety-card viruddha">
           <h3 className="diet-safety-title">
-            <TriangleAlert size={13} /> Viruddha Ahara detected (Charaka Sutrasthana 26)
+            <TriangleAlert size={13} /> {t('diet.alertViruddhaTitle', 'Viruddha Ahara detected (Charaka Sutrasthana 26)')}
           </h3>
           <ul className="diet-safety-list">
             {viruddha.map((v, i) => (
@@ -415,6 +421,7 @@ function DietSafetyBanner({ plan }) {
 
 
 function EnergyPrescriptionCard({ plan }) {
+  const { t } = useTranslation()
   const rx = plan.energy_prescription
   if (!rx?.target_calories) return null
   const rec = plan.energy_reconciliation || {}
@@ -425,25 +432,25 @@ function EnergyPrescriptionCard({ plan }) {
     <div className="diet-energy-card">
       <div className="diet-energy-head">
         <Flame size={13} className="diet-vital-icon" />
-        <span className="diet-energy-target">{rx.target_calories} kcal / day</span>
+        <span className="diet-energy-target">{t('diet.kcalPerDay', '{{kcal}} kcal / day', { kcal: rx.target_calories })}</span>
         {rx.protein_target_g ? (
           <span className="diet-energy-sub">
-            {rx.protein_target_g} g protein{rx.protein_floor_g && rx.protein_floor_g < rx.protein_target_g
-              ? ` (never under ${rx.protein_floor_g} g)` : ''}
+            {t('diet.proteinG', '{{g}} g protein', { g: rx.protein_target_g })}
+            {rx.protein_floor_g && rx.protein_floor_g < rx.protein_target_g
+              ? ` ${t('diet.neverUnder', '(never under {{g}} g)', { g: rx.protein_floor_g })}` : ''}
           </span>
         ) : rx.protein_floor_g ? (
-          <span className="diet-energy-sub">at least {rx.protein_floor_g} g protein</span>
+          <span className="diet-energy-sub">{t('diet.atLeastProtein', 'at least {{g}} g protein', { g: rx.protein_floor_g })}</span>
         ) : null}
       </div>
 
       {rx.basis === 'measured' ? (
         <p className="diet-energy-basis">
-          From your own measurements: {rx.bmr} kcal at rest, {rx.tdee} kcal at your
-          stated activity level.
+          {t('diet.basisMeasured', 'From your own measurements: {{bmr}} kcal at rest, {{tdee}} kcal at your stated activity level.', { bmr: rx.bmr, tdee: rx.tdee })}
         </p>
       ) : (
         <p className="diet-energy-basis is-estimated">
-          Estimated — add your height and weight in your profile to make this exact.
+          {t('diet.basisEstimated', 'Estimated — add your height and weight in your profile to make this exact.')}
         </p>
       )}
 
@@ -451,7 +458,7 @@ function EnergyPrescriptionCard({ plan }) {
         {['breakfast', 'lunch', 'snack', 'dinner'].map(slot => (
           mb[slot] ? (
             <span key={slot} className="diet-energy-slot">
-              <b>{slot}</b> {mb[slot]}
+              <b>{t(`diet.slot_${slot}`, SLOT_LABEL[slot])}</b> {mb[slot]}
             </span>
           ) : null
         ))}
@@ -463,15 +470,12 @@ function EnergyPrescriptionCard({ plan }) {
 
       {rec.method === 'computed_from_components' ? (
         <p className="diet-energy-note">
-          Every day&apos;s figures are calculated from the foods and grams in its meals,
-          using published food-composition data — not estimated.
-          {adjusted ? ` Portions on ${rec.days_adjusted} ${rec.days_adjusted === 1 ? 'day' : 'days'} were resized so the day meets your targets; the dishes are unchanged.` : ''}
+          {t('diet.computedNote', "Every day's figures are calculated from the foods and grams in its meals, using published food-composition data — not estimated.")}
+          {adjusted ? ` ${t('diet.resizedComputed', 'Portions on {{count}} days were resized so the day meets your targets; the dishes are unchanged.', { count: rec.days_adjusted })}` : ''}
         </p>
       ) : adjusted ? (
         <p className="diet-energy-note">
-          Portions on {rec.days_adjusted} {rec.days_adjusted === 1 ? 'day' : 'days'} were
-          resized to meet this target — the meals and their Ayurvedic reasoning are
-          unchanged.
+          {t('diet.resizedLegacy', 'Portions on {{count}} days were resized to meet this target — the meals and their Ayurvedic reasoning are unchanged.', { count: rec.days_adjusted })}
         </p>
       ) : null}
       {/* Weeks 2-4 are meal names with no macros, so nothing there can be summed or
@@ -480,11 +484,8 @@ function EnergyPrescriptionCard({ plan }) {
           are named. */}
       {rec.days_unquantified > 0 ? (
         <p className="diet-energy-note">
-          Checked against this target on {rec.days_quantified}{' '}
-          {rec.days_quantified === 1 ? 'day' : 'days'}. Weeks 2-4 are given as meal
-          names without portion figures, so {rec.days_unquantified} further{' '}
-          {rec.days_unquantified === 1 ? 'day is' : 'days are'} not measured — keep the
-          week 1 portions as your guide.
+          {t('diet.unquantified', 'Checked against this target on {{checked}} days. Weeks 2-4 are given as meal names without portion figures, so {{rest}} further days are not measured — keep the week 1 portions as your guide.',
+            { checked: rec.days_quantified, rest: rec.days_unquantified })}
         </p>
       ) : null}
       {(rec.residual_notes || []).slice(0, 3).map((note, i) => (
@@ -497,13 +498,11 @@ function EnergyPrescriptionCard({ plan }) {
           here and protein was not, which is the asymmetry rather than the check. */}
       {(rec.days_below_protein_floor || []).length > 0 ? (
         <p className="diet-energy-note is-warn">
-          Protein is below your {rx.protein_floor_g} g floor on{' '}
-          {rec.days_below_protein_floor.length}{' '}
-          {rec.days_below_protein_floor.length === 1 ? 'day' : 'days'}
+          {t('diet.proteinShortDays', 'Protein is below your {{floor}} g floor on {{count}} days', { floor: rx.protein_floor_g, count: rec.days_below_protein_floor.length })}
           {rec.days_below_protein_floor.length <= 3
             ? ` (${rec.days_below_protein_floor.map(d => (typeof d === 'string' ? d : `${d.week} ${d.day}`)).join(', ')})`
             : ''}
-          . Add dal, paneer or curd to the meal that suits your Agni best.
+          . {t('diet.addProtein', 'Add dal, paneer or curd to the meal that suits your Agni best.')}
         </p>
       ) : null}
     </div>
@@ -513,8 +512,9 @@ function EnergyPrescriptionCard({ plan }) {
 // The figures a dietitian sets beside the energy target, each with its source.
 function NutrientTargetsCard({ plan }) {
   const [open, setOpen] = useState(false)
-  const t = plan.nutrient_targets
-  if (!t) return null
+  const { t } = useTranslation()
+  const nt = plan.nutrient_targets
+  if (!nt) return null
   // What the 28 days deliver, beside each target. Computed from the components, so a
   // shortfall is stated rather than implied met.
   const micro = plan.energy_reconciliation?.micronutrients || {}
@@ -525,52 +525,54 @@ function NutrientTargetsCard({ plan }) {
     const hit = m.days_met ?? (m.days_over != null ? days - m.days_over : null)
     // B12 and vitamin D are a few micrograms: rounding 1.4 to 1 hides the figure.
     const avg = m.average < 10 ? Math.round(m.average * 10) / 10 : Math.round(m.average)
-    return ` — this plan: ~${avg} ${unit} a day${hit != null && days ? `, on target ${hit} of ${days} days` : ''}`
+    return ` — ${t('diet.thisPlan', 'this plan: ~{{avg}} {{unit}} a day', { avg, unit })}${hit != null && days ? `, ${t('diet.onTarget', 'on target {{hit}} of {{days}} days', { hit, days })}` : ''}`
   }
-  const mineral = (key, label, unit) => t[key] && [label, `at least ${t[key].min} ${unit}${delivered(key, unit)}`]
+  const atLeast = (v, unit) => t('diet.atLeast', 'at least {{v}} {{unit}}', { v, unit })
+  const under = (v, unit) => t('diet.under', 'under {{v}} {{unit}}', { v, unit })
+  const mineral = (key, label, unit) => nt[key] && [label, `${atLeast(nt[key].min, unit)}${delivered(key, unit)}`]
   const unmeasured = micro.unmeasured_foods || []
   const rows = [
-    t.carbs_g && ['Carbohydrate', `~${t.carbs_g.target} g (${t.carbs_g.pct_energy}% of energy)${t.carbs_g.basis ? ' — available, after fibre' : ''}`],
-    t.fat_g && ['Fat', `~${t.fat_g.target} g (${t.fat_g.pct_energy}%)`],
-    t.sat_fat_g && ['Saturated fat', `under ${t.sat_fat_g.max} g`],
-    t.fibre_g && ['Fibre', `at least ${t.fibre_g.min} g`],
-    t.sodium_mg && ['Sodium', `under ${t.sodium_mg.max} mg (about ${(t.sodium_mg.max * 2.54 / 1000).toFixed(1)} g salt)${delivered('sodium_mg', 'mg')}`],
-    mineral('potassium_mg', 'Potassium', 'mg'),
-    mineral('iron_mg', 'Iron', 'mg'),
-    mineral('calcium_mg', 'Calcium', 'mg'),
-    mineral('folate_ug', 'Folate', 'µg'),
-    mineral('zinc_mg', 'Zinc', 'mg'),
-    mineral('b12_ug', 'Vitamin B12', 'µg'),
-    mineral('vitd_ug', 'Vitamin D', 'µg'),
-    mineral('iodine_ug', 'Iodine (from iodised salt)', 'µg'),
-    t.added_sugar_g && ['Added sugar', t.added_sugar_g.max === 0 ? 'none' : `under ${t.added_sugar_g.max} g`],
-    t.water_ml && ['Water', t.water_ml.target ? `about ${(t.water_ml.target / 1000).toFixed(1)} L` : 'as your doctor advises'],
+    nt.carbs_g && [t('diet.carbs', 'Carbohydrate'), `~${nt.carbs_g.target} g (${t('diet.pctEnergy', '{{pct}}% of energy', { pct: nt.carbs_g.pct_energy })})${nt.carbs_g.basis ? ` — ${t('diet.availableCarbs', 'available, after fibre')}` : ''}`],
+    nt.fat_g && [t('diet.fat', 'Fat'), `~${nt.fat_g.target} g (${nt.fat_g.pct_energy}%)`],
+    nt.sat_fat_g && [t('diet.satFat', 'Saturated fat'), under(nt.sat_fat_g.max, 'g')],
+    nt.fibre_g && [t('diet.fibre', 'Fibre'), atLeast(nt.fibre_g.min, 'g')],
+    nt.sodium_mg && [t('diet.sodium', 'Sodium'), `${under(nt.sodium_mg.max, 'mg')} (${t('diet.aboutSalt', 'about {{g}} g salt', { g: (nt.sodium_mg.max * 2.54 / 1000).toFixed(1) })})${delivered('sodium_mg', 'mg')}`],
+    mineral('potassium_mg', t('diet.potassium', 'Potassium'), 'mg'),
+    mineral('iron_mg', t('diet.iron', 'Iron'), 'mg'),
+    mineral('calcium_mg', t('diet.calcium', 'Calcium'), 'mg'),
+    mineral('folate_ug', t('diet.folate', 'Folate'), 'µg'),
+    mineral('zinc_mg', t('diet.zinc', 'Zinc'), 'mg'),
+    mineral('b12_ug', t('diet.b12', 'Vitamin B12'), 'µg'),
+    mineral('vitd_ug', t('diet.vitd', 'Vitamin D'), 'µg'),
+    mineral('iodine_ug', t('diet.iodine', 'Iodine (from iodised salt)'), 'µg'),
+    nt.added_sugar_g && [t('diet.addedSugar', 'Added sugar'), nt.added_sugar_g.max === 0 ? t('diet.none', 'none') : under(nt.added_sugar_g.max, 'g')],
+    nt.water_ml && [t('diet.water', 'Water'), nt.water_ml.target ? t('diet.aboutLitres', 'about {{l}} L', { l: (nt.water_ml.target / 1000).toFixed(1) }) : t('diet.asDoctorAdvises', 'as your doctor advises')],
   ].filter(Boolean)
   return (
     <div className="diet-targets-card">
       <div className="diet-energy-head">
         <Target size={13} className="diet-vital-icon" />
-        <span className="diet-energy-target">Your daily targets</span>
+        <span className="diet-energy-target">{t('diet.dailyTargets', 'Your daily targets')}</span>
       </div>
       <dl className="diet-targets-list">
         {rows.map(([k, v]) => (
           <div key={k} className="diet-targets-row"><dt>{k}</dt><dd>{v}</dd></div>
         ))}
       </dl>
-      {(t.notes || []).map((n, i) => <p key={i} className="diet-energy-note">{n}</p>)}
+      {(nt.notes || []).map((n, i) => <p key={i} className="diet-energy-note">{n}</p>)}
       {(micro.notices || []).map((n, i) => <p key={`m${i}`} className="diet-energy-note">{n}</p>)}
       {unmeasured.length > 0 && (
         <p className="diet-energy-note">
-          Minerals and vitamins are not counted for {unmeasured.map(f => f.replace(/_/g, ' ')).join(', ')} — no
-          reliable composition data — so the figures above may run a little low.
+          {t('diet.unmeasured', 'Minerals and vitamins are not counted for {{foods}} — no reliable composition data — so the figures above may run a little low.',
+            { foods: unmeasured.map(f => f.replace(/_/g, ' ')).join(', ') })}
         </p>
       )}
       <button type="button" className="diet-targets-toggle" onClick={() => setOpen(o => !o)} aria-expanded={open}>
-        {open ? <ChevronUp size={11} /> : <ChevronDown size={11} />} Where these numbers come from
+        {open ? <ChevronUp size={11} /> : <ChevronDown size={11} />} {t('diet.sources', 'Where these numbers come from')}
       </button>
       {open && (
         <ul className="diet-targets-sources">
-          {Object.entries(t.sources || {}).map(([k, v]) => <li key={k}><b>{k.replace(/_/g, ' ')}:</b> {v}</li>)}
+          {Object.entries(nt.sources || {}).map(([k, v]) => <li key={k}><b>{k.replace(/_/g, ' ')}:</b> {v}</li>)}
         </ul>
       )}
     </div>
@@ -580,6 +582,7 @@ function NutrientTargetsCard({ plan }) {
 // Medicines, fasting and the condition notes — what a dietitian writes beside the
 // meals. Each note carries its source.
 function ClinicalNotesCard({ plan }) {
+  const { t } = useTranslation()
   const meds = plan.medication_interactions || []
   const notes = plan.clinical_notes || []
   const unchecked = plan.medications_not_checked || []
@@ -588,7 +591,7 @@ function ClinicalNotesCard({ plan }) {
     <div className="diet-clinical-card">
       {plan.fasting_notice && (
         <div className="diet-clinical-item is-warn">
-          <Moon size={13} /> <div><strong>Fasting</strong><p>{plan.fasting_notice}</p></div>
+          <Moon size={13} /> <div><strong>{t('diet.fasting', 'Fasting')}</strong><p>{plan.fasting_notice}</p></div>
         </div>
       )}
       {meds.map(m => (
@@ -603,7 +606,7 @@ function ClinicalNotesCard({ plan }) {
       ))}
       {unchecked.length > 0 && (
         <p className="diet-energy-note">
-          Not checked for food interactions: {unchecked.join(', ')}. Ask your pharmacist.
+          {t('diet.medsUnchecked', 'Not checked for food interactions: {{meds}}. Ask your pharmacist.', { meds: unchecked.join(', ') })}
         </p>
       )}
       {notes.map(n => (
@@ -642,7 +645,7 @@ function withOverlay(plan, strings) {
 }
 
 export function DietView({ plan: englishPlan }) {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const lang = (i18n.language || 'en').slice(0, 2)
   const translatable = lang in PLAN_LANGUAGES && !!englishPlan.plan_id
   const [showTranslated, setShowTranslated] = useState(false)
@@ -741,16 +744,16 @@ export function DietView({ plan: englishPlan }) {
           {translated ? (
             <>
               <span>
-                Translated into {PLAN_LANGUAGES[lang]} from your English plan. The food-safety
-                checks were run on the English version{overlay.kept_english > 0 ? `; ${overlay.kept_english} lines that could not be verified are left in English` : ''}.
+                {t('diet.translatedNote', 'Translated into {{lang}} from your English plan. The food-safety checks were run on the English version.', { lang: PLAN_LANGUAGES[lang] })}
+                {overlay.kept_english > 0 ? ` ${t('diet.keptEnglish', '{{count}} lines that could not be verified are left in English.', { count: overlay.kept_english })}` : ''}
               </span>
-              <button type="button" className="diet-translate-btn" onClick={() => setShowTranslated(false)}>Show English</button>
+              <button type="button" className="diet-translate-btn" onClick={() => setShowTranslated(false)}>{t('diet.showEnglish', 'Show English')}</button>
             </>
           ) : (
             <>
-              <span>{translateError ? 'Translation failed — the English plan is shown.' : 'This plan is in English.'}</span>
+              <span>{translateError ? t('diet.translateFailed', 'Translation failed — the English plan is shown.') : t('diet.planInEnglish', 'This plan is in English.')}</span>
               <button type="button" className="diet-translate-btn" onClick={requestTranslation} disabled={translating}>
-                {translating ? 'Translating…' : `Read in ${PLAN_LANGUAGES[lang]}`}
+                {translating ? t('diet.translating', 'Translating…') : t('diet.readIn', 'Read in {{lang}}', { lang: PLAN_LANGUAGES[lang] })}
               </button>
             </>
           )}
@@ -780,20 +783,20 @@ export function DietView({ plan: englishPlan }) {
         {goalLabel && (
           <div className="diet-vital-chip">
             <Target size={11} className="diet-vital-icon" />
-            <span className="diet-vital-k">Goal</span>
+            <span className="diet-vital-k">{t('diet.goal', 'Goal')}</span>
             <span className="diet-vital-v">{goalLabel}</span>
           </div>
         )}
         {us.dominant_dosha && (
           <div className="diet-vital-chip" style={{ borderColor: `${doshaColor}44`, color: doshaText }}>
-            <span className="diet-vital-k">Dosha</span>
+            <span className="diet-vital-k">{t('diet.dosha', 'Dosha')}</span>
             <span className="diet-vital-v">{us.dominant_dosha.toUpperCase()}</span>
           </div>
         )}
         {us.agni_type && (
           <div className="diet-vital-chip">
             <Flame size={11} className="diet-vital-icon" />
-            <span className="diet-vital-k">Agni</span>
+            <span className="diet-vital-k">{t('diet.agni', 'Agni')}</span>
             <span className="diet-vital-v">{agniLabel}</span>
           </div>
         )}
@@ -805,7 +808,7 @@ export function DietView({ plan: englishPlan }) {
         )}
         {us.gut_issue && us.gut_issue !== 'healthy' && (
           <div className="diet-vital-chip">
-            <span className="diet-vital-k">Gut</span>
+            <span className="diet-vital-k">{t('diet.gut', 'Gut')}</span>
             <span className="diet-vital-v">{us.gut_issue.replace(/_/g, ' ')}</span>
           </div>
         )}
@@ -862,7 +865,7 @@ export function DietView({ plan: englishPlan }) {
               className={`diet-week-tab${activeWeek === idx ? ' active' : ''}`}
               onClick={() => { setActiveWeek(idx); setActiveDay(0); }}
             >
-              <span className="diet-week-num">Week {wk.week_number}</span>
+              <span className="diet-week-num">{t('diet.week', 'Week {{n}}', { n: wk.week_number })}</span>
               <span className="diet-week-phase">{wk.phase}</span>
             </button>
           ))}
@@ -884,7 +887,7 @@ export function DietView({ plan: englishPlan }) {
               className={`diet-day-btn ${activeDay === i ? 'active' : ''} ${isFasting ? 'fasting' : ''}`}
               onClick={() => setActiveDay(i)}
               title={theme || label}>
-              {label}
+              {t(`diet.day_${label}`, label)}
               {isFasting && <span className="diet-fast-dot" />}
             </button>
           )
@@ -893,7 +896,7 @@ export function DietView({ plan: englishPlan }) {
 
       {/* ── Selected-day heading ── */}
       <h3 className="diet-day-heading">
-        {DIET_DAY_FULL[activeDay]}{isMultiWeek ? ` · Week ${activeWeek + 1}` : ''}
+        {t(`diet.dayFull_${DIET_DAY_FULL[activeDay]}`, DIET_DAY_FULL[activeDay])}{isMultiWeek ? ` · ${t('diet.week', 'Week {{n}}', { n: activeWeek + 1 })}` : ''}
       </h3>
 
       {/* ── Day theme badge (LLM) ── */}
@@ -908,13 +911,12 @@ export function DietView({ plan: englishPlan }) {
             <div className="diet-fasting-banner">
               <Moon size={16} />
               <div>
-                <strong>Fasting Day</strong>
+                <strong>{t('diet.fastingDay', 'Fasting Day')}</strong>
                 <p>
-                  Phalahar — fruit, milk or plant milk, nuts and herbal drinks, kept light on
-                  purpose
+                  {t('diet.phalahar', 'Phalahar — fruit, milk or plant milk, nuts and herbal drinks, kept light on purpose')}
                   {plan.energy_reconciliation?.fasting_day_target_kcal
-                    ? ` (about ${plan.energy_reconciliation.fasting_day_target_kcal} kcal)` : ''}
-                  . Rest the digestive fire.
+                    ? ` ${t('diet.aboutKcal', '(about {{kcal}} kcal)', { kcal: plan.energy_reconciliation.fasting_day_target_kcal })}` : ''}
+                  . {t('diet.restAgni', 'Rest the digestive fire.')}
                 </p>
               </div>
             </div>
@@ -952,18 +954,17 @@ export function DietView({ plan: englishPlan }) {
             return (
               <div className="diet-day-macros">
                 <span className="diet-day-macros-label">
-                  {dayData.day_totals ? 'Day totals (calculated, incl. drink)' : 'Day totals (approx.)'}
+                  {dayData.day_totals ? t('diet.dayTotalsCalc', 'Day totals (calculated, incl. drink)') : t('diet.dayTotalsApprox', 'Day totals (approx.)')}
                   {target ? (
                     <span className={`diet-day-target${offBand ? ' is-off' : ''}`}>
-                      target {target} kcal
+                      {t('diet.targetKcal', 'target {{kcal}} kcal', { kcal: target })}
                     </span>
                   ) : null}
                 </span>
                 <MacroBar macros={total} />
                 {lowProtein ? (
                   <p className="diet-day-flag">
-                    Protein is below your {rx.protein_floor_g} g daily floor on this day —
-                    add dal, paneer or curd to the meal that suits your Agni best.
+                    {t('diet.proteinShortToday', 'Protein is below your {{floor}} g daily floor on this day — add dal, paneer or curd to the meal that suits your Agni best.', { floor: rx.protein_floor_g })}
                   </p>
                 ) : null}
               </div>
@@ -979,7 +980,7 @@ export function DietView({ plan: englishPlan }) {
             const val = dayData[meal]
             if (!val) return null
             const MealIcon = DIET_MEAL_ICONS[meal] || UtensilsCrossed
-            const label = meal.charAt(0).toUpperCase() + meal.slice(1)
+            const label = t(`diet.slot_${meal}`, SLOT_LABEL[meal])
             return (
               <div key={meal} className="diet-compact-meal-row">
                 <MealIcon size={13} className="diet-compact-meal-icon" />
@@ -991,7 +992,7 @@ export function DietView({ plan: englishPlan }) {
           {dayData.special_drink && (
             <div className="diet-compact-meal-row drink">
               <Droplets size={13} className="diet-compact-meal-icon" />
-              <span className="diet-compact-meal-label">Drink</span>
+              <span className="diet-compact-meal-label">{t('diet.drink', 'Drink')}</span>
               <span className="diet-compact-meal-name">{typeof dayData.special_drink === 'string' ? dayData.special_drink : dayData.special_drink.name || ''}</span>
             </div>
           )}
@@ -1005,8 +1006,8 @@ export function DietView({ plan: englishPlan }) {
             <div className="diet-fasting-banner">
               <Moon size={16} />
               <div>
-                <strong>Fasting Day</strong>
-                <p>Light fruits, dairy, nuts, and herbal beverages only. Rest the digestive fire.</p>
+                <strong>{t('diet.fastingDay', 'Fasting Day')}</strong>
+                <p>{t('diet.fastingLegacy', 'Light fruits, dairy, nuts, and herbal beverages only. Rest the digestive fire.')}</p>
               </div>
             </div>
           )}
@@ -1021,7 +1022,7 @@ export function DietView({ plan: englishPlan }) {
                   <h3 className="diet-meal-header">
                     <div className="diet-meal-title-row">
                       <MealIcon size={13} className="diet-meal-icon" />
-                      <span className="diet-meal-label">{meal.charAt(0).toUpperCase() + meal.slice(1)}</span>
+                      <span className="diet-meal-label">{t(`diet.slot_${meal}`, SLOT_LABEL[meal])}</span>
                     </div>
                   </h3>
                   <div className="diet-meal-foods">
@@ -1030,7 +1031,7 @@ export function DietView({ plan: englishPlan }) {
                         <span className="diet-food-name">{item.name}</span>
                         <span className="diet-food-portion">{item.portion}</span>
                         {item.macros?.calories > 0 && (
-                          <span className="diet-food-cal">{Math.round(item.macros.calories)} cal</span>
+                          <span className="diet-food-cal">{t('diet.cal', '{{n}} cal', { n: Math.round(item.macros.calories) })}</span>
                         )}
                       </div>
                     ))}
@@ -1041,7 +1042,7 @@ export function DietView({ plan: englishPlan }) {
           </div>
           {fallbackDay.daily_macros && (
             <div className="diet-day-macros">
-              <span className="diet-day-macros-label">Day totals (approx.)</span>
+              <span className="diet-day-macros-label">{t('diet.dayTotalsApprox', 'Day totals (approx.)')}</span>
               <MacroBar macros={fallbackDay.daily_macros} />
             </div>
           )}
@@ -1055,17 +1056,17 @@ export function DietView({ plan: englishPlan }) {
               warnings were invisible here while the scans could not see it. */}
           {dayData.special_drink.allergen_warning && (
             <div className="diet-allergen-warning">
-              Allergen detected: {dayData.special_drink.allergen_terms?.join(', ')}
+              {t('diet.allergenDetected', 'Allergen detected: {{terms}}', { terms: dayData.special_drink.allergen_terms?.join(', ') })}
             </div>
           )}
           {dayData.special_drink.condition_warnings?.length > 0 && (
             <div className="diet-allergen-warning">
-              Not advised for your conditions: {dayData.special_drink.condition_warnings.map(w => w.food).join(', ')}
+              {t('diet.notAdvised', 'Not advised for your conditions: {{foods}}', { foods: dayData.special_drink.condition_warnings.map(w => w.food).join(', ') })}
             </div>
           )}
           {dayData.special_drink.dietary_type_warnings?.length > 0 && (
             <div className="diet-allergen-warning">
-              Not {us.dietary_type?.replace(/_/g, ' ')}: {dayData.special_drink.dietary_type_warnings.join(', ')}
+              {t('diet.notDietType', 'not {{type}}', { type: us.dietary_type?.replace(/_/g, ' ') })}: {dayData.special_drink.dietary_type_warnings.join(', ')}
             </div>
           )}
           <div className="diet-drink-header">
@@ -1093,7 +1094,7 @@ export function DietView({ plan: englishPlan }) {
       {isLLM && plan.ahar_vidhi && (
         <div className="diet-ahar-vidhi">
           <h3 className="diet-ahar-vidhi-title">
-            <BookOpen size={13} /> Ahar Vidhi — Rules of Eating
+            <BookOpen size={13} /> {t('diet.aharVidhi', 'Ahar Vidhi — Rules of Eating')}
           </h3>
           <p>{plan.ahar_vidhi}</p>
         </div>
@@ -1104,7 +1105,7 @@ export function DietView({ plan: englishPlan }) {
         <div className="diet-timing-card">
           <button className="diet-timing-toggle" onClick={() => setTimingOpen(o => !o)}>
             <Clock size={13} className="diet-timing-icon" />
-            <span>Meal Timing — Dinacharya</span>
+            <span>{t('diet.mealTiming', 'Meal Timing — Dinacharya')}</span>
             {timingOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
           </button>
           {timingOpen && (
@@ -1113,21 +1114,21 @@ export function DietView({ plan: englishPlan }) {
               <div className="diet-timing-rows">
                 {['breakfast', 'lunch', 'snack', 'dinner'].map(m => timing[m] && (
                   <div key={m} className="diet-timing-row">
-                    <span className="diet-timing-meal">{m.charAt(0).toUpperCase() + m.slice(1)}</span>
+                    <span className="diet-timing-meal">{t(`diet.slot_${m}`, SLOT_LABEL[m])}</span>
                     <span className="diet-timing-time">{timing[m]}</span>
                   </div>
                 ))}
                 {timing.wake_up_drink && (
                   <div className="diet-timing-row special">
                     <CupSoda size={11} />
-                    <span className="diet-timing-meal">Wake-up drink</span>
+                    <span className="diet-timing-meal">{t('diet.wakeDrink', 'Wake-up drink')}</span>
                     <span className="diet-timing-time">{timing.wake_up_drink}</span>
                   </div>
                 )}
                 {timing.bedtime_drink && (
                   <div className="diet-timing-row special">
                     <Moon size={11} />
-                    <span className="diet-timing-meal">Bedtime drink</span>
+                    <span className="diet-timing-meal">{t('diet.bedtimeDrink', 'Bedtime drink')}</span>
                     <span className="diet-timing-time">{timing.bedtime_drink}</span>
                   </div>
                 )}
@@ -1142,7 +1143,7 @@ export function DietView({ plan: englishPlan }) {
         <div className="diet-spice-guide-card">
           <button className="diet-timing-toggle" onClick={() => setSpiceOpen(o => !o)}>
             <Flower2 size={13} className="diet-timing-icon" />
-            <span>Dosha Spice Guide</span>
+            <span>{t('diet.spiceGuide', 'Dosha Spice Guide')}</span>
             {spiceOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
           </button>
           {spiceOpen && (
@@ -1168,7 +1169,7 @@ export function DietView({ plan: englishPlan }) {
             <div className="diet-guidance-card">
               <Droplets size={13} className="diet-guidance-icon hydration" />
               <div>
-                <h3 className="diet-guidance-title">Hydration</h3>
+                <h3 className="diet-guidance-title">{t('diet.hydration', 'Hydration')}</h3>
                 <p className="diet-guidance-text">{plan.hydration_guidance}</p>
               </div>
             </div>
@@ -1177,7 +1178,7 @@ export function DietView({ plan: englishPlan }) {
             <div className="diet-guidance-card">
               <Moon size={13} className="diet-guidance-icon fasting" />
               <div>
-                <h3 className="diet-guidance-title">Fasting Protocol</h3>
+                <h3 className="diet-guidance-title">{t('diet.fastingProtocol', 'Fasting Protocol')}</h3>
                 <p className="diet-guidance-text">{plan.fasting_guidance}</p>
               </div>
             </div>
@@ -1204,7 +1205,7 @@ export function DietView({ plan: englishPlan }) {
         <ShieldCheck size={11} />
         <span>
           {plan.disclaimer ||
-            'AI-generated wellness guidance. Consult a qualified Ayurvedic practitioner before starting a therapeutic diet, especially with existing medical conditions.'}
+            t('diet.disclaimer', 'AI-generated wellness guidance. Consult a qualified Ayurvedic practitioner before starting a therapeutic diet, especially with existing medical conditions.')}
         </span>
       </div>
 
