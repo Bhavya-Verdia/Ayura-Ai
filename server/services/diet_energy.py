@@ -187,9 +187,37 @@ def _canon(conditions) -> set:
     return {str(c).strip().lower().replace(" ", "_") for c in conditions or []}
 
 
+# ── Minerals and folate, ICMR-NIN 2020 RDA ────────────────────────────────────
+# Iron mg, calcium mg, folate ug per day, by life stage. These figures are the ones
+# most likely to need a reviewer's correction; they are in the dietitian pack.
+def _rda(age: int, gender: str, state: str | None) -> dict:
+    female = gender == "female"
+    if state == "pregnant":
+        return {"iron_mg": 27, "calcium_mg": 1000, "folate_ug": 570}
+    if state == "nursing":
+        return {"iron_mg": 23, "calcium_mg": 1200, "folate_ug": 330}
+    if age <= 12:
+        return {"iron_mg": 28 if female else 16, "calcium_mg": 850, "folate_ug": 220}
+    if age <= 15:
+        return {"iron_mg": 30 if female else 22, "calcium_mg": 1000,
+                "folate_ug": 245 if female else 285}
+    if age <= 17:
+        return {"iron_mg": 32 if female else 26, "calcium_mg": 1050,
+                "folate_ug": 270 if female else 340}
+    if female:
+        return {"iron_mg": 19 if age >= 50 else 29, "calcium_mg": 1200 if age >= 50 else 1000,
+                "folate_ug": 220}
+    if gender == "male":
+        return {"iron_mg": 19, "calcium_mg": 1000, "folate_ug": 300}
+    # Sex unrecorded: the higher of each, so neither is under-served.
+    return {"iron_mg": 29 if age < 50 else 19, "calcium_mg": 1200 if age >= 50 else 1000,
+            "folate_ug": 300}
+
+
 def nutrient_targets(target_kcal: int, protein_target_g: int, protein_floor_g: int,
                      conditions, *, age: int, weight_kg, pregnant_or_nursing: bool,
-                     fluid_weight_kg=None) -> dict:
+                     fluid_weight_kg=None, gender: str = "other", state: str | None = None,
+                     potassium_restricted: bool = False) -> dict:
     """What a dietitian writes beside the energy figure, for this patient.
 
     Carbohydrate, fat and fibre follow from the energy and protein targets, so the
@@ -239,6 +267,16 @@ def nutrient_targets(target_kcal: int, protein_target_g: int, protein_floor_g: i
         },
         "notes": [],
     }
+    rda = _rda(age, gender, state)
+    targets["iron_mg"] = {"min": rda["iron_mg"]}
+    targets["calcium_mg"] = {"min": rda["calcium_mg"]}
+    targets["folate_ug"] = {"min": rda["folate_ug"]}
+    targets["sources"]["minerals"] = "ICMR-NIN 2020 RDA (iron, calcium, folate)"
+    if age >= 18 and not renal and not potassium_restricted:
+        # WHO (2012): at least 3510 mg potassium a day for adults, for blood pressure.
+        # The opposite advice in kidney disease or on a potassium-raising medicine.
+        targets["potassium_mg"] = {"min": 3510}
+        targets["sources"]["potassium"] = "WHO, potassium intake guideline (2012)"
     if cardiac:
         # AHA (2021): saturated fat < 6-7% of energy for LDL lowering.
         targets["sat_fat_g"] = {"max": round(0.07 * target_kcal / 9)}
@@ -488,9 +526,13 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
         protein_target = protein_floor = int(round(target * 0.15 / 4))
     protein_floor = min(protein_floor, protein_target)
 
+    from services.diet_clinical_notes import medication_matches
+    k_raising = any(m["key"] == "potassium_raising" for m in medication_matches(user_profile)[0])
     targets = nutrient_targets(
         target, protein_target, protein_floor, conditions, age=age, weight_kg=weight_kg,
-        pregnant_or_nursing=flag,
+        pregnant_or_nursing=flag, gender=gender,
+        state="nursing" if nursing else ("pregnant" if pregnant else None),
+        potassium_restricted=k_raising,
         fluid_weight_kg=(_protein_basis_weight(float(weight_kg), height_cm, bmi_category)
                          if weight_kg else None))
     return {

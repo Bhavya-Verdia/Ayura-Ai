@@ -1734,10 +1734,10 @@
       "vegetarian"
     ],
     "nutrition_per_100g": {
-      "calories": 40.0,
-      "protein_g": 3.3,
-      "carbs_g": 4.8,
-      "fat_g": 0.9,
+      "calories": 32.0,
+      "protein_g": 2.6,
+      "carbs_g": 3.5,
+      "fat_g": 0.8,
       "fiber_g": 0.0
     },
     "nutrition_source": "usda",
@@ -7402,13 +7402,13 @@
       "vegan"
     ],
     "nutrition_per_100g": {
-      "calories": 44.0,
-      "protein_g": 0.9,
-      "carbs_g": 10.2,
-      "fat_g": 0.6,
-      "fiber_g": 4.3
+      "calories": 24.0,
+      "protein_g": 0.3,
+      "carbs_g": 4.4,
+      "fat_g": 0.2,
+      "fiber_g": 7.8
     },
-    "nutrition_source": "usda",
+    "nutrition_source": "ifct2017",
     "ayurvedic": {
       "rasa": [
         "sour",
@@ -7927,13 +7927,13 @@
       "vegan"
     ],
     "nutrition_per_100g": {
-      "calories": 43.0,
+      "calories": 27.0,
       "protein_g": 0.8,
-      "carbs_g": 9.3,
-      "fat_g": 0.3,
-      "fiber_g": 0.5
+      "carbs_g": 5.2,
+      "fat_g": 0.2,
+      "fiber_g": 2.1
     },
-    "nutrition_source": "authored_estimate",
+    "nutrition_source": "ifct2017",
     "ayurvedic": {
       "rasa": [
         "sweet",
@@ -8672,13 +8672,13 @@
       "vegan"
     ],
     "nutrition_per_100g": {
-      "calories": 49.0,
-      "protein_g": 4.4,
-      "carbs_g": 6.0,
-      "fat_g": 0.9,
-      "fiber_g": 1.1
+      "calories": 34.0,
+      "protein_g": 3.7,
+      "carbs_g": 2.2,
+      "fat_g": 0.8,
+      "fiber_g": 4.9
     },
-    "nutrition_source": "usda",
+    "nutrition_source": "ifct2017",
     "ayurvedic": {
       "rasa": [
         "bitter",
@@ -10452,13 +10452,13 @@
       "vegan"
     ],
     "nutrition_per_100g": {
-      "calories": 89.0,
-      "protein_g": 1.1,
-      "carbs_g": 22.8,
-      "fat_g": 0.3,
-      "fiber_g": 2.6
+      "calories": 80.0,
+      "protein_g": 1.2,
+      "carbs_g": 17.6,
+      "fat_g": 0.2,
+      "fiber_g": 3.6
     },
-    "nutrition_source": "usda",
+    "nutrition_source": "ifct2017",
     "ayurvedic": {
       "rasa": [
         "astringent",
@@ -10817,11 +10817,11 @@
       "vegan"
     ],
     "nutrition_per_100g": {
-      "calories": 16.0,
-      "protein_g": 3.2,
-      "carbs_g": 10.8,
+      "calories": 40.0,
+      "protein_g": 3.6,
+      "carbs_g": 4.9,
       "fat_g": 0.4,
-      "fiber_g": 3.2
+      "fiber_g": 4.8
     },
     "nutrition_source": "ifct2017",
     "ayurvedic": {

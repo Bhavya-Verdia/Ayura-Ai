@@ -87,7 +87,9 @@ FRUITS = [
       dosha=(-1, -2, -1), ritu=("sharad", "hemanta", "shishira"),
       pathya_for=("acidity", "diabetes", "anemia", "psoriasis", "high_cholesterol",
                   "hypothyroid", "bloating"),
-      nutrition=N(44, 0.9, 10.2, 0.6, 4.3, source="usda"), **_F),
+      # IFCT 2017 E021 (Emblica officinalis). It was 44 kcal from USDA's European
+      # gooseberry, a different fruit (Ribes uva-crispa).
+      nutrition=N(24, 0.3, 4.4, 0.2, 7.8, source="ifct2017"), **_F),
 
     F("Narikela (Fresh Coconut)", id="coconut",
       rasa=("madhura",), guna=("guru", "snigdha"), virya="shita", vipaka="madhura",
@@ -148,7 +150,8 @@ FRUITS = [
       pathya_for=("acidity", "anemia", "fatty_liver"),
       apathya_for=("asthma",),
       viruddha_with=("milk_full_fat",),
-      nutrition=N(43, 0.8, 9.3, 0.3, 0.5, source="authored_estimate"), **_F),
+      # IFCT 2017 E034 (Citrus limetta, pulp); it was an unsourced 43 kcal.
+      nutrition=N(27, 0.8, 5.2, 0.2, 2.1, source="ifct2017"), **_F),
 
     F("Nashpati (Pear)", id="pear",
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha"), virya="shita",

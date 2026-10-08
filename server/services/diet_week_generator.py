@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import math
 import random
 from datetime import datetime, timezone
 
@@ -73,6 +74,8 @@ This week's staples, so the four weeks differ: {staples}.{fasting}
 Per-meal kcal budget: breakfast ~{b} | lunch ~{l} | snack ~{s} | dinner ~{d}. \
 Protein at least {protein} g per day. Carbohydrate about {carbs} g per day. Fat about \
 {fat} g per day in total — ghee or oil 1-2 tsp (5-10 g) per main meal, not more.{carb_rule}
+Salt: list it as a component ("salt", grams) in every savoury meal — about {salt_g} g a day \
+in all; the plan's sodium is counted from it.{micro_rule}
 Real portions: at most 2 katori (300 g) of cooked rice or grain, or 3 roti, per meal; at most \
 2 katori of any one vegetable; at most 40 g nuts. For a high energy target, use denser foods \
 (roti, paratha, poha, paneer or tofu, a glass of milk or plant milk, nuts) — never a mountain of rice.
@@ -176,6 +179,28 @@ def _validate_overview(data):
 
 
 # ── Variety ──────────────────────────────────────────────────────────────────
+
+def _salt_budget(energy: dict) -> str:
+    limit = ((energy.get("nutrient_targets") or {}).get("sodium_mg") or {}).get("max") or 2000
+    # Foods themselves carry roughly 400 mg; the rest is the cook's salt (~388 mg/g).
+    return f"{max(1.5, round((limit - 400) / 388, 1))}"
+
+
+def _micro_rule(energy: dict) -> str:
+    """Where the day's iron, calcium and folate come from, for the groups whose need
+    a plain plate misses: pregnancy, anaemia-prone women and girls, and the old."""
+    nt = energy.get("nutrient_targets") or {}
+    iron, calcium = (nt.get("iron_mg") or {}).get("min"), (nt.get("calcium_mg") or {}).get("min")
+    bits = []
+    if iron and iron >= 27:
+        bits.append(f"iron about {iron} mg a day: ragi, bajra, poha, greens (methi, palak, "
+                    "drumstick leaves), dates, jaggery in place of sugar, sesame; a vitamin C "
+                    "food (amla, guava, lemon) at the same meal; no tea within an hour")
+    if calcium and calcium >= 1000:
+        bits.append(f"calcium about {calcium} mg a day: ragi, milk, curd, paneer, sesame, "
+                    "methi leaves")
+    return ("\nMINERALS — " + "; ".join(bits) + ".") if bits else ""
+
 
 def _carb_rule(energy: dict) -> str:
     """The plate rules portion scaling cannot reach afterwards. A day built on rice
@@ -295,7 +320,7 @@ def _safe_meal(slot: str, allowed: list[dict], budget: int, rng: random.Random) 
         parts = [one("grain", 180), one("fruit", 100), one("nut_seed", 10)]
     else:
         parts = [one("grain", 180), one("legume", 150), one("vegetable", 150),
-                 one("oil", 5)]
+                 one("oil", 5), {"food": "salt", "grams": _COOK_SALT_G}]
     parts = [p for p in parts if p]
     meal = {"meal_name": " with ".join(dn._short(dn.name_of(p["food"])) for p in parts[:3]),
             "description": "A simple plate built from your allowed foods.",
@@ -313,8 +338,17 @@ def _slot_kcal(meal) -> float:
     return float(((meal or {}).get("macros_approx") or {}).get("calories") or 0)
 
 
+def _fixed(meal: dict, c: dict) -> bool:
+    """A side added for a mineral keeps the portion it was added at. The solver
+    trimmed a glass of milk to 130 ml and ragi malt to 13 g along with the rest of
+    the plate, taking back most of what it was added for."""
+    return c["food"] in (meal.get("mineral_sides") or ())
+
+
 def _rescale(meal: dict, factor: float) -> None:
-    meal["components"] = dn.scale(dn.components_of(meal), factor)
+    comps = dn.components_of(meal)
+    fixed = [c for c in comps if _fixed(meal, c)]
+    meal["components"] = dn.scale([c for c in comps if not _fixed(meal, c)], factor) + fixed
     _finish_meal_inplace(meal)
 
 
@@ -327,6 +361,7 @@ _ROLE_BOUNDS = {
     "grain": (0.5, 1.6), "protein": (0.6, 2.0), "vegetable": (0.6, 1.6),
     "fruit": (0.6, 1.5), "sweet_fruit": (0.4, 1.3), "nut": (0.5, 1.6),
     "fat": (0.3, 1.3), "sweet": (0.0, 1.0), "drink": (0.7, 1.3), "other": (0.8, 1.2),
+    "fixed": (1.0, 1.0),
 }
 _NUTRIENTS = ("calories", "protein_g", "carbs_g", "fat_g", "fiber_g")
 
@@ -335,8 +370,9 @@ def _role_matrix(day: dict) -> dict:
     """{role: {nutrient: amount}} — what each kind of component contributes today."""
     out: dict = {}
     for s in _COUNTED:
-        for c in (day.get(s) or {}).get("components") or []:
-            r = dn.role(c["food"])
+        meal = day.get(s) or {}
+        for c in meal.get("components") or []:
+            r = "fixed" if _fixed(meal, c) else dn.role(c["food"])
             if r == "seasoning":
                 continue
             per = (dn.food(c["food"]) or {}).get("nutrition_per_100g") or {}
@@ -395,9 +431,10 @@ def _role_ceilings(day: dict, scale: float = 1.0) -> dict:
     foods passes `meal_cap` — a plate a person would actually be served."""
     out: dict = {}
     for s in _COUNTED:
-        for c in (day.get(s) or {}).get("components") or []:
+        meal = day.get(s) or {}
+        for c in meal.get("components") or []:
             r = dn.role(c["food"])
-            if r == "seasoning" or not c["grams"]:
+            if r == "seasoning" or not c["grams"] or _fixed(meal, c):
                 continue
             r = r if r in _ROLE_BOUNDS else "other"
             out[r] = min(out.get(r, 9.9), dn.meal_cap(c["food"], scale) / c["grams"])
@@ -413,7 +450,7 @@ def _clip_to_caps(day: dict, scale: float = 1.0) -> bool:
         changed = False
         for c in meal.get("components") or []:
             cap = dn.meal_cap(c["food"], scale)
-            if dn.role(c["food"]) != "seasoning" and c["grams"] > cap:
+            if dn.role(c["food"]) != "seasoning" and not _fixed(meal, c) and c["grams"] > cap:
                 c["grams"] = cap
                 changed = True
         if changed:
@@ -470,7 +507,7 @@ def _apply_factors(day: dict, x: dict) -> None:
             continue
         for c in meal["components"]:
             r = dn.role(c["food"])
-            if r == "seasoning":
+            if r == "seasoning" or _fixed(meal, c):
                 continue
             f = x.get(r if r in _ROLE_BOUNDS else "other", 1.0)
             g = c["grams"] * f
@@ -538,9 +575,125 @@ def _reconcile_day(day: dict, energy: dict) -> dict:
         # solver runs again so other foods can make up the energy if they have room.
         if not _clip_to_caps(day, scale):
             break
+    _trim_salt(day, energy)
     after = _day_totals(day)["calories"]
     return {"factor": round(after / before, 2), "before": round(before), "after": round(after),
             "role_factors": {r: round(v, 2) for r, v in factors.items() if abs(v - 1) > 0.02}}
+
+
+_SALTS = ("salt", "rock_salt")
+_MIN_SALT_PER_MEAL = 0.5
+# Salt in a home-cooked savoury main meal, before any trimming to the day's limit.
+_COOK_SALT_G = 1.5
+
+
+def _trim_salt(day: dict, energy: dict) -> None:
+    """Hold the day under its sodium limit by trimming the salt added in cooking —
+    in an Indian kitchen almost all of it comes from there, and it is the one
+    component that changes no dish. Never below half a gram in a savoury meal."""
+    limit = ((energy.get("nutrient_targets") or {}).get("sodium_mg") or {}).get("max")
+    if not limit:
+        return
+    sodium = _day_totals(day)["sodium_mg"]
+    per_g = (dn.micronutrients().get("salt") or {}).get("sodium_mg", 38758) / 100.0
+    salts = [(s, c) for s in _COUNTED for c in ((day.get(s) or {}).get("components") or [])
+             if c["food"] in _SALTS]
+    salt_g = sum(c["grams"] for _, c in salts)
+    if sodium <= limit or not salt_g:
+        return
+    keep = max(0.0, (salt_g - (sodium - limit) / per_g) / salt_g)
+    for s in {s for s, _ in salts}:
+        for c in day[s]["components"]:
+            if c["food"] in _SALTS:
+                # Down to the tenth of a gram: rounding to nearest put
+                # days 2-24 mg over the limit the trim exists to hold.
+                c["grams"] = max(_MIN_SALT_PER_MEAL, math.floor(c["grams"] * keep * 10) / 10)
+        _finish_meal_inplace(day[s])
+
+
+# ── Minerals ─────────────────────────────────────────────────────────────────
+# What a dietitian adds when a day is short of calcium, iron or potassium: an
+# ordinary side, in the meal it is usually eaten with. Scaling portions cannot fix
+# a shortfall like this — it is composition — and measured on 60 profiles calcium
+# was met on almost no day for most patients before this step.
+# (food, grams, slot, how it reads on the plate)
+_MINERAL_SIDES = (
+    ("curd_yogurt", 150, "lunch", "a katori of curd"),
+    ("buttermilk_chaas", 200, "lunch", "a glass of chaas"),
+    ("milk_full_fat", 200, "breakfast", "a glass of milk"),
+    ("soy_milk", 200, "breakfast", "a glass of soy milk"),
+    ("almond_milk", 200, "breakfast", "a glass of almond milk"),
+    ("tofu_firm", 80, "dinner", "a side of tofu"),
+    ("paneer", 40, "dinner", "a little paneer"),
+    ("sesame_seeds_til", 10, "snack", "a spoon of roasted til"),
+    ("ragi_flour", 30, "snack", "a cup of ragi malt"),
+    ("methi_fenugreek_leaves", 60, "lunch", "a side of methi saag"),
+    ("cluster_beans_gavar", 80, "dinner", "a side of gavar"),
+    ("pumpkin_seeds", 10, "snack", "a spoon of pumpkin seeds"),
+    ("amla", 40, "snack", "an amla"),
+    ("banana", 100, "snack", "a banana"),
+    ("coconut_water", 200, "snack", "a glass of coconut water"),
+)
+_MINERAL_KEYS = ("calcium_mg", "iron_mg", "potassium_mg")
+# Spinach calcium is bound to oxalate and barely absorbed; it is counted in the
+# totals, as the tables do, but never chosen to supply calcium.
+_POOR_CALCIUM = {"spinach", "palak"}
+_MAX_SIDES_PER_DAY = 3
+
+
+def _mineral_gaps(day: dict, energy: dict) -> dict:
+    nt = energy.get("nutrient_targets") or {}
+    tot = _day_totals(day)
+    gaps = {}
+    for k in _MINERAL_KEYS:
+        lo = (nt.get(k) or {}).get("min")
+        if lo and tot.get(k, 0) < lo:
+            gaps[k] = (lo - tot[k], lo)
+    return gaps
+
+
+def _add_mineral_sides(day: dict, energy: dict, allowed_ids: set) -> list[str]:
+    """Add up to three ordinary sides to a day short of calcium, iron or potassium,
+    chosen from the patient's screened foods. A side that would make its meal a
+    Viruddha combination (milk beside banana or sour fruit) is passed over."""
+    from services.ahara_safety import scan_meal_for_viruddha
+
+    added: list[str] = []
+    table = dn.micronutrients()
+    for _ in range(_MAX_SIDES_PER_DAY):
+        gaps = _mineral_gaps(day, energy)
+        if not gaps:
+            break
+        present = {c["food"] for s in _COUNTED for c in ((day.get(s) or {}).get("components") or [])}
+        best, best_score = None, 0.08
+        for fid, grams, slot, phrase in _MINERAL_SIDES:
+            meal = day.get(slot)
+            if fid not in allowed_ids or fid in present or not isinstance(meal, dict):
+                continue
+            row, kcal = table.get(fid) or {}, (dn.food(fid) or {}).get("nutrition_per_100g", {})
+            score = 0.0
+            for k, (short, target) in gaps.items():
+                if k == "calcium_mg" and fid in _POOR_CALCIUM:
+                    continue
+                gain = (row.get(k) or 0) * grams / 100
+                score += min(gain, short) / target
+            score /= 1 + (kcal.get("calories") or 0) * grams / 100 / 150
+            if score <= best_score:
+                continue
+            trial = {**meal, "components": [*meal["components"], {"food": fid, "grams": grams}]}
+            if len(scan_meal_for_viruddha(trial, slot)) > len(scan_meal_for_viruddha(meal, slot)):
+                continue
+            best, best_score = (fid, grams, slot, phrase), score
+        if not best:
+            break
+        fid, grams, slot, phrase = best
+        meal = day[slot]
+        meal["components"].append({"food": fid, "grams": grams})
+        meal["meal_name"] = f"{meal.get('meal_name') or ''} + {phrase}".strip(" +")
+        meal.setdefault("mineral_sides", []).append(fid)
+        _finish_meal_inplace(meal)
+        added.append(fid)
+    return added
 
 
 def _finish_meal_inplace(meal: dict) -> None:
@@ -549,8 +702,8 @@ def _finish_meal_inplace(meal: dict) -> None:
 
 def _day_totals(day: dict) -> dict:
     """The day's nutrition, including the daily drink — a 220 kcal glass of milk was
-    left out of every total."""
-    tot = dict.fromkeys(("calories", "protein_g", "carbs_g", "fat_g", "fiber_g"), 0.0)
+    left out of every total — and its minerals and folate."""
+    tot = dict.fromkeys(("calories", "protein_g", "carbs_g", "fat_g", "fiber_g") + dn.MICROS, 0.0)
     for s in SLOTS + (DRINK,):
         m = (day.get(s) or {}).get("macros_approx") or {}
         for k in tot:
@@ -558,14 +711,76 @@ def _day_totals(day: dict) -> dict:
     return {k: round(v, 1) for k, v in tot.items()}
 
 
-def finalise_weeks(weeks: list[dict], energy: dict, fasting: set) -> dict:
+def _micro_report(weeks: list[dict], energy: dict, fasting: set) -> dict:
+    """Average per day against each mineral target, and on how many days it is met.
+    A food with no data is named, so a short figure is not read as a measured one."""
+    nt = energy.get("nutrient_targets") or {}
+    days = [w["daily_plan"][d] for w in weeks for d in DAYS
+            if d in w["daily_plan"] and not w["daily_plan"][d].get("is_fasting")]
+    out: dict = {}
+    for key in dn.MICROS:
+        vals = [d.get("day_totals", {}).get(key, 0.0) for d in days]
+        if not vals:
+            continue
+        row = {"average": round(sum(vals) / len(vals), 1)}
+        t = nt.get(key) or {}
+        if t.get("max") is not None:
+            row["max"] = t["max"]
+            row["days_over"] = sum(1 for v in vals if v > t["max"])
+        if t.get("min") is not None:
+            row["min"] = t["min"]
+            row["days_met"] = sum(1 for v in vals if v >= t["min"])
+        out[key] = row
+    unmeasured = sorted({f for w in weeks for d in w["daily_plan"].values()
+                         for s in _COUNTED for f in ((d.get(s) or {}).get("micros_unmeasured") or [])})
+    out["unmeasured_foods"] = unmeasured
+    out["days_counted"] = len(days)
+    out["notices"] = _mineral_notices(out)
+    return out
+
+
+# Ordinary food reaches an iron requirement of 27-32 mg, or calcium of 1200 mg
+# without dairy, only with difficulty; that is why India's programmes supplement
+# (Anaemia Mukt Bharat for iron and folic acid). Where the plan's food falls short
+# the patient is told so, and told who decides about a tablet.
+_MINERAL_ADVICE = {
+    "iron_mg": ("iron", "Ask your doctor whether you need an iron-folic acid tablet, and "
+                "have your haemoglobin checked. Eat a vitamin C food (amla, guava, lemon) "
+                "with your meals, and keep tea and coffee an hour away from them."),
+    "calcium_mg": ("calcium", "Ask your doctor whether you need a calcium and vitamin D "
+                   "supplement."),
+}
+
+
+def _mineral_notices(report: dict) -> list[str]:
+    notes = []
+    for key, (label, advice) in _MINERAL_ADVICE.items():
+        row = report.get(key) or {}
+        lo, avg = row.get("min"), row.get("average")
+        if lo and avg is not None and avg < 0.9 * lo:
+            notes.append(f"The food in this plan gives about {round(avg)} mg of {label} a "
+                         f"day; you need about {lo} mg. {advice}")
+    return notes
+
+
+def finalise_weeks(weeks: list[dict], energy: dict, fasting: set,
+                   allowed_ids: set | None = None) -> dict:
     """Bring every day to its targets and report what was reached. Shared by the LLM
     path and the rule-engine fallback, so a fallback plan is held to the same numbers."""
+    # A renal plan is held to a protein ceiling and, by the clinician, to phosphorus
+    # and potassium; dairy and seeds are the wrong thing to add to it.
+    renal = bool(((energy.get("nutrient_targets") or {}).get("protein_g") or {}).get("max"))
     # Energy: scale each day toward target, then report.
     days_report, below_protein = [], []
     for w in weeks:
         for d in DAYS:
             day = w["daily_plan"][d]
+            if allowed_ids and not renal and not day.get("is_fasting"):
+                # Sides first, so the solver sizes the whole plate to the energy band;
+                # then once more for what the solver's trimming took back.
+                _add_mineral_sides(day, energy, allowed_ids)
+                _reconcile_day(day, energy)
+                _add_mineral_sides(day, energy, allowed_ids)
             r = _reconcile_day(day, energy)
             day["day_totals"] = _day_totals(day)
             days_report.append({"week": w["week_number"], "day": d, **r,
@@ -591,6 +806,7 @@ def finalise_weeks(weeks: list[dict], energy: dict, fasting: set) -> dict:
         "protein_floor_g": energy["protein_floor_g"],
         "days_below_protein_floor": below_protein,
         "days": days_report,
+        "micronutrients": _micro_report(weeks, energy, fasting),
     }
     # Some combinations of targets cannot all be met with ordinary foods — a renal
     # protein ceiling beside a high energy need is the usual one. A plan that misses
@@ -636,6 +852,7 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
             fat=(energy.get("nutrient_targets") or {}).get("fat_g", {}).get("target", "~30% of energy"),
             carbs=(energy.get("nutrient_targets") or {}).get("carbs_g", {}).get("target", "~55% of energy"),
             carb_rule=_carb_rule(energy),
+            salt_g=_salt_budget(energy), micro_rule=_micro_rule(energy),
             drink=_DRINK_SHAPE)
 
     overview_prompt = OVERVIEW_PROMPT.format(
@@ -737,7 +954,7 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
                 slot, allowed, mb.get(slot, 0) if slot != DRINK else 0, rng)
             report["substituted"] += 1
 
-    reconciliation = finalise_weeks(weeks, energy, fasting)
+    reconciliation = finalise_weeks(weeks, energy, fasting, allowed_ids)
     distinct = {(m.get("meal_name") or "").lower() for _, _, s, day in _units(weeks)
                 if s in SLOTS for m in [day[s]]}
     report["weeks_from_rule_engine"] = failed
@@ -757,7 +974,8 @@ def engine_plan_to_weeks(raw: dict, energy: dict, allowed_ids: set | None = None
     brought to the same targets. Its meals were lists of foods with a portion each,
     and they missed the protein floor on 26 of 28 days."""
     weeks, fasting = _engine_weeks(raw, allowed_ids)
-    return {"diet_weeks": weeks, "energy_reconciliation": finalise_weeks(weeks, energy, fasting)}
+    return {"diet_weeks": weeks,
+            "energy_reconciliation": finalise_weeks(weeks, energy, fasting, allowed_ids)}
 
 
 def _engine_weeks(raw: dict, allowed_ids: set | None = None) -> tuple[list[dict], set]:
@@ -791,6 +1009,12 @@ def _engine_weeks(raw: dict, allowed_ids: set | None = None) -> tuple[list[dict]
                 if allowed_fat and slot != "snack" and not out["is_fasting"] and not any(
                         dn.role(c["food"]) == "fat" for c in comps):
                     comps.append({"food": allowed_fat, "grams": 5})
+                # The cook salts the dal and sabzi. Leaving it out reported a day's
+                # sodium at 160 mg — a measurement of nothing. `_trim_salt` holds the
+                # day to its limit afterwards.
+                if slot in ("lunch", "dinner") and not out["is_fasting"] and not any(
+                        c["food"] in _SALTS for c in comps):
+                    comps.append({"food": "salt", "grams": _COOK_SALT_G})
                 out[slot] = _finish_meal({
                     "meal_name": " with ".join(dn._short(i.get("name") or i["id"]) for i in items[:3]),
                     "description": "Composed from your screened food list.",
