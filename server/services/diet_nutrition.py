@@ -32,12 +32,21 @@ from functools import lru_cache
 from pathlib import Path
 
 _LIB_PATH = Path(__file__).resolve().parents[1] / "data" / "knowledge_base" / "diet_foods.json"
-# Sodium, potassium, phosphorus, calcium, iron and folate per 100 g, built by
-# `scripts/build_diet_micronutrients.py` from USDA SR Legacy and IFCT 2017 rows chosen
-# by hand. A food with no trustworthy source carries None and is reported as
-# unmeasured, never counted as zero.
+# Sodium, potassium, phosphorus, calcium, iron, folate, zinc, B12 and vitamin D per
+# 100 g, built by `scripts/build_diet_micronutrients.py` from USDA SR Legacy and IFCT
+# 2017 rows chosen by hand. A food with no trustworthy source carries None and is
+# reported as unmeasured, never counted as zero.
 _MICRO_PATH = _LIB_PATH.parent / "diet_micronutrients.json"
-MICROS = ("sodium_mg", "potassium_mg", "phosphorus_mg", "calcium_mg", "iron_mg", "folate_ug")
+TABLE_MICROS = ("sodium_mg", "potassium_mg", "phosphorus_mg", "calcium_mg", "iron_mg",
+                 "folate_ug", "zinc_mg", "b12_ug", "vitd_ug")
+MICROS = TABLE_MICROS + ("iodine_ug",)
+# Iodine is counted from the salt the cook adds, because in India that is where it
+# comes from: salt for human use must be iodised (Food Safety and Standards
+# (Prohibition and Restrictions on Sales) Regulations 2011, 2.3.12) at not less than
+# 15 ppm at the consumer's end, i.e. 15 ug per gram. Saindhava (rock salt) is not
+# iodised, and the classical preference for it is the reason this is counted at all.
+# The few micrograms dairy adds vary with the cattle's feed and are not counted.
+IODINE_UG_PER_G = {"salt": 15.0, "rock_salt": 0.0}
 
 # id: (name, kcal, protein, carbs, fat, fibre, source, flags)
 # flags: "nonveg-free" foods are all vegetarian; `animal` marks non-vegan; allergen
@@ -257,13 +266,15 @@ def compute(components: list[dict]) -> dict:
         m = table.get(c["food"]) or {}
         if m.get("sodium_mg") is None and c["food"] != "water":
             unmeasured.append(c["food"])
-        for k in MICROS:
+        for k in TABLE_MICROS:
             if m.get(k) is not None:
                 micro_total[k] += float(m[k]) * c["grams"] / 100.0
+        micro_total["iodine_ug"] += IODINE_UG_PER_G.get(c["food"], 0.0) * c["grams"]
     out = {"calories": round(total["calories"]), "protein_g": round(total["protein_g"], 1),
            "carbs_g": round(total["carbs_g"], 1), "fat_g": round(total["fat_g"], 1),
            "fiber_g": round(total["fiber_g"], 1)}
-    out.update({k: round(v, 1) for k, v in micro_total.items()})
+    out.update({k: round(v, 2 if k in ("b12_ug", "vitd_ug") else 1)
+                for k, v in micro_total.items()})
     return {"nutrition": out, "unknown": unknown, "unmeasured_micros": unmeasured}
 
 

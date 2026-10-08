@@ -426,7 +426,9 @@ function NutrientTargetsCard({ plan }) {
     if (!m || m.average == null) return ''
     const days = micro.days_counted
     const hit = m.days_met ?? (m.days_over != null ? days - m.days_over : null)
-    return ` — this plan: ~${Math.round(m.average)} ${unit} a day${hit != null && days ? `, on target ${hit} of ${days} days` : ''}`
+    // B12 and vitamin D are a few micrograms: rounding 1.4 to 1 hides the figure.
+    const avg = m.average < 10 ? Math.round(m.average * 10) / 10 : Math.round(m.average)
+    return ` — this plan: ~${avg} ${unit} a day${hit != null && days ? `, on target ${hit} of ${days} days` : ''}`
   }
   const mineral = (key, label, unit) => t[key] && [label, `at least ${t[key].min} ${unit}${delivered(key, unit)}`]
   const unmeasured = micro.unmeasured_foods || []
@@ -440,6 +442,10 @@ function NutrientTargetsCard({ plan }) {
     mineral('iron_mg', 'Iron', 'mg'),
     mineral('calcium_mg', 'Calcium', 'mg'),
     mineral('folate_ug', 'Folate', 'µg'),
+    mineral('zinc_mg', 'Zinc', 'mg'),
+    mineral('b12_ug', 'Vitamin B12', 'µg'),
+    mineral('vitd_ug', 'Vitamin D', 'µg'),
+    mineral('iodine_ug', 'Iodine (from iodised salt)', 'µg'),
     t.added_sugar_g && ['Added sugar', t.added_sugar_g.max === 0 ? 'none' : `under ${t.added_sugar_g.max} g`],
     t.water_ml && ['Water', t.water_ml.target ? `about ${(t.water_ml.target / 1000).toFixed(1)} L` : 'as your doctor advises'],
   ].filter(Boolean)
@@ -458,7 +464,7 @@ function NutrientTargetsCard({ plan }) {
       {(micro.notices || []).map((n, i) => <p key={`m${i}`} className="diet-energy-note">{n}</p>)}
       {unmeasured.length > 0 && (
         <p className="diet-energy-note">
-          Minerals are not counted for {unmeasured.map(f => f.replace(/_/g, ' ')).join(', ')} — no
+          Minerals and vitamins are not counted for {unmeasured.map(f => f.replace(/_/g, ' ')).join(', ')} — no
           reliable composition data — so the figures above may run a little low.
         </p>
       )}

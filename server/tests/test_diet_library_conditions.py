@@ -312,4 +312,10 @@ def test_the_number_of_withheld_claims_is_pinned():
     # is Aluka, the archetypal Vatala kanda. `peanuts` and `cream` went the same way.
     # All three claims were restored for that reason. If this number moves, read the
     # list: a term going quiet is a cost, not a neutral outcome.
-    assert len(withheld_claims()) == 76
+    #
+    # 76 -> 73 (2026-10, dietitian pass): soy lost its PCOS, thyroid and (tofu) IBS
+    # claims and masoor its acidity claim, so `paneer` (shared with "vegan paneer")
+    # and `masura` stopped disagreeing for those four. `paneer` now disagrees for
+    # hypothyroid instead — the dairy row keeps the claim, tofu lost it — and the
+    # dairy row is still screened by `kilata`.
+    assert len(withheld_claims()) == 73

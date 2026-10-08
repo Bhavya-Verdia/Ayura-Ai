@@ -86,8 +86,54 @@ def allowed_foods(user_profile: dict, diet_prefs: dict, extra_terms=None) -> dic
         extra_terms={**(extra_terms or {}), **meds},
         pregnant=bool(user_profile.get("pregnancy_or_nursing")),
     )
+    conditions = diet_conditions(user_profile, diet_prefs)
+    if _is_renal(conditions):
+        for fid in high_potassium_ids(foods):
+            excluded.setdefault(fid, "high in potassium (kidney disease)")
     allowed = [f for f in foods if f["id"] not in excluded]
     return {"allowed": allowed, "excluded": excluded}
+
+
+# Kidney disease: the fruits, vegetables and drinks with 300 mg or more of potassium
+# per 100 g are left out — kiwi, banana, guava, dates, potato, yam, arbi, spinach,
+# drumstick, coconut water and the like, the foods every Indian renal diet sheet
+# names. Measured on the reviewer personas, a CKD patient was served kiwi, which no
+# scan caught because no list named it; this reads the composition table instead of
+# a list, so a food added later is screened too. It is deliberately not a full
+# hyperkalaemia diet: whether that is needed depends on the blood potassium, which
+# the app does not have, and KDOQI 2020 advises against restricting without it. The
+# seasonings (ginger, garlic) are used in grams and stay.
+_RENAL_K_PER_100G = 300
+_K_SCREENED_CATEGORIES = {"fruit", "vegetable", "beverage"}
+_DRIED_FRUIT = {"dates", "figs", "raisins"}
+_EXTRA_VEGETABLES = {"okra_bhindi", "brinjal_baingan", "tinda", "parwal"}
+_USED_AS_SEASONING = {"ginger", "garlic"}
+
+
+def high_potassium_ids(foods: list[dict]) -> set[str]:
+    from services.diet_nutrition import micronutrients
+
+    table = micronutrients()
+    out = set()
+    for f in foods:
+        fid = f["id"]
+        if fid in SEASONINGS or fid in _USED_AS_SEASONING:
+            continue
+        if f.get("category") not in _K_SCREENED_CATEGORIES and fid not in _DRIED_FRUIT \
+                and fid not in _EXTRA_VEGETABLES:
+            continue
+        k = (table.get(fid) or {}).get("potassium_mg")
+        if k is not None and k >= _RENAL_K_PER_100G:
+            out.add(fid)
+    return out
+
+
+def _is_renal(conditions) -> bool:
+    from services.diet_energy import _RENAL
+    from services.ahara_safety import _canon_condition
+
+    return any((_canon_condition(c) or str(c).lower()) in _RENAL
+               or str(c).lower().replace(" ", "_") in _RENAL for c in conditions or [])
 
 
 def food_list_for_prompt(allowed: list[dict]) -> str:

@@ -37,6 +37,14 @@ MEDICATIONS = {
         "Take with meals. Long-term use lowers vitamin B12 — include milk, curd or a "
         "fortified food daily and ask for a B12 test once a year.",
         (), "ADA Standards of Care in Diabetes (2024), section 9"),
+    "acid_suppressant": (
+        "Acid-reducing medicine (omeprazole, pantoprazole, ranitidine-type)",
+        ("omeprazole", "pantoprazole", "esomeprazole", "rabeprazole", "lansoprazole",
+         "pan 40", "pan-40", "pantocid", "omez", "nexpro", "razo", "rablet", "famotidine",
+         "ranitidine", "rantac", "aciloc"),
+        "Taken for more than two years these lower vitamin B12 absorption from food. "
+        "Include milk or curd daily if you eat dairy, and ask your doctor about a B12 test.",
+        (), "Lam et al., JAMA 2013 (PPI/H2RA use and B12 deficiency)"),
     "hypoglycaemic": (
         "Insulin or a sulfonylurea (glimepiride, gliclazide, glipizide)",
         ("insulin", "glimepiride", "amaryl", "gliclazide", "glizid", "glipizide",
@@ -126,9 +134,14 @@ CONDITION_NOTES = {
                "sold in India is mixed with wheat flour — use a labelled gluten-free one.",
                "ACG coeliac guideline (2023)"),
     "lactose_intolerance": ("Lactose intolerance",
-                            "Curd and buttermilk are usually better tolerated than milk; small "
-                            "amounts of milk with a meal often are too.",
-                            "NIDDK, lactose intolerance"),
+                            "Plain milk is left out of this plan. Curd and paneer are kept, in "
+                            "a katori or a small piece at a time with a meal: curd's cultures "
+                            "digest much of its lactose and paneer loses most of it with the "
+                            "whey, and most people with lactose intolerance manage up to 12 g "
+                            "of lactose at a sitting. If even these upset you, tell us and "
+                            "they will be removed.",
+                            "NIH Consensus Development Conference on lactose intolerance (2010); "
+                            "NIDDK"),
     "ibs": ("IBS",
             "If symptoms persist, a 4-6 week low-FODMAP trial with a dietitian is the "
             "evidence-based next step.",

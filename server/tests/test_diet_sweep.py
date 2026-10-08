@@ -134,10 +134,20 @@ def test_any_patient_gets_a_plan_a_dietitian_would_accept(profile, prefs, monkey
     assert micro["sodium_mg"]["average"] > 600, (who, "salt missing from the count")
     # Calcium and iron: reached by the plan's own food, or the patient is told it was
     # not and who decides about a supplement. A kidney plan adds no sides by design.
-    for key in ("calcium_mg", "iron_mg"):
-        row = micro[key]
-        if row["average"] < 0.9 * row["min"]:
-            assert any(key.split("_")[0] in n for n in micro["notices"]), (who, key, row)
+    # The same for zinc, B12, vitamin D and iodine, none of which a plan reached
+    # by chance before they were counted.
+    from services.diet_week_generator import _MINERAL_ADVICE
+    for key, (label, _, _) in _MINERAL_ADVICE.items():
+        row = micro.get(key) or {}
+        if row.get("min") and row["average"] < 0.9 * row["min"]:
+            assert any(f"of {label} a day" in n for n in micro["notices"]), (who, key, row)
+    # Cooked with iodised salt; rock salt only where a fast asks for it.
+    for w in plan["diet_weeks"]:
+        for d, day in w["daily_plan"].items():
+            if not day.get("is_fasting"):
+                assert not any(c["food"] == "rock_salt"
+                               for s in ("breakfast", "lunch", "snack", "dinner", "special_drink")
+                               for c in (day.get(s) or {}).get("components") or []), (who, d)
     # A fallback composed from category quotas cannot always reach every target on
     # every day; more than a few misses is a solver or composition fault.
     assert len(misses) <= 3, (who, rx["band"], rx["protein_floor_g"], nt["fat_g"], misses[:3])

@@ -3,7 +3,9 @@
 The diet library carried energy, protein, carbohydrate, fat and fibre and nothing
 else, so the plan could state a sodium limit, a renal potassium caution and an
 anaemia note and check none of them. This adds sodium, potassium, phosphorus,
-calcium, iron and folate per 100 g for every food a plan can name.
+calcium, iron, folate, zinc, vitamin B12 and vitamin D per 100 g for every food a
+plan can name. Iodine is not here: in an Indian kitchen it comes from iodised salt,
+and `diet_nutrition` counts it from the salt component.
 
 Every value comes from a row chosen BY HAND below, never from a name match:
   ("sr", fdc_id)            USDA FoodData Central, SR Legacy (2018-04)
@@ -17,6 +19,12 @@ Choices that matter:
   * cooked pulses and grains are the "without salt" rows, and rice and flour the
     UNENRICHED ones — Indian rice and atta are not iron- and folate-fortified the
     way US "enriched" rice is, and salt is counted where the cook adds it;
+  * plant milks are the UNFORTIFIED rows: Indian soy and almond drinks are mostly
+    sold without the calcium, B12 and vitamin D a US carton carries, so counting it
+    would close a vegan's calcium gap with fortification they may not be buying;
+  * IFCT 2017 reports neither B12 nor vitamin D. Plant foods carry none of either,
+    so a plant row from IFCT is 0 for both; paneer takes them from a fresh
+    acid-set whole-milk cheese (`VITAMINS_FROM`);
   * Indian foods come from IFCT where it has them: amla is Emblica (IFCT E021),
     not the European gooseberry, whose numbers the library's macros came from.
 
@@ -38,12 +46,14 @@ from pathlib import Path
 
 OUT = Path(__file__).resolve().parents[1] / "data" / "knowledge_base" / "diet_micronutrients.json"
 SOURCES = Path(__file__).resolve().parent / "diet_micronutrient_sources.json"
-KEYS = ("sodium_mg", "potassium_mg", "phosphorus_mg", "calcium_mg", "iron_mg", "folate_ug")
+KEYS = ("sodium_mg", "potassium_mg", "phosphorus_mg", "calcium_mg", "iron_mg", "folate_ug",
+        "zinc_mg", "b12_ug", "vitd_ug")
 _SR_IDS = {"1093": "sodium_mg", "1092": "potassium_mg", "1091": "phosphorus_mg",
            "1087": "calcium_mg", "1089": "iron_mg", "1190": "folate_dfe", "1177": "folate_total",
+           "1095": "zinc_mg", "1178": "b12_ug", "1114": "vitd_ug",
            "1008": "kcal", "1003": "protein"}
 _IFCT_COLS = {"na": "sodium_mg", "k": "potassium_mg", "p": "phosphorus_mg", "ca": "calcium_mg",
-              "fe": "iron_mg", "folsum": "folate_ug"}
+              "fe": "iron_mg", "folsum": "folate_ug", "zn": "zinc_mg"}
 
 S, I = "sr", "ifct"
 RICE_RAW, URAD_RAW, TOOR_RAW, CHANA_RAW = ("sr", "169756"), ("sr", "174259"), ("sr", "172436"), ("sr", "173756")
@@ -68,13 +78,17 @@ MAP = {
     "buttermilk_chaas": ("scaled", S, "170886", 0.5), "paneer": (I, "L003"), "butter": (S, "173430"),
     "whey": (S, "171282"), "cream": (S, "170859"), "cottage_cheese": (S, "172179"),
     "lassi": ("scaled", S, "171284", 0.85), "coconut_milk": (S, "170172"),
-    "almond_milk": (S, "174832"), "soy_milk": (S, "173768"),
-    "oat_milk": ("none", "no unfortified oat drink in SR Legacy; products vary"),
-    "coconut_yogurt": ("none", "a commercial product; composition varies"),
+    # Plant drinks: unfortified, scaled to the energy the library's row states — a
+    # drink of that energy holds that share of its source.
+    "almond_milk": ("scaled", S, "170567", 0.026), "soy_milk": (S, "172446"),
+    "oat_milk": ("scaled", S, "173904", 0.113),
+    "coconut_yogurt": ("scaled", S, "170172", 0.42),
     "vegan_paneer_tofu": (S, "172476"),
-    "nutritional_yeast": ("none", "fortified products vary widely"),
+    # Inactive dried Saccharomyces, counted UNFORTIFIED: the B12 some brands add is
+    # not counted, so a vegan is never told a sprinkle covers it.
+    "nutritional_yeast": (S, "175043"),
     "coconut_cream": (S, "170580"), "cashew_cream": ("scaled", S, "170162", 0.45),
-    "flax_milk": ("none", "a commercial product; composition varies"),
+    "flax_milk": ("scaled", S, "169414", 0.047),
     # grains (cooked unless stated)
     "basmati_rice": (S, "169757"), "white_rice": (S, "169757"), "brown_rice": (S, "169704"),
     "roti_whole_wheat": ("scaled", S, "168893", 0.87), "paratha": ("scaled", S, "168893", 0.75),
@@ -92,7 +106,8 @@ MAP = {
     "toor_dal": (S, "172437"), "urad_dal": (S, "172427"), "black_eyed_peas": (S, "173759"),
     "green_peas": (S, "170420"), "rajma": (S, "173740"), "kidney_beans": (S, "173740"),
     "black_beans": (S, "173735"),
-    "soya_chunks": ("none", "textured soy protein products vary; no SR row for hydrated chunks"),
+    # Defatted soy flour is what the chunks are extruded from; hydrated ~3x.
+    "soya_chunks": ("scaled", S, "174275", 0.32),
     "tofu_firm": (S, "172476"), "tempeh": (S, "174272"), "edamame": (S, "168411"),
     "peanuts": (S, "172430"),
     # nuts and seeds
@@ -101,7 +116,9 @@ MAP = {
     "sesame_seeds_til": (S, "170150"), "flax_seeds": (S, "169414"),
     "pumpkin_seeds": (S, "170556"), "melon_seeds_magaz": (S, "169407"),
     "watermelon_seeds": (S, "169407"),
-    "fox_nuts_makhana": ("none", "Euryale ferox is in neither SR Legacy nor IFCT 2017"),
+    "fox_nuts_makhana": ("none", "Euryale ferox is in neither SR Legacy nor IFCT 2017, and "
+                                 "published figures for popped makhana disagree up to ten-fold "
+                                 "(potassium 42 to 500 mg/100 g)"),
     "sunflower_seeds": (S, "170562"), "chia_seeds": (S, "170554"), "hemp_seeds": (S, "170148"),
     "pine_nuts": (S, "170591"),
     # fruits
@@ -140,12 +157,24 @@ MAP = {
     "okra_bhindi": (S, "169260"), "brinjal_baingan": (S, "169228"), "tinda": (I, "D073"),
     "parwal": (I, "D060"), "green_chilli": (S, "170497"), "lemon_juice": (S, "167747"),
     "salt": (S, "173468"), "rock_salt": (S, "173468"), "mustard_seeds": (S, "170929"),
-    "hing": ("none", "compounded hing varies by its flour and gum"),
+    "hing": (I, "G019"),
     "curry_leaves": (I, "G010"), "coriander_leaves": (S, "169997"), "mint_leaves": (S, "173474"),
     "tamarind": (S, "167763"), "red_chilli_powder": (S, "171319"),
-    "garam_masala": ("none", "a blend; no single composition"),
+    "garam_masala": ("recipe", [(("sr", "170922"), 30), (("sr", "170923"), 30),
+                                (("sr", "170931"), 15), (("sr", "170919"), 10),
+                                (("sr", "171320"), 10), (("sr", "171321"), 5)]),
     "water": ("zero", "tap water"),
 }
+
+
+# IFCT 2017 has no B12 or vitamin D column. Animal foods take both from the SR row
+# closest in kind; every other food from IFCT is a plant, which carries neither.
+VITAMINS_FROM = {"paneer": ("sr", "170851")}      # ricotta, whole milk: fresh, acid-set
+_VITAMINS = ("b12_ug", "vitd_ug")
+# Foods of animal origin. A plant row with no reported B12 or vitamin D is 0 for it;
+# an animal row with none reported stays unmeasured.
+ANIMAL = {"milk_full_fat", "curd_yogurt", "buttermilk_chaas", "paneer", "butter", "whey",
+          "cream", "cottage_cheese", "lassi", "ghee", "ghee_oil", "honey"}
 
 
 def _load_sr(sr_dir: Path) -> dict:
@@ -165,6 +194,8 @@ def _load_sr(sr_dir: Path) -> dict:
         out[fid] = {"sodium_mg": v.get("sodium_mg"), "potassium_mg": v.get("potassium_mg"),
                     "phosphorus_mg": v.get("phosphorus_mg"), "calcium_mg": v.get("calcium_mg"),
                     "iron_mg": v.get("iron_mg"), "folate_ug": folate,
+                    "zinc_mg": v.get("zinc_mg"), "b12_ug": v.get("b12_ug"),
+                    "vitd_ug": v.get("vitd_ug"),
                     "kcal": v.get("kcal"), "protein": v.get("protein"),
                     "label": f"USDA SR Legacy {fid}: {desc.get(fid, '')}"}
     return out
@@ -236,6 +267,7 @@ def cited() -> set:
             out.add((entry[1], entry[2]))
         elif entry[0] == "recipe":
             out.update(ref for ref, _ in entry[1])
+    out.update(VITAMINS_FROM.values())
     return out
 
 
@@ -251,7 +283,21 @@ def extract(sr_dir: Path, ifct_csv: Path) -> dict:
 
 def build(sources: dict | None = None) -> dict:
     src = sources or json.loads(SOURCES.read_text())
-    return {fid: resolve(entry, src["sr"], src["ifct"]) for fid, entry in sorted(MAP.items())}
+    out = {}
+    for fid, entry in sorted(MAP.items()):
+        row = resolve(entry, src["sr"], src["ifct"])
+        if fid in VITAMINS_FROM:
+            kind, ref = VITAMINS_FROM[fid]
+            v = _row(kind, ref, src["sr"], src["ifct"])
+            for k in _VITAMINS:
+                row[k] = v.get(k)
+            row["source"] += f"; B12 and vitamin D from {v['label']}"
+        elif fid not in ANIMAL and row["sodium_mg"] is not None:
+            for k in _VITAMINS:
+                if row[k] is None:
+                    row[k] = 0.0
+        out[fid] = row
+    return out
 
 
 def render(data: dict) -> str:

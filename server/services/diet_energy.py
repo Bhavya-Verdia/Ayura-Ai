@@ -214,6 +214,28 @@ def _rda(age: int, gender: str, state: str | None) -> dict:
             "folate_ug": 300}
 
 
+def _vitamin_rda(age: int, gender: str, state: str | None) -> dict:
+    """Zinc mg and B12 ug (ICMR-NIN 2020), vitamin D ug (ICMR-NIN 2020 600 IU; IOM 800 IU
+    over 70) and iodine ug (WHO/UNICEF/ICCIDD 2007) per day. Sex unrecorded takes the
+    higher figure, as `_rda` does."""
+    female = gender == "female"
+    iodine = 250 if state in ("pregnant", "nursing") else (120 if age <= 12 else 150)
+    vitd = 20 if age >= 70 else 15
+    if state == "pregnant":
+        return {"zinc_mg": 14.5, "b12_ug": 2.45, "vitd_ug": vitd, "iodine_ug": iodine}
+    if state == "nursing":
+        return {"zinc_mg": 14.1, "b12_ug": 3.2, "vitd_ug": vitd, "iodine_ug": iodine}
+    if age <= 12:
+        zinc = 8.5
+    elif age <= 15:
+        zinc = 12.8 if female else 14.3
+    elif age <= 17:
+        zinc = 14.2 if female else 17.6
+    else:
+        zinc = 13.2 if female else 17.0
+    return {"zinc_mg": zinc, "b12_ug": 2.2, "vitd_ug": vitd, "iodine_ug": iodine}
+
+
 def nutrient_targets(target_kcal: int, protein_target_g: int, protein_floor_g: int,
                      conditions, *, age: int, weight_kg, pregnant_or_nursing: bool,
                      fluid_weight_kg=None, gender: str = "other", state: str | None = None,
@@ -272,6 +294,18 @@ def nutrient_targets(target_kcal: int, protein_target_g: int, protein_floor_g: i
     targets["calcium_mg"] = {"min": rda["calcium_mg"]}
     targets["folate_ug"] = {"min": rda["folate_ug"]}
     targets["sources"]["minerals"] = "ICMR-NIN 2020 RDA (iron, calcium, folate)"
+    vit = _vitamin_rda(age, gender, state)
+    targets["zinc_mg"] = {"min": vit["zinc_mg"]}
+    targets["b12_ug"] = {"min": vit["b12_ug"]}
+    targets["vitd_ug"] = {"min": vit["vitd_ug"]}
+    targets["sources"]["zinc_b12"] = "ICMR-NIN 2020 RDA (zinc, vitamin B12)"
+    targets["sources"]["vitamin_d"] = ("ICMR-NIN 2020 (600 IU); IOM 2011 (800 IU over 70) — "
+                                       "met by sunlight and, where needed, a supplement")
+    # Hyperthyroidism is the one case where iodine is not pushed toward a target:
+    # iodine excess worsens it, and the iodised salt in the plan is already enough.
+    if not conds & {"hyperthyroid", "hyperthyroidism", "graves"}:
+        targets["iodine_ug"] = {"min": vit["iodine_ug"]}
+        targets["sources"]["iodine"] = "WHO/UNICEF/ICCIDD (2007), counted from iodised salt"
     if age >= 18 and not renal and not potassium_restricted:
         # WHO (2012): at least 3510 mg potassium a day for adults, for blood pressure.
         # The opposite advice in kidney disease or on a potassium-raising medicine.
@@ -299,8 +333,10 @@ def nutrient_targets(target_kcal: int, protein_target_g: int, protein_floor_g: i
                 "as sugar or refined flour.")
     if renal:
         targets["notes"].append(
-            "Kidney disease: protein is capped at 0.8 g/kg. Potassium and phosphorus "
-            "limits depend on your blood results — ask your nephrologist for them.")
+            "Kidney disease: protein is capped at 0.8 g/kg. The fruits and vegetables "
+            "highest in potassium (banana, kiwi, guava, dates, potato, coconut water and "
+            "the like) are left out. Your exact potassium and phosphorus limits depend on "
+            "your blood results — ask your nephrologist for them.")
     # Fluids: 35 ml/kg for adults (ESPEN); the two states where a fixed target can
     # harm are the ones whose fluid allowance is set by the treating doctor.
     if renal or "heart_failure" in conds:

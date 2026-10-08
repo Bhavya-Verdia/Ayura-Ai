@@ -115,9 +115,13 @@ ALLERGEN_TERMS: dict[str, list[str]] = {
     # AUTHORED, NOT CLINICALLY REVIEWED. These lists are a food-safety floor, not a
     # diagnosis, and they flag rather than remove — the same contract the allergy
     # terms above keep.
-    "lactose": ["milk", "curd", "yogurt", "yoghurt", "cream", "paneer", "cheese",
-                "lassi", "buttermilk", "kheer", "raita", "mawa", "khoa", "dahi",
-                "payasam", "ice cream", "condensed milk"],
+    # Curd, chaas, raita and paneer are NOT here. Curd's live cultures digest much of
+    # its lactose and paneer loses most of it with the whey; most people with lactose
+    # intolerance manage 12 g of lactose at a sitting (NIH Consensus 2010), and listing
+    # them left a lactose-intolerant vegetarian with no dairy protein at all — 28 of
+    # 28 days under her protein floor. Milk and the milk-based sweets stay.
+    "lactose": ["milk", "cream", "cheese", "lassi", "kheer", "mawa", "khoa",
+                "payasam", "ice cream", "condensed milk", "whey", "rabdi", "basundi"],
     # Ghee is deliberately absent: clarified butter is all but lactose-free, and
     # Ayurveda treats it as a distinct dravya from dugdha. Listing it would flag the
     # one dairy the classical texts prescribe most and train the user to ignore the
@@ -685,14 +689,18 @@ _CONDITION_APATHYA_TERMS: dict[str, dict] = {
     },
     "hypothyroid": {
         "name": "Hypothyroidism (Galaganda)",
-        "reason": "Goitrogenic raw crucifers / soy — Apathya in Galaganda.",
+        # Soy is not here: with adequate iodine it does not cause hypothyroidism, and
+        # what it does — slow levothyroxine absorption — is a timing note in
+        # `diet_clinical_notes`, which already told the patient soy was fine while
+        # this list removed it (ATA 2014).
+        "reason": "Goitrogenic raw crucifers — Apathya in Galaganda.",
         "terms": ["raw cabbage", "coleslaw", "raw broccoli", "raw cauliflower",
-                  "raw kale", "soy milk", "tofu", "soybean"],
+                  "raw kale"],
     },
     "thyroid": {
         "name": "Thyroid (Galaganda)",
-        "reason": "Goitrogenic raw crucifers / soy.",
-        "terms": ["raw cabbage", "coleslaw", "raw broccoli", "raw cauliflower", "tofu", "soy milk"],
+        "reason": "Goitrogenic raw crucifers.",
+        "terms": ["raw cabbage", "coleslaw", "raw broccoli", "raw cauliflower"],
     },
     "kidney_disease": {
         "name": "Kidney disease (Vrikka Roga)",

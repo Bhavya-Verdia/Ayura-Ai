@@ -20,8 +20,8 @@ them, and the LLM path is grounded on a corpus built from them, so:
 - a wrong **Apathya** withholds a food from a patient who could have eaten it
 - a wrong **Pathya** puts a food in front of a patient who should not
 
-There are **808 clinical claims** (373 Pathya,
-435 Apathya) across **21 conditions**.
+There are **790 clinical claims** (373 Pathya,
+417 Apathya) across **21 conditions**.
 
 ## What replaced the derived library
 
@@ -115,7 +115,7 @@ Authored Viruddha Ahara pairs. Also tell us what is **missing**: the
 `missing_pairs` column is for combinations that should be here and are not, which is
 the failure this file cannot show you on its own.
 
-### 5. `vaidya_diet_clinical_claims.csv` — 808 rows
+### 5. `vaidya_diet_clinical_claims.csv` — 790 rows
 
 The full Pathya/Apathya matrix, sorted **by condition** so each is one screen. This is
 the long tier; it is also the one where an outlier is obvious next to its peers, which

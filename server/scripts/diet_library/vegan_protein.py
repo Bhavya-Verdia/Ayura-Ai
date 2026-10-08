@@ -41,11 +41,15 @@ VEGAN_PROTEIN = [
             "to one — the madhura rasa and snigdha guna survive, the guru quality does "
             "not. Extrapolated, not cited.", **_VP),
 
+    # Dietitian decision, 2026-10: no PCOS or thyroid claim on soy. Soy isoflavones
+    # improve insulin resistance in PCOS (Jamilian & Asemi, JCEM 2016) and do not cause
+    # hypothyroidism with adequate iodine; the levothyroxine note keeps them 4 h from the
+    # tablet instead (ATA 2014). The claims were modern extrapolations the evidence runs against.
     F("Soy Milk", id="soy_milk",
       rasa=("madhura", "kashaya"), guna=("guru", "picchila"), virya="shita",
       vipaka="madhura",
       dosha=(1, -1, 1), ritu=("grishma", "sharad"),
-      apathya_for=("hypothyroid", "thyroid", "ibs", "pcos", "bloating"), allergen=True,
+      apathya_for=("ibs", "bloating"), allergen=True,
       nutrition=N(33, 2.8, 1.8, 1.6, 0.4, source="usda"),
       ref="modern_extrapolated",
       varga="No classical entry; the soybean itself is absent from the nighantus. "
@@ -76,11 +80,17 @@ VEGAN_PROTEIN = [
             "souring, and the Amavata bar arrives with them. Extrapolated, not cited.",
       **_VP),
 
+    # Dietitian decision, 2026-10: no PCOS or thyroid claim on soy. Soy isoflavones
+    # improve insulin resistance in PCOS (Jamilian & Asemi, JCEM 2016) and do not cause
+    # hypothyroidism with adequate iodine; the levothyroxine note keeps them 4 h from the
+    # tablet instead (ATA 2014). The claims were modern extrapolations the evidence runs against.
+    # Firm tofu is low-FODMAP (the oligosaccharides go with the whey), so no IBS
+    # claim either (Monash University FODMAP data). Soy milk from whole beans keeps it.
     F("Tofu", id="vegan_paneer_tofu",
       rasa=("madhura", "kashaya"), guna=("guru", "picchila"), virya="shita",
       vipaka="madhura",
       dosha=(1, -1, 1), ritu=("grishma", "sharad"),
-      apathya_for=("hypothyroid", "thyroid", "ibs", "pcos", "bloating"), allergen=True,
+      apathya_for=("bloating",), allergen=True,
       nutrition=N(76, 8.1, 1.9, 4.8, 0.3, source="usda"),
       ref="modern_extrapolated",
       varga="No classical entry. Reasoned from the Shimbi Varga curdled as Kilata is — "
