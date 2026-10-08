@@ -195,3 +195,28 @@ def test_energy_target_carries_the_new_targets_through():
     e = energy_target({"age": 35, "gender": "male", "weight_kg": 70, "height_cm": 175,
                        "activity_level": "moderate"}, {"diet_goal": "general_wellness"})
     assert {"b12_ug", "vitd_ug", "zinc_mg", "iodine_ug"} <= set(e["nutrient_targets"])
+
+
+def test_iodine_is_raised_only_in_pregnancy_or_on_very_little_salt():
+    from services.diet_week_generator import _mineral_notices
+    ordinary = {"iodine_ug": {"min": 150, "average": 55}}
+    pregnant = {"iodine_ug": {"min": 250, "average": 55}}
+    low_salt = {"iodine_ug": {"min": 150, "average": 20}}
+    assert _mineral_notices(ordinary) == []
+    assert "iodised salt" in _mineral_notices(pregnant)[0]
+    assert "iodised salt" in _mineral_notices(low_salt)[0]
+
+
+def test_no_side_dish_phrase_trips_a_scan():
+    """`_add_mineral_sides` writes its phrase into the meal name after the scans ran;
+    "ragi malt" shipped as a gluten alert for a coeliac."""
+    from services.ahara_safety import ALLERGEN_TERMS, _CONDITION_APATHYA_TERMS, _term_in_text
+    from services.diet_week_generator import _MINERAL_SIDES
+    terms = {t for v in ALLERGEN_TERMS.values() for t in v} | {"malt"}
+    terms |= {t for p in _CONDITION_APATHYA_TERMS.values() for t in p.get("terms", [])}
+    for fid, _, _, phrase in _MINERAL_SIDES:
+        own = {fid.split("_")[0], "curd", "milk", "chaas", "paneer", "til", "soy", "tofu",
+               "almond", "pumpkin", "banana", "coconut", "amla", "methi", "gavar", "ragi"}
+        bad = [t for t in terms if _term_in_text(t, phrase.lower())
+               and not any(o in t or t in o for o in own)]
+        assert not bad, (phrase, bad)

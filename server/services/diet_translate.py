@@ -51,9 +51,11 @@ SYSTEM = (
     "ingredient, quantity, time or instruction. Keep every number exactly as written, "
     "in Western digits (0-9), with its unit. Use the everyday local name of each food "
     "a cook in that language would recognise; keep Sanskrit Ayurvedic terms (Agni, "
-    "Pitta, Pathya) in the target script. Keep the ' · ' separators in portion lines.")
+    "Pitta, Pathya) in the target script. Keep the ' · ' separators in portion lines. "
+    "'Vegan' means no animal food at all, dairy included: never translate it with the "
+    "word for vegetarian (in Hindi use वीगन, not शाकाहारी).")
 
-PROMPT = """Translate each value into {language}. Return exactly {{"t": {{"<same key>": "<translation>"}}}} with every key.
+PROMPT = """Translate each value into {language}. Return only JSON, exactly {{"t": {{"<same key>": "<translation>"}}}} with every key.
 {items}"""
 
 

@@ -668,10 +668,10 @@ not by a test.
 #### Diet: minerals are counted, from hand-picked composition rows
 The plan stated a sodium limit and anaemia advice and could check neither. The library
 held energy and four macronutrients. `data/knowledge_base/diet_micronutrients.json`
-adds sodium, potassium, phosphorus, calcium, iron and folate per 100 g for all 186
-foods a plan can name. It is **generated** by `scripts/build_diet_micronutrients.py`
+adds sodium, potassium, phosphorus, calcium, iron, folate, zinc, B12 and vitamin D per
+100 g for all 186 foods a plan can name. It is **generated** by `scripts/build_diet_micronutrients.py`
 from USDA SR Legacy and IFCT 2017 rows chosen by hand in `MAP`, never matched by name.
-Never hand-edit the JSON. The 153 rows `MAP` cites are committed in
+Never hand-edit the JSON. The 158 rows `MAP` cites are committed in
 `scripts/diet_micronutrient_sources.json`, so the table builds and `--check`s without
 the ~100 MB datasets, and a test holds it in sync. After changing `MAP`, run `extract`
 with the datasets (paths in the docstring).
@@ -680,8 +680,23 @@ with the datasets (paths in the docstring).
   the way US "enriched" rice is.
 - Cooked grains and pulses use the unsalted rows, because salt is counted where the
   cook adds it.
-- Eight foods have no trustworthy source (makhana, hing, garam masala, oat milk …).
-  They carry `None` and are named in `unmeasured_foods`, never counted as zero.
+- Plant milks are the **unfortified** rows. Indian soy and almond drinks mostly carry
+  no added calcium, B12 or D, and counting a US carton's closed a vegan's gap on paper.
+- IFCT has no B12 or vitamin D. Plant rows are 0 for both, and paneer takes them from
+  a fresh whole-milk cheese (`VITAMINS_FROM`).
+- **Iodine is counted from salt**, not the table: iodised salt at FSSAI's 15 ppm
+  consumer-end minimum. Rock salt carries none, so on non-fasting days
+  `_iodised_salt` turns it into iodised salt. Hyperthyroidism gets no iodine target.
+  At the WHO salt limit and the legal minimum, every plan reads 45-75 µg, and food
+  supplies the rest uncounted. So the notice is given only in pregnancy and
+  breastfeeding (250 µg) or when iodised salt is under 2 g a day. Telling every
+  patient they are short would be noise.
+- **A side dish's phrase is written into the meal name after the scans have run.**
+  "a cup of ragi malt" shipped as a gluten alert for a coeliac patient, because "malt"
+  means barley malt. `test_no_side_dish_phrase_trips_a_scan` guards every phrase.
+- Only makhana has no source. Published popped-makhana figures disagree up to
+  ten-fold, so it carries `None` and is named in `unmeasured_foods`, never counted
+  as zero.
 
 Building it found five library macro rows that were wrong:
 - amla was carrying the European gooseberry's figures
@@ -721,6 +736,43 @@ Anaemia Mukt Bharat supplements. Below 90% of the target,
 as the one who decides about a tablet. The sweep asserts that either the target is
 reached or the notice is there. `DietView` shows each target beside the plan's average
 and the days it was met.
+
+#### Diet: the open clinical questions, decided
+The reviewer pack left four questions open. They were decided as a dietitian would
+decide them, and `tests/test_diet_dietitian_decisions.py` pins each one:
+
+- **Kidney disease.** Any fruit, vegetable or drink with 300 mg or more of potassium
+  per 100 g is screened out (`diet_allowed_foods.high_potassium_ids`). The cut-off
+  reads the composition table, not a list, which is why kiwi passed before. It is not
+  a hyperkalaemia diet: that needs blood potassium, and KDOQI 2020 advises against
+  restricting without it. Ginger and garlic are used as seasonings, so they stay.
+- **Soy.** No PCOS or thyroid claim. The hypothyroid note already said soy was fine
+  while the list removed it. Firm tofu is low-FODMAP, so it has no IBS claim either.
+  Whole-bean soy milk keeps its IBS claim.
+- **Acidity.** Carrot, beetroot, masoor and almonds are lifted. The 47 foods that
+  both frameworks agree on stay out.
+- **Lactose intolerance** removes milk, cream, lassi, whey and cottage cheese. It does
+  not remove curd, chaas or paneer: most people with lactose intolerance tolerate about
+  12 g of lactose at a sitting (NIH Consensus 2010).
+
+#### Diet: the meal log feeds the next plan
+`db.meal_logs` holds one document per (plan, week, day, slot): eaten, partly,
+skipped or swapped. The meal's food ids are copied in at log time, so a log still
+means something after the plan is regenerated. `services/diet_log.adaptation` makes
+three changes, each only on evidence, and only once 14 meals are logged:
+
+- **Skipped slots.** A slot skipped on half of 5+ logged days is made quick and light,
+  never dropped.
+- **Left-uneaten foods.** A food left 3+ times, and on 60% of the days it was served,
+  is used rarely. This is a soft dislike, not an exclusion.
+- **Energy, ±150 kcal.** This needs 70% of meals eaten and two weigh-ins from
+  `progress_logs` 14+ days apart. It never creates a deficit for a child or in
+  pregnancy, and the floors still apply. Low adherence changes no energy figure,
+  because a plan that was not followed was not tested.
+
+**The cache key holds the adaptation's fingerprint (`diet_log`), not the log**, so
+logging one more meal does not bill a regeneration. Both diet paths read the log.
+`GET /api/meals/adaptation` tells the patient what will change before they regenerate.
 
 #### The Ritucharya card is the other surface that names food
 `services/seasonal_service.build_seasonal_guidance` took a **dosha and nothing else**,
@@ -794,14 +846,20 @@ the guard test carries a `same_food` allowlist and fails only on two different f
 The two real ones were found by the existing `test_no_condition_flags_an_ordinary_
 vegetarian_day`, which is what that test is for.
 
-**Non-Latin script is a wall, not a gap.** Measured: a meal written as
-`दही चावल` or `தயிர் சாதம்` raises **zero** alerts from every gate — condition,
-allergen and dietary type alike. The app ships eight locales and translates its
-chrome; the plan is English-only and has no language input. Translating patient-facing
-plan text is therefore not a localisation task but a **safety-model redesign** — the
-structured fields a gate reads would have to stay in a scannable script, or the
-scanning would have to move. Nothing is broken today because nothing is translated;
-the trap is that the obvious next feature disables the safety layer silently.
+**Non-Latin script is a wall, so translation is an overlay.** A meal written as
+`दही चावल` or `தயிर் சாதம்` raised **zero** alerts from every gate. Two things now hold:
+
+- `apply_script_guard` reports any meal whose free text is in a script the gates
+  cannot read as **unverified**, and sends it to repair. Pathya entries in such a
+  script are withheld and prose is flagged. IAST and accented Latin still read.
+- `services/diet_translate` translates **display strings only**, into
+  `plan_history.translations.{lang}`. The overlay is keyed by the English it came
+  from, and no gate reads it. A line keeps its translation only if every number
+  survives in Western digits and a portion line keeps its item count. Otherwise it
+  stays English. `DietView` offers "Read in …" and always "Show English".
+
+Never write a translation into the plan's own fields. The guard would catch it as
+unverified, but the plan would stop being one anyone checked.
 
 #### The plan cache key is an allowlist, and it was missing most of the plan
 `routes/plan_runner._check_plan_cache` hashes a hand-written dict of "relevant"

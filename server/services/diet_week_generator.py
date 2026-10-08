@@ -643,7 +643,10 @@ _MINERAL_SIDES = (
     ("tofu_firm", 80, "dinner", "a side of tofu"),
     ("paneer", 40, "dinner", "a little paneer"),
     ("sesame_seeds_til", 10, "snack", "a spoon of roasted til"),
-    ("ragi_flour", 30, "snack", "a cup of ragi malt"),
+    # Not "ragi malt", its everyday name: "malt" is barley malt in the coeliac
+    # screen, and the phrase is appended after the scans, so it shipped as a gluten
+    # alert on a gluten-free food.
+    ("ragi_flour", 30, "snack", "a cup of ragi kanji"),
     ("methi_fenugreek_leaves", 60, "lunch", "a side of methi saag"),
     ("cluster_beans_gavar", 80, "dinner", "a side of gavar"),
     ("pumpkin_seeds", 10, "snack", "a spoon of pumpkin seeds"),
@@ -787,11 +790,31 @@ _MINERAL_ADVICE = {
 }
 
 
+# Iodine is counted from iodised salt at the legal MINIMUM (15 ppm), and nothing
+# else: at the WHO salt limit that reads as 45-75 ug for every plan, while dairy,
+# grains and salt above the minimum supply the rest. Told to everyone, it would be
+# noise. It is said where it matters — pregnancy and breastfeeding (250 ug), and a
+# plan with under 2 g of iodised salt a day.
+_IODINE_LOW_SALT_UG = 30
+
+
+def _iodine_notice(row: dict) -> bool:
+    lo, avg = row.get("min"), row.get("average")
+    if not lo or avg is None:
+        return False
+    return lo >= 250 or avg < _IODINE_LOW_SALT_UG
+
+
 def _mineral_notices(report: dict) -> list[str]:
     notes = []
     for key, (label, unit, advice) in _MINERAL_ADVICE.items():
         row = report.get(key) or {}
         lo, avg = row.get("min"), row.get("average")
+        if key == "iodine_ug":
+            if _iodine_notice(row):
+                notes.append(f"The iodised salt in this plan gives about {round(avg)} µg of "
+                             f"iodine a day; you need about {lo} µg. {advice}")
+            continue
         if lo and avg is not None and avg < 0.9 * lo:
             shown = round(avg, 1) if unit == "µg" and avg < 10 else round(avg)
             notes.append(f"The food in this plan gives about {shown} {unit} of {label} a "

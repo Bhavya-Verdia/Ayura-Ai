@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { plansAPI } from '../../api/client'
+import { mealsAPI, plansAPI } from '../../api/client'
 import {
   Sun, Leaf, Coffee, AlertTriangle, Star, Droplets, ShieldCheck, Flame, Moon, Timer, Target, ChevronDown, ChevronUp, Flower2, UtensilsCrossed, Clock, Soup, Apple, CupSoda, BookOpen, TriangleAlert, Languages,
 } from 'lucide-react'
@@ -37,7 +37,87 @@ function MacroBar({ macros }) {
 
 // ── LLM Meal Card (primary — for weekly_plan structure) ───────────────────────
 
-function LLMMealCard({ mealName, meal }) {
+// ── Meal log ──────────────────────────────────────────────────────────────────
+// Eaten / partly / skipped / swapped, per meal. The next plan reads it: a slot that is
+// usually skipped is kept light, foods left uneaten are used rarely, and with
+// weigh-ins the energy target moves (server/services/diet_log.py).
+const LOG_STATUSES = [
+  { key: 'eaten', label: 'Ate it' },
+  { key: 'partly', label: 'Some' },
+  { key: 'skipped', label: 'Skipped' },
+  { key: 'swapped', label: 'Ate something else' },
+]
+
+function MealLogBar({ log, onLog }) {
+  const [swapping, setSwapping] = useState(false)
+  const [text, setText] = useState(log?.swapped_with || '')
+  const status = log?.status
+  const choose = (key) => {
+    if (key === 'swapped') { setSwapping(true); return }
+    setSwapping(false)
+    onLog(status === key ? null : key)
+  }
+  return (
+    <div className="diet-log-bar" role="group" aria-label="Log this meal">
+      {LOG_STATUSES.map(s => (
+        <button key={s.key} type="button" aria-pressed={status === s.key}
+          className={`diet-log-btn${status === s.key ? ' is-on' : ''}`} onClick={() => choose(s.key)}>
+          {s.label}
+        </button>
+      ))}
+      {swapping && (
+        <form className="diet-log-swap" onSubmit={e => { e.preventDefault(); setSwapping(false); onLog('swapped', text) }}>
+          <input value={text} onChange={e => setText(e.target.value)} maxLength={120}
+            placeholder="What did you have instead? (optional)" aria-label="What you ate instead" />
+          <button type="submit" className="diet-log-btn">Save</button>
+        </form>
+      )}
+      {status === 'swapped' && log?.swapped_with && !swapping && (
+        <span className="diet-log-note">Had: {log.swapped_with}</span>
+      )}
+    </div>
+  )
+}
+
+function MealLogSummary({ planId, logs }) {
+  const [adapt, setAdapt] = useState(null)
+  const count = Object.keys(logs).length
+  useEffect(() => {
+    if (!planId) return
+    let live = true
+    mealsAPI.getAdaptation().then(r => { if (live) setAdapt(r.data) }).catch(() => {})
+    return () => { live = false }
+  }, [planId, count])
+  if (!count) {
+    return (
+      <p className="diet-energy-note">
+        Log each meal below — ate it, some, skipped, or something else. Your next plan is
+        built from what you actually ate.
+      </p>
+    )
+  }
+  const a = adapt?.adaptation || {}
+  const s = adapt?.summary || {}
+  const changes = [
+    ...(a.skipped_slots || []).map(slot => `${slot.replace(/_/g, ' ')} kept quick and light — you usually skip it`),
+    a.avoided_foods?.length ? `${a.avoided_foods.map(f => f.replace(/_/g, ' ')).join(', ')} used rarely — often left uneaten` : null,
+    a.energy_adjust_kcal ? `energy ${a.energy_adjust_kcal > 0 ? '+' : ''}${a.energy_adjust_kcal} kcal — ${a.energy_reason}` : null,
+  ].filter(Boolean)
+  return (
+    <div className="diet-log-summary">
+      <span>
+        {s.meals_logged || count} meals logged{s.adherence != null ? ` · ${Math.round(s.adherence * 100)}% eaten as planned` : ''}.
+      </span>
+      {changes.length > 0 ? (
+        <ul>{changes.map(c => <li key={c}>Next plan: {c}.</li>)}</ul>
+      ) : (
+        <span> Your next plan changes once there are 14 logged meals and enough of a pattern to act on.</span>
+      )}
+    </div>
+  )
+}
+
+function LLMMealCard({ mealName, meal, log, onLog }) {
   const [open, setOpen] = useState(false)
   const MealIcon = DIET_MEAL_ICONS[mealName] || UtensilsCrossed
   const label = mealName.charAt(0).toUpperCase() + mealName.slice(1)
@@ -76,6 +156,7 @@ function LLMMealCard({ mealName, meal }) {
           </div>
         </button>
       </h3>
+      {onLog && <MealLogBar log={log} onLog={onLog} />}
 
       {open && (
         <div className="diet-llm-body">
@@ -589,6 +670,35 @@ export function DietView({ plan: englishPlan }) {
   }
   const [activeDay, setActiveDay] = useState(0)
   const [activeWeek, setActiveWeek] = useState(0)
+  // Logs are keyed to the English plan's id: a translation is the same plan.
+  const planId = englishPlan.plan_id
+  const [logs, setLogs] = useState({})
+  useEffect(() => {
+    if (!planId) return
+    let live = true
+    mealsAPI.getLogs(planId).then(r => {
+      if (!live) return
+      const map = {}
+      for (const l of r.data.logs || []) map[`${l.week}:${l.day}:${l.slot}`] = l
+      setLogs(map)
+    }).catch(() => {})
+    return () => { live = false }
+  }, [planId])
+  const logMeal = (week, day, slot) => async (status, swappedWith) => {
+    const k = `${week}:${day}:${slot}`
+    const prev = logs[k]
+    setLogs(m => {
+      const next = { ...m }
+      if (status) next[k] = { week, day, slot, status, swapped_with: swappedWith }
+      else delete next[k]
+      return next
+    })
+    try {
+      await mealsAPI.log({ plan_id: planId, week, day, slot, status, swapped_with: swappedWith || null })
+    } catch {
+      setLogs(m => { const next = { ...m }; if (prev) next[k] = prev; else delete next[k]; return next })
+    }
+  }
   const [timingOpen, setTimingOpen] = useState(false)
   const [spiceOpen, setSpiceOpen] = useState(false)
 
@@ -613,6 +723,10 @@ export function DietView({ plan: englishPlan }) {
   // Every week of a current plan is full detail. Plans generated before that carry
   // meal NAMES in weeks 2-4, and keep their compact rows.
   const fullDetail = typeof dayData.lunch === 'object' || typeof dayData.breakfast === 'object'
+  const weekNumber = currentWeek?.week_number || activeWeek + 1
+  // Only plans whose meals are stated as components can be logged: the log records
+  // which foods were eaten or left, and an older plan's meals name none.
+  const canLog = !!planId && fullDetail && !!dayData.lunch?.components
 
   // Fallback path: four_week_plan array
   const fallbackDays = (plan.four_week_plan?.[0]?.days) || []
@@ -805,10 +919,13 @@ export function DietView({ plan: englishPlan }) {
               </div>
             </div>
           )}
+          {canLog && <MealLogSummary planId={planId} logs={logs} />}
           <div className="diet-meals-section">
             {['breakfast', 'lunch', 'snack', 'dinner'].map(meal => (
               dayData[meal] && (
-                <LLMMealCard key={meal} mealName={meal} meal={dayData[meal]} />
+                <LLMMealCard key={meal} mealName={meal} meal={dayData[meal]}
+                  log={logs[`${weekNumber}:${currentDayName}:${meal}`]}
+                  onLog={canLog ? logMeal(weekNumber, currentDayName, meal) : null} />
               )
             ))}
           </div>

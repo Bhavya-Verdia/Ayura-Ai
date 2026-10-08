@@ -989,6 +989,9 @@ snack ~{mb['snack']} kcal | dinner ~{mb['dinner']} kcal
         )
     for _note in energy["notes"]:
         energy_block += f"\n  Note: {_note}"
+    from services.diet_log import brief_block
+    _log = brief_block(user_profile.get("diet_log") or {})
+    log_block = f"\n\n{_log}" if _log else ""
 
     return f"""PATIENT: {name} | Age: {age} | Gender: {gender}{' | PREGNANT/NURSING' if is_pregnant else ''}
 
@@ -1023,7 +1026,7 @@ HARD DIETARY CONSTRAINTS (never violate these):
 THERAPEUTIC GOAL: {goal.replace('_', ' ').title()}
 WATER INTAKE: {water} per day
 
-{energy_block}"""
+{energy_block}{log_block}"""
 
 
 def flag_allergens(weekly_plan: dict, allergies: list[str], intolerances: list[str]) -> dict:

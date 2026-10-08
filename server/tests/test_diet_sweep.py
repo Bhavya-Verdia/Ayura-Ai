@@ -139,8 +139,12 @@ def test_any_patient_gets_a_plan_a_dietitian_would_accept(profile, prefs, monkey
     from services.diet_week_generator import _MINERAL_ADVICE
     for key, (label, _, _) in _MINERAL_ADVICE.items():
         row = micro.get(key) or {}
+        if key == "iodine_ug":
+            continue        # said only in pregnancy or on very little salt; tested apart
         if row.get("min") and row["average"] < 0.9 * row["min"]:
             assert any(f"of {label} a day" in n for n in micro["notices"]), (who, key, row)
+    # No phrase added to a meal after the scans may trip them.
+    assert not plan.get("condition_safety_alerts"), who
     # Cooked with iodised salt; rock salt only where a fast asks for it.
     for w in plan["diet_weeks"]:
         for d, day in w["daily_plan"].items():

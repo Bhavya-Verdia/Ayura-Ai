@@ -473,6 +473,18 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
             "stays eatable; gain is steadier this way."
         )
 
+    # What the meal log and the weigh-ins showed on the last plan (`diet_log`): a
+    # 150 kcal step, never a deficit for a child or in pregnancy, and still bounded
+    # by the floor and the renal range below.
+    log = user_profile.get("diet_log") or {}
+    log_adjust = int(log.get("energy_adjust_kcal") or 0)
+    if log_adjust < 0 and (is_child or flag):
+        log_adjust = 0
+    if log_adjust:
+        target += log_adjust
+        notes.append(f"From your meal log and weigh-ins: {log_adjust:+d} kcal, because "
+                     f"{log.get('energy_reason', 'your weight did not move as planned')}.")
+
     # Kidney disease: energy 25-35 kcal/kg (KDOQI 2020), on a reference weight —
     # ideal body weight for an underweight patient, adjusted weight for an obese one.
     # Without it a 34.7 kg man with CKD was given 2050+ kcal and a 28 g protein cap,

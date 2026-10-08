@@ -200,6 +200,14 @@ export const plansAPI = {
   translateDiet:      (planId, lang) => API.post('/plans/diet/translate', { plan_id: planId, lang }),
 }
 
+// ── Meal log ───────────────────────────────────
+// What was eaten of the diet plan; the next plan reads it (services/diet_log.py).
+export const mealsAPI = {
+  getLogs:       (planId) => API.get('/meals/logs', { params: { plan_id: planId } }),
+  log:           (entry)  => API.post('/meals/logs', entry),
+  getAdaptation: ()       => API.get('/meals/adaptation'),
+}
+
 // ── Preferences ────────────────────────────────
 export const preferencesAPI = {
   getAll:             () => API.get('/preferences'),

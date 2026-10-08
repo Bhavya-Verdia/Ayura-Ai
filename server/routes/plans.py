@@ -288,6 +288,13 @@ async def generate_diet_plan(
 
     diet_prefs = prefs_doc.get("diet")
 
+    # What the meal log and weigh-ins say about the last plan. Its adaptation (not
+    # the raw log) is part of the cache key, through `diet_log`.
+    from services.diet_log import diet_history
+    history = await diet_history(db, user.id, goal=diet_prefs.get("diet_goal"),
+                                 bmi_category=user_profile.get("bmi_category"))
+    user_profile["diet_log"] = history["adaptation"]
+
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "diet", user_profile, diet_prefs, force_regenerate)
     if cached_plan:

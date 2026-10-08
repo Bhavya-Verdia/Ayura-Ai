@@ -111,3 +111,13 @@ def test_the_overlay_never_touches_the_checked_plan(monkeypatch):
 def test_an_unsupported_language_is_refused():
     with pytest.raises(ValueError):
         asyncio.run(dt.translate_diet_plan(_PLAN, "xx"))
+
+
+def test_the_translation_prompt_asks_for_json():
+    """Azure refuses json_mode unless the prompt says JSON: every live batch failed
+    with BadRequest while the mocked tests passed."""
+    assert "JSON" in dt.PROMPT
+
+
+def test_vegan_is_never_translated_as_vegetarian():
+    assert "never translate it with the word for vegetarian" in dt.SYSTEM
