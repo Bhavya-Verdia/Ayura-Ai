@@ -64,7 +64,8 @@ _PLAN = {
                    "lunch": {"meal_name": "Moong Dal Khichdi",
                              "portion": "Moong Dal 150 g (1 katori) · Ghee 5 g (1 tsp)",
                              "components": [{"food": "moong_dal_yellow", "grams": 150}]},
-                   "special_drink": {"name": "Jeera water", "recipe": "1 tsp cumin in 200 ml water"}}}}],
+                   "special_drink": {"name": "Jeera water", "recipe": "1 tsp cumin in 200 ml water",
+                                     "portion": "Water 200 ml (1 glass)"}}}}],
 }
 
 
@@ -72,6 +73,8 @@ def test_every_display_string_is_collected_and_no_component_is():
     s = dt.display_strings(_PLAN)
     assert s["diet_weeks.0.daily_plan.Monday.lunch.portion"].startswith("Moong Dal 150 g")
     assert "pathya_apathya.pathya.0" in s
+    # The drink's portion line was left English on screen until it was collected.
+    assert "diet_weeks.0.daily_plan.Monday.special_drink.portion" in s
     assert not any("components" in p for p in s)
 
 
