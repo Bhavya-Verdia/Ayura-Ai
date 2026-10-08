@@ -35,7 +35,7 @@ LANGUAGES = {"hi": "Hindi", "kn": "Kannada", "ta": "Tamil", "sa": "Sanskrit",
              "es": "Spanish", "fr": "French", "zh": "Simplified Chinese"}
 
 _MEAL_FIELDS = ("meal_name", "portion", "ayurvedic_note", "description")
-_DRINK_FIELDS = ("name", "when", "recipe", "rationale")
+_DRINK_FIELDS = ("name", "when", "recipe", "rationale", "portion")
 _SLOTS = ("breakfast", "lunch", "snack", "dinner")
 _PROSE = ("plan_title", "plan_description", "condition_coaching", "hydration_guidance",
           "fasting_guidance", "seasonal_note", "ahar_vidhi", "motivational_note",
