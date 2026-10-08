@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { plansAPI } from '../../api/client'
 import {
-  Sun, Leaf, Coffee, AlertTriangle, Star, Droplets, ShieldCheck, Flame, Moon, Timer, Target, ChevronDown, ChevronUp, Flower2, UtensilsCrossed, Clock, Soup, Apple, CupSoda, BookOpen, TriangleAlert,
+  Sun, Leaf, Coffee, AlertTriangle, Star, Droplets, ShieldCheck, Flame, Moon, Timer, Target, ChevronDown, ChevronUp, Flower2, UtensilsCrossed, Clock, Soup, Apple, CupSoda, BookOpen, TriangleAlert, Languages,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { RemedyView } from './RemedyView'
@@ -193,9 +195,11 @@ function DietSafetyBanner({ plan }) {
   // looks like an oversight, which is the lesson of the withheld Panchakarma Karma.
   const withheld = plan.withheld_recommendations || []
   const proseAlerts = plan.advisory_prose_alerts || []
+  // Meals in a script the checks cannot read: never passed as checked.
+  const unscannable = plan.unscannable_alerts || []
 
   if (!alerts.length && !viruddha.length && !condAlerts.length && !dietTypeAlerts.length
-      && !withheld.length && !proseAlerts.length) {
+      && !withheld.length && !proseAlerts.length && !unscannable.length) {
     if (unscanned.length || termsOnly.length) {
       // "Everything checked" would be false here: these conditions reached no
       // curated rule, no library claim and no usable classification.
@@ -240,6 +244,18 @@ function DietSafetyBanner({ plan }) {
               <li key={i}>
                 <strong>{a.week} · {a.day} · {a.meal_slot}</strong>: contains {(a.matched_terms || []).join(', ')}
               </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {unscannable.length > 0 && (
+        <div className="diet-safety-card allergen">
+          <h3 className="diet-safety-title">
+            <TriangleAlert size={13} /> Not verified — written in a script our safety checks cannot read
+          </h3>
+          <ul className="diet-safety-list">
+            {unscannable.map((u, i) => (
+              <li key={i}><strong>{u.week} · {u.day} · {u.meal_slot}</strong>: {u.script} script</li>
             ))}
           </ul>
         </div>
@@ -523,7 +539,54 @@ function ClinicalNotesCard({ plan }) {
   )
 }
 
-export function DietView({ plan }) {
+// Languages the plan can be READ in. The plan is generated and safety-checked in
+// English; a translation is an overlay of its display text (services/diet_translate.py)
+// and never what the checks read, because they cannot read other scripts.
+const PLAN_LANGUAGES = { hi: 'हिंदी', kn: 'ಕನ್ನಡ', ta: 'தமிழ்', sa: 'संस्कृतम्', es: 'Español', fr: 'Français', zh: '中文' }
+
+function withOverlay(plan, strings) {
+  if (!strings) return plan
+  const out = structuredClone(plan)
+  for (const [path, text] of Object.entries(strings)) {
+    const keys = path.split('.')
+    let node = out
+    for (const k of keys.slice(0, -1)) {
+      node = node?.[/^\d+$/.test(k) && Array.isArray(node) ? Number(k) : k]
+      if (node == null) break
+    }
+    const last = keys[keys.length - 1]
+    if (node != null && typeof node === 'object') node[Array.isArray(node) ? Number(last) : last] = text
+  }
+  return out
+}
+
+export function DietView({ plan: englishPlan }) {
+  const { i18n } = useTranslation()
+  const lang = (i18n.language || 'en').slice(0, 2)
+  const translatable = lang in PLAN_LANGUAGES && !!englishPlan.plan_id
+  const [showTranslated, setShowTranslated] = useState(false)
+  const [overlay, setOverlay] = useState(null)
+  const [translating, setTranslating] = useState(false)
+  const [translateError, setTranslateError] = useState(false)
+  const translated = showTranslated && overlay?.lang === lang
+  const plan = useMemo(
+    () => (translated ? withOverlay(englishPlan, overlay.strings) : englishPlan),
+    [translated, englishPlan, overlay],
+  )
+  const requestTranslation = async () => {
+    if (overlay?.lang === lang) { setShowTranslated(true); return }
+    setTranslating(true)
+    setTranslateError(false)
+    try {
+      const { data } = await plansAPI.translateDiet(englishPlan.plan_id, lang)
+      setOverlay(data)
+      setShowTranslated(true)
+    } catch {
+      setTranslateError(true)
+    } finally {
+      setTranslating(false)
+    }
+  }
   const [activeDay, setActiveDay] = useState(0)
   const [activeWeek, setActiveWeek] = useState(0)
   const [timingOpen, setTimingOpen] = useState(false)
@@ -558,6 +621,27 @@ export function DietView({ plan }) {
 
   return (
     <div className="diet-view">
+      {translatable && (
+        <div className="diet-translate-bar">
+          <Languages size={13} />
+          {translated ? (
+            <>
+              <span>
+                Translated into {PLAN_LANGUAGES[lang]} from your English plan. The food-safety
+                checks were run on the English version{overlay.kept_english > 0 ? `; ${overlay.kept_english} lines that could not be verified are left in English` : ''}.
+              </span>
+              <button type="button" className="diet-translate-btn" onClick={() => setShowTranslated(false)}>Show English</button>
+            </>
+          ) : (
+            <>
+              <span>{translateError ? 'Translation failed — the English plan is shown.' : 'This plan is in English.'}</span>
+              <button type="button" className="diet-translate-btn" onClick={requestTranslation} disabled={translating}>
+                {translating ? 'Translating…' : `Read in ${PLAN_LANGUAGES[lang]}`}
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* ── Header ── */}
       {plan.plan_title && (

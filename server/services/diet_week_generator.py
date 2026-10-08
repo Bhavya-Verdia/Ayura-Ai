@@ -279,15 +279,16 @@ def _scan(plan: dict, allergies, intolerances, dietary_type, conditions, extra_t
           pregnant) -> dict[tuple, list[str]]:
     """{(week, day, slot): [reasons]} from the same three scans the plan ships with."""
     from services.ahara_safety import (apply_ahara_safety, apply_condition_food_safety,
-                                       apply_dietary_type_safety)
+                                       apply_dietary_type_safety, apply_script_guard)
     probe = {"diet_weeks": json.loads(json.dumps(plan["diet_weeks"]))}
+    probe = apply_script_guard(probe)
     probe = apply_ahara_safety(probe, allergies, intolerances)
     probe = apply_dietary_type_safety(probe, dietary_type)
     probe = apply_condition_food_safety(probe, conditions, extra_terms=extra_terms,
                                         pregnant=pregnant)
     found: dict[tuple, list[str]] = {}
     for key in ("safety_alerts", "dietary_type_alerts", "condition_safety_alerts",
-                "viruddha_ahara_detected"):
+                "viruddha_ahara_detected", "unscannable_alerts"):
         for a in probe.get(key) or []:
             wk = str(a.get("week", "")).replace("Week ", "")
             try:

@@ -342,6 +342,50 @@ async def generate_diet_plan(
     return enriched_plan
 
 
+class DietTranslateRequest(BaseModel):
+    plan_id: str
+    lang: str = Field(..., max_length=5)
+
+
+@router.post("/diet/translate")
+async def translate_diet_plan(
+    req: DietTranslateRequest,
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """The diet plan's display text in the reader's language, as an overlay.
+
+    The plan itself stays English: it is the version every food-safety gate checked,
+    and those gates cannot read other scripts (see `services.diet_translate`). The
+    overlay is stored on the history document, beside `plan_data`, keyed by the
+    English it was made from, so a regenerated plan is never shown an old one."""
+    from services.diet_translate import LANGUAGES, display_strings, source_hash
+    from services.diet_translate import translate_diet_plan as _translate
+
+    if req.lang not in LANGUAGES:
+        raise HTTPException(status_code=422, detail="Unsupported language")
+    # The diet payload's own `plan_id` names it on both paths; the per-feature
+    # endpoint also uses it as the history `_id`, the holistic worker does not.
+    doc = await db.plan_history.find_one(
+        {"user_id": user.id,
+         "$or": [{"_id": req.plan_id}, {"plan_data.diet_plan.plan_id": req.plan_id}]},
+        sort=[("generated_at", -1)])
+    diet = ((doc or {}).get("plan_data") or {}).get("diet_plan")
+    if not diet:
+        raise HTTPException(status_code=404, detail="Diet plan not found")
+    cached = ((doc.get("translations") or {}).get(req.lang)) or {}
+    if cached.get("source_hash") == source_hash(display_strings(diet)):
+        return cached
+    # A billed LLM call, like a generation.
+    await consume_plan_quota(db, user)
+    overlay = await _translate(diet, req.lang)
+    if overlay["strings"]:
+        await db.plan_history.update_one(
+            {"_id": doc["_id"], "user_id": user.id},
+            {"$set": {f"translations.{req.lang}": overlay}})
+    return overlay
+
+
 @router.post("/routine")
 async def generate_routine_plan(
     req: dict = Body(default={}),

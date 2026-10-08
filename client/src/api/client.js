@@ -196,6 +196,8 @@ export const plansAPI = {
   generateRemedies:   ({ symptoms, severity = {}, duration = {} }) =>
                         API.post('/plans/remedies', { symptoms, severity, duration }),
   generateMedicines:  (forceRegenerate = false) => API.post('/plans/medicines', { force_regenerate: forceRegenerate }),
+  // Display-only translation of a diet plan; the plan itself stays the checked English.
+  translateDiet:      (planId, lang) => API.post('/plans/diet/translate', { plan_id: planId, lang }),
 }
 
 // ── Preferences ────────────────────────────────

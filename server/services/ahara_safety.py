@@ -19,6 +19,7 @@ raise — a safety layer must not be able to break plan generation.
 from __future__ import annotations
 
 import re
+import unicodedata
 from functools import lru_cache
 
 # Words that merely START with a short term but are NOT that food. `_term_regex`
@@ -420,6 +421,66 @@ def _collect_meal_units(plan: dict) -> list[tuple[str, str, str, object]]:
                 if meals.get(slot) is not None:
                     units.append((wk, day_label, slot, meals.get(slot)))
     return units
+
+
+# ── Script guard ──────────────────────────────────────────────────────────────
+# Every scan here matches English and Sanskrit words in Latin script. Measured: a
+# meal written as `दही चावल` or `தயிர் சாதம்` raised ZERO alerts from every gate —
+# condition, allergen and dietary type — so a plan in any of the app's other scripts
+# would have passed as checked. A meal's components are screened by id whatever its
+# name says, but the name, description and recipe are free text, and a name can
+# carry a food the components do not.
+#
+# So text the scans cannot read is never passed: it is reported as unverified and
+# sent to repair like any other flagged meal. Translation for the reader is a
+# separate display layer (`services.diet_translate`) laid over the checked English
+# plan, never a field these scans read.
+_LATIN_LIMIT = 0x024F            # end of Latin Extended-B: é, ñ, ā (IAST) still read
+
+
+def unreadable_script(text) -> str | None:
+    """The first non-Latin script a text's LETTERS are written in, or None."""
+    for ch in str(text or ""):
+        if ch.isalpha() and ord(ch) > _LATIN_LIMIT and not (0x1E00 <= ord(ch) <= 0x1EFF):
+            name = unicodedata.name(ch, "")
+            return name.split(" ")[0].title() if name else "Unknown"
+    return None
+
+
+def _free_text(meal) -> str:
+    """The free-text fields `_meal_text` scans — everything but the component ids."""
+    if isinstance(meal, str):
+        return meal
+    if isinstance(meal, list):
+        return " ".join(_free_text(m) for m in meal)
+    if isinstance(meal, dict):
+        return " ".join(str(meal.get(k) or "") for k in
+                        ("meal_name", "name", "description", "recipe")) + " " + \
+            " ".join(str(x) for x in (meal.get("key_ingredients") or []))
+    return ""
+
+
+def apply_script_guard(plan: dict) -> dict:
+    """Flag every meal whose scanned text is in a script the scans cannot read.
+
+    Adds plan["unscannable_alerts"] and plan["script_checked"]; marks the meal
+    `requires_substitution`, as an allergen hit does."""
+    alerts: list[dict] = []
+    for week_label, day_label, slot, meal in _collect_meal_units(plan):
+        script = unreadable_script(_free_text(meal))
+        if not script:
+            continue
+        if isinstance(meal, dict):
+            meal["requires_substitution"] = True
+            meal["unscannable_script"] = script
+        alerts.append({
+            "week": week_label, "day": day_label, "meal_slot": slot, "script": script,
+            "message": (f"This meal is written in {script} script, which the food-safety "
+                        "checks cannot read, so it has not been verified."),
+        })
+    plan["unscannable_alerts"] = alerts
+    plan["script_checked"] = True
+    return plan
 
 
 def apply_ahara_safety(plan: dict, allergies: list[str], intolerances: list[str]) -> dict:
@@ -1607,6 +1668,11 @@ def apply_advisory_safety(
                 # rice", and withholding it took correct advice off the card for
                 # naming the thing it was steering the patient away from.
                 found = _hits(str(item), negation_aware=True, allergens_absolute=True)
+                script = unreadable_script(item)
+                if script and not found:
+                    found = [{"condition": "unverified", "food": str(item)[:40],
+                              "reason": f"it is written in {script} script, which the "
+                                        "food-safety checks cannot read."}]
                 if found:
                     withheld.append({
                         "item": item, "source": "pathya_apathya.pathya",
@@ -1627,6 +1693,13 @@ def apply_advisory_safety(
             value = plan.get(field)
             if not isinstance(value, str):
                 continue
+            script = unreadable_script(value)
+            if script:
+                alerts.append({
+                    "field": field, "food": None, "condition": "unverified",
+                    "message": (f"{field.replace('_', ' ')} is written in {script} script, "
+                                "which the food-safety checks cannot read — not verified."),
+                })
             for hit in _hits(value, negation_aware=True):
                 alerts.append({
                     "field": field, "food": hit["food"], "condition": hit["condition"],
