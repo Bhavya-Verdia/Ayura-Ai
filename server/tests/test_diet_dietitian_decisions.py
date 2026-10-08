@@ -78,6 +78,21 @@ def test_acidity_keeps_the_foods_with_no_case_against_them():
         assert fid in ex, fid
 
 
+# ── High cholesterol ─────────────────────────────────────────────────────────
+
+def test_high_cholesterol_keeps_almonds_beside_walnuts():
+    """Almonds lower LDL (Musa-Veloso 2016); they were Apathya while walnuts were Pathya."""
+    from services.diet_condition_foods import condition_food_rules
+    rules = condition_food_rules("high_cholesterol")
+    assert "Badama (Almonds)" in rules["pathya_names"]
+    assert not any("almond" in t or "badam" in t for t in rules["apathya_terms"])
+    ex = _excluded(["high_cholesterol"])
+    assert "almonds" not in ex and "walnuts" not in ex, ex.get("almonds")
+    assert "cashews" in ex
+    # Obesity still withholds them: the portion is the risk there.
+    assert "almonds" in _excluded(["obesity"])
+
+
 # ── Lactose intolerance ──────────────────────────────────────────────────────
 
 def test_lactose_intolerance_removes_milk_and_keeps_curd_and_paneer():
