@@ -20,12 +20,16 @@ Choices that matter:
   * Indian foods come from IFCT where it has them: amla is Emblica (IFCT E021),
     not the European gooseberry, whose numbers the library's macros came from.
 
-    python scripts/build_diet_micronutrients.py SR_DIR IFCT_CSV        # write
-    python scripts/build_diet_micronutrients.py SR_DIR IFCT_CSV --check
+    python scripts/build_diet_micronutrients.py            # write the table
+    python scripts/build_diet_micronutrients.py --check    # is it in sync?
+    python scripts/build_diet_micronutrients.py extract SR_DIR IFCT_CSV
 
-SR_DIR is the unzipped https://fdc.nal.usda.gov/fdc-datasets/
-FoodData_Central_sr_legacy_food_csv_2018-04.zip; IFCT_CSV is
-compositions/index.csv from the ifct2017 dataset (github.com/nodef/ifct2017).
+The rows `MAP` cites are kept in `diet_micronutrient_sources.json` beside this
+script, so the table builds and checks without the source datasets (~100 MB). Run
+`extract` after adding or changing a row in `MAP`: SR_DIR is the unzipped
+https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_sr_legacy_food_csv_2018-04.zip
+and IFCT_CSV is compositions/index.csv from the ifct2017 dataset
+(github.com/nodef/ifct2017).
 """
 import csv
 import json
@@ -33,6 +37,7 @@ import sys
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parents[1] / "data" / "knowledge_base" / "diet_micronutrients.json"
+SOURCES = Path(__file__).resolve().parent / "diet_micronutrient_sources.json"
 KEYS = ("sodium_mg", "potassium_mg", "phosphorus_mg", "calcium_mg", "iron_mg", "folate_ug")
 _SR_IDS = {"1093": "sodium_mg", "1092": "potassium_mg", "1091": "phosphorus_mg",
            "1087": "calcium_mg", "1089": "iron_mg", "1190": "folate_dfe", "1177": "folate_total",
@@ -60,10 +65,10 @@ MAP = {
     "coconut_water": (S, "170174"), "lemon_water": ("scaled", S, "167747", 0.27),
     # dairy and plant milks
     "milk_full_fat": (S, "172217"), "curd_yogurt": (S, "171284"),
-    "buttermilk_chaas": (S, "170874"), "paneer": (I, "L003"), "butter": (S, "173430"),
+    "buttermilk_chaas": ("scaled", S, "170886", 0.5), "paneer": (I, "L003"), "butter": (S, "173430"),
     "whey": (S, "171282"), "cream": (S, "170859"), "cottage_cheese": (S, "172179"),
     "lassi": ("scaled", S, "171284", 0.85), "coconut_milk": (S, "170172"),
-    "almond_milk": (S, "174832"), "soy_milk": (S, "175215"),
+    "almond_milk": (S, "174832"), "soy_milk": (S, "173768"),
     "oat_milk": ("none", "no unfortified oat drink in SR Legacy; products vary"),
     "coconut_yogurt": ("none", "a commercial product; composition varies"),
     "vegan_paneer_tofu": (S, "172476"),
@@ -221,18 +226,48 @@ def resolve(entry, sr, ifct) -> dict:
     return {**dict.fromkeys(KEYS, None), "source": f"not available — {entry[1]}"}
 
 
-def build(sr_dir: Path, ifct_csv: Path) -> dict:
-    sr, ifct = _load_sr(sr_dir), _load_ifct(ifct_csv)
-    return {fid: resolve(entry, sr, ifct) for fid, entry in sorted(MAP.items())}
+def cited() -> set:
+    """Every (kind, ref) a row of `MAP` reads."""
+    out = set()
+    for entry in MAP.values():
+        if entry[0] in ("sr", "ifct"):
+            out.add((entry[0], entry[1]))
+        elif entry[0] == "scaled":
+            out.add((entry[1], entry[2]))
+        elif entry[0] == "recipe":
+            out.update(ref for ref, _ in entry[1])
+    return out
+
+
+def extract(sr_dir: Path, ifct_csv: Path) -> dict:
+    """The cited rows only, from the full datasets."""
+    full = {"sr": _load_sr(sr_dir), "ifct": _load_ifct(ifct_csv)}
+    out: dict = {"sr": {}, "ifct": {}}
+    for kind, ref in sorted(cited()):
+        row = _row(kind, ref, full["sr"], full["ifct"])
+        out[kind][ref] = {k: row.get(k) for k in (*KEYS, "label")}
+    return out
+
+
+def build(sources: dict | None = None) -> dict:
+    src = sources or json.loads(SOURCES.read_text())
+    return {fid: resolve(entry, src["sr"], src["ifct"]) for fid, entry in sorted(MAP.items())}
+
+
+def render(data: dict) -> str:
+    return json.dumps(data, indent=1, sort_keys=True) + "\n"
 
 
 if __name__ == "__main__":
-    sr_dir, ifct_csv = Path(sys.argv[1]), Path(sys.argv[2])
-    data = build(sr_dir, ifct_csv)
-    text = json.dumps(data, indent=1, sort_keys=True) + "\n"
+    if sys.argv[1:2] == ["extract"]:
+        SOURCES.write_text(json.dumps(extract(Path(sys.argv[2]), Path(sys.argv[3])),
+                                      indent=1, sort_keys=True) + "\n")
+        print(f"wrote {SOURCES} ({len(cited())} rows)")
+        sys.exit(0)
+    text = render(build())
     if "--check" in sys.argv:
         same = OUT.exists() and OUT.read_text() == text
         print("in sync" if same else "OUT OF SYNC — rebuild")
         sys.exit(0 if same else 1)
     OUT.write_text(text)
-    print(f"wrote {OUT} ({len(data)} foods)")
+    print(f"wrote {OUT} ({len(MAP)} foods)")

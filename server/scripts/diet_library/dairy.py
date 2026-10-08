@@ -57,7 +57,10 @@ DAIRY = [
       dosha=(-1, 0, -1), ritu=ALL_RITU,
       pathya_for=("grahani", "ibs", "arsha", "obesity", "fatty_liver", "bloating"),
       apathya_for=("acidity",),
-      nutrition=N(40, 3.3, 4.8, 0.9, 0.0, source="usda"), **_DAIRY),
+      # Curd churned with an equal part of water, butter removed: USDA 170886 (low-fat
+      # yogurt) x 0.5. It was US cultured buttermilk, a factory product with salt in
+      # it (105 mg sodium/100 g); chaas is salted by the cook, and counted there.
+      nutrition=N(32, 2.6, 3.5, 0.8, 0.0, source="usda"), **_DAIRY),
 
     F("Kilata (Paneer)", id="paneer",
       rasa=("madhura",), guna=("guru", "snigdha", "picchila"), virya="shita",

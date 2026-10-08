@@ -435,7 +435,7 @@ function NutrientTargetsCard({ plan }) {
     t.fat_g && ['Fat', `~${t.fat_g.target} g (${t.fat_g.pct_energy}%)`],
     t.sat_fat_g && ['Saturated fat', `under ${t.sat_fat_g.max} g`],
     t.fibre_g && ['Fibre', `at least ${t.fibre_g.min} g`],
-    t.sodium_mg && ['Sodium', `under ${t.sodium_mg.max} mg (about ${(t.sodium_mg.max * 2.5 / 1000).toFixed(1)} g salt)${delivered('sodium_mg', 'mg')}`],
+    t.sodium_mg && ['Sodium', `under ${t.sodium_mg.max} mg (about ${(t.sodium_mg.max * 2.54 / 1000).toFixed(1)} g salt)${delivered('sodium_mg', 'mg')}`],
     mineral('potassium_mg', 'Potassium', 'mg'),
     mineral('iron_mg', 'Iron', 'mg'),
     mineral('calcium_mg', 'Calcium', 'mg'),
@@ -455,6 +455,7 @@ function NutrientTargetsCard({ plan }) {
         ))}
       </dl>
       {(t.notes || []).map((n, i) => <p key={i} className="diet-energy-note">{n}</p>)}
+      {(micro.notices || []).map((n, i) => <p key={`m${i}`} className="diet-energy-note">{n}</p>)}
       {unmeasured.length > 0 && (
         <p className="diet-energy-note">
           Minerals are not counted for {unmeasured.map(f => f.replace(/_/g, ' ')).join(', ')} — no

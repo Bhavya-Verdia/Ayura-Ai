@@ -1734,10 +1734,10 @@
       "vegetarian"
     ],
     "nutrition_per_100g": {
-      "calories": 40.0,
-      "protein_g": 3.3,
-      "carbs_g": 4.8,
-      "fat_g": 0.9,
+      "calories": 32.0,
+      "protein_g": 2.6,
+      "carbs_g": 3.5,
+      "fat_g": 0.8,
       "fiber_g": 0.0
     },
     "nutrition_source": "usda",

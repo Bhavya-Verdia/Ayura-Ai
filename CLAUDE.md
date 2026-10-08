@@ -671,8 +671,10 @@ held energy and four macronutrients. `data/knowledge_base/diet_micronutrients.js
 adds sodium, potassium, phosphorus, calcium, iron and folate per 100 g for all 186
 foods a plan can name. It is **generated** by `scripts/build_diet_micronutrients.py`
 from USDA SR Legacy and IFCT 2017 rows chosen by hand in `MAP`, never matched by name.
-Never hand-edit the JSON. `--check` needs the two source datasets, whose paths are in
-the script's docstring.
+Never hand-edit the JSON. The 153 rows `MAP` cites are committed in
+`scripts/diet_micronutrient_sources.json`, so the table builds and `--check`s without
+the ~100 MB datasets, and a test holds it in sync. After changing `MAP`, run `extract`
+with the datasets (paths in the docstring).
 
 - Rice and flour use the **unenriched** rows: Indian rice and atta are not fortified
   the way US "enriched" rice is.
@@ -687,6 +689,8 @@ Building it found five library macro rows that were wrong:
 - methi leaf was labelled USDA, which has no such row
 - gavar was labelled IFCT with the wrong value
 - mosambi was unsourced
+- Takra carried US cultured buttermilk, a factory product with salt in it. It is
+  now low-fat curd diluted 1:1, salted by the cook.
 
 **Salt is a component.** The LLM is told to list it. The rule-engine fallback adds
 1.5 g to lunch and dinner, because without it a day's sodium read 160 mg, a
@@ -696,9 +700,27 @@ and unrecorded sex takes the higher figure. The WHO potassium minimum is set onl
 adults without kidney disease or an ACE inhibitor, ARB or spironolactone. For those
 patients the advice is the opposite.
 
-On the 60-profile sweep, calcium is met on few days for most patients and iron is
-often short for women. **That is reported, not hidden**: `DietView` shows each
-target beside the plan's average and the days it was met.
+**Shortfalls are closed with sides, not portions.** Scaling cannot fix composition.
+Before this step, calcium was met on almost no day for most patients. `_add_mineral_sides`
+adds up to three ordinary sides to a day that falls short: a katori of curd, a glass of
+milk or soy milk, roasted til, ragi malt, methi saag, tofu. Each one:
+- comes from the patient's **screened** list, and is skipped if it would make its meal
+  Viruddha (no milk beside a banana)
+- keeps its portion through the solver (`_fixed`), which balances energy with the rest
+  of the plate
+- is never added to a kidney plan
+- is named in the meal ("… + a katori of curd")
+
+Spinach calcium is counted in the totals but never chosen to supply calcium, because
+oxalate binds it.
+
+What food cannot close, the plan says. An 84-year-old vegan with acidity has five
+calcium sources left, and 29 mg of iron is hard to reach from food alone; that is why
+Anaemia Mukt Bharat supplements. Below 90% of the target,
+`energy_reconciliation.micronutrients.notices` gives the shortfall and names the doctor
+as the one who decides about a tablet. The sweep asserts that either the target is
+reached or the notice is there. `DietView` shows each target beside the plan's average
+and the days it was met.
 
 #### The Ritucharya card is the other surface that names food
 `services/seasonal_service.build_seasonal_guidance` took a **dosha and nothing else**,

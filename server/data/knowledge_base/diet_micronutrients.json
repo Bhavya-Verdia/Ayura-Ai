@@ -207,13 +207,13 @@
   "source": "USDA SR Legacy 173430: Butter, without salt"
  },
  "buttermilk_chaas": {
-  "calcium_mg": 116.0,
-  "folate_ug": 5.0,
-  "iron_mg": 0.05,
-  "phosphorus_mg": 89.0,
-  "potassium_mg": 151.0,
-  "sodium_mg": 148.0,
-  "source": "USDA SR Legacy 170874: Milk, buttermilk, fluid, cultured, lowfat"
+  "calcium_mg": 91.5,
+  "folate_ug": 5.5,
+  "iron_mg": 0.04,
+  "phosphorus_mg": 72.0,
+  "potassium_mg": 117.0,
+  "sodium_mg": 35.0,
+  "source": "USDA SR Legacy 170886: Yogurt, plain, low fat \u00d7 0.5 (cooked or diluted state)"
  },
  "cabbage": {
   "calcium_mg": 40.0,
@@ -1404,13 +1404,13 @@
   "source": "USDA SR Legacy 170150: Seeds, sesame seeds, whole, dried"
  },
  "soy_milk": {
-  "calcium_mg": 124.0,
-  "folate_ug": null,
+  "calcium_mg": 123.0,
+  "folate_ug": 7.0,
   "iron_mg": 0.46,
-  "phosphorus_mg": 32.0,
-  "potassium_mg": 120.0,
-  "sodium_mg": 37.0,
-  "source": "USDA SR Legacy 175215: Soymilk (all flavors), unsweetened, with added calcium, vitamins A and D"
+  "phosphorus_mg": 103.0,
+  "potassium_mg": 117.0,
+  "sodium_mg": 63.0,
+  "source": "USDA SR Legacy 173768: Soymilk, original and vanilla, light, unsweetened, with added calcium, vitamins A and D"
  },
  "soya_chunks": {
   "calcium_mg": null,
