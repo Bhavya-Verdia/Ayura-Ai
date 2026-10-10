@@ -774,6 +774,97 @@ three changes, each only on evidence, and only once 14 meals are logged:
 logging one more meal does not bill a regeneration. Both diet paths read the log.
 `GET /api/meals/adaptation` tells the patient what will change before they regenerate.
 
+#### Diet: the weekly check-in, and the weeks still to come
+`services/diet_checkin.py` (`/api/meals/checkins`, `db.diet_checkins`) asks what the log
+cannot know: hunger, digestion, which served food disagreed, and five signs no menu answers.
+It **proposes**; `POST /api/plans/diet/rebuild` rewrites the weeks after the check-in only
+when the patient asks (one billed generation). The rebuild keeps the eaten weeks exactly
+(`finalise_weeks(frozen=…)`), keeps the plan id and start date so logs and check-ins still
+belong to it, and composes failed weeks with the rule engine, so it works through an LLM
+outage. Trouble foods leave the screened list by id, for six weeks. Bloating, acidity and
+constipation become protocols. Hunger is ±150 kcal, bounded together with the log's own step,
+and never a cut for a child, in pregnancy or for an underweight patient. A red flag says
+"see a doctor". A food becomes an allergy only when ticked. A log-only adaptation keeps the
+fingerprint it had, or shipping this would have billed every patient a regeneration.
+
+#### Diet: the day around the meals is screened too
+Meal times, the wake-up and bedtime drinks, the spice guide and the dosha tips were fixed
+per-dosha tables no gate read: golden milk at bedtime for a vegan Vata, honey-ginger-lemon
+water for a diabetic, Jain or acidity Kapha, hing for a coeliac, fenugreek seed in
+pregnancy. `services/diet_day_frame.py` is now their only source (a test fails if the old
+tables return). Every drink, spice and tip names its food ids and is shown only if all of
+them are on the screened list; anything removed is listed in `withheld_guidance` with its
+reason. The drinks are counted: `day["rituals"]` is in `_day_totals` and held fixed by the
+solver.
+
+**The eating window was a label.** `intermittent_fasting` reached the model as "adjust meal
+timing accordingly", in a plan with no field for a time, beside a 7 AM breakfast and a
+bedtime milk. Now the brief and `meal_timing` carry the window's hours and each meal's time.
+Inside a window the wake-up drink is under 5 kcal and there is no bedtime drink.
+`no_fasting_group` withholds 14:10 and 16:8 from children, the over-70s, pregnancy,
+underweight, diabetes and CKD. `fasting_withheld_reason` returns None when no fasting
+**day** is declared, and that is how a diabetic's 16:8 used to pass. A child gets no window
+at all.
+
+**Open for the dietitian:** the screen does not remove honey or raisins for diabetes
+(classically Madhu is Pathya in Prameha), while the brief's plate rule says no honey or
+dried fruit. The frame follows the brief. The screen is left as it is.
+
+#### Diet: plan over plan
+Every plan used to choose its four-week progression afresh, so month two opened with
+month one's first phase. A balanced patient kindled Agni every month; a reducing patient
+spent every fourth week on the opening week and never more than two on Langhana.
+
+`diet_log.previous_plans` counts diet plans the way gym counts blocks:
+- **Finished:** 21 days passed before the next plan was written, or week 4 was logged.
+- **Followed:** 14 meals logged, half of them eaten as planned.
+
+When the last plan was both, `diet_plan_arc._continue` skips the opening phase of the same
+line of treatment (`_CONTINUED`):
+- **Not followed:** the progression repeats, and the plan says why.
+- **State changed:** a new line starts from its first week.
+- **Clearing is never skipped:** Ama still on the latest assessment has not been cleared,
+  so Ama Pachana and Deepana arcs are held. Pregnancy is held too.
+
+The continuation is **not** in the cache fingerprint: it flips the day the next plan is
+written, and a key that moves under a current plan bills a regeneration. The next plan is
+asked for with `force_regenerate`. The rule-engine fallback has no arc, so a plan built by
+it continues nothing. A finished plan opens on week 4, under the end-of-plan card.
+
+The food changes too. `plan_seq` (every plan, finished or not) offsets two things:
+- `_staples`' rotation, so week 1 of every month no longer features the same grains and
+  pulses. The rotation runs through familiar staples and real pulses only: once it ran past
+  month one, it featured cashew cream as the week's pulse.
+- The rule engine's seed. Seeded on the user alone, an unchanged patient got almost the
+  same four weeks every month. Plan 1 keeps its old seed.
+
+#### Diet: using the plan day to day
+- **Today.** `DietView` opens on today's week and day, counted in sevens from
+  `generated_at`.
+- **The end of the four weeks.** A card offers the next plan, and the
+  `notify_finished_diet_plans` cron (03:35 UTC, `plan_end_notified`) sends one
+  notification, as gym does.
+- **Another dish** (`services/diet_meal_swap.py`, `/api/meals/replace`).
+  - The replacement is the same slot from elsewhere in the patient's own plan.
+  - It is held to today's screened list plus the plan's own exclusions, and the scans run
+    again.
+  - It is resized to the replaced meal's energy and capped at `meal_cap`.
+  - Repeated requests step through the alternatives. `replaced_from` puts the original
+    back.
+  - No LLM call, nothing billed.
+- **Regional cuisine.** `CUISINE_STAPLES` is read by the rule engine as well as the
+  brief: it favours them, and touches the random sequence only when a cuisine is set, so
+  "any" plans are unchanged. The week prompts' staple rotation leads with them.
+- **Translation is per line.** The overlay is keyed by path, so a swapped meal kept the
+  old dish's translation, and any change billed a whole plan. `sources` holds a hash of
+  each line's English. Unchanged lines are reused, and 40 or fewer new lines are not
+  billed.
+- **Screen strings.** `scripts/translate_diet_view.py` fills only missing keys by default;
+  `--all` redoes everything and undoes the hand corrections.
+- **`scripts/e2e_diet_week_local.py`** drives swap, check-in and rebuild over HTTP against
+  a scratch mongod. Set `MONGO_DB` as well as `MONGO_URL`, or the backend uses the `.env`
+  database name. Set `SENTRY_DSN=`, or local errors reach production Sentry.
+
 #### The Ritucharya card is the other surface that names food
 `services/seasonal_service.build_seasonal_guidance` took a **dosha and nothing else**,
 and `diet_adjustments` is LLM-written and names specific foods. A real Sharad card read

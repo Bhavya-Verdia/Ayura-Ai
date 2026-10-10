@@ -281,6 +281,36 @@ _CUISINE = {
 }
 
 
+# The foods each regional kitchen is built on, by library id. The brief names the
+# cuisine to the model; the rule engine cannot read a sentence, so without these a
+# plan that fell back to it lost the patient's cuisine with nothing to say so. Both
+# paths read them: the engine favours them when it picks a food, and the week
+# prompts lead their rotating staples with them.
+CUISINE_STAPLES = {
+    "north_indian": ("roti_whole_wheat", "paratha", "basmati_rice", "daliya", "rajma", "chhole",
+                     "moong_dal_yellow", "urad_dal", "toor_dal", "chana_dal", "paneer",
+                     "curd_yogurt", "lassi", "palak", "spinach", "cauliflower", "potato",
+                     "methi_fenugreek_leaves", "bottle_gourd", "green_peas", "millet_bajra"),
+    "south_indian": ("idli", "dosa", "upma_rava", "white_rice", "rice_flakes", "toor_dal",
+                     "urad_dal", "moong_dal_yellow", "black_eyed_peas", "sambar", "coconut",
+                     "coconut_chutney", "curd_yogurt", "buttermilk_chaas", "drumstick_moringa",
+                     "ivy_gourd_tindora", "ragi_flour", "raw_banana", "french_beans", "pumpkin",
+                     "curry_leaves"),
+    "east_indian": ("white_rice", "rice_flakes", "poha", "masoor_dal", "moong_dal_yellow",
+                    "chana_dal", "mustard_oil", "raw_banana", "pumpkin", "bitter_gourd_karela",
+                    "sweet_potato", "bottle_gourd", "ridge_gourd", "potato", "spinach",
+                    "green_peas", "curd_yogurt"),
+    "west_indian": ("millet_bajra", "bajra_flour", "millet_jowar", "jowar_flour", "roti_whole_wheat",
+                    "poha", "chickpea_flour_besan", "toor_dal", "moong_dal_green", "sprouted_moong",
+                    "buttermilk_chaas", "curd_yogurt", "cluster_beans_gavar",
+                    "methi_fenugreek_leaves", "brinjal_baingan", "ivy_gourd_tindora", "peanuts"),
+}
+
+
+def cuisine_staples(diet_prefs: dict) -> tuple[str, ...]:
+    return CUISINE_STAPLES.get((diet_prefs or {}).get("cuisine_preference") or "any", ())
+
+
 def preference_protocols(diet_prefs: dict) -> dict:
     """Dislikes and restrictions as pseudo-condition protocols for the food screen."""
     out = {}

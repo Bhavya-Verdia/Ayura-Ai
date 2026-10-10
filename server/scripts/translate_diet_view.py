@@ -5,8 +5,13 @@ these are the screen's labels and fixed sentences, translated once and committed
 Every translation keeps the English's `{{placeholders}}` exactly, or it is asked for
 again; one that still fails is left out, and i18next shows the English for it.
 
-    python scripts/translate_diet_view.py            # all seven locales
+    python scripts/translate_diet_view.py            # strings a locale lacks, all seven locales
     python scripts/translate_diet_view.py hi ta      # some
+    python scripts/translate_diet_view.py --all hi   # every string again
+
+By default only the strings a locale lacks are translated, and the rest are kept:
+several were corrected by hand after the first run (the Sanskrit "Ate it" meant "not
+eaten"), and translating everything again would undo them. Read what it writes.
 """
 import asyncio
 import json
@@ -89,15 +94,19 @@ async def translate(lang: str, english: dict) -> dict:
     return dict(sorted(out.items()))
 
 
-async def main(langs):
+async def main(langs, everything=False):
     english = json.loads((LOCALES / "en.json").read_text())["diet"]
     for lang in langs:
         path = LOCALES / f"{lang}.json"
         data = json.loads(path.read_text())
-        data["diet"] = await translate(lang, english)
+        have = {} if everything else {k: v for k, v in (data.get("diet") or {}).items()
+                                      if k in english}
+        todo = {k: v for k, v in english.items() if k not in have}
+        data["diet"] = dict(sorted({**have, **(await translate(lang, todo) if todo else {})}.items()))
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
-        print(f"{lang}: {len(data['diet'])}/{len(english)}")
+        print(f"{lang}: {len(data['diet'])}/{len(english)} ({len(todo)} translated)")
 
 
 if __name__ == "__main__":
-    asyncio.run(main(sys.argv[1:] or list(LANGS)))
+    args = [a for a in sys.argv[1:] if a != "--all"]
+    asyncio.run(main(args or list(LANGS), everything="--all" in sys.argv))
