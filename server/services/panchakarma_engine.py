@@ -1183,6 +1183,22 @@ def _select_pradhana_karma(
 
 # ── Purvakarma Duration ────────────────────────────────────────────────────────
 
+# Purvakarma for a Karma that takes no internal oleation: Abhyanga and Swedana on
+# their own. Three days loosens and opens the Srotas without turning preparation
+# into most of a short course.
+_EXTERNAL_PURVAKARMA_DAYS = 3
+
+
+def _uses_snehapana(karma: str | None) -> bool:
+    """Whether this Pradhana Karma is preceded by the internal Snehapana ladder.
+
+    Read off the `karma` tag of the Snehapana row, which is authored as
+    `[vamana, virechana]`: Basti's preparation is Abhyanga + Swedana and its
+    internal Sneha is the Anuvasana itself; Nasya and Raktamokshana take none.
+    """
+    return bool(karma) and karma in _ROW_KARMA.get("snehapana_home", ())
+
+
 def _purvakarma_days(vikriti_dom: str, total_days: int, protocols: dict) -> int:
     """Classical Snehana duration by Prakriti/Vikriti. Vata=7, Pitta=5, Kapha=3."""
     dur_map = (
@@ -1667,9 +1683,20 @@ _SHAMANA_EXCLUDED_THERAPIES = {
 # The Deepana-Pachana phase excludes the same oleation rows for its own reason:
 # `ama_correction_first` places the herbs "before starting Snehana", so Snehapana
 # inside that phase oils an Ama-laden Srotas — the exact sequencing the phase exists
-# to prevent. The two sets coincide today; they are named separately because the
-# reasons are different and either could change alone.
-_DEEPANA_EXCLUDED_THERAPIES = {"snehapana_home", "snehapana_clinic"}
+# to prevent.
+#
+# External oil is excluded with it. The two sets used to coincide, and the phase
+# then rotated Self-Abhyanga, Clinical Abhyanga and Shirodhara through the days
+# whose whole purpose is to digest Ama — a high-Ama rheumatoid patient had two oil
+# massages and an oil Shirodhara inside "Deepana-Pachana". Ashtanga Hridaya
+# Sutrasthana 2.9 withholds Abhyanga from the Kapha-afflicted, the just-purified and
+# those with Ajirna, and an unripe Ama state is Ajirna by definition: oil on the
+# skin is still Snehana, and Snehana is what this phase precedes. What remains is
+# the Rukshana side — Udvartana and sudation — which is what Ama is treated with.
+_DEEPANA_EXCLUDED_THERAPIES = {
+    "snehapana_home", "snehapana_clinic",
+    "abhyanga_self", "abhyanga_clinic", "shirodhara",
+}
 
 def _shamana_regimen(vikriti_dom: str) -> dict:
     """The Ahara and Vihara a Shamana plan prescribes, from the procedures KB.
@@ -2063,11 +2090,46 @@ def _assemble_rotating_phase(pool, target_days, start_day, phase_name, pinned=No
         if pinned:
             therapies.append(pinned)
         if pool:
-            therapies.append(_therapy_row(pool[i % len(pool)], core=True))
-            if len(pool) > 1:
-                therapies.append(_therapy_row(pool[(i + 1) % len(pool)]))
+            first = pool[i % len(pool)]
+            therapies.append(_therapy_row(first, core=True))
+            # The second therapy of the day is the next one of a DIFFERENT kind.
+            # Taking pool[i + 1] blindly paired Home Steam with Bashpa Sweda and
+            # Self-Abhyanga with Clinical Abhyanga whenever two variants of one
+            # procedure sat next to each other in the scored pool.
+            second = next(
+                (pool[(i + k) % len(pool)] for k in range(1, len(pool))
+                 if _therapy_kind(pool[(i + k) % len(pool)]["id"]) != _therapy_kind(first["id"])),
+                None,
+            )
+            if second is not None:
+                therapies.append(_therapy_row(second))
         schedule.append({"day": start_day + i, "phase": phase_name, "therapies": therapies})
     return schedule
+
+
+def _therapy_kind(therapy_id: str) -> str:
+    """The procedure a row performs, ignoring who performs it and where."""
+    for kind in ("abhyanga", "sweda", "udvartana", "snehapana", "nasya", "basti",
+                 "virechana", "samsarjana"):
+        if kind in therapy_id:
+            return kind
+    return therapy_id
+
+
+def _prefer_clinic_rows(pool: list[dict], raw_setting: str | None) -> list[dict]:
+    """In a clinic-only course, drop a home row when the clinic offers the same procedure.
+
+    "both" keeps them: the home rows are what fills the days the patient is not at
+    the clinic. A clinic-only patient has no such days, and handing them a home
+    steam beside the clinic's Bashpa Sweda is the same procedure twice.
+    """
+    if raw_setting != "clinic":
+        return pool
+    clinic_kinds = {_therapy_kind(t["id"]) for t in pool
+                    if "home" not in t.get("setting_required", [])}
+    return [t for t in pool
+            if "home" not in t.get("setting_required", [])
+            or _therapy_kind(t["id"]) not in clinic_kinds]
 
 
 def _build_shamana_plan(
@@ -2115,7 +2177,8 @@ def _build_shamana_plan(
         if t["id"] not in _SHAMANA_EXCLUDED_THERAPIES
     ]
     # No therapy from the `pradhana` phase may appear — that is the whole point.
-    gentle_pool = [t for t in pool if t.get("phase") != "pradhana"]
+    gentle_pool = _prefer_clinic_rows(
+        [t for t in pool if t.get("phase") != "pradhana"], pk_prefs.get("setting"))
 
     schedule: list[dict] = []
     phases: list[dict] = []
@@ -2723,6 +2786,7 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         paschat_max = paschat_min + _RASAYANA_TAIL
 
         is_basti = pradhana["primary"] in ("basti", "basti_matra")
+        uses_snehapana = _uses_snehapana(pradhana["primary"])
         deepana_needed = bool(
             eligibility.get("ama_correction_needed") or eligibility.get("agni_correction_needed")
         )
@@ -2755,7 +2819,16 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
                                total_days - (floor - deepana_min))
 
         shodhana_days = total_days - deepana_days
-        purva_days = max(purva_min, _purvakarma_days(vikriti_dom, shodhana_days, protocols))
+        # The classical Snehana lengths (Vata 7, Pitta 5, Kapha 3) are the length of
+        # the Snehapana ladder, and only Vamana and Virechana take Snehapana — see
+        # `_uses_snehapana`. Basti, Nasya and Raktamokshana are prepared with
+        # Abhyanga and Swedana alone, so their Purvakarma is a fixed short block,
+        # not a Vata patient's seven days of escalating ghee before an enema.
+        purva_days = (
+            max(purva_min, _purvakarma_days(vikriti_dom, shodhana_days, protocols))
+            if uses_snehapana else
+            max(purva_min, min(_EXTERNAL_PURVAKARMA_DAYS, int(shodhana_days * 0.40)))
+        )
 
         budget = shodhana_days - purva_days
 
@@ -2912,7 +2985,13 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     # escalating ladder is Shodhanartha Sneha, given to liquefy Doshas so they can
     # be expelled. In a plan with no expulsion step it mobilises them with nowhere
     # to go. Shamana-matra Sneha replaces it (see shamana_protocol.shamana_chikitsa).
-    dose_schedule = [] if is_shamana else snehana_int.get("dose_schedule", [])[:purva_days]
+    #
+    # Empty too for a Karma that takes no Snehapana. Every Basti, Matra Basti, Nasya
+    # and Raktamokshana course used to be handed the full 30 -> 120 ml ladder, with a
+    # "SNEHANA SHORTER THAN CLASSICAL" warning measuring it against the Vata figure —
+    # seven days of escalating ghee before an oil enema whose own oil IS the Sneha.
+    uses_snehapana = (not is_shamana) and _uses_snehapana(pradhana["primary"])
+    dose_schedule = snehana_int.get("dose_schedule", [])[:purva_days] if uses_snehapana else []
     # Kapha: classical Avara Snehana — max 60ml; avoid heavy oleation for already-heavy Kapha
     # Sarshapa Taila (mustard oil) or Trikatu-infused Ghrita preferred over plain Ghrita
     if vikriti_dom == "kapha":
@@ -2993,9 +3072,11 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         sd       = shamana_build["days"]
         purva_days, pradhana_days, paschat_days = 0, 0, sd["brimhana"]
     else:
-        purva_pool   = filter_and_score_therapies(user_profile, pk_prefs, "purvakarma", pkt,
-                                                  vikriti_dom, triage_doshas,
-                                                  pradhana_karma=pradhana["primary"])
+        purva_pool   = _prefer_clinic_rows(
+            filter_and_score_therapies(user_profile, pk_prefs, "purvakarma", pkt,
+                                       vikriti_dom, triage_doshas,
+                                       pradhana_karma=pradhana["primary"]),
+            pk_prefs.get("setting"))
         # The Paschat pool takes the Karma for the same reason, but be clear about
         # what that buys today: the only rows its ordering moves are the two
         # Samsarjana rows, and `paschat_rest` below strips those out because the
@@ -3034,9 +3115,33 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         # Taking pool[0] and pool[1] gave the two highest-scoring rows, which for a
         # Vata patient were both Abhyanga: two oil massages a day and no sudation at
         # all, in the phase whose definition is the pair.
-        purva_abhyanga = next((t for t in purva_pool if "abhyanga" in t["id"]), None)
-        purva_swedana  = next((t for t in purva_pool if "sweda" in t["id"]), None)
-        purva_extras   = [t for t in purva_pool if t not in (purva_abhyanga, purva_swedana)]
+        #
+        # In a clinic the pair is the clinic's own. The pool is scored, not sorted by
+        # setting, so the first Abhyanga row was usually Self-Abhyanga — and the
+        # clinical one then rotated in on top of it: a clinic patient had a
+        # self-massage, a steam, then a two-therapist Abhyanga, three days in five,
+        # and on the others a home steam followed by Bashpa Sweda.
+        def _pick(kind: str):
+            rows = [t for t in purva_pool if kind in t["id"]]
+            if setting == "clinic":
+                rows = sorted(rows, key=lambda t: "home" in t.get("setting_required", []))
+            return rows[0] if rows else None
+
+        purva_abhyanga = _pick("abhyanga")
+        purva_swedana  = _pick("sweda")
+        # One of each kind a day. Another Abhyanga or another Swedana is not an
+        # adjunct to the pair, it is the pair twice.
+        purva_extras = [
+            t for t in purva_pool
+            if t not in (purva_abhyanga, purva_swedana)
+            and "abhyanga" not in t["id"] and "sweda" not in t["id"]
+            # Udvartana is Rukshana — a dry powder rubbed against the grain to strip
+            # oil. Inside a Vata or Pitta Snehana phase it undoes the day's Abhyanga
+            # and Snehapana; the KB authors it for Kapha ("Udvartana as Purvakarma
+            # instead of heavy Snehana — Kapha doesn't need excessive oil"), and its
+            # `karma` tag is Vamana alone.
+            and not (t["id"].startswith("udvartana") and vikriti_dom != "kapha")
+        ]
         schedule.extend(assemble_phase(
             [t for t in (purva_abhyanga, purva_swedana) if t] or purva_pool,
             purva_days, purva_start, "Purvakarma (Preparation)",
@@ -3091,7 +3196,10 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         for i, day_entry in enumerate(d for d in schedule if "Purvakarma" in d.get("phase", "")):
             if i < len(dose_schedule):
                 day_entry["snehapana"] = dose_schedule[i]
-            day_entry["snehana_signs"] = snehana_int.get("signs_adequate_snehana", [])
+            if dose_schedule:
+                # Samyak Snigdha is the endpoint of Snehapana; with no internal
+                # oleation in this course there is nothing for these signs to judge.
+                day_entry["snehana_signs"] = snehana_int.get("signs_adequate_snehana", [])
 
         # The pinned action IS the Pradhana Karma, fully described. The therapy pool
         # holds a row for every Karma in the KB and was never filtered by the one
@@ -3141,7 +3249,9 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
 
         phases += [
             {"key": "purvakarma", "label": "Purvakarma",
-             "sub": "Snehana + Swedana (Preparation)", "days": purva_days},
+             "sub": ("Snehana + Swedana (Preparation)" if uses_snehapana
+                     else "Abhyanga + Swedana (external preparation)"),
+             "days": purva_days},
             {"key": "pradhana", "label": "Pradhana Karma",
              "sub": (pradhana["primary"] or "").replace("_", " "), "days": pradhana_days},
             {"key": "paschat", "label": "Paschat Karma",
@@ -3236,7 +3346,8 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
 
         # ── Snehana (Purvakarma) protocol ─────────────────────────────────────
         "snehana_protocol": {
-            "internal_ghrita":    snehana_oils,
+            # No internal oleation agent to name when the Karma takes none.
+            "internal_ghrita":    snehana_oils if (uses_snehapana or is_shamana) else None,
             "dose_schedule":      dose_schedule,
             "signs_adequate":     snehana_int.get("signs_adequate_snehana", []),
             "diet_during":        snehana_int.get("diet_during_snehana", ""),
