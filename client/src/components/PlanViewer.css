@@ -6763,3 +6763,56 @@
   color: var(--ayura-text-secondary);
 }
 .diet-log-summary ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }
+
+/* Another dish in place of one meal; the original can be put back. */
+.diet-replace-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem;
+  padding: 0 0.85rem 0.6rem;
+}
+.diet-replace-bar .diet-log-btn { display: inline-flex; align-items: center; gap: 0.3rem; }
+.diet-replace-bar .diet-log-btn:disabled { opacity: 0.6; cursor: progress; }
+
+/* Today, in a plan counted from the day it was written. */
+.diet-day-btn.is-today { box-shadow: 0 0 0 2px color-mix(in srgb, var(--ayura-accent) 45%, transparent); }
+.diet-today-dot {
+  display: inline-block; width: 6px; height: 6px; margin-left: 0.35rem; border-radius: 50%;
+  background: var(--ayura-accent); vertical-align: middle;
+}
+.diet-day-heading-row {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem;
+}
+.diet-today-btn { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; }
+
+/* The wake-up and bedtime drinks, counted in the day's totals. */
+.diet-ritual-list { list-style: none; margin: 0.45rem 0 0; padding: 0; display: grid; gap: 0.2rem; }
+.diet-ritual-list li {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem;
+  font-size: 0.74rem; color: var(--ayura-text-secondary);
+}
+.diet-ritual-k { font-weight: 600; color: var(--ayura-text); }
+
+/* Weekly check-in — shares the gym check-in's card. */
+.diet-checkin-food {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 0.4rem;
+  font-size: 0.8rem; color: var(--ayura-text);
+}
+.diet-checkin-food select, .diet-checkin-add {
+  min-width: 0; padding: 0.3rem 0.5rem; border-radius: 8px; font: inherit; font-size: 0.78rem;
+  border: 1px solid var(--ayura-border); background: transparent; color: inherit;
+}
+.diet-checkin-add { justify-self: start; max-width: 100%; }
+.diet-checkin-remove {
+  display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+  border-radius: 50%; border: 1px solid var(--ayura-border); background: transparent;
+  color: var(--ayura-text-secondary); cursor: pointer;
+}
+.diet-checkin-proposal { display: grid; gap: 0.35rem; font-size: 0.8rem; color: var(--ayura-text); }
+.diet-checkin-closed .diet-checkin-proposal { grid-column: 1; }
+.diet-checkin-changes { margin: 0; padding-left: 1.1rem; color: var(--ayura-text-secondary); }
+
+.diet-spice-guide-note { font-style: italic; }
+.diet-withheld-guidance ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }
+@media (max-width: 520px) {
+  .diet-checkin-food { grid-template-columns: minmax(0, 1fr) auto; }
+  .diet-checkin-food select { grid-column: 1; }
+}

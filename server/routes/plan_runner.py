@@ -376,7 +376,8 @@ async def _generate_feature_via_engine_impl(
             from services.diet_log import diet_history
             if db is not None and user_id:
                 hist = await diet_history(db, user_id, goal=(prefs or {}).get("diet_goal"),
-                                          bmi_category=profile.get("bmi_category"))
+                                          bmi_category=profile.get("bmi_category"),
+                                          profile=profile)
                 profile = {**profile, "diet_log": hist["adaptation"]}
             return await build_diet_plan(profile, prefs, _kb("diet_foods"))
 

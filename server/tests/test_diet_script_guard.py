@@ -137,3 +137,23 @@ def test_the_translation_prompt_asks_for_json():
 
 def test_vegan_is_never_translated_as_vegetarian():
     assert "never translate it with the word for vegetarian" in dt.SYSTEM
+
+
+def test_a_changed_meal_is_translated_alone_and_the_rest_is_reused(monkeypatch):
+    """A swapped meal used to make the whole overlay stale: a full, billed
+    re-translation, and until then the old dish's name in the new dish's place."""
+    asked = []
+
+    async def fake(prompt, **k):
+        items = json.loads(prompt.split("\n", 1)[1])
+        asked.extend(items.values())
+        return json.dumps({"t": {key: f"अनुवाद {v}" for key, v in items.items()}})
+    monkeypatch.setattr("ai.llm_client.llm_client.generate", fake)
+    first = asyncio.run(dt.translate_diet_plan(_PLAN, "hi"))
+    changed = json.loads(json.dumps(_PLAN))
+    changed["diet_weeks"][0]["daily_plan"]["Monday"]["lunch"]["meal_name"] = "Vegetable Khichdi"
+    asked.clear()
+    second = asyncio.run(dt.translate_diet_plan(changed, "hi", previous=first))
+    assert asked == ["Vegetable Khichdi"]
+    assert second["strings"]["diet_weeks.0.daily_plan.Monday.lunch.meal_name"] == "अनुवाद Vegetable Khichdi"
+    assert len(second["strings"]) == len(first["strings"])

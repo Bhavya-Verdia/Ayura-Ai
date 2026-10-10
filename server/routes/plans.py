@@ -292,7 +292,8 @@ async def generate_diet_plan(
     # the raw log) is part of the cache key, through `diet_log`.
     from services.diet_log import diet_history
     history = await diet_history(db, user.id, goal=diet_prefs.get("diet_goal"),
-                                 bmi_category=user_profile.get("bmi_category"))
+                                 bmi_category=user_profile.get("bmi_category"),
+                                 profile=user_profile)
     user_profile["diet_log"] = history["adaptation"]
 
     # 1. Check Cache
@@ -349,6 +350,91 @@ async def generate_diet_plan(
     return enriched_plan
 
 
+class DietRebuildRequest(BaseModel):
+    plan_id: str = Field(..., min_length=1, max_length=120)
+
+
+@router.post("/diet/rebuild")
+async def rebuild_diet_weeks_route(
+    req: DietRebuildRequest,
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """Write the weeks after the latest check-in again, around what it reported.
+
+    Only on the patient's request: the check-in proposes, this disposes. The weeks
+    already eaten are kept exactly, the plan keeps its id (so its meal logs and
+    check-ins still belong to it), and the replaced weeks are kept on the history
+    document. Bills one plan generation."""
+    from services.diet_checkin import proposal
+    from services.diet_llm_generator import rebuild_diet_weeks
+    from services.diet_log import diet_history
+
+    doc = await db.plan_history.find_one(
+        {"user_id": user.id,
+         "$or": [{"_id": req.plan_id}, {"plan_data.diet_plan.plan_id": req.plan_id}]},
+        sort=[("generated_at", -1)])
+    plan = ((doc or {}).get("plan_data") or {}).get("diet_plan")
+    if not plan or not plan.get("diet_weeks"):
+        raise HTTPException(status_code=404, detail="Diet plan not found")
+    checkin = await db.diet_checkins.find_one(
+        {"user_id": user.id, "plan_id": req.plan_id}, sort=[("week", -1)])
+    prop = proposal(checkin, {"age": user.age, "bmi_category": user.bmi_category,
+                              "pregnancy_or_nursing": bool(user.pregnancy_or_nursing)})
+    if not prop.get("rebuild_available"):
+        raise HTTPException(status_code=409, detail="Nothing to rebuild from the latest check-in")
+    prefs_doc = await db.user_preferences.find_one({"user_id": user.id}) or {}
+    diet_prefs = prefs_doc.get("diet")
+    if not diet_prefs:
+        raise HTTPException(status_code=422, detail="Complete diet preferences first")
+
+    user_profile = user.model_dump()
+    history = await diet_history(db, user.id, goal=diet_prefs.get("diet_goal"),
+                                 bmi_category=user_profile.get("bmi_category"),
+                                 profile=user_profile)
+    user_profile["diet_log"] = history["adaptation"]
+    # The hash /diet would compute for this profile now, computed the same way and at
+    # the same point, so the next visit serves the rebuilt plan instead of billing a
+    # whole new one.
+    _, pref_hash = await _check_plan_cache(db, user.id, "diet", user_profile, diet_prefs, False)
+
+    await consume_plan_quota(db, user)
+    async with _plan_guard(user.id, "diet"):
+        from engine.seasonal import get_current_season
+        user_profile["current_season"] = get_current_season().name.lower()
+        user_profile["pregnancy_or_nursing"] = user.pregnancy_or_nursing or False
+        try:
+            rebuilt = await rebuild_diet_weeks(plan, user_profile, diet_prefs, prop["from_week"])
+        except Exception as e:  # noqa: BLE001 — the stored plan is untouched
+            logger.error(f"diet rebuild failed: {e}")
+            raise HTTPException(status_code=502, detail="Could not rebuild the plan — it is unchanged. Please try again.")
+        now = datetime.now(timezone.utc)
+        rebuilt["rebuilt_from_week"] = prop["from_week"]
+        rebuilt["rebuilt_at"] = now.isoformat()
+        replaced = [w for w in plan["diet_weeks"] if (w.get("week_number") or 0) >= prop["from_week"]]
+        await db.plan_history.update_one(
+            {"_id": doc["_id"], "user_id": user.id},
+            # The translations stay: they are reused line by line for the weeks kept.
+            {"$set": {"plan_data.diet_plan": rebuilt, "preference_hash": pref_hash},
+             "$push": {"rebuilds": {"from_week": prop["from_week"], "at": now,
+                                    "changes": prop["changes"]},
+                       # The weeks as they were, for the Vaidya and for an audit; the
+                       # last three rebuilds only, so the document cannot grow unbounded.
+                       "superseded_weeks": {"$each": [{"at": now, "weeks": replaced}],
+                                            "$slice": -3}}})
+        await db.diet_checkins.update_one({"_id": checkin["_id"], "user_id": user.id},
+                                          {"$set": {"rebuilt_at": now}})
+        await log_plan_generated(db=db, user_id=user.id, plan_id=str(doc["_id"]),
+                                 plan_type="diet",
+                                 model_used=rebuilt.get("enrichment_model", "diet_rebuild"),
+                                 is_adaptation=True)
+    return rebuilt
+
+
+# A swapped meal changes four lines; a rebuilt week several hundred.
+_FREE_RETRANSLATE_LINES = 40
+
+
 class DietTranslateRequest(BaseModel):
     plan_id: str
     lang: str = Field(..., max_length=5)
@@ -366,7 +452,7 @@ async def translate_diet_plan(
     and those gates cannot read other scripts (see `services.diet_translate`). The
     overlay is stored on the history document, beside `plan_data`, keyed by the
     English it was made from, so a regenerated plan is never shown an old one."""
-    from services.diet_translate import LANGUAGES, display_strings, source_hash
+    from services.diet_translate import LANGUAGES, display_strings, reusable, source_hash
     from services.diet_translate import translate_diet_plan as _translate
 
     if req.lang not in LANGUAGES:
@@ -381,11 +467,15 @@ async def translate_diet_plan(
     if not diet:
         raise HTTPException(status_code=404, detail="Diet plan not found")
     cached = ((doc.get("translations") or {}).get(req.lang)) or {}
-    if cached.get("source_hash") == source_hash(display_strings(diet)):
+    english = display_strings(diet)
+    if cached.get("source_hash") == source_hash(english):
         return cached
-    # A billed LLM call, like a generation.
-    await consume_plan_quota(db, user)
-    overlay = await _translate(diet, req.lang)
+    # A billed LLM call, like a generation — unless only a few lines changed since the
+    # last translation (a swapped meal), which is translated without a charge.
+    new_lines = len(english) - len(reusable(english, cached))
+    if new_lines > _FREE_RETRANSLATE_LINES:
+        await consume_plan_quota(db, user)
+    overlay = await _translate(diet, req.lang, previous=cached)
     if overlay["strings"]:
         await db.plan_history.update_one(
             {"_id": doc["_id"], "user_id": user.id},

@@ -44,7 +44,9 @@ _PROSE = ("plan_title", "plan_description", "condition_coaching", "hydration_gui
 # translated and these stayed English beside them.
 _NESTED = (("therapeutic_arc", "arc"), ("therapeutic_arc", "basis"),
            ("meal_timing", "general_note"), ("meal_timing", "wake_up_drink"),
-           ("meal_timing", "bedtime_drink"))
+           ("meal_timing", "bedtime_drink"), ("meal_timing", "breakfast"),
+           ("meal_timing", "lunch"), ("meal_timing", "snack"), ("meal_timing", "dinner"),
+           ("meal_timing", "window_notice"), ("meal_timing", "after_window"))
 _LISTS = (("pathya_apathya", "pathya"), ("pathya_apathya", "apathya"),
           ("pathya_apathya", "viruddha_ahara_warnings"), ("nutrient_targets", "notes"),
           ("energy_reconciliation", "micronutrients", "notices"),
@@ -98,6 +100,14 @@ def display_strings(plan: dict) -> dict[str, str]:
     for i, sp in enumerate(plan.get("spice_guide") or []):
         if isinstance(sp, dict):
             put(("spice_guide", i, "use"), sp.get("use"))
+            put(("spice_guide", i, "note"), sp.get("note"))
+    for i, r in enumerate(plan.get("daily_rituals") or []):
+        if isinstance(r, dict):
+            put(("daily_rituals", i, "name"), r.get("name"))
+    for i, w in enumerate(plan.get("withheld_guidance") or []):
+        if isinstance(w, dict):
+            put(("withheld_guidance", i, "item"), w.get("item"))
+            put(("withheld_guidance", i, "reason"), w.get("reason"))
     for i, n in enumerate(plan.get("clinical_notes") or []):
         if isinstance(n, dict):
             put(("clinical_notes", i, "topic"), n.get("topic"))
@@ -138,14 +148,32 @@ def faithful(english: str, translated, path: str = "") -> bool:
     return len(translated) <= 4 * len(english) + 40
 
 
-async def translate_diet_plan(plan: dict, lang: str) -> dict:
-    """{"lang", "source_hash", "strings": {path: text}, "kept_english": n}."""
+def line_hash(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()[:12]
+
+
+def reusable(english: dict[str, str], previous: dict | None) -> dict[str, str]:
+    """The lines of an earlier overlay whose English has not changed since.
+
+    A swapped meal or a rebuilt week changes a handful of lines, and the overlay used
+    to be all or nothing: any change billed a whole plan's translation, and a swap
+    shown in Hindi would read the old dish's name until then."""
+    prev = previous or {}
+    sources, strings = prev.get("sources") or {}, prev.get("strings") or {}
+    return {p: strings[p] for p, text in english.items()
+            if p in strings and sources.get(p) == line_hash(text)}
+
+
+async def translate_diet_plan(plan: dict, lang: str, previous: dict | None = None) -> dict:
+    """{"lang", "source_hash", "strings": {path: text}, "sources": {path: hash of its
+    English}, "kept_english": n}. Lines `previous` already holds are not asked again."""
     from ai.llm_client import llm_client
 
     if lang not in LANGUAGES:
         raise ValueError(f"unsupported language: {lang}")
     english = display_strings(plan)
-    paths = list(english)
+    kept = reusable(english, previous)
+    paths = [p for p in english if p not in kept]
     sem = asyncio.Semaphore(4)
 
     async def batch(chunk: list[str]) -> dict[str, str]:
@@ -166,10 +194,11 @@ async def translate_diet_plan(plan: dict, lang: str) -> dict:
 
     results = await asyncio.gather(*(batch(paths[i:i + _BATCH])
                                      for i in range(0, len(paths), _BATCH)))
-    strings: dict[str, str] = {}
+    strings: dict[str, str] = dict(kept)
     for got in results:
         for p, text in got.items():
             if faithful(english[p], text, p):
                 strings[p] = text
     return {"lang": lang, "source_hash": source_hash(english), "strings": strings,
-            "kept_english": len(paths) - len(strings), "total": len(paths)}
+            "sources": {p: line_hash(english[p]) for p in strings},
+            "kept_english": len(english) - len(strings), "total": len(english)}

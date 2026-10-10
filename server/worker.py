@@ -101,13 +101,28 @@ async def notify_finished_gym_blocks(ctx):
         logger.error(f"Gym block notifications failed: {e}")
 
 
+async def notify_finished_diet_plans(ctx):
+    """Once a day: a diet plan four weeks old, and still the latest, is finished —
+    say so, or the patient stays in week four and the meal log shapes nothing."""
+    from database.mongodb import get_mongodb
+    from services.diet_log import notify_finished_plans
+
+    try:
+        sent = await notify_finished_plans(get_mongodb())
+        logger.info(f"Diet plan-complete notifications sent: {sent}")
+    except Exception as e:
+        logger.error(f"Diet plan notifications failed: {e}")
+
+
 class WorkerSettings:
     """Configuration for the ARQ worker process."""
-    functions = [_run_plan_job, dispatch_due_reminders, notify_finished_gym_blocks]
+    functions = [_run_plan_job, dispatch_due_reminders, notify_finished_gym_blocks,
+                 notify_finished_diet_plans]
     cron_jobs = [
         cron(dispatch_due_reminders, minute=set(range(60))),
         # 03:30 UTC is 09:00 in India, where the users are.
         cron(notify_finished_gym_blocks, hour={3}, minute={30}),
+        cron(notify_finished_diet_plans, hour={3}, minute={35}),
     ]
     redis_settings = RedisSettings.from_dsn(settings.REDIS_URL or "redis://localhost:6379")
     on_startup = startup

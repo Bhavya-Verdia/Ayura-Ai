@@ -110,7 +110,7 @@ function ClassicalBasis({ planType }) {
 }
 
 
-export default function PlanViewer({ plan: rawPlan, planType, onRegenerate }) {
+export default function PlanViewer({ plan: rawPlan, planType, onRegenerate, onPlanChange }) {
   if (!rawPlan) return <p className="plan-empty">No plan data available.</p>
 
   const sectionKey = planType ? SECTION_KEY_MAP[planType] : null
@@ -207,7 +207,10 @@ export default function PlanViewer({ plan: rawPlan, planType, onRegenerate }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         >
-          <DietView plan={plan} />
+          <DietView plan={plan} onRegenerate={onRegenerate}
+            // A swapped meal or rebuilt weeks, handed back in the envelope it came in.
+            onPlanChange={onPlanChange && (inner => onPlanChange(
+              plan === rawPlan ? inner : { ...rawPlan, [sectionKey]: inner }))} />
         </m.div>
       )}
 

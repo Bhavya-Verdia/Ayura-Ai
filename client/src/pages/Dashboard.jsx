@@ -720,6 +720,14 @@ const Dashboard = () => {
                 setViewingPlan(null); setViewingType(null)
                 generatePlan(type, true)
               }}
+              // A plan changed in place (a swapped meal, rebuilt diet weeks): kept in
+              // the cached history too, so reopening it does not show the old one.
+              onPlanChange={(next) => {
+                const type = viewingType
+                setViewingPlan(next)
+                queryClient.setQueryData(['plans-history'], old => (old?.[type]
+                  ? { ...old, [type]: { ...old[type], data: next } } : old))
+              }}
             />
           </Suspense>
         </SectionBoundary>

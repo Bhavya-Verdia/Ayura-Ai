@@ -198,6 +198,7 @@ export const plansAPI = {
   generateMedicines:  (forceRegenerate = false) => API.post('/plans/medicines', { force_regenerate: forceRegenerate }),
   // Display-only translation of a diet plan; the plan itself stays the checked English.
   translateDiet:      (planId, lang) => API.post('/plans/diet/translate', { plan_id: planId, lang }),
+  rebuildDiet:        (planId) => API.post('/plans/diet/rebuild', { plan_id: planId }),
 }
 
 // ── Meal log ───────────────────────────────────
@@ -206,6 +207,10 @@ export const mealsAPI = {
   getLogs:       (planId) => API.get('/meals/logs', { params: { plan_id: planId } }),
   log:           (entry)  => API.post('/meals/logs', entry),
   getAdaptation: ()       => API.get('/meals/adaptation'),
+  // Another dish from the plan in place of one meal; `undo` puts the original back.
+  replace:       (body)   => API.post('/meals/replace', body),
+  getCheckins:   (planId) => API.get('/meals/checkins', { params: { plan_id: planId } }),
+  checkin:       (body)   => API.post('/meals/checkins', body),
 }
 
 // ── Preferences ────────────────────────────────
