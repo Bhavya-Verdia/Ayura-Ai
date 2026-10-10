@@ -130,6 +130,90 @@ def _exercise_rows():
     } for ex in sorted(gym_exercises, key=lambda e: (_lift_class(e) or "zz", e["name"]))]
 
 
+def _risk_mechanism_rows():
+    """One row per mechanism group — the unit a reviewer rules on.
+
+    `risk_tags` are authored by mechanism in `gym_library/mechanisms.py`, each
+    group with its reason stated once, so the review is a confirmation of the
+    group rather than 70 separate rows."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from gym_library.mechanisms import MECHANISMS
+    from engine.movement_risk import _CONDITION_RISK_TAGS, _INJURY_RISK_TAGS
+
+    rows = []
+    for tag, group in sorted(MECHANISMS.items()):
+        rows.append({
+            "mechanism": tag,
+            "why": group["why"],
+            "movements": "; ".join(sorted(group["movements"])),
+            "conditions_that_withhold_it": ", ".join(sorted(
+                k for k, v in _CONDITION_RISK_TAGS.items() if tag in v)),
+            "injuries_that_withhold_it": ", ".join(sorted(
+                k for k, v in _INJURY_RISK_TAGS.items() if tag in v)),
+            "movements_missing__list": "",
+            "movements_wrongly_included__list": "",
+            "vaidya_ruling": "",
+        })
+    return rows
+
+
+def _adaptation_rows():
+    """The rules that change a plan after it is written, with their live values.
+
+    Read from the modules that apply them, so the packet cannot describe a
+    threshold the code no longer uses. Each is a coaching default chosen in
+    engineering, and none has been reviewed by anyone qualified to choose it."""
+    from services import gym_plan_engine as eng
+    from services import gym_week_adjust as wk
+    from services import workout_log as wl
+
+    def row(rule, value, applies, exceptions, basis, question):
+        return {"rule": rule, "current_value": value, "applies_to": applies,
+                "exceptions": exceptions, "basis": basis,
+                "question_for_reviewer": question, "reviewer_ruling": "", "corrections": ""}
+
+    rir = ", ".join(f"{k}={v}" for k, v in wl.EFFORT_RIR.items())
+    return [
+        row("Effort as reps in reserve", rir, "every logged set",
+            "", "RIR-based autoregulation (Helms et al., 2016)",
+            "Is 'very hard' = 0 reps in reserve the right reading for someone under an intensity ceiling?"),
+        row("Weekly load step up", "+1 kg below 20 kg, +2.5 kg above, or the next kettlebell",
+            "an exercise whose logged sets all reached the top of the range, or were rated easy",
+            "never in a deload week; never when the check-in says too hard or unwell",
+            "double progression", "Are these steps safe for the over-60 and adolescent groups?"),
+        row("Weekly load step down", f"x{wk._STEP_DOWN} (about {round((1 - wk._STEP_DOWN) * 100)}% lighter)",
+            "an exercise whose sets fell below the range AND were rated very hard", "",
+            "coaching default", "Should a failed set ever prompt a larger reduction or a different exercise?"),
+        row("Check-in can hold, never raise", "too_hard / unwell -> no rise",
+            "every user", "", "asymmetric by design: lowering on a feeling is safe, raising is not",
+            "Is holding enough after an illness week, or should loads come down?"),
+        row("Warning signs stop the load advice", "; ".join(wk.RED_FLAGS.values()),
+            "every user", "", "ACSM's Guidelines 11th ed., signs to terminate exercise",
+            "Is the list complete? Should any of these also trigger an urgent-care message?"),
+        row("Block counts as progressed", f">= {int(wl._ADHERENCE_TO_PROGRESS * 100)}% of planned sessions logged",
+            "every user", "", "coaching default",
+            "Is half the block enough evidence to progress?"),
+        row("Block counts as finished", f"{wl._BLOCK_DAYS} days after it was written, or any week-3 log",
+            "every user", "", "engineering default", ""),
+        row("Next block's extra volume", f"+{eng._BLOCK_EXTRA_PRIMARY_SETS} set on main lifts, once (going into block 2)",
+            "a progressed block", "pregnancy (maintained, not progressed — ACOG 804)",
+            "coaching default", "Should the over-60, cardiac or hypertensive groups get the extra set?"),
+        row("Beginner -> intermediate offer", f"{wl.LEVEL_UP_AFTER_BLOCKS} finished, progressed blocks in a row + a measured gain",
+            f"adults ({wl._ADULT_FROM}+)", "pregnancy; under 18",
+            "novice linear progression runs ~12 weeks (Rippetoe & Baker, Practical Programming)",
+            "Is twelve weeks right for people with a chronic condition?"),
+        row("Intermediate -> advanced offer", f"{wl._ADVANCED_AFTER_BLOCKS} finished blocks at intermediate + a measured gain",
+            f"adults {wl._ADULT_FROM}-{wl._SENIOR_FROM - 1}", f"pregnancy; under 18; {wl._SENIOR_FROM}+ (the engine never prescribes advanced movements there)",
+            "product decision (2026-10-06)",
+            "Is two months at intermediate enough? Should any condition exclude advanced programming?"),
+        row("End-of-block notification", f"once, {wl._BLOCK_LENGTH_DAYS}-{wl._BLOCK_LENGTH_DAYS + wl._NOTIFY_WINDOW_DAYS} days after the plan",
+            "the latest gym plan only", "", "engineering default", ""),
+        row("Loads from the log", f"strongest set in the last {wl.RECENT_DAYS} days, Epley with effort as RIR",
+            "every logged exercise", "sets of more than 15 reps are not used to estimate a max", "Epley (1985)",
+            ""),
+    ]
+
+
 def _write_csv(path, rows):
     # lineterminator="\n": csv defaults to CRLF, but .gitattributes normalises the
     # repo to LF, so the default made every regeneration a diff of every row.
@@ -145,6 +229,14 @@ def main():
     exercises = _exercise_rows()
     _write_csv(OUT / "gym_mechanism_review.csv", coverage)
     _write_csv(OUT / "gym_exercise_review.csv", exercises)
+    _write_csv(OUT / "gym_risk_mechanism_review.csv", _risk_mechanism_rows())
+    _write_csv(OUT / "gym_adaptation_rules_review.csv", _adaptation_rows())
+    from services.gym_condition_guidance import CONDITION_GUIDANCE
+    _write_csv(OUT / "gym_condition_guidance_review.csv", [{
+        "key": g["key"], "label": g["label"], "matches": ", ".join(g["match"]),
+        "note_shown_to_the_practitioner": g["note"], "source": g["source"],
+        "vaidya_ruling": "", "corrections": "",
+    } for g in CONDITION_GUIDANCE])
 
     flagged = [r for r in coverage if r["inconsistent"]]
     reviewed = sum(1 for e in gym_exercises if e.get("contraindications_reviewed"))
@@ -155,6 +247,8 @@ def main():
         "mechanism_groups": len({(r["movement_class"], r["muscle_group"]) for r in coverage}),
         "tag_rules": len(coverage),
         "tag_rules_applied_inconsistently": len(flagged),
+        "risk_mechanism_groups": len(_risk_mechanism_rows()),
+        "movements_with_a_risk_mechanism": sum(1 for e in gym_exercises if e.get("risk_tags")),
     }
     (OUT / "gym_review_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     print("  wrote gym_review_summary.json")

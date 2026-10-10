@@ -103,6 +103,200 @@ barbell and two that instructed holding your breath under load. Contraindication
 pregnancy and dosha are authored per movement in `scripts/gym_library/clinical.py`,
 each with a stated mechanism — they differ from the old derived rules on 89 of 173.
 
+#### Gym: health status is a mechanism, not a body part
+The contraindication tokens (`bad_knee`, `shoulder_injury`, …) name body parts, and
+until 2026-09 only **8 of the 70 conditions onboarding offers changed a gym plan**.
+Glaucoma, epilepsy, vertigo, a hernia and rheumatoid arthritis are not body parts.
+Each movement now also carries `risk_tags`: the mechanism it works through, authored
+per group in `scripts/gym_library/mechanisms.py`. `engine/movement_risk.py` maps
+conditions and injuries onto them, and **yoga and gym read that one map**. Don't add
+a second copy. 27 of 70 conditions are now live. Most of the rest need no movement
+removed (acne, ADHD).
+
+For conditions where no movement is the problem and the session is (diabetes,
+asthma, epilepsy, ME/CFS), `services/gym_condition_guidance.py` gives a
+before-you-train note with its source. Near-maximal sets are replaced with 8-12
+(`_intensity_ceiling`) for these groups, because of the Valsalva manoeuvre:
+- cardiac conditions and hypertension
+- glaucoma
+- a hernia or recent abdominal surgery
+- pregnancy
+- everyone over 60 and under 18
+
+Under 18 also gets at most three alternate whole-body days, and over 60 an Otago
+balance block. The warm-up, cool-down, balance block and rest-day practices pass the
+same gate as the workout, and substitutes pass it too. Every earlier miss in this
+engine was prose that no gate read.
+
+**Injuries are collected on the gym form** (`GymPreferences.injuries` /
+`injury_detail`). No screen had ever collected them, and the profile field's
+documented values were not the library's tokens. `_resolve_injuries` translates
+both once, at the top of `generate_gym_plan`. Anything typed that matches nothing
+comes back in `injury_notice`. The yoga form asks with the same chips, and **both engines
+read the union of the two forms** (`movement_risk.declared_injuries`, merged by
+`with_declared_injuries` on every gym and yoga path before the cache check). The chips are
+one list: saving either form writes them to the other, but only if that form has been
+saved, because a partial `yoga` document reads as preferences set.
+
+**Load is priced per set.** `_LIFT_BW` is a 1RM standard, and the quoted range used
+to be that ±15% regardless of reps, so sets of 20 were priced at the top of the
+lifter's max. Now:
+- Epley with two reps in reserve, priced at week one's reps (the weekly notes are
+  written against week one's weight)
+- bodyweight to the 0.67 power
+- 1%/yr lighter from 40
+- no barbell rack lift below the 20 kg bar
+
+Rare conditions go to the LLM classifier on **both** plan paths
+(`gym_condition_fallback.extra_avoid_tags_for`), and it may answer in mechanisms.
+
+#### Gym: programming is checked by a sweep, not by reading code
+`tests/test_gym_programming.py` generates ~80 random plans (age, sex, body, level,
+goal, days, length, equipment, conditions, cardio) and asserts the shape a coach
+would recognise. Every rule in it came from reading a 400-1,000-plan sweep's output:
+
+- **Loads are calibrated to Strength Level's published standards** (2026-10):
+  "intermediate" is the midpoint of their Novice and Intermediate rows. The old
+  table was written from memory and ran ~half on isolation (1-2 kg hammer curls).
+  `test_starting_loads_sit_inside_published_standards` pins anchors. Goblet squats,
+  two-handed dumbbells and one-dumbbell lifts (side bend, suitcase carry) have their
+  own factors; no bar or stack is quoted below its lightest real setting. "Other" /
+  unanswered sex takes the midpoint of the two standards, as the diet path does.
+- **One compound per movement pattern** on full-body/upper/lower days, two on a
+  region day, **one loaded hinge per session**, no stacked bodyweight variants.
+- **Sessions are fitted to the clock** (`_fit_to_clock`): sets come off or go on
+  (never on the main lift — the week header describes it) and the conditioning
+  block is sized to what is left. 75-90 min lifting requests stay short with a notice;
+  that is deliberate.
+- **Splits:** strength goal → upper/lower or full-body, never body-part; 3-day
+  intermediates are full-body; 5-6 days are PPL/UL. Emphasis weeks must beat the
+  balanced week (`test_the_region_you_asked_to_prioritise_gets_more_work`) — improving
+  the baseline breaks them, and that is the test doing its job.
+- RDL, not the conventional deadlift, outside strength sets; a strength block is led
+  by a free weight. Rep tiers use `_TIER_REPS` (ranges a coach writes).
+- **Inputs are normalised at entry** (`_normalise_inputs`): both paths read prefs
+  back from Mongo, not the validated request.
+- Per-dosha food prose (rest-day `nutrition_note`, pre/post tips) and the enricher's
+  meal lines go through diet's `apply_advisory_safety`; the enricher's
+  `active_recovery` through `_gate_practices`.
+- Kettlebell-only lifters have their own six movements (`movements_kettlebell.py`),
+  quoted as real bell sizes. Full-body days include shoulders, so they press overhead.
+- The enricher's `vyayama_vidhi`, per-day notes and lifestyle note are rendered (they
+  were generated and shown nowhere) and pass `gate_coaching_prose`. Retrieval failure
+  degrades the coaching rather than removing it. Ardhabala is a session dose — never
+  "stop at the first sweat" beside sets written to two reps in reserve.
+
+#### Gym: the reviewer pack is generated, and read whole
+The Claude Doc "Ayura AI Gym Plans — Reviewer Pack" shows 12 personas' plans exactly as
+the app builds them, with live AI coaching. `scripts/gym_reviewer_pack.py generate [n …]`
+builds them (real LLM calls, no database) and `render` writes markdown in the doc's
+format. Everything in a section is plan output except `PLEASE_CHECK` in
+`gym_reviewer_pack_render.py`; re-read those questions against new output, because a
+question about behaviour the plan no longer has wastes the reviewer's time. Regenerate
+after any gym engine or enricher change.
+
+Reading the plans whole, rather than grepping them, is what finds things. Each pass so
+far found prose that contradicted the plan's own notes: supine rest poses beside "avoid
+lying flat", then the model's own "legs-elevated rest", hard intervals beside anaemia's
+"work below the plan's effort", and jumping jacks for a sedentary lifter whose cardio was
+already steady-only. `scripts/e2e_gym_logging_local.py` checks logging end to end against
+a local Mongo and refuses any non-localhost target.
+
+#### Gym: loads are calibrated, and the next block reads the log
+`_load_calibration` has two inputs. **`known_lifts`** on the gym form ("a weight you can
+lift N times", five anchors) rescales each anchor's family of movements; unanchored
+movements move 60% of the way; a typo is bounded to 0.35-3x. **Logged sets**
+(`db.workout_logs`, `routes/workouts.py`, `services/workout_log.py`) replace an
+exercise's estimate outright with its strongest recent set (Epley, effort as RIR), and
+logged lifts come back in the next plan. Every load says where it came from.
+
+A block counts as finished three weeks after it was written or once week 3 is logged;
+half the sessions logged builds on it (block number +1), less repeats it. Both plan
+paths call `gym_history`, and its fingerprint joins the plan cache key — a plan priced
+from the log is stale the moment a set is logged.
+
+**Erasure:** `test_account_deletion_reaches_every_collection_written_per_user` fails if
+a collection the app writes with a `user_id` is missing from `privacy.delete_account`.
+It found four (practice sessions, adverse-reaction reports, push endpoints, feedback).
+
+#### Gym: next week's weights move inside the block
+The log used to reach only the next block. `services/gym_week_adjust.week_adjustments`
+sets week N+1's load per exercise from week N's logged sets (`GET
+/api/workouts/adjustments`): top of the range or "easy" → one step up (1 kg below
+20 kg, 2.5 above, next bell); in range and "right" → same weight, more reps; below the
+range → hold; below **and** "very hard" → ~10% down. The block's **structure never
+moves** — only loads, and computed on read; the plan in `plan_history` is never
+rewritten.
+
+The plan's own week-to-week ratio is kept, so a deload stays lighter — and a deload
+week **never adds weight**, because at 4-5 kg the plan's deload rounds to the same
+quote and the ratio alone let it.
+
+The week check-in (`POST /api/workouts/checkins`, `db.gym_checkins`,
+`GymWeekCheckin.jsx`) is separate from the general Vikriti check-in on purpose: it asks
+how hard the week was, where it hurt, whether they were unwell, and four ACSM
+stop-exercise signs. **It can hold or lower a weight, never raise one** — "too easy"
+with nothing logged changes nothing and says why. A red flag replaces every adjustment
+with "see a doctor". Pain becomes an injury only when ticked ("add to my injuries"),
+goes into whichever of the gym/yoga forms exist, and offers a rebuild, because the gates
+read injuries at generation.
+
+#### Gym: block over block
+The block number used to be a label: block 2 had block 1's sets and exercises, the level
+never moved from the form's answer, nothing marked the end of week four, and month one
+fell out of the 42-day load window by month three.
+
+- **Next block:** a block built on (`_next_block`) gets **one** extra main-lift set
+  (`_block_extra_sets`, once — loads progress after that, not volume; never in
+  pregnancy) and a new rotating slot (block number in that seed only; block 1's seed is
+  unchanged, so the main lifts stay). A repeated block keeps its number and its volume.
+  `_fit_to_clock` absorbs the set.
+- **Long history:** `workout_log.block_history` reads every gym plan (not the 42-day
+  window — that stays right for *loads*), skipping regenerations nothing was logged on.
+  `GET /api/workouts/blocks`.
+- **Level:** `level_up_offer` — beginner → intermediate after three finished blocks in a
+  row, intermediate → advanced after **two finished blocks trained at intermediate**
+  (counted on the level each plan was *programmed* at, `history[].fitness_level`, not
+  today's profile). Both need an adult, not pregnant, each block mostly done, and a
+  measured gain across the run. **No advanced offer past 60**: `filter_exercises` never
+  prescribes an advanced movement there, so the offer would promise what the plan
+  cannot contain. It is an **offer**;
+  `POST /api/workouts/level-up` re-checks the evidence and moves `users.fitness_level`
+  and `gym.strength_level` together (one without the other is an intermediate split
+  priced at beginner loads).
+- **End of block:** `GymBlockComplete` once the plan is 28 days old or week 4 is logged,
+  and the `notify_finished_gym_blocks` cron (03:30 UTC) sends one notification per
+  latest plan, marking `block_end_notified` so it never repeats; plans more than ten
+  days past due are abandoned, not finished, and are not announced.
+
+#### Gym: workout mode, cardio, and what is measured
+`GymSessionPlayer.jsx` runs a day: warm-up, one exercise at a time with sets ticked
+as done, the plan's rest counted down, holds and intervals timed (rounds of hard and
+easy), and each exercise **logged when it is finished** so a closed tab costs one
+exercise. It starts from this week's adjusted weight and is **withheld when last week's
+check-in reported a warning sign**. Sessions go through `/practice/session` with
+`feature: "gym"`. Its countdown detects zero in an effect, never inside a state
+updater — React may run an updater twice, and doing so skipped every easy interval.
+
+Conditioning is logged as `minutes` (no weight for reps), a minutes-only day counts as
+a session, and bodyweight progress is the best set's reps (`best_bodyweight_reps`) —
+`logged_lifts` cannot estimate a max without a load.
+
+Gym analytics (`EVENTS.GYM_*`) send training facts only — week, counts, effort, level.
+**Pain areas, warning signs and injuries are never sent, not even as booleans**;
+`test_gym_analytics_privacy.py` greps every gym `track` call. "Shown" events use
+`trackOnce` so a tab switch is not a person.
+
+**No exercise photos from free-exercise-db.** The dataset is Unlicense, but its images
+were scraped (the original author: "I do not own the copyright … advise against using
+them in commercial projects"; reverse search traces them to bodybuilding.com). Images
+need licensed or commissioned content, and all-or-nothing: yoga turned its drawn
+figures off because a partly illustrated list read as broken.
+
+The adaptation thresholds are in the review packet
+(`gym_adaptation_rules_review.csv`, generated from the live constants; a test fails if
+it drifts).
+
 #### Diet library: authored, not derived
 `data/knowledge_base/diet_foods.json` is **generated** by
 `scripts/build_diet_library.py` from the curated spec in `scripts/diet_library/`
@@ -126,7 +320,790 @@ rule must state a `prabhava` giving the reason, or `schema.validate` refuses it.
 Rows are `reviewed: false` — authored, **not clinically reviewed**. They belong in
 the Vaidya packet alongside the gym and Panchakarma flags.
 
+#### Diet: the floor for diseases outside the vocabulary
+`ahara_safety.classify_condition_apathya_llm` covers what the 38-condition vocabulary
+does not. Run on six real rare diseases it returned **zero** entries: the whole batch
+shared a 700-token budget, six conditions truncated the JSON mid-object, and the parse
+failure zeroed all of them. Worse, the failure was cached as a negative — so one bad
+request meant a permanent absence of a floor for every condition in that batch, for
+the life of the process. A negative is now cached only when the model actually
+answered; a transport or parse error is not evidence about a disease.
+
+Classifier terms are held to the same rules as the authored tables: no behaviour words
+(Apathya in the sources is a regimen, so the model returns "day sleep" when asked for
+foods) and nothing contentless (`tea` is the form half of Ayurvedic medicine takes,
+`water` is in every drink recipe, `oil` is in every tadka, `salt` is in every savoury
+meal — `sugar` stays, because a recipe mentions salt by default and sugar only when it
+is there). Staples are **not** rejected: `wheat` is the whole point of a celiac floor.
+
+`conditions_without_food_floor` names what could not be covered, and `DietView` shows
+a partial all-clear off it. Silence there read as "checked and clear", which is the
+opposite of what had happened.
+
+#### Diet arc: the four-week progression is chosen, not fixed
+`services/diet_plan_arc.py` picks the sequence from the patient's Ama, Bala, Ojas and
+build. It used to be four literals in the prompt — Ama Pachana, Agni Deepana,
+Brimhana, Rasayana — for every patient the app has ever had, computed *after* the
+profile and reading none of it.
+
+Two ways that was wrong rather than merely unpersonalised. Charaka Sutrasthana 23
+names Prameha, Medoroga and Kushtha as the diseases of over-nourishment, and week 3
+handed exactly those patients a Brimhana week of ghee, nuts and root vegetables. And
+week 1 handed a depleted patient a clearing week — the model noticed and wrote it into
+the plan: *"Although Ama is reported as absent, this first week keeps meals light…"*.
+
+Five arcs: Garbhini Paricharya (pregnancy, nourishing throughout),
+Brimhana-pradhana (depleted), Langhana-pradhana (Santarpana-caused disease or heavy
+build), Deepana-pradhana (depleted **and** Ama-laden — the Ama is burned by kindling
+Agni, not by reducing a patient with no Bala to spend), and Samatva. Rasayana is only
+scheduled where the weeks before it can clear what was there at the start, since
+Rasayana on an Ama-laden Srotas feeds the Ama.
+
+**Low Ojas is not depletion in a heavy patient.** Ojas Kshaya is ordinary in Medoroga
+— the Srotas are obstructed, not empty — and reading it as depletion sent an obese
+diabetic down the Brimhana arc, which is the error this module exists to prevent.
+
+`withheld` names a phase the patient must *not* be given, with its reason, so the
+absence is legible in the prompt and in `DietView` rather than looking like an
+oversight. Phase labels on the returned plan are stamped from the arc: the arc is the
+app's prescription, not the model's echo.
+
+Related: nothing checked that the model returned four weeks — only that the `weeks`
+key existed — and it drops one now and then, shipping a one-week "4-week plan" into a
+UI that renders four tabs. A short or misnumbered response is now a failed generation
+and falls back to the rule engine.
+
+#### Diet conditions: every recognised disease has a rule, and one table names it
+`engine/condition_vocab` accepts 38 canonical conditions. **21 had no dietary rule of
+any kind** — no `PATHYA_APATHYA_HINTS` entry, no `_CONDITION_APATHYA_TERMS` entry, no
+library claim — so the brief said "use your classical Ayurvedic knowledge" and the
+deterministic floor was whatever `classify_condition_apathya_llm` invented. Gout and
+kidney stones were among them. All 21 are now authored in both tables and carried in
+`data/golden/vaidya_diet_condition_protocols.csv` (packet tier 7) — authored, **not
+clinically reviewed**, like the library rows.
+
+Scan terms hold only concrete food words. The Apathya prose beside them names
+behaviours ("sleeping during the day", "holding the urge to urinate") and deriving
+terms from that phrasing is how a scan ends up searching meals for `sitting`. Terms
+broad enough to match a prescribed food are out for the same reason: `salt` is in
+every meal and `tea` is the form half these conditions' medicines take, so the
+entries say `extra salt` and `black tea`. Two conditions have no classical Nidana and
+say so via `modern_extrapolated` rather than citing a chapter that does not describe
+them. Hyperthyroidism is authored as the **mirror** of hypothyroidism, not a copy —
+the brassicas restricted in one are Pathya in the other — and hypotension is the one
+entry here that does not restrict salt.
+
+**There is one canonical-condition table**, `ahara_safety._COND_CANON`;
+`diet_brief_builder.COND_ALIASES` and `normalize_condition_key` delegate to it. There
+were two, disagreeing on 22 inputs, and that was not cosmetic: `uncurated_conditions()`
+skips the LLM classifier whenever the *brief* recognises a condition, so anything the
+brief canonicalised and the scan did not got the curated floor from neither table and
+the classifier from neither path — `piles`, `iron_deficiency`, `ulcerative_colitis`,
+`rheumatoid` and five others sat there. It is the same hole PR #62 closed between
+these two tables, reopened by a second alias map nobody thought of as one. Chains
+resolve inside the table so one lookup is always enough.
+
+#### Diet conditions: the library's claims gate the primary path
+`services/diet_condition_foods.py` turns `diet_foods.json`'s 370 authored
+(condition, food) Apathya claims and 338 Pathya claims into two things the
+LLM-primary path can use — named foods in the brief, and scan terms in
+`apply_condition_food_safety`. Before it, `apathya_for` gated only
+`diet_plan_engine` (the **fallback**) and `pathya_for` gated nothing: 333 of the 370
+exclusions were unenforced on the path every user gets, so **the fallback was
+clinically stricter than the primary path**. An acidity patient could be served green
+tea, lemon water, curd and dry ginger, all authored Apathya for acidity.
+
+The curated `_CONDITION_APATHYA_TERMS` is **not** replaced — the two tables were
+authored separately and each names foods the other does not, so the floor is their
+union.
+
+**Deriving a scan term from a food name is where this goes wrong.** A term is used
+for a condition only when every library food it matches agrees about that condition.
+That is what keeps `banana`/`raw_banana` and `ginger_fresh`/`ginger_dry` apart, and
+what stops the same-food-entered-twice rows (`kidney_beans`/`rajma`,
+`chana_dal`/`chhole`, `lentils_brown`/`masoor_dal` — all disagreeing clinically)
+speaking for a condition their own rows cannot agree on. A parenthetical is usually
+the English translation, but `Tofu (Firm)` is a variant, so modifier-only surfaces
+are dropped — "firm" fired on a hypothyroid patient for a word describing texture.
+
+Where the *curated* table is prep-state blind, the fix is an `exempt` list on the
+entry, not a narrowed term: a meal that just says "banana" is usually the ripe one,
+so the term still fires and the permitted sibling is let through by name.
+
+As with energy, the lever that works is the **brief** — naming the Apathya foods
+before generation took a 3-condition plan from 20 post-hoc alerts to 8, and an
+acidity+piles plan (65 Apathya foods) to 2, with variety holding at 28/28 distinct
+meals.
+
+#### Diet energy: the target is computed, and the plan is checked against it
+`services/diet_energy.py` is the diet path's nutrition arithmetic, and
+`services/diet_portion_reconciler.py` verifies the generated plan delivers it. Before
+these, `target_calories` was `1800 if female else 2000` nudged by BMI category and
+goal — it read neither height, weight nor activity level — and nothing compared the
+stated target with what came back: measured plans ran at 585-720 kcal against a stated
+1200, and 1240-1410 against a stated 2400 for an *underweight* patient.
+`engine/calorie_calculator.py`, a documented Tier-1 engine, was called only by its own
+unit test and is now the BMR/TDEE source.
+
+A deficit is floored at the larger of the sex floor and the patient's own BMR;
+underweight and pregnancy override a stated weight-loss goal; the combined surplus is
+bounded. The brief carries a **per-meal** kcal budget, which is what actually moved
+delivery into band — the reconciler is the backstop, scaling `macros_approx` **and the
+portion text together** (raising one without the other produces a plan that lies to
+the person cooking it). Fasting days are exempt: Upavasa is the therapy, not a miss.
+
+#### Diet: Adhmana is authored across the library
+`bloating` was the one `gut_health_issue` value with a curated protocol and no library
+claims, so its deterministic floor was the curated table alone — six terms, against
+95 for acidity. It is authored on all 150 rows now: **64 Apathya, 35 Pathya**, from
+each row's own stated qualities rather than its name. 63 and 34 of those reach the
+brief; the rest are lost to the owner-disagreement rule below, which is the point of
+that rule.
+
+Adhmana has **two limbs**, and a food can be Apathya by either:
+
+* **Vatala** — the food adds Vata where Vata is already trapped (`dosha_effect.vata`
+  > 0, ruksha/khara/chala, kashaya rasa).
+* **Srotorodha** — the food obstructs, so Apana cannot move at all (guru, picchila,
+  sthira). **This limb is why the library has to be authored.** Masha (`urad_dal`) is
+  **V-2** — Vata-*pacifying* by its own dosha effect — and is the pulse most
+  associated with Anaha, because it is guru, snigdha and picchila. A rule reading
+  `dosha_effect` alone gets that exactly backwards.
+
+The Shimbi varga is the condition, so most of it is withheld — but **Mudga is the
+varga's permitted pulse** and Mudga yusha is the Pathya the protocol is built on.
+`moong_dal_yellow` is Pathya; only `sprouted_moong` is withheld, for chala guna. The
+curated `_CONDITION_APATHYA_TERMS` names `rajma` and `chana` individually rather than
+a blanket `legume` for the same reason, and a test asserts no curated term matches a
+food the library prescribes.
+
+`build_diet_review_packet.screen` gained a `_VATA_OBSTRUCTED` rule: a Pathya that
+raises Vata needs a Prabhava, and an Apathya that *lowers* it must be guru or picchila
+or neither limb explains the restriction. All 99 claims pass it, and a test asserts
+the rule can still fire so that is not a vacuous result.
+
+**Over-restriction is measured, and Adhmana is the exception that proves the rule.**
+`test_no_condition_is_left_with_nothing_to_eat` requires 90 of 150 foods to survive
+any single condition. Adhmana leaves 87, and is registered in `_MOST_RESTRICTIVE` with
+its reason rather than trimmed to fit: the floor was calibrated when nothing exceeded
+obesity's 53, and cutting earned claims to meet a number set by other diseases is the
+over-restriction guard causing under-restriction. Conditions carrying an exception get
+a second, functional check — the engine must still build four weeks with no empty slot
+and draw from grain, legume and vegetable.
+
+**A term going quiet is a cost, not a neutral outcome.** Seven bloating terms are
+withheld by owner disagreement, all genuine prep-state splits (`mudga`, `takra`,
+`prithuka`, `coconut`, `watermelon`, `kalinga`, `kanda`). Three more went quiet during
+a trim and were bought back by restoring the claim that had been dropped — `potato`
+had stopped firing because sweet potato lost its claim, and Aluka is the archetypal
+Vatala kanda. Read the list when the pin moves; do not just re-pin it.
+
+**`("ibs")` is a string, not a one-tuple.** Written without its trailing comma it
+spreads into `['i', 'b', 's']`, so the row silently claims three conditions that do
+not exist and loses the one it meant. Two rows lost their IBS claim that way during
+this pass, and nothing downstream treats an unknown condition key as an error — it
+surfaced only in a diff of the built KB against the previous one. `schema.validate`
+rejects it now.
+
+#### Diet: a dish form is not a dravya
+`diet_foods.json` rows are named for the dravya, and where the preparation changes the
+clinical answer the preparation is part of the **id** — `ginger_fresh` / `ginger_dry`,
+not one `ginger`. `upma` broke that rule: the row is authored from Godhuma sooji (its
+own `nighantu_ref` says so) and is Apathya in Prameha for the semolina, but the
+derived scan term was the bare word, which fired on **"Vegetable Oats Upma"** for a
+diabetic — a meal whose base is Yava, which the library prescribes for exactly that
+patient. It is `upma_rava` now, and oats, millet and daliya upma pass.
+
+`paratha` is the near-miss that is *not* the same bug: its clinical driver is the
+sneha every paratha is cooked in, not the flour, so the bare term is right there.
+
+Renaming it surfaced a second thing. `_term_owners` matches by substring, so `rava`
+(owned by `semolina_rava`) now also matched `upma_rava`, and the two rows **disagreed
+about hypothyroid** — the grain carried it, the dish made of the grain did not. The
+term-agreement rule did exactly what it is for and withheld `rava` and `semolina` for
+hypothyroid from both, and `test_the_number_of_withheld_claims_is_pinned` went 69 → 71
+to say so. The fix is in the data: a preparation that adds nothing but a tadka cannot
+be Pathya where its base is Apathya, so `upma_rava` inherits the claim and the count
+returns to 69.
+
+**Still open for the reviewer:** the hypothyroid-gluten claim is carried by 2 of the 6
+wheat rows (`roti_whole_wheat`, `semolina_rava`, and now `upma_rava`) and not by
+`paratha`, `daliya` or `bread_whole_wheat`. It is a modern extrapolation rather than a
+classical one, so whether it belongs on all of them is a clinical call and is left in
+the packet rather than settled here.
+
+Renames go in `diet_library.spec.RENAMED`. `build_diet_library --write` refuses when a
+row in the KB is no longer authored — that is how a food gets silently dropped from
+the engine and from the RAG corpus, and a corpus that returns less is not an error —
+and a rename is indistinguishable from a drop from outside, so it has to be written
+down to be accepted. A rename changes the seeded nutrition corpus, which the deploy now handles itself
+(see below).
+
+#### Diet: a retrieval outage degrades the plan, it does not replace it
+The five `rag_pipeline.query` calls in `generate_diet_plan_llm` sat directly under the
+function's outer `except`, which returns None and sends the caller to the rule engine.
+A ChromaDB restart therefore cost the plan the therapeutic arc, the per-meal energy
+budget and the condition coaching — everything the LLM path adds — with nothing on
+screen to say why. Retrieval has its own handler now, partial context is kept, and
+`test_diet_rag_degrades` parses the AST, because no behavioural test notices this
+until ChromaDB is actually down in production.
+
+#### Diet engine: composition first, portion scaling second
+`_MEAL_CONFIGS` builds a meal from a list of categories and knew nothing about energy.
+Measured on a Manda-Agni patient with a 2100 kcal target: breakfast came back as green
+tea and an orange — **58 kcal** — snack as a single amla (53), dinner as zucchini and
+quinoa (206), for a day of 918. Across 28 days the plan ran 1082-1585 kcal with 22-40 g
+of protein against a 48 g floor.
+
+`reconcile_plan_energy` could not repair that and was right not to: it scales portions,
+and no multiplier turns two oranges into a breakfast. **A slot 8.99x short is short of
+food.** `_top_up_slot` adds energy-bearing food first, and the reconciler does the fine
+scaling on something it can work with. All 28 days land in band now.
+
+Three things that went wrong while building it, each found by reading the output rather
+than the totals:
+
+* **Rank by the portion served, never by kcal/100g.** Density picks condiments — it
+  chose mustard oil at 44 kcal a teaspoon, and nutritional yeast, which it served at
+  **100 g twice a day for 28 days** because a deterministic argmax never loses. Ranking
+  is on `_format_food(...)["macros"]["calories"]` and the pick is `rng.choice` over the
+  strongest few.
+* **Dedup across the day, not the slot.** Without the day's set a food is added to
+  breakfast and picked again for lunch — 25 repeats in a four-week plan. In
+  `_get_meal_foods` it is a *preference*, not a filter: passed over while the category
+  has anything else, taken anyway when it is the only thing left, or a narrow pool
+  leaves the slot empty instead.
+* **Fasting days are exempt**, as they are in the reconciler. Upavasa is the therapy.
+
+The top-up draws from `pool`, which has already passed every dosha, season, allergy,
+dietary-type and condition-Apathya filter, so it cannot buy calories by reintroducing a
+food the patient must not have. A test asserts that directly.
+
+#### Diet portions: what the patient is actually served
+`_PORTION` gives a dairy food 150 ml and a grain a 150 g katori — right for milk and
+rice, absurd for butter and for a flour. **Navanita came out at 1076 kcal a serving**,
+besan at a 100 g "katori cooked" it is never eaten in, and nutritional yeast — a
+condiment measured in spoons — at 100 g and 45 g of protein. Thirteen foods were like
+this and `_ITEM_PORTIONS` now covers them all. The portion text is shown to the patient
+and `macros_approx` is summed into a day total on screen, so an unreal portion is both
+a wrong number and an instruction to eat something nobody would serve.
+`test_no_single_portion_is_one_nobody_would_eat` fails on any row over 300 kcal.
+
+#### Diet packet: the claims two frameworks disagree about
+`screen` asks whether a claim contradicts the row carrying it. Some claims contradict
+something else: garlic is Pathya in Adhmana because Lashuna is tikshna, ushna and V-2 —
+the great Vatahara, named for Gulma and Anaha — and it is the first food a modern FODMAP
+protocol removes. `screen` cannot catch that, because garlic's claim agrees with
+garlic's own profile perfectly.
+
+`vaidya_diet_contested_claims.csv` is tier 0 of the packet, with both readings stated
+and an empty `vaidya_ruling` column. Three rows, all Adhmana: garlic, onion and wheat
+roti. **This is the one file where an author declining to choose is the correct
+behaviour** — the library is authored classically, so the classical reading is what the
+rows say, and picking a framework quietly is how a contested claim starts looking
+settled.
+
+#### Deploy: the RAG corpus is seeded by the deploy now
+It was not, and that was the standing instruction to remember a manual step. The
+corpus went stale for real in this branch — renaming `upma` changed three nutrition
+documents and authoring Adhmana changed 99 more — and **nothing would have failed**:
+plans are built by the deterministic engines, so only RAG context drifts, and a corpus
+answering from a food the engine no longer has is not an error anywhere.
+
+`build_vectors.py` is content-addressed and idempotent, writing only what changed and
+never emptying a collection, so running it every deploy is a no-op except when a
+knowledge-base file actually moved. It runs **after** the commit-verification step, so
+a seeding failure cannot mask a deploy that shipped the wrong image, and is followed by
+`--check`, because the seeder's own success line is not evidence either.
+
+#### The Vaidya handoff PDF rendered the diet plan as truncated JSON
+`routes/export._build_pdf` turns each plan key into one table row holding
+`json.dumps(value)[:400]`. A diet plan's `diet_weeks` is ~6 KB, so the practitioner got
+**7% of it** — four hundred characters of escaped JSON where twenty-eight days of meals
+should be — and the safety findings truncated as soon as there were more than about
+two. **A truncated list of flagged meals is worse than none: it reads as the whole
+list.**
+
+This is the artifact the entire clinical review depends on, and the diet plan is the
+largest thing in it. `_render_diet` writes it out: the energy prescription, the
+therapeutic arc *including the withheld phase and its reason*, every safety finding in
+full, both coverage caveats (`conditions_without_food_floor` and
+`conditions_screened_by_terms_only`), then the meals for all four weeks. Only diet is
+special-cased; the other five features keep the generic renderer.
+
+#### Diet: composed from components, computed, then solved
+The LLM path (`services/diet_week_generator.py`) is four week calls and an overview call
+in parallel. Every meal is `components` — library or `diet_nutrition.EXTRAS` ids with
+grams — chosen only from the patient's **screened food list** (`diet_allowed_foods`:
+every candidate run through the same allergen / dietary-type / condition / medication /
+dislike / Jain scans as a one-food meal, so the list and the post-check are one set of
+rules). Nutrition is **computed** from the components for all 28 days (it was the model's
+estimate, for 7). A flagged meal goes to one repair call, then to a plain safe
+substitute; a week that fails twice is composed by the rule engine; three failures fall
+back entirely. The rule-engine fallback is screened and converted to the same shape.
+
+Each day is solved, not scaled: meals toward their own budgets, then one factor per
+food role (grain, protein food, vegetable, fruit, nut, fat, sweet) by bounded projected
+gradient descent with backtracking, for energy band, protein floor (and the renal
+ceiling), diabetic **available** carbohydrate (total minus fibre — a 71 g-fibre day is
+not over), fat, and fibre. `meal_cap` bounds every single-meal portion (2 katori cooked
+grain, 120 g flour ...), scaled with the energy target; portions past it are clipped
+and re-solved. Fasting days are held light (30-70% of target), not exempt.
+
+Targets come from `diet_energy.energy_target`: Mifflin-St Jeor; AHA/ACC/TOS deficit
+floored at 1200/1500; pregnancy by trimester and lactation (ICMR-NIN 2020); protein
+floor by life stage and target by goal, macros that sum to energy; renal protein cap
+0.8 g/kg and energy 25-35 kcal/kg of a reference weight (KDOQI); IBD protein 1.2 g/kg.
+`diet_clinical_notes` adds medicine-food interactions (Indian brand names), condition
+notes with sources, no-caffeine-under-18, and fasting is withheld for diabetes, CKD,
+pregnancy/lactation, underweight, under 18 and 70+.
+
+`tests/test_diet_sweep.py` builds 60 random patients end to end on the fallback path
+and holds every plan to those numbers; `scripts/diet_reviewer_pack.py generate|audit|
+render` builds the 16 live personas and writes them as a dietitian reads them.
+**Read the rendered plans whole after any change** — a 2.75-katori rice portion, a
+"fasting" day of 1955 kcal and compounded hing for a coeliac were all found that way,
+not by a test.
+
+#### Diet: minerals are counted, from hand-picked composition rows
+The plan stated a sodium limit and anaemia advice and could check neither. The library
+held energy and four macronutrients. `data/knowledge_base/diet_micronutrients.json`
+adds sodium, potassium, phosphorus, calcium, iron, folate, zinc, B12 and vitamin D per
+100 g for all 186 foods a plan can name. It is **generated** by `scripts/build_diet_micronutrients.py`
+from USDA SR Legacy and IFCT 2017 rows chosen by hand in `MAP`, never matched by name.
+Never hand-edit the JSON. The 158 rows `MAP` cites are committed in
+`scripts/diet_micronutrient_sources.json`, so the table builds and `--check`s without
+the ~100 MB datasets, and a test holds it in sync. After changing `MAP`, run `extract`
+with the datasets (paths in the docstring).
+
+- Rice and flour use the **unenriched** rows: Indian rice and atta are not fortified
+  the way US "enriched" rice is.
+- Cooked grains and pulses use the unsalted rows, because salt is counted where the
+  cook adds it.
+- Plant milks are the **unfortified** rows. Indian soy and almond drinks mostly carry
+  no added calcium, B12 or D, and counting a US carton's closed a vegan's gap on paper.
+- IFCT has no B12 or vitamin D. Plant rows are 0 for both, and paneer takes them from
+  a fresh whole-milk cheese (`VITAMINS_FROM`).
+- **Iodine is counted from salt**, not the table: iodised salt at FSSAI's 15 ppm
+  consumer-end minimum. Rock salt carries none, so on non-fasting days
+  `_iodised_salt` turns it into iodised salt. Hyperthyroidism gets no iodine target.
+  At the WHO salt limit and the legal minimum, every plan reads 45-75 µg, and food
+  supplies the rest uncounted. So the notice is given only in pregnancy and
+  breastfeeding (250 µg) or when iodised salt is under 2 g a day. Telling every
+  patient they are short would be noise.
+- **A side dish's phrase is written into the meal name after the scans have run.**
+  "a cup of ragi malt" shipped as a gluten alert for a coeliac patient, because "malt"
+  means barley malt. `test_no_side_dish_phrase_trips_a_scan` guards every phrase.
+- Only makhana has no source. Published popped-makhana figures disagree up to
+  ten-fold, so it carries `None` and is named in `unmeasured_foods`, never counted
+  as zero.
+
+Building it found five library macro rows that were wrong:
+- amla was carrying the European gooseberry's figures
+- kachcha kela was carrying ripe banana's
+- methi leaf was labelled USDA, which has no such row
+- gavar was labelled IFCT with the wrong value
+- mosambi was unsourced
+- Takra carried US cultured buttermilk, a factory product with salt in it. It is
+  now low-fat curd diluted 1:1, salted by the cook.
+
+**Salt is a component.** The LLM is told to list it. The rule-engine fallback adds
+1.5 g to lunch and dinner, because without it a day's sodium read 160 mg, a
+measurement of nothing. `_trim_salt` then holds each day under its limit, never below
+0.5 g a meal, and rounds down. The targets come from ICMR-NIN 2020 RDAs by life stage,
+and unrecorded sex takes the higher figure. The WHO potassium minimum is set only for
+adults without kidney disease or an ACE inhibitor, ARB or spironolactone. For those
+patients the advice is the opposite.
+
+**Shortfalls are closed with sides, not portions.** Scaling cannot fix composition.
+Before this step, calcium was met on almost no day for most patients. `_add_mineral_sides`
+adds up to three ordinary sides to a day that falls short: a katori of curd, a glass of
+milk or soy milk, roasted til, ragi malt, methi saag, tofu. Each one:
+- comes from the patient's **screened** list, and is skipped if it would make its meal
+  Viruddha (no milk beside a banana)
+- keeps its portion through the solver (`_fixed`), which balances energy with the rest
+  of the plate
+- is never added to a kidney plan
+- is named in the meal ("… + a katori of curd")
+
+Spinach calcium is counted in the totals but never chosen to supply calcium, because
+oxalate binds it.
+
+What food cannot close, the plan says. An 84-year-old vegan with acidity has five
+calcium sources left, and 29 mg of iron is hard to reach from food alone; that is why
+Anaemia Mukt Bharat supplements. Below 90% of the target,
+`energy_reconciliation.micronutrients.notices` gives the shortfall and names the doctor
+as the one who decides about a tablet. The sweep asserts that either the target is
+reached or the notice is there. `DietView` shows each target beside the plan's average
+and the days it was met.
+
+#### Diet: the open clinical questions, decided
+The reviewer pack left four questions open. They were decided as a dietitian would
+decide them, and `tests/test_diet_dietitian_decisions.py` pins each one:
+
+- **Kidney disease.** Any fruit, vegetable or drink with 300 mg or more of potassium
+  per 100 g is screened out (`diet_allowed_foods.high_potassium_ids`). The cut-off
+  reads the composition table, not a list, which is why kiwi passed before. It is not
+  a hyperkalaemia diet: that needs blood potassium, and KDOQI 2020 advises against
+  restricting without it. Ginger and garlic are used as seasonings, so they stay.
+- **Soy.** No PCOS or thyroid claim. The hypothyroid note already said soy was fine
+  while the list removed it. Firm tofu is low-FODMAP, so it has no IBS claim either.
+  Whole-bean soy milk keeps its IBS claim.
+- **Acidity.** Carrot, beetroot, masoor and almonds are lifted. The 47 foods that
+  both frameworks agree on stay out.
+- **Lactose intolerance** removes milk, cream, lassi, whey and cottage cheese. It does
+  not remove curd, chaas or paneer: most people with lactose intolerance tolerate about
+  12 g of lactose at a sitting (NIH Consensus 2010).
+
+#### Diet: the meal log feeds the next plan
+`db.meal_logs` holds one document per (plan, week, day, slot): eaten, partly,
+skipped or swapped. The meal's food ids are copied in at log time, so a log still
+means something after the plan is regenerated. `services/diet_log.adaptation` makes
+three changes, each only on evidence, and only once 14 meals are logged:
+
+- **Skipped slots.** A slot skipped on half of 5+ logged days is made quick and light,
+  never dropped.
+- **Left-uneaten foods.** A food left 3+ times, and on 60% of the days it was served,
+  is used rarely. This is a soft dislike, not an exclusion.
+- **Energy, ±150 kcal.** This needs 70% of meals eaten and two weigh-ins from
+  `progress_logs` 14+ days apart. It never creates a deficit for a child or in
+  pregnancy, and the floors still apply. Low adherence changes no energy figure,
+  because a plan that was not followed was not tested.
+
+**The cache key holds the adaptation's fingerprint (`diet_log`), not the log**, so
+logging one more meal does not bill a regeneration. Both diet paths read the log.
+`GET /api/meals/adaptation` tells the patient what will change before they regenerate.
+
+#### The Ritucharya card is the other surface that names food
+`services/seasonal_service.build_seasonal_guidance` took a **dosha and nothing else**,
+and `diet_adjustments` is LLM-written and names specific foods. A real Sharad card read
+*"Favor sweet, bitter, and astringent foods such as pomegranate, **white rice**, and
+leafy greens"* and *"Use **cow ghee**"* — shown identically to every Pitta user. White
+rice is Apathya in Prameha and cow ghee is a declared dairy allergen; the endpoint knew
+about neither and nothing read its output.
+
+The second food-recommending surface in this app with that shape, after the plan's own
+Pathya card. Fixed the same way and in the same order: **prevention in the prompt**
+(the patient's conditions, allergies, dietary type and pregnancy now reach it) and
+`apply_advisory_safety` as the **backstop** on the way out. `diet_adjustments` maps
+onto `pathya` — a contradicted entry is withheld — and `avoid` onto `apathya`, which
+is never scanned because it exists to name those foods.
+
+Both call sites pass the profile: the `/plans/seasonal` endpoint and the holistic
+worker. A card generated on one path must not be blinder than the other, which is the
+asymmetry `build_diet_plan` exists to prevent.
+
+`withheld_for_you` is surfaced on the Dashboard card, because a suggestion removed by
+a screen and a suggestion that was never generated look identical otherwise.
+
+**A string where a list belongs empties the card.** `allergies="dairy"` instead of
+`["dairy"]` iterates into `d,a,i,r,y`, and a one-letter term matches every word there
+is — so a malformed profile field withheld *every* recommendation rather than the one
+naming dairy. Guarded inside `apply_advisory_safety`, where the damage lands, rather
+than at each caller. Same shape as the one-element tuple written without its comma
+that cost two library rows their IBS claim.
+
+#### Diet: the gates are English, the prompt asks for Hindi
+`diet_llm_generator`'s system prompt says **"Generate REAL Indian meal names"**, and
+every scan term is English or Sanskrit. `_term_in_text` is a word match, so the same
+food was caught or missed on the model's choice of word:
+
+    curd -> caught      dahi        -> missed
+    tamarind -> caught  imli        -> missed
+    pickle -> caught    achar       -> missed
+    jaggery -> caught   gud         -> missed
+    cabbage -> caught   patta gobhi -> missed
+
+The library carries **Sanskrit** because its rows are named that way (`dadhi`), and
+the curated tables carry **English**. Neither carried the Hindi-Urdu register the
+prompt actually requests — which is the one a meal name is most likely to be in.
+
+`_VERNACULAR` maps ~83 of those words onto the canonical form, and
+`_expand_vernacular` **appends** it to the searchable text rather than substituting,
+so a term that already matched cannot stop matching and the displayed meal name is
+untouched. It sits in `_meal_text`, which all three meal scans share, so they gain it
+together.
+
+**Every canonical must be a word some gate actually holds**, or the entry is
+decoration: `chole -> chickpeas` looked right and fired nothing, because the tables
+say `chana`. Thirteen entries were inert on the first pass —
+`test_no_vernacular_entry_is_inert` runs the real matcher over the whole term
+vocabulary. And words the tables exclude on purpose stay out for the same reason they
+were excluded there: `namak -> salt`, `chai -> tea`, `chawal -> rice` and
+`nimbu -> lemon` would each reintroduce, through the back door, a term that fires on
+every other meal.
+
+**A short vernacular word swallows the longer ones.** `_term_regex` allows a suffix on
+purpose — "milk" has to match "milkshake" — so `makhan` (butter) matched **makhana**,
+the fox nut this app prescribes as a light snack, and flagged a plain day of Chilla,
+Khichdi, Makhana and Lauki Sabzi as containing butter. `alu` (potato) matched
+**alubukhara**, a dried plum. Both went into `_ALLERGEN_FALSE_FRIENDS`, which
+`_term_in_text` already consulted and which is therefore general, not allergen-only.
+
+Most such collisions are benign because the longer word is the *same food in
+Sanskrit* — `badam`/`badama`, `palak`/`palakya`, `til`/`tila`, `chana`/`chanaka` — so
+the guard test carries a `same_food` allowlist and fails only on two different foods.
+The two real ones were found by the existing `test_no_condition_flags_an_ordinary_
+vegetarian_day`, which is what that test is for.
+
+**Non-Latin script is a wall, so translation is an overlay.** A meal written as
+`दही चावल` or `தயிर் சாதம்` raised **zero** alerts from every gate. Two things now hold:
+
+- `apply_script_guard` reports any meal whose free text is in a script the gates
+  cannot read as **unverified**, and sends it to repair. Pathya entries in such a
+  script are withheld and prose is flagged. IAST and accented Latin still read.
+- `services/diet_translate` translates **display strings only**, into
+  `plan_history.translations.{lang}`. The overlay is keyed by the English it came
+  from, and no gate reads it. A line keeps its translation only if every number
+  survives in Western digits and a portion line keeps its item count. Otherwise it
+  stays English. `DietView` offers "Read in …" and always "Show English".
+
+**The screen's own labels are separate from the plan.** `DietView` writes every string as
+`t('diet.key', 'English')`. `scripts/diet_view_strings.py --write` extracts them into
+`en.json`, and `scripts/translate_diet_view.py` produces the other seven locales.
+`tests/test_diet_view_i18n.py` holds all eight to the same keys and placeholders.
+Read the generated set, don't just run the script. The first set had:
+- a Sanskrit "Ate it" that meant "not eaten"
+- Hindi breakfast and snack sharing one word
+- Ayurvedic terms in Latin letters inside Devanagari
+- the Sanskrit for "alkali" where "spice" was meant
+
+Never write a translation into the plan's own fields. The guard would catch it as
+unverified, but the plan would stop being one anyone checked.
+
+#### The plan cache key is an allowlist, and it was missing most of the plan
+`routes/plan_runner._check_plan_cache` hashes a hand-written dict of "relevant"
+profile fields, and its own comment says a newly wired field is invisible until named
+there. Seven of the eight profile edits that change a diet plan did not bust it:
+
+    medical_history += diabetes   the newly diagnosed patient got their old plan
+    weight 70 -> 58 kg            target 2240 -> 2070, cache unchanged
+    activity -> sedentary         target 2240 -> 1730, cache unchanged
+    age 35 -> 17                  paediatric equation, cache unchanged
+    gender -> other               sex-neutral equation, cache unchanged
+    agni -> manda                 the whole brief changes, cache unchanged
+    season -> grishma             Ritucharya changes, cache unchanged
+
+`medical_history` is the single largest input to any plan this app makes and was not
+in the key at all. This is not diet-specific — the key is shared by every feature.
+
+**`weight_kg` is bucketed to 2 kg**, and that is the interesting part. It is the one
+field a user changes daily; the energy target moves ~10-15 kcal per kilo, well inside
+the plan's own ±10% acceptance band, so keying on the raw value would regenerate every
+plan on every weigh-in and bill an LLM call for a difference nobody could see. Same
+principle as `menstruation_active`: **key on the state that changes the answer, not on
+the raw reading.**
+
+`test_the_key_names_every_profile_field_the_diet_brief_reads` parses `build_brief` and
+`energy_target` for `user_profile.get(...)` and fails on anything the key does not
+name, with an `exempt` set carrying a reason per entry. It found `stress_level`,
+`sleep_quality` and `vikriti_secondary` the moment it was written.
+
+#### Diet: who the plan is actually for
+The profile accepts age 10-120 and sex male/female/other, and the energy model treated
+all of it as one adult male.
+
+**Age.** Mifflin-St Jeor and Harris-Benedict are derived from and validated on adults.
+A 10-year-old at 150 cm / 45 kg was handed 1990 kcal from the adult formula, with
+nothing in the brief to say a child was being fed. Under 18 now uses **Schofield
+(WHO/FAO)** for the 10-17 band, takes **no energy deficit** whatever the stated goal
+(childhood weight management belongs with a paediatrician), and gets a `VAYAH — BALYA`
+block telling the model to build rather than restrict. Over 65 gets `VAYAH — VRIDDHA`:
+soft, warm, moist textures, smaller meals for a reduced Agni, and protein at every
+meal.
+
+**Protein followed neither end of life.** It was a flat 0.8 g/kg from the goal table,
+so the two groups that can least afford it — the growing and the old — were on the
+lowest floor in it. Now 1.0 g/kg under 18 and **1.1 g/kg over 65**, because the
+requirement rises with age while appetite falls and muscle loss is the main
+nutritional risk of that stage.
+
+**Fasting is withheld from a child in all three places, not just the brief.** The
+brief is a request; `diet_plan_engine` reads `fasting_days` itself and builds a
+Phalahar day, and `generate_diet_plan_llm` stamps `is_fasting` from the same list.
+`fasting_days_for()` is the one function all three use, and it returns `[]` under 18 —
+otherwise a twelve-year-old gets a fruit-only Monday in a plan whose own brief forbids
+fasting them.
+
+**Sex.** `_bmr` was `if female else male`, so a user who chose `other` — and everyone
+who answered nothing, because the default was `"male"` — silently got the male
+equation (2410 kcal against 2190 on the same body) while `_SEX_FLOOR` handed them the
+*female* floor. Half of one and half of the other, chosen by nobody. `other` and unset
+now take the **mean of the two equations**, for Harris-Benedict and Schofield alike,
+and the plan says so rather than presenting an average as a measurement.
+
+#### Diet conditions: the phrasing must not decide the floor
+`_COND_CANON` was exact-match, so `crohns` resolved to IBS and `crohns disease`
+resolved to nothing. Onboarding has a free-text *"Not listed? Add here"* field, so what
+a user got was decided by how they typed it.
+
+`_canon_condition` now composes three sources in order: `_COND_CANON` directly, then
+`engine.condition_vocab.normalize_condition` (193 aliases, compact forms,
+depluralization) with its output run **back through** `_COND_CANON`, then both again
+with trailing qualifiers stripped and with the last word's other number tried.
+
+The two vocabularies are **not interchangeable** — `condition_vocab` calls `arsha`
+`hemorrhoids` and the diet tables call `hemorrhoids` `arsha` — which is why this
+composes them instead of replacing one with the other. Stripping runs only after both
+exact lookups fail, so `heart_disease` and `kidney_disease` match whole and are never
+shortened to `heart`.
+
+Measured over 239 known inputs: **0 regressions, 0 silent reassignments, 109 newly
+resolving** — including the Sanskrit the vocab knew and the diet path could not reach
+(`apasmara`, `ardhavabhedaka`, `bawaseer`, `bhrama`). `test_the_normalizer_only_ever_
+adds` is the differential guard, and a set of junk inputs asserts nothing resolves to a
+protocol by accident: a false positive applies a whole disease's Apathya to someone who
+does not have it, which is the worse failure.
+
+#### Diet: how deeply a condition was screened is part of the answer
+Twenty-one conditions have been judged against every one of the library's 150 foods
+individually. The other nineteen — gout, kidney stones, heart disease among them — have
+a curated term list and nothing more. Both produced the same *"every meal checked —
+none found"* badge, so a gout patient (27 terms, no per-food claims) read the same
+reassurance as an acidity patient (101 terms, 95 authored food by food) while being
+materially less protected.
+
+`conditions_screened_by_terms_only` reports that, beside the existing
+`conditions_without_food_floor`, and `DietView` distinguishes the two: *"we could not
+derive a rule"* and *"we checked, less thoroughly"* are different statements and a
+patient is owed the difference. **The fix for the nineteen is a Vaidya, not more
+authoring** — adding 19 × 150 unreviewed judgements to make a number look better is the
+opposite of progress.
+
+#### Diet inputs: one list per declaration, built in one place
+Two helpers in `diet_brief_builder` are the only way the diet path builds a list of
+what the patient declared, and the brief, the RAG query, the arc, the rule engine and
+every scan take it from them:
+
+* `diet_conditions(profile, prefs)` — `medical_history` **plus the diet form's own
+  `gut_health_issue`**. Its four values are diseases, and three of them (acidity,
+  constipation, ibs) were already canonical keys with a hint block, a scan floor and
+  authored library claims. None of it reached them: the answer was rendered as the
+  line `GUT HEALTH: Acidity` and went nowhere else. Same patient, same disease —
+  declared on the diet form, brief 1,812 chars and 0 Apathya foods named; declared in
+  `medical_history`, 3,789 and 50. `bloating` (Adhmana) is authored in both tables
+  rather than aliased onto IBS or constipation: Vata obstructed by Ama in the
+  Pakvashaya takes the Vatala foods, not IBS's sour-and-raw list. `rajma` and `chana`
+  are named individually because moong is this condition's Pathya.
+* `diet_allergies(profile, prefs)` — the diet form's `food_allergies` **union**
+  `profile["allergies"]`. An allergy is the one declaration where asking twice and
+  honouring one answer is not acceptable.
+
+`profile["allergies"]` was `null` for every user in production and no screen collected
+it, while `condition_filter.filter_by_allergies`, the chat agent's system prompt and
+the Vaidya PDF export all read it. It is collected in onboarding now, in the same
+vocabulary as the diet form, and `filter_by_allergies` expands each key through
+`ALLERGEN_TERMS` — its substring matching could not see through a canonical key at
+all (`"nuts_tree" in "tree nuts"` is False in both directions), so a declared tree-nut
+allergy matched an almond by no route.
+
+**Counting trap:** `{"allergies": {"$ne": []}}` matches nulls, and said 11 of 12 users
+had declared one. With `$size` it is zero.
+
+#### Diet: the advisory prose is held to the same floor as the meals
+The three scans read five consumed slots. A plan also ships six free-text surfaces
+that recommend food *by name* and `DietView` renders all of them —
+`pathya_apathya.pathya` under the heading "Pathya — Recommended" above the rest. For
+an acidity patient, `curd` in a meal raised an alert and set `condition_food_safe =
+False`; the same word in the card passed untouched, beside green tea and lemon water.
+
+`apply_advisory_safety` closes it, with two different remedies because the surfaces
+differ. A `pathya` entry is a recommendation by construction, so a contradicted one is
+**withheld** into `withheld_recommendations` and shown as withheld. Free prose is
+mixed — "avoid curd and sour fruit" is correct advice for exactly the patient whose
+terms match it — so it is flagged, and only where the food is not already governed by
+an avoid-word **in its own clause**. Flagging correct advice is how a safety badge
+gets trained out of a reader. `pathya_apathya.apathya` is never scanned: it exists to
+name these foods.
+
+The clause, not the prefix, is the unit: scanning only the text *before* the mention
+made the answer depend on where the word fell, clearing "curd is best avoided" and
+flagging "fresh curd is best avoided". What keeps that from clearing a genuine
+recommendation is the splitter — a comma before an avoid-word is a clause boundary,
+so "curd is excellent, avoid pickles" is two clauses.
+
+`_active_condition_protocols` is shared by the meal scan and the prose scan rather
+than copied. A second copy of that assembly is how the curated and library tables came
+to disagree, and how the daily drink came to be in none of the three scans.
+
+#### Diet: vegetarian and vegan only, because that is what the library holds
+All 150 authored rows of `diet_foods.json` are vegetarian — no egg, fish or meat. The
+form offered five dietary types. For the three with no data behind them the 708
+authored (condition, food) claims said nothing, so a non-vegetarian patient's meals
+were screened against the curated table alone; the rule engine answered a
+`non_vegetarian` + `muscle_support` patient with black beans and edamame; and
+`_DIET_TYPE_FORBIDDEN` had no `non_vegetarian` entry, so the scan reported
+`dietary_type_safe = True`.
+
+`DIETARY_TYPES` is `{vegetarian, vegan}`. The three withdrawn values are **coerced,
+never rejected** — a stored preference that 422s is a user who cannot regenerate their
+plan — and an unrecognised value now takes the vegetarian floor rather than an
+all-clear, because it no longer means "nothing to check". `test_the_library_holds_no_
+animal_food` fails if an animal row is ever authored, so reopening those types is a
+decision someone makes on purpose.
+
+#### Diet energy: `activity_level` is asked, not assumed
+`Onboarding.jsx` sent `activity_level: 'moderate'` as a literal for every user it ever
+created, and 9 of 12 in production had no value at all — while it is the largest
+single lever in the plan: same body, same goal, **2040 kcal** at `sedentary` and
+**3220** at `very_active`. The hardcoded value was the middle one, so the error was
+silent in both directions. Onboarding asks for it now ("how active", which is a
+different question from `fitness_level`, which it already asked and the diet path does
+not read), and `test_onboarding_collects_every_activity_level_the_engine_scores`
+parses the JSX to hold the offered answers and `ACTIVITY_MULTIPLIERS` in step — the
+same front/back gap `test_dosha_instrument` exists to close.
+
+`services.diet_llm_generator.build_diet_plan` is the single diet entry point — LLM
+primary, rule engine fallback, same safety and energy layers on both. It exists
+because the per-feature route and the holistic worker each held a copy of that
+sequence and had drifted: the holistic fallback ran only `apply_ahara_safety`, so
+which endpoint a user came through decided how much of the safety model applied.
+
 `routes/plans._generate_feature_via_engine` is the single entry point both the holistic and per-feature paths use — it runs the engine + enricher and applies pregnancy/safety gating. The per-feature endpoints (`POST /api/plans/{gym,yoga,diet,routine,panchakarma,remedies,medicines}`) return the plan **synchronously**. The holistic `POST /api/plans/generate` is offloaded to an **ARQ background worker** (`server/worker.py`) via Redis and returns a `job_id` to poll at `/api/plans/job/{jobId}`; if Redis/ARQ is unavailable it falls back to running the job in-process via FastAPI `BackgroundTasks`.
+
+### Prakriti instrument
+The live quiz is **`client/src/pages/DoshaQuiz.jsx`** — 21 constitutional traits, a
+`temperature_check` consistency probe, a Manas Prakriti block and a Vikriti symptom
+list. `engine/dosha_analyzer._TRAIT_WEIGHTS` weights all 21 (0.7-2.0) and
+`_PHYSICAL_TRAITS`/`_MENTAL_TRAITS` split them for body-versus-mind dominance.
+
+The question set and the weights live on opposite sides of the front/back boundary
+with no shared schema, so `tests/test_dosha_instrument.py` parses the JSX and holds
+them in step: a trait the quiz stops asking contributes nothing silently, and
+`_TRAIT_WEIGHTS.get(trait, 1.0)` gives an unweighted one the default. The structural
+fix is to serve the instrument from the backend; until then that test is the only
+place the two can be compared.
+
+`dosha_profiles.json` used to carry a superseded 20-item set under
+`doshaQuizQuestions`, seeded into a `dosha_quiz_questions` collection nothing read.
+Its ids differed from the live ones (`skin_type` for `skin`, `body_temperature` for
+`temperature`, `learning` for `memory`), so comparing that copy against
+`_TRAIT_WEIGHTS` showed 15 weighted axes never asked and 14 asked axes unweighted —
+a convincing false positive, entirely an artefact of reading the dead file. It is
+removed and the test fails if it returns.
+
+**No public dataset can validate this instrument.** The Prakriti datasets label
+records with their own rule-based scoring, not a practitioner's assessment — the
+largest says its scoring "may differ from clinical evaluations made by expert
+practitioners". Comparing our scorer against theirs compares two rule engines over
+two different questionnaires. Clinical accuracy needs a blind Vaidya study, specified
+as Part 7 of `data/golden/vaidya_reviewer_packet.md`.
+
+### Preferences forms
+`client/src/components/PreferencesModal.jsx` holds every feature's form; the schemas in
+`server/schemas/preferences_schema.py` **do not forbid unknown fields**, so an answer the
+schema does not declare returns 200 and is dropped on save. Koshtha and the Ayurvedic
+medicines already being taken were both lost this way; both are safety inputs.
+`tests/test_preferences_form_fields.py` parses the JSX and fails on any such field. If a
+form edits an answer in its own shape (gym `likes`/`dislikes`), name it in `_FORM_ONLY`.
+
+Two answers are asked on two forms and unioned server-side, so both engines see either:
+the Ayurvedic medicines already taken (Panchakarma + remedies; `herb_overlap.declared_ayurvedic`,
+checked by both engines through one matcher) and injuries (gym + yoga).
+
+The form opens pre-filled from the saved answers (`savedToForm`), so give any new field
+that is stored as a list but edited as text a case there. Without one, saving again
+writes back the wrong shape.
 
 ### Chat Agent (`server/ai/agents/health_agent.py`)
 The conversational chatbot (`POST /api/chat`, mounted in `main.py`) **is** a LangGraph ReAct agent (`create_react_agent`) with a small tool set (`get_plan_detail`, `set_reminder`, `check_my_medicine_interactions`, `adapt_plan`, `get_health_trend`). This is the *only* place LangGraph is used — the removed 4-agent pipeline noted above was for **plan authoring**, which is now purely engine-backed. Chat may read/adapt plans and trigger side effects but never authors them from free text. LangSmith tracing is enabled when a key is configured.

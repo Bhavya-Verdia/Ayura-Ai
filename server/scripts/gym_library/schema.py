@@ -41,7 +41,10 @@ WORKING_ROLES = ("main", "accessory")
 # ------------------------------------------------------------- rep styles ---
 # A carry is not "12-15 reps" and neither is a plank. The engine printed reps
 # for both because reps were the only thing it could print.
-REP_STYLES = ("reps", "time", "distance", "isometric")
+# `interval` is conditioning done in rounds of work and easy effort. Burpees,
+# sprints and battle ropes were written as `time` — "12-15 min" of continuous
+# burpees, which nobody does and nobody should be told to.
+REP_STYLES = ("reps", "time", "distance", "isometric", "interval")
 
 # ---------------------------------------------------------------- impact ---
 # Landing force through knee and ankle. Withheld at obese BMI classifications.

@@ -44,6 +44,7 @@ from collections import defaultdict
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE))
 OUT = BASE / "data" / "golden"
 KB = BASE / "data" / "knowledge_base" / "diet_foods.json"
 
@@ -55,6 +56,13 @@ _KAPHA_MEDA = {"obesity", "hypothyroid", "thyroid", "fatty_liver", "high_cholest
 # Grahani and IBS admit ruksha, Vata-raising foods through the Grahi (binding) action —
 # which is exactly the kind of departure the library requires a Prabhava for.
 _GRAHI = {"grahani", "ibs", "diarrhea"}
+# Adhmana is Apana Vata obstructed by Ama in the Pakvashaya, so its claims can be read
+# two ways and only one of them is the dosha effect. A Pathya that raises Vata needs a
+# reason. An Apathya that LOWERS Vata is not thereby wrong — Masha is V-2 and is the
+# pulse most associated with Anaha — but it is only defensible through the obstruction
+# limb, so the row has to be guru or picchila to carry it. That is the rule below, and
+# it is the one a reviewer should argue with first.
+_VATA_OBSTRUCTED = {"bloating"}
 
 
 def _load():
@@ -70,6 +78,69 @@ def _profile(row):
     d = a["dosha_effect"]
     return (set(a.get("guna") or []), d,
             f"V{d['vata']:+d} P{d['pitta']:+d} K{d['kapha']:+d}")
+
+
+# ── Claims where two frameworks disagree ─────────────────────────────────────
+# `screen` asks whether a claim contradicts the row carrying it. These contradict
+# something else: the classical reading and the modern one reach opposite conclusions
+# about the same food, and both have standing.
+#
+# This library is authored classically, so the classical reading is what the rows say
+# and the modern one is recorded here rather than silently losing. A reviewer rules;
+# an author should not, and picking one framework quietly is how a contested claim
+# starts looking settled.
+_CONTESTED: dict[tuple[str, str], dict[str, str]] = {
+    ("bloating", "garlic"): {
+        "library_says": "pathya",
+        "classical": "Lashuna is tikshna, ushna and V-2 — the great Vatahara, used in "
+                     "Gulma and Anaha, and one of the few dravyas named for exactly "
+                     "this complaint.",
+        "modern": "Garlic is a fructan and one of the two canonical high-FODMAP "
+                  "triggers for bloating; it is the first thing a modern elimination "
+                  "diet removes.",
+    },
+    ("bloating", "onion"): {
+        "library_says": "no claim",
+        "classical": "Palandu is V-1 and Vatahara cooked; classically it is not "
+                     "restricted in Adhmana.",
+        "modern": "Onion is the other canonical high-FODMAP trigger, and raw onion is "
+                  "reported as a bloating trigger more often than any other vegetable.",
+    },
+    ("bloating", "roti_whole_wheat"): {
+        "library_says": "no claim",
+        "classical": "Godhuma is guru and sthira but V-2, and wheat roti is the staple "
+                     "anna; classical Anaha Apathya names the Shimbi varga, not wheat.",
+        "modern": "Wheat is a fructan source and is restricted alongside garlic and "
+                  "onion in a FODMAP protocol.",
+    },
+}
+
+
+def build_contested_claims(rows):
+    """One row per claim two frameworks disagree about, with both readings stated."""
+    by_id = {r["id"]: r for r in rows}
+    out = []
+    for (condition, food_id), entry in sorted(_CONTESTED.items()):
+        row = by_id.get(food_id)
+        if row is None:
+            continue
+        _, _, dosha = _profile(row)
+        a = row["ayurvedic"]
+        out.append({
+            "condition": condition,
+            "food": row["name"],
+            "food_id": food_id,
+            "library_says": entry["library_says"],
+            "classical_reading": entry["classical"],
+            "modern_reading": entry["modern"],
+            "rasa": _fmt(a["rasa"]),
+            "guna": _fmt(a.get("guna")),
+            "virya": a["virya"],
+            "dosha_effect": dosha,
+            "vaidya_ruling": "",
+            "vaidya_notes": "",
+        })
+    return out
 
 
 def screen(row, condition, kind):
@@ -97,6 +168,16 @@ def screen(row, condition, kind):
             return ("indicated_in_grahani_but_ruksha_vata_raising",
                     "ruksha and Vata-raising; defensible through Grahi action, but "
                     "no Prabhava states it")
+    if condition in _VATA_OBSTRUCTED:
+        if kind == "pathya" and d["vata"] > 0 and not has_reason:
+            return ("indicated_in_adhmana_but_vata_raising",
+                    "Vata-raising in a condition of obstructed Apana, with no "
+                    "Prabhava stating why it is given")
+        if kind == "apathya" and d["vata"] < 0 and not ({"guru", "picchila"} & guna) \
+                and not has_reason:
+            return ("withheld_in_adhmana_but_neither_vatala_nor_obstructing",
+                    "Vata-reducing, and neither guru nor picchila — so neither limb "
+                    "of the Samprapti explains the restriction")
     if condition == "acidity" and kind == "pathya" and d["pitta"] > 0:
         return ("indicated_in_amlapitta_but_pitta_raising",
                 "raises Pitta by its own dosha effect")
@@ -238,15 +319,59 @@ def build_foods(rows):
     return out
 
 
+def build_condition_protocols(_rows):
+    """One row per condition per Pathya/Apathya item, from the two curated tables.
+
+    These are not food-library claims — they are disease protocols, and 21 of the
+    conditions here were authored in one go to close the gap where the app recognised
+    a disease and had no dietary rule for it at all. Gout and kidney stones were in
+    that gap, which are the two conditions in the vocabulary where diet is most of the
+    treatment.
+
+    `enforced` says whether the deterministic scan can act on the item: the Pathya
+    side is advice to the model and the Apathya side is prose, while
+    `_CONDITION_APATHYA_TERMS` is what actually fires. A Vaidya rejecting an Apathya
+    item that is enforced changes what a patient is served; rejecting one that is not
+    changes what the model is told.
+    """
+    from services.ahara_safety import _CONDITION_APATHYA_TERMS
+    from services.diet_brief_builder import PATHYA_APATHYA_HINTS
+
+    out = []
+    for condition, hint in sorted(PATHYA_APATHYA_HINTS.items()):
+        proto = _CONDITION_APATHYA_TERMS.get(condition) or {}
+        terms = proto.get("terms") or []
+        for kind, items in (("pathya", hint["pathya"]), ("apathya", hint["apathya"])):
+            for item in items:
+                enforced = ""
+                if kind == "apathya":
+                    low = item.lower()
+                    enforced = "yes" if any(t in low or low in t for t in terms) else "no"
+                out.append({
+                    "condition": condition,
+                    "ayurvedic_name": hint["ayurvedic_name"],
+                    "kind": kind,
+                    "item": item,
+                    "enforced_by_scan": enforced,
+                    "modern_extrapolated": "yes" if hint.get("modern_extrapolated") else "",
+                    "classical_ref": hint["classical_ref"],
+                    "mechanism": proto.get("reason", ""),
+                    "item_ok": "", "vaidya_notes": "",
+                })
+    return out
+
+
 def _write(name, rows):
     path = OUT / name
     if not rows:
         return path, 0
-    # newline="\n", not "" — csv writes \r\n per RFC 4180, git normalises it to \n on
-    # commit, and the file is then dirty the moment it is regenerated. The drift test
-    # would be comparing line endings rather than content.
-    with path.open("w", newline="\n", encoding="utf-8") as fh:
-        w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+    # csv writes \r\n per RFC 4180 and `.gitattributes` normalises it to \n on commit,
+    # so a regenerated packet shows as dirty with an empty diff. `newline="\n"` on the
+    # open does not prevent that — it only stops Python translating what csv already
+    # wrote — so the terminator has to be set on the writer itself. Every CSV here was
+    # CRLF in the working copy and LF in the repository until this was fixed.
+    with path.open("w", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()), lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     return path, len(rows)
@@ -301,7 +426,23 @@ The count did not reset; it was always zero.
 The tiers are ordered by what a wrong answer costs and by how far the claim sits from
 a citable source — not by size. The first two are small and decisive.
 
-### 1. `vaidya_diet_screened_claims.csv` — {counts['screened']} rows · start here
+### 0. `vaidya_diet_contested_claims.csv` — {counts['contested']} rows · rule on these first
+
+Claims where the classical reading and the modern one reach **opposite** conclusions
+about the same food, and both have standing. The rest of this packet asks whether a
+claim is right; this file asks which framework decides.
+
+The library is authored classically, so the classical reading is what the rows
+currently say and the modern one is recorded beside it rather than quietly losing.
+All three are Adhmana: garlic is Pathya here because Lashuna is the great Vatahara
+named for Gulma and Anaha, and is the first food a modern FODMAP protocol removes.
+Onion and wheat roti carry no claim for the same reason and are contested the same
+way.
+
+Fill `vaidya_ruling` with the framework that should decide, per row. This is the one
+file where an author declining to choose is the correct behaviour.
+
+### 1. `vaidya_diet_screened_claims.csv` — {counts['screened']} rows
 
 Claims that disagree with the food carrying them. The library already requires that a
 dosha effect running against both rasa and virya state a Prabhava; these are the
@@ -368,6 +509,21 @@ is why it is grouped this way rather than by food.
 The six Ayurvedic axes per food, for whole-row sign-off. Tick columns are per axis, so
 a row can be accepted on Rasa and rejected on Vipaka.
 
+### 7. `vaidya_diet_condition_protocols.csv` — {counts['protocol_items']} rows across {counts['protocols']} diseases
+
+Disease protocols rather than food properties: the Pathya and Apathya the brief states
+to the model for each condition. **Twenty-one of these diseases had no dietary rule of
+any kind** until recently — the app recognised them, and the plan was written from
+whatever the model knew. Gout and kidney stones were among them, which are the two
+conditions in this vocabulary where diet is most of the treatment, so those two are
+worth reading first.
+
+`enforced_by_scan` says whether an Apathya item can actually withhold food: rejecting
+an enforced item changes what a patient is served, rejecting an unenforced one changes
+what the model is told. Two conditions — long COVID and hypotension — have no classical
+Nidana and are marked `modern_extrapolated`; their `classical_ref` says so rather than
+naming a chapter that does not describe them.
+
 ## How to record a verdict
 
 Every CSV has empty `*_ok` columns and a `vaidya_notes` column. Use:
@@ -403,6 +559,7 @@ def main() -> int:
         "apathya": sum(1 for r in claims if r["claim"] == "apathya"),
         "conditions": len({r["condition"] for r in claims}),
         "screened": len(screened),
+        "contested": len(_CONTESTED),
         "extrapolations": len(extrap),
         "extrapolations_gating": sum(1 for r in extrap if r["gates_a_condition"] == "yes"),
         "prabhava": sum(1 for r in rows if r["ayurvedic"].get("prabhava")),
@@ -410,14 +567,20 @@ def main() -> int:
         "viruddha_foods": sum(1 for r in rows if r.get("viruddha_with")),
     }
 
+    protocols = build_condition_protocols(rows)
+    counts["protocol_items"] = len(protocols)
+    counts["protocols"] = len({r["condition"] for r in protocols})
+
     OUT.mkdir(parents=True, exist_ok=True)
     written = [
         _write("vaidya_diet_screened_claims.csv", screened),
+        _write("vaidya_diet_contested_claims.csv", build_contested_claims(rows)),
         _write("vaidya_diet_extrapolations.csv", extrap),
         _write("vaidya_diet_prabhava.csv", build_prabhava(rows)),
         _write("vaidya_diet_viruddha.csv", build_viruddha(rows)),
         _write("vaidya_diet_clinical_claims.csv", claims),
         _write("vaidya_diet_foods.csv", build_foods(rows)),
+        _write("vaidya_diet_condition_protocols.csv", protocols),
     ]
     md = OUT / "vaidya_diet_packet.md"
     md.write_text(build_packet_md(rows, counts, screened), encoding="utf-8")

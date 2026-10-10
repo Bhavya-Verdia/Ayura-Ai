@@ -67,14 +67,61 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
     # This key is an allowlist, so a newly wired profile field is invisible to it
     # until named here — the plan changes and the cache serves the old one.
     from services.panchakarma_engine import _menstruation_active, _kriya_kala_assessment
+    from services.diet_log import fingerprint as _diet_log_fingerprint
 
     relevant_data = {
         "dosha": user_profile.get("dominant_dosha"),
         "vikriti": user_profile.get("vikriti_dominant"),
         "pregnancy": user_profile.get("pregnancy_or_nursing"),
+        # Which stage: the energy and protein additions differ by trimester and
+        # between pregnancy and breastfeeding (ICMR-NIN 2020).
+        "pregnancy_status": user_profile.get("pregnancy_status"),
+        "pregnancy_trimester": user_profile.get("pregnancy_trimester"),
         "allergies": user_profile.get("allergies"),
         "symptoms": user_profile.get("current_symptoms"),
         "injuries": user_profile.get("injuries_or_limitations"),
+
+        # Everything below was being read by an engine and was invisible here, so the
+        # plan changed and the cache served the old one. Measured on the diet feature:
+        # of eight profile edits that change the generated plan, seven did not bust
+        # the key — including **adding diabetes to `medical_history`**, which served a
+        # newly diagnosed patient their pre-diagnosis plan, and `activity_level`,
+        # which moves the calorie target by up to 1180 kcal.
+        #
+        # `medical_history` is the single largest input to a plan and belongs first.
+        "conditions": sorted(str(c).lower() for c in (user_profile.get("medical_history") or [])),
+        "medications": sorted(str(m).lower() for m in (user_profile.get("current_medications") or [])),
+
+        # The body. `weight_kg` is bucketed to 2 kg because it is the one field here
+        # that a user changes daily: the energy target moves ~10-15 kcal per kilo,
+        # well inside the plan's own +/-10% acceptance band, so keying on the raw
+        # value would regenerate every plan on every weigh-in and bill an LLM call
+        # for a difference nobody could see. This is the `menstruation_active`
+        # principle — key on the state that changes the answer, not the raw reading.
+        "age": user_profile.get("age"),
+        "gender": user_profile.get("gender"),
+        "height_cm": user_profile.get("height_cm"),
+        "weight_bucket": (round(float(user_profile["weight_kg"]) / 2) * 2
+                          if user_profile.get("weight_kg") else None),
+        "activity": user_profile.get("activity_level"),
+        "fitness": user_profile.get("fitness_level"),
+        "bmi_category": user_profile.get("bmi_category"),
+
+        # The Ayurvedic axes every brief and arc is built from. All coarse enums, so
+        # including them costs nothing and omitting them meant a patient whose Agni or
+        # Ama changed at check-in kept the plan written for the old reading.
+        "agni": user_profile.get("agni_type"),
+        "ama": user_profile.get("ama_indicator"),
+        "ojas": user_profile.get("ojas_level"),
+        "koshtha": user_profile.get("koshtha"),
+        "prakriti_secondary": user_profile.get("secondary_dosha"),
+        "vikriti_secondary": user_profile.get("vikriti_secondary"),
+        "season": user_profile.get("current_season"),
+        "goal": user_profile.get("goal"),
+        # Both are read by the diet brief and set at check-in. Found by the drift
+        # guard rather than by hand, which is the point of having one.
+        "stress_level": user_profile.get("stress_level"),
+        "sleep_quality": user_profile.get("sleep_quality"),
         # The *effective* gate state, not the raw flag. Menstruation is the one
         # eligibility input that expires, so `menstrual_phase` alone would hold a
         # Shamana plan in cache after the observation went stale, and the raw
@@ -87,6 +134,10 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
         # when a patient re-answers the selects with a pair that maps to the same
         # stage — and adds a condition id to the key for a plan that reads only one.
         "kriya_kala_stage": ((_kriya_kala_assessment(user_profile) or {}).get("governing_stage")),
+        # What the meal log changes in the next diet plan — the adaptation's
+        # fingerprint, not the log: logging a meal must not bill a regeneration.
+        "diet_log": (_diet_log_fingerprint(user_profile["diet_log"])
+                     if user_profile.get("diet_log") else None),
         "feature_prefs": feature_prefs
     }
     pref_hash = hashlib.sha256(json.dumps(relevant_data, sort_keys=True).encode()).hexdigest()
@@ -239,7 +290,16 @@ async def _load_feature_preferences(db: AsyncIOMotorDatabase, user_id: str, plan
     else:
         prefs = schema_cls()  # use defaults
 
-    return prefs.model_dump()
+    out = prefs.model_dump()
+    if storage_key in ("panchakarma", "remedies"):
+        # Asked on both forms, checked by both engines: the per-feature routes
+        # merge the two the same way, so neither path is blinder than the other.
+        from engine.herb_overlap import declared_ayurvedic
+        out["current_ayurvedic_medicines"] = declared_ayurvedic(doc)
+    if storage_key in ("gym", "yoga"):
+        from engine.movement_risk import with_declared_injuries
+        out = with_declared_injuries(storage_key, out, doc)
+    return out
 
 
 # ─── Engine-backed feature generation (shared by holistic + agentic paths) ────
@@ -299,24 +359,33 @@ async def _generate_feature_via_engine_impl(
         if plan_type == "gym":
             from services.gym_plan_engine import generate_gym_plan
             from services.gym_plan_enricher import enrich_gym_plan
+            from services.gym_condition_fallback import extra_avoid_tags_for
             ex = _kb("gym_exercises")
             if is_prenatal and ex:
                 ex = [e for e in ex if e.get("pregnancy_safe")] or None
-            raw = generate_gym_plan(profile, prefs, ex)
+            # Both paths read the log, or the holistic plan would quietly go
+            # back to bodyweight estimates for someone who has been logging.
+            from services.workout_log import gym_history
+            history = await gym_history(db, user_id) if db is not None and user_id else {}
+            raw = generate_gym_plan(profile, prefs, ex,
+                                    extra_avoid_tags=await extra_avoid_tags_for(profile),
+                                    logged_lifts=history.get("logged_lifts"),
+                                    previous_block=history.get("previous_block"))
             return await enrich_gym_plan(raw, profile, prefs)
 
         if plan_type == "diet":
-            from services.diet_llm_generator import generate_diet_plan_llm
-            enriched = await generate_diet_plan_llm(profile, prefs)
-            if enriched is None:
-                from services.diet_plan_engine import generate_diet_plan
-                from services.diet_plan_enricher import enrich_diet_plan
-                from services.ahara_safety import apply_ahara_safety
-                raw = generate_diet_plan(profile, prefs, _kb("diet_foods"))
-                enriched = await enrich_diet_plan(raw, profile, prefs)
-                enriched = apply_ahara_safety(
-                    enriched, prefs.get("food_allergies") or [], prefs.get("food_intolerances") or [])
-            return enriched
+            # This used to be a second copy of the per-feature route's sequence, and
+            # the copies had drifted: the fallback here ran only `apply_ahara_safety`,
+            # so a holistic plan skipped the dietary-type check and the condition
+            # food floor that the per-feature endpoint applied.
+            from services.diet_llm_generator import build_diet_plan
+            # Both paths read the meal log, as both gym paths read the workout log.
+            from services.diet_log import diet_history
+            if db is not None and user_id:
+                hist = await diet_history(db, user_id, goal=(prefs or {}).get("diet_goal"),
+                                          bmi_category=profile.get("bmi_category"))
+                profile = {**profile, "diet_log": hist["adaptation"]}
+            return await build_diet_plan(profile, prefs, _kb("diet_foods"))
 
         if plan_type == "panchakarma":
             if is_prenatal:
@@ -421,7 +490,7 @@ async def _run_plan_job(
                 try:
                     from services.seasonal_service import build_seasonal_guidance
                     dosha = user_profile.get("vikriti_dominant") or user_profile.get("dominant_dosha") or "vata"
-                    seasonal_guidance = await build_seasonal_guidance(dosha)
+                    seasonal_guidance = await build_seasonal_guidance(dosha, user_profile)
                 except Exception:
                     pass
 

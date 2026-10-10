@@ -1660,6 +1660,18 @@
 /* The coaching cue reads as the coach talking, so it gets the weight the
    modification note does not: upright, slightly stronger colour, and a rule down
    the side to separate it from the mechanical text around it. */
+/* The coach's line for the day — above the session, in the same voice as the
+   per-exercise cue but set apart as the day's intent. */
+.gym-day-coach-note {
+  font-size: 0.8rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ayura-text);
+  margin: 0 0 0.6rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ayura-accent) 8%, transparent);
+}
 .gym-ex-cue {
   font-size: 0.78rem;
   color: var(--ayura-text);
@@ -2124,6 +2136,33 @@
 [data-theme='light'] .yoga-unrecognised-notice svg { color: #b45309 !important; }
 .yoga-pool-notice svg,
 .yoga-duration-notice svg,
+.gym-condition-guidance {
+  padding: 0.75rem 0.95rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--plan-amber) 28%, transparent);
+  background: color-mix(in srgb, var(--plan-amber) 7%, var(--ayura-card-bg) 93%);
+  color: var(--ayura-text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+.gym-condition-guidance h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.45rem;
+  font-size: 0.82rem;
+  color: var(--plan-amber);
+}
+.gym-condition-guidance ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.4rem;
+}
+.gym-condition-guidance strong {
+  color: var(--ayura-text-primary, inherit);
+}
+
 .gym-pool-notice svg,
 .gym-duration-notice svg {
   flex-shrink: 0;
@@ -3721,6 +3760,125 @@
   color: var(--ayura-muted);
   font-weight: 500;
 }
+/* The day total used to stand alone, so a day delivering 600 kcal against a 1490
+   kcal prescription read as a fact rather than a miss. */
+.diet-day-target {
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ayura-muted);
+  background: color-mix(in srgb, var(--ayura-muted) 12%, transparent);
+}
+.diet-day-target.is-off {
+  color: var(--ayura-amber);
+  background: color-mix(in srgb, var(--ayura-amber) 16%, transparent);
+}
+.diet-day-flag {
+  flex-basis: 100%;
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--ayura-amber);
+}
+
+/* A partial all-clear. Saying "everything checked" when a condition reached no
+   rule at all is the failure this state exists to prevent. */
+.diet-safety-ok.is-partial {
+  color: var(--ayura-amber);
+  border-color: color-mix(in srgb, var(--ayura-amber) 40%, transparent);
+}
+
+/* ── Therapeutic arc ── the progression was the same four phases for every
+   patient; showing which one this is, and what it deliberately leaves out. */
+.diet-arc-card {
+  margin: 0.75rem 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--ayura-border);
+  border-left: 3px solid var(--ayura-teal);
+  border-radius: 12px;
+}
+.diet-arc-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.diet-arc-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ayura-text);
+}
+.diet-arc-basis,
+.diet-arc-withheld {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ayura-muted);
+}
+.diet-arc-withheld {
+  padding-left: 0.6rem;
+  border-left: 2px solid var(--ayura-amber);
+}
+
+/* ── Energy prescription ── */
+.diet-energy-card {
+  margin: 0.75rem 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--ayura-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ayura-surface, transparent) 60%, transparent);
+}
+.diet-energy-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.diet-energy-target {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ayura-text);
+}
+.diet-energy-sub,
+.diet-energy-basis {
+  font-size: 0.78rem;
+  color: var(--ayura-muted);
+}
+.diet-energy-basis {
+  margin: 0.35rem 0 0;
+  line-height: 1.5;
+}
+.diet-energy-basis.is-estimated {
+  color: var(--ayura-amber);
+}
+.diet-energy-split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+.diet-energy-slot {
+  font-size: 0.72rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 20px;
+  color: var(--ayura-muted);
+  background: color-mix(in srgb, var(--ayura-muted) 10%, transparent);
+  text-transform: capitalize;
+}
+.diet-energy-slot b {
+  font-weight: 600;
+  margin-right: 0.2rem;
+}
+.diet-energy-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--ayura-muted);
+}
+.diet-energy-note.is-warn {
+  color: var(--ayura-amber);
+}
 
 .diet-macro-bar {
   display: flex;
@@ -4781,6 +4939,21 @@
   font-weight: 600;
   font-family: var(--font-body);
 }
+.mv-doubling {
+  list-style: none;
+  margin: 0 16px 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(239,68,68,0.3);
+  background: rgba(239,68,68,0.08);
+  color: var(--ayura-ink);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  display: grid;
+  gap: 6px;
+}
+.mv-doubling li { display: flex; gap: 8px; align-items: flex-start; }
+.mv-doubling svg { color: #f87171; flex-shrink: 0; margin-top: 3px; }
 .mv-type-chip {
   display: inline-block;
   padding: 2px 9px;
@@ -5995,6 +6168,7 @@
    They now paint from --ayura-text-secondary/-primary, which already flip per
    theme, so overriding them to brown would only make light mode disagree with
    dark for no contrast benefit. */
+[data-theme='light'] .mv-doubling svg { color: #b91c1c; }
 [data-theme='light'] .mv-tried-badge,
 [data-theme='light'] .yoga-pose-modification { color: #92400e; }
 [data-theme='light'] .rv-practitioner-note,
@@ -6428,3 +6602,195 @@
   line-height: 1.45;
   opacity: 0.92;
 }
+
+/* ── Set logging (GymSetLogger) ── */
+.gym-log-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0.15rem 0 0.35rem; }
+.gym-log-summary { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.74rem; color: var(--ayura-accent); }
+.gym-log-toggle, .gym-log-cancel, .gym-log-save {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-size: 0.74rem; border-radius: 999px; padding: 0.25rem 0.7rem; cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--ayura-accent) 45%, transparent);
+  background: transparent; color: var(--ayura-text);
+}
+.gym-log-save { background: var(--ayura-accent); color: #10140f; border-color: var(--ayura-accent); font-weight: 600; }
+.gym-log-save:disabled { opacity: 0.6; cursor: default; }
+.gym-log-editor {
+  margin: 0.3rem 0 0.5rem; padding: 0.6rem; border-radius: 10px;
+  background: color-mix(in srgb, var(--ayura-accent) 6%, transparent);
+  display: grid; gap: 0.45rem;
+}
+.gym-log-set { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) minmax(0, 1fr); gap: 0.4rem; align-items: center; }
+.gym-log-set input { min-width: 0; width: 100%; padding: 0.35rem 0.5rem; border-radius: 8px;
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.15)); background: transparent; color: var(--ayura-text); font-size: 0.85rem; }
+.gym-log-set-label { font-size: 0.74rem; color: var(--ayura-muted); }
+.gym-log-effort { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.gym-log-chip { font-size: 0.72rem; border-radius: 999px; padding: 0.22rem 0.6rem; cursor: pointer;
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.18)); background: transparent; color: var(--ayura-text); }
+.gym-log-chip.active { border-color: var(--ayura-accent); background: color-mix(in srgb, var(--ayura-accent) 18%, transparent); }
+.gym-log-actions { display: flex; justify-content: flex-end; gap: 0.4rem; }
+.gym-log-error { font-size: 0.74rem; color: #e07a6e; margin: 0; }
+
+/* ── Week check-in + next week's adjusted weights ── */
+.gym-checkin {
+  margin: 1rem 0; padding: 0.85rem 1rem; border-radius: 12px; display: grid; gap: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--ayura-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--ayura-accent) 5%, transparent);
+}
+.gym-checkin-closed { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.gym-checkin-closed .gym-checkin-sub,
+.gym-checkin-closed .gym-checkin-stop,
+.gym-checkin-closed .gym-checkin-rebuild { grid-column: 1; }
+.gym-checkin-closed > .gym-log-toggle { grid-column: 2; grid-row: 1 / span 2; justify-self: end; }
+.gym-checkin-title { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600;
+  font-size: 0.9rem; color: var(--ayura-text-primary); }
+.gym-checkin-sub { font-size: 0.76rem; color: var(--ayura-text-secondary); }
+.gym-checkin-q { margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--ayura-text-secondary); }
+.gym-checkin-check { display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem;
+  color: var(--ayura-text); cursor: pointer; }
+.gym-checkin-check input { width: 1rem; height: 1rem; accent-color: var(--ayura-accent); }
+.gym-checkin-flag.active { border-color: #e07a6e; background: color-mix(in srgb, #e07a6e 16%, transparent); }
+.gym-checkin-stop, .gym-adjust-stop {
+  display: flex; align-items: flex-start; gap: 0.45rem; margin: 0; font-size: 0.8rem; line-height: 1.45;
+  color: #e07a6e; padding: 0.55rem 0.7rem; border-radius: 10px;
+  background: color-mix(in srgb, #e07a6e 10%, transparent);
+}
+.gym-adjust-stop { margin: 0.75rem 0; font-size: 0.86rem; }
+.gym-checkin-rebuild { justify-self: start; }
+.gym-adjusted {
+  margin-top: 0.3rem; padding: 0.4rem 0.6rem; border-radius: 8px; font-size: 0.76rem; line-height: 1.45;
+  border-left: 3px solid var(--ayura-accent);
+  background: color-mix(in srgb, var(--ayura-accent) 7%, transparent); color: var(--ayura-text);
+}
+.gym-adjusted-down, .gym-adjusted-deload { border-left-color: var(--ayura-text-secondary); }
+.gym-adjusted-k { color: var(--ayura-text-secondary); }
+.gym-adjusted-why { display: block; color: var(--ayura-text-secondary); margin-top: 0.1rem; }
+@media (max-width: 520px) {
+  .gym-checkin-closed { grid-template-columns: 1fr; }
+  .gym-checkin-closed > .gym-log-toggle { grid-column: 1; grid-row: auto; justify-self: start; }
+}
+.gym-checkin-stop svg, .gym-adjust-stop svg { flex-shrink: 0; margin-top: 0.12rem; }
+
+/* ── Block complete + block history ── */
+.gym-block-card {
+  margin: 1rem 0; padding: 0.85rem 1rem; border-radius: 12px; display: grid; gap: 0.45rem;
+  border: 1px dashed color-mix(in srgb, var(--ayura-accent) 40%, transparent);
+}
+.gym-block-card.over {
+  border-style: solid; border-color: color-mix(in srgb, var(--ayura-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--ayura-accent) 9%, transparent);
+}
+.gym-block-line { margin: 0; font-size: 0.82rem; line-height: 1.5; color: var(--ayura-text); }
+.gym-block-next { color: var(--ayura-text-secondary); }
+.gym-history { margin: 1.25rem 0; }
+.gym-history-list { list-style: none; margin: 0.5rem 0 0; padding: 0; display: grid; gap: 0.3rem; }
+.gym-history-row {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 0.75rem;
+  padding: 0.45rem 0.7rem; border-radius: 8px; font-size: 0.8rem;
+  background: color-mix(in srgb, var(--ayura-accent) 5%, transparent);
+}
+.gym-history-k { font-weight: 600; color: var(--ayura-text-primary); }
+.gym-history-v { color: var(--ayura-text-secondary); }
+.gym-history-trends { margin-top: 0.6rem; display: grid; gap: 0.2rem; }
+.gym-history-trend { margin: 0; font-size: 0.8rem; color: var(--ayura-text); }
+.gym-history-note { margin: 0.2rem 0 0; font-size: 0.72rem; color: var(--ayura-text-secondary); }
+
+/* ── Gym workout mode (GymSessionPlayer) — shares the sp-* overlay shell ── */
+.gs-start { justify-self: start; margin: 0.25rem 0 0.5rem; padding: 0.45rem 1rem; font-size: 0.82rem; }
+.gs-stage { flex: 1; overflow-y: auto; padding: 1rem 1rem 2rem; width: 100%; max-width: 640px; margin: 0 auto; }
+.gs-exercise { display: grid; gap: 0.6rem; }
+.gs-title { margin: 0; font-size: 1.35rem; line-height: 1.25; color: var(--ayura-text-primary); }
+.gs-rx { margin: 0; font-size: 0.95rem; color: var(--ayura-text-secondary); }
+.gs-target { margin: 0; display: grid; gap: 0.15rem; font-size: 0.82rem; line-height: 1.45; color: var(--ayura-text);
+  padding: 0.5rem 0.7rem; border-radius: 8px; border-left: 3px solid var(--ayura-accent);
+  background: color-mix(in srgb, var(--ayura-accent) 7%, transparent); }
+.gs-target span { color: var(--ayura-text-secondary); }
+.gs-sets { display: grid; gap: 0.45rem; }
+.gs-set { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) minmax(0, 1fr) 2.75rem; gap: 0.45rem; align-items: center; }
+.gs-set:has(> input:only-of-type) { grid-template-columns: 3.4rem minmax(0, 1fr) 2.75rem; }
+.gs-set input { min-width: 0; width: 100%; padding: 0.6rem 0.6rem; border-radius: 10px; font-size: 1rem;
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.15)); background: transparent; color: var(--ayura-text); }
+.gs-set.done input { opacity: 0.65; }
+.gs-set-done { height: 2.75rem; width: 2.75rem; border-radius: 10px; display: grid; place-items: center; cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--ayura-accent) 50%, transparent); background: transparent; color: var(--ayura-text); }
+.gs-set-done.on { background: var(--ayura-accent); color: #10140f; border-color: var(--ayura-accent); }
+.gs-set-done:disabled:not(.on) { opacity: 0.4; cursor: default; }
+.gs-rest, .gs-hold { display: grid; justify-items: center; gap: 0.4rem; padding: 0.9rem; border-radius: 14px;
+  background: color-mix(in srgb, var(--ayura-accent) 10%, transparent); }
+.gs-rest-label { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: var(--ayura-text-secondary); }
+.gs-rest-clock { font-size: 2.6rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ayura-text-primary); }
+.gs-rest-actions { display: flex; gap: 0.5rem; }
+.gs-step-actions { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.gs-next { padding: 0.55rem 1.3rem; font-size: 0.9rem; }
+.gs-next:disabled { opacity: 0.5; cursor: default; }
+.gs-checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.gs-checklist label { display: flex; gap: 0.6rem; align-items: flex-start; font-size: 0.9rem; line-height: 1.45;
+  color: var(--ayura-text); cursor: pointer; padding: 0.45rem 0.6rem; border-radius: 8px;
+  background: color-mix(in srgb, var(--ayura-accent) 5%, transparent); }
+.gs-checklist input { margin-top: 0.2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--ayura-accent); flex-shrink: 0; }
+.gs-hold.hard { background: color-mix(in srgb, #e0a96e 18%, transparent); }
+.gs-minutes { grid-template-columns: 7rem minmax(0, 8rem); }
+.gs-minutes input { font-size: 1rem; padding: 0.55rem 0.6rem; }
+
+/* ── Diet: targets, clinical notes ── */
+.diet-targets-card, .diet-clinical-card {
+  margin: 0.75rem 0; padding: 0.85rem 1rem; border-radius: 12px; display: grid; gap: 0.45rem;
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.12));
+  background: color-mix(in srgb, var(--ayura-accent) 4%, transparent);
+}
+.diet-targets-list { margin: 0; display: grid; gap: 0.3rem; }
+.diet-targets-row { display: flex; justify-content: space-between; gap: 0.75rem; font-size: 0.82rem; }
+.diet-targets-row dt { color: var(--ayura-text-secondary); }
+.diet-targets-row dd { margin: 0; text-align: right; color: var(--ayura-text); }
+.diet-targets-toggle { justify-self: start; display: inline-flex; align-items: center; gap: 0.25rem;
+  background: none; border: none; padding: 0.2rem 0; font-size: 0.76rem; color: var(--ayura-text-secondary); cursor: pointer; }
+.diet-targets-sources { margin: 0; padding-left: 1rem; font-size: 0.74rem; color: var(--ayura-text-secondary); display: grid; gap: 0.2rem; }
+.diet-clinical-item { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 0.5rem; align-items: start;
+  font-size: 0.82rem; line-height: 1.5; color: var(--ayura-text); }
+.diet-clinical-item svg { margin-top: 0.2rem; color: var(--ayura-text-secondary); }
+.diet-clinical-item p { margin: 0.1rem 0 0; }
+.diet-clinical-item.is-warn svg { color: #e0a96e; }
+.diet-clinical-source { display: block; font-size: 0.7rem; color: var(--ayura-text-secondary); margin-top: 0.15rem; }
+.diet-llm-note-plain { margin: 0.2rem 0; font-size: 0.78rem; color: var(--ayura-text-secondary); }
+.diet-macro-chip.fib { opacity: 0.85; }
+
+/* Diet plan translation bar — the translated text is an overlay of the checked English plan. */
+.diet-translate-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem;
+  margin-bottom: 1rem; padding: 0.55rem 0.8rem;
+  border: 1px solid var(--ayura-border); border-radius: 10px;
+  font-size: 0.78rem; line-height: 1.45; color: var(--ayura-text-secondary);
+}
+.diet-translate-bar > span { flex: 1 1 14rem; }
+.diet-translate-btn {
+  padding: 0.3rem 0.75rem; border-radius: 999px; border: 1px solid var(--ayura-border);
+  background: transparent; color: inherit; font: inherit; font-weight: 600; cursor: pointer;
+}
+.diet-translate-btn:disabled { opacity: 0.6; cursor: progress; }
+
+/* Meal log — what was eaten of the plan; the next plan reads it. */
+.diet-log-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem;
+  padding: 0 0.85rem 0.6rem;
+}
+.diet-log-btn {
+  padding: 0.22rem 0.6rem; min-height: 28px; border-radius: 999px;
+  border: 1px solid var(--ayura-border); background: transparent;
+  color: var(--ayura-text-secondary); font: inherit; font-size: 0.72rem; cursor: pointer;
+}
+.diet-log-btn.is-on {
+  border-color: var(--ayura-accent); color: var(--ayura-text);
+  background: color-mix(in srgb, var(--ayura-accent) 14%, transparent);
+  font-weight: 600;
+}
+.diet-log-swap { display: flex; gap: 0.35rem; flex: 1 1 100%; }
+.diet-log-swap input {
+  flex: 1; min-width: 0; padding: 0.3rem 0.6rem; border-radius: 8px;
+  border: 1px solid var(--ayura-border); background: transparent; color: inherit; font: inherit; font-size: 0.78rem;
+}
+.diet-log-note { font-size: 0.72rem; color: var(--ayura-muted); }
+.diet-log-summary {
+  margin: 0 0 0.75rem; padding: 0.55rem 0.8rem; border-radius: 10px;
+  border: 1px dashed var(--ayura-border); font-size: 0.78rem; line-height: 1.5;
+  color: var(--ayura-text-secondary);
+}
+.diet-log-summary ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }

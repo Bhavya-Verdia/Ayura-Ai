@@ -58,6 +58,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Repeated lumbar extension. Prone position rules it out prenatally.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "spinal_extension"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -72,7 +75,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Back Extension holding a plate to the chest. If form breaks down, shorten the range or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "Hyperextensions (Back Extensions)",
     "contraindications_reviewed": false
@@ -139,6 +142,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead, but band tension is lowest at the top where the shoulder is most vulnerable.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -216,6 +220,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Heavy load hanging from the shoulder girdle, transmitted through the neck.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "neck_load"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -230,7 +237,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Barbell Shrug",
     "contraindications_reviewed": false
@@ -294,6 +301,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Unsupported hinge under load.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -308,7 +316,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Bent Over Two-Dumbbell Row",
     "contraindications_reviewed": false
@@ -370,6 +378,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Self-limiting and light — the resistance is your own lean.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -447,6 +456,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the barbell shrug.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "neck_load"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -461,7 +473,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Dumbbell Shrug",
     "contraindications_reviewed": false
@@ -526,6 +538,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Light, but performed face down.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "spinal_extension"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -540,7 +555,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Prone Y-Raise. If form breaks down, shorten the range or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "prior authoring (Prone Swimmer)",
     "contraindications_reviewed": false
@@ -612,6 +627,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Heaviest axial load in the library. Breath-holding against a maximal pull is the mechanism.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -626,7 +644,7 @@
       "flexibility": false
     },
     "calories_per_minute": 9,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Rack Pulls",
     "contraindications_reviewed": false
@@ -693,6 +711,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "A plank under a rowing load; the trunk and the supporting shoulder both work hard.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -707,7 +728,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Alternating Renegade Row",
     "contraindications_reviewed": false
@@ -769,6 +790,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Long-lever shoulder extension; the straight arm is what makes it a shoulder movement.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -783,7 +805,7 @@
       "flexibility": false
     },
     "calories_per_minute": 5,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Straight-Arm Pulldown",
     "contraindications_reviewed": false
@@ -850,6 +872,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Sustained lumbar extension, performed lying face down.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "spinal_extension"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -930,6 +955,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Neutral close grip is the kindest overhead pull; keeps `shoulder_injury` but not the cuff tag.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -944,7 +970,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "V-Bar Pulldown",
     "contraindications_reviewed": false
@@ -1007,6 +1033,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Postural drill against a wall. Suitable for almost everyone, including prenatally.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1021,7 +1048,7 @@
       "flexibility": false
     },
     "calories_per_minute": 5,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Band Row. If form breaks down, shorten the range or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "prior authoring (Wall Angel Row)",
     "contraindications_reviewed": false
@@ -1083,6 +1110,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Upright, light, and fully self-limiting.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1162,6 +1190,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Sustained loaded spinal flexion hold; the hinge position is also unavailable as the abdomen grows.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -1176,7 +1205,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Bent Over Barbell Row",
     "contraindications_reviewed": false
@@ -1238,6 +1267,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The bench removes the spinal load entirely. This is the row that survives a back restriction.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1252,7 +1282,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Dumbbell Incline Row",
     "contraindications_reviewed": false
@@ -1321,6 +1351,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the pull-up, with the supinated grip adding elbow load.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1399,6 +1432,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Bodyweight, spine neutral and supported by the feet. Among the safest pulls in the library.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1476,6 +1510,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The bench takes most of the spinal load, so the disc restriction is dropped; still a hinged position.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1490,9 +1525,87 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "One-Arm Dumbbell Row",
+    "contraindications_reviewed": false
+  },
+  {
+    "id": "one_arm_kettlebell_row",
+    "name": "One-Arm Kettlebell Row",
+    "category": "strength",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "skill_floor": "beginner",
+    "primary_muscles": [
+      "lats"
+    ],
+    "secondary_muscles": [
+      "middle back",
+      "biceps",
+      "rear deltoids"
+    ],
+    "bucket": "back",
+    "movement_pattern": "pull_h",
+    "mechanic": "compound",
+    "family": "db_row",
+    "role": "main",
+    "canonical": false,
+    "load_class": "chest_supported_row",
+    "impact": "none",
+    "unilateral": true,
+    "rep_style": "reps",
+    "instructions": [
+      "Place one hand and the same-side knee on a bench or sturdy chair, the other foot on the floor.",
+      "Hold the kettlebell in the free hand with the arm hanging straight below the shoulder.",
+      "Keep the back flat and the shoulders square to the floor.",
+      "Pull the bell toward the hip, elbow close to the body, breathing out as you pull.",
+      "Lower it until the arm is straight again, without letting the shoulder drop."
+    ],
+    "coaching_cue": "Row to the hip, not the chest — the elbow travels back, not up.",
+    "progression": {},
+    "sets_reps": {
+      "beginner": {
+        "sets": 3,
+        "reps": "8-12",
+        "rest_seconds": 90
+      },
+      "intermediate": {
+        "sets": 4,
+        "reps": "6-10",
+        "rest_seconds": 120
+      },
+      "advanced": {
+        "sets": 5,
+        "reps": "4-8",
+        "rest_seconds": 180
+      }
+    },
+    "contraindications": [
+      "lower_back_pain"
+    ],
+    "contraindications_derived": [],
+    "clinical_basis": "authored",
+    "clinical_rationale": "As the one-arm dumbbell row: the bench takes most of the spinal load; still a hinged position.",
+    "pregnancy_safe": false,
+    "risk_tags": [],
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true,
+      "flexibility": false
+    },
+    "calories_per_minute": 6,
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
+    "prose": "authored",
+    "anatomy_source": "authored",
     "contraindications_reviewed": false
   },
   {
@@ -1558,6 +1671,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Full overhead hang loads the shoulder at end range; hanging is also avoided as the abdomen loads.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1635,6 +1751,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Seated and supported; the low back still works to hold the torso upright.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1649,7 +1766,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Seated Cable Rows",
     "contraindications_reviewed": false
@@ -1712,6 +1829,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Same hinged position as a barbell row.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -1726,7 +1844,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "prior authoring (T-Bar Row With Handle)",
     "contraindications_reviewed": false
@@ -1793,6 +1911,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead start position. Seated and supported, so no prenatal restriction.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1807,7 +1926,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Wide-Grip Lat Pulldown",
     "contraindications_reviewed": false
@@ -1868,6 +1987,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Tension is lowest at full extension, where the elbow is most exposed.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1945,6 +2065,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Fixed supinated grip gives the elbow and wrist no room to adjust.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -1959,7 +2080,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Barbell Curl",
     "contraindications_reviewed": false
@@ -2020,6 +2141,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Constant tension holds the elbow under load through the whole range.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2034,7 +2156,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Standing Biceps Cable Curl",
     "contraindications_reviewed": false
@@ -2093,6 +2215,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Neutral grip with constant tension; the kindest loaded curl.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2107,7 +2230,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Cable Hammer Curls - Rope Attachment",
     "contraindications_reviewed": false
@@ -2170,6 +2293,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Braced arm removes the escape route the standing versions allow.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2184,7 +2308,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Concentration Curls",
     "contraindications_reviewed": false
@@ -2245,6 +2369,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Free rotation lets the wrist and elbow find a comfortable path.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2259,7 +2384,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Dumbbell Bicep Curl",
     "contraindications_reviewed": false
@@ -2320,6 +2445,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The angled bar eases the wrist; the elbow load is unchanged.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2334,7 +2460,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "EZ-Bar Curl",
     "contraindications_reviewed": false
@@ -2393,6 +2519,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Neutral grip is the most forgiving curl for the elbow and wrist.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2407,7 +2534,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Hammer Curls",
     "contraindications_reviewed": false
@@ -2472,6 +2599,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the inverted row; the supinated grip loads the elbow.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2547,6 +2675,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loads the elbow at full extension, where the joint is least protected.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2561,7 +2690,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Preacher Curl",
     "contraindications_reviewed": false
@@ -2622,6 +2751,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The practitioner sets the resistance, so it cannot exceed what they tolerate.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2636,7 +2766,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Towel Biceps Curl. If form breaks down, shorten the range or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "prior authoring (Self-Resisted Biceps Curl)",
     "contraindications_reviewed": false
@@ -2699,6 +2829,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Pronated grip loads the lateral elbow — the tennis-elbow mechanism.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2713,7 +2844,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Standing Dumbbell Reverse Curl",
     "contraindications_reviewed": false
@@ -2774,6 +2905,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As above — self-limiting by construction.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -2819,7 +2951,7 @@
     "load_class": null,
     "impact": "none",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Sit on the bike, set the seat so the knee is almost straight at the bottom of the stroke.",
       "Take the handles and start turning the pedals easily for a minute to warm up.",
@@ -2831,19 +2963,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -2854,8 +2986,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Self-limiting and non-impact, but the effort ceiling is as high as anything here.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
-      "vata": "moderate",
+      "vata": "good",
       "pitta": "moderate",
       "kapha": "good"
     },
@@ -2868,7 +3001,7 @@
       "flexibility": false
     },
     "calories_per_minute": 14,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Scale the pace, not the rounds: if the easy interval is not enough to recover, make the hard one slower.",
     "prose": "authored",
     "anatomy_source": "prior authoring (Air Bike (Assault Bike))",
     "contraindications_reviewed": false
@@ -2899,7 +3032,7 @@
     "load_class": null,
     "impact": "none",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Take an end of the rope in each hand and stand facing the anchor, feet shoulder-width apart.",
       "Sit into a quarter squat with the chest up and the trunk braced.",
@@ -2911,19 +3044,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -2935,8 +3068,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Sustained shoulder work at a cardiovascular intensity.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
-      "vata": "moderate",
+      "vata": "good",
       "pitta": "good",
       "kapha": "good"
     },
@@ -2949,7 +3083,7 @@
       "flexibility": false
     },
     "calories_per_minute": 12,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Scale the pace, not the rounds: if the easy interval is not enough to recover, make the hard one slower.",
     "prose": "authored",
     "anatomy_source": "prior authoring (Battle Ropes)",
     "contraindications_reviewed": false
@@ -3012,6 +3146,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The most universally available conditioning there is. No restriction in the library excludes it.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -3026,7 +3161,7 @@
       "flexibility": false
     },
     "calories_per_minute": 5,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Build minutes before speed. If you cannot talk in short sentences, slow down.",
     "prose": "authored",
     "anatomy_source": "prior authoring (Brisk Walking)",
     "contraindications_reviewed": false
@@ -3057,7 +3192,7 @@
     "load_class": null,
     "impact": "high",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Stand tall, then squat down and place both hands on the floor in front of the feet.",
       "Jump or step the feet back into a plank with the body in one straight line.",
@@ -3069,19 +3204,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3100,6 +3235,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Maximal-effort whole-body work combining landing impact with a floor transition.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -3114,7 +3252,7 @@
       "flexibility": false
     },
     "calories_per_minute": 14,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Scale the pace, not the rounds: if the easy interval is not enough to recover, make the hard one slower.",
     "prose": "authored",
     "anatomy_source": "prior authoring (Burpee)",
     "contraindications_reviewed": false
@@ -3175,6 +3313,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supported, non-impact, and among the better prenatal options. **Flagged for review** — the merged duplicate said otherwise.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -3189,7 +3328,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Build minutes before speed. If you cannot talk in short sentences, slow down.",
     "prose": "authored",
     "anatomy_source": "Elliptical Trainer",
     "contraindications_reviewed": false
@@ -3215,7 +3354,7 @@
     "load_class": null,
     "impact": "high",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Choose four movements you can perform safely without close attention to form.",
       "Work at a hard but controlled effort on the first for the prescribed interval.",
@@ -3227,19 +3366,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3256,6 +3395,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Sustained high effort with form degrading as the circuit progresses.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -3270,7 +3410,7 @@
       "flexibility": false
     },
     "calories_per_minute": 13,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Scale the pace, not the rounds: if the easy interval is not enough to recover, make the hard one slower.",
     "prose": "authored",
     "anatomy_source": "prior authoring (HIIT Circuit)",
     "contraindications_reviewed": false
@@ -3300,7 +3440,7 @@
     "load_class": null,
     "impact": "high",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Stand tall with the feet hip-width apart and the arms bent at your sides.",
       "Drive one knee up toward hip height while pushing off the opposite foot.",
@@ -3312,19 +3452,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3341,6 +3481,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Running mechanics in place; landing force through knee and ankle.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -3355,7 +3496,7 @@
       "flexibility": false
     },
     "calories_per_minute": 11,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Scale the pace, not the rounds: if the easy interval is not enough to recover, make the hard one slower.",
     "prose": "authored",
     "anatomy_source": "prior authoring (High Knees)",
     "contraindications_reviewed": false
@@ -3416,6 +3557,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Walking mechanics with the incline raising the effort rather than the impact.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -3430,7 +3574,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Build minutes before speed. If you cannot talk in short sentences, slow down.",
     "prose": "authored",
     "anatomy_source": "authored",
     "contraindications_reviewed": false
@@ -3458,7 +3602,7 @@
     "load_class": null,
     "impact": "high",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Hold a handle in each hand with the rope resting on the floor behind your heels.",
       "Set the elbows close to the ribs and turn the rope with the wrists, not the whole arm.",
@@ -3470,19 +3614,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3501,6 +3645,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Repetitive landing impact at high frequency.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -3515,7 +3660,7 @@
       "flexibility": false
     },
     "calories_per_minute": 12,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Scale the pace, not the rounds: if the easy interval is not enough to recover, make the hard one slower.",
     "prose": "authored",
     "anatomy_source": "Rope Jumping",
     "contraindications_reviewed": false
@@ -3545,7 +3690,7 @@
     "load_class": null,
     "impact": "high",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Stand tall with the feet together and the arms at your sides.",
       "Jump the feet out wider than the hips while sweeping the arms overhead.",
@@ -3557,19 +3702,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3586,6 +3731,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Repeated bilateral landing with the arms overhead.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -3600,7 +3746,7 @@
       "flexibility": false
     },
     "calories_per_minute": 10,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Scale the pace, not the rounds: if the easy interval is not enough to recover, make the hard one slower.",
     "prose": "authored",
     "anatomy_source": "prior authoring (Jumping Jacks)",
     "contraindications_reviewed": false
@@ -3629,7 +3775,7 @@
     "load_class": null,
     "impact": "low",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Start in a push-up position with the hands under the shoulders and the body in a straight line.",
       "Brace the trunk and draw one knee toward the chest without letting the hips rise.",
@@ -3641,19 +3787,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3665,8 +3811,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Plank position held under a cardiovascular load; shoulders support throughout.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
-      "vata": "moderate",
+      "vata": "good",
       "pitta": "good",
       "kapha": "good"
     },
@@ -3679,7 +3828,7 @@
       "flexibility": false
     },
     "calories_per_minute": 11,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Scale the pace, not the rounds: if the easy interval is not enough to recover, make the hard one slower.",
     "prose": "authored",
     "anatomy_source": "Mountain Climbers",
     "contraindications_reviewed": false
@@ -3747,6 +3896,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Repeated loaded hinge at high cadence, where form fails as fatigue arrives.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -3761,7 +3911,7 @@
       "flexibility": false
     },
     "calories_per_minute": 10,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Build minutes before speed. If you cannot talk in short sentences, slow down.",
     "prose": "authored",
     "anatomy_source": "Rowing, Stationary",
     "contraindications_reviewed": false
@@ -3792,7 +3942,7 @@
     "load_class": null,
     "impact": "high",
     "unilateral": false,
-    "rep_style": "time",
+    "rep_style": "interval",
     "instructions": [
       "Warm up with three to five minutes of easy jogging or cycling.",
       "Accelerate to near-maximal effort and hold it for twenty to thirty seconds.",
@@ -3804,19 +3954,19 @@
     "progression": {},
     "sets_reps": {
       "beginner": {
-        "sets": 1,
-        "reps": "8-10 min",
-        "rest_seconds": 60
+        "sets": 6,
+        "reps": "20 sec",
+        "rest_seconds": 40
       },
       "intermediate": {
-        "sets": 1,
-        "reps": "12-15 min",
-        "rest_seconds": 60
+        "sets": 8,
+        "reps": "30 sec",
+        "rest_seconds": 30
       },
       "advanced": {
-        "sets": 1,
-        "reps": "15-20 min",
-        "rest_seconds": 60
+        "sets": 10,
+        "reps": "30 sec",
+        "rest_seconds": 30
       }
     },
     "contraindications": [
@@ -3834,6 +3984,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Near-maximal cardiovascular effort with running impact.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -3848,7 +3999,7 @@
       "flexibility": false
     },
     "calories_per_minute": 15,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Scale the pace, not the rounds: if the easy interval is not enough to recover, make the hard one slower.",
     "prose": "authored",
     "anatomy_source": "prior authoring (Sprint Intervals (HIIT))",
     "contraindications_reviewed": false
@@ -3912,6 +4063,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Repeated single-leg knee extension under bodyweight.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "fall_risk",
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -3926,7 +4081,7 @@
       "flexibility": false
     },
     "calories_per_minute": 9,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Build minutes before speed. If you cannot talk in short sentences, slow down.",
     "prose": "authored",
     "anatomy_source": "Stairmaster",
     "contraindications_reviewed": false
@@ -3989,6 +4144,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Non-impact and fully supported; resistance is chosen.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -4003,7 +4159,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Build minutes before speed. If you cannot talk in short sentences, slow down.",
     "prose": "authored",
     "anatomy_source": "Bicycling, Stationary",
     "contraindications_reviewed": false
@@ -4063,6 +4219,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Non-weight-bearing. Survives essentially every musculoskeletal restriction.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -4077,7 +4236,7 @@
       "flexibility": false
     },
     "calories_per_minute": 10,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Build minutes before speed. If you cannot talk in short sentences, slow down.",
     "prose": "authored",
     "anatomy_source": "authored",
     "contraindications_reviewed": false
@@ -4137,6 +4296,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine, so not prenatal — but the floor caps the range, which is why it carries no shoulder restriction: it is the press a restricted shoulder keeps.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4151,7 +4313,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Floor Press",
     "contraindications_reviewed": false
@@ -4216,6 +4378,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Standing, so no supine restriction, but the same end-range shoulder position as a fly.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4230,7 +4393,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Cable Crossover",
     "contraindications_reviewed": false
@@ -4300,6 +4463,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Deep shoulder extension under bodyweight — the position most associated with anterior shoulder strain.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4383,6 +4549,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Head-below-heart position with the shoulder near end range.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4463,6 +4633,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Same shoulder position as a dip, with the load chosen rather than fixed.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4477,7 +4648,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Dip Machine",
     "contraindications_reviewed": false
@@ -4537,6 +4708,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As above. Deliberately untagged for the shoulder so that someone with a shoulder problem is left with a pressing option.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4551,7 +4723,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Dumbbell Floor Press",
     "contraindications_reviewed": false
@@ -4614,6 +4786,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine, and takes the shoulder to end-range horizontal abduction under load.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4628,7 +4803,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Dumbbell Flyes",
     "contraindications_reviewed": false
@@ -4694,6 +4869,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Inclined rather than flat, but still a reclined position under a loaded bar.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -4708,7 +4886,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Barbell Incline Bench Press - Medium Grip",
     "contraindications_reviewed": false
@@ -4774,6 +4952,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Reclined, and the incline shifts load onto the front of the shoulder.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4788,9 +4969,84 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Incline Dumbbell Press",
+    "contraindications_reviewed": false
+  },
+  {
+    "id": "kettlebell_floor_press",
+    "name": "Kettlebell Floor Press",
+    "category": "strength",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "skill_floor": "beginner",
+    "primary_muscles": [
+      "chest"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "bucket": "chest",
+    "movement_pattern": "push_h",
+    "mechanic": "compound",
+    "family": "floor_press",
+    "role": "accessory",
+    "canonical": false,
+    "load_class": "floor_press",
+    "impact": "none",
+    "unilateral": true,
+    "rep_style": "reps",
+    "instructions": [
+      "Lie on your back with the knees bent and a kettlebell held in one hand, upper arm on the floor.",
+      "Hold the handle diagonally across the palm with the bell resting on the back of the forearm.",
+      "Press the bell straight up over the shoulder, keeping the wrist straight and breathing out.",
+      "Lower until the upper arm touches the floor, pause, then press again.",
+      "Finish the set before changing sides."
+    ],
+    "coaching_cue": "The floor stops the elbow — the range a sore shoulder can keep.",
+    "progression": {},
+    "sets_reps": {
+      "beginner": {
+        "sets": 2,
+        "reps": "12-15",
+        "rest_seconds": 60
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "10-12",
+        "rest_seconds": 75
+      },
+      "advanced": {
+        "sets": 3,
+        "reps": "8-12",
+        "rest_seconds": 75
+      }
+    },
+    "contraindications": [],
+    "contraindications_derived": [],
+    "clinical_basis": "authored",
+    "clinical_rationale": "As the dumbbell floor press: supine, so not prenatal, and the floor caps the range — the press a restricted shoulder keeps.",
+    "pregnancy_safe": false,
+    "risk_tags": [],
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true,
+      "flexibility": false
+    },
+    "calories_per_minute": 6,
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
+    "prose": "authored",
+    "anatomy_source": "authored",
     "contraindications_reviewed": false
   },
   {
@@ -4851,6 +5107,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Seated and fixed-path at end-range shoulder abduction.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -4865,7 +5122,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Butterfly",
     "contraindications_reviewed": false
@@ -4929,6 +5186,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Upright and light. The mildest press in the library and the one a pregnant practitioner can keep.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5011,6 +5269,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine, and the heaviest horizontal press available. Lying flat is avoided after the first trimester.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -5025,7 +5286,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Barbell Bench Press with a pause on the chest. If form breaks down, shorten the range or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "Barbell Bench Press - Medium Grip",
     "contraindications_reviewed": false
@@ -5091,6 +5352,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine. Dumbbells allow a deeper stretch at the bottom than a bar.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5105,7 +5369,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Dumbbell Bench Press",
     "contraindications_reviewed": false
@@ -5172,6 +5436,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The most prenatal-friendly press: upright, self-limiting, no supine position.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5253,6 +5520,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the push-up, with less load through the wrist and shoulder.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5333,6 +5603,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine and fixed-path; the path is what a restricted shoulder cannot adjust.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5347,7 +5618,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Machine Bench Press",
     "contraindications_reviewed": false
@@ -5414,6 +5685,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded wrist extension. Trunk stays off the floor, so it is workable in pregnancy for as long as the belly allows.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5495,6 +5769,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The longest anti-extension lever there is, with the shoulders holding the position.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5509,7 +5787,7 @@
       "flexibility": false
     },
     "calories_per_minute": 6,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range if form breaks down.",
     "prose": "authored",
     "anatomy_source": "Barbell Ab Rollout - On Knees",
     "contraindications_reviewed": false
@@ -5573,6 +5851,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Quadruped, low load, spine neutral. Safe for essentially everyone, including prenatally.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5650,6 +5929,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Weighted spinal flexion — the highest-load flexion movement in the library.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5664,7 +5947,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Cable Crunch",
     "contraindications_reviewed": false
@@ -5729,6 +6012,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Repeated loaded spinal flexion. Abdominal separation makes this unsuitable prenatally.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "neck_load",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5743,7 +6031,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Cable Crunch. If form breaks down, shorten the range or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "Crunches",
     "contraindications_reviewed": false
@@ -5806,6 +6094,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine. One of the better trunk drills for a sensitive back, since the range is set by the back staying flat.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5883,6 +6172,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded lateral flexion of the lumbar spine.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5897,7 +6189,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Dumbbell Side Bend",
     "contraindications_reviewed": false
@@ -5960,6 +6252,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the crunch, through a longer range.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -5974,7 +6270,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range if form breaks down.",
     "prose": "authored",
     "anatomy_source": "Exercise Ball Crunch",
     "contraindications_reviewed": false
@@ -6037,6 +6333,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Plank on an unstable base; the shoulders support throughout.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6051,7 +6351,7 @@
       "flexibility": false
     },
     "calories_per_minute": 6,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range if form breaks down.",
     "prose": "authored",
     "anatomy_source": "Exercise Ball Pull-In",
     "contraindications_reviewed": false
@@ -6115,6 +6415,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Load hangs from the shoulder girdle through the neck; the spine itself stays neutral and braced.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "neck_load"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6129,7 +6432,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "authored",
     "contraindications_reviewed": false
@@ -6196,6 +6499,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine bridge held while the trunk resists tilt.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6276,6 +6580,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Hanging loads the shoulder throughout; the pelvis must tilt before the legs move.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "seizure_risk",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6357,6 +6666,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine with a long lever; the low back lifts the moment the trunk gives.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6372,6 +6685,84 @@
     },
     "calories_per_minute": 4,
     "modification": "Too hard? Use Dead Bug. Too easy? Move to Hollow Body Hold with the arms overhead.",
+    "prose": "authored",
+    "anatomy_source": "authored",
+    "contraindications_reviewed": false
+  },
+  {
+    "id": "kettlebell_suitcase_carry",
+    "name": "Kettlebell Suitcase Carry",
+    "category": "strength",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "skill_floor": "beginner",
+    "primary_muscles": [
+      "core"
+    ],
+    "secondary_muscles": [
+      "forearms",
+      "glutes",
+      "traps"
+    ],
+    "bucket": "core",
+    "movement_pattern": "carry",
+    "mechanic": "compound",
+    "family": "carry",
+    "role": "accessory",
+    "canonical": false,
+    "load_class": "suitcase_carry",
+    "impact": "none",
+    "unilateral": true,
+    "rep_style": "distance",
+    "instructions": [
+      "Stand the kettlebell on the floor beside one foot.",
+      "Hinge at the hips to pick it up in one hand, keeping the chest up.",
+      "Stand tall with the shoulders level and resist being pulled to one side.",
+      "Walk in a straight line for the prescribed distance, then swap hands."
+    ],
+    "coaching_cue": "Staying square against a load on one side is the whole exercise.",
+    "progression": {},
+    "sets_reps": {
+      "beginner": {
+        "sets": 3,
+        "reps": "20 m",
+        "rest_seconds": 90
+      },
+      "intermediate": {
+        "sets": 3,
+        "reps": "30 m",
+        "rest_seconds": 90
+      },
+      "advanced": {
+        "sets": 4,
+        "reps": "40 m",
+        "rest_seconds": 90
+      }
+    },
+    "contraindications": [
+      "cervical_spondylosis",
+      "lower_back_pain"
+    ],
+    "contraindications_derived": [],
+    "clinical_basis": "authored",
+    "clinical_rationale": "One-sided load the trunk resists laterally.",
+    "pregnancy_safe": true,
+    "risk_tags": [],
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "moderate"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true,
+      "flexibility": false
+    },
+    "calories_per_minute": 8,
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "authored",
     "contraindications_reviewed": false
@@ -6437,6 +6828,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supported on the forearms, so less shoulder load than hanging.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "seizure_risk",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6517,6 +6913,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine with a long lever; the low back arches as soon as the abdominals are outmatched.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6592,6 +6992,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Anti-rotation: the trunk resists movement rather than producing it. Safe prenatally and with most back restrictions.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6606,7 +7007,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Pallof Press",
     "contraindications_reviewed": false
@@ -6671,6 +7072,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The trunk resists extension against gravity — a demand that rises sharply as the abdomen loads.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6753,6 +7155,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded rotation of a flexed spine — the position discs tolerate least.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6831,6 +7237,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The supporting shoulder carries the bodyweight.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6909,6 +7316,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Rotation under load, though driven from the hips rather than the lumbar spine.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -6923,7 +7333,7 @@
       "flexibility": false
     },
     "calories_per_minute": 6,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Standing Cable Wood Chop",
     "contraindications_reviewed": false
@@ -6986,6 +7396,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "One-sided load the trunk resists laterally.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7000,7 +7411,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "authored",
     "contraindications_reviewed": false
@@ -7065,6 +7476,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Deep knee flexion in the kneeling position; the spine is unloaded.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7140,6 +7552,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Unloaded spinal movement through a self-selected range. Suitable prenatally.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7214,6 +7627,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded forward fold into a plank; the wrists carry bodyweight at the far end.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "intracranial_pressure",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7284,6 +7701,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Unloaded joint preparation.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7363,6 +7781,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Hinge pattern with the load pulling backwards rather than down — the least spinal compression of any hinge.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7442,6 +7861,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Spine stays neutral and supported, so the disc restriction is dropped; the low back still resists extension at the top.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "spinal_extension"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7456,7 +7879,7 @@
       "flexibility": false
     },
     "calories_per_minute": 9,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Barbell Hip Thrust",
     "contraindications_reviewed": false
@@ -7524,6 +7947,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded single-leg work with a bar on the back — balance fails before the muscles do.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "fall_risk",
+      "neck_load",
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7538,7 +7966,7 @@
       "flexibility": false
     },
     "calories_per_minute": 9,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Barbell Lunge",
     "contraindications_reviewed": false
@@ -7607,6 +8035,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As above with an axial load and a balance demand on top.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "fall_risk",
+      "neck_load",
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7621,7 +8054,7 @@
       "flexibility": false
     },
     "calories_per_minute": 9,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Barbell Step Ups",
     "contraindications_reviewed": false
@@ -7680,6 +8113,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Lightest ankle loading available.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7694,7 +8128,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Standing Calf Raise on a step for full range. If form breaks down, shorten the range or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "Calf Raises - With Bands",
     "contraindications_reviewed": false
@@ -7761,6 +8195,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded single-leg knee extension; box height decides how much.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "fall_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7775,7 +8212,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Dumbbell Step Ups",
     "contraindications_reviewed": false
@@ -7847,6 +8284,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the back squat, plus a rack position the shoulder and wrist must hold.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -7861,7 +8302,7 @@
       "flexibility": false
     },
     "calories_per_minute": 9,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Front Barbell Squat",
     "contraindications_reviewed": false
@@ -7922,6 +8363,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine, which rules it out after the first trimester. Otherwise among the gentlest hip movements.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -7936,7 +8378,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Single Leg Glute Bridge. If form breaks down, shorten the range or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "Butt Lift (Bridge)",
     "contraindications_reviewed": false
@@ -7999,6 +8441,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Quadruped position; the low back arches if the range is chased.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8013,7 +8456,7 @@
       "flexibility": false
     },
     "calories_per_minute": 5,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Band Pull-Through. If form breaks down, shorten the range or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "Glute Kickback",
     "contraindications_reviewed": false
@@ -8084,6 +8527,12 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Bar on the back through a hinge — the longest lever against the spine of anything here.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "neck_load",
+      "seizure_risk",
+      "spinal_flexion"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8098,7 +8547,7 @@
       "flexibility": false
     },
     "calories_per_minute": 9,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Good Morning",
     "contraindications_reviewed": false
@@ -8169,6 +8618,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Ballistic hinge; the spine decelerates the bell at the bottom of every rep.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -8183,7 +8633,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "prior authoring (Kettlebell Swing (Cardio))",
     "contraindications_reviewed": false
@@ -8243,6 +8693,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Open-chain knee extension puts shear through the joint that closed-chain work does not.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8257,7 +8708,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Leg Extensions",
     "contraindications_reviewed": false
@@ -8316,6 +8767,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Prone position rules it out prenatally; hamstring loading at the knee otherwise.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8330,7 +8782,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Lying Leg Curls",
     "contraindications_reviewed": false
@@ -8389,6 +8841,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Bent knee moves the work to the soleus; ankle range is the same.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8403,7 +8856,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Seated Calf Raise",
     "contraindications_reviewed": false
@@ -8462,6 +8915,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Seated and supported, so it keeps the hamstring work without the prone position.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8476,7 +8930,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Seated Leg Curl",
     "contraindications_reviewed": false
@@ -8540,6 +8994,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine, and the single-leg version asks the low back to resist rotation.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8620,6 +9075,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Both feet planted, so the balance demand is low and the knee path is stable.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8634,7 +9090,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Dumbbell Rear Lunge",
     "contraindications_reviewed": false
@@ -8696,6 +9152,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Full ankle range under bodyweight.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8775,6 +9232,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Sustained isometric knee flexion; the position is fixed and the load is bodyweight.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8853,6 +9311,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Lightest hinge in the library; tension is lowest at the bottom where the spine is most flexed.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -8933,6 +9392,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Band tension is highest standing and lowest at depth, which is the opposite of where the knee is loaded.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9023,6 +9483,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The heaviest axial pull available, with a brace held against a maximal effort.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -9037,7 +9500,7 @@
       "flexibility": false
     },
     "calories_per_minute": 9,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Barbell Deadlift",
     "contraindications_reviewed": false
@@ -9107,6 +9570,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Sustained loaded hinge; the hamstrings run out before the spine does, which is where it goes wrong.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -9121,7 +9587,7 @@
       "flexibility": false
     },
     "calories_per_minute": 9,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Romanian Deadlift",
     "contraindications_reviewed": false
@@ -9196,6 +9662,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Axial load through the spine with a hard brace; the knee is at end-range flexion under that load.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "neck_load",
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -9277,6 +9748,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "No external load; depth is self-selected.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9354,6 +9826,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The chair sets the depth, so the knee never passes into an unmanaged range.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9368,7 +9841,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Bodyweight Squat. If form breaks down, shorten the range or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "authored",
     "contraindications_reviewed": false
@@ -9435,6 +9908,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Deep single-leg flexion with the rear foot elevated; a demanding position for the front knee.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "fall_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9516,6 +9992,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Single-leg knee flexion under load; the dumbbells can be dropped, which the bar cannot.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "fall_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9530,7 +10009,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Dumbbell Lunges",
     "contraindications_reviewed": false
@@ -9597,6 +10076,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Same hinge, lighter load, dumbbells tracking closer to the body.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9611,7 +10091,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Romanian Deadlift",
     "contraindications_reviewed": false
@@ -9677,6 +10157,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The chest-held weight keeps the torso upright and the load light. The squat that survives most restrictions.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9691,7 +10172,7 @@
       "flexibility": false
     },
     "calories_per_minute": 8,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Goblet Squat",
     "contraindications_reviewed": false
@@ -9757,6 +10238,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Fixed path holds the knee in one line whether or not that is the practitioner's line.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9771,9 +10255,177 @@
       "flexibility": false
     },
     "calories_per_minute": 9,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Hack Squat",
+    "contraindications_reviewed": false
+  },
+  {
+    "id": "kettlebell_deadlift",
+    "name": "Kettlebell Deadlift",
+    "category": "strength",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "skill_floor": "beginner",
+    "primary_muscles": [
+      "hamstrings"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "lower back",
+      "forearms"
+    ],
+    "bucket": "legs",
+    "movement_pattern": "hinge",
+    "mechanic": "compound",
+    "family": "kettlebell_deadlift",
+    "role": "main",
+    "canonical": false,
+    "load_class": "romanian_deadlift",
+    "impact": "none",
+    "unilateral": false,
+    "rep_style": "reps",
+    "instructions": [
+      "Stand with the kettlebell on the floor between the feet, in line with the ankles.",
+      "Push the hips back, bend the knees a little and take the handle in both hands.",
+      "Set the back flat and pull the shoulders down away from the ears.",
+      "Stand up by driving the hips forward, keeping the bell close to the legs.",
+      "Lower it the same way — hips back first — until it touches the floor lightly."
+    ],
+    "coaching_cue": "Hips back, not knees forward. This is the hinge the swing is built on.",
+    "progression": {
+      "easier": "Banded Romanian Deadlift",
+      "harder": "Kettlebell Swing"
+    },
+    "sets_reps": {
+      "beginner": {
+        "sets": 3,
+        "reps": "8-12",
+        "rest_seconds": 90
+      },
+      "intermediate": {
+        "sets": 4,
+        "reps": "6-10",
+        "rest_seconds": 120
+      },
+      "advanced": {
+        "sets": 5,
+        "reps": "4-8",
+        "rest_seconds": 180
+      }
+    },
+    "contraindications": [
+      "herniated_disc",
+      "lower_back_pain"
+    ],
+    "contraindications_derived": [
+      "herniated_disc",
+      "lower_back_pain"
+    ],
+    "clinical_basis": "authored",
+    "clinical_rationale": "The dumbbell Romanian deadlift's hinge, from the floor, with the bell between the feet keeping the load close to the body.",
+    "pregnancy_safe": false,
+    "risk_tags": [],
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true,
+      "flexibility": false
+    },
+    "calories_per_minute": 8,
+    "modification": "Too hard? Use Banded Romanian Deadlift. Too easy? Move to Kettlebell Swing.",
+    "prose": "authored",
+    "anatomy_source": "authored",
+    "contraindications_reviewed": false
+  },
+  {
+    "id": "kettlebell_goblet_squat",
+    "name": "Kettlebell Goblet Squat",
+    "category": "strength",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "skill_floor": "beginner",
+    "primary_muscles": [
+      "quadriceps"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "adductors",
+      "core"
+    ],
+    "bucket": "legs",
+    "movement_pattern": "squat",
+    "mechanic": "compound",
+    "family": "squat",
+    "role": "main",
+    "canonical": false,
+    "load_class": "front_squat",
+    "impact": "none",
+    "unilateral": false,
+    "rep_style": "reps",
+    "instructions": [
+      "Hold the kettlebell by the horns at chest height, elbows pointing down.",
+      "Stand with the feet a little wider than the hips and the toes turned slightly out.",
+      "Sit down between the hips, keeping the chest up and the bell close to the body.",
+      "Go as deep as you can while the heels stay down and the back stays long.",
+      "Drive through the whole foot to stand, breathing out as you rise."
+    ],
+    "coaching_cue": "The bell at the chest is a counterweight — let it keep you upright.",
+    "progression": {
+      "easier": "Box Squat to a Chair",
+      "harder": "Kettlebell Goblet Squat with a pause at the bottom"
+    },
+    "sets_reps": {
+      "beginner": {
+        "sets": 3,
+        "reps": "8-12",
+        "rest_seconds": 90
+      },
+      "intermediate": {
+        "sets": 4,
+        "reps": "6-10",
+        "rest_seconds": 120
+      },
+      "advanced": {
+        "sets": 5,
+        "reps": "4-8",
+        "rest_seconds": 180
+      }
+    },
+    "contraindications": [
+      "bad_knee"
+    ],
+    "contraindications_derived": [
+      "bad_knee"
+    ],
+    "clinical_basis": "authored",
+    "clinical_rationale": "As the goblet squat: the chest-held bell keeps the torso upright and the load light.",
+    "pregnancy_safe": true,
+    "risk_tags": [],
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true,
+      "flexibility": false
+    },
+    "calories_per_minute": 8,
+    "modification": "Too hard? Use Box Squat to a Chair. Too easy? Move to Kettlebell Goblet Squat with a pause at the bottom.",
+    "prose": "authored",
+    "anatomy_source": "authored",
     "contraindications_reviewed": false
   },
   {
@@ -9837,6 +10489,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Deep knee flexion under heavy load; the low back rounds off the pad at depth.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -9851,7 +10506,7 @@
       "flexibility": false
     },
     "calories_per_minute": 9,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Leg Press",
     "contraindications_reviewed": false
@@ -9918,6 +10573,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Stepping back rather than forward keeps the front shin vertical and is markedly kinder to the knee.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "fall_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10008,6 +10666,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the conventional pull, with the wide stance loading the hip in abduction.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -10022,7 +10683,7 @@
       "flexibility": false
     },
     "calories_per_minute": 9,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Sumo Deadlift",
     "contraindications_reviewed": false
@@ -10081,6 +10742,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Passive stretch against a wall, range self-selected.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10154,6 +10816,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "End-range hip abduction; the load is the weight of the legs.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10227,6 +10890,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "End-range knee flexion, performed lying face down.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10302,6 +10966,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Passive hip external rotation with a forward hinge.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10375,6 +11040,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Unloaded joint preparation through the hip's own range.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10454,6 +11120,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Adds internal-to-external rotation under load, through the arc the cuff is most exposed in.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10468,7 +11135,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Arnold Dumbbell Press",
     "contraindications_reviewed": false
@@ -10528,6 +11195,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Lightest abduction available; band tension is least where the arc is most sensitive.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10599,6 +11267,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Posterior shoulder work, which is generally protective. Hinged position rules it out prenatally.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10613,7 +11282,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Bent Over Dumbbell Rear Delt Raise With Head On Bench",
     "contraindications_reviewed": false
@@ -10678,6 +11347,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the dumbbell version, with tension held at the bottom.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10692,7 +11362,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Cable Seated Lateral Raise",
     "contraindications_reviewed": false
@@ -10749,6 +11419,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Standing and upright, so it keeps the posterior work without the hinge.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10763,7 +11434,7 @@
       "flexibility": false
     },
     "calories_per_minute": 5,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Cable Rear Delt Fly",
     "contraindications_reviewed": false
@@ -10822,6 +11493,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "External rotation with abduction — the movement most often prescribed FOR a shoulder, not against it.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10836,7 +11508,7 @@
       "flexibility": false
     },
     "calories_per_minute": 5,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Face Pull",
     "contraindications_reviewed": false
@@ -10898,6 +11570,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Flexion to shoulder height with a long lever.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -10912,7 +11585,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Front Dumbbell Raise",
     "contraindications_reviewed": false
@@ -10982,6 +11655,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Near-vertical loading with the head well below the heart.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11060,6 +11737,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded wrist extension in a plank; the plank position is unavailable as the abdomen loads.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11134,6 +11814,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Light posterior shoulder work, performed face down.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11148,7 +11829,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Prone Y-Raise. If form breaks down, shorten the range or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "authored",
     "contraindications_reviewed": false
@@ -11210,6 +11891,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the T-raise, with more shoulder flexion.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11281,6 +11963,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the rear delt raise.",
     "pregnancy_safe": false,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11295,7 +11978,7 @@
       "flexibility": false
     },
     "calories_per_minute": 5,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Reverse Flyes",
     "contraindications_reviewed": false
@@ -11357,6 +12040,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Abduction to shoulder height. Light, but directly through the painful arc.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11371,7 +12055,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Side Lateral Raise",
     "contraindications_reviewed": false
@@ -11436,6 +12120,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Internal rotation with the arm abducted — the classic impingement position.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11450,7 +12135,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "authored",
     "contraindications_reviewed": false
@@ -11520,6 +12205,13 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Full inversion under bodyweight; blood pressure and wrist load are both at their limit.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "neck_load",
+      "seizure_risk",
+      "spinal_extension",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "good",
@@ -11600,6 +12292,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead, but band tension is lowest at the bottom and the load is small.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11681,6 +12374,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead pressing with a bar; the bracing required raises intrathoracic pressure.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -11695,7 +12391,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Barbell Shoulder Press",
     "contraindications_reviewed": false
@@ -11760,6 +12456,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead, but seated and independently loaded so the arms find their own path.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11774,7 +12471,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Dumbbell Shoulder Press",
     "contraindications_reviewed": false
@@ -11842,6 +12539,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Less overhead load and less inversion than the floor version.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "intracranial_pressure",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11856,7 +12557,90 @@
       "flexibility": false
     },
     "calories_per_minute": 6,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Pike Push-Up. If form breaks down, shorten the range or slow the tempo.",
+    "prose": "authored",
+    "anatomy_source": "authored",
+    "contraindications_reviewed": false
+  },
+  {
+    "id": "kettlebell_overhead_press",
+    "name": "Kettlebell Overhead Press",
+    "category": "strength",
+    "equipment": "kettlebell",
+    "level": "beginner",
+    "skill_floor": "beginner",
+    "primary_muscles": [
+      "shoulders"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "core"
+    ],
+    "bucket": "shoulders",
+    "movement_pattern": "push_v",
+    "mechanic": "compound",
+    "family": "overhead_press",
+    "role": "main",
+    "canonical": false,
+    "load_class": "overhead_press",
+    "impact": "none",
+    "unilateral": true,
+    "rep_style": "reps",
+    "instructions": [
+      "Hold the kettlebell in the rack position: handle in the palm, bell resting on the outside of the forearm, elbow tucked in.",
+      "Stand tall with the glutes squeezed and the ribs pulled down.",
+      "Press the bell straight up, turning the palm forward as the arm straightens.",
+      "Finish with the bicep beside the ear and the wrist straight, breathing out on the press.",
+      "Lower under control back to the rack, then change sides after the set."
+    ],
+    "coaching_cue": "Ribs down — if the low back arches, the bell is too heavy.",
+    "progression": {
+      "easier": "Band Overhead Press"
+    },
+    "sets_reps": {
+      "beginner": {
+        "sets": 3,
+        "reps": "8-12",
+        "rest_seconds": 90
+      },
+      "intermediate": {
+        "sets": 4,
+        "reps": "6-10",
+        "rest_seconds": 120
+      },
+      "advanced": {
+        "sets": 5,
+        "reps": "4-8",
+        "rest_seconds": 180
+      }
+    },
+    "contraindications": [
+      "rotator_cuff",
+      "shoulder_injury"
+    ],
+    "contraindications_derived": [
+      "rotator_cuff",
+      "shoulder_injury"
+    ],
+    "clinical_basis": "authored",
+    "clinical_rationale": "Overhead and standing, one arm at a time, so the trunk also resists a sideways pull. The rack position asks for a little more shoulder mobility than a dumbbell.",
+    "pregnancy_safe": true,
+    "risk_tags": [],
+    "dosha_suitability": {
+      "vata": "good",
+      "pitta": "good",
+      "kapha": "good"
+    },
+    "goal_suitability": {
+      "fat_loss": true,
+      "muscle_gain": true,
+      "endurance": true,
+      "strength": true,
+      "general_fitness": true,
+      "flexibility": false
+    },
+    "calories_per_minute": 6,
+    "modification": "Too hard? Use Band Overhead Press. Too easy? Add load or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "authored",
     "contraindications_reviewed": false
@@ -11920,6 +12704,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supported and fixed-path; suitable when balance rather than the shoulder is the limit.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -11934,7 +12719,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Machine Shoulder (Military) Press",
     "contraindications_reviewed": false
@@ -12005,6 +12790,10 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Bodyweight overhead press with the head below the heart.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "intracranial_pressure",
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12092,6 +12881,11 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Explosive overhead drive with an axial load and a hard brace.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "abdominal_pressure",
+      "seizure_risk",
+      "spinal_extension"
+    ],
     "dosha_suitability": {
       "vata": "moderate",
       "pitta": "moderate",
@@ -12106,7 +12900,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "authored",
     "contraindications_reviewed": false
@@ -12164,6 +12958,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Unloaded joint preparation.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12238,6 +13033,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Scapular retraction against light resistance. Safe for essentially everyone.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12309,6 +13105,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Rotator-cuff rehab loading. Deliberately untagged: withholding it from a shoulder problem removes the treatment.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12386,6 +13183,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Scapular rehab drill against a wall. The derived rule withheld it from shoulder problems, which is backwards.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12459,6 +13257,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Lightest elbow extension available.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12544,6 +13343,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Internally rotated shoulder behind the torso — a poor position under load.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12622,6 +13424,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Self-limiting, but the elbow is the only joint working.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12704,6 +13509,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Loaded wrist extension with the elbows tracking close.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12784,6 +13592,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "The narrowest hand position puts the wrist at its end range.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12860,6 +13671,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As above; two hands make it steadier, not lighter on the shoulder.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12874,7 +13688,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Standing Dumbbell Triceps Extension",
     "contraindications_reviewed": false
@@ -12937,6 +13751,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As above, with the angled bar easing the wrist only.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -12951,7 +13768,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "EZ-Bar Skullcrusher",
     "contraindications_reviewed": false
@@ -13012,6 +13829,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine, and loads the elbow at end-range flexion.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13026,7 +13846,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Lying Triceps Press",
     "contraindications_reviewed": false
@@ -13087,6 +13907,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "As the pushdown, one side at a time.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13101,7 +13922,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Cable One Arm Tricep Extension",
     "contraindications_reviewed": false
@@ -13163,6 +13984,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead position stretches the long head and loads the shoulder to hold it there.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13177,7 +13999,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Standing Dumbbell Triceps Extension",
     "contraindications_reviewed": false
@@ -13236,6 +14058,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Short lever, light load, elbow working in mid-range.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13250,7 +14073,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Tricep Dumbbell Kickback",
     "contraindications_reviewed": false
@@ -13312,6 +14135,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Overhead under constant cable tension.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13326,7 +14150,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Triceps Overhead Extension with Rope",
     "contraindications_reviewed": false
@@ -13387,6 +14211,7 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Standing and self-limiting, but the elbow is the working joint.",
     "pregnancy_safe": true,
+    "risk_tags": [],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13401,7 +14226,7 @@
       "flexibility": false
     },
     "calories_per_minute": 4,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Triceps Pushdown",
     "contraindications_reviewed": false
@@ -13468,6 +14293,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Supine press; the narrow grip concentrates load at the elbow.",
     "pregnancy_safe": false,
+    "risk_tags": [
+      "seizure_risk"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "moderate",
@@ -13482,7 +14310,7 @@
       "flexibility": false
     },
     "calories_per_minute": 7,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
     "prose": "authored",
     "anatomy_source": "Barbell Bench Press - Medium Grip",
     "contraindications_reviewed": false
@@ -13548,6 +14376,9 @@
     "clinical_basis": "authored",
     "clinical_rationale": "Elevated hands reduce both the load and the wrist angle.",
     "pregnancy_safe": true,
+    "risk_tags": [
+      "wrist_weight_bearing"
+    ],
     "dosha_suitability": {
       "vata": "good",
       "pitta": "good",
@@ -13562,7 +14393,7 @@
       "flexibility": false
     },
     "calories_per_minute": 6,
-    "modification": "Slow the tempo or pause a beat to make it harder; shorten the range or reduce the load if form breaks down.",
+    "modification": "Too easy? Move to Close-Grip Push-Up. If form breaks down, shorten the range or slow the tempo.",
     "prose": "authored",
     "anatomy_source": "Incline Push-Up Close-Grip",
     "contraindications_reviewed": false

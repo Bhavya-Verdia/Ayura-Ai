@@ -22,7 +22,7 @@ import confetti from 'canvas-confetti'
 import {
   Sunrise, Salad, Flower2, Dumbbell, Leaf, Soup, Pill,
   Flame, Snowflake, Sun, CloudRain, Moon, Mail, RefreshCw,
-  TriangleAlert, MessageCircle, TrendingUp, CircleCheck, Sparkles,
+  TriangleAlert, MessageCircle, TrendingUp, CircleCheck, Sparkles, SlidersHorizontal,
 } from 'lucide-react'
 import './Dashboard.css'
 
@@ -173,6 +173,11 @@ function RitucharyaCard() {
   const rec = data.recommendations || data
   const favour = (rec.diet_adjustments || []).slice(0, 3)
   const avoid = (rec.avoid || []).slice(0, 3)
+  // Seasonal advice named specific foods and knew nothing about the reader — a Sharad
+  // card recommended white rice and cow ghee to everyone, including diabetics and the
+  // dairy-allergic. It is screened now, and a line removed by that screen is said
+  // rather than silently missing.
+  const withheld = rec.withheld_for_you || []
   const SeasonIcon = SEASON_ICON[data.season] || Leaf
 
   return (
@@ -209,6 +214,13 @@ function RitucharyaCard() {
             </div>
           )}
         </div>
+      )}
+      {withheld.length > 0 && (
+        <p className="dash-ritu-withheld">
+          {withheld.length} seasonal {withheld.length === 1 ? 'suggestion' : 'suggestions'} for
+          this Ritu {withheld.length === 1 ? 'was' : 'were'} left out because
+          {withheld.length === 1 ? ' it names' : ' they name'} a food you should avoid.
+        </p>
       )}
     </m.div>
   )
@@ -698,7 +710,17 @@ const Dashboard = () => {
           onBack={() => { setViewingPlan(null); setViewingType(null) }}
         >
           <Suspense fallback={<div className="skeleton-plan-card" style={{ minHeight: 320 }} />}>
-            <PlanViewer plan={viewingPlan} planType={viewingType} />
+            <PlanViewer
+              plan={viewingPlan}
+              planType={viewingType}
+              // A check-in that adds an injury asks for the plan to be rebuilt
+              // around it; the new plan replaces this one on the dashboard.
+              onRegenerate={() => {
+                const type = viewingType
+                setViewingPlan(null); setViewingType(null)
+                generatePlan(type, true)
+              }}
+            />
           </Suspense>
         </SectionBoundary>
       </m.div>
@@ -922,6 +944,21 @@ const Dashboard = () => {
                   >
                     {generating[type.id] ? '…' : '↻'}
                   </button>
+                  {/* The form only ever opened when nothing was saved, so once a
+                      feature had preferences there was no way back to them: every
+                      field added since — gym injuries, working weights — was out of
+                      reach for anyone who had already answered once. */}
+                  {!REMEDY_PAGE_PATH[type.id] && (
+                    <button
+                      className="dash-plan-prefs-btn"
+                      onClick={() => setPrefModalConfig({ isOpen: true, typeId: type.id })}
+                      disabled={generating[type.id]}
+                      title="Edit preferences"
+                      aria-label={`Edit ${type.title} preferences`}
+                    >
+                      <SlidersHorizontal size={15} strokeWidth={2} />
+                    </button>
+                  )}
                   <button
                     className="dash-plan-react-btn"
                     onClick={() => setReactionFor(type.id)}

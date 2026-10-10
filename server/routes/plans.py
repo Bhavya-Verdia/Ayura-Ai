@@ -60,7 +60,9 @@ async def generate_yoga_plan(
     if not prefs_doc or not prefs_doc.get("yoga"):
         raise HTTPException(status_code=422, detail="Complete yoga preferences first")
 
-    yoga_prefs = prefs_doc.get("yoga")
+    # Injuries are asked on the gym form too; either answer reaches this plan.
+    from engine.movement_risk import with_declared_injuries
+    yoga_prefs = with_declared_injuries("yoga", prefs_doc.get("yoga"), prefs_doc)
     is_prenatal = user.pregnancy_or_nursing
 
     # Inject current Ayurvedic season so engine can apply Ritucharya pose boosts
@@ -198,7 +200,9 @@ async def generate_next_yoga_week(
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
     if not prefs_doc or not prefs_doc.get("yoga"):
         raise HTTPException(status_code=422, detail="Complete yoga preferences first")
-    yoga_prefs = prefs_doc.get("yoga")
+    # Injuries are asked on the gym form too; either answer reaches this plan.
+    from engine.movement_risk import with_declared_injuries
+    yoga_prefs = with_declared_injuries("yoga", prefs_doc.get("yoga"), prefs_doc)
 
     user_profile = user.model_dump()
     from engine.seasonal import get_current_season
@@ -275,9 +279,6 @@ async def generate_diet_plan(
     user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
-    from services.diet_plan_engine import generate_diet_plan as engine_generate
-    from services.diet_plan_enricher import enrich_diet_plan
-
     force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
@@ -286,6 +287,13 @@ async def generate_diet_plan(
         raise HTTPException(status_code=422, detail="Complete diet preferences first")
 
     diet_prefs = prefs_doc.get("diet")
+
+    # What the meal log and weigh-ins say about the last plan. Its adaptation (not
+    # the raw log) is part of the cache key, through `diet_log`.
+    from services.diet_log import diet_history
+    history = await diet_history(db, user.id, goal=diet_prefs.get("diet_goal"),
+                                 bmi_category=user_profile.get("bmi_category"))
+    user_profile["diet_log"] = history["adaptation"]
 
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "diet", user_profile, diet_prefs, force_regenerate)
@@ -296,7 +304,7 @@ async def generate_diet_plan(
     # Cache miss — this run hits the LLM, so it bills the daily allowance.
     await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "diet"):
-        from services.diet_llm_generator import generate_diet_plan_llm
+        from services.diet_llm_generator import build_diet_plan
 
         # Inject season (same as yoga route) so Ritucharya block is populated
         from engine.seasonal import get_current_season
@@ -306,32 +314,11 @@ async def generate_diet_plan(
         # Inject pregnancy flag so LLM brief adds hard constraints
         user_profile["pregnancy_or_nursing"] = user.pregnancy_or_nursing or False
 
-        # Primary path: LLM-generated clinical plan
-        enriched_plan = await generate_diet_plan_llm(user_profile, diet_prefs)
-
-        # Fallback: rule engine + enricher if LLM fails
-        if enriched_plan is None:
-            from core.logger import logger
-            logger.warning(f"LLM diet generation failed for {user.id}; falling back to rule engine")
-            diet_foods = kb_cache.diet_foods or None
-            raw_plan = engine_generate(user_profile, diet_prefs, diet_foods)
-            enriched_plan = await enrich_diet_plan(raw_plan, user_profile, diet_prefs)
-            # Same deterministic Ahara safety scans the LLM path gets
-            from services.ahara_safety import (
-                apply_ahara_safety, apply_condition_food_safety, apply_dietary_type_safety,
-                classify_condition_apathya_llm,
-            )
-            enriched_plan = apply_ahara_safety(
-                enriched_plan, diet_prefs.get("food_allergies") or [],
-                diet_prefs.get("food_intolerances") or [])
-            enriched_plan = apply_dietary_type_safety(
-                enriched_plan, diet_prefs.get("dietary_type"))
-            from services.diet_brief_builder import uncurated_conditions
-            _conds = user_profile.get("medical_history") or []
-            _extra_apathya = await classify_condition_apathya_llm(uncurated_conditions(_conds))
-            enriched_plan = apply_condition_food_safety(
-                enriched_plan, _conds, extra_terms=_extra_apathya,
-                pregnant=bool(user_profile.get("pregnancy_or_nursing")))
+        # LLM primary, rule engine fallback, and the same safety and energy layers
+        # on both — see `build_diet_plan`, which exists because this sequence had
+        # been copied into the holistic worker and the two had drifted apart.
+        enriched_plan = await build_diet_plan(
+            user_profile, diet_prefs, kb_cache.diet_foods or None)
 
         plan_id = enriched_plan.get("plan_id")
         model_used = enriched_plan.get("enrichment_model", "services.diet_plan_engine")
@@ -360,6 +347,50 @@ async def generate_diet_plan(
         )
 
     return enriched_plan
+
+
+class DietTranslateRequest(BaseModel):
+    plan_id: str
+    lang: str = Field(..., max_length=5)
+
+
+@router.post("/diet/translate")
+async def translate_diet_plan(
+    req: DietTranslateRequest,
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """The diet plan's display text in the reader's language, as an overlay.
+
+    The plan itself stays English: it is the version every food-safety gate checked,
+    and those gates cannot read other scripts (see `services.diet_translate`). The
+    overlay is stored on the history document, beside `plan_data`, keyed by the
+    English it was made from, so a regenerated plan is never shown an old one."""
+    from services.diet_translate import LANGUAGES, display_strings, source_hash
+    from services.diet_translate import translate_diet_plan as _translate
+
+    if req.lang not in LANGUAGES:
+        raise HTTPException(status_code=422, detail="Unsupported language")
+    # The diet payload's own `plan_id` names it on both paths; the per-feature
+    # endpoint also uses it as the history `_id`, the holistic worker does not.
+    doc = await db.plan_history.find_one(
+        {"user_id": user.id,
+         "$or": [{"_id": req.plan_id}, {"plan_data.diet_plan.plan_id": req.plan_id}]},
+        sort=[("generated_at", -1)])
+    diet = ((doc or {}).get("plan_data") or {}).get("diet_plan")
+    if not diet:
+        raise HTTPException(status_code=404, detail="Diet plan not found")
+    cached = ((doc.get("translations") or {}).get(req.lang)) or {}
+    if cached.get("source_hash") == source_hash(display_strings(diet)):
+        return cached
+    # A billed LLM call, like a generation.
+    await consume_plan_quota(db, user)
+    overlay = await _translate(diet, req.lang)
+    if overlay["strings"]:
+        await db.plan_history.update_one(
+            {"_id": doc["_id"], "user_id": user.id},
+            {"$set": {f"translations.{req.lang}": overlay}})
+    return overlay
 
 
 @router.post("/routine")
@@ -470,11 +501,20 @@ async def generate_gym_plan(
     if not prefs_doc or not prefs_doc.get("gym"):
         raise HTTPException(status_code=422, detail="Complete gym preferences first")
 
-    gym_prefs = prefs_doc.get("gym")
+    # Injuries are asked on the yoga form too; either answer reaches this plan.
+    from engine.movement_risk import with_declared_injuries
+    gym_prefs = with_declared_injuries("gym", prefs_doc.get("gym"), prefs_doc)
     is_prenatal = user.pregnancy_or_nursing
 
+    # What was actually lifted. Its fingerprint joins the cache key, because a
+    # plan whose loads come from the log is stale the moment a set is logged.
+    from services.workout_log import gym_history
+    history = await gym_history(db, user.id)
+
     # 1. Check Cache
-    cached_plan, pref_hash = await _check_plan_cache(db, user.id, "gym", user_profile, gym_prefs, force_regenerate)
+    cached_plan, pref_hash = await _check_plan_cache(
+        db, user.id, "gym", user_profile, {**gym_prefs, "_log": history["fingerprint"]},
+        force_regenerate)
     if cached_plan:
         return cached_plan
 
@@ -488,13 +528,12 @@ async def generate_gym_plan(
             gym_exercises = kb_cache.gym_exercises or None
         # Rare/uncovered conditions → LLM maps them to KB contraindication
         # categories (validated), giving disease-safety parity with yoga.
-        from services.gym_plan_engine import _condition_contra_tags
-        from services.gym_condition_fallback import gym_avoid_tags_for_conditions, GYM_CONTRA_VOCAB
-        _conds = user.medical_history or []
-        _vocab = set(GYM_CONTRA_VOCAB)
-        _uncovered = [c for c in _conds if not (_condition_contra_tags([c]) & _vocab)]
-        _extra_avoid_tags = await gym_avoid_tags_for_conditions(_uncovered) if _uncovered else set()
-        raw_plan = engine_generate(user_profile, gym_prefs, gym_exercises, extra_avoid_tags=_extra_avoid_tags)
+        from services.gym_condition_fallback import extra_avoid_tags_for
+        _extra_avoid_tags = await extra_avoid_tags_for(user_profile)
+        raw_plan = engine_generate(user_profile, gym_prefs, gym_exercises,
+                                   extra_avoid_tags=_extra_avoid_tags,
+                                   logged_lifts=history["logged_lifts"],
+                                   previous_block=history["previous_block"])
         enriched_plan = await enrich_gym_plan(raw_plan, user_profile, gym_prefs)
 
         plan_id = enriched_plan.get("plan_id")
@@ -562,7 +601,9 @@ async def generate_panchakarma_plan(
     if not prefs_doc or not prefs_doc.get("panchakarma"):
         raise HTTPException(status_code=422, detail="Complete panchakarma preferences first")
 
-    panchakarma_prefs = prefs_doc.get("panchakarma")
+    from engine.herb_overlap import declared_ayurvedic
+    panchakarma_prefs = {**prefs_doc.get("panchakarma"),
+                         "current_ayurvedic_medicines": declared_ayurvedic(prefs_doc)}
 
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "panchakarma", user_profile, panchakarma_prefs, force_regenerate)
@@ -733,7 +774,11 @@ async def generate_medicines_plan(
     if not prefs_doc or not prefs_doc.get("remedies"):
         raise HTTPException(status_code=422, detail="Complete medicines preferences first")
 
-    medicines_prefs = prefs_doc.get("remedies")
+    # The Ayurvedic medicines already being taken are asked on two forms and
+    # checked by two engines; either declaration has to reach this one.
+    from engine.herb_overlap import declared_ayurvedic
+    medicines_prefs = {**prefs_doc.get("remedies"),
+                       "current_ayurvedic_medicines": declared_ayurvedic(prefs_doc)}
 
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "medicines", user_profile, medicines_prefs, force_regenerate)
@@ -1026,7 +1071,9 @@ async def get_seasonal_guidance(user: UserDocument = Depends(get_current_user)):
 
     dosha = user.dominant_dosha or "pitta"
     try:
-        return await build_seasonal_guidance(dosha)
+        # The profile, not just the dosha: this card names specific foods and was
+        # blind to the reader's diseases and allergies.
+        return await build_seasonal_guidance(dosha, user.model_dump())
     except Exception as e:
         logger.error("Failed to generate seasonal guidance, returning static fallback: %s", e)
         season = get_current_season()

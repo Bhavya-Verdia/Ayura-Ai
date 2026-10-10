@@ -383,6 +383,21 @@ CLINICAL.update({
     "Suitcase Carry": C(contra=["lower_back_pain", "cervical_spondylosis"],
                         why="One-sided load the trunk resists laterally."),
 
+    # ---------------------------------------------------------- kettlebell ---
+    # Each mirrors its dumbbell analogue; the joint positions are the same.
+    "Kettlebell Goblet Squat": C(contra=["bad_knee"],
+                                 why="As the goblet squat: the chest-held bell keeps the torso upright and the load light."),
+    "Kettlebell Deadlift": C(contra=SPINE, preg=False,
+                             why="The dumbbell Romanian deadlift's hinge, from the floor, with the bell between the feet keeping the load close to the body."),
+    "One-Arm Kettlebell Row": C(contra=["lower_back_pain"], preg=False,
+                                why="As the one-arm dumbbell row: the bench takes most of the spinal load; still a hinged position."),
+    "Kettlebell Overhead Press": C(contra=SHOULDER,
+                                   why="Overhead and standing, one arm at a time, so the trunk also resists a sideways pull. The rack position asks for a little more shoulder mobility than a dumbbell."),
+    "Kettlebell Floor Press": C(contra=[], preg=False,
+                                why="As the dumbbell floor press: supine, so not prenatal, and the floor caps the range — the press a restricted shoulder keeps."),
+    "Kettlebell Suitcase Carry": C(contra=["lower_back_pain", "cervical_spondylosis"],
+                                   why="One-sided load the trunk resists laterally."),
+
     # -------------------------------------------------------------- cardio ---
     "Brisk Walking": C(contra=[],
                        why="The most universally available conditioning there is. No restriction in the library excludes it."),

@@ -196,6 +196,16 @@ export const plansAPI = {
   generateRemedies:   ({ symptoms, severity = {}, duration = {} }) =>
                         API.post('/plans/remedies', { symptoms, severity, duration }),
   generateMedicines:  (forceRegenerate = false) => API.post('/plans/medicines', { force_regenerate: forceRegenerate }),
+  // Display-only translation of a diet plan; the plan itself stays the checked English.
+  translateDiet:      (planId, lang) => API.post('/plans/diet/translate', { plan_id: planId, lang }),
+}
+
+// ── Meal log ───────────────────────────────────
+// What was eaten of the diet plan; the next plan reads it (services/diet_log.py).
+export const mealsAPI = {
+  getLogs:       (planId) => API.get('/meals/logs', { params: { plan_id: planId } }),
+  log:           (entry)  => API.post('/meals/logs', entry),
+  getAdaptation: ()       => API.get('/meals/adaptation'),
 }
 
 // ── Preferences ────────────────────────────────
@@ -203,6 +213,20 @@ export const preferencesAPI = {
   getAll:             () => API.get('/preferences'),
   getFeature:         (feature) => API.get(`/preferences/${feature}`),
   saveFeature:        (feature, data) => API.post(`/preferences/${feature}`, data),
+}
+
+// ── Workout logs (gym) ─────────────────────────
+// One entry per (plan, week, day, exercise); logging again replaces it and an
+// empty set list removes it. Feeds the next block's loads.
+export const workoutsAPI = {
+  log:     (data)   => API.post('/workouts/logs', data),
+  list:    (planId) => API.get('/workouts/logs', { params: { plan_id: planId } }),
+  summary: (planId) => API.get('/workouts/summary', { params: { plan_id: planId } }),
+  checkin:  (data)   => API.post('/workouts/checkins', data),
+  checkins: (planId) => API.get('/workouts/checkins', { params: { plan_id: planId } }),
+  adjustments: (planId, week) => API.get('/workouts/adjustments', { params: { plan_id: planId, week } }),
+  blocks:   ()       => API.get('/workouts/blocks'),
+  levelUp:  ()       => API.post('/workouts/level-up'),
 }
 
 // ── Progress ───────────────────────────────────

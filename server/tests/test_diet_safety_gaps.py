@@ -29,9 +29,17 @@ from services.ahara_safety import (
     apply_dietary_type_safety,
 )
 
+# A day that no condition in the library contraindicates, so that a flag raised on it
+# is over-restriction and nothing else. It used to open on Vegetable Upma and carry
+# ghee at lunch. Both were correct flags once the authored library was wired into the
+# scan — rava is a refined carbohydrate and is Apathya in Prameha, and ghee is guru
+# and snigdha and Apathya in Sthaulya, Yakrit Roga and high cholesterol. Keeping them
+# here would have meant loosening the canary to accommodate claims that are right;
+# the ghee behaviour is pinned separately in
+# `test_ghee_is_flagged_in_the_fat_restricted_conditions`.
 SAFE_MEALS = {
-    "breakfast": {"meal_name": "Vegetable Upma", "key_ingredients": ["semolina", "carrot"]},
-    "lunch": {"meal_name": "Moong Dal Khichdi with Ghee", "key_ingredients": ["moong dal", "rice", "ghee"]},
+    "breakfast": {"meal_name": "Moong Dal Chilla", "key_ingredients": ["moong dal", "coriander"]},
+    "lunch": {"meal_name": "Moong Dal Khichdi", "key_ingredients": ["moong dal", "rice"]},
     "snack": {"meal_name": "Roasted Makhana", "key_ingredients": ["makhana"]},
     "dinner": {"meal_name": "Lauki Sabzi with Roti", "key_ingredients": ["bottle gourd", "wheat"]},
 }
@@ -131,7 +139,7 @@ def test_every_schema_intolerance_has_a_term_list():
 
 
 @pytest.mark.parametrize("intolerance,meal,ingredient", [
-    ("lactose", "Paneer Paratha with Curd", "paneer"),
+    ("lactose", "Kheer with Warm Milk", "milk"),
     ("fructose", "Mango Shrikhand with Honey", "honey"),
     ("histamine", "Idli with Coconut Chutney", "idli"),
     ("fodmap", "Rajma Chawal with Onion Salad", "rajma"),
@@ -140,6 +148,15 @@ def test_a_declared_intolerance_actually_fires(intolerance, meal, ingredient):
     plan = _plan({"lunch": {"meal_name": meal, "key_ingredients": [ingredient]}})
     out = apply_ahara_safety(plan, [], [intolerance])
     assert out["allergen_safe"] is False, f"{intolerance} did not fire on {meal}"
+
+
+def test_fermented_and_strained_dairy_is_not_flagged_for_lactose():
+    """Curd, chaas and paneer carry little lactose per serving (NIH Consensus 2010:
+    most people with lactose intolerance manage 12 g at a sitting). Flagging them
+    left a lactose-intolerant vegetarian with no dairy protein at all."""
+    plan = _plan({"lunch": {"meal_name": "Paneer Bhurji with Curd and Chaas",
+                            "key_ingredients": ["paneer", "curd", "buttermilk"]}})
+    assert apply_ahara_safety(plan, [], ["lactose"])["allergen_safe"] is True
 
 
 def test_ghee_is_not_flagged_for_lactose():
@@ -156,11 +173,15 @@ def test_ghee_is_not_flagged_for_lactose():
     ("vegetarian", "Paneer Butter Masala", False),
     ("vegan", "Paneer Butter Masala", True),
     ("vegan", "Chana Masala with Rice", False),
-    ("eggetarian", "Masala Omelette", False),
-    ("eggetarian", "Mutton Rogan Josh", True),
-    ("pescatarian", "Fish Curry with Rice", False),
-    ("pescatarian", "Chicken Biryani", True),
-    ("non_vegetarian", "Chicken Biryani", False),
+    # The three withdrawn types, and anything malformed, get the vegetarian floor
+    # rather than none. The library has no animal-food row, so a meal the app cannot
+    # screen against the patient's diseases is flagged whatever type was stored.
+    ("eggetarian", "Masala Omelette", True),
+    ("pescatarian", "Fish Curry with Rice", True),
+    ("non_vegetarian", "Chicken Biryani", True),
+    ("", "Chicken Biryani", True),
+    (None, "Chicken Biryani", True),
+    ("garbage", "Chicken Biryani", True),
 ])
 def test_the_declared_dietary_type_is_checked_not_requested(dtype, meal, expect_flag):
     plan = _plan({"lunch": {"meal_name": meal, "key_ingredients": []}})
@@ -169,11 +190,45 @@ def test_the_declared_dietary_type_is_checked_not_requested(dtype, meal, expect_
     assert out["dietary_type_checked"] is True
 
 
-def test_non_vegetarian_is_checked_rather_than_skipped():
-    """`dietary_type_checked` must be True even when nothing is forbidden, so
-    "no rules apply" is distinguishable from "the scan never ran"."""
-    out = apply_dietary_type_safety(_plan(), "non_vegetarian")
-    assert out["dietary_type_checked"] is True and out["dietary_type_safe"] is True
+def test_a_withdrawn_dietary_type_gets_a_floor_rather_than_an_all_clear():
+    """`non_vegetarian` used to map to no entry, and the `if not forbidden` branch
+    answered `dietary_type_safe = True` for it. That was right while the value was
+    offered and meant "nothing to check". Now an unknown value means a stale or
+    malformed preference, and answering "safe, checked" to one is the failure this
+    module exists to prevent."""
+    plan = _plan({"lunch": {"meal_name": "Chicken Biryani", "key_ingredients": []}})
+    out = apply_dietary_type_safety(plan, "non_vegetarian")
+    assert out["dietary_type_checked"] is True
+    assert out["dietary_type_safe"] is False
+
+
+def test_a_withdrawn_dietary_type_is_coerced_and_never_rejected():
+    """A stored preference must not lock a user out of regenerating their own plan."""
+    from schemas.preferences_schema import DIETARY_TYPES, DietPreferences
+    assert DIETARY_TYPES == {"vegetarian", "vegan"}
+    for legacy in ("non_vegetarian", "pescatarian", "eggetarian"):
+        assert DietPreferences(dietary_type=legacy).dietary_type == "vegetarian"
+    with pytest.raises(Exception):
+        DietPreferences(dietary_type="carnivore")
+
+
+def test_the_library_holds_no_animal_food():
+    """The reason the app offers two dietary types and not five, as a guard rather
+    than a comment. If an animal-food row is ever authored — with its rasa, virya,
+    vipaka, per-condition `pathya_for` / `apathya_for` claims and its Viruddha pairs,
+    milk-and-fish among them — then this fails, and whether to reopen `eggetarian`
+    and `pescatarian` becomes a decision someone makes on purpose."""
+    from services.diet_plan_engine import diet_foods
+
+    animal = {"egg", "fish", "chicken", "mutton", "meat", "prawn", "shrimp", "crab",
+              "lamb", "beef", "pork", "goat"}
+    found = sorted(f["id"] for f in diet_foods
+                   if any(a in f["id"] for a in animal)
+                   or "vegetarian" not in (f.get("dietary_type") or []))
+    assert not found, (
+        f"the library now holds animal food ({found}); the dietary-type vocabulary "
+        f"in preferences_schema was narrowed on the assumption that it does not"
+    )
 
 
 def test_dietary_type_never_raises_on_a_malformed_plan():
@@ -286,9 +341,24 @@ def test_no_condition_flags_an_ordinary_vegetarian_day():
     for cond in PATHYA_APATHYA_HINTS:
         out = apply_condition_food_safety(_plan(drink=CCF_TEA), [cond])
         assert out["condition_food_safe"] is True, (
-            f"{cond} flags a plain day of Upma, Khichdi, Makhana and Lauki Sabzi: "
+            f"{cond} flags a plain day of Chilla, Khichdi, Makhana and Lauki Sabzi: "
             f"{[a['food'] for a in out['condition_safety_alerts']]}"
         )
+
+
+def test_ghee_is_flagged_in_the_fat_restricted_conditions():
+    """Pinned, not hidden. The library authors ghee as Apathya in Sthaulya, Yakrit
+    Roga and high cholesterol — guru and snigdha, and Santarpana where the treatment
+    is Langhana. That means a khichdi finished with ghee flags for those patients
+    every day it appears, which is a real cost and a deliberate claim. It belongs in
+    the Vaidya packet's screened tier beside the other fat calls, not in a quietly
+    loosened canary."""
+    ghee_lunch = dict(SAFE_MEALS)
+    ghee_lunch["lunch"] = {"meal_name": "Moong Dal Khichdi with Ghee",
+                           "key_ingredients": ["moong dal", "rice", "ghee"]}
+    for cond in ("obesity", "fatty_liver", "high_cholesterol"):
+        out = apply_condition_food_safety(_plan(meals=ghee_lunch), [cond])
+        assert "ghee" in {a["food"] for a in out["condition_safety_alerts"]}
 
 
 def test_the_two_kushtha_viruddha_pairs_exist():

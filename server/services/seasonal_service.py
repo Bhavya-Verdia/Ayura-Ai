@@ -48,9 +48,22 @@ def _fallback_recommendations(user_dosha: str, season_name: str, season_descript
 
 async def build_seasonal_guidance(
     user_dosha: str,
+    user_profile: dict | None = None,
     current_date: date | None = None,
 ) -> dict:
-    """Generate normalized seasonal guidance for a user dosha."""
+    """Generate normalized seasonal guidance for a user dosha.
+
+    `user_profile` carries the patient's diseases, allergies and dietary type. It used
+    to take a dosha and nothing else, while `diet_adjustments` names specific foods —
+    a real Sharad card read "Favor sweet, bitter, and astringent foods such as
+    **pomegranate, white rice, and leafy greens**" and "Use **cow ghee**", shown
+    identically to every Pitta user. White rice is Apathya in Prameha, cow ghee is a
+    declared dairy allergen, and this endpoint knew about neither.
+
+    It is the second food-recommending surface in this app that no gate read — the
+    Pathya card was the first — so it is prevented in the prompt AND filtered on the
+    way out, the same order that worked for the diet brief.
+    """
     season_info = get_current_season(current_date)
     risk_level = _risk_level_for_dosha(
         user_dosha,
@@ -95,10 +108,36 @@ CURRENT WEATHER (real-time):
 - Ayurvedic Impact: {weather['ayurvedic_impact']['summary']}
 """
 
+    profile = user_profile or {}
+    def _as_list(value):
+        """A profile field that should be a list and is sometimes a string."""
+        if isinstance(value, str):
+            return [value] if value.strip() else []
+        return [v for v in (value or []) if str(v).strip()]
+
+    conditions = _as_list(profile.get("medical_history"))
+    allergies = _as_list(profile.get("allergies"))
+    dietary_type = profile.get("dietary_type") or "vegetarian"
+    pregnant = bool(profile.get("pregnancy_or_nursing"))
+
+    patient_block = ""
+    if conditions or allergies or pregnant:
+        lines = []
+        if conditions:
+            lines.append(f"- Diagnosed conditions: {', '.join(str(c) for c in conditions)}")
+        if allergies:
+            lines.append(f"- ALLERGIES, never name these or anything containing them: "
+                         f"{', '.join(str(a) for a in allergies)}")
+        if pregnant:
+            lines.append("- Pregnant or nursing: nothing emmenagogue, nothing raw or unpasteurised")
+        patient_block = "\nTHIS PATIENT (their guidance, not a generic card):\n" + "\n".join(lines) + "\n"
+
     prompt = f"""
 You are an Ayurvedic expert generating concise Ritucharya guidance.
 
 USER DOSHA: {user_dosha}
+DIETARY TYPE: {dietary_type} — this app serves vegetarian and vegan plans only, so
+never name egg, fish, poultry or meat, not even to say to avoid it.{patient_block}
 CURRENT SEASON: {season_info.name} ({season_info.english_name})
 SEASON DETAILS: {season_info.description}
 RISK LEVEL: {risk_level}
@@ -136,6 +175,35 @@ Return ONLY valid JSON in this format:
             }
         except Exception:
             recommendations = fallback
+
+    # The same gate the diet plan's Pathya card goes through. `diet_adjustments` is a
+    # list of recommendations, so a contradicted one is WITHHELD; `avoid` is the list
+    # that exists to name these foods and is never scanned. Prevention in the prompt
+    # above is what usually works — this is the backstop for when it does not.
+    try:
+        from services.ahara_safety import apply_advisory_safety
+
+        gated = apply_advisory_safety(
+            {
+                "pathya_apathya": {
+                    "pathya": list(recommendations.get("diet_adjustments") or []),
+                    "apathya": list(recommendations.get("avoid") or []),
+                },
+                "seasonal_note": recommendations.get("focus") or "",
+                "condition_coaching": recommendations.get("dosha_impact") or "",
+            },
+            conditions, allergies, [], extra_terms={}, pregnant=pregnant,
+        )
+        recommendations = {
+            **recommendations,
+            "diet_adjustments": gated["pathya_apathya"]["pathya"],
+            "withheld_for_you": [
+                {"item": w["item"], "reason": w["reason"]}
+                for w in gated.get("withheld_recommendations") or []
+            ],
+        }
+    except Exception as gate_err:   # a safety layer must not lose the card
+        logger.warning("seasonal guidance safety gate degraded: %s", gate_err)
 
     return {
         "season": season_info.name,

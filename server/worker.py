@@ -88,11 +88,26 @@ async def dispatch_due_reminders(ctx):
             logger.error(f"Failed to dispatch reminder {reminder.get('_id')}: {e}")
 
 
+async def notify_finished_gym_blocks(ctx):
+    """Once a day: a gym plan four weeks old, and still the latest, is a finished
+    block — say so, or week four repeats indefinitely."""
+    from database.mongodb import get_mongodb
+    from services.workout_log import notify_finished_blocks
+
+    try:
+        sent = await notify_finished_blocks(get_mongodb())
+        logger.info(f"Gym block-complete notifications sent: {sent}")
+    except Exception as e:
+        logger.error(f"Gym block notifications failed: {e}")
+
+
 class WorkerSettings:
     """Configuration for the ARQ worker process."""
-    functions = [_run_plan_job, dispatch_due_reminders]
+    functions = [_run_plan_job, dispatch_due_reminders, notify_finished_gym_blocks]
     cron_jobs = [
         cron(dispatch_due_reminders, minute=set(range(60))),
+        # 03:30 UTC is 09:00 in India, where the users are.
+        cron(notify_finished_gym_blocks, hour={3}, minute={30}),
     ]
     redis_settings = RedisSettings.from_dsn(settings.REDIS_URL or "redis://localhost:6379")
     on_startup = startup

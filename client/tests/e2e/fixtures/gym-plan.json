@@ -1,0 +1,799 @@
+{
+ "plan_id": "gym_e2e-user_1700000000",
+ "generated_at": "2026-10-05T00:00:00+00:00",
+ "user_summary": {
+  "dominant_dosha": "vata",
+  "bmi_category": "unknown",
+  "fitness_level": "intermediate",
+  "strength_level": "intermediate",
+  "gym_goal": "strength",
+  "training_style": "strength",
+  "set_scheme": "strength",
+  "workout_days": 3,
+  "requested_workout_days": 3,
+  "duration_per_session": 45,
+  "injuries": [],
+  "block": 1
+ },
+ "weekly_schedule": [],
+ "four_week_plan": [
+  {
+   "week": 1,
+   "theme": "Foundation",
+   "prescription": {
+    "sets": 4,
+    "reps": "3-5",
+    "rest_seconds": 180,
+    "note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+    "applies_to": "main lifts"
+   },
+   "role_prescriptions": {
+    "primary": {
+     "sets": 4,
+     "reps": "3-5",
+     "rest_seconds": 180,
+     "label": "Main lift"
+    },
+    "secondary": {
+     "sets": 3,
+     "reps": "6-8",
+     "rest_seconds": 135,
+     "label": "Secondary"
+    },
+    "accessory": {
+     "sets": 2,
+     "reps": "8-12",
+     "rest_seconds": 90,
+     "label": "Accessory"
+    }
+   },
+   "days": [
+    {
+     "day": 1,
+     "day_name": "Monday",
+     "focus": "Full Body",
+     "type": "strength",
+     "warmup": [
+      "Jumping jacks \u2014 30 sec",
+      "Arm circles \u2014 10 each direction",
+      "Hip circles \u2014 10 each direction",
+      "Bodyweight squat \u2014 10 reps",
+      "High knees \u2014 30 sec",
+      "Inchworm \u2014 5 reps"
+     ],
+     "main_workout": [
+      {
+       "exercise_id": "barbell_squat",
+       "exercise_name": "Barbell Squat",
+       "category": "strength",
+       "primary_muscles": [
+        "quadriceps"
+       ],
+       "equipment": "barbell",
+       "sets": 4,
+       "reps": "3-5",
+       "rest_seconds": 180,
+       "role": "primary",
+       "role_label": "Main lift",
+       "weight_range": "70\u201382.5 kg \u00b7 a starting estimate from your bodyweight \u2014 adjust so the last 2 reps are hard and form holds",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Too hard? Use Goblet Squat. Too easy? Add load or slow the tempo.",
+       "coaching_cue": "Brace as if about to be punched, then sit between the hips.",
+       "instructions": [
+        "Set the bar across the upper back, not the neck, and grip it firmly with the elbows down.",
+        "Step back and set the feet shoulder-width apart with the toes turned slightly out.",
+        "Brace the trunk as if about to be punched in the stomach.",
+        "Sit down and back between the hips, keeping the chest up and the knees tracking over the middle toes.",
+        "Descend to at least parallel if your hips allow it, then drive the floor away to stand."
+       ]
+      },
+      {
+       "exercise_id": "barbell_bench_press",
+       "exercise_name": "Barbell Bench Press",
+       "category": "strength",
+       "primary_muscles": [
+        "chest"
+       ],
+       "equipment": "barbell",
+       "sets": 3,
+       "reps": "6-8",
+       "rest_seconds": 135,
+       "role": "secondary",
+       "role_label": "Secondary",
+       "weight_range": "47.5\u201357.5 kg \u00b7 a starting estimate from your bodyweight \u2014 adjust so the last 2 reps are hard and form holds",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Too easy? Move to Barbell Bench Press with a pause on the chest. If form breaks down, shorten the range or slow the tempo.",
+       "coaching_cue": "Shoulder blades pinched and down into the bench before the bar leaves the rack.",
+       "instructions": [
+        "Lie on a flat bench with the eyes under the bar and the feet flat on the floor.",
+        "Pull the shoulder blades together and down into the bench and keep them there.",
+        "Grip the bar a little wider than the shoulders and unrack it over the chest.",
+        "Lower the bar to the mid-chest with the elbows about 45 degrees from the body.",
+        "Press back up until the arms are straight, keeping the shoulder blades set."
+       ]
+      },
+      {
+       "exercise_id": "bent_over_barbell_row",
+       "exercise_name": "Bent Over Barbell Row",
+       "category": "strength",
+       "primary_muscles": [
+        "middle back"
+       ],
+       "equipment": "barbell",
+       "sets": 3,
+       "reps": "6-8",
+       "rest_seconds": 135,
+       "role": "secondary",
+       "role_label": "Secondary",
+       "weight_range": "42.5\u201350 kg \u00b7 a starting estimate from your bodyweight \u2014 adjust so the last 2 reps are hard and form holds",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
+       "coaching_cue": "Bar to the belly button. If the torso rises to meet it, the weight is winning.",
+       "instructions": [
+        "Stand with the feet hip-width apart and hold a barbell with an overhand grip just outside the knees.",
+        "Push the hips back and hinge forward to roughly 45 degrees, keeping the spine long and the knees soft.",
+        "Let the bar hang at arm's length, then pull it to the navel by driving the elbows back.",
+        "Squeeze the shoulder blades together at the top without letting the torso rise to meet the bar.",
+        "Lower the bar under control until the arms are straight and the shoulder blades travel forward."
+       ]
+      },
+      {
+       "exercise_id": "barbell_shoulder_press",
+       "exercise_name": "Barbell Shoulder Press",
+       "category": "strength",
+       "primary_muscles": [
+        "shoulders"
+       ],
+       "equipment": "barbell",
+       "sets": 2,
+       "reps": "6-8",
+       "rest_seconds": 135,
+       "role": "secondary",
+       "role_label": "Secondary",
+       "weight_range": "30\u201335 kg \u00b7 a starting estimate from your bodyweight \u2014 adjust so the last 2 reps are hard and form holds",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
+       "coaching_cue": "Head moves back to let the bar pass, then through as it locks out overhead.",
+       "instructions": [
+        "Set a barbell at shoulder height and take an overhand grip just outside the shoulders.",
+        "Unrack it to the front of the shoulders and stand tall with the feet hip-width apart.",
+        "Squeeze the glutes and keep the ribs down so the press does not become a standing backbend.",
+        "Press the bar overhead, moving the head back slightly to let it pass, then through as it locks out.",
+        "Lower under control to the front of the shoulders before the next repetition."
+       ]
+      },
+      {
+       "exercise_id": "mountain_climbers",
+       "exercise_name": "Mountain Climbers",
+       "category": "cardio",
+       "primary_muscles": [
+        "quadriceps"
+       ],
+       "equipment": "bodyweight",
+       "sets": 4,
+       "reps": "30 sec hard / 30 sec easy",
+       "rest_seconds": 0,
+       "role": "conditioning",
+       "role_label": "Conditioning",
+       "weight_range": "Hard intervals at about 8/10 \u2014 too breathless to talk; easy intervals at a walk until your breathing settles",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Scale the pace, not the rounds: if the easy interval is not enough to recover, make the hard one slower.",
+       "coaching_cue": "Hips stay low and level; do not let them bounce up with each drive.",
+       "instructions": [
+        "Start in a push-up position with the hands under the shoulders and the body in a straight line.",
+        "Brace the trunk and draw one knee toward the chest without letting the hips rise.",
+        "Switch legs, driving the other knee forward as the first foot returns to the floor.",
+        "Keep alternating at a steady rhythm, breathing continuously, for the prescribed time.",
+        "Keep the shoulders stacked over the hands throughout rather than drifting behind them."
+       ]
+      }
+     ],
+     "cooldown": [
+      "Child's pose \u2014 60 sec",
+      "Supine spinal twist \u2014 30 sec each side",
+      "Quad stretch \u2014 30 sec each leg",
+      "Shoulder cross-body stretch \u2014 30 sec each arm",
+      "Deep belly breathing \u2014 5 breaths"
+     ],
+     "balance": [],
+     "estimated_duration_minutes": 48,
+     "requested_duration_minutes": 45,
+     "duration_notice": null,
+     "calories_burned_estimate": 175
+    },
+    {
+     "day": 2,
+     "day_name": "Tuesday",
+     "focus": "Rest & Recovery",
+     "type": "recovery",
+     "warmup": [],
+     "main_workout": [],
+     "cooldown": [],
+     "estimated_duration_minutes": 0,
+     "calories_burned_estimate": 0,
+     "rest_day_recovery": {
+      "title": "Vata Rest Day \u2014 Ground & Restore",
+      "activities": [
+       "Abhyanga (warm sesame oil self-massage) \u2014 15\u201320 min, long slow strokes toward the heart",
+       "Restorative yoga \u2014 Child's Pose, Supta Baddha Konasana, Legs-Up-The-Wall (5 min each)",
+       "Nadi Shodhana pranayama \u2014 10 min alternate nostril breathing to calm the nervous system",
+       "Warm herbal bath with calming herbs (Ashwagandha, Brahmi, or Jatamansi)",
+       "Light walk (20\u201330 min) in nature, preferably midday when Vata is naturally pacified"
+      ],
+      "nutrition_note": "Warm, oily, nourishing foods. Ghee, warm milk, root vegetables. Avoid cold, raw, or dry foods on rest days.",
+      "sleep_note": "Aim for 8\u20139 hrs. Apply warm oil to feet (Padabhyanga) before bed. Asleep by 10pm.",
+      "ayurvedic_note": "Vata recovers through stillness and warmth \u2014 resist the urge to stay active on rest days."
+     }
+    },
+    {
+     "day": 3,
+     "day_name": "Wednesday",
+     "focus": "Full Body",
+     "type": "strength",
+     "warmup": [
+      "Jumping jacks \u2014 30 sec",
+      "Arm circles \u2014 10 each direction",
+      "Hip circles \u2014 10 each direction",
+      "Bodyweight squat \u2014 10 reps",
+      "High knees \u2014 30 sec",
+      "Inchworm \u2014 5 reps"
+     ],
+     "main_workout": [
+      {
+       "exercise_id": "barbell_romanian_deadlift",
+       "exercise_name": "Barbell Romanian Deadlift",
+       "category": "strength",
+       "primary_muscles": [
+        "hamstrings"
+       ],
+       "equipment": "barbell",
+       "sets": 4,
+       "reps": "3-5",
+       "rest_seconds": 180,
+       "role": "primary",
+       "role_label": "Main lift",
+       "weight_range": "62.5\u201375 kg \u00b7 a starting estimate from your bodyweight \u2014 adjust so the last 2 reps are hard and form holds",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
+       "coaching_cue": "Soft knees, long spine, hips travel back \u2014 this is a hamstring movement, not a squat.",
+       "instructions": [
+        "Stand tall holding a barbell at arm's length against the thighs, hands just outside the knees.",
+        "Set the knees softly bent and hold that bend throughout \u2014 this is a hinge, not a squat.",
+        "Push the hips back and let the bar travel down the front of the legs, keeping the spine long.",
+        "Stop when the hamstrings run out of length, usually around mid-shin.",
+        "Drive the hips forward to stand tall, keeping the bar against the legs the whole way."
+       ]
+      },
+      {
+       "exercise_id": "barbell_shoulder_press",
+       "exercise_name": "Barbell Shoulder Press",
+       "category": "strength",
+       "primary_muscles": [
+        "shoulders"
+       ],
+       "equipment": "barbell",
+       "sets": 3,
+       "reps": "6-8",
+       "rest_seconds": 135,
+       "role": "secondary",
+       "role_label": "Secondary",
+       "weight_range": "30\u201335 kg \u00b7 a starting estimate from your bodyweight \u2014 adjust so the last 2 reps are hard and form holds",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
+       "coaching_cue": "Head moves back to let the bar pass, then through as it locks out overhead.",
+       "instructions": [
+        "Set a barbell at shoulder height and take an overhand grip just outside the shoulders.",
+        "Unrack it to the front of the shoulders and stand tall with the feet hip-width apart.",
+        "Squeeze the glutes and keep the ribs down so the press does not become a standing backbend.",
+        "Press the bar overhead, moving the head back slightly to let it pass, then through as it locks out.",
+        "Lower under control to the front of the shoulders before the next repetition."
+       ]
+      },
+      {
+       "exercise_id": "chin_up",
+       "exercise_name": "Chin-Up",
+       "category": "strength",
+       "primary_muscles": [
+        "lats"
+       ],
+       "equipment": "bodyweight",
+       "sets": 2,
+       "reps": "6-8",
+       "rest_seconds": 135,
+       "role": "secondary",
+       "role_label": "Secondary",
+       "weight_range": "Bodyweight \u00b7 Easier option: Inverted Row, then band-assisted chin-ups",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Too hard? Use Inverted Row, then band-assisted chin-ups. Too easy? Add load or slow the tempo.",
+       "coaching_cue": "Underhand grip brings the biceps in, which is why it is the easier of the two.",
+       "instructions": [
+        "Take an underhand grip on a bar, hands roughly shoulder-width apart.",
+        "Hang at full arm extension with the shoulders pulled down away from the ears.",
+        "Pull the elbows down to the ribs until the chin clears the bar.",
+        "Keep the ribs down and avoid swinging the legs to generate momentum.",
+        "Lower under control all the way to straight arms."
+       ]
+      },
+      {
+       "exercise_id": "close_grip_bench_press",
+       "exercise_name": "Close-Grip Bench Press",
+       "category": "strength",
+       "primary_muscles": [
+        "chest"
+       ],
+       "equipment": "barbell",
+       "sets": 2,
+       "reps": "6-8",
+       "rest_seconds": 135,
+       "role": "secondary",
+       "role_label": "Secondary",
+       "weight_range": "47.5\u201357.5 kg \u00b7 a starting estimate from your bodyweight \u2014 adjust so the last 2 reps are hard and form holds",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
+       "coaching_cue": "Hands just inside shoulder width. Any closer and the wrists pay for it.",
+       "instructions": [
+        "Lie on a flat bench and grip the bar just inside shoulder width.",
+        "Set the shoulder blades together and down and unrack the bar over the chest.",
+        "Lower it to the lower chest, keeping the elbows tucked close to the ribs.",
+        "Press back to straight arms, driving through the triceps.",
+        "Any narrower than shoulder width and the wrists pay for it."
+       ]
+      },
+      {
+       "exercise_id": "inverted_row_underhand_grip",
+       "exercise_name": "Inverted Row - Underhand Grip",
+       "category": "strength",
+       "primary_muscles": [
+        "biceps"
+       ],
+       "equipment": "bodyweight",
+       "sets": 2,
+       "reps": "6-8",
+       "rest_seconds": 135,
+       "role": "secondary",
+       "role_label": "Secondary",
+       "weight_range": "Bodyweight",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Too hard? Use set the bar higher. Too easy? Move to Chin-Up.",
+       "coaching_cue": "The underhand grip is what puts the biceps in charge of a bodyweight pull.",
+       "instructions": [
+        "Set a bar at roughly hip height and lie underneath it.",
+        "Take an underhand grip about shoulder-width apart, palms facing you.",
+        "Walk the feet out until the body is straight and the arms are extended.",
+        "Pull the chest to the bar, leading with the elbows and keeping the hips level.",
+        "Lower under control until the arms are straight again."
+       ]
+      }
+     ],
+     "cooldown": [
+      "Child's pose \u2014 60 sec",
+      "Supine spinal twist \u2014 30 sec each side",
+      "Quad stretch \u2014 30 sec each leg",
+      "Shoulder cross-body stretch \u2014 30 sec each arm",
+      "Deep belly breathing \u2014 5 breaths"
+     ],
+     "balance": [],
+     "estimated_duration_minutes": 47,
+     "requested_duration_minutes": 45,
+     "duration_notice": null,
+     "calories_burned_estimate": 137
+    },
+    {
+     "day": 4,
+     "day_name": "Thursday",
+     "focus": "Rest & Recovery",
+     "type": "recovery",
+     "warmup": [],
+     "main_workout": [],
+     "cooldown": [],
+     "estimated_duration_minutes": 0,
+     "calories_burned_estimate": 0,
+     "rest_day_recovery": {
+      "title": "Vata Rest Day \u2014 Ground & Restore",
+      "activities": [
+       "Abhyanga (warm sesame oil self-massage) \u2014 15\u201320 min, long slow strokes toward the heart",
+       "Restorative yoga \u2014 Child's Pose, Supta Baddha Konasana, Legs-Up-The-Wall (5 min each)",
+       "Nadi Shodhana pranayama \u2014 10 min alternate nostril breathing to calm the nervous system",
+       "Warm herbal bath with calming herbs (Ashwagandha, Brahmi, or Jatamansi)",
+       "Light walk (20\u201330 min) in nature, preferably midday when Vata is naturally pacified"
+      ],
+      "nutrition_note": "Warm, oily, nourishing foods. Ghee, warm milk, root vegetables. Avoid cold, raw, or dry foods on rest days.",
+      "sleep_note": "Aim for 8\u20139 hrs. Apply warm oil to feet (Padabhyanga) before bed. Asleep by 10pm.",
+      "ayurvedic_note": "Vata recovers through stillness and warmth \u2014 resist the urge to stay active on rest days."
+     }
+    },
+    {
+     "day": 5,
+     "day_name": "Friday",
+     "focus": "Full Body",
+     "type": "strength",
+     "warmup": [
+      "Jumping jacks \u2014 30 sec",
+      "Arm circles \u2014 10 each direction",
+      "Hip circles \u2014 10 each direction",
+      "Bodyweight squat \u2014 10 reps",
+      "High knees \u2014 30 sec",
+      "Inchworm \u2014 5 reps"
+     ],
+     "main_workout": [
+      {
+       "exercise_id": "barbell_squat",
+       "exercise_name": "Barbell Squat",
+       "category": "strength",
+       "primary_muscles": [
+        "quadriceps"
+       ],
+       "equipment": "barbell",
+       "sets": 4,
+       "reps": "3-5",
+       "rest_seconds": 180,
+       "role": "primary",
+       "role_label": "Main lift",
+       "weight_range": "70\u201382.5 kg \u00b7 a starting estimate from your bodyweight \u2014 adjust so the last 2 reps are hard and form holds",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Too hard? Use Goblet Squat. Too easy? Add load or slow the tempo.",
+       "coaching_cue": "Brace as if about to be punched, then sit between the hips.",
+       "instructions": [
+        "Set the bar across the upper back, not the neck, and grip it firmly with the elbows down.",
+        "Step back and set the feet shoulder-width apart with the toes turned slightly out.",
+        "Brace the trunk as if about to be punched in the stomach.",
+        "Sit down and back between the hips, keeping the chest up and the knees tracking over the middle toes.",
+        "Descend to at least parallel if your hips allow it, then drive the floor away to stand."
+       ]
+      },
+      {
+       "exercise_id": "barbell_shoulder_press",
+       "exercise_name": "Barbell Shoulder Press",
+       "category": "strength",
+       "primary_muscles": [
+        "shoulders"
+       ],
+       "equipment": "barbell",
+       "sets": 3,
+       "reps": "6-8",
+       "rest_seconds": 135,
+       "role": "secondary",
+       "role_label": "Secondary",
+       "weight_range": "30\u201335 kg \u00b7 a starting estimate from your bodyweight \u2014 adjust so the last 2 reps are hard and form holds",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
+       "coaching_cue": "Head moves back to let the bar pass, then through as it locks out overhead.",
+       "instructions": [
+        "Set a barbell at shoulder height and take an overhand grip just outside the shoulders.",
+        "Unrack it to the front of the shoulders and stand tall with the feet hip-width apart.",
+        "Squeeze the glutes and keep the ribs down so the press does not become a standing backbend.",
+        "Press the bar overhead, moving the head back slightly to let it pass, then through as it locks out.",
+        "Lower under control to the front of the shoulders before the next repetition."
+       ]
+      },
+      {
+       "exercise_id": "bent_over_barbell_row",
+       "exercise_name": "Bent Over Barbell Row",
+       "category": "strength",
+       "primary_muscles": [
+        "middle back"
+       ],
+       "equipment": "barbell",
+       "sets": 3,
+       "reps": "6-8",
+       "rest_seconds": 135,
+       "role": "secondary",
+       "role_label": "Secondary",
+       "weight_range": "42.5\u201350 kg \u00b7 a starting estimate from your bodyweight \u2014 adjust so the last 2 reps are hard and form holds",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
+       "coaching_cue": "Bar to the belly button. If the torso rises to meet it, the weight is winning.",
+       "instructions": [
+        "Stand with the feet hip-width apart and hold a barbell with an overhand grip just outside the knees.",
+        "Push the hips back and hinge forward to roughly 45 degrees, keeping the spine long and the knees soft.",
+        "Let the bar hang at arm's length, then pull it to the navel by driving the elbows back.",
+        "Squeeze the shoulder blades together at the top without letting the torso rise to meet the bar.",
+        "Lower the bar under control until the arms are straight and the shoulder blades travel forward."
+       ]
+      },
+      {
+       "exercise_id": "barbell_bench_press",
+       "exercise_name": "Barbell Bench Press",
+       "category": "strength",
+       "primary_muscles": [
+        "chest"
+       ],
+       "equipment": "barbell",
+       "sets": 2,
+       "reps": "6-8",
+       "rest_seconds": 135,
+       "role": "secondary",
+       "role_label": "Secondary",
+       "weight_range": "47.5\u201357.5 kg \u00b7 a starting estimate from your bodyweight \u2014 adjust so the last 2 reps are hard and form holds",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Too easy? Move to Barbell Bench Press with a pause on the chest. If form breaks down, shorten the range or slow the tempo.",
+       "coaching_cue": "Shoulder blades pinched and down into the bench before the bar leaves the rack.",
+       "instructions": [
+        "Lie on a flat bench with the eyes under the bar and the feet flat on the floor.",
+        "Pull the shoulder blades together and down into the bench and keep them there.",
+        "Grip the bar a little wider than the shoulders and unrack it over the chest.",
+        "Lower the bar to the mid-chest with the elbows about 45 degrees from the body.",
+        "Press back up until the arms are straight, keeping the shoulder blades set."
+       ]
+      },
+      {
+       "exercise_id": "suitcase_carry",
+       "exercise_name": "Suitcase Carry",
+       "category": "strength",
+       "primary_muscles": [
+        "core"
+       ],
+       "equipment": "dumbbell",
+       "sets": 2,
+       "reps": "30 m",
+       "rest_seconds": 90,
+       "role": "secondary",
+       "role_label": "Secondary",
+       "weight_range": "12\u201314 kg in one hand \u00b7 a starting estimate from your bodyweight \u2014 adjust so the last 2 reps are hard and form holds",
+       "week_note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+       "notes": "Add weight once every set reaches the top of the range; take it off the moment form breaks down.",
+       "coaching_cue": "Staying square against a load on one side is the whole exercise.",
+       "instructions": [
+        "Stand a heavy dumbbell or kettlebell on the floor beside one foot.",
+        "Hinge at the hips to pick it up in one hand, keeping the chest up.",
+        "Stand tall with the shoulders level \u2014 resist the pull to one side.",
+        "Walk in a straight line for the prescribed distance, then swap hands."
+       ]
+      }
+     ],
+     "cooldown": [
+      "Child's pose \u2014 60 sec",
+      "Supine spinal twist \u2014 30 sec each side",
+      "Quad stretch \u2014 30 sec each leg",
+      "Shoulder cross-body stretch \u2014 30 sec each arm",
+      "Deep belly breathing \u2014 5 breaths"
+     ],
+     "balance": [],
+     "estimated_duration_minutes": 48,
+     "requested_duration_minutes": 45,
+     "duration_notice": null,
+     "calories_burned_estimate": 148
+    },
+    {
+     "day": 6,
+     "day_name": "Saturday",
+     "focus": "Rest & Recovery",
+     "type": "recovery",
+     "warmup": [],
+     "main_workout": [],
+     "cooldown": [],
+     "estimated_duration_minutes": 0,
+     "calories_burned_estimate": 0,
+     "rest_day_recovery": {
+      "title": "Vata Rest Day \u2014 Ground & Restore",
+      "activities": [
+       "Abhyanga (warm sesame oil self-massage) \u2014 15\u201320 min, long slow strokes toward the heart",
+       "Restorative yoga \u2014 Child's Pose, Supta Baddha Konasana, Legs-Up-The-Wall (5 min each)",
+       "Nadi Shodhana pranayama \u2014 10 min alternate nostril breathing to calm the nervous system",
+       "Warm herbal bath with calming herbs (Ashwagandha, Brahmi, or Jatamansi)",
+       "Light walk (20\u201330 min) in nature, preferably midday when Vata is naturally pacified"
+      ],
+      "nutrition_note": "Warm, oily, nourishing foods. Ghee, warm milk, root vegetables. Avoid cold, raw, or dry foods on rest days.",
+      "sleep_note": "Aim for 8\u20139 hrs. Apply warm oil to feet (Padabhyanga) before bed. Asleep by 10pm.",
+      "ayurvedic_note": "Vata recovers through stillness and warmth \u2014 resist the urge to stay active on rest days."
+     }
+    },
+    {
+     "day": 7,
+     "day_name": "Sunday",
+     "focus": "Rest & Recovery",
+     "type": "recovery",
+     "warmup": [],
+     "main_workout": [],
+     "cooldown": [],
+     "estimated_duration_minutes": 0,
+     "calories_burned_estimate": 0,
+     "rest_day_recovery": {
+      "title": "Vata Rest Day \u2014 Ground & Restore",
+      "activities": [
+       "Abhyanga (warm sesame oil self-massage) \u2014 15\u201320 min, long slow strokes toward the heart",
+       "Restorative yoga \u2014 Child's Pose, Supta Baddha Konasana, Legs-Up-The-Wall (5 min each)",
+       "Nadi Shodhana pranayama \u2014 10 min alternate nostril breathing to calm the nervous system",
+       "Warm herbal bath with calming herbs (Ashwagandha, Brahmi, or Jatamansi)",
+       "Light walk (20\u201330 min) in nature, preferably midday when Vata is naturally pacified"
+      ],
+      "nutrition_note": "Warm, oily, nourishing foods. Ghee, warm milk, root vegetables. Avoid cold, raw, or dry foods on rest days.",
+      "sleep_note": "Aim for 8\u20139 hrs. Apply warm oil to feet (Padabhyanga) before bed. Asleep by 10pm.",
+      "ayurvedic_note": "Vata recovers through stillness and warmth \u2014 resist the urge to stay active on rest days."
+     }
+    }
+   ]
+  }
+ ],
+ "ayurvedic_tips": {
+  "best_time_to_workout": "10am\u20132pm (avoid early-morning cold and late-night stimulation)",
+  "pre_workout": "Warm sesame oil self-massage (Abhyanga); eat a small warm meal 1 hr before",
+  "post_workout": "Rest 10 min; warm water; avoid cold shower immediately after",
+  "recovery": "Prioritize 8 hrs sleep; warm oil massage on rest days; avoid over-exertion"
+ },
+ "vyayama_shakti": {
+  "principle": "Exercise should be performed only to Ardhabala \u2014 half of one's maximum capacity (Charaka Sutrasthana 7). It describes the whole session, not a single set: the classical signal that the dose has been reached is sweat on the forehead, nose and joints together with the onset of mouth-breathing.",
+  "your_capacity": "Keep well inside Ardhabala. Each set should end with two reps still in you, and the session as a whole should leave you with energy to spare. If the classical sign \u2014 sweat on the forehead, nose and joints together with breathing through the mouth \u2014 arrives before the session's end, stop there and skip what is left. Vata constitution, a beginner's strength and older age all lower exercise tolerance, and over-exertion here depletes Ojas directly.",
+  "signs_adequate": "Sweat on forehead, nose and armpits; lightness in the body; comfortably increased breathing.",
+  "signs_overexertion": "Breathlessness, dizziness, tremor, excessive thirst, joint pain or cough mark Ativyayama (over-exercise) \u2014 reduce intensity immediately.",
+  "bala_note": "Exercise capacity (Bala) here is estimated from fitness level and age as a practical proxy \u2014 not a full classical Bala Pareeksha, which also weighs Sara, Samhanana, Satmya, Sattva, and season."
+ },
+ "progression": [
+  {
+   "week": 1,
+   "theme": "Foundation",
+   "main_lift_prescription": "4 \u00d7 3-5, 180s rest",
+   "role_prescriptions": {
+    "primary": {
+     "sets": 4,
+     "reps": "3-5",
+     "rest_seconds": 180,
+     "label": "Main lift"
+    },
+    "secondary": {
+     "sets": 3,
+     "reps": "6-8",
+     "rest_seconds": 135,
+     "label": "Secondary"
+    },
+    "accessory": {
+     "sets": 2,
+     "reps": "8-12",
+     "rest_seconds": 90,
+     "label": "Accessory"
+    }
+   },
+   "note": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+   "is_deload": false,
+   "main_lifts": [
+    {
+     "exercise": "Barbell Squat",
+     "day": "Full Body",
+     "load": "70\u201382.5 kg"
+    },
+    {
+     "exercise": "Barbell Romanian Deadlift",
+     "day": "Full Body",
+     "load": "62.5\u201375 kg"
+    }
+   ]
+  },
+  {
+   "week": 2,
+   "theme": "Volume Build",
+   "main_lift_prescription": "5 \u00d7 3-5, 180s rest",
+   "role_prescriptions": {
+    "primary": {
+     "sets": 5,
+     "reps": "3-5",
+     "rest_seconds": 180,
+     "label": "Main lift"
+    },
+    "secondary": {
+     "sets": 4,
+     "reps": "6-8",
+     "rest_seconds": 135,
+     "label": "Secondary"
+    },
+    "accessory": {
+     "sets": 3,
+     "reps": "8-12",
+     "rest_seconds": 90,
+     "label": "Accessory"
+    }
+   },
+   "note": "Add 2.5\u20135 kg vs Week 1 on main lifts if all reps were clean.",
+   "is_deload": false,
+   "main_lifts": [
+    {
+     "exercise": "Barbell Squat",
+     "day": "Full Body",
+     "load": "70\u201382.5 kg"
+    },
+    {
+     "exercise": "Barbell Romanian Deadlift",
+     "day": "Full Body",
+     "load": "62.5\u201375 kg"
+    }
+   ]
+  },
+  {
+   "week": 3,
+   "theme": "Intensity Peak",
+   "main_lift_prescription": "5 \u00d7 4-5, 180s rest",
+   "role_prescriptions": {
+    "primary": {
+     "sets": 5,
+     "reps": "4-5",
+     "rest_seconds": 180,
+     "label": "Main lift"
+    },
+    "secondary": {
+     "sets": 4,
+     "reps": "6-8",
+     "rest_seconds": 135,
+     "label": "Secondary"
+    },
+    "accessory": {
+     "sets": 3,
+     "reps": "8-12",
+     "rest_seconds": 90,
+     "label": "Accessory"
+    }
+   },
+   "note": "Peak intensity week \u2014 push for personal bests on compound lifts.",
+   "is_deload": false,
+   "main_lifts": [
+    {
+     "exercise": "Barbell Squat",
+     "day": "Full Body",
+     "load": "70\u201382.5 kg"
+    },
+    {
+     "exercise": "Barbell Romanian Deadlift",
+     "day": "Full Body",
+     "load": "62.5\u201375 kg"
+    }
+   ]
+  },
+  {
+   "week": 4,
+   "theme": "Deload & Reset",
+   "main_lift_prescription": "3 \u00d7 3-5, 180s rest",
+   "role_prescriptions": {
+    "primary": {
+     "sets": 3,
+     "reps": "3-5",
+     "rest_seconds": 180,
+     "label": "Main lift"
+    },
+    "secondary": {
+     "sets": 2,
+     "reps": "6-8",
+     "rest_seconds": 135,
+     "label": "Secondary"
+    },
+    "accessory": {
+     "sets": 2,
+     "reps": "8-12",
+     "rest_seconds": 90,
+     "label": "Accessory"
+    }
+   },
+   "note": "Deload \u2014 reduce weight 20%, focus on perfect technique.",
+   "is_deload": true,
+   "main_lifts": [
+    {
+     "exercise": "Barbell Squat",
+     "day": "Full Body",
+     "load": "70\u201382.5 kg"
+    },
+    {
+     "exercise": "Barbell Romanian Deadlift",
+     "day": "Full Body",
+     "load": "62.5\u201375 kg"
+    }
+   ]
+  }
+ ],
+ "progressive_overload_guide": {
+  "week_1": "Focus on form. Choose a weight you can barely complete 5 clean reps with.",
+  "week_2": "Add 2.5\u20135 kg vs Week 1 on main lifts if all reps were clean.",
+  "week_3": "Peak intensity week \u2014 push for personal bests on compound lifts.",
+  "week_4": "Deload \u2014 reduce weight 20%, focus on perfect technique."
+ },
+ "disclaimer": "This plan is for general wellness guidance only. Consult a physician before beginning any new exercise program.",
+ "pool_notice": null,
+ "schedule_notice": null,
+ "age_notice": null,
+ "focus_notice": null,
+ "cardio_notice": null,
+ "preference_notice": null,
+ "adaptation_notice": null,
+ "substitution_notice": null,
+ "injury_notice": null,
+ "intensity_notice": null,
+ "block_notice": null,
+ "previous_block": null,
+ "condition_guidance": []
+}

@@ -21,13 +21,16 @@ _N = dict(category="nut_seed", prep_state="raw", meal=("snack",), prep_minutes=1
           ref="bhavaprakasha", varga="Vatadi")
 
 NUTS_SEEDS = [
+    # Dietitian decision, 2026-10: not Apathya in acidity. Soaked and peeled, as its
+    # Prabhava note says, a small portion is not a reflux trigger; it is the one nut
+    # left to an acidity plan.
     F("Badama (Almonds)", id="almonds",
       rasa=("madhura",), guna=("guru", "snigdha"), virya="ushna", vipaka="madhura",
       prabhava="Medhya, Balya and Vrishya — the actions that make Badama a Rasayana "
                "rather than a fat, and the reason it is soaked and peeled before use.",
       dosha=(-2, 1, 2), ritu=("shishira", "hemanta", "vasanta"),
       pathya_for=("anemia", "constipation"),
-      apathya_for=("acidity", "obesity", "high_cholesterol", "psoriasis"),
+      apathya_for=("obesity", "high_cholesterol", "psoriasis"),
       nutrition=N(579, 21.2, 21.6, 49.9, 12.5, source="usda"), **_N),
 
     F("Akshota (Walnuts)", id="walnuts",
@@ -59,7 +62,7 @@ NUTS_SEEDS = [
                "same dravya, a sharper one, and the reason roasted peanuts sit worse "
                "in Amlapitta than boiled ones.",
       dosha=(-1, 2, 1), ritu=("shishira", "hemanta"),
-      apathya_for=("acidity", "psoriasis", "obesity", "migraine", "high_cholesterol"),
+      apathya_for=("acidity", "psoriasis", "obesity", "migraine", "high_cholesterol", "bloating"),
       nutrition=N(587, 24.4, 21.5, 49.7, 8.0, source="usda"),
       **{**_N, "prep_state": "roasted",
          "varga": "Shimbi Dhanya — Mandapi, roasted"}),
@@ -70,7 +73,7 @@ NUTS_SEEDS = [
       prabhava="Balya and Vata-hara, and the Kushtha caution that comes with it — Tila "
                "with milk is named Viruddha in the Kushtha Nidana (Charaka Chikitsa 7).",
       dosha=(-2, 1, 1), ritu=("shishira", "hemanta"),
-      pathya_for=("constipation", "anemia", "amavata"),
+      pathya_for=("constipation", "anemia", "amavata", "bloating"),
       apathya_for=("psoriasis", "acidity", "obesity"),
       viruddha_with=("milk_full_fat",),
       nutrition=N(573, 17.7, 23.4, 49.7, 11.8, source="usda"),
@@ -84,7 +87,7 @@ NUTS_SEEDS = [
                "than a cooling one.",
       dosha=(-2, 1, 0), ritu=("shishira", "hemanta"),
       pathya_for=("pcos", "constipation", "high_cholesterol", "hypothyroid"),
-      apathya_for=("acidity", "psoriasis"),
+      apathya_for=("acidity", "psoriasis", "bloating"),
       nutrition=N(534, 18.3, 28.9, 42.2, 27.3, source="usda"),
       **{**_N, "varga": "Uma — Atasi"}),
 
@@ -147,7 +150,7 @@ NUTS_SEEDS = [
       **{**_N, "ref": "modern_extrapolated",
          "varga": "No nighantu entry — a New World seed. Reasoned from Atasi for its "
                   "picchila swelling in water, but shita rather than ushna: it lacks "
-                  "the heat Atasi is cautioned for. Extrapolated, not cited."}),
+                  "the heat Atasi is cautioned for. Extrapolated, not cited."}, apathya_for=("bloating",)),
 
     F("Hemp Seeds", id="hemp_seeds",
       rasa=("madhura", "kashaya"), guna=("guru", "snigdha"), virya="ushna",

@@ -5,7 +5,8 @@ allergen-scanning utilities.  Extracted from diet_llm_generator.py so the
 knowledge constants and brief logic are independently testable and importable.
 """
 
-from services.ahara_safety import _term_in_text
+from services.ahara_safety import _canon_condition, _COND_CANON, _term_in_text
+from services.diet_condition_foods import condition_food_rules
 
 # ── Dosha-based meal timing ────────────────────────────────────────────────────
 MEAL_TIMING: dict[str, dict] = {
@@ -99,6 +100,214 @@ AYUR_TIPS: dict[str, str] = {
 
 # ── Condition Pathya-Apathya hints ────────────────────────────────────────────
 PATHYA_APATHYA_HINTS: dict[str, dict] = {
+    # ── The twenty-one conditions the app recognised and said nothing about ──────
+    # `engine/condition_vocab` accepts 38 canonical conditions. Twenty-one of them
+    # had no entry here, no entry in `_CONDITION_APATHYA_TERMS`, and no claim in the
+    # authored food library — so the brief told the model to "use your classical
+    # Ayurvedic knowledge to determine Pathya-Apathya" and the deterministic floor
+    # was whatever `classify_condition_apathya_llm` invented for them. Gout and
+    # kidney stones were among them, which are the two conditions here where diet is
+    # most of the treatment.
+    #
+    # AUTHORED, NOT CLINICALLY REVIEWED — they go into the Vaidya packet with the
+    # library's 708 claims. Where a condition has no classical counterpart the entry
+    # says so in `modern_extrapolated` rather than inventing a Samhita chapter for it.
+    "gout": {
+        "ayurvedic_name": "Vatarakta",
+        "pathya": ["old rice (Puranashali)", "barley (Yava)", "moong dal (Mudga)",
+                   "bitter gourd (Karela)", "pointed gourd (Patola)", "amla (Amalaki)",
+                   "cow's ghee", "cow's milk", "plenty of warm water"],
+        "apathya": ["red meat", "organ meat", "shellfish and prawns", "alcohol and beer",
+                    "urad dal (Masha)", "curd (Dadhi)", "excess salt", "fermented and sour foods"],
+        "classical_ref": "Charaka Chikitsa 29 (Vatashonita); Ashtanga Hridayam Nidana 16",
+    },
+    "kidney_stones": {
+        "ayurvedic_name": "Mutrashmari",
+        "pathya": ["horse gram (Kulattha) — the classical Ashmari dravya", "barley (Yava)",
+                   "plenty of water throughout the day", "tender coconut water",
+                   "banana stem (Kadali Kanda)", "pomegranate (Dadima)",
+                   "Gokshura and Punarnava preparations", "cucumber (Trapusha)"],
+        "apathya": ["spinach and other high-oxalate greens", "tomato seeds", "excess salt",
+                    "red meat", "beetroot", "chocolate and cocoa", "strong black tea",
+                    "excess nuts"],
+        "classical_ref": "Sushruta Nidana 3 (Ashmari); Charaka Chikitsa 26 (Trimarmiya)",
+    },
+    "gallstones": {
+        "ayurvedic_name": "Pittashmari / Yakrit Vikara",
+        "pathya": ["barley (Yava)", "moong dal", "bitter greens", "turmeric (Haridra)",
+                   "amla (Amalaki)", "warm water", "light early dinner",
+                   "pointed gourd (Patola)"],
+        "apathya": ["deep-fried foods", "butter and cream", "excess ghee", "red meat",
+                    "egg yolk", "full-fat cheese and paneer", "heavy late-night meals"],
+        "classical_ref": "Sushruta Nidana 3 (Ashmari); Charaka Chikitsa 26",
+    },
+    "heart_disease": {
+        "ayurvedic_name": "Hridroga",
+        "pathya": ["Arjuna bark preparations", "garlic (Lasuna)", "amla (Amalaki)",
+                   "pomegranate (Dadima)", "barley (Yava)", "oats", "moong dal",
+                   "flax seeds (Atasi)"],
+        "apathya": ["excess salt", "deep-fried foods", "red meat", "butter, cream and cheese",
+                    "alcohol", "very heavy meals", "sleeping immediately after eating"],
+        "classical_ref": "Charaka Chikitsa 26 (Trimarmiya — Hridroga); Sushruta Uttara 43",
+    },
+    "hyperthyroidism": {
+        "ayurvedic_name": "Atyagni / Bhasmaka with Galaganda",
+        "pathya": ["cow's milk", "cow's ghee", "sweet ripe fruits", "fresh coconut",
+                   "almonds (Badama)", "oats", "cabbage, cauliflower and broccoli",
+                   "rice and other grounding grains"],
+        "apathya": ["strong coffee and black tea", "chilli and excess pungent spices",
+                    "alcohol", "seaweed and other concentrated iodine sources",
+                    "skipping meals", "excess bitter and astringent foods"],
+        "classical_ref": "Charaka Nidana 11 (Galaganda); Charaka Chikitsa 15 (Bhasmaka)",
+    },
+    "osteoarthritis": {
+        "ayurvedic_name": "Sandhigata Vata",
+        "pathya": ["cow's ghee", "sesame oil (Tila Taila)", "garlic (Lasuna)",
+                   "ginger (Ardraka)", "turmeric (Haridra)", "warm cooked moong",
+                   "old rice", "warm milk"],
+        "apathya": ["cold and refrigerated foods", "dry and raw foods", "curd (Dadhi)",
+                    "fermented foods", "rajma and chana in excess", "carbonated drinks"],
+        "classical_ref": "Charaka Chikitsa 28 (Vatavyadhi); Ashtanga Hridayam Nidana 15",
+    },
+    "sciatica": {
+        "ayurvedic_name": "Gridhrasi",
+        "pathya": ["cow's ghee", "sesame oil", "castor oil (Eranda Taila) — the classical "
+                   "Gridhrasi dravya", "garlic", "dry ginger (Shunthi)", "moong dal",
+                   "old rice", "warm unctuous food"],
+        "apathya": ["cold and refrigerated foods", "dry and raw foods", "curd",
+                    "fermented foods", "heavy legumes", "carbonated drinks"],
+        "classical_ref": "Charaka Chikitsa 28 (Vatavyadhi — Gridhrasi); Sushruta Nidana 1",
+    },
+    "cervical_spondylosis": {
+        "ayurvedic_name": "Griva Sandhigata Vata / Manyastambha",
+        "pathya": ["cow's ghee", "sesame oil", "warm milk", "garlic", "ginger",
+                   "moong dal", "old rice", "warm cooked vegetables"],
+        "apathya": ["cold and refrigerated foods", "curd at night", "dry and raw foods",
+                    "fermented foods", "carbonated drinks"],
+        "classical_ref": "Charaka Chikitsa 28 (Vatavyadhi); Ashtanga Hridayam Nidana 15",
+    },
+    "ankylosing_spondylitis": {
+        "ayurvedic_name": "Asthi-Majjagata Vata with Ama",
+        "pathya": ["warm freshly cooked food", "cow's ghee", "dry ginger (Shunthi)",
+                   "turmeric (Haridra)", "garlic", "moong dal", "old rice",
+                   "Guggulu preparations"],
+        "apathya": ["curd (Dadhi)", "cold and refrigerated foods", "fermented foods",
+                    "urad dal and rajma", "deep-fried foods", "incompatible combinations "
+                    "(Viruddha Ahara)"],
+        "classical_ref": "Charaka Chikitsa 28 (Vatavyadhi); Charaka Chikitsa 29 (Vatashonita)",
+    },
+    "fibromyalgia": {
+        "ayurvedic_name": "Mamsagata Vata with Ama",
+        "pathya": ["warm easily digestible food", "cow's ghee", "dry ginger", "turmeric",
+                   "moong soup", "old rice", "warm water"],
+        "apathya": ["cold and raw foods", "curd", "fermented foods",
+                    "strong coffee and black tea", "irregular meal times"],
+        "classical_ref": "Charaka Chikitsa 28 (Vatavyadhi); Charaka Chikitsa 15 (Ama)",
+    },
+    "anxiety": {
+        "ayurvedic_name": "Chittodvega",
+        "pathya": ["warm milk with nutmeg", "cow's ghee", "soaked almonds", "dates (Kharjura)",
+                   "Brahmi and Ashwagandha preparations", "rice", "sesame seeds",
+                   "regular meal times"],
+        "apathya": ["coffee and strong black tea", "alcohol", "energy drinks",
+                    "dry and raw cold foods", "skipping meals", "excess pungent food"],
+        "classical_ref": "Charaka Sutra 11 (Manasa); Charaka Chikitsa 9 (Unmada)",
+    },
+    "depression": {
+        "ayurvedic_name": "Vishada / Manasa Avasada",
+        "pathya": ["warm light freshly cooked food", "cow's ghee", "saffron milk",
+                   "dates", "Brahmi and Jatamansi preparations", "sesame seeds",
+                   "warming spices"],
+        "apathya": ["heavy cold Kapha-increasing foods", "excess sweets", "alcohol",
+                    "stale and reheated food", "sleeping during the day"],
+        "classical_ref": "Charaka Chikitsa 9 (Unmada); Charaka Sutra 11",
+    },
+    "epilepsy": {
+        "ayurvedic_name": "Apasmara",
+        "pathya": ["Brahmi ghrita and other medicated ghee", "cow's milk", "old rice",
+                   "moong dal", "light sattvic food", "regular meals"],
+        "apathya": ["alcohol", "heavy meat", "stale and fermented food",
+                    "incompatible combinations (Viruddha Ahara)", "excess pungent food",
+                    "fasting to exhaustion"],
+        "classical_ref": "Charaka Chikitsa 10 (Apasmara); Ashtanga Hridayam Uttara 7",
+    },
+    "eczema": {
+        "ayurvedic_name": "Vicharchika (Kshudra Kushtha)",
+        "pathya": ["bitter vegetables", "neem (Nimba)", "turmeric (Haridra)", "moong dal",
+                   "old rice", "cow's ghee", "pointed gourd (Patola)"],
+        "apathya": ["milk with fish — the classical Viruddha pair", "curd", "sour foods",
+                    "excess salt", "seafood", "brinjal", "sour fruits"],
+        "classical_ref": "Charaka Chikitsa 7 (Kushtha); Sushruta Nidana 5",
+    },
+    "sinusitis": {
+        "ayurvedic_name": "Dushta Pratishyaya / Peenasa",
+        "pathya": ["warm water through the day", "dry ginger (Shunthi)", "tulsi",
+                   "black pepper (Maricha)", "turmeric", "honey", "light warm khichdi"],
+        "apathya": ["curd (Dadhi)", "banana", "cold drinks", "ice cream", "heavy dairy",
+                    "refrigerated food", "sleeping during the day"],
+        "classical_ref": "Ashtanga Hridayam Uttara 24 (Nasaroga); Charaka Chikitsa 26",
+    },
+    "common_cold": {
+        "ayurvedic_name": "Pratishyaya",
+        "pathya": ["warm water", "ginger and tulsi decoction", "black pepper", "honey",
+                   "turmeric milk", "light khichdi", "warm soups"],
+        "apathya": ["curd", "banana", "cold drinks", "ice cream", "deep-fried foods",
+                    "heavy dairy", "sleeping during the day"],
+        "classical_ref": "Ashtanga Hridayam Uttara 24 (Nasaroga); Charaka Chikitsa 26",
+    },
+    "recurrent_uti": {
+        "ayurvedic_name": "Mutrakrichra",
+        "pathya": ["plenty of water", "tender coconut water", "barley water (Yava)",
+                   "Gokshura and Punarnava preparations", "cucumber (Trapusha)",
+                   "coriander seed water", "amla (Amalaki)"],
+        "apathya": ["chilli and excess pungent spices", "alcohol", "coffee",
+                    "pickles and fermented food", "sour foods", "holding the urge to urinate"],
+        "classical_ref": "Charaka Chikitsa 26 (Mutrakrichra); Sushruta Uttara 59",
+    },
+    "glaucoma": {
+        "ayurvedic_name": "Adhimantha",
+        "pathya": ["Triphala preparations", "amla (Amalaki)", "cow's ghee",
+                   "green leafy vegetables", "carrot (Garjara)", "cooling sweet foods"],
+        "apathya": ["excess salt", "coffee and strong black tea", "alcohol",
+                    "large volumes of fluid at one time", "very hot and pungent food",
+                    "suppression of natural urges"],
+        "classical_ref": "Sushruta Uttara 6 (Netraroga); Ashtanga Hridayam Uttara 15",
+    },
+    "vertigo": {
+        "ayurvedic_name": "Bhrama",
+        "pathya": ["cow's milk", "cow's ghee", "amla", "coriander (Dhanyaka)",
+                   "grapes (Draksha)", "adequate water", "small frequent meals"],
+        "apathya": ["excess salt", "coffee and strong black tea", "alcohol",
+                    "fasting", "very sour foods", "heavy meals at night"],
+        "classical_ref": "Charaka Chikitsa 28 (Vatavyadhi — Bhrama); Ashtanga Hridayam Sutra 17",
+    },
+    "low_blood_pressure": {
+        "ayurvedic_name": "Nyuna Rakta Chapa (no direct classical counterpart; "
+                          "treated as Ojas and Bala Kshaya)",
+        "modern_extrapolated": True,
+        "pathya": ["adequate salt — unlike hypertension, this is not restricted",
+                   "soaked raisins (Draksha)", "dates (Kharjura)", "cow's milk",
+                   "cow's ghee", "Ashwagandha and Yashtimadhu preparations",
+                   "small frequent meals", "adequate fluids"],
+        "apathya": ["fasting and skipping meals", "alcohol",
+                    "excess bitter and astringent foods", "dehydration",
+                    "standing up abruptly after eating"],
+        "classical_ref": "Extrapolated from Charaka Sutra 21 (Ojas) and Charaka Sutra 11; "
+                         "no classical Nidana describes this entity directly",
+    },
+    "long_covid": {
+        "ayurvedic_name": "Post-viral Dhatu Kshaya with residual Ama "
+                          "(closest classical parallel: Jirna Jwara)",
+        "modern_extrapolated": True,
+        "pathya": ["warm easily digestible food", "moong soup", "rice gruel (Peya)",
+                   "dry ginger (Shunthi)", "tulsi", "amla (Amalaki)",
+                   "adequate protein once Agni returns", "Rasayana once Ama has cleared"],
+        "apathya": ["heavy and deep-fried foods", "cold and refrigerated food",
+                    "fermented foods", "Rasayana given before Ama has cleared",
+                    "sleeping during the day", "exertion beyond capacity"],
+        "classical_ref": "Extrapolated from Charaka Chikitsa 3 (Jwara — Jirna Jwara and "
+                         "Jwaramukti); no classical Nidana describes this entity directly",
+    },
     "diabetes": {
         "ayurvedic_name": "Prameha / Madhumeha",
         "pathya": ["bitter gourd (Karela)", "fenugreek seeds (Methi)", "barley (Yava)", "moong dal (Mudga)", "amla (Amalaki)", "turmeric (Haridra)", "neem leaves (Nimba)"],
@@ -123,10 +332,13 @@ PATHYA_APATHYA_HINTS: dict[str, dict] = {
         "apathya": ["raw crucifers (cabbage, broccoli, cauliflower, kale)", "soy in excess", "gluten (if sensitive)", "refined sugar"],
         "classical_ref": "Charaka Nidana 11 (Galaganda); Sushruta Nidana 11",
     },
+    # Carries what the separate `thyroid_disorder` entry held, for the same reason
+    # as `ibs` above.
     "thyroid": {
         "ayurvedic_name": "Galaganda",
-        "pathya": ["ginger", "black pepper", "coconut oil", "pumpkin seeds", "tulsi"],
-        "apathya": ["raw crucifers", "soy"],
+        "pathya": ["ginger", "black pepper", "coconut oil", "pumpkin seeds", "tulsi",
+                   "selenium-rich foods"],
+        "apathya": ["raw crucifers", "soy", "refined sugar"],
         "classical_ref": "Charaka Nidana 11; Sushruta Nidana 11",
     },
     "obesity": {
@@ -135,17 +347,20 @@ PATHYA_APATHYA_HINTS: dict[str, dict] = {
         "apathya": ["new rice", "heavy wheat", "sugar", "excess dairy", "sweets", "cold foods", "sleeping after meals"],
         "classical_ref": "Charaka Sutra 21 (Sthoulya Nidana); Charaka Chikitsa 15",
     },
-    "grahani": {
-        "ayurvedic_name": "Grahani (Irritable Bowel / Malabsorption)",
-        "pathya": ["Peya (thin rice gruel)", "Yavagu (thick gruel)", "pomegranate (Dadima)", "moong dal soup (thin)", "buttermilk (Takra) with ginger and rock salt", "bael fruit (Bilwa)"],
-        "apathya": ["raw vegetables", "sour foods (curd, sour fruits)", "heavy dairy", "fried foods", "cold water", "incompatible food combinations (Viruddha Ahara)", "eating before previous meal is digested"],
-        "classical_ref": "Charaka Chikitsa 15 (Grahani Chikitsa); Ashtanga Hridayam Nidana 8",
-    },
+    # Carries what the separate `grahani` entry held: the two were near-duplicate
+    # hints for one disease, and `grahani` now canonicalises onto this key, which
+    # would have left its Pathya unreachable.
     "ibs": {
         "ayurvedic_name": "Grahani / Atisara",
-        "pathya": ["bael fruit (Bilwa)", "pomegranate", "Peya", "ginger tea", "moong dal soup", "cumin water (Jeeraka Jala)"],
-        "apathya": ["raw vegetables", "gas-forming foods (cabbage, broccoli, beans)", "cold milk", "fried foods"],
-        "classical_ref": "Charaka Chikitsa 15; Ashtanga Hridayam Chikitsa 9",
+        "pathya": ["bael fruit (Bilwa)", "pomegranate (Dadima)", "Peya (thin rice gruel)",
+                   "Yavagu (thick gruel)", "ginger tea", "moong dal soup (thin)",
+                   "buttermilk (Takra) with ginger and rock salt", "cumin water (Jeeraka Jala)"],
+        "apathya": ["raw vegetables", "gas-forming foods (cabbage, broccoli, beans)",
+                    "sour foods (curd, sour fruits)", "heavy dairy", "cold milk",
+                    "cold water", "fried foods",
+                    "incompatible food combinations (Viruddha Ahara)",
+                    "eating before the previous meal is digested"],
+        "classical_ref": "Charaka Chikitsa 15 (Grahani Chikitsa); Ashtanga Hridayam Nidana 8",
     },
     "arsha": {
         "ayurvedic_name": "Arsha (Haemorrhoids / Piles)",
@@ -183,12 +398,6 @@ PATHYA_APATHYA_HINTS: dict[str, dict] = {
         "apathya": ["curd (Dadhi)", "fish", "black gram (Urad)", "new rice", "cold foods", "refrigerated food", "incompatible food combinations"],
         "classical_ref": "Madhava Nidana 25 (Amavata Nidana); Yogaratnakara Amavata Chikitsa",
     },
-    "rheumatoid_arthritis": {
-        "ayurvedic_name": "Amavata",
-        "pathya": ["ginger", "garlic", "horse gram soup", "turmeric milk", "moong dal"],
-        "apathya": ["curd", "black gram", "cold foods", "fried foods", "fermented foods"],
-        "classical_ref": "Madhava Nidana 25",
-    },
     "asthma": {
         "ayurvedic_name": "Tamaka Shwasa",
         "pathya": ["ginger (Shunthi)", "black pepper (Maricha)", "long pepper (Pippali)", "honey (Madhu)", "warm foods", "Tulsi tea", "light easily digestible foods"],
@@ -213,41 +422,38 @@ PATHYA_APATHYA_HINTS: dict[str, dict] = {
         "apathya": ["dry, light foods in excess", "cold water", "suppressing the urge to defecate", "excess travel/exertion"],
         "classical_ref": "Charaka Sutra 28; Ashtanga Hridayam Chikitsa 9",
     },
+    # Adhmana is the one `gut_health_issue` value that was not already a canonical
+    # condition. Authored here rather than aliased onto IBS or constipation: its
+    # Samprapti is Vata trapped by Ama in the Pakvashaya, so the Apathya is the
+    # Vatala and Abhishyandi foods — not IBS's sour and raw list, and not
+    # constipation's dry and cold one. Authored, NOT clinically reviewed.
+    "bloating": {
+        "ayurvedic_name": "Adhmana / Anaha (Vata-Ama in the Pakvashaya)",
+        "pathya": ["hing (Hingu) in the tadka", "ajwain (Yavani) water",
+                   "cumin-coriander-fennel water", "ginger with rock salt before meals",
+                   "moong dal (well cooked, thin)", "buttermilk (Takra) with ajwain",
+                   "warm cooked vegetables", "old rice"],
+        "apathya": ["raw salads", "cabbage, cauliflower and broccoli",
+                    "rajma, chana and other heavy legumes", "carbonated drinks",
+                    "curd at night", "cold water with meals",
+                    "eating before the previous meal is digested",
+                    "suppressing the urge to pass flatus"],
+        "classical_ref": "Charaka Sutra 19 (Anaha); Ashtanga Hridayam Nidana 8",
+    },
     "acidity": {
         "ayurvedic_name": "Amlapitta",
         "pathya": ["coconut water (Narikela Jala)", "pomegranate", "coriander seeds water", "amla", "fennel (Shatapushpa)", "old rice", "ghee", "milk (warm)"],
         "apathya": ["sour foods", "fermented foods", "chilli", "garlic", "onion", "coffee", "alcohol", "eating before previous meal digests"],
         "classical_ref": "Charaka Chikitsa 15 (Amlapitta); Ashtanga Hridayam Chikitsa 10",
     },
-    "thyroid_disorder": {
-        "ayurvedic_name": "Galaganda",
-        "pathya": ["coconut oil", "ginger", "black pepper", "pumpkin seeds", "selenium-rich foods"],
-        "apathya": ["raw crucifers", "excess soy", "refined sugar"],
-        "classical_ref": "Charaka Nidana 11",
-    },
 }
 
-COND_ALIASES: dict[str, str] = {
-    "type2_diabetes": "diabetes", "prediabetes": "diabetes", "insulin_resistance": "diabetes",
-    # Onboarding / condition_vocab canonical forms (as stored on the profile)
-    "diabetes_type2": "diabetes", "diabetes_type1": "diabetes", "madhumeha": "diabetes",
-    "bp": "hypertension", "high_blood_pressure": "hypertension",
-    "polycystic_ovary": "pcos", "polycystic_ovarian_syndrome": "pcos",
-    "hypothyroidism": "hypothyroid", "hashimoto": "hypothyroid", "thyroidism": "thyroid",
-    "overweight": "obesity", "weight_management": "obesity",
-    "liver_disease": "fatty_liver", "nafld": "fatty_liver",
-    "cholesterol": "high_cholesterol", "dyslipidemia": "high_cholesterol",
-    "hyperlipidemia": "high_cholesterol", "high_lipids": "high_cholesterol",
-    "ckd": "kidney_disease", "kidney_failure": "kidney_disease",
-    "chronic_kidney_disease": "kidney_disease",
-    "iron_deficiency": "anemia", "iron_deficiency_anemia": "anemia",
-    "ibd": "grahani", "crohns": "grahani", "ibd_crohns": "grahani", "ulcerative_colitis": "grahani",
-    "irritable_bowel_syndrome": "ibs",
-    "piles": "arsha", "hemorrhoids": "arsha", "haemorrhoids": "arsha",
-    "rheumatoid": "amavata", "ra": "amavata", "rheumatoid_arthritis": "amavata",
-    "acid_reflux": "acidity", "gerd": "acidity", "heartburn": "acidity",
-    "skin_disease": "psoriasis", "eczema": "psoriasis",
-}
+# Canonical condition keys live in `ahara_safety`, which is the layer that enforces
+# them. This module kept its own map, and the two disagreed on 22 inputs — and because
+# `uncurated_conditions()` skips the LLM classifier whenever the BRIEF recognises a
+# condition, every input the brief canonicalised and the scan did not was left with no
+# deterministic floor at all. See `_COND_CANON` for the list.
+COND_ALIASES = _COND_CANON
 
 AGNI_DESC: dict[str, str] = {
     "sama":    "balanced and strong — can handle a varied diet with regular timing",
@@ -273,21 +479,13 @@ SEASON_GUIDANCE: dict[str, str] = {
 }
 
 # ── Allergen term lookup for post-LLM safety scan ─────────────────────────────
-ALLERGEN_TERMS: dict[str, list[str]] = {
-    "gluten": ["wheat", "gluten", "maida", "atta", "bread", "roti", "chapati", "poha", "semolina",
-               "suji", "rava", "barley", "oats", "seitan", "naan", "paratha"],
-    "dairy": ["milk", "curd", "yogurt", "ghee", "butter", "cream", "paneer", "cheese", "lassi",
-              "buttermilk", "kheer", "raita", "mawa", "khoa"],
-    "nuts_tree": ["almond", "cashew", "walnut", "pistachio", "pine nut", "hazelnut", "chestnut",
-                  "badam", "kaju", "akhrot"],
-    "peanuts": ["peanut", "groundnut", "mungphali"],
-    "soy": ["soy", "tofu", "tempeh", "edamame", "soybean"],
-    "eggs": ["egg", "omelet", "omelette", "anda"],
-    "shellfish": ["shrimp", "prawn", "crab", "lobster", "scallop"],
-    "fish": ["fish", "salmon", "tuna", "mackerel", "pomfret", "rohu", "hilsa", "sardine"],
-    "sesame": ["sesame", "til", "tahini", "gingelly"],
-    "mustard": ["mustard", "sarson", "rai"],
-}
+# The allergen and intolerance term lists live in `ahara_safety`, which is the layer
+# that enforces them. This module kept its own copy, and the copies drifted: the copy
+# here was missing every one of the four `food_intolerances` values, so `flag_allergens`
+# resolved `lactose` through `.get(key, [key])` and scanned meal text for the literal
+# word "lactose" — the exact failure PR #61 fixed in `apply_ahara_safety` and only
+# there. It also disagreed with the live list on 8 of the 10 keys it did have.
+from services.ahara_safety import ALLERGEN_TERMS  # noqa: E402  (re-exported below)
 
 
 # ── Multi-condition conflict resolution ───────────────────────────────────────
@@ -321,10 +519,149 @@ _GENERIC_FOOD_WORDS = frozenset({
 
 
 def normalize_condition_key(cond: str) -> str:
-    """Canonical diet key for a stored/free-text condition (double-passed aliases)."""
-    key = str(cond).lower().replace(" ", "_")
-    canon = COND_ALIASES.get(key, key)
-    return COND_ALIASES.get(canon, canon)
+    """Canonical diet key for a stored or free-text condition.
+
+    Delegates to `ahara_safety._canon_condition` so the brief and the scan cannot
+    reach different conclusions about which disease the patient has. It used to
+    double-pass its own alias map; chains are now resolved in the table itself.
+    """
+    return _canon_condition(cond)
+
+
+# ── The diseases the diet path must treat ─────────────────────────────────────
+# `gut_health_issue` is asked on the diet preferences form and its four values are
+# diseases: three of them — acidity, constipation, ibs — are already canonical keys
+# with a `PATHYA_APATHYA_HINTS` block, a `_CONDITION_APATHYA_TERMS` floor and
+# authored `apathya_for` / `pathya_for` claims on the 150 library rows.
+#
+# None of that reached them. The answer was rendered into the brief as the single
+# line `GUT HEALTH: Acidity` and went nowhere else: the condition list came from
+# `medical_history` alone, so the brief carried no Pathya-Apathya block, named none
+# of the library's Apathya foods, and `apply_condition_food_safety` scanned the
+# meals against nothing. Measured on the same patient, the same disease declared on
+# the diet form produced a 1,812-character brief with 0 Apathya foods named; declared
+# in `medical_history` it produced 3,789 characters and 50.
+#
+# It is the shape PR #77 found in Panchakarma — a question asked at check-in whose
+# answer no engine could see — and the fix is the same: one function, used by the
+# brief and by the safety scan, so a disease cannot be visible to one and not the
+# other.
+_GUT_ISSUE_CONDITIONS: dict[str, str] = {
+    "acidity": "acidity",
+    "constipation": "constipation",
+    "bloating": "bloating",
+    "ibs": "ibs",
+    # "healthy" declares no disease and adds nothing.
+}
+
+
+def diet_conditions(user_profile: dict, diet_prefs: dict | None = None) -> list[str]:
+    """Every disease the diet path must treat, from both places the app collects one.
+
+    `medical_history` (onboarding) plus `gut_health_issue` (the diet form). Returns
+    canonical keys, deduplicated, with `medical_history` first so a condition
+    declared in both keeps its original spelling in the brief's heading.
+
+    Every caller that builds a condition list for the diet path goes through here.
+    Passing `diet_prefs=None` gives the medical-history-only list, which is what a
+    caller with no preferences document has.
+    """
+    out: list[str] = []
+    seen: set[str] = set()
+    for cond in (user_profile.get("medical_history") or []):
+        canon = normalize_condition_key(cond)
+        if canon and canon not in seen:
+            seen.add(canon)
+            out.append(canon)
+    gut = str((diet_prefs or {}).get("gut_health_issue") or "healthy").strip().lower()
+    canon = _GUT_ISSUE_CONDITIONS.get(gut)
+    if canon and canon not in seen:
+        seen.add(canon)
+        out.append(canon)
+    return out
+
+
+def diet_allergies(user_profile: dict, diet_prefs: dict | None = None) -> list[str]:
+    """Every allergy the app holds for this patient, from both places it stores one.
+
+    `diet_prefs["food_allergies"]` (the diet form) and `user_profile["allergies"]`
+    (onboarding). The diet path read only the first, so an allergy declared once, in
+    the health step, was enforced by the remedies engine and by nothing in the one
+    feature that is entirely about food.
+
+    An allergy is the one declaration where asking twice and honouring one answer is
+    not acceptable, so this is a union and never a choice between them.
+    """
+    out: list[str] = []
+    seen: set[str] = set()
+    for source in ((diet_prefs or {}).get("food_allergies") or [],
+                   user_profile.get("allergies") or []):
+        for a in source:
+            key = str(a).strip().lower().replace(" ", "_")
+            if key and key not in seen:
+                seen.add(key)
+                out.append(key)
+    return out
+
+
+# Fasting is withheld during Vriddhi. Upavasa is a therapy with a cost, and the cost
+# is paid in growth by a patient who is still doing it.
+PAEDIATRIC_MAX_AGE = 17
+
+
+# Who is not given a planned fast, and why. Each is a state where a meal-free or
+# fruit-only day causes harm that the meal plan has no way to watch for.
+_NO_FAST_CONDITIONS = {
+    # IDF-DAR (2021) and ADA: fasting on insulin or a sulfonylurea risks
+    # hypoglycaemia, and a Phalahar day of fruit spikes glucose either way.
+    "diabetes": "diabetes", "diabetes_type2": "diabetes", "diabetes_type1": "diabetes",
+    "gestational_diabetes": "diabetes", "kidney_disease": "kidney disease",
+    "chronic_kidney_disease": "kidney disease",
+}
+
+
+def fasting_withheld_reason(user_profile: dict, diet_prefs: dict | None = None) -> str | None:
+    """Why this patient's fasting days are not planned as fasts, or None."""
+    if not (diet_prefs or {}).get("fasting_days"):
+        return None
+    try:
+        age = int(user_profile.get("age"))
+    except (TypeError, ValueError):
+        age = None
+    if age is not None and age <= PAEDIATRIC_MAX_AGE:
+        return "Under 18 — no planned fasting days for a growing body."
+    if age is not None and age >= 70:
+        # Upavasa is withheld from the Vriddha in the classical texts, and clinically
+        # a fasting day past 70 costs muscle and risks dizziness and falls.
+        return ("Past 70 — fasting days are planned as ordinary, lighter days: a fast at "
+                "this age costs muscle and risks dizziness.")
+    if user_profile.get("pregnancy_or_nursing"):
+        return ("Pregnancy or breastfeeding — fasting days are planned as ordinary days. "
+                "Mother and baby both need the energy every day.")
+    if str(user_profile.get("bmi_category") or "").lower() == "underweight":
+        return "Underweight — fasting days are planned as ordinary days."
+    for cond in diet_conditions(user_profile, diet_prefs):
+        why = _NO_FAST_CONDITIONS.get(str(cond).lower())
+        if why:
+            return (f"With {why}, a fasting day can cause dangerously low (or, on fruit, "
+                    "high) blood sugar, especially on insulin or tablets such as a "
+                    "sulfonylurea. Your fasting days are planned as regular, lighter days. "
+                    "Please agree any fast with your doctor first (IDF-DAR 2021).")
+    return None
+
+
+def fasting_days_for(user_profile: dict, diet_prefs: dict | None = None) -> list[str]:
+    """The fasting days that actually apply to this patient.
+
+    Empty when `fasting_withheld_reason` gives a reason: under 18, pregnant or
+    nursing, underweight, diabetic, or with kidney disease. A 62-year-old diabetic on
+    metformin who keeps a Monday fast was planned a fruit-only Monday at 1090 kcal.
+    The brief is a request: `diet_plan_engine` and the week generator each read this
+    list to build and stamp the fasting day, so it is withheld here, once.
+    """
+    if fasting_withheld_reason(user_profile, diet_prefs):
+        return []
+    return list((diet_prefs or {}).get("fasting_days") or [])
 
 
 def uncurated_conditions(conditions: list[str]) -> list[str]:
@@ -428,26 +765,14 @@ def _conflict_section(norm_conditions: list[str]) -> str:
 
 
 def target_calories(user_profile: dict, diet_prefs: dict) -> int:
-    age = int(user_profile.get("age") or 30)
-    gender = (user_profile.get("gender") or "male").lower()
-    bmi = (user_profile.get("bmi_category") or "normal").lower()
-    goal = diet_prefs.get("diet_goal") or "general_wellness"
+    """Deprecated — kept only so callers outside this module keep working.
 
-    base = 1800 if gender == "female" else 2000
-    if bmi in ("overweight", "obese"):
-        base -= 300
-    if bmi == "underweight":
-        base += 200
-    if age > 60:
-        base -= 100
-    if age < 20:
-        base += 100
-    if goal == "weight_loss":
-        base -= 300
-    elif goal == "muscle_support":
-        base += 200
-
-    return max(1200, min(3000, base))
+    This read neither height, weight nor activity level: a very active 82 kg woman and
+    a sedentary 78 kg woman were both told 1200 kcal. `services.diet_energy` computes
+    the target from the patient's actual body, and `build_brief` now uses that.
+    """
+    from services.diet_energy import energy_target
+    return energy_target(user_profile, diet_prefs)["target_calories"]
 
 
 def build_brief(user_profile: dict, diet_prefs: dict) -> str:
@@ -469,7 +794,7 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
     name = user_profile.get("name") or user_profile.get("full_name") or "the patient"
 
     diet_type = diet_prefs.get("dietary_type") or "vegetarian"
-    allergies = diet_prefs.get("food_allergies") or []
+    allergies = diet_allergies(user_profile, diet_prefs)
     intolerances = diet_prefs.get("food_intolerances") or []
     gut = diet_prefs.get("gut_health_issue") or "healthy"
     goal = diet_prefs.get("diet_goal") or "general_wellness"
@@ -477,8 +802,10 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
     if_window = diet_prefs.get("intermittent_fasting") or "no"
     water = diet_prefs.get("water_intake") or "1-2L"
 
-    conditions = user_profile.get("medical_history") or []
-    norm_conditions = [COND_ALIASES.get(c.lower().replace(" ", "_"), c.lower().replace(" ", "_")) for c in conditions]
+    # Both places the app collects a disease — `medical_history` and the diet form's
+    # own `gut_health_issue`. The second used to reach the model as the single line
+    # `GUT HEALTH: Acidity` and nothing else.
+    norm_conditions = diet_conditions(user_profile, diet_prefs)
 
     cond_blocks = []
     seen: set = set()
@@ -500,6 +827,28 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
                 f"  • {cond.replace('_', ' ').title()} — use your classical Ayurvedic knowledge "
                 f"to determine Pathya-Apathya. Cite the relevant Samhita chapter."
             )
+        # The authored library's own claims for this disease, by name. The hint above
+        # is prose written per condition; these are the 150 rows of
+        # `diet_foods.json`, where each (condition, food) pair was authored
+        # individually. They reached the model only as scattered RAG passages before
+        # — `apathya_for` was read by `diet_plan_engine`, which is the fallback, and
+        # `pathya_for` by nothing at all.
+        lib = condition_food_rules(canon)
+        if lib["apathya_names"]:
+            block += (
+                f"\n    DO NOT USE (library Apathya for this disease — "
+                f"{len(lib['apathya_names'])} foods): "
+                f"{', '.join(lib['apathya_names'])}"
+            )
+        if lib["pathya_names"]:
+            # Pathya is advisory, so it is capped; Apathya above is not, because a
+            # truncated list of things to avoid is a list that fails silently.
+            shown = lib["pathya_names"][:30]
+            block += (
+                f"\n    PREFER (library Pathya): {', '.join(shown)}"
+                + (f" (+{len(lib['pathya_names']) - len(shown)} more)"
+                   if len(lib["pathya_names"]) > len(shown) else "")
+            )
         cond_blocks.append(block)
 
     cond_section = "\n".join(cond_blocks) if cond_blocks else "  • None reported"
@@ -507,15 +856,50 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
     cond_section += _conflict_section(norm_conditions)
     season_guidance = SEASON_GUIDANCE.get(season, "No specific season provided — use general Ayurvedic diet principles.")
 
-    hard_constraints = [f"Dietary type: {diet_type} (STRICTLY honour — never recommend non-{diet_type} items)"]
+    _age_num = user_profile.get("age")
+    try:
+        _age_num = int(_age_num)
+    except (TypeError, ValueError):
+        _age_num = None
+
+    hard_constraints = [
+        f"Dietary type: {diet_type} (STRICTLY honour — never recommend non-{diet_type} items). "
+        f"Ayura serves vegetarian and vegan plans only: the authored food library has no "
+        f"egg, fish or meat row, so an animal-food meal reaches the patient screened "
+        f"against none of their conditions."
+    ]
     if allergies:
         hard_constraints.append(f"ALLERGIES (absolutely avoid): {', '.join(allergies)}")
     if intolerances:
         hard_constraints.append(f"Intolerances (avoid): {', '.join(intolerances)}")
-    if fasting_days:
-        hard_constraints.append(f"Fasting days: {', '.join(fasting_days)} — only Phalahar (fruits, milk, nuts) on these days")
-    if if_window != "no":
-        hard_constraints.append(f"Intermittent fasting: {if_window} window — adjust meal timing accordingly")
+    # Fasting is withheld from a child rather than argued with. The age block below
+    # tells the model not to fast a growing patient, and leaving the declared window
+    # in the hard constraints at the same time hands it a contradiction to resolve —
+    # which is how a 16:8 window ends up in a twelve-year-old's plan anyway. The same
+    # reasoning as the energy deficit, which `diet_energy` already refuses for them.
+    _is_child = _age_num is not None and _age_num <= 17
+    if _is_child and (fasting_days or if_window != "no"):
+        hard_constraints.append(
+            "NO FASTING: the patient is under 18. Any fasting window or fasting day "
+            "on their profile is deliberately not applied — Upavasa is withheld "
+            "during Vriddhi. Give them three full meals and a snack every day."
+        )
+    elif fasting_withheld_reason(user_profile, diet_prefs):
+        # Diabetes, kidney disease, pregnancy or nursing, underweight: the declared
+        # fasting days are planned as ordinary days, and the brief says so rather
+        # than listing them as a constraint the generator then has to overrule.
+        hard_constraints.append(
+            "NO FASTING DAYS: " + fasting_withheld_reason(user_profile, diet_prefs)
+            + " Keep regular meal times every day.")
+    else:
+        if fasting_days:
+            hard_constraints.append(f"Fasting days: {', '.join(fasting_days)} — only Phalahar (fruits, milk, nuts) on these days")
+        if if_window != "no":
+            hard_constraints.append(f"Intermittent fasting: {if_window} window — adjust meal timing accordingly")
+    from services.diet_clinical_notes import medication_matches, preference_brief_lines
+    hard_constraints.extend(preference_brief_lines(diet_prefs))
+    for _m in medication_matches(user_profile)[0]:
+        hard_constraints.append(f"MEDICATION — {_m['medication']}: {_m['advice']}")
     if is_pregnant:
         hard_constraints.append(
             "PREGNANCY / NURSING — absolutely avoid: papaya (raw/ripe), pineapple, excess fenugreek seeds, "
@@ -523,13 +907,91 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
             "unpasteurised dairy; all meals must be Satvic, warm, and nourishing (Garbhini Paricharya)"
         )
 
+    # The gut issue is now carried in MEDICAL CONDITIONS with a full Pathya-Apathya
+    # block. This line stays because it says something that list cannot: which of the
+    # patient's diseases is the presenting complaint — the reason they opened the diet
+    # form — as opposed to a comorbidity carried over from onboarding.
+    if gut in _GUT_ISSUE_CONDITIONS:
+        gut_line = (f"GUT HEALTH: {gut.replace('_', ' ').title()} — the presenting digestive "
+                    f"complaint, and the primary target of this plan. Its Pathya-Apathya is "
+                    f"listed under MEDICAL CONDITIONS above.")
+    else:
+        gut_line = f"GUT HEALTH: {gut.replace('_', ' ').title()}"
+
+    # ── Age ──────────────────────────────────────────────────────────────────
+    # The brief said nothing about age beyond the number in the header, so a
+    # 10-year-old and a 78-year-old were described to the model identically and it
+    # wrote the same kind of plan for both. Ayurveda has a name for this axis —
+    # Vayah — and it changes the prescription before any dosha does.
+    if _age_num is not None and _age_num <= 17:
+        age_block = """
+VAYAH (AGE STAGE) — BALYA / GROWING:
+  This is a child or adolescent. Vriddhi (growth) is the governing requirement and
+  Kapha is the natural dosha of this stage.
+  • Every meal must be nourishing and building. Do NOT restrict, fast, or design for
+    weight loss, whatever the stated goal — the energy target already refuses a
+    deficit for this age.
+  • Favour Madhura rasa, warm cooked food, milk and ghee where tolerated, and
+    adequate protein at every meal for growth.
+  • No Upavasa, no long fasting windows, no detox regimens, no strong Pachana herbs.
+  • Familiar, palatable, school-compatible food. A plan a child will not eat has
+    failed regardless of its Ayurvedic merit.
+  • State plainly that this plan should be reviewed with a paediatrician."""
+    elif _age_num is not None and _age_num >= 65:
+        age_block = """
+VAYAH (AGE STAGE) — VRIDDHA / ELDER:
+  Vata is the natural dosha of this stage and Agni is usually reduced.
+  • Warm, soft, moist, well-cooked, easily chewed food. Avoid dry, raw, cold and
+    hard textures — these are Vata-aggravating and often simply not chewable.
+  • Protein at every meal: the requirement rises with age while appetite falls, and
+    muscle loss is the main nutritional risk of this stage.
+  • Smaller, more frequent meals suit a reduced Agni better than three large ones.
+  • Attend to hydration and to Vata-anulomana — thirst is blunted and constipation
+    is near-universal here.
+  • Keep preparations simple and low-effort to cook."""
+    else:
+        age_block = ""
+
     _KOSHTHA_DESC = {
         "krura": "Krura Koshtha (hard bowel — constipation tendency) — use more ghee, warm water, soaked dried fruits; avoid dry/astringent foods",
         "mridu": "Mridu Koshtha (soft bowel — loose stool tendency) — favour astringent, binding foods; avoid excess oil, sour, and heavy dairy",
         "madhyama": "Madhyama Koshtha (balanced bowel) — general Ayurvedic diet applies",
     }
     koshtha_line = f"\n  Koshtha (bowel constitution): {_KOSHTHA_DESC.get(koshtha, koshtha.title())}" if koshtha else ""
-    cal = target_calories(user_profile, diet_prefs)
+
+    # The brief used to end on "TARGET CALORIES: approximately N kcal/day" and nothing
+    # else, and the model divided that by eye: measured plans came back at 585-720 kcal
+    # against a stated 1200, and 1240-1410 against a stated 2400. A per-meal budget
+    # gives each meal an anchor instead of leaving the split to the model.
+    from services.diet_energy import energy_target
+    energy = energy_target(user_profile, diet_prefs)
+    mb = energy["meal_budget"]
+    nt = energy["nutrient_targets"]
+    sat_fat_line = (f" | saturated fat under {nt['sat_fat_g']['max']} g"
+                    if nt.get("sat_fat_g") else "")
+    nt_notes = "".join(f"\n  {n}" for n in nt.get("notes") or [])
+    energy_block = f"""ENERGY PRESCRIPTION (a clinical target, not a suggestion):
+  Daily total: {energy['target_calories']} kcal. Every day of every week must land \
+within {energy['band'][0]}-{energy['band'][1]} kcal.
+  A day totalling far less than this is a failed plan, not a light one.
+  Per-meal budget: breakfast ~{mb['breakfast']} kcal | lunch ~{mb['lunch']} kcal | \
+snack ~{mb['snack']} kcal | dinner ~{mb['dinner']} kcal
+  Protein: {energy['protein_target_g']} g/day (never under {energy['protein_floor_g']} g), spread across the four meals.
+  Carbohydrate ~{nt['carbs_g']['target']} g ({nt['carbs_g']['pct_energy']}% of energy) | fat ~{nt['fat_g']['target']} g ({nt['fat_g']['pct_energy']}%) | fibre at least {nt['fibre_g']['min']} g{sat_fat_line}
+  Sodium under {nt['sodium_mg']['max']} mg (about {round(nt['sodium_mg']['max'] * 2.5 / 1000, 1)} g salt); added sugar {'none' if nt['added_sugar_g']['max'] == 0 else 'under ' + str(nt['added_sugar_g']['max']) + ' g'}.{nt_notes}
+  Portions must be sized to deliver this. State the portion in a measurable unit
+  (katori/ml/g/pieces) and make `macros_approx` honest for that portion — the figures
+  are shown to the patient and are summed into a daily total on screen."""
+    if energy["basis"] == "measured":
+        energy_block += (
+            f"\n  Basis: BMR {energy['bmr']} kcal, maintenance {energy['tdee']} kcal at the "
+            f"patient's stated activity level."
+        )
+    for _note in energy["notes"]:
+        energy_block += f"\n  Note: {_note}"
+    from services.diet_log import brief_block
+    _log = brief_block(user_profile.get("diet_log") or {})
+    log_block = f"\n\n{_log}" if _log else ""
 
     return f"""PATIENT: {name} | Age: {age} | Gender: {gender}{' | PREGNANT/NURSING' if is_pregnant else ''}
 
@@ -538,6 +1000,7 @@ PRAKRITI & VIKRITI:
   Vikriti (current imbalance): {vikriti.title()}{(' + ' + vikriti_secondary.title()) if vikriti_secondary else ''}
   (If Prakriti ≠ Vikriti, treat the Vikriti preferentially while supporting Prakriti)
 
+{age_block}
 DIGESTIVE FIRE (AGNI):
   Type: {agni.title()} — {AGNI_DESC.get(agni, 'balanced')}{koshtha_line}
 
@@ -555,14 +1018,15 @@ CURRENT SEASON (RITUCHARYA):
 MEDICAL CONDITIONS (Pathya-Apathya required for each):
 {cond_section}
 
-GUT HEALTH: {gut.replace('_', ' ').title()}
+{gut_line}
 
 HARD DIETARY CONSTRAINTS (never violate these):
   {chr(10).join(f'  {i+1}. {c}' for i, c in enumerate(hard_constraints))}
 
 THERAPEUTIC GOAL: {goal.replace('_', ' ').title()}
 WATER INTAKE: {water} per day
-TARGET CALORIES: approximately {cal} kcal/day"""
+
+{energy_block}{log_block}"""
 
 
 def flag_allergens(weekly_plan: dict, allergies: list[str], intolerances: list[str]) -> dict:

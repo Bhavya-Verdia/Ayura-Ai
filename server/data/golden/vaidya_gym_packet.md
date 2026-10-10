@@ -123,6 +123,66 @@ down so it can be checked.
    that they are coached from day one. **Confirm that split, and the pull-up and
    barbell placements in particular.**
 
+## Risk mechanisms — the conditions that are not body parts
+
+`gym_risk_mechanism_review.csv`, eight rows. The contraindication tags above name
+body parts, and until 2026-09 only 8 of the 70 conditions onboarding offers
+changed a gym plan at all. Glaucoma, epilepsy, vertigo, a hernia and rheumatoid
+arthritis had nothing to reach.
+
+Each movement now also carries the **mechanism** it works through — spinal
+flexion, head below heart, intra-abdominal pressure, fall risk, a load that lands
+on the body if control is lost, wrist weight-bearing, neck load, lumbar extension —
+in the same vocabulary the yoga engine uses, and one shared map
+(`engine/movement_risk.py`) names the conditions each mechanism is withheld for.
+Joint conditions (osteoarthritis, rheumatoid arthritis, gout, fibromyalgia,
+neuropathy, declared obesity) now also withhold landing impact.
+
+Each row states the reason once and lists its movements. **Rule on the group:**
+is the mechanism right, are the listed movements the ones that carry it, and are
+the conditions the right ones. Two choices to confirm specifically:
+
+- **Fall risk is not withheld by age alone.** Balance and stepping are what older
+  adults most need to keep; the conditions that make a fall likely or dangerous
+  (osteoporosis, vertigo, neuropathy, Parkinson's, epilepsy) withhold it instead.
+- **Herniated disc is not mapped to spinal extension**, matching the yoga engine:
+  extension is often the therapeutic direction for a posterior herniation.
+
+## Before-you-train notes
+
+`gym_condition_guidance_review.csv`, one row per note. For diabetes, asthma,
+epilepsy, heart disease and a dozen others no movement is the problem — the
+session is — so the plan now shows a short note before the first set, each with
+its published source. **Confirm the wording and the thresholds** (the glucose
+and blood-pressure cut-offs in particular), and say whether any note should stop
+the plan being generated rather than accompany it.
+
+Alongside them, **sets of 3-5 at near-maximal load are replaced with 8-12** for
+hypertension, heart disease, glaucoma and retinopathy, a hernia or recent
+abdominal surgery, pregnancy and everyone over 60. The mechanism is the
+Valsalva manoeuvre. Confirm the list, and whether diabetes (for its retinopathy
+risk) belongs on it.
+
+## How the plan changes after it is written
+
+`gym_adaptation_rules_review.csv`, one row per rule, with the value the app uses
+today read from the code. Since 2026-10 a plan is no longer fixed for its four
+weeks: next week's weights move with what was logged and a short weekly
+check-in, and each new four-week block builds on the last, up to an offer of
+intermediate and then advanced programming. **Every threshold in that file is a
+coaching default chosen in engineering** — the load steps, the ~10% reduction,
+"half the sessions logged" as the bar for progressing, three blocks before
+intermediate, two more before advanced, one extra main-lift set going into
+block 2.
+
+What is already fixed, and why: a check-in can hold or lower a weight but never
+raise one; four warning signs (chest pain, fainting, palpitations,
+disproportionate breathlessness) replace all load advice with "see a doctor"
+and pause workout mode; pregnancy is maintained, not progressed; advanced is
+never offered under 18 or from 60. **Confirm each row, and say which groups —
+cardiac, hypertensive, over-60, adolescent — should be held back from any of
+them.**
+
 ## What happens to your answers
 
 Every `N` with a correction goes into the movement spec in

@@ -792,79 +792,12 @@ _MEDICAL_CONTRA_MAP = {
 }
 
 # ── Condition → risk mechanism ───────────────────────────────────────────────
-# Conditions used to be mapped onto whichever pose tag was vaguely nearby:
-# hernia onto knee_injury, epilepsy onto heart_disease, migraine onto
-# high_blood_pressure, wrist onto shoulder_injury. Those tags describe a
-# different body part, so the poses that actually endanger those users were
-# never the ones removed — blocking knee poses does nothing for a hernia.
-#
-# These map to what a pose *does* (`risk_tags` in the KB), so the exclusion
-# matches the mechanism: abdominal pressure for hernia, intracranial pressure
-# for glaucoma and retinal detachment, loaded spinal flexion for osteoporosis.
-_CONDITION_RISK_TAGS: dict[str, set[str]] = {
-    "hernia":               {"abdominal_pressure"},
-    "inguinal_hernia":      {"abdominal_pressure"},
-    "hiatal_hernia":        {"abdominal_pressure"},
-    "abdominal_surgery":    {"abdominal_pressure", "wrist_weight_bearing"},
-    "recent_surgery":       {"abdominal_pressure"},
-    "ulcer":                {"abdominal_pressure"},
-    "ibd":                  {"abdominal_pressure"},
-    "diverticulitis":       {"abdominal_pressure"},
-
-    "glaucoma":             {"intracranial_pressure"},
-    "retinal_detachment":   {"intracranial_pressure"},
-    "retinopathy":          {"intracranial_pressure"},
-    "migraine":             {"intracranial_pressure"},
-    "sinusitis":            {"intracranial_pressure"},
-    "stroke":               {"intracranial_pressure", "fall_risk"},
-
-    "epilepsy":             {"seizure_risk", "intracranial_pressure", "fall_risk"},
-    "seizure":              {"seizure_risk", "intracranial_pressure", "fall_risk"},
-
-    "vertigo":              {"fall_risk", "neck_load", "intracranial_pressure"},
-    "bppv":                 {"fall_risk", "neck_load", "intracranial_pressure"},
-    "labyrinthitis":        {"fall_risk", "neck_load", "intracranial_pressure"},
-    "vestibular":           {"fall_risk", "neck_load", "intracranial_pressure"},
-    "parkinson":            {"fall_risk"},
-    "multiple_sclerosis":   {"fall_risk"},
-    "neuropathy":           {"fall_risk"},
-
-    "osteoporosis":         {"spinal_flexion", "fall_risk", "spinal_extension"},
-    "osteopenia":           {"spinal_flexion"},
-    "compression_fracture": {"spinal_flexion", "spinal_extension"},
-
-    # Spinal EXTENSION — backbending. The mechanism vocabulary covered flexion but
-    # not its opposite, so an entire movement class (18 poses) had no mechanism at
-    # all and could only be caught by a pose's hand-written contraindication list.
-    #
-    # Herniated disc is deliberately NOT mapped here. Extension is frequently the
-    # therapeutic direction for a posterior disc herniation, and excluding backbends
-    # for those users would be actively wrong — it is already covered by its own
-    # contraindication tokens where individual poses call for it. These four are the
-    # conditions where loading into extension is the recognised problem.
-    "spondylolisthesis":    {"spinal_extension"},
-    "spondylolysis":        {"spinal_extension"},
-    "spinal_stenosis":      {"spinal_extension"},
-    "facet":                {"spinal_extension"},
-
-    "carpal_tunnel":        {"wrist_weight_bearing"},
-    "wrist_injury":         {"wrist_weight_bearing"},
-    "rheumatoid_arthritis": {"wrist_weight_bearing"},
-
-    "cervical_spondylosis": {"neck_load"},
-    "cervical_disc":        {"neck_load"},
-    "neck_injury":          {"neck_load"},
-    "whiplash":             {"neck_load"},
-}
-
-# Injury free-text → risk mechanism, for the same reason as above.
-_INJURY_RISK_TAGS: dict[str, set[str]] = {
-    "wrist":  {"wrist_weight_bearing"},
-    "hand":   {"wrist_weight_bearing"},
-    "neck":   {"neck_load"},
-    "hernia": {"abdominal_pressure"},
-    "balance": {"fall_risk"},
-}
+# The maps live in `engine.movement_risk`, shared with the gym engine: both
+# features read the same profile, and two copies of a safety list is how they
+# drift apart.
+from engine.movement_risk import (  # noqa: E402
+    _CONDITION_RISK_TAGS, _INJURY_RISK_TAGS, condition_risk_tags, injury_risk_tags, unfalse,
+)
 
 _INJURY_CONTRA_MAP = {
     "bad_knee":        {"knee_injury", "knee_replacement"},
@@ -933,19 +866,9 @@ _SYMPTOM_CATEGORY_BOOST: dict[str, list[str]] = {
 # It is folded into the same injury list rather than given a parallel path, because
 # the maps already match by substring and a typed "shoulder" should exclude exactly
 # what a picked "shoulder" excludes.
-# Words people type for injuries the maps already know under a different name.
-# Only unambiguous ones: "ACL" is a knee, "rotator cuff" is a shoulder. Vague terms
-# like "surgery" or "pain everywhere" are deliberately absent — they should fall
-# through to `unmatched_limitations` and be shown to the user, not guessed at.
-_LIMITATION_ALIASES = {
-    "acl": "knee", "mcl": "knee", "meniscus": "knee", "patella": "knee", "kneecap": "knee",
-    "rotator cuff": "shoulder", "frozen shoulder": "shoulder", "impingement": "shoulder",
-    "sciatica": "lower_back", "slipped disc": "lower_back", "herniated disc": "lower_back",
-    "lumbar": "lower_back", "disc": "lower_back",
-    "carpal tunnel": "wrist", "cervical": "neck", "whiplash": "neck",
-    "plantar": "ankle", "achilles": "ankle", "sprained ankle": "ankle",
-    "sacroiliac": "hip", "si joint": "hip", "labral": "hip",
-}
+# Words people type for injuries the maps already know under a different name —
+# shared with the gym engine's free-text box, in `engine.movement_risk`.
+from engine.movement_risk import _LIMITATION_ALIASES  # noqa: E402
 
 
 def _expand_aliases(term: str) -> str:
@@ -956,7 +879,11 @@ def _expand_aliases(term: str) -> str:
 
 
 def _limitation_terms(user_profile: dict, yoga_prefs: dict | None) -> list[str]:
-    terms = list(user_profile.get("injuries_or_limitations") or [])
+    # Ticked injuries go through the aliases like typed ones: the chip `disc`
+    # meant nothing to the maps below until it was read as a lower back.
+    terms = [_expand_aliases(str(t)) for t in (
+        *(user_profile.get("injuries_or_limitations") or []),
+        *((yoga_prefs or {}).get("injuries") or []))]
     detail = (yoga_prefs or {}).get("physical_limitations_detail")
     if detail:
         # Split on the separators people actually type, so "frozen shoulder, cannot
@@ -975,8 +902,15 @@ def unmatched_limitations(user_profile: dict, yoga_prefs: dict | None) -> list[s
     their own words and every filter passed it by, exactly as an unmapped condition
     passes a contraindication gate. The plan says so instead of implying it was read.
     """
-    known = set(_INJURY_CONTRA_MAP) | set(_INJURY_RISK_TAGS) | set(_LIMITATION_ALIASES)
+    known = (set(_INJURY_CONTRA_MAP) | set(_INJURY_RISK_TAGS) | set(_LIMITATION_ALIASES)
+             | set(_CONDITION_RISK_TAGS))
     unmatched = []
+    # A ticked injury the pose library has no mechanism for (an elbow) is said
+    # back the same way: the gym can act on it, and the yoga plan must not imply
+    # it did too.
+    for chip in (yoga_prefs or {}).get("injuries") or []:
+        if not any(k in str(chip).lower() for k in known):
+            unmatched.append(str(chip).replace("_", " "))
     detail = (yoga_prefs or {}).get("physical_limitations_detail")
     if not detail:
         return unmatched
@@ -1013,17 +947,13 @@ def _build_risk_set(user_profile: dict, age_group: str = "adult", yoga_prefs: di
     """Pose mechanisms this user must avoid, derived from conditions and injuries."""
     risks: set[str] = set()
 
-    for cond in (user_profile.get("medical_history") or []):
-        key = str(cond).lower()
-        for k, tags in _CONDITION_RISK_TAGS.items():
-            if k in key:
-                risks.update(tags)
+    risks |= condition_risk_tags(user_profile.get("medical_history") or [])
 
-    for inj in _limitation_terms(user_profile, yoga_prefs):
-        key = str(inj).lower()
-        for k, tags in _INJURY_RISK_TAGS.items():
-            if k in key:
-                risks.update(tags)
+    # Both maps, as the gym reads them: a hernia or an abdominal operation is the
+    # same mechanism whether it was declared as a condition or ticked as an injury,
+    # and `abdominal_surgery` is only in the condition map.
+    limitations = _limitation_terms(user_profile, yoga_prefs)
+    risks |= injury_risk_tags(limitations) | condition_risk_tags(limitations)
 
     # Falls are the dominant injury mechanism over 60, and bone density is
     # already declining — the two risks that most warrant a blanket exclusion.
@@ -1391,10 +1321,13 @@ def _pranayama_hard_blocked(pr: dict, user_conditions: set[str]) -> bool:
         contra_tokens.add(str(c).lower())
     if not contra_tokens:
         return False
+    # `unfalse`: a herniated disc is not a hernia, and Kapalabhati was blocked
+    # for it on the strength of the substring.
+    declared = {unfalse(uc) for uc in user_conditions}
     for tok in contra_tokens:
         if not tok:
             continue
-        for uc in user_conditions:
+        for uc in declared:
             if tok in uc or uc in tok:
                 return True
     return False

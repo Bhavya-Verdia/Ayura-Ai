@@ -317,7 +317,7 @@ CONDITIONING = [
 
     M("Jump Rope", src="Rope Jumping", bucket="cardio", pattern="locomotion",
       mechanic="compound", equipment="jump_rope", role="finisher",
-      skill_floor="intermediate", level="intermediate", rep_style="time",
+      skill_floor="intermediate", level="intermediate", rep_style="interval",
       category="cardio", family="jump_rope", impact="high",
       contra=["hypertension", "heart_disease", "bad_knee", "knee_replacement"],
       cal_per_min=12,
@@ -332,19 +332,19 @@ CONDITIONING = [
 
     M("High Knees", bucket="cardio", pattern="locomotion", mechanic="compound",
       equipment="bodyweight", role="finisher", skill_floor="beginner",
-      level="beginner", rep_style="time", category="cardio", impact="high",
+      level="beginner", rep_style="interval", category="cardio", impact="high",
       family="high_knees", contra=["hypertension", "heart_disease", "bad_knee"],
       cal_per_min=11, cue="Drive the knees to hip height and stay light on the feet."),
 
     M("Jumping Jacks", bucket="cardio", pattern="locomotion", mechanic="compound",
       equipment="bodyweight", role="finisher", skill_floor="beginner",
-      level="beginner", rep_style="time", category="cardio", impact="high",
+      level="beginner", rep_style="interval", category="cardio", impact="high",
       family="jumping_jack", contra=["bad_knee", "knee_replacement"],
       cal_per_min=10, cue="Land softly through the whole foot, knees slightly bent."),
 
     M("Mountain Climbers", bucket="cardio", pattern="locomotion",
       mechanic="compound", equipment="bodyweight", role="finisher",
-      skill_floor="beginner", level="beginner", rep_style="time",
+      skill_floor="beginner", level="beginner", rep_style="interval",
       category="cardio", impact="low", family="mountain_climber",
       contra=["hypertension", "heart_disease", "shoulder_injury"], cal_per_min=11,
       instructions=[
@@ -358,7 +358,7 @@ CONDITIONING = [
 
     M("Burpees", src="Burpee", bucket="cardio", pattern="locomotion", mechanic="compound",
       equipment="bodyweight", role="finisher", skill_floor="intermediate",
-      level="intermediate", rep_style="time", category="cardio", impact="high",
+      level="intermediate", rep_style="interval", category="cardio", impact="high",
       family="burpee", contra=["hypertension", "heart_disease", "bad_knee",
                                "knee_replacement", "shoulder_injury"],
       cal_per_min=14, cue="Pace it. Burpees punish anyone who starts at a sprint."),

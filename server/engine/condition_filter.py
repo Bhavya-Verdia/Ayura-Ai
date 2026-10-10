@@ -215,9 +215,22 @@ class ConditionFilter:
         Matching is case-insensitive substring-based so that e.g. "nuts" matches "tree nuts"
         and "peanut butter" matches "peanuts".
         """
-        allergies = [a.lower() for a in (user_profile.get("allergies") or [])]
-        if not allergies:
+        declared = [str(a).lower().strip() for a in (user_profile.get("allergies") or [])]
+        if not declared:
             return items
+
+        # Expand each declared allergy into the ingredient words that imply it, using
+        # the same table the diet scans use. Substring matching alone cannot see
+        # through the canonical keys the app stores: `"nuts_tree" in "tree nuts"` is
+        # False in both directions, and so is every other underscored key, so a
+        # declared tree-nut allergy matched an almond by no route at all. The raw
+        # string is kept alongside the expansion for free-text entries.
+        from services.ahara_safety import ALLERGEN_TERMS
+
+        allergies: list[str] = []
+        for a in declared:
+            allergies.append(a)
+            allergies.extend(ALLERGEN_TERMS.get(a.replace(" ", "_"), []))
 
         def _is_safe(item: dict) -> bool:
             # Check both ingredient names and tags

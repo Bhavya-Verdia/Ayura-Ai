@@ -143,6 +143,23 @@
 .onb-tile:hover .onb-tile-desc { opacity: 1; }
 .onb-tile.selected .onb-tile-desc { opacity: 0.7; }
 
+/* A note under a field label — says what the answer will be used for, where that
+   is not obvious from the label ("how active", not "how fit"). */
+.onb-field-note {
+  color: var(--ayura-muted); font-size: 0.78rem; line-height: 1.45;
+  margin: 4px 0 0;
+}
+
+/* A always-visible qualifier inside a tile, unlike .onb-tile-desc which is a
+   hover reveal — these distinguish the options rather than decorate them, so they
+   have to be readable before the pointer arrives (and on a phone, where it never
+   does). */
+.onb-tile-note {
+  font-size: 0.7rem; color: var(--ayura-muted); line-height: 1.35;
+  font-weight: 400; text-align: center;
+}
+.onb-tile.selected .onb-tile-note { color: inherit; opacity: 0.75; }
+
 /* Chips */
 .onb-chip-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .onb-chip {

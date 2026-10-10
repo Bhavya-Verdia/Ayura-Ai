@@ -49,9 +49,26 @@ class CalorieCalculator:
         }
 
     def _bmr(self, gender: str, age: int, weight_kg: float, height_cm: float) -> float:
+        """Mifflin-St Jeor. `other` and an unset gender take the mean of the two.
+
+        It was Harris-Benedict (1919), which overestimates resting expenditure by
+        roughly 5-15% in modern adults; Mifflin-St Jeor (1990) is the equation the
+        Academy of Nutrition and Dietetics found most accurate for healthy and
+        obese adults alike, and the one a dietitian reviewing the plan will
+        recompute by hand.
+
+        The app offers male / female / other in onboarding. `other`, and every user
+        who answered nothing, take the mean of the two equations — the usual
+        practice when sex is unknown, stated in the plan rather than presented as a
+        measurement.
+        """
+        base = 10.0 * weight_kg + 6.25 * height_cm - 5.0 * age
+        male, female = base + 5.0, base - 161.0
         if gender == "female":
-            return 447.593 + (9.247 * weight_kg) + (3.098 * height_cm) - (4.330 * age)
-        return 88.362 + (13.397 * weight_kg) + (4.799 * height_cm) - (5.677 * age)
+            return female
+        if gender == "male":
+            return male
+        return (female + male) / 2
 
     def _macros(self, calories: int, goal: str) -> dict:
         if goal == "muscle_gain":

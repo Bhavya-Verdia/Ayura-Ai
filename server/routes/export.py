@@ -26,6 +26,146 @@ def _sanitize_csv(val) -> str:
     return val_str
 
 
+def diet_report_lines(plan: dict) -> list[tuple[str, str]]:
+    """The nutrition plan as (style, text) pairs, ready to be rendered.
+
+    Separate from the PDF so the content can be asserted without a PDF parser —
+    `reportlab` writes but does not read, and adding a reader to `requirements.txt`
+    for a test would put a production dependency on a test-only need.
+
+    The generic renderer in `_build_pdf` turns each plan key into one table row
+    holding `json.dumps(value)[:400]`. A diet plan's `diet_weeks` is ~6 KB, so the
+    practitioner got **7%** of it — four hundred characters of escaped JSON where
+    twenty-eight days of meals should be — and the safety findings truncated as soon
+    as there were more than about two of them. A truncated list of flagged meals is
+    worse than none: it reads as the whole list.
+
+    This is the artifact the whole clinical review depends on, and the diet plan is
+    the largest thing in it.
+    """
+    out: list[tuple[str, str]] = []
+
+    rx = plan.get("energy_prescription") or {}
+    if rx.get("target_calories"):
+        line = f"<b>Energy prescription:</b> {rx['target_calories']} kcal/day"
+        if rx.get("band"):
+            line += f" (acceptable {rx['band'][0]}-{rx['band'][1]})"
+        if rx.get("protein_target_g"):
+            line += f", protein {rx['protein_target_g']} g (floor {rx.get('protein_floor_g')} g)"
+        elif rx.get("protein_floor_g"):
+            line += f", at least {rx['protein_floor_g']} g protein"
+        if rx.get("basis"):
+            line += f" — basis: {rx['basis']}"
+        out.append(("body", line))
+
+    nt = plan.get("nutrient_targets") or {}
+    if nt:
+        parts = []
+        if nt.get("carbs_g"):
+            parts.append(f"carbohydrate ~{nt['carbs_g']['target']} g ({nt['carbs_g']['pct_energy']}%"
+                         + (", available" if nt["carbs_g"].get("basis") else "") + ")")
+        if nt.get("fat_g"):
+            parts.append(f"fat ~{nt['fat_g']['target']} g")
+        if nt.get("sat_fat_g"):
+            parts.append(f"sat. fat < {nt['sat_fat_g']['max']} g")
+        if nt.get("fibre_g"):
+            parts.append(f"fibre ≥ {nt['fibre_g']['min']} g")
+        if nt.get("sodium_mg"):
+            parts.append(f"sodium < {nt['sodium_mg']['max']} mg")
+        if nt.get("protein_g", {}).get("max"):
+            parts.append(f"protein ≤ {nt['protein_g']['max']} g")
+        out.append(("body", "<b>Nutrient targets:</b> " + "; ".join(parts)))
+        srcs = "; ".join(f"{k}: {v}" for k, v in (nt.get("sources") or {}).items())
+        if srcs:
+            out.append(("small", f"Sources — {srcs}"))
+    for note in rx.get("notes") or []:
+        out.append(("small", f"• {note}"))
+    if plan.get("fasting_notice"):
+        out.append(("small", f"<b>Fasting:</b> {plan['fasting_notice']}"))
+    for m in plan.get("medication_interactions") or []:
+        out.append(("small", f"<b>Medication — {m.get('medication')}:</b> {m.get('advice')} "
+                             f"({m.get('source')})"))
+    if plan.get("medications_not_checked"):
+        out.append(("small", "<b>Medicines not checked for food interactions:</b> "
+                             + ", ".join(plan["medications_not_checked"])))
+    for n in plan.get("clinical_notes") or []:
+        out.append(("small", f"<b>{n.get('topic')}:</b> {n.get('note')} ({n.get('source')})"))
+    if plan.get("nutrition_method") == "computed_from_components":
+        out.append(("small", "Day figures below are computed from each meal's foods and grams "
+                             "(USDA FDC / IFCT 2017; prepared dishes estimated)."))
+
+    arc = (plan.get("therapeutic_arc") or {}).get("weeks") or []
+    if arc:
+        phases = " → ".join(str(w.get("phase")) for w in arc if w.get("phase"))
+        out.append(("body", f"<b>Therapeutic arc:</b> {phases}"))
+    for w in (plan.get("therapeutic_arc") or {}).get("withheld") or []:
+        out.append(("small", f"<b>Phase withheld:</b> {w}"))
+
+    # Safety findings in full. These are the rows a reviewer is here for.
+    for field, label in (
+        ("condition_safety_alerts", "Foods flagged against a declared condition"),
+        ("safety_alerts", "Allergen / intolerance flags"),
+        ("dietary_type_alerts", "Dietary-type conflicts"),
+        ("withheld_recommendations", "Withheld from the patient's Pathya list"),
+        ("advisory_prose_alerts", "Guidance text naming a contraindicated food"),
+    ):
+        rows = plan.get(field) or []
+        if not rows:
+            continue
+        out.append(("h3", f"{label} ({len(rows)})"))
+        for r in rows[:25]:
+            if not isinstance(r, dict):
+                out.append(("small", f"• {r}"))
+                continue
+            where = " ".join(str(r[k]) for k in ("week", "day", "meal_slot") if r.get(k))
+            # `item` before `food`: a withheld recommendation is a whole sentence and
+            # the food word alone ("figs") loses what was actually removed.
+            what = (r.get("item") or r.get("food")
+                    or ", ".join(r.get("matched_terms") or []))
+            why = r.get("condition") or r.get("reason") or ""
+            out.append(("small", f"• <b>{where or 'plan'}</b>: {what} — {why}"[:600]))
+        if len(rows) > 25:
+            out.append(("small", f"… and {len(rows) - 25} more"))
+
+    for field, label in (
+        ("conditions_without_food_floor", "No food-safety rule could be derived for"),
+        ("conditions_screened_by_terms_only",
+         "Screened against a term list only, not food by food"),
+    ):
+        vals = plan.get(field) or []
+        if vals:
+            out.append(("small", f"<b>{label}:</b> "
+                                 f"{', '.join(str(v).replace('_', ' ') for v in vals)}"))
+
+    for week in plan.get("diet_weeks") or []:
+        if not isinstance(week, dict):
+            continue
+        out.append(("h3", f"Week {week.get('week_number', '?')} — "
+                          f"{week.get('phase', '')}".strip(" —")))
+        for day, day_data in (week.get("daily_plan") or {}).items():
+            if not isinstance(day_data, dict):
+                continue
+            bits = []
+            for slot in ("breakfast", "lunch", "snack", "dinner"):
+                meal = day_data.get(slot)
+                name = (meal.get("meal_name") or meal.get("name") or ""
+                        if isinstance(meal, dict) else str(meal or ""))
+                if name:
+                    bits.append(f"{slot[:2]}: {name}")
+            drink = day_data.get("special_drink")
+            if isinstance(drink, dict) and drink.get("name"):
+                bits.append(f"drink: {drink['name']}")
+            if bits:
+                fasting = " [fasting]" if day_data.get("is_fasting") else ""
+                t = day_data.get("day_totals") or {}
+                totals = (f" — {round(t.get('calories', 0))} kcal, P {t.get('protein_g')} g, "
+                          f"C {t.get('carbs_g')} g, F {t.get('fat_g')} g, fibre {t.get('fiber_g')} g"
+                          if t else "")
+                out.append(("small", f"<b>{day}</b>{fasting} — {'; '.join(bits)}{totals}"))
+        out.append(("spacer", ""))
+    return out
+
+
 def _build_pdf(user: UserDocument, plan_data: dict, generated_at: str) -> bytes:
     """Build a proper PDF wellness report using ReportLab."""
     try:
@@ -227,6 +367,14 @@ def _build_pdf(user: UserDocument, plan_data: dict, generated_at: str) -> bytes:
             ("medicines",         "💊  Ayurvedic Medicines",      HexColor("#818CF8")),
         ]
 
+        def _render_diet(plan: dict) -> None:
+            styles_by_name = {"h3": H3, "body": BODY, "small": SMALL}
+            for style, text in diet_report_lines(plan):
+                if style == "spacer":
+                    story.append(Spacer(1, 0.2 * cm))
+                else:
+                    story.append(Paragraph(text, styles_by_name[style]))
+
         for key, title, color in PLAN_SECTIONS:
             value = plan_data.get(key)
             if not value:
@@ -234,6 +382,11 @@ def _build_pdf(user: UserDocument, plan_data: dict, generated_at: str) -> bytes:
 
             story.append(HRFlowable(width="100%", thickness=0.5, color=color, spaceAfter=4))
             story.append(Paragraph(title, H2))
+
+            if key == "diet_plan" and isinstance(value, dict):
+                _render_diet(value)
+                story.append(Spacer(1, 0.3 * cm))
+                continue
 
             if isinstance(value, list):
                 for idx, item in enumerate(value[:12]):   # cap at 12 items

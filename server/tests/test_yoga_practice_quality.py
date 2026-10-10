@@ -1576,5 +1576,11 @@ def test_the_beginner_pool_can_outlast_a_session():
         poses = pool["poses"] if isinstance(pool, dict) else pool
         main = [p for p in poses if p.get("sequence_role") == "main"]
         warmup = [p for p in poses if p.get("sequence_role") == "warmup"]
-        assert len(main) >= 9, f"{overrides}: {len(main)} main-role poses"
+        # A disc listed as an injury used to skip the contraindication the same
+        # disc gets as a condition, so this profile kept Simple Seated Twist, which
+        # the library rules out for a herniated disc. It is read now, and the pool
+        # is the 8 a declared condition always gave. The built session still
+        # holds 7+ main poses (asserted above).
+        floor = 8 if overrides.get("injuries_or_limitations") else 9
+        assert len(main) >= floor, f"{overrides}: {len(main)} main-role poses"
         assert len(warmup) >= 4, f"{overrides}: {len(warmup)} warm-up poses"

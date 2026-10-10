@@ -24,10 +24,45 @@ PK_GOALS = {"detox", "rejuvenation", "stress_relief", "seasonal_cleanse", "speci
 EQUIPMENT_OPTIONS = {"bodyweight", "dumbbells", "barbell", "machines", "cables",
                      "kettlebell", "resistance_bands", "cardio_machines", "pool",
                      "jump_rope", "full_gym"}
+# Injuries and joint problems the gym form offers. Must stay in step with
+# `gym_plan_engine._INJURY_TOKENS`, which translates them into the library's own
+# contraindication tokens. The profile's `injuries_or_limitations` was the only
+# place an injury could be declared, and no screen ever collected it — so the 47
+# movements tagged for a shoulder and 29 for a knee were reachable by nobody.
+KNOWN_LIFT_OPTIONS = {"squat", "deadlift", "bench", "overhead_press", "row"}
+GYM_INJURY_OPTIONS = {"knee", "knee_replacement", "lower_back", "disc", "shoulder",
+                      "elbow", "wrist", "neck", "hip", "hip_replacement", "ankle",
+                      "hernia", "abdominal_surgery"}
 YOGA_STYLES = {"hatha", "vinyasa", "restorative", "yin", "power", "ashtanga", "kundalini"}
-DIETARY_TYPES = {"vegetarian", "vegan", "eggetarian", "non_vegetarian", "pescatarian"}
+# The two the app has data for. `data/knowledge_base/diet_foods.json` is 150 authored
+# rows and every one of them is vegetarian — there is no egg, fish or meat row in it,
+# so `apathya_for` / `pathya_for`, the 708 authored (condition, food) claims that gate
+# the primary path, said nothing about any animal food. A `non_vegetarian` patient was
+# offered a choice the library could not honour: the rule engine answered a
+# muscle-support goal with black beans and edamame, and on the LLM path the model
+# invented meals that the authored claim layer could not screen.
+#
+# Offering only what the data can support is the honest version of that. The three
+# withdrawn values are still canonicalised rather than rejected — see
+# `_LEGACY_DIETARY_TYPES` — because a stored preference must not lock a user out of
+# their own plan.
+DIETARY_TYPES = {"vegetarian", "vegan"}
+
+# Withdrawn values, mapped to the strictest thing the library can actually serve.
+# Coerced, never raised: a 422 here is a user who cannot regenerate their diet plan.
+_LEGACY_DIETARY_TYPES = {
+    "eggetarian": "vegetarian",
+    "non_vegetarian": "vegetarian",
+    "pescatarian": "vegetarian",
+}
 FOOD_ALLERGIES = {"gluten", "dairy", "nuts_tree", "peanuts", "soy", "eggs", "shellfish", "fish", "sesame", "mustard"}
-FOOD_INTOLERANCES = {"lactose", "fructose", "histamine", "fodmap"}
+# `gluten_sensitivity` is offered on the form and was accepted with no validator,
+# but no term list knew it, so it was declared and enforced by nothing.
+FOOD_INTOLERANCES = {"lactose", "fructose", "histamine", "fodmap", "gluten_sensitivity"}
+CUISINES = {"any", "north_indian", "south_indian", "east_indian", "west_indian"}
+# Restrictions people live by that are not a dietary TYPE: Jain (no root vegetables,
+# honey or mushrooms) and the common no-onion-garlic household.
+DIET_RESTRICTIONS = {"jain", "no_onion_garlic"}
 
 
 # ─── Gym Preferences ─────────────────────────────────────────────────────────
@@ -83,11 +118,57 @@ class GymPreferences(BaseModel):
         description="Self-assessed lifting strength: untrained | beginner | intermediate | advanced"
     )
 
+    injuries: list[str] = Field(
+        default_factory=list,
+        description="Injuries or joint problems, from GYM_INJURY_OPTIONS.")
+    injury_detail: Optional[str] = Field(
+        None, max_length=300,
+        description="Anything the options do not cover, in the practitioner's words. "
+                    "What the engine cannot act on is named back to them in the plan.")
+
+    # What the practitioner can actually lift, when they know. Every load in the
+    # plan was otherwise priced from bodyweight and training age alone — within
+    # published standards on average, and well off for any one trained lifter.
+    # {"squat": {"kg": 60, "reps": 8}, ...}, keys from KNOWN_LIFT_OPTIONS. The
+    # set is "a weight you can lift for that many reps with good form".
+    known_lifts: Optional[dict] = Field(
+        None,
+        description="Optional working sets: {lift: {kg, reps}} for squat, deadlift, bench, "
+                    "overhead_press, row. Calibrates every load in the plan.")
+
+    @field_validator("known_lifts")
+    @classmethod
+    def validate_known_lifts(cls, v):
+        if not v:
+            return None
+        clean = {}
+        for lift, entry in v.items():
+            if lift not in KNOWN_LIFT_OPTIONS:
+                raise ValueError(f"Unknown lift {lift!r}. Valid: {sorted(KNOWN_LIFT_OPTIONS)}")
+            if not entry or entry.get("kg") in (None, "") or entry.get("reps") in (None, ""):
+                continue
+            try:
+                kg, reps = float(entry["kg"]), int(entry["reps"])
+            except (TypeError, ValueError):
+                raise ValueError(f"{lift}: kg and reps must be numbers")
+            if not (1 <= kg <= 400) or not (1 <= reps <= 20):
+                raise ValueError(f"{lift}: kg must be 1-400 and reps 1-20")
+            clean[lift] = {"kg": kg, "reps": reps}
+        return clean or None
+
     @field_validator("gym_goal")
     @classmethod
     def validate_gym_goal(cls, v: str) -> str:
         if v not in GYM_GOALS:
             raise ValueError(f"gym_goal must be one of {GYM_GOALS}")
+        return v
+
+    @field_validator("injuries")
+    @classmethod
+    def validate_injuries(cls, v: list[str]) -> list[str]:
+        invalid = set(v) - GYM_INJURY_OPTIONS
+        if invalid:
+            raise ValueError(f"Unknown injury: {invalid}. Valid: {GYM_INJURY_OPTIONS}")
         return v
 
     @field_validator("available_equipment")
@@ -156,6 +237,20 @@ class YogaPreferences(BaseModel):
         None,
         description="Specific limitations e.g., can't sit cross-legged"
     )
+    # The gym form's chips, asked here too. Both engines read the union of the
+    # two forms (`engine.movement_risk.declared_injuries`), so an injury ticked
+    # once reaches both plans.
+    injuries: list[str] = Field(
+        default_factory=list,
+        description="Injuries or joint problems, from GYM_INJURY_OPTIONS.")
+
+    @field_validator("injuries")
+    @classmethod
+    def validate_injuries(cls, v: list[str]) -> list[str]:
+        invalid = set(v) - GYM_INJURY_OPTIONS
+        if invalid:
+            raise ValueError(f"Unknown injury: {invalid}. Valid: {GYM_INJURY_OPTIONS}")
+        return v
 
     @field_validator("yoga_goal")
     @classmethod
@@ -187,7 +282,7 @@ class DietPreferences(BaseModel):
     # Dietary type — CRITICAL, filters entire food selection
     dietary_type: str = Field(
         "vegetarian",
-        description="vegetarian / vegan / eggetarian / non_vegetarian / pescatarian"
+        description="vegetarian / vegan"
     )
 
     # Safety filters — NEVER passed to LLM, always hardcoded exclusion
@@ -221,6 +316,16 @@ class DietPreferences(BaseModel):
         default=[],
         description="Specific days user fasts (e.g., Monday, Ekadashi)"
     )
+    # What makes a plan one a person will actually eat. A dietitian asks all three
+    # before writing a single meal; the form asked none of them.
+    food_dislikes: list[str] = Field(
+        default=[], max_length=20,
+        description="Foods the person will not eat, typed; each is screened out of the plan")
+    cuisine_preference: str = Field(
+        "any", pattern="^(any|north_indian|south_indian|east_indian|west_indian)$",
+        description="Regional cuisine the meals should lean toward")
+    dietary_restrictions: list[str] = Field(
+        default=[], description="jain / no_onion_garlic")
 
     @field_validator("diet_goal")
     @classmethod
@@ -232,9 +337,12 @@ class DietPreferences(BaseModel):
     @field_validator("dietary_type")
     @classmethod
     def validate_dietary_type(cls, v: str) -> str:
-        if v not in DIETARY_TYPES:
+        key = str(v or "").strip().lower()
+        if key in _LEGACY_DIETARY_TYPES:
+            return _LEGACY_DIETARY_TYPES[key]
+        if key not in DIETARY_TYPES:
             raise ValueError(f"dietary_type must be one of {DIETARY_TYPES}")
-        return v
+        return key
 
     @field_validator("food_allergies")
     @classmethod
@@ -242,6 +350,32 @@ class DietPreferences(BaseModel):
         invalid = set(v) - FOOD_ALLERGIES
         if invalid:
             raise ValueError(f"Unknown allergy: {invalid}. Valid: {FOOD_ALLERGIES}")
+        return v
+
+    @field_validator("food_intolerances")
+    @classmethod
+    def validate_intolerances(cls, v: list[str]) -> list[str]:
+        invalid = set(v) - FOOD_INTOLERANCES
+        if invalid:
+            raise ValueError(f"Unknown intolerance: {invalid}. Valid: {FOOD_INTOLERANCES}")
+        return v
+
+    @field_validator("food_dislikes")
+    @classmethod
+    def validate_dislikes(cls, v: list[str]) -> list[str]:
+        cleaned = []
+        for item in v:
+            item = str(item).strip()[:40]
+            if item and item.lower() not in (c.lower() for c in cleaned):
+                cleaned.append(item)
+        return cleaned[:20]
+
+    @field_validator("dietary_restrictions")
+    @classmethod
+    def validate_restrictions(cls, v: list[str]) -> list[str]:
+        invalid = set(v) - DIET_RESTRICTIONS
+        if invalid:
+            raise ValueError(f"Unknown restriction: {invalid}. Valid: {DIET_RESTRICTIONS}")
         return v
 
 
@@ -279,6 +413,15 @@ class PanchakarmaPreferences(BaseModel):
         "willing_to_buy",
         pattern="^(yes|no|willing_to_buy)$",
         description="Can they procure specific herbs"
+    )
+    # The form asked this from the start and the schema did not declare it, so the
+    # answer was dropped on save and every patient was planned as Sama. Koshtha
+    # fixes the Virechana drug's strength: a Mridu Koshtha must get the mild band
+    # only, and read as Sama in a clinic setting it was given the moderate one.
+    koshtha: Optional[str] = Field(
+        None,
+        pattern="^(sama|krura|mridu)$",
+        description="Bowel tendency (Koshtha); decides Virechana drug strength",
     )
     diet_adherence_ability: str = Field(
         "partial",
@@ -335,6 +478,12 @@ class RemedyPreferences(BaseModel):
     )
 
     # History
+    # Also asked on the Panchakarma form; `engine.herb_overlap.declared_ayurvedic`
+    # unions the two, so a medicine declared on either reaches both checks.
+    current_ayurvedic_medicines: list[str] = Field(
+        default=[],
+        description="Ayurvedic medicines taken now, checked against every prescribed formulation",
+    )
     previous_ayurvedic_medicines: list[str] = Field(
         default=[],
         description="Ayurvedic medicines previously tried — avoids repetition, captures what worked"

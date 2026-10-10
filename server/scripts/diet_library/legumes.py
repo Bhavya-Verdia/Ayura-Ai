@@ -25,6 +25,19 @@ AUTHORED, NOT CLINICALLY REVIEWED. Macros from USDA FoodData Central unless mark
 
 from diet_library.spec import F, N
 
+# ── Adhmana (`bloating`) across this varga ───────────────────────────────────
+# Adhmana is Apana Vata obstructed by Ama in the Pakvashaya, and the Shimbi varga is
+# what obstructs it, so most of these rows carry the claim. Two things are deliberate:
+#
+#   * Mudga is the varga's PERMITTED pulse. `moong_dal_yellow` is Pathya and Mudga
+#     yusha is what this protocol is built on; only `sprouted_moong` is withheld, for
+#     the chala guna sprouting adds. Withholding Mudga would take away the one thing
+#     the patient is meant to be fed, which is why the curated scan terms beside this
+#     name `rajma` and `chana` individually and never a blanket `legume`.
+#   * Masura (`masoor_dal`) and Adhaki (`toor_dal`) are NOT withheld. Both are laghu,
+#     both are given well cooked with Hingu and Yavani rather than withheld, and a
+#     four-week plan that leaves a vegetarian a single pulse is its own kind of harm.
+
 _L = dict(category="legume", meal=("lunch", "dinner"), prep_minutes=30,
           diet_types=("vegetarian", "vegan"), vegan=True, ref="bhavaprakasha",
           varga="Shimbi Dhanya")
@@ -37,7 +50,7 @@ LEGUMES = [
                "and prescribe in fever, in convalescence and to a weak Agni, where "
                "every other legume in this varga is withheld.",
       dosha=(0, -1, -1), ritu=("grishma", "sharad", "varsha"),
-      pathya_for=("grahani", "ibs", "anemia", "obesity", "diabetes", "amavata"),
+      pathya_for=("grahani", "ibs", "anemia", "obesity", "diabetes", "amavata", "bloating"),
       nutrition=N(105, 7.0, 19.0, 0.4, 4.1, source="usda"), **_L),
 
     F("Mudga (Whole Green Gram)", id="moong_dal_green", prep_state="cooked",
@@ -53,10 +66,13 @@ LEGUMES = [
       vipaka="katu",
       dosha=(2, -1, -1), ritu=("vasanta", "grishma"),
       pathya_for=("obesity", "diabetes", "anemia"),
-      apathya_for=("ibs", "grahani", "amavata"),
+      apathya_for=("ibs", "grahani", "amavata", "bloating"),
       nutrition=N(30, 3.0, 5.9, 0.2, 1.8, source="usda"),
       **{**_L, "meal": ("breakfast", "snack"), "prep_minutes": 5}),
 
+    # Dietitian decision, 2026-10: not Apathya in acidity. Masura is the pulse the
+    # texts give in Raktapitta, a Pitta disorder; removing it left acidity patients
+    # one dal (moong).
     F("Masura (Masoor Dal)", id="masoor_dal", prep_state="cooked",
       rasa=("madhura", "kashaya"), guna=("laghu", "ruksha"), virya="ushna",
       vipaka="katu",
@@ -64,7 +80,7 @@ LEGUMES = [
                "motions and is the legume withheld in constipation.",
       dosha=(1, 0, -1), ritu=("shishira", "hemanta", "varsha"),
       pathya_for=("grahani", "obesity"),
-      apathya_for=("constipation", "acidity"),
+      apathya_for=("constipation",),
       nutrition=N(116, 9.0, 20.1, 0.4, 7.9, source="usda"), **_L),
 
     F("Masura (Whole Brown Lentil)", id="lentils_brown", prep_state="cooked",
@@ -79,14 +95,14 @@ LEGUMES = [
       vipaka="katu",
       dosha=(2, -1, -1), ritu=("hemanta", "shishira"),
       pathya_for=("diabetes", "obesity", "high_cholesterol"),
-      apathya_for=("ibs", "grahani", "arsha"),
+      apathya_for=("ibs", "grahani", "arsha", "bloating"),
       nutrition=N(164, 8.9, 27.4, 2.6, 7.6, source="usda"), **_L),
 
     F("Chanaka (Kabuli Chana)", id="chhole", prep_state="cooked",
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha"), virya="shita", vipaka="katu",
       dosha=(2, -1, -1), ritu=("hemanta", "shishira"),
       pathya_for=("diabetes", "anemia"),
-      apathya_for=("ibs", "grahani", "arsha", "amavata"),
+      apathya_for=("ibs", "grahani", "arsha", "amavata", "bloating"),
       nutrition=N(164, 8.9, 27.4, 2.6, 7.6, source="usda"), **_L),
 
     F("Chanaka Churna (Besan)", id="chickpea_flour_besan", prep_state="dry",
@@ -94,7 +110,7 @@ LEGUMES = [
       vipaka="katu",
       dosha=(2, -1, -1), ritu=("hemanta", "shishira", "vasanta"),
       pathya_for=("diabetes",),
-      apathya_for=("ibs", "grahani"),
+      apathya_for=("ibs", "grahani", "bloating"),
       nutrition=N(387, 22.4, 57.8, 6.7, 10.8, source="usda"), **_L),
 
     F("Adhaki (Toor Dal)", id="toor_dal", prep_state="cooked",
@@ -105,6 +121,12 @@ LEGUMES = [
       apathya_for=("ibs", "arsha"),
       nutrition=N(121, 7.0, 23.0, 0.4, 5.0, source="usda"), **_L),
 
+    # `bloating` (Adhmana) on this row is the one claim in the varga that a reader
+    # will take for a mistake. Masha is V-2 — Vata-PACIFYING by its own dosha effect —
+    # and it is still the pulse most associated with Anaha, because the condition has
+    # two limbs and this is the other one: guru, snigdha and picchila obstruct the
+    # Pakvashaya so Apana cannot move at all. A rule reading `dosha_effect` alone
+    # concludes the opposite, which is why these are authored and not derived.
     F("Masha (Urad Dal)", id="urad_dal", prep_state="cooked",
       rasa=("madhura",), guna=("guru", "snigdha", "picchila"), virya="ushna",
       vipaka="madhura",
@@ -115,21 +137,21 @@ LEGUMES = [
       dosha=(-2, 2, 2), ritu=("shishira", "hemanta"),
       pathya_for=("constipation", "anemia"),
       apathya_for=("amavata", "obesity", "acidity", "psoriasis", "high_cholesterol",
-                   "hypothyroid", "arsha"),
+                   "hypothyroid", "arsha", "bloating"),
       nutrition=N(118, 7.5, 20.6, 0.5, 6.0, source="usda"), **_L),
 
     F("Rajamasha (Black-Eyed Peas)", id="black_eyed_peas", prep_state="cooked",
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha"), virya="shita", vipaka="katu",
       dosha=(2, -1, -1), ritu=("varsha", "sharad"),
       pathya_for=("anemia", "diabetes"),
-      apathya_for=("ibs", "grahani", "arsha"),
+      apathya_for=("ibs", "grahani", "arsha", "bloating"),
       nutrition=N(116, 7.7, 20.8, 0.5, 6.5, source="usda"), **_L),
 
     F("Kalaya (Green Peas)", id="green_peas", prep_state="cooked",
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha"), virya="shita", vipaka="katu",
       dosha=(2, -1, -1), ritu=("shishira", "hemanta", "vasanta"),
       pathya_for=("diabetes", "obesity"),
-      apathya_for=("ibs", "grahani", "amavata"),
+      apathya_for=("ibs", "grahani", "amavata", "bloating"),
       nutrition=N(84, 5.4, 15.6, 0.2, 5.5, source="usda"), **_L),
 
     F("Rajma (Kidney Beans)", id="rajma", prep_state="cooked",
@@ -137,7 +159,7 @@ LEGUMES = [
       vipaka="katu",
       dosha=(2, -1, -1), ritu=("hemanta", "shishira"),
       pathya_for=("diabetes",),
-      apathya_for=("ibs", "grahani", "arsha", "amavata"),
+      apathya_for=("ibs", "grahani", "arsha", "amavata", "bloating"),
       nutrition=N(127, 8.7, 22.8, 0.5, 6.4, source="usda"),
       **{**_L, "ref": "modern_extrapolated",
          "varga": "No nighantu entry — the kidney bean is a New World crop. Reasoned "
@@ -149,7 +171,7 @@ LEGUMES = [
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha", "sthira"), virya="shita",
       vipaka="katu",
       dosha=(2, -1, -1), ritu=("hemanta", "shishira"),
-      apathya_for=("ibs", "grahani", "arsha", "amavata"),
+      apathya_for=("ibs", "grahani", "arsha", "amavata", "bloating"),
       nutrition=N(127, 8.7, 22.8, 0.5, 6.4, source="usda"),
       **{**_L, "ref": "modern_extrapolated",
          "varga": "No classical entry. Reasoned from the Shimbi Varga as a guru, "
@@ -159,28 +181,37 @@ LEGUMES = [
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha"), virya="shita", vipaka="katu",
       dosha=(2, 0, -1), ritu=("hemanta", "shishira"),
       pathya_for=("diabetes", "high_cholesterol"),
-      apathya_for=("ibs", "grahani", "arsha"),
+      apathya_for=("ibs", "grahani", "arsha", "bloating"),
       nutrition=N(132, 8.9, 23.7, 0.5, 8.7, source="usda"),
       **{**_L, "ref": "modern_extrapolated",
          "varga": "No nighantu entry — a New World crop. Reasoned from the Shimbi "
                   "Varga as guru, ruksha and Vata-vardhaka. Extrapolated, not cited."}),
 
+    # Dietitian decision, 2026-10: no PCOS or thyroid claim on soy. Soy isoflavones
+    # improve insulin resistance in PCOS (Jamilian & Asemi, JCEM 2016) and do not cause
+    # hypothyroidism with adequate iodine; the levothyroxine note keeps them 4 h from the
+    # tablet instead (ATA 2014). The claims were modern extrapolations the evidence runs against.
     F("Soya Chunks", id="soya_chunks", prep_state="cooked",
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha"), virya="shita", vipaka="katu",
       dosha=(2, 0, 0), ritu=("hemanta", "shishira"),
-      apathya_for=("hypothyroid", "thyroid", "ibs", "pcos"), allergen=True,
+      apathya_for=("ibs", "bloating"), allergen=True,
       nutrition=N(105, 15.0, 8.0, 0.5, 4.0, source="authored_estimate"),
       **{**_L, "ref": "modern_extrapolated",
          "varga": "No nighantu entry, and the defatted extrusion has no dravya "
-                  "analogue at all. Reasoned from the Shimbi Varga as guru and ruksha; "
-                  "the thyroid caution is modern and does not come from the texts. "
+                  "analogue at all. Reasoned from the Shimbi Varga as guru and ruksha. "
                   "Extrapolated, not cited."}),
 
+    # Dietitian decision, 2026-10: no PCOS or thyroid claim on soy. Soy isoflavones
+    # improve insulin resistance in PCOS (Jamilian & Asemi, JCEM 2016) and do not cause
+    # hypothyroidism with adequate iodine; the levothyroxine note keeps them 4 h from the
+    # tablet instead (ATA 2014). The claims were modern extrapolations the evidence runs against.
+    # Firm tofu is low-FODMAP (the oligosaccharides go with the whey), so no IBS
+    # claim either (Monash University FODMAP data). Soy milk from whole beans keeps it.
     F("Tofu (Firm)", id="tofu_firm", prep_state="prepared",
       rasa=("madhura", "kashaya"), guna=("guru", "picchila"), virya="shita",
       vipaka="madhura",
       dosha=(1, -1, 1), ritu=("grishma", "sharad"),
-      apathya_for=("hypothyroid", "thyroid", "ibs", "pcos"), allergen=True,
+      apathya_for=("bloating",), allergen=True,
       nutrition=N(76, 8.1, 1.9, 4.8, 0.3, source="usda"),
       **{**_L, "ref": "modern_extrapolated",
          "varga": "No classical entry. Reasoned from the Shimbi Varga curdled as "
@@ -189,7 +220,7 @@ LEGUMES = [
     F("Tempeh", id="tempeh", prep_state="fermented",
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha"), virya="ushna", vipaka="katu",
       dosha=(1, 1, 0), ritu=("hemanta", "shishira"),
-      apathya_for=("amavata", "psoriasis", "hypothyroid", "migraine"), allergen=True,
+      apathya_for=("amavata", "psoriasis", "hypothyroid", "migraine", "bloating"), allergen=True,
       nutrition=N(192, 20.3, 7.6, 10.8, 4.0, source="usda"),
       **{**_L, "ref": "modern_extrapolated",
          "varga": "No nighantu entry. Reasoned as a Shimbi taken through mould "
@@ -200,7 +231,7 @@ LEGUMES = [
     F("Edamame", id="edamame", prep_state="cooked",
       rasa=("madhura", "kashaya"), guna=("guru", "ruksha"), virya="shita", vipaka="katu",
       dosha=(1, -1, 0), ritu=("grishma", "sharad"),
-      apathya_for=("hypothyroid", "thyroid", "ibs"), allergen=True,
+      apathya_for=("hypothyroid", "thyroid", "ibs", "bloating"), allergen=True,
       nutrition=N(121, 11.9, 8.9, 5.2, 5.2, source="usda"),
       **{**_L, "ref": "modern_extrapolated",
          "varga": "No nighantu entry — the green soybean. Reasoned from the Shimbi "
@@ -214,7 +245,7 @@ LEGUMES = [
                "where its rasa says it should cool, which is the classical caution and "
                "the reason it is withheld in Amlapitta and Kushtha.",
       dosha=(-1, 2, 2), ritu=("shishira", "hemanta"),
-      apathya_for=("acidity", "psoriasis", "obesity", "high_cholesterol", "migraine"),
+      apathya_for=("acidity", "psoriasis", "obesity", "high_cholesterol", "migraine", "bloating"),
       allergen=True,
       nutrition=N(567, 25.8, 16.1, 49.2, 8.5, source="usda"),
       **{**_L, "meal": ("snack",), "prep_minutes": 1,

@@ -83,6 +83,17 @@ export async function track(event, properties) {
   posthog?.capture(event, properties)
 }
 
+// Keys already sent this page session, for `trackOnce`.
+const sentOnce = new Set()
+
+/** Record a "was shown" event once per page session per key. A view event that
+ * fires on every tab switch or remount counts renders, not people. */
+export function trackOnce(key, event, properties) {
+  if (sentOnce.has(key)) return
+  sentOnce.add(key)
+  track(event, properties)
+}
+
 /** Record an event without awaiting, for use while the page is being torn down.
  *
  * `track` awaits the lazy import, and on `pagehide` that continuation never runs
@@ -138,4 +149,21 @@ export const EVENTS = {
   PLAN_GENERATED: 'plan_generated',
   CHAT_MESSAGE_SENT: 'chat_message_sent',
   CHECKIN_SUBMITTED: 'checkin_submitted',
+
+  /* Gym: does anyone use what adapts the plan? Every adaptive part of the gym
+   * feature — next week's weights, the next block, the level — runs on logged
+   * sets, so whether people log is the question everything else depends on.
+   * Weeks, counts, effort and level are about the TRAINING, not the person.
+   * Deliberately absent: pain areas, warning symptoms, injuries, conditions —
+   * a check-in's health answers never leave the app, not even as booleans. */
+  GYM_SETS_LOGGED: 'gym_sets_logged',
+  GYM_CHECKIN_SUBMITTED: 'gym_checkin_submitted',
+  GYM_ADJUSTMENTS_SHOWN: 'gym_adjustments_shown',
+  GYM_BLOCK_COMPLETE_SHOWN: 'gym_block_complete_shown',
+  GYM_NEXT_BLOCK_STARTED: 'gym_next_block_started',
+  GYM_REBUILD_REQUESTED: 'gym_rebuild_requested',
+  GYM_LEVEL_UP_OFFERED: 'gym_level_up_offered',
+  GYM_LEVEL_UP_ACCEPTED: 'gym_level_up_accepted',
+  GYM_SESSION_STARTED: 'gym_session_started',
+  GYM_SESSION_FINISHED: 'gym_session_finished',
 }

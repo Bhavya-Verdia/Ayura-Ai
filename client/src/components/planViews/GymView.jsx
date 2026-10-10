@@ -1,19 +1,89 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Dumbbell, Leaf, Calendar, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Lightbulb, Info,
+  ShieldAlert, Play,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
+import { workoutsAPI } from '../../api/client'
+import { trackOnce, EVENTS } from '../../lib/analytics'
+import { GymSetLogger } from './GymSetLogger'
+import { GymWeekCheckin } from './GymWeekCheckin'
+import { GymBlockComplete, GymBlockHistory } from './GymBlocks'
+import { GymSessionPlayer } from './GymSessionPlayer'
+import { blockIsOver } from './gymBlock'
 
 const WEEK_THEMES = ['Foundation', 'Volume Build', 'Intensity Peak', 'Deload']
 
 
-export function GymView({ plan }) {
+export function GymView({ plan, onRegenerate }) {
   const [activeWeek, setActiveWeek] = useState(0)
   const [expandedEx, setExpandedEx] = useState(new Set())
   const [showAllActivities, setShowAllActivities] = useState(new Set())
   // Which day cards are open. Rendering every day expanded made one week 8,700px
   // on a phone — ten screens before the tips section. Same disclosure as YogaView.
   const [expandedDays, setExpandedDays] = useState(new Set())
+  // What has been logged against this plan, keyed `${week}:${day}:${exerciseId}`.
+  // The next block reads it; this view shows it beside each exercise.
+  const [logs, setLogs] = useState({})
+  const planId = plan.plan_id
+  // Week check-ins, keyed by week number, and what last week's sets and
+  // check-in change in the week on screen. The plan's structure is fixed for
+  // the block; only the weights move, and the server says why for each.
+  const [checkins, setCheckins] = useState({})
+  // Stored with the week it was fetched for, so switching weeks never shows the
+  // previous week's adjustments while the next request is in flight.
+  const [adjusted, setAdjusted] = useState(null)
+  // The day being trained in workout mode, or null.
+  const [sessionDay, setSessionDay] = useState(null)
+  useEffect(() => {
+    if (!planId) return
+    let live = true
+    workoutsAPI.list(planId)
+      .then(({ data }) => {
+        if (!live) return
+        const map = {}
+        ;(data?.logs || []).forEach(l => { map[`${l.week}:${l.day}:${l.exercise_id}`] = l })
+        setLogs(map)
+      })
+      .catch(() => {})  // logging is an addition to the plan, never a condition of seeing it
+    workoutsAPI.checkins(planId)
+      .then(({ data }) => {
+        if (!live) return
+        const map = {}
+        ;(data?.checkins || []).forEach(c => { map[c.week] = c })
+        setCheckins(map)
+      })
+      .catch(() => {})
+    return () => { live = false }
+  }, [planId])
+
+  const prevWeek = activeWeek          // 1-based number of the week before the active one
+  const prevWeekLogs = Object.keys(logs).filter(k => k.startsWith(`${prevWeek}:`))
+    .map(k => `${k}:${logs[k]?.effort}:${(logs[k]?.sets || []).map(s => `${s.kg}x${s.reps}`).join(',')}`)
+    .join('|')
+  const prevCheckin = JSON.stringify(checkins[prevWeek] || null)
+  useEffect(() => {
+    if (!planId || activeWeek < 1) return
+    let live = true
+    const week = activeWeek + 1
+    workoutsAPI.adjustments(planId, week)
+      .then(({ data }) => {
+        if (!live) return
+        setAdjusted({ week, data })
+        const moved = Object.values(data?.exercises || {})
+        if (moved.length) {
+          // Whether the adaptation reached anyone — and in which direction.
+          trackOnce(`adjust:${planId}:${week}`, EVENTS.GYM_ADJUSTMENTS_SHOWN, {
+            week, exercises: moved.length,
+            up: moved.filter(a => a.direction === 'up').length,
+            down: moved.filter(a => a.direction === 'down').length,
+          })
+        }
+      })
+      .catch(() => { if (live) setAdjusted({ week, data: null }) })
+    return () => { live = false }
+  }, [planId, activeWeek, prevWeekLogs, prevCheckin])
+  const adjust = adjusted?.week === activeWeek + 1 ? adjusted.data : null
 
   const us = plan.user_summary || {}
   const fourWeekPlan = plan.four_week_plan || []
@@ -31,6 +101,8 @@ export function GymView({ plan }) {
     ? plan.progression : null
   const nutrition = plan.nutrition_sync || {}
   const recovery = plan.recovery_protocol || {}
+  const focusNotes = plan.weekly_focus_notes || {}
+  const vidhi = plan.vyayama_vidhi || {}
 
   const goalLabel = (us.gym_goal || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
   const doshaColor = DOSHA_COLOR[us.dominant_dosha] || DOSHA_COLOR.default
@@ -145,12 +217,37 @@ export function GymView({ plan }) {
         ))}
       </div>
 
+      {/* ── The block is over: what it came to, and the next one ── */}
+      {blockIsOver(plan, logs) && <GymBlockComplete plan={plan} over onRegenerate={onRegenerate} />}
+
       {/* ── Week coaching banner ── */}
       {weekPrescription?.note && (
         <div className="gym-week-banner">
           <span className="gym-week-banner-icon"><Lightbulb size={16} strokeWidth={2} /></span>
           <span className="gym-week-banner-text">
             <strong>Week {activeWeek + 1} · {WEEK_THEMES[activeWeek]}:</strong> {weekPrescription.note}
+          </span>
+        </div>
+      )}
+
+      {/* ── What last week changed in this one ── */}
+      {adjust?.stop && (
+        <div className="gym-adjust-stop" role="alert">
+          <ShieldAlert size={16} /> <span>{adjust.stop}</span>
+        </div>
+      )}
+      {adjust?.notices?.map((n, i) => (
+        <div key={i} className="gym-week-banner gym-adjust-notice">
+          <span className="gym-week-banner-icon"><Info size={16} strokeWidth={2} /></span>
+          <span className="gym-week-banner-text">{n}</span>
+        </div>
+      ))}
+      {adjust && !adjust.stop && Object.keys(adjust.exercises || {}).length > 0 && (
+        <div className="gym-week-banner gym-adjust-notice">
+          <span className="gym-week-banner-icon"><Target size={16} strokeWidth={2} /></span>
+          <span className="gym-week-banner-text">
+            <strong>Adjusted from week {adjust.based_on_week}:</strong> {Object.keys(adjust.exercises).length} exercise
+            {Object.keys(adjust.exercises).length === 1 ? ' has' : 's have'} a weight set from what you logged — shown under each one.
           </span>
         </div>
       )}
@@ -176,10 +273,37 @@ export function GymView({ plan }) {
         </div>
       )}
 
+      {/* Before-you-train notes for the conditions where no movement is the
+          problem and the session is — hypoglycaemia on insulin, an asthma attack
+          a longer warm-up prevents, a seizure with a bar overhead. Shown above the
+          week, not under it, because they apply before the first set. */}
+      {Array.isArray(plan.condition_guidance) && plan.condition_guidance.length > 0 && (
+        <section className="gym-condition-guidance" aria-label="Before you train">
+          <h4><ShieldAlert size={14} /> Before you train</h4>
+          <ul>
+            {plan.condition_guidance.map(g => (
+              <li key={g.key}>
+                <strong>{g.label}.</strong> {g.note}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Why this plan is narrower than usual — a pregnant practitioner has 19 safe
           exercises at beginner level, and bodyweight-only users can be near that.
           The engine has written this since the pregnancy pass; rendering it is
           what stops a repetitive plan from looking like the whole library. */}
+      {/* What this block was built from — the last block's logged sessions and
+          the loads measured in it — so a plan that read the log does not look
+          identical to one that did not. */}
+      {plan.block_notice && (
+        <div className="gym-pool-notice gym-block-notice">
+          <Activity size={12} />
+          <span>{plan.block_notice}</span>
+        </div>
+      )}
+
       {plan.pool_notice && (
         <div className="gym-pool-notice">
           <Info size={12} />
@@ -246,6 +370,24 @@ export function GymView({ plan }) {
           <span>{plan.substitution_notice}</span>
         </div>
       )}
+      {plan.injury_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.injury_notice}</span>
+        </div>
+      )}
+      {plan.intensity_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.intensity_notice}</span>
+        </div>
+      )}
+      {plan.age_notice && (
+        <div className="gym-pool-notice">
+          <Info size={12} />
+          <span>{plan.age_notice}</span>
+        </div>
+      )}
 
       {/* ── Day-list toolbar ── */}
       {weekDays.length > 0 && (
@@ -300,6 +442,9 @@ export function GymView({ plan }) {
                 restRecovery ? (
                   <div className="gym-rest-card rich">
                     <h4 className="gym-rest-title">{restRecovery.title}</h4>
+                    {focusNotes[day.day_name] && (
+                      <p className="gym-day-coach-note">{focusNotes[day.day_name]}</p>
+                    )}
                     <ul className="gym-rest-activities">
                       {(showAllActs ? restRecovery.activities : restRecovery.activities?.slice(0, 3))
                         ?.map((act, k) => <li key={k}>{act}</li>)}
@@ -341,6 +486,12 @@ export function GymView({ plan }) {
                     </div>
                   )}
 
+                  {/* The coach's line for this day. Generated for every enriched
+                      plan and, until now, rendered nowhere. */}
+                  {focusNotes[day.day_name] && (
+                    <p className="gym-day-coach-note">{focusNotes[day.day_name]}</p>
+                  )}
+
                   <div className="gym-day-meta">
                     {day.estimated_duration_minutes > 0 && (
                       <span className="gym-meta-chip"><Timer size={10} /> {day.estimated_duration_minutes} min</span>
@@ -349,6 +500,19 @@ export function GymView({ plan }) {
                       <span className="gym-meta-chip"><Zap size={10} /> ~{day.calories_burned_estimate} kcal</span>
                     )}
                   </div>
+
+                  {/* Workout mode. Withheld when last week's check-in reported a
+                      warning sign: the advice that week is a doctor, not a session. */}
+                  {planId && (adjust?.stop ? (
+                    <p className="gym-checkin-stop" role="note">
+                      <ShieldAlert size={14} /> Workout mode is paused — see the note at the top of this week.
+                    </p>
+                  ) : (
+                    <button type="button" className="gym-log-save gs-start"
+                      onClick={() => setSessionDay(day)}>
+                      <Play size={13} /> Start workout
+                    </button>
+                  ))}
 
                   {/* Warmup */}
                   {day.warmup?.length > 0 && (
@@ -368,7 +532,7 @@ export function GymView({ plan }) {
                         {day.main_workout.map((ex, j) => {
                           const exId = `${dayIdx}-${j}`
                           const isExpanded = expandedEx.has(exId)
-                          const isBodyweight = (ex.weight_range || '').startsWith('Bodyweight') || (ex.weight_range || '').startsWith('Effort')
+                          const isBodyweight = ex.category === 'cardio' || /^(Bodyweight|Band|Effort)/.test(ex.weight_range || '')
                           return (
                             <div key={j} className="gym-exercise-row">
                               <div className="gym-ex-top">
@@ -384,7 +548,8 @@ export function GymView({ plan }) {
                                 </span>
                                 <div className="gym-ex-chips">
                                   <span className="gym-ex-badge">{ex.sets} × {ex.reps}</span>
-                                  {ex.rest_seconds && <span className="gym-ex-rest">{ex.rest_seconds}s rest</span>}
+                                  {/* `0 && …` renders a literal 0: every conditioning row showed one. */}
+                                  {ex.rest_seconds > 0 && <span className="gym-ex-rest">{ex.rest_seconds}s rest</span>}
                                   {ex.equipment && ex.equipment !== 'bodyweight' && (
                                     <span className="gym-ex-equip">{ex.equipment}</span>
                                   )}
@@ -396,10 +561,30 @@ export function GymView({ plan }) {
                                   {ex.weight_range}
                                 </div>
                               )}
+                              {!adjust?.stop && adjust?.exercises?.[ex.exercise_id] && (
+                                <div className={`gym-adjusted gym-adjusted-${adjust.exercises[ex.exercise_id].direction}`}>
+                                  <span className="gym-adjusted-k">This week for you:</span>{' '}
+                                  <strong>{adjust.exercises[ex.exercise_id].text}</strong>
+                                  <span className="gym-adjusted-why">{adjust.exercises[ex.exercise_id].reason}</span>
+                                </div>
+                              )}
                               {ex.coaching_cue && (
                                 <p className="gym-ex-cue">{ex.coaching_cue}</p>
                               )}
                               {ex.notes && <p className="gym-ex-notes">{ex.notes}</p>}
+                              <GymSetLogger
+                                planId={planId}
+                                week={activeWeek + 1}
+                                day={day.day}
+                                exercise={ex}
+                                logged={logs[`${activeWeek + 1}:${day.day}:${ex.exercise_id}`]}
+                                onSaved={(entry) => setLogs(prev => {
+                                  const key = `${activeWeek + 1}:${day.day}:${ex.exercise_id}`
+                                  const next = { ...prev }
+                                  if (entry) next[key] = entry; else delete next[key]
+                                  return next
+                                })}
+                              />
                               {ex.instructions?.length > 0 && (
                                 <>
                                   <button className="gym-instructions-toggle" onClick={() => toggleEx(exId)}>
@@ -422,6 +607,18 @@ export function GymView({ plan }) {
                     </div>
                   )}
 
+                  {/* Balance — past sixty only. Falls are the injury that ends
+                      independence, and a strength plan with no balance work in it
+                      is half of what WHO asks older adults for. */}
+                  {day.balance?.length > 0 && (
+                    <div className="gym-sub-section">
+                      <h4 className="gym-section-label">Balance · beside a counter or chair</h4>
+                      <ul className="gym-sub-list">
+                        {day.balance.map((b, j) => <li key={j} className="gym-list-item">{b}</li>)}
+                      </ul>
+                    </div>
+                  )}
+
                   {/* Cooldown */}
                   {day.cooldown?.length > 0 && (
                     <div className="gym-sub-section">
@@ -437,6 +634,37 @@ export function GymView({ plan }) {
           )
         })}
       </div>
+
+      {sessionDay && (
+        <GymSessionPlayer
+          planId={planId}
+          week={activeWeek + 1}
+          day={sessionDay}
+          adjustments={adjust?.exercises}
+          logs={logs}
+          onLogged={(dayNo, exId, entry) => setLogs(prev => ({ ...prev, [`${activeWeek + 1}:${dayNo}:${exId}`]: entry }))}
+          onClose={() => setSessionDay(null)}
+        />
+      )}
+
+      {/* ── The week's check-in, below the days it is about ── */}
+      {weekDays.length > 0 && (
+        <GymWeekCheckin
+          key={`${planId}:${activeWeek + 1}`}
+          planId={planId}
+          week={activeWeek + 1}
+          saved={checkins[activeWeek + 1]}
+          onSaved={(c) => setCheckins(prev => ({ ...prev, [c.week]: c }))}
+          onRebuild={onRegenerate}
+        />
+      )}
+
+      {/* ── Week four ends the block: say what comes next before it does ── */}
+      {activeWeek === 3 && !blockIsOver(plan, logs) && (
+        <GymBlockComplete plan={plan} over={false} onRegenerate={onRegenerate} />
+      )}
+
+      <GymBlockHistory onRegenerate={onRegenerate} />
 
       {/* ── Ayurvedic Tips ── */}
       {Object.keys(tips).length > 0 && (
@@ -476,6 +704,44 @@ export function GymView({ plan }) {
           </div>
           {plan.vyayama_shakti.bala_note && (
             <p className="gym-vyayama-bala">{plan.vyayama_shakti.bala_note}</p>
+          )}
+        </div>
+      )}
+
+      {/* ── Vyayama Vidhi: the classical regimen around the session ──
+          Written by the coaching model for every enriched plan and shown
+          nowhere until this. Each line has passed the practice gate and the
+          food floor (`gym_plan_enricher.gate_coaching_prose`). */}
+      {(vidhi.ardhashakti_guideline || vidhi.pre_workout_ritual || vidhi.post_workout_ritual
+        || vidhi.seasonal_adjustment || vidhi.vyayama_contraindications?.length > 0) && (
+        <div className="gym-vyayama-section">
+          <h3 className="gym-tips-title"><Leaf size={14} /> Vyayama Vidhi — Your Exercise Regimen</h3>
+          {vidhi.ardhashakti_guideline && (
+            <p className="gym-vyayama-capacity">{vidhi.ardhashakti_guideline}</p>
+          )}
+          <div className="gym-tips-grid">
+            {[
+              ['pre_workout_ritual', 'Before training'],
+              ['post_workout_ritual', 'After training'],
+              ['seasonal_adjustment', 'This season'],
+              ['dosha_intensity_principle', 'Your constitution'],
+            ].map(([key, label]) => vidhi[key] ? (
+              <div key={key} className="gym-tip-card">
+                <h4 className="gym-tip-label">{label}</h4>
+                <p className="gym-tip-text">{vidhi[key]}</p>
+              </div>
+            ) : null)}
+          </div>
+          {vidhi.vyayama_contraindications?.length > 0 && (
+            <div className="gym-overtraining">
+              <h4 className="gym-tip-label" style={{ marginBottom: '0.4rem' }}>Skip training today if</h4>
+              <ul className="gym-sub-list">
+                {vidhi.vyayama_contraindications.map((s, i) => <li key={i} className="gym-list-item">{s}</li>)}
+              </ul>
+            </div>
+          )}
+          {plan.ayurvedic_lifestyle_sync && (
+            <p className="gym-vyayama-bala">{plan.ayurvedic_lifestyle_sync}</p>
           )}
         </div>
       )}
@@ -534,7 +800,7 @@ export function GymView({ plan }) {
       )}
 
       {/* ── Nutrition sync ── */}
-      {Object.keys(nutrition).length > 0 && (
+      {(Object.keys(nutrition).length > 0 || plan.nutrition_withheld?.length > 0) && (
         <div className="gym-nutrition-section">
           <h3 className="gym-tips-title"><Flame size={14} /> Nutrition Sync</h3>
           <div className="gym-nutrition-grid">
@@ -549,6 +815,14 @@ export function GymView({ plan }) {
               </div>
             ) : null)}
           </div>
+          {/* A suggestion removed by the screen and one never written look the
+              same unless the removal is said out loud. */}
+          {plan.nutrition_withheld?.map(w => (
+            <div key={w.field} className="gym-pool-notice">
+              <Info size={12} />
+              <span>A {w.field.replace(/_/g, ' ')} suggestion was withheld: it {w.reason}.</span>
+            </div>
+          ))}
         </div>
       )}
 

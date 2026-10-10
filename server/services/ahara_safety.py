@@ -19,14 +19,29 @@ raise — a safety layer must not be able to break plan generation.
 from __future__ import annotations
 
 import re
+import unicodedata
 from functools import lru_cache
 
-# Words that merely START with a short allergen term but are NOT that allergen.
-# Prefix matching alone would flag an egg allergy on "eggplant"/"eggless" or a
-# mustard ("rai") allergy on "raita"/"raisin"; these are dropped explicitly.
+# Words that merely START with a short term but are NOT that food. `_term_regex`
+# allows a suffix on purpose — "milk" has to match "milkshake" — so every short term
+# needs checking against the longer words it swallows. Prefix matching alone would
+# flag an egg allergy on "eggplant"/"eggless", a mustard ("rai") allergy on
+# "raita"/"raisin", and butter ("makhan") on "makhana", which is a fox nut.
+#
+# Read by `_term_in_text`, so it covers the vernacular expansion below as well as the
+# allergen terms it was written for. Most prefix collisions there are benign because
+# the longer word is the SAME food in Sanskrit — `badam`/`badama`, `palak`/`palakya`,
+# `til`/`tila`, `chana`/`chanaka` — and only a collision between two different foods
+# belongs here.
 _ALLERGEN_FALSE_FRIENDS: dict[str, frozenset[str]] = {
     "egg": frozenset({"eggplant", "eggplants", "eggless"}),
     "rai": frozenset({"raita", "raisin", "raisins"}),
+    # Makhana is Phool Makhana, the fox nut — a different food from Makhan, butter,
+    # and one this app prescribes as a light snack. It flagged a plain day of
+    # Chilla, Khichdi, Makhana and Lauki Sabzi as containing butter.
+    "makhan": frozenset({"makhana", "makhane", "makhani"}),
+    # Alubukhara is a dried plum, not Alu the potato.
+    "alu": frozenset({"alubukhara", "alubukhare"}),
 }
 
 
@@ -39,14 +54,39 @@ def _term_regex(term: str) -> "re.Pattern":
     return re.compile(rf"\b{re.escape(term)}\w*")
 
 
+# A dairy word after a plant word is not dairy: soy milk, almond milk, coconut
+# yogurt, vegan paneer and peanut butter are what a vegan or a dairy-allergic
+# patient is meant to eat. Matching the bare word stripped the library's whole
+# plant-protein category out of every vegan plan and flagged the plant milks a vegan
+# plan rightly contains. The plant itself is still screened by its own allergy —
+# "almond" for a tree-nut allergy, "soy" for soy — so nothing is let through.
+_DAIRY_WORDS = frozenset({"milk", "curd", "yogurt", "yoghurt", "butter", "cream",
+                          "paneer", "cheese", "dahi", "lassi", "kheer"})
+_PLANT_QUALIFIERS = frozenset({
+    "soy", "soya", "almond", "badam", "oat", "oats", "coconut", "cashew", "kaju",
+    "flax", "rice", "peanut", "groundnut", "hemp", "vegan", "plant", "tofu", "nut",
+    "cocoa", "sesame", "seed", "seeds", "millet",
+})
+_PREV_WORD = re.compile(r"([a-z]+)[\s-]*$")
+
+
+def _plant_qualified(term: str, text: str, start: int) -> bool:
+    if term not in _DAIRY_WORDS:
+        return False
+    prev = _PREV_WORD.search(text[max(0, start - 24):start])
+    return bool(prev) and prev.group(1) in _PLANT_QUALIFIERS
+
+
 def _term_in_text(term: str, text: str) -> bool:
     friends = _ALLERGEN_FALSE_FRIENDS.get(term, frozenset())
-    return any(m.group(0) not in friends for m in _term_regex(term).finditer(text))
+    return any(m.group(0) not in friends and not _plant_qualified(term, text, m.start())
+               for m in _term_regex(term).finditer(text))
 
 # ── Allergen term lookup ──────────────────────────────────────────────────────
 # Maps a declared allergy key → the ingredient/dish terms that imply it.
 ALLERGEN_TERMS: dict[str, list[str]] = {
-    "gluten": ["wheat", "gluten", "maida", "atta", "bread", "roti", "chapati", "poha",
+    # Not "poha": it is flattened RICE, and a coeliac patient's safest breakfast.
+    "gluten": ["wheat", "gluten", "maida", "atta", "bread", "roti", "chapati",
                "semolina", "suji", "rava", "barley", "oats", "seitan", "naan", "paratha",
                "dalia", "vermicelli", "pasta", "couscous"],
     "dairy": ["milk", "curd", "yogurt", "yoghurt", "ghee", "butter", "cream", "paneer",
@@ -76,9 +116,13 @@ ALLERGEN_TERMS: dict[str, list[str]] = {
     # AUTHORED, NOT CLINICALLY REVIEWED. These lists are a food-safety floor, not a
     # diagnosis, and they flag rather than remove — the same contract the allergy
     # terms above keep.
-    "lactose": ["milk", "curd", "yogurt", "yoghurt", "cream", "paneer", "cheese",
-                "lassi", "buttermilk", "kheer", "raita", "mawa", "khoa", "dahi",
-                "payasam", "ice cream", "condensed milk"],
+    # Curd, chaas, raita and paneer are NOT here. Curd's live cultures digest much of
+    # its lactose and paneer loses most of it with the whey; most people with lactose
+    # intolerance manage 12 g of lactose at a sitting (NIH Consensus 2010), and listing
+    # them left a lactose-intolerant vegetarian with no dairy protein at all — 28 of
+    # 28 days under her protein floor. Milk and the milk-based sweets stay.
+    "lactose": ["milk", "cream", "cheese", "lassi", "kheer", "mawa", "khoa",
+                "payasam", "ice cream", "condensed milk", "whey", "rabdi", "basundi"],
     # Ghee is deliberately absent: clarified butter is all but lactose-free, and
     # Ayurveda treats it as a distinct dravya from dugdha. Listing it would flag the
     # one dairy the classical texts prescribe most and train the user to ignore the
@@ -89,6 +133,9 @@ ALLERGEN_TERMS: dict[str, list[str]] = {
     "histamine": ["fermented", "idli", "dosa", "dhokla", "pickle", "achar", "vinegar",
                   "aged cheese", "cheese", "curd", "yogurt", "dahi", "kombucha",
                   "soy sauce", "leftover", "tomato", "spinach", "brinjal", "eggplant"],
+    "gluten_sensitivity": ["wheat", "gluten", "maida", "atta", "bread", "roti", "chapati",
+                           "semolina", "suji", "rava", "barley", "oats", "seitan", "naan",
+                           "paratha", "dalia", "vermicelli", "pasta", "couscous"],
     "fodmap": ["wheat", "atta", "roti", "chapati", "onion", "garlic", "rajma",
                "chole", "chickpea", "kidney bean", "cabbage", "cauliflower", "milk",
                "curd", "apple", "pear", "mango", "watermelon", "honey", "cashew",
@@ -173,6 +220,83 @@ def _norm(text: str) -> str:
     return (text or "").lower()
 
 
+# ── The vernacular the prompt asks for, and the English the gates are written in ──
+# `diet_llm_generator`'s system prompt says "Generate REAL Indian meal names", so the
+# model writes "Dahi Bhalla with imli chutney" and "Gud ki Kheer". Every scan term is
+# English or Sanskrit, and `_term_in_text` is a word match — so the SAME FOOD was
+# caught or missed depending on which name the model happened to reach for:
+#
+#     curd -> caught        dahi  -> missed
+#     tamarind -> caught    imli  -> missed
+#     pickle -> caught      achar -> missed
+#     jaggery -> caught     gud   -> missed
+#     cabbage -> caught     patta gobhi -> missed
+#
+# The library carries Sanskrit (`dadhi`) because its rows are named that way, and the
+# curated tables carry English. Neither carries the Hindi-Urdu register the prompt
+# actually requests, which is the one a meal name is most likely to be written in.
+#
+# Canonical forms are APPENDED to the searchable text rather than substituted, so a
+# term that already matched cannot stop matching. Display text is untouched — this
+# only affects what the scans read.
+#
+# Every canonical here must be a word some gate actually holds, or the entry is
+# decoration: `chole -> chickpeas` looked right and fired nothing, because the tables
+# say `chana`. `test_no_vernacular_entry_is_inert` runs the real matcher over the
+# whole term vocabulary. Words the tables exclude ON PURPOSE stay out of this table
+# for the same reason they are excluded there — `namak -> salt`, `chai -> tea`,
+# `chawal -> rice` and `nimbu -> lemon` are each in every other meal.
+_VERNACULAR: dict[str, str] = {
+    # dairy
+    "dahi": "curd", "dahee": "curd", "chaach": "buttermilk", "chhach": "buttermilk",
+    "chaas": "buttermilk", "makhan": "butter", "malai": "cream", "khoya": "mawa",
+    "doodh": "milk", "dudh": "milk", "ghee": "ghee", "paneer": "paneer",
+    # souring and preserving
+    "imli": "tamarind", "achar": "pickle", "aachar": "pickle", "achaar": "pickle",
+    "sirka": "vinegar", "kachcha aam": "raw mango",
+    # sweeteners
+    "gud": "jaggery", "gur": "jaggery", "shakkar": "sugar", "cheeni": "sugar",
+    "chini": "sugar", "misri": "sugar", "sharkara": "sugar",
+    # pulses — the Shimbi varga this app restricts most
+    "chole": "chana chhole", "chhole": "chana", "chana": "chana",
+    "kabuli chana": "chana", "kala chana": "chana", "besan": "chickpea flour",
+    "rajma": "kidney beans", "lobia": "black eyed peas", "urad": "urad dal",
+    "arhar": "toor dal", "tuvar": "toor dal", "masoor": "masoor dal",
+    "matar": "green peas",
+    # vegetables
+    "patta gobhi": "cabbage", "bandh gobhi": "cabbage", "phool gobhi": "cauliflower",
+    "aloo": "potato", "alu": "potato", "arbi": "colocasia", "arvi": "colocasia",
+    "kachalu": "colocasia", "palak": "spinach", "baingan": "brinjal", "kaddu": "pumpkin", "karela": "bitter gourd",
+    "shakarkandi": "sweet potato", "shakarkand": "sweet potato", "kela": "banana", "chukandar": "beetroot",
+    "kathal": "jackfruit", "kheera": "cucumber", "khira": "cucumber",
+    # grains and preparations "atta": "wheat", "maida": "refined flour", "suji": "semolina",
+    "sooji": "semolina", "rava": "semolina", "dalia": "broken wheat",
+    "bhature": "fried bread", "puri": "fried bread", "poori": "fried bread",
+    "pakora": "deep fried", "pakoda": "deep fried", "samosa": "deep fried",
+    "bhujia": "deep fried", "tali": "deep fried", "talahua": "deep fried",
+    # other "kadak chai": "strong tea",
+    "mirch": "chilli", "lal mirch": "chilli", "hari mirch": "chilli",
+    "kaju": "cashew", "badam": "almond", "akhrot": "walnut", "pista": "pistachio",
+    "mungfali": "peanut", "moongphali": "peanut", "til": "sesame",
+    "anda": "egg", "murgh": "chicken", "machli": "fish", "gosht": "meat",
+}
+
+# Longest first, so "patta gobhi" is matched before "gobhi" could be.
+_VERNACULAR_ORDER = tuple(sorted(_VERNACULAR, key=len, reverse=True))
+
+
+def _expand_vernacular(text: str) -> str:
+    """Append the canonical English for any vernacular food word present.
+
+    Appended, never substituted: the original text keeps matching whatever it already
+    matched, and the canonical form adds what it could not.
+    """
+    if not text:
+        return text
+    found = [_VERNACULAR[v] for v in _VERNACULAR_ORDER if _term_in_text(v, text)]
+    return f"{text} {' '.join(found)}" if found else text
+
+
 def _meal_text(meal) -> str:
     """Flatten a meal into a single lowercase searchable string.
 
@@ -182,7 +306,7 @@ def _meal_text(meal) -> str:
       - list of food-item dicts (rule engine four_week_plan: [{name, id, ...}])
     """
     if isinstance(meal, str):
-        return _norm(meal)
+        return _expand_vernacular(_norm(meal))
     if isinstance(meal, dict):
         parts = [
             str(meal.get("meal_name", "")),
@@ -195,9 +319,17 @@ def _meal_text(meal) -> str:
             # would flag the very drink that avoids it. Same line `ayurvedic_note`
             # sits on the wrong side of for meals.
             str(meal.get("recipe", "")),
-            " ".join(meal.get("key_ingredients", []) or []),
+            " ".join(str(x) for x in (meal.get("key_ingredients", []) or [])),
         ]
-        return _norm(" ".join(parts))
+        # A meal stated as components is screened on what it is made of, by name and
+        # by id: "ghee" as a component is a dairy food whatever the dish is called.
+        for comp in meal.get("components") or []:
+            if isinstance(comp, dict) and comp.get("food"):
+                from services.diet_nutrition import name_of
+                fid = str(comp["food"])
+                parts.append(name_of(fid))
+                parts.append(fid.replace("_", " "))
+        return _expand_vernacular(_norm(" ".join(parts)))
     if isinstance(meal, list):
         parts = []
         for item in meal:
@@ -206,7 +338,7 @@ def _meal_text(meal) -> str:
                 parts.append(" ".join(item.get("key_ingredients", []) or []))
             elif isinstance(item, str):
                 parts.append(item)
-        return _norm(" ".join(parts))
+        return _expand_vernacular(_norm(" ".join(parts)))
     return ""
 
 
@@ -291,6 +423,66 @@ def _collect_meal_units(plan: dict) -> list[tuple[str, str, str, object]]:
     return units
 
 
+# ── Script guard ──────────────────────────────────────────────────────────────
+# Every scan here matches English and Sanskrit words in Latin script. Measured: a
+# meal written as `दही चावल` or `தயிர் சாதம்` raised ZERO alerts from every gate —
+# condition, allergen and dietary type — so a plan in any of the app's other scripts
+# would have passed as checked. A meal's components are screened by id whatever its
+# name says, but the name, description and recipe are free text, and a name can
+# carry a food the components do not.
+#
+# So text the scans cannot read is never passed: it is reported as unverified and
+# sent to repair like any other flagged meal. Translation for the reader is a
+# separate display layer (`services.diet_translate`) laid over the checked English
+# plan, never a field these scans read.
+_LATIN_LIMIT = 0x024F            # end of Latin Extended-B: é, ñ, ā (IAST) still read
+
+
+def unreadable_script(text) -> str | None:
+    """The first non-Latin script a text's LETTERS are written in, or None."""
+    for ch in str(text or ""):
+        if ch.isalpha() and ord(ch) > _LATIN_LIMIT and not (0x1E00 <= ord(ch) <= 0x1EFF):
+            name = unicodedata.name(ch, "")
+            return name.split(" ")[0].title() if name else "Unknown"
+    return None
+
+
+def _free_text(meal) -> str:
+    """The free-text fields `_meal_text` scans — everything but the component ids."""
+    if isinstance(meal, str):
+        return meal
+    if isinstance(meal, list):
+        return " ".join(_free_text(m) for m in meal)
+    if isinstance(meal, dict):
+        return " ".join(str(meal.get(k) or "") for k in
+                        ("meal_name", "name", "description", "recipe")) + " " + \
+            " ".join(str(x) for x in (meal.get("key_ingredients") or []))
+    return ""
+
+
+def apply_script_guard(plan: dict) -> dict:
+    """Flag every meal whose scanned text is in a script the scans cannot read.
+
+    Adds plan["unscannable_alerts"] and plan["script_checked"]; marks the meal
+    `requires_substitution`, as an allergen hit does."""
+    alerts: list[dict] = []
+    for week_label, day_label, slot, meal in _collect_meal_units(plan):
+        script = unreadable_script(_free_text(meal))
+        if not script:
+            continue
+        if isinstance(meal, dict):
+            meal["requires_substitution"] = True
+            meal["unscannable_script"] = script
+        alerts.append({
+            "week": week_label, "day": day_label, "meal_slot": slot, "script": script,
+            "message": (f"This meal is written in {script} script, which the food-safety "
+                        "checks cannot read, so it has not been verified."),
+        })
+    plan["unscannable_alerts"] = alerts
+    plan["script_checked"] = True
+    return plan
+
+
 def apply_ahara_safety(plan: dict, allergies: list[str], intolerances: list[str]) -> dict:
     """
     Mutates `plan` in place, adding deterministic Viruddha + allergen safety data.
@@ -364,12 +556,186 @@ def apply_ahara_safety(plan: dict, allergies: list[str], intolerances: list[str]
 # user's conditions. High-signal, low-false-positive terms only; we FLAG (not
 # delete) so a spurious match is a harmless warning, never a broken plan.
 _CONDITION_APATHYA_TERMS: dict[str, dict] = {
+    # ── Floors for the twenty-one conditions that had none ──────────────────────
+    # Each mirrors an entry added to `PATHYA_APATHYA_HINTS`; the guard test
+    # `test_every_brief_curated_condition_has_a_safety_floor` requires both.
+    #
+    # Only concrete, matchable food words belong here. The Apathya prose beside these
+    # includes behaviours — "sleeping during the day", "holding the urge to urinate",
+    # "standing up abruptly after eating" — and deriving terms from that phrasing is
+    # how a scan ends up searching meals for `sitting` and `travel`. Terms broad
+    # enough to match a prescribed food are left out for the same reason: `salt` is in
+    # every meal and `tea` is the form half these conditions' medicines take, so the
+    # entries say `extra salt`, `salted`, `black tea` and `strong tea` instead.
+    "gout": {
+        "name": "Gout (Vatarakta)",
+        "reason": "Purine-rich, fermented and sour foods aggravate Rakta and Vata in Vatarakta.",
+        "terms": ["red meat", "mutton", "beef", "pork", "liver", "organ meat", "kidney meat",
+                  "prawn", "shrimp", "crab", "shellfish", "sardine", "anchovy", "mackerel",
+                  "beer", "alcohol", "whisky", "wine", "urad dal", "masha", "curd", "dahi",
+                  "pickle", "achar", "extra salt", "salted", "vinegar"],
+    },
+    "kidney_stones": {
+        "name": "Kidney stones (Mutrashmari)",
+        "reason": "High-oxalate and high-sodium foods feed stone formation in Mutrashmari.",
+        "terms": ["spinach", "palak", "beetroot", "chocolate", "cocoa", "black tea",
+                  "strong tea", "extra salt", "salted", "pickle", "papad", "red meat",
+                  "organ meat", "rhubarb", "sweet potato", "cashew", "almond",
+                  "peanut", "soya"],
+    },
+    "gallstones": {
+        "name": "Gallstones (Pittashmari)",
+        "reason": "A high-fat meal contracts the gallbladder; fried and rich foods provoke an attack.",
+        "terms": ["deep fried", "deep-fried", "puri", "bhatura", "samosa", "pakora",
+                  "butter", "cream", "cheese", "paneer", "egg yolk", "red meat",
+                  "mutton", "vanaspati", "margarine", "mayonnaise"],
+    },
+    "heart_disease": {
+        "name": "Heart disease (Hridroga)",
+        "reason": "Sodium, saturated fat and alcohol burden the Hridaya and the Rasavaha srotas.",
+        "terms": ["extra salt", "salted", "pickle", "achar", "papad", "processed",
+                  "canned", "deep fried", "deep-fried", "butter", "cream", "cheese",
+                  "vanaspati", "margarine", "red meat", "mutton", "beef", "bacon",
+                  "sausage", "alcohol", "whisky", "beer", "wine"],
+    },
+    "hyperthyroidism": {
+        "name": "Hyperthyroidism (Atyagni / Bhasmaka with Galaganda)",
+        "reason": ("Stimulants and concentrated iodine drive an already excessive Agni. "
+                   "Note this is the mirror of hypothyroidism: the goitrogenic brassicas "
+                   "restricted there are Pathya here."),
+        "terms": ["coffee", "espresso", "black tea", "strong tea", "energy drink",
+                  "cola", "alcohol", "whisky", "beer", "wine", "chilli", "red chilli",
+                  "seaweed", "kelp", "nori", "iodised salt"],
+    },
+    "osteoarthritis": {
+        "name": "Osteoarthritis (Sandhigata Vata)",
+        "reason": "Cold, dry and fermented foods increase Vata in the Sandhi.",
+        "terms": ["curd", "dahi", "yogurt", "cold drink", "soft drink", "soda",
+                  "ice cream", "chilled", "refrigerated", "raw salad", "rajma",
+                  "kidney bean", "chana", "chickpea", "pickle", "vinegar"],
+    },
+    "sciatica": {
+        "name": "Sciatica (Gridhrasi)",
+        "reason": "Cold, dry and Vata-increasing foods aggravate Gridhrasi.",
+        "terms": ["curd", "dahi", "yogurt", "cold drink", "soft drink", "soda",
+                  "ice cream", "chilled", "refrigerated", "raw salad", "rajma",
+                  "kidney bean", "chana", "chickpea", "pickle"],
+    },
+    "cervical_spondylosis": {
+        "name": "Cervical spondylosis (Griva Sandhigata Vata)",
+        "reason": "Cold, dry and fermented foods increase Vata in the cervical Sandhi.",
+        "terms": ["curd", "dahi", "yogurt", "cold drink", "soft drink", "soda",
+                  "ice cream", "chilled", "refrigerated", "raw salad", "pickle"],
+    },
+    "ankylosing_spondylitis": {
+        "name": "Ankylosing spondylitis (Asthi-Majjagata Vata with Ama)",
+        "reason": "Ama-forming and Vata-increasing foods drive the Asthi-Majjagata process.",
+        "terms": ["curd", "dahi", "yogurt", "cold drink", "ice cream", "chilled",
+                  "refrigerated", "fermented", "idli", "dosa", "dhokla", "urad dal",
+                  "masha", "rajma", "kidney bean", "deep fried", "deep-fried", "pickle"],
+    },
+    "fibromyalgia": {
+        "name": "Fibromyalgia (Mamsagata Vata with Ama)",
+        "reason": "Cold, raw and fermented foods deepen Ama and aggravate Vata in Mamsa dhatu.",
+        "terms": ["curd", "dahi", "yogurt", "cold drink", "ice cream", "chilled",
+                  "refrigerated", "raw salad", "fermented", "coffee", "black tea",
+                  "energy drink"],
+    },
+    "anxiety": {
+        "name": "Anxiety (Chittodvega)",
+        "reason": "Stimulants and dry, cold, irregular food aggravate Vata in the Manovaha srotas.",
+        "terms": ["coffee", "espresso", "black tea", "strong tea", "energy drink",
+                  "cola", "soft drink", "alcohol", "whisky", "beer", "wine",
+                  "raw salad", "chilled"],
+    },
+    "depression": {
+        "name": "Depression (Vishada)",
+        "reason": "Heavy, cold and stale foods increase Kapha and Tamas in the Manovaha srotas.",
+        "terms": ["alcohol", "whisky", "beer", "wine", "leftover", "stale", "reheated",
+                  "ice cream", "cold drink", "soft drink", "deep fried", "deep-fried"],
+    },
+    "epilepsy": {
+        "name": "Epilepsy (Apasmara)",
+        "reason": "Alcohol, stale and incompatible foods disturb the Manovaha srotas in Apasmara.",
+        "terms": ["alcohol", "whisky", "beer", "wine", "leftover", "stale", "reheated",
+                  "fermented", "red meat", "mutton", "beef", "pork"],
+    },
+    "eczema": {
+        "name": "Eczema (Vicharchika)",
+        "reason": "Sour, salty and Viruddha foods provoke Kushtha; milk with fish is the classical pair.",
+        "terms": ["curd", "dahi", "yogurt", "pickle", "achar", "vinegar", "tamarind",
+                  "imli", "extra salt", "salted", "fish", "prawn", "shrimp", "brinjal",
+                  "eggplant", "fermented"],
+    },
+    "sinusitis": {
+        "name": "Sinusitis (Dushta Pratishyaya)",
+        "reason": "Cold and Kapha-increasing foods thicken and retain Kapha in the Nasa srotas.",
+        "terms": ["curd", "dahi", "yogurt", "banana", "cold drink", "soft drink",
+                  "ice cream", "chilled", "refrigerated", "deep fried", "deep-fried",
+                  "cheese", "paneer"],
+        # The library keeps the ripe and unripe banana apart and only the ripe one is
+        # Kapha-increasing; the same exemption the diabetes entry carries applies.
+        "exempt": ["raw banana", "kadali kanda", "unripe banana"],
+    },
+    "common_cold": {
+        "name": "Common cold (Pratishyaya)",
+        "reason": "Cold and heavy foods increase Kapha and prolong Pratishyaya.",
+        "terms": ["curd", "dahi", "yogurt", "banana", "cold drink", "soft drink",
+                  "ice cream", "chilled", "refrigerated", "deep fried", "deep-fried",
+                  "cheese"],
+        "exempt": ["raw banana", "kadali kanda", "unripe banana"],
+    },
+    "recurrent_uti": {
+        "name": "Recurrent UTI (Mutrakrichra)",
+        "reason": "Pungent, sour and fermented foods aggravate Pitta in the Mutravaha srotas.",
+        "terms": ["chilli", "red chilli", "pickle", "achar", "vinegar", "tamarind",
+                  "imli", "alcohol", "whisky", "beer", "wine", "coffee", "espresso",
+                  "fermented"],
+    },
+    "glaucoma": {
+        "name": "Glaucoma (Adhimantha)",
+        "reason": "Sodium, caffeine and alcohol raise intraocular pressure; Pitta-provoking food worsens Adhimantha.",
+        "terms": ["extra salt", "salted", "pickle", "papad", "processed", "coffee",
+                  "espresso", "black tea", "strong tea", "energy drink", "alcohol",
+                  "whisky", "beer", "wine"],
+    },
+    "vertigo": {
+        "name": "Vertigo (Bhrama)",
+        "reason": "Sodium, stimulants and very sour foods aggravate Bhrama.",
+        "terms": ["extra salt", "salted", "pickle", "papad", "coffee", "espresso",
+                  "black tea", "strong tea", "alcohol", "whisky", "beer", "wine",
+                  "vinegar", "tamarind", "imli"],
+    },
+    "low_blood_pressure": {
+        "name": "Low blood pressure (Nyuna Rakta Chapa)",
+        "reason": ("Alcohol and prolonged fasting lower pressure further. Salt is "
+                   "deliberately absent from these terms: restricting it here would be "
+                   "the opposite of the advice, and it is the one condition in this "
+                   "table where that is true."),
+        "terms": ["alcohol", "whisky", "beer", "wine"],
+    },
+    "long_covid": {
+        "name": "Long COVID (post-viral Dhatu Kshaya with residual Ama)",
+        "reason": "Heavy, cold and fermented foods deepen residual Ama while Agni is still weak.",
+        "terms": ["deep fried", "deep-fried", "puri", "bhatura", "samosa", "pakora",
+                  "cold drink", "soft drink", "ice cream", "chilled", "refrigerated",
+                  "fermented", "leftover", "stale"],
+    },
     "diabetes": {
         "name": "Diabetes (Prameha / Madhumeha)",
         "reason": "High-glycaemic / sweet — Apathya in Prameha.",
         "terms": ["sugar", "jaggery", "white rice", "maida", "refined flour",
                   "gulab jamun", "jalebi", "halwa", "laddu", "barfi", "ice cream",
                   "cold drink", "soft drink", "soda", "mango", "banana", "grapes"],
+                  # The library splits these by ripeness and contraindicates only the
+                  # ripe form: unripe banana and raw mango are low-glycaemic and raw
+                  # banana is authored Pathya in Prameha. A bare "banana" flags the
+                  # Kadali Kanda sabzi the same plan was told to serve. Narrowing the
+                  # term to "ripe banana" would be worse — a meal that just says
+                  # "banana" is usually the ripe one — so the term still fires and the
+                  # permitted sibling is exempted by name.
+                  "exempt": ["raw banana", "kadali kanda", "unripe banana",
+                             "raw mango", "green mango", "kacha aam"],
     },
     "hypertension": {
         "name": "Hypertension (Uchcha Rakta Chapa)",
@@ -384,14 +750,18 @@ _CONDITION_APATHYA_TERMS: dict[str, dict] = {
     },
     "hypothyroid": {
         "name": "Hypothyroidism (Galaganda)",
-        "reason": "Goitrogenic raw crucifers / soy — Apathya in Galaganda.",
+        # Soy is not here: with adequate iodine it does not cause hypothyroidism, and
+        # what it does — slow levothyroxine absorption — is a timing note in
+        # `diet_clinical_notes`, which already told the patient soy was fine while
+        # this list removed it (ATA 2014).
+        "reason": "Goitrogenic raw crucifers — Apathya in Galaganda.",
         "terms": ["raw cabbage", "coleslaw", "raw broccoli", "raw cauliflower",
-                  "raw kale", "soy milk", "tofu", "soybean"],
+                  "raw kale"],
     },
     "thyroid": {
         "name": "Thyroid (Galaganda)",
-        "reason": "Goitrogenic raw crucifers / soy.",
-        "terms": ["raw cabbage", "coleslaw", "raw broccoli", "raw cauliflower", "tofu", "soy milk"],
+        "reason": "Goitrogenic raw crucifers.",
+        "terms": ["raw cabbage", "coleslaw", "raw broccoli", "raw cauliflower"],
     },
     "kidney_disease": {
         "name": "Kidney disease (Vrikka Roga)",
@@ -475,6 +845,26 @@ _CONDITION_APATHYA_TERMS: dict[str, dict] = {
         "reason": "Cold, heavy and Kapha-increasing foods provoke Shwasa.",
         "terms": ["curd", "dahi", "banana", "ice cream", "cold drink", "deep fried",
                   "fish"],
+        # Only the ripe banana is Kapha-increasing and authored Apathya here; the
+        # unripe one is a vegetable. See the diabetes entry for why the term stays
+        # broad and the sibling is exempted instead.
+        "exempt": ["raw banana", "kadali kanda", "unripe banana"],
+    },
+    # Adhmana — the fourth `gut_health_issue` value, and the only one that was not
+    # already a canonical condition. Its Samprapti is Vata obstructed by Ama in the
+    # Pakvashaya, so the floor is the Vatala and gas-forming foods; it is not IBS's
+    # sour-and-raw floor and not constipation's dry-and-cold one.
+    #
+    # `chana` and `rajma` are named rather than a blanket `legume`: moong is Pathya
+    # here and a term broad enough to catch it would withhold the one pulse this
+    # condition is meant to be fed. `soda` and `carbonated` are the same food by two
+    # names, which is how meals actually spell it.
+    "bloating": {
+        "name": "Adhmana / Anaha (bloating, distension)",
+        "reason": "Vatala and gas-forming foods distend the Pakvashaya where Vata is already obstructed by Ama.",
+        "terms": ["raw salad", "cabbage", "cauliflower", "broccoli", "rajma",
+                  "kidney beans", "chana", "carbonated", "soda", "cold water",
+                  "curd"],
     },
     "constipation": {
         "name": "Vibandha (constipation)",
@@ -524,30 +914,193 @@ _CONDITION_APATHYA_TERMS: dict[str, dict] = {
 # Normalise common variants to the keys above (mirrors diet COND_ALIASES so this
 # module stays self-contained and can't circular-import).
 _COND_CANON: dict[str, str] = {
-    "type2_diabetes": "diabetes", "type_2_diabetes": "diabetes", "diabetes_type2": "diabetes",
-    "diabetes_type1": "diabetes", "prediabetes": "diabetes", "insulin_resistance": "diabetes",
-    "madhumeha": "diabetes", "prameha": "diabetes", "sugar": "diabetes",
-    "bp": "hypertension", "high_blood_pressure": "hypertension", "high_bp": "hypertension",
-    "polycystic_ovary": "pcos", "polycystic_ovarian_syndrome": "pcos",
-    "hypothyroidism": "hypothyroid", "hashimoto": "hypothyroid", "thyroid_disorder": "thyroid",
-    "obese": "obesity", "overweight": "obesity", "weight_management": "obesity",
-    "liver_disease": "fatty_liver", "nafld": "fatty_liver",
-    "cholesterol": "high_cholesterol", "dyslipidemia": "high_cholesterol",
-    "hyperlipidemia": "high_cholesterol", "high_lipids": "high_cholesterol",
-    "ckd": "kidney_disease", "kidney_failure": "kidney_disease", "chronic_kidney_disease": "kidney_disease",
-    "acid_reflux": "acidity", "gerd": "acidity", "heartburn": "acidity", "amlapitta": "acidity",
-    "irritable_bowel_syndrome": "ibs", "grahani": "ibs",
-    # The brief carries `amavata` and `rheumatoid_arthritis` as separate hints with
-    # different Apathya lists. They are one disease — the brief itself names Amavata
-    # as the Ayurvedic name of rheumatoid arthritis — so they resolve to one entry
-    # here rather than drifting as two.
-    "rheumatoid_arthritis": "amavata", "ra": "amavata", "amavata_roga": "amavata",
+    # The one canonical-condition table for the diet feature.
+    #
+    # There were two. This one resolved the scan's conditions and `COND_ALIASES` in
+    # `diet_brief_builder` resolved the brief's, and they disagreed on 22 inputs. The
+    # disagreements were not harmless: `uncurated_conditions()` sends a condition to
+    # the LLM Apathya classifier only when the BRIEF has no hint for it, so an input
+    # the brief canonicalised and the scan did not got the curated floor from neither
+    # table and the classifier from neither path. "piles", "hemorrhoids",
+    # "iron_deficiency", "ulcerative_colitis", "crohns", "ibd", "rheumatoid",
+    # "skin_disease" and "thyroidism" all sat in that hole — the same shape as the
+    # eight conditions PR #62 found between these two tables, reopened by a second
+    # alias map nobody thought of as one.
+    #
+    # Chains are resolved here rather than by double-passing at the call site, so one
+    # lookup is always enough and an alias-of-an-alias cannot behave differently
+    # depending on which caller resolved it.
+    "acid_reflux": "acidity",
+    "amlapitta": "acidity",
+    "gerd": "acidity",
+    "heartburn": "acidity",
+    "amavata_roga": "amavata",
+    "ra": "amavata",
+    "rheumatoid": "amavata",
+    "rheumatoid_arthritis": "amavata",
+    "iron_deficiency": "anemia",
+    "iron_deficiency_anemia": "anemia",
+    "haemorrhoids": "arsha",
+    "hemorrhoids": "arsha",
+    "piles": "arsha",
+    "constipation_chronic": "constipation",
+    "diabetes_type1": "diabetes",
+    "diabetes_type2": "diabetes",
+    "insulin_resistance": "diabetes",
+    "madhumeha": "diabetes",
+    "prameha": "diabetes",
+    "prediabetes": "diabetes",
+    "sugar": "diabetes",
+    "type2_diabetes": "diabetes",
+    "type_2_diabetes": "diabetes",
+    "liver_disease": "fatty_liver",
+    "nafld": "fatty_liver",
+    "cholesterol": "high_cholesterol",
+    "dyslipidemia": "high_cholesterol",
+    "high_lipids": "high_cholesterol",
+    "hyperlipidemia": "high_cholesterol",
+    "bp": "hypertension",
+    "high_blood_pressure": "hypertension",
+    "high_bp": "hypertension",
+    "hashimoto": "hypothyroid",
+    "hypothyroidism": "hypothyroid",
+    "crohns": "ibs",
+    "grahani": "ibs",
+    "ibd": "ibs",
+    "ibd_crohns": "ibs",
+    "irritable_bowel_syndrome": "ibs",
+    "ulcerative_colitis": "ibs",
+    "chronic_kidney_disease": "kidney_disease",
+    "ckd": "kidney_disease",
+    "kidney_failure": "kidney_disease",
+    "obese": "obesity",
+    "overweight": "obesity",
+    "weight_management": "obesity",
+    "polycystic_ovarian_syndrome": "pcos",
+    "polycystic_ovary": "pcos",
+    "skin_disease": "psoriasis",
+    "thyroid_disorder": "thyroid",
+    "thyroidism": "thyroid",
+    # Found by probing free-text phrasings a user actually types.
+    "gouty_arthritis": "gout",
+    "uric_acid": "gout",
+    "high_uric_acid": "gout",
+    "renal_stone": "kidney_stones",
+    "renal_calculi": "kidney_stones",
+    "gall_stone": "gallstones",
+    "gall_bladder_stone": "gallstones",
+    "spondylitis": "cervical_spondylosis",
+    "slip_disc": "sciatica",
+    "acidity_gas": "acidity",
+    "gas_trouble": "bloating",
+    "gastritis": "acidity",
+    "piles_bleeding": "arsha",
+    "fissure": "arsha",
+    "sugar_disease": "diabetes",
+    "bp_high": "hypertension",
+    "bp_low": "low_blood_pressure",
+    "thyroid_under": "hypothyroid",
+    "thyroid_over": "hyperthyroidism",
 }
 
 
+# Qualifiers a person appends to a disease name that carry no diagnostic content.
+# Onboarding has a free-text "Not listed? Add here" field, so the app receives
+# "crohn's disease", "thyroid problem" and "sugar issue" — and `_COND_CANON` was an
+# exact-match table, so `crohns` resolved to IBS and `crohns disease` resolved to
+# nothing. The curated floor a user got was decided by how they phrased it.
+_COND_QUALIFIERS = (
+    "disease", "diseases", "disorder", "disorders", "syndrome", "problem",
+    "problems", "condition", "conditions", "issue", "issues", "illness",
+    "complaint", "complaints", "trouble",
+)
+
+
 def _canon_condition(cond: str) -> str:
-    key = str(cond).strip().lower().replace(" ", "_").replace("-", "_")
-    return _COND_CANON.get(key, key)
+    """The diet path's canonical key for a stored or free-text condition.
+
+    Three sources, tried in order, because each knows something the others do not:
+
+      1. `_COND_CANON` directly — the diet vocabulary, which maps to the keys this
+         feature's tables are written in (`arsha`, `acidity`, `amavata`).
+      2. `engine.condition_vocab.normalize_condition` — 193 aliases, compact forms
+         and depluralization, mapping into ITS key space (`hemorrhoids`,
+         `acid_reflux`, `hypothyroidism`), whose output is then run back through
+         `_COND_CANON`. The two vocabularies are not interchangeable: it calls
+         `arsha` `hemorrhoids` and the diet tables call `hemorrhoids` `arsha`, so
+         this composes them rather than replacing one with the other.
+      3. The same two again with trailing qualifiers stripped, so "crohn's disease"
+         reaches what "crohns" already reached.
+
+    Stripping is a last resort, after both exact lookups have failed, so a real key
+    that happens to end in a qualifier — `heart_disease`, `kidney_disease` — is
+    matched whole and never shortened to `heart`.
+    """
+    import re
+
+    raw = str(cond or "")
+    # Apostrophes are dropped rather than turned into separators: "crohn's" is
+    # "crohns", not "crohn s".
+    text = re.sub(r"[''`]", "", raw).strip().lower()
+    text = re.sub(r"[^a-z0-9]+", " ", text).strip()
+    if not text:
+        return ""
+
+    def _direct(t: str) -> str | None:
+        key = t.replace(" ", "_")
+        return _COND_CANON.get(key) or (key if key in _CONDITION_APATHYA_TERMS else None)
+
+    def _viavocab(t: str) -> str | None:
+        try:
+            from engine.condition_vocab import normalize_condition
+        except Exception:
+            return None
+        key = normalize_condition(t)
+        if not key:
+            return None
+        return _COND_CANON.get(key) or (key if key in _CONDITION_APATHYA_TERMS else None)
+
+    for candidate in (text, _strip_qualifier(text)):
+        if not candidate:
+            continue
+        # The candidate, then its other number. `kidney stone` and `kidney stones`
+        # are the same disease and a user writes either; `_COND_CANON` happened to
+        # hold only the plural. Tried last so a real key is never reshaped first.
+        for variant in (candidate, *_number_variants(candidate)):
+            for lookup in (_direct, _viavocab):
+                hit = lookup(variant)
+                if hit:
+                    return hit
+    return text.replace(" ", "_")
+
+
+def _number_variants(text: str) -> tuple[str, ...]:
+    """The singular and plural of the last word, for a table that holds one of them.
+
+    Only the last word, and only where a trailing `s` is plausibly a plural — `ibs`
+    and `ss` endings are left alone, the same rule `condition_vocab._singularize`
+    applies, for the same reason: `ibs` is not the plural of `ib`.
+    """
+    words = text.split()
+    if not words:
+        return ()
+    last = words[-1]
+    out = []
+    if len(last) > 3 and last.endswith("s") and not last.endswith("ss"):
+        out.append(" ".join(words[:-1] + [last[:-1]]))
+    elif not last.endswith("s"):
+        out.append(" ".join(words[:-1] + [last + "s"]))
+    return tuple(out)
+
+
+def _strip_qualifier(text: str) -> str:
+    """"crohns disease" -> "crohns"; "heart disease" is left alone by the caller,
+    which only reaches here after an exact lookup has already matched it."""
+    words = text.split()
+    while len(words) > 1 and words[-1] in _COND_QUALIFIERS:
+        words = words[:-1]
+    out = " ".join(words)
+    return out if out != text else ""
 
 
 # ── LLM Apathya classifier for uncurated / rare conditions ────────────────────
@@ -557,6 +1110,62 @@ def _canon_condition(cond: str) -> str:
 # conditions. Cached per-condition; validated; fail-safe. Mirrors the dosha
 # feature's rare-disease classifier (engine/dosha_analyzer).
 _CONDITION_APATHYA_CACHE: dict[str, dict | None] = {}
+
+
+# Words that describe conduct rather than a food. The classifier is asked for foods
+# and returns these anyway, because Apathya in the classical sources is a regimen:
+# "day sleep", "suppression of urges", "eating before the previous meal is digested".
+# As scan terms they search meal text for `sitting` and `travel` and match nothing, or
+# worse, match a dish that happens to contain the word.
+_BEHAVIOUR_WORDS = frozenset({
+    "sleep", "sleeping", "nap", "daysleep", "sitting", "standing", "walking",
+    "travel", "travelling", "traveling", "exertion", "exercise", "suppression",
+    "suppressing", "holding", "skipping", "fasting", "overeating", "eating",
+    "irregular", "late", "night", "stress", "anger", "bathing", "smoking",
+})
+
+# Terms with no food in them. Each of these matches most of the plans this app
+# generates: `tea` is the form half of Ayurvedic medicine takes, `water` appears in
+# every drink recipe, and `oil` is in every tadka. A term this broad does not warn a
+# patient, it trains them to stop reading warnings.
+_CONTENTLESS_TERMS = frozenset({
+    "water", "food", "foods", "meal", "meals", "drink", "drinks", "beverage",
+    "beverages", "liquid", "liquids", "snack", "snacks", "spice", "spices", "herb",
+    "herbs", "oil", "oils", "fat", "fats", "tea", "juice", "diet", "nutrition",
+    "anything", "everything", "all", "none", "any", "some", "other", "others",
+    "hot", "cold", "warm", "heavy", "light", "sour", "sweet", "salty", "bitter",
+    "pungent", "astringent", "raw", "fresh", "dry", "stale",
+})
+
+
+# Real foods whose bare name appears in almost every savoury meal, so a scan term
+# made of it flags the whole plan. The authored tables say `extra salt` and `salted`
+# for exactly this reason, and a term the model invents is held to the same standard.
+# Note the asymmetry with `sugar`, which stays: a recipe mentions salt by default and
+# sugar only when it is actually there.
+_TOO_COMMON_TERMS = frozenset({"salt"})
+
+
+def _term_is_usable(term: str) -> bool:
+    """Whether a classifier-proposed term can be matched against meal text.
+
+    The validator's comment has always said "keep only concrete, matchable food
+    words" and the code checked length and nothing else, so `day sleep`, `tea` and
+    `heavy` all became scan terms. The authored condition tables have to satisfy these
+    same two rules — see `test_no_scan_term_describes_a_behaviour` — and a term the
+    model invents is held to them too.
+    """
+    if not term or len(term) < 3 or len(term) > 30:
+        return False
+    words = set(re.split(r"[\s/&,+-]+", term))
+    if words & _BEHAVIOUR_WORDS:
+        return False
+    if term in _CONTENTLESS_TERMS or term in _TOO_COMMON_TERMS:
+        return False
+    # A multi-word term made only of qualifiers ("cold heavy") names no food either.
+    if words and words <= _CONTENTLESS_TERMS:
+        return False
+    return True
 
 
 def _validate_apathya_classification(raw: dict, cond_label: str) -> dict | None:
@@ -569,8 +1178,7 @@ def _validate_apathya_classification(raw: dict, cond_label: str) -> dict | None:
     terms = []
     for t in terms_in:
         s = str(t).strip().lower()
-        # Keep only concrete, matchable food words; drop empties and long phrases.
-        if s and len(s) <= 30 and s not in terms:
+        if s and s not in terms and _term_is_usable(s):
             terms.append(s)
     terms = terms[:20]
     if not terms:
@@ -620,14 +1228,25 @@ async def classify_condition_apathya_llm(conditions: list[str]) -> dict[str, dic
         '"apathya_foods":["food1","food2", ...]}\n'
         "Only concrete food words. No prose outside JSON."
     )
+    # 700 tokens was the budget for the whole batch. One condition's name, reason and
+    # twenty food names is most of it, so a batch of six truncated mid-object, the
+    # JSON failed to parse, and every condition in it came back unscanned — measured
+    # on six real rare diseases, which produced zero entries. The budget now scales
+    # with the request.
+    budget = min(4000, 400 + 320 * len(todo))
+    answered = False
     try:
         resp = await llm_client.generate(
             prompt=user_prompt, system_prompt=system_prompt,
-            max_tokens=700, temperature=0.2, json_mode=True,
+            max_tokens=budget, temperature=0.2, json_mode=True,
         )
         parsed = json.loads(resp) if resp else {}
+        answered = isinstance(parsed, dict)
     except Exception as exc:
-        logger.warning(f"LLM Apathya classification failed ({exc}); {len(todo)} conditions unscanned.")
+        logger.warning(
+            f"LLM Apathya classification failed ({exc}); {len(todo)} conditions "
+            "unscanned. Not cached — this will be retried."
+        )
         parsed = {}
 
     parsed_norm = {_norm(str(k)).replace(" ", "").replace("_", ""): v
@@ -635,9 +1254,20 @@ async def classify_condition_apathya_llm(conditions: list[str]) -> dict[str, dic
     for lbl, canon in label_to_canon.items():
         key = _norm(lbl).replace(" ", "").replace("_", "")
         entry = _validate_apathya_classification(parsed_norm.get(key), lbl)
-        _CONDITION_APATHYA_CACHE[canon] = entry  # cache hit OR miss (None)
+        # A negative is cached only when the model actually answered and had nothing
+        # usable for this condition. A transport error or a truncated response is not
+        # evidence about the disease, and caching it as one turned a single bad
+        # request into a permanent "no floor" for every condition in that batch, for
+        # the life of the process.
+        if answered:
+            _CONDITION_APATHYA_CACHE[canon] = entry
         if entry:
             out[canon] = entry
+        else:
+            logger.info(
+                f"no deterministic Apathya floor for {lbl!r} "
+                f"({'model returned nothing usable' if answered else 'request failed'})"
+            )
     return out
 
 
@@ -653,19 +1283,23 @@ _DIET_TYPE_FORBIDDEN: dict[str, list[str]] = {
     "vegetarian":     ["chicken", "mutton", "lamb", "beef", "pork", "meat", "fish",
                        "prawn", "shrimp", "crab", "egg", "omelette", "omelet", "keema",
                        "gelatin", "bacon", "ham"],
-    "eggetarian":     ["chicken", "mutton", "lamb", "beef", "pork", "meat", "fish",
-                       "prawn", "shrimp", "crab", "keema", "gelatin", "bacon", "ham"],
-    "pescatarian":    ["chicken", "mutton", "lamb", "beef", "pork", "keema",
-                       "gelatin", "bacon", "ham"],
     "vegan":          ["chicken", "mutton", "lamb", "beef", "pork", "meat", "fish",
                        "prawn", "shrimp", "crab", "egg", "omelette", "omelet", "keema",
                        "gelatin", "bacon", "ham",
                        "milk", "curd", "yogurt", "yoghurt", "ghee", "butter", "cream",
                        "paneer", "cheese", "lassi", "buttermilk", "kheer", "raita",
                        "mawa", "khoa", "dahi", "honey"],
-    # `non_vegetarian` forbids nothing and is absent deliberately — an empty entry
-    # here would read as "unchecked" rather than "nothing to check".
 }
+
+# Withdrawn dietary types, and anything else that reaches this scan without having
+# passed the schema. The library has no animal-food row, so the app serves only
+# vegetarian and vegan plans; an unrecognised type gets the vegetarian floor rather
+# than none. It used to be the other way round — `non_vegetarian` mapped to no entry,
+# and the `if not forbidden` branch below reported `dietary_type_safe = True` for it.
+# That was right when the value was offered and meant "nothing to check". Now an
+# unknown value means a stale or malformed preference, and answering "safe, checked"
+# to one is the failure this module exists to prevent.
+_DIETARY_TYPE_FALLBACK = "vegetarian"
 
 
 def apply_dietary_type_safety(plan: dict, dietary_type: str | None) -> dict:
@@ -681,13 +1315,10 @@ def apply_dietary_type_safety(plan: dict, dietary_type: str | None) -> dict:
     drops meals is harder to notice than one that says what is wrong with them.
     """
     try:
-        dtype = (dietary_type or "vegetarian").strip().lower()
-        forbidden = _DIET_TYPE_FORBIDDEN.get(dtype)
-        if not forbidden:
-            plan["dietary_type_safe"] = True
-            plan["dietary_type_alerts"] = []
-            plan["dietary_type_checked"] = True
-            return plan
+        dtype = (dietary_type or _DIETARY_TYPE_FALLBACK).strip().lower()
+        if dtype not in _DIET_TYPE_FORBIDDEN:
+            dtype = _DIETARY_TYPE_FALLBACK
+        forbidden = _DIET_TYPE_FORBIDDEN[dtype]
 
         alerts: list[dict] = []
         for week_label, day_label, slot, meal in _collect_meal_units(plan):
@@ -718,6 +1349,52 @@ def apply_dietary_type_safety(plan: dict, dietary_type: str | None) -> dict:
     return plan
 
 
+def _active_condition_protocols(
+    medical_history: list[str], extra_terms: dict | None = None,
+    pregnant: bool = False,
+) -> dict[str, dict]:
+    """The Apathya protocols in force for this patient, keyed by canonical condition.
+
+    Factored out of `apply_condition_food_safety` so that the meal scan and the
+    advisory-prose scan cannot be built from different term sets. A second copy of
+    this assembly is exactly how the curated table and the library table came to
+    disagree before, and how the drink came to be in none of the three scans.
+    """
+    from services.diet_condition_foods import condition_food_rules
+
+    extra_terms = extra_terms or {}
+    active: dict[str, dict] = {}
+    for cond in (medical_history or []):
+        canon = _canon_condition(cond)
+        proto = _CONDITION_APATHYA_TERMS.get(canon) or extra_terms.get(canon)
+        # The authored library's own Apathya for this disease, which until it was
+        # wired gated only `diet_plan_engine` — the fallback. Measured against the
+        # curated table, 333 of the library's 370 (condition, food) exclusions were
+        # unenforced on the LLM-primary path. The curated table is not replaced by
+        # it — the two were authored separately and each names foods the other does
+        # not, so the floor is their union.
+        lib_terms = condition_food_rules(canon)["apathya_terms"]
+        if lib_terms:
+            if proto:
+                proto = {
+                    **proto,
+                    "terms": sorted(set(proto.get("terms") or ()) | set(lib_terms)),
+                }
+            else:
+                proto = {
+                    "name": canon.replace("_", " ").title(),
+                    "reason": "Apathya for this condition in the authored food library.",
+                    "terms": sorted(lib_terms),
+                }
+        if proto:
+            active[canon] = proto
+    # `pregnancy_or_nursing` is a profile flag, not a history entry, so it has to be
+    # added here or it reaches the scan by no route.
+    if pregnant:
+        active["pregnancy"] = _CONDITION_APATHYA_TERMS["pregnancy"]
+    return active
+
+
 def apply_condition_food_safety(
     plan: dict, medical_history: list[str], extra_terms: dict | None = None,
     pregnant: bool = False,
@@ -735,19 +1412,29 @@ def apply_condition_food_safety(
     Non-destructive: flags only, and never raises (safety layer must not break gen).
     """
     try:
-        extra_terms = extra_terms or {}
-        active: dict[str, dict] = {}
-        for cond in (medical_history or []):
-            canon = _canon_condition(cond)
-            proto = _CONDITION_APATHYA_TERMS.get(canon) or extra_terms.get(canon)
-            if proto:
-                active[canon] = proto
-        # `pregnancy_or_nursing` is a profile flag, not a history entry, so it has to
-        # be added here or it reaches the scan by no route. A user who typed
-        # "pregnancy" into their history keeps working through the loop above; this
-        # covers the ones who answered the question the app actually asks.
-        if pregnant:
-            active["pregnancy"] = _CONDITION_APATHYA_TERMS["pregnancy"]
+        active = _active_condition_protocols(medical_history, extra_terms, pregnant)
+        # A condition the app could give no deterministic floor for. Silence here
+        # reads as "checked and clear", which is the opposite of what happened: the
+        # curated tables do not cover it, the library has no claim about it, and the
+        # classifier either failed or returned nothing usable.
+        plan["conditions_without_food_floor"] = sorted(
+            {str(c) for c in (medical_history or [])
+             if _canon_condition(c) not in active}
+        )
+        # Depth, not just presence. Twenty-one conditions have been judged against
+        # every one of the library's 150 foods individually; the other nineteen have
+        # a curated term list and nothing more. Both currently produce the same
+        # "every meal checked — none found" badge, so a gout patient (27 terms, no
+        # per-food claims) reads the same reassurance as an acidity patient (101
+        # terms, 95 of them authored food by food) while being materially less
+        # protected. Saying which is which is the honest version of that badge.
+        from services.diet_condition_foods import condition_food_rules as _rules
+        plan["conditions_screened_by_terms_only"] = sorted(
+            {str(c) for c in (medical_history or [])
+             if _canon_condition(c) in active
+             and not _rules(_canon_condition(c))["apathya_terms"]}
+        )
+
         if not active:
             plan["condition_food_safe"] = True
             plan["condition_safety_alerts"] = []
@@ -762,7 +1449,13 @@ def apply_condition_food_safety(
             meal_hits: list[dict] = []
             for canon, proto in active.items():
                 _ai = " (AI-inferred)" if proto.get("ai") else ""
+                # A term may name a food the library splits by preparation. The
+                # permitted sibling is exempted by name rather than by narrowing the
+                # term, so an unqualified mention still fires.
+                _exempt = any(_term_in_text(e, text) for e in (proto.get("exempt") or ()))
                 for term in proto["terms"]:
+                    if _exempt and _term_in_text(term, text):
+                        continue
                     if _term_in_text(term, text):
                         meal_hits.append({"condition": proto["name"] + _ai, "food": term, "reason": proto["reason"]})
                         alerts.append({
@@ -782,4 +1475,241 @@ def apply_condition_food_safety(
         plan["condition_safety_checked"] = True
     except Exception:
         plan["condition_safety_checked"] = False
+    return plan
+
+
+# ── The advisory prose, held to the same floor as the meals ───────────────────
+# The three scans above read five consumed slots and nothing else. A diet plan also
+# ships six free-text surfaces that *recommend food by name*, and `DietView` renders
+# them: `pathya_apathya.pathya` under the heading "Pathya — Recommended", plus
+# `hydration_guidance`, `condition_coaching`, `ahar_vidhi`, `seasonal_note` and
+# `fasting_guidance`.
+#
+# Measured on an acidity patient: the word `curd` in a meal raised an alert and set
+# `condition_food_safe = False`; the same word in the Pathya card passed untouched,
+# alongside "Green tea" and "Lemon water on waking" — three foods the library itself
+# authors as Apathya for that disease. It is PR #72's shape from the other side:
+# there, prose was embedded for the model and shown to nobody; here it is written by
+# the model, shown to the patient, and read by no gate.
+#
+# Two different remedies, because the surfaces are different:
+#
+#   * A `pathya` entry is a recommendation by construction — it exists to be
+#     followed. A contradicted one is WITHHELD, moved off the card into
+#     `withheld_recommendations` with its reason. Leaving it on screen under
+#     "Recommended" next to an alert saying the opposite is worse than removing it;
+#     this is the lesson of #57 and #70 — say that it was withheld and why.
+#
+#   * Free prose is mixed: "avoid curd and sour fruit" is correct advice for exactly
+#     the patient whose terms would match it. Rewriting a sentence is not something
+#     this layer can do safely, so prose is FLAGGED, and only where the food is not
+#     already governed by an avoid-word in its own clause. Flagging correct advice
+#     is how a safety badge gets trained out of a reader.
+_AVOID_MARKERS = (
+    "avoid", "avoiding", "avoided", "no ", "not ", "never", "skip", "skipping",
+    "limit", "limited", "reduce", "reducing", "minimise", "minimize", "cut out",
+    "cut back", "stay away", "steer clear", "refrain", "abstain", "exclude",
+    "omit", "restrict", "forbidden", "apathya", "contraindicated", "don't",
+    "do not", "without", "instead of", "rather than", "in place of", "replace",
+    "substitute", "swap", "less ",
+    # Comparatives. A recommendation may name the food it displaces — "lighter than
+    # white rice", "unlike maida" — and in "X than Y" the food after `than` is always
+    # the one being moved away from.
+    "than ", "unlike",
+)
+
+# Sentence-ish boundaries. A clause is the unit a negation governs: "take warm water,
+# avoid curd" must not clear `warm water`, and must clear `curd`.
+_CLAUSE_SPLIT = re.compile(r"[.;:!?\n]|\s+(?:but|however|whereas|while)\s+|,\s*(?=avoid|no |not |never|skip|limit|reduce|instead|rather|without|exclude|omit|restrict)")
+
+_PROSE_FIELDS = (
+    "condition_coaching", "hydration_guidance", "fasting_guidance",
+    "seasonal_note", "ahar_vidhi", "plan_description",
+)
+
+
+def _governed_by_avoidance(text: str, term: str) -> bool:
+    """True when every mention of `term` in `text` sits in a clause that tells the
+    reader to avoid it."""
+    clauses = [c for c in _CLAUSE_SPLIT.split(text.lower()) if c and c.strip()]
+    # A list continues the clause that opened it: in "avoiding alcohol, urad dal, and
+    # overeating" the splitter leaves "urad dal" alone in its own clause, with no
+    # avoid-word, and correct advice read as a recommendation. A short noun-phrase
+    # clause (four words or fewer, "and"/"or" allowed) inherits the governing of the
+    # clause before it. "Curd is excellent, avoid pickles" is unaffected: "curd is
+    # excellent" opens its own clause.
+    governed = []
+    for c in clauses:
+        words = c.strip().split()
+        listy = 0 < len(words) <= 4 and not any(w in ("is", "are", "helps", "supports",
+                                                        "eat", "have", "take", "use",
+                                                        "include", "favour", "favor",
+                                                        "prefer", "enjoy") for w in words)
+        own = any(m in c for m in _AVOID_MARKERS)
+        governed.append(own or (listy and bool(governed) and governed[-1]))
+    # Vernacular is expanded clause by clause. The scan expands the whole text once,
+    # appending "urad dal" for "urad" at the END — outside the clause that says
+    # "avoid", so "For gout, avoid alcohol and urad-based foods" read as recommending
+    # urad dal.
+    mentions = [(c, g) for c, g in zip(clauses, governed)
+                if _term_in_text(term, c) or _term_in_text(term, _expand_vernacular(_norm(c)))]
+    if not mentions:
+        return False
+    # The whole clause, not the text before the mention: "curd is best avoided" puts
+    # the marker after the food and is still advice to avoid it. Scanning only the
+    # prefix made the answer depend on where in the clause the word happened to fall
+    # — it cleared "curd is best avoided" (prefix empty, so the whole clause was
+    # scanned) and flagged "fresh curd is best avoided" (prefix "fresh ").
+    #
+    # What stops that clearing a genuine recommendation is the splitter: a comma
+    # before an avoid-word is a clause boundary, so "curd is excellent, avoid
+    # pickles" is two clauses and the curd one has no marker.
+    # "Gluten-free", "dairy free", "sugar-free": the food named as absent. A coeliac
+    # plan's description reading "strictly gluten-free" was flagged as recommending
+    # gluten. Matched on the word itself, not a bare "free", so "feel free to have
+    # curd" still reads as a recommendation.
+    free = re.compile(rf"\b{re.escape(term)}\w*[\s-]+free\b")
+    # "non-sugary fruits", "low-sugar", "no-sugar": the food named by its absence.
+    absent = re.compile(rf"\b(?:non|low|no|zero)[\s-]*{re.escape(term)}")
+    return all(g or free.search(clause) or absent.search(clause) for clause, g in mentions)
+
+
+def apply_advisory_safety(
+    plan: dict, medical_history: list[str], allergies: list[str] | None = None,
+    intolerances: list[str] | None = None, extra_terms: dict | None = None,
+    pregnant: bool = False,
+) -> dict:
+    """Hold the plan's food-recommending prose to the same floor as its meals.
+
+    Adds:
+      plan["withheld_recommendations"] → [{item, source, reason, condition}] removed
+                                          from `pathya_apathya.pathya`
+      plan["advisory_prose_alerts"]    → [{field, food, condition, message}]
+      plan["advisory_safety_checked"]  → bool
+    Never raises: a safety layer must not break generation.
+    """
+    try:
+        active = _active_condition_protocols(medical_history, extra_terms, pregnant)
+        # A string where a list was expected iterates into single characters, and a
+        # one-letter term matches every word there is — `allergies="dairy"` instead
+        # of `["dairy"]` withheld every recommendation on the card rather than
+        # degrading. Same shape as a one-element tuple written without its comma.
+        # Guarded here rather than at each caller, because this is where the damage
+        # would be done.
+        def _declared(value):
+            if isinstance(value, str):
+                return [value]
+            return list(value or [])
+
+        allergen_terms: dict[str, str] = {}
+        for a in _declared(allergies) + _declared(intolerances):
+            key = str(a).strip().lower()
+            if len(key) < 2:
+                continue
+            for t in ALLERGEN_TERMS.get(key, [key]):
+                if len(t) >= 2:
+                    allergen_terms[t] = key
+
+        def _hits(text: str, *, negation_aware: bool,
+                  allergens_absolute: bool = False) -> list[dict]:
+            out: list[dict] = []
+            low = _expand_vernacular(str(text or "").lower())
+            if not low:
+                return out
+            for canon, proto in active.items():
+                exempt = any(_term_in_text(e, low) for e in (proto.get("exempt") or ()))
+                for term in proto["terms"]:
+                    if not _term_in_text(term, low):
+                        continue
+                    if exempt:
+                        continue
+                    # The text as written, not `low`: the expansion appends its
+                    # canonical words after the last clause, outside any "avoid".
+                    if negation_aware and _governed_by_avoidance(str(text or "").lower(), term):
+                        continue
+                    out.append({
+                        "food": term,
+                        "condition": proto["name"] + (" (AI-inferred)" if proto.get("ai") else ""),
+                        "reason": proto["reason"],
+                    })
+            for term, declared in allergen_terms.items():
+                if not _term_in_text(term, low):
+                    continue
+                # On the Pathya card an allergen is absolute: a declared allergen has
+                # no business in a list of things to eat, in any phrasing. The
+                # comparative markers are what makes this necessary — "nothing is
+                # better than warm milk at bedtime" reads as displacement to the
+                # clause rule and cleared for a dairy-allergic patient. Over-
+                # withholding one entry costs a line of advice; the other way costs
+                # more than that.
+                #
+                # Prose stays negation-aware, because there "avoid dairy" is the
+                # correct sentence to write for exactly this patient and flagging it
+                # is noise.
+                if negation_aware and not allergens_absolute \
+                        and _governed_by_avoidance(low, term):
+                    continue
+                out.append({
+                    "food": term,
+                    "condition": f"Declared {declared.replace('_', ' ')} allergy/intolerance",
+                    "reason": "The patient declared this; it must not be recommended.",
+                })
+            return out
+
+        # 1. The Pathya card — withheld, not merely flagged.
+        withheld: list[dict] = []
+        pa = plan.get("pathya_apathya")
+        if isinstance(pa, dict) and isinstance(pa.get("pathya"), list):
+            kept = []
+            for item in pa["pathya"]:
+                # Negation-aware here too. A `pathya` entry is a recommendation, but a
+                # recommendation may name the food it *displaces*: a real one read
+                # "Quinoa or brown rice congee in small portions — lighter than white
+                # rice", and withholding it took correct advice off the card for
+                # naming the thing it was steering the patient away from.
+                found = _hits(str(item), negation_aware=True, allergens_absolute=True)
+                script = unreadable_script(item)
+                if script and not found:
+                    found = [{"condition": "unverified", "food": str(item)[:40],
+                              "reason": f"it is written in {script} script, which the "
+                                        "food-safety checks cannot read."}]
+                if found:
+                    withheld.append({
+                        "item": item, "source": "pathya_apathya.pathya",
+                        "condition": found[0]["condition"], "food": found[0]["food"],
+                        "reason": (
+                            f"Withheld: names '{found[0]['food']}', which is Apathya here — "
+                            f"{found[0]['reason']}"
+                        ),
+                    })
+                else:
+                    kept.append(item)
+            pa["pathya"] = kept
+        plan["withheld_recommendations"] = withheld
+
+        # 2. The free prose — flagged where it is not already telling them to avoid it.
+        alerts: list[dict] = []
+        for field in _PROSE_FIELDS:
+            value = plan.get(field)
+            if not isinstance(value, str):
+                continue
+            script = unreadable_script(value)
+            if script:
+                alerts.append({
+                    "field": field, "food": None, "condition": "unverified",
+                    "message": (f"{field.replace('_', ' ')} is written in {script} script, "
+                                "which the food-safety checks cannot read — not verified."),
+                })
+            for hit in _hits(value, negation_aware=True):
+                alerts.append({
+                    "field": field, "food": hit["food"], "condition": hit["condition"],
+                    "message": (
+                        f"{field.replace('_', ' ')} recommends '{hit['food']}' — "
+                        f"{hit['reason']} Do not follow this line without substituting."
+                    ),
+                })
+        plan["advisory_prose_alerts"] = alerts
+        plan["advisory_safety_checked"] = True
+    except Exception:
+        plan["advisory_safety_checked"] = False
     return plan
