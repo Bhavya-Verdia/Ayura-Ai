@@ -25,6 +25,7 @@ classical axis. Run:  cd server && ./venv/bin/python scripts/reviewer_packet.py
 """
 import csv
 import json
+import re
 import os
 import sys
 
@@ -276,7 +277,7 @@ def build_medicine_csv():
     return path, len(meds)
 
 
-def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0):
+def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0, n_cmap=0):
     golden_path = os.path.join(OUT, "golden_cases.json")
     cases = json.load(open(golden_path, encoding="utf-8")) if os.path.exists(golden_path) else []
 
@@ -358,6 +359,16 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0):
         "exists. **Those decisions were made by a non-clinician**, and each one moves a "
         "formulation between prescribed and withheld. Tick `interpretation_ok`, or write "
         "what it should be.",
+        "",
+        "## Part 3b — Condition → formulary map  (`vaidya_condition_formulary_map.csv`)",
+        f"{n_cmap} onboarding conditions whose route to the formulary was authored rather than "
+        "matched by name. Thirty of seventy conditions onboarding offers used to reach no "
+        "formulation at all, so an osteoarthritis patient was given Triphala and a cough "
+        "powder. Fifteen are now bridged to the formulary terms whose formulations are "
+        "indicated (osteoarthritis → arthritis, joint_pain). The rest are **left uncovered on "
+        "purpose** — Type 1 diabetes, hyperthyroidism, atrial fibrillation, lupus and others — "
+        "so the plan tells the patient a Vaidya must prescribe rather than serving a near "
+        "match. Tick `mapping_ok`, or say what it should reach.",
         "",
         "## Part 4 — Panchakarma Karma tags  (`vaidya_panchakarma_karma_tags.csv`)",
         f"{n_karma} preparation and aftercare therapies, each tagged with the Pradhana "
@@ -488,17 +499,55 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0):
     return path
 
 
+def build_condition_formulary_csv():
+    """Which formulary conditions each onboarding condition is allowed to reach.
+
+    The medicines plan matched onboarding conditions to the formulary by name, and
+    30 of 70 reached nothing. `remedy_engine._CONDITION_KB_TERMS` bridges 15 of
+    them; the rest are left uncovered on purpose. Both halves are clinical calls.
+    """
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from services.remedy_engine import _CONDITION_KB_TERMS, _MEDICINES_KB, _med_covers_condition, _CONDITION_ALIAS
+    js = os.path.join(os.path.dirname(DATA), "..", "client", "src", "constants", "conditions.js")
+    onboarding = list(dict.fromkeys(re.findall(r"id: '([a-z_0-9]+)'", open(js, encoding="utf-8").read())))
+    cols = ["onboarding_condition", "formulary_terms", "reason", "formulations_reached",
+            "mapping_ok", "should_map_to", "vaidya_notes"]
+    rows = []
+    for c in onboarding:
+        terms, reason = _CONDITION_KB_TERMS.get(c, ((), ""))
+        reached = [m["name"] for m in _MEDICINES_KB if _med_covers_condition(m, _CONDITION_ALIAS.get(c, c))]
+        if not terms and reached:
+            continue  # matched by its own name; nothing authored to review
+        rows.append({
+            "onboarding_condition": c,
+            "formulary_terms": "; ".join(terms) or "(none — left uncovered)",
+            "reason": reason or ("Deliberately not mapped: the plan says a Vaidya must prescribe for it."
+                                 if not reached else ""),
+            "formulations_reached": "; ".join(reached[:12]) + (" …" if len(reached) > 12 else ""),
+            "mapping_ok": "", "should_map_to": "", "vaidya_notes": "",
+        })
+    path = os.path.join(OUT, "vaidya_condition_formulary_map.csv")
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=cols)
+        w.writeheader()
+        w.writerows(rows)
+    return path, len(rows)
+
+
 def main():
     csv_path, n = build_medicine_csv()
     pk_path, n_pk = build_panchakarma_contraindication_csv()
     tok_path, n_tok = build_contraindication_token_csv()
     karma_path, n_karma = build_karma_tag_csv()
-    md_path = build_packet_md(n, n_pk, n_tok, n_karma)
+    cmap_path, n_cmap = build_condition_formulary_csv()
+    md_path = build_packet_md(n, n_pk, n_tok, n_karma, n_cmap)
     print("Vaidya reviewer packet generated:")
     print(f"  {csv_path}  ({n} medicines)")
     print(f"  {pk_path}  ({n_pk} panchakarma contraindications)")
     print(f"  {tok_path}  ({n_tok} contraindication tokens)")
     print(f"  {karma_path}  ({n_karma} Karma tags)")
+    print(f"  {cmap_path}  ({n_cmap} condition → formulary mappings)")
     print(f"  {md_path}")
     print("\nGive these to a BAMS Vaidya, along with the diet packet built separately by")
     print("scripts/build_diet_review_packet.py. Filled CSV corrections fold straight back")

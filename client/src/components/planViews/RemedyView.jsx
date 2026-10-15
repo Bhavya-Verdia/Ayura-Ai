@@ -28,7 +28,19 @@ function RemedyCard({ result }) {
     remedy, symptom_display, severity, dosha_cause, dosha_used, requires_practitioner,
     ayurvedic_rationale, usage_cautions, red_flags, taste_notices,
     consult_doctor_if, practitioner_reason,
+    caution_notes, medication_cautions, drug_interaction_warning,
   } = result
+  // Everything that should be read before the remedy is used, in one list.
+  const beforeUse = [
+    ...(usage_cautions || []),
+    ...(caution_notes || []),
+    ...(medication_cautions?.length
+      ? [`Herbs used for this complaint interact with ${medication_cautions.join(', ')}. Check with your prescriber before using it.`]
+      : []),
+    ...(drug_interaction_warning?.herb
+      ? [`${drug_interaction_warning.herb} was left out because it interacts with ${drug_interaction_warning.medication}.`]
+      : []),
+  ]
   if (!remedy) return null
   const doshaColor = DOSHA_COLORS_R[dosha_used] || DOSHA_COLORS_R.universal
   const doshaText = doshaInk(dosha_used === 'universal' ? '' : dosha_used)
@@ -81,11 +93,11 @@ function RemedyCard({ result }) {
             {remedy.duration   && <div className="rv-meta-chip"><Calendar size={11} />{remedy.duration}</div>}
             {remedy.expected_relief && <div className="rv-meta-chip"><Zap size={11} />Relief in {remedy.expected_relief}</div>}
           </div>
-          {usage_cautions?.length > 0 && (
+          {beforeUse.length > 0 && (
             <div className="rv-section">
               <div className="rv-section-label">Before you use this</div>
               <ul className="mv-safety-list">
-                {usage_cautions.map((c, i) => <li key={i}>{c}</li>)}
+                {beforeUse.map((c, i) => <li key={i}>{c}</li>)}
               </ul>
             </div>
           )}
@@ -155,6 +167,16 @@ export function RemedyView({ plan }) {
           <HeartPulse size={18} className="rv-intro-icon" />
           <p>{plan.personalized_intro}</p>
         </div>
+      )}
+      {/* Narrative lines the deterministic gate withheld, as a count, so a gap
+          reads as a decision rather than an omission. */}
+      {plan.coaching_withheld?.length > 0 && (
+        <p className="rv-info-body" style={{ opacity: 0.8 }}>
+          {plan.coaching_withheld.length} line{plan.coaching_withheld.length === 1 ? '' : 's'} of the AI guidance{' '}
+          {plan.coaching_withheld.length === 1 ? 'was' : 'were'} withheld because{' '}
+          {plan.coaching_withheld.length === 1 ? 'it' : 'they'} contradicted your plan
+          ({[...new Set(plan.coaching_withheld.map(w => w.reason.split(' — ')[0]))].slice(0, 3).join('; ')}).
+        </p>
       )}
 
       {/* Symptom remedy cards */}

@@ -396,6 +396,8 @@ medication_class,NSAID painkiller,membership,nsaids,"Matched by: ibuprofen, bruf
 medication_class,Statin,membership,statins,"Matched by: atorvastatin, rosuvastatin, simvastatin, pravastatin, pitavastatin, atorva, rosuvas, storvas, rozavel, lipicure",,,,
 medication_class,Acid suppressant (PPI / H2 blocker),membership,acid_suppressants,"Matched by: omeprazole, pantoprazole, pantocid, rabeprazole, razo, esomeprazole, lansoprazole, famotidine, ranitidine, omez, nexpro",,,,
 medication_class,Parkinson's medicine,membership,antiparkinson,"Matched by: levodopa, carbidopa, syndopa, sinemet, tidomet, madopar, pramipexole, pramipex, ropinirole, ropark, rasagiline, selegiline, amantadine, entacapone",,,,
+medication_class,Sedative / sleeping medicine,membership,sedatives,"Matched by: alprazolam, restyl, alprax, clonazepam, clonotril, rivotril, lorazepam, ativan, diazepam, valium, zolpidem, zolfresh, nitrazepam, etizolam, etilaam, quetiapine, mirtazapine, sleeping pill",,,,
+medication_class,Metronidazole / disulfiram,membership,metronidazole_disulfiram,"Matched by: metronidazole, flagyl, metrogyl, tinidazole, tiniba, disulfiram, esperal, antabuse",,,,
 assessed_no_contraindication,(all five Karma),none,acne_severe,"Pitta-Rakta in the skin is an indication for Virechana (and Raktamokshana by a clinician). Isotretinoin, if taken, is a separate question for the prescriber.",,,,
 assessed_no_contraindication,(all five Karma),none,adhd,No procedural conflict with any Karma. Stimulant medicines are not in the interaction classes here; show them to the Vaidya.,,,,
 assessed_no_contraindication,(all five Karma),none,alopecia,Nasya and Shirodhara are indicated for it. No Karma is contraindicated by hair loss.,,,,

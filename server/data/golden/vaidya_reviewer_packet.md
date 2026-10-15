@@ -17,7 +17,7 @@ Open **`vaidya_medicine_review.csv`** (157 formulations). For each row, tick:
 Sort by `type` or `indications` to review related formulations together. Anything marked N with a correction is gold — it goes straight back into the KB.
 
 ## Part 2 — Panchakarma contraindications  (`vaidya_panchakarma_contraindications.csv`)
-416 authored contraindications gating Vamana, Virechana, Basti, Nasya, Raktamokshana, the 23 supporting therapies, and the individual herbs in every Aushadha the plan prescribes. **None has been clinically reviewed** — `contraindications_reviewed` is false on the whole file. Part 1 carries the larger credibility risk; this part carries the larger safety risk, because these are the only procedures in the app that can injure a patient directly.
+418 authored contraindications gating Vamana, Virechana, Basti, Nasya, Raktamokshana, the 23 supporting therapies, and the individual herbs in every Aushadha the plan prescribes. **None has been clinically reviewed** — `contraindications_reviewed` is false on the whole file. Part 1 carries the larger credibility risk; this part carries the larger safety risk, because these are the only procedures in the app that can injure a patient directly.
 
 Each row states the *mechanism* by which the condition and the procedure conflict, so you can reject a single claim without discarding the file. Columns to fill:
 - **severity_ok** — is `hard` (withhold + substitute) vs `soft` (proceed modified) right?
@@ -39,6 +39,9 @@ These were deliberately **not** settled by the author. Each needs a ruling.
 
 ## Part 3 — Contraindication tokens  (`vaidya_contraindication_tokens.csv`)
 164 tokens appear in the medicines and home-remedy contraindication lists. They were written as notes for a human and then used as a machine gate, which matched them against the patient's history as plain strings — so most of them never fired. Making them work required deciding what each one means: which recorded diagnoses `autoimmune_disease` covers, whether `uncontrolled_diabetes` must bar every diabetic when the app cannot know how controlled anyone is, whether `pitta_excess` may be read off a constitution when no Vikriti assessment exists. **Those decisions were made by a non-clinician**, and each one moves a formulation between prescribed and withheld. Tick `interpretation_ok`, or write what it should be.
+
+## Part 3b — Condition → formulary map  (`vaidya_condition_formulary_map.csv`)
+37 onboarding conditions whose route to the formulary was authored rather than matched by name. Thirty of seventy conditions onboarding offers used to reach no formulation at all, so an osteoarthritis patient was given Triphala and a cough powder. Fifteen are now bridged to the formulary terms whose formulations are indicated (osteoarthritis → arthritis, joint_pain). The rest are **left uncovered on purpose** — Type 1 diabetes, hyperthyroidism, atrial fibrillation, lupus and others — so the plan tells the patient a Vaidya must prescribe rather than serving a near match. Tick `mapping_ok`, or say what it should reach.
 
 ## Part 4 — Panchakarma Karma tags  (`vaidya_panchakarma_karma_tags.csv`)
 14 preparation and aftercare therapies, each tagged with the Pradhana Karma courses it belongs to. The engine scores its therapy pool with this tag, so it decides what a patient is actually prepared with: a Nasya plan now leads with Shirodhara (Murdha Taila) rather than internal ghee, and a Basti plan no longer opens on Snehapana. Measured across 9,720 Shodhana plans, 10.4% changed schedule.
@@ -119,7 +122,7 @@ A disagreement rate is not a failure. An unmeasured instrument is.
 
 - Reviewer (name, BAMS/MD reg. no.): ____________________
 - Date: ____________  
-- Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/416 · contraindication tokens reviewed ___/164 · Karma tags reviewed ___/14 · cases reviewed ___/30
+- Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/418 · contraindication tokens reviewed ___/164 · Karma tags reviewed ___/14 · cases reviewed ___/30
 - Summary judgement (1–5) on classical accuracy of: Medicines __ · Panchakarma __ · Diet __ · Yoga __ · Routine __
 - Prakriti instrument study (Part 7): commissioned ☐ · scheduled ☐ · completed ☐ — participants ____
 

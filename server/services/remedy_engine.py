@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import json
+import re
 import os
 from core.kb_cache import kb_cache
 from engine.condition_vocab import condition_matches_term, normalize_condition
@@ -12,12 +13,71 @@ from engine.contraindication_tokens import (
 )
 
 
+# The onboarding vocabulary and the formulary's `conditions` vocabulary were
+# written separately, and 30 of the 70 conditions onboarding offers matched no
+# formulation at all — osteoarthritis among them, against a formulary holding
+# Yogaraj Guggulu and twenty other `arthritis` entries. Those patients were given
+# Triphala and a cough powder as "general support".
+#
+# One condition → the formulary terms whose formulations are INDICATED for it.
+# One-to-many on purpose: the one-to-one alias table had to pick, and picked
+# wrongly (`ibs` was sent to the IBD formulations; `migraine` lost Pathyadi).
+#
+# Deliberately absent, so they stay "uncovered" with the Vaidya note rather than
+# being served a near match: diabetes_type1 (hypoglycaemic herbs beside insulin),
+# hyperthyroidism (the formulary's `thyroid` entries treat the opposite state),
+# atrial_fibrillation (Arjuna beside digoxin and anticoagulants), bipolar,
+# multiple_sclerosis, lupus, scleroderma, celiac, gallstones, sleep_apnea,
+# low_blood_pressure, varicose_veins, vertigo, tinnitus, rosacea.
+# AUTHORED, NOT CLINICALLY REVIEWED — `vaidya_condition_formulary_map.csv`.
+_CONDITION_KB_TERMS: dict[str, tuple[tuple[str, ...], str]] = {
+    "osteoarthritis": (("arthritis", "joint_pain"),
+                       "Sandhigata Vata — the formulary's arthritis and joint-pain entries are written for it."),
+    "ankylosing_spondylitis": (("arthritis", "back_pain", "low_back_pain"),
+                               "Treated as Vata in the spine and joints; the anti-inflammatory Guggulu entries are indicated."),
+    "lumbar_spondylosis": (("low_back_pain", "back_pain"), "Kati-graha — the back-pain entries."),
+    "cervical_spondylosis": (("cervical_spondylosis", "neurological"),
+                             "Griva-graha; the cervical and Vata-nervine entries."),
+    "fibromyalgia": (("muscle_stiffness", "vata_vyadhi"),
+                     "Mamsagata Vata — the muscle-stiffness and Vata-vyadhi entries."),
+    "osteoporosis": (("calcium_deficiency",), "Asthi Kshaya — the calcium entries (Pravala, Mukta, Shankha)."),
+    "peripheral_neuropathy": (("neurological_weakness", "vata_vyadhi"),
+                              "Vata in the peripheral nerves; the nervine Vata-vyadhi entries."),
+    "copd": (("respiratory_disorders", "chronic_cough", "kapha_respiratory"),
+             "Chronic Kapha-Vata Shwasa; the chronic respiratory entries, not the acute-infection ones."),
+    "chronic_bronchitis": (("bronchitis", "chronic_cough", "respiratory_disorders"),
+                           "Kasa — the bronchitis and chronic-cough entries."),
+    "ibd_crohns": (("inflammatory_bowel_disease",), "The formulary's IBD entries."),
+    "ulcerative_colitis": (("inflammatory_bowel_disease",), "The formulary's IBD entries."),
+    "ibs": (("ibs", "irritable_bowel", "grahani"),
+            "Grahani. Not the IBD entries, which the old alias sent IBS patients to."),
+    "migraine": (("migraine", "headache"), "Ardhavabhedaka — the migraine entry first, then headache."),
+    "metabolic_syndrome": (("obesity", "dyslipidemia"),
+                           "Medoroga; obesity and lipid entries. Diabetic entries only if diabetes is recorded."),
+    "hashimoto": (("hypothyroid",),
+                  "Usually hypothyroid. The thyroid-stimulating entries are wrong in its early hyperthyroid phase — the Vaidya confirms the state."),
+    "acne_severe": (("acne", "skin_disorders"), "Yauvana Pidika — acne, then the Rakta-shodhaka skin entries."),
+    "vitiligo": (("skin_disorders",), "Shvitra; the general Kushtha entries. Bakuchi-specific formulation is not in the formulary."),
+    "endometriosis": (("dysmenorrhea", "menstrual_disorders"), "Kashtartava — the painful-menstruation entries."),
+    "uterine_fibroids": (("uterine_disorders",), "Garbhashaya Granthi — the uterine entries."),
+    "ocd": (("anxiety",), "Manovaha Srotas; the anxiolytic Medhya entries."),
+    "ptsd": (("ptsd", "anxiety"), "The formulary's own PTSD entries, then anxiety."),
+    "adhd": (("adhd", "memory_impairment"), "The formulary's ADHD entries, then the Medhya Rasayanas."),
+}
+
+
+def _kb_terms(user_cond: str) -> tuple[str, ...]:
+    c = user_cond.lower()
+    return (c, *_CONDITION_KB_TERMS.get(c, ((), ""))[0])
+
+
 def _med_covers_condition(med: dict, user_cond: str) -> bool:
     """True if a medicine's `conditions` cover the user's condition — matching by
-    exact string OR shared canonical vocabulary key (so 'diabetes_type2' matches a
-    KB entry tagged 'diabetes')."""
+    exact string, the authored onboarding → formulary map, or shared canonical
+    vocabulary key (so 'diabetes_type2' matches a KB entry tagged 'diabetes')."""
     med_conds = [x.lower() for x in med.get("conditions", [])]
-    if user_cond.lower() in med_conds:
+    terms = _kb_terms(user_cond)
+    if any(t in med_conds for t in terms):
         return True
     ucn = normalize_condition(user_cond)
     return any(normalize_condition(mc) == ucn for mc in med_conds)
@@ -77,14 +137,12 @@ _CONDITION_ALIAS: dict[str, str] = {
     "hypothyroidism": "hypothyroid",
     "hyperthyroidism": "hyperthyroid",
     "pcod": "pcos",
-    "ibs": "inflammatory_bowel_disease",
     "gerd": "gerd",
     "acid_reflux": "hyperacidity",
     "chronic_constipation": "constipation",
     "chronic_fatigue": "chronic_fatigue_syndrome",
     "ra": "rheumatoid_arthritis",
     "depression": "depression",
-    "migraine": "headache",
     "cervical": "cervical_spondylosis",
 }
 
@@ -93,7 +151,11 @@ _CONDITION_ALIAS: dict[str, str] = {
 # synonyms — "thyroid" alone used to be matched as a substring, which caught
 # hyperthyroidism and hypothyroidism but nothing a user typed by hand.
 _REMEDY_INGREDIENT_BLOCKS: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
-    (("diabetes_type1", "diabetes_type2"), ("guggulu", "honey")),
+    (("diabetes_type1", "diabetes_type2"), ("guggulu", "honey", "jaggery", "mishri", "sugar")),
+    # Eucalyptus and menthol vapour and a sniffed powder are airway irritants that
+    # can set off bronchospasm. An eleven-year-old asthmatic was told to steam with
+    # eucalyptus and then sniff dry ginger powder.
+    (("asthma", "copd", "chronic_bronchitis"), ("eucalyptus", "menthol", "sniff")),
     (("hypertension",), ("salt", "ajwain", "stimulant")),
     (("hypothyroidism", "hyperthyroidism", "hashimoto"), ("ashwagandha",)),
     (("ibs", "ulcerative_colitis", "ibd_crohns"), ("pippali", "trikatu")),
@@ -111,6 +173,15 @@ _DRUG_HERB_MAP: dict[str, list[str]] = {
     "kanchanara":  ["thyroid_medication", "blood_thinners"],
 }
 
+def _alt_blocked_by_condition(text: str, medical_history) -> bool:
+    low = (text or "").lower()
+    for group, items in _REMEDY_INGREDIENT_BLOCKS:
+        if any(condition_matches_term(c, g) for c in medical_history or [] for g in group) \
+                and any(i in low for i in items if i != "ashwagandha"):
+            return True
+    return False
+
+
 def _escalation(remedy_kb: dict | None) -> str:
     """The KB's authored "consult a doctor if…" line for a symptom.
 
@@ -118,6 +189,101 @@ def _escalation(remedy_kb: dict | None) -> str:
     not hold, where there is no line to give and a referral is issued anyway.
     """
     return ((remedy_kb or {}).get("consult_doctor_if") or "").strip()
+
+
+
+# ── Shared with Panchakarma: what a typed medicine is, and what an allergy is in ──
+# Both live in `panchakarma_clinical.json` so the three features recognise the same
+# medicine names and the same allergen compositions. The medicines plan matched
+# typed names by substring against its category tokens, so "warfarin" typed into
+# the profile still received Triphala, which the form's "Blood thinners" option
+# blocks; "Glycomet 500" (metformin) was checked against nothing.
+
+def _resolve_medications(medications) -> tuple[list[str], dict | None]:
+    """Interaction tokens for typed medicine names, and what was not recognised."""
+    from services.panchakarma_engine import _medication_findings, pk_clinical
+    found = _medication_findings(medications)
+    classes = pk_clinical.get("medication_classes") or {}
+    tokens: list[str] = []
+    for cls in found["tokens"]:
+        for t in (classes.get(cls) or {}).get("remedy_tokens") or []:
+            if t not in tokens:
+                tokens.append(t)
+    review = None
+    if found["matched"] or found["unmatched"]:
+        review = {
+            "matched": found["matched"],
+            "unmatched": found["unmatched"],
+            "notice": (
+                "Not recognised, so nothing in this plan has been checked against "
+                f"{'it' if len(found['unmatched']) == 1 else 'them'}: {', '.join(found['unmatched'])}. "
+                "Show every medicine you take to the Vaidya and your doctor."
+            ) if found["unmatched"] else None,
+        }
+    return tokens, review
+
+
+def _allergen_entries(allergies) -> list[dict]:
+    """The composition entries for a patient's declared allergies.
+
+    The check was `allergy in ingredients_text`, so "dairy" was looked for in a list
+    of herbs and ghee and never found, and the Anupana — milk, ghee, honey, the
+    vehicle the patient swallows the medicine in — was never checked at all."""
+    from services.panchakarma_engine import pk_clinical
+    if isinstance(allergies, str):
+        allergies = [allergies]
+    table = pk_clinical.get("allergens") or {}
+    out = []
+    for a in allergies or []:
+        key = str(a).strip().lower().replace(" ", "_")
+        if key in table and isinstance(table[key], dict):
+            out.append({"key": key, **table[key]})
+        elif key:
+            # An allergy outside the table is still checked by its own word.
+            out.append({"key": key, "label": str(a), "terms": [key.replace("_", " ")]})
+    return out
+
+
+def _contains_allergen(text: str, entry: dict) -> bool:
+    low = (text or "").lower()
+    excepts = [e.lower() for e in entry.get("except", [])]
+    for term in entry["terms"]:
+        for m in re.finditer(rf"\b{re.escape(term)}\b", low):
+            if not any(e in low[max(0, m.start() - 24):m.start()] for e in excepts):
+                return True
+    return False
+
+
+# A condition rules out an Anupana as surely as an allergy: rock-salt water for
+# kidney disease and hypertension, honey or mishri for a diabetic.
+_ANUPANA_CONDITION_TERMS: tuple[tuple[tuple[str, ...], dict], ...] = (
+    (("hypertension", "chronic_kidney_disease"), {"label": "salt (blood pressure / kidneys)",
+                                                  "terms": ["salt", "saindhava", "lavana"]}),
+    (("diabetes_type1", "diabetes_type2"), {"label": "sugar (diabetes)",
+                                            "terms": ["honey", "madhu", "mishri", "sugar", "jaggery", "guda"]}),
+)
+
+
+def _allergen_safe_anupana(anupana: str, entries: list[dict],
+                           medical_history=None) -> tuple[str, str | None]:
+    """Keep the Anupana options that carry no allergen and no ruled-out item; say so
+    when one was dropped."""
+    entries = list(entries or []) + [
+        rule for group, rule in _ANUPANA_CONDITION_TERMS
+        if any(condition_matches_term(c, g) for c in medical_history or [] for g in group)]
+    if not entries or not anupana:
+        return anupana, None
+    hit = [e for e in entries if _contains_allergen(anupana, e)]
+    if not hit:
+        return anupana, None
+    options = [o.strip() for o in re.split(r",|\bor\b|/", anupana) if o.strip()]
+    safe = [o for o in options if not any(_contains_allergen(o, e) for e in entries)]
+    labels = ", ".join(e["label"].lower() for e in hit)
+    if safe:
+        new = " or ".join(safe)
+        return new, f"Take it with {new}: the usual Anupana, '{anupana}', contains {labels}."
+    return "warm water", (f"Take it with warm water: the usual Anupana, '{anupana}', contains {labels}. "
+                          "Ask the Vaidya whether the medicine needs a different vehicle.")
 
 
 def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
@@ -134,10 +300,17 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
 
     pregnancy_or_nursing = user_profile.get("pregnancy_or_nursing", False)
     current_meds = user_profile.get("current_medications") or []
+    # Typed names resolve to the interaction vocabulary the KB uses.
+    current_meds = list(current_meds) + _resolve_medications(current_meds)[0]
     medical_history = user_profile.get("medical_history") or []
     allergies = user_profile.get("allergies") or []
+    allergen_entries = _allergen_entries(allergies)
     dominant_dosha = user_profile.get("dominant_dosha", "vata").lower()
-    secondary_dosha = user_profile.get("secondary_dosha", "pitta").lower()
+    # Only a recorded second Dosha. It defaulted to "pitta", so a Kapha patient
+    # whose Kapha remedy was unsafe was handed the Pitta one — Shatavari in coconut
+    # water, Kapha-building, for an obese diabetic — before the universal remedy
+    # was ever tried.
+    secondary_dosha = (user_profile.get("secondary_dosha") or "").lower() or None
 
     all_remedies = kb_cache.ayurvedic_remedies or _REMEDIES_FALLBACK
 
@@ -189,6 +362,31 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
         practitioner_reason = _practitioner_reason(sym_sev, sym_dur) if requires_practitioner else ""
 
         # c) Pregnancy filter
+        # 54 of 60 entries author a `pregnancy_alternative` — "Ginger tea with
+        # mishri only — avoid hing" for nausea — and it was read only by the vector
+        # seeder, so every pregnant patient was told no safe remedy existed. It is
+        # served now, screened like any remedy, and with the practitioner named.
+        alt = (remedy_kb.get("pregnancy_alternative") or "").strip()
+        if pregnancy_or_nursing and not remedy_kb.get("pregnancy_safe", False) and alt \
+                and not any(_contains_allergen(alt, e) for e in allergen_entries) \
+                and not _alt_blocked_by_condition(alt, medical_history):
+            filtered_results.append({
+                "symptom_id": sym_id,
+                "symptom_display": remedy_kb.get("symptom_display", sym_id),
+                "severity": sym_sev,
+                "duration": sym_dur,
+                "remedy": {"name": f"Pregnancy-safe option for {remedy_kb.get('symptom_display', sym_id)}",
+                           "preparation": alt, "ingredients": []},
+                "pregnancy_alternative": True,
+                "usage_cautions": ["The usual remedy for this is not safe in pregnancy; this is the "
+                                   "gentler option. Tell your obstetrician and Vaidya you are using it."],
+                "requires_practitioner": requires_practitioner,
+                "practitioner_reason": practitioner_reason,
+                "dosha_used": "pregnancy",
+                "consult_doctor_if": _escalation(remedy_kb),
+                "source": remedy_kb.get("source", "Traditional"),
+            })
+            continue
         if pregnancy_or_nursing and not remedy_kb.get("pregnancy_safe", False):
             filtered_results.append({
                 "symptom_id": sym_id,
@@ -234,8 +432,13 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
 
         remedy_cautions, remedy_red_flags = usage_notes(remedy_contra)
 
+        candidate_notes: list[str] = []
+
         # dosha selection helper
         def is_safe(cand_remedy):
+            # Notes belong to the candidate being judged; the last one judged is
+            # the one served.
+            candidate_notes.clear()
             if not cand_remedy:
                 return False, None
 
@@ -259,25 +462,35 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                 )
                 if not cond:
                     continue
+                # The method too: "strain and drink warm with honey" is in the
+                # preparation, not the ingredient list, and a diabetic was given it.
+                prep_text = ingredients_text + " " + str(cand_remedy.get("preparation") or "").lower()
                 for item in blocked_items:
-                    if item not in ingredients_text:
+                    if item not in prep_text:
                         continue
                     if item == "ashwagandha":
-                        cand_remedy["caution_note"] = "Use Ashwagandha with caution due to thyroid history."
+                        # Recorded here, never on `cand_remedy`: that dict is the
+                        # shared KB entry, and writing onto it served this thyroid
+                        # caution to every later user given the same remedy.
+                        candidate_notes.append("Use Ashwagandha with caution due to thyroid history.")
                     else:
                         return False, f"Contraindicated for {cond}"
 
             # d) Drug interaction
-            drug_interaction_map = {
+            # The medicines plan's map plus the kitchen herbs only remedies use. Two
+            # copies had drifted: Ashwagandha was barred beside clonazepam in the
+            # medicines plan and served as "Ashwagandha milk" by this one.
+            drug_interaction_map = {k: list(v) for k, v in _DRUG_HERB_MAP.items()}
+            for herb, cats in {
                 "ashwagandha": ["thyroid_medication", "immunosuppressants"],
-                "guggulu": ["blood_thinners", "thyroid_medication"],
-                "triphala": ["blood_thinners", "diabetes_medication"],
-                "ginger": ["blood_thinners", "diabetes_medication"],
                 "neem": ["diabetes_medication", "immunosuppressants"],
                 "fenugreek": ["diabetes_medication", "blood_thinners"],
                 "aloe_vera": ["diabetes_medication", "blood_thinners"],
-                "tulsi": ["blood_thinners"]
-            }
+                "tulsi": ["blood_thinners"],
+                "nutmeg": ["sedatives"],
+                "jatamansi": ["sedatives"],
+            }.items():
+                drug_interaction_map[herb] = sorted(set(drug_interaction_map.get(herb, [])) | set(cats))
 
             for med in current_meds:
                 med_l = med.lower().replace(" ", "_")
@@ -287,10 +500,12 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                             if interaction in med_l:
                                 return False, {"interaction_found": True, "medication": med, "herb": herb}
 
-            # f) Allergy filter
-            for allergy in allergies:
-                if allergy.lower() in ingredients_text:
-                    return False, f"Allergen {allergy} found"
+            # f) Allergy filter — by composition, over the ingredients and the method.
+            method = " ".join([ingredients_text, str(cand_remedy.get("preparation") or ""),
+                               str(cand_remedy.get("name") or "")])
+            for entry in allergen_entries:
+                if _contains_allergen(method, entry):
+                    return False, f"Contains {entry['label'].lower()} (declared allergy)"
 
             return True, None
 
@@ -301,20 +516,32 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
         interaction_warning = None
 
         safe, reason = is_safe(candidate)
+        why_not = reason if isinstance(reason, str) else None
         if not safe:
             if isinstance(reason, dict) and reason.get("interaction_found"):
                 interaction_warning = reason
             dosha_used = secondary_dosha
-            candidate = remedy_kb.get("remedies", {}).get(secondary_dosha)
+            candidate = remedy_kb.get("remedies", {}).get(secondary_dosha) if secondary_dosha else None
             safe, reason = is_safe(candidate)
+            why_not = (reason if isinstance(reason, str) else None) or why_not
             if not safe:
                 if isinstance(reason, dict) and reason.get("interaction_found"):
                     interaction_warning = reason
                 candidate = remedy_kb.get("universal_remedy")
                 dosha_used = "universal"
                 safe, reason = is_safe(candidate)
+                why_not = (reason if isinstance(reason, str) else None) or why_not
                 if not safe:
-                    msg = {"symptom_id": sym_id, "action": "consult_doctor", "message": "No safe remedy available due to interactions/allergies."}
+                    msg = {"symptom_id": sym_id, "action": "consult_doctor",
+                           "message": "No safe remedy available due to interactions/allergies."}
+                    if not why_not and interaction_warning:
+                        why_not = (f"{interaction_warning['herb']} interacts with "
+                                   f"{interaction_warning['medication']}")
+                    if why_not:
+                        # Say which: "interactions/allergies" told a diabetic nothing
+                        # about why their headache was referred.
+                        msg["message"] = (f"No home remedy for this suits you ({why_not}). "
+                                          "Please see a practitioner.")
                     if isinstance(reason, dict):
                         msg.update(reason)
                     elif interaction_warning:
@@ -333,7 +560,17 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
             "severity": sym_sev,
             "duration": sym_dur,
             "dosha_cause": remedy_kb.get("dosha_cause", {}).get(dosha_used, ""),
-            "remedy": selected_remedy,
+            # A copy: the KB entry is shared by every request in the process.
+            "remedy": dict(selected_remedy),
+            "caution_notes": list(dict.fromkeys(candidate_notes)),
+            # The entry's own `drug_interactions` (33 of 60 carry one) was read by
+            # nothing. Stated, not used to withhold: it is authored per complaint,
+            # not per remedy, so it names a herb this patient may not be given.
+            "medication_cautions": [
+                t.replace("_", " ") for t in (remedy_kb.get("drug_interactions") or [])
+                if any(t.lower() == m.lower() or t.lower() in m.lower().replace(" ", "_")
+                       for m in current_meds)
+            ],
             "requires_practitioner": requires_practitioner,
             # Which trigger fired. The note in the view said "Chronic/long-duration
             # symptom" whatever the cause, which is wrong copy for a moderate
@@ -627,7 +864,6 @@ _CONDITION_ALIAS.update({
     "pandu_roga":               "anemia",
     "ibd":                      "inflammatory_bowel_disease",
     "crohns":                   "inflammatory_bowel_disease",
-    "ulcerative_colitis":       "inflammatory_bowel_disease",
     "piles":                    "hemorrhoids",
     "arsha":                    "hemorrhoids",
     "haemorrhoids":             "hemorrhoids",
@@ -676,9 +912,6 @@ _CONDITION_ALIAS.update({
     "dementia":                 "cognitive_decline",
     "medhya":                   "cognitive_decline",
     "panic_attacks":            "anxiety",
-    "ocd":                      "anxiety",
-    "ptsd":                     "anxiety",
-    "adhd":                     "memory_impairment",
     "hypothyroid":              "hypothyroid",
     "postpartum":               "postpartum_weakness",
     "postpartum_depression":    "postpartum_weakness",
@@ -757,8 +990,9 @@ def _score_medicine(
     karma_set = set(med.get("karma", []))
 
     # 1. Condition match — primary driver (+5 per match)
-    med_conditions = [c.lower() for c in med.get("conditions", [])]
-    matched_conditions = [c for c in conditions if c in med_conditions]
+    # The same matcher as coverage. Exact-string matching here scored a formulation
+    # 0 for a condition `_med_covers_condition` said it covered.
+    matched_conditions = [c for c in conditions if _med_covers_condition(med, c)]
     score += len(matched_conditions) * 5
 
     # 2. Multi-condition synergy bonus (+3 if covers ≥2 of user's conditions)
@@ -768,6 +1002,14 @@ def _score_medicine(
     # 3. Dominant Vikriti match (+3 — use vikriti, not prakriti)
     if de.get(vikriti_dominant, 0) < 0:
         score += 3
+
+    # 3b. Named for this Dosha (+2). `dosha_effects` is coarse — 311 of its 471
+    # values are -1 — so the tridoshic Rasayanas tied with everything and won on
+    # file order: every Vata, Pitta and Kapha patient with nothing to treat got the
+    # same Triphala and Chyawanprash. The authored karma says which Dosha a
+    # formulation is written against.
+    if f"{vikriti_dominant}hara" in {k.lower() for k in karma_set}:
+        score += 2
 
     # 4. Secondary Vikriti match (+1)
     if de.get(vikriti_secondary, 0) < 0:
@@ -835,10 +1077,12 @@ def _check_medicine_safety(
                     if cat in cm or cm in cat:
                         return False, f"{herb_key.title()} interacts with {current_med}"
 
-    # Allergy check
-    for allergy in allergies:
-        if allergy.lower() in all_ingredients_text:
-            return False, f"Contains allergen: {allergy}"
+    # Allergy check — by composition. A Ghrita is ghee and a Taila is sesame oil
+    # unless another base is named; "dairy" never appears in an ingredient list.
+    for entry in _allergen_entries(allergies):
+        if _contains_allergen(" ".join([all_ingredients_text, med.get("name", ""),
+                                        med.get("type", "")]), entry):
+            return False, f"Contains {entry['label'].lower()} (declared allergy)"
 
     return True, None
 
@@ -884,7 +1128,15 @@ def _build_treatment_protocol(
     condition_context = ", ".join(conditions[:3]) if conditions else "general wellness"
 
     return {
-        "week_1_2": f"Introduce all formulations at prescribed dosage{week_1_2_suffix}. Focus on Ama clearance and Agni kindling. Monitor for any digestive sensitivity.",
+        # One at a time. "Introduce all formulations at once" made any reaction
+        # impossible to attribute, and the narrative beside it said the opposite.
+        "week_1_2": (
+            f"Start one formulation at a time, adding the next after 2–3 days if the last is "
+            f"well tolerated{week_1_2_suffix}. Focus on Ama clearance and Agni kindling. If "
+            "anything disagrees with you, the last one added is the likely cause."
+            if len(formulations) > 1 else
+            f"Start at the prescribed dosage{week_1_2_suffix}. Focus on Ama clearance and Agni "
+            "kindling. Monitor for any digestive sensitivity."),
         "week_3_4": "Progress to full standard dose (if started lower). Therapeutic action on target Dhatus begins. Primary symptoms should show first signs of improvement.",
         "week_5_plus": (
             f"Maintenance phase — continue for {min_weeks}–{max_weeks} weeks total. "
@@ -969,6 +1221,59 @@ def _build_dosage_schedule(formulations: list[dict], anupana_map: dict[str, str]
 
 
 # Dosha-specific lifestyle guidance (used as base; enricher deepens it per protocol)
+# The per-Dosha lifestyle lines were printed whatever else was on file: a Pitta
+# patient with kidney disease was told "coconut water daily" (a potassium load),
+# a Kapha patient on insulin "skip breakfast if not hungry", a Vata patient
+# allergic to sesame "Abhyanga daily with sesame oil", a Kapha cardiac patient
+# "vigorous exercise daily". (phrase, conditions or allergens or states, safe phrase)
+_LIFESTYLE_RESTRICTIONS: tuple[tuple[str, tuple[str, ...], str], ...] = (
+    ("Coconut water and pomegranate daily.",
+     ("chronic_kidney_disease", "kidney_disease"),
+     "Pomegranate daily; coconut water only if your kidney doctor allows potassium."),
+    ("Use generous ghee.", ("allergy:dairy",), "Cook with oil rather than ghee."),
+    ("Use generous ghee.",
+     ("gallstones", "high_cholesterol", "obesity", "fatty_liver", "metabolic_syndrome"),
+     "Use a little oil or ghee in cooking, as your conditions allow."),
+    ("Abhyanga (oil massage) daily with sesame oil.",
+     ("allergy:sesame",),
+     "Abhyanga (oil massage) daily with coconut oil."),
+    ("Honey over sugar.",
+     ("diabetes", "diabetes_type1", "diabetes_type2", "allergy:honey"),
+     "Keep both honey and sugar low."),
+    ("Skip breakfast if not hungry.",
+     ("diabetes", "diabetes_type1", "diabetes_type2", "state:child", "state:pregnant"),
+     "Keep breakfast light rather than skipping it."),
+    ("Vigorous exercise daily.",
+     ("heart_disease", "atrial_fibrillation", "hypertension", "state:pregnant", "state:over_65"),
+     "Brisk walking daily, at a pace your doctor has cleared."),
+    ("Vigorous exercise daily.",
+     ("asthma", "copd", "chronic_bronchitis"),
+     "Daily exercise, warming up first and stopping at any wheeze; keep the reliever inhaler at hand."),
+)
+
+
+def _gate_lifestyle(lifestyle: dict, medical_history, allergies, age: int, pregnant: bool) -> tuple[dict, list[str]]:
+    """Replace a lifestyle line a declared condition, allergy or state rules out, and say so."""
+    states = {f"allergy:{e['key']}" for e in _allergen_entries(allergies)}
+    if age < 16:
+        states.add("state:child")
+    if age > 65:
+        states.add("state:over_65")
+    if pregnant:
+        states.add("state:pregnant")
+    out, notes = dict(lifestyle), []
+    for phrase, triggers, safe in _LIFESTYLE_RESTRICTIONS:
+        why = next((t for t in triggers if t in states or any(
+            condition_matches_term(c, t) for c in medical_history or [] if ":" not in t)), None)
+        if not why:
+            continue
+        for field in ("dietary_note", "routine_note"):
+            if phrase in (out.get(field) or ""):
+                out[field] = out[field].replace(phrase, safe)
+                notes.append(f"'{phrase}' changed — {why.split(':')[-1].replace('_', ' ')}.")
+    return out, notes
+
+
 _LIFESTYLE_BY_DOSHA = {
     "vata": {
         "dietary_note": "Favour warm, unctuous, nourishing foods. Eat at fixed times. Use generous ghee.",
@@ -1001,6 +1306,72 @@ def _repeats_a_herb(a: dict, b: dict) -> bool:
         return False
     ha, hb = _active_herbs(a), _active_herbs(b)
     return (len(ha) == 1 and ha <= hb) or (len(hb) == 1 and hb <= ha)
+
+
+_MINERAL_MARKERS = ("bhasma", "pishti", "parada", "mercury", "gandhaka", "hingula",
+                    "manahshila", "haratala", "tamra", "abhraka", "loha", "mandura")
+
+
+def _is_mineral(med: dict) -> bool:
+    """A Rasa Aushadhi or mineral preparation, by type or by what is in it."""
+    t = (med.get("type") or "").lower()
+    if any(k in t for k in ("bhasma", "pishti")) or t.startswith("rasa"):
+        return True
+    text = " ".join(med.get("ingredients") or []).lower()
+    return any(k in text for k in _MINERAL_MARKERS)
+
+
+def _herb_table_findings(med: dict, findings: list[str]) -> tuple[str | None, list[str]]:
+    """Hard bar (reason) and soft cautions from the shared per-herb safety table."""
+    from services.panchakarma_engine import _match_contraindications, pk_clinical
+    table = pk_clinical.get("herbs") or {}
+    cautions: list[str] = []
+    for key in sorted(_active_herbs(med)):
+        entry = table.get(key)
+        if not isinstance(entry, dict):
+            continue
+        display = entry.get("display", key.title())
+        hard = _match_contraindications(findings, entry.get("hard") or {})
+        if hard:
+            c, mech = hard[0]
+            return f"Contains {display}, contraindicated with {c.replace('_', ' ')}: {mech}", []
+        for c, mech in _match_contraindications(findings, entry.get("soft") or {}):
+            cautions.append(f"{display} ({c.replace('_', ' ')}): {mech}")
+    return None, cautions
+
+
+def _formulation_class(med: dict) -> str | None:
+    """The classes a plan carries one of at most.
+
+    Three Guggulu formulations together (Kaishor, Yogaraj and Vatari, for one
+    osteoarthritis patient) is three doses of the same resin, a known gastric
+    irritant. Two Arishtas or Asavas is two self-generated alcohol doses. Two
+    mineral preparations stack the metal load. Shared herbs between ordinary
+    compound formulations stay a Vaidya's call; these three are not."""
+    t = (med.get("type") or "").lower()
+    name = (med.get("name") or "").lower()
+    if "guggulu" in t or "guggulu" in name:
+        return "guggulu"
+    if any(k in t for k in ("arishta", "asava")) or name.endswith(("arishta", "asava")):
+        return "fermented"
+    if _is_mineral(med):
+        return "mineral"
+    return None
+
+
+_WELLNESS_KARMA = {"rasayana", "balya", "brimhana"}
+# Kindling and digesting are wellness only where Agni or Ama asks for them.
+_AGNI_KARMA = {"deepana", "pachana", "ama pachana"}
+
+_CLASS_LABEL = {"guggulu": "a Guggulu formulation", "fermented": "a fermented (Arishta/Asava) preparation",
+                "mineral": "a mineral preparation"}
+
+# How many medicines a person takes by mouth at once. The plan gave seven in a
+# third of all plans — three condition medicines, two more, two "general
+# wellness" ones — each with its own timing and Anupana. Adherence falls with
+# every addition and every addition is another interaction. External oils are
+# not counted.
+_MAX_INTERNAL = 4
 
 
 def _doubling_note(med: dict, hit: dict) -> str:
@@ -1040,8 +1411,11 @@ def generate_medicines_plan(
     # Also include free-text from user profile (legacy)
     current_meds_profile = user_profile.get("current_medications") or []
     current_meds = [m.lower().replace(" ", "_") for m in current_meds_prefs + current_meds_profile]
+    resolved_tokens, medication_review = _resolve_medications(current_meds_profile)
+    current_meds += [t for t in resolved_tokens if t not in current_meds]
 
     allergies       = user_profile.get("allergies") or []
+    allergen_entries = _allergen_entries(allergies)
     medical_history = [c.lower() for c in (user_profile.get("medical_history") or [])]
     ingredient_access  = (medicines_prefs.get("ingredient_access") or "can_buy_herbs").lower()
     previous_tried     = [m.lower().strip() for m in (medicines_prefs.get("previous_ayurvedic_medicines") or [])]
@@ -1110,6 +1484,10 @@ def generate_medicines_plan(
     )
 
     # ── Score and filter ──────────────────────────────────────────────────
+    from services.panchakarma_engine import _patient_findings
+    herb_findings = list(medical_history) + _patient_findings(user_profile) + (
+        ["pregnancy"] if is_pregnant else [])
+    herb_notes: dict[str, list[str]] = {}
     scored:  list[tuple[int, dict]] = []
     blocked: list[dict] = []
 
@@ -1117,7 +1495,12 @@ def generate_medicines_plan(
         tier = med.get("safety_tier", 1)
         if tier > max_safety_tier:
             continue
-        if restrict_bhasma and med.get("type", "").lower() in ("bhasma (ash)", "pishti (powder of gems/minerals)") and tier == 2:
+        # By composition, not by the type string: the list matched "bhasma (ash)"
+        # and the pishti spelling only, so "bhasma (calcined mineral)", "rasa
+        # (mineral-herbal tablet)" and "rasa aushadhi" passed — Shwas Kuthar Rasa,
+        # purified mercury and sulphur with a paediatric dose of its own, was one
+        # scoring change away from a ten-year-old's asthma plan.
+        if restrict_bhasma and _is_mineral(med):
             blocked.append({"name": med["name"], "reason": "Mineral preparations require extra caution for your age group — consult a Vaidya"})
             continue
         # No authored paediatric dose means there is no dose we can print for this
@@ -1140,6 +1523,16 @@ def generate_medicines_plan(
         if not is_safe:
             blocked.append({"name": med["name"], "reason": reason})
             continue
+        # The per-herb table Panchakarma reads. Its own docstring records Shilajit
+        # going to kidney patients and Sarpagandha to anyone with hypertension; that
+        # was fixed for Panchakarma and this plan still did both — Shilajit is even
+        # listed here as *indicated* for kidney disease. One herb, one table.
+        herb_bar, herb_cautions = _herb_table_findings(med, herb_findings)
+        if herb_bar:
+            blocked.append({"name": med["name"], "reason": herb_bar})
+            continue
+        if herb_cautions:
+            herb_notes[med["name"]] = herb_cautions
 
         score = _score_medicine(
             med,
@@ -1159,7 +1552,14 @@ def generate_medicines_plan(
     condition_matched = [(s, m) for s, m in scored if any(
         _med_covers_condition(m, c) for c in normalised_conditions
     )]
-    general_wellness = [(s, m) for s, m in scored if (s, m) not in condition_matched]
+    # "General wellness" means Rasayana, Deepana or Pachana — something a person
+    # without a diagnosis may take for weeks. It used to mean any formulation with
+    # a positive score, which put Sitopaladi, a cough powder, into the plan of
+    # everyone with a Vata or Kapha imbalance and nothing to treat.
+    general_wellness = [(s, m) for s, m in scored if (s, m) not in condition_matched
+                        and {k.lower() for k in m.get("karma", [])} & (
+                            _WELLNESS_KARMA | (_AGNI_KARMA if agni_type == "manda"
+                                               or ama_level in ("moderate", "high") else set()))]
 
     # ── Condition coverage tier (honesty for rare / unmapped diseases) ─────
     # Which of the user's conditions actually have a KB-matched formulation?
@@ -1168,12 +1568,26 @@ def generate_medicines_plan(
         for c in normalised_conditions
         if _med_covers_condition(m, c)
     }
-    uncovered_conditions = [c for c in normalised_conditions if c not in matched_conditions]
+    uncovered_all = [c for c in normalised_conditions if c not in matched_conditions]
+    # "No formulation matches hypothyroid" was false: Kanchanara Guggulu does, and was
+    # withheld for the patient's thyroxine. Withheld and absent are different answers.
+    all_withheld = [c for c in uncovered_all
+                    if any(_med_covers_condition(m, c) for m in _MEDICINES_KB)]
+    uncovered_conditions = [c for c in uncovered_all if c not in all_withheld]
+    # Covered only from the outside: every internal formulation for the condition
+    # was barred, and an oil is all that is left. A Pitta patient with sciatica —
+    # every sciatica Guggulu and Kashayam is contraindicated in aggravated Pitta —
+    # read "curated" above a plan with nothing to take by mouth.
+    external_only = [
+        c for c in normalised_conditions if c in matched_conditions and not any(
+            _med_covers_condition(m, c) and m.get("application_type") != "external"
+            for _, m in condition_matched)
+    ]
     if not normalised_conditions:
         condition_coverage = "wellness"      # no conditions — general dosha wellness
     elif not condition_matched:
         condition_coverage = "general"       # rare/unmapped — only dosha-based general meds
-    elif uncovered_conditions:
+    elif uncovered_conditions or all_withheld:
         condition_coverage = "partial"       # some conditions matched, some not
     else:
         condition_coverage = "curated"       # all conditions have KB-matched formulations
@@ -1199,18 +1613,49 @@ def generate_medicines_plan(
                     "reason": f"Its herb is already in {clash['name']}, so it would double the dose.",
                 })
                 continue
+            cls = _formulation_class(med)
+            same = next((c for c in chosen + out if cls and _formulation_class(c) == cls
+                         and (c.get("application_type") == "external") == (med.get("application_type") == "external")),
+                        None)
+            if same:
+                not_doubled.append({
+                    "name": med["name"],
+                    "reason": f"The plan already gives {_CLASS_LABEL[cls]} ({same['name']}); two at once double it.",
+                })
+                continue
+            if med.get("application_type") != "external" and \
+                    sum(1 for c in chosen + out if c.get("application_type") != "external") >= _MAX_INTERNAL:
+                continue
             out.append(med)
         return out
 
-    primary_formulations    = _pick([m for _, m in condition_matched], 3, [])
+    # Every condition first, then depth. Ranked as one list, the higher-scoring
+    # condition took every slot: an anxiety + IBS patient got four digestive
+    # formulations and nothing for anxiety, though anxiety formulations had passed
+    # every gate. The best for each condition goes first, in the order recorded.
+    ordered: list[dict] = []
+    for c in normalised_conditions:
+        best = next((m for _, m in condition_matched if _med_covers_condition(m, c)
+                     and m.get("application_type") != "external" and m not in ordered), None)
+        if best:
+            ordered.append(best)
+    ordered += [m for _, m in condition_matched if m not in ordered]
+    primary_formulations    = _pick(ordered, 3, [])
     rest = [m for _, m in condition_matched if m not in primary_formulations
             and m["name"] not in {d["name"] for d in not_doubled}]
     supporting_formulations = _pick(rest, 2, primary_formulations)
-    supporting_formulations += _pick([m for _, m in general_wellness], 2,
-                                     primary_formulations + supporting_formulations)
+    # General-wellness filler only where the conditions left room. Beside three
+    # condition medicines it added a cough powder to an osteoarthritis plan.
+    internal_so_far = [m for m in primary_formulations + supporting_formulations
+                       if m.get("application_type") != "external"]
+    if condition_coverage in ("wellness", "general", "partial") or len(internal_so_far) < 2:
+        supporting_formulations += _pick([m for _, m in general_wellness], 2,
+                                         primary_formulations + supporting_formulations)
     all_selected            = primary_formulations + supporting_formulations
 
-    external_oils           = [m for m in all_selected if m.get("application_type") == "external"]
+    # One external oil: two medicated oils for the same complaint is the same
+    # application twice, and both are usually sesame-based.
+    external_oils           = [m for m in all_selected if m.get("application_type") == "external"][:1]
     primary_formulations    = [m for m in primary_formulations    if m.get("application_type") != "external"]
     supporting_formulations = [m for m in supporting_formulations if m.get("application_type") != "external"]
 
@@ -1235,8 +1680,12 @@ def generate_medicines_plan(
         out = []
         for med in meds:
             m = dict(med)
-            anupana_map[m["id"]] = _select_anupana(m, primary_condition, agni_type)
-            m["selected_anupana"] = anupana_map[m["id"]]
+            anupana, anupana_note = _allergen_safe_anupana(
+                _select_anupana(m, primary_condition, agni_type), allergen_entries, medical_history)
+            anupana_map[m["id"]] = anupana
+            m["selected_anupana"] = anupana
+            if anupana_note:
+                m["anupana_note"] = anupana_note
             m["previously_tried"] = m["name"].lower() in previous_tried
             # Flagged, not withheld: usually the answer is to stop the one being
             # self-administered, which is for the patient and their Vaidya.
@@ -1251,6 +1700,7 @@ def generate_medicines_plan(
             # medicine, not in the gate.
             m["usage_cautions"], m["red_flags"] = usage_notes(m.get("contraindications"))
             m["usage_cautions"] += assumed_state_notes(m.get("contraindications"), derived_states)
+            m["usage_cautions"] += herb_notes.get(m["name"], [])
             _apply_patient_dosage(m, age)
             out.append(m)
         return out
@@ -1263,7 +1713,33 @@ def generate_medicines_plan(
     dosage_schedule    = _build_dosage_schedule(primary_formulations + supporting_formulations, anupana_map)
     treatment_protocol = _build_treatment_protocol(primary_formulations + supporting_formulations, agni_type, normalised_conditions)
 
-    lifestyle_guidance = _LIFESTYLE_BY_DOSHA.get(vikriti_dominant, _LIFESTYLE_BY_DOSHA["vata"])
+    lifestyle_guidance, lifestyle_notes = _gate_lifestyle(
+        _LIFESTYLE_BY_DOSHA.get(vikriti_dominant, _LIFESTYLE_BY_DOSHA["vata"]),
+        medical_history, allergies, age, is_pregnant)
+    if lifestyle_notes:
+        lifestyle_guidance = {**lifestyle_guidance, "changed_for_you": lifestyle_notes}
+
+    # Shodhana is the Panchakarma engine's verdict, not a second opinion here. This
+    # plan labelled itself "Shodhana — Vamana/Virechana indicated" from Ama and a
+    # Kapha condition count alone, for ten-year-olds, eighty-year-olds and pregnant
+    # women the Panchakarma engine refuses. Ask it.
+    shodhana_withheld = None
+    shodhana_strength = "full" if chikitsa_approach == "Shodhana" else None
+    if chikitsa_approach == "Shodhana":
+        from services.panchakarma_engine import _determine_shodhana_or_shamana, pk_protocols
+        verdict = _determine_shodhana_or_shamana(
+            user_profile, {"setting": "clinic", "detox_experience": "some"}, pk_protocols)
+        if verdict.get("type") == "shamana":
+            chikitsa_approach = "Shamana"
+            shodhana_withheld = (
+                "Your Ama and conditions would point toward purification, but it is not "
+                "advised for you: " + "; ".join(verdict.get("blocking_reasons") or verdict.get("reasons") or [])
+                + ". These medicines pacify instead.")
+        elif verdict.get("type") == "mridu_shodhana":
+            shodhana_strength = "mridu"
+            shodhana_withheld = (
+                "Only mild (Mridu) purification is suitable for you, never Vamana: "
+                + "; ".join(verdict.get("restricting_reasons") or []) + ".")
 
     return {
         "plan_id":               plan_id,
@@ -1276,17 +1752,31 @@ def generate_medicines_plan(
         "ama_level":             ama_level,
         "current_season":        season,
         "chikitsa_approach":     chikitsa_approach,
+        "shodhana_withheld":     shodhana_withheld,
+        "shodhana_strength":     shodhana_strength,
         "active_conditions":     normalised_conditions,
         "condition_coverage":    condition_coverage,
         "uncovered_conditions":  uncovered_conditions,
-        "vaidya_review_required": bool(uncovered_conditions),
-        "coverage_note": (
-            "No formulation in our classical knowledge base specifically matches "
-            f"{', '.join(c.replace('_', ' ') for c in uncovered_conditions)}. "
-            "The medicines below are dosha-balancing general support — a qualified Vaidya "
-            "should prescribe condition-specific formulations for these."
-            if uncovered_conditions else ""
-        ),
+        "vaidya_review_required": bool(uncovered_conditions or external_only or all_withheld),
+        "coverage_note": " ".join(x for x in (
+            ("No formulation in our classical knowledge base specifically matches "
+             f"{', '.join(c.replace('_', ' ') for c in uncovered_conditions)}. "
+             "The medicines below are dosha-balancing general support — a qualified Vaidya "
+             "should prescribe condition-specific formulations for these.")
+            if uncovered_conditions else "",
+            ("Every formulation we hold for "
+             f"{', '.join(c.replace('_', ' ') for c in all_withheld)} is unsuitable for you — "
+             "see the excluded list for why — so none is given for it. A Vaidya should choose "
+             "one in person.")
+            if all_withheld else "",
+            ("Every medicine taken by mouth for "
+             f"{', '.join(c.replace('_', ' ') for c in external_only)} is unsuitable for you "
+             "(see the excluded list), so only an external oil is given for it. A Vaidya "
+             "should choose an internal formulation in person.")
+            if external_only else "",
+        ) if x),
+        "external_only_conditions": external_only,
+        "withheld_conditions":   all_withheld,
         "primary_formulations":  primary_formulations,
         "supporting_formulations": supporting_formulations,
         "external_therapies":    external_oils,
@@ -1294,6 +1784,7 @@ def generate_medicines_plan(
         "treatment_protocol":    treatment_protocol,
         "lifestyle_guidance":    lifestyle_guidance,
         "blocked_medicines":     blocked,
+        "medication_review":     medication_review,
         "not_doubled":           not_doubled,
         "enriched":              False,
         "disclaimer": (

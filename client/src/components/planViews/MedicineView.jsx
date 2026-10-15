@@ -222,6 +222,7 @@ function MedCard({ med, rationale }) {
                 <span>Anupana: <strong>{med.selected_anupana || med.anupana}</strong></span>
               </div>
             )}
+            {med.anupana_note && <div className="mv-anupana" style={{ color: '#c2410c' }}><span>{med.anupana_note}</span></div>}
             {med.dosage_pediatric && (
               <div className="mv-anupana" style={{ color: '#a78bfa' }}>
                 <span>Paediatric dose: {med.dosage_pediatric}</span>
@@ -329,6 +330,30 @@ export function MedicineView({ plan }) {
           <p>{plan.personalized_intro}</p>
         </div>
       )}
+      {/* Narrative lines the deterministic gate withheld, as a count, so a gap
+          reads as a decision rather than an omission. */}
+      {plan.coaching_withheld?.length > 0 && (
+        <p className="rv-info-body" style={{ opacity: 0.8 }}>
+          {plan.coaching_withheld.length} line{plan.coaching_withheld.length === 1 ? '' : 's'} of the AI guidance{' '}
+          {plan.coaching_withheld.length === 1 ? 'was' : 'were'} withheld because{' '}
+          {plan.coaching_withheld.length === 1 ? 'it' : 'they'} contradicted your plan
+          ({[...new Set(plan.coaching_withheld.map(w => w.reason.split(' — ')[0]))].slice(0, 3).join('; ')}).
+        </p>
+      )}
+
+      {/* ── The patient's own medicines, as this plan read them ── */}
+      {plan.medication_review && (plan.medication_review.matched?.length > 0 || plan.medication_review.notice) && (
+        <div className="mv-coverage-note">
+          <Pill size={14} />
+          <div>
+            <strong>Your medicines and this plan</strong>
+            {plan.medication_review.matched?.length > 0 && (
+              <p>Checked against: {plan.medication_review.matched.map(m => `${m.medication} (${m.classes.join(', ').toLowerCase()})`).join('; ')}. Formulations that interact are listed under "Medicines Excluded for Your Safety".</p>
+            )}
+            {plan.medication_review.notice && <p>{plan.medication_review.notice}</p>}
+          </div>
+        </div>
+      )}
 
       {/* ── Rare / unmapped condition coverage notice ── */}
       {plan.coverage_note && (
@@ -346,8 +371,24 @@ export function MedicineView({ plan }) {
         <div className="mv-shodhana-alert">
           <TriangleAlert size={14} />
           <div>
-            <strong>Shodhana (Purification) Protocol Indicated</strong>
-            <p>Your Vikriti and condition profile suggest a purification approach (Vamana/Virechana). This requires in-person evaluation and supervision by a qualified Vaidya. The formulations below support this direction but do not replace clinical Panchakarma.</p>
+            <strong>{plan.shodhana_strength === 'mridu' ? 'Mild (Mridu) Purification Indicated' : 'Shodhana (Purification) Protocol Indicated'}</strong>
+            <p>
+              {plan.shodhana_strength === 'mridu'
+                ? 'Your Ama and conditions suggest purification, but only a mild form suits you — never Vamana.'
+                : 'Your Vikriti and condition profile suggest a purification approach (Vamana/Virechana).'}
+              {' '}This requires in-person evaluation and supervision by a qualified Vaidya. The formulations below support this direction but do not replace clinical Panchakarma.
+            </p>
+            {plan.shodhana_withheld && <p>{plan.shodhana_withheld}</p>}
+          </div>
+        </div>
+      )}
+
+      {plan.chikitsa_approach !== 'Shodhana' && plan.shodhana_withheld && (
+        <div className="mv-shodhana-alert">
+          <TriangleAlert size={14} />
+          <div>
+            <strong>Purification is not advised for you</strong>
+            <p>{plan.shodhana_withheld}</p>
           </div>
         </div>
       )}
@@ -530,6 +571,11 @@ export function MedicineView({ plan }) {
           </h3>
           {lifestyle.dietary_note && <p className="rv-info-body">{lifestyle.dietary_note}</p>}
           {lifestyle.routine_note && <p className="rv-info-body" style={{ marginTop: 6 }}>{lifestyle.routine_note}</p>}
+          {lifestyle.changed_for_you?.length > 0 && (
+            <p className="rv-info-body" style={{ marginTop: 6, opacity: 0.8 }}>
+              Changed for you: {lifestyle.changed_for_you.join(' ')}
+            </p>
+          )}
           {lifestyle.avoid?.length > 0 && (
             <div className="rv-avoid-row">
               {lifestyle.avoid.map((a, i) => <span key={i} className="rv-avoid-chip">{a}</span>)}
