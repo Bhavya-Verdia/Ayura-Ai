@@ -79,6 +79,8 @@ HERBS = {
             "autoimmune": "Immunostimulant — may aggravate autoimmune activity. Introduce alone and monitor.",
             "hypothyroidism": "Raises thyroid hormone, so thyroxine dose may need review — check TFTs at 6 weeks.",
             "depression": "Sedating at higher doses; take the evening dose only and review if fatigue worsens.",
+            "fatty_liver": "Cholestatic liver injury is reported with Ashwagandha supplements; check liver function after starting.",
+            "hepatitis": "As fatty liver — reported liver injury; check liver function and stop at any rise.",
         },
         "medication_classes": ["thyroid_hormone", "sedatives", "immunosuppressants"],
     },
@@ -166,7 +168,9 @@ HERBS = {
     },
     "brahmi": {
         "display": "Brahmi (Bacopa)",
-        "hard": {},
+        "hard": {
+            "hyperthyroidism": "Raises T4 (animal studies); adding it to a thyrotoxic state works the wrong way.",
+        },
         "soft": {
             "hypothyroidism": "Raises T4 in animal studies — check TFTs if taken long term.",
             "bradycardia": "Can slow the heart rate further.",

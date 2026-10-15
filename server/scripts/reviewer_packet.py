@@ -382,6 +382,17 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0, n_cmap=0, n_hdi=0):
         "is listed in the formulary without its classical Parada and Tamra; the composition "
         "itself needs checking.",
         "",
+        "## Part 3d — Formulary data corrections  (`vaidya_medicine_data_corrections.csv`)",
+        "An audit of the 30 most-served formulations against classical composition found data "
+        "errors, corrected and recorded here with the previous value: Pathyadi Kadha's "
+        "ingredients (it listed fennel and Trikatu), Avipattikar (half sugar with no diabetes "
+        "bar, and listed as indicated for IBD while containing a purgative), Brahmi's thyroid "
+        "contraindication (pointed the wrong way). Fourteen formulations carry "
+        "`pregnancy_safe: \"consult\"` — the engine read that as safe; it now withholds them in "
+        "pregnancy until you rule. **53 compound formulations cite the Ayurvedic Pharmacopoeia "
+        "(API), which covers single drugs; their references should point to the AFI** — "
+        "page numbers were not verified. Approve or reverse each row.",
+        "",
         "## Part 4 — Panchakarma Karma tags  (`vaidya_panchakarma_karma_tags.csv`)",
         f"{n_karma} preparation and aftercare therapies, each tagged with the Pradhana "
         "Karma courses it belongs to. The engine scores its therapy pool with this tag, so "
@@ -580,6 +591,29 @@ def build_herb_drug_csv():
     return path, len(rows)
 
 
+def build_medicine_corrections_csv():
+    """Every change a non-clinician made to the formulary's data, for sign-off."""
+    meds = json.load(open(os.path.join(DATA, "knowledge_base", "ayurvedic_medicines.json"), encoding="utf-8"))
+    cols = ["medicine", "field", "was", "now", "reason", "approve", "should_be", "vaidya_notes"]
+    rows = []
+    for m in meds:
+        for c in m.get("data_corrections") or []:
+            rows.append({"medicine": m["name"], "field": c["field"], "was": json.dumps(c["was"], ensure_ascii=False),
+                         "now": json.dumps(c["now"], ensure_ascii=False), "reason": c["reason"],
+                         "approve": "", "should_be": "", "vaidya_notes": ""})
+    pending = [m["name"] for m in meds if m.get("pregnancy_safe") == "consult"]
+    for n in pending:
+        rows.append({"medicine": n, "field": "pregnancy_safe", "was": '"consult"', "now": '"consult" (withheld in pregnancy)',
+                     "reason": "Unsettled — the engine now withholds it in pregnancy. Rule true or false.",
+                     "approve": "", "should_be": "", "vaidya_notes": ""})
+    path = os.path.join(OUT, "vaidya_medicine_data_corrections.csv")
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=cols)
+        w.writeheader()
+        w.writerows(rows)
+    return path, len(rows)
+
+
 def main():
     csv_path, n = build_medicine_csv()
     pk_path, n_pk = build_panchakarma_contraindication_csv()
@@ -587,6 +621,7 @@ def main():
     karma_path, n_karma = build_karma_tag_csv()
     cmap_path, n_cmap = build_condition_formulary_csv()
     hdi_path, n_hdi = build_herb_drug_csv()
+    corr_path, n_corr = build_medicine_corrections_csv()
     md_path = build_packet_md(n, n_pk, n_tok, n_karma, n_cmap, n_hdi)
     print("Vaidya reviewer packet generated:")
     print(f"  {csv_path}  ({n} medicines)")
@@ -595,6 +630,7 @@ def main():
     print(f"  {karma_path}  ({n_karma} Karma tags)")
     print(f"  {cmap_path}  ({n_cmap} condition → formulary mappings)")
     print(f"  {hdi_path}  ({n_hdi} herb-medicine and formulation rules)")
+    print(f"  {corr_path}  ({n_corr} formulary data corrections to approve)")
     print(f"  {md_path}")
     print("\nGive these to a BAMS Vaidya, along with the diet packet built separately by")
     print("scripts/build_diet_review_packet.py. Filled CSV corrections fold straight back")

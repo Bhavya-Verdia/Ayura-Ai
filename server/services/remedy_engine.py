@@ -1061,8 +1061,15 @@ def _check_medicine_safety(
     derived_states: dict | None = None,
 ) -> tuple[bool, str | None]:
     """4-layer safety gate. Returns (is_safe, reason_if_blocked)."""
-    if is_pregnant and not med.get("pregnancy_safe", False):
+    # `is True`, not truthiness: 14 entries carry the string "consult", which is
+    # truthy, so Manjishtha (an emmenagogue) and Parthadyarishta (alcohol) were
+    # served in pregnancy. Unsettled safety is not safety.
+    if is_pregnant and med.get("pregnancy_safe") is not True:
+        if med.get("pregnancy_safe") == "consult":
+            return False, "Pregnancy safety not established — a Vaidya must decide in person"
         return False, "Not safe during pregnancy"
+    if is_pregnant and _formulation_class(med) == "fermented":
+        return False, "Contains self-generated alcohol — not taken in pregnancy or while nursing"
 
     # Contraindications vs medical history and derived state.
     #
@@ -1458,7 +1465,9 @@ def _formulation_rule_findings(med: dict, medical_history, age: int,
     if fermented and age >= int(es.get("min_age") or 200) and set(es.get("classes") or []) & (classes or set()):
         return f"Withheld at {age} with your sleeping or sedating medicine: {es['mechanism']}", []
     sb = rules.get("sugar_base") or {}
-    if any(k in t for k in sb.get("types", [])) and (c := has(sb.get("conditions", []))):
+    sugar_ing = any(re.search(rf"\b{re.escape(k)}\b", text) for k in sb.get("ingredient_markers", []))
+    if (any(k in t for k in sb.get("types", [])) or (sugar_ing and not fermented)) \
+            and (c := has(sb.get("conditions", []))):
         return f"Contraindicated with {c.replace('_', ' ')}: {sb['mechanism']}", []
     for key in ("fermented_alcohol", "fermented_sugar", "fermented_reflux"):
         r = rules.get(key) or {}

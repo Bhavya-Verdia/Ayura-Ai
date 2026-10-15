@@ -16,7 +16,7 @@ herb x medicine,gudmar; karela; methi; jambu; shilajit; vijaysar; nimba; guduchi
 herb x medicine,@fermented,metronidazole_disulfiram,major,"Arishtas and Asavas contain self-generated alcohol; with metronidazole or disulfiram it causes a disulfiram reaction — flushing, vomiting, palpitations.",,,,
 herb x medicine,@fermented,sedatives,moderate,The alcohol in an Arishta or Asava adds to a sedative.,,,,
 herb x medicine,trivrit; danti; jayapala; eranda; aragvadha,digoxin; lithium; diuretics,moderate,"Purgation loses potassium and water, which raises digoxin and lithium toxicity and adds to a diuretic.",,,,
-formulation base,"sugar_base (avaleha, gulam, pak, lehya, khanda)",diabetes_type1; diabetes_type2,major,"Avalehas, Gulams and Khandas are prepared in sugar or jaggery — often half the preparation by weight.",,,,
+formulation base,"sugar_base (avaleha, gulam, pak, lehya, khanda)",diabetes_type1; diabetes_type2,major,"Prepared in sugar or jaggery — Avalehas, Gulams and Khandas, and churnas like Avipattikar and Sitopaladi that are half sugar by the classical recipe.",,,,
 formulation base,fermented_sugar,diabetes_type1; diabetes_type2,moderate,Arishtas and Asavas are fermented from jaggery and keep residual sugar; check blood glucose after starting.,,,,
 formulation base,fermented_alcohol,fatty_liver; liver_disease; hepatitis; cirrhosis; alcohol_dependence; pancreatitis,major,Self-generated alcohol (typically 5-10%) in a liver that is already diseased. Kumaryasava is classically a liver medicine — contested; see the packet.,,,,
 formulation base,fermented_reflux,acid_reflux; gastritis; peptic_ulcer,moderate,Alcohol relaxes the lower oesophageal sphincter and irritates the gastric lining.,,,,

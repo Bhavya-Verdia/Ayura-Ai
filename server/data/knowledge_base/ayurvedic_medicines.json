@@ -265,7 +265,6 @@
       "constipation",
       "indigestion",
       "pitta_disorders",
-      "inflammatory_bowel_disease",
       "gastric_ulcer"
     ],
     "dosha_effects": {
@@ -319,7 +318,8 @@
     "contraindications": [
       "diarrhea",
       "pregnancy",
-      "ibs_diarrhea_predominant"
+      "ibs_diarrhea_predominant",
+      "diabetes"
     ],
     "drug_interactions": [
       "reduces_absorption_of_concurrent_oral_drugs_separate_by_2h"
@@ -332,7 +332,49 @@
     "duration_max_weeks": 8,
     "afi_reference": "API Vol. I, P. 14",
     "classical_text_reference": "Bhaishajya Ratnavali, Amlapitta Rogadhikara 56/5",
-    "classical_action": "Pittahara, Anulomana, Deepana, Ama Pachana"
+    "classical_action": "Pittahara, Anulomana, Deepana, Ama Pachana",
+    "data_corrections": [
+      {
+        "field": "contraindications",
+        "was": [
+          "diarrhea",
+          "pregnancy",
+          "ibs_diarrhea_predominant"
+        ],
+        "now": [
+          "diarrhea",
+          "pregnancy",
+          "ibs_diarrhea_predominant",
+          "diabetes"
+        ],
+        "reason": "Half sugar by the classical recipe (Sharkara 66 parts of ~132); it had no diabetes bar.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      },
+      {
+        "field": "conditions",
+        "was": [
+          "hyperacidity",
+          "gerd",
+          "constipation",
+          "indigestion",
+          "pitta_disorders",
+          "inflammatory_bowel_disease",
+          "gastric_ulcer"
+        ],
+        "now": [
+          "hyperacidity",
+          "gerd",
+          "constipation",
+          "indigestion",
+          "pitta_disorders",
+          "gastric_ulcer"
+        ],
+        "reason": "Listed as indicated for inflammatory bowel disease while containing Trivrit, a purgative barred in IBD by the herb table.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "chyawanprash",
@@ -888,7 +930,7 @@
     "contraindications": [
       "bradycardia",
       "peptic_ulcer",
-      "hypothyroidism"
+      "hyperthyroid"
     ],
     "drug_interactions": [
       "sedatives",
@@ -902,7 +944,25 @@
     "duration_max_weeks": 16,
     "afi_reference": "API Vol. I, P. 19",
     "classical_text_reference": "Charaka Samhita, Sutra Sthana 4 (Medhya Rasayana); Bhaishajya Ratnavali, Unmada Rogadhikara",
-    "classical_action": "Medhya, Nidrajanana, Pittahara, Rasayana, Balya"
+    "classical_action": "Medhya, Nidrajanana, Pittahara, Rasayana, Balya",
+    "data_corrections": [
+      {
+        "field": "contraindications",
+        "was": [
+          "bradycardia",
+          "peptic_ulcer",
+          "hypothyroidism"
+        ],
+        "now": [
+          "bradycardia",
+          "peptic_ulcer",
+          "hyperthyroid"
+        ],
+        "reason": "Bacopa raises T4 (Kar et al. 2002); the risk is hyperthyroidism, not hypothyroidism. The herb table already records it this way. Direction to be confirmed.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "arjuna_churna",
@@ -5207,12 +5267,13 @@
       "rakta"
     ],
     "ingredients": [
-      "Pathya (Haritaki)",
-      "Shatapushpa (Fennel)",
-      "Amalaki",
-      "Shunthi",
-      "Maricha",
-      "Pippali"
+      "Pathya (Haritaki — Terminalia chebula)",
+      "Aksha (Bibhitaki — Terminalia bellirica)",
+      "Dhatri (Amalaki — Emblica officinalis)",
+      "Bhunimba (Kirata — Andrographis / Swertia)",
+      "Nisha (Haridra — Curcuma longa)",
+      "Nimba (Azadirachta indica)",
+      "Amrita (Guduchi — Tinospora cordifolia)"
     ],
     "dosage": "15–20ml with equal warm water before meals or at onset of headache",
     "dosage_pediatric": "5–10ml diluted 1:5 for children over 6",
@@ -5235,7 +5296,32 @@
     "duration_max_weeks": 8,
     "afi_reference": "API Vol. II, Part I — Pathyadi Kwatha",
     "classical_text_reference": "Bhaishajya Ratnavali, Shiroroga Chikitsa 62/21; Sahasrayogam, Kashaya Yogam 3",
-    "classical_action": "Shulahara, Jvarahara, Ardhavabhedaka hara, Vatahara"
+    "classical_action": "Shulahara, Jvarahara, Ardhavabhedaka hara, Vatahara",
+    "data_corrections": [
+      {
+        "field": "ingredients",
+        "was": [
+          "Pathya (Haritaki)",
+          "Shatapushpa (Fennel)",
+          "Amalaki",
+          "Shunthi",
+          "Maricha",
+          "Pippali"
+        ],
+        "now": [
+          "Pathya (Haritaki — Terminalia chebula)",
+          "Aksha (Bibhitaki — Terminalia bellirica)",
+          "Dhatri (Amalaki — Emblica officinalis)",
+          "Bhunimba (Kirata — Andrographis / Swertia)",
+          "Nisha (Haridra — Curcuma longa)",
+          "Nimba (Azadirachta indica)",
+          "Amrita (Guduchi — Tinospora cordifolia)"
+        ],
+        "reason": "Classical Pathyadi Kwatha (Sharangadhara Samhita, Madhyama Khanda 2) is Pathya-Aksha-Dhatri-Bhunimba-Nisha-Nimba-Amrita; the entry listed Shatapushpa and Trikatu, which are not in it. Verify against the AFI text.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "vasaguduchyadi_kashayam",
@@ -8966,7 +9052,17 @@
     "duration_max_weeks": 8,
     "afi_reference": "AFI Part 1 — Pathyadi Kashayam",
     "classical_text_reference": "Ashtanga Hridayam, Uttara Sthana 13 (Shiro Roga); Charaka Samhita Chi.26",
-    "classical_action": "Shirashoola-nashana, Jwaraghna, Chaksushya"
+    "classical_action": "Shirashoola-nashana, Jwaraghna, Chaksushya",
+    "data_corrections": [
+      {
+        "field": "(entry)",
+        "was": null,
+        "now": null,
+        "reason": "Possible duplicate of Pathyadi Kadha with a different, non-classical composition (Haritaki, Guduchi, Draksha). Not changed — verify which formulation this is meant to be.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "balarishta",

@@ -555,7 +555,9 @@
       "soft": {
         "autoimmune": "Immunostimulant — may aggravate autoimmune activity. Introduce alone and monitor.",
         "hypothyroidism": "Raises thyroid hormone, so thyroxine dose may need review — check TFTs at 6 weeks.",
-        "depression": "Sedating at higher doses; take the evening dose only and review if fatigue worsens."
+        "depression": "Sedating at higher doses; take the evening dose only and review if fatigue worsens.",
+        "fatty_liver": "Cholestatic liver injury is reported with Ashwagandha supplements; check liver function after starting.",
+        "hepatitis": "As fatty liver — reported liver injury; check liver function and stop at any rise."
       },
       "medication_classes": [
         "thyroid_hormone",
@@ -577,7 +579,9 @@
     },
     "brahmi": {
       "display": "Brahmi (Bacopa)",
-      "hard": {},
+      "hard": {
+        "hyperthyroidism": "Raises T4 (animal studies); adding it to a thyrotoxic state works the wrong way."
+      },
       "soft": {
         "hypothyroidism": "Raises T4 in animal studies — check TFTs if taken long term.",
         "bradycardia": "Can slow the heart rate further.",
@@ -1755,7 +1759,17 @@
         "diabetes_type2"
       ],
       "severity": "major",
-      "mechanism": "Avalehas, Gulams and Khandas are prepared in sugar or jaggery — often half the preparation by weight."
+      "mechanism": "Prepared in sugar or jaggery — Avalehas, Gulams and Khandas, and churnas like Avipattikar and Sitopaladi that are half sugar by the classical recipe.",
+      "ingredient_markers": [
+        "sita",
+        "sitopala",
+        "sharkara",
+        "sugar",
+        "jaggery",
+        "guda",
+        "mishri",
+        "khanda"
+      ]
     },
     "fermented_sugar": {
       "conditions": [

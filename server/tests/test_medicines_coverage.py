@@ -469,3 +469,41 @@ def test_the_shodhana_banner_asks_the_whole_panchakarma_engine():
                                       ama_indicator="high"), {}, [])
     assert plan["shodhana_strength"] != "full"
     assert plan["shodhana_withheld"]
+
+
+# ── The formulary audit ───────────────────────────────────────────────────────
+
+def test_unsettled_pregnancy_safety_is_not_read_as_safe():
+    consult = {m["name"] for m in _MEDICINES_KB if m.get("pregnancy_safe") == "consult"}
+    assert consult                                            # 14 entries carry it
+    for d in ("vata", "pitta", "kapha"):
+        for c in ("menorrhagia", "anemia", "asthma", "psoriasis", "insomnia"):
+            plan = generate_medicines_plan(_p(age=29, dominant_dosha=d, vikriti_dominant=d,
+                                              medical_history=[c], pregnancy_or_nursing=True), {}, [])
+            assert not set(_names(plan)) & consult
+            assert not any(R._formulation_class(m) == "fermented" for m in _internal(plan))
+
+
+def test_every_pregnancy_flag_is_a_bool_or_consult():
+    assert {repr(m.get("pregnancy_safe")) for m in _MEDICINES_KB} <= {"True", "False", "'consult'"}
+
+
+def test_a_half_sugar_churna_is_not_given_to_a_diabetic():
+    plan = generate_medicines_plan(_p(dominant_dosha="pitta", vikriti_dominant="pitta",
+                                      medical_history=["diabetes_type2", "acid_reflux"]), {}, [])
+    assert "Avipattikar Churna" not in _names(plan)
+
+
+def test_every_data_correction_records_what_it_replaced():
+    corrected = [m for m in _MEDICINES_KB if m.get("data_corrections")]
+    assert len(corrected) >= 4
+    for m in corrected:
+        for c in m["data_corrections"]:
+            assert c["reason"] and c["reviewed"] is False and "was" in c
+
+
+def test_brahmi_is_withheld_in_hyperthyroidism_not_hypothyroidism():
+    hyper = generate_medicines_plan(_p(medical_history=["hyperthyroidism", "anxiety"]), {}, [])
+    assert "Brahmi Churna" not in _names(hyper)
+    brahmi = next(m for m in _MEDICINES_KB if m["name"] == "Brahmi Churna")
+    assert "hypothyroidism" not in brahmi["contraindications"]
