@@ -20,7 +20,6 @@ from services.remedy_engine import (
     _MEDICINES_KB,
     _is_mineral,
     _med_covers_condition,
-    build_remedy_plan,
     filter_remedies,
     generate_medicines_plan,
 )
