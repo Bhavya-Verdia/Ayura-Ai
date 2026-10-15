@@ -6808,3 +6808,17 @@
   margin-top: 0.5rem;
 }
 .pk-medication-list { margin: 0; padding-left: 1.1rem; font-size: 0.8rem; line-height: 1.5; }
+
+/* "Show all N excluded formulations" — a quiet text button under the list. */
+.mv-show-all {
+  margin-top: 8px;
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  color: var(--text-secondary, #a8a29e);
+  font: inherit;
+  font-size: 0.82rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.mv-show-all:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
