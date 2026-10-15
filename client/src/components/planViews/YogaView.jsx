@@ -239,6 +239,37 @@ export function YogaView({ plan: planProp }) {
         </div>
       )}
 
+      {/* Before-you-practise notes for the conditions — and medicines — where no
+          pose is the problem and the session is: hypoglycaemia on insulin, a
+          seizure, standing up too fast on blood-pressure tablets. The gym showed
+          these; yoga had none. */}
+      {Array.isArray(plan.condition_guidance) && plan.condition_guidance.length > 0 && (
+        <section className="gym-condition-guidance" aria-label="Before you practise">
+          <h4><ShieldCheck size={14} /> Before you practise</h4>
+          <ul>
+            {plan.condition_guidance.map(g => (
+              <li key={g.key}><strong>{g.label}.</strong> {g.note}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {plan.menstruation_note && (
+        <div className="yoga-pool-notice">
+          <Info size={12} />
+          <span>{plan.menstruation_note}</span>
+        </div>
+      )}
+      {plan.coaching_withheld?.length > 0 && (
+        <div className="yoga-pool-notice">
+          <Info size={12} />
+          <span>
+            {plan.coaching_withheld.length} line{plan.coaching_withheld.length === 1 ? '' : 's'} of the AI coaching{' '}
+            {plan.coaching_withheld.length === 1 ? 'was' : 'were'} withheld because{' '}
+            {plan.coaching_withheld.length === 1 ? 'it' : 'they'} named a practice this plan leaves out for you.
+          </span>
+        </div>
+      )}
+
       {/* Why this plan is narrower than usual — the engine has written this for a
           heavily filtered pool since the safety pass, and nothing rendered it. */}
       {plan.practice_pool_notice && (
@@ -580,6 +611,9 @@ export function YogaView({ plan: planProp }) {
                                 <div className="yoga-pose-chips">
                                   {p.duration_seconds && (
                                     <span className="yoga-duration-badge">{p.duration_seconds}s</span>
+                                  )}
+                                  {p.skip_during_period && plan.menstruation_note && (
+                                    <span className="yoga-category-chip" title="Skip on the days of your period">Skip on period days</span>
                                   )}
                                   {p.category && (
                                     <span className="yoga-category-chip">{p.category}</span>

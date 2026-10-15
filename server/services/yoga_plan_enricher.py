@@ -60,6 +60,112 @@ User profile and plan:
 {plan_summary_json}
 """
 
+# Words in pose names that name no particular pose.
+_GENERIC_POSE_WORDS = {"standing", "forward", "supported", "reclining", "shoulder", "seated",
+                       "extended", "revolved", "half", "opener", "bridge", "salamba", "ardha",
+                       "uttanasana", "facing", "downward"}
+
+
+def _name_word_counts() -> dict[str, int]:
+    import re
+    import services.yoga_plan_engine as Y
+    counts: dict[str, int] = {}
+    for p in Y.yoga_poses:
+        for w in {w.lower() for n in (p.get("english_name"), p.get("sanskrit_name")) if n
+                  for w in re.split(r"[\s-]+", n)}:
+            counts[w] = counts.get(w, 0) + 1
+    return counts
+
+
+_NAME_WORD_COUNTS = _name_word_counts()
+
+
+def gate_yoga_enrichment(enrichment: dict, raw_plan: dict, user_profile: dict,
+                         yoga_prefs: dict) -> tuple[dict, list[dict]]:
+    """Withhold narrative sentences that recommend what the plan excluded.
+
+    The narrative was merged ungated. The plan withholds Kapalabhati from a
+    hypertensive and a headstand from someone with glaucoma; the breathing
+    guidance and condition coaching beside it could name either, and the
+    lifestyle line could recommend warm milk to someone allergic to dairy."""
+    import re
+    import services.yoga_plan_engine as Y
+    from services.panchakarma_enricher import _DISTANCING, _sentences
+    from services.remedy_engine import _allergen_entries, _contains_allergen
+    from services.ahara_safety import unreadable_script
+
+    served = {p.get("pose_id") for d in raw_plan.get("weekly_schedule") or []
+              for k in ("warmup", "main_sequence", "cooldown")
+              for p in (d.get("session") or {}).get(k) or []}
+    age_group = Y._get_age_group(user_profile.get("age") or 30)
+    risks = Y._build_risk_set(user_profile, age_group, yoga_prefs)
+    pregnant = bool(user_profile.get("pregnancy_or_nursing"))
+    names: dict[str, str] = {}
+    for pose in Y.yoga_poses:
+        if pose.get("id") in served:
+            continue
+        why = None
+        if set(pose.get("risk_tags") or []) & risks:
+            why = "a pose this plan leaves out for your conditions"
+        elif pregnant and (pose.get("category") == "inversion" or pose.get("pregnancy_safe") is False):
+            why = "a pose this plan leaves out in pregnancy"
+        if why:
+            full = [pose.get("english_name"), pose.get("sanskrit_name")]
+            # The words people actually write: "Headstand" for "Supported Headstand
+            # Pose", "Shoulderstand" for "Shoulder Stand", "Sirsasana" for "Salamba
+            # Sirsasana". A full-name match alone missed "practise Headstand".
+            # Only words that name ONE pose: "Rotation" is in five pose names and
+            # withheld "smooth rotation" from a pregnant woman's intention.
+            short = [w for n in full if n for w in re.split(r"[\s-]+", n)
+                     if len(w) > 6 and w.lower() not in _GENERIC_POSE_WORDS
+                     and _NAME_WORD_COUNTS.get(w.lower(), 0) == 1]
+            joined = [n.replace(" ", "") for n in full if n and " " in n]
+            for n in [*full, *short, *joined]:
+                if n and len(n) > 4:
+                    names[n.lower()] = why
+    for x in raw_plan.get("pranayama_safety_exclusions") or []:
+        full = str(x.get("name") or "")
+        for n in [full.split(" (")[0], *re.findall(r"\(([^)]+)\)", full)]:
+            if len(n) > 4:
+                names[n.lower()] = "a breath this plan withholds for you"
+    name_re = re.compile(r"\b(" + "|".join(re.escape(n) for n in sorted(names, key=len, reverse=True)) + r")\b",
+                         re.I) if names else None
+    allergens = _allergen_entries(user_profile.get("allergies") or [])
+    withheld: list[dict] = []
+
+    def screen(text: str, field: str) -> str:
+        if (script := unreadable_script(text)):
+            withheld.append({"field": field, "text": text[:200],
+                             "reason": f"written in {script} script, which the safety checks cannot read"})
+            return ""
+        kept = []
+        for sent in _sentences(text):
+            distanced = bool(_DISTANCING.search(sent))
+            reason = None
+            if name_re and not distanced and (m := name_re.search(sent)):
+                reason = f"names {m.group(1)}, {names[m.group(1).lower()]}"
+            if not reason and not distanced:
+                hit = next((e for e in allergens if _contains_allergen(sent, e)), None)
+                if hit:
+                    reason = f"names a {hit['label'].lower()} food — declared allergy"
+            if reason:
+                withheld.append({"field": field, "text": sent, "reason": reason})
+            else:
+                kept.append(sent)
+        return " ".join(kept)
+
+    def walk(v, field):
+        if isinstance(v, str):
+            return screen(v, field)
+        if isinstance(v, list):
+            return [x for x in (walk(x, field) for x in v) if x not in ("", [], {})]
+        if isinstance(v, dict):
+            return {k: walk(x, f"{field}.{k}") for k, x in v.items()}
+        return v
+
+    return {k: walk(v, k) for k, v in enrichment.items()}, withheld
+
+
 async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict) -> dict:
     raw_plan["enriched"] = False
 
@@ -70,10 +176,16 @@ async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict)
 
         # Fetch grounding context from ChromaDB before calling the LLM
         rag_query = f"{dosha} yoga practice {goal} pranayama Ayurvedic wellness"
-        docs = await rag_pipeline.query(rag_query, "ayurveda", n_results=4, dosha_filter=dosha)
-        if not docs and conditions:
-            cond_query = f"{conditions[0]} yoga therapy Ayurvedic treatment"
-            docs = await rag_pipeline.query(cond_query, "ayurveda", n_results=3)
+        # Retrieval has its own handler: under the outer `except` a ChromaDB restart
+        # cost the plan all of its coaching, not just the references.
+        docs = []
+        try:
+            docs = await rag_pipeline.query(rag_query, "ayurveda", n_results=4, dosha_filter=dosha)
+            if not docs and conditions:
+                cond_query = f"{conditions[0]} yoga therapy Ayurvedic treatment"
+                docs = await rag_pipeline.query(cond_query, "ayurveda", n_results=3)
+        except Exception as e:
+            logger.warning(f"Yoga enrichment: retrieval failed ({e}); continuing without it")
         rag_context = rag_pipeline.format_context(docs, max_chars=1500) or "No specific context retrieved — use classical Ayurvedic principles."
 
         # Build compressed summary for LLM context
@@ -100,7 +212,12 @@ async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict)
                 "pregnancy": user_profile.get("pregnancy_or_nursing", False),
                 "current_season": user_profile.get("current_season"),
                 "seasonal_note": raw_plan.get("seasonal_note"),
+                "allergies": user_profile.get("allergies"),
+                "current_medications": user_profile.get("current_medications"),
             },
+            # What the engine decided, so the narrative agrees with it.
+            "withheld_breathing": [x.get("name") for x in (raw_plan.get("pranayama_safety_exclusions") or [])],
+            "condition_guidance": [g.get("label") for g in (raw_plan.get("condition_guidance") or [])],
             "condition_protocols": [
                 {
                     "condition": p.get("condition"),
@@ -157,7 +274,8 @@ async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict)
         if "error" in enrichment:
             raise ValueError(f"LLM provider error: {enrichment['error']}")
 
-        # Merge enrichment
+        # Merge enrichment — through the gate, never around it.
+        enrichment, raw_plan["coaching_withheld"] = gate_yoga_enrichment(enrichment, raw_plan, user_profile, yoga_prefs)
         raw_plan["plan_title"] = enrichment.get("plan_title", "Personalized Yoga Plan")
         raw_plan["plan_description"] = enrichment.get("plan_description", "")
         raw_plan["daily_intention"] = enrichment.get("daily_intention", {})
