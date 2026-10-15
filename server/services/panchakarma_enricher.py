@@ -110,7 +110,7 @@ _KARMA_WORDS = {
 _DISTANCING = _re.compile(
     r"\b(not|never|no|avoid\w*|withh[oe]ld\w*|withdrawn|instead|rather than|defer\w*|"
     r"postpone\w*|later|future|until|contraindicat\w*|barred|unsafe|replac\w*|"
-    r"substitut\w*|without|allerg\w*|discuss|ask (?:the|your) vaidya|skip\w*)\b", _re.I)
+    r"substitut\w*|without|free|allerg\w*|discuss|ask (?:the|your) vaidya|skip\w*)\b", _re.I)
 _SNEHAPANA_WORDS = _re.compile(r"\b(snehapana|drink(?:ing)? (?:warm |medicated )?ghee|ghee (?:dose|ladder)|"
                                r"internal oleation)\b", _re.I)
 _ML = _re.compile(r"(\d+(?:\.\d+)?)\s*(?:-|–|to)?\s*(\d+(?:\.\d+)?)?\s*ml\b", _re.I)
@@ -198,6 +198,20 @@ def gate_enrichment(enrichment: dict, raw_plan: dict) -> tuple[dict, list[dict]]
             return {k: walk(x, f"{field}.{k}") for k, x in v.items()}
         return v
 
+    # Coaching for a phase the plan does not contain. The model writes every field
+    # the schema asks for, so a Nasya or Matra Basti course was told "Samsarjana
+    # Krama is as important as the Shodhana itself" about a phase it does not have,
+    # and a Shamana plan was coached through preparing Doshas for an expulsion.
+    absent = {}
+    if not raw_plan.get("samsarjana_krama"):
+        absent["samsarjana_coaching"] = "this plan has no Samsarjana Krama"
+    if not (raw_plan.get("phase_breakdown") or {}).get("purvakarma_days"):
+        absent["purvakarma_coaching"] = "this plan has no Purvakarma phase"
+    for field, why in absent.items():
+        if enrichment.get(field):
+            withheld.append({"field": field, "text": str(enrichment[field])[:300], "reason": why})
+    enrichment = {k: v for k, v in enrichment.items() if k not in absent}
+
     gated = {k: walk(v, k) for k, v in enrichment.items()}
     return gated, withheld
 
@@ -213,9 +227,21 @@ async def enrich_panchakarma_plan(raw_plan: dict, user_profile: dict, pk_prefs: 
 
         # Fetch grounding context from panchakarma + ayurveda collections
         pk_query = f"{pradhana_name} {vikriti} panchakarma shodhana treatment protocol"
-        pk_docs = await rag_pipeline.query(pk_query, "panchakarma", n_results=4)
-        ayur_docs = await rag_pipeline.query(f"{vikriti} vikriti detox Ayurvedic cleansing", "ayurveda", n_results=2, dosha_filter=vikriti)
-        rag_context = rag_pipeline.format_context(pk_docs + ayur_docs, max_chars=1800) or "No specific context retrieved — use classical Charaka Samhita and Ashtanga Hridayam principles."
+        # Retrieval has its own handler. It sat under the outer `except`, so a
+        # ChromaDB restart cost the patient the whole narrative — every coaching
+        # section — when all it should cost is the retrieved references. Partial
+        # context is kept.
+        docs: list = []
+        for query, collection, kw in (
+            (pk_query, "panchakarma", {"n_results": 4}),
+            (f"{vikriti} vikriti detox Ayurvedic cleansing", "ayurveda",
+             {"n_results": 2, "dosha_filter": vikriti}),
+        ):
+            try:
+                docs += await rag_pipeline.query(query, collection, **kw)
+            except Exception as e:
+                logger.warning(f"Panchakarma enrichment: retrieval from {collection} failed ({e}); continuing without it")
+        rag_context = rag_pipeline.format_context(docs, max_chars=1800) or "No specific context retrieved — use classical Charaka Samhita and Ashtanga Hridayam principles."
 
         cd = raw_plan.get("clinical_decisions", {})
         pradhana = cd.get("pradhana_karma_selected", {})
@@ -326,6 +352,13 @@ async def enrich_panchakarma_plan(raw_plan: dict, user_profile: dict, pk_prefs: 
                 "access_to_ayurvedic_herbs": pk_prefs.get("access_to_ayurvedic_herbs"),
             },
             "samsarjana_notice": raw_plan.get("samsarjana_notice"),
+            # The Shamana arm's medicine — its daily Sneha dose, diet and conduct —
+            # lives here, not in the schedule. Without it the model told an anaemic
+            # patient not to take the Ghrita this protocol prescribes at 10 ml a day.
+            "shamana_protocol": {
+                k: v for k, v in ((raw_plan.get("shamana_protocol") or {}).get("shamana_chikitsa") or {}).items()
+                if isinstance(v, str)
+            } or None,
             "procurement_notice": raw_plan.get("procurement_notice"),
         }
 

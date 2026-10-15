@@ -78,7 +78,8 @@
         "osteoporosis": "Forceful retching flexes the thoracic spine under load; in severe osteoporosis that is the mechanism of a vertebral compression fracture.",
         "metformin": "Vomiting and dehydration with metformin risk lactic acidosis and acute kidney injury; the sick-day rule is to pause it while vomiting, which only the prescriber can authorise.",
         "thyroid_hormone": "A tablet vomited within hours is not absorbed. Take it once the Vamana day has settled, as the prescriber directs.",
-        "hormonal_contraceptives": "Vomiting within three hours of a pill counts as a missed pill. Use a barrier method until seven pills after the course."
+        "hormonal_contraceptives": "Vomiting within three hours of a pill counts as a missed pill. Use a barrier method until seven pills after the course.",
+        "antiparkinson": "A dose vomited is a dose missed — an 'off' period follows. The prescriber plans the dose around the Karma day."
       }
     },
     "virechana": {
@@ -139,7 +140,8 @@
         "thyroid_hormone": "Purgation shortens gut transit and cuts levothyroxine absorption; keep at least four hours between the tablet and the purgative.",
         "hormonal_contraceptives": "Severe purgation can stop the pill being absorbed. Use a barrier method until seven pills after the course.",
         "ssri_snri": "These medicines cause low sodium (SIADH), most in the elderly; purgation and the large water intake around it add to it.",
-        "nsaids": "NSAIDs with purgation-induced dehydration risk acute kidney injury, and they irritate a gut already purged."
+        "nsaids": "NSAIDs with purgation-induced dehydration risk acute kidney injury, and they irritate a gut already purged.",
+        "antiparkinson": "Levodopa is absorbed in the small intestine on a timed schedule; purgation cuts the dose actually absorbed, and a missed dose brings an 'off' period of rigidity and falls. Keep the dosing times; the prescriber decides any change."
       }
     },
     "basti": {
@@ -309,7 +311,8 @@
         "heart_disease": "Heat vasodilates and raises heart rate. Shorter sessions with the head outside the chamber; stop on palpitations or breathlessness.",
         "atrial_fibrillation": "As heart disease — heat raises the ventricular rate.",
         "kidney_stones": "Sweating concentrates the urine, the condition stones form in. Drink enough on Swedana days to keep the urine pale.",
-        "urticaria": "Heat provokes cholinergic urticaria (Sheetapitta). Mild, short sessions; stop at the first wheal."
+        "urticaria": "Heat provokes cholinergic urticaria (Sheetapitta). Mild, short sessions; stop at the first wheal.",
+        "antiparkinson": "These medicines lower blood pressure on standing; heat adds to it. Rise slowly from the steam and never alone."
       }
     },
     "bashpa_sweda_clinic": {
@@ -377,7 +380,8 @@
         "open_wound": "Dry powder into a wound is a direct infection risk.",
         "bleeding_disorder": "Friction causes purpura and subcutaneous bleeding.",
         "emaciation": "Atidurbala — as underweight.",
-        "atidurbala": "Extreme depletion — as underweight."
+        "atidurbala": "Extreme depletion — as underweight.",
+        "anemia": "Udvartana is Lekhana — it scrapes and reduces. Pandu is a Dhatu-Kshaya state, and a Shamana plan that ends in Brimhana cannot begin by reducing."
       },
       "soft": {
         "vata_aggravation": "The therapy is Ruksha and Vata-increasing — the KB's own dosha_effect scores it +1 for Vata. Follow with light oil.",
@@ -1204,6 +1208,25 @@
         "ranitidine",
         "omez",
         "nexpro"
+      ]
+    },
+    "antiparkinson": {
+      "label": "Parkinson's medicine",
+      "match": [
+        "levodopa",
+        "carbidopa",
+        "syndopa",
+        "sinemet",
+        "tidomet",
+        "madopar",
+        "pramipexole",
+        "pramipex",
+        "ropinirole",
+        "ropark",
+        "rasagiline",
+        "selegiline",
+        "amantadine",
+        "entacapone"
       ]
     }
   },

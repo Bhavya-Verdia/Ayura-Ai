@@ -250,8 +250,10 @@ async def test_panchakarma_enricher_snapshot_all_fields_present():
         },
         "aushadha": {},
         "snehana_protocol": {},
-        "samsarjana_krama": [],
-        "phase_breakdown": {},
+        # A Virechana course has both phases; coaching for an absent phase is
+        # withheld by the gate, so an empty fixture would hide these fields.
+        "samsarjana_krama": [{"stage": 1, "food": "Peya"}],
+        "phase_breakdown": {"purvakarma_days": 5},
     }
 
     with patch("services.panchakarma_enricher.llm_client") as mock_llm, \

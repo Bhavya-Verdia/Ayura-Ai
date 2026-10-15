@@ -292,3 +292,68 @@ def test_structural_invariants_hold_across_a_sample():
         for day in plan["daily_schedule"]:
             ids = [t.get("id") for t in day["therapies"] if t.get("id")]
             assert len(ids) == len(set(ids)), (day["day"], ids)
+
+
+# ── A retrieval outage degrades the narrative, it does not remove it ──────────
+
+@pytest.mark.asyncio
+async def test_a_retrieval_outage_keeps_the_narrative(monkeypatch):
+    import json as _json
+    from services import panchakarma_enricher as enr
+
+    async def broken(*a, **k):
+        raise RuntimeError("ChromaDB not initialized")
+
+    async def fake_generate(**kw):
+        return _json.dumps({"plan_title": "t", "plan_description": "d", "shodhana_rationale": "r"})
+
+    monkeypatch.setattr(enr.rag_pipeline, "query", broken)
+    monkeypatch.setattr(enr.llm_client, "generate", fake_generate)
+    plan = generate_panchakarma_plan(_profile(), _prefs())
+    out = await enr.enrich_panchakarma_plan(plan, _profile(), _prefs())
+    assert out["enriched"] is True and out["plan_title"] == "t"
+
+
+def test_coaching_for_an_absent_phase_is_withheld():
+    plan = generate_panchakarma_plan(_profile(vikriti_dominant="vata"), _prefs(setting="home"))
+    assert plan["samsarjana_krama"] == []
+    gated, withheld = gate_enrichment(
+        {"samsarjana_coaching": "Samsarjana Krama is essential.", "plan_title": "t"}, plan)
+    assert "samsarjana_coaching" not in gated and gated["plan_title"] == "t"
+    assert withheld[0]["reason"] == "this plan has no Samsarjana Krama"
+
+
+def test_the_snehana_card_names_the_oil_the_medicines_name():
+    """One oil, one Ghrita: the card and the compendium used to disagree."""
+    plan = generate_panchakarma_plan(_profile(), _prefs())
+    sn, aus = plan["snehana_protocol"], plan["aushadha"]
+    assert sn["abhyanga_oil"]["primary"] == aus["abhyanga_oil"]["name"]
+    assert sn["internal_ghrita"]["primary"] == aus["internal_ghrita"]["name"]
+
+
+def test_a_substituted_plan_carries_the_substitutes_cautions_not_the_withdrawn_ones():
+    plan = generate_panchakarma_plan(
+        _profile(vikriti_dominant="kapha", medical_history=["diabetes_type1"],
+                 current_medications=["insulin"]), _prefs(current_season="vasanta"))
+    assert _karma(plan) == "nasya"
+    assert not any("Peya" in w for w in plan["clinical_decisions"]["safety_warnings"])
+    reason = plan["clinical_decisions"]["pradhana_karma_selected"]["reason"]
+    assert "Virechana" not in reason
+
+
+def test_anaemia_is_not_given_a_reducing_therapy():
+    plan = generate_panchakarma_plan(_profile(medical_history=["anemia"]), _prefs())
+    ids = {t.get("id") for d in plan["daily_schedule"] for t in d["therapies"]}
+    assert not ids & {"udvartana", "udvartana_home"}
+
+
+def test_levodopa_is_recognised():
+    assert "antiparkinson" in _medication_findings(["Syndopa 110"])["tokens"]
+
+
+def test_the_gate_reads_an_allergen_free_preparation_as_safe():
+    """Found in a live plan: "a honey-free preparation" was withheld as naming honey."""
+    plan = generate_panchakarma_plan(_profile(vikriti_dominant="vata", allergies=["honey"]), _prefs())
+    gated, withheld = gate_enrichment(
+        {"x": "Today is Niruha Basti once more, again with a honey-free preparation."}, plan)
+    assert withheld == []

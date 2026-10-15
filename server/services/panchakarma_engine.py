@@ -667,9 +667,12 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
 # the worse choice for haemorrhoids, for a patient who only needed a milder dose.
 # Neither could be corrected without the other drifting.
 _KARMA_FALLBACK: dict[str, tuple[str, str]] = {
-    "vamana":        ("nasya",     "Vamana contraindicated — Pratimarsha Nasya + mild Virechana substituted"),
+    # The reason states what is scheduled and nothing more: "+ mild Virechana" was
+    # promised here and never given, and the Nasya form (Navana in a clinic,
+    # Pratimarsha at home) is named by the schedule, not by this string.
+    "vamana":        ("nasya",     "Vamana contraindicated — Nasya substituted to clear Kapha from the head and neck"),
     "virechana":     ("basti",     "Virechana contraindicated — Basti (enema route) substituted to avoid GI stress"),
-    "basti":         ("nasya",     "Basti contraindicated — Nasya + Shamana substituted"),
+    "basti":         ("nasya",     "Basti contraindicated — Nasya substituted"),
     "nasya":         ("nasya",     ""),
     # The reason names the route, not the drug: the Aushadha for the substituted
     # Karma is chosen separately from the compendium, and naming one here was a
@@ -1039,6 +1042,12 @@ def _validate_karma_safety(pradhana: dict, medical_history: list[str],
                 f"SAFETY SUBSTITUTION: {old_primary} → {chosen} "
                 f"(contraindicated by: {', '.join(flagged)})"
             )
+            # The cautions are the substitute's, not the withdrawn Karma's. A Type 1
+            # diabetic moved from Vamana to Nasya kept Vamana's insulin caution about
+            # "the Peya/Vilepi days after it" — days the Nasya course does not have.
+            soft_hits = _match_contraindications(
+                medical_history,
+                contraindications("basti" if chosen == "basti_matra" else chosen)["soft"])
         warnings += [f"{c}: {m}" for c, m in hard_hits if m]
 
     # A soft entry that names a different route is a prescription. The CKD caution
@@ -3483,6 +3492,17 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     abhyanga_oils = snehana_ext.get("oils_by_dosha", {}).get(
         vikriti_dom, snehana_ext.get("oils_by_dosha", {}).get("vata", {})
     )
+    # One oil, one Ghrita. These per-Dosha entries are the generic defaults; the
+    # Aushadha selection is the patient's, matched to their conditions and gated.
+    # The plan carried both, so a Pitta patient's medicines read "Chandanadi Taila"
+    # while the Snehana card — and the narrative fed from it — said coconut oil.
+    # The selection leads; the generic default stays as context.
+    if (aushadha.get("abhyanga_oil") or {}).get("name") and isinstance(abhyanga_oils, dict):
+        abhyanga_oils = {**abhyanga_oils, "primary": aushadha["abhyanga_oil"]["name"],
+                         "base_by_dosha": abhyanga_oils.get("primary")}
+    if (aushadha.get("internal_ghrita") or {}).get("name") and isinstance(snehana_oils, dict):
+        snehana_oils = {**snehana_oils, "primary": aushadha["internal_ghrita"]["name"],
+                        "default_by_dosha": snehana_oils.get("primary")}
 
     # ── Daily Schedule Assembly ───────────────────────────────────────────────
     shamana_build: dict = {}

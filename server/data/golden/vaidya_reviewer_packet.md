@@ -17,7 +17,7 @@ Open **`vaidya_medicine_review.csv`** (157 formulations). For each row, tick:
 Sort by `type` or `indications` to review related formulations together. Anything marked N with a correction is gold — it goes straight back into the KB.
 
 ## Part 2 — Panchakarma contraindications  (`vaidya_panchakarma_contraindications.csv`)
-411 authored contraindications gating Vamana, Virechana, Basti, Nasya, Raktamokshana, the 23 supporting therapies, and the individual herbs in every Aushadha the plan prescribes. **None has been clinically reviewed** — `contraindications_reviewed` is false on the whole file. Part 1 carries the larger credibility risk; this part carries the larger safety risk, because these are the only procedures in the app that can injure a patient directly.
+416 authored contraindications gating Vamana, Virechana, Basti, Nasya, Raktamokshana, the 23 supporting therapies, and the individual herbs in every Aushadha the plan prescribes. **None has been clinically reviewed** — `contraindications_reviewed` is false on the whole file. Part 1 carries the larger credibility risk; this part carries the larger safety risk, because these are the only procedures in the app that can injure a patient directly.
 
 Each row states the *mechanism* by which the condition and the procedure conflict, so you can reject a single claim without discarding the file. Columns to fill:
 - **severity_ok** — is `hard` (withhold + substitute) vs `soft` (proceed modified) right?
@@ -119,7 +119,7 @@ A disagreement rate is not a failure. An unmeasured instrument is.
 
 - Reviewer (name, BAMS/MD reg. no.): ____________________
 - Date: ____________  
-- Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/411 · contraindication tokens reviewed ___/164 · Karma tags reviewed ___/14 · cases reviewed ___/30
+- Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/416 · contraindication tokens reviewed ___/164 · Karma tags reviewed ___/14 · cases reviewed ___/30
 - Summary judgement (1–5) on classical accuracy of: Medicines __ · Panchakarma __ · Diet __ · Yoga __ · Routine __
 - Prakriti instrument study (Part 7): commissioned ☐ · scheduled ☐ · completed ☐ — participants ____
 
