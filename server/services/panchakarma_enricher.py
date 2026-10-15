@@ -23,6 +23,11 @@ THE DETERMINISTIC LAYER HAS THE LAST WORD:
 - `kriya_kala` is the classical stage of the patient's disease, derived from what they reported at check-in. Cite it in `shodhana_rationale` ONLY from this field — name the stage it gives and nothing else. When it is null the patient has staged no condition, so Kriya Kala is unknown: write the rationale from Bala, Agni, Ama and Ritu and do not mention a stage at all. Never infer a stage from the diagnosis, the duration or the plan. It is `advisory_only`: it did not decide this verdict, so do not write that the patient is eligible or ineligible because of it.
 - `secondary_karma_deferred` names a Karma that is classically indicated for this Vikriti and that this plan deliberately does NOT perform. Treat it as withheld. You may say it is something to raise with a Vaidya; you must never describe it as part of the treatment, place it in the schedule, or explain how to undergo it. For Pitta this field is Raktamokshana — bloodletting — and a patient who reads your text as a prescription for it has been actively misled.
 
+- `snehana_protocol.dose_schedule` empty on a Shodhana plan means this Karma takes NO internal oleation (Basti, Nasya and Raktamokshana are prepared with Abhyanga and Swedana alone). Never tell the patient to drink ghee or describe Snehapana in that case; `purvakarma_coaching` is about the massage and the steam.
+- `allergen_review.findings` names substances in this plan the patient is allergic to. Never recommend any of them as written — not the ghee, oil, milk or honey named there — and never suggest a substitute base yourself; say the Vaidya supplies a preparation without the allergen.
+- `snehana_protocol.matra` is the Snehapana peak set by the patient's Agni. Quote doses only from `dose_schedule`; never a larger figure.
+- `medication_review` and `safety_warnings` name what the procedures do to the patient's own medicines. Never tell the patient to stop, skip or change the dose of a prescribed medicine — say the prescriber decides. Do not contradict a caution, and do not describe a Karma the warnings say was withdrawn.
+
 Respond ONLY with valid JSON. No preamble, no markdown fences.
 """
 
@@ -83,6 +88,118 @@ For each unmapped condition, add to "rare_disease_assessment" (replace null abov
   }}
 }}
 """
+
+
+# ── Deterministic gate on the narrative ───────────────────────────────────────
+# The prompt asks the model to agree with the engine; nothing checked that it did.
+# Every field below was merged straight into the plan the patient reads, beside a
+# schedule it could contradict. This withholds a sentence — never rewrites it — when
+# it prescribes something the engine withheld, and records what it withheld.
+
+import re as _re
+
+_KARMA_WORDS = {
+    "vamana": ("vamana", "emesis", "therapeutic vomiting"),
+    "virechana": ("virechana", "purgation", "purgative"),
+    "basti": ("niruha", "basti", "enema"),
+    "basti_matra": ("matra basti",),
+    "nasya": ("nasya", "nasal drops"),
+    "raktamokshana": ("raktamokshana", "bloodletting", "leech", "jalaukavacharana"),
+}
+# A sentence naming a withheld thing is fine when it is saying it is withheld.
+_DISTANCING = _re.compile(
+    r"\b(not|never|no|avoid\w*|withh[oe]ld\w*|withdrawn|instead|rather than|defer\w*|"
+    r"postpone\w*|later|future|until|contraindicat\w*|barred|unsafe|replac\w*|"
+    r"substitut\w*|without|allerg\w*|discuss|ask (?:the|your) vaidya|skip\w*)\b", _re.I)
+_SNEHAPANA_WORDS = _re.compile(r"\b(snehapana|drink(?:ing)? (?:warm |medicated )?ghee|ghee (?:dose|ladder)|"
+                               r"internal oleation)\b", _re.I)
+_ML = _re.compile(r"(\d+(?:\.\d+)?)\s*(?:-|–|to)?\s*(\d+(?:\.\d+)?)?\s*ml\b", _re.I)
+
+
+def _sentences(text: str) -> list[str]:
+    return [x for x in _re.split(r"(?<=[.!?])\s+", text) if x.strip()]
+
+
+def gate_enrichment(enrichment: dict, raw_plan: dict) -> tuple[dict, list[dict]]:
+    """Withhold narrative sentences that contradict the deterministic plan."""
+    cd = raw_plan.get("clinical_decisions", {}) or {}
+    pradhana = cd.get("pradhana_karma_selected") or {}
+    primary = pradhana.get("primary")
+    is_shamana = (cd.get("shodhana_or_shamana") or {}).get("type") == "shamana" or not primary
+
+    withheld_karmas: dict[str, str] = {}
+    if pradhana.get("original_karma") and pradhana.get("original_karma") != primary:
+        withheld_karmas[pradhana["original_karma"]] = "withdrawn for safety"
+    deferred = (cd.get("secondary_karma_deferred") or {}).get("karma")
+    if deferred and deferred != primary:
+        withheld_karmas[deferred] = "not part of this plan"
+    if is_shamana:
+        for k in ("vamana", "virechana", "basti", "raktamokshana"):
+            withheld_karmas.setdefault(k, "no Shodhana in this plan")
+    if primary == "basti_matra":
+        withheld_karmas.setdefault("basti", "this course is Matra Basti only")
+    patterns = {}
+    for k, why in withheld_karmas.items():
+        words = [w for w in _KARMA_WORDS.get(k, ()) if not (
+            # "basti" also names the course being given.
+            primary in ("basti", "basti_matra") and w in ("basti", "enema"))]
+        if k == "basti" and primary == "basti_matra":
+            words = ["niruha", "decoction enema"]
+        if words:
+            patterns[k] = (_re.compile(r"\b(" + "|".join(map(_re.escape, words)) + r")\b", _re.I), why)
+
+    ladder = (raw_plan.get("snehana_protocol") or {}).get("dose_schedule") or []
+    peak = max((d.get("dose_ml") or 0) for d in ladder) if ladder else 0
+
+    allergen_terms: list[tuple[str, str]] = []
+    from services.panchakarma_engine import pk_clinical
+    table = pk_clinical.get("allergens") or {}
+    for f in ((cd.get("allergen_review") or {}).get("findings") or []):
+        for key, entry in table.items():
+            if isinstance(entry, dict) and entry.get("label") == f.get("allergy"):
+                allergen_terms += [(t, f["allergy"]) for t in entry["terms"] if t != "taila"]
+
+    withheld: list[dict] = []
+
+    def screen(text: str, field: str) -> str:
+        kept = []
+        for sent in _sentences(text):
+            reason = None
+            distanced = bool(_DISTANCING.search(sent))
+            for k, (pat, why) in patterns.items():
+                if pat.search(sent) and not distanced:
+                    reason = f"{k.replace('_', ' ').title()} — {why}"
+                    break
+            if not reason and not ladder and not is_shamana and _SNEHAPANA_WORDS.search(sent) and not distanced:
+                reason = "this Karma takes no Snehapana"
+            if not reason and peak and _re.search(r"\b(ghee|ghrita|sneha)", sent, _re.I):
+                for m in _ML.finditer(sent):
+                    hi = float(m.group(2) or m.group(1))
+                    if hi > peak:
+                        reason = f"quotes {hi:g} ml; this plan's Snehapana peak is {peak} ml"
+                        break
+            if not reason and not distanced:
+                for term, label in allergen_terms:
+                    if _re.search(rf"\b{_re.escape(term)}\b", sent, _re.I):
+                        reason = f"names {term} — declared {label.lower()} allergy"
+                        break
+            if reason:
+                withheld.append({"field": field, "text": sent, "reason": reason})
+            else:
+                kept.append(sent)
+        return " ".join(kept)
+
+    def walk(v, field):
+        if isinstance(v, str):
+            return screen(v, field)
+        if isinstance(v, list):
+            return [x for x in (walk(x, field) for x in v) if x not in ("", [], {})]
+        if isinstance(v, dict):
+            return {k: walk(x, f"{field}.{k}") for k, x in v.items()}
+        return v
+
+    gated = {k: walk(v, k) for k, v in enrichment.items()}
+    return gated, withheld
 
 
 async def enrich_panchakarma_plan(raw_plan: dict, user_profile: dict, pk_prefs: dict) -> dict:
@@ -163,13 +280,22 @@ async def enrich_panchakarma_plan(raw_plan: dict, user_profile: dict, pk_prefs: 
                 # was invented. None when the patient has staged no condition, which
                 # is what the prompt rule below is about.
                 "kriya_kala": eligibility.get("kriya_kala"),
+                # What each procedure does to the medicines the patient takes, and
+                # the Karma substitutions those medicines forced.
+                "medication_review": cd.get("medication_review"),
+                # Substances in this plan the patient is allergic to.
+                "allergen_review":   cd.get("allergen_review"),
+                "safety_warnings":   cd.get("safety_warnings", []),
             },
             "phase_breakdown":    raw_plan.get("phase_breakdown", {}),
             "snehana_protocol": {
-                "internal_ghrita":  snehana.get("internal_ghrita", {}).get("name"),
-                "ghrita_rationale": snehana.get("internal_ghrita", {}).get("use"),
+                # None for a Basti, Nasya or Raktamokshana course: those take no
+                # internal oleation, so there is no ghrita to name.
+                "internal_ghrita":  (snehana.get("internal_ghrita") or {}).get("name"),
+                "ghrita_rationale": (snehana.get("internal_ghrita") or {}).get("use"),
                 "abhyanga_oil":     snehana.get("abhyanga_oil", {}).get("primary") if isinstance(snehana.get("abhyanga_oil"), dict) else snehana.get("abhyanga_oil"),
                 "dose_schedule":    snehana.get("dose_schedule", []),
+                "matra":            snehana.get("matra"),
                 "signs_adequate":   snehana.get("signs_adequate", []),
             },
             "aushadha": {
@@ -245,7 +371,11 @@ async def enrich_panchakarma_plan(raw_plan: dict, user_profile: dict, pk_prefs: 
         if missing:
             raise ValueError(f"LLM enrichment missing required fields: {missing}")
 
-        # Merge enrichment into plan
+        # Merge enrichment into plan — through the gate, never around it.
+        enrichment, coaching_withheld = gate_enrichment(enrichment, raw_plan)
+        raw_plan["coaching_withheld"] = coaching_withheld
+        if coaching_withheld:
+            logger.info(f"Panchakarma enrichment: {len(coaching_withheld)} sentence(s) withheld by the gate")
         for key in (
             "plan_title", "plan_description", "shodhana_rationale", "ritu_guidance",
             "purvakarma_coaching", "daily_guidance", "pradhana_karma_coaching",

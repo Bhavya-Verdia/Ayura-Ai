@@ -101,6 +101,17 @@ _AGNI_CANON = {
     "pitta": "tikshna", "tikshna": "tikshna",
     "kapha": "manda", "manda": "manda",
 }
+# Snehapana peak by Agni (Charaka Sutrasthana 13: the Matra is graded by the time
+# the Sneha takes to digest — Uttama for strong Agni, Hrasva for weak). None leaves
+# the Vikriti's ladder as it is.
+_AGNI_SNEHA_CAP: dict[str, tuple[int | None, str]] = {
+    "manda": (60, "Manda Agni — Hrasva (small) Matra: the peak is held at 60 ml, because "
+                  "weak Agni cannot digest the larger dose and undigested Sneha is Ama."),
+    "vishama": (90, "Vishama Agni — the peak is held at 90 ml, and a dose is never raised on "
+                    "a day the previous one was not digested (belching, heaviness, no hunger)."),
+    "tikshna": (None, "Tikshna Agni — Uttama (full) Matra: strong Agni digests the full ladder; "
+                      "watch for thirst and burning, which mean Pitta, not digestion."),
+}
 _AGNI_NAME = {
     "sama": "Sama Agni", "vishama": "Vishama Agni",
     "tikshna": "Tikshna Agni", "manda": "Manda Agni",
@@ -128,6 +139,38 @@ def _derive_agni(digestion_quality: str | None, dominant_dosha: str | None) -> s
 # moderate-to-severe thinness and is the only objective depletion signal the
 # profile carries.
 _ATIDURBALA_BMI = 17.0
+
+# The same threshold for a child, by age and sex: IOTF thinness grade 2 — the
+# BMI-for-age centile that passes through 17 at 18 (Cole, Flegal, Nicholls & Jackson,
+# BMJ 2007;335:194). The adult 17 applied to a child barred every healthy
+# ten-year-old: a median ten-year-old's BMI is about 16.5. Computed from the IOTF LMS
+# reference as distributed in the R package `sitar` (data `iotf`); the grade 1
+# column from the same computation reproduces the published 18.5 cut-offs to within
+# 0.03. (age: (male, female))
+_ATIDURBALA_BMI_CHILD: dict[int, tuple[float, float]] = {
+    7: (13.04, 12.87), 8: (13.11, 12.98), 9: (13.27, 13.16),
+    10: (13.47, 13.40), 11: (13.73, 13.77), 12: (14.07, 14.26), 13: (14.50, 14.84),
+    14: (15.01, 15.42), 15: (15.55, 15.97), 16: (16.08, 16.42), 17: (16.57, 16.76),
+}
+
+
+def _atidurbala_bmi(age: int, gender: str | None) -> float:
+    """The BMI below which this patient is Atidurbala."""
+    if age >= 18 or age not in _ATIDURBALA_BMI_CHILD:
+        return _ATIDURBALA_BMI
+    male, female = _ATIDURBALA_BMI_CHILD[age]
+    g = str(gender or "").lower()
+    # Unrecorded or other sex takes the lower threshold: the gate withholds a
+    # procedure, and the error to avoid is barring a child at a normal weight.
+    return male if g == "male" else female if g == "female" else min(male, female)
+
+
+# Charaka Vimanasthana 8.122: Bala (childhood, Dhatus not yet mature) to 16; Jirna
+# (old age) from 60. Sushruta's Vriddha begins at 70, which is where the KB's
+# Shodhana window closes.
+_CHILD_AGE = 16
+_JIRNA_AGE = 60
+_VRIDDHA_AGE = 70
 
 # Rajaswala (active menstruation). How long a reported `menstrual_phase` is treated
 # as still describing the patient.
@@ -365,8 +408,23 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
     restricting: list[str] = []
 
     age = int(user_profile.get("age") or 30)
-    if age < 7 or age > 70:
+    # Over 70 restricts to the nourishing routes rather than barring. The KB's
+    # Shodhana window closes at 70, and nothing expulsive is given past it — but
+    # Matra Basti is not an expulsion. Charaka Siddhisthana 4 gives it "at all
+    # times" to children, the old and the weak, and Vata is the Dosha of old age.
+    # Barring it handed every patient over 70, a Parkinson's patient among them,
+    # oil massage and a Rasayana and withheld the one Basti the texts write for
+    # them. The same `brimhana_only` path low Ojas takes, for the same reason.
+    brimhana_reason = None
+    if age < 7:
         blocking.append(f"Age {age} outside Shodhana range (7–70 years)")
+    elif age > _VRIDDHA_AGE:
+        brimhana_reason = f"age {age}"
+        restricting.append(
+            f"Age {age} — past the Shodhana window (7–70). Nothing expulsive: Matra Basti and "
+            "Pratimarsha Nasya only, the nourishing routes Charaka gives the old, under Vaidya "
+            "supervision."
+        )
     elif age < 12:
         # `pradhana_karma.vamana.contraindications.absolute` bars children under 12
         # outright, and Virechana bars "very young". 7–11 is inside the eligibility
@@ -374,6 +432,13 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
         restricting.append(
             f"Age {age} — Vamana is contraindicated under 12 and strong Virechana in the very young. "
             "Mridu (mild) Shodhana only, under Vaidya supervision."
+        )
+    elif age < _CHILD_AGE:
+        # 12–15 sat in the adult protocol: a 13-year-old in a clinic was planned a
+        # full Virechana at 30–60 ml of castor oil and a 120 ml Snehapana peak.
+        restricting.append(
+            f"Age {age} — under 16 the Dhatus are still forming (Charaka Vimanasthana 8.122). "
+            "Mridu (mild) Shodhana only, at a child's dose, under Vaidya supervision."
         )
 
     if user_profile.get("pregnancy_or_nursing", False):
@@ -430,8 +495,9 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
     # Expulsive routes (Vamana, Virechana, Raktamokshana) stay barred: those
     # deplete, which is the objection to Shodhana here in the first place.
     ojas = user_profile.get("ojas_level", "medium")
-    brimhana_only = ojas == "low"
-    if brimhana_only:
+    brimhana_only = ojas == "low" or brimhana_reason is not None
+    if ojas == "low":
+        brimhana_reason = "low Ojas" if brimhana_reason is None else f"{brimhana_reason}, low Ojas"
         restricting.append(
             "Low Ojas — Brimhana (nourishing) routes only: Matra Basti, Pratimarsha Nasya, "
             "Abhyanga. No expulsive Karma, and Rasayana required before any future Shodhana."
@@ -441,10 +507,12 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
     # Virechana and Niruha Basti outright; only Matra Basti, Pratimarsha Nasya,
     # Abhyanga and Shamana remain.
     bmi = user_profile.get("bmi")
-    if isinstance(bmi, (int, float)) and 0 < bmi < _ATIDURBALA_BMI:
+    threshold = _atidurbala_bmi(age, user_profile.get("gender"))
+    if isinstance(bmi, (int, float)) and 0 < bmi < threshold:
         blocking.append(
-            f"Atidurbala (BMI {bmi:.1f}) — Shodhana would cause Dhatu Kshaya. "
-            "Brimhana required first."
+            f"Atidurbala (BMI {bmi:.1f}"
+            + (f", below {threshold:.1f} for age {age}" if age < 18 else "")
+            + ") — Shodhana would cause Dhatu Kshaya. Brimhana required first."
         )
 
     # Bala (strength) from fitness_level — CS Sutrasthana 15 (Bala Pareeksha).
@@ -497,6 +565,7 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
             "blocking_reasons": blocking,
             "restricting_reasons": restricting,
             "brimhana_only": brimhana_only,
+            "brimhana_reason": brimhana_reason,
             "bala": bala_type,
             "bala_note": bala_note,
             "agni": agni,
@@ -539,6 +608,7 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
             "blocking_reasons": [],
             "restricting_reasons": restricting,
             "brimhana_only": brimhana_only,
+            "brimhana_reason": brimhana_reason,
             "bala": bala_type,
             "bala_note": bala_note,
             "agni": agni,
@@ -608,13 +678,33 @@ _KARMA_FALLBACK: dict[str, tuple[str, str]] = {
 }
 
 
+# Derived states the plan corrects (Deepana-Pachana) rather than bars on.
+_CORRECTABLE_STATES = frozenset({"high_ama", "manda_agni"})
+
+
 def _karma_contraindications(karma_key: str) -> dict:
     """hard/soft token→mechanism maps for one Pradhana Karma, plus its fallback."""
     entry = pk_clinical.get("pradhana_karma", {}).get(karma_key, {})
     fallback, reason = _KARMA_FALLBACK.get(karma_key, ("nasya", "Therapy substituted due to contraindication"))
+    hard, soft = dict(entry.get("hard", {})), dict(entry.get("soft", {}))
+    # A Karma whose preparation is barred is barred. The Snehapana ladder is
+    # delivered per day, outside the therapy pool, so the Snehapana rows' own
+    # contraindications gated a variety item and never the 30 -> 120 ml of ghee: a
+    # gallstone patient was planned the full ladder before Virechana with no
+    # warning. Correctable states are left out — Deepana-Pachana corrects them
+    # before Snehana begins, and reading them as a bar is the high-Ama error.
+    if karma_key in _ROW_KARMA.get("snehapana_home", ()):
+        sneha = _therapy_contraindications("snehapana_clinic")
+        for token, mech in sneha["hard"].items():
+            if token not in _CORRECTABLE_STATES:
+                hard.setdefault(token, f"Snehapana, the oleation this Karma requires first: {mech}")
+        for token, mech in sneha["soft"].items():
+            soft.setdefault(token, f"Snehapana (the ghee taken before this Karma): {mech}")
     return {
-        "hard": entry.get("hard", {}),
-        "soft": entry.get("soft", {}),
+        "hard": hard,
+        "soft": soft,
+        "restrict_to": entry.get("restrict_to", {}),
+        "soft_niruha_only": entry.get("soft_niruha_only", []),
         "fallback": fallback,
         "fallback_reason": reason,
     }
@@ -684,16 +774,20 @@ def _restrict_to_brimhana(pradhana: dict, eligibility: dict) -> tuple[dict, list
     primary = pradhana.get("primary")
     if primary in _BRIMHANA_KARMAS or primary is None:
         return pradhana, []
-    fallback, why = _BRIMHANA_SUBSTITUTE.get(primary, ("nasya", "Expulsive Karma withheld — Ojas depleted"))
+    fallback, why = _BRIMHANA_SUBSTITUTE.get(primary, ("nasya", "Expulsive Karma withheld"))
+    why_for = eligibility.get("brimhana_reason") or "low Ojas"
+    if "Ojas" not in why_for:
+        # The substitute's own text explains itself in terms of Ojas.
+        why = why.replace("depletes Ojas", "depletes a body that has less to spare")
     return (
         {
             **pradhana,
             "primary": fallback,
-            "reason": f"⚠ {primary.title()} withheld (low Ojas). {why}.",
+            "reason": f"⚠ {primary.title()} withheld ({why_for}). {why}.",
             "brimhana_substitution": True,
             "original_karma": primary,
         },
-        [f"BRIMHANA RESTRICTION: {primary} → {fallback} (low Ojas — expulsive Karma depletes further)"],
+        [f"BRIMHANA RESTRICTION: {primary} → {fallback} ({why_for} — expulsive Karma is withheld)"],
     )
 
 
@@ -947,6 +1041,49 @@ def _validate_karma_safety(pradhana: dict, medical_history: list[str],
             )
         warnings += [f"{c}: {m}" for c, m in hard_hits if m]
 
+    # A soft entry that names a different route is a prescription. The CKD caution
+    # read "Matra Basti only — Niruha's electrolyte load is poorly cleared" beside a
+    # schedule with three Niruha days; the caution was right and nothing obeyed it.
+    # `restrict_to` converts the course instead of warning beside it. Only toward a
+    # gentler route of the same Karma, and only if that route is itself clear.
+    if pradhana.get("primary") and not hard_hits:
+        cur_key = "basti" if pradhana["primary"] == "basti_matra" else pradhana["primary"]
+        for target, tokens in (contraindications(cur_key).get("restrict_to") or {}).items():
+            if pradhana["primary"] == target:
+                continue
+            hits = _match_contraindications(medical_history, tokens)
+            if hits:
+                old_primary = pradhana["primary"]
+                pradhana = {
+                    **pradhana,
+                    "primary": target,
+                    "reason": (
+                        f"⚠ {old_primary.replace('_', ' ').title()} restricted to "
+                        f"{target.replace('_', ' ').title()}: {', '.join(c for c, _ in hits)}."
+                    ),
+                    "safety_substitution": True,
+                    "original_karma": old_primary,
+                    "contraindication_mechanisms": [
+                        {"condition": c, "mechanism": m} for c, m in hits
+                    ],
+                }
+                warnings.append(
+                    f"ROUTE RESTRICTED: {old_primary} → {target} "
+                    f"({', '.join(c for c, _ in hits)})")
+                warnings += [f"{c}: {m}" for c, m in hits if m]
+                # The caution that asked for this route has been obeyed; repeating
+                # it under the converted course reads as an unresolved warning.
+                restricted = {c for c, _ in hits}
+                soft_hits = [(c, m) for c, m in soft_hits if c not in restricted]
+                break
+
+    # Some Basti cautions are about the Niruha decoction alone — its Saindhava, its
+    # honey, its empty-stomach timing. They are noise on a Matra Basti course.
+    if pradhana.get("primary") == "basti_matra":
+        niruha_only = set(contraindications("basti").get("soft_niruha_only") or [])
+        soft_hits = [(c, m) for c, m in soft_hits
+                     if not any(condition_matches_term(c, t) for t in niruha_only)]
+
     if soft_hits:
         warnings += [
             f"CAUTION — {c}: {m}" if m
@@ -1182,6 +1319,226 @@ def _select_pradhana_karma(
 
 
 # ── Purvakarma Duration ────────────────────────────────────────────────────────
+
+def _paediatric_dose_factor(user_profile: dict) -> tuple[float, str] | None:
+    """The fraction of an adult dose for a patient under 18, and how it was set.
+
+    Every dose in the compendium is an adult dose, and the plan printed it for a
+    ten-year-old unchanged — 30–60 ml of castor oil, a 120 ml Snehapana peak,
+    250 mg of Shilajit. Clark's rule (weight / 70 kg) where the weight is known,
+    Young's rule (age / (age + 12)) where it is not; never above an adult's.
+    """
+    age = int(user_profile.get("age") or 30)
+    if age >= 18:
+        return None
+    weight = user_profile.get("weight_kg")
+    if isinstance(weight, (int, float)) and weight > 0:
+        f, basis = weight / 70.0, f"Clark's rule ({weight:g} kg of a 70 kg adult)"
+    else:
+        f, basis = age / (age + 12.0), f"Young's rule (age {age})"
+    f = round(min(1.0, max(0.25, f)), 2)
+    return (f, basis) if f < 1.0 else None
+
+
+def _scale_dose_text(text, factor: float):
+    """Scale every quantity in a dose string ("30-60ml", "250mg ... 500mg", "5 g")."""
+    import re
+    if not isinstance(text, str) or factor >= 1.0:
+        return text
+
+    def one(x: str, unit: str) -> str:
+        v = float(x) * factor
+        if unit == "ml":
+            v = max(5, round(v / 5) * 5) if v >= 10 else max(1, round(v))
+        elif unit == "mg":
+            v = max(25, round(v / 25) * 25)
+        elif unit.startswith("tablet") or unit in ("tsp", "tbsp"):
+            v = max(0.5, round(v * 2) / 2)
+        else:  # g
+            v = max(0.5, round(v * 2) / 2)
+        return f"{v:g}"
+
+    pattern = re.compile(r"(\d+(?:\.\d+)?)(\s*(?:–|-|to)\s*)?(\d+(?:\.\d+)?)?\s*(ml|mg|g|tablets?|tsp|tbsp)\b", re.I)
+
+    def repl(m):
+        unit = m.group(4).lower()
+        lo = one(m.group(1), unit)
+        if m.group(3):
+            return f"{lo}{m.group(2)}{one(m.group(3), unit)} {m.group(4)}"
+        return f"{lo} {m.group(4)}"
+    return pattern.sub(repl, text)
+
+
+def _medication_findings(medications) -> dict:
+    """Map `current_medications` onto the classes the clinical KB names.
+
+    The medicines reached the herb-interaction gate and nothing else, so a patient
+    on warfarin, insulin or lithium was planned emesis, purgation and bloodletting
+    exactly as though they took nothing. Each matched class becomes a finding the
+    per-Karma and per-therapy maps name, the same way a condition is named. A
+    medicine that matches no class is listed back, never read as checked.
+    """
+    import re
+    classes = {k: v for k, v in (pk_clinical.get("medication_classes") or {}).items()
+               if not k.startswith("_")}
+    tokens: list[str] = []
+    matched: list[dict] = []
+    unmatched: list[str] = []
+    for med in medications or []:
+        text = str(med).lower().strip()
+        if not text:
+            continue
+        hits = [k for k, v in classes.items()
+                if any(re.search(rf"\b{re.escape(m)}", text) for m in v.get("match", []))]
+        if hits:
+            matched.append({"medication": str(med),
+                            "classes": [classes[k]["label"] for k in hits]})
+            tokens += [h for h in hits if h not in tokens]
+        else:
+            unmatched.append(str(med))
+    return {"tokens": tokens, "matched": matched, "unmatched": unmatched}
+
+
+def _medication_review(user_profile: dict) -> dict | None:
+    meds = _medication_findings(user_profile.get("current_medications"))
+    if not meds["matched"] and not meds["unmatched"]:
+        return None
+    # Classes assessed as having no procedure-level interaction are recognised, so
+    # they are not reported as unchecked, but there is nothing to show a prescriber.
+    classes = pk_clinical.get("medication_classes") or {}
+    no_interaction = {v["label"] for v in classes.values()
+                      if isinstance(v, dict) and v.get("assessed_no_procedure_interaction")}
+    gated = {c for m in meds["matched"] for c in m["classes"]} - no_interaction
+    return {
+        "matched": meds["matched"],
+        "unmatched": meds["unmatched"],
+        "notice": (
+            "Not recognised, so no procedure in this plan has been checked against "
+            f"{'it' if len(meds['unmatched']) == 1 else 'them'}: {', '.join(meds['unmatched'])}. "
+            "Show the Vaidya every medicine you take before starting."
+        ) if meds["unmatched"] else None,
+        # Every class here is managed by the doctor who prescribed it. The plan can
+        # say what the procedure does to the drug; it cannot change the dose.
+        "prescriber_notice": (
+            "Show this plan to the doctor who manages your medicines ("
+            + ", ".join(sorted(gated)).lower()
+            + ") before day 1. The cautions above name what each procedure does to these "
+            "medicines; only the prescriber can change a dose, and none should be stopped "
+            "for the course."
+        ) if gated else None,
+    }
+
+
+def _allergen_review(allergies, aushadha: dict, schedule: list[dict], dose_schedule: list[dict],
+                     shamana_protocol: dict | None = None) -> dict | None:
+    """Every prescribed substance that contains something the patient is allergic to.
+
+    `allergies` reached no Panchakarma code, while the procedures are built on
+    ghee, sesame oil, milk and honey. This reads the plan's own text — the
+    formulation names, each therapy's steps, the ghee ladder — so it screens what
+    the patient is actually told to use. It does not substitute: the replacement
+    base is a Vaidya's preparation, and naming one the patient cannot buy is worse
+    than naming the problem. A recognised allergy with no hit is listed as checked.
+    """
+    import re
+    if isinstance(allergies, str):
+        # A bare string iterates into letters and a one-letter term matches everything.
+        allergies = [allergies]
+    table = {k: v for k, v in (pk_clinical.get("allergens") or {}).items() if not k.startswith("_")}
+    declared = [str(a).strip().lower() for a in (allergies or []) if str(a).strip()]
+    if not declared:
+        return None
+
+    sources: list[tuple[str, str]] = []
+    for key, v in (aushadha or {}).items():
+        if isinstance(v, dict):
+            label = v.get("name") or v.get("herb")
+            if label:
+                sources.append((str(label), f"{v.get('name') or v.get('herb')}"))
+    if dose_schedule:
+        sources.append(("ghee (Snehapana)", "Snehapana ghee (Purvakarma mornings)"))
+    for p_ in ((shamana_protocol or {}).get("shamana_chikitsa") or []):
+        if isinstance(p_, dict):
+            sources.append((" ".join(str(x) for x in p_.values() if isinstance(x, str)),
+                            str(p_.get("name") or p_.get("therapy") or "Shamana medicine")))
+    by_item: dict[str, list[int]] = {}
+    item_text: dict[str, str] = {}
+    for day in schedule or []:
+        for t in day.get("therapies") or []:
+            name = t.get("name") or t.get("id") or ""
+            text = " ".join([name, t.get("pradhana_notes") or "", " ".join(t.get("steps") or [])])
+            by_item.setdefault(name, []).append(day.get("day"))
+            item_text[name] = text
+    for name, days in by_item.items():
+        sources.append((item_text[name], f"{name} (day {', '.join(str(x) for x in sorted(set(days)))})"
+                        if len(set(days)) <= 3 else f"{name} ({len(set(days))} days)"))
+
+    findings, checked, unrecognised = [], [], []
+    for a in declared:
+        entry = table.get(a.replace(" ", "_"))
+        if not entry:
+            unrecognised.append(a)
+            continue
+        excepts = [e.lower() for e in entry.get("except", [])]
+        items = []
+        for text, label in sources:
+            low = text.lower()
+            for term in entry["terms"]:
+                for m in re.finditer(rf"\b{re.escape(term)}\b", low):
+                    # The excepted bases (Sarshapa Taila, coconut oil) are named
+                    # immediately before the generic word they qualify.
+                    window = low[max(0, m.start() - 24):m.start()]
+                    if any(e in window for e in excepts):
+                        continue
+                    items.append(label)
+                    break
+                if items and items[-1] == label:
+                    break
+        items = list(dict.fromkeys(items))
+        if items:
+            findings.append({"allergy": entry["label"], "items": items,
+                             "substitute": entry.get("substitute")})
+        else:
+            checked.append(entry["label"])
+    if not findings and not unrecognised:
+        return {"findings": [], "checked_clear": checked, "unrecognised": [], "notice": None}
+    notice = None
+    if findings:
+        notice = (
+            "Your plan names substances you have told us you are allergic to. Do not use them as "
+            "written. Show this list to the Vaidya before day 1 — each needs a preparation made "
+            "without the allergen, which only they can supply: "
+            + "; ".join(f"{f['allergy']}: {', '.join(f['items'])} (ask for {f['substitute']})"
+                        for f in findings) + "."
+        )
+    return {
+        "findings": findings,
+        "checked_clear": checked,
+        "unrecognised": unrecognised,
+        "notice": notice,
+        "unrecognised_notice": (
+            f"Not checked against this plan: {', '.join(unrecognised)}. Tell the Vaidya."
+        ) if unrecognised else None,
+    }
+
+
+def _patient_findings(user_profile: dict) -> list[str]:
+    """Findings every gate must see that are not typed into `medical_history`:
+    the medication classes and the age band. Kept apart from the Dosha/Ama states
+    `filter_and_score_therapies` adds, because those would also match Aushadha
+    indications by substring and reorder the compendium."""
+    findings = list(_medication_findings(user_profile.get("current_medications")).get("tokens", []))
+    age = int(user_profile.get("age") or 30)
+    if age > _VRIDDHA_AGE:
+        findings.append("elderly")
+    if age > _JIRNA_AGE:
+        findings.append("age_over_60")
+    if age < _CHILD_AGE:
+        findings.append("child")
+    if age < 12:
+        findings.append("child_under_12")
+    return findings
+
 
 # Purvakarma for a Karma that takes no internal oleation: Abhyanga and Swedana on
 # their own. Three days loosens and opens the Srotas without turning preparation
@@ -1453,8 +1810,13 @@ def _select_aushadha(
 
     result["abhyanga_oil"] = _select_from_compendium(
         aus.get("oils_external", []), medical_history, vikriti_dom)
-    result["internal_ghrita"] = _select_from_compendium(
-        aus.get("ghrita_internal", []), medical_history, vikriti_dom)
+    # The Ghrita is the Snehapana medicine (Shodhanartha before Vamana/Virechana) or
+    # the Shamana-matra Sneha. A Basti or Nasya course takes neither, and 82% of
+    # plans named a Ghrita the schedule never told the patient to take — a medicine
+    # bought for nothing, the same defect as a Niruha decoction on a Matra Basti course.
+    if _uses_snehapana(pradhana_karma) or pradhana_karma == "shamana":
+        result["internal_ghrita"] = _select_from_compendium(
+            aus.get("ghrita_internal", []), medical_history, vikriti_dom)
 
     # Pradhana-specific Aushadha
     if pradhana_karma == "virechana":
@@ -1506,8 +1868,11 @@ def _select_aushadha(
         # every safety gate in this file uses `term_in_condition`, and its oil names
         # duplicated compendium entries that carried their own `use` text — two
         # descriptions of Ksheerabala Taila that could drift apart.
-        result["basti_kashayam"] = _select_from_compendium(
-            aus.get("kashayam_basti", []), medical_history, vikriti_dom)
+        # Matra Basti is oil alone; naming a Niruha decoction for a course that
+        # gives none sends the patient to buy a medicine nothing tells them to use.
+        if pradhana_karma == "basti":
+            result["basti_kashayam"] = _select_from_compendium(
+                aus.get("kashayam_basti", []), medical_history, vikriti_dom)
         result["basti_oil"] = _select_from_compendium(
             aus.get("oils_external", []), medical_history, vikriti_dom)
 
@@ -1653,7 +2018,12 @@ def _samsarjana_krama(pradhana_karma: str, protocols: dict) -> list[dict]:
         return sk.get("post_vamana", {}).get("stages", [])
     if pradhana_karma == "virechana":
         return sk.get("post_virechana", {}).get("stages", [])
-    if pradhana_karma in ("basti", "basti_matra"):
+    # Matra Basti joins them. It is given after food, the oil is absorbed, and
+    # Charaka Siddhisthana 4 describes it as needing no Parihara — no regimen of
+    # restriction around it. A 72-year-old on a nourishing course was put on
+    # "Vilepi or Khichdi only" afterwards, which is the depletion the course exists
+    # to prevent.
+    if pradhana_karma == "basti":
         return sk.get("post_basti", {}).get("post_course", [])
     return []
 
@@ -2334,8 +2704,7 @@ def filter_and_score_therapies(user_profile, pk_prefs, phase, pk_therapies_list,
         medical_history.append("manda_agni")
     if dominant in ("vata", "pitta", "kapha"):
         medical_history.append(f"{dominant}_aggravation")
-    if (user_profile.get("age") or 30) > 70:
-        medical_history.append("elderly")
+    medical_history += [f for f in _patient_findings(user_profile) if f not in medical_history]
 
     for t in pk_therapies_list:
         if t["phase"] != phase:
@@ -2447,7 +2816,11 @@ def _pradhana_day_action(pradhana_karma: str, aushadha: dict, basti_info: dict |
         return {**action, "id": "vamana_main", "is_pradhana_karma": True}
 
     if pk == "nasya":
-        action = _render_procedure("nasya", {
+        # At home it is Pratimarsha — two drops, the KB's `home_pratimarsha` form,
+        # which every home and Brimhana substitution names. Home courses used to be
+        # handed the clinical Navana template: 6–8 drops, self-administered.
+        template = "nasya_pratimarsha" if setting == "home" else "nasya"
+        action = _render_procedure(template, {
             "oil_name": _aushadha_name(aushadha.get("nasya_oil"), "the prescribed nasal oil"),
         })
         return {**action, "id": "nasya_main", "is_pradhana_karma": True}
@@ -2455,6 +2828,7 @@ def _pradhana_day_action(pradhana_karma: str, aushadha: dict, basti_info: dict |
     if pk == "basti_matra":
         action = _render_procedure("basti_matra", {
             "oil_name": _aushadha_name(aushadha.get("basti_oil"), "warm sesame oil"),
+            "dose": (basti_info or {}).get("dose") or "50–80 ml",
         })
         return {**action, "id": "basti_matra_main", "is_pradhana_karma": True}
 
@@ -2712,7 +3086,8 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
                 goal_notes.append(seasonal_note)
         pradhana, safety_warnings = _restrict_to_brimhana(pradhana, eligibility)
         # Safety gate: substitute karma if hard contraindicated by medical history
-        pradhana, karma_warnings = _validate_karma_safety(pradhana, medical_history, triage_terms)
+        pradhana, karma_warnings = _validate_karma_safety(
+            pradhana, medical_history + _patient_findings(user_profile), triage_terms)
         safety_warnings += karma_warnings
 
         # Second gate, and second only: what the patient has told us they can supply.
@@ -2838,7 +3213,12 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         # course labelled "Kala Basti (16-Basti Schedule)" — the card and the calendar
         # disagreeing for the third time in this file.
         if is_basti:
-            basti_info = _basti_subtype(karma_setting, max(1, budget - paschat_min))
+            # Matra Basti is its own subtype wherever it is given. A clinic course
+            # substituted to Matra Basti was labelled "Yoga Basti (8-Basti Schedule)"
+            # above a calendar of nightly oil enemas.
+            basti_info = _basti_subtype(
+                "home" if pradhana["primary"] == "basti_matra" else karma_setting,
+                max(1, budget - paschat_min))
             pradhana_days = basti_info["days"]
         else:
             basti_info = None
@@ -2880,12 +3260,38 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
 
     # ── Aushadha & Samsarjana ─────────────────────────────────────────────────
     aushadha = _select_aushadha(
-        vikriti_dom, medical_history, pradhana["primary"] or "shamana", karma_setting, protocols,
+        vikriti_dom, medical_history + _patient_findings(user_profile),
+        pradhana["primary"] or "shamana", karma_setting, protocols,
         koshtha, gender=(user_profile.get("gender") or None), bala=bala_type,
         medications=(user_profile.get("current_medications") or []),
         pregnancy=bool(user_profile.get("pregnancy_or_nursing")),
         existing_ayurvedic=(pk_prefs.get("current_ayurvedic_medicines") or []),
     )
+
+    # A child's dose. Applied to everything the plan quantifies — the drug, the
+    # Rasayana, the adjuvants, the Matra Basti volume and (below) the Snehapana
+    # ladder — so no adult figure is left beside a child's.
+    dose_adjustment = None
+    _paed = _paediatric_dose_factor(user_profile)
+    if _paed:
+        factor, basis = _paed
+        for k, v in list(aushadha.items()):
+            if isinstance(v, dict) and isinstance(v.get("dose"), str):
+                scaled = _scale_dose_text(v["dose"], factor)
+                if scaled != v["dose"]:
+                    aushadha[k] = {**v, "dose": scaled, "adult_dose": v["dose"]}
+        if basti_info and basti_info.get("dose"):
+            basti_info = {**basti_info, "dose": _scale_dose_text(basti_info["dose"], factor)}
+        dose_adjustment = {
+            "factor": factor,
+            "basis": basis,
+            "notice": (
+                f"Every dose in this plan is a child's dose — {int(factor * 100)}% of the adult "
+                f"figure by {basis}. A Vaidya sets the final dose in person; never give a child "
+                "the adult figure shown beside it."
+            ),
+        }
+        safety_warnings.append("CHILD'S DOSE: " + dose_adjustment["notice"])
 
     # `access_to_ayurvedic_herbs` reached the therapy pool and stopped there. Every
     # Pradhana row the KB marks `specific_ayurvedic` is clinician-administered and
@@ -3001,6 +3407,19 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
              "vehicle": "Warm ginger water (Kapha: avoid plain warm water — use Ushna Dravya)"}
             for d in dose_schedule
         ]
+    # Agni sets the Matra. Charaka Sutrasthana 13 grades the Snehapana dose by how
+    # long it takes to digest, and gives the large dose to strong Agni and the small
+    # one to weak. The ladder read the Vikriti and nothing else, so a Manda Agni
+    # patient — corrected by Deepana for three days, not cured — climbed to the same
+    # 120 ml as a Tikshna one.
+    agni = eligibility.get("agni", "sama")
+    sneha_matra = None
+    if dose_schedule and agni in _AGNI_SNEHA_CAP:
+        cap, basis = _AGNI_SNEHA_CAP[agni]
+        if cap is not None and max(d.get("dose_ml", 30) for d in dose_schedule) > cap:
+            dose_schedule = [{**d, "dose_ml": min(d.get("dose_ml", 30), cap)} for d in dose_schedule]
+        sneha_matra = {"agni": agni, "peak_ml": max(d.get("dose_ml", 30) for d in dose_schedule),
+                       "basis": basis}
     # The ladder is meant to end on a reduced dose — the KB's day 7 reads "Reduce
     # dose on final day", halving the 120ml peak to 60. Slicing the first N entries
     # dropped that step whenever the course was shorter than seven days, handing the
@@ -3009,11 +3428,16 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
     # Only from three days up: a two-day course has no plateau to step down from,
     # and forcing one there flattens the ladder to 30ml twice, which is not oleation
     # at all — worse than the missing step-down it was meant to fix.
+    if dose_adjustment and dose_schedule:
+        f = dose_adjustment["factor"]
+        dose_schedule = [{**d, "dose_ml": max(10, int(round(d.get("dose_ml", 30) * f / 5) * 5))}
+                         for d in dose_schedule]
     if len(dose_schedule) >= 3:
         peak = max(d["dose_ml"] for d in dose_schedule)
         dose_schedule = dose_schedule[:-1] + [{
             **dose_schedule[-1],
-            "dose_ml": max(30, peak // 2),
+            # Never above the peak: a child's scaled ladder can peak under 30 ml.
+            "dose_ml": max(min(30, peak), int(round(peak / 2 / 5) * 5)),
             "time": "Reduce dose on final day",
         }]
 
@@ -3279,6 +3703,12 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             f"Proceed with extra caution and increased Purvakarma."
         )
 
+    allergen_review = _allergen_review(
+        user_profile.get("allergies"), aushadha, schedule, dose_schedule,
+        shamana_build.get("protocol") if is_shamana else None)
+    if allergen_review and allergen_review.get("notice"):
+        safety_warnings.insert(0, "ALLERGY: " + allergen_review["notice"])
+
     return {
         "plan_id": f"pk_{user_profile.get('id', 'unknown')}_{int(datetime.now(timezone.utc).timestamp())}",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -3326,6 +3756,9 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             # So it is surfaced and marked deferred. Stated and unused is a question
             # a Vaidya can answer; silently dropped is not.
             "secondary_karma_deferred": _secondary_karma_deferral(pradhana),
+            "medication_review":      _medication_review(user_profile),
+            "allergen_review":        allergen_review,
+            "dose_adjustment":        dose_adjustment,
             "vaidya_review_required": vaidya_review_required,
         },
 
@@ -3349,6 +3782,7 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
             # No internal oleation agent to name when the Karma takes none.
             "internal_ghrita":    snehana_oils if (uses_snehapana or is_shamana) else None,
             "dose_schedule":      dose_schedule,
+            "matra":              sneha_matra,
             "signs_adequate":     snehana_int.get("signs_adequate_snehana", []),
             "diet_during":        snehana_int.get("diet_during_snehana", ""),
             "abhyanga_oil":       abhyanga_oils,

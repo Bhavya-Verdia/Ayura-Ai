@@ -66,7 +66,6 @@ SHODHANA_INSTRUCTIONS = [
 # these tests originally asserted, and the assertion passed while the engine issued
 # a plan containing seven days of the very correction it had just ruled impossible.
 INELIGIBLE = [
-    pytest.param(_profile(age=78), id="elderly"),
     pytest.param(_profile(age=5), id="very_young"),
     pytest.param(_profile(pregnancy_or_nursing=True), id="pregnancy"),
     pytest.param(_profile(bmi=15.2), id="atidurbala"),
@@ -293,7 +292,7 @@ def test_the_day_count_matches_the_days_the_schedule_contains():
 def test_a_shamana_plan_does_not_advertise_the_therapy_it_withheld():
     """The Ritu calendar names a Shodhana for each season. On a plan that performs
     none, `ritu_warning` would be advice about a procedure that is not happening."""
-    plan = generate_panchakarma_plan(_profile(age=78), _prefs())
+    plan = generate_panchakarma_plan(_profile(bmi=15.2), _prefs())
     assert plan["clinical_decisions"]["ritu_warning"] is None
     assert "SHAMANA PROTOCOL" in plan["disclaimer"]
 
@@ -501,3 +500,20 @@ def test_a_shamana_plan_defers_nothing():
                  medical_history=["heart_disease"]), _prefs())
     if plan["clinical_decisions"]["shodhana_or_shamana"]["type"] == "shamana":
         assert _deferral(plan) is None
+
+
+@pytest.mark.parametrize("setting", ["home", "clinic", "both"])
+@pytest.mark.parametrize("dosha", ["vata", "pitta", "kapha"])
+def test_past_seventy_nothing_expels_but_matra_basti_is_not_withheld(setting, dosha):
+    """Over 70 used to be Shamana outright, which withheld Matra Basti — the Basti
+    Charaka gives the old (Siddhisthana 4) — from every patient past the window.
+    Now the nourishing routes only, the same restriction low Ojas takes."""
+    plan = generate_panchakarma_plan(_profile(age=78, vikriti_dominant=dosha),
+                                     _prefs(setting=setting))
+    elig = plan["clinical_decisions"]["shodhana_or_shamana"]
+    assert elig["type"] == "mridu_shodhana" and elig["brimhana_only"]
+    karma = plan["clinical_decisions"]["pradhana_karma_selected"]["primary"]
+    assert karma in ("basti_matra", "nasya")
+    names = " ".join(t.get("name", "") for d in plan["daily_schedule"] for t in d["therapies"]).lower()
+    for word in ("virechana", "vamana", "niruha", "raktamokshana", "navana"):
+        assert word not in names, word

@@ -96,7 +96,7 @@ def test_present_on_all_three_verdicts():
     shodhana = _elig(_plan(stages))
     mridu    = _elig(generate_panchakarma_plan(
         {**_profile(), "disease_stages": stages}, _prefs(setting="home")))
-    shamana  = _elig(_plan(stages, age=78))
+    shamana  = _elig(_plan(stages, bmi=15.2))
     assert shodhana["type"] == "shodhana"
     assert mridu["type"] == "mridu_shodhana"
     assert shamana["type"] == "shamana"

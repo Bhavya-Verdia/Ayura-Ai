@@ -139,3 +139,16 @@ def test_udvartana_is_not_rubbed_off_a_vata_or_pitta_snehana():
             if day["phase"].startswith("Purvakarma"):
                 assert not any(str(t.get("id", "")).startswith("udvartana")
                                for t in day["therapies"]), (dosha, day)
+
+
+@pytest.mark.parametrize("condition", ["chronic_kidney_disease", "hemorrhoids", "diabetes_type1"])
+def test_a_caution_that_names_another_route_converts_the_course(condition):
+    """The CKD caution read "Matra Basti only" above three scheduled Niruha days."""
+    plan = generate_panchakarma_plan(_profile(medical_history=[condition]), _prefs())
+    assert _karma(plan) == "basti_matra"
+    names = " ".join(t.get("name", "") for d in plan["daily_schedule"] for t in d["therapies"])
+    assert "Niruha" not in names
+    assert plan["clinical_decisions"]["basti_subtype"]["subtype"] == "matra_basti"
+    assert "basti_kashayam" not in plan["aushadha"]
+    assert not any(w.startswith(f"CAUTION — {condition}")
+                   for w in plan["clinical_decisions"]["safety_warnings"])

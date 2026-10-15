@@ -74,6 +74,16 @@ def build_panchakarma_contraindication_csv():
 
     for karma, entry in clinical.get("pradhana_karma", {}).items():
         emit("pradhana_karma", karma, entry)
+        # A route restriction changes the course rather than warning beside it,
+        # so it is a stronger claim than the soft entry it was promoted from.
+        for target, tokens in (entry.get("restrict_to") or {}).items():
+            for condition, mechanism in sorted(tokens.items()):
+                rows.append({
+                    "scope": "pradhana_karma", "procedure": karma,
+                    "severity": f"restrict_to:{target}", "condition": condition,
+                    "stated_mechanism": mechanism,
+                    "severity_ok": "", "mechanism_ok": "", "should_be": "", "vaidya_notes": "",
+                })
     for tid, entry in clinical.get("therapies", {}).items():
         if isinstance(entry, dict):
             emit("therapy", tid, entry)
@@ -83,6 +93,18 @@ def build_panchakarma_contraindication_csv():
     for herb, entry in clinical.get("herbs", {}).items():
         if isinstance(entry, dict):
             emit("herb", entry.get("display", herb), entry)
+
+    # Which medicines count as which class is what makes a medication row fire; a
+    # brand in the wrong class is a contraindication applied to the wrong patient.
+    for cls, entry in (clinical.get("medication_classes") or {}).items():
+        if cls.startswith("_"):
+            continue
+        rows.append({
+            "scope": "medication_class", "procedure": entry.get("label", cls),
+            "severity": "membership", "condition": cls,
+            "stated_mechanism": "Matched by: " + ", ".join(entry.get("match", [])),
+            "severity_ok": "", "mechanism_ok": "", "should_be": "", "vaidya_notes": "",
+        })
 
     # "This disease contraindicates nothing" is a clinical claim like any other, and
     # the one most likely to be wrong by omission — it is what 23 diseases in the
@@ -301,6 +323,29 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0):
         "",
         "Missing entries matter as much as wrong ones: if a condition should bar a procedure and "
         "is not listed, add a row.",
+        "",
+        "### Open questions where the authored rule and the classics disagree",
+        "These were deliberately **not** settled by the author. Each needs a ruling.",
+        "",
+        "1. **Anaemia (Pandu) bars every Shodhana.** The engine treats `anemia` as an absolute "
+        "bar and gives Shamana only. Charaka Chikitsa 16 prescribes the opposite for Pandu: "
+        "oleate with ghee, then purify by both routes. The bar was kept because the app cannot "
+        "know the haemoglobin, and severe anaemia is a modern contraindication to any depleting "
+        "procedure. Should mild anaemia restrict to Mridu Virechana instead of barring?",
+        "2. **A barred Snehapana bars the Karma it prepares.** Gallstones and acute pancreatitis "
+        "bar Snehapana (a 60–120 ml fat load provokes biliary colic), so they now withdraw "
+        "Vamana and Virechana and substitute Basti or Nasya. Is a Ruksha or short (Sadyo) "
+        "Snehana the better answer than substitution?",
+        "3. **Snehapana peak by Agni.** Manda Agni is held to 60 ml and Vishama to 90 ml "
+        "(after Charaka Sutrasthana 13's Matra grading); Sama and Tikshna take the ladder in "
+        "the KB. Are these caps right?",
+        "4. **Pratimarsha Nasya is the default substitute.** Low Ojas, age over 70 and the Vamana "
+        "age bar all substitute to Nasya, and a Kapha patient at home is given Nasya. Across "
+        "3,000 sampled profiles it is the Karma of 43% of plans. Is it the right default, or "
+        "should a Pitta substitution go to Matra Basti?",
+        "5. **Allergies are flagged, never substituted.** A dairy-allergic patient is told the "
+        "ghee and milk-processed oils need a Vaidya's preparation; the engine does not choose "
+        "a Taila Snehapana for them. Should it?",
         "",
         "## Part 3 — Contraindication tokens  (`vaidya_contraindication_tokens.csv`)",
         f"{n_tokens} tokens appear in the medicines and home-remedy contraindication "

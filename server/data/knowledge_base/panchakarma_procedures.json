@@ -58,6 +58,20 @@
       "Avoid food, cold water and wind for 30 minutes afterwards. Repeat daily for every day of the Nasya phase."
     ]
   },
+  "nasya_pratimarsha": {
+    "name": "Pratimarsha Nasya — {oil_name}",
+    "benefits": "The daily home Nasya: two drops, safe at any age. Keeps the nasal passages oiled and clears Kapha from the head gently, without the Vega of a clinical Nasya.",
+    "timing": "Morning, after brushing — before sunrise if possible",
+    "duration_minutes": 5,
+    "steps": [
+      "Warm the bottle in your palm; the oil should be at body temperature.",
+      "Tilt the head back slightly and place 2 drops of {oil_name} in each nostril.",
+      "Sniff gently, then massage the bridge of the nose and the forehead.",
+      "Stay lying or reclined for 1–2 minutes and spit out anything that reaches the throat.",
+      "Stop and consult a Vaidya at any nosebleed, headache or a cold coming on."
+    ],
+    "_note": "Home Nasya used the clinical Navana template — 6–8 drops, self-administered, for five days. The KB's own `nasya.subtypes.pratimarsha_nasya` is the home form (setting: home_pratimarsha) and is what the home protocol and every Brimhana substitution name."
+  },
   "basti_matra": {
     "name": "Matra Basti — {oil_name}",
     "benefits": "Lubricates Pakwashaya and nourishes Vata-dominant Srotas. The safest home Basti — the oil is absorbed, so no expulsion is forced.",
@@ -65,13 +79,14 @@
     "duration_minutes": 10,
     "steps": [
       "Night, after a light dinner. Empty the bladder and bowels first.",
-      "Warm 50–80 ml of {oil_name} to body temperature (38°C) — warm to the wrist, never hot.",
+      "Warm {dose} of {oil_name} to body temperature (38°C) — warm to the wrist, never hot.",
       "Using an enema bulb (Netra), lie on the left side with the right knee drawn up. Administer slowly over 1–2 minutes.",
       "Remain lying down. Retain overnight if possible; the oil is absorbed and no Vega is needed.",
       "If the oil is expelled within an hour on three consecutive nights, or there is pain or bleeding, stop and consult a Vaidya.",
       "Repeat nightly for every day of the Basti phase."
     ],
-    "_step_5_note": "New. The engine's version described only the success case, for a procedure the patient self-administers."
+    "_step_5_note": "New. The engine's version described only the success case, for a procedure the patient self-administers.",
+    "_dose_note": "The volume is a placeholder so a child's course carries a child's dose; it was the literal 50–80 ml for every age."
   },
   "basti_niruha": {
     "name": "Niruha Basti (Decoction) — {kashayam_name}",
