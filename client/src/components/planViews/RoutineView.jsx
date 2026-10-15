@@ -44,7 +44,7 @@ function RitualCard({ ritual, idx }) {
   const Icon = RITUAL_ICON_MAP[ritual.icon] || Sparkles
   return (
     <m.div
-      className="din-ritual-card"
+      className={`din-ritual-card${ritual.withheld ? ' withheld' : ''}`}
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: idx * 0.05 }}
@@ -52,7 +52,10 @@ function RitualCard({ ritual, idx }) {
       <button className="din-ritual-header" onClick={() => setOpen(o => !o)}>
         <span className="din-ritual-icon"><Icon size={14} /></span>
         <span className="din-ritual-name">{ritual.name}</span>
-        {ritual.duration_min && <span className="din-ritual-dur">{ritual.duration_min} min</span>}
+        {/* A withheld ritual carries duration 0, which `0 &&` rendered as a bare "0". */}
+        {ritual.withheld
+          ? <span className="din-ritual-dur">Skipped</span>
+          : ritual.duration_min > 0 && <span className="din-ritual-dur">{ritual.duration_min} min</span>}
         {open ? <ChevronUp size={13} className="din-ritual-chevron" /> : <ChevronDown size={13} className="din-ritual-chevron" />}
       </button>
       {open && <p className="din-ritual-body">{ritual.instruction}</p>}
@@ -93,12 +96,12 @@ function TimelineSlot({ slot, idx }) {
           )}
         </div>
         {slot.description && <p className="din-slot-desc">{slot.description}</p>}
-        {slot.condition_note && (
-          <div className="din-slot-cond-note">
+        {(slot.condition_notes || (slot.condition_note ? [slot.condition_note] : [])).map((note, i) => (
+          <div key={i} className="din-slot-cond-note">
             <Zap size={11} />
-            <span>{slot.condition_note}</span>
+            <span>{note}</span>
           </div>
-        )}
+        ))}
         {slot.agni_note && (
           <div className="din-slot-agni-note">
             <Flame size={11} />
@@ -173,6 +176,19 @@ export function RoutineView({ plan }) {
   // sat at 2.15:1 in light mode with the dark-theme dosha hex).
   const dtext = doshaInk(dosha)
 
+  const limits = plan.exercise_limits
+  const adjustments = [
+    ...(din.pregnancy_notices || []).map(n => ({ why: n })),
+    ...(limits?.reasons?.length
+      ? [{ what: 'Exercise', why: `kept ${limits.cap === 'gentle' ? 'gentle' : 'to a pace you can talk through'}${limits.low_impact ? ' and low impact' : ''}, because of ${limits.reasons.join(' and ')}.` }]
+      : limits?.low_impact ? [{ what: 'Exercise', why: 'kept low impact — no running or jumping.' }] : []),
+    ...(din.withheld_practices || []).map(w => ({ what: w.practice, why: w.reason })),
+    ...(seasonal.withheld || []).map(w => ({ what: w.item, why: w.reason })),
+    ...(mealGuide.withheld || []).map(w => ({ what: w.item, why: w.reason })),
+  ]
+  const coaching = [plan.plan_description, plan.dosha_coaching, plan.agni_coaching, plan.sleep_coaching,
+    plan.seasonal_rationale, plan.integration_note, plan.motivational_note].filter(c => typeof c === 'string' && c.trim())
+
   return (
     <div className="din-root">
       {/* ── Key principle banner ── */}
@@ -190,6 +206,28 @@ export function RoutineView({ plan }) {
         <div className="din-wake-notice">
           <TriangleAlert size={12} />
           <span>{din.wake_notice}</span>
+        </div>
+      )}
+
+      {[din.sleep_notice, plan.fasting_notice].filter(Boolean).map((n, i) => (
+        <div key={i} className="din-wake-notice">
+          <TriangleAlert size={12} />
+          <span>{n}</span>
+        </div>
+      ))}
+
+      {/* What this routine changed or left out for this person, in one place. The
+          engine withheld herbs, rituals and foods and capped exercise, and the
+          screen said none of it — a missing practice and a forgotten one look
+          identical otherwise. */}
+      {adjustments.length > 0 && (
+        <div className="gym-condition-guidance din-adjustments">
+          <h4><ShieldCheck size={13} />Adjusted for you</h4>
+          <ul>
+            {adjustments.map((a, i) => (
+              <li key={i}>{a.what && <strong>{a.what}: </strong>}{a.why}</li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -212,6 +250,9 @@ export function RoutineView({ plan }) {
             <div className="din-anchor-val" style={{ textTransform: 'capitalize' }}>
               {(din.agni_type || din.agni_level || '').replace(/_/g, ' ')}
             </div>
+            {din.agni_source && din.agni_source !== 'default' && (
+              <div className="din-anchor-label">from {din.agni_source}</div>
+            )}
           </div>
         </div>
         {din.age_band && (
@@ -281,6 +322,9 @@ export function RoutineView({ plan }) {
               {currentDay.is_fasting_day && <span className="din-fast-badge">Fasting</span>}
             </div>
           )}
+          {plan.weekly_theme?.[currentDay.day_name] && (
+            <p className="din-day-theme">{plan.weekly_theme[currentDay.day_name]}</p>
+          )}
 
           {/* Timeline */}
           <div className="din-timeline">
@@ -317,6 +361,7 @@ export function RoutineView({ plan }) {
         <m.div className="din-section" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <h3 className="din-section-head"><UtensilsCrossed size={14} />Dosha Meal Guidance</h3>
           {mealGuide.general && <p className="din-section-body">{mealGuide.general}</p>}
+          {mealGuide.agni_note && <p className="din-section-body">{mealGuide.agni_note}</p>}
           <MealGuidancePanel guidance={mealGuide} />
         </m.div>
       )}
@@ -348,6 +393,22 @@ export function RoutineView({ plan }) {
                 ))}
               </div>
             </div>
+          )}
+        </m.div>
+      )}
+
+      {/* The AI coaching was generated, billed against the daily allowance, and
+          rendered nowhere. */}
+      {coaching.length > 0 && (
+        <m.div className="din-section" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <h3 className="din-section-head"><BookOpen size={14} />Why This Routine</h3>
+          {coaching.map((c, i) => <p key={i} className="din-section-body">{c}</p>)}
+          {plan.coaching_withheld?.length > 0 && (
+            <p className="din-coaching-withheld">
+              {plan.coaching_withheld.length === 1 ? 'One sentence' : `${plan.coaching_withheld.length} sentences`} of
+              the AI coaching {plan.coaching_withheld.length === 1 ? 'was' : 'were'} held back because {plan.coaching_withheld.length === 1 ? 'it' : 'they'} recommended
+              something this routine leaves out for you.
+            </p>
           )}
         </m.div>
       )}

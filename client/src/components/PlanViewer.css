@@ -6822,3 +6822,21 @@
   cursor: pointer;
 }
 .mv-show-all:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+/* Routine: what the plan changed or withheld for this person. Reuses the gym's
+   condition-guidance panel; only the spacing differs. */
+.din-adjustments { margin-bottom: 0.75rem; }
+.din-ritual-card.withheld .din-ritual-name { color: var(--ayura-muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+.din-day-theme {
+  margin: 0.4rem 0 0.6rem;
+  font-size: 0.78rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ayura-text-secondary);
+}
+.din-coaching-withheld {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--ayura-muted);
+}

@@ -1617,6 +1617,46 @@ def _doubling_note(med: dict, hit: dict) -> str:
             f"{med['name']}. Taking both doubles that dose. Ask a Vaidya which one to keep.")
 
 
+def screen_formulation(name: str, user_profile: dict) -> tuple[str | None, list[str]]:
+    """(reason it is withheld, cautions) for one formulation named outside this plan.
+
+    The daily routine names Ashwagandha, Brahmi, Triphala, Trikatu and Chyawanprash
+    as part of the day, and none of them passed a gate: Triphala every night in
+    pregnancy, Ashwagandha milk for a ten-year-old and for a thyrotoxic patient. The
+    medicines plan already holds each of these to five layers, so this runs the same
+    five on one entry rather than a second copy of the rules.
+    """
+    med = _KB_BY_NAME.get(name)
+    if med is None:
+        return "Not in the formulary, so it cannot be checked.", []
+    age = int(user_profile.get("age") or 30)
+    is_pregnant = bool(user_profile.get("pregnancy_or_nursing"))
+    profile_meds = user_profile.get("current_medications") or []
+    current_meds = [m.lower().replace(" ", "_") for m in profile_meds]
+    current_meds += [t for t in _resolve_medications(profile_meds)[0] if t not in current_meds]
+    medical_history = [c.lower() for c in (user_profile.get("medical_history") or [])]
+
+    if not _has_paediatric_dose(med, age):
+        return "No dose is established for this age; a Vaidya must set it.", []
+    states = build_derived_states(user_profile, ama_level=(user_profile.get("ama_indicator") or "low").lower(),
+                                  symptoms=list(user_profile.get("current_symptoms") or []))
+    ok, reason = _check_medicine_safety(med, is_pregnant, current_meds,
+                                        user_profile.get("allergies") or [], medical_history, states)
+    if not ok:
+        return reason, []
+    from services.panchakarma_engine import _patient_findings
+    findings = medical_history + _patient_findings(user_profile) + (["pregnancy"] if is_pregnant else [])
+    classes = _patient_classes(profile_meds, [])
+    bar, cautions = _herb_table_findings(med, findings)
+    if not bar:
+        bar, more = _interaction_findings(_herb_keys(med), classes)
+        cautions += more
+    if not bar:
+        bar, more = _formulation_rule_findings(med, medical_history, age, classes)
+        cautions += more
+    return bar, cautions
+
+
 def generate_medicines_plan(
     user_profile: dict,
     medicines_prefs: dict,

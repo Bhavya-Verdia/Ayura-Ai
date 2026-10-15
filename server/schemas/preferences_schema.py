@@ -530,7 +530,7 @@ class RoutinePreferences(BaseModel):
     wake_preference: str = Field(
         "natural",
         pattern="^(early|natural|late)$",
-        description="early = ~4:30–5:30 AM | natural = ~5:30–6:30 AM | late = ~6:30–7:30 AM",
+        description="early = 4:30–5:30 AM | natural = the hour the Dosha and season suggest | late = 6:30–7:30 AM",
     )
 
     # Occupation type — affects exercise slot intensity + sedentary movement breaks
@@ -541,10 +541,13 @@ class RoutinePreferences(BaseModel):
     )
 
     # Self-reported Agni — used instead of derived Agni for meal timing
+    # "assessed" (the default) uses the Agni the dosha assessment measured. The
+    # field used to default to "sama", so everyone who left it alone overrode a
+    # measured Manda or Tikshna Agni with "balanced".
     agni_type_self_report: str = Field(
-        "sama",
-        pattern="^(sama|manda|tikshna|vishama)$",
-        description="sama (balanced) | manda (slow/sluggish) | tikshna (sharp/intense) | vishama (irregular)",
+        "assessed",
+        pattern="^(assessed|sama|manda|tikshna|vishama)$",
+        description="assessed (use my assessment) | sama (balanced) | manda (slow/sluggish) | tikshna (sharp/intense) | vishama (irregular)",
     )
 
     # Integration flags — if True, engine fetches latest gym/yoga plan to annotate exercise slots

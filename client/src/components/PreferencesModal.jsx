@@ -350,7 +350,7 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
     } else if (typeId === 'routine') {
       payload.wake_preference = payload.wake_preference || 'natural';
       payload.occupation_type = payload.occupation_type || 'moderately_active';
-      payload.agni_type_self_report = payload.agni_type_self_report || 'sama';
+      payload.agni_type_self_report = payload.agni_type_self_report || 'assessed';
       payload.intermittent_fasting = payload.intermittent_fasting || 'no';
       payload.fasting_days = payload.fasting_days
         ? payload.fasting_days.split(',').map(s => s.trim()).filter(Boolean)
@@ -692,7 +692,7 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                 <label>Wake Preference</label>
                 <select name="wake_preference" value={form.wake_preference || 'natural'} onChange={handleChange} required>
                   <option value="early">Early — 4:30–5:30 AM</option>
-                  <option value="natural">Natural — 5:30–6:30 AM</option>
+                  <option value="natural">Natural — the hour your Dosha and season suggest</option>
                   <option value="late">Late — 6:30–7:30 AM</option>
                 </select>
               </div>
@@ -711,7 +711,8 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                   Agni (Digestive Fire) Type
                   <span className="pref-hint-sub"> — how would you describe your digestion?</span>
                 </label>
-                <select name="agni_type_self_report" value={form.agni_type_self_report || 'sama'} onChange={handleChange} required>
+                <select name="agni_type_self_report" value={form.agni_type_self_report || 'assessed'} onChange={handleChange} required>
+                  <option value="assessed">Use my assessment</option>
                   <option value="sama">Sama — Balanced, regular digestion</option>
                   <option value="manda">Manda — Slow, heavy, bloated after meals</option>
                   <option value="tikshna">Tikshna — Sharp, hungry quickly, acidity</option>

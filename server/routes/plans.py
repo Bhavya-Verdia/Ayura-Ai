@@ -418,6 +418,7 @@ async def generate_routine_plan(
     gym_plan_data  = None
     yoga_plan_data = None
 
+    linked: dict = {}
     if integrate_gym:
         gym_hist = await db.plan_history.find_one(
             {"user_id": user.id, "plan_type": "gym"},
@@ -425,6 +426,7 @@ async def generate_routine_plan(
         )
         if gym_hist:
             gym_plan_data = gym_hist.get("plan_data", {}).get("gym_plan") or gym_hist.get("plan_data", {})
+            linked["gym_plan"] = str(gym_hist.get("_id"))
 
     if integrate_yoga:
         yoga_hist = await db.plan_history.find_one(
@@ -433,6 +435,26 @@ async def generate_routine_plan(
         )
         if yoga_hist:
             yoga_plan_data = yoga_hist.get("plan_data", {}).get("yoga_plan") or yoga_hist.get("plan_data", {})
+            linked["yoga_plan"] = str(yoga_hist.get("_id"))
+            # The yoga form's time of day places the session in the routine.
+            linked["yoga_time_of_day"] = ((prefs_doc or {}).get("yoga") or {}).get("time_of_day_preference")
+
+    # Injuries are collected on the gym and yoga forms; the routine's exercise
+    # limits read them too.
+    from engine.movement_risk import declared_injuries
+    injuries, typed_injury = declared_injuries(prefs_doc)
+    injuries = injuries + ([typed_injury] if typed_injury else [])
+    prefs_to_pass["routine"] = {**routine_prefs, **{k: v for k, v in linked.items() if k == "yoga_time_of_day"},
+                                "injuries": injuries}
+    # Which gym and yoga plan the routine was built from is part of what it is.
+    # Without it a new gym plan left the routine showing the old one's days.
+    prefs_to_pass["linked_plans"] = linked
+
+    # The season the plan is built for. This was set AFTER the cache lookup, so the
+    # key held the profile's stored season (usually none) and a routine written in
+    # Grishma was served unchanged through the monsoon.
+    from engine.seasonal import get_current_season
+    user_profile["current_season"] = get_current_season().name.lower()
 
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "routine", user_profile, prefs_to_pass, force_regenerate)
@@ -443,10 +465,6 @@ async def generate_routine_plan(
     # Cache miss — this run hits the LLM, so it bills the daily allowance.
     await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "routine"):
-        from engine.seasonal import get_current_season
-        season_info = get_current_season()
-        user_profile["current_season"] = season_info.name.lower()
-
         raw_plan = engine_generate(
             user_profile,
             prefs_to_pass,
