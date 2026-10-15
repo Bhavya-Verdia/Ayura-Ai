@@ -183,6 +183,25 @@ def _alt_blocked_by_condition(text: str, medical_history) -> bool:
     return False
 
 
+def _remedy_herbs_of(ingredients) -> set[str]:
+    out: set[str] = set()
+    for i in ingredients or []:
+        item = i.get("item", "") if isinstance(i, dict) else str(i)
+        out |= herbs_in(item.split(" (")[0])
+    return out
+
+
+def _doubles(remedy_herbs: set[str], already_on: list[dict]) -> dict | None:
+    """The formulation this remedy would double, by the medicines plan's own rule:
+    one of the two is a single-herb preparation of a herb the other gives.
+    Shared spices between compounds (ginger in a tea and in Trikatu) are not."""
+    for a in already_on:
+        h = a["herbs"]
+        if (len(remedy_herbs) == 1 and remedy_herbs <= h) or (len(h) == 1 and h <= remedy_herbs):
+            return {"name": a["name"], "herb": ", ".join(sorted(remedy_herbs & h))}
+    return None
+
+
 def _escalation(remedy_kb: dict | None) -> str:
     """The KB's authored "consult a doctor if…" line for a symptom.
 
@@ -306,6 +325,19 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
     medical_history = user_profile.get("medical_history") or []
     allergies = user_profile.get("allergies") or []
     allergen_entries = _allergen_entries(allergies)
+    # What the patient already takes by mouth from Ayurveda: the formulations of
+    # their current medicines plan, and anything they told us they take. The two
+    # plans were built blind to each other, so a patient using both tabs could be
+    # given Giloy Satva as a medicine and a Guduchi decoction as a remedy — the
+    # same herb twice under two names.
+    already_on: list[dict] = [
+        {"name": f.get("name", ""), "herbs": _remedy_herbs_of(f.get("ingredients") or [f.get("name", "")])}
+        for f in (symptom_input.get("current_ayurvedic_formulations") or [])
+    ] + [
+        {"name": str(t), "herbs": herbs_in(str(t))}
+        for t in (symptom_input.get("current_ayurvedic_medicines") or [])
+    ]
+    already_on = [a for a in already_on if a["herbs"]]
     remedy_classes = _patient_classes(user_profile.get("current_medications") or [],
                                       symptom_input.get("current_allopathic_medications") or [])
     dominant_dosha = user_profile.get("dominant_dosha", "vata").lower()
@@ -520,26 +552,54 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
 
         selected_remedy = None
         dosha_used = dominant_dosha
+        doubled_by: dict | None = None
+
+        def is_safe_and_new(cand):
+            """Safe, and not a herb the patient already takes as a medicine."""
+            nonlocal doubled_by
+            ok, why = is_safe(cand)
+            if ok and cand and already_on:
+                hit = _doubles(_remedy_herbs_of(cand.get("ingredients")), already_on)
+                if hit:
+                    doubled_by = doubled_by or hit
+                    return False, None
+            return ok, why
+
         candidate = remedy_kb.get("remedies", {}).get(dominant_dosha)
 
         interaction_warning = None
 
-        safe, reason = is_safe(candidate)
+        safe, reason = is_safe_and_new(candidate)
         why_not = reason if isinstance(reason, str) else None
         if not safe:
             if isinstance(reason, dict) and reason.get("interaction_found"):
                 interaction_warning = reason
             dosha_used = secondary_dosha
             candidate = remedy_kb.get("remedies", {}).get(secondary_dosha) if secondary_dosha else None
-            safe, reason = is_safe(candidate)
+            safe, reason = is_safe_and_new(candidate)
             why_not = (reason if isinstance(reason, str) else None) or why_not
             if not safe:
                 if isinstance(reason, dict) and reason.get("interaction_found"):
                     interaction_warning = reason
                 candidate = remedy_kb.get("universal_remedy")
                 dosha_used = "universal"
-                safe, reason = is_safe(candidate)
+                safe, reason = is_safe_and_new(candidate)
                 why_not = (reason if isinstance(reason, str) else None) or why_not
+                if not safe and doubled_by:
+                    # Every safe remedy repeats a herb the patient already takes as a
+                    # medicine. That is covered, not a referral.
+                    filtered_results.append({
+                        "symptom_id": sym_id,
+                        "symptom_display": remedy_kb.get("symptom_display", sym_id),
+                        "severity": sym_sev,
+                        "duration": sym_dur,
+                        "action": "covered_by_medicines",
+                        "message": (f"Your Ayurvedic medicines already give {doubled_by['herb'].title()} "
+                                    f"({doubled_by['name']}), which is what the home remedy for this would "
+                                    "use. Taking both doubles the dose — keep to the medicine."),
+                        "consult_doctor_if": _escalation(remedy_kb),
+                    })
+                    continue
                 if not safe:
                     msg = {"symptom_id": sym_id, "action": "consult_doctor",
                            "message": "No safe remedy available due to interactions/allergies."}
@@ -571,7 +631,9 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
             "dosha_cause": remedy_kb.get("dosha_cause", {}).get(dosha_used, ""),
             # A copy: the KB entry is shared by every request in the process.
             "remedy": dict(selected_remedy),
-            "caution_notes": list(dict.fromkeys(candidate_notes)),
+            "caution_notes": list(dict.fromkeys(candidate_notes + ([
+                f"The usual remedy repeats {doubled_by['herb'].title()}, which your medicines "
+                f"({doubled_by['name']}) already give — this one does not."] if doubled_by else []))),
             # The entry's own `drug_interactions` (33 of 60 carry one) was read by
             # nothing. Stated, not used to withhold: it is authored per complaint,
             # not per remedy, so it names a herb this patient may not be given.
@@ -790,10 +852,13 @@ def build_remedy_plan(filtered_remedies: list, user_profile: dict, symptom_input
 
     symptoms_addressed = []
     doctor_referrals = []
+    covered_by_medicines = []
 
     for res in filtered_remedies:
         if res.get("action") in ["see_doctor", "consult_doctor"]:
             doctor_referrals.append(res)
+        elif res.get("action") == "covered_by_medicines":
+            covered_by_medicines.append(res)
         else:
             symptoms_addressed.append(res)
 
@@ -825,6 +890,7 @@ def build_remedy_plan(filtered_remedies: list, user_profile: dict, symptom_input
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "user_dosha": dominant_dosha,
         "symptoms_addressed": symptoms_addressed,
+        "covered_by_medicines": covered_by_medicines,
         "doctor_referrals": doctor_referrals,
         "general_guidelines": guidelines,
         "guideline_notices": guideline_notices,
@@ -1379,14 +1445,16 @@ def _repeats_a_herb(a: dict, b: dict) -> bool:
     return (len(ha) == 1 and ha <= hb) or (len(hb) == 1 and hb <= ha)
 
 
-_MINERAL_MARKERS = ("bhasma", "pishti", "parada", "mercury", "gandhaka", "hingula",
+_MINERAL_MARKERS = ("bhasma", "pishti", "parada", "mercury", "gandhaka", "hingula", "kasisa", "kaseesa",
                     "manahshila", "haratala", "tamra", "abhraka", "loha", "mandura")
 
 
 def _is_mineral(med: dict) -> bool:
     """A Rasa Aushadhi or mineral preparation, by type or by what is in it."""
     t = (med.get("type") or "").lower()
-    if any(k in t for k in ("bhasma", "pishti")) or t.startswith("rasa"):
+    # "rasa (" / "rasa aushadhi", not any type beginning "rasa": "rasayana" does,
+    # and herbal Rasayanas were withheld from children and the old as metals.
+    if any(k in t for k in ("bhasma", "pishti")) or re.match(r"rasa(\s|\(|$)", t):
         return True
     text = " ".join(med.get("ingredients") or []).lower()
     return any(k in text for k in _MINERAL_MARKERS)
@@ -1458,6 +1526,11 @@ def _formulation_rule_findings(med: dict, medical_history, age: int,
     if any(re.search(rf"\b{re.escape(m)}\b", text) for m in hm.get("markers", [])) \
             or name in hm.get("classical_contains", []):
         return f"Prescribed in person only: {hm.get('mechanism', '')}", []
+    vd = rules.get("visha_dravya") or {}
+    if med.get("application_type") != "external" and (
+            any(re.search(rf"\b{re.escape(m)}\b", text) for m in vd.get("markers", []))
+            or name in vd.get("classical_contains", [])):
+        return f"Prescribed in person only: {vd.get('mechanism', '')}", []
     cautions: list[str] = []
     fermented = _formulation_class(med) == "fermented"
     if fermented and age < int(rules.get("fermented_minor_age") or 18):

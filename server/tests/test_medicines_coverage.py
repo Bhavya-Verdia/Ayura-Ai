@@ -541,3 +541,93 @@ def test_the_gate_withholds_a_pregnancy_barred_herb_from_a_remedy_rationale():
         {"remedy_rationale": {"acid_reflux": "Fennel cools Pitta. Aloe vera juice soothes the lining."}},
         plan, prof, ("prevention_tips",))
     assert out["remedy_rationale"]["acid_reflux"] == "Fennel cools Pitta."
+
+
+# ── The full formulary audit ──────────────────────────────────────────────────
+
+def test_a_rasayana_is_not_read_as_a_rasa_aushadhi():
+    by_name = {m["name"]: m for m in _MEDICINES_KB}
+    assert not _is_mineral(by_name["Narasimha Rasayana"])
+    assert _is_mineral(by_name["Shwas Kuthar Rasa"])
+
+
+@pytest.mark.parametrize("name", ["Kanakasava", "Agnitundi Vati", "Dhanwanthari Gulika"])
+def test_a_visha_dravya_taken_by_mouth_is_never_self_served(name):
+    med = next(m for m in _MEDICINES_KB if m["name"] == name)
+    bar, _ = R._formulation_rule_findings(med, [], 40, set())
+    assert bar and bar.startswith("Prescribed in person")
+
+
+def test_external_aconite_oil_is_still_served():
+    med = next(m for m in _MEDICINES_KB if m["name"] == "Vishagarbha Taila")
+    assert R._formulation_rule_findings(med, [], 40, set())[0] is None
+
+
+def test_no_fermented_preparation_is_marked_pregnancy_safe():
+    for m in _MEDICINES_KB:
+        if R._formulation_class(m) == "fermented":
+            assert m.get("pregnancy_safe") is not True, m["name"]
+
+
+def test_no_indication_contradicts_a_hard_herb_bar():
+    from services.panchakarma_engine import pk_clinical
+    herbs = pk_clinical["herbs"]
+    for m in _MEDICINES_KB:
+        for c in m.get("conditions", []):
+            for k in R._active_herbs(m):
+                assert c not in ((herbs.get(k) or {}).get("hard") or {}), (m["name"], c, k)
+
+
+def test_iron_is_withheld_in_iron_overload():
+    plan = generate_medicines_plan(_p(medical_history=["anemia", "hemochromatosis"]), {}, [])
+    assert "Loha Bhasma" not in _names(plan) and "Lohasava" not in _names(plan)
+
+
+def test_a_woman_can_receive_the_parkinsons_herb():
+    med = next(m for m in _MEDICINES_KB if m["name"] == "Kapikachu Churna")
+    assert med["gender_specific"] is None
+
+
+# ── The two plans know about each other ───────────────────────────────────────
+
+_ON_GILOY_AND_BRAHMI = [
+    {"name": "Giloy Satva", "ingredients": ["Guduchi Satva (Tinospora cordifolia)"]},
+    {"name": "Brahmi Churna", "ingredients": ["Brahmi (Bacopa monnieri) herb"]},
+]
+
+
+def test_a_remedy_never_repeats_a_herb_the_medicines_plan_gives():
+    prof = _p(dominant_dosha="pitta", medical_history=["osteoarthritis"])
+    si = {"symptoms": ["joint_pain", "insomnia", "low_immunity"],
+          "current_ayurvedic_formulations": _ON_GILOY_AND_BRAHMI}
+    plan = build_remedy_plan(filter_remedies(prof, si), prof, si)
+    served = json.dumps([x.get("remedy") for x in plan["symptoms_addressed"]]).lower()
+    assert "guduchi" not in served and "brahmi" not in served
+    assert {x["symptom_id"] for x in plan["covered_by_medicines"]} == {"joint_pain", "insomnia"}
+    assert not plan["doctor_referrals"]                     # covered is not a referral
+
+
+def test_a_typed_ayurvedic_medicine_counts_too():
+    out = filter_remedies(_p(dominant_dosha="pitta"),
+                          {"symptoms": ["joint_pain"], "current_ayurvedic_medicines": ["guduchi tablets"]})
+    assert out[0]["action"] == "covered_by_medicines"
+
+
+def test_a_shared_spice_between_compounds_is_not_doubling():
+    """Ginger in a tea and Shunthi inside Trikatu are ordinary compounding."""
+    from services.remedy_engine import _doubles
+    assert _doubles({"shunthi", "tulsi"}, [{"name": "Trikatu Churna", "herbs": {"shunthi", "maricha", "pippali"}}]) is None
+
+
+def test_without_a_medicines_plan_nothing_changes():
+    prof = _p(dominant_dosha="pitta")
+    si = {"symptoms": ["joint_pain", "insomnia"]}
+    assert all(x.get("action") is None for x in filter_remedies(prof, si))
+
+
+def test_the_route_reads_the_latest_medicines_plan_from_either_envelope():
+    from routes.plans import _internal_formulations
+    meds = generate_medicines_plan(_p(medical_history=["osteoarthritis"]), {}, [])
+    flat = _internal_formulations(meds)
+    wrapped = _internal_formulations({"medicines": meds})
+    assert flat == wrapped and flat and all(f["ingredients"] for f in flat)

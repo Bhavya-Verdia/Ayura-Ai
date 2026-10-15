@@ -5,7 +5,7 @@ Orchestration helpers (engine generation, locking, ARQ job runner, enqueue)
 live in routes/plan_runner.py; this module holds the FastAPI route handlers.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import uuid
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Body
@@ -684,6 +684,27 @@ async def list_remedy_symptoms(user: UserDocument = Depends(get_current_user)):
     return {"items": items}
 
 
+def _internal_formulations(medicines_plan: dict | None) -> list[dict]:
+    """The formulations a medicines plan has the patient take by mouth."""
+    mp = (medicines_plan or {})
+    mp = mp.get("medicines") if isinstance(mp.get("medicines"), dict) else mp
+    return [{"name": m.get("name"), "ingredients": m.get("ingredients") or []}
+            for k in ("primary_formulations", "supporting_formulations")
+            for m in (mp.get(k) or []) if m.get("application_type") != "external"]
+
+
+async def _current_medicines_formulations(db, user_id: str, max_age_days: int = 180) -> list[dict]:
+    """The latest medicines plan's formulations, from the medicines tab or a
+    holistic plan, if it is recent enough to still be followed."""
+    since = datetime.now(timezone.utc) - timedelta(days=max_age_days)
+    doc = await db.plan_history.find_one(
+        {"user_id": user_id, "generated_at": {"$gte": since},
+         "$or": [{"plan_type": "medicines"}, {"plan_data.medicines": {"$exists": True}}]},
+        sort=[("generated_at", -1)],
+    )
+    return _internal_formulations((doc or {}).get("plan_data")) if doc else []
+
+
 @router.post("/remedies")
 async def generate_remedies_plan(
     req: dict = Body(default={}),
@@ -692,6 +713,7 @@ async def generate_remedies_plan(
 ):
     from services.remedy_engine import filter_remedies, build_remedy_plan
     from services.remedy_enricher import enrich_remedies_plan
+    from engine.herb_overlap import declared_ayurvedic
 
     # Pregnancy gate — contraindicated; matches the holistic/worker paths
     assert_not_pregnancy_blocked(user, "remedies")
@@ -716,6 +738,10 @@ async def generate_remedies_plan(
         "duration": req.get("duration") or stored.get("symptom_duration") or {},
         "preference_taste_smell": req.get("preference_taste_smell")
                                   or stored.get("preference_taste_smell") or [],
+        # So a remedy never repeats a herb the patient already takes as a medicine.
+        # (Imported here as the medicines endpoint does.)
+        "current_ayurvedic_formulations": await _current_medicines_formulations(db, user.id),
+        "current_ayurvedic_medicines": declared_ayurvedic(prefs_doc),
     }
 
     async with _plan_guard(user.id, "remedies"):
