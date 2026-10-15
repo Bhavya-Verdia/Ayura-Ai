@@ -43,6 +43,14 @@ def gate_remedy_enrichment(enrichment: dict, raw_plan: dict, user_profile: dict,
             out[field] = probe["pathya_apathya"]["pathya"]
 
     names = [n for n in _withheld_names(raw_plan) if n]
+    if pregnant:
+        # Herbs the herb table bars in pregnancy, by their common names too.
+        from services.panchakarma_engine import pk_clinical
+        for key, entry in (pk_clinical.get("herbs") or {}).items():
+            if isinstance(entry, dict) and "pregnancy" in (entry.get("hard") or {}):
+                names += [key.replace("_", " "), entry.get("display", "").split(" (")[0]]
+        names += ["aloe vera", "aloe", "kumari", "nutmeg", "hing", "asafoetida", "papaya"]
+        names = [n for n in dict.fromkeys(names) if n and len(n) > 2]
     name_re = re.compile(r"\b(" + "|".join(re.escape(n) for n in names) + r")\b", re.I) if names else None
     allergens = _allergen_entries(allergies)
 
@@ -61,7 +69,8 @@ def gate_remedy_enrichment(enrichment: dict, raw_plan: dict, user_profile: dict,
             distanced = bool(_DISTANCING.search(sent))
             reason = None
             if name_re and not distanced and (m := name_re.search(sent)):
-                reason = f"names {m.group(1)}, which this plan withheld"
+                reason = f"names {m.group(1)}, which this plan withheld" + (
+                    " or which is not used in pregnancy" if pregnant else "")
             if not reason and not distanced:
                 hit = next((e for e in allergens if _contains_allergen(sent, e)), None)
                 if hit:
@@ -107,7 +116,14 @@ async def enrich_remedies_plan(raw_plan: dict, user_profile: dict, remedies_pref
                 "id": sym.get("symptom_id"),
                 "name": sym.get("symptom_display"),
                 "severity": sym.get("severity"),
-                "remedy_name": sym.get("remedy", {}).get("name")
+                "remedy_name": sym.get("remedy", {}).get("name"),
+                # The remedy itself, not only its name. Given "Pregnancy-safe option for
+                # Acid Reflux", the model explained the usual remedy from retrieval —
+                # aloe vera, which is barred in pregnancy — above a card that said
+                # fennel tea.
+                "ingredients": [i.get("item") for i in (sym.get("remedy") or {}).get("ingredients") or []],
+                "preparation": (sym.get("remedy") or {}).get("preparation"),
+                "pregnancy_alternative": bool(sym.get("pregnancy_alternative")),
             })
 
         # Fetch grounding context for each symptom from the remedy knowledge base
@@ -137,7 +153,7 @@ Provide an enriched context in EXACTLY this JSON format:
 {{
   "personalized_intro": "2-3 sentences addressing user's specific symptom combination and dosha",
   "remedy_rationale": {{
-    "symptom_id": "Why this specific remedy works for this dosha - Ayurvedic explanation"
+    "symptom_id": "Why this specific remedy works for this dosha - Ayurvedic explanation. Explain ONLY the ingredients and preparation given for it; never describe a different remedy. Where pregnancy_alternative is true, explain the gentle option given and say nothing about the usual remedy."
   }},
   "synergy_note": "If multiple symptoms, explain how the remedies work together. If single symptom, explain how the remedy balances the entire body.",
   "recovery_timeline": "What to expect day by day",

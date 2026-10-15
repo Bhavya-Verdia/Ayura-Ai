@@ -223,9 +223,15 @@ function MedCard({ med, rationale }) {
               </div>
             )}
             {med.anupana_note && <div className="mv-anupana" style={{ color: '#c2410c' }}><span>{med.anupana_note}</span></div>}
-            {med.dosage_pediatric && (
+            {/* Why the dose differs from the usual range — a child's dose, the bottom
+                of the range for a teenager or an older adult. The paediatric figure
+                used to be printed on every card, an 82-year-old's included. */}
+            {med.dosage_basis && (
               <div className="mv-anupana" style={{ color: '#a78bfa' }}>
-                <span>Paediatric dose: {med.dosage_pediatric}</span>
+                <span>
+                  {med.dosage_basis === 'paediatric' ? "Child's dose" : `Dose set for: ${med.dosage_basis}`}
+                  {med.dosage_adult ? ` — the usual adult dose is ${med.dosage_adult}` : ''}
+                </span>
               </div>
             )}
           </div>
@@ -281,7 +287,7 @@ function MedCard({ med, rationale }) {
           ) : (
             <div className="mv-section">
               <h4 className="mv-section-label mv-no-interactions">
-                <ShieldCheck size={11} /> No known drug–herb interactions documented
+                <ShieldCheck size={11} /> No interaction with your medicines found in our tables — still show it to your doctor
               </h4>
             </div>
           )}
@@ -312,6 +318,7 @@ export function MedicineView({ plan }) {
   const outcomes   = plan.expected_outcomes || {}
   const lifestyle  = plan.lifestyle_guidance || {}
   const blocked    = plan.blocked_medicines || []
+  const [showAllBlocked, setShowAllBlocked] = useState(false)
   const notDoubled = plan.not_doubled || []
   const rationale  = plan.formulation_rationale || {}
   const pathya     = plan.pathya || []
@@ -360,7 +367,11 @@ export function MedicineView({ plan }) {
         <div className="mv-coverage-note">
           <TriangleAlert size={14} />
           <div>
-            <strong>Limited classical coverage for your condition</strong>
+            <strong>
+              {(plan.uncovered_conditions || []).length > 0
+                ? 'Limited classical coverage for your condition'
+                : 'Some of your conditions need a Vaidya to prescribe'}
+            </strong>
             <p>{plan.coverage_note}</p>
           </div>
         </div>
@@ -604,12 +615,20 @@ export function MedicineView({ plan }) {
       {blocked.length > 0 && (
         <div className="mv-blocked-section">
           <h3 className="rv-info-label"><TriangleAlert size={14} style={{ color: '#ef4444' }} />Medicines Excluded for Your Safety</h3>
-          {blocked.map((b, i) => (
+          {(showAllBlocked ? blocked : blocked.filter(b => b.for_your_conditions).slice(0, 8)).map((b, i) => (
             <div key={i} className="mv-blocked-item">
               <span className="mv-blocked-name">{b.name}</span>
               <span className="mv-blocked-reason">{b.reason}</span>
             </div>
           ))}
+          {/* Only the ones that would have treated your conditions, by default. */}
+          {blocked.length > blocked.filter(b => b.for_your_conditions).slice(0, 8).length && (
+            <button type="button" className="mv-show-all" onClick={() => setShowAllBlocked(v => !v)}>
+              {showAllBlocked
+                ? 'Show only those for your conditions'
+                : `Show all ${blocked.length} excluded formulations`}
+            </button>
+          )}
         </div>
       )}
 

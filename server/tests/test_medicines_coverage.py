@@ -20,6 +20,7 @@ from services.remedy_engine import (
     _MEDICINES_KB,
     _is_mineral,
     _med_covers_condition,
+    build_remedy_plan,
     filter_remedies,
     generate_medicines_plan,
 )
@@ -507,3 +508,36 @@ def test_brahmi_is_withheld_in_hyperthyroidism_not_hypothyroidism():
     assert "Brahmi Churna" not in _names(hyper)
     brahmi = next(m for m in _MEDICINES_KB if m["name"] == "Brahmi Churna")
     assert "hypothyroidism" not in brahmi["contraindications"]
+
+
+# ── Found by looking at the rendered screens ──────────────────────────────────
+
+def test_excluded_formulations_for_the_patients_own_conditions_come_first():
+    plan = generate_medicines_plan(_p(age=82, gender="male",
+                                      medical_history=["osteoarthritis", "heart_disease", "insomnia"],
+                                      current_medications=["Ecosprin 75", "Lanoxin", "zolpidem"]), {}, [])
+    flags = [b["for_your_conditions"] for b in plan["blocked_medicines"]]
+    assert any(flags) and flags == sorted(flags, reverse=True)
+    assert not any("_" in b["reason"] for b in plan["blocked_medicines"][:10])
+
+
+def test_a_heart_patient_is_not_told_to_use_generous_ghee():
+    plan = generate_medicines_plan(_p(medical_history=["heart_disease"]), {}, [])
+    assert "generous ghee" not in plan["lifestyle_guidance"]["dietary_note"]
+
+
+def test_the_remedy_enricher_is_given_the_remedy_not_only_its_name():
+    import inspect
+    from services import remedy_enricher
+    src = inspect.getsource(remedy_enricher.enrich_remedies_plan)
+    assert '"preparation"' in src and '"ingredients"' in src
+
+
+def test_the_gate_withholds_a_pregnancy_barred_herb_from_a_remedy_rationale():
+    prof = _p(dominant_dosha="pitta", pregnancy_or_nursing=True, medical_history=["acid_reflux"])
+    si = {"symptoms": ["acid_reflux"]}
+    plan = build_remedy_plan(filter_remedies(prof, si), prof, si)
+    out, withheld = gate_remedy_enrichment(
+        {"remedy_rationale": {"acid_reflux": "Fennel cools Pitta. Aloe vera juice soothes the lining."}},
+        plan, prof, ("prevention_tips",))
+    assert out["remedy_rationale"]["acid_reflux"] == "Fennel cools Pitta."

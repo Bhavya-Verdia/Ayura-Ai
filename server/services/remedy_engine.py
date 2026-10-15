@@ -89,6 +89,7 @@ try:
         _MEDICINES_KB: list[dict] = json.load(_f)
 except Exception:
     _MEDICINES_KB = []
+_KB_BY_NAME: dict[str, dict] = {m["name"]: m for m in _MEDICINES_KB}
 
 # ── Home-remedies fallback (loaded once at module import) ────────────────────
 # Remedies are normally served from Mongo (kb_ayurvedic_remedies, seeded by
@@ -1301,7 +1302,8 @@ _LIFESTYLE_RESTRICTIONS: tuple[tuple[str, tuple[str, ...], str], ...] = (
      "Pomegranate daily; coconut water only if your kidney doctor allows potassium."),
     ("Use generous ghee.", ("allergy:dairy",), "Cook with oil rather than ghee."),
     ("Use generous ghee.",
-     ("gallstones", "high_cholesterol", "obesity", "fatty_liver", "metabolic_syndrome"),
+     ("gallstones", "high_cholesterol", "obesity", "fatty_liver", "metabolic_syndrome",
+      "heart_disease", "atrial_fibrillation"),
      "Use a little oil or ghee in cooking, as your conditions allow."),
     ("Abhyanga (oil massage) daily with sesame oil.",
      ("allergy:sesame",),
@@ -1973,7 +1975,14 @@ def generate_medicines_plan(
         "dosage_schedule":       dosage_schedule,
         "treatment_protocol":    treatment_protocol,
         "lifestyle_guidance":    lifestyle_guidance,
-        "blocked_medicines":     blocked,
+        # Those that would have treated a recorded condition first: an 82-year-old on
+        # five medicines was shown a hundred excluded formulations, most of them for
+        # conditions they do not have.
+        "blocked_medicines":     sorted(
+            ({**b, "reason": b["reason"].replace("_", " "), "for_your_conditions": any(
+                _med_covers_condition(_KB_BY_NAME[b["name"]], c) for c in normalised_conditions)
+              if b["name"] in _KB_BY_NAME else False} for b in blocked),
+            key=lambda b: not b["for_your_conditions"]),
         "medication_review":     medication_review,
         "not_doubled":           not_doubled,
         "enriched":              False,
