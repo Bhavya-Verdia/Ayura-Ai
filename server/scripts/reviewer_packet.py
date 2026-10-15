@@ -383,11 +383,18 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0, n_cmap=0, n_hdi=0):
         "itself needs checking.",
         "",
         "## Part 3d — Formulary data corrections  (`vaidya_medicine_data_corrections.csv`)",
-        "An audit of the 30 most-served formulations against classical composition found data "
-        "errors, corrected and recorded here with the previous value: Pathyadi Kadha's "
-        "ingredients (it listed fennel and Trikatu), Avipattikar (half sugar with no diabetes "
-        "bar, and listed as indicated for IBD while containing a purgative), Brahmi's thyroid "
-        "contraindication (pointed the wrong way). Fourteen formulations carry "
+        "All 157 formulations were read against classical composition by a non-clinician, and "
+        "every change is recorded here with its previous value. Corrected: composition "
+        "(Pathyadi Kadha, Navaka Guggulu, Rajapravartini Vati — listed with opium — and "
+        "Sukumar Kashayam), indications that contradicted the herb table (Avipattikar, "
+        "Vidangadi and Hingwashtak for IBD; Shilajit for kidney disease; Saraswatarishta for "
+        "epilepsy), thyroid contraindications that pointed the wrong way (Brahmi), missing "
+        "bars (Loha Bhasma in haemochromatosis), a male-only Parkinson's herb (Kapikachu), and "
+        "five alcohol-based Asavas marked pregnancy-safe. **Three self-served formulations "
+        "contain Visha dravya — Kanakasava (datura), Agnitundi Vati (classically mercury, "
+        "aconite and nux vomica, missing from its list) and Dhanwanthari Gulika (aconite) — and "
+        "are now prescribed in person only.** Rows with field `(entry)` are questions, not "
+        "changes. Fourteen formulations carry "
         "`pregnancy_safe: \"consult\"` — the engine read that as safe; it now withholds them in "
         "pregnancy until you rule. **53 compound formulations cite the Ayurvedic Pharmacopoeia "
         "(API), which covers single drugs; their references should point to the AFI** — "

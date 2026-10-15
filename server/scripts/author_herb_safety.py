@@ -271,12 +271,15 @@ HERBS = {
     },
     "kapikacchu": {
         "display": "Kapikacchu (Mucuna)",
+        # Parkinson's is Kapikacchu's classical indication (Kampavata); the danger is
+        # the levodopa a patient already takes, which is a medicine interaction
+        # (herb_drug_interactions), not a bar on the disease.
         "hard": {
-            "parkinson": "Contains L-DOPA. Taken alongside prescribed levodopa it stacks the dose unpredictably — a Vaidya and the treating neurologist must set this together.",
             "psychosis": "Dopaminergic — can precipitate or worsen psychosis.",
         },
         "soft": {
             "depression": "Dopaminergic; may interact with antidepressants — introduce alone.",
+            "parkinson": "Contains L-DOPA. If you take levodopa it stacks the dose unpredictably — the treating neurologist must agree before you start.",
         },
         "medication_classes": ["antidepressants"],
     },

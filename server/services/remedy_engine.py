@@ -1379,14 +1379,16 @@ def _repeats_a_herb(a: dict, b: dict) -> bool:
     return (len(ha) == 1 and ha <= hb) or (len(hb) == 1 and hb <= ha)
 
 
-_MINERAL_MARKERS = ("bhasma", "pishti", "parada", "mercury", "gandhaka", "hingula",
+_MINERAL_MARKERS = ("bhasma", "pishti", "parada", "mercury", "gandhaka", "hingula", "kasisa", "kaseesa",
                     "manahshila", "haratala", "tamra", "abhraka", "loha", "mandura")
 
 
 def _is_mineral(med: dict) -> bool:
     """A Rasa Aushadhi or mineral preparation, by type or by what is in it."""
     t = (med.get("type") or "").lower()
-    if any(k in t for k in ("bhasma", "pishti")) or t.startswith("rasa"):
+    # "rasa (" / "rasa aushadhi", not any type beginning "rasa": "rasayana" does,
+    # and herbal Rasayanas were withheld from children and the old as metals.
+    if any(k in t for k in ("bhasma", "pishti")) or re.match(r"rasa(\s|\(|$)", t):
         return True
     text = " ".join(med.get("ingredients") or []).lower()
     return any(k in text for k in _MINERAL_MARKERS)
@@ -1458,6 +1460,11 @@ def _formulation_rule_findings(med: dict, medical_history, age: int,
     if any(re.search(rf"\b{re.escape(m)}\b", text) for m in hm.get("markers", [])) \
             or name in hm.get("classical_contains", []):
         return f"Prescribed in person only: {hm.get('mechanism', '')}", []
+    vd = rules.get("visha_dravya") or {}
+    if med.get("application_type") != "external" and (
+            any(re.search(rf"\b{re.escape(m)}\b", text) for m in vd.get("markers", []))
+            or name in vd.get("classical_contains", [])):
+        return f"Prescribed in person only: {vd.get('mechanism', '')}", []
     cautions: list[str] = []
     fermented = _formulation_class(med) == "fermented"
     if fermented and age < int(rules.get("fermented_minor_age") or 18):

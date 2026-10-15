@@ -701,11 +701,11 @@
     "kapikacchu": {
       "display": "Kapikacchu (Mucuna)",
       "hard": {
-        "parkinson": "Contains L-DOPA. Taken alongside prescribed levodopa it stacks the dose unpredictably — a Vaidya and the treating neurologist must set this together.",
         "psychosis": "Dopaminergic — can precipitate or worsen psychosis."
       },
       "soft": {
-        "depression": "Dopaminergic; may interact with antidepressants — introduce alone."
+        "depression": "Dopaminergic; may interact with antidepressants — introduce alone.",
+        "parkinson": "Contains L-DOPA. If you take levodopa it stacks the dose unpredictably — the treating neurologist must agree before you start."
       },
       "medication_classes": [
         "antidepressants"
@@ -1741,6 +1741,27 @@
         ],
         "severity": "moderate",
         "mechanism": "Purgation loses potassium and water, which raises digoxin and lithium toxicity and adds to a diuretic."
+      },
+      {
+        "herbs": [
+          "mukta",
+          "praval"
+        ],
+        "classes": [
+          "thyroid_hormone"
+        ],
+        "severity": "moderate",
+        "mechanism": "Calcium binds levothyroxine in the gut and cuts its absorption — take them at least four hours apart."
+      },
+      {
+        "herbs": [
+          "kapikacchu"
+        ],
+        "classes": [
+          "antiparkinson"
+        ],
+        "severity": "major",
+        "mechanism": "Kapikacchu is a natural source of L-DOPA; added to prescribed levodopa it stacks the dose unpredictably — dyskinesia, hallucinations, swings in blood pressure."
       }
     ]
   },
@@ -1818,6 +1839,7 @@
         "lead"
       ],
       "classical_contains": [
+        "Agnitundi Vati",
         "Arogyavardhini Vati"
       ],
       "mechanism": "Rasa Aushadhi containing mercury, copper, lead, tin or arsenic compounds are prescribed in person and monitored (liver and kidney function), never self-administered.",
@@ -1830,6 +1852,31 @@
       ],
       "severity": "major",
       "mechanism": "Alcohol with a sleeping or sedating medicine in an older adult — the combination the Beers criteria list as a cause of falls and confusion."
+    },
+    "visha_dravya": {
+      "markers": [
+        "dhattura",
+        "datura",
+        "vatsanabha",
+        "aconite",
+        "aconitum",
+        "kupilu",
+        "kuchala",
+        "strychnos",
+        "ahiphen",
+        "ahiphena",
+        "opium",
+        "bhallataka",
+        "gunja",
+        "jayapala",
+        "arka kshira",
+        "calotropis",
+        "mahisha visha"
+      ],
+      "classical_contains": [
+        "Agnitundi Vati"
+      ],
+      "mechanism": "Contains a classical Visha dravya — datura, aconite, nux vomica, opium, marking nut or Calotropis latex. These are given only after Shodhana, at a dose a Vaidya sets in person, and never self-administered. Opium is also a controlled substance."
     }
   }
 }

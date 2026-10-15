@@ -541,3 +541,48 @@ def test_the_gate_withholds_a_pregnancy_barred_herb_from_a_remedy_rationale():
         {"remedy_rationale": {"acid_reflux": "Fennel cools Pitta. Aloe vera juice soothes the lining."}},
         plan, prof, ("prevention_tips",))
     assert out["remedy_rationale"]["acid_reflux"] == "Fennel cools Pitta."
+
+
+# ── The full formulary audit ──────────────────────────────────────────────────
+
+def test_a_rasayana_is_not_read_as_a_rasa_aushadhi():
+    by_name = {m["name"]: m for m in _MEDICINES_KB}
+    assert not _is_mineral(by_name["Narasimha Rasayana"])
+    assert _is_mineral(by_name["Shwas Kuthar Rasa"])
+
+
+@pytest.mark.parametrize("name", ["Kanakasava", "Agnitundi Vati", "Dhanwanthari Gulika"])
+def test_a_visha_dravya_taken_by_mouth_is_never_self_served(name):
+    med = next(m for m in _MEDICINES_KB if m["name"] == name)
+    bar, _ = R._formulation_rule_findings(med, [], 40, set())
+    assert bar and bar.startswith("Prescribed in person")
+
+
+def test_external_aconite_oil_is_still_served():
+    med = next(m for m in _MEDICINES_KB if m["name"] == "Vishagarbha Taila")
+    assert R._formulation_rule_findings(med, [], 40, set())[0] is None
+
+
+def test_no_fermented_preparation_is_marked_pregnancy_safe():
+    for m in _MEDICINES_KB:
+        if R._formulation_class(m) == "fermented":
+            assert m.get("pregnancy_safe") is not True, m["name"]
+
+
+def test_no_indication_contradicts_a_hard_herb_bar():
+    from services.panchakarma_engine import pk_clinical
+    herbs = pk_clinical["herbs"]
+    for m in _MEDICINES_KB:
+        for c in m.get("conditions", []):
+            for k in R._active_herbs(m):
+                assert c not in ((herbs.get(k) or {}).get("hard") or {}), (m["name"], c, k)
+
+
+def test_iron_is_withheld_in_iron_overload():
+    plan = generate_medicines_plan(_p(medical_history=["anemia", "hemochromatosis"]), {}, [])
+    assert "Loha Bhasma" not in _names(plan) and "Lohasava" not in _names(plan)
+
+
+def test_a_woman_can_receive_the_parkinsons_herb():
+    med = next(m for m in _MEDICINES_KB if m["name"] == "Kapikachu Churna")
+    assert med["gender_specific"] is None

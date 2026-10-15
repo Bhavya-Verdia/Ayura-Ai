@@ -462,7 +462,17 @@
     "duration_max_weeks": 52,
     "afi_reference": "API Vol. I, P. 27",
     "classical_text_reference": "Charaka Samhita, Chikitsa Sthana 1/1 (Chyawanprasha Rasayana)",
-    "classical_action": "Rasayana, Balya, Vayasthapana, Ojovardhana"
+    "classical_action": "Rasayana, Balya, Vayasthapana, Ojovardhana",
+    "data_corrections": [
+      {
+        "field": "(entry)",
+        "was": null,
+        "now": null,
+        "reason": "Contains Ashwagandha, which the herb table bars in pregnancy, and is marked pregnancy-safe. Classically used in pregnancy — rule which holds.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "shatavari_gulam",
@@ -1670,7 +1680,6 @@
       "intestinal_worms",
       "grahani",
       "digestive_disorders",
-      "inflammatory_bowel_disease",
       "bloating"
     ],
     "dosha_effects": {
@@ -1725,7 +1734,28 @@
     "duration_max_weeks": 4,
     "afi_reference": "Not listed in API",
     "classical_text_reference": "Bhaishajya Ratnavali, Krimi Rogadhikara",
-    "classical_action": "Krimighna, Deepana, Pachana, Anulomana"
+    "classical_action": "Krimighna, Deepana, Pachana, Anulomana",
+    "data_corrections": [
+      {
+        "field": "conditions",
+        "was": [
+          "intestinal_worms",
+          "grahani",
+          "digestive_disorders",
+          "inflammatory_bowel_disease",
+          "bloating"
+        ],
+        "now": [
+          "intestinal_worms",
+          "grahani",
+          "digestive_disorders",
+          "bloating"
+        ],
+        "reason": "Listed for inflammatory bowel disease while built on pungent Trikatu/Hingu, which the engine bars in IBD.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "sudarshana_churna",
@@ -1897,7 +1927,6 @@
     ],
     "conditions": [
       "grahani",
-      "inflammatory_bowel_disease",
       "constipation",
       "bloating",
       "vata_disorders",
@@ -1965,7 +1994,30 @@
     "duration_max_weeks": 8,
     "afi_reference": "API Vol. I, P. 48",
     "classical_text_reference": "Ashtanga Hridayam, Chikitsa Sthana 15 (Grahani Chikitsa); Bhaishajya Ratnavali, Grahani Rogadhikara",
-    "classical_action": "Deepana, Pachana, Vatanulomana, Shulahara"
+    "classical_action": "Deepana, Pachana, Vatanulomana, Shulahara",
+    "data_corrections": [
+      {
+        "field": "conditions",
+        "was": [
+          "grahani",
+          "inflammatory_bowel_disease",
+          "constipation",
+          "bloating",
+          "vata_disorders",
+          "indigestion"
+        ],
+        "now": [
+          "grahani",
+          "constipation",
+          "bloating",
+          "vata_disorders",
+          "indigestion"
+        ],
+        "reason": "Listed for inflammatory bowel disease while built on pungent Trikatu/Hingu, which the engine bars in IBD.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "kapikachu_churna",
@@ -2035,14 +2087,24 @@
       "sedatives"
     ],
     "pregnancy_safe": false,
-    "gender_specific": "male",
+    "gender_specific": null,
     "safety_tier": 1,
     "season_avoid": [],
     "duration_min_weeks": 4,
     "duration_max_weeks": 12,
     "afi_reference": "API Vol. I, P. 17",
     "classical_text_reference": "Charaka Samhita, Chikitsa Sthana 2 (Vajikarana); Bhaishajya Ratnavali, Vajikarana Adhikara",
-    "classical_action": "Vatahara, Balya, Vajikarana, Brimhana, Rasayana"
+    "classical_action": "Vatahara, Balya, Vajikarana, Brimhana, Rasayana",
+    "data_corrections": [
+      {
+        "field": "gender_specific",
+        "was": "male",
+        "now": null,
+        "reason": "Marked male-only, so a woman with Parkinson's could never receive the classical Kampavata herb. Its male_reproductive indication stays.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "vasa_avaleha",
@@ -2573,7 +2635,7 @@
     "contraindications": [
       "bradycardia",
       "peptic_ulcer",
-      "hypothyroidism"
+      "hyperthyroid"
     ],
     "drug_interactions": [
       "sedatives",
@@ -2587,7 +2649,25 @@
     "duration_max_weeks": 16,
     "afi_reference": "API Part I, Vol. IV — Brahmi Vati",
     "classical_text_reference": "Bhaishajya Ratnavali, Unmadrogadhikara 26/6",
-    "classical_action": "Medhya, Nidrajanana, Unmadahara, Balya"
+    "classical_action": "Medhya, Nidrajanana, Unmadahara, Balya",
+    "data_corrections": [
+      {
+        "field": "contraindications",
+        "was": [
+          "bradycardia",
+          "peptic_ulcer",
+          "hypothyroidism"
+        ],
+        "now": [
+          "bradycardia",
+          "peptic_ulcer",
+          "hyperthyroid"
+        ],
+        "reason": "As Brahmi Churna — Bacopa raises T4; the risk is hyperthyroidism.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "chandraprabha_vati",
@@ -2673,7 +2753,17 @@
     "duration_max_weeks": 12,
     "afi_reference": "API Part I, Vol. I — Chandraprabha Vati",
     "classical_text_reference": "Sharangadhara Samhita, Madhyamakhanda 7/96",
-    "classical_action": "Mutrakricchrahara, Sharkara nashana, Prameha, Rasayana"
+    "classical_action": "Mutrakricchrahara, Sharkara nashana, Prameha, Rasayana",
+    "data_corrections": [
+      {
+        "field": "(entry)",
+        "was": null,
+        "now": null,
+        "reason": "Classical Chandraprabha is commonly prepared with Loha and Svarnamakshika bhasma, absent from this list. Verify the composition.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "kanchanara_guggulu",
@@ -3006,7 +3096,6 @@
       "anxiety",
       "depression",
       "cognitive_decline",
-      "epilepsy_support",
       "insomnia",
       "stress"
     ],
@@ -3079,7 +3168,32 @@
     "duration_max_weeks": 24,
     "afi_reference": "API Part II, Vol. II — Saraswatarishta",
     "classical_text_reference": "Bhaishajya Ratnavali, Unmadrogadhikara 26/56",
-    "classical_action": "Medhya, Balya, Nidrajanana, Unmadahara"
+    "classical_action": "Medhya, Balya, Nidrajanana, Unmadahara",
+    "data_corrections": [
+      {
+        "field": "conditions",
+        "was": [
+          "memory_impairment",
+          "anxiety",
+          "depression",
+          "cognitive_decline",
+          "epilepsy_support",
+          "insomnia",
+          "stress"
+        ],
+        "now": [
+          "memory_impairment",
+          "anxiety",
+          "depression",
+          "cognitive_decline",
+          "insomnia",
+          "stress"
+        ],
+        "reason": "Listed both for and against epilepsy. Alcohol lowers the seizure threshold, so the indication goes and the contraindication stays — rule on whether it should be used in Apasmara at all.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "drakshasava",
@@ -3150,7 +3264,7 @@
     "drug_interactions": [
       "diabetes_medication"
     ],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "gender_specific": null,
     "safety_tier": 1,
     "season_avoid": [],
@@ -3158,7 +3272,17 @@
     "duration_max_weeks": 12,
     "afi_reference": "API Part II, Vol. I — Drakshasava",
     "classical_text_reference": "Bhaishajya Ratnavali, Hridroga Chikitsa 45/68",
-    "classical_action": "Brimhana, Balya, Hridya, Raktaprasadana"
+    "classical_action": "Brimhana, Balya, Hridya, Raktaprasadana",
+    "data_corrections": [
+      {
+        "field": "pregnancy_safe",
+        "was": true,
+        "now": false,
+        "reason": "Fermented (Arishta/Asava) — self-generated alcohol, not given in pregnancy. The engine already withheld it; the flag said true.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "kutajarishta",
@@ -5699,7 +5823,17 @@
     "duration_max_weeks": 24,
     "afi_reference": "API Vol. IV — Phala Ghrita",
     "classical_text_reference": "Charaka Samhita, Chikitsa 30/135; Ashtanga Hridayam, Uttara 34/15",
-    "classical_action": "Garbhaposhana, Stanyajanana, Artava shodha, Balya"
+    "classical_action": "Garbhaposhana, Stanyajanana, Artava shodha, Balya",
+    "data_corrections": [
+      {
+        "field": "(entry)",
+        "was": null,
+        "now": null,
+        "reason": "Ingredient list is partial against the classical recipe (Manjishtha, Kushtha, Tagara, Triphala, Meda, Kakoli and others). It is classically given before conception and in pregnancy; marked not pregnancy-safe here — rule.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "triphala_ghrita",
@@ -6168,11 +6302,11 @@
     },
     "timing": "twice_daily",
     "contraindications": [
-      "kapha_excess",
-      "hypothyroid"
+      "kapha_excess"
     ],
     "drug_interactions": [
-      "antihypertensives"
+      "antihypertensives",
+      "thyroid_medication"
     ],
     "pregnancy_safe": true,
     "gender_specific": null,
@@ -6182,7 +6316,35 @@
     "duration_max_weeks": 12,
     "afi_reference": "API Vol. II, Part II — Praval Pishti",
     "classical_text_reference": "Rasa Tarangini 14/45; Bhaishajya Ratnavali, Amlapitta Chikitsa 56/18",
-    "classical_action": "Pittahara, Hridya, Raktaprasadana, Asthiposhaka"
+    "classical_action": "Pittahara, Hridya, Raktaprasadana, Asthiposhaka",
+    "data_corrections": [
+      {
+        "field": "contraindications",
+        "was": [
+          "kapha_excess",
+          "hypothyroid"
+        ],
+        "now": [
+          "kapha_excess"
+        ],
+        "reason": "Barred in hypothyroidism; the real problem is calcium binding levothyroxine, now an interaction rule (take four hours apart), not a bar on the disease.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      },
+      {
+        "field": "drug_interactions",
+        "was": [
+          "antihypertensives"
+        ],
+        "now": [
+          "antihypertensives",
+          "thyroid_medication"
+        ],
+        "reason": "Calcium reduces levothyroxine absorption — separate by four hours.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "mukta_pishti",
@@ -6314,7 +6476,9 @@
       "hyperacidity",
       "pregnancy",
       "constipation_chronic",
-      "fever_active"
+      "fever_active",
+      "hemochromatosis",
+      "thalassemia"
     ],
     "drug_interactions": [
       "antibiotics",
@@ -6328,7 +6492,29 @@
     "duration_max_weeks": 12,
     "afi_reference": "API Vol. II, Part II — Loha Bhasma",
     "classical_text_reference": "Rasa Tarangini 19/10; Charaka Samhita, Chikitsa 16/48 (Pandu Roga Chikitsa)",
-    "classical_action": "Raktaprasadana, Pandu hara, Balya, Deepana, Panduroga nashaka"
+    "classical_action": "Raktaprasadana, Pandu hara, Balya, Deepana, Panduroga nashaka",
+    "data_corrections": [
+      {
+        "field": "contraindications",
+        "was": [
+          "hyperacidity",
+          "pregnancy",
+          "constipation_chronic",
+          "fever_active"
+        ],
+        "now": [
+          "hyperacidity",
+          "pregnancy",
+          "constipation_chronic",
+          "fever_active",
+          "hemochromatosis",
+          "thalassemia"
+        ],
+        "reason": "Iron into an iron-overloaded body — haemochromatosis and transfusion-dependent thalassaemia.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "shilajit",
@@ -6341,7 +6527,6 @@
       "anemia",
       "fatigue",
       "cognitive_decline",
-      "kidney_disease",
       "obesity"
     ],
     "dosha_effects": {
@@ -6410,7 +6595,32 @@
     "duration_max_weeks": 16,
     "afi_reference": "API Vol. I — Shilajit (Asphaltum purificatum)",
     "classical_text_reference": "Charaka Samhita, Chikitsa 1/3-76 (Rasayana); Ashtanga Hridayam, Chikitsa 39/152",
-    "classical_action": "Rasayana, Sarva Dhatu Balya, Mutrala, Prameha hara, Medhya"
+    "classical_action": "Rasayana, Sarva Dhatu Balya, Mutrala, Prameha hara, Medhya",
+    "data_corrections": [
+      {
+        "field": "conditions",
+        "was": [
+          "diabetes",
+          "male_reproductive",
+          "anemia",
+          "fatigue",
+          "cognitive_decline",
+          "kidney_disease",
+          "obesity"
+        ],
+        "now": [
+          "diabetes",
+          "male_reproductive",
+          "anemia",
+          "fatigue",
+          "cognitive_decline",
+          "obesity"
+        ],
+        "reason": "Listed as indicated for kidney disease; the herb table bars Shilajit in CKD (mineral load a reduced GFR cannot clear).",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "tulsi_churna",
@@ -8692,7 +8902,17 @@
     "duration_max_weeks": 8,
     "afi_reference": "AFI Part 1 — Vaishwanara Churna",
     "classical_text_reference": "Ashtanga Hridayam, Chikitsa 10; Sharangdhara Samhita Madhyama Khanda",
-    "classical_action": "Deepana, Anulomana, Shoolahara, Vatakaphahara"
+    "classical_action": "Deepana, Anulomana, Shoolahara, Vatakaphahara",
+    "data_corrections": [
+      {
+        "field": "(entry)",
+        "was": null,
+        "now": null,
+        "reason": "Contains Swarjika Kshara (alkali) and salt and is marked pregnancy-safe; Kshara is classically avoided in Garbhini. Rule.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "indukantham_kashayam",
@@ -8958,7 +9178,7 @@
       "Eranda (Ricinus communis)",
       "Shatavari (Asparagus racemosus)",
       "Bala (Sida cordifolia)",
-      "Sauviraka (rock salt)"
+      "Sauviraka (sour fermented barley gruel)"
     ],
     "dosage": "15–20ml twice daily on empty stomach",
     "dosage_pediatric": null,
@@ -8983,7 +9203,27 @@
     "duration_max_weeks": 16,
     "afi_reference": "AFI Part 1 — Sukumar Kashayam",
     "classical_text_reference": "Ashtanga Hridayam, Chikitsa 1 (Prasava Krichra); Kerala classical formulary",
-    "classical_action": "Artavajana, Garbhashaya-Balya, Anulomana, Vatahara"
+    "classical_action": "Artavajana, Garbhashaya-Balya, Anulomana, Vatahara",
+    "data_corrections": [
+      {
+        "field": "ingredients",
+        "was": [
+          "Eranda (Ricinus communis)",
+          "Shatavari (Asparagus racemosus)",
+          "Bala (Sida cordifolia)",
+          "Sauviraka (rock salt)"
+        ],
+        "now": [
+          "Eranda (Ricinus communis)",
+          "Shatavari (Asparagus racemosus)",
+          "Bala (Sida cordifolia)",
+          "Sauviraka (sour fermented barley gruel)"
+        ],
+        "reason": "Sauviraka is a sour fermented gruel, not rock salt. The rest of the list is partial against the classical recipe — verify.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "pathyadi_kashayam",
@@ -9127,7 +9367,7 @@
       "ama_condition"
     ],
     "drug_interactions": [],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "gender_specific": null,
     "safety_tier": 1,
     "season_avoid": [],
@@ -9135,7 +9375,17 @@
     "duration_max_weeks": 24,
     "afi_reference": "API Vol. I — Balarishta",
     "classical_text_reference": "Ashtanga Hridayam, Chikitsa Sthana 21 (Vatavyadhi); Charaka Samhita Chi.28",
-    "classical_action": "Balya, Brumhana, Vatahara, Rasayana"
+    "classical_action": "Balya, Brumhana, Vatahara, Rasayana",
+    "data_corrections": [
+      {
+        "field": "pregnancy_safe",
+        "was": true,
+        "now": false,
+        "reason": "Fermented (Arishta/Asava) — self-generated alcohol, not given in pregnancy. The engine already withheld it; the flag said true.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "chandanasava",
@@ -9198,7 +9448,7 @@
       "obesity"
     ],
     "drug_interactions": [],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "gender_specific": null,
     "safety_tier": 1,
     "season_avoid": [],
@@ -9206,7 +9456,17 @@
     "duration_max_weeks": 8,
     "afi_reference": "API Vol. I — Chandanasava",
     "classical_text_reference": "Ashtanga Hridayam, Chikitsa 11 (Mutraghata); Charaka Samhita Chi.26",
-    "classical_action": "Mutrala, Pittashamana, Raktasthambhana"
+    "classical_action": "Mutrala, Pittashamana, Raktasthambhana",
+    "data_corrections": [
+      {
+        "field": "pregnancy_safe",
+        "was": true,
+        "now": false,
+        "reason": "Fermented (Arishta/Asava) — self-generated alcohol, not given in pregnancy. The engine already withheld it; the flag said true.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "ushirasava",
@@ -9269,7 +9529,7 @@
       "hypothyroidism"
     ],
     "drug_interactions": [],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "gender_specific": null,
     "safety_tier": 1,
     "season_avoid": [],
@@ -9277,7 +9537,25 @@
     "duration_max_weeks": 8,
     "afi_reference": "API Vol. I — Ushirasava",
     "classical_text_reference": "Ashtanga Hridayam, Chikitsa 3 (Raktapitta); Charaka Samhita Chi.4",
-    "classical_action": "Pittashamana, Raktastambhana, Shothahara"
+    "classical_action": "Pittashamana, Raktastambhana, Shothahara",
+    "data_corrections": [
+      {
+        "field": "pregnancy_safe",
+        "was": true,
+        "now": false,
+        "reason": "Fermented (Arishta/Asava) — self-generated alcohol, not given in pregnancy. The engine already withheld it; the flag said true.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      },
+      {
+        "field": "(entry)",
+        "was": null,
+        "now": null,
+        "reason": "Contraindicated in hypothyroidism with no mechanism the author could find. Keep or remove.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "parthadyarishta",
@@ -9407,7 +9685,7 @@
       "obesity"
     ],
     "drug_interactions": [],
-    "pregnancy_safe": true,
+    "pregnancy_safe": false,
     "gender_specific": null,
     "safety_tier": 1,
     "season_avoid": [],
@@ -9415,7 +9693,17 @@
     "duration_max_weeks": 12,
     "afi_reference": "API Vol. I — Mridvikasava",
     "classical_text_reference": "Charaka Samhita, Chikitsa 17 (Kasa); Ashtanga Hridayam Chi.3",
-    "classical_action": "Pittashamana, Hridya, Brumhana, Shwasahara"
+    "classical_action": "Pittashamana, Hridya, Brumhana, Shwasahara",
+    "data_corrections": [
+      {
+        "field": "pregnancy_safe",
+        "was": true,
+        "now": false,
+        "reason": "Fermented (Arishta/Asava) — self-generated alcohol, not given in pregnancy. The engine already withheld it; the flag said true.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "saptavinshati_guggulu",
@@ -9540,14 +9828,15 @@
     ],
     "ingredients": [
       "Guggulu (Commiphora mukul)",
-      "Shunti",
+      "Shunthi",
       "Maricha",
       "Pippali",
+      "Chitraka (Plumbago zeylanica)",
       "Haritaki",
-      "Vibhitaki",
+      "Bibhitaki",
       "Amalaki",
-      "Danti",
-      "Trivrit"
+      "Musta (Cyperus rotundus)",
+      "Vidanga (Embelia ribes)"
     ],
     "dosage": "1–2 tablets (500mg) twice daily with warm water",
     "dosage_pediatric": null,
@@ -9574,7 +9863,38 @@
     "duration_max_weeks": 24,
     "afi_reference": "AFI Part 1 — Navaka Guggulu",
     "classical_text_reference": "Ashtanga Hridayam, Chikitsa 14 (Sthoulya — Medoroga); Sharangdhara",
-    "classical_action": "Lekhana, Kapha-medohara, Shothaghna"
+    "classical_action": "Lekhana, Kapha-medohara, Shothaghna",
+    "data_corrections": [
+      {
+        "field": "ingredients",
+        "was": [
+          "Guggulu (Commiphora mukul)",
+          "Shunti",
+          "Maricha",
+          "Pippali",
+          "Haritaki",
+          "Vibhitaki",
+          "Amalaki",
+          "Danti",
+          "Trivrit"
+        ],
+        "now": [
+          "Guggulu (Commiphora mukul)",
+          "Shunthi",
+          "Maricha",
+          "Pippali",
+          "Chitraka (Plumbago zeylanica)",
+          "Haritaki",
+          "Bibhitaki",
+          "Amalaki",
+          "Musta (Cyperus rotundus)",
+          "Vidanga (Embelia ribes)"
+        ],
+        "reason": "Classical Navaka Guggulu (Bhavaprakasha, Medoroga) is Trikatu, Chitraka, Triphala, Musta, Vidanga + Guggulu; the entry listed the purgatives Danti and Trivrit instead of Chitraka, Musta and Vidanga.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "medohar_guggulu",
@@ -10158,7 +10478,7 @@
       "pregnancy_high_doses"
     ],
     "drug_interactions": [],
-    "pregnancy_safe": true,
+    "pregnancy_safe": "consult",
     "gender_specific": null,
     "safety_tier": 1,
     "season_avoid": [],
@@ -10166,7 +10486,17 @@
     "duration_max_weeks": 4,
     "afi_reference": "AFI Part 1 — Eladi Vati",
     "classical_text_reference": "Ashtanga Hridayam, Chikitsa 10 (Chardi/Vomiting); Sharangdhara Samhita",
-    "classical_action": "Deepana, Chedana, Hridya, Shoolahara"
+    "classical_action": "Deepana, Chedana, Hridya, Shoolahara",
+    "data_corrections": [
+      {
+        "field": "pregnancy_safe",
+        "was": true,
+        "now": "consult",
+        "reason": "Contains Karpura (camphor) and Jatiphala (nutmeg); swallowed camphor is a recognised hazard in pregnancy. Rule true or false.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "khadiradi_vati",
@@ -10225,7 +10555,7 @@
       "do_not_swallow_large_quantities_camphor"
     ],
     "drug_interactions": [],
-    "pregnancy_safe": true,
+    "pregnancy_safe": "consult",
     "gender_specific": null,
     "safety_tier": 1,
     "season_avoid": [],
@@ -10233,7 +10563,17 @@
     "duration_max_weeks": 8,
     "afi_reference": "AFI Part 1 — Khadiradi Vati",
     "classical_text_reference": "Ashtanga Hridayam, Uttara Sthana 22 (Mukharoga); Charaka Samhita Chi.26",
-    "classical_action": "Kusthaghna, Kriminashaka, Chedana — oral cavity use"
+    "classical_action": "Kusthaghna, Kriminashaka, Chedana — oral cavity use",
+    "data_corrections": [
+      {
+        "field": "pregnancy_safe",
+        "was": true,
+        "now": "consult",
+        "reason": "Contains Karpura (camphor); swallowed camphor is a recognised hazard in pregnancy. Rule true or false.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "karpuradi_taila",
@@ -11234,7 +11574,17 @@
     "duration_max_weeks": 8,
     "afi_reference": "API Vol. III, Vati section",
     "classical_text_reference": "Bhaishajya Ratnavali, Grahani Roga Adhikara; Charaka Samhita, Chikitsa Sthana 15 (Grahani Chikitsa)",
-    "classical_action": "Deepana, Pachana, Krimighna, Agnivarddhana"
+    "classical_action": "Deepana, Pachana, Krimighna, Agnivarddhana",
+    "data_corrections": [
+      {
+        "field": "(entry)",
+        "was": null,
+        "now": null,
+        "reason": "Classical Agnitundi Vati contains Parada, Gandhaka, Vatsanabha and Kupilu, absent from this list, which names Arka Kshira (Calotropis latex). Now prescribed in person only. Verify the composition.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "rajapravartini_vati",
@@ -11285,11 +11635,10 @@
       "artava"
     ],
     "ingredients": [
-      "Tankana (Borax)",
-      "Shuddha Kaseesa",
-      "Ahiphen (Opium)",
-      "Aloe vera",
-      "Kasturi"
+      "Kumari (Aloe barbadensis) sara",
+      "Kasisa (purified ferrous sulphate)",
+      "Tankana (purified borax)",
+      "Hingu (Ferula asafoetida)"
     ],
     "dosage": "1–2 tablets (125 mg each) twice daily with warm water during menstrual cycle",
     "dosage_pediatric": "Not recommended",
@@ -11317,7 +11666,28 @@
     "duration_max_weeks": 8,
     "afi_reference": "API Vol. III, Vati section",
     "classical_text_reference": "Bhaishajya Ratnavali, Rakta Pradara Adhikara; Yogaratnakara, Stri Roga section",
-    "classical_action": "Artavajana, Vatanulomana, Raktashodhana"
+    "classical_action": "Artavajana, Vatanulomana, Raktashodhana",
+    "data_corrections": [
+      {
+        "field": "ingredients",
+        "was": [
+          "Tankana (Borax)",
+          "Shuddha Kaseesa",
+          "Ahiphen (Opium)",
+          "Aloe vera",
+          "Kasturi"
+        ],
+        "now": [
+          "Kumari (Aloe barbadensis) sara",
+          "Kasisa (purified ferrous sulphate)",
+          "Tankana (purified borax)",
+          "Hingu (Ferula asafoetida)"
+        ],
+        "reason": "The entry listed Ahiphen (opium) and Kasturi (musk). Classical Rajahpravartini Vati (Bhaishajya Ratnavali) is Kumari, Kasisa, Tankana and Hingu. Verify; opium would make it a controlled substance either way.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "kanakasava",
@@ -11403,7 +11773,17 @@
     "duration_max_weeks": 12,
     "afi_reference": "AFI (Part I), Arishta-Asava section",
     "classical_text_reference": "Bhaishajya Ratnavali, Shwasa-Kasa Adhikara; Charaka Samhita, Chikitsa Sthana 17 (Kasa Chikitsa)",
-    "classical_action": "Shwasahara, Kasahara, Kaphahara, Vatanulomana"
+    "classical_action": "Shwasahara, Kasahara, Kaphahara, Vatanulomana",
+    "data_corrections": [
+      {
+        "field": "(entry)",
+        "was": null,
+        "now": null,
+        "reason": "Contains Dhattura (datura). Now prescribed in person only; it carried a child dose of 5-10 mL.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "varunaadi_kashayam",
@@ -11640,7 +12020,17 @@
     "duration_max_weeks": 24,
     "afi_reference": "AFI (Part I), Ghrita section",
     "classical_text_reference": "Ashtanga Hridayam, Uttara Sthana 34 (Yonivyapad Chikitsa); Charaka Samhita, Chikitsa Sthana 30 (Vajikarana Pada)",
-    "classical_action": "Garbhasthapana, Artavajana, Stanyajanana, Vatapittahara, Rasayana"
+    "classical_action": "Garbhasthapana, Artavajana, Stanyajanana, Vatapittahara, Rasayana",
+    "data_corrections": [
+      {
+        "field": "(entry)",
+        "was": null,
+        "now": null,
+        "reason": "As Chyawanprash — contains Ashwagandha and is marked pregnancy-safe.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "shwas_kuthar_rasa",
@@ -12063,7 +12453,17 @@
     "duration_max_weeks": 4,
     "afi_reference": "AFI (Part I), Gulika section",
     "classical_text_reference": "Ashtanga Hridayam, Chikitsa Sthana 1 (Jvara Chikitsa); Sahasrayoga, Gulika Prakarana",
-    "classical_action": "Jwaraghna, Vishaghna, Krimighna, Pittashamaka"
+    "classical_action": "Jwaraghna, Vishaghna, Krimighna, Pittashamaka",
+    "data_corrections": [
+      {
+        "field": "(entry)",
+        "was": null,
+        "now": null,
+        "reason": "Contains Vatsanabha (aconite) and 'Mahisha visha'. Now prescribed in person only.",
+        "by": "non-clinician audit 2026-10-15",
+        "reviewed": false
+      }
+    ]
   },
   {
     "id": "ashtachurna",
