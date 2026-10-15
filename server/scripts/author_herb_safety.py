@@ -89,6 +89,8 @@ HERBS = {
             "kidney_disease": "As chronic kidney disease — mineral load requires intact renal clearance.",
             "hemochromatosis": "Iron-rich; contraindicated where iron already accumulates.",
             "gout": "Purine and mineral load can precipitate an attack.",
+            # Age reaches this gate as the `child` finding (under 16).
+            "child": "A mineral exudate whose purification (Shodhana) grade cannot be verified at home, with documented heavy-metal contamination in unpurified samples, and a child takes more per kilogram. Not a paediatric Rasayana.",
         },
         "soft": {
             "hypertension": "Some preparations carry a sodium load — use a purified (Shodhita) grade and monitor BP.",
@@ -103,6 +105,7 @@ HERBS = {
             "hyperthyroidism": "Guggulsterones are thyroid-stimulating and worsen a thyrotoxic state.",
             "ibd_crohns": "Gastric irritant; aggravates active inflammatory bowel disease.",
             "ulcerative_colitis": "As IBD — irritant to inflamed bowel mucosa.",
+            "child": "A Lekhana (scraping, reducing) resin; under 16 the Dhatus are still being built, and it is a gastric irritant at any age.",
         },
         "soft": {
             "hypothyroidism": "Thyroid-stimulating, so it may reduce the thyroxine requirement — check TFTs.",

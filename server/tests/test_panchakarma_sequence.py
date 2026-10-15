@@ -175,8 +175,11 @@ def test_purvakarma_is_snehana_and_swedana_every_day():
 def test_the_snehapana_dose_escalates_across_purvakarma():
     """The ladder runs 30 → 60 → 90 → 120ml and steps back on the last day. It lived
     in a summary block while every Purvakarma day on the calendar read the same, so
-    the day a patient was on told them nothing about the dose they were due."""
-    plan = generate_panchakarma_plan(_profile(), _prefs())
+    the day a patient was on told them nothing about the dose they were due.
+
+    Vata-Pitta, because the ladder belongs to Virechana: a Vata-only profile is a
+    Basti course, whose preparation takes no Snehapana at all."""
+    plan = generate_panchakarma_plan(_profile(vikriti_secondary="pitta"), _prefs())
     doses = [d["snehapana"]["dose_ml"] for d in _phase_days(plan, "Purvakarma") if d.get("snehapana")]
     assert len(doses) >= 3
     assert doses[1] > doses[0], "the dose must escalate, not repeat"
@@ -336,7 +339,8 @@ def test_a_short_snehana_says_so_and_says_what_to_do_about_it():
     number beside a phase half its length — a card reading 7 above a 2-day
     schedule — and inadequate Snehana before Shodhana is the textbook cause of
     post-Shodhana complications."""
-    plan = generate_panchakarma_plan(_profile(), _prefs(available_time_days=7))
+    plan = generate_panchakarma_plan(_profile(vikriti_secondary="pitta"),
+                                     _prefs(available_time_days=7))
     adequacy = plan["snehana_protocol"]["adequacy"]
 
     assert adequacy["truncated"] is True
@@ -349,7 +353,8 @@ def test_a_short_snehana_says_so_and_says_what_to_do_about_it():
 
 def test_a_full_length_snehana_still_points_at_the_signs():
     """Even at classical length the calendar is not the criterion."""
-    plan = generate_panchakarma_plan(_profile(), _prefs(available_time_days=21))
+    plan = generate_panchakarma_plan(_profile(vikriti_secondary="pitta"),
+                                     _prefs(available_time_days=21))
     adequacy = plan["snehana_protocol"]["adequacy"]
     assert adequacy["truncated"] is False
     assert "signs" in adequacy["instruction"].lower()

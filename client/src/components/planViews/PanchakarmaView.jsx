@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import {
   Sun, Leaf, Sparkles, AlertTriangle, Droplets, Calendar, ShieldCheck, Flame, Beaker, ArrowRight,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, Pill,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 
@@ -228,6 +228,31 @@ export function PanchakarmaView({ plan }) {
           </div>
         )}
 
+        {/* Kriya Kala. The stage was computed from the patient's own check-in
+            answers, persisted, handed to the engine and read by nothing — while the
+            enricher prompt required the narrative to justify the verdict "in
+            classical terms (Bala, Agni, Ama, Ritu, Kriya Kala)", so that one term
+            was the model's invention. It is ADVISORY: `shamana_only_criteria`,
+            which is what decides eligibility, does not mention Kriya Kala at all.
+            Rendered here rather than left to the narrative alone so it is not a
+            second claim shown to nobody. */}
+        {elig.kriya_kala && (
+          <div className={elig.kriya_kala.alignment === 'in_window' ? 'pk-kriyakala' : 'pk-kriyakala pk-kriyakala-off'}>
+            {elig.kriya_kala.alignment !== 'in_window' && <AlertTriangle size={13} />}
+            <div>
+              <span className="pk-kriyakala-stage">Disease stage: {elig.kriya_kala.governing_stage_label}</span>
+              <p className="pk-kriyakala-note">{elig.kriya_kala.note}</p>
+              {elig.kriya_kala.out_of_window_conditions?.length > 1 && (
+                <p className="pk-kriyakala-note">
+                  Also outside the window: {elig.kriya_kala.out_of_window_conditions
+                    .filter(c => c.condition !== elig.kriya_kala.governing_condition)
+                    .map(c => `${c.condition} (${c.stage_label})`).join(', ')}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Safety substitution alert */}
         {pk.safety_substitution && (
           <div className="pk-safety-sub">
@@ -236,10 +261,73 @@ export function PanchakarmaView({ plan }) {
           </div>
         )}
 
-        {/* Per-karma safety warnings */}
-        {(cd.safety_warnings || []).filter(() => !pk.safety_substitution).map((w, i) => (
-          <div key={i} className="pk-ama-warning"><AlertTriangle size={13} /><span>{w}</span></div>
-        ))}
+        {/* Per-karma safety warnings. Only the one-line summary of a substitution
+            is dropped, because the alert above already states it. Hiding the whole
+            list whenever a substitution happened hid every other caution with it —
+            a hypertensive patient on insulin never saw the insulin warning. */}
+        {(cd.safety_warnings || [])
+          .filter(w => !(pk.safety_substitution && /^(SAFETY SUBSTITUTION|ROUTE RESTRICTED):/.test(w)))
+          // Rendered item by item in the allergy block below.
+          .filter(w => !(cd.allergen_review?.findings?.length && w.startsWith('ALLERGY:')))
+          .map((w, i) => (
+            <div key={i} className="pk-ama-warning"><AlertTriangle size={13} /><span>{w}</span></div>
+          ))}
+
+        {/* Medicines the patient takes, as the procedures see them. */}
+        {cd.medication_review && (cd.medication_review.prescriber_notice || cd.medication_review.notice) && (
+          <div className="pk-medication-review">
+            <h3 className="pk-unmapped-title"><Pill size={13} /> Your medicines and this plan</h3>
+            {cd.medication_review.matched?.length > 0 && (
+              <ul className="pk-medication-list">
+                {cd.medication_review.matched.map(m => (
+                  <li key={m.medication}><strong>{m.medication}</strong> — {m.classes.join(', ')}</li>
+                ))}
+              </ul>
+            )}
+            {cd.medication_review.prescriber_notice && (
+              <p className="pk-unmapped-note">{cd.medication_review.prescriber_notice}</p>
+            )}
+            {cd.medication_review.notice && (
+              <p className="pk-unmapped-note">{cd.medication_review.notice}</p>
+            )}
+          </div>
+        )}
+
+        {/* Narrative sentences the deterministic gate withheld. Shown as a count
+            so a gap in the coaching reads as a decision, not an omission. */}
+        {plan.coaching_withheld?.length > 0 && (
+          <p className="pk-unmapped-note">
+            {plan.coaching_withheld.length} line{plan.coaching_withheld.length === 1 ? '' : 's'} of the
+            AI coaching {plan.coaching_withheld.length === 1 ? 'was' : 'were'} withheld because{' '}
+            {plan.coaching_withheld.length === 1 ? 'it' : 'they'} contradicted this plan
+            ({[...new Set(plan.coaching_withheld.map(w => w.reason))].join('; ')}).
+          </p>
+        )}
+
+        {/* Declared allergies, screened against every substance the plan names. */}
+        {cd.allergen_review && (cd.allergen_review.findings?.length > 0 || cd.allergen_review.unrecognised_notice) && (
+          <div className="pk-medication-review pk-allergen-review">
+            <h3 className="pk-unmapped-title"><AlertTriangle size={13} /> Your allergies and this plan</h3>
+            {cd.allergen_review.findings?.length > 0 && (
+              <>
+                <p className="pk-unmapped-note">
+                  Do not use these as written. Each needs a preparation made without the allergen — ask the Vaidya before day 1.
+                </p>
+                <ul className="pk-medication-list">
+                  {cd.allergen_review.findings.map(f => (
+                    <li key={f.allergy}>
+                      <strong>{f.allergy}</strong> — {f.items.join('; ')}
+                      {f.substitute && <> <em>(ask for {f.substitute})</em></>}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {cd.allergen_review.unrecognised_notice && (
+              <p className="pk-unmapped-note">{cd.allergen_review.unrecognised_notice}</p>
+            )}
+          </div>
+        )}
 
         {/* Unmapped / rare disease notice */}
         {unmapped.length > 0 && (
@@ -441,7 +529,14 @@ export function PanchakarmaView({ plan }) {
                     : sn.internal_ghrita}
                 </div>
                 {sn.dose_schedule?.length > 0 && (
-                  <div className="pk-aus-sub">Day 1: {sn.dose_schedule[0]?.dose_ml}ml → Day {sn.dose_schedule.length}: {sn.dose_schedule[sn.dose_schedule.length - 1]?.dose_ml}ml</div>
+                  <>
+                    {/* The last day is the step-down, so "first → last" hid the peak. */}
+                    <div className="pk-aus-sub">
+                      Day 1: {sn.dose_schedule[0]?.dose_ml}ml → peak {Math.max(...sn.dose_schedule.map(d => d.dose_ml || 0))}ml
+                      {sn.dose_schedule.length >= 3 && <> → Day {sn.dose_schedule.length}: {sn.dose_schedule[sn.dose_schedule.length - 1]?.dose_ml}ml</>}
+                    </div>
+                    {sn.matra?.basis && <div className="pk-aus-sub">{sn.matra.basis}</div>}
+                  </>
                 )}
               </div>
             )}

@@ -41,7 +41,14 @@
         "scleroderma": "Oesophageal dysmotility and stricture are near-universal in systemic sclerosis; forceful emesis against a fibrosed oesophagus risks perforation, and impaired clearance makes aspiration likely.",
         "sickle_cell": "The fluid loss of Vamana haemoconcentrates the blood, which is the classic precipitant of a vaso-occlusive crisis.",
         "pulmonary_fibrosis": "Emesis demands respiratory reserve and carries aspiration risk into lungs that have none; hypoxia during repeated retching is not recoverable by breathing harder.",
-        "lupus": "Active SLE is a Dhatu Kshaya state, and serositis or pulmonary involvement makes the repeated Valsalva of emesis dangerous. Conservative by intent — SLE ranges from mild to organ-threatening and this layer cannot tell which."
+        "lupus": "Active SLE is a Dhatu Kshaya state, and serositis or pulmonary involvement makes the repeated Valsalva of emesis dangerous. Conservative by intent — SLE ranges from mild to organ-threatening and this layer cannot tell which.",
+        "anticoagulants": "Forceful retching can tear the gastro-oesophageal junction (Mallory-Weiss); on an anticoagulant the bleed does not stop.",
+        "lithium": "Emesis and the fluid lost with it concentrate lithium, whose toxic level sits close to its therapeutic one.",
+        "digoxin": "Emesis depletes potassium, and hypokalaemia is the commonest precipitant of digoxin toxicity and arrhythmia.",
+        "child_under_12": "The KB lists children under 12 as absolute for Vamana. The forceful Vega and the volume of milk or Yashtimadhu decoction given to fill the stomach are adult quantities for an adult oesophagus.",
+        "age_over_60": "Charaka Siddhisthana 2 names the Vriddha among those not to be given emesis, and Charaka Vimanasthana 8.122 places Jirna (old age) from 60. Retching raises intrathoracic and arterial pressure in a vasculature that no longer buffers it.",
+        "diabetes_type1": "Vomiting with insulin on board is the textbook trigger of diabetic ketoacidosis, and the fasting Snehapana before it a hypoglycaemia window. Vamana induces both on purpose in a patient with no insulin of their own.",
+        "hernia": "Forceful retching raises intra-abdominal pressure — the mechanism by which a hernia enlarges or strangulates."
       },
       "soft": {
         "anxiety": "Vamana is a frightening procedure; the KB names severe psychological fragility as relative. Sattvavajaya preparation is required first.",
@@ -53,7 +60,26 @@
         "menieres_disease": "Emesis during an attack is indistinguishable from the attack; the vertigo makes falls likely and can extend the episode. Schedule only between attacks.",
         "hashimoto": "Levothyroxine taken that morning is vomited with the Kapha, and the dose is lost. Move the tablet to the evening for the Karma day and the days around it.",
         "adrenal_fatigue": "The label is not a recognised diagnosis, but what it reports is low reserve, and that is what is acted on here: treat as reduced Bala and use the mildest effective dose.",
-        "common_cold": "Vamana is classically indicated for Kapha in the chest, so this is not a bar — but an acute Pratishyaya is not the moment to begin a multi-week course. Let the acute phase settle first."
+        "common_cold": "Vamana is classically indicated for Kapha in the chest, so this is not a bar — but an acute Pratishyaya is not the moment to begin a multi-week course. Let the acute phase settle first.",
+        "antiplatelets": "Retching on an antiplatelet can provoke an oozing gastric or oesophageal bleed; report any blood in the vomitus at once.",
+        "insulin_or_sulfonylurea": "The Karma day and the Peya/Vilepi days after it are close to a fast, and the drug lowers glucose whether or not food arrives — the classic setting for a hypoglycaemic collapse. The prescribing doctor must set the dose for these days before the course begins; carry glucose.",
+        "sglt2_inhibitors": "Fasting and fluid loss on an SGLT2 inhibitor can tip into euglycaemic ketoacidosis with a normal glucose reading. Sick-day rules apply: the prescriber normally withholds it from the day before the Karma until eating is normal.",
+        "diuretics": "Emesis on top of a diuretic compounds fluid and potassium loss; the prescriber should review the dose for the Karma and Samsarjana days.",
+        "antihypertensives": "After the fluid lost in emesis, the usual dose can drop the pressure too far — rise slowly, and have the pressure checked before standing.",
+        "corticosteroids": "Long-term steroids blunt the adrenal response to physiological stress, and Vamana is one. Never stop the steroid for the course; the prescriber may need to cover the Karma day.",
+        "antiepileptics": "A dose vomited is a dose lost. Time the anti-epileptic after the emesis has fully settled and never skip it — a missed dose is a seizure risk.",
+        "immunosuppressants": "Shodhana is a deliberate physiological stress; on immunosuppression, infection after the Karma presents late and quietly. Coordinate with the prescriber.",
+        "glaucoma": "Retching is a sustained Valsalva and raises intraocular pressure sharply; ophthalmologist clearance first.",
+        "vertigo": "The head-down posture and repeated retching provoke vestibular symptoms, and the weakness (Klama) after Vamana makes a fall likely. An attendant stays throughout.",
+        "copd": "Retching under a fluid load risks aspiration and bronchospasm in obstructed airways; check oxygen saturation before and during.",
+        "chronic_bronchitis": "As COPD — aspiration and bronchospasm risk while retching against narrowed airways.",
+        "chronic_fatigue_syndrome": "An expulsive Karma is a large exertion; post-exertional malaise can follow for days. Mridu dose, and rest is part of the course.",
+        "fibromyalgia": "As chronic fatigue — the exertion of Vamana can set off a flare lasting beyond the course.",
+        "osteoporosis": "Forceful retching flexes the thoracic spine under load; in severe osteoporosis that is the mechanism of a vertebral compression fracture.",
+        "metformin": "Vomiting and dehydration with metformin risk lactic acidosis and acute kidney injury; the sick-day rule is to pause it while vomiting, which only the prescriber can authorise.",
+        "thyroid_hormone": "A tablet vomited within hours is not absorbed. Take it once the Vamana day has settled, as the prescriber directs.",
+        "hormonal_contraceptives": "Vomiting within three hours of a pill counts as a missed pill. Use a barrier method until seven pills after the course.",
+        "antiparkinson": "A dose vomited is a dose missed — an 'off' period follows. The prescriber plans the dose around the Karma day."
       }
     },
     "virechana": {
@@ -77,7 +103,9 @@
         "tb": "Abbreviation for tuberculosis (Rajayakshma).",
         "emaciation": "Atidurbala — as underweight.",
         "atidurbala": "Extreme depletion — as underweight.",
-        "sickle_cell": "Purgative fluid loss haemoconcentrates the blood and precipitates vaso-occlusive crisis."
+        "sickle_cell": "Purgative fluid loss haemoconcentrates the blood and precipitates vaso-occlusive crisis.",
+        "lithium": "Purgation is controlled diarrhoea, and diarrhoeal dehydration is the commonest cause of lithium toxicity.",
+        "digoxin": "Purgation loses potassium; hypokalaemia sensitises the heart to digoxin."
       },
       "soft": {
         "liver_disease": "Use Triphala only — the mildest Virechaka. Avoid Trivrit and Eranda entirely.",
@@ -92,7 +120,28 @@
         "celiac": "Chronic malabsorption means lower reserve and slower recovery; the Samsarjana Krama itself is rice and dal and so is safe, but the purgation compounds an existing deficit.",
         "thalassemia": "Chronic anaemia is reduced Bala; the fluid loss is tolerated poorly.",
         "hashimoto": "Purgation flushes levothyroxine taken that morning before it is absorbed; separate the dose from the Karma day.",
-        "adrenal_fatigue": "As for Vamana — the state described is low reserve, and a purgative is a depleting procedure."
+        "adrenal_fatigue": "As for Vamana — the state described is low reserve, and a purgative is a depleting procedure.",
+        "anticoagulants": "Repeated Vegas irritate the bowel mucosa and can bleed on an anticoagulant; blood in the stool is an Atiyoga sign to stop at.",
+        "insulin_or_sulfonylurea": "The Karma day and the Peya/Vilepi days after it are close to a fast, and the drug lowers glucose whether or not food arrives — the classic setting for a hypoglycaemic collapse. The prescribing doctor must set the dose for these days before the course begins; carry glucose.",
+        "sglt2_inhibitors": "Purgation is fluid loss; on an SGLT2 inhibitor that risks ketoacidosis with a normal glucose. Sick-day rules: the prescriber normally withholds it until eating and drinking are normal.",
+        "diuretics": "Purgation and a diuretic together deplete volume and potassium; the prescriber should review the dose for the Karma and Samsarjana days.",
+        "antihypertensives": "Fluid lost in purgation can make the usual dose too strong — rise slowly, and have the pressure checked on the Karma day.",
+        "corticosteroids": "Never stop a long-term steroid for the course; the prescriber may need to cover the Karma day.",
+        "antiepileptics": "Purgation shortens gut transit and can lower absorption of the dose; take it at its usual time and report any aura.",
+        "immunosuppressants": "Coordinate with the prescriber: purgation can alter absorption of oral immunosuppressants, and infection afterwards presents quietly.",
+        "child": "Under 16 the purgative is a Mridu Virechana at a child's dose; Atiyoga dehydrates a small body far faster than an adult's. Count Vegas closely and stop early.",
+        "heart_disease": "Purgation moves potassium and fluid out quickly; low potassium provokes arrhythmia in a diseased heart. Electrolytes before and after.",
+        "atrial_fibrillation": "As heart disease — hypokalaemia and dehydration after purgation raise the ventricular rate and destabilise rate control.",
+        "ibs": "A strong purgative can set off an IBS-D flare that outlasts the course. Mridu Virechana only, and not during a flare.",
+        "menorrhagia": "Adhoga Raktapitta — bleeding by the downward route — is treated by the upward route, not the downward one (Charaka Chikitsa 4); a purgative moves Pitta toward the channel already bleeding. Never during menses; the Vaidya decides whether it is given at all.",
+        "chronic_fatigue_syndrome": "Purgation depletes fluid and electrolytes in a patient whose reserve is the problem; Mridu dose and a longer Samsarjana.",
+        "fibromyalgia": "As chronic fatigue — dehydration and exertion can set off a flare. Mridu dose.",
+        "metformin": "As Vamana — purgation dehydrates, and metformin is paused on sick days only on the prescriber's word.",
+        "thyroid_hormone": "Purgation shortens gut transit and cuts levothyroxine absorption; keep at least four hours between the tablet and the purgative.",
+        "hormonal_contraceptives": "Severe purgation can stop the pill being absorbed. Use a barrier method until seven pills after the course.",
+        "ssri_snri": "These medicines cause low sodium (SIADH), most in the elderly; purgation and the large water intake around it add to it.",
+        "nsaids": "NSAIDs with purgation-induced dehydration risk acute kidney injury, and they irritate a gut already purged.",
+        "antiparkinson": "Levodopa is absorbed in the small intestine on a timed schedule; purgation cuts the dose actually absorbed, and a missed dose brings an 'off' period of rigidity and falls. Keep the dosing times; the prescriber decides any change."
       }
     },
     "basti": {
@@ -124,8 +173,28 @@
         "interstitial_cystitis": "Rectal distension refers directly to an inflamed bladder and can trigger a flare.",
         "urinary_incontinence": "Anuvasana Basti is retained for hours. The pelvic floor weakness that presents as urinary incontinence commonly extends to anal sphincter tone, so the oil may not be held and the dose is lost — this is a delivery problem, not a danger.",
         "scleroderma": "Anorectal involvement reduces compliance and sphincter function, so retention of Anuvasana is unreliable and Niruha may not be evacuated.",
-        "lupus": "Immunosuppressive therapy is common in SLE, and rectal instrumentation in a neutropenic patient is a bacteraemia risk."
-      }
+        "lupus": "Immunosuppressive therapy is common in SLE, and rectal instrumentation in a neutropenic patient is a bacteraemia risk.",
+        "anticoagulants": "Netra insertion can graze the rectal mucosa, which bleeds on an anticoagulant; use a soft catheter and stop at any blood.",
+        "antiplatelets": "As anticoagulants, to a lesser degree — a soft catheter, and stop at any blood.",
+        "insulin_or_sulfonylurea": "Niruha is given on an empty stomach and holds honey; check glucose around each Niruha. Anuvasana and Matra Basti follow food and carry no such swing.",
+        "immunosuppressants": "Rectal instrumentation on immunosuppression is a bacteraemia risk; sterile Netra, and report any fever.",
+        "corticosteroids": "Do not stop a long-term steroid for the course."
+      },
+      "restrict_to": {
+        "basti_matra": {
+          "chronic_kidney_disease": "Niruha is a large decoction with Saindhava and honey whose fluid and electrolyte load a failing kidney clears poorly; Matra Basti is a small volume of oil that is absorbed, not evacuated. The soft entry already said 'Matra Basti only' and the schedule kept three Niruha days.",
+          "hemorrhoids": "Repeated Niruha insertion and evacuation bleed from piles; a single soft-catheter oil Basti retained overnight does not. The soft entry already said 'oil Basti only'.",
+          "diabetes_type1": "Niruha is given on an empty stomach and contains honey; the combination of a fasting procedure and an evacuant with a sugar in it is the glucose swing the soft entry warns about. Anuvasana/Matra Basti is given after food."
+        }
+      },
+      "_restrict_to_note": "A soft entry that names a different route is a prescription, not a caution. Tokens here convert a Niruha course to Matra Basti rather than warning beside a Niruha the schedule still contains.",
+      "soft_niruha_only": [
+        "hypertension",
+        "insulin_or_sulfonylurea",
+        "chronic_kidney_disease",
+        "diabetes_type1"
+      ],
+      "_soft_niruha_only_note": "Soft entries whose mechanism is the Niruha decoction (Saindhava, honey, volume, empty-stomach timing). They are not printed on a Matra Basti course, which gives none."
     },
     "nasya": {
       "prose_source": "pradhana_karma.nasya.general_contraindications",
@@ -140,7 +209,9 @@
         "active_fever": "Wait for resolution — the KB and the contraindication matrix both defer Shodhana during Jwara.",
         "rhinitis": "Allergic mucosa may react to the oil; test with a single drop first.",
         "deviated_septum": "Distribution is uneven; instil into the patent side and expect reduced effect.",
-        "migraine": "The KB warns against stimulating Nasya in Pitta headache — use Ksheerabala rather than Shadbindu."
+        "migraine": "The KB warns against stimulating Nasya in Pitta headache — use Ksheerabala rather than Shadbindu.",
+        "anticoagulants": "Nasal mucosa bleeds easily on an anticoagulant; warm the oil, use the lowest drop count, and stop at any epistaxis.",
+        "antiplatelets": "As anticoagulants, to a lesser degree — stop at any epistaxis."
       }
     },
     "raktamokshana": {
@@ -163,11 +234,18 @@
         "sickle_cell": "Removing blood from a chronic haemolytic anaemia deepens it, and the volume loss itself precipitates crisis.",
         "thalassemia": "Chronic anaemia, often transfusion-dependent. Bloodletting is directly opposed to the patient's baseline problem.",
         "lupus": "Thrombocytopenia and autoimmune haemolysis are common in SLE; the patient may be cytopenic without symptoms.",
-        "scleroderma": "Raynaud's and digital ischaemia are near-universal; leeching a poorly perfused extremity produces an ulcer that will not heal."
+        "scleroderma": "Raynaud's and digital ischaemia are near-universal; leeching a poorly perfused extremity produces an ulcer that will not heal.",
+        "antiplatelets": "Platelet inhibition keeps a leech bite or venesection site oozing for hours.",
+        "immunosuppressants": "An open wound and a live leech on immunosuppression risk a systemic infection.",
+        "child": "Bloodletting from a growing body under 16 (Charaka Vimanasthana 8.122: Dhatus not yet mature) removes Rakta the child is still building; it is not a home or app-initiated procedure at this age.",
+        "menorrhagia": "Removing blood from a patient who already loses too much every cycle; iron deficiency follows."
       },
       "soft": {
         "hypertension": "Historically an indication rather than a contraindication, but volume loss on antihypertensives can overshoot — monitor BP for two hours.",
-        "restless_leg_syndrome": "RLS is frequently a marker of iron deficiency. Check ferritin before any bloodletting — if it is low, Raktamokshana makes the presenting complaint worse."
+        "restless_leg_syndrome": "RLS is frequently a marker of iron deficiency. Check ferritin before any bloodletting — if it is low, Raktamokshana makes the presenting complaint worse.",
+        "corticosteroids": "Steroids slow wound healing at the site; the Vaidya should see it at 48 hours.",
+        "ssri_snri": "SSRIs and SNRIs deplete platelet serotonin and prolong bleeding; a leech wound may ooze for longer.",
+        "nsaids": "NSAIDs inhibit platelet function and prolong bleeding from the wound; the prescriber decides whether to pause them."
       },
       "seasonal_hard": {
         "shishira": "The KB lists winter (Shishira) as an absolute contraindication for Raktamokshana — Rakta is naturally condensed and Vata is high."
@@ -190,7 +268,8 @@
         "obesity": "Kapha-increasing. Use Udvartana instead, or a light Sarshapa Taila application.",
         "hypothyroidism": "Kapha-predominant state; prefer dry Udvartana over heavy oleation.",
         "skin_infection": "Avoid the affected area entirely; oil spreads superficial fungal and bacterial infection.",
-        "scleroderma": "Sclerotic skin is fragile and tears under the pressure of a standard stroke; use light effleurage only."
+        "scleroderma": "Sclerotic skin is fragile and tears under the pressure of a standard stroke; use light effleurage only.",
+        "rheumatoid_arthritis": "Amavata: oil on joints still carrying Ama is classically withheld until the Ama is digested — Ruksha Sweda (Valuka Sweda) and Deepana-Pachana come first (Chakradatta, Amavata Chikitsa). Avoid oiling a hot, swollen joint."
       }
     },
     "abhyanga_clinic": {
@@ -198,7 +277,8 @@
       "hard": {},
       "soft": {
         "anxiety": "Two-therapist synchronised massage involves sustained close contact; offer the single-therapist version first.",
-        "ptsd": "As anxiety — the patient must be able to stop the procedure at any point."
+        "ptsd": "As anxiety — the patient must be able to stop the procedure at any point.",
+        "osteoporosis": "Firm two-therapist pressure on fragile bone; light pressure over the spine and ribs."
       }
     },
     "swedana_home": {
@@ -223,7 +303,16 @@
         "varicose_veins": "Heat worsens venous pooling; avoid direct leg steam.",
         "eczema": "Heat and moisture flare atopic skin.",
         "psoriasis": "Koebner response — heat and friction can provoke new plaques.",
-        "migraine": "Steam to the head is a common trigger; keep the face out of the steam as the KB directs."
+        "migraine": "Steam to the head is a common trigger; keep the face out of the steam as the KB directs.",
+        "diuretics": "Sweating on a diuretic compounds fluid loss; keep it under 10 minutes and drink warm water after.",
+        "sglt2_inhibitors": "Sweating adds to the fluid an SGLT2 inhibitor already drains; keep sessions short and hydrate.",
+        "multiple_sclerosis": "Uhthoff's phenomenon: a rise in core temperature temporarily worsens MS — weakness, blurred vision, fatigue. Local and brief only; stop at the first symptom.",
+        "rosacea": "Heat and steam on the face are the commonest rosacea trigger. Keep the head out of the steam.",
+        "heart_disease": "Heat vasodilates and raises heart rate. Shorter sessions with the head outside the chamber; stop on palpitations or breathlessness.",
+        "atrial_fibrillation": "As heart disease — heat raises the ventricular rate.",
+        "kidney_stones": "Sweating concentrates the urine, the condition stones form in. Drink enough on Swedana days to keep the urine pale.",
+        "urticaria": "Heat provokes cholinergic urticaria (Sheetapitta). Mild, short sessions; stop at the first wheal.",
+        "antiparkinson": "These medicines lower blood pressure on standing; heat adds to it. Rise slowly from the steam and never alone."
       }
     },
     "bashpa_sweda_clinic": {
@@ -234,7 +323,9 @@
       "soft": {
         "asthma": "Herbal steam constituents can trigger bronchospasm in reactive airways; test tolerance briefly first.",
         "pulmonary_fibrosis": "An enclosed steam chamber in restrictive lung disease reduces the reserve further; use a shortened exposure with continuous observation.",
-        "sickle_cell": "As for home Swedana — keep the session short and hydrate throughout."
+        "sickle_cell": "As for home Swedana — keep the session short and hydrate throughout.",
+        "diuretics": "Sweating on a diuretic compounds fluid loss; keep it under 10 minutes and drink warm water after.",
+        "sglt2_inhibitors": "Sweating adds to the fluid an SGLT2 inhibitor already drains; keep sessions short and hydrate."
       }
     },
     "snehapana_home": {
@@ -252,7 +343,11 @@
         "hypercholesterolemia": "A daily escalating fat load needs lipid monitoring; use the minimum dose that produces Snigdha lakshana.",
         "diabetes_type2": "Ghee delays gastric emptying and alters post-prandial glucose; monitor.",
         "fatty_liver": "Use the smallest effective dose and prefer Tikta Ghrita over plain ghee.",
-        "gerd": "Fat relaxes the lower oesophageal sphincter and worsens reflux."
+        "gerd": "Fat relaxes the lower oesophageal sphincter and worsens reflux.",
+        "diabetes_type1": "The ghee is taken fasting and the next meal waits until it is digested — a hypoglycaemia window on insulin. Check glucose through the morning.",
+        "metabolic_syndrome": "As obesity — Charaka lists those with excess Medas and Kapha among the not-to-be-oleated; a short, Ruksha-led preparation is the classical alternative. The Vaidya decides the dose.",
+        "thyroid_hormone": "Levothyroxine is taken on an empty stomach and the morning Snehapana occupies the same slot; take the tablet first and wait 30–60 minutes before the ghee.",
+        "rheumatoid_arthritis": "Amavata: Snehapana follows Langhana, Ruksha Sweda and Deepana in the classical order (Chakradatta 25), never precedes them. Do not begin the ghee while joints are hot and swollen."
       }
     },
     "snehapana_clinic": {
@@ -285,7 +380,8 @@
         "open_wound": "Dry powder into a wound is a direct infection risk.",
         "bleeding_disorder": "Friction causes purpura and subcutaneous bleeding.",
         "emaciation": "Atidurbala — as underweight.",
-        "atidurbala": "Extreme depletion — as underweight."
+        "atidurbala": "Extreme depletion — as underweight.",
+        "anemia": "Udvartana is Lekhana — it scrapes and reduces. Pandu is a Dhatu-Kshaya state, and a Shamana plan that ends in Brimhana cannot begin by reducing."
       },
       "soft": {
         "vata_aggravation": "The therapy is Ruksha and Vata-increasing — the KB's own dosha_effect scores it +1 for Vata. Follow with light oil.",
@@ -537,7 +633,8 @@
         "pregnancy": "Uterine stimulant — contraindicated throughout pregnancy.",
         "hyperthyroidism": "Guggulsterones are thyroid-stimulating and worsen a thyrotoxic state.",
         "ibd_crohns": "Gastric irritant; aggravates active inflammatory bowel disease.",
-        "ulcerative_colitis": "As IBD — irritant to inflamed bowel mucosa."
+        "ulcerative_colitis": "As IBD — irritant to inflamed bowel mucosa.",
+        "child": "A Lekhana (scraping, reducing) resin; under 16 the Dhatus are still being built, and it is a gastric irritant at any age."
       },
       "soft": {
         "hypothyroidism": "Thyroid-stimulating, so it may reduce the thyroxine requirement — check TFTs.",
@@ -691,7 +788,8 @@
         "chronic_kidney_disease": "Mineral pitch with a substantial mineral and fulvic acid load that a reduced GFR cannot clear.",
         "kidney_disease": "As chronic kidney disease — mineral load requires intact renal clearance.",
         "hemochromatosis": "Iron-rich; contraindicated where iron already accumulates.",
-        "gout": "Purine and mineral load can precipitate an attack."
+        "gout": "Purine and mineral load can precipitate an attack.",
+        "child": "A mineral exudate whose purification (Shodhana) grade cannot be verified at home, with documented heavy-metal contamination in unpurified samples, and a child takes more per kilogram. Not a paediatric Rasayana."
       },
       "soft": {
         "hypertension": "Some preparations carry a sodium load — use a purified (Shodhita) grade and monitor BP.",
@@ -754,6 +852,486 @@
     "chronic_tonsillitis": "Kapha lodged in the throat is a classical indication for Vamana, not a contraindication to it.",
     "erectile_dysfunction": "An indication for Vajikarana Rasayana. No procedural conflict with any Karma.",
     "hearing_loss": "Karnapurana and Nasya are indicated. No Karma is contraindicated.",
-    "tinnitus": "As hearing loss — Vata in the Shabdavaha Srotas is treated by Nasya and Karnapurana, and no Karma is barred."
+    "tinnitus": "As hearing loss — Vata in the Shabdavaha Srotas is treated by Nasya and Karnapurana, and no Karma is barred.",
+    "osteoarthritis": "Sandhigata Vata is an indication for Basti and Abhyanga, not a bar to any Karma. Joint pressure during Abhyanga is a technique point, not a contraindication.",
+    "ankylosing_spondylitis": "Treated as Vata in the Asthi-Majja; Basti is indicated. No Karma is barred. A fused spine cannot take the forward-flexed Vamana posture comfortably — the clinic positions the patient, which is not a contraindication.",
+    "sciatica": "Gridhrasi is a classical indication for Basti (and Siravyadha by a clinician). No Karma is barred.",
+    "lumbar_spondylosis": "As osteoarthritis of the spine — Kati Basti and Basti are indicated. No Karma is barred.",
+    "ocd": "No procedural conflict. Shirodhara and Nasya are used for Manovaha Srotas disorders; the Vaidya judges whether a long course suits the patient's state.",
+    "adhd": "No procedural conflict with any Karma. Stimulant medicines are not in the interaction classes here; show them to the Vaidya.",
+    "insomnia": "Anidra is an indication for Shirodhara, Nasya and Abhyanga. No Karma is barred.",
+    "acne_severe": "Pitta-Rakta in the skin is an indication for Virechana (and Raktamokshana by a clinician). Isotretinoin, if taken, is a separate question for the prescriber.",
+    "vitiligo": "Shvitra is a classical indication for Shodhana (Virechana). No Karma is barred.",
+    "recurrent_uti": "No Karma acts on the urinary tract except Uttara Basti, which this app never schedules. No bar; an active infection with fever is gated as fever.",
+    "endometriosis": "Apana Vata disorders are an indication for Basti. Timing around menses is handled by the Rajaswala gate; no Karma is barred by the diagnosis.",
+    "dysmenorrhea": "Kashtartava is an indication for Basti. Menses timing is handled by the Rajaswala gate."
+  },
+  "medication_classes": {
+    "_note": "current_medications reached the herb gate and nothing else, so a patient on warfarin, insulin or lithium was planned emesis, purgation and bloodletting exactly as if they took nothing. Each class below is matched by generic and common Indian brand name and emits its key as a finding; the per-Karma and per-therapy hard/soft maps in this file then name the key with the mechanism, the same way a condition is named. Anything that matches no class is listed back to the patient as unchecked, never read as checked. AUTHORED, NOT CLINICALLY REVIEWED. Classes carrying `assessed_no_procedure_interaction` were assessed and gate nothing: they are recognised so a patient taking them is not told the plan ignored them.",
+    "anticoagulants": {
+      "label": "Anticoagulant",
+      "match": [
+        "warfarin",
+        "coumadin",
+        "acenocoumarol",
+        "acitrom",
+        "nicoumalone",
+        "sintrom",
+        "apixaban",
+        "eliquis",
+        "rivaroxaban",
+        "xarelto",
+        "dabigatran",
+        "pradaxa",
+        "edoxaban",
+        "heparin",
+        "enoxaparin",
+        "clexane",
+        "dalteparin",
+        "fondaparinux",
+        "blood thinner"
+      ]
+    },
+    "antiplatelets": {
+      "label": "Antiplatelet",
+      "match": [
+        "aspirin",
+        "ecosprin",
+        "clopidogrel",
+        "clopilet",
+        "plavix",
+        "deplatt",
+        "prasugrel",
+        "ticagrelor",
+        "brilinta",
+        "cilostazol",
+        "dipyridamole"
+      ]
+    },
+    "insulin_or_sulfonylurea": {
+      "label": "Insulin or a sulfonylurea",
+      "match": [
+        "insulin",
+        "glargine",
+        "lantus",
+        "basaglar",
+        "degludec",
+        "tresiba",
+        "aspart",
+        "novorapid",
+        "lispro",
+        "humalog",
+        "humulin",
+        "mixtard",
+        "glimepiride",
+        "amaryl",
+        "gliclazide",
+        "glizid",
+        "diamicron",
+        "glipizide",
+        "glibenclamide",
+        "glyburide",
+        "daonil",
+        "repaglinide"
+      ]
+    },
+    "sglt2_inhibitors": {
+      "label": "SGLT2 inhibitor",
+      "match": [
+        "dapagliflozin",
+        "forxiga",
+        "empagliflozin",
+        "jardiance",
+        "canagliflozin",
+        "invokana",
+        "ertugliflozin",
+        "remogliflozin",
+        "sotagliflozin"
+      ]
+    },
+    "diuretics": {
+      "label": "Diuretic",
+      "match": [
+        "furosemide",
+        "frusemide",
+        "lasix",
+        "torsemide",
+        "torasemide",
+        "dytor",
+        "hydrochlorothiazide",
+        "hctz",
+        "chlorthalidone",
+        "indapamide",
+        "spironolactone",
+        "aldactone",
+        "eplerenone",
+        "metolazone",
+        "bumetanide",
+        "amiloride"
+      ]
+    },
+    "antihypertensives": {
+      "label": "Blood-pressure medicine",
+      "match": [
+        "amlodipine",
+        "amlong",
+        "stamlo",
+        "nifedipine",
+        "cilnidipine",
+        "losartan",
+        "losar",
+        "telmisartan",
+        "telma",
+        "olmesartan",
+        "valsartan",
+        "irbesartan",
+        "ramipril",
+        "enalapril",
+        "lisinopril",
+        "perindopril",
+        "metoprolol",
+        "atenolol",
+        "bisoprolol",
+        "carvedilol",
+        "nebivolol",
+        "propranolol",
+        "prazosin",
+        "clonidine"
+      ]
+    },
+    "lithium": {
+      "label": "Lithium",
+      "match": [
+        "lithium",
+        "licab",
+        "lithosun"
+      ]
+    },
+    "digoxin": {
+      "label": "Digoxin",
+      "match": [
+        "digoxin",
+        "lanoxin"
+      ]
+    },
+    "corticosteroids": {
+      "label": "Oral or injected corticosteroid",
+      "match": [
+        "prednisolone",
+        "wysolone",
+        "omnacortil",
+        "prednisone",
+        "methylprednisolone",
+        "medrol",
+        "dexamethasone",
+        "decadron",
+        "hydrocortisone",
+        "deflazacort",
+        "betamethasone"
+      ]
+    },
+    "immunosuppressants": {
+      "label": "Immunosuppressant or chemotherapy",
+      "match": [
+        "methotrexate",
+        "azathioprine",
+        "mycophenolate",
+        "cellcept",
+        "tacrolimus",
+        "cyclosporine",
+        "ciclosporin",
+        "sirolimus",
+        "leflunomide",
+        "cyclophosphamide",
+        "tofacitinib",
+        "baricitinib",
+        "rituximab",
+        "adalimumab",
+        "infliximab",
+        "etanercept",
+        "chemotherapy"
+      ]
+    },
+    "antiepileptics": {
+      "label": "Anti-epileptic",
+      "match": [
+        "valproate",
+        "valproic",
+        "divalproex",
+        "valparin",
+        "encorate",
+        "phenytoin",
+        "eptoin",
+        "dilantin",
+        "carbamazepine",
+        "tegretol",
+        "oxcarbazepine",
+        "levetiracetam",
+        "levipil",
+        "keppra",
+        "lamotrigine",
+        "lamictal",
+        "phenobarbital",
+        "phenobarbitone",
+        "clobazam",
+        "topiramate",
+        "lacosamide",
+        "brivaracetam"
+      ]
+    },
+    "metformin": {
+      "label": "Metformin",
+      "match": [
+        "metformin",
+        "glycomet",
+        "glucophage",
+        "gluconorm",
+        "obimet",
+        "glyciphage",
+        "janumet",
+        "galvus met",
+        "istamet"
+      ]
+    },
+    "thyroid_hormone": {
+      "label": "Thyroid hormone",
+      "match": [
+        "levothyroxine",
+        "thyroxine",
+        "thyronorm",
+        "eltroxin",
+        "thyrox",
+        "lethyrox",
+        "euthyrox",
+        "liothyronine"
+      ]
+    },
+    "hormonal_contraceptives": {
+      "label": "Hormonal contraceptive",
+      "match": [
+        "oral contraceptive",
+        "contraceptive pill",
+        "birth control",
+        "the pill",
+        "ovral",
+        "mala-d",
+        "mala d",
+        "loette",
+        "yasmin",
+        "yaz",
+        "novelon",
+        "femilon",
+        "levonorgestrel",
+        "ethinyl",
+        "drospirenone",
+        "desogestrel",
+        "dienogest",
+        "cerazette",
+        "i-pill",
+        "unwanted 72"
+      ]
+    },
+    "ssri_snri": {
+      "label": "SSRI / SNRI antidepressant",
+      "match": [
+        "sertraline",
+        "fluoxetine",
+        "escitalopram",
+        "citalopram",
+        "paroxetine",
+        "fluvoxamine",
+        "venlafaxine",
+        "desvenlafaxine",
+        "duloxetine",
+        "nexito",
+        "cipralex",
+        "daxid",
+        "serta",
+        "fludac",
+        "prodep",
+        "venlor",
+        "duzela",
+        "dulane"
+      ]
+    },
+    "nsaids": {
+      "label": "NSAID painkiller",
+      "match": [
+        "ibuprofen",
+        "brufen",
+        "combiflam",
+        "diclofenac",
+        "voveran",
+        "naproxen",
+        "aceclofenac",
+        "zerodol",
+        "hifenac",
+        "etoricoxib",
+        "nimesulide",
+        "nise",
+        "ketorolac",
+        "mefenamic",
+        "meftal",
+        "piroxicam",
+        "indomethacin",
+        "celecoxib"
+      ]
+    },
+    "statins": {
+      "label": "Statin",
+      "assessed_no_procedure_interaction": "Statins are not absorbed, cleared or dosed in a way any Karma here changes. Recognised so it is not reported as unchecked; the herb gate still checks it against each formulation.",
+      "match": [
+        "atorvastatin",
+        "rosuvastatin",
+        "simvastatin",
+        "pravastatin",
+        "pitavastatin",
+        "atorva",
+        "rosuvas",
+        "storvas",
+        "rozavel",
+        "lipicure"
+      ]
+    },
+    "acid_suppressants": {
+      "label": "Acid suppressant (PPI / H2 blocker)",
+      "assessed_no_procedure_interaction": "No procedure here changes their effect or safety. Recognised so it is not reported as unchecked.",
+      "match": [
+        "omeprazole",
+        "pantoprazole",
+        "pantocid",
+        "rabeprazole",
+        "razo",
+        "esomeprazole",
+        "lansoprazole",
+        "famotidine",
+        "ranitidine",
+        "omez",
+        "nexpro"
+      ]
+    },
+    "antiparkinson": {
+      "label": "Parkinson's medicine",
+      "match": [
+        "levodopa",
+        "carbidopa",
+        "syndopa",
+        "sinemet",
+        "tidomet",
+        "madopar",
+        "pramipexole",
+        "pramipex",
+        "ropinirole",
+        "ropark",
+        "rasagiline",
+        "selegiline",
+        "amantadine",
+        "entacapone"
+      ]
+    }
+  },
+  "_age_tokens_note": "Age reaches the gates as findings, the same way medicines do: `child` under 16 (Charaka Vimanasthana 8.122 — Dhatus mature at 16), `child_under_12`, `age_over_60` (Jirna from 60, same reference) and `elderly` over 70. Emitted by panchakarma_engine._patient_findings.",
+  "allergens": {
+    "_note": "What each declared allergy (the onboarding `allergies` vocabulary, shared with the diet path) is found in, across the substances a Panchakarma plan prescribes. `allergies` was read by no Panchakarma code, while the procedures are built on ghee, sesame oil, milk and honey: a dairy-allergic patient was planned up to 120 ml of ghee a day, a sesame-allergic one a daily sesame-oil massage and enema. Matching is on the plan's own text — formulation names, therapy steps and the ghee ladder — so a new formulation is screened without a new rule. Composition claims, not clinical ones: classical Tailas are prepared in sesame oil (Tila Taila) unless another base is named, and Ghritas in cow's ghee.",
+    "dairy": {
+      "label": "Dairy",
+      "terms": [
+        "ghee",
+        "ghrita",
+        "ksheera",
+        "milk",
+        "butter",
+        "takra",
+        "buttermilk",
+        "chyawanprash",
+        "navanita"
+      ],
+      "substitute": "an oil (Taila) Sneha in place of ghee, and water or another vehicle in place of milk"
+    },
+    "lactose": {
+      "label": "Lactose",
+      "terms": [
+        "ksheera",
+        "milk",
+        "takra",
+        "buttermilk"
+      ],
+      "substitute": "water or another vehicle in place of milk, and an oil not processed in milk. Clarified ghee carries almost no lactose and is usually tolerated; confirm with the Vaidya"
+    },
+    "sesame": {
+      "label": "Sesame",
+      "terms": [
+        "sesame",
+        "tila",
+        "taila",
+        "gingelly"
+      ],
+      "except": [
+        "sarshapa",
+        "mustard",
+        "narikela",
+        "coconut",
+        "eranda",
+        "castor"
+      ],
+      "substitute": "the same medicated oil prepared in a non-sesame base (coconut or mustard), or ghee where Sneha is internal"
+    },
+    "mustard": {
+      "label": "Mustard",
+      "terms": [
+        "mustard",
+        "sarshapa"
+      ],
+      "substitute": "a sesame or coconut base"
+    },
+    "honey": {
+      "label": "Honey",
+      "terms": [
+        "honey",
+        "madhu",
+        "chyawanprash"
+      ],
+      "substitute": "a Niruha decoction prepared without Madhu"
+    },
+    "fructose": {
+      "label": "Fructose (honey)",
+      "terms": [
+        "honey",
+        "madhu",
+        "chyawanprash"
+      ],
+      "substitute": "a preparation without Madhu"
+    },
+    "gluten": {
+      "label": "Gluten",
+      "terms": [
+        "wheat",
+        "godhuma",
+        "yava",
+        "barley"
+      ],
+      "substitute": "rice- or millet-based food in its place"
+    },
+    "gluten_sensitivity": {
+      "label": "Gluten sensitivity",
+      "terms": [
+        "wheat",
+        "godhuma",
+        "yava",
+        "barley"
+      ],
+      "substitute": "rice- or millet-based food in its place"
+    },
+    "nuts_tree": {
+      "label": "Tree nuts",
+      "terms": [
+        "almond",
+        "badam",
+        "cashew",
+        "walnut",
+        "pistachio"
+      ],
+      "substitute": "the preparation without nuts"
+    }
   }
 }

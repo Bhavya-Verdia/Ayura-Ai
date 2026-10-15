@@ -358,7 +358,7 @@ def test_the_shamana_regimen_comes_from_the_kb():
         assert regimen[dosha]["ahara"] and regimen[dosha]["vihara"]
         assert regimen[dosha]["principle"] and regimen[dosha]["sneha_matra"]
 
-    plan = generate_panchakarma_plan(_profile(age=78), _prefs())
+    plan = generate_panchakarma_plan(_profile(bmi=15.2), _prefs())
     chikitsa = plan["shamana_protocol"]["shamana_chikitsa"]
     assert chikitsa["ahara"] == regimen["vata"]["ahara"] or chikitsa["ahara"]
 

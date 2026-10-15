@@ -22,7 +22,7 @@ import json
 import pytest
 
 from routes.plan_runner import _check_plan_cache
-from services.panchakarma_engine import _menstruation_active
+from services.panchakarma_engine import _kriya_kala_assessment, _menstruation_active
 
 
 def _key(profile, prefs):
@@ -32,7 +32,8 @@ def _key(profile, prefs):
     src = inspect.getsource(_check_plan_cache)
     body = src[src.index("relevant_data = {"):src.index("pref_hash = hashlib")]
     loc = {"user_profile": profile, "feature_prefs": prefs,
-           "_menstruation_active": _menstruation_active}
+           "_menstruation_active": _menstruation_active,
+           "_kriya_kala_assessment": _kriya_kala_assessment}
     exec(body, {"sorted": sorted, "str": str, "round": round, "float": float}, loc)
     return hashlib.sha256(
         json.dumps(loc["relevant_data"], sort_keys=True).encode()).hexdigest()

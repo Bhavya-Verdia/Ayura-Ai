@@ -17,7 +17,7 @@ Open **`vaidya_medicine_review.csv`** (157 formulations). For each row, tick:
 Sort by `type` or `indications` to review related formulations together. Anything marked N with a correction is gold — it goes straight back into the KB.
 
 ## Part 2 — Panchakarma contraindications  (`vaidya_panchakarma_contraindications.csv`)
-299 authored contraindications gating Vamana, Virechana, Basti, Nasya, Raktamokshana, the 23 supporting therapies, and the individual herbs in every Aushadha the plan prescribes. **None has been clinically reviewed** — `contraindications_reviewed` is false on the whole file. Part 1 carries the larger credibility risk; this part carries the larger safety risk, because these are the only procedures in the app that can injure a patient directly.
+416 authored contraindications gating Vamana, Virechana, Basti, Nasya, Raktamokshana, the 23 supporting therapies, and the individual herbs in every Aushadha the plan prescribes. **None has been clinically reviewed** — `contraindications_reviewed` is false on the whole file. Part 1 carries the larger credibility risk; this part carries the larger safety risk, because these are the only procedures in the app that can injure a patient directly.
 
 Each row states the *mechanism* by which the condition and the procedure conflict, so you can reject a single claim without discarding the file. Columns to fill:
 - **severity_ok** — is `hard` (withhold + substitute) vs `soft` (proceed modified) right?
@@ -27,6 +27,15 @@ Each row states the *mechanism* by which the condition and the procedure conflic
 Rows with scope `herb` are per-constituent: a `hard` row withholds that herb from whichever formulation contains it and leaves the rest, so severity here decides between dropping one ingredient and dropping a whole preparation.
 
 Missing entries matter as much as wrong ones: if a condition should bar a procedure and is not listed, add a row.
+
+### Open questions where the authored rule and the classics disagree
+These were deliberately **not** settled by the author. Each needs a ruling.
+
+1. **Anaemia (Pandu) bars every Shodhana.** The engine treats `anemia` as an absolute bar and gives Shamana only. Charaka Chikitsa 16 prescribes the opposite for Pandu: oleate with ghee, then purify by both routes. The bar was kept because the app cannot know the haemoglobin, and severe anaemia is a modern contraindication to any depleting procedure. Should mild anaemia restrict to Mridu Virechana instead of barring?
+2. **A barred Snehapana bars the Karma it prepares.** Gallstones and acute pancreatitis bar Snehapana (a 60–120 ml fat load provokes biliary colic), so they now withdraw Vamana and Virechana and substitute Basti or Nasya. Is a Ruksha or short (Sadyo) Snehana the better answer than substitution?
+3. **Snehapana peak by Agni.** Manda Agni is held to 60 ml and Vishama to 90 ml (after Charaka Sutrasthana 13's Matra grading); Sama and Tikshna take the ladder in the KB. Are these caps right?
+4. **Pratimarsha Nasya is the default substitute.** Low Ojas, age over 70 and the Vamana age bar all substitute to Nasya, and a Kapha patient at home is given Nasya. Across 3,000 sampled profiles it is the Karma of 43% of plans. Is it the right default, or should a Pitta substitution go to Matra Basti?
+5. **Allergies are flagged, never substituted.** A dairy-allergic patient is told the ghee and milk-processed oils need a Vaidya's preparation; the engine does not choose a Taila Snehapana for them. Should it?
 
 ## Part 3 — Contraindication tokens  (`vaidya_contraindication_tokens.csv`)
 164 tokens appear in the medicines and home-remedy contraindication lists. They were written as notes for a human and then used as a machine gate, which matched them against the patient's history as plain strings — so most of them never fired. Making them work required deciding what each one means: which recorded diagnoses `autoimmune_disease` covers, whether `uncontrolled_diabetes` must bar every diabetic when the app cannot know how controlled anyone is, whether `pitta_excess` may be read off a constitution when no Vikriti assessment exists. **Those decisions were made by a non-clinician**, and each one moves a formulation between prescribed and withheld. Tick `interpretation_ok`, or write what it should be.
@@ -110,7 +119,7 @@ A disagreement rate is not a failure. An unmeasured instrument is.
 
 - Reviewer (name, BAMS/MD reg. no.): ____________________
 - Date: ____________  
-- Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/299 · contraindication tokens reviewed ___/164 · Karma tags reviewed ___/14 · cases reviewed ___/30
+- Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/416 · contraindication tokens reviewed ___/164 · Karma tags reviewed ___/14 · cases reviewed ___/30
 - Summary judgement (1–5) on classical accuracy of: Medicines __ · Panchakarma __ · Diet __ · Yoga __ · Routine __
 - Prakriti instrument study (Part 7): commissioned ☐ · scheduled ☐ · completed ☐ — participants ____
 
