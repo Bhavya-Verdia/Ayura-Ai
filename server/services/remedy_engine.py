@@ -305,6 +305,8 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
     medical_history = user_profile.get("medical_history") or []
     allergies = user_profile.get("allergies") or []
     allergen_entries = _allergen_entries(allergies)
+    remedy_classes = _patient_classes(user_profile.get("current_medications") or [],
+                                      symptom_input.get("current_allopathic_medications") or [])
     dominant_dosha = user_profile.get("dominant_dosha", "vata").lower()
     # Only a recorded second Dosha. It defaulted to "pitta", so a Kapha patient
     # whose Kapha remedy was unsafe was handed the Pitta one — Shatavari in coconut
@@ -499,6 +501,12 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
                         for interaction in interactions:
                             if interaction in med_l:
                                 return False, {"interaction_found": True, "medication": med, "herb": herb}
+
+            # e2) The authored herb x medicine table the medicines plan reads.
+            bar, notes = _interaction_findings(herbs_in(ingredients_text), remedy_classes)
+            if bar:
+                return False, bar
+            candidate_notes.extend(notes)
 
             # f) Allergy filter — by composition, over the ingredients and the method.
             method = " ".join([ingredients_text, str(cand_remedy.get("preparation") or ""),
@@ -1024,9 +1032,22 @@ def _score_medicine(
     if ama_level in ("high", "moderate") and karma_set.intersection(_AMA_KARMA):
         score += 3 if ama_level == "high" else 1
 
-    # 7. Season penalty (−5 if medicine should be avoided in current season)
-    if current_season and current_season.lower() in [s.lower() for s in med.get("season_avoid", [])]:
+    # 7. Season penalty (−5 if medicine should be avoided in current season).
+    # Normalised: three entries said "summer" while the app stores "grishma", so
+    # they never fired.
+    from services.panchakarma_engine import _current_ritu
+    if current_season and current_season.lower() in {_current_ritu(x) for x in med.get("season_avoid", [])}:
         score -= 5
+
+    # 8. Ritucharya by Virya (Ashtanga Hridaya Sutrasthana 3). Only 36 of 157
+    # formulations carry a `season_avoid`, so the season decided almost nothing;
+    # every formulation carries a Virya. Cooling medicines suit the Pitta seasons,
+    # warming ones the cold — a nudge, below a condition match.
+    virya = (med.get("virya") or "").lower()
+    if current_season in ("grishma", "sharad"):
+        score += 1 if virya == "sheeta" else -2 if virya == "ushna" else 0
+    elif current_season in ("hemanta", "shishira", "varsha", "vasanta"):
+        score += 1 if virya == "ushna" else -1 if virya == "sheeta" and current_season != "vasanta" else 0
 
     return score
 
@@ -1154,6 +1175,27 @@ def _build_treatment_protocol(
 # `restrict_bhasma` uses the same boundary, so paediatric dosing uses it too rather
 # than inventing a third definition of "child" in the same file.
 PAEDIATRIC_AGE = 12
+ADOLESCENT_AGE = 16
+ELDER_START_LOW_AGE = 75
+FALLS_CAUTION_AGE = 65
+_SEDATING_HERBS = {"jatamansi", "tagara", "sarpagandha", "ashwagandha", "brahmi", "shankhpushpi"}
+
+
+def _lower_end(dose: str) -> str:
+    """'3–5g with warm water' → '3g with warm water'; '1–2 tablets' → '1 tablet'."""
+    def repl(m):
+        low, space, unit = m.group(1), m.group(2), m.group(3) or ""
+        if unit.startswith("tablet"):
+            unit = "tablet" if low == "1" else "tablets"
+        return f"{low}{space}{unit}"
+    dose = dose or ""
+    # "500mg–1g": a unit on each end.
+    two_units = re.sub(r"(\d+(?:\.\d+)?\s*(?:mg|g|ml))\s*(?:–|-|to)\s*\d+(?:\.\d+)?\s*(?:mg|g|ml)\b",
+                       r"\1", dose, count=1)
+    if two_units != dose:
+        return two_units
+    return re.sub(r"(\d+(?:\.\d+)?)\s*(?:–|-|to)\s*\d+(?:\.\d+)?(\s*)(mg|g|ml|tablets?|tsp|tbsp)?",
+                  repl, dose, count=1)
 
 
 def _apply_patient_dosage(med: dict, age: int) -> None:
@@ -1168,6 +1210,26 @@ def _apply_patient_dosage(med: dict, age: int) -> None:
 
     Mutates a COPY — see `_annotate`. Never hand this a `_MEDICINES_KB` entry.
     """
+    if age >= ELDER_START_LOW_AGE:
+        # Start low: Agni and clearance both fall with age, and a frail patient is
+        # where an adult-range dose does harm first.
+        lower = _lower_end(med.get("dosage", ""))
+        if lower != med.get("dosage", ""):
+            med["dosage_adult"] = med.get("dosage", "")
+            med["dosage"] = lower
+            med["dosage_basis"] = "older adult (start at the lower end; the Vaidya may raise it)"
+        return
+    if PAEDIATRIC_AGE <= age < ADOLESCENT_AGE:
+        # 12–15 sat on the full adult range. Under 16 the Dhatus are still forming
+        # (Charaka Vimanasthana 8.122, the line Panchakarma draws), so they take the
+        # bottom of it: "3–5g" becomes "3g". The range's own floor, not an invented
+        # fraction — the author of every range already judged that figure safe.
+        lower = _lower_end(med.get("dosage", ""))
+        if lower != med.get("dosage", ""):
+            med["dosage_adult"] = med.get("dosage", "")
+            med["dosage"] = lower
+            med["dosage_basis"] = "adolescent (lower end of the adult range)"
+        return
     if age >= PAEDIATRIC_AGE:
         return
     paediatric = (med.get("dosage_pediatric") or "").strip()
@@ -1321,6 +1383,92 @@ def _is_mineral(med: dict) -> bool:
     return any(k in text for k in _MINERAL_MARKERS)
 
 
+# The form's category chips, as medication classes.
+_FORM_CATEGORY_CLASSES = {
+    "blood_thinners": ["anticoagulants", "antiplatelets"],
+    "diabetes_medication": ["insulin_or_sulfonylurea", "metformin"],
+    "thyroid_medication": ["thyroid_hormone"],
+    "antihypertensives": ["antihypertensives"],
+    "immunosuppressants": ["immunosuppressants", "corticosteroids"],
+    "sedatives": ["sedatives"],
+    "antiepileptics": ["antiepileptics"],
+    "antidepressants": ["ssri_snri"],
+    "cardiac_glycosides": ["digoxin"],
+    "nsaids": ["nsaids"],
+    "hormone_therapy": ["hormonal_contraceptives"],
+    "antibiotics": ["metronidazole_disulfiram"],
+}
+
+
+def _patient_classes(typed, form_categories) -> set[str]:
+    from services.panchakarma_engine import _medication_findings
+    out = set(_medication_findings(typed or [])["tokens"])
+    for c in form_categories or []:
+        out |= set(_FORM_CATEGORY_CLASSES.get(str(c).lower(), []))
+    return out
+
+
+def _herb_keys(med: dict) -> set[str]:
+    keys = set(_active_herbs(med))
+    if _formulation_class(med) == "fermented":
+        keys.add("@fermented")
+    return keys
+
+
+def _interaction_findings(herbs: set[str], classes: set[str]) -> tuple[str | None, list[str]]:
+    """Major (withhold, reason) and moderate (cautions) herb x medicine findings."""
+    from services.panchakarma_engine import pk_clinical
+    labels = {k: v.get("label", k) for k, v in (pk_clinical.get("medication_classes") or {}).items()
+              if isinstance(v, dict)}
+    cautions: list[str] = []
+    for rule in (pk_clinical.get("herb_drug_interactions") or {}).get("rules", []):
+        h = herbs & set(rule["herbs"])
+        c = classes & set(rule["classes"])
+        if not (h and c):
+            continue
+        herb = "the alcohol in it" if h == {"@fermented"} else ", ".join(sorted(x for x in h if x != "@fermented"))
+        med = ", ".join(sorted(labels.get(x, x).lower() for x in c))
+        text = f"{herb.title() if herb[0] != 't' else herb} with your {med}: {rule['mechanism']}"
+        if rule["severity"] == "major":
+            return f"Interaction — {text}", []
+        cautions.append(text)
+    return None, cautions
+
+
+def _formulation_rule_findings(med: dict, medical_history, age: int,
+                               classes: set[str] | None = None) -> tuple[str | None, list[str]]:
+    """What the formulation's base and metal rule out for this patient."""
+    from services.panchakarma_engine import pk_clinical
+    rules = pk_clinical.get("formulation_rules") or {}
+    t = (med.get("type") or "").lower()
+    name = med.get("name", "")
+    has = lambda conds: next((c for c in medical_history or []
+                              if any(condition_matches_term(c, x) for x in conds)), None)
+    hm = rules.get("heavy_metal") or {}
+    text = (" ".join(med.get("ingredients") or []) + " " + name).lower()
+    if any(re.search(rf"\b{re.escape(m)}\b", text) for m in hm.get("markers", [])) \
+            or name in hm.get("classical_contains", []):
+        return f"Prescribed in person only: {hm.get('mechanism', '')}", []
+    cautions: list[str] = []
+    fermented = _formulation_class(med) == "fermented"
+    if fermented and age < int(rules.get("fermented_minor_age") or 18):
+        return ("Contains self-generated alcohol (an Arishta or Asava) — not given under 18 "
+                "without a Vaidya setting the dose."), []
+    es = rules.get("fermented_elderly_sedative") or {}
+    if fermented and age >= int(es.get("min_age") or 200) and set(es.get("classes") or []) & (classes or set()):
+        return f"Withheld at {age} with your sleeping or sedating medicine: {es['mechanism']}", []
+    sb = rules.get("sugar_base") or {}
+    if any(k in t for k in sb.get("types", [])) and (c := has(sb.get("conditions", []))):
+        return f"Contraindicated with {c.replace('_', ' ')}: {sb['mechanism']}", []
+    for key in ("fermented_alcohol", "fermented_sugar", "fermented_reflux"):
+        r = rules.get(key) or {}
+        if fermented and (c := has(r.get("conditions", []))):
+            if r.get("severity") == "major":
+                return f"Contraindicated with {c.replace('_', ' ')}: {r['mechanism']}", []
+            cautions.append(f"{c.replace('_', ' ').capitalize()}: {r['mechanism']}")
+    return None, cautions
+
+
 def _herb_table_findings(med: dict, findings: list[str]) -> tuple[str | None, list[str]]:
     """Hard bar (reason) and soft cautions from the shared per-herb safety table."""
     from services.panchakarma_engine import _match_contraindications, pk_clinical
@@ -1401,7 +1549,11 @@ def generate_medicines_plan(
     vikriti_secondary = (user_profile.get("vikriti_secondary") or secondary_dosha).lower()
     agni_type   = (user_profile.get("agni_type") or "sama").lower()
     ama_level   = (user_profile.get("ama_indicator") or "low").lower()
-    season      = (user_profile.get("current_season") or "").lower()
+    # The Ritu the rest of the app uses — `current_season` when declared, else the
+    # calendar. An empty season switched the seasonal signal off for everyone who
+    # never set one.
+    from services.panchakarma_engine import _current_ritu
+    season      = _current_ritu(user_profile.get("current_season"))
     is_pregnant = bool(user_profile.get("pregnancy_or_nursing", False))
     gender      = (user_profile.get("gender") or "").lower()
     age         = int(user_profile.get("age") or 30)
@@ -1488,6 +1640,7 @@ def generate_medicines_plan(
     herb_findings = list(medical_history) + _patient_findings(user_profile) + (
         ["pregnancy"] if is_pregnant else [])
     herb_notes: dict[str, list[str]] = {}
+    patient_classes = _patient_classes(current_meds_profile, current_meds_prefs)
     scored:  list[tuple[int, dict]] = []
     blocked: list[dict] = []
 
@@ -1528,6 +1681,12 @@ def generate_medicines_plan(
         # was fixed for Panchakarma and this plan still did both — Shilajit is even
         # listed here as *indicated* for kidney disease. One herb, one table.
         herb_bar, herb_cautions = _herb_table_findings(med, herb_findings)
+        if not herb_bar:
+            herb_bar, more = _interaction_findings(_herb_keys(med), patient_classes)
+            herb_cautions += more
+        if not herb_bar:
+            herb_bar, more = _formulation_rule_findings(med, medical_history, age, patient_classes)
+            herb_cautions += more
         if herb_bar:
             blocked.append({"name": med["name"], "reason": herb_bar})
             continue
@@ -1701,6 +1860,11 @@ def generate_medicines_plan(
             m["usage_cautions"], m["red_flags"] = usage_notes(m.get("contraindications"))
             m["usage_cautions"] += assumed_state_notes(m.get("contraindications"), derived_states)
             m["usage_cautions"] += herb_notes.get(m["name"], [])
+            if age >= FALLS_CAUTION_AGE and (_active_herbs(m) & _SEDATING_HERBS
+                                             or _formulation_class(m) == "fermented"):
+                m["usage_cautions"].append(
+                    "Can cause drowsiness or unsteadiness — take it at night, rise slowly, and "
+                    "stop if you feel light-headed (falls are the main risk after 65).")
             _apply_patient_dosage(m, age)
             out.append(m)
         return out
@@ -1726,9 +1890,26 @@ def generate_medicines_plan(
     shodhana_withheld = None
     shodhana_strength = "full" if chikitsa_approach == "Shodhana" else None
     if chikitsa_approach == "Shodhana":
-        from services.panchakarma_engine import _determine_shodhana_or_shamana, pk_protocols
-        verdict = _determine_shodhana_or_shamana(
-            user_profile, {"setting": "clinic", "detox_experience": "some"}, pk_protocols)
+        from services.panchakarma_engine import generate_panchakarma_plan
+        # The whole engine, not its eligibility step alone: the medicine and
+        # condition bars apply when a Karma is chosen, so eligibility alone told a
+        # transplant patient on tacrolimus, steroids and insulin that purification
+        # was indicated.
+        pk_plan = generate_panchakarma_plan(
+            {**user_profile, "current_medications": current_meds_profile},
+            {"setting": "clinic", "detox_experience": "some", "available_time_days": 14})
+        verdict = dict(pk_plan["clinical_decisions"]["shodhana_or_shamana"])
+        karma = (pk_plan["clinical_decisions"].get("pradhana_karma_selected") or {})
+        if verdict.get("type") != "shamana" and not karma.get("primary"):
+            verdict = {"type": "shamana", "blocking_reasons": [
+                "no purification procedure is safe with your conditions and medicines"]}
+        elif karma.get("safety_substitution"):
+            verdict.setdefault("restricting_reasons", [])
+            verdict["restricting_reasons"] = list(verdict["restricting_reasons"]) + [
+                f"only {karma['primary'].replace('_', ' ').title()} would be safe for you — "
+                f"{karma.get('original_karma', 'the usual Karma').title()} is not"]
+            if verdict.get("type") == "shodhana":
+                verdict["type"] = "mridu_shodhana"
         if verdict.get("type") == "shamana":
             chikitsa_approach = "Shamana"
             shodhana_withheld = (
@@ -1738,7 +1919,7 @@ def generate_medicines_plan(
         elif verdict.get("type") == "mridu_shodhana":
             shodhana_strength = "mridu"
             shodhana_withheld = (
-                "Only mild (Mridu) purification is suitable for you, never Vamana: "
+                "Only a mild or restricted purification is suitable for you, never Vamana: "
                 + "; ".join(verdict.get("restricting_reasons") or []) + ".")
 
     return {

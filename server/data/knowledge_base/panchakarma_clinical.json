@@ -48,7 +48,9 @@
         "child_under_12": "The KB lists children under 12 as absolute for Vamana. The forceful Vega and the volume of milk or Yashtimadhu decoction given to fill the stomach are adult quantities for an adult oesophagus.",
         "age_over_60": "Charaka Siddhisthana 2 names the Vriddha among those not to be given emesis, and Charaka Vimanasthana 8.122 places Jirna (old age) from 60. Retching raises intrathoracic and arterial pressure in a vasculature that no longer buffers it.",
         "diabetes_type1": "Vomiting with insulin on board is the textbook trigger of diabetic ketoacidosis, and the fasting Snehapana before it a hypoglycaemia window. Vamana induces both on purpose in a patient with no insulin of their own.",
-        "hernia": "Forceful retching raises intra-abdominal pressure — the mechanism by which a hernia enlarges or strangulates."
+        "hernia": "Forceful retching raises intra-abdominal pressure — the mechanism by which a hernia enlarges or strangulates.",
+        "chronic_kidney_disease": "Emesis after a large fluid load swings volume and electrolytes; a diseased kidney has no reserve, and acute kidney injury follows.",
+        "calcineurin_inhibitors": "Vomiting or purgation loses doses of a drug with a narrow window — too little and a transplanted organ is rejected; dehydration with too much and the kidney is poisoned. Levels must be checked by the transplant team before any expulsive Karma."
       },
       "soft": {
         "anxiety": "Vamana is a frightening procedure; the KB names severe psychological fragility as relative. Sattvavajaya preparation is required first.",
@@ -105,7 +107,8 @@
         "atidurbala": "Extreme depletion — as underweight.",
         "sickle_cell": "Purgative fluid loss haemoconcentrates the blood and precipitates vaso-occlusive crisis.",
         "lithium": "Purgation is controlled diarrhoea, and diarrhoeal dehydration is the commonest cause of lithium toxicity.",
-        "digoxin": "Purgation loses potassium; hypokalaemia sensitises the heart to digoxin."
+        "digoxin": "Purgation loses potassium; hypokalaemia sensitises the heart to digoxin.",
+        "calcineurin_inhibitors": "Vomiting or purgation loses doses of a drug with a narrow window — too little and a transplanted organ is rejected; dehydration with too much and the kidney is poisoned. Levels must be checked by the transplant team before any expulsive Karma."
       },
       "soft": {
         "liver_disease": "Use Triphala only — the mildest Virechaka. Avoid Trivrit and Eranda entirely.",
@@ -178,7 +181,8 @@
         "antiplatelets": "As anticoagulants, to a lesser degree — a soft catheter, and stop at any blood.",
         "insulin_or_sulfonylurea": "Niruha is given on an empty stomach and holds honey; check glucose around each Niruha. Anuvasana and Matra Basti follow food and carry no such swing.",
         "immunosuppressants": "Rectal instrumentation on immunosuppression is a bacteraemia risk; sterile Netra, and report any fever.",
-        "corticosteroids": "Do not stop a long-term steroid for the course."
+        "corticosteroids": "Do not stop a long-term steroid for the course.",
+        "calcineurin_inhibitors": "Niruha can cause loose stools and affect absorption of a narrow-window drug; the transplant team should know, and levels checked after the course."
       },
       "restrict_to": {
         "basti_matra": {
@@ -605,6 +609,17 @@
         "blood_pressure_meds"
       ]
     },
+    "danti": {
+      "display": "Danti (purgative)",
+      "hard": {
+        "ulcerative_colitis": "A drastic purgative on an inflamed colon.",
+        "ibd_crohns": "A drastic purgative inflames a bowel already ulcerated by Crohn's disease and can provoke a flare.",
+        "diarrhea": "A drastic purgative given into an existing diarrhoea deepens dehydration and electrolyte loss.",
+        "pregnancy": "Drastic purgative — barred in Garbhini."
+      },
+      "soft": {},
+      "medication_classes": []
+    },
     "dashamoola": {
       "display": "Dashamoola",
       "hard": {},
@@ -700,6 +715,19 @@
       },
       "medication_classes": []
     },
+    "kumari": {
+      "display": "Kumari (aloe)",
+      "hard": {
+        "menorrhagia": "Artava-pravartaka: aloe brings on and increases menstrual flow, the opposite of what heavy bleeding needs.",
+        "pregnancy": "Emmenagogue and purgative (the dried latex); classically barred in Garbhini.",
+        "ulcerative_colitis": "The anthraquinones in aloe are purgative and irritate an inflamed colon.",
+        "ibd_crohns": "As ulcerative colitis — purgative anthraquinones on an ulcerated bowel."
+      },
+      "soft": {
+        "hemorrhoids": "Loose stools from the latex irritate piles; use the gel, not the dried powder."
+      },
+      "medication_classes": []
+    },
     "kutaja": {
       "display": "Kutaja",
       "hard": {
@@ -715,6 +743,26 @@
       },
       "soft": {
         "chronic_kidney_disease": "Colours the urine red, which can mask haematuria — warn the patient and their physician."
+      },
+      "medication_classes": []
+    },
+    "mukta": {
+      "display": "Mukta Pishti (pearl calcium)",
+      "hard": {
+        "kidney_stones": "A calcium carbonate supplement taken without a deficiency to correct adds to the calcium a stone former excretes."
+      },
+      "soft": {
+        "chronic_kidney_disease": "A calcium load the kidney must clear; calcium and phosphate should be monitored."
+      },
+      "medication_classes": []
+    },
+    "praval": {
+      "display": "Praval Pishti (coral calcium)",
+      "hard": {
+        "kidney_stones": "A calcium carbonate supplement taken without a deficiency to correct adds to the calcium a stone former excretes."
+      },
+      "soft": {
+        "chronic_kidney_disease": "A calcium load the kidney must clear; calcium and phosphate should be monitored."
       },
       "medication_classes": []
     },
@@ -776,7 +824,8 @@
       },
       "soft": {
         "pcos": "Phytoestrogenic — beneficial in Artava Kshaya but review with the treating physician in oestrogen-dominant PCOS.",
-        "obesity": "Guru and Brimhana; increases Kapha and weight."
+        "obesity": "Guru and Brimhana; increases Kapha and weight.",
+        "endometriosis": "Phytoestrogenic, in a disease driven by oestrogen — the treating gynaecologist should agree before it is taken."
       },
       "medication_classes": [
         "oral_contraceptives"
@@ -829,6 +878,19 @@
       "soft": {
         "high_cholesterol": "A daily ghee-based preparation needs lipid monitoring.",
         "obesity": "Guru and Snigdha — increases Kapha and Meda."
+      },
+      "medication_classes": []
+    },
+    "trivrit": {
+      "display": "Trivrit (purgative)",
+      "hard": {
+        "ulcerative_colitis": "A purgative drives an inflamed colon; it can provoke a flare and bleeding.",
+        "ibd_crohns": "As ulcerative colitis — purgation inflames the diseased bowel.",
+        "diarrhea": "A purgative given into an existing diarrhoea worsens dehydration.",
+        "pregnancy": "Purgatives stimulate the pelvic organs; classically barred in Garbhini."
+      },
+      "soft": {
+        "hemorrhoids": "Repeated loose stools irritate piles; the lower dose and a short course."
       },
       "medication_classes": []
     },
@@ -1344,6 +1406,26 @@
         "metronidazole",
         "disulfiram"
       ]
+    },
+    "calcineurin_inhibitors": {
+      "label": "Tacrolimus / cyclosporine",
+      "match": [
+        "tacrolimus",
+        "pangraf",
+        "tacrograf",
+        "cyclosporine",
+        "ciclosporin",
+        "sandimmun",
+        "neoral",
+        "sirolimus",
+        "rapamune",
+        "everolimus"
+      ],
+      "remedy_tokens": [
+        "cyclosporine",
+        "tacrolimus",
+        "immunosuppressants"
+      ]
     }
   },
   "_age_tokens_note": "Age reaches the gates as findings, the same way medicines do: `child` under 16 (Charaka Vimanasthana 8.122 — Dhatus mature at 16), `child_under_12`, `age_over_60` (Jirna from 60, same reference) and `elderly` over 70. Emitted by panchakarma_engine._patient_findings.",
@@ -1448,6 +1530,292 @@
         "pistachio"
       ],
       "substitute": "the preparation without nuts"
+    }
+  },
+  "herb_drug_interactions": {
+    "_note": "Herb x medicine-class interactions for the medicines and home-remedy plans, by herb key (engine.herb_overlap.herbs_in), so a constituent is caught under any formulation name. `major` withholds the formulation; `moderate` serves it with the mechanism shown. `@fermented` is the self-generated alcohol of every Arishta and Asava. The medicines plan matched category WORDS before this, so lithium was served Punarnava, digoxin Yashtimadhu and tacrolimus Trikatu. AUTHORED, NOT CLINICALLY REVIEWED.",
+    "rules": [
+      {
+        "herbs": [
+          "guggulu"
+        ],
+        "classes": [
+          "anticoagulants",
+          "antiplatelets"
+        ],
+        "severity": "major",
+        "mechanism": "Guggulu inhibits platelet aggregation; with an anticoagulant or antiplatelet the bleeding risk rises."
+      },
+      {
+        "herbs": [
+          "haridra",
+          "arjuna"
+        ],
+        "classes": [
+          "anticoagulants",
+          "antiplatelets"
+        ],
+        "severity": "moderate",
+        "mechanism": "Antiplatelet activity at therapeutic doses adds to the medicine's effect — the INR or bleeding time should be checked after starting."
+      },
+      {
+        "herbs": [
+          "shunthi",
+          "lashuna"
+        ],
+        "classes": [
+          "anticoagulants"
+        ],
+        "severity": "moderate",
+        "mechanism": "Ginger and garlic inhibit platelets; small amounts in a compound are usually tolerated, but report any bruising or bleeding."
+      },
+      {
+        "herbs": [
+          "yashtimadhu"
+        ],
+        "classes": [
+          "digoxin",
+          "diuretics",
+          "corticosteroids"
+        ],
+        "severity": "major",
+        "mechanism": "Glycyrrhizin causes potassium loss and sodium retention (pseudo-aldosteronism). Low potassium provokes digoxin toxicity, adds to a diuretic's potassium loss, and liquorice slows the clearance of corticosteroids."
+      },
+      {
+        "herbs": [
+          "yashtimadhu"
+        ],
+        "classes": [
+          "antihypertensives"
+        ],
+        "severity": "moderate",
+        "mechanism": "Liquorice retains sodium and raises blood pressure against the medicine."
+      },
+      {
+        "herbs": [
+          "punarnava",
+          "gokshura"
+        ],
+        "classes": [
+          "lithium"
+        ],
+        "severity": "major",
+        "mechanism": "Diuretic herbs reduce lithium clearance; lithium rises toward toxic levels."
+      },
+      {
+        "herbs": [
+          "punarnava",
+          "gokshura"
+        ],
+        "classes": [
+          "diuretics"
+        ],
+        "severity": "moderate",
+        "mechanism": "Additive diuresis — dehydration and electrolyte loss. Monitor weight and potassium."
+      },
+      {
+        "herbs": [
+          "shankhpushpi"
+        ],
+        "classes": [
+          "antiepileptics"
+        ],
+        "severity": "major",
+        "mechanism": "Shankhpushpi lowers phenytoin blood levels (documented interaction); seizure control can be lost."
+      },
+      {
+        "herbs": [
+          "brahmi",
+          "jatamansi",
+          "tagara",
+          "sarpagandha",
+          "ashwagandha"
+        ],
+        "classes": [
+          "sedatives"
+        ],
+        "severity": "major",
+        "mechanism": "Additive CNS depression with benzodiazepines and other sedatives — drowsiness, slowed breathing, falls."
+      },
+      {
+        "herbs": [
+          "sarpagandha"
+        ],
+        "classes": [
+          "ssri_snri",
+          "antiparkinson",
+          "antihypertensives"
+        ],
+        "severity": "major",
+        "mechanism": "Reserpine depletes monoamines: it causes depression, worsens parkinsonism and adds to blood-pressure medicines."
+      },
+      {
+        "herbs": [
+          "kanchanara",
+          "guggulu",
+          "ashwagandha"
+        ],
+        "classes": [
+          "thyroid_hormone"
+        ],
+        "severity": "moderate",
+        "mechanism": "Thyroid-active herbs change the thyroxine requirement — thyroid function should be rechecked at six weeks."
+      },
+      {
+        "herbs": [
+          "pippali",
+          "maricha"
+        ],
+        "classes": [
+          "calcineurin_inhibitors"
+        ],
+        "severity": "major",
+        "mechanism": "Piperine inhibits CYP3A4 and P-glycoprotein and raises tacrolimus and cyclosporine levels toward toxicity."
+      },
+      {
+        "herbs": [
+          "guduchi",
+          "ashwagandha"
+        ],
+        "classes": [
+          "immunosuppressants",
+          "calcineurin_inhibitors",
+          "corticosteroids"
+        ],
+        "severity": "moderate",
+        "mechanism": "Immunostimulant herbs work against an immunosuppressant; the prescriber should know."
+      },
+      {
+        "herbs": [
+          "gudmar",
+          "karela",
+          "methi",
+          "jambu",
+          "shilajit",
+          "vijaysar",
+          "nimba",
+          "guduchi"
+        ],
+        "classes": [
+          "insulin_or_sulfonylurea"
+        ],
+        "severity": "moderate",
+        "mechanism": "Additive glucose lowering — check blood sugar more often and carry glucose."
+      },
+      {
+        "herbs": [
+          "@fermented"
+        ],
+        "classes": [
+          "metronidazole_disulfiram"
+        ],
+        "severity": "major",
+        "mechanism": "Arishtas and Asavas contain self-generated alcohol; with metronidazole or disulfiram it causes a disulfiram reaction — flushing, vomiting, palpitations."
+      },
+      {
+        "herbs": [
+          "@fermented"
+        ],
+        "classes": [
+          "sedatives"
+        ],
+        "severity": "moderate",
+        "mechanism": "The alcohol in an Arishta or Asava adds to a sedative."
+      },
+      {
+        "herbs": [
+          "trivrit",
+          "danti",
+          "jayapala",
+          "eranda",
+          "aragvadha"
+        ],
+        "classes": [
+          "digoxin",
+          "lithium",
+          "diuretics"
+        ],
+        "severity": "moderate",
+        "mechanism": "Purgation loses potassium and water, which raises digoxin and lithium toxicity and adds to a diuretic."
+      }
+    ]
+  },
+  "formulation_rules": {
+    "_note": "Rules on what a formulation IS — its base and its metal — rather than a single herb. AUTHORED, NOT CLINICALLY REVIEWED.",
+    "sugar_base": {
+      "types": [
+        "avaleha",
+        "gulam",
+        "pak",
+        "lehya",
+        "khanda"
+      ],
+      "conditions": [
+        "diabetes_type1",
+        "diabetes_type2"
+      ],
+      "severity": "major",
+      "mechanism": "Avalehas, Gulams and Khandas are prepared in sugar or jaggery — often half the preparation by weight."
+    },
+    "fermented_sugar": {
+      "conditions": [
+        "diabetes_type1",
+        "diabetes_type2"
+      ],
+      "severity": "moderate",
+      "mechanism": "Arishtas and Asavas are fermented from jaggery and keep residual sugar; check blood glucose after starting."
+    },
+    "fermented_alcohol": {
+      "conditions": [
+        "fatty_liver",
+        "liver_disease",
+        "hepatitis",
+        "cirrhosis",
+        "alcohol_dependence",
+        "pancreatitis"
+      ],
+      "severity": "major",
+      "mechanism": "Self-generated alcohol (typically 5-10%) in a liver that is already diseased. Kumaryasava is classically a liver medicine — contested; see the packet."
+    },
+    "fermented_reflux": {
+      "conditions": [
+        "acid_reflux",
+        "gastritis",
+        "peptic_ulcer"
+      ],
+      "severity": "moderate",
+      "mechanism": "Alcohol relaxes the lower oesophageal sphincter and irritates the gastric lining."
+    },
+    "fermented_minor_age": 18,
+    "heavy_metal": {
+      "markers": [
+        "parada",
+        "mercury",
+        "hingula",
+        "rasa sindoor",
+        "rasasindoor",
+        "tamra bhasma",
+        "copper",
+        "naga bhasma",
+        "vanga bhasma",
+        "manahshila",
+        "haratala",
+        "arsenic",
+        "lead"
+      ],
+      "classical_contains": [
+        "Arogyavardhini Vati"
+      ],
+      "mechanism": "Rasa Aushadhi containing mercury, copper, lead, tin or arsenic compounds are prescribed in person and monitored (liver and kidney function), never self-administered.",
+      "_markers_note": "Whole terms only. Naga, Vanga and Tamra are named with 'bhasma' because the bare words sit inside herb names — Nagakeshara, Lavanga — and withheld two herbal formulations as metals."
+    },
+    "fermented_elderly_sedative": {
+      "min_age": 65,
+      "classes": [
+        "sedatives"
+      ],
+      "severity": "major",
+      "mechanism": "Alcohol with a sleeping or sedating medicine in an older adult — the combination the Beers criteria list as a cause of falls and confusion."
     }
   }
 }

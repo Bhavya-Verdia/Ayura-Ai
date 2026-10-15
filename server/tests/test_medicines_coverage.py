@@ -324,3 +324,149 @@ def test_narrative_in_a_script_the_gate_cannot_read_is_not_served():
     out, withheld = gate_remedy_enrichment({"dose_note": "अग्नि सम है, इसलिए औषधि को सामान्य मात्रा से शुरू करें।"},
                                            plan, prof, ("pathya",))
     assert out["dose_note"] == "" and "Devanagari" in withheld[0]["reason"]
+
+
+# ── Herb x medicine: the documented interactions withhold, by herb ─────────────
+
+@pytest.mark.parametrize("typed,herbs", [
+    ("Licab 300", {"punarnava", "gokshura"}),            # lithium
+    ("Lanoxin", {"yashtimadhu"}),                         # digoxin
+    ("Wysolone 10", {"yashtimadhu"}),                     # prednisolone
+    ("Pangraf 1mg", {"pippali", "maricha"}),              # tacrolimus — piperine, CYP3A4
+    ("Eptoin 100 phenytoin", {"shankhpushpi"}),
+    ("clonazepam", {"jatamansi", "tagara", "sarpagandha", "ashwagandha", "brahmi"}),
+])
+def test_a_documented_interaction_is_never_served(typed, herbs):
+    for d in ("vata", "pitta", "kapha"):
+        for cond in ("osteoarthritis", "anxiety", "kidney_stones", "asthma", "obesity"):
+            plan = generate_medicines_plan(_p(dominant_dosha=d, vikriti_dominant=d, medical_history=[cond],
+                                              current_medications=[typed]), {}, [])
+            for m in _internal(plan):
+                assert not (R._active_herbs(m) & herbs), (typed, m["name"])
+
+
+def test_no_arishta_with_metronidazole():
+    plan = generate_medicines_plan(_p(medical_history=["ibs"], current_medications=["Flagyl 400"]), {}, [])
+    assert not any(R._formulation_class(m) == "fermented" for m in _internal(plan))
+
+
+def test_a_moderate_interaction_is_served_with_its_mechanism():
+    plan = generate_medicines_plan(_p(medical_history=["osteoarthritis"], current_medications=["warfarin"]), {}, [])
+    cautions = [c for m in _internal(plan) for c in m["usage_cautions"]]
+    assert any("anticoagulant" in c for c in cautions)
+
+
+def test_the_form_chips_reach_the_herb_table():
+    plan = generate_medicines_plan(_p(medical_history=["anxiety"]),
+                                   {"current_allopathic_medications": ["sedatives"]}, [])
+    assert not any(R._active_herbs(m) & {"jatamansi", "tagara", "ashwagandha", "brahmi"} for m in _internal(plan))
+
+
+# ── What a formulation is made of ─────────────────────────────────────────────
+
+def test_no_mercury_or_copper_preparation_is_self_served():
+    for cond in ("fatty_liver", "asthma", "obesity"):
+        plan = generate_medicines_plan(_p(medical_history=[cond]), {}, [])
+        assert "Arogyavardhini Vati" not in _names(plan)
+        assert not any("parada" in json.dumps(m).lower() for m in _internal(plan))
+
+
+@pytest.mark.parametrize("age", [13, 16, 17])
+def test_no_alcohol_based_preparation_under_18(age):
+    for cond in ("menorrhagia", "acne_severe", "ibs", "anemia"):
+        plan = generate_medicines_plan(_p(age=age, medical_history=[cond]), {}, [])
+        assert not any(R._formulation_class(m) == "fermented" for m in _internal(plan))
+
+
+def test_no_alcohol_based_preparation_in_liver_disease():
+    plan = generate_medicines_plan(_p(medical_history=["fatty_liver"]), {}, [])
+    assert not any(R._formulation_class(m) == "fermented" for m in _internal(plan))
+
+
+def test_no_sugar_based_jam_for_a_diabetic():
+    for d in ("vata", "pitta", "kapha"):
+        plan = generate_medicines_plan(_p(dominant_dosha=d, vikriti_dominant=d,
+                                          medical_history=["diabetes_type2", "anemia"]), {}, [])
+        for m in _internal(plan):
+            assert not any(k in m["type"].lower() for k in ("avaleha", "gulam", "pak", "khanda")), m["name"]
+
+
+def test_no_purgative_herb_in_ulcerative_colitis():
+    plan = generate_medicines_plan(_p(medical_history=["ulcerative_colitis", "acid_reflux"]), {}, [])
+    assert not any(R._active_herbs(m) & {"trivrit", "danti"} for m in _internal(plan))
+
+
+# ── Age bands ─────────────────────────────────────────────────────────────────
+
+def test_lower_end_parses_every_range_shape():
+    assert R._lower_end("3–5g with warm water") == "3g with warm water"
+    assert R._lower_end("1–2 tablets twice daily") == "1 tablet twice daily"
+    assert R._lower_end("500mg–1g with water") == "500mg with water"
+    assert R._lower_end("250mg") == "250mg"
+
+
+@pytest.mark.parametrize("age,basis", [(13, "adolescent"), (15, "adolescent"), (80, "older adult")])
+def test_adolescents_and_the_old_start_at_the_bottom_of_the_range(age, basis):
+    plan = generate_medicines_plan(_p(age=age, medical_history=["acid_reflux"]), {}, [])
+    lowered = [m for m in _internal(plan) if (m.get("dosage_basis") or "").startswith(basis)]
+    assert lowered
+    for m in lowered:
+        assert m["dosage"] != m["dosage_adult"]
+
+
+def test_a_sedating_herb_after_65_carries_the_falls_caution():
+    plan = generate_medicines_plan(_p(age=70, medical_history=["insomnia"]), {}, [])
+    sedating = [m for m in _internal(plan) if R._active_herbs(m) & R._SEDATING_HERBS]
+    assert sedating and all(any("falls" in c for c in m["usage_cautions"]) for m in sedating)
+
+
+# ── Season ────────────────────────────────────────────────────────────────────
+
+def test_the_season_moves_the_choice_by_virya():
+    hot = generate_medicines_plan(_p(current_season="grishma"), {}, [])
+    cold = generate_medicines_plan(_p(current_season="hemanta"), {}, [])
+    assert all(m["virya"].lower() == "sheeta" for m in hot["supporting_formulations"])
+    assert all(m["virya"].lower() == "ushna" for m in cold["supporting_formulations"])
+
+
+def test_an_unset_season_comes_from_the_calendar():
+    plan = generate_medicines_plan(_p(current_season=None), {}, [])
+    assert plan["current_season"] in {"vasanta", "grishma", "varsha", "sharad", "hemanta", "shishira"}
+
+
+# ── Found by the second live read ─────────────────────────────────────────────
+
+def test_a_herb_named_like_a_metal_is_not_withheld_as_one():
+    """'naga' sits inside Nagakeshara and 'vanga' inside Lavanga."""
+    by_name = {m["name"]: m for m in _MEDICINES_KB}
+    for n in ("Avipattikar Churna", "Kutajarishta"):
+        bar, _ = R._formulation_rule_findings(by_name[n], [], 40, set())
+        assert not (bar or "").startswith("Prescribed in person"), n
+    bar, _ = R._formulation_rule_findings(by_name["Manasamitra Vatakam"], [], 40, set())
+    assert bar.startswith("Prescribed in person")            # Naga Bhasma is lead
+
+
+def test_no_aloe_in_heavy_menstrual_bleeding():
+    plan = generate_medicines_plan(_p(dominant_dosha="pitta", vikriti_dominant="pitta",
+                                      medical_history=["endometriosis", "menorrhagia"]), {}, [])
+    assert not any("kumari" in R._active_herbs(m) for m in _internal(plan))
+
+
+def test_no_calcium_supplement_for_a_stone_former():
+    plan = generate_medicines_plan(_p(medical_history=["kidney_stones", "insomnia"]), {}, [])
+    assert not {"Praval Pishti", "Mukta Pishti"} & set(_names(plan))
+
+
+def test_no_arishta_for_an_older_adult_on_a_sleeping_pill():
+    plan = generate_medicines_plan(_p(age=82, gender="male", medical_history=["constipation_chronic"],
+                                      current_medications=["zolpidem"]), {}, [])
+    assert not any(R._formulation_class(m) == "fermented" for m in _internal(plan))
+
+
+def test_the_shodhana_banner_asks_the_whole_panchakarma_engine():
+    plan = generate_medicines_plan(_p(age=47, dominant_dosha="kapha", vikriti_dominant="kapha",
+                                      medical_history=["chronic_kidney_disease", "diabetes_type2"],
+                                      current_medications=["Pangraf 1mg", "Wysolone 5"],
+                                      ama_indicator="high"), {}, [])
+    assert plan["shodhana_strength"] != "full"
+    assert plan["shodhana_withheld"]

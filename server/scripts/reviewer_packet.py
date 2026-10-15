@@ -277,7 +277,7 @@ def build_medicine_csv():
     return path, len(meds)
 
 
-def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0, n_cmap=0):
+def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0, n_cmap=0, n_hdi=0):
     golden_path = os.path.join(OUT, "golden_cases.json")
     cases = json.load(open(golden_path, encoding="utf-8")) if os.path.exists(golden_path) else []
 
@@ -369,6 +369,18 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0, n_cmap=0):
         "purpose** — Type 1 diabetes, hyperthyroidism, atrial fibrillation, lupus and others — "
         "so the plan tells the patient a Vaidya must prescribe rather than serving a near "
         "match. Tick `mapping_ok`, or say what it should reach.",
+        "",
+        "## Part 3c — Herb x medicine and formulation rules  (`vaidya_herb_drug_interactions.csv`)",
+        f"{n_hdi} rules the medicines and home-remedy plans withhold (`major`) or caution "
+        "(`moderate`) by. Before them, interactions were matched by category word, so a "
+        "patient on lithium was given Punarnava, one on digoxin Yashtimadhu, one on "
+        "tacrolimus a Trikatu compound, and one on metronidazole an Arishta. The formulation "
+        "rules withhold mercury, copper, lead and arsenic preparations from self-service "
+        "altogether, alcohol-based Arishtas under 18 and in liver disease, and sugar-based "
+        "Avalehas in diabetes. **Contested:** Kumaryasava and Arogyavardhini are classical "
+        "liver medicines and are withheld in liver disease here — rule on them. Arogyavardhini "
+        "is listed in the formulary without its classical Parada and Tamra; the composition "
+        "itself needs checking.",
         "",
         "## Part 4 — Panchakarma Karma tags  (`vaidya_panchakarma_karma_tags.csv`)",
         f"{n_karma} preparation and aftercare therapies, each tagged with the Pradhana "
@@ -535,19 +547,54 @@ def build_condition_formulary_csv():
     return path, len(rows)
 
 
+def build_herb_drug_csv():
+    """The herb x medicine rules and the formulation-base rules the medicines and
+    home-remedy plans withhold or caution by."""
+    clinical = json.load(open(os.path.join(DATA, "knowledge_base", "panchakarma_clinical.json"), encoding="utf-8"))
+    cols = ["kind", "herbs_or_form", "applies_to", "severity", "stated_mechanism",
+            "severity_ok", "mechanism_ok", "should_be", "vaidya_notes"]
+    rows = []
+    for r in (clinical.get("herb_drug_interactions") or {}).get("rules", []):
+        rows.append({"kind": "herb x medicine", "herbs_or_form": "; ".join(r["herbs"]),
+                     "applies_to": "; ".join(r["classes"]), "severity": r["severity"],
+                     "stated_mechanism": r["mechanism"], "severity_ok": "", "mechanism_ok": "",
+                     "should_be": "", "vaidya_notes": ""})
+    fr = clinical.get("formulation_rules") or {}
+    for key, r in fr.items():
+        if key.startswith("_") or not isinstance(r, dict):
+            continue
+        rows.append({"kind": "formulation base", "herbs_or_form": key + (
+                         f" ({', '.join(r.get('types') or r.get('markers') or [])})" if r.get("types") or r.get("markers") else ""),
+                     "applies_to": "; ".join(r.get("conditions") or ["every patient (self-served)"]),
+                     "severity": r.get("severity", "withhold"), "stated_mechanism": r.get("mechanism", ""),
+                     "severity_ok": "", "mechanism_ok": "", "should_be": "", "vaidya_notes": ""})
+    rows.append({"kind": "formulation base", "herbs_or_form": "fermented (Arishta / Asava)",
+                 "applies_to": f"under {fr.get('fermented_minor_age', 18)}", "severity": "major",
+                 "stated_mechanism": "Self-generated alcohol at an adult dose; withheld unless a Vaidya sets the dose.",
+                 "severity_ok": "", "mechanism_ok": "", "should_be": "", "vaidya_notes": ""})
+    path = os.path.join(OUT, "vaidya_herb_drug_interactions.csv")
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=cols)
+        w.writeheader()
+        w.writerows(rows)
+    return path, len(rows)
+
+
 def main():
     csv_path, n = build_medicine_csv()
     pk_path, n_pk = build_panchakarma_contraindication_csv()
     tok_path, n_tok = build_contraindication_token_csv()
     karma_path, n_karma = build_karma_tag_csv()
     cmap_path, n_cmap = build_condition_formulary_csv()
-    md_path = build_packet_md(n, n_pk, n_tok, n_karma, n_cmap)
+    hdi_path, n_hdi = build_herb_drug_csv()
+    md_path = build_packet_md(n, n_pk, n_tok, n_karma, n_cmap, n_hdi)
     print("Vaidya reviewer packet generated:")
     print(f"  {csv_path}  ({n} medicines)")
     print(f"  {pk_path}  ({n_pk} panchakarma contraindications)")
     print(f"  {tok_path}  ({n_tok} contraindication tokens)")
     print(f"  {karma_path}  ({n_karma} Karma tags)")
     print(f"  {cmap_path}  ({n_cmap} condition → formulary mappings)")
+    print(f"  {hdi_path}  ({n_hdi} herb-medicine and formulation rules)")
     print(f"  {md_path}")
     print("\nGive these to a BAMS Vaidya, along with the diet packet built separately by")
     print("scripts/build_diet_review_packet.py. Filled CSV corrections fold straight back")
