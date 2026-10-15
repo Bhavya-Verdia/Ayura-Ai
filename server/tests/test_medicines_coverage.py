@@ -586,3 +586,48 @@ def test_iron_is_withheld_in_iron_overload():
 def test_a_woman_can_receive_the_parkinsons_herb():
     med = next(m for m in _MEDICINES_KB if m["name"] == "Kapikachu Churna")
     assert med["gender_specific"] is None
+
+
+# ── The two plans know about each other ───────────────────────────────────────
+
+_ON_GILOY_AND_BRAHMI = [
+    {"name": "Giloy Satva", "ingredients": ["Guduchi Satva (Tinospora cordifolia)"]},
+    {"name": "Brahmi Churna", "ingredients": ["Brahmi (Bacopa monnieri) herb"]},
+]
+
+
+def test_a_remedy_never_repeats_a_herb_the_medicines_plan_gives():
+    prof = _p(dominant_dosha="pitta", medical_history=["osteoarthritis"])
+    si = {"symptoms": ["joint_pain", "insomnia", "low_immunity"],
+          "current_ayurvedic_formulations": _ON_GILOY_AND_BRAHMI}
+    plan = build_remedy_plan(filter_remedies(prof, si), prof, si)
+    served = json.dumps([x.get("remedy") for x in plan["symptoms_addressed"]]).lower()
+    assert "guduchi" not in served and "brahmi" not in served
+    assert {x["symptom_id"] for x in plan["covered_by_medicines"]} == {"joint_pain", "insomnia"}
+    assert not plan["doctor_referrals"]                     # covered is not a referral
+
+
+def test_a_typed_ayurvedic_medicine_counts_too():
+    out = filter_remedies(_p(dominant_dosha="pitta"),
+                          {"symptoms": ["joint_pain"], "current_ayurvedic_medicines": ["guduchi tablets"]})
+    assert out[0]["action"] == "covered_by_medicines"
+
+
+def test_a_shared_spice_between_compounds_is_not_doubling():
+    """Ginger in a tea and Shunthi inside Trikatu are ordinary compounding."""
+    from services.remedy_engine import _doubles
+    assert _doubles({"shunthi", "tulsi"}, [{"name": "Trikatu Churna", "herbs": {"shunthi", "maricha", "pippali"}}]) is None
+
+
+def test_without_a_medicines_plan_nothing_changes():
+    prof = _p(dominant_dosha="pitta")
+    si = {"symptoms": ["joint_pain", "insomnia"]}
+    assert all(x.get("action") is None for x in filter_remedies(prof, si))
+
+
+def test_the_route_reads_the_latest_medicines_plan_from_either_envelope():
+    from routes.plans import _internal_formulations
+    meds = generate_medicines_plan(_p(medical_history=["osteoarthritis"]), {}, [])
+    flat = _internal_formulations(meds)
+    wrapped = _internal_formulations({"medicines": meds})
+    assert flat == wrapped and flat and all(f["ingredients"] for f in flat)

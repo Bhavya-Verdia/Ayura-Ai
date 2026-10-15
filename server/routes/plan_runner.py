@@ -415,11 +415,19 @@ async def _generate_feature_via_engine_impl(
             # and the severity gate — which returns a doctor referral instead of a
             # remedy — could not fire on the holistic plan at all. A user whose
             # recorded symptom was severe was handed a home remedy for it.
+            # The holistic run builds the medicines plan beside this one; the engine
+            # is deterministic, so the same selection is computed here rather than
+            # waited for, and no remedy repeats a herb it gives.
+            from services.remedy_engine import generate_medicines_plan as _gen_meds
+            from routes.plans import _internal_formulations
             symptom_input = {
                 "symptoms": symptoms,
                 "severity": (prefs or {}).get("symptom_severity") or {},
                 "duration": (prefs or {}).get("symptom_duration") or {},
                 "preference_taste_smell": (prefs or {}).get("preference_taste_smell") or [],
+                "current_ayurvedic_formulations": _internal_formulations(
+                    _gen_meds(profile, prefs or {}, [], "clinical_medicine")),
+                "current_ayurvedic_medicines": (prefs or {}).get("current_ayurvedic_medicines") or [],
             }
             filtered = filter_remedies(profile, symptom_input)
             raw = build_remedy_plan(filtered, profile, symptom_input)

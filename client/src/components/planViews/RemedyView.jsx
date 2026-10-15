@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import {
-  Leaf, Sparkles, Calendar, ShieldCheck, Flame, Timer, Zap, ChevronDown, ChevronUp, Layers, TriangleAlert, BadgeCheck, HeartPulse,
+  Leaf, Sparkles, Calendar, ShieldCheck, Flame, Timer, Zap, ChevronDown, ChevronUp, Layers, TriangleAlert, BadgeCheck, HeartPulse, Pill,
 } from 'lucide-react'
 import { DOSHA_COLORS_R, doshaInk } from '../../constants/dosha'
 import { MedicineView } from './MedicineView'
@@ -155,6 +155,7 @@ function RemedyCard({ result }) {
 export function RemedyView({ plan }) {
   const symptoms   = plan.symptoms_addressed || []
   const referrals  = plan.doctor_referrals || []
+  const covered    = plan.covered_by_medicines || []
   const guidelines = plan.general_guidelines || {}
   const prevention = plan.prevention_tips || []
 
@@ -187,6 +188,21 @@ export function RemedyView({ plan }) {
             Remedies for Your Symptoms
           </h3>
           {symptoms.map((res, i) => <RemedyCard key={i} result={res} />)}
+        </div>
+      )}
+
+      {/* Symptoms the medicines plan already treats with the same herb. Not a
+          referral and not a gap: adding the home remedy would double the dose. */}
+      {covered.length > 0 && (
+        <div className="rv-section-block">
+          <h3 className="rv-block-title"><Pill size={16} />Already Covered by Your Medicines</h3>
+          {covered.map((r, i) => (
+            <div key={i} className="rv-referral-card">
+              <span className="rv-referral-sym">{r.symptom_display || r.symptom_id}</span>
+              <span className="rv-referral-msg">{r.message}</span>
+              {r.consult_doctor_if && <span className="rv-referral-escalation">{r.consult_doctor_if}</span>}
+            </div>
+          ))}
         </div>
       )}
 
