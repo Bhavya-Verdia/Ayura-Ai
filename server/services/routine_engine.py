@@ -987,7 +987,7 @@ def _get_base_timeline(dosha: str, season: str, if_window: str, agni_type: str, 
                        agni_notes: dict | None = None, ex_minutes: int | None = None,
                        dinner_gap: int = 150, anchors: dict | None = None,
                        sessions: dict | None = None, pins: dict | None = None,
-                       items: list | None = None) -> list:
+                       items: list | None = None, skip: set | None = None) -> list:
     anchors = anchors or _day_anchors(dosha, season, age, wake_preference)
     wake = _hm(anchors["wake"])
     slots = _template(dosha, anchors["label"], wake)
@@ -996,6 +996,11 @@ def _get_base_timeline(dosha: str, season: str, if_window: str, agni_type: str, 
             if s.get("morning"):
                 s["min"] = ex_minutes
     slots = _place_sessions(slots, sessions or {})
+    # Slots the day leaves out go before the times are laid out. Removed after,
+    # the conflict notes still named them: a user's cricket that replaced the
+    # Evening Movement said it overlapped the Evening Movement.
+    if skip:
+        slots = [s for s in slots if s.get("id") not in skip]
     if items:
         # Put each item where it falls in the day as first laid out, so the slots
         # after it flow from its end instead of colliding with it.
@@ -1746,9 +1751,15 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
         for it in day_items:
             t = parse_hhmm(it["time"])
             pins[it["id"]] = t + 24 * 60 if t < day_anchors["wake"] else t
+        skipped = {k for k, v in day_times.items() if v == SKIP}
+        if not planned["evening"] and any(it["category"] == "exercise" for it in day_items):
+            skipped.add("evening_ex")   # their own exercise replaces the routine's walk
+        kept_breakfast = bool(ctx.get("steady_meals") and "breakfast" in skipped)
+        if kept_breakfast:
+            skipped.discard("breakfast")
         day_tl = _get_base_timeline(dosha, season, if_window, agni_type, occupation,
                                     wake_preference, age, notes, None, dinner_gap, day_anchors, sessions,
-                                    pins, day_items)
+                                    pins, day_items, skipped)
         # Something the user added as exercise is held to the same limits as the
         # routine's own exercise; the engine cannot read what "cricket" involves,
         # but it can say what pace this person should keep.
@@ -1762,11 +1773,7 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
         for s in day_tl:
             if s.get("id") in ("wake", "sleep") and s["id"] in day_times:
                 s["user_set"] = True
-        skipped = {k for k, v in day_times.items() if v == SKIP}
-        if not planned["evening"] and any(it["category"] == "exercise" for it in day_items):
-            skipped.add("evening_ex")   # their own exercise replaces the routine's walk
-        if ctx.get("steady_meals") and "breakfast" in skipped:
-            skipped.discard("breakfast")
+        if kept_breakfast:
             for s in day_tl:
                 if s.get("id") == "breakfast":
                     s.setdefault("schedule_notes", []).append(
@@ -1774,7 +1781,6 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
                         + ("your diabetes medicine needs food on time."
                            if "insulin_or_sulfonylurea" in (ctx.get("med_classes") or ())
                            else "meals are not skipped in pregnancy."))
-        day_tl = [s for s in day_tl if s.get("id") not in skipped]
         day_tl = _strip_withheld_practices(day_tl, is_pregnant)
 
         def _inject(info: dict, slot_key: str, planned_session: bool, after: dict | None = None) -> None:
