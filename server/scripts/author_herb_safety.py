@@ -79,6 +79,8 @@ HERBS = {
             "autoimmune": "Immunostimulant — may aggravate autoimmune activity. Introduce alone and monitor.",
             "hypothyroidism": "Raises thyroid hormone, so thyroxine dose may need review — check TFTs at 6 weeks.",
             "depression": "Sedating at higher doses; take the evening dose only and review if fatigue worsens.",
+            "fatty_liver": "Cholestatic liver injury is reported with Ashwagandha supplements; check liver function after starting.",
+            "hepatitis": "As fatty liver — reported liver injury; check liver function and stop at any rise.",
         },
         "medication_classes": ["thyroid_hormone", "sedatives", "immunosuppressants"],
     },
@@ -89,6 +91,8 @@ HERBS = {
             "kidney_disease": "As chronic kidney disease — mineral load requires intact renal clearance.",
             "hemochromatosis": "Iron-rich; contraindicated where iron already accumulates.",
             "gout": "Purine and mineral load can precipitate an attack.",
+            # Age reaches this gate as the `child` finding (under 16).
+            "child": "A mineral exudate whose purification (Shodhana) grade cannot be verified at home, with documented heavy-metal contamination in unpurified samples, and a child takes more per kilogram. Not a paediatric Rasayana.",
         },
         "soft": {
             "hypertension": "Some preparations carry a sodium load — use a purified (Shodhita) grade and monitor BP.",
@@ -103,6 +107,7 @@ HERBS = {
             "hyperthyroidism": "Guggulsterones are thyroid-stimulating and worsen a thyrotoxic state.",
             "ibd_crohns": "Gastric irritant; aggravates active inflammatory bowel disease.",
             "ulcerative_colitis": "As IBD — irritant to inflamed bowel mucosa.",
+            "child": "A Lekhana (scraping, reducing) resin; under 16 the Dhatus are still being built, and it is a gastric irritant at any age.",
         },
         "soft": {
             "hypothyroidism": "Thyroid-stimulating, so it may reduce the thyroxine requirement — check TFTs.",
@@ -163,7 +168,9 @@ HERBS = {
     },
     "brahmi": {
         "display": "Brahmi (Bacopa)",
-        "hard": {},
+        "hard": {
+            "hyperthyroidism": "Raises T4 (animal studies); adding it to a thyrotoxic state works the wrong way.",
+        },
         "soft": {
             "hypothyroidism": "Raises T4 in animal studies — check TFTs if taken long term.",
             "bradycardia": "Can slow the heart rate further.",
@@ -197,17 +204,82 @@ HERBS = {
         "soft": {
             "pcos": "Phytoestrogenic — beneficial in Artava Kshaya but review with the treating physician in oestrogen-dominant PCOS.",
             "obesity": "Guru and Brimhana; increases Kapha and weight.",
+            "endometriosis": "Phytoestrogenic, in a disease driven by oestrogen — the treating gynaecologist should agree before it is taken.",
         },
         "medication_classes": ["oral_contraceptives"],
     },
+    # Purgative herbs. Avipattikar (Trivrit) went to 174 of 213 ulcerative-colitis
+    # plans in a sweep — a purgative to an inflamed colon.
+    "trivrit": {
+        "display": "Trivrit (purgative)",
+        "hard": {
+            "ulcerative_colitis": "A purgative drives an inflamed colon; it can provoke a flare and bleeding.",
+            "ibd_crohns": "As ulcerative colitis — purgation inflames the diseased bowel.",
+            "diarrhea": "A purgative given into an existing diarrhoea worsens dehydration.",
+            "pregnancy": "Purgatives stimulate the pelvic organs; classically barred in Garbhini.",
+        },
+        "soft": {
+            "hemorrhoids": "Repeated loose stools irritate piles; the lower dose and a short course.",
+        },
+        "medication_classes": [],
+    },
+    "danti": {
+        "display": "Danti (purgative)",
+        "hard": {
+            "ulcerative_colitis": "A drastic purgative on an inflamed colon.",
+            "ibd_crohns": "A drastic purgative inflames a bowel already ulcerated by Crohn's disease and can provoke a flare.",
+            "diarrhea": "A drastic purgative given into an existing diarrhoea deepens dehydration and electrolyte loss.",
+            "pregnancy": "Drastic purgative — barred in Garbhini.",
+        },
+        "soft": {},
+        "medication_classes": [],
+    },
+    "mukta": {
+        "display": "Mukta Pishti (pearl calcium)",
+        "hard": {
+            "kidney_stones": "A calcium carbonate supplement taken without a deficiency to correct adds to the calcium a stone former excretes.",
+        },
+        "soft": {
+            "chronic_kidney_disease": "A calcium load the kidney must clear; calcium and phosphate should be monitored.",
+        },
+        "medication_classes": [],
+    },
+    "praval": {
+        "display": "Praval Pishti (coral calcium)",
+        "hard": {
+            "kidney_stones": "A calcium carbonate supplement taken without a deficiency to correct adds to the calcium a stone former excretes.",
+        },
+        "soft": {
+            "chronic_kidney_disease": "A calcium load the kidney must clear; calcium and phosphate should be monitored.",
+        },
+        "medication_classes": [],
+    },
+    # Kumari Churna went to a patient with menorrhagia and endometriosis. Aloe is
+    # classically Artava-pravartaka — it brings on and increases the flow.
+    "kumari": {
+        "display": "Kumari (aloe)",
+        "hard": {
+            "menorrhagia": "Artava-pravartaka: aloe brings on and increases menstrual flow, the opposite of what heavy bleeding needs.",
+            "pregnancy": "Emmenagogue and purgative (the dried latex); classically barred in Garbhini.",
+            "ulcerative_colitis": "The anthraquinones in aloe are purgative and irritate an inflamed colon.",
+            "ibd_crohns": "As ulcerative colitis — purgative anthraquinones on an ulcerated bowel.",
+        },
+        "soft": {
+            "hemorrhoids": "Loose stools from the latex irritate piles; use the gel, not the dried powder.",
+        },
+        "medication_classes": [],
+    },
     "kapikacchu": {
         "display": "Kapikacchu (Mucuna)",
+        # Parkinson's is Kapikacchu's classical indication (Kampavata); the danger is
+        # the levodopa a patient already takes, which is a medicine interaction
+        # (herb_drug_interactions), not a bar on the disease.
         "hard": {
-            "parkinson": "Contains L-DOPA. Taken alongside prescribed levodopa it stacks the dose unpredictably — a Vaidya and the treating neurologist must set this together.",
             "psychosis": "Dopaminergic — can precipitate or worsen psychosis.",
         },
         "soft": {
             "depression": "Dopaminergic; may interact with antidepressants — introduce alone.",
+            "parkinson": "Contains L-DOPA. If you take levodopa it stacks the dose unpredictably — the treating neurologist must agree before you start.",
         },
         "medication_classes": ["antidepressants"],
     },

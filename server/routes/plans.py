@@ -5,7 +5,7 @@ Orchestration helpers (engine generation, locking, ARQ job runner, enqueue)
 live in routes/plan_runner.py; this module holds the FastAPI route handlers.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import uuid
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Body
@@ -483,15 +483,31 @@ async def translate_diet_plan(
     return overlay
 
 
+class RoutineTimeEdit(BaseModel):
+    slot_id: str | None = None
+    time: str | None = Field(None, max_length=5)
+    day: str | None = Field(None, pattern="^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$")
+    reset_all: bool = False
+
+
 @router.post("/routine")
 async def generate_routine_plan(
     req: dict = Body(default={}),
     user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
+    return await _build_routine(db, user, force_regenerate=req.get("force_regenerate", False))
+
+
+async def _build_routine(db, user, force_regenerate: bool = False, carry_coaching: bool = False):
+    """Build (or serve from cache) the routine.
+
+    `carry_coaching` is the path a time edit takes: the engine rebuilds the day
+    and the previous plan's coaching is carried over, so moving lunch does not
+    bill an LLM call or a plan from the daily quota.
+    """
     from services.routine_engine import generate_routine_plan as engine_generate
 
-    force_regenerate = req.get("force_regenerate", False)
     user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
 
@@ -500,14 +516,24 @@ async def generate_routine_plan(
     if not routine_prefs:
         raise HTTPException(status_code=422, detail="Complete daily routine preferences first")
 
+    # The user's own times live beside the form's answers, not inside them: saving
+    # the form replaces the whole `routine` document.
+    schedule = (prefs_doc or {}).get("routine_schedule") or {}
+    routine_prefs = {**routine_prefs,
+                     "custom_times": schedule.get("custom_times") or {},
+                     "custom_times_by_day": schedule.get("custom_times_by_day") or {},
+                     "custom_items": schedule.get("custom_items") or []}
     prefs_to_pass = {"routine": routine_prefs, "diet": (prefs_doc or {}).get("diet") or {}}
 
-    # Tier B: fetch gym/yoga plan histories if integration is requested
-    integrate_gym  = routine_prefs.get("integrate_gym_plan", False)
-    integrate_yoga = routine_prefs.get("integrate_yoga_plan", False)
+    # The latest gym and yoga plans are part of the day unless the form leaves one
+    # out. They were opt-in, and the chips started off, so a user with both plans
+    # got a routine with neither.
+    integrate_gym  = not routine_prefs.get("exclude_gym_plan", False)
+    integrate_yoga = not routine_prefs.get("exclude_yoga_plan", False)
     gym_plan_data  = None
     yoga_plan_data = None
 
+    linked: dict = {}
     if integrate_gym:
         gym_hist = await db.plan_history.find_one(
             {"user_id": user.id, "plan_type": "gym"},
@@ -515,6 +541,7 @@ async def generate_routine_plan(
         )
         if gym_hist:
             gym_plan_data = gym_hist.get("plan_data", {}).get("gym_plan") or gym_hist.get("plan_data", {})
+            linked["gym_plan"] = str(gym_hist.get("_id"))
 
     if integrate_yoga:
         yoga_hist = await db.plan_history.find_one(
@@ -523,6 +550,26 @@ async def generate_routine_plan(
         )
         if yoga_hist:
             yoga_plan_data = yoga_hist.get("plan_data", {}).get("yoga_plan") or yoga_hist.get("plan_data", {})
+            linked["yoga_plan"] = str(yoga_hist.get("_id"))
+            # The yoga form's time of day places the session in the routine.
+            linked["yoga_time_of_day"] = ((prefs_doc or {}).get("yoga") or {}).get("time_of_day_preference")
+
+    # Injuries are collected on the gym and yoga forms; the routine's exercise
+    # limits read them too.
+    from engine.movement_risk import declared_injuries
+    injuries, typed_injury = declared_injuries(prefs_doc)
+    injuries = injuries + ([typed_injury] if typed_injury else [])
+    prefs_to_pass["routine"] = {**routine_prefs, **{k: v for k, v in linked.items() if k == "yoga_time_of_day"},
+                                "injuries": injuries}
+    # Which gym and yoga plan the routine was built from is part of what it is.
+    # Without it a new gym plan left the routine showing the old one's days.
+    prefs_to_pass["linked_plans"] = linked
+
+    # The season the plan is built for. This was set AFTER the cache lookup, so the
+    # key held the profile's stored season (usually none) and a routine written in
+    # Grishma was served unchanged through the monsoon.
+    from engine.seasonal import get_current_season
+    user_profile["current_season"] = get_current_season().name.lower()
 
     # 1. Check Cache
     cached_plan, pref_hash = await _check_plan_cache(db, user.id, "routine", user_profile, prefs_to_pass, force_regenerate)
@@ -531,12 +578,14 @@ async def generate_routine_plan(
 
     # 2. Generate new plan (engine first, then LLM enrichment for coaching rationale)
     # Cache miss — this run hits the LLM, so it bills the daily allowance.
-    await consume_plan_quota(db, user)
+    previous = None
+    if carry_coaching:
+        prev_doc = await db.plan_history.find_one({"user_id": user.id, "plan_type": "routine"},
+                                                  sort=[("generated_at", -1)])
+        previous = ((prev_doc or {}).get("plan_data") or {}).get("routine_plan")
+    if previous is None:
+        await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "routine"):
-        from engine.seasonal import get_current_season
-        season_info = get_current_season()
-        user_profile["current_season"] = season_info.name.lower()
-
         raw_plan = engine_generate(
             user_profile,
             prefs_to_pass,
@@ -544,8 +593,19 @@ async def generate_routine_plan(
             yoga_plan_data=yoga_plan_data,
         )
 
-        from services.routine_enricher import enrich_routine_plan
-        enriched_plan = await enrich_routine_plan(raw_plan, user_profile, prefs_to_pass)
+        # Which plans the day was built around, and which could not be: a routine
+        # with no gym slot reads the same whether gym was left out or never made.
+        raw_plan["linked_plans"] = {
+            kind: ("excluded" if not wanted else "included" if data else "none")
+            for kind, wanted, data in (("gym", integrate_gym, gym_plan_data),
+                                       ("yoga", integrate_yoga, yoga_plan_data))
+        }
+
+        from services.routine_enricher import carry_routine_enrichment, enrich_routine_plan
+        if previous is not None:
+            enriched_plan = carry_routine_enrichment(previous, raw_plan, user_profile)
+        else:
+            enriched_plan = await enrich_routine_plan(raw_plan, user_profile, prefs_to_pass)
 
         plan_id = enriched_plan.get("plan_id")
         model_used = enriched_plan.get("enrichment_model", "services.routine_engine")
@@ -574,6 +634,139 @@ async def generate_routine_plan(
         )
 
     return enriched_plan
+
+class RoutineItemIn(BaseModel):
+    title: str = Field(..., min_length=1, max_length=60)
+    time: str = Field(..., pattern=r"^\d{1,2}:\d{2}$")
+    duration_minutes: int = Field(30, ge=5, le=600)
+    category: str = Field("activity", pattern="^(activity|work|exercise|meal|self_care|rest)$")
+    days: list[str] = Field(default_factory=list, max_length=7)
+    note: str = Field("", max_length=200)
+
+
+async def _save_routine_items(db, user, change) -> dict:
+    """Load the user's own items, apply `change` to the list, save, rebuild."""
+    from services.routine_engine import clean_custom_items
+
+    prefs_doc = await db.user_preferences.find_one({"user_id": user.id}) or {}
+    if not (prefs_doc.get("routine") or prefs_doc.get("diet")):
+        raise HTTPException(status_code=422, detail="Complete daily routine preferences first")
+    schedule = dict(prefs_doc.get("routine_schedule") or {})
+    items = change(clean_custom_items(schedule.get("custom_items")))
+    schedule["custom_items"] = clean_custom_items(items)
+    await db.user_preferences.update_one(
+        {"user_id": user.id},
+        {"$set": {"routine_schedule": schedule, "updated_at": datetime.now(timezone.utc)}},
+    )
+    return await _build_routine(db, user, carry_coaching=True)
+
+
+def _item_doc(req: RoutineItemIn, item_id: str) -> dict:
+    from services.routine_engine import parse_hhmm
+    if parse_hhmm(req.time) is None:
+        raise HTTPException(status_code=422, detail="Time must be HH:MM (24-hour)")
+    days = [d.lower() for d in req.days]
+    if any(d not in ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday") for d in days):
+        raise HTTPException(status_code=422, detail="Days must be weekday names")
+    return {"id": item_id, **req.model_dump(), "days": days}
+
+
+@router.post("/routine/items")
+async def add_routine_item(
+    req: RoutineItemIn,
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """Add something of the user's own to their routine. Returns the rebuilt routine."""
+    from services.routine_engine import MAX_ITEMS
+    doc = _item_doc(req, f"custom_{uuid.uuid4().hex[:10]}")
+
+    def add(items):
+        if len(items) >= MAX_ITEMS:
+            raise HTTPException(status_code=422, detail=f"A routine can hold {MAX_ITEMS} of your own items")
+        return items + [doc]
+    return await _save_routine_items(db, user, add)
+
+
+@router.put("/routine/items/{item_id}")
+async def update_routine_item(
+    item_id: str,
+    req: RoutineItemIn,
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    doc = _item_doc(req, item_id)
+
+    def update(items):
+        if not any(i["id"] == item_id for i in items):
+            raise HTTPException(status_code=404, detail="No such item in your routine")
+        return [doc if i["id"] == item_id else i for i in items]
+    return await _save_routine_items(db, user, update)
+
+
+@router.delete("/routine/items/{item_id}")
+async def delete_routine_item(
+    item_id: str,
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    def remove(items):
+        if not any(i["id"] == item_id for i in items):
+            raise HTTPException(status_code=404, detail="No such item in your routine")
+        return [i for i in items if i["id"] != item_id]
+    return await _save_routine_items(db, user, remove)
+
+
+@router.put("/routine/schedule")
+async def set_routine_time(
+    req: RoutineTimeEdit,
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """Move one slot of the routine, leave it out, or put it back.
+
+    `time` is "HH:MM", "off" to leave the slot out, or null to return it to the
+    suggested time. `day` scopes the change to one weekday; without it the change
+    applies to every day. `reset_all` clears every change. The day is rebuilt by
+    the engine and the routine comes back in the response.
+    """
+    from services.routine_engine import SKIP, SLOT_IDS, UNSKIPPABLE, clean_custom_times
+
+    prefs_doc = await db.user_preferences.find_one({"user_id": user.id}) or {}
+    if not (prefs_doc.get("routine") or prefs_doc.get("diet")):
+        raise HTTPException(status_code=422, detail="Complete daily routine preferences first")
+    schedule = prefs_doc.get("routine_schedule") or {}
+    every = dict(schedule.get("custom_times") or {})
+    by_day = {d: dict(v) for d, v in (schedule.get("custom_times_by_day") or {}).items()}
+
+    if req.reset_all:
+        every, by_day = {}, {}
+    else:
+        slot = req.slot_id or ""
+        if slot not in SLOT_IDS and not re.fullmatch(r"(morning|evening)_ex_\d", slot):
+            raise HTTPException(status_code=422, detail=f"Unknown routine slot: {slot}")
+        if req.time == SKIP and slot in UNSKIPPABLE:
+            raise HTTPException(status_code=422, detail="Wake, sleep, lunch and dinner can be moved but not left out")
+        if req.time is not None and not clean_custom_times({slot: req.time}):
+            raise HTTPException(status_code=422, detail="Time must be HH:MM (24-hour) or \"off\"")
+        target = by_day.setdefault(req.day, {}) if req.day else every
+        if req.time is None:
+            target.pop(slot, None)
+            if not req.day:
+                # Putting a slot back for every day puts it back on each day too.
+                for times in by_day.values():
+                    times.pop(slot, None)
+        else:
+            target[slot] = clean_custom_times({slot: req.time})[slot]
+        by_day = {d: v for d, v in by_day.items() if v}
+
+    await db.user_preferences.update_one(
+        {"user_id": user.id},
+        {"$set": {"routine_schedule": {**schedule, "custom_times": every, "custom_times_by_day": by_day},
+                  "updated_at": datetime.now(timezone.utc)}},
+    )
+    return await _build_routine(db, user, carry_coaching=True)
+
 
 @router.post("/gym")
 async def generate_gym_plan(
@@ -774,6 +967,27 @@ async def list_remedy_symptoms(user: UserDocument = Depends(get_current_user)):
     return {"items": items}
 
 
+def _internal_formulations(medicines_plan: dict | None) -> list[dict]:
+    """The formulations a medicines plan has the patient take by mouth."""
+    mp = (medicines_plan or {})
+    mp = mp.get("medicines") if isinstance(mp.get("medicines"), dict) else mp
+    return [{"name": m.get("name"), "ingredients": m.get("ingredients") or []}
+            for k in ("primary_formulations", "supporting_formulations")
+            for m in (mp.get(k) or []) if m.get("application_type") != "external"]
+
+
+async def _current_medicines_formulations(db, user_id: str, max_age_days: int = 180) -> list[dict]:
+    """The latest medicines plan's formulations, from the medicines tab or a
+    holistic plan, if it is recent enough to still be followed."""
+    since = datetime.now(timezone.utc) - timedelta(days=max_age_days)
+    doc = await db.plan_history.find_one(
+        {"user_id": user_id, "generated_at": {"$gte": since},
+         "$or": [{"plan_type": "medicines"}, {"plan_data.medicines": {"$exists": True}}]},
+        sort=[("generated_at", -1)],
+    )
+    return _internal_formulations((doc or {}).get("plan_data")) if doc else []
+
+
 @router.post("/remedies")
 async def generate_remedies_plan(
     req: dict = Body(default={}),
@@ -782,6 +996,7 @@ async def generate_remedies_plan(
 ):
     from services.remedy_engine import filter_remedies, build_remedy_plan
     from services.remedy_enricher import enrich_remedies_plan
+    from engine.herb_overlap import declared_ayurvedic
 
     # Pregnancy gate — contraindicated; matches the holistic/worker paths
     assert_not_pregnancy_blocked(user, "remedies")
@@ -806,6 +1021,10 @@ async def generate_remedies_plan(
         "duration": req.get("duration") or stored.get("symptom_duration") or {},
         "preference_taste_smell": req.get("preference_taste_smell")
                                   or stored.get("preference_taste_smell") or [],
+        # So a remedy never repeats a herb the patient already takes as a medicine.
+        # (Imported here as the medicines endpoint does.)
+        "current_ayurvedic_formulations": await _current_medicines_formulations(db, user.id),
+        "current_ayurvedic_medicines": declared_ayurvedic(prefs_doc),
     }
 
     async with _plan_guard(user.id, "remedies"):

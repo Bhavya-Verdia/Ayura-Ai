@@ -66,7 +66,7 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
 
     # This key is an allowlist, so a newly wired profile field is invisible to it
     # until named here — the plan changes and the cache serves the old one.
-    from services.panchakarma_engine import _menstruation_active
+    from services.panchakarma_engine import _menstruation_active, _kriya_kala_assessment
     from services.diet_log import fingerprint as _diet_log_fingerprint
 
     relevant_data = {
@@ -127,6 +127,13 @@ async def _check_plan_cache(db: AsyncIOMotorDatabase, user_id: str, plan_type: s
         # Shamana plan in cache after the observation went stale, and the raw
         # `menstrual_phase_at` would bust every user's cache on every check-in.
         "menstruation_active": _menstruation_active(user_profile),
+        # Kriya Kala changes the rendered advisory and the narrative, so a cached
+        # plan must not outlive a stage change. Keyed on the governing stage rather
+        # than the raw `disease_stages` dict: the dict carries the duration and
+        # trajectory the stage is derived from, so keying on it would bust the cache
+        # when a patient re-answers the selects with a pair that maps to the same
+        # stage — and adds a condition id to the key for a plan that reads only one.
+        "kriya_kala_stage": ((_kriya_kala_assessment(user_profile) or {}).get("governing_stage")),
         # What the meal log changes in the next diet plan — the adaptation's
         # fingerprint, not the log: logging a meal must not bill a regeneration.
         "diet_log": (_diet_log_fingerprint(user_profile["diet_log"])
@@ -409,11 +416,19 @@ async def _generate_feature_via_engine_impl(
             # and the severity gate — which returns a doctor referral instead of a
             # remedy — could not fire on the holistic plan at all. A user whose
             # recorded symptom was severe was handed a home remedy for it.
+            # The holistic run builds the medicines plan beside this one; the engine
+            # is deterministic, so the same selection is computed here rather than
+            # waited for, and no remedy repeats a herb it gives.
+            from services.remedy_engine import generate_medicines_plan as _gen_meds
+            from routes.plans import _internal_formulations
             symptom_input = {
                 "symptoms": symptoms,
                 "severity": (prefs or {}).get("symptom_severity") or {},
                 "duration": (prefs or {}).get("symptom_duration") or {},
                 "preference_taste_smell": (prefs or {}).get("preference_taste_smell") or [],
+                "current_ayurvedic_formulations": _internal_formulations(
+                    _gen_meds(profile, prefs or {}, [], "clinical_medicine")),
+                "current_ayurvedic_medicines": (prefs or {}).get("current_ayurvedic_medicines") or [],
             }
             filtered = filter_remedies(profile, symptom_input)
             raw = build_remedy_plan(filtered, profile, symptom_input)

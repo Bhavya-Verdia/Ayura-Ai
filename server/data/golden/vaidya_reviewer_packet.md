@@ -17,7 +17,7 @@ Open **`vaidya_medicine_review.csv`** (157 formulations). For each row, tick:
 Sort by `type` or `indications` to review related formulations together. Anything marked N with a correction is gold — it goes straight back into the KB.
 
 ## Part 2 — Panchakarma contraindications  (`vaidya_panchakarma_contraindications.csv`)
-299 authored contraindications gating Vamana, Virechana, Basti, Nasya, Raktamokshana, the 23 supporting therapies, and the individual herbs in every Aushadha the plan prescribes. **None has been clinically reviewed** — `contraindications_reviewed` is false on the whole file. Part 1 carries the larger credibility risk; this part carries the larger safety risk, because these are the only procedures in the app that can injure a patient directly.
+445 authored contraindications gating Vamana, Virechana, Basti, Nasya, Raktamokshana, the 23 supporting therapies, and the individual herbs in every Aushadha the plan prescribes. **None has been clinically reviewed** — `contraindications_reviewed` is false on the whole file. Part 1 carries the larger credibility risk; this part carries the larger safety risk, because these are the only procedures in the app that can injure a patient directly.
 
 Each row states the *mechanism* by which the condition and the procedure conflict, so you can reject a single claim without discarding the file. Columns to fill:
 - **severity_ok** — is `hard` (withhold + substitute) vs `soft` (proceed modified) right?
@@ -28,8 +28,26 @@ Rows with scope `herb` are per-constituent: a `hard` row withholds that herb fro
 
 Missing entries matter as much as wrong ones: if a condition should bar a procedure and is not listed, add a row.
 
+### Open questions where the authored rule and the classics disagree
+These were deliberately **not** settled by the author. Each needs a ruling.
+
+1. **Anaemia (Pandu) bars every Shodhana.** The engine treats `anemia` as an absolute bar and gives Shamana only. Charaka Chikitsa 16 prescribes the opposite for Pandu: oleate with ghee, then purify by both routes. The bar was kept because the app cannot know the haemoglobin, and severe anaemia is a modern contraindication to any depleting procedure. Should mild anaemia restrict to Mridu Virechana instead of barring?
+2. **A barred Snehapana bars the Karma it prepares.** Gallstones and acute pancreatitis bar Snehapana (a 60–120 ml fat load provokes biliary colic), so they now withdraw Vamana and Virechana and substitute Basti or Nasya. Is a Ruksha or short (Sadyo) Snehana the better answer than substitution?
+3. **Snehapana peak by Agni.** Manda Agni is held to 60 ml and Vishama to 90 ml (after Charaka Sutrasthana 13's Matra grading); Sama and Tikshna take the ladder in the KB. Are these caps right?
+4. **Pratimarsha Nasya is the default substitute.** Low Ojas, age over 70 and the Vamana age bar all substitute to Nasya, and a Kapha patient at home is given Nasya. Across 3,000 sampled profiles it is the Karma of 43% of plans. Is it the right default, or should a Pitta substitution go to Matra Basti?
+5. **Allergies are flagged, never substituted.** A dairy-allergic patient is told the ghee and milk-processed oils need a Vaidya's preparation; the engine does not choose a Taila Snehapana for them. Should it?
+
 ## Part 3 — Contraindication tokens  (`vaidya_contraindication_tokens.csv`)
 164 tokens appear in the medicines and home-remedy contraindication lists. They were written as notes for a human and then used as a machine gate, which matched them against the patient's history as plain strings — so most of them never fired. Making them work required deciding what each one means: which recorded diagnoses `autoimmune_disease` covers, whether `uncontrolled_diabetes` must bar every diabetic when the app cannot know how controlled anyone is, whether `pitta_excess` may be read off a constitution when no Vikriti assessment exists. **Those decisions were made by a non-clinician**, and each one moves a formulation between prescribed and withheld. Tick `interpretation_ok`, or write what it should be.
+
+## Part 3b — Condition → formulary map  (`vaidya_condition_formulary_map.csv`)
+37 onboarding conditions whose route to the formulary was authored rather than matched by name. Thirty of seventy conditions onboarding offers used to reach no formulation at all, so an osteoarthritis patient was given Triphala and a cough powder. Fifteen are now bridged to the formulary terms whose formulations are indicated (osteoarthritis → arthritis, joint_pain). The rest are **left uncovered on purpose** — Type 1 diabetes, hyperthyroidism, atrial fibrillation, lupus and others — so the plan tells the patient a Vaidya must prescribe rather than serving a near match. Tick `mapping_ok`, or say what it should reach.
+
+## Part 3c — Herb x medicine and formulation rules  (`vaidya_herb_drug_interactions.csv`)
+27 rules the medicines and home-remedy plans withhold (`major`) or caution (`moderate`) by. Before them, interactions were matched by category word, so a patient on lithium was given Punarnava, one on digoxin Yashtimadhu, one on tacrolimus a Trikatu compound, and one on metronidazole an Arishta. The formulation rules withhold mercury, copper, lead and arsenic preparations from self-service altogether, alcohol-based Arishtas under 18 and in liver disease, and sugar-based Avalehas in diabetes. **Contested:** Kumaryasava and Arogyavardhini are classical liver medicines and are withheld in liver disease here — rule on them. Arogyavardhini is listed in the formulary without its classical Parada and Tamra; the composition itself needs checking.
+
+## Part 3d — Formulary data corrections  (`vaidya_medicine_data_corrections.csv`)
+All 157 formulations were read against classical composition by a non-clinician, and every change is recorded here with its previous value. Corrected: composition (Pathyadi Kadha, Navaka Guggulu, Rajapravartini Vati — listed with opium — and Sukumar Kashayam), indications that contradicted the herb table (Avipattikar, Vidangadi and Hingwashtak for IBD; Shilajit for kidney disease; Saraswatarishta for epilepsy), thyroid contraindications that pointed the wrong way (Brahmi), missing bars (Loha Bhasma in haemochromatosis), a male-only Parkinson's herb (Kapikachu), and five alcohol-based Asavas marked pregnancy-safe. **Three self-served formulations contain Visha dravya — Kanakasava (datura), Agnitundi Vati (classically mercury, aconite and nux vomica, missing from its list) and Dhanwanthari Gulika (aconite) — and are now prescribed in person only.** Rows with field `(entry)` are questions, not changes. Fourteen formulations carry `pregnancy_safe: "consult"` — the engine read that as safe; it now withholds them in pregnancy until you rule. **53 compound formulations cite the Ayurvedic Pharmacopoeia (API), which covers single drugs; their references should point to the AFI** — page numbers were not verified. Approve or reverse each row.
 
 ## Part 4 — Panchakarma Karma tags  (`vaidya_panchakarma_karma_tags.csv`)
 14 preparation and aftercare therapies, each tagged with the Pradhana Karma courses it belongs to. The engine scores its therapy pool with this tag, so it decides what a patient is actually prepared with: a Nasya plan now leads with Shirodhara (Murdha Taila) rather than internal ghee, and a Basti plan no longer opens on Snehapana. Measured across 9,720 Shodhana plans, 10.4% changed schedule.
@@ -110,7 +128,7 @@ A disagreement rate is not a failure. An unmeasured instrument is.
 
 - Reviewer (name, BAMS/MD reg. no.): ____________________
 - Date: ____________  
-- Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/299 · contraindication tokens reviewed ___/164 · Karma tags reviewed ___/14 · cases reviewed ___/30
+- Overall: medicines reviewed ___/157 · PK contraindications reviewed ___/445 · contraindication tokens reviewed ___/164 · Karma tags reviewed ___/14 · cases reviewed ___/30
 - Summary judgement (1–5) on classical accuracy of: Medicines __ · Panchakarma __ · Diet __ · Yoga __ · Routine __
 - Prakriti instrument study (Part 7): commissioned ☐ · scheduled ☐ · completed ☐ — participants ____
 

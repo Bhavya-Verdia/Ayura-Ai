@@ -104,7 +104,9 @@ def test_the_herb_table_is_marked_unreviewed():
     ("guggulu", "pregnancy"),
     ("sarpagandha", "depression"),
     ("sarpagandha", "hypotension"),
-    ("kapikacchu", "parkinson"),
+    # Kapikacchu x parkinson moved to the levodopa interaction (2026-10-15): the
+    # disease is its classical indication, the danger is the dose stacking.
+    ("kapikacchu", "psychosis"),
     ("kutaja", "constipation_chronic"),
 ])
 def test_a_hard_contraindication_withholds_that_component(herb, condition):

@@ -5,6 +5,99 @@ from ai.rag_pipeline import rag_pipeline
 
 logger = logging.getLogger(__name__)
 
+# ── Deterministic gate on the narrative ───────────────────────────────────────
+# Both enrichers merged the model's text straight into the plan. The medicines one
+# writes a Pathya list — food recommendations — which the diet feature screens with
+# `apply_advisory_safety` and this feature did not; and its prose could name a
+# formulation the engine had withheld (an interaction, an allergen, a doubled
+# Guggulu) or a declared allergen. This holds both to the plan.
+
+def _withheld_names(raw_plan: dict) -> list[str]:
+    served = {m.get("name") for k in ("primary_formulations", "supporting_formulations",
+                                      "external_therapies") for m in raw_plan.get(k) or []}
+    return [b["name"] for b in (raw_plan.get("blocked_medicines") or []) + (raw_plan.get("not_doubled") or [])
+            if b.get("name") and b["name"] not in served]
+
+
+def gate_remedy_enrichment(enrichment: dict, raw_plan: dict, user_profile: dict,
+                           list_fields: tuple[str, ...]) -> tuple[dict, list[dict]]:
+    import re
+    from services.ahara_safety import apply_advisory_safety
+    from services.panchakarma_enricher import _DISTANCING, _sentences
+    from services.remedy_engine import _allergen_entries, _contains_allergen
+
+    withheld: list[dict] = []
+    history = user_profile.get("medical_history") or []
+    allergies = user_profile.get("allergies") or []
+    pregnant = bool(user_profile.get("pregnancy_or_nursing"))
+
+    out = dict(enrichment)
+    # Food lists — the diet feature's own floor.
+    for field in list_fields:
+        items = out.get(field)
+        if isinstance(items, list) and items:
+            probe = {"pathya_apathya": {"pathya": list(items)}}
+            apply_advisory_safety(probe, history, allergies, pregnant=pregnant)
+            for w in probe.get("withheld_recommendations") or []:
+                withheld.append({"field": field, "text": str(w["item"]), "reason": w["reason"]})
+            out[field] = probe["pathya_apathya"]["pathya"]
+
+    names = [n for n in _withheld_names(raw_plan) if n]
+    if pregnant:
+        # Herbs the herb table bars in pregnancy, by their common names too.
+        from services.panchakarma_engine import pk_clinical
+        for key, entry in (pk_clinical.get("herbs") or {}).items():
+            if isinstance(entry, dict) and "pregnancy" in (entry.get("hard") or {}):
+                names += [key.replace("_", " "), entry.get("display", "").split(" (")[0]]
+        names += ["aloe vera", "aloe", "kumari", "nutmeg", "hing", "asafoetida", "papaya"]
+        names = [n for n in dict.fromkeys(names) if n and len(n) > 2]
+    name_re = re.compile(r"\b(" + "|".join(re.escape(n) for n in names) + r")\b", re.I) if names else None
+    allergens = _allergen_entries(allergies)
+
+    from services.ahara_safety import unreadable_script
+
+    def screen(text: str, field: str) -> str:
+        # The plan is English; translation is an overlay (`diet_translate`). A whole
+        # medicines narrative came back in Devanagari once — rationale, dose and
+        # when-to-stop — and no check here can read it, so it is not served.
+        if (script := unreadable_script(text)):
+            withheld.append({"field": field, "text": text[:200],
+                             "reason": f"written in {script} script, which the safety checks cannot read"})
+            return ""
+        kept = []
+        for sent in _sentences(text):
+            distanced = bool(_DISTANCING.search(sent))
+            reason = None
+            if name_re and not distanced and (m := name_re.search(sent)):
+                reason = f"names {m.group(1)}, which this plan withheld" + (
+                    " or which is not used in pregnancy" if pregnant else "")
+            if not reason and not distanced:
+                hit = next((e for e in allergens if _contains_allergen(sent, e)), None)
+                if hit:
+                    reason = f"names a {hit['label'].lower()} food — declared allergy"
+            if reason:
+                withheld.append({"field": field, "text": sent, "reason": reason})
+            else:
+                kept.append(sent)
+        return " ".join(kept)
+
+    def walk(v, field):
+        if isinstance(v, str):
+            return screen(v, field)
+        if isinstance(v, list):
+            return [x for x in (walk(x, field) for x in v) if x not in ("", [], {})]
+        if isinstance(v, dict):
+            # A rationale keyed by a withheld formulation's name goes with it.
+            return {k: walk(x, f"{field}.{k}") for k, x in v.items() if k not in names}
+        return v
+
+    skip = set(list_fields) | {"apathya", "viruddha_ahara_alerts"}  # those exist to name what to avoid
+    for k, v in list(out.items()):
+        if k not in skip:
+            out[k] = walk(v, k)
+    return out, withheld
+
+
 async def enrich_remedies_plan(raw_plan: dict, user_profile: dict, remedies_prefs: dict = None) -> dict:
     """
     Enriches the generated remedies plan with Ayurvedic rationale,
@@ -23,7 +116,14 @@ async def enrich_remedies_plan(raw_plan: dict, user_profile: dict, remedies_pref
                 "id": sym.get("symptom_id"),
                 "name": sym.get("symptom_display"),
                 "severity": sym.get("severity"),
-                "remedy_name": sym.get("remedy", {}).get("name")
+                "remedy_name": sym.get("remedy", {}).get("name"),
+                # The remedy itself, not only its name. Given "Pregnancy-safe option for
+                # Acid Reflux", the model explained the usual remedy from retrieval —
+                # aloe vera, which is barred in pregnancy — above a card that said
+                # fennel tea.
+                "ingredients": [i.get("item") for i in (sym.get("remedy") or {}).get("ingredients") or []],
+                "preparation": (sym.get("remedy") or {}).get("preparation"),
+                "pregnancy_alternative": bool(sym.get("pregnancy_alternative")),
             })
 
         # Fetch grounding context for each symptom from the remedy knowledge base
@@ -53,7 +153,7 @@ Provide an enriched context in EXACTLY this JSON format:
 {{
   "personalized_intro": "2-3 sentences addressing user's specific symptom combination and dosha",
   "remedy_rationale": {{
-    "symptom_id": "Why this specific remedy works for this dosha - Ayurvedic explanation"
+    "symptom_id": "Why this specific remedy works for this dosha - Ayurvedic explanation. Explain ONLY the ingredients and preparation given for it; never describe a different remedy. Where pregnancy_alternative is true, explain the gentle option given and say nothing about the usual remedy."
   }},
   "synergy_note": "If multiple symptoms, explain how the remedies work together. If single symptom, explain how the remedy balances the entire body.",
   "recovery_timeline": "What to expect day by day",
@@ -64,7 +164,8 @@ Provide an enriched context in EXACTLY this JSON format:
 
         response = await llm_client.generate(
             prompt=prompt,
-            system_prompt="You are a clinical Ayurvedic expert. Output strictly valid JSON matching the schema.",
+            system_prompt=("You are a clinical Ayurvedic expert. Write every field in English — the app "
+                           "translates separately. Output strictly valid JSON matching the schema."),
             json_mode=True,
         )
 
@@ -73,6 +174,8 @@ Provide an enriched context in EXACTLY this JSON format:
             raise ValueError(f"LLM provider error: {enrichment_data['error']}")
 
         # Merge enrichment data into the plan
+        enrichment_data, raw_plan["coaching_withheld"] = gate_remedy_enrichment(
+            enrichment_data, raw_plan, user_profile, ("prevention_tips",))
         raw_plan["personalized_intro"] = enrichment_data.get("personalized_intro", "")
         raw_plan["synergy_note"] = enrichment_data.get("synergy_note", "")
         raw_plan["recovery_timeline"] = enrichment_data.get("recovery_timeline", "")
@@ -170,7 +273,7 @@ async def enrich_medicines_plan(raw_plan: dict, user_profile: dict, medicines_pr
             "A BAMS-qualified reviewer will verify all references. Inaccurate shloka numbers "
             "destroy credibility. When unsure of the exact shloka, state the principle and the "
             "classical text it comes from without a specific number. "
-            "Output ONLY valid JSON. No markdown. No preamble."
+            "Write every field in English — the app translates separately. Output ONLY valid JSON. No markdown. No preamble."
         )
 
         prompt = f"""
@@ -236,7 +339,9 @@ Respond in EXACTLY this JSON format — every field is required:
         if "error" in enrichment:
             raise ValueError(f"LLM provider error: {enrichment['error']}")
 
-        # Merge enrichment into plan
+        # Merge enrichment into plan — through the gate, never around it.
+        enrichment, raw_plan["coaching_withheld"] = gate_remedy_enrichment(
+            enrichment, raw_plan, user_profile, ("pathya",))
         raw_plan["chikitsa_sutra"]       = enrichment.get("chikitsa_sutra", "")
         raw_plan["personalized_intro"]   = enrichment.get("personalized_intro", "")
         raw_plan["formulation_rationale"]= enrichment.get("formulation_rationale", {})

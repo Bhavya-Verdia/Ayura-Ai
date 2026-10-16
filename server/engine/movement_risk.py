@@ -80,6 +80,12 @@ _CONDITION_RISK_TAGS: dict[str, set[str]] = {
     "lupus":                {"wrist_weight_bearing"},
     "scleroderma":          {"wrist_weight_bearing"},
 
+    # Onboarding offers both and neither reached a mechanism. A spine fused by
+    # ankylosing spondylitis fractures under loaded flexion and the neck has lost
+    # its range; lumbar spondylosis is usually degenerative narrowing, which
+    # extension closes further (as spinal stenosis above).
+    "ankylosing_spondylitis": {"spinal_flexion", "neck_load"},
+    "lumbar_spondylosis":   {"spinal_extension"},
     "cervical_spondylosis": {"neck_load"},
     "cervical_disc":        {"neck_load"},
     "neck_injury":          {"neck_load"},
@@ -180,3 +186,31 @@ def with_declared_injuries(feature: str, prefs: dict, prefs_doc: dict | None) ->
     chips, detail = declared_injuries(prefs_doc)
     detail_key = "injury_detail" if feature == "gym" else "physical_limitations_detail"
     return {**(prefs or {}), "injuries": chips, detail_key: detail}
+
+
+# Medicines are a mechanism too. Neither feature read `current_medications`, so a
+# patient on warfarin was handed a supported headstand and an 80-year-old on a
+# benzodiazepine a one-legged balance, exactly as though they took nothing.
+# Keys are the medication classes of `panchakarma_clinical.json`, resolved from
+# what the patient typed by `services.panchakarma_engine._medication_findings`.
+_MEDICATION_RISK_TAGS: dict[str, set[str]] = {
+    # A fall onto the head, or the head loaded in an inversion, on an anticoagulant.
+    "anticoagulants": {"neck_load"},
+}
+# Sedation is a fall risk mostly in the old (Beers criteria).
+_SEDATIVE_FALLS_AGE = 65
+
+
+def medication_classes(user_profile) -> set:
+    """The medication classes this practitioner's typed medicines resolve to."""
+    from services.panchakarma_engine import _medication_findings
+    return set(_medication_findings(user_profile.get("current_medications") or [])["tokens"])
+
+
+def medication_risk_tags(classes, age=None) -> set:
+    risks: set = set()
+    for c in classes or ():
+        risks |= _MEDICATION_RISK_TAGS.get(c, set())
+    if "sedatives" in (classes or ()) and (age or 0) >= _SEDATIVE_FALLS_AGE:
+        risks.add("fall_risk")
+    return risks

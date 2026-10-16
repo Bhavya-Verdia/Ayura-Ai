@@ -222,9 +222,16 @@ function MedCard({ med, rationale }) {
                 <span>Anupana: <strong>{med.selected_anupana || med.anupana}</strong></span>
               </div>
             )}
-            {med.dosage_pediatric && (
+            {med.anupana_note && <div className="mv-anupana" style={{ color: '#c2410c' }}><span>{med.anupana_note}</span></div>}
+            {/* Why the dose differs from the usual range — a child's dose, the bottom
+                of the range for a teenager or an older adult. The paediatric figure
+                used to be printed on every card, an 82-year-old's included. */}
+            {med.dosage_basis && (
               <div className="mv-anupana" style={{ color: '#a78bfa' }}>
-                <span>Paediatric dose: {med.dosage_pediatric}</span>
+                <span>
+                  {med.dosage_basis === 'paediatric' ? "Child's dose" : `Dose set for: ${med.dosage_basis}`}
+                  {med.dosage_adult ? ` — the usual adult dose is ${med.dosage_adult}` : ''}
+                </span>
               </div>
             )}
           </div>
@@ -280,7 +287,7 @@ function MedCard({ med, rationale }) {
           ) : (
             <div className="mv-section">
               <h4 className="mv-section-label mv-no-interactions">
-                <ShieldCheck size={11} /> No known drug–herb interactions documented
+                <ShieldCheck size={11} /> No interaction with your medicines found in our tables — still show it to your doctor
               </h4>
             </div>
           )}
@@ -311,6 +318,7 @@ export function MedicineView({ plan }) {
   const outcomes   = plan.expected_outcomes || {}
   const lifestyle  = plan.lifestyle_guidance || {}
   const blocked    = plan.blocked_medicines || []
+  const [showAllBlocked, setShowAllBlocked] = useState(false)
   const notDoubled = plan.not_doubled || []
   const rationale  = plan.formulation_rationale || {}
   const pathya     = plan.pathya || []
@@ -329,13 +337,41 @@ export function MedicineView({ plan }) {
           <p>{plan.personalized_intro}</p>
         </div>
       )}
+      {/* Narrative lines the deterministic gate withheld, as a count, so a gap
+          reads as a decision rather than an omission. */}
+      {plan.coaching_withheld?.length > 0 && (
+        <p className="rv-info-body" style={{ opacity: 0.8 }}>
+          {plan.coaching_withheld.length} line{plan.coaching_withheld.length === 1 ? '' : 's'} of the AI guidance{' '}
+          {plan.coaching_withheld.length === 1 ? 'was' : 'were'} withheld because{' '}
+          {plan.coaching_withheld.length === 1 ? 'it' : 'they'} contradicted your plan
+          ({[...new Set(plan.coaching_withheld.map(w => w.reason.split(' — ')[0]))].slice(0, 3).join('; ')}).
+        </p>
+      )}
+
+      {/* ── The patient's own medicines, as this plan read them ── */}
+      {plan.medication_review && (plan.medication_review.matched?.length > 0 || plan.medication_review.notice) && (
+        <div className="mv-coverage-note">
+          <Pill size={14} />
+          <div>
+            <strong>Your medicines and this plan</strong>
+            {plan.medication_review.matched?.length > 0 && (
+              <p>Checked against: {plan.medication_review.matched.map(m => `${m.medication} (${m.classes.join(', ').toLowerCase()})`).join('; ')}. Formulations that interact are listed under "Medicines Excluded for Your Safety".</p>
+            )}
+            {plan.medication_review.notice && <p>{plan.medication_review.notice}</p>}
+          </div>
+        </div>
+      )}
 
       {/* ── Rare / unmapped condition coverage notice ── */}
       {plan.coverage_note && (
         <div className="mv-coverage-note">
           <TriangleAlert size={14} />
           <div>
-            <strong>Limited classical coverage for your condition</strong>
+            <strong>
+              {(plan.uncovered_conditions || []).length > 0
+                ? 'Limited classical coverage for your condition'
+                : 'Some of your conditions need a Vaidya to prescribe'}
+            </strong>
             <p>{plan.coverage_note}</p>
           </div>
         </div>
@@ -346,8 +382,24 @@ export function MedicineView({ plan }) {
         <div className="mv-shodhana-alert">
           <TriangleAlert size={14} />
           <div>
-            <strong>Shodhana (Purification) Protocol Indicated</strong>
-            <p>Your Vikriti and condition profile suggest a purification approach (Vamana/Virechana). This requires in-person evaluation and supervision by a qualified Vaidya. The formulations below support this direction but do not replace clinical Panchakarma.</p>
+            <strong>{plan.shodhana_strength === 'mridu' ? 'Mild (Mridu) Purification Indicated' : 'Shodhana (Purification) Protocol Indicated'}</strong>
+            <p>
+              {plan.shodhana_strength === 'mridu'
+                ? 'Your Ama and conditions suggest purification, but only a mild form suits you — never Vamana.'
+                : 'Your Vikriti and condition profile suggest a purification approach (Vamana/Virechana).'}
+              {' '}This requires in-person evaluation and supervision by a qualified Vaidya. The formulations below support this direction but do not replace clinical Panchakarma.
+            </p>
+            {plan.shodhana_withheld && <p>{plan.shodhana_withheld}</p>}
+          </div>
+        </div>
+      )}
+
+      {plan.chikitsa_approach !== 'Shodhana' && plan.shodhana_withheld && (
+        <div className="mv-shodhana-alert">
+          <TriangleAlert size={14} />
+          <div>
+            <strong>Purification is not advised for you</strong>
+            <p>{plan.shodhana_withheld}</p>
           </div>
         </div>
       )}
@@ -530,6 +582,11 @@ export function MedicineView({ plan }) {
           </h3>
           {lifestyle.dietary_note && <p className="rv-info-body">{lifestyle.dietary_note}</p>}
           {lifestyle.routine_note && <p className="rv-info-body" style={{ marginTop: 6 }}>{lifestyle.routine_note}</p>}
+          {lifestyle.changed_for_you?.length > 0 && (
+            <p className="rv-info-body" style={{ marginTop: 6, opacity: 0.8 }}>
+              Changed for you: {lifestyle.changed_for_you.join(' ')}
+            </p>
+          )}
           {lifestyle.avoid?.length > 0 && (
             <div className="rv-avoid-row">
               {lifestyle.avoid.map((a, i) => <span key={i} className="rv-avoid-chip">{a}</span>)}
@@ -558,12 +615,20 @@ export function MedicineView({ plan }) {
       {blocked.length > 0 && (
         <div className="mv-blocked-section">
           <h3 className="rv-info-label"><TriangleAlert size={14} style={{ color: '#ef4444' }} />Medicines Excluded for Your Safety</h3>
-          {blocked.map((b, i) => (
+          {(showAllBlocked ? blocked : blocked.filter(b => b.for_your_conditions).slice(0, 8)).map((b, i) => (
             <div key={i} className="mv-blocked-item">
               <span className="mv-blocked-name">{b.name}</span>
               <span className="mv-blocked-reason">{b.reason}</span>
             </div>
           ))}
+          {/* Only the ones that would have treated your conditions, by default. */}
+          {blocked.length > blocked.filter(b => b.for_your_conditions).slice(0, 8).length && (
+            <button type="button" className="mv-show-all" onClick={() => setShowAllBlocked(v => !v)}>
+              {showAllBlocked
+                ? 'Show only those for your conditions'
+                : `Show all ${blocked.length} excluded formulations`}
+            </button>
+          )}
         </div>
       )}
 

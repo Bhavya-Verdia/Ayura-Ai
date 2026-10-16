@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import {
-  Leaf, Sparkles, Calendar, ShieldCheck, Flame, Timer, Zap, ChevronDown, ChevronUp, Layers, TriangleAlert, BadgeCheck, HeartPulse,
+  Leaf, Sparkles, Calendar, ShieldCheck, Flame, Timer, Zap, ChevronDown, ChevronUp, Layers, TriangleAlert, BadgeCheck, HeartPulse, Pill,
 } from 'lucide-react'
 import { DOSHA_COLORS_R, doshaInk } from '../../constants/dosha'
 import { MedicineView } from './MedicineView'
@@ -28,7 +28,19 @@ function RemedyCard({ result }) {
     remedy, symptom_display, severity, dosha_cause, dosha_used, requires_practitioner,
     ayurvedic_rationale, usage_cautions, red_flags, taste_notices,
     consult_doctor_if, practitioner_reason,
+    caution_notes, medication_cautions, drug_interaction_warning,
   } = result
+  // Everything that should be read before the remedy is used, in one list.
+  const beforeUse = [
+    ...(usage_cautions || []),
+    ...(caution_notes || []),
+    ...(medication_cautions?.length
+      ? [`Herbs used for this complaint interact with ${medication_cautions.join(', ')}. Check with your prescriber before using it.`]
+      : []),
+    ...(drug_interaction_warning?.herb
+      ? [`${drug_interaction_warning.herb} was left out because it interacts with ${drug_interaction_warning.medication}.`]
+      : []),
+  ]
   if (!remedy) return null
   const doshaColor = DOSHA_COLORS_R[dosha_used] || DOSHA_COLORS_R.universal
   const doshaText = doshaInk(dosha_used === 'universal' ? '' : dosha_used)
@@ -81,11 +93,11 @@ function RemedyCard({ result }) {
             {remedy.duration   && <div className="rv-meta-chip"><Calendar size={11} />{remedy.duration}</div>}
             {remedy.expected_relief && <div className="rv-meta-chip"><Zap size={11} />Relief in {remedy.expected_relief}</div>}
           </div>
-          {usage_cautions?.length > 0 && (
+          {beforeUse.length > 0 && (
             <div className="rv-section">
               <div className="rv-section-label">Before you use this</div>
               <ul className="mv-safety-list">
-                {usage_cautions.map((c, i) => <li key={i}>{c}</li>)}
+                {beforeUse.map((c, i) => <li key={i}>{c}</li>)}
               </ul>
             </div>
           )}
@@ -143,6 +155,7 @@ function RemedyCard({ result }) {
 export function RemedyView({ plan }) {
   const symptoms   = plan.symptoms_addressed || []
   const referrals  = plan.doctor_referrals || []
+  const covered    = plan.covered_by_medicines || []
   const guidelines = plan.general_guidelines || {}
   const prevention = plan.prevention_tips || []
 
@@ -156,6 +169,16 @@ export function RemedyView({ plan }) {
           <p>{plan.personalized_intro}</p>
         </div>
       )}
+      {/* Narrative lines the deterministic gate withheld, as a count, so a gap
+          reads as a decision rather than an omission. */}
+      {plan.coaching_withheld?.length > 0 && (
+        <p className="rv-info-body" style={{ opacity: 0.8 }}>
+          {plan.coaching_withheld.length} line{plan.coaching_withheld.length === 1 ? '' : 's'} of the AI guidance{' '}
+          {plan.coaching_withheld.length === 1 ? 'was' : 'were'} withheld because{' '}
+          {plan.coaching_withheld.length === 1 ? 'it' : 'they'} contradicted your plan
+          ({[...new Set(plan.coaching_withheld.map(w => w.reason.split(' — ')[0]))].slice(0, 3).join('; ')}).
+        </p>
+      )}
 
       {/* Symptom remedy cards */}
       {symptoms.length > 0 && (
@@ -165,6 +188,21 @@ export function RemedyView({ plan }) {
             Remedies for Your Symptoms
           </h3>
           {symptoms.map((res, i) => <RemedyCard key={i} result={res} />)}
+        </div>
+      )}
+
+      {/* Symptoms the medicines plan already treats with the same herb. Not a
+          referral and not a gap: adding the home remedy would double the dose. */}
+      {covered.length > 0 && (
+        <div className="rv-section-block">
+          <h3 className="rv-block-title"><Pill size={16} />Already Covered by Your Medicines</h3>
+          {covered.map((r, i) => (
+            <div key={i} className="rv-referral-card">
+              <span className="rv-referral-sym">{r.symptom_display || r.symptom_id}</span>
+              <span className="rv-referral-msg">{r.message}</span>
+              {r.consult_doctor_if && <span className="rv-referral-escalation">{r.consult_doctor_if}</span>}
+            </div>
+          ))}
         </div>
       )}
 
