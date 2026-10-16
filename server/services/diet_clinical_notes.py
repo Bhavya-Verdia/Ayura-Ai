@@ -122,8 +122,9 @@ CONDITION_NOTES = {
                       "AHA/ACC 2019; AHA dietary guidance 2021"),
     "high_cholesterol": ("High cholesterol",
                          "Oats, barley and pulses supply the soluble fibre that lowers LDL; "
-                         "saturated fat is kept under 7% of energy.",
-                         "AHA dietary guidance 2021"),
+                         "saturated fat is kept under 7% of energy. A small handful of almonds or "
+                         "walnuts a day helps too; fried and salted nuts do not.",
+                         "AHA dietary guidance 2021; Musa-Veloso, Nutr Rev 2016"),
     "gout": ("Gout",
              "Drink 2.5-3 L of water a day unless told otherwise, avoid sweetened drinks "
              "and alcohol, and keep weight steady — crash diets raise uric acid.",
