@@ -288,7 +288,10 @@ def _build_surya_namaskar_block(user_profile: dict, yoga_prefs: dict,
 # extended supine holds risk vena cava compression.
 _TRIMESTER_BLOCKED_CATEGORIES = {
     1: set(),
-    2: {"prone"},
+    # Supine from the second trimester, not the third: ACOG advises avoiding the
+    # supine position after the first trimester (Committee Opinion 804, 2020). The
+    # comment above said so and the table served Bridge Pose at 24 weeks.
+    2: {"prone", "supine"},
     3: {"prone", "supine", "inversion"},
 }
 
@@ -760,6 +763,10 @@ _MEDICAL_CONTRA_MAP = {
     "hypertension":        {"hypertension", "high_blood_pressure"},
     "high_blood_pressure": {"hypertension", "high_blood_pressure"},
     "heart_disease":       {"heart_disease"},
+    # Atrial fibrillation took none of heart disease's exclusions — not even the
+    # sustained Surya Namaskar the cardiac rule removes.
+    "atrial_fibrillation": {"heart_disease"},
+    "arrhythmia":          {"heart_disease"},
     "glaucoma":            {"glaucoma"},
     "cervical_spondylosis":{"neck_injury", "cervical_spondylosis", "serious_neck_injury"},
     "cervical_disc":       {"neck_injury", "cervical_spondylosis", "serious_neck_injury"},
@@ -795,8 +802,10 @@ _MEDICAL_CONTRA_MAP = {
 # The maps live in `engine.movement_risk`, shared with the gym engine: both
 # features read the same profile, and two copies of a safety list is how they
 # drift apart.
+from services.gym_condition_guidance import guidance_for  # noqa: E402
 from engine.movement_risk import (  # noqa: E402
     _CONDITION_RISK_TAGS, _INJURY_RISK_TAGS, condition_risk_tags, injury_risk_tags, unfalse,
+    medication_classes, medication_risk_tags,
 )
 
 _INJURY_CONTRA_MAP = {
@@ -943,11 +952,35 @@ def _build_contra_set(user_profile: dict, age_group: str = "adult", yoga_prefs: 
     return contra
 
 
+def _menstruation_note(user_profile: dict) -> str | None:
+    """Inversions on period days. Most teaching traditions leave them out while
+    bleeding — a convention rather than a proven risk — and the plan said nothing,
+    so a woman met a headstand on day one of her period with no word either way.
+    Inversions carry `skip_during_period` so the session can show which ones."""
+    if str(user_profile.get("gender") or "").lower() != "female" or user_profile.get("pregnancy_or_nursing"):
+        return None
+    age = int(user_profile.get("age") or 30)
+    if not 10 <= age <= 55:
+        return None
+    from services.panchakarma_engine import _menstruation_active
+    heavy = any("menorrhag" in str(c).lower() or "fibroid" in str(c).lower() or "endometrio" in str(c).lower()
+                for c in user_profile.get("medical_history") or [])
+    now = "You reported your period this week. " if _menstruation_active(user_profile) else ""
+    return (now + "On the days of your period, skip the inversions marked in your sessions and "
+            "replace them with a supported forward fold or Legs-up-the-wall with the hips flat. "
+            "Many traditions advise this; the evidence either way is limited, so let comfort decide."
+            + (" With heavy bleeding, skip them and keep strong abdominal work gentle until the "
+               "flow eases." if heavy else ""))
+
+
 def _build_risk_set(user_profile: dict, age_group: str = "adult", yoga_prefs: dict | None = None) -> set:
     """Pose mechanisms this user must avoid, derived from conditions and injuries."""
     risks: set[str] = set()
 
     risks |= condition_risk_tags(user_profile.get("medical_history") or [])
+    # Medicines: an anticoagulant rules out head-loaded inversions, a sedative after
+    # 65 the unsupported balances. Neither was read.
+    risks |= medication_risk_tags(medication_classes(user_profile), user_profile.get("age"))
 
     # Both maps, as the gym reads them: a hernia or an abdominal operation is the
     # same mechanism whether it was declared as a condition or ticked as an injury,
@@ -1130,7 +1163,12 @@ def filter_poses(user_profile, yoga_prefs, poses, max_allowed_levels=None, proto
             pose_preg_tags = set(pose.get("contraindications", []))
             if "pregnancy" in pose_preg_tags:
                 continue
-            if trimester == 3 and "pregnancy_third_trimester" in pose_preg_tags:
+            # Savasana is the exception: its third-trimester tag is about lying
+            # flat, and from the second trimester it is rendered on the left side
+            # (see the post-pass in `generate_yoga_plan`). Excluding it left the
+            # third trimester with no final relaxation at all.
+            if trimester == 3 and "pregnancy_third_trimester" in pose_preg_tags \
+                    and not pose.get("final_relaxation"):
                 continue
         # Condition-specific pose contraindication (dynamic protocol) — hard exclude.
         if pose.get("id", "") in protocol_avoid_ids:
@@ -2684,6 +2722,8 @@ def format_pose(pose: dict, experience: str, week: int, age_group: str = "adult"
         "pose_name":           pose.get("english_name"),
         "sanskrit_name":       pose.get("sanskrit_name"),
         "category":            pose.get("category"),
+        # Shown on period days; see `_menstruation_note`.
+        "skip_during_period":  pose.get("category") == "inversion",
         # Joint coordinates the client draws the pose from. Travels with the plan
         # rather than the bundle: only the ~19 poses in a session are ever sent,
         # and the frontend budget is untouched. Absent until a pose has been
@@ -2887,7 +2927,7 @@ def build_yoga_day(sequence: dict, pranayama: list, yoga_prefs: dict,
                 f"This session runs about {built_minutes} minutes rather than the "
                 f"{requested_minutes} you asked for. At your level the poses that are safe "
                 f"for you do not fill that much time without holding each one longer than is "
-                f"useful. Practise it unhurried, or repeat the main sequence to fill the hour."
+                f"useful. Practise it unhurried, or repeat the main sequence to fill the time."
             )
         else:
             duration_notice = (
@@ -3318,6 +3358,21 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
             "beginning any new practice."
         )
 
+    # Savasana is filed "restorative", so no category block reaches it, and it was
+    # served lying flat on the back at 24 and 36 weeks. From the second trimester
+    # it is taken on the left side.
+    if is_pregnant and trimester >= 2:
+        for wk in four_week_plan:
+            for day in wk["days"]:
+                for key in ("warmup", "main_sequence", "cooldown"):
+                    for pose in (day.get("session") or {}).get(key) or []:
+                        if pose.get("final_relaxation"):
+                            pose["pose_name"] = f"{pose['pose_name']} (left side-lying)"
+                            pose["modification"] = (
+                                "Lie on your LEFT side, a pillow between the knees and one under the "
+                                "head — not flat on your back, which presses on the vena cava from the "
+                                "second trimester.")
+
     return {
         "plan_id":        f"yoga_{user_id}_{int(datetime.now(timezone.utc).timestamp())}",
         "generated_at":   datetime.now(timezone.utc).isoformat(),
@@ -3372,6 +3427,16 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
             }
             if _unmatched_limits else None
         ),
+        # What a practitioner with a condition — or on a medicine — needs to know
+        # before practising, where no pose is the problem: hypoglycaemia, a seizure,
+        # standing up too fast. The gym had these for every condition; yoga had none.
+        "condition_guidance": guidance_for(
+            list(user_profile.get("medical_history") or [])
+            + list(_limitation_terms(user_profile, yoga_prefs))
+            + (["pregnancy"] if _pregnancy_state(user_profile)[0] else [])
+            + [f"med:{c}" for c in sorted(medication_classes(user_profile))],
+            feature="yoga") or None,
+        "menstruation_note": _menstruation_note(user_profile),
         "disclaimer":         disclaimer,
         "enriched":           False,
     }

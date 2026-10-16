@@ -2134,8 +2134,6 @@
 }
 .yoga-unrecognised-notice svg { color: #fbbf24 !important; }
 [data-theme='light'] .yoga-unrecognised-notice svg { color: #b45309 !important; }
-.yoga-pool-notice svg,
-.yoga-duration-notice svg,
 .gym-condition-guidance {
   padding: 0.75rem 0.95rem;
   border-radius: 10px;
@@ -2163,6 +2161,8 @@
   color: var(--ayura-text-primary, inherit);
 }
 
+.yoga-pool-notice svg,
+.yoga-duration-notice svg,
 .gym-pool-notice svg,
 .gym-duration-notice svg {
   flex-shrink: 0;

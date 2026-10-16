@@ -26,6 +26,12 @@ CONDITION_GUIDANCE: list[dict] = [
                  "(250 mg/dL) with ketones, skip the session. Carry glucose tablets or "
                  "juice, and check your feet afterwards if you have any numbness. If you "
                  "have diabetic eye disease, ask your doctor before lifting heavy."),
+        "yoga_note": ("If you use insulin or a sulfonylurea, check your blood glucose before "
+                      "practice, especially on the strong days. Below about 5.6 mmol/L (100 mg/dL), "
+                      "eat 15–30 g of fast carbohydrate first; with type 1 and a reading above about "
+                      "13.9 mmol/L (250 mg/dL) with ketones, skip the session. Keep glucose by the mat. "
+                      "If you have diabetic eye disease, ask your doctor before any pose with the head "
+                      "below the heart; if your feet are numb, keep a wall beside you in balances."),
         "source": "ADA position statement on physical activity and diabetes (Colberg et al., 2016)",
     },
     {
@@ -36,6 +42,7 @@ CONDITION_GUIDANCE: list[dict] = [
                  "minutes building from easy to moderate — reduces exercise-triggered "
                  "symptoms. Avoid training in cold, dry air, and stop if wheezing or chest "
                  "tightness does not settle with your inhaler."),
+        "yoga_note": "Keep your reliever inhaler by the mat. The gradual warm-up reduces exercise-triggered symptoms, so do not skip it. Avoid practising in cold, dry air, and stop if wheezing or chest tightness does not settle with your inhaler.",
         "source": "GINA 2024 report, exercise-induced bronchoconstriction",
     },
     {
@@ -46,6 +53,10 @@ CONDITION_GUIDANCE: list[dict] = [
                  "This plan uses machines and cables in place of free bars held over the "
                  "body. Never swim alone, and skip training after a missed dose, a poor "
                  "night's sleep or when you feel an aura."),
+        "yoga_note": ("Practise with someone nearby who knows what to do in a seizure. This plan "
+                      "leaves out inversions and unsupported balances. Skip a session after a "
+                      "missed dose, a poor night's sleep or an aura, and avoid rapid forceful "
+                      "breathing such as Kapalabhati."),
         "source": "ILAE Task Force on Sports and Epilepsy (Capovilla et al., 2016)",
     },
     {
@@ -66,6 +77,7 @@ CONDITION_GUIDANCE: list[dict] = [
         "note": ("Breathe out on every effort and never hold your breath. If a reading "
                  "before training is 180/110 or higher, skip the session and speak to your "
                  "doctor. Cool down gradually rather than stopping suddenly."),
+        "yoga_note": "Breathe out on every effort and never hold your breath. If a reading before practice is 180/110 or higher, skip the session and speak to your doctor. Come out of poses and up from the floor slowly.",
         "source": "ACSM's Guidelines for Exercise Testing and Prescription, 11th ed.",
     },
     {
@@ -76,6 +88,7 @@ CONDITION_GUIDANCE: list[dict] = [
                  "inverted positions — and breathe out on every effort, because holding "
                  "your breath raises the pressure inside the eye. Tell your eye doctor you "
                  "are starting resistance training."),
+        "yoga_note": "Keep your head above your heart — this plan leaves out inversions and head-down positions — and never hold your breath, because that raises the pressure inside the eye. Tell your eye doctor you have started yoga.",
         "source": "American Academy of Ophthalmology patient guidance on exercise and glaucoma",
     },
     {
@@ -93,6 +106,7 @@ CONDITION_GUIDANCE: list[dict] = [
         "note": ("Less oxygen reaches your muscles, so the same weight feels harder. Work at "
                  "a lower effort than the plan suggests until your levels are treated, and "
                  "stop for dizziness, breathlessness or a racing heart."),
+        "yoga_note": "Less oxygen reaches your muscles, so a pose feels harder than it should. Practise at a lower effort than the plan suggests until your levels are treated, and stop for dizziness, breathlessness or a racing heart.",
         "source": "General clinical guidance",
     },
     {
@@ -138,6 +152,7 @@ CONDITION_GUIDANCE: list[dict] = [
                  "spine straight whenever you are holding a weight — this plan leaves out "
                  "crunches, twists and side bends for that reason — and practise balance so "
                  "a fall is less likely."),
+        "yoga_note": "Weight-bearing poses and balance work are part of the treatment. Keep your spine long — this plan leaves out deep forward folds, twists and side bends for that reason — and practise balances beside a wall so a fall is less likely.",
         "source": "Too Fit to Fracture consensus (Giangregorio et al., 2014)",
     },
     {
@@ -146,6 +161,7 @@ CONDITION_GUIDANCE: list[dict] = [
         "label": "Inflammatory joint condition",
         "note": ("During a flare, rest the inflamed joints and train around them. Work in "
                  "ranges that do not hurt; some stiffness is expected, sharp pain is not."),
+        "yoga_note": "During a flare, rest the inflamed joints and practise around them. Work in ranges that do not hurt; some stiffness is expected, sharp pain is not.",
         "source": "EULAR recommendations for physical activity in inflammatory arthritis (2018)",
     },
     {
@@ -170,6 +186,7 @@ CONDITION_GUIDANCE: list[dict] = [
         "label": "Migraine",
         "note": ("Hard exertion, dehydration and skipped meals are common triggers: eat and "
                  "drink before training, and avoid training in heat."),
+        "yoga_note": "Hard exertion, dehydration and skipped meals are common triggers: eat and drink before practice, and avoid practising in heat.",
         "source": "General clinical guidance",
     },
     {
@@ -198,6 +215,13 @@ CONDITION_GUIDANCE: list[dict] = [
                  "swelling, or breathlessness before you start. After the first trimester avoid "
                  "lying flat on your back. Keep to an effort where you can still talk, avoid "
                  "getting overheated, and drink water through the session."),
+        "yoga_note": ("Get your obstetrician's or midwife's go-ahead first. Stop and seek care for "
+                      "vaginal bleeding, fluid leaking, regular painful contractions, dizziness or "
+                      "feeling faint, chest pain, a headache that will not settle, calf pain or "
+                      "swelling, or breathlessness. After the first trimester avoid lying flat on "
+                      "your back, which is why the plan rests you on your left side. Breathe "
+                      "freely without holding the breath, avoid hot rooms and deep twists, and "
+                      "stretch only to a comfortable point, as joints loosen in pregnancy."),
         "source": "ACOG Committee Opinion 804, physical activity in pregnancy (2020)",
     },
     {
@@ -212,6 +236,7 @@ CONDITION_GUIDANCE: list[dict] = [
                  "(about 2–3 out of 10) and has settled by the next morning; if the joint is "
                  "worse the next day, use less weight or a smaller range next session. This "
                  "plan leaves out jumping and running."),
+        "yoga_note": "Movement is one of the main treatments for osteoarthritis. Some joint discomfort during practice is fine if it stays mild (about 2–3 out of 10) and has settled by the next morning; if the joint is worse the next day, ease off that pose.",
         "source": "OARSI 2019 and ACR/Arthritis Foundation 2019 osteoarthritis guidelines; "
                   "pain-monitoring model (Thomeé, 1997)",
     },
@@ -226,6 +251,7 @@ CONDITION_GUIDANCE: list[dict] = [
                  "safe to keep working through gently. Get urgent care for numbness around "
                  "the groin, new bladder or bowel problems, or weakness in a leg that is "
                  "getting worse."),
+        "yoga_note": "Keep your spine long and move into folds from the hips. If pain spreads further down your leg during or after a pose, stop that pose; pain that stays in the back is usually safe to keep working with gently.",
         "source": "NICE NG59, low back pain and sciatica (2016, updated 2020)",
     },
     {
@@ -235,6 +261,7 @@ CONDITION_GUIDANCE: list[dict] = [
         "note": ("Keep your neck in line with your spine — no weight resting on the neck, "
                  "and no looking up under load. Stop and get it checked if pain, tingling or "
                  "weakness spreads into an arm."),
+        "yoga_note": "Keep your neck in line with your spine — no load on the head or neck, as in a headstand, and no dropping the head back. Stop and get it checked if pain, tingling or weakness spreads into an arm.",
         "source": "NICE CKS, neck pain — cervical radiculopathy (2023)",
     },
     {
@@ -244,6 +271,7 @@ CONDITION_GUIDANCE: list[dict] = [
         "note": ("Train when your medication is working best. Big, deliberate movements and "
                  "balance practice are part of the benefit, so take your time with them, "
                  "and keep a support within reach for standing work."),
+        "yoga_note": "Practise when your medication is working best. Big, deliberate movements and balance practice are part of the benefit, so take your time with them, and keep a chair or wall within reach for standing poses.",
         "source": "European Physiotherapy Guideline for Parkinson's Disease (KNGF/ParkinsonNet, 2014)",
     },
     {
@@ -254,6 +282,7 @@ CONDITION_GUIDANCE: list[dict] = [
                  "cold water with you and rest between sets. Symptoms that come with "
                  "overheating should settle within about an hour of cooling down; if they "
                  "do not, speak to your MS team."),
+        "yoga_note": "Getting hot can bring symptoms on for a while — practise somewhere cool, keep cold water with you and rest between poses. Symptoms that come with overheating should settle within about an hour of cooling down; if they do not, speak to your MS team.",
         "source": "National MS Society exercise recommendations (Kalb et al., 2020)",
     },
     {
@@ -264,7 +293,42 @@ CONDITION_GUIDANCE: list[dict] = [
                  "Drink water steadily before, during and after training, avoid training in "
                  "heat, and tell your prescriber you have started. Stop and seek advice for "
                  "a new tremor, unsteadiness, confusion, vomiting or diarrhoea."),
+        "yoga_note": "If you take lithium, heavy sweating can raise its level in your blood. Drink water steadily before, during and after practice, avoid hot rooms, and tell your prescriber you have started. Stop and seek advice for a new tremor, unsteadiness, confusion, vomiting or diarrhoea.",
         "source": "BNF lithium monograph; NICE CG185 (bipolar disorder)",
+    },
+]
+
+# Medicines. Matched by the "med:<class>" entries the engines add to the declared
+# list from `engine.movement_risk.medication_classes`.
+CONDITION_GUIDANCE += [
+    {
+        "key": "med_orthostatic",
+        "match": ("med:antihypertensives", "med:diuretics", "med:antiparkinson", "med:sedatives"),
+        "label": "Your medicines and standing up",
+        "note": ("Your medicines can drop your blood pressure when you stand. Come up from "
+                 "lying, folding forward or any head-down position slowly, over two or three "
+                 "breaths, and sit for a moment if the room swims. Drink water through the "
+                 "session."),
+        "source": "Orthostatic hypotension — drug causes (BNF; AGS Beers Criteria 2023)",
+    },
+    {
+        "key": "med_bleeding",
+        "match": ("med:anticoagulants", "med:antiplatelets"),
+        "label": "Blood thinners",
+        "note": ("A fall or a knock bleeds more on your medicine, and a head injury needs "
+                 "checking the same day even if you feel fine. This plan leaves out poses that "
+                 "load the head and neck; practise balances beside a wall."),
+        "source": "Anticoagulation and fall-related injury (BNF; NICE CG161 falls)",
+    },
+    {
+        "key": "med_hypoglycaemia",
+        "match": ("med:insulin_or_sulfonylurea",),
+        "unless": ("diabetes",),
+        "label": "Insulin or a sulfonylurea",
+        "note": ("These lower blood glucose whether or not you have eaten. Check it before a "
+                 "strong session, keep fast carbohydrate by the mat, and stop for shakiness, "
+                 "sweating or sudden hunger."),
+        "source": "ADA position statement on physical activity and diabetes (Colberg et al., 2016)",
     },
 ]
 
@@ -274,11 +338,14 @@ from engine.movement_risk import unfalse  # noqa: E402
 _unfalse = unfalse
 
 
-def guidance_for(declared) -> list[dict]:
+def guidance_for(declared, feature: str = "gym") -> list[dict]:
     """The notes that apply to these declared conditions and injuries, in the
-    order the table lists them, one per entry."""
+    order the table lists them, one per entry. `feature="yoga"` takes an entry's
+    `yoga_note` where the gym wording is about bars and machines."""
     text = [_unfalse(d) for d in declared or [] if d]
-    return [{"key": g["key"], "label": g["label"], "note": g["note"], "source": g["source"]}
+    return [{"key": g["key"], "label": g["label"],
+             "note": (g.get("yoga_note") if feature == "yoga" else None) or g["note"],
+             "source": g["source"]}
             for g in CONDITION_GUIDANCE
             if any(m in t for t in text for m in g["match"])
             and not any(u in t for t in text for u in g.get("unless", ()))]

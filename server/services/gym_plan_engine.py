@@ -6,7 +6,8 @@ import re
 
 from services.gym_condition_guidance import _unfalse, guidance_for
 from engine.movement_risk import (_INJURY_RISK_TAGS, _LIMITATION_ALIASES, RISK_VOCAB,
-                                  condition_risk_tags, injury_risk_tags)
+                                  condition_risk_tags, injury_risk_tags,
+                                  medication_classes, medication_risk_tags)
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -1574,6 +1575,8 @@ def _avoided_risks(user_profile, extra=()) -> set:
     declared = _conditions_and_injuries(user_profile)
     risks = condition_risk_tags(declared)
     risks |= injury_risk_tags(declared)
+    # Medicines — shared with yoga (engine.movement_risk).
+    risks |= medication_risk_tags(medication_classes(user_profile), user_profile.get("age"))
     if _age_group(user_profile.get("age")) == "senior":
         risks |= _SENIOR_RISKS
     risks |= {str(t).lower() for t in extra or ()} & RISK_VOCAB
@@ -4425,5 +4428,6 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         # seizure. See `services/gym_condition_guidance.py`.
         "condition_guidance": guidance_for(
             _conditions_and_injuries(user_profile)
-            + (["pregnancy"] if user_profile.get("pregnancy_or_nursing") else [])),
+            + (["pregnancy"] if user_profile.get("pregnancy_or_nursing") else [])
+            + [f"med:{c}" for c in sorted(medication_classes(user_profile))]),
     }
