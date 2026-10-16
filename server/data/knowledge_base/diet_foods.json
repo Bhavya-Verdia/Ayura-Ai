@@ -5983,16 +5983,17 @@
       "agni_effect": "heavy",
       "best_for": [
         "anemia",
-        "constipation"
+        "constipation",
+        "high_cholesterol"
       ]
     },
     "pathya_for": [
       "anemia",
-      "constipation"
+      "constipation",
+      "high_cholesterol"
     ],
     "apathya_for": [
       "obesity",
-      "high_cholesterol",
       "psoriasis"
     ],
     "viruddha_with": [],

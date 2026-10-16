@@ -751,6 +751,8 @@ decide them, and `tests/test_diet_dietitian_decisions.py` pins each one:
   Whole-bean soy milk keeps its IBS claim.
 - **Acidity.** Carrot, beetroot, masoor and almonds are lifted. The 47 foods that
   both frameworks agree on stay out.
+- **High cholesterol.** Almonds are Pathya, not Apathya: about 40 g a day lowers LDL
+  (Musa-Veloso 2016), and walnuts were already Pathya. Obesity still withholds them.
 - **Lactose intolerance** removes milk, cream, lassi, whey and cottage cheese. It does
   not remove curd, chaas or paneer: most people with lactose intolerance tolerate about
   12 g of lactose at a sitting (NIH Consensus 2010).
