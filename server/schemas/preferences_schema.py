@@ -530,7 +530,7 @@ class RoutinePreferences(BaseModel):
     wake_preference: str = Field(
         "natural",
         pattern="^(early|natural|late)$",
-        description="early = ~4:30–5:30 AM | natural = ~5:30–6:30 AM | late = ~6:30–7:30 AM",
+        description="early = 4:30–5:30 AM | natural = the hour the Dosha and season suggest | late = 6:30–7:30 AM",
     )
 
     # Occupation type — affects exercise slot intensity + sedentary movement breaks
@@ -541,15 +541,25 @@ class RoutinePreferences(BaseModel):
     )
 
     # Self-reported Agni — used instead of derived Agni for meal timing
+    # "assessed" (the default) uses the Agni the dosha assessment measured. The
+    # field used to default to "sama", so everyone who left it alone overrode a
+    # measured Manda or Tikshna Agni with "balanced".
     agni_type_self_report: str = Field(
-        "sama",
-        pattern="^(sama|manda|tikshna|vishama)$",
-        description="sama (balanced) | manda (slow/sluggish) | tikshna (sharp/intense) | vishama (irregular)",
+        "assessed",
+        pattern="^(assessed|sama|manda|tikshna|vishama)$",
+        description="assessed (use my assessment) | sama (balanced) | manda (slow/sluggish) | tikshna (sharp/intense) | vishama (irregular)",
     )
 
-    # Integration flags — if True, engine fetches latest gym/yoga plan to annotate exercise slots
-    integrate_gym_plan: bool = Field(False, description="Annotate exercise slots with user's gym plan")
-    integrate_yoga_plan: bool = Field(False, description="Annotate exercise slots with user's yoga plan")
+    # Linked plans. The routine places the latest gym and yoga plan's sessions in the
+    # day by default; these leave one out. The old opt-in flags were sent as false by
+    # every save of the form, so false there cannot be told from "never asked" and
+    # they are no longer read.
+    exclude_gym_plan: bool = Field(False, description="Leave the gym plan out of the routine")
+    exclude_yoga_plan: bool = Field(False, description="Leave the yoga plan out of the routine")
+    gym_time_of_day: str = Field("morning", pattern="^(morning|evening)$",
+                                 description="When the gym session goes in the day")
+    integrate_gym_plan: bool | None = Field(None, description="Deprecated; not read")
+    integrate_yoga_plan: bool | None = Field(None, description="Deprecated; not read")
 
     # Carry fasting signals from diet preferences (optional — used if no DietPreferences)
     fasting_days: list[str] = Field(default=[], description="Days the user fasts (e.g., Monday, Ekadashi)")

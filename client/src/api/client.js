@@ -196,6 +196,12 @@ export const plansAPI = {
   generateRemedies:   ({ symptoms, severity = {}, duration = {} }) =>
                         API.post('/plans/remedies', { symptoms, severity, duration }),
   generateMedicines:  (forceRegenerate = false) => API.post('/plans/medicines', { force_regenerate: forceRegenerate }),
+  // Move a routine slot (time 'HH:MM'), leave it out ('off'), or put it back (null).
+  setRoutineTime:     (body) => API.put('/plans/routine/schedule', body),
+  // The user's own items in their routine: { title, time, duration_minutes, category, days, note }.
+  addRoutineItem:     (item) => API.post('/plans/routine/items', item),
+  updateRoutineItem:  (id, item) => API.put(`/plans/routine/items/${id}`, item),
+  deleteRoutineItem:  (id) => API.delete(`/plans/routine/items/${id}`),
   // Display-only translation of a diet plan; the plan itself stays the checked English.
   translateDiet:      (planId, lang) => API.post('/plans/diet/translate', { plan_id: planId, lang }),
 }

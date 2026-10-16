@@ -350,13 +350,16 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
     } else if (typeId === 'routine') {
       payload.wake_preference = payload.wake_preference || 'natural';
       payload.occupation_type = payload.occupation_type || 'moderately_active';
-      payload.agni_type_self_report = payload.agni_type_self_report || 'sama';
+      payload.agni_type_self_report = payload.agni_type_self_report || 'assessed';
       payload.intermittent_fasting = payload.intermittent_fasting || 'no';
       payload.fasting_days = payload.fasting_days
         ? payload.fasting_days.split(',').map(s => s.trim()).filter(Boolean)
         : [];
-      payload.integrate_gym_plan = !!form.integrate_gym_plan;
-      payload.integrate_yoga_plan = !!form.integrate_yoga_plan;
+      payload.exclude_gym_plan = !!form.exclude_gym_plan;
+      payload.exclude_yoga_plan = !!form.exclude_yoga_plan;
+      payload.gym_time_of_day = payload.gym_time_of_day || 'morning';
+      delete payload.integrate_gym_plan;
+      delete payload.integrate_yoga_plan;
     } else if (typeId === 'panchakarma') {
       payload.panchakarma_goal = payload.panchakarma_goal || 'detox';
       payload.detox_experience = payload.detox_experience || 'none';
@@ -692,7 +695,7 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                 <label>Wake Preference</label>
                 <select name="wake_preference" value={form.wake_preference || 'natural'} onChange={handleChange} required>
                   <option value="early">Early — 4:30–5:30 AM</option>
-                  <option value="natural">Natural — 5:30–6:30 AM</option>
+                  <option value="natural">Natural — the hour your Dosha and season suggest</option>
                   <option value="late">Late — 6:30–7:30 AM</option>
                 </select>
               </div>
@@ -711,7 +714,8 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
                   Agni (Digestive Fire) Type
                   <span className="pref-hint-sub"> — how would you describe your digestion?</span>
                 </label>
-                <select name="agni_type_self_report" value={form.agni_type_self_report || 'sama'} onChange={handleChange} required>
+                <select name="agni_type_self_report" value={form.agni_type_self_report || 'assessed'} onChange={handleChange} required>
+                  <option value="assessed">Use my assessment</option>
                   <option value="sama">Sama — Balanced, regular digestion</option>
                   <option value="manda">Manda — Slow, heavy, bloated after meals</option>
                   <option value="tikshna">Tikshna — Sharp, hungry quickly, acidity</option>
@@ -739,24 +743,36 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
               />
             </div>
             <div className="pref-input-group pref-full">
-              <label className="pref-label-hint">Plan Integration <span>(select to annotate your routine with existing plans)</span></label>
+              <label className="pref-label-hint">Your gym and yoga plans <span>(their sessions are placed in your day — tap one to leave it out)</span></label>
               <div className="pref-chip-row">
                 <button
                   type="button"
-                  className={`pref-chip${form.integrate_gym_plan ? ' active' : ''}`}
-                  onClick={() => setForm(p => ({ ...p, integrate_gym_plan: !p.integrate_gym_plan }))}
+                  className={`pref-chip${!form.exclude_gym_plan ? ' active' : ''}`}
+                  aria-pressed={!form.exclude_gym_plan}
+                  onClick={() => setForm(p => ({ ...p, exclude_gym_plan: !p.exclude_gym_plan }))}
                 >
-                  Integrate Gym Plan
+                  Include Gym Plan
                 </button>
                 <button
                   type="button"
-                  className={`pref-chip${form.integrate_yoga_plan ? ' active' : ''}`}
-                  onClick={() => setForm(p => ({ ...p, integrate_yoga_plan: !p.integrate_yoga_plan }))}
+                  className={`pref-chip${!form.exclude_yoga_plan ? ' active' : ''}`}
+                  aria-pressed={!form.exclude_yoga_plan}
+                  onClick={() => setForm(p => ({ ...p, exclude_yoga_plan: !p.exclude_yoga_plan }))}
                 >
-                  Integrate Yoga Plan
+                  Include Yoga Plan
                 </button>
               </div>
             </div>
+            {!form.exclude_gym_plan && (
+              <div className="pref-input-group">
+                <label>Gym Time</label>
+                <select name="gym_time_of_day" value={form.gym_time_of_day || 'morning'} onChange={handleChange}>
+                  <option value="morning">Morning</option>
+                  <option value="evening">Evening (before dinner)</option>
+                </select>
+                <p className="pref-hint">Yoga goes at the time you chose on the yoga form.</p>
+              </div>
+            )}
           </>
         );
       case 'diet':
