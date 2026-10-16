@@ -1,7 +1,10 @@
 import React, { useState } from 'react'
 import { m } from 'framer-motion'
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { plansAPI } from '../../api/client'
 import {
-  Sun, PersonStanding, Dumbbell, Leaf, Sparkles, Star, Droplets, ShieldCheck, Flame, ArrowRight, Moon, Zap, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain, UtensilsCrossed, Clock, CupSoda, BookOpen, TriangleAlert, BadgeCheck,
+  Sun, PersonStanding, Pencil, RotateCcw, Plus, Trash2, Dumbbell, Leaf, Sparkles, Star, Droplets, ShieldCheck, Flame, ArrowRight, Moon, Zap, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain, UtensilsCrossed, Clock, CupSoda, BookOpen, TriangleAlert, BadgeCheck,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 
@@ -20,6 +23,8 @@ const SLOT_COLORS = {
   rest:            { bg: 'rgba(160,140,240,0.10)', border: 'rgba(160,140,240,0.28)', dot: '#a08cf0' },
   wind_down:       { bg: 'rgba(139,143,224,0.10)', border: 'rgba(139,143,224,0.28)', dot: '#8b8fe0' },
   sleep:           { bg: 'rgba(30,27,75,0.08)',    border: 'rgba(99,102,241,0.22)',  dot: '#4f46e5' },
+  // What the user added themselves — its own hue, so it reads apart from the plan.
+  custom:          { bg: 'rgba(96,165,250,0.10)',  border: 'rgba(96,165,250,0.32)',  dot: '#60a5fa' },
 }
 
 const SLOT_ICON_MAP = {
@@ -64,8 +69,130 @@ function RitualCard({ ritual, idx }) {
 }
 
 
-function TimelineSlot({ slot, idx }) {
+// The routine is the user's to fit around their life. These cannot be left out:
+// the day's anchors, and the two main meals.
+const UNSKIPPABLE = new Set(['wake', 'sleep', 'lunch', 'dinner'])
+
+// "7:05 PM" -> "19:05", for <input type="time">.
+function to24h(label) {
+  const match = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(label || '')
+  if (!match) return ''
+  const h = (Number(match[1]) % 12) + (match[3].toUpperCase() === 'PM' ? 12 : 0)
+  return `${String(h).padStart(2, '0')}:${match[2]}`
+}
+
+function SlotTimeEditor({ slot, dayName, onSave, onCancel, busy }) {
+  const [time, setTime] = useState(to24h(slot.time))
+  const [scope, setScope] = useState('every')
+  const day = scope === 'day' ? dayName.toLowerCase() : null
+  return (
+    <div className="din-time-editor" role="group" aria-label={`Change time for ${slot.activity}`}>
+      <div className="din-time-editor-row">
+        <input
+          type="time"
+          value={time}
+          onChange={e => setTime(e.target.value)}
+          aria-label="New time"
+          autoFocus
+        />
+        <div className="din-time-scope" role="radiogroup" aria-label="Apply to">
+          <button type="button" role="radio" aria-checked={scope === 'every'}
+            className={scope === 'every' ? 'active' : ''} onClick={() => setScope('every')}>Every day</button>
+          <button type="button" role="radio" aria-checked={scope === 'day'}
+            className={scope === 'day' ? 'active' : ''} onClick={() => setScope('day')}>Only {dayName}</button>
+        </div>
+      </div>
+      <div className="din-time-editor-actions">
+        <button type="button" className="din-time-save" disabled={busy || !time}
+          onClick={() => onSave({ slot_id: slot.id, time, day })}>Save</button>
+        {!UNSKIPPABLE.has(slot.id) && (
+          <button type="button" disabled={busy}
+            onClick={() => onSave({ slot_id: slot.id, time: 'off', day })}>Leave out</button>
+        )}
+        {slot.user_set && (
+          <button type="button" disabled={busy}
+            onClick={() => onSave({ slot_id: slot.id, time: null, day })}>Suggested time</button>
+        )}
+        <button type="button" disabled={busy} onClick={onCancel}>Cancel</button>
+      </div>
+    </div>
+  )
+}
+
+const ITEM_CATEGORIES = [
+  ['activity', 'Activity'], ['work', 'Work / study'], ['exercise', 'Exercise'],
+  ['meal', 'Meal'], ['self_care', 'Self-care'], ['rest', 'Rest'],
+]
+const WEEK = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
+// Add or edit something of the user's own: a commute, school pickup, a class.
+function ItemEditor({ item, onSubmit, onDelete, onCancel, busy }) {
+  const [form, setForm] = useState({
+    title: item?.activity || '',
+    time: item ? to24h(item.time) : '',
+    duration_minutes: item?.duration_minutes || 30,
+    category: item?.category || 'activity',
+    days: item?.days || [],
+    note: item?.description || '',
+  })
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+  const toggleDay = d => set('days', form.days.includes(d) ? form.days.filter(x => x !== d) : [...form.days, d])
+  const valid = form.title.trim() && form.time && form.duration_minutes >= 5
+  return (
+    <form
+      className="din-time-editor din-item-editor"
+      onSubmit={e => { e.preventDefault(); if (valid) onSubmit({ ...form, title: form.title.trim(), duration_minutes: Number(form.duration_minutes) }) }}
+    >
+      <label className="din-item-field din-item-wide">
+        <span>What</span>
+        <input type="text" maxLength={60} value={form.title} onChange={e => set('title', e.target.value)}
+          placeholder="e.g. Commute, School pickup, Guitar class" autoFocus />
+      </label>
+      <div className="din-time-editor-row">
+        <label className="din-item-field">
+          <span>Start</span>
+          <input type="time" value={form.time} onChange={e => set('time', e.target.value)} />
+        </label>
+        <label className="din-item-field">
+          <span>Minutes</span>
+          <input type="number" min={5} max={600} step={5} value={form.duration_minutes}
+            onChange={e => set('duration_minutes', e.target.value)} />
+        </label>
+        <label className="din-item-field">
+          <span>Kind</span>
+          <select value={form.category} onChange={e => set('category', e.target.value)}>
+            {ITEM_CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          </select>
+        </label>
+      </div>
+      <div className="din-item-days" role="group" aria-label="Days">
+        <button type="button" aria-pressed={form.days.length === 0}
+          className={form.days.length === 0 ? 'active' : ''} onClick={() => set('days', [])}>Every day</button>
+        {WEEK.map(d => (
+          <button key={d} type="button" aria-pressed={form.days.includes(d)}
+            className={form.days.includes(d) ? 'active' : ''} onClick={() => toggleDay(d)}>
+            {d.slice(0, 3).replace(/^./, c => c.toUpperCase())}
+          </button>
+        ))}
+      </div>
+      <label className="din-item-field din-item-wide">
+        <span>Note (optional)</span>
+        <input type="text" maxLength={200} value={form.note} onChange={e => set('note', e.target.value)} />
+      </label>
+      <div className="din-time-editor-actions">
+        <button type="submit" className="din-time-save" disabled={busy || !valid}>{item ? 'Save' : 'Add'}</button>
+        {onDelete && (
+          <button type="button" disabled={busy} onClick={onDelete}><Trash2 size={11} aria-hidden="true" />Remove</button>
+        )}
+        <button type="button" disabled={busy} onClick={onCancel}>Cancel</button>
+      </div>
+    </form>
+  )
+}
+
+function TimelineSlot({ slot, idx, dayName, onSave, onItem, busy }) {
   const [mealOpen, setMealOpen] = useState(false)
+  const [editing, setEditing] = useState(false)
   const slotType = SLOT_COLORS[slot.type] ? slot.type : 'work'
   const colors = SLOT_COLORS[slotType]
   const Icon = SLOT_ICON_MAP[slot.icon] || Sparkles
@@ -80,7 +207,19 @@ function TimelineSlot({ slot, idx }) {
       style={{ '--slot-bg': colors.bg, '--slot-border': colors.border }}
     >
       <div className="din-slot-time-col">
-        <span className="din-slot-time">{slot.time}</span>
+        {slot.id && onSave ? (
+          <button
+            type="button"
+            className={`din-slot-time din-slot-time-btn${slot.user_set ? ' user-set' : ''}`}
+            onClick={() => setEditing(e => !e)}
+            aria-expanded={editing}
+            aria-label={`${slot.time}, ${slot.activity}. ${slot.custom ? 'Edit' : 'Change time'}`}
+          >
+            {slot.time}<Pencil size={10} aria-hidden="true" />
+          </button>
+        ) : (
+          <span className="din-slot-time">{slot.time}</span>
+        )}
         <div className="din-slot-line" style={{ background: colors.dot }} />
       </div>
       <div className="din-slot-dot" style={{ background: colors.dot }} />
@@ -89,6 +228,9 @@ function TimelineSlot({ slot, idx }) {
           <span className="din-slot-icon-wrap"><Icon size={13} /></span>
           <span className="din-slot-activity">{slot.activity}</span>
           {slot.gym_focus && <span className="din-gym-focus-badge">{slot.gym_focus}</span>}
+          {slot.custom
+            ? <span className="din-user-set-badge">Added by you</span>
+            : slot.user_set && <span className="din-user-set-badge">Your time</span>}
           {slot.type === 'meal' && (
             <button className="din-meal-toggle" onClick={() => setMealOpen(o => !o)}>
               {mealOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -96,6 +238,30 @@ function TimelineSlot({ slot, idx }) {
           )}
         </div>
         {slot.description && <p className="din-slot-desc">{slot.description}</p>}
+        {(slot.schedule_notes || []).map((note, i) => (
+          <div key={`s${i}`} className="din-slot-cond-note din-slot-sched-note">
+            <Clock size={11} />
+            <span>{note}</span>
+          </div>
+        ))}
+        {editing && slot.custom && onItem && (
+          <ItemEditor
+            item={slot}
+            busy={busy}
+            onCancel={() => setEditing(false)}
+            onSubmit={async body => { if (await onItem('update', slot.id, body)) setEditing(false) }}
+            onDelete={async () => { if (await onItem('delete', slot.id)) setEditing(false) }}
+          />
+        )}
+        {editing && !slot.custom && (
+          <SlotTimeEditor
+            slot={slot}
+            dayName={dayName}
+            busy={busy}
+            onCancel={() => setEditing(false)}
+            onSave={async body => { if (await onSave(body)) setEditing(false) }}
+          />
+        )}
         {(slot.condition_notes || (slot.condition_note ? [slot.condition_note] : [])).map((note, i) => (
           <div key={i} className="din-slot-cond-note">
             <Zap size={11} />
@@ -161,8 +327,39 @@ function MealGuidancePanel({ guidance }) {
 }
 
 
-export function RoutineView({ plan }) {
+export function RoutineView({ plan: initialPlan }) {
   const [activeDay, setActiveDay] = useState(0)
+  // A time edit returns the rebuilt routine; it replaces this one here and in the
+  // dashboard's cache, so going back and reopening shows the same day.
+  const [plan, setPlan] = useState(initialPlan)
+  const [saving, setSaving] = useState(false)
+  const queryClient = useQueryClient()
+  const [adding, setAdding] = useState(false)
+  const saveItem = (action, id, body) => apply(
+    action === 'add' ? plansAPI.addRoutineItem(body)
+      : action === 'update' ? plansAPI.updateRoutineItem(id, body)
+        : plansAPI.deleteRoutineItem(id),
+    'Could not save that. Try again.')
+  const saveTime = (body) => apply(plansAPI.setRoutineTime(body), 'Could not change that time. Try again.')
+  const apply = async (request, failure) => {
+    setSaving(true)
+    try {
+      const res = await request
+      setPlan(res.data)
+      queryClient.setQueryData(['plans-history'], old => old ? ({
+        ...old, routine: { ...(old.routine || {}), data: res.data },
+      }) : old)
+      return true
+    } catch (err) {
+      const detail = err.response?.data?.detail
+      toast.error(typeof detail === 'string' ? detail : failure)
+      return false
+    } finally {
+      setSaving(false)
+    }
+  }
+  const hasCustomTimes = Object.keys(plan.custom_times || {}).length > 0
+    || Object.keys(plan.custom_times_by_day || {}).length > 0
   const din = plan.dinacharya_protocol || {}
   const seasonal = plan.seasonal_ritucharya || {}
   const mealGuide = plan.meal_guidance || {}
@@ -186,6 +383,13 @@ export function RoutineView({ plan }) {
     ...(seasonal.withheld || []).map(w => ({ what: w.item, why: w.reason })),
     ...(mealGuide.withheld || []).map(w => ({ what: w.item, why: w.reason })),
   ]
+  // A day with no gym or yoga slot reads the same whether the plan was left out
+  // or never made, so the second case says what to do.
+  const linked = plan.linked_plans || {}
+  const missingPlans = ['gym', 'yoga'].filter(k => linked[k] === 'none')
+  const linkNotice = missingPlans.length
+    ? `You have no ${missingPlans.join(' or ')} plan yet. Create one and regenerate this routine, and its sessions will be placed in your day.`
+    : null
   const coaching = [plan.plan_description, plan.dosha_coaching, plan.agni_coaching, plan.sleep_coaching,
     plan.seasonal_rationale, plan.integration_note, plan.motivational_note].filter(c => typeof c === 'string' && c.trim())
 
@@ -209,7 +413,7 @@ export function RoutineView({ plan }) {
         </div>
       )}
 
-      {[din.sleep_notice, plan.fasting_notice].filter(Boolean).map((n, i) => (
+      {[din.sleep_notice, plan.fasting_notice, linkNotice].filter(Boolean).map((n, i) => (
         <div key={i} className="din-wake-notice">
           <TriangleAlert size={12} />
           <span>{n}</span>
@@ -326,10 +530,36 @@ export function RoutineView({ plan }) {
             <p className="din-day-theme">{plan.weekly_theme[currentDay.day_name]}</p>
           )}
 
+          <div className="din-edit-hint">
+            <span>Tap a time to change it to fit your day.</span>
+            <button type="button" disabled={saving} onClick={() => setAdding(a => !a)} aria-expanded={adding}>
+              <Plus size={11} aria-hidden="true" />Add to my routine
+            </button>
+            {hasCustomTimes && (
+              <button type="button" disabled={saving} onClick={() => saveTime({ reset_all: true })}>
+                <RotateCcw size={11} aria-hidden="true" />Reset all my times
+              </button>
+            )}
+          </div>
+          {adding && (
+            <ItemEditor
+              busy={saving}
+              onCancel={() => setAdding(false)}
+              onSubmit={async body => { if (await saveItem('add', null, body)) setAdding(false) }}
+            />
+          )}
+          {currentDay.sleep_notice && (
+            <div className="din-wake-notice">
+              <TriangleAlert size={12} />
+              <span>{currentDay.sleep_notice}</span>
+            </div>
+          )}
+
           {/* Timeline */}
           <div className="din-timeline">
             {timeline.map((slot, i) => (
-              <TimelineSlot key={i} slot={slot} idx={i} />
+              <TimelineSlot key={`${slot.id || i}-${slot.time}`} slot={slot} idx={i}
+                dayName={currentDay.day_name || dayLabels[activeDay]} onSave={saveTime} onItem={saveItem} busy={saving} />
             ))}
           </div>
         </div>

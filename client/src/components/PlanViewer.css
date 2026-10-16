@@ -5721,6 +5721,110 @@
   white-space: nowrap;
   line-height: 1;
 }
+/* The time is the edit control: tap it to move the slot. */
+.din-slot-time-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px dashed transparent;
+  border-radius: 6px;
+  padding: 3px 5px;
+  margin: -3px -5px 0 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ayura-muted);
+}
+.din-slot-time-btn svg { opacity: 0.45; }
+.din-slot-time-btn:hover,
+.din-slot-time-btn[aria-expanded='true'] { border-color: var(--ayura-border, rgba(160,140,240,0.4)); }
+.din-slot-time-btn:hover svg { opacity: 0.9; }
+.din-slot-time-btn.user-set { color: var(--plan-amber); }
+.din-user-set-badge {
+  margin-left: auto;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: var(--plan-amber);
+  border: 1px solid rgba(251,191,36,0.35);
+  white-space: nowrap;
+}
+.din-edit-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 2px 0 10px;
+  font-size: 0.74rem;
+  color: var(--ayura-muted);
+}
+.din-edit-hint button,
+.din-time-editor button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 8px;
+  border: 1px solid var(--ayura-border, rgba(160,140,240,0.3));
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.din-edit-hint button:disabled,
+.din-time-editor button:disabled { opacity: 0.5; cursor: progress; }
+.din-time-editor {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--ayura-border, rgba(160,140,240,0.3));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.din-time-editor-row,
+.din-time-editor-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.din-time-editor input[type='time'] {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--ayura-border, rgba(160,140,240,0.3));
+  background: transparent;
+  color: inherit;
+  color-scheme: light dark;
+}
+.din-time-scope { display: inline-flex; gap: 4px; }
+.din-time-scope button.active,
+.din-time-editor .din-time-save { background: var(--plan-amber); border-color: var(--plan-amber); color: #1a1406; }
+.din-slot-sched-note svg { color: var(--plan-amber); }
+.din-edit-hint > span { flex: 1 1 auto; }
+.din-item-editor { margin: 0 0 12px; }
+.din-item-field { display: flex; flex-direction: column; gap: 4px; font-size: 0.7rem; color: var(--ayura-muted); }
+.din-item-wide { width: 100%; }
+.din-item-field input,
+.din-item-field select {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--ayura-border, rgba(160,140,240,0.3));
+  background: transparent;
+  color: var(--ayura-text, inherit);
+  color-scheme: light dark;
+  min-width: 0;
+}
+.din-item-field input[type='number'] { width: 80px; }
+.din-item-days { display: flex; flex-wrap: wrap; gap: 4px; }
+.din-item-days button.active { background: var(--plan-amber); border-color: var(--plan-amber); color: #1a1406; }
+
 .din-slot-line {
   flex: 1;
   width: 2px;
@@ -5769,6 +5873,7 @@
 .din-slot[data-slot='exercise']        { --slot-label: #8fd3a4; }
 .din-slot[data-slot='meal']            { --slot-label: #f2b183; }
 .din-slot[data-slot='work']            { --slot-label: #c9bfae; }
+.din-slot[data-slot='custom']          { --slot-label: #93c5fd; }
 .din-slot[data-slot='rest']            { --slot-label: #c4b5fd; }
 .din-slot[data-slot='wind_down']       { --slot-label: #b5b8f0; }
 .din-slot[data-slot='sleep']           { --slot-label: #a5b4fc; }
@@ -5777,6 +5882,7 @@
 [data-theme='light'] .din-slot[data-slot='exercise']        { --slot-label: #166534; }
 [data-theme='light'] .din-slot[data-slot='meal']            { --slot-label: #9a3412; }
 [data-theme='light'] .din-slot[data-slot='work']            { --slot-label: #5a4f40; }
+[data-theme='light'] .din-slot[data-slot='custom']          { --slot-label: #1e40af; }
 [data-theme='light'] .din-slot[data-slot='rest']            { --slot-label: #5b21b6; }
 [data-theme='light'] .din-slot[data-slot='wind_down']       { --slot-label: #3730a3; }
 [data-theme='light'] .din-slot[data-slot='sleep']           { --slot-label: #312e81; }

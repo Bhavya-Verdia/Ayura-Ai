@@ -616,6 +616,122 @@ def _day_anchors(dosha: str, season: str, age: int, preference: str | None) -> d
             "sleep_notice": sleep_notice, "sleep_hours": round((wake_min + 24 * 60 - bed) / 60, 1)}
 
 
+# ── The user's own times ──────────────────────────────────────────────────────
+# Every slot carries a stable `id`, and a user can set any of them to their own
+# time, for every day or for one weekday. A set slot is placed exactly there; the
+# slots after it flow from its end, as they flow from any other. Wake and sleep are
+# the day's anchors, so setting either moves everything tied to them.
+#
+# The user's time wins. Where it costs something — less sleep than their age
+# needs, dinner close to bed, a workout straight after a meal — the slot says so;
+# it is not refused, because the routine is theirs to live and a plan that will not
+# fit someone's working hours is a plan nobody follows.
+
+SLOT_IDS = ("wake", "rituals", "abhyanga", "morning_ex", "breakfast", "work", "lunch",
+            "midday_rest", "after_lunch_walk", "snack", "evening_ex", "dinner",
+            "after_dinner_walk", "wind_down", "night_drink", "sleep")
+
+
+# A slot can be left out of the day as well as moved. Not the day's anchors, and
+# not lunch or dinner: a routine with no main meal is not one this app can stand
+# behind. Breakfast can go, except where a medicine or pregnancy needs it eaten.
+SKIP = "off"
+_WEEKDAY_KEYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+UNSKIPPABLE = {"wake", "sleep", "lunch", "dinner"}
+
+
+def parse_hhmm(value) -> int | None:
+    """'07:30' / '7:30' / '19:05' -> minutes after midnight; None when not a time."""
+    m = re.fullmatch(r"\s*(\d{1,2}):(\d{2})\s*", str(value or ""))
+    if not m:
+        return None
+    h, mi = int(m.group(1)), int(m.group(2))
+    return h * 60 + mi if h < 24 and mi < 60 else None
+
+
+def clean_custom_times(times) -> dict[str, str]:
+    """Only known slot ids with real times survive; anything else is dropped."""
+    out = {}
+    for k, v in (times or {}).items() if isinstance(times, dict) else ():
+        k = str(k)
+        known = k in SLOT_IDS or re.fullmatch(r"(morning|evening)_ex_\d", k)
+        if known and v == SKIP and k not in UNSKIPPABLE:
+            out[k] = SKIP
+        elif known and parse_hhmm(v) is not None:
+            t = parse_hhmm(v)
+            out[k] = f"{t // 60:02d}:{t % 60:02d}"
+    return out
+
+
+# Things the user adds to their own day — a commute, school pickup, a class. They
+# are the user's words and are shown only to the user; they never reach the model.
+ITEM_CATEGORIES = {
+    "activity": ("custom", "work"), "work": ("work", "work"), "exercise": ("exercise", "walk"),
+    "meal": ("meal", "meal"), "self_care": ("self_care", "ritual"), "rest": ("rest", "rest"),
+}
+MAX_ITEMS = 20
+
+
+def clean_custom_items(items) -> list[dict]:
+    """The user's own items, each with a real time, a bounded length and known days."""
+    out = []
+    for it in (items if isinstance(items, list) else [])[:MAX_ITEMS]:
+        if not isinstance(it, dict):
+            continue
+        t = parse_hhmm(it.get("time"))
+        title = re.sub(r"\s+", " ", str(it.get("title") or "")).strip()[:60]
+        iid = str(it.get("id") or "")
+        if t is None or not title or not re.fullmatch(r"custom_[a-z0-9]{4,16}", iid):
+            continue
+        try:
+            dur = min(max(int(it.get("duration_minutes") or 30), 5), 600)
+        except (TypeError, ValueError):
+            dur = 30
+        out.append({
+            "id": iid, "title": title, "time": f"{t // 60:02d}:{t % 60:02d}", "duration_minutes": dur,
+            "category": it.get("category") if it.get("category") in ITEM_CATEGORIES else "activity",
+            "days": [d for d in (it.get("days") or []) if d in _WEEKDAY_KEYS],
+            "note": str(it.get("note") or "").strip()[:200],
+        })
+    return out
+
+
+def _item_slot(it: dict) -> dict:
+    kind, icon = ITEM_CATEGORIES[it["category"]]
+    return {"id": it["id"], "at": ("clock", it["time"]), "min": it["duration_minutes"],
+            "activity": it["title"], "description": it["note"], "type": kind, "icon": icon,
+            "custom": True, "duration_minutes": it["duration_minutes"], "category": it["category"],
+            "days": it["days"]}
+
+
+def _override_anchors(anchors: dict, times: dict, age: int, dosha: str) -> dict:
+    """The day's wake and bed with the user's own times applied."""
+    if not ({"wake", "sleep"} & set(times)):
+        return anchors
+    out = dict(anchors)
+    need = _sleep_need_minutes(age, dosha)
+    if "wake" in times:
+        out["wake"] = parse_hhmm(times["wake"])
+        out["label"] = "Wake up" if out["wake"] >= _BRAHMA_MUHURTA_ENDS_MIN else "Brahma Muhurta — Wake up"
+        out["wake_notice"] = None
+        if "sleep" not in times:
+            # Bedtime follows a wake time the user moved, as it follows the computed one.
+            out["bed"] = max(min(_CLASSICAL_BED.get(dosha, 22 * 60), out["wake"] + 24 * 60 - need),
+                             _earliest_bed(age))
+    if "sleep" in times:
+        bed = parse_hhmm(times["sleep"])
+        out["bed"] = bed + 24 * 60 if bed < 12 * 60 else bed   # 00:30 is after midnight
+    out["sleep_hours"] = round((out["wake"] + 24 * 60 - out["bed"]) / 60, 1)
+    out["sleep_notice"] = None
+    if out["sleep_hours"] * 60 < need - 5:
+        who = "a child" if age < 13 else "a teenager" if age < 18 else "you"
+        out["sleep_notice"] = (
+            f"With the times you set, this is about {out['sleep_hours']:g} hours in bed. "
+            f"{who[0].upper() + who[1:]} need{'s' if who != 'you' else ''} about {need / 60:g}. "
+            "Sleep is the one thing in this routine not worth trading for an earlier start.")
+    return out
+
+
 def _kapha_wake_description(wake: str) -> str:
     """Kapha's wake instruction, which cannot be printed unchanged at every hour.
 
@@ -643,6 +759,31 @@ def _kapha_wake_description(wake: str) -> str:
 #   ("dinner", n) n minutes after dinner (negative: before)
 #   ("bed", n)    n minutes before bedtime (n negative)
 def _template(dosha: str, wake_label: str, wake: str) -> list:
+    """The dosha's day, each slot with a stable `id` the user can set a time on."""
+    slots = _template_slots(dosha, wake_label, wake)
+    care = 0
+    for x in slots:
+        kind, act = x["type"], x["activity"].lower()
+        if kind == "morning_routine":
+            x["id"] = "wake"
+        elif kind == "self_care":
+            x["id"] = ("rituals", "abhyanga")[min(care, 1)]
+            care += 1
+        elif kind == "meal":
+            x["id"] = x["meal_type"]
+        elif kind == "exercise":
+            x["id"] = ("morning_ex" if x.get("morning") else "evening_ex" if x.get("evening")
+                       else "after_lunch_walk" if "shatapadi" in act else "after_dinner_walk")
+        elif kind == "rest":
+            x["id"] = "midday_rest"
+        elif kind == "wind_down":
+            x["id"] = "night_drink" if x.get("icon") == "milk" else "wind_down"
+        else:
+            x["id"] = kind
+    return slots
+
+
+def _template_slots(dosha: str, wake_label: str, wake: str) -> list:
     if dosha == "vata":
         return [
             {"at": ("wake", 0),   "min": 15, "activity": wake_label, "description": "Rise gently. Lie still for 2 minutes. Set an intention before leaving bed. Same time every day — regularity is the #1 Vata medicine.", "type": "morning_routine", "icon": "sun"},
@@ -694,7 +835,8 @@ def _template(dosha: str, wake_label: str, wake: str) -> list:
     ]
 
 
-def _resolve_times(slots: list, wake: int, bed: int, dinner_gap: int = 150) -> list:
+def _resolve_times(slots: list, wake: int, bed: int, dinner_gap: int = 150,
+                   pins: dict[str, int] | None = None) -> list:
     """Give every slot a time, in order, none earlier than the end of the one before.
 
     Dinner is the classical hour, brought earlier when it would fall inside
@@ -704,9 +846,19 @@ def _resolve_times(slots: list, wake: int, bed: int, dinner_gap: int = 150) -> l
     """
     dinner_clock = next((_minutes(s["dinner_clock"]) for s in slots if s.get("dinner_clock")), 19 * 60)
     dinner = min(dinner_clock, bed - dinner_gap)
+    pins = pins or {}
+    if "dinner" in pins:
+        dinner = pins["dinner"]
     out, prev_end = [], None
     for s in slots:
         kind = s["at"][0]
+        if s.get("id") in pins:
+            t = pins[s["id"]]
+            entry = {k: v for k, v in s.items() if k not in ("at", "min", "dinner_clock")}
+            entry.update(_t=t, _end=t + int(s.get("min") or 0), user_set=True)
+            out.append(entry)
+            prev_end = entry["_end"]
+            continue
         if kind == "wake":
             t = wake + s["at"][1]
         elif kind == "clock":
@@ -722,13 +874,60 @@ def _resolve_times(slots: list, wake: int, bed: int, dinner_gap: int = 150) -> l
             dinner = t
         entry = {k: v for k, v in s.items() if k not in ("at", "min", "dinner_clock")}
         entry["_t"] = t
+        entry["_end"] = t + int(s.get("min") or 0)
         out.append(entry)
-        prev_end = t + int(s.get("min") or 0)
+        prev_end = entry["_end"]
+    if pins:
+        out.sort(key=lambda e: e["_t"])
+        _note_conflicts(out, bed, dinner_gap)
     # The bed row is the anchor; if the evening ran on past it, say so by moving
     # bed rather than printing a 10 PM sleep after a 10:15 wind-down.
     for e in out:
         e["time"] = _clock(e["_t"])
     return out
+
+
+_MAIN_MEALS = {"breakfast", "lunch", "dinner"}
+
+
+def _note_conflicts(out: list, bed: int, dinner_gap: int) -> None:
+    """What a time the user set costs, said on the slot rather than refused."""
+    sleep = next((e for e in out if e["type"] == "sleep"), None)
+    if sleep and sleep["_t"] > bed and not sleep.get("user_set"):
+        # The evening ran past bedtime because of a time the user set. Sleep is
+        # what gave, so say so where they will look for it.
+        sleep["schedule_notes"] = [
+            f"Later than planned ({_clock(bed)}), because the times you set ran the evening on. "
+            "Move one of them earlier to get the sleep back."]
+    bed = sleep["_t"] if sleep else bed
+    for i, e in enumerate(out):
+        if not e.get("user_set"):
+            continue
+        notes = []
+        before = out[i - 1] if i else None
+        after = out[i + 1] if i + 1 < len(out) else None
+        for other in (before, after):
+            if not other or "sleep" in (other["type"], e["type"]):
+                continue
+            if (other["_t"] < e["_end"] and e["_t"] < other["_end"]) or other["_t"] == e["_t"]:
+                notes.append(f"Overlaps with {other['activity']} at {_clock(other['_t'])}. "
+                             "Move one of them, or do them back to back.")
+                break
+        if e.get("meal_type") == "dinner" and bed - e["_t"] < dinner_gap:
+            notes.append(f"This leaves {(bed - e['_t']) / 60:g} hours before bed. Ayurveda keeps "
+                         f"dinner about {dinner_gap / 60:g} hours before sleep, so it is digested "
+                         "first.")
+        if e.get("meal_type") == "lunch" and not (11 * 60 <= e["_t"] <= 14 * 60):
+            notes.append("Agni is strongest from about 10 AM to 2 PM, which is why lunch is the "
+                         "main meal. At this hour keep it lighter, and make it the bigger meal "
+                         "again on days you can.")
+        if e["type"] == "exercise" and "walk" not in e.get("activity", "").lower():
+            meal = next((m for m in reversed(out[:i]) if m.get("meal_type") in _MAIN_MEALS), None)
+            if meal and e["_t"] - meal["_t"] < 90:
+                notes.append(f"This is soon after {meal['activity'].split(' —')[0].lower()}. "
+                             "Leave an hour or two after a meal before a workout.")
+        if notes:
+            e["schedule_notes"] = notes
 
 
 def _sleep_line(hours: float, age: int) -> str:
@@ -739,10 +938,55 @@ def _sleep_line(hours: float, age: int) -> str:
     return f"About {hours:g} hours in bed."
 
 
+def _place_sessions(slots: list, sessions: dict) -> list:
+    """One exercise slot per planned session, tagged `ex_slot` ("morning0", ...).
+
+    The template has one morning slot, and an evening one for Vata and Pitta only,
+    so a day with a gym session and a yoga session had room for one of them: the
+    gym won and the yoga plan disappeared from every shared day. A second session
+    in the same part of the day follows the first. An evening session is placed so
+    it ends half an hour before dinner rather than running into it, and Kapha,
+    whose template has no evening slot, gets one when a plan needs it.
+    """
+    evening = [m for m in sessions.get("evening") or [] if m]
+    if evening and not any(s.get("evening") for s in slots):
+        at = next(i for i, s in enumerate(slots) if s.get("meal_type") == "dinner")
+        slots = slots[:at] + [{"id": "evening_ex", "at": ("dinner",), "min": 30, "activity": "Evening Movement",
+                               "description": "", "type": "exercise", "icon": "walk",
+                               "evening": True}] + slots[at:]
+    # Vata's template bathes before its gentle morning movement. Before a planned
+    # session that is a shower followed by an hour of sweating, so the session
+    # moves ahead of the bath, as it already sits in the Pitta and Kapha days.
+    if any(sessions.get("morning") or []):
+        m = next((i for i, x in enumerate(slots) if x.get("morning")), None)
+        b = next((i for i, x in enumerate(slots) if x.get("type") == "self_care"
+                  and "bath" in x.get("activity", "").lower()), None)
+        if m is not None and b is not None and b < m:
+            slots = list(slots)
+            ex = {**slots.pop(m), "at": slots[b]["at"]}
+            slots.insert(b, ex)
+    out = []
+    for s in slots:
+        part = "morning" if s.get("morning") else "evening" if s.get("evening") else None
+        if s.get("type") != "exercise" or not part:
+            out.append(s)
+            continue
+        mins = [m for m in sessions.get(part) or [] if m]
+        if not mins:
+            out.append({**s, "ex_slot": f"{part}0"})
+            continue
+        at = s["at"] if part == "morning" else ("dinner", -(sum(mins) + 30))
+        out.extend({**s, "at": at, "min": m, "ex_slot": f"{part}{n}",
+                    "id": s["id"] if n == 0 else f"{s['id']}_{n + 1}"} for n, m in enumerate(mins))
+    return out
+
+
 def _get_base_timeline(dosha: str, season: str, if_window: str, agni_type: str, occupation: str,
                        wake_preference: str | None = None, age: int = 30,
                        agni_notes: dict | None = None, ex_minutes: int | None = None,
-                       dinner_gap: int = 150, anchors: dict | None = None) -> list:
+                       dinner_gap: int = 150, anchors: dict | None = None,
+                       sessions: dict | None = None, pins: dict | None = None,
+                       items: list | None = None) -> list:
     anchors = anchors or _day_anchors(dosha, season, age, wake_preference)
     wake = _hm(anchors["wake"])
     slots = _template(dosha, anchors["label"], wake)
@@ -750,7 +994,17 @@ def _get_base_timeline(dosha: str, season: str, if_window: str, agni_type: str, 
         for s in slots:
             if s.get("morning"):
                 s["min"] = ex_minutes
-    timeline = _resolve_times(slots, anchors["wake"], anchors["bed"], dinner_gap)
+    slots = _place_sessions(slots, sessions or {})
+    if items:
+        # Put each item where it falls in the day as first laid out, so the slots
+        # after it flow from its end instead of colliding with it.
+        first = _resolve_times(slots, anchors["wake"], anchors["bed"], dinner_gap, pins)
+        placed = [(e["_t"], e["id"]) for e in first]
+        for it in sorted(items, key=lambda i: pins[i["id"]], reverse=True):
+            after = next((sid for t, sid in placed if t > pins[it["id"]]), None)
+            at = next((i for i, x in enumerate(slots) if x["id"] == after), len(slots))
+            slots.insert(at, _item_slot(it))
+    timeline = _resolve_times(slots, anchors["wake"], anchors["bed"], dinner_gap, pins)
     for s in timeline:
         if s["type"] == "sleep":
             hours = round((anchors["wake"] + 24 * 60 - s["_t"]) / 60, 1)
@@ -789,7 +1043,11 @@ def _apply_if_window(timeline: list, if_window: str) -> list:
     opens = dinner["_t"] + 30 - hours * 60
     out = []
     for s in timeline:
-        if s.get("meal_type") == "breakfast" and opens > s["_t"]:
+        if s.get("meal_type") == "breakfast" and opens > s["_t"] and s.get("user_set"):
+            s.setdefault("schedule_notes", []).append(
+                f"You set this before your {if_window} eating window opens at {_clock(opens)}. "
+                "Either move it, or this is not a fasting window today.")
+        elif s.get("meal_type") == "breakfast" and opens > s["_t"]:
             if opens >= lunch["_t"] - 90:
                 lunch.setdefault("_notes", []).append(
                     f"Intermittent fasting ({if_window}): this is your first meal. Break the fast "
@@ -1408,6 +1666,7 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
     herbs     = ctx.get("herbs") or {}
     allergens = ctx.get("allergens") or []
     yoga_evening = ctx.get("yoga_time") == "evening"
+    gym_time = "evening" if ctx.get("gym_time") == "evening" else "morning"
     dinner_gap = 180 if "acid_reflux" in (ctx.get("conditions") or set()) else 150
     week_plan = _DEFAULT_WEEK.get(dosha, _DEFAULT_WEEK["vata"])
     # The week's exercise labels are a FOURTH structure carrying the same
@@ -1424,37 +1683,36 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
         day_name   = day_meta["day_name"]
         is_fasting = day_name.lower() in fasting
 
-        # Gym first; on a gym rest day an integrated yoga session takes the slot,
-        # rather than the gym's rest hiding the yoga plan for the whole week. When
-        # the yoga plan was asked for in the evening, a gym morning and a yoga
-        # evening share the day — they were never competing for the same hour.
+        # Each linked plan's session gets its own slot. Gym and yoga used to compete
+        # for one: gym won every shared day, so a morning yoga practitioner who also
+        # lifted saw their yoga plan on rest days only. Yoga goes where the yoga form
+        # put it; gym where the routine form did. Two sessions in the same part of
+        # the day run back to back, gym first, so the yoga is the cool-down.
         gym_day = gym_schedule.get(i)
         yoga_day = yoga_schedule.get(i)
-        evening_ex = None
-        from_plan = False
+        planned = {"morning": [], "evening": []}
         if gym_day and not gym_day["is_rest"]:
-            ex_info, from_plan = gym_day, True
-            if yoga_day and not yoga_day["is_rest"] and yoga_evening:
-                evening_ex = yoga_day
-        elif yoga_day and not yoga_day["is_rest"]:
-            ex_info, from_plan = yoga_day, True
-            if yoga_evening:
-                evening_ex, ex_info = yoga_day, None
+            planned[gym_time].append(gym_day)
+        if yoga_day and not yoga_day["is_rest"]:
+            planned["evening" if yoga_evening else "morning"].append(yoga_day)
+        from_plan = bool(planned["morning"] or planned["evening"])
+        morning_walk = from_plan and not planned["morning"]
+        if from_plan:
+            ex_info = planned["morning"][0] if planned["morning"] else {
+                "ex_type": "walk", "ex_label": "Morning Walk (15–20 min)", "ex_duration": "15–20 min",
+                "is_rest": False,
+                "note": (f"Your {' and '.join(x['ex_type'] for x in planned['evening'])} "
+                         f"{'sessions are' if len(planned['evening']) > 1 else 'session is'} in "
+                         "the evening today; a short walk keeps the morning rhythm.")}
         elif gym_day or yoga_day:
-            ex_info, from_plan = (gym_day or yoga_day), True
+            ex_info = gym_day or yoga_day
         else:
-            ex_info = None
-        if ex_info is None and not (from_plan and evening_ex):
             ex_info = {
                 "ex_type":    day_meta["ex_type"],
                 "ex_label":   day_meta["ex_label"],
                 "ex_duration": day_meta.get("ex_duration"),
                 "is_rest":    day_meta["is_rest"],
             }
-        morning_walk = ex_info is None
-        if morning_walk:
-            ex_info = {"ex_type": "walk", "ex_label": "Morning Walk (15–20 min)", "ex_duration": "15–20 min",
-                       "is_rest": False, "note": "Your yoga session is in the evening today; a short walk keeps the morning rhythm."}
 
         # Age band exercise override
         if not from_plan and ab in _AGE_EXERCISE_OVERRIDE:
@@ -1466,15 +1724,61 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
         if not from_plan:
             ex_info = _limit_exercise(ex_info, limits)
 
-        minutes = None if (ex_info.get("is_rest") or morning_walk) else _ex_minutes(ex_info)
+        if from_plan:
+            sessions = {part: [_ex_minutes(x) or 30 for x in planned[part]] for part in planned}
+        else:
+            minutes = None if ex_info.get("is_rest") else _ex_minutes(ex_info)
+            sessions = {"morning": [minutes] if minutes else []}
         notes = ctx.get("agni_notes")
+        own_day = (ctx.get("custom_times_by_day") or {}).get(day_name.lower()) or {}
+        day_times = {**(ctx.get("custom_times") or {}), **own_day}
+        day_anchors = _override_anchors(anchors, {k: v for k, v in own_day.items() if k in ("wake", "sleep")},
+                                        age, dosha)
+        pins = {}
+        for k, v in day_times.items():
+            if k in ("wake", "sleep") or v == SKIP:
+                continue
+            t = parse_hhmm(v)
+            pins[k] = t + 24 * 60 if t < day_anchors["wake"] else t   # 00:15 is tonight, not this morning
+        day_items = [it for it in ctx.get("custom_items") or ()
+                     if not it["days"] or day_name.lower() in it["days"]]
+        for it in day_items:
+            t = parse_hhmm(it["time"])
+            pins[it["id"]] = t + 24 * 60 if t < day_anchors["wake"] else t
         day_tl = _get_base_timeline(dosha, season, if_window, agni_type, occupation,
-                                    wake_preference, age, notes, minutes, dinner_gap, anchors)
+                                    wake_preference, age, notes, None, dinner_gap, day_anchors, sessions,
+                                    pins, day_items)
+        # Something the user added as exercise is held to the same limits as the
+        # routine's own exercise; the engine cannot read what "cricket" involves,
+        # but it can say what pace this person should keep.
+        if limits["reasons"]:
+            for s in day_tl:
+                if s.get("custom") and s.get("category") == "exercise":
+                    s.setdefault("schedule_notes", []).append(
+                        f"Keep this at a pace you can talk through, because of "
+                        f"{', '.join(limits['reasons'])}."
+                        + (" Never swim alone." if limits.get("no_swim_alone") else ""))
+        for s in day_tl:
+            if s.get("id") in ("wake", "sleep") and s["id"] in day_times:
+                s["user_set"] = True
+        skipped = {k for k, v in day_times.items() if v == SKIP}
+        if not planned["evening"] and any(it["category"] == "exercise" for it in day_items):
+            skipped.add("evening_ex")   # their own exercise replaces the routine's walk
+        if ctx.get("steady_meals") and "breakfast" in skipped:
+            skipped.discard("breakfast")
+            for s in day_tl:
+                if s.get("id") == "breakfast":
+                    s.setdefault("schedule_notes", []).append(
+                        "Kept in, although you asked to leave it out: "
+                        + ("your diabetes medicine needs food on time."
+                           if "insulin_or_sulfonylurea" in (ctx.get("med_classes") or ())
+                           else "meals are not skipped in pregnancy."))
+        day_tl = [s for s in day_tl if s.get("id") not in skipped]
         day_tl = _strip_withheld_practices(day_tl, is_pregnant)
 
-        def _inject(info: dict, target: str, planned: bool) -> None:
+        def _inject(info: dict, slot_key: str, planned_session: bool, after: dict | None = None) -> None:
             for s in day_tl:
-                if s.get("type") != "exercise" or not s.get(target):
+                if s.get("ex_slot") != slot_key:
                     continue
                 if info.get("is_rest"):
                     s["activity"] = info["ex_label"]
@@ -1489,7 +1793,10 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
                 # under a 72-year-old's gentle walk.
                 if info.get("note"):
                     desc = info["note"]
-                elif planned:
+                elif planned_session and after:
+                    desc = (f"From your plan, straight after your {after['ex_type']} session — "
+                            "it doubles as the cool-down.")
+                elif planned_session:
                     desc = "From your plan."
                 elif info.get("limited") or info.get("replaced"):
                     desc = "Today's session."
@@ -1499,26 +1806,33 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
                 if info.get("limited") and limits["reasons"]:
                     desc += (f" Kept at a pace you can talk through, because of "
                              f"{', '.join(limits['reasons'])}.")
-                if limits.get("no_swim_alone") and target == "morning":
+                if limits.get("no_swim_alone") and slot_key == "morning0":
                     desc += " Never swim alone."
+                if (planned_session and info.get("ex_type") == "gym" and slot_key.startswith("evening")
+                        and dosha == "pitta" and s["_t"] < 18 * 60):
+                    desc += (" This falls in Pitta Kala (2–6 PM), the hottest part of the day for "
+                             "your constitution — train in a cool space, or move it to the morning.")
                 s["description"] = desc
                 if info.get("gym_focus"):
                     s["gym_focus"] = info["gym_focus"]
-                if planned:
+                if planned_session:
                     s["icon"] = "gym" if info.get("ex_type") == "gym" else "yoga"
                 return
 
         # `time_of_day_preference` was read by the yoga plan and nowhere here, so an
         # evening practitioner's routine put their session at dawn.
-        _inject(ex_info, "morning", from_plan and not morning_walk)
-        if evening_ex:
-            _inject(evening_ex, "evening", True)
+        _inject(ex_info, "morning0", from_plan and not morning_walk)
+        for part in ("morning", "evening"):
+            for n, info in enumerate(planned[part]):
+                if part == "morning" and n == 0:
+                    continue
+                _inject(info, f"{part}{n}", True, planned[part][n - 1] if n else None)
 
         # A ritual the panel withholds — Nasya in pregnancy and for a child, Kavala
         # for a child, Garshana on psoriasis — must not be named in the timeline's
         # own one-line summary of the rituals, which carries a separate copy.
         for s in day_tl:
-            if s.get("type") != "self_care":
+            if s.get("type") != "self_care" or s.get("custom"):
                 continue
             for name in ctx.get("withheld_rituals") or ():
                 key = name.split()[0]
@@ -1538,6 +1852,8 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
 
         # Herbal drinks and oils in the timeline — the same verdict as the panel.
         for s in day_tl:
+            if s.get("custom"):
+                continue   # the user's own words are not rewritten
             herb = s.pop("herb", None)
             if herb and herbs.get(herb):
                 plain_name, plain_text = _PLAIN_DRINK[herb]
@@ -1572,16 +1888,24 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
         day_tl = _apply_condition_notes(day_tl, conditions, gender, age, ctx.get("med_classes"))
         for s in day_tl:
             s.pop("_t", None)
+            s.pop("_end", None)
             s.pop("morning", None)
             s.pop("evening", None)
+            s.pop("ex_slot", None)
 
         weekly.append({
             "day":            i,
             "day_name":       day_name,
             "is_fasting_day": is_fasting,
-            "is_rest_day":    ex_info.get("is_rest", False),
-            "exercise_type":  ex_info.get("ex_type", ""),
-            "exercise_label": ex_info.get("ex_label", ""),
+            "is_rest_day":    ex_info.get("is_rest", False) and not from_plan,
+            "exercise_type":  ex_info.get("ex_type", "") if not from_plan else
+                              "+".join(x["ex_type"] for x in planned["morning"] + planned["evening"]),
+            "exercise_label": ex_info.get("ex_label", "") if not from_plan else
+                              " · ".join(x["ex_label"] for x in planned["morning"] + planned["evening"]),
+            "wake_time":      _clock(day_anchors["wake"]),
+            "sleep_time":     _clock(day_anchors["bed"]),
+            "sleep_notice":   day_anchors["sleep_notice"] if own_day.keys() & {"wake", "sleep"} else None,
+            "user_set":       sorted(own_day),
             "timeline":       day_tl,
         })
 
@@ -1684,7 +2008,11 @@ def generate_routine_plan(user_profile: dict, prefs: dict, diet_foods_db=None,
         fasting_notice = (f"{', '.join(unmatched_fasting)} is not a fixed weekday, so it is not "
                           "marked on the week. Treat that day as a fasting day when it falls.")
 
-    anchors = _day_anchors(dosha, season, age, rp.get("wake_preference"))
+    custom = clean_custom_times(rp.get("custom_times"))
+    by_day = {d: t for d, v in (rp.get("custom_times_by_day") or {}).items()
+              if d in _WEEKDAYS and (t := clean_custom_times(v))}
+    anchors = _override_anchors(_day_anchors(dosha, season, age, rp.get("wake_preference")),
+                                custom, age, dosha)
     agni_notes = _agni_notes(agni_type, not herbs.get("Trikatu Churna"), steady_meals)
     yoga_time = None
     if yoga_plan_data:
@@ -1694,6 +2022,9 @@ def generate_routine_plan(user_profile: dict, prefs: dict, diet_foods_db=None,
         "conditions": cset, "med_classes": med_classes, "allergens": allergens, "herbs": herbs,
         "limits": limits, "anchors": anchors, "agni_notes": agni_notes, "agni_source": agni_source,
         "steady_meals": steady_meals, "exercise_cap": limits["cap"], "yoga_time": yoga_time,
+        "gym_time": rp.get("gym_time_of_day"),
+        "custom_times": custom, "custom_times_by_day": by_day,
+        "custom_items": clean_custom_items(rp.get("custom_items")),
         "ama": user_profile.get("ama_indicator"),
         "high_ama": str(user_profile.get("ama_indicator") or "").lower() in ("high", "severe"),
     }
@@ -1746,6 +2077,9 @@ def generate_routine_plan(user_profile: dict, prefs: dict, diet_foods_db=None,
         "weekly_summary":      summary,
         "exercise_limits":     limits if (limits["cap"] != "full" or limits["low_impact"]) else None,
         "fasting_notice":      fasting_notice,
+        "custom_times":        custom,
+        "custom_times_by_day": by_day,
+        "custom_items":        ctx["custom_items"],
         "requested_fasting":   requested_fasting if fast_reason else None,
         "enriched":            False,
         "disclaimer": "This Dinacharya plan is for educational wellness guidance. Consult a qualified Vaidya before beginning herbal protocols, especially with pre-existing conditions.",

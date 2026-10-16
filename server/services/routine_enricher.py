@@ -198,8 +198,9 @@ async def enrich_routine_plan(raw_plan: dict, user_profile: dict, routine_prefs:
         season = summary.get("current_season") or user_profile.get("current_season") or "sharad"
         season_label = _SEASON_LABELS.get(season, season.title())
         rp = routine_prefs.get("routine", {}) or {}
-        has_gym = bool(rp.get("integrate_gym_plan"))
-        has_yoga = bool(rp.get("integrate_yoga_plan"))
+        linked = raw_plan.get("linked_plans") or {}
+        has_gym = linked.get("gym") == "included"
+        has_yoga = linked.get("yoga") == "included"
 
         # Retrieval has its own handler: a ChromaDB outage costs the grounding, not
         # the coaching.
@@ -279,4 +280,36 @@ async def enrich_routine_plan(raw_plan: dict, user_profile: dict, routine_prefs:
     except Exception as e:
         logger.error("Routine enrichment failed: %s", e)
 
+    return raw_plan
+
+
+_CLOCK_TIME = re.compile(r"\b\d{1,2}(:\d{2})?\s*(a\.?m\.?|p\.?m\.?)(?![a-z])|\b\d{1,2}:\d{2}\b", re.I)
+
+
+def carry_routine_enrichment(previous: dict, raw_plan: dict, user_profile: dict) -> dict:
+    """The previous plan's coaching on a routine whose times the user changed.
+
+    A time edit rebuilds the day without a model call. The coaching is about the
+    person, not the clock, so it carries over — except any sentence quoting a time,
+    which now quotes the old schedule. What is kept passes the same gate as fresh
+    coaching, against the rebuilt plan.
+    """
+    from services.panchakarma_enricher import _sentences
+
+    def strip(value):
+        if isinstance(value, str):
+            return " ".join(x for x in _sentences(value) if not _CLOCK_TIME.search(x))
+        if isinstance(value, dict):
+            return {k: strip(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [strip(v) for v in value]
+        return value
+
+    carried = {k: strip(previous[k]) for k in _FIELDS if previous.get(k)}
+    carried, withheld = gate_routine_enrichment(carried, raw_plan, user_profile)
+    raw_plan.update({k: v for k, v in carried.items() if v})
+    raw_plan["coaching_withheld"] = withheld
+    raw_plan["enriched"] = bool(previous.get("enriched"))
+    if previous.get("enrichment_model"):
+        raw_plan["enrichment_model"] = previous["enrichment_model"]
     return raw_plan

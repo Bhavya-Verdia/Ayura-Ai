@@ -550,9 +550,16 @@ class RoutinePreferences(BaseModel):
         description="assessed (use my assessment) | sama (balanced) | manda (slow/sluggish) | tikshna (sharp/intense) | vishama (irregular)",
     )
 
-    # Integration flags — if True, engine fetches latest gym/yoga plan to annotate exercise slots
-    integrate_gym_plan: bool = Field(False, description="Annotate exercise slots with user's gym plan")
-    integrate_yoga_plan: bool = Field(False, description="Annotate exercise slots with user's yoga plan")
+    # Linked plans. The routine places the latest gym and yoga plan's sessions in the
+    # day by default; these leave one out. The old opt-in flags were sent as false by
+    # every save of the form, so false there cannot be told from "never asked" and
+    # they are no longer read.
+    exclude_gym_plan: bool = Field(False, description="Leave the gym plan out of the routine")
+    exclude_yoga_plan: bool = Field(False, description="Leave the yoga plan out of the routine")
+    gym_time_of_day: str = Field("morning", pattern="^(morning|evening)$",
+                                 description="When the gym session goes in the day")
+    integrate_gym_plan: bool | None = Field(None, description="Deprecated; not read")
+    integrate_yoga_plan: bool | None = Field(None, description="Deprecated; not read")
 
     # Carry fasting signals from diet preferences (optional — used if no DietPreferences)
     fasting_days: list[str] = Field(default=[], description="Days the user fasts (e.g., Monday, Ekadashi)")

@@ -255,6 +255,53 @@ def test_an_evening_yoga_plan_shares_a_gym_day():
     assert acts.index("Gym — Push") < acts.index("Yoga — Calm")
 
 
+_GYM = {"four_week_plan": [{"days": [{"day_name": "Monday", "type": "strength", "focus": "Push",
+                                      "estimated_duration_minutes": 55}]}]}
+
+
+def _yoga(when):
+    return {"four_week_plan": [{"days": [{"day_name": "Monday", "rest": False,
+                                          "session": {"dosha_theme": "Calm", "total_duration_minutes": 30}}]}],
+            "user_summary": {"time_of_day_preference": when}}
+
+
+@pytest.mark.parametrize("dosha", ["vata", "pitta", "kapha"])
+@pytest.mark.parametrize("gym_time,yoga_time", [("morning", "morning"), ("morning", "evening"),
+                                                ("evening", "morning"), ("evening", "evening")])
+def test_a_day_with_both_plans_has_a_slot_for_each(dosha, gym_time, yoga_time):
+    """Gym and yoga used to compete for one slot, and gym won every shared day."""
+    plan = generate_routine_plan(
+        dict(id="t", age=30, gender="male", dominant_dosha=dosha, medical_history=[]),
+        {"routine": {**_R, "gym_time_of_day": gym_time}}, gym_plan_data=_GYM, yoga_plan_data=_yoga(yoga_time))
+    day = plan["weekly_routine"][0]["timeline"]
+    acts = [s["activity"] for s in day]
+    gym, yoga = acts.index("Gym — Push"), acts.index("Yoga — Calm")
+    dinner = next(i for i, s in enumerate(day) if s.get("meal_type") == "dinner")
+    breakfast = next(i for i, s in enumerate(day) if s.get("meal_type") == "breakfast")
+    for idx, when in ((gym, gym_time), (yoga, yoga_time)):
+        assert (idx < breakfast) if when == "morning" else (breakfast < idx < dinner), (when, acts)
+    if gym_time == yoga_time:
+        assert yoga == gym + 1
+    # A session ends before dinner starts, and a planned morning session is never
+    # done after the bath.
+    t = {s["activity"]: _mins(s["time"]) for s in day}
+    assert max(t["Gym — Push"] + 55, t["Yoga — Calm"] + 30) <= _mins(day[dinner]["time"]) or \
+        gym_time == yoga_time == "morning"
+    bath = next(i for i, s in enumerate(day) if "abhyanga" in s["activity"].lower())
+    if "morning" in (gym_time, yoga_time):
+        assert min(i for i, w in ((gym, gym_time), (yoga, yoga_time)) if w == "morning") < bath
+    assert plan["weekly_routine"][0]["exercise_label"] == " · ".join(
+        a for _, a in sorted([((gym_time != "morning", 0), "Gym — Push"),
+                               ((yoga_time != "morning", 1), "Yoga — Calm")]))
+
+
+def test_linked_plans_are_included_unless_the_form_leaves_them_out():
+    from schemas.preferences_schema import RoutinePreferences
+    prefs = RoutinePreferences()
+    assert prefs.exclude_gym_plan is False and prefs.exclude_yoga_plan is False
+    assert prefs.gym_time_of_day == "morning"
+
+
 # ── The narrative ─────────────────────────────────────────────────────────────
 
 def test_the_enricher_is_sent_the_schedule_it_is_asked_to_explain():
@@ -271,3 +318,119 @@ def test_the_gate_withholds_what_the_plan_withheld():
               "Drink warm milk before bed. Try HIIT on Mondays."}, plan, prof)
     assert out["a"] == "Walk after dinner. Avoid Triphala in pregnancy."
     assert len(withheld) == 4
+
+
+# ── The user's own times ──────────────────────────────────────────────────────
+
+def _day(plan, i=0):
+    return {s["id"]: s for s in plan["weekly_routine"][i]["timeline"]}
+
+
+def test_a_time_the_user_sets_is_kept_and_the_day_still_runs_forwards():
+    plan = _plan(routine={"custom_times": {"lunch": "14:00", "dinner": "20:00", "work": "09:00"}})
+    for i, day in enumerate(plan["weekly_routine"]):
+        d = _day(plan, i)
+        assert d["lunch"]["time"] == "2:00 PM" and d["lunch"]["user_set"]
+        assert d["dinner"]["time"] == "8:00 PM" and d["work"]["time"] == "9:00 AM"
+        times = [_mins(s["time"]) for s in day["timeline"]]
+        assert times == sorted(times)
+        # The slot after a moved one follows it.
+        assert _mins(d["midday_rest"]["time"]) >= _mins("2:30 PM")
+
+
+def test_moving_wake_moves_the_day_and_bedtime_follows_it():
+    base = _plan()
+    moved = _plan(routine={"custom_times": {"wake": "07:00"}})
+    din = moved["dinacharya_protocol"]
+    assert din["wake_time"] == "7:00 AM" and moved["weekly_routine"][0]["timeline"][0]["time"] == "7:00 AM"
+    assert _mins(_day(moved)["rituals"]["time"]) == _mins("7:15 AM")
+    assert _mins(din["sleep_time"]) >= _mins(base["dinacharya_protocol"]["sleep_time"])
+    assert din["sleep_hours"] >= 7
+
+
+def test_one_day_can_differ_from_the_rest():
+    plan = _plan(routine={"custom_times_by_day": {"saturday": {"wake": "08:30", "sleep": "23:30", "work": "off"}}})
+    sat, mon = plan["weekly_routine"][5], plan["weekly_routine"][0]
+    assert sat["wake_time"] == "8:30 AM" and sat["sleep_time"] == "11:30 PM"
+    assert "work" not in _day(plan, 5) and "work" in _day(plan, 0)
+    assert mon["wake_time"] == plan["dinacharya_protocol"]["wake_time"]
+
+
+def test_short_sleep_is_warned_not_refused():
+    plan = _plan(routine={"custom_times": {"wake": "05:00", "sleep": "23:45"}})
+    din = plan["dinacharya_protocol"]
+    assert din["sleep_time"] == "11:45 PM" and "about 5.2 hours" in din["sleep_notice"]
+
+
+def test_a_late_dinner_and_a_workout_after_a_meal_say_what_they_cost():
+    d = _day(_plan(routine={"custom_times": {"dinner": "21:30", "evening_ex": "20:15", "lunch": "15:30"}}))
+    assert any("before bed" in n for n in d["dinner"]["schedule_notes"])
+    assert any("Agni is strongest" in n for n in d["lunch"]["schedule_notes"])
+
+
+def test_main_meals_and_anchors_cannot_be_left_out_and_medicine_keeps_breakfast():
+    from services.routine_engine import clean_custom_times
+    assert clean_custom_times({"lunch": "off", "dinner": "off", "wake": "off", "snack": "off",
+                               "bogus": "10:00", "work": "25:00"}) == {"snack": "off"}
+    d = _day(_plan(routine={"custom_times": {"breakfast": "off"}},
+                   medical_history=["diabetes_type2"], current_medications=["Insulin glargine"]))
+    assert "breakfast" in d and "diabetes medicine" in d["breakfast"]["schedule_notes"][0]
+    assert "breakfast" not in _day(_plan(routine={"custom_times": {"breakfast": "off"}}))
+
+
+def test_a_planned_session_can_be_moved_by_its_own_id():
+    plan = generate_routine_plan(
+        dict(id="t", age=30, gender="male", dominant_dosha="pitta", medical_history=[]),
+        {"routine": {**_R, "custom_times": {"morning_ex_2": "18:00"}}},
+        gym_plan_data=_GYM, yoga_plan_data=_yoga("morning"))
+    d = _day(plan)
+    assert d["morning_ex_2"]["activity"] == "Yoga — Calm" and d["morning_ex_2"]["time"] == "6:00 PM"
+
+
+def test_carried_coaching_drops_sentences_that_quote_the_old_times():
+    from services.routine_enricher import carry_routine_enrichment
+    previous = {"enriched": True, "enrichment_model": "azure",
+                "sleep_coaching": "Be in bed by 10 PM. Rest restores Ojas.",
+                "dosha_coaching": "Rise at 5:30 to beat Kapha. Warmth steadies Vata."}
+    out = carry_routine_enrichment(previous, _plan(), {"age": 35, "allergies": []})
+    assert out["sleep_coaching"] == "Rest restores Ojas." and out["dosha_coaching"] == "Warmth steadies Vata."
+    assert out["enriched"] is True
+
+
+# ── The user's own items ──────────────────────────────────────────────────────
+
+_COMMUTE = {"id": "custom_ab12cd", "title": "Commute", "time": "08:45", "duration_minutes": 40,
+            "category": "activity", "days": ["monday", "friday"]}
+
+
+def test_an_item_the_user_adds_sits_at_its_time_on_its_days_and_the_day_flows_round_it():
+    plan = _plan(routine={"custom_items": [_COMMUTE, {**_COMMUTE, "id": "custom_lunch1", "title": "Team lunch",
+                                                     "time": "12:30", "duration_minutes": 60, "days": []}]})
+    mon, tue = _day(plan, 0), _day(plan, 1)
+    assert mon["custom_ab12cd"]["time"] == "8:45 AM" and mon["custom_ab12cd"]["custom"]
+    assert "custom_ab12cd" not in tue and "custom_lunch1" in tue
+    for day in plan["weekly_routine"]:
+        times = [_mins(s["time"]) for s in day["timeline"]]
+        assert times == sorted(times)
+
+
+def test_items_that_are_not_real_are_dropped():
+    from services.routine_engine import clean_custom_items
+    bad = [{"id": "custom_ok1234", "title": "", "time": "08:00"},
+           {"id": "not-custom", "title": "x", "time": "08:00"},
+           {"id": "custom_ok1235", "title": "x", "time": "26:00"},
+           {"id": "custom_ok1236", "title": "y" * 200, "time": "08:00", "days": ["funday", "monday"],
+            "category": "nonsense", "duration_minutes": 99999}]
+    out = clean_custom_items(bad)
+    assert len(out) == 1 and len(out[0]["title"]) == 60 and out[0]["days"] == ["monday"]
+    assert out[0]["category"] == "activity" and out[0]["duration_minutes"] == 600
+
+
+def test_the_users_own_exercise_is_held_to_their_limits_and_their_words_are_not_rewritten():
+    item = {"id": "custom_crick1", "title": "Cricket", "time": "17:00", "duration_minutes": 90,
+            "category": "exercise", "days": [], "note": "Sesame laddoo after"}
+    plan = _plan(routine={"custom_items": [item]}, medical_history=["hypertension"], allergies=["sesame"])
+    d = _day(plan)
+    assert any("pace you can talk through" in n for n in d["custom_crick1"]["schedule_notes"])
+    assert d["custom_crick1"]["description"] == "Sesame laddoo after"
+    assert "evening_ex" not in d   # their exercise replaces the routine's evening walk
