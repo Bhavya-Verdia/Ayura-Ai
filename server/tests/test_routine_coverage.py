@@ -434,3 +434,14 @@ def test_the_users_own_exercise_is_held_to_their_limits_and_their_words_are_not_
     assert any("pace you can talk through" in n for n in d["custom_crick1"]["schedule_notes"])
     assert d["custom_crick1"]["description"] == "Sesame laddoo after"
     assert "evening_ex" not in d   # their exercise replaces the routine's evening walk
+
+
+def test_two_rebuilds_in_one_second_get_different_plan_ids():
+    # A time edit rebuilds without a model call, so two edits land in the same
+    # second. The plan id is plan_history's _id; a seconds-only id made the second
+    # edit a duplicate key and a 500 on production.
+    from services.routine_engine import generate_routine_plan
+    profile = {"id": "u1", "age": 34, "gender": "female", "dominant_dosha": "pitta"}
+    prefs = {"routine": {"wake_preference": "natural"}, "diet": {}}
+    ids = {generate_routine_plan(profile, prefs)["plan_id"] for _ in range(5)}
+    assert len(ids) == 5
