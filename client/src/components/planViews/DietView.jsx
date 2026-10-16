@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { mealsAPI, plansAPI } from '../../api/client'
 import {
   Sun, Leaf, Coffee, AlertTriangle, Star, Droplets, ShieldCheck, Flame, Moon, Timer, Target, ChevronDown, ChevronUp, Flower2, UtensilsCrossed, Clock, Soup, Apple, CupSoda, BookOpen, TriangleAlert, Languages,
+  Shuffle, Undo2, Award, RefreshCw, ClipboardCheck, ShieldAlert, Check, CalendarCheck, X,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { RemedyView } from './RemedyView'
@@ -126,7 +127,41 @@ function MealLogSummary({ planId, logs }) {
   )
 }
 
-function LLMMealCard({ mealName, meal, log, onLog }) {
+// Another dish from this plan in place of one meal — no regeneration, nothing billed
+// (server/services/diet_meal_swap.py). The meal first written is kept and can be put back.
+function MealReplaceBar({ meal, onReplace, onRestore }) {
+  const { t } = useTranslation()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+  const run = async (fn) => {
+    setBusy(true)
+    setError(null)
+    try {
+      await fn()
+    } catch (e) {
+      setError(e?.response?.status === 409
+        ? t('diet.noOtherDish', 'No other dish in your plan suits this meal.')
+        : t('diet.replaceFailed', 'Could not change this meal — try again.'))
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="diet-replace-bar">
+      <button type="button" className="diet-log-btn" disabled={busy} onClick={() => run(onReplace)}>
+        <Shuffle size={11} /> {t('diet.anotherDish', 'Another dish')}
+      </button>
+      {meal.replaced_from && (
+        <button type="button" className="diet-log-btn" disabled={busy} onClick={() => run(onRestore)}>
+          <Undo2 size={11} /> {t('diet.putBack', 'Back to {{meal}}', { meal: meal.replaced_from.meal_name })}
+        </button>
+      )}
+      {error && <span className="diet-log-note" role="status">{error}</span>}
+    </div>
+  )
+}
+
+function LLMMealCard({ mealName, meal, log, onLog, onReplace, onRestore }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const MealIcon = DIET_MEAL_ICONS[mealName] || UtensilsCrossed
@@ -167,6 +202,7 @@ function LLMMealCard({ mealName, meal, log, onLog }) {
         </button>
       </h3>
       {onLog && <MealLogBar log={log} onLog={onLog} />}
+      {onReplace && <MealReplaceBar meal={meal} onReplace={onReplace} onRestore={onRestore} />}
 
       {open && (
         <div className="diet-llm-body">
@@ -623,6 +659,298 @@ function ClinicalNotesCard({ plan }) {
   )
 }
 
+// ── Where the patient is in the plan ──────────────────────────────────────────
+// The plan opened on week 1, Monday, whatever the date, so someone in week 3 had
+// to find their place every time. Weeks are counted in sevens from the day the plan
+// was written; a day is the weekday it names.
+const PLAN_DAYS = 28
+const DAY_MS = 864e5
+
+function planToday(plan) {
+  const start = Date.parse(plan?.generated_at || '')
+  if (!Number.isFinite(start)) return null
+  const first = new Date(start)
+  first.setHours(0, 0, 0, 0)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const days = Math.round((today - first) / DAY_MS)
+  if (days < 0) return null
+  return { days, week: Math.min(4, Math.floor(days / 7) + 1), dayIndex: (today.getDay() + 6) % 7,
+    over: days >= PLAN_DAYS }
+}
+
+// ── The end of the four weeks ─────────────────────────────────────────────────
+// Week four was the last page and nothing came after it: the plan sat in week six,
+// and the meal log meant to shape the next plan shaped nothing until the patient
+// thought to regenerate. The server sends one notification too (diet_log.py).
+function DietPlanComplete({ planId, onRegenerate }) {
+  const { t } = useTranslation()
+  const [adapt, setAdapt] = useState(null)
+  useEffect(() => {
+    if (!planId) return
+    let live = true
+    mealsAPI.getAdaptation().then(r => { if (live) setAdapt(r.data) }).catch(() => {})
+    return () => { live = false }
+  }, [planId])
+  const s = adapt?.summary || {}
+  return (
+    <div className="gym-block-card over diet-plan-complete">
+      <span className="gym-checkin-title"><Award size={16} /> {t('diet.planDone', 'Your four weeks are done')}</span>
+      <p className="gym-block-line">
+        {s.meals_logged
+          ? t('diet.planDoneLogged', 'You logged {{meals}} meals, {{pct}}% eaten as planned. Your next four weeks will be built from them and from your weekly check-ins.',
+            { meals: s.meals_logged, pct: Math.round((s.adherence || 0) * 100) })
+          : t('diet.planDoneNoLog', 'Log meals as you go in the next four weeks, and the plan after that is built from what you actually ate.')}
+      </p>
+      {onRegenerate && (
+        <button type="button" className="gym-log-save gym-checkin-rebuild" onClick={onRegenerate}>
+          <RefreshCw size={12} /> {t('diet.buildNext', 'Build my next four weeks')}
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ── Weekly check-in ───────────────────────────────────────────────────────────
+// What a dietitian asks at each review and the meal log cannot know: hunger, how
+// digestion went, which food disagreed, and the signs no menu answers. It proposes;
+// the weeks still to come are rebuilt only when the patient asks
+// (server/services/diet_checkin.py).
+const HUNGER = [
+  { value: 'hungry', label: 'Hungry between meals', i18n: 'diet.hungerHungry' },
+  { value: 'right', label: 'About right', i18n: 'diet.hungerRight' },
+  { value: 'too_much', label: 'More than I could eat', i18n: 'diet.hungerTooMuch' },
+]
+const DIGESTION = [
+  { value: 'bloating', label: 'Bloating or gas', i18n: 'diet.digBloating' },
+  { value: 'acidity', label: 'Acidity or heartburn', i18n: 'diet.digAcidity' },
+  { value: 'constipation', label: 'Constipation', i18n: 'diet.digConstipation' },
+  { value: 'loose_stools', label: 'Loose stools', i18n: 'diet.digLoose' },
+]
+const PROBLEMS = [
+  { value: 'bloating', label: 'Bloating', i18n: 'diet.probBloating' },
+  { value: 'acidity', label: 'Acidity', i18n: 'diet.probAcidity' },
+  { value: 'loose_stools', label: 'Loose stools', i18n: 'diet.probLoose' },
+  { value: 'nausea', label: 'Nausea', i18n: 'diet.probNausea' },
+  { value: 'itching_rash', label: 'Itching or a rash', i18n: 'diet.probRash' },
+  { value: 'did_not_like', label: 'Did not like it', i18n: 'diet.probDislike' },
+]
+// None of these is answered by a different menu.
+const DIET_RED_FLAGS = [
+  { value: 'swelling', label: 'Swelling of the lips, face or tongue', i18n: 'diet.flagSwelling' },
+  { value: 'breathing', label: 'Wheezing or a tight throat', i18n: 'diet.flagBreathing' },
+  { value: 'hives', label: 'Hives over much of the body', i18n: 'diet.flagHives' },
+  { value: 'vomiting', label: 'Vomiting again and again', i18n: 'diet.flagVomiting' },
+  { value: 'blood_in_stool', label: 'Blood in the stool, or black stool', i18n: 'diet.flagBlood' },
+]
+const ALLERGY_LABELS = [
+  { value: 'dairy', label: 'Dairy', i18n: 'diet.allergyDairy' },
+  { value: 'gluten', label: 'Gluten', i18n: 'diet.allergyGluten' },
+  { value: 'nuts_tree', label: 'Tree nuts', i18n: 'diet.allergyTreeNuts' },
+  { value: 'peanuts', label: 'Peanuts', i18n: 'diet.allergyPeanuts' },
+  { value: 'soy', label: 'Soy', i18n: 'diet.allergySoy' },
+  { value: 'sesame', label: 'Sesame', i18n: 'diet.allergySesame' },
+]
+const MAX_TROUBLE = 8
+const toggle = (list, v) => (list.includes(v) ? list.filter(x => x !== v) : [...list, v])
+
+function CheckinChanges({ proposal }) {
+  const { t } = useTranslation()
+  const lines = (proposal?.changes || []).map(c => {
+    if (c.kind === 'exclude') return t('diet.ciExclude', '{{foods}} left out', { foods: c.foods.join(', ') })
+    if (c.kind === 'digestion') {
+      const d = DIGESTION.find(x => x.value === c.condition)
+      return t('diet.ciDigestion', 'every meal built for {{condition}}', { condition: d ? t(d.i18n, d.label).toLowerCase() : c.condition })
+    }
+    if (c.kind === 'light_meals') return t('diet.ciLight', 'light, warm, well-cooked meals')
+    if (c.kind === 'energy') return t('diet.ciEnergy', 'energy {{kcal}} kcal a day', { kcal: `${c.kcal > 0 ? '+' : ''}${c.kcal}` })
+    return null
+  }).filter(Boolean)
+  if (!lines.length) return null
+  return <ul className="diet-checkin-changes">{lines.map(l => <li key={l}>{l}</li>)}</ul>
+}
+
+function DietWeekCheckin({ planId, week, data, onSaved, onRebuilt }) {
+  const { t } = useTranslation()
+  const saved = (data?.checkins || []).find(c => c.week === week)
+  const foods = data?.week_foods?.[week] || data?.week_foods?.[String(week)] || []
+  const latest = (data?.checkins || []).reduce((a, c) => (!a || c.week > a.week ? c : a), null)
+  const proposal = latest?.week === week ? data?.proposal : null
+  const [open, setOpen] = useState(false)
+  const [hunger, setHunger] = useState('right')
+  const [digestion, setDigestion] = useState([])
+  const [trouble, setTrouble] = useState([])
+  const [flags, setFlags] = useState([])
+  const [addAllergies, setAddAllergies] = useState([])
+  const [state, setState] = useState('idle')
+
+  if (!planId) return null
+
+  const openForm = () => {
+    setHunger(saved?.hunger || 'right')
+    setDigestion(saved?.digestion || [])
+    setTrouble(saved?.trouble_foods || [])
+    setFlags(saved?.red_flags || [])
+    setAddAllergies([])
+    setState('idle')
+    setOpen(true)
+  }
+  const nameOf = (id) => foods.find(f => f.id === id)?.name || id.replace(/_/g, ' ')
+  // A reaction can go onto the allergy list — only when the patient ticks it, and
+  // only as an allergy that would actually remove the food.
+  const reacted = trouble.filter(x => x.problem === 'itching_rash' || flags.length > 0)
+  const offerAllergies = [...new Set(reacted.flatMap(x => foods.find(f => f.id === x.food)?.allergies || []))]
+  const save = async () => {
+    setState('saving')
+    try {
+      await mealsAPI.checkin({ plan_id: planId, week, hunger, digestion, trouble_foods: trouble,
+        red_flags: flags, add_allergies: addAllergies.filter(a => offerAllergies.includes(a)) })
+      await onSaved?.()
+      setState('idle')
+      setOpen(false)
+    } catch {
+      setState('error')
+    }
+  }
+  const rebuild = async () => {
+    setState('rebuilding')
+    try {
+      const { data: plan } = await plansAPI.rebuildDiet(planId)
+      onRebuilt?.(plan)
+      setState('idle')
+    } catch {
+      setState('rebuildError')
+    }
+  }
+
+  if (!open) {
+    return (
+      <div className="gym-checkin gym-checkin-closed diet-checkin">
+        <span className="gym-checkin-title">
+          <ClipboardCheck size={15} /> {saved
+            ? t('diet.ciDone', 'Week {{n}} checked in', { n: week })
+            : t('diet.ciAsk', 'How was week {{n}}?', { n: week })}
+        </span>
+        <span className="gym-checkin-sub">
+          {saved
+            ? (week < 4
+              ? t('diet.ciSubDone', 'What you said shapes the weeks still to come.')
+              : t('diet.ciSubDoneLast', 'What you said shapes your next plan.'))
+            : t('diet.ciSub', 'Half a minute: hunger, digestion, and any food that disagreed with you.')}
+        </span>
+        {saved?.red_flags?.length > 0 && (
+          <p className="gym-checkin-stop" role="alert">
+            <ShieldAlert size={14} /> {t('diet.ciSeeDoctor', 'Please see a doctor about what you reported — a different menu does not answer it. If your lips, face or tongue swell or breathing is hard, call 112 now.')}
+          </p>
+        )}
+        {proposal?.changes?.length > 0 && (
+          <div className="diet-checkin-proposal">
+            <span>{proposal.from_week <= 4
+              ? t('diet.ciWould', 'Weeks {{from}}–4 would change:', { from: proposal.from_week })
+              : t('diet.ciNext', 'Your next plan will change:')}</span>
+            <CheckinChanges proposal={proposal} />
+            {proposal.rebuild_available && (
+              <button type="button" className="gym-log-save gym-checkin-rebuild" onClick={rebuild}
+                disabled={state === 'rebuilding'}>
+                <RefreshCw size={12} /> {state === 'rebuilding'
+                  ? t('diet.ciRebuilding', 'Rebuilding…')
+                  : t('diet.ciRebuild', 'Rebuild weeks {{from}}–4 around it', { from: proposal.from_week })}
+              </button>
+            )}
+            {proposal.rebuild_available && (
+              <span className="gym-checkin-sub">{t('diet.ciRebuildNote', 'The weeks you have eaten stay as they are. This uses one plan generation.')}</span>
+            )}
+            {state === 'rebuildError' && <p className="gym-log-error">{t('diet.ciRebuildFailed', 'Could not rebuild — your plan is unchanged. Try again in a minute.')}</p>}
+          </div>
+        )}
+        <button type="button" className="gym-log-toggle" onClick={openForm}>
+          {saved ? t('diet.ciEdit', 'Edit check-in') : t('diet.ciStart', 'Check in')}
+        </button>
+      </div>
+    )
+  }
+
+  const unused = foods.filter(f => !trouble.some(x => x.food === f.id))
+  return (
+    <div className="gym-checkin diet-checkin" role="group" aria-label={t('diet.ciAsk', 'How was week {{n}}?', { n: week })}>
+      <span className="gym-checkin-title"><ClipboardCheck size={15} /> {t('diet.ciAsk', 'How was week {{n}}?', { n: week })}</span>
+
+      <p className="gym-checkin-q">{t('diet.ciHungerQ', 'The amount of food was')}</p>
+      <div className="gym-log-effort" role="radiogroup" aria-label={t('diet.ciHungerQ', 'The amount of food was')}>
+        {HUNGER.map(o => (
+          <button key={o.value} type="button" role="radio" aria-checked={hunger === o.value}
+            className={`gym-log-chip${hunger === o.value ? ' active' : ''}`}
+            onClick={() => setHunger(o.value)}>{t(o.i18n, o.label)}</button>
+        ))}
+      </div>
+
+      <p className="gym-checkin-q">{t('diet.ciDigestionQ', 'Did you have any of these this week?')}</p>
+      <div className="gym-log-effort">
+        {DIGESTION.map(o => (
+          <button key={o.value} type="button" aria-pressed={digestion.includes(o.value)}
+            className={`gym-log-chip${digestion.includes(o.value) ? ' active' : ''}`}
+            onClick={() => setDigestion(d => toggle(d, o.value))}>{t(o.i18n, o.label)}</button>
+        ))}
+      </div>
+
+      <p className="gym-checkin-q">{t('diet.ciFoodQ', 'Did a food from this week disagree with you?')}</p>
+      {trouble.map((x, i) => (
+        <div key={x.food} className="diet-checkin-food">
+          <span>{nameOf(x.food)}</span>
+          <select value={x.problem} aria-label={t('diet.ciWhatHappened', 'What happened')}
+            onChange={e => setTrouble(tr => tr.map((y, j) => (j === i ? { ...y, problem: e.target.value } : y)))}>
+            {PROBLEMS.map(p => <option key={p.value} value={p.value}>{t(p.i18n, p.label)}</option>)}
+          </select>
+          <button type="button" className="diet-checkin-remove" aria-label={t('diet.ciRemove', 'Remove')}
+            onClick={() => setTrouble(tr => tr.filter((_, j) => j !== i))}><X size={12} /></button>
+        </div>
+      ))}
+      {trouble.length < MAX_TROUBLE && unused.length > 0 && (
+        <select className="diet-checkin-add" value="" aria-label={t('diet.ciAddFood', 'Add a food')}
+          onChange={e => e.target.value && setTrouble(tr => [...tr, { food: e.target.value, problem: 'bloating' }])}>
+          <option value="">{t('diet.ciAddFood', 'Add a food')}</option>
+          {unused.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+        </select>
+      )}
+      {trouble.length > 0 && (
+        <span className="gym-checkin-sub">{t('diet.ciFoodNote', 'A food you name here is left out of the coming weeks and your next plan.')}</span>
+      )}
+
+      <p className="gym-checkin-q">{t('diet.ciFlagsQ', 'After eating, did any of these happen?')}</p>
+      <div className="gym-log-effort">
+        {DIET_RED_FLAGS.map(o => (
+          <button key={o.value} type="button" aria-pressed={flags.includes(o.value)}
+            className={`gym-log-chip gym-checkin-flag${flags.includes(o.value) ? ' active' : ''}`}
+            onClick={() => setFlags(f => toggle(f, o.value))}>{t(o.i18n, o.label)}</button>
+        ))}
+      </div>
+      {flags.length > 0 && (
+        <p className="gym-checkin-stop" role="alert">
+          <ShieldAlert size={14} /> {t('diet.ciSeeDoctor', 'Please see a doctor about what you reported — a different menu does not answer it. If your lips, face or tongue swell or breathing is hard, call 112 now.')}
+        </p>
+      )}
+      {offerAllergies.map(a => {
+        const label = ALLERGY_LABELS.find(x => x.value === a)
+        return (
+          <label key={a} className="gym-checkin-check">
+            <input type="checkbox" checked={addAllergies.includes(a)}
+              onChange={() => setAddAllergies(l => toggle(l, a))} />
+            {t('diet.ciAddAllergy', 'Add {{allergy}} to my allergies, so no plan includes it', { allergy: label ? t(label.i18n, label.label) : a })}
+          </label>
+        )
+      })}
+
+      <div className="gym-log-actions">
+        <button type="button" className="gym-log-cancel" onClick={() => setOpen(false)}>{t('diet.cancel', 'Cancel')}</button>
+        <button type="button" className="gym-log-save" onClick={save} disabled={state === 'saving'}>
+          {state === 'saving' ? t('diet.saving', 'Saving…') : <><Check size={12} /> {t('diet.save', 'Save')}</>}
+        </button>
+      </div>
+      {state === 'error' && <p className="gym-log-error">{t('diet.ciSaveFailed', 'Could not save — check your connection and try again.')}</p>}
+    </div>
+  )
+}
+
 // Languages the plan can be READ in. The plan is generated and safety-checked in
 // English; a translation is an overlay of its display text (services/diet_translate.py)
 // and never what the checks read, because they cannot read other scripts.
@@ -644,8 +972,16 @@ function withOverlay(plan, strings) {
   return out
 }
 
-export function DietView({ plan: englishPlan }) {
+export function DietView({ plan: incomingPlan, onRegenerate, onPlanChange }) {
   const { t, i18n } = useTranslation()
+  // A swapped meal or rebuilt weeks change the plan in place; the dashboard is told
+  // through `onPlanChange`, so reopening the plan does not show the old one.
+  const [englishPlan, setEnglishPlan] = useState(incomingPlan)
+  useEffect(() => { setEnglishPlan(incomingPlan) }, [incomingPlan])
+  const changePlan = (next) => {
+    setEnglishPlan(next)
+    onPlanChange?.(next)
+  }
   const lang = (i18n.language || 'en').slice(0, 2)
   const translatable = lang in PLAN_LANGUAGES && !!englishPlan.plan_id
   const [showTranslated, setShowTranslated] = useState(false)
@@ -671,10 +1007,55 @@ export function DietView({ plan: englishPlan }) {
       setTranslating(false)
     }
   }
-  const [activeDay, setActiveDay] = useState(0)
-  const [activeWeek, setActiveWeek] = useState(0)
   // Logs are keyed to the English plan's id: a translation is the same plan.
   const planId = englishPlan.plan_id
+  const today = planToday(englishPlan)
+  // Where the plan opens: today; once the four weeks are over, the last week, on
+  // today's weekday — not back at week 1 Monday, which reads as starting again.
+  const openAt = (p) => {
+    const now = planToday(p)
+    if (!now) return { week: 0, day: 0 }
+    return { week: now.over ? Math.max(0, (p.diet_weeks?.length || 4) - 1) : now.week - 1, day: now.dayIndex }
+  }
+  const [activeDay, setActiveDay] = useState(() => openAt(englishPlan).day)
+  const [activeWeek, setActiveWeek] = useState(() => openAt(englishPlan).week)
+  useEffect(() => {
+    const at = openAt(incomingPlan)
+    setActiveWeek(at.week)
+    setActiveDay(at.day)
+  }, [incomingPlan?.plan_id]) // eslint-disable-line react-hooks/exhaustive-deps
+  const goToday = () => { if (today) { setActiveWeek(today.week - 1); setActiveDay(today.dayIndex) } }
+  const [checkins, setCheckins] = useState(null)
+  const loadCheckins = () => (planId
+    ? mealsAPI.getCheckins(planId).then(r => setCheckins(r.data)).catch(() => {})
+    : Promise.resolve())
+  useEffect(() => { loadCheckins() }, [planId]) // eslint-disable-line react-hooks/exhaustive-deps
+  // One day of the plan replaced — a swapped meal. The overlay's lines for that day
+  // are dropped, so a translated view never shows the old dish's name in its place.
+  const applyDay = (week, dayName, day) => {
+    const next = {
+      ...englishPlan,
+      diet_weeks: (englishPlan.diet_weeks || []).map(w => (w.week_number === week
+        ? { ...w, daily_plan: { ...w.daily_plan, [dayName]: day } } : w)),
+      weekly_plan: week === 1 && englishPlan.weekly_plan
+        ? { ...englishPlan.weekly_plan, [dayName]: day } : englishPlan.weekly_plan,
+    }
+    const wi = (englishPlan.diet_weeks || []).findIndex(w => w.week_number === week)
+    const prefix = `diet_weeks.${wi}.daily_plan.${dayName}.`
+    setOverlay(o => (o ? { ...o, strings: Object.fromEntries(Object.entries(o.strings || {})
+      .filter(([k]) => !k.startsWith(prefix))) } : o))
+    changePlan(next)
+  }
+  const replaceMeal = (week, dayName, slot, undo = false) => async () => {
+    const { data } = await mealsAPI.replace({ plan_id: planId, week, day: dayName, slot, undo })
+    applyDay(week, dayName, data.day)
+  }
+  const onRebuilt = (plan) => {
+    setOverlay(null)
+    setShowTranslated(false)
+    changePlan(plan)
+    loadCheckins()
+  }
   const [logs, setLogs] = useState({})
   useEffect(() => {
     if (!planId) return
@@ -727,14 +1108,22 @@ export function DietView({ plan: englishPlan }) {
   // meal NAMES in weeks 2-4, and keep their compact rows.
   const fullDetail = typeof dayData.lunch === 'object' || typeof dayData.breakfast === 'object'
   const weekNumber = currentWeek?.week_number || activeWeek + 1
+  const viewingTodayWeek = !!today && !today.over && today.week === weekNumber
+  const viewingToday = viewingTodayWeek && today.dayIndex === activeDay
   // Only plans whose meals are stated as components can be logged: the log records
   // which foods were eaten or left, and an older plan's meals name none.
   const canLog = !!planId && fullDetail && !!dayData.lunch?.components
+  // A week can be checked in once it has started; the plan's last week too, for the
+  // next plan.
+  const canCheckin = canLog && !!today && (today.over || weekNumber <= today.week)
 
   // Fallback path: four_week_plan array
   const fallbackDays = (plan.four_week_plan?.[0]?.days) || []
   const fallbackDay = fallbackDays[activeDay] || {}
   const timing = plan.meal_timing || {}
+  // The day's copy is the English; the plan-level one carries the translation.
+  const ritualName = (r) => (plan.daily_rituals || []).find(x => x.slot === r.slot)?.name || r.name
+  const withheldGuidance = plan.withheld_guidance || []
 
   return (
     <div className="diet-view">
@@ -856,6 +1245,8 @@ export function DietView({ plan: englishPlan }) {
         </div>
       )}
 
+      {isMultiWeek && today?.over && <DietPlanComplete planId={planId} onRegenerate={onRegenerate} />}
+
       {/* ── Week tabs (LLM 4-week plan) ── */}
       {isMultiWeek && (
         <div className="diet-week-tabs">
@@ -865,7 +1256,10 @@ export function DietView({ plan: englishPlan }) {
               className={`diet-week-tab${activeWeek === idx ? ' active' : ''}`}
               onClick={() => { setActiveWeek(idx); setActiveDay(0); }}
             >
-              <span className="diet-week-num">{t('diet.week', 'Week {{n}}', { n: wk.week_number })}</span>
+              <span className="diet-week-num">
+                {t('diet.week', 'Week {{n}}', { n: wk.week_number })}
+                {today && !today.over && today.week === wk.week_number && <span className="diet-today-dot" aria-label={t('diet.thisWeek', 'this week')} />}
+              </span>
               <span className="diet-week-phase">{wk.phase}</span>
             </button>
           ))}
@@ -882,10 +1276,12 @@ export function DietView({ plan: englishPlan }) {
             ? (weeklyPlan[DIET_DAY_FULL[i]]?.is_fasting ?? false)
             : (fallbackDays[i]?.is_fasting_day || false)
           const theme = isLLM ? (weeklyPlan[DIET_DAY_FULL[i]]?.theme || '') : ''
+          const isToday = viewingTodayWeek && today.dayIndex === i
           return (
             <button key={i}
-              className={`diet-day-btn ${activeDay === i ? 'active' : ''} ${isFasting ? 'fasting' : ''}`}
+              className={`diet-day-btn ${activeDay === i ? 'active' : ''} ${isFasting ? 'fasting' : ''}${isToday ? ' is-today' : ''}`}
               onClick={() => setActiveDay(i)}
+              aria-current={isToday ? 'date' : undefined}
               title={theme || label}>
               {t(`diet.day_${label}`, label)}
               {isFasting && <span className="diet-fast-dot" />}
@@ -895,9 +1291,17 @@ export function DietView({ plan: englishPlan }) {
       </div>
 
       {/* ── Selected-day heading ── */}
-      <h3 className="diet-day-heading">
-        {t(`diet.dayFull_${DIET_DAY_FULL[activeDay]}`, DIET_DAY_FULL[activeDay])}{isMultiWeek ? ` · ${t('diet.week', 'Week {{n}}', { n: activeWeek + 1 })}` : ''}
-      </h3>
+      <div className="diet-day-heading-row">
+        <h3 className="diet-day-heading">
+          {t(`diet.dayFull_${DIET_DAY_FULL[activeDay]}`, DIET_DAY_FULL[activeDay])}{isMultiWeek ? ` · ${t('diet.week', 'Week {{n}}', { n: activeWeek + 1 })}` : ''}
+          {viewingToday ? ` · ${t('diet.today', 'Today')}` : ''}
+        </h3>
+        {isMultiWeek && today && !today.over && !viewingToday && (
+          <button type="button" className="diet-translate-btn diet-today-btn" onClick={goToday}>
+            <CalendarCheck size={12} /> {t('diet.goToday', 'Go to today')}
+          </button>
+        )}
+      </div>
 
       {/* ── Day theme badge (LLM) ── */}
       {isLLM && dayData.theme && (
@@ -927,7 +1331,9 @@ export function DietView({ plan: englishPlan }) {
               dayData[meal] && (
                 <LLMMealCard key={meal} mealName={meal} meal={dayData[meal]}
                   log={logs[`${weekNumber}:${currentDayName}:${meal}`]}
-                  onLog={canLog ? logMeal(weekNumber, currentDayName, meal) : null} />
+                  onLog={canLog ? logMeal(weekNumber, currentDayName, meal) : null}
+                  onReplace={canLog ? replaceMeal(weekNumber, currentDayName, meal) : null}
+                  onRestore={canLog ? replaceMeal(weekNumber, currentDayName, meal, true) : null} />
               )
             ))}
           </div>
@@ -954,7 +1360,11 @@ export function DietView({ plan: englishPlan }) {
             return (
               <div className="diet-day-macros">
                 <span className="diet-day-macros-label">
-                  {dayData.day_totals ? t('diet.dayTotalsCalc', 'Day totals (calculated, incl. drink)') : t('diet.dayTotalsApprox', 'Day totals (approx.)')}
+                  {dayData.day_totals
+                    ? (dayData.rituals?.length
+                      ? t('diet.dayTotalsAllDrinks', 'Day totals (calculated, including every drink)')
+                      : t('diet.dayTotalsCalc', 'Day totals (calculated, incl. drink)'))
+                    : t('diet.dayTotalsApprox', 'Day totals (approx.)')}
                   {target ? (
                     <span className={`diet-day-target${offBand ? ' is-off' : ''}`}>
                       {t('diet.targetKcal', 'target {{kcal}} kcal', { kcal: target })}
@@ -967,9 +1377,26 @@ export function DietView({ plan: englishPlan }) {
                     {t('diet.proteinShortToday', 'Protein is below your {{floor}} g daily floor on this day — add dal, paneer or curd to the meal that suits your Agni best.', { floor: rx.protein_floor_g })}
                   </p>
                 ) : null}
+                {dayData.rituals?.length > 0 && (
+                  <ul className="diet-ritual-list">
+                    {dayData.rituals.map(r => (
+                      <li key={r.slot}>
+                        {r.slot === 'bedtime' ? <Moon size={11} /> : <CupSoda size={11} />}
+                        <span className="diet-ritual-k">
+                          {r.slot === 'bedtime' ? t('diet.bedtimeDrink', 'Bedtime drink') : t('diet.wakeDrink', 'Wake-up drink')}
+                        </span>
+                        <span>{ritualName(r)}{r.macros_approx?.calories > 0 ? ` · ${Math.round(r.macros_approx.calories)} kcal` : ''}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )
           })()}
+          {canCheckin && (
+            <DietWeekCheckin planId={planId} week={weekNumber} data={checkins}
+              onSaved={loadCheckins} onRebuilt={onRebuilt} />
+          )}
         </>
       )}
 
@@ -1110,8 +1537,16 @@ export function DietView({ plan: englishPlan }) {
           </button>
           {timingOpen && (
             <div className="diet-timing-body">
+              {timing.window_notice && <p className="diet-energy-note is-warn">{timing.window_notice}</p>}
               {timing.general_note && <p className="diet-timing-note">{timing.general_note}</p>}
               <div className="diet-timing-rows">
+                {timing.eating_window && (
+                  <div className="diet-timing-row special">
+                    <Timer size={11} />
+                    <span className="diet-timing-meal">{t('diet.eatingWindow', 'Eating window')}</span>
+                    <span className="diet-timing-time">{timing.eating_window}</span>
+                  </div>
+                )}
                 {['breakfast', 'lunch', 'snack', 'dinner'].map(m => timing[m] && (
                   <div key={m} className="diet-timing-row">
                     <span className="diet-timing-meal">{t(`diet.slot_${m}`, SLOT_LABEL[m])}</span>
@@ -1130,6 +1565,13 @@ export function DietView({ plan: englishPlan }) {
                     <Moon size={11} />
                     <span className="diet-timing-meal">{t('diet.bedtimeDrink', 'Bedtime drink')}</span>
                     <span className="diet-timing-time">{timing.bedtime_drink}</span>
+                  </div>
+                )}
+                {timing.after_window && (
+                  <div className="diet-timing-row special">
+                    <Moon size={11} />
+                    <span className="diet-timing-meal">{t('diet.afterWindow', 'After the window')}</span>
+                    <span className="diet-timing-time">{timing.after_window}</span>
                   </div>
                 )}
               </div>
@@ -1155,6 +1597,7 @@ export function DietView({ plan: englishPlan }) {
                     {s.sanskrit && <span className="diet-spice-guide-sk">{s.sanskrit}</span>}
                   </div>
                   <p className="diet-spice-guide-use">{s.use}</p>
+                  {s.note && <p className="diet-spice-guide-use diet-spice-guide-note">{s.note}</p>}
                 </div>
               ))}
             </div>
@@ -1197,6 +1640,15 @@ export function DietView({ plan: englishPlan }) {
         <div className="diet-ayur-tips">
           <Leaf size={13} className="diet-ayur-icon" />
           <p>{plan.ayurvedic_tips}</p>
+        </div>
+      )}
+      {/* Drinks, spices and tips the standard guidance for this dosha would have
+          given, left out because the patient's own food list rules them out. Saying
+          so is the point: advice that vanishes silently looks like an oversight. */}
+      {withheldGuidance.length > 0 && (
+        <div className="diet-energy-note diet-withheld-guidance">
+          <span>{t('diet.withheldGuidance', 'Left out of the guidance for you:')}</span>
+          <ul>{withheldGuidance.map((w, i) => <li key={i}>{w.item} — {w.reason}</li>)}</ul>
         </div>
       )}
 

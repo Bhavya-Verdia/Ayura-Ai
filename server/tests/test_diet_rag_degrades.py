@@ -83,37 +83,29 @@ async def test_partial_retrieval_keeps_what_it_got():
 
 
 def test_the_retrieval_block_has_its_own_handler():
-    """A structural guard: moving a `rag_pipeline.query` call back outside the inner
-    try restores the defect, and no behavioural test would notice until ChromaDB was
-    actually down in production."""
+    """A structural guard: a `rag_pipeline.query` call outside its own try restores
+    the defect, and no behavioural test would notice until ChromaDB was actually down
+    in production. Retrieval lives in `_with_classical_context`, shared by the plan
+    and the check-in rebuild; every query there must sit inside a try, and nothing
+    else in the plan path may call the retrieval layer directly."""
     import ast
     import inspect
     import textwrap
 
-    src = textwrap.dedent(inspect.getsource(g.generate_diet_plan_llm))
-    tree = ast.parse(src)
+    def queries(node):
+        return [c for c in ast.walk(node)
+                if isinstance(c, ast.Attribute) and c.attr == "query"
+                and isinstance(c.value, ast.Name) and c.value.id == "rag_pipeline"]
 
-    def guarded(node, depth=0):
-        """Every rag_pipeline.query call must sit inside a Try nested in the outer one."""
-        found = []
-        for child in ast.walk(node):
-            if (isinstance(child, ast.Attribute) and child.attr == "query"
-                    and isinstance(child.value, ast.Name)
-                    and child.value.id == "rag_pipeline"):
-                found.append(child)
-        return found
-
-    inner_tries = [n for n in ast.walk(tree) if isinstance(n, ast.Try)]
-    assert inner_tries, "generate_diet_plan_llm has no try block at all"
-    # The queries must all live inside a Try that is NOT the outermost one.
-    outermost = max(inner_tries, key=lambda t: len(ast.dump(t)))
-    nested = [t for t in inner_tries if t is not outermost]
-    all_queries = guarded(tree)
+    helper = ast.parse(textwrap.dedent(inspect.getsource(g._with_classical_context)))
+    all_queries = queries(helper)
     assert all_queries, "no rag_pipeline.query calls found — has retrieval moved?"
-    covered = {id(q) for t in nested for q in guarded(t)}
+    covered = {id(q) for t in ast.walk(helper) if isinstance(t, ast.Try) for q in queries(t)}
     uncovered = [q for q in all_queries if id(q) not in covered]
     assert not uncovered, (
-        f"{len(uncovered)} rag_pipeline.query call(s) sit directly under the outer "
-        f"except, which returns None — a retrieval outage would replace the plan "
-        f"rather than degrade it"
-    )
+        f"{len(uncovered)} rag_pipeline.query call(s) are outside a try — a retrieval "
+        f"outage would replace the plan rather than degrade it")
+    for fn in (g.generate_diet_plan_llm, g.rebuild_diet_weeks):
+        src = inspect.getsource(fn)
+        assert "_with_classical_context" in src, fn.__name__
+        assert not queries(ast.parse(textwrap.dedent(src))), fn.__name__

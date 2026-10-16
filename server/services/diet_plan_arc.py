@@ -54,7 +54,91 @@ def _phase(number: int, name: str, focus: str, rationale: str) -> dict:
     }
 
 
+# ── Plan over plan ───────────────────────────────────────────────────────────
+# The arc is chosen from the patient's state, and every plan used to begin it
+# again: a balanced patient kindled Agni at the start of every month, a reducing
+# patient spent every fourth week on the opening kindling and never more than two on
+# Langhana itself. When the last plan was finished and followed and the state still
+# calls for the same line of treatment, the next one continues it instead — the
+# opening phase is done. What it never skips is clearing: an arc that opens with Ama
+# Pachana is only chosen while the assessment still shows Ama, and Ama that is still
+# there has not been cleared, however well the last plan was followed.
+_CONTINUED = {
+    "Samatva (balance-led)": [
+        ("Sthairya", "Steadying — the meals that suited you, matched to the Dosha and season",
+         "Agni was kindled last plan; this one starts from the steady pattern."),
+        ("Brimhana", "Moderately nourishing — good fats, whole grains, seasonal produce",
+         "Build Dhatu at a pace a balanced Agni can carry."),
+        ("Rasayana", "Rejuvenation — amla, seasonal Rasayana, maintenance",
+         "Rasayana suits a clear Srotas and a steady Agni."),
+        ("Sthairya", "Holding — the pattern as ordinary food, seasonally adjusted",
+         "A balanced patient's plan is maintenance; it should become habit."),
+    ],
+    "Langhana-pradhana (reduction-led)": [
+        ("Langhana", "Reducing — lighter meals, barley and millets over wheat and rice, no late eating",
+         "Agni was kindled last plan, so reduction starts in the first week."),
+        ("Rukshana", "Drying — astringent and bitter tastes, minimal oil",
+         "Rukshana addresses the Snigdha quality underlying Medoroga."),
+        ("Langhana", "Reducing, continued — the lighter pattern held",
+         "Meda comes down over months, not weeks; the reduction is sustained."),
+        ("Sthairya", "Holding — a sustainable version of the reducing weeks",
+         "Consolidate rather than rebound."),
+    ],
+    "Brimhana-pradhana (nourishment-led)": [
+        ("Brimhana", "Nourishing — ghee, nuts, root vegetables, whole grains, dairy",
+         "Agni was steadied last plan, so nourishment starts in the first week."),
+        ("Balya", "Strength-building — protein-dense meals, dates, milk",
+         "Convert the nourishment into Bala rather than only weight."),
+        ("Rasayana", "Rejuvenation — amla, ghee, seasonal Rasayana preparations",
+         "Rasayana lands on a clear Srotas."),
+        ("Sthairya", "Holding — the nourishing pattern kept as ordinary food",
+         "Consolidate the gain."),
+    ],
+}
+
+
+def _continue(arc: dict, user_profile: dict) -> dict:
+    prev = (user_profile.get("diet_log") or {}).get("continues")
+    if not prev:
+        return arc
+    n = int(prev.get("plan_number") or 2)
+    arc = {**arc, "plan_number": n}
+    same_line = prev.get("arc") == arc["arc"]
+    if not same_line:
+        arc["continuation"] = "new_line"
+        if prev.get("arc"):
+            arc["basis"] += (f" Plan {n}: your last plan followed {prev['arc']}; your state now "
+                             f"calls for this line instead, so it starts from its first week.")
+        return arc
+    if not prev.get("followed"):
+        arc["continuation"] = "repeated"
+        arc["basis"] += (f" Plan {n}: the last plan was not followed long enough to build on "
+                         f"({prev.get('meals_logged', 0)} meals logged), so this one starts the "
+                         "same progression again.")
+        return arc
+    weeks = _CONTINUED.get(arc["arc"])
+    if not weeks:
+        arc["continuation"] = "held"
+        arc["basis"] += (f" Plan {n}: the same progression again, deliberately — "
+                         + ("Ama is still present on your latest assessment, and Ama that is "
+                            "still there has not been cleared."
+                            if arc["weeks"][0]["phase"] in ("Ama Pachana", "Deepana-Pachana")
+                            else "it is held for as long as the state that chose it lasts."))
+        return arc
+    arc["continuation"] = "continued"
+    arc["weeks"] = [_phase(i + 1, *w) for i, w in enumerate(weeks)]
+    arc["basis"] += (f" Plan {n}: you finished and followed the last plan, so this one "
+                     "continues it rather than starting the opening week again.")
+    return arc
+
+
 def choose_arc(user_profile: dict, diet_prefs: dict) -> dict:
+    """The four-week progression for this patient, continued from the last plan when
+    that one was finished and followed (`_continue`)."""
+    return _continue(_choose_arc(user_profile, diet_prefs), user_profile)
+
+
+def _choose_arc(user_profile: dict, diet_prefs: dict) -> dict:
     """The four-week progression for this patient, and why it is this one.
 
     Returns {"arc": str, "basis": str, "weeks": [ {week_number, phase, focus,

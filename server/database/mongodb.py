@@ -119,6 +119,8 @@ async def _create_indexes(db):
         await db.workout_logs.create_index([("user_id", 1), ("updated_at", -1)])
         await db.meal_logs.create_index([("user_id", 1), ("plan_id", 1)])
         await db.meal_logs.create_index([("user_id", 1), ("updated_at", -1)])
+        await db.diet_checkins.create_index([("user_id", 1), ("plan_id", 1)])
+        await db.diet_checkins.create_index([("user_id", 1), ("updated_at", -1)])
     except Exception as e:
         logger.error(f"Failed to create indexes in background: {e}")
 

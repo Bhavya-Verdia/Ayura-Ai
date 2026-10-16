@@ -14,9 +14,6 @@ from ai.llm_client import llm_client
 from ai.rag_pipeline import rag_pipeline
 from core.logger import logger
 from services.diet_brief_builder import (
-    MEAL_TIMING,
-    DOSHA_SPICES,
-    AYUR_TIPS,
     build_brief,
     diet_allergies,
     diet_conditions,
@@ -159,6 +156,14 @@ Return this exact JSON structure — no extra keys, no preamble, no markdown fen
 """
 
 
+def _frame_fields(frame: dict) -> dict:
+    """Meal times, the two daily drinks, spices and tips — built from the patient's
+    screened food list (`diet_day_frame`), on every path that writes a plan."""
+    return {"meal_timing": frame["meal_timing"], "daily_rituals": frame["rituals"],
+            "spice_guide": frame["spice_guide"], "ayurvedic_tips": frame["ayurvedic_tips"],
+            "withheld_guidance": frame["withheld_guidance"]}
+
+
 def _clinical(user_profile: dict, conditions: list[str]) -> dict:
     """Medicine-food interactions and condition notes, with sources — the same on
     both generation paths."""
@@ -167,6 +172,63 @@ def _clinical(user_profile: dict, conditions: list[str]) -> dict:
     return {"medication_interactions": interactions,
             "medications_not_checked": unmatched,
             "clinical_notes": clinical_notes(user_profile, conditions)}
+
+
+async def _with_classical_context(brief: str, user_profile: dict, diet_prefs: dict) -> str:
+    """The brief with classical passages from the knowledge base appended."""
+    # RAG: pull classical text passages relevant to this patient's profile.
+    #
+    # Supplementary grounding, in its own try. These five calls used to sit
+    # directly under the outer `except`, which returns None and sends the caller
+    # to the rule engine — so a ChromaDB restart did not cost the plan its
+    # classical citations, it cost the plan. Every diet generation during the
+    # outage silently lost the LLM path entirely: the therapeutic arc, the
+    # per-meal energy budget, the condition coaching, all of it, with nothing on
+    # screen to say why.
+    #
+    # An outage degrades, it does not withhold — the same rule the remedies
+    # triage follows for the same retrieval layer.
+    dominant_dosha_q = (user_profile.get("dominant_dosha") or "vata").lower()
+    agni_type_q = (user_profile.get("agni_type") or "sama").lower()
+    conditions_q = diet_conditions(user_profile, diet_prefs)
+    season = (user_profile.get("current_season") or "").lower()
+    rag_context_parts: list[str] = []
+    try:
+        # Query 1: dosha + agni general diet guidance
+        general_query = f"{dominant_dosha_q} dosha diet Ahara Pathya Apathya {agni_type_q} Agni Ayurvedic food"
+        general_docs = await rag_pipeline.query(general_query, "nutrition", n_results=5, dosha_filter=dominant_dosha_q)
+        if general_docs:
+            rag_context_parts.append(rag_pipeline.format_context(general_docs, max_chars=1200))
+
+        # Query 2: condition-specific diet — retrieve for EACH condition (capped),
+        # not just the first, so multi-condition patients get classical grounding
+        # for every diagnosis rather than only conditions_q[0].
+        for _cond in conditions_q[:3]:
+            cond_query = f"{_cond} Pathya Apathya diet Ayurvedic classical"
+            cond_docs = await rag_pipeline.query(cond_query, "nutrition", n_results=3)
+            if cond_docs:
+                rag_context_parts.append(rag_pipeline.format_context(cond_docs, max_chars=600))
+
+        # Query 3: seasonal diet
+        if season:
+            season_docs = await rag_pipeline.query(f"{season} Ritucharya diet seasonal Ayurveda", "nutrition", n_results=3)
+            if season_docs:
+                rag_context_parts.append(rag_pipeline.format_context(season_docs, max_chars=600))
+    except Exception as _rag_err:
+        # Partial context is kept: a condition query that succeeded before the
+        # failure is still grounding for that condition.
+        logger.warning(
+            f"diet RAG retrieval degraded ({_rag_err}); generating with "
+            f"{len(rag_context_parts)} of the usual context blocks"
+        )
+
+    rag_context = "\n\n".join(rag_context_parts) if rag_context_parts else ""
+
+    # Inject RAG context into brief if retrieved
+    if rag_context:
+        brief = brief + f"\n\nCLASSICAL KNOWLEDGE BASE (cite these references where relevant):\n{rag_context}"
+
+    return brief
 
 
 async def generate_diet_plan_llm(
@@ -179,57 +241,7 @@ async def generate_diet_plan_llm(
     try:
         brief = build_brief(user_profile, diet_prefs)
 
-        # RAG: pull classical text passages relevant to this patient's profile.
-        #
-        # Supplementary grounding, in its own try. These five calls used to sit
-        # directly under the outer `except`, which returns None and sends the caller
-        # to the rule engine — so a ChromaDB restart did not cost the plan its
-        # classical citations, it cost the plan. Every diet generation during the
-        # outage silently lost the LLM path entirely: the therapeutic arc, the
-        # per-meal energy budget, the condition coaching, all of it, with nothing on
-        # screen to say why.
-        #
-        # An outage degrades, it does not withhold — the same rule the remedies
-        # triage follows for the same retrieval layer.
-        dominant_dosha_q = (user_profile.get("dominant_dosha") or "vata").lower()
-        agni_type_q = (user_profile.get("agni_type") or "sama").lower()
-        conditions_q = diet_conditions(user_profile, diet_prefs)
-        season = (user_profile.get("current_season") or "").lower()
-        rag_context_parts: list[str] = []
-        try:
-            # Query 1: dosha + agni general diet guidance
-            general_query = f"{dominant_dosha_q} dosha diet Ahara Pathya Apathya {agni_type_q} Agni Ayurvedic food"
-            general_docs = await rag_pipeline.query(general_query, "nutrition", n_results=5, dosha_filter=dominant_dosha_q)
-            if general_docs:
-                rag_context_parts.append(rag_pipeline.format_context(general_docs, max_chars=1200))
-
-            # Query 2: condition-specific diet — retrieve for EACH condition (capped),
-            # not just the first, so multi-condition patients get classical grounding
-            # for every diagnosis rather than only conditions_q[0].
-            for _cond in conditions_q[:3]:
-                cond_query = f"{_cond} Pathya Apathya diet Ayurvedic classical"
-                cond_docs = await rag_pipeline.query(cond_query, "nutrition", n_results=3)
-                if cond_docs:
-                    rag_context_parts.append(rag_pipeline.format_context(cond_docs, max_chars=600))
-
-            # Query 3: seasonal diet
-            if season:
-                season_docs = await rag_pipeline.query(f"{season} Ritucharya diet seasonal Ayurveda", "nutrition", n_results=3)
-                if season_docs:
-                    rag_context_parts.append(rag_pipeline.format_context(season_docs, max_chars=600))
-        except Exception as _rag_err:
-            # Partial context is kept: a condition query that succeeded before the
-            # failure is still grounding for that condition.
-            logger.warning(
-                f"diet RAG retrieval degraded ({_rag_err}); generating with "
-                f"{len(rag_context_parts)} of the usual context blocks"
-            )
-
-        rag_context = "\n\n".join(rag_context_parts) if rag_context_parts else ""
-
-        # Inject RAG context into brief if retrieved
-        if rag_context:
-            brief = brief + f"\n\nCLASSICAL KNOWLEDGE BASE (cite these references where relevant):\n{rag_context}"
+        brief = await _with_classical_context(brief, user_profile, diet_prefs)
 
         # The four-week progression. It used to be four literals in the prompt, the
         # same for every patient the app has ever had — so a Kapha-dominant obese
@@ -295,9 +307,7 @@ async def generate_diet_plan_llm(
             "seasonal_note": data.get("seasonal_note", ""),
             "ahar_vidhi": data.get("ahar_vidhi", ""),
             "motivational_note": data.get("motivational_note", ""),
-            "meal_timing": MEAL_TIMING.get(dominant_dosha, MEAL_TIMING.get("vata", {})),
-            "spice_guide": DOSHA_SPICES.get(dominant_dosha, DOSHA_SPICES.get("vata", [])),
-            "ayurvedic_tips": AYUR_TIPS.get(dominant_dosha, ""),
+            **_frame_fields(body["frame"]),
             "energy_prescription": energy,
             "nutrient_targets": energy["nutrient_targets"],
             "energy_reconciliation": body["energy_reconciliation"],
@@ -376,12 +386,14 @@ async def build_diet_plan(
     # The engine's food lists become the same component meals the primary path
     # writes, and are brought to the same targets by the same solver. Its days
     # missed the protein floor on 26 of 28 before this.
+    from services.diet_day_frame import day_frame
     from services.diet_week_generator import engine_plan_to_weeks
     energy = energy_target(user_profile, diet_prefs)
     from services.diet_allowed_foods import allowed_foods
-    body = engine_plan_to_weeks(plan, energy, {
-        f["id"] for f in allowed_foods(user_profile, diet_prefs,
-                                       extra_terms=extra_apathya)["allowed"]})
+    screen = allowed_foods(user_profile, diet_prefs, extra_terms=extra_apathya)
+    allowed_ids = {f["id"] for f in screen["allowed"]}
+    frame = day_frame(user_profile, diet_prefs, allowed_ids, energy, screen["excluded"])
+    body = engine_plan_to_weeks(plan, energy, allowed_ids, rituals=frame["rituals"])
     plan.pop("four_week_plan", None)
     plan.update({
         "generation_method": "rule_engine",
@@ -392,6 +404,7 @@ async def build_diet_plan(
         "nutrient_targets": energy["nutrient_targets"],
         "energy_reconciliation": body["energy_reconciliation"],
         "fasting_notice": fasting_withheld_reason(user_profile, diet_prefs),
+        **_frame_fields(frame),
         **_clinical(user_profile, conds),
     })
     plan = apply_script_guard(plan)
@@ -407,3 +420,103 @@ async def build_diet_plan(
         diet_prefs.get("food_intolerances") or [], extra_terms=extra_apathya,
         pregnant=bool(user_profile.get("pregnancy_or_nursing")))
     return plan
+
+
+# ── Check-in rebuild: the weeks still to come ────────────────────────────────
+
+# Safety outputs that list meals by week. A rebuild scans only the weeks it wrote;
+# the kept weeks keep the findings they were shipped with.
+_WEEK_ALERT_KEYS = ("safety_alerts", "dietary_type_alerts", "condition_safety_alerts",
+                    "unscannable_alerts")
+_SAFE_FLAGS = {"safety_alerts": "allergen_safe", "dietary_type_alerts": "dietary_type_safe",
+               "condition_safety_alerts": "condition_food_safe"}
+
+
+def _alert_week(alert: dict) -> int | None:
+    try:
+        return int(str(alert.get("week", "")).split()[-1])
+    except (ValueError, IndexError):
+        return None
+
+
+async def rebuild_diet_weeks(old_plan: dict, user_profile: dict, diet_prefs: dict,
+                             from_week: int) -> dict:
+    """The plan with weeks `from_week`-4 written again after a weekly check-in.
+
+    `user_profile["diet_log"]` carries the check-in (trouble foods, digestion,
+    hunger), so the food list, the condition floors and the energy target already
+    reflect it. Weeks before `from_week` are kept exactly, the therapeutic arc is
+    kept so the phases continue, and the same safety layers run on what was written.
+    Raises if the weeks cannot be written; the stored plan is then left as it was."""
+    import copy
+
+    from services.ahara_safety import (
+        apply_advisory_safety, apply_ahara_safety, apply_condition_food_safety,
+        apply_dietary_type_safety, apply_script_guard, classify_condition_apathya_llm,
+    )
+    from services.diet_brief_builder import uncurated_conditions
+    from services.diet_energy import energy_target
+    from services.diet_plan_arc import arc_prompt_block, choose_arc
+    from services.diet_week_generator import generate_week_by_week
+
+    if not 2 <= from_week <= 4:
+        raise ValueError("only weeks 2-4 can be rebuilt")
+    conds = diet_conditions(user_profile, diet_prefs)
+    extra = await classify_condition_apathya_llm(uncurated_conditions(conds))
+    energy = energy_target(user_profile, diet_prefs)
+    arc = old_plan.get("therapeutic_arc") or choose_arc(user_profile, diet_prefs)
+    brief = build_brief(user_profile, diet_prefs)
+    brief = await _with_classical_context(brief, user_profile, diet_prefs)
+    brief = brief + "\n\n" + arc_prompt_block(arc)
+
+    kept = [copy.deepcopy(w) for w in old_plan.get("diet_weeks") or []
+            if isinstance(w, dict) and (w.get("week_number") or 0) < from_week]
+    body = await generate_week_by_week(user_profile, diet_prefs, brief, arc, energy, extra,
+                                       kept_weeks=kept)
+
+    plan = copy.deepcopy(old_plan)
+    summary = dict(plan.get("user_summary") or {})
+    summary["active_condition_protocols"] = list(dict.fromkeys(conds))
+    plan.update({
+        "diet_weeks": body["diet_weeks"],
+        "weekly_plan": body["diet_weeks"][0]["daily_plan"],
+        "user_summary": summary,
+        "energy_prescription": energy,
+        "nutrient_targets": energy["nutrient_targets"],
+        "energy_reconciliation": body["energy_reconciliation"],
+        "composition_report": body["composition_report"],
+        "fasting_notice": fasting_withheld_reason(user_profile, diet_prefs),
+        **_frame_fields(body["frame"]),
+        **_clinical(user_profile, conds),
+    })
+    plan.pop("translations", None)
+
+    allergies = diet_allergies(user_profile, diet_prefs)
+    intolerances = diet_prefs.get("food_intolerances") or []
+    pregnant = bool(user_profile.get("pregnancy_or_nursing"))
+    # Scanned: the new weeks and all the prose. Not scanned: the kept weeks, which
+    # were checked when they were written and have since been eaten.
+    checked = {**plan, "diet_weeks": [w for w in plan["diet_weeks"]
+                                      if w["week_number"] >= from_week]}
+    checked.pop("weekly_plan", None)
+    checked = apply_script_guard(checked)
+    checked = apply_ahara_safety(checked, allergies, intolerances)
+    checked = apply_dietary_type_safety(checked, diet_prefs.get("dietary_type"))
+    checked = apply_condition_food_safety(checked, conds, extra_terms=extra, pregnant=pregnant)
+    checked = apply_advisory_safety(checked, conds, allergies, intolerances,
+                                    extra_terms=extra, pregnant=pregnant)
+    checked["diet_weeks"] = plan["diet_weeks"]
+    checked["weekly_plan"] = plan["weekly_plan"]
+    for key in _WEEK_ALERT_KEYS:
+        earlier = [a for a in old_plan.get(key) or []
+                   if isinstance(a, dict) and (_alert_week(a) or 0) < from_week]
+        checked[key] = earlier + list(checked.get(key) or [])
+        if key in _SAFE_FLAGS:
+            checked[_SAFE_FLAGS[key]] = not checked[key]
+    seen = {v.get("combination"): v for v in old_plan.get("viruddha_ahara_detected") or []
+            if isinstance(v, dict)}
+    for v in checked.get("viruddha_ahara_detected") or []:
+        seen.setdefault(v.get("combination"), v)
+    checked["viruddha_ahara_detected"] = list(seen.values())
+    checked["generated_at"] = old_plan.get("generated_at")
+    return checked

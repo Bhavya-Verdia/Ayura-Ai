@@ -8,95 +8,8 @@ knowledge constants and brief logic are independently testable and importable.
 from services.ahara_safety import _canon_condition, _COND_CANON, _term_in_text
 from services.diet_condition_foods import condition_food_rules
 
-# ── Dosha-based meal timing ────────────────────────────────────────────────────
-MEAL_TIMING: dict[str, dict] = {
-    "vata": {
-        "breakfast": "7:00–8:00 AM — warm, cooked; before Vata peaks at 10 AM",
-        "lunch": "12:00–1:00 PM — largest meal at solar peak",
-        "snack": "4:00–5:00 PM — small nourishing snack before Vata evening spike",
-        "dinner": "6:30–7:30 PM — warm, light; at least 2 hrs before sleep",
-        "wake_up_drink": "Warm water with a pinch of rock salt and cumin",
-        "bedtime_drink": "Warm golden milk with turmeric and cardamom",
-        "general_note": "Regularity is the single most important Vata prescription. Eat at the same time every day.",
-    },
-    "pitta": {
-        "breakfast": "7:30–8:30 AM — moderate, cooling breakfast",
-        "lunch": "12:00–1:00 PM — substantial; Pitta digestion peaks at midday",
-        "snack": "3:00–4:00 PM — cooling fruit or coconut water",
-        "dinner": "7:00–8:00 PM — light, early; prevents overnight heat buildup",
-        "wake_up_drink": "Room-temperature water with soaked dates or raisins",
-        "bedtime_drink": "Cool milk with cardamom and fennel",
-        "general_note": "Never skip lunch — Pitta Agni is strongest and must be fed at midday.",
-    },
-    "kapha": {
-        "breakfast": "8:00–9:00 AM — light or skip; only eat if truly hungry",
-        "lunch": "12:30–1:30 PM — main meal; spiced, warm, light grains and legumes",
-        "snack": "4:00–5:00 PM — skip if not hungry; ginger tea instead",
-        "dinner": "6:00–7:00 PM — very light, early; avoid heavy foods after dark",
-        "wake_up_drink": "Warm water with honey, ginger, and lemon — kindles Kapha Agni",
-        "bedtime_drink": "Warm ginger-cinnamon tea — prevents Kapha overnight accumulation",
-        "general_note": "Less is more for Kapha. Never eat out of boredom or habit.",
-    },
-}
-
-# ── Dosha-specific spice guides ────────────────────────────────────────────────
-DOSHA_SPICES: dict[str, list[dict]] = {
-    "vata": [
-        {"name": "Ginger", "sanskrit": "Shunthi",
-         "use": "Fresh in morning tea and all cooked meals — kindles Agni, warms Vata"},
-        {"name": "Cumin", "sanskrit": "Jeeraka",
-         "use": "Toast and add to dal and rice — grounds Vata, aids digestion"},
-        {"name": "Cardamom", "sanskrit": "Ela",
-         "use": "In warm milk or chai — reduces bloating, calms nervous system"},
-        {"name": "Ajwain", "sanskrit": "Ajamoda",
-         "use": "In rotis and dals — powerful carminative for Vata bloating"},
-        {"name": "Asafoetida", "sanskrit": "Hingu",
-         "use": "Tiny pinch in tadka — prevents Vata gas; most important Vata spice"},
-    ],
-    "pitta": [
-        {"name": "Coriander", "sanskrit": "Dhanyaka",
-         "use": "Fresh or seeds — the best Pitta-pacifying spice; use liberally"},
-        {"name": "Fennel", "sanskrit": "Shatapushpa",
-         "use": "After meals — cooling, anti-inflammatory, aids digestion"},
-        {"name": "Cardamom", "sanskrit": "Ela",
-         "use": "In cool drinks and desserts — sweet, cooling"},
-        {"name": "Turmeric", "sanskrit": "Haridra",
-         "use": "In all cooking — anti-inflammatory; use moderately (mildly heating)"},
-        {"name": "Saffron", "sanskrit": "Kumkuma",
-         "use": "In warm milk — royal Pitta tonic, cooling and nourishing"},
-    ],
-    "kapha": [
-        {"name": "Black Pepper", "sanskrit": "Maricha",
-         "use": "In all meals — stimulates sluggish Kapha Agni, burns Ama"},
-        {"name": "Dry Ginger", "sanskrit": "Shunthi",
-         "use": "Powder in food and tea — Kapha's number-one spice"},
-        {"name": "Turmeric", "sanskrit": "Haridra",
-         "use": "Generous amounts — reduces Kapha mucus and inflammation"},
-        {"name": "Cinnamon", "sanskrit": "Tvak",
-         "use": "In morning tea and porridge — warms and stimulates Kapha metabolism"},
-        {"name": "Fenugreek", "sanskrit": "Methi",
-         "use": "Seeds in dal or sprouted — the best Kapha fat-burning seed"},
-    ],
-}
-
-# ── General Ayurvedic diet tips per dosha ─────────────────────────────────────
-AYUR_TIPS: dict[str, str] = {
-    "vata": (
-        "Favour warm, cooked, oily, and grounding foods. Use generous ghee. "
-        "Eat at consistent times — regularity is the single most important Vata prescription. "
-        "Avoid cold drinks, raw salads, and dry snacks."
-    ),
-    "pitta": (
-        "Favour cooling, mildly spiced, lightly sweet foods. Include coconut, coriander, and fennel liberally. "
-        "Never skip lunch — your Agni is strongest at midday. "
-        "Avoid excess chilli, garlic, onion, vinegar, and fermented foods."
-    ),
-    "kapha": (
-        "Favour light, warm, pungent, and spiced foods. Prefer honey over sugar. "
-        "Skip or minimise breakfast if not genuinely hungry. "
-        "Avoid heavy dairy, cold foods, sweets, and eating after 7 PM."
-    ),
-}
+# Meal times, the wake-up and bedtime drinks, the spice guide and the dosha tips
+# live in `diet_day_frame`, where each is screened against the patient's food list.
 
 # ── Condition Pathya-Apathya hints ────────────────────────────────────────────
 PATHYA_APATHYA_HINTS: dict[str, dict] = {
@@ -578,6 +491,15 @@ def diet_conditions(user_profile: dict, diet_prefs: dict | None = None) -> list[
     if canon and canon not in seen:
         seen.add(canon)
         out.append(canon)
+    # Bloating, acidity or constipation reported in the latest weekly check-in: the
+    # remaining weeks are composed and screened under that protocol, the same as if
+    # it had been declared (`services/diet_checkin`).
+    from services.diet_checkin import DIGESTION_CONDITIONS
+    for d in (user_profile.get("diet_log") or {}).get("digestion") or []:
+        canon = DIGESTION_CONDITIONS.get(d)
+        if canon and canon not in seen:
+            seen.add(canon)
+            out.append(canon)
     return out
 
 
@@ -624,30 +546,69 @@ def fasting_withheld_reason(user_profile: dict, diet_prefs: dict | None = None) 
     """Why this patient's fasting days are not planned as fasts, or None."""
     if not (diet_prefs or {}).get("fasting_days"):
         return None
+    group = no_fasting_group(user_profile, diet_prefs)
+    if group is None:
+        return None
+    if group == "child":
+        return "Under 18 — no planned fasting days for a growing body."
+    if group == "elderly":
+        # Upavasa is withheld from the Vriddha in the classical texts, and clinically
+        # a fasting day past 70 costs muscle and risks dizziness and falls.
+        return ("Past 70 — fasting days are planned as ordinary, lighter days: a fast at "
+                "this age costs muscle and risks dizziness.")
+    if group == "pregnancy":
+        return ("Pregnancy or breastfeeding — fasting days are planned as ordinary days. "
+                "Mother and baby both need the energy every day.")
+    if group == "underweight":
+        return "Underweight — fasting days are planned as ordinary days."
+    return (f"With {group}, a fasting day can cause dangerously low (or, on fruit, "
+            "high) blood sugar, especially on insulin or tablets such as a "
+            "sulfonylurea. Your fasting days are planned as regular, lighter days. "
+            "Please agree any fast with your doctor first (IDF-DAR 2021).")
+
+
+def no_fasting_group(user_profile: dict, diet_prefs: dict | None = None) -> str | None:
+    """Who is not fasted at all — fasting days or a long eating window: "child",
+    "elderly", "pregnancy", "underweight", or the condition ("diabetes", "kidney
+    disease"). None for everyone else.
+
+    Kept apart from `fasting_withheld_reason`, which returns None when no fasting day
+    is declared: read through it, a diabetic's 16:8 window was never withheld."""
     try:
         age = int(user_profile.get("age"))
     except (TypeError, ValueError):
         age = None
     if age is not None and age <= PAEDIATRIC_MAX_AGE:
-        return "Under 18 — no planned fasting days for a growing body."
+        return "child"
     if age is not None and age >= 70:
-        # Upavasa is withheld from the Vriddha in the classical texts, and clinically
-        # a fasting day past 70 costs muscle and risks dizziness and falls.
-        return ("Past 70 — fasting days are planned as ordinary, lighter days: a fast at "
-                "this age costs muscle and risks dizziness.")
+        return "elderly"
     if user_profile.get("pregnancy_or_nursing"):
-        return ("Pregnancy or breastfeeding — fasting days are planned as ordinary days. "
-                "Mother and baby both need the energy every day.")
+        return "pregnancy"
     if str(user_profile.get("bmi_category") or "").lower() == "underweight":
-        return "Underweight — fasting days are planned as ordinary days."
+        return "underweight"
     for cond in diet_conditions(user_profile, diet_prefs):
         why = _NO_FAST_CONDITIONS.get(str(cond).lower())
         if why:
-            return (f"With {why}, a fasting day can cause dangerously low (or, on fruit, "
-                    "high) blood sugar, especially on insulin or tablets such as a "
-                    "sulfonylurea. Your fasting days are planned as regular, lighter days. "
-                    "Please agree any fast with your doctor first (IDF-DAR 2021).")
+            return why
     return None
+
+
+_WINDOW_WITHHELD = {
+    "child": "a growing body is fed at ordinary times",
+    "elderly": "past 70 a long daily fast costs muscle and risks dizziness",
+    "pregnancy": "mother and baby both need regular meals",
+    "underweight": "you are underweight, and a shorter eating day makes it harder to gain",
+}
+
+
+def eating_window_withheld_reason(user_profile: dict, diet_prefs: dict | None = None) -> str | None:
+    """Why a declared 14:10 or 16:8 eating window is not applied, or None."""
+    group = no_fasting_group(user_profile, diet_prefs)
+    if group is None:
+        return None
+    return _WINDOW_WITHHELD.get(group) or (
+        f"with {group}, a long daily fast risks low blood sugar, especially on insulin or a "
+        "sulfonylurea; agree any eating window with your doctor first (IDF-DAR 2021)")
 
 
 def fasting_days_for(user_profile: dict, diet_prefs: dict | None = None) -> list[str]:
@@ -891,11 +852,15 @@ def build_brief(user_profile: dict, diet_prefs: dict) -> str:
         hard_constraints.append(
             "NO FASTING DAYS: " + fasting_withheld_reason(user_profile, diet_prefs)
             + " Keep regular meal times every day.")
-    else:
-        if fasting_days:
-            hard_constraints.append(f"Fasting days: {', '.join(fasting_days)} — only Phalahar (fruits, milk, nuts) on these days")
-        if if_window != "no":
-            hard_constraints.append(f"Intermittent fasting: {if_window} window — adjust meal timing accordingly")
+    elif fasting_days:
+        hard_constraints.append(f"Fasting days: {', '.join(fasting_days)} — only Phalahar (fruits, milk, nuts) on these days")
+    # The eating window, with its times. It used to be the line "adjust meal timing
+    # accordingly", in a plan with no field for a time; the times shown came from a
+    # per-dosha table and made a 12-hour day of a 16:8 window. Withheld for the same
+    # groups as fasting days, whether or not any fasting day was declared.
+    if if_window != "no" and not _is_child:
+        from services.diet_day_frame import window_brief_line
+        hard_constraints.append(window_brief_line(user_profile, diet_prefs))
     from services.diet_clinical_notes import medication_matches, preference_brief_lines
     hard_constraints.extend(preference_brief_lines(diet_prefs))
     for _m in medication_matches(user_profile)[0]:

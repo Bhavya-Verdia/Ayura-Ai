@@ -484,6 +484,17 @@ def energy_target(user_profile: dict, diet_prefs: dict) -> dict:
         target += log_adjust
         notes.append(f"From your meal log and weigh-ins: {log_adjust:+d} kcal, because "
                      f"{log.get('energy_reason', 'your weight did not move as planned')}.")
+    # The weekly check-in's hunger answer. Together with the step above it moves the
+    # target by at most 150 kcal either way: hungry on a plan the scale says is too
+    # generous cancels out rather than compounding.
+    hunger = int(log.get("hunger_adjust_kcal") or 0)
+    if hunger < 0 and (is_child or flag or bmi_category == "underweight"):
+        hunger = 0
+    hunger = max(-150 - log_adjust, min(150 - log_adjust, hunger))
+    if hunger:
+        target += hunger
+        notes.append(f"From your weekly check-in: {hunger:+d} kcal, because you were "
+                     + ("hungry between meals." if hunger > 0 else "served more than you could eat."))
 
     # Kidney disease: energy 25-35 kcal/kg (KDOQI 2020), on a reference weight —
     # ideal body weight for an underweight patient, adjusted weight for an obese one.

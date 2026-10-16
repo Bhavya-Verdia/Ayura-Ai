@@ -90,6 +90,10 @@ def allowed_foods(user_profile: dict, diet_prefs: dict, extra_terms=None) -> dic
     if _is_renal(conditions):
         for fid in high_potassium_ids(foods):
             excluded.setdefault(fid, "high in potassium (kidney disease)")
+    # Foods the patient said caused trouble, in a weekly check-in. By id: the
+    # patient picked the food from their own plan, so there is nothing to match.
+    for fid in (user_profile.get("diet_log") or {}).get("trouble_foods") or []:
+        excluded.setdefault(fid, "you reported trouble after eating it")
     allowed = [f for f in foods if f["id"] not in excluded]
     return {"allowed": allowed, "excluded": excluded}
 

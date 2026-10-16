@@ -223,9 +223,11 @@ def _carb_rule(energy: dict) -> str:
             "or nut-based rather than fruit alone. No sugar, jaggery, honey or dried fruit.")
 
 
-def _staples(allowed: list[dict], week: int) -> str:
+def _staples(allowed: list[dict], week: int, regional: tuple = (), plan_seq: int = 1) -> str:
     """Two grains and two pulses featured per week, rotated through the allowed list,
-    so four weeks generated in parallel do not all centre on the same khichdi."""
+    so four weeks generated in parallel do not all centre on the same khichdi. The
+    patient's regional staples lead the rotation, and each plan carries on from where
+    the last one's rotation stopped — week 1 of every month featured the same four."""
     # Everyday Indian staples first, in the order a household rotates them; the
     # unfamiliar grains and pulses come after, as occasional extras. Alphabetical
     # order put quinoa and amaranth at the centre of whole weeks.
@@ -235,16 +237,26 @@ def _staples(allowed: list[dict], week: int) -> str:
                 "moong_dal_yellow", "toor_dal", "masoor_dal", "chana_dal", "moong_dal_green",
                 "rajma", "chhole", "urad_dal", "paneer", "black_eyed_peas", "green_peas",
                 "sprouted_moong", "tofu_firm", "soy_milk", "soya_chunks"]
-    rank = {fid: i for i, fid in enumerate(familiar)}
+    order = list(regional) + [f for f in familiar if f not in regional]
+    rank = {fid: i for i, fid in enumerate(order)}
     key = lambda f: (rank.get(f["id"], 100), f["id"])  # noqa: E731
     grains = sorted((f for f in allowed if dn.role(f["id"]) == "grain"), key=key)
-    pulses = sorted((f for f in allowed if f.get("category") in ("legume", "vegan_protein")
-                     or f["id"] == "paneer"), key=key)
+    # Pulses and the protein foods a dal is swapped for — not every `vegan_protein`
+    # row, which is mostly plant milks and creams: once the rotation ran past the
+    # first month it featured cashew cream as the week's pulse.
+    pulses = sorted((f for f in allowed if f.get("category") == "legume"
+                     or f["id"] in ("paneer", "tofu_firm", "vegan_paneer_tofu")), key=key)
+    # The rotation runs through the familiar staples; the unfamiliar ones come in
+    # only when the patient's list has too few familiar ones to rotate.
+    def familiar_first(rows, n):
+        known = [f for f in rows if f["id"] in rank]
+        return known if len(known) >= 2 * n else rows
+    grains, pulses = familiar_first(grains, 2), familiar_first(pulses, 2)
 
     def pick(rows, n):
         if not rows:
             return []
-        start = ((week - 1) * n) % len(rows)
+        start = ((plan_seq - 1) * 4 + week - 1) * n % len(rows)
         return [rows[(start + i) % len(rows)] for i in range(min(n, len(rows)))]
     names = [f"{f['id']} ({dn._short(f.get('name') or f['id'])})"
              for f in pick(grains, 2) + pick(pulses, 2)]
@@ -355,6 +367,9 @@ def _rescale(meal: dict, factor: float) -> None:
 
 
 _COUNTED = SLOTS + (DRINK,)
+# The wake-up and bedtime drinks (`diet_day_frame`): the same every day, counted in
+# the day's totals and held fixed by the solver, which sizes the meals around them.
+_RITUAL_SLOTS = ("wake_up", "bedtime")
 
 # How far each kind of component may move from what the model wrote. Grains and
 # protein foods are where a cook adjusts a plate; added fat and sweet things move
@@ -371,10 +386,10 @@ _NUTRIENTS = ("calories", "protein_g", "carbs_g", "fat_g", "fiber_g")
 def _role_matrix(day: dict) -> dict:
     """{role: {nutrient: amount}} — what each kind of component contributes today."""
     out: dict = {}
-    for s in _COUNTED:
-        meal = day.get(s) or {}
+    for meal in [day.get(s) or {} for s in _COUNTED] + list(day.get("rituals") or []):
+        ritual = meal.get("slot") in _RITUAL_SLOTS
         for c in meal.get("components") or []:
-            r = "fixed" if _fixed(meal, c) else dn.role(c["food"])
+            r = "fixed" if ritual or _fixed(meal, c) else dn.role(c["food"])
             if r == "seasoning":
                 continue
             per = (dn.food(c["food"]) or {}).get("nutrition_per_100g") or {}
@@ -725,10 +740,10 @@ def _finish_meal_inplace(meal: dict) -> None:
 
 def _day_totals(day: dict) -> dict:
     """The day's nutrition, including the daily drink — a 220 kcal glass of milk was
-    left out of every total — and its minerals and folate."""
+    left out of every total — the wake-up and bedtime drinks, and minerals and folate."""
     tot = dict.fromkeys(("calories", "protein_g", "carbs_g", "fat_g", "fiber_g") + dn.MICROS, 0.0)
-    for s in SLOTS + (DRINK,):
-        m = (day.get(s) or {}).get("macros_approx") or {}
+    for m in ([(day.get(s) or {}).get("macros_approx") or {} for s in SLOTS + (DRINK,)]
+              + [r.get("macros_approx") or {} for r in day.get("rituals") or []]):
         for k in tot:
             tot[k] += float(m.get(k) or 0)
     return {k: round(v, 1) for k, v in tot.items()}
@@ -823,9 +838,14 @@ def _mineral_notices(report: dict) -> list[str]:
 
 
 def finalise_weeks(weeks: list[dict], energy: dict, fasting: set,
-                   allowed_ids: set | None = None) -> dict:
+                   allowed_ids: set | None = None, frozen: set | None = None,
+                   rituals: list[dict] | None = None) -> dict:
     """Bring every day to its targets and report what was reached. Shared by the LLM
-    path and the rule-engine fallback, so a fallback plan is held to the same numbers."""
+    path and the rule-engine fallback, so a fallback plan is held to the same numbers.
+
+    Weeks in `frozen` are measured, never changed: a check-in rebuild keeps the
+    weeks the patient has already eaten exactly as they were."""
+    frozen = frozen or set()
     # A renal plan is held to a protein ceiling and, by the clinician, to phosphorus
     # and potassium; dairy and seeds are the wrong thing to add to it.
     renal = bool(((energy.get("nutrient_targets") or {}).get("protein_g") or {}).get("max"))
@@ -834,6 +854,17 @@ def finalise_weeks(weeks: list[dict], energy: dict, fasting: set,
     for w in weeks:
         for d in DAYS:
             day = w["daily_plan"][d]
+            if w["week_number"] in frozen:
+                kcal = round(_day_totals(day)["calories"])
+                r = {"factor": 1.0, "before": kcal, "after": kcal}
+                days_report.append({"week": w["week_number"], "day": d, **r,
+                                    "protein_g": (day.get("day_totals") or _day_totals(day))["protein_g"]})
+                if (not day.get("is_fasting") and kcal
+                        and days_report[-1]["protein_g"] < energy["protein_floor_g"]):
+                    below_protein.append(f"Week {w['week_number']} {d}")
+                continue
+            if rituals is not None:
+                day["rituals"] = json.loads(json.dumps(rituals))
             if not day.get("is_fasting"):
                 _iodised_salt(day)
             if allowed_ids and not renal and not day.get("is_fasting"):
@@ -886,18 +917,32 @@ def finalise_weeks(weeks: list[dict], energy: dict, fasting: set,
 # ── Entry point ──────────────────────────────────────────────────────────────
 
 async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str,
-                                arc: dict, energy: dict, extra_terms: dict) -> dict:
+                                arc: dict, energy: dict, extra_terms: dict,
+                                kept_weeks: list[dict] | None = None) -> dict:
     """The plan body: diet_weeks (all 28 days in full), overview prose, and reports.
 
+    With `kept_weeks`, only the weeks after them are written — the check-in rebuild.
+    The kept weeks are returned unchanged and no overview is asked for.
     Raises if the plan cannot be produced, so the caller can fall back."""
+    kept_weeks = [w for w in kept_weeks or [] if isinstance(w, dict)]
+    kept_nos = {w.get("week_number") for w in kept_weeks}
+    build = tuple(w for w in (1, 2, 3, 4) if w not in kept_nos)
+    if not build:
+        raise ValueError("no weeks left to build")
     from services.diet_allowed_foods import allowed_foods, food_list_for_prompt
     from services.diet_brief_builder import (diet_allergies, diet_conditions,
                                              fasting_days_for)
+
+    from services.diet_day_frame import day_frame
 
     screen = allowed_foods(user_profile, diet_prefs, extra_terms=extra_terms)
     allowed = screen["allowed"]
     allowed_ids = {f["id"] for f in allowed}
     foods_text = food_list_for_prompt(allowed)
+    frame = day_frame(user_profile, diet_prefs, allowed_ids, energy, screen["excluded"])
+    from services.diet_clinical_notes import cuisine_staples
+    regional = cuisine_staples(diet_prefs)
+    plan_seq = int((user_profile.get("diet_log") or {}).get("plan_seq") or 1)
     mb = energy["meal_budget"]
     fasting = {d.capitalize() for d in (fasting_days_for(user_profile, diet_prefs) or [])}
     fasting_line = (f"\nFasting days: {', '.join(sorted(fasting))} — Phalahar only (fruit, "
@@ -907,7 +952,7 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
     def week_prompt(w):
         phase = next((x["phase"] for x in arc["weeks"] if x["week_number"] == w), "")
         return WEEK_PROMPT.format(
-            brief=brief, foods=foods_text, week=w, phase=phase, staples=_staples(allowed, w),
+            brief=brief, foods=foods_text, week=w, phase=phase, staples=_staples(allowed, w, regional, plan_seq),
             fasting=fasting_line, b=mb["breakfast"], l=mb["lunch"], s=mb["snack"],
             d=mb["dinner"], protein=energy["protein_floor_g"], meal=_MEAL_SHAPE,
             fat=(energy.get("nutrient_targets") or {}).get("fat_g", {}).get("target", "~30% of energy"),
@@ -918,13 +963,21 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
 
     overview_prompt = OVERVIEW_PROMPT.format(
         brief=brief, food_names=", ".join(dn._short(f.get("name") or f["id"]) for f in allowed))
+    async def _no_overview():
+        return {}
+
     results = await asyncio.gather(
-        *(_ask(week_prompt(w), _WEEK_TOKENS, _validate_week(w)) for w in (1, 2, 3, 4)),
-        _ask(overview_prompt, _OVERVIEW_TOKENS, _validate_overview),
+        *(_ask(week_prompt(w), _WEEK_TOKENS, _validate_week(w)) for w in build),
+        (_no_overview() if kept_weeks else
+         _ask(overview_prompt, _OVERVIEW_TOKENS, _validate_overview)),
         return_exceptions=True)
-    weeks_raw, overview = results[:4], results[4]
-    failed = [i + 1 for i, r in enumerate(weeks_raw) if isinstance(r, Exception)]
-    if len(failed) >= 3:
+    weeks_raw, overview = results[:len(build)], results[len(build)]
+    failed = [build[i] for i, r in enumerate(weeks_raw) if isinstance(r, Exception)]
+    # Three of four weeks failing sends a new plan to the rule-engine fallback whole,
+    # which writes its own guidance. A rebuild has no such fallback and needs no
+    # guidance, so its failed weeks are composed by the rule engine from the same
+    # screened list instead — a check-in rebuild still works through an LLM outage.
+    if len(failed) >= 3 and not kept_weeks:
         raise RuntimeError(f"weeks {failed} could not be generated")
     # One or two weeks failing twice no longer costs the whole plan: those weeks are
     # composed by the rule engine from the same screened list and brought to the same
@@ -945,8 +998,8 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
     weeks = []
     for i, wr in enumerate(weeks_raw):
         if isinstance(wr, Exception):
-            ew = dict(engine_weeks[i + 1])
-            ew["phase"] = next((x["phase"] for x in arc["weeks"] if x["week_number"] == i + 1),
+            ew = dict(engine_weeks[build[i]])
+            ew["phase"] = next((x["phase"] for x in arc["weeks"] if x["week_number"] == build[i]),
                                ew.get("phase", ""))
             ew["composed_by"] = "rule_engine"
             for d in DAYS:
@@ -965,7 +1018,9 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
             daily[d] = day
         weeks.append({"week_number": w, "phase": phase,
                       "phase_description": wr["phase_description"], "daily_plan": daily})
+    # Only the weeks written here are scanned and repaired; kept weeks are history.
     plan = {"diet_weeks": weeks}
+    by_no = {w["week_number"]: w for w in weeks}
 
     # Scan, then repair what the scans or the allowed list rejected.
     allergies = diet_allergies(user_profile, diet_prefs)
@@ -991,7 +1046,7 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
         for i, ((w, d, slot), reasons) in enumerate(sorted(found.items())):
             key = f"m{i}"
             keys[key] = (w, d, slot)
-            meal = weeks[w - 1]["daily_plan"][d][slot]
+            meal = by_no[w]["daily_plan"][d][slot]
             budget = mb.get(slot, 0) if slot != DRINK else 0
             items.append(f'- key "{key}": week {w} {d} {slot} (~{budget} kcal) — '
                          f'"{meal.get("meal_name") or meal.get("name")}" — '
@@ -1005,23 +1060,27 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
                 meal = entry.get("meal")
                 if where and isinstance(meal, dict) and dn.components_of(meal):
                     w, d, slot = where
-                    weeks[w - 1]["daily_plan"][d][slot] = _finish_meal(meal)
+                    by_no[w]["daily_plan"][d][slot] = _finish_meal(meal)
                     report["repaired"] += 1
         except Exception as e:  # noqa: BLE001 — substitution below still guarantees safety
             logger.warning(f"diet repair call failed: {e}")
         rng = random.Random(str(user_profile.get("id") or "anon"))
         for (w, d, slot) in problems():
-            weeks[w - 1]["daily_plan"][d][slot] = _safe_meal(
+            by_no[w]["daily_plan"][d][slot] = _safe_meal(
                 slot, allowed, mb.get(slot, 0) if slot != DRINK else 0, rng)
             report["substituted"] += 1
 
-    reconciliation = finalise_weeks(weeks, energy, fasting, allowed_ids)
+    new_weeks = weeks
+    weeks = sorted(kept_weeks + new_weeks, key=lambda w: w["week_number"])
+    reconciliation = finalise_weeks(weeks, energy, fasting, allowed_ids, frozen=kept_nos,
+                                    rituals=frame["rituals"])
     distinct = {(m.get("meal_name") or "").lower() for _, _, s, day in _units(weeks)
                 if s in SLOTS for m in [day[s]]}
     report["weeks_from_rule_engine"] = failed
     return {
         "diet_weeks": weeks,
         "overview": overview,
+        "frame": frame,
         "energy_reconciliation": reconciliation,
         "composition_report": {**report, "distinct_meals": len(distinct),
                                "allowed_foods": len(allowed),
@@ -1030,13 +1089,15 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
     }
 
 
-def engine_plan_to_weeks(raw: dict, energy: dict, allowed_ids: set | None = None) -> dict:
+def engine_plan_to_weeks(raw: dict, energy: dict, allowed_ids: set | None = None,
+                         rituals: list[dict] | None = None) -> dict:
     """The rule engine's food lists as the same component meals the LLM path writes,
     brought to the same targets. Its meals were lists of foods with a portion each,
     and they missed the protein floor on 26 of 28 days."""
     weeks, fasting = _engine_weeks(raw, allowed_ids)
     return {"diet_weeks": weeks,
-            "energy_reconciliation": finalise_weeks(weeks, energy, fasting, allowed_ids)}
+            "energy_reconciliation": finalise_weeks(weeks, energy, fasting, allowed_ids,
+                                                    rituals=rituals)}
 
 
 def _engine_weeks(raw: dict, allowed_ids: set | None = None) -> tuple[list[dict], set]:

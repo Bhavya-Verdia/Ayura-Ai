@@ -120,7 +120,11 @@ async def test_the_daily_drink_counts_toward_the_day(monkeypatch):
     day = plan["diet_weeks"][0]["daily_plan"]["Monday"]
     meals = sum(day[s]["macros_approx"]["calories"]
                 for s in ("breakfast", "lunch", "snack", "dinner", "special_drink"))
-    assert day["day_totals"]["calories"] == pytest.approx(meals, abs=2)
+    # The wake-up and bedtime drinks too: a Vata patient's bedtime milk is ~100 kcal.
+    rituals = sum(r["macros_approx"]["calories"] for r in day["rituals"])
+    assert {r["slot"] for r in day["rituals"]} == {"wake_up", "bedtime"}
+    assert rituals > 50
+    assert day["day_totals"]["calories"] == pytest.approx(meals + rituals, abs=2)
 
 
 # ── The fallback is held to the same numbers ──────────────────────────────────

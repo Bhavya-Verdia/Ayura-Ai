@@ -228,103 +228,17 @@ _AGNI_ADJUST: dict[str, dict] = {
     },
 }
 
-# ── Dinacharya meal timing per dosha ──────────────────────────────────────────
-_MEAL_TIMING: dict[str, dict] = {
-    "vata": {
-        "breakfast": "7:00–8:00 AM — warm, cooked; before Vata peaks at 10 AM",
-        "lunch": "12:00–1:00 PM — largest meal at solar peak",
-        "snack": "4:00–5:00 PM — small nourishing snack before Vata evening spike",
-        "dinner": "6:30–7:30 PM — warm, light; at least 2 hrs before sleep",
-        "wake_up_drink": "Warm water with a pinch of rock salt and cumin",
-        "bedtime_drink": "Warm golden milk with turmeric and cardamom",
-        "general_note": "Regularity is the single most important Vata prescription. Eat at the same time every day.",
-    },
-    "pitta": {
-        "breakfast": "7:30–8:30 AM — moderate, cooling breakfast",
-        "lunch": "12:00–1:00 PM — substantial; Pitta digestion peaks at midday",
-        "snack": "3:00–4:00 PM — cooling fruit or coconut water",
-        "dinner": "7:00–8:00 PM — light, early; prevents overnight heat buildup",
-        "wake_up_drink": "Room-temperature water with soaked dates or raisins",
-        "bedtime_drink": "Cool milk with cardamom and fennel",
-        "general_note": "Never skip lunch — Pitta Agni is strongest and must be fed at midday.",
-    },
-    "kapha": {
-        "breakfast": "8:00–9:00 AM — light or skip; only eat if truly hungry",
-        "lunch": "12:30–1:30 PM — main meal; spiced, warm, light grains and legumes",
-        "snack": "4:00–5:00 PM — skip if not hungry; ginger tea instead",
-        "dinner": "6:00–7:00 PM — very light, early; avoid heavy foods after dark",
-        "wake_up_drink": "Warm water with honey, ginger, and lemon — kindles Kapha Agni",
-        "bedtime_drink": "Warm ginger-cinnamon tea — prevents Kapha overnight accumulation",
-        "general_note": "Less is more for Kapha. Never eat out of boredom or habit.",
-    },
-}
-
-# ── Dosha spice guide ──────────────────────────────────────────────────────────
-_DOSHA_SPICES: dict[str, list[dict]] = {
-    "vata": [
-        {"name": "Ginger", "sanskrit": "Shunthi",
-         "use": "Fresh in morning tea and all cooked meals — kindles Agni, warms Vata"},
-        {"name": "Cumin", "sanskrit": "Jeeraka",
-         "use": "Toast and add to dal and rice — grounds Vata, aids digestion"},
-        {"name": "Cardamom", "sanskrit": "Ela",
-         "use": "In warm milk or chai — reduces bloating, calms nervous system"},
-        {"name": "Ajwain", "sanskrit": "Ajamoda",
-         "use": "In rotis and dals — powerful carminative for Vata bloating"},
-        {"name": "Asafoetida", "sanskrit": "Hingu",
-         "use": "Tiny pinch in tadka — prevents Vata gas; most important Vata spice"},
-    ],
-    "pitta": [
-        {"name": "Coriander", "sanskrit": "Dhanyaka",
-         "use": "Fresh or seeds — the best Pitta-pacifying spice; use liberally"},
-        {"name": "Fennel", "sanskrit": "Shatapushpa",
-         "use": "After meals — cooling, anti-inflammatory, aids digestion"},
-        {"name": "Cardamom", "sanskrit": "Ela",
-         "use": "In cool drinks and desserts — sweet, cooling"},
-        {"name": "Turmeric", "sanskrit": "Haridra",
-         "use": "In all cooking — anti-inflammatory; use moderately (mildly heating)"},
-        {"name": "Saffron", "sanskrit": "Kumkuma",
-         "use": "In warm milk — royal Pitta tonic, cooling and nourishing"},
-    ],
-    "kapha": [
-        {"name": "Black Pepper", "sanskrit": "Maricha",
-         "use": "In all meals — stimulates sluggish Kapha Agni, burns Ama"},
-        {"name": "Dry Ginger", "sanskrit": "Shunthi",
-         "use": "Powder in food and tea — Kapha's number-one spice"},
-        {"name": "Turmeric", "sanskrit": "Haridra",
-         "use": "Generous amounts — reduces Kapha mucus and inflammation"},
-        {"name": "Cinnamon", "sanskrit": "Tvak",
-         "use": "In morning tea and porridge — warms and stimulates Kapha metabolism"},
-        {"name": "Fenugreek", "sanskrit": "Methi",
-         "use": "Seeds in dal or sprouted — the best Kapha fat-burning seed"},
-    ],
-}
-
-_AYUR_TIPS: dict[str, str] = {
-    "vata": (
-        "Favour warm, cooked, oily, and grounding foods. Use generous ghee. "
-        "Eat at consistent times — regularity is the single most important Vata prescription. "
-        "Avoid cold drinks, raw salads, and dry snacks."
-    ),
-    "pitta": (
-        "Favour cooling, mildly spiced, lightly sweet foods. Include coconut, coriander, and fennel liberally. "
-        "Never skip lunch — your Agni is strongest at midday. "
-        "Avoid excess chilli, garlic, onion, vinegar, and fermented foods."
-    ),
-    "kapha": (
-        "Favour light, warm, pungent, and spiced foods. Prefer honey over sugar. "
-        "Skip or minimise breakfast if not genuinely hungry. "
-        "Avoid heavy dairy, cold foods, sweets, and eating after 7 PM."
-    ),
-}
-
-
 # ── Helpers ────────────────────────────────────────────────────────────────────
 # Dairy with enough lactose per serving to matter (a glass of milk is ~10 g).
 HIGH_LACTOSE_IDS = {"milk_full_fat", "cream", "lassi", "whey", "cottage_cheese"}
 
 
-def _seeded_rng(user_id: str, week: int, day: int) -> random.Random:
-    seed = int(hashlib.md5(f"{user_id}|{week}|{day}".encode()).hexdigest(), 16) % (2**32)
+def _seeded_rng(user_id: str, week: int, day: int, plan_seq: int = 1) -> random.Random:
+    """Deterministic per user, week and day — and per plan: seeded on the user alone,
+    an unchanged patient was served almost the same four weeks every month. The first
+    plan keeps the seed it always had."""
+    key = f"{user_id}|{week}|{day}" + (f"|{plan_seq}" if plan_seq > 1 else "")
+    seed = int(hashlib.md5(key.encode()).hexdigest(), 16) % (2**32)
     return random.Random(seed)
 
 
@@ -544,9 +458,15 @@ _SLOT_SUITABILITY: dict[tuple[str, str], tuple[str, ...]] = {
 }
 
 
+# How often a slot takes one of the patient's regional staples when the category
+# offers one: most of the time, not always, so a week still varies.
+_CUISINE_SHARE = 0.7
+
+
 def _get_meal_foods(pool: list[dict], meal_type: str, cats: list[str],
                     rng: random.Random, config_key: str = "",
-                    used_today: set | None = None) -> list[dict]:
+                    used_today: set | None = None,
+                    favour: frozenset = frozenset()) -> list[dict]:
     """Compose one slot from its category quotas.
 
     `used_today` is a preference, not a filter: a food already eaten today is passed
@@ -562,8 +482,13 @@ def _get_meal_foods(pool: list[dict], meal_type: str, cats: list[str],
     selected: list[dict] = []
 
     def _pick(items):
-        fresh = [f for f in items if f["id"] not in used]
-        return rng.choice(fresh or items)
+        fresh = [f for f in items if f["id"] not in used] or items
+        # The cuisine the patient chose. Only consulted when there is one, so the
+        # random sequence — and every plan — is unchanged for "any".
+        liked = [f for f in fresh if f["id"] in favour] if favour else []
+        if liked and rng.random() < _CUISINE_SHARE:
+            return rng.choice(liked)
+        return rng.choice(fresh)
 
     for cat in cats:
         items = [f for f in candidates if f.get("category") == cat and f not in selected]
@@ -716,7 +641,8 @@ def _top_up_slot(formatted: list[dict], pool: list[dict], meal_type: str,
 
 
 def _build_day(pool: list[dict], is_fasting: bool, agni_type: str,
-               rng: random.Random, meal_budget: dict | None = None) -> dict:
+               rng: random.Random, meal_budget: dict | None = None,
+               favour: frozenset = frozenset()) -> dict:
     if is_fasting:
         config_key = "fasting"
         fasting_pool = [f for f in pool if f.get("category") in
@@ -738,7 +664,7 @@ def _build_day(pool: list[dict], is_fasting: bool, agni_type: str,
     used_today: set[str] = set()
     for meal_name, cats in config.items():
         items = _get_meal_foods(active_pool, meal_name, cats, rng, config_key,
-                                used_today)
+                                used_today, favour)
         formatted = []
         for food in items:
             formatted.append(_format_food(food))
@@ -794,25 +720,25 @@ def generate_diet_plan(user_profile: dict, diet_prefs: dict,
     from services.diet_energy import energy_target
     meal_budget = energy_target(user_profile, diet_prefs)["meal_budget"]
 
+    from services.diet_clinical_notes import cuisine_staples
+    favour = frozenset(cuisine_staples(diet_prefs))
+    plan_seq = int((user_profile.get("diet_log") or {}).get("plan_seq") or 1)
+
     days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday",
                     "Friday", "Saturday", "Sunday"]
     week_themes = ["Foundation", "Rhythm", "Deepen", "Consolidate"]
-    spices = _DOSHA_SPICES.get(dominant_dosha, _DOSHA_SPICES["vata"])
     agni_info = _AGNI_ADJUST.get(agni_type, _AGNI_ADJUST["sama"])
 
     four_week_plan: list[dict] = []
     for week in range(1, 5):
         week_days: list[dict] = []
         for day_idx, day_name in enumerate(days_of_week):
-            rng = _seeded_rng(user_id, week, day_idx)
+            rng = _seeded_rng(user_id, week, day_idx, plan_seq)
             day_pool = list(food_pool)
             rng.shuffle(day_pool)
 
             is_fasting = day_name.lower() in fasting_days
-            day_data = _build_day(day_pool, is_fasting, agni_type, rng, meal_budget)
-
-            # Rotate spices across days
-            day_spice = spices[day_idx % len(spices)]
+            day_data = _build_day(day_pool, is_fasting, agni_type, rng, meal_budget, favour)
 
             week_days.append({
                 "day": day_idx + 1,
@@ -820,7 +746,6 @@ def generate_diet_plan(user_profile: dict, diet_prefs: dict,
                 "is_fasting_day": is_fasting,
                 "meals": day_data["meals"],
                 "daily_macros": day_data["daily_macros"],
-                "spice_of_day": day_spice,
             })
 
         four_week_plan.append({
@@ -845,9 +770,6 @@ def generate_diet_plan(user_profile: dict, diet_prefs: dict,
             "current_season": season or None,
         },
         "four_week_plan": four_week_plan,
-        "meal_timing": _MEAL_TIMING.get(dominant_dosha, _MEAL_TIMING["vata"]),
-        "spice_guide": spices,
-        "ayurvedic_tips": _AYUR_TIPS.get(dominant_dosha, _AYUR_TIPS["vata"]),
         "disclaimer": (
             "This plan uses approximate nutritional values and Ayurvedic food qualities. "
             "Adjust portions to your appetite. Consult a qualified nutritionist or Vaidya "
