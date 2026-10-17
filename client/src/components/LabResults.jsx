@@ -34,9 +34,12 @@ export default function LabResults() {
   const [form, setForm] = useState({ test: '', value: '', taken_on: today(), note: '' })
   const [error, setError] = useState('')
 
+  // Both payloads are guarded: an error body or a cached junk value must reach the
+  // empty state, not throw and take the whole Progress page into the error boundary.
   const { data: catalogue = [] } = useQuery({
     queryKey: ['labs-catalogue'],
     queryFn: () => labsAPI.catalogue().then(r => r.data),
+    select: (d) => (Array.isArray(d) ? d : []),
     staleTime: 24 * 60 * 60 * 1000,
   })
   const { data, isLoading } = useQuery({
@@ -44,8 +47,8 @@ export default function LabResults() {
     queryFn: () => labsAPI.list().then(r => r.data),
     staleTime: 60 * 1000,
   })
-  const latest = data?.latest || []
-  const history = data?.history || []
+  const latest = Array.isArray(data?.latest) ? data.latest : []
+  const history = Array.isArray(data?.history) ? data.history : []
 
   const groups = useMemo(() => {
     const out = {}
