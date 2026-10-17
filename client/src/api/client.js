@@ -279,6 +279,8 @@ export const whatsappAPI = {
 // ── Export ─────────────────────────────────────
 export const exportAPI = {
   pdf: () => API.get('/export/pdf', { responseType: 'blob' }),
+  // day: 'all' (the week), 'today', or 0-6 (Monday-Sunday)
+  routinePdf: (day = 'all') => API.get('/export/routine-pdf', { params: { day }, responseType: 'blob' }),
   csv: () => API.get('/export/csv', { responseType: 'blob' }),
 }
 

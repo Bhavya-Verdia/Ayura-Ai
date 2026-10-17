@@ -7,6 +7,7 @@ import {
   Sun, PersonStanding, Pencil, RotateCcw, Plus, Trash2, Dumbbell, Leaf, Sparkles, Star, Droplets, ShieldCheck, Flame, ArrowRight, Moon, Zap, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain, UtensilsCrossed, Clock, CupSoda, BookOpen, TriangleAlert, BadgeCheck,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
+import RoutinePdfButtons from '../RoutinePdfButtons'
 
 // Earthy day-part palette — warm gold → herbal greens → terracotta → cool
 // evening/night tones, each hue distinct so adjacent timeline slots read apart.
@@ -395,6 +396,7 @@ export function RoutineView({ plan: initialPlan }) {
 
   return (
     <div className="din-root">
+      <RoutinePdfButtons />
       {/* ── Key principle banner ── */}
       {din.key_principle && (
         <m.div className="din-principle-banner" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>

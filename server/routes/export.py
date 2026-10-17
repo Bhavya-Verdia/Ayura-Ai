@@ -526,6 +526,35 @@ async def export_csv(
     )
 
 
+@router.get("/routine-pdf")
+async def export_routine_pdf(
+    day: str = "all",
+    user: UserDocument = Depends(get_current_user),
+    db=Depends(get_mongodb),
+):
+    """The latest Daily Routine as a printable PDF: `day=all` (the week), `today`, or
+    0-6 for Monday-Sunday. Today is the user's own weekday, not the server's."""
+    from fastapi import HTTPException
+    from services.reminder_service import _local_now
+    from services.routine_pdf import build_routine_pdf
+
+    if day not in ("all", "today") and day not in {str(i) for i in range(7)}:
+        raise HTTPException(status_code=422, detail="day must be all, today, or 0-6")
+    doc = await db.plan_history.find_one({"user_id": user.id, "plan_type": "routine"},
+                                         sort=[("generated_at", -1)])
+    plan = ((doc or {}).get("plan_data") or {})
+    plan = plan.get("routine_plan") or plan
+    if not plan.get("weekly_routine"):
+        raise HTTPException(status_code=404, detail="Build your Daily Routine first.")
+    local = _local_now(datetime.now(timezone.utc), getattr(user, "timezone", None))
+    pdf = build_routine_pdf(plan, user.name or "", day, local.weekday(), local)
+    suffix = "week" if day == "all" else ("today" if day == "today" else f"day{int(day) + 1}")
+    return StreamingResponse(
+        iter([pdf]), media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=ayura_daily_routine_{suffix}.pdf"},
+    )
+
+
 @router.get("/pdf")
 async def export_pdf(
     user: UserDocument = Depends(get_current_user),
