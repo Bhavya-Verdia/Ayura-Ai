@@ -17,6 +17,7 @@ from routes.profile import get_current_user
 from schemas.user_schema import UserDocument
 from services.diet_checkin import DIGESTION, HUNGER, PROBLEMS, RED_FLAGS, proposal, week_foods
 from services.diet_log import SLOTS, diet_history, log_key, summarise
+from services.rewards import record_activity
 
 router = APIRouter()
 
@@ -73,6 +74,7 @@ async def log_meal(
     if body.status == "swapped" and body.swapped_with:
         record["swapped_with"] = body.swapped_with.strip()
     await db.meal_logs.replace_one({"_id": key, "user_id": user.id}, record, upsert=True)
+    await record_activity(db, user.id, user.timezone, "meal")
     return {"id": key, "deleted": False, "updated_at": now.isoformat()}
 
 
@@ -160,6 +162,7 @@ async def save_diet_checkin(
             trouble.append(t)
     record["trouble_foods"] = trouble
     await db.diet_checkins.replace_one({"_id": key, "user_id": user.id}, record, upsert=True)
+    await record_activity(db, user.id, user.timezone, "checkin")
 
     added: list[str] = []
     if body.add_allergies:

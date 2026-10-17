@@ -1,4 +1,4 @@
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient, MutationCache } from '@tanstack/react-query'
 import { get, set, del } from 'idb-keyval'
 
 // Single IndexedDB key holding the persisted React Query cache. The cache is NOT
@@ -20,6 +20,11 @@ export const idbPersister = {
 }
 
 export const queryClient = new QueryClient({
+  // Any successful write may have been a log that moves the streak or earns a
+  // badge; refreshing one small query is cheaper than wiring every log site.
+  mutationCache: new MutationCache({
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['rewards'] }) },
+  }),
   defaultOptions: {
     queries: {
       gcTime: 1000 * 60 * 60 * 24 * 7, // Keep cache for 7 days

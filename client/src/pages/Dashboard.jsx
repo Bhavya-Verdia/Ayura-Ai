@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { toast } from 'sonner'
 import { AuthContext } from '../providers/AuthContext'
-import API, { plansAPI, preferencesAPI, progressAPI, profileAPI, authAPI } from '../api/client'
+import API, { plansAPI, preferencesAPI, profileAPI, authAPI } from '../api/client'
 // Lazy-loaded: PlanViewer pulls in all 7 heavy plan-view components (~3k LOC),
 // but only renders when a user opens a generated plan. Keeps the Dashboard
 // landing chunk light.
@@ -17,6 +17,8 @@ import SectionBoundary from '../components/SectionBoundary'
 import EmptyState from '../components/EmptyState'
 import { DOSHA_COLOR } from '../constants/dosha'
 import useLowPowerMode from '../hooks/useLowPowerMode'
+import { useRewards } from '../hooks/useRewards'
+import { BadgeStrip } from '../components/RewardsBadges'
 import { track, EVENTS } from '../lib/analytics'
 import confetti from 'canvas-confetti'
 import {
@@ -87,35 +89,14 @@ function extractPreview(planData, maxLen = 110) {
 }
 
 function StreakCard() {
-  const { data: progress } = useQuery({
-    queryKey: ['progress-summary'],
-    queryFn: () => progressAPI.getSummary().then(r => r.data),
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
-  })
-
-  const sd = progress?.streak_data
-  const streak = sd?.current_streak_days ?? sd?.current_streak ?? 0
-  const checkedInToday = sd?.checked_in_today ?? false
-
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate() - (6 - i))
-    const dateStr = d.toISOString().split('T')[0]
-    const isActive = !!sd?.active_dates?.includes(dateStr)
-    return {
-      label: ['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()],
-      isActive,
-      isToday: i === 6,
-    }
-  })
-
-  const message =
-    streak >= 14 ? 'Incredible streak — keep going!' :
-    streak >= 7  ? 'One full week! Phenomenal.' :
-    streak >= 3  ? 'Great consistency!' :
-    streak >= 1  ? 'Good start — keep it up!' :
-    'Start your streak — log today!'
+  // Streak and badges come from /api/rewards: an active day is any log (meal,
+  // workout, practice, progress, check-in) in the user's own timezone. The card used
+  // to count Progress-page entries only, by UTC date, and drew its dots from
+  // toISOString(), so an Indian evening's log lit tomorrow's dot.
+  const { data } = useRewards({ announce: true })
+  const st = data?.streak
+  const streak = st?.current ?? 0
+  const days = (Array.isArray(st?.last7) ? st.last7 : []).map((d, i, all) => ({ label: d.weekday, isActive: d.active, isToday: i === all.length - 1 }))
 
   return (
     <m.div
@@ -131,7 +112,7 @@ function StreakCard() {
             <span className="dash-streak-num">{streak}</span>
             <span className="dash-streak-unit">day{streak !== 1 ? 's' : ''}</span>
           </div>
-          <p className="dash-streak-sub">{message}</p>
+          <p className="dash-streak-sub">{st?.message || 'Log a meal, a workout, a practice or today\'s progress to start a streak.'}</p>
         </div>
       </div>
       <div className="dash-streak-right">
@@ -144,9 +125,10 @@ function StreakCard() {
           ))}
         </div>
         <Link to="/progress" className="dash-streak-cta">
-          {checkedInToday ? '✓ Logged today' : '↗ Log today'}
+          {st?.today_active ? '✓ Logged today' : '↗ Log today'}
         </Link>
       </div>
+      <BadgeStrip data={data} />
     </m.div>
   )
 }

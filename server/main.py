@@ -23,6 +23,7 @@ from routes import (
     community,
     export,
     labs,
+    rewards,
     feedback,
     notifications,
     plans,
@@ -223,6 +224,7 @@ app.include_router(practice.router, prefix="/api/practice", tags=["Practice Sess
 app.include_router(workouts.router, prefix="/api/workouts", tags=["Workout Logs"])
 app.include_router(meals.router, prefix="/api/meals", tags=["Meal Logs"])
 app.include_router(labs.router, prefix="/api/labs", tags=["Lab Results"])
+app.include_router(rewards.router, prefix="/api/rewards", tags=["Streaks & Badges"])
 
 
 

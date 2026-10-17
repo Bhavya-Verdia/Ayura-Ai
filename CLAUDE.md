@@ -1172,6 +1172,24 @@ never stored with them, so a corrected band applies to old results too.
   kidney diet) is a clinical rule and goes through the Vaidya packet first.
 - No analytics event: a test name alone says what someone is being checked for.
 
+### Streaks and badges
+`services/rewards.py` (`GET /api/rewards`). An active day is a day with a **log** — meal,
+workout, yoga practice, progress or check-in — in the user's own timezone. Opening the
+app is not one: a reward for visiting teaches visiting. **Nothing rewards an outcome or
+an intensity** (weight, calories, fasting, sets): those are the badges that push a
+person past what is good for them, and `test_no_badge_rewards_an_outcome_or_an_intensity`
+greps the catalogue for it.
+
+- Days are the union of `db.activity_days` (written by every logging route via
+  `record_activity`, which never raises) and the logs' own timestamps. Both are needed:
+  meal and workout logs are edited in place, so `updated_at` moves to the day of the edit.
+  A new logging route must call `record_activity` — a test lists the routes.
+- A streak stays alive until the day after a gap, so it does not read as broken at 07:00.
+- Earned badges persist in `db.user_badges` and are never taken back; `users.best_streak`
+  outlives the 400-day lookback. A new badge makes one in-app notification (no email or
+  push) and one combined toast.
+- Every successful mutation invalidates the `['rewards']` query (`queryClient.js`).
+
 ### Prakriti instrument
 The live quiz is **`client/src/pages/DoshaQuiz.jsx`**, its questions in
 `client/src/pages/doshaQuiz/questions.js` — 21 constitutional traits, a

@@ -255,6 +255,12 @@ export const labsAPI = {
   remove:    (id)   => API.delete(`/labs/${id}`),
 }
 
+// ── Streaks & badges ───────────────────────────
+export const rewardsAPI = {
+  get:      () => API.get('/rewards'),
+  markSeen: () => API.post('/rewards/seen'),
+}
+
 // ── Export ─────────────────────────────────────
 export const exportAPI = {
   pdf: () => API.get('/export/pdf', { responseType: 'blob' }),

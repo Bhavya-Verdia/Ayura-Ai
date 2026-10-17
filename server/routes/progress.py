@@ -15,6 +15,7 @@ from database.mongodb import get_mongodb
 from ai.llm_client import llm_client
 from core.cache import cache_manager
 from core.logger import logger
+from services.rewards import record_activity
 
 _SUMMARY_TTL = 14400  # 4 hours
 
@@ -42,6 +43,7 @@ async def log_progress(
         "symptom_updates": req.symptom_updates or {},
     }
     await db.progress_logs.insert_one(log_doc)
+    await record_activity(db, user.id, user.timezone, "progress")
 
     # Invalidate cached summary so next fetch reflects the new entry
     if cache_manager.redis_client:
