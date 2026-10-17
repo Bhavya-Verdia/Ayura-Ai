@@ -34,6 +34,9 @@ from engine.dosha_analyzer import (
 )
 
 _QUIZ = Path(__file__).resolve().parents[2] / "client" / "src" / "pages" / "DoshaQuiz.jsx"
+# The question data moved out of the page into its own module; both are read, so
+# a question authored in either place counts and neither can hide one.
+_QUESTIONS = _QUIZ.parent / "doshaQuiz" / "questions.js"
 
 
 @pytest.fixture(scope="module")
@@ -47,7 +50,8 @@ def quiz_ids() -> set[str]:
     """
     if not _QUIZ.exists():
         pytest.skip(f"quiz page not found at {_QUIZ}")
-    return set(re.findall(r"id:\s*'([a-z_]+)'", _QUIZ.read_text(encoding="utf-8")))
+    text = "".join(p.read_text(encoding="utf-8") for p in (_QUIZ, _QUESTIONS) if p.exists())
+    return set(re.findall(r"id:\s*'([a-z_]+)'", text))
 
 
 def test_every_weighted_trait_is_actually_asked(quiz_ids):
@@ -94,7 +98,7 @@ def test_the_superseded_instrument_is_not_back(quiz_ids):
          / "dosha_profiles.json").read_text(encoding="utf-8"))
     assert "doshaQuizQuestions" not in profiles, (
         "the dead question set is back in dosha_profiles.json — the live instrument "
-        "is client/src/pages/DoshaQuiz.jsx"
+        "is client/src/pages/doshaQuiz/questions.js"
     )
     assert set(profiles) == {"doshas"}
 

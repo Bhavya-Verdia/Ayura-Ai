@@ -31,22 +31,19 @@ _FORM_ONLY = {
 
 
 def _form_fields() -> dict[str, set[str]]:
+    """The modal's switch names the component each feature renders
+    (`case 'gym': return <GymFields`); that component's file is the form."""
     src = _MODAL.read_text()
     body = src[src.index("const renderFormFields"):]
-    # `case 'remedies':` falls through to `case 'medicines':`, so both share a block.
-    parts = re.split(r"\n\s*case '([a-z]+)':", body)
+    # `case 'remedies':` falls through to `case 'medicines':`, so both share a form.
     fields: dict[str, set[str]] = {}
-    pending: list[str] = []
-    for i in range(1, len(parts), 2):
-        name, block = parts[i], parts[i + 1]
-        pending.append(name)
+    for m in re.finditer(r"((?:\s*case '[a-z]+':)+)\s*return <(\w+)", body):
+        block = (_MODAL.parent / "preferences" / f"{m.group(2)}.jsx").read_text()
         found = set(re.findall(r'name="([a-z_]+)"', block))
         found |= set(re.findall(r"handleToggle\('([a-z_]+)'", block))
         found |= set(re.findall(r"form\.([a-z_]+)\b", block))
-        if found:
-            for feature in pending:
-                fields[feature] = found
-            pending = []
+        for feature in re.findall(r"case '([a-z]+)'", m.group(1)):
+            fields[feature] = found
     return fields
 
 

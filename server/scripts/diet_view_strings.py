@@ -1,4 +1,4 @@
-"""The diet screen's own strings, read out of `DietView.jsx`.
+"""The diet screen's own strings, read out of `DietView.jsx` and `planViews/diet/`.
 
 `t('diet.key', 'English default', {...})` is the only way a string reaches that
 screen, so the JSX is the source of truth for the English: this reads every call,
@@ -16,6 +16,8 @@ from pathlib import Path
 
 CLIENT = Path(__file__).resolve().parents[2] / "client"
 JSX = CLIENT / "src" / "components" / "planViews" / "DietView.jsx"
+# The screen is split into modules under planViews/diet/; every one is read.
+JSX_PARTS = (JSX, *sorted((JSX.parent / "diet").glob("*.js*")))
 LOCALES = CLIENT / "src" / "locales"
 
 _CALL = re.compile(r"""t\(\s*'diet\.([A-Za-z0-9_]+)'\s*,\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")""")
@@ -36,8 +38,7 @@ def placeholders(text: str) -> set:
 
 
 def extract() -> dict:
-    src = JSX.read_text()
-    src = src[: src.index("// ── RemedyView")]
+    src = "\n".join(p.read_text() for p in JSX_PARTS)
     out = {}
     for m in _CALL.finditer(src):
         key, a, b = m.group(1), m.group(2), m.group(3)

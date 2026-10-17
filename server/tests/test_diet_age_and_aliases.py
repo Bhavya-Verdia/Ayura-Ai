@@ -217,8 +217,9 @@ def test_a_thin_floor_is_reported_as_a_thin_floor():
 def test_the_view_renders_both_kinds_of_partial_check():
     from pathlib import Path
 
-    jsx = (Path(__file__).resolve().parents[2] / "client" / "src" / "components"
-           / "planViews" / "DietView.jsx").read_text(encoding="utf-8")
+    views = Path(__file__).resolve().parents[2] / "client" / "src" / "components" / "planViews"
+    jsx = "".join(p.read_text(encoding="utf-8")
+                  for p in (views / "DietView.jsx", *sorted((views / "diet").glob("*.js*"))))
     assert "conditions_screened_by_terms_only" in jsx
     assert "conditions_without_food_floor" in jsx
 
