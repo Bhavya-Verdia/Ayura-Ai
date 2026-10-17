@@ -451,7 +451,7 @@ export default function Settings() {
                 <img src={avatarUrl} alt="Avatar" className="settings-avatar-img" loading="lazy" decoding="async" />
               ) : (
                 <div className="settings-avatar-placeholder">
-                  {profile?.name?.charAt(0)?.toUpperCase() || '?'}
+                  {profile?.name ? profile.name.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
                 </div>
               )}
               <label className="settings-avatar-btn" title="Upload avatar">

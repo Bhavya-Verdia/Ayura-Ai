@@ -147,10 +147,14 @@
   gap: 0.75rem;
 }
 
+/* Grid, not flex: label and desc are sibling spans, and as flex items they sat
+   side by side, so the label wrapped a word per line ("Slim / & / light") and
+   each card's description started at a different x. Icon spans both rows. */
 .da-trait-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  column-gap: 1rem;
   background: var(--card-bg, rgba(255,255,255,0.04));
   border: 1px solid var(--dash-edge, rgba(255,255,255,0.08));
   border-radius: 16px;
@@ -187,6 +191,7 @@
   line-height: 1;
   flex-shrink: 0;
   margin-top: 2px;
+  grid-row: 1 / span 2;
 }
 .da-trait-card.selected .da-trait-icon {
   background: var(--ayura-teal);
@@ -196,6 +201,7 @@
 
 .da-trait-label {
   display: block;
+  padding-right: 1.25rem; /* clear of the absolute ✓ */
   font-size: 1rem;
   font-weight: 700;
   color: var(--text-color, #f1f5f9);

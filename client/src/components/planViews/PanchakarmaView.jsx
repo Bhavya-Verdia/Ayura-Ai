@@ -383,7 +383,7 @@ export function PanchakarmaView({ plan }) {
         </div>
         <div className="pk-info-card">
           <div className="pk-info-label"><Sun size={12} /> Duration</div>
-          <div className="pk-info-value">{ph.total_days || '—'} days</div>
+          <div className="pk-info-value">{ph.total_days ? `${ph.total_days} ${ph.total_days === 1 ? 'day' : 'days'}` : '—'}</div>
           <div className="pk-info-sub">{ph.purvakarma_days}P · {ph.pradhana_karma_days}M · {ph.paschat_karma_days}R</div>
         </div>
       </div>
@@ -441,7 +441,7 @@ export function PanchakarmaView({ plan }) {
             <React.Fragment key={phase.key}>
               <div className="pk-phase-block">
                 <div className="pk-phase-icon-wrap"><Icon size={15} /></div>
-                <div className="pk-phase-days">{phase.days} days</div>
+                <div className="pk-phase-days">{phase.days} {phase.days === 1 ? 'day' : 'days'}</div>
                 <div className="pk-phase-name">{phase.label}</div>
                 <div className="pk-phase-sub">{phase.sub}</div>
               </div>
@@ -714,7 +714,7 @@ export function PanchakarmaView({ plan }) {
         <PkSection
           icon={Calendar}
           title="Daily Schedule"
-          summary={`${sch.length} days`}
+          summary={`${sch.length} ${sch.length === 1 ? 'day' : 'days'}`}
           {...sec('schedule')}
         >
           <div className="pk-schedule">

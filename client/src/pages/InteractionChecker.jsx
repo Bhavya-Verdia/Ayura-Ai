@@ -103,14 +103,14 @@ export default function InteractionChecker() {
             <ChipInput
               label="Your medications"
               hint="Prefilled from your profile — edit as needed. Allopathic drug names work best (e.g. metformin, warfarin)."
-              placeholder="Add a medication and press Enter"
+              placeholder="Add a medication"
               items={medications}
               setItems={setMedications}
             />
             <ChipInput
               label="Herb or formulation to check"
               hint="e.g. ashwagandha, turmeric, fenugreek, triphala"
-              placeholder="Add an herb and press Enter"
+              placeholder="Add an herb"
               items={herbs}
               setItems={setHerbs}
             />

@@ -81,6 +81,24 @@
   padding-bottom: 0.5rem;
   margin-bottom: 0.5rem;
 }
+/* On a phone the pickers wrapped: Week 4 and Sunday dropped onto a second row,
+   doubling the height of a bar that rides over the content. One row, equal
+   columns; a long week theme wraps inside its own tab instead. */
+@media (max-width: 560px) {
+  /* Parent-qualified: the base tab rules come later in this file and would
+     otherwise win at equal specificity. */
+  .plan-viewer-container .yoga-week-tabs,
+  .plan-viewer-container .gym-week-tabs,
+  .plan-viewer-container .din-day-tabs { flex-wrap: nowrap; gap: 4px; }
+  .yoga-week-tabs .yoga-week-tab,
+  .gym-week-tabs .gym-week-tab,
+  .din-day-tabs .din-day-tab { flex: 1 1 0; min-width: 0; padding-left: 0.2rem; padding-right: 0.2rem; }
+  .yoga-week-tab .yoga-tab-theme,
+  .gym-week-tab .gym-tab-theme { font-size: 0.62rem; line-height: 1.2; text-align: center; }
+  .yoga-week-tab .yoga-tab-num,
+  .gym-week-tab .gym-tab-num { font-size: 0.68rem; letter-spacing: 0.02em; white-space: nowrap; }
+  .din-day-tabs .din-day-tab { font-size: 0.74rem; }
+}
 /* Sticky needs a non-visible overflow ancestor to be absent; these grids are
    the only ancestors that could clip, and none of them scroll. */
 @media (prefers-reduced-motion: reduce) {
@@ -4487,19 +4505,23 @@
   padding: 0.55rem 0.7rem;
   font-size: 0.75rem;
   line-height: 1.45;
-  /* MUST be set. These cards have a FIXED pale background in both themes, but
-     previously declared no text colour — so the body inherited the theme ink,
-     which in dark mode is the cream --ayura-ink (#f7f1e6). Cream on #e8f6ef is
-     1.01:1: the exertion-safety guidance ("signs of over-exercise") rendered as
-     an empty coloured box in the default theme. The labels below survived only
-     because they set their own colour. */
-  color: #23301f;
+  /* Every theme sets its own text colour here. When these cards had one fixed
+     pale background and no colour, dark mode's cream ink sat on #e8f6ef at
+     1.01:1 and the over-exercise warning rendered as an empty box. They were then
+     given dark ink, which worked but left two light-mode cards glaring out of the
+     dark page. Dark (the default) is now tinted; the pale pair is light-only. */
+  color: var(--ayura-text);
 }
-.gym-vyayama-card.adequate { background: #e8f6ef; border: 1px solid #b8e2cd; }
-.gym-vyayama-card.over { background: #fdecea; border: 1px solid #e9a8b0; color: #3a2020; }
+.gym-vyayama-card.adequate { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.28); }
+.gym-vyayama-card.over { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.32); }
 .gym-vyayama-label { font-weight: 700; margin-bottom: 0.2rem; }
-.gym-vyayama-card.adequate .gym-vyayama-label { color: #1e7d52; }
-.gym-vyayama-card.over .gym-vyayama-label { color: #c0392b; }
+.gym-vyayama-card.adequate .gym-vyayama-label { color: #6ee7a8; }
+.gym-vyayama-card.over .gym-vyayama-label { color: #fca5a5; }
+[data-theme='light'] .gym-vyayama-card { color: #23301f; }
+[data-theme='light'] .gym-vyayama-card.adequate { background: #e8f6ef; border-color: #b8e2cd; }
+[data-theme='light'] .gym-vyayama-card.over { background: #fdecea; border-color: #e9a8b0; color: #3a2020; }
+[data-theme='light'] .gym-vyayama-card.adequate .gym-vyayama-label { color: #1e7d52; }
+[data-theme='light'] .gym-vyayama-card.over .gym-vyayama-label { color: #c0392b; }
 .gym-vyayama-bala {
   font-size: 0.75rem;
   font-style: italic;
