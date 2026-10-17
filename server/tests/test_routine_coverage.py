@@ -445,3 +445,31 @@ def test_two_rebuilds_in_one_second_get_different_plan_ids():
     prefs = {"routine": {"wake_preference": "natural"}, "diet": {}}
     ids = {generate_routine_plan(profile, prefs)["plan_id"] for _ in range(5)}
     assert len(ids) == 5
+
+
+def test_no_note_names_a_slot_the_day_left_out():
+    # The user's own exercise replaces the Evening Movement, and "off" removes a
+    # slot. Both were removed after the conflict notes were written, so the
+    # cricket said it overlapped an Evening Movement that was no longer there.
+    from services.routine_engine import generate_routine_plan
+    profile = {"id": "u1", "age": 34, "gender": "female", "dominant_dosha": "pitta",
+               "medical_history": ["hypertension"]}
+    item = {"id": "custom_abcd1234", "title": "Cricket practice", "time": "17:30",
+            "duration_minutes": 60, "category": "exercise", "days": ["tuesday"]}
+    plan = generate_routine_plan(profile, {"routine": {
+        "wake_preference": "natural", "occupation_type": "sedentary",
+        "custom_items": [item], "custom_times": {"midday_rest": "off"}}, "diet": {}})
+    for day in plan["weekly_routine"]:
+        present = {s["activity"] for s in day["timeline"]}
+        ids = {s.get("id") for s in day["timeline"]}
+        assert "midday_rest" not in ids
+        for s in day["timeline"]:
+            for note in s.get("schedule_notes") or ():
+                if note.startswith("Overlaps with "):
+                    other = note[len("Overlaps with "):].split(" at ")[0]
+                    assert other in present, (day["day_name"], s["activity"], note)
+    tue = plan["weekly_routine"][1]["timeline"]
+    assert not any(s.get("id") == "evening_ex" for s in tue)
+    cricket = next(s for s in tue if s.get("custom"))
+    assert not any("Evening Movement" in n for n in cricket["schedule_notes"])
+    assert any("talk through" in n for n in cricket["schedule_notes"])
