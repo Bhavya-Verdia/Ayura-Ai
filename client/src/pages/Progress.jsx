@@ -10,6 +10,7 @@ import {
   Laugh, Smile, Meh, Frown, Annoyed,
 } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
+import LabResults from '../components/LabResults'
 import './Progress.css'
 
 const MOOD_OPTIONS = [
@@ -328,6 +329,10 @@ export default function Progress() {
               )}
             </>
           )}
+
+          {/* Lab results load on their own, so a progress-summary failure does not
+              hide them and they do not wait on it. */}
+          <LabResults />
         </div>
       </div>
     </>

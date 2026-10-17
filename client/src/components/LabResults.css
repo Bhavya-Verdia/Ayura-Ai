@@ -1,0 +1,105 @@
+/* Lab results section on the Progress page. Status colours: normal sage, borderline
+   amber, low/high rose, unclassified muted. Urgent cards get a rose edge as well as
+   their text, so the state is not carried by colour alone. */
+.lab-section {
+  margin-top: 32px;
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 22px 20px;
+}
+[data-theme='light'] .lab-section { background: rgba(255,255,255,0.7); }
+
+.lab-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.lab-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  display: flex; align-items: center; gap: 8px;
+  margin: 0;
+}
+.lab-add-btn { display: inline-flex; align-items: center; gap: 6px; }
+.lab-sub { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5; margin: 8px 0 16px; }
+
+.lab-form { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; }
+.lab-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .lab-form-row { grid-template-columns: 1fr; } }
+.lab-unit-hint { font-size: 0.78rem; color: var(--text-secondary); margin: -6px 0 0; }
+.lab-error { color: var(--ayura-rose); font-size: 0.85rem; margin: 0; }
+.lab-empty { color: var(--text-secondary); font-size: 0.88rem; margin: 0; }
+
+.lab-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.lab-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.lab-card.is-urgent {
+  border-color: color-mix(in srgb, var(--ayura-rose) 60%, transparent);
+  border-left-width: 4px;
+}
+.lab-card-main { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.lab-card-name { font-weight: 600; color: var(--text-primary); }
+.lab-card-date { font-size: 0.76rem; color: var(--text-secondary); margin-top: 2px; }
+.lab-card-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.lab-card-val { font-family: var(--font-display); font-size: 1.15rem; color: var(--text-primary); white-space: nowrap; }
+.lab-card-val span { font-family: var(--font-ui); font-size: 0.75rem; color: var(--text-secondary); }
+.lab-card-reading {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  display: flex; align-items: flex-start; gap: 6px;
+}
+.lab-card-advice {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex; align-items: flex-start; gap: 6px;
+}
+.lab-card-advice.is-urgent { color: var(--ayura-rose); font-weight: 600; }
+.lab-card-advice svg { flex-shrink: 0; margin-top: 2px; }
+[data-theme='light'] .lab-card-advice.is-urgent { color: #b42318; }
+
+.lab-pill {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+.lab-pill--normal { color: var(--ayura-sage, #6fbf8a); }
+.lab-pill--borderline { color: var(--ayura-amber); }
+.lab-pill--low, .lab-pill--high { color: var(--ayura-rose); }
+.lab-pill--unclassified { color: var(--text-secondary); }
+[data-theme='light'] .lab-pill--normal { color: #1e7d52; }
+[data-theme='light'] .lab-pill--borderline { color: #92400e; }
+[data-theme='light'] .lab-pill--low, [data-theme='light'] .lab-pill--high { color: #b42318; }
+
+.lab-toggle {
+  margin-top: 8px;
+  background: none; border: none; padding: 0;
+  color: var(--text-secondary); font-size: 0.78rem; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.lab-history { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.lab-history-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding: 4px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+.lab-history-val { color: var(--text-primary); white-space: nowrap; }
+.lab-icon-btn {
+  background: none; border: none; cursor: pointer; padding: 6px;
+  color: var(--text-secondary); border-radius: 8px;
+  min-width: 32px; min-height: 32px;
+}
+.lab-icon-btn:hover { color: var(--ayura-rose); }

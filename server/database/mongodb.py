@@ -118,6 +118,7 @@ async def _create_indexes(db):
         await db.workout_logs.create_index([("user_id", 1), ("plan_id", 1)])
         await db.workout_logs.create_index([("user_id", 1), ("updated_at", -1)])
         await db.meal_logs.create_index([("user_id", 1), ("plan_id", 1)])
+        await db.lab_results.create_index([("user_id", 1), ("taken_on", -1)])
         await db.meal_logs.create_index([("user_id", 1), ("updated_at", -1)])
         await db.diet_checkins.create_index([("user_id", 1), ("plan_id", 1)])
         await db.diet_checkins.create_index([("user_id", 1), ("updated_at", -1)])

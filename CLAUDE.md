@@ -1154,6 +1154,24 @@ which endpoint a user came through decided how much of the safety model applied.
 
 `routes/plans._generate_feature_via_engine` is the single entry point both the holistic and per-feature paths use — it runs the engine + enricher and applies pregnancy/safety gating. The per-feature endpoints (`POST /api/plans/{gym,yoga,diet,routine,panchakarma,remedies,medicines}`) return the plan **synchronously**. The holistic `POST /api/plans/generate` is offloaded to an **ARQ background worker** (`server/worker.py`) via Redis and returns a `job_id` to poll at `/api/plans/job/{jobId}`; if Redis/ARQ is unavailable it falls back to running the job in-process via FastAPI `BackgroundTasks`.
 
+### Lab results
+`services/lab_results.py` is the only place a test is defined: unit, plausible bounds
+(outside them is a typo and is refused — HbA1c 48 is mmol/mol typed as %), published
+bands with their source, and the values that mean "contact a doctor today" (potassium
+≥ 6.0, BP ≥ 180/110, …). Results live in `db.lab_results` (`routes/labs.py`, the
+Progress page's `LabResults.jsx`) and are read against the bands **on the way out**,
+never stored with them, so a corrected band applies to old results too.
+
+- Labels never diagnose: "in the range used to diagnose diabetes", not "you have
+  diabetes". A test asserts no band label starts with "you".
+- `other`/unanswered sex takes the **stricter** limit; pregnancy moves haemoglobin and
+  leaves TSH unclassified (trimester ranges not authored) rather than judging it
+  against the non-pregnant range.
+- They go into the Vaidya PDF (latest per test, urgent first, with sources).
+- **No plan engine reads them yet.** Letting a value change a plan (potassium in a
+  kidney diet) is a clinical rule and goes through the Vaidya packet first.
+- No analytics event: a test name alone says what someone is being checked for.
+
 ### Prakriti instrument
 The live quiz is **`client/src/pages/DoshaQuiz.jsx`**, its questions in
 `client/src/pages/doshaQuiz/questions.js` — 21 constitutional traits, a
