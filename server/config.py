@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     # plan generation and chat turn is a billed LLM call.
     DAILY_PLAN_QUOTA: int = 40        # plan generations per user per UTC day
     DAILY_CHAT_QUOTA: int = 200       # chat turns per user per UTC day
+    DAILY_LAB_READ_QUOTA: int = 10       # lab report uploads read by the vision/text model
     QUOTA_ENABLED: bool = True
     LOGIN_MAX_FAILED_ATTEMPTS: int = 8
     LOGIN_LOCKOUT_MINUTES: int = 15

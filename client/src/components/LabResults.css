@@ -103,3 +103,34 @@
   min-width: 32px; min-height: 32px;
 }
 .lab-icon-btn:hover { color: var(--ayura-rose); }
+
+/* Report upload and its review step */
+.lab-upload { margin-bottom: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.lab-review {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--ayura-amber) 35%, var(--border-subtle));
+  border-radius: 14px;
+  padding: 14px;
+  margin-top: 4px;
+}
+.lab-review-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+.lab-review-date { max-width: 220px; margin-bottom: 12px; }
+.lab-review-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.lab-review-row {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+  padding: 10px; border: 1px solid var(--border-subtle); border-radius: 10px;
+}
+.lab-review-row.is-off .lab-review-main { opacity: 0.6; }
+.lab-review-check input { width: 18px; height: 18px; }
+.lab-review-name { font-weight: 600; color: var(--text-primary); font-size: 0.88rem; }
+.lab-review-printed { font-size: 0.76rem; color: var(--text-secondary); margin-top: 2px; }
+.lab-review-issue {
+  font-size: 0.76rem; color: var(--ayura-amber); margin-top: 4px;
+  display: flex; gap: 4px; align-items: flex-start;
+}
+[data-theme='light'] .lab-review-issue { color: #92400e; }
+.lab-review-value { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.lab-review-value input { width: 88px; text-align: right; }
+.lab-review-value span { font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap; }
+.lab-review-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.lab-review-actions .btn { display: inline-flex; align-items: center; gap: 6px; }

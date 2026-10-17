@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { FlaskConical, Plus, X, Trash2, ChevronDown, ChevronUp, TriangleAlert } from 'lucide-react'
 import { labsAPI } from '../api/client'
+import LabReportUpload from './LabReportUpload'
 import './LabResults.css'
 
 // Lab results the patient enters from their report. The band each value is read
@@ -96,9 +97,11 @@ export default function LabResults() {
         </button>
       </div>
       <p className="lab-sub">
-        Copy results from your lab report. Each one is shown against its published range and goes
-        into the summary you can share with your Vaidya. They do not change your plans.
+        Upload your lab report or add results by hand. Each one is shown against its published range
+        and goes into the summary you can share with your Vaidya. They do not change your plans.
       </p>
+
+      {!adding && <LabReportUpload />}
 
       {adding && (
         <form className="lab-form" onSubmit={submit}>
