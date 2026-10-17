@@ -16,6 +16,7 @@ from database.mongodb import get_mongodb
 from ai.llm_client import llm_client
 from services.chat_service import apply_chat_side_effects
 from services.notification_service import create_and_deliver_notification
+from services.rewards import record_activity
 
 router = APIRouter()
 
@@ -70,6 +71,7 @@ async def submit_weekly_checkin(req: WeeklyCheckinRequest, background_tasks: Bac
         "sleep": req.sleep, "stress": req.stress, "adherence": req.adherence,
         "symptoms": req.symptoms, "what_felt_good": req.what_felt_good, "timestamp": now,
     })
+    await record_activity(db, user.id, user.timezone, "checkin")
 
     # 2. Record reported symptoms (so plan regeneration reflects them)
     if req.symptoms:
