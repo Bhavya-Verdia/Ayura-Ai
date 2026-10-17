@@ -101,6 +101,7 @@ async def delete_account(
     await db.lab_results.delete_many({"user_id": user_id})
     await db.activity_days.delete_many({"user_id": user_id})
     await db.user_badges.delete_many({"user_id": user_id})
+    await db.whatsapp_verifications.delete_many({"user_id": user_id})
     # Feedback is free text written by the user and keyed to them.
     await db.feedback.delete_many({"user_id": user_id})
     # OTP records are keyed by phone number, not user_id

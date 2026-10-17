@@ -261,6 +261,15 @@ export const rewardsAPI = {
   markSeen: () => API.post('/rewards/seen'),
 }
 
+// ── WhatsApp ───────────────────────────────────
+export const whatsappAPI = {
+  status:   ()     => API.get('/whatsapp/status'),
+  start:    (data) => API.post('/whatsapp/start', data),
+  verify:   (code) => API.post('/whatsapp/verify', { code }),
+  settings: (data) => API.put('/whatsapp/settings', data),
+  stop:     ()     => API.delete('/whatsapp'),
+}
+
 // ── Export ─────────────────────────────────────
 export const exportAPI = {
   pdf: () => API.get('/export/pdf', { responseType: 'blob' }),
