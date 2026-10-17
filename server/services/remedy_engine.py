@@ -11,6 +11,7 @@ from engine.contraindication_tokens import (
     contraindication_hit,
     usage_notes,
 )
+from services.plan_id import new_plan_id
 
 
 # The onboarding vocabulary and the formulary's `conditions` vocabulary were
@@ -847,7 +848,7 @@ def _taste_notices(remedy: dict, preferences: list[str]) -> list[str]:
 
 
 def build_remedy_plan(filtered_remedies: list, user_profile: dict, symptom_input: dict) -> dict:
-    plan_id = f"remedy_{user_profile.get('id', 'usr')}_{int(datetime.now(timezone.utc).timestamp())}"
+    plan_id = new_plan_id("remedy", user_profile.get('id', 'usr'))
     dominant_dosha = user_profile.get("dominant_dosha", "vata").lower()
 
     symptoms_addressed = []
@@ -1663,7 +1664,7 @@ def generate_medicines_plan(
     ayurvedic_remedies: list,
     plan_type: str = "clinical_medicine",
 ) -> dict:
-    plan_id = f"medicines_{user_profile.get('id', 'usr')}_{int(datetime.now(timezone.utc).timestamp())}"
+    plan_id = new_plan_id("medicines", user_profile.get('id', 'usr'))
 
     # ── Profile extraction ──────────────────────────────────────────────────
     dominant_dosha  = (user_profile.get("dominant_dosha") or "vata").lower()

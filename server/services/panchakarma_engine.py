@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from engine.condition_vocab import condition_matches_term, term_in_condition
+from services.plan_id import new_plan_id
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 THERAPIES_PATH = BASE_DIR / "data" / "knowledge_base" / "panchakarma_therapies.json"
@@ -3730,7 +3731,7 @@ def generate_panchakarma_plan(user_profile: dict, pk_prefs: dict, pk_therapies_d
         safety_warnings.insert(0, "ALLERGY: " + allergen_review["notice"])
 
     return {
-        "plan_id": f"pk_{user_profile.get('id', 'unknown')}_{int(datetime.now(timezone.utc).timestamp())}",
+        "plan_id": new_plan_id("pk", user_profile.get('id', 'unknown')),
         "generated_at": datetime.now(timezone.utc).isoformat(),
 
         # ── Classical clinical decisions (new) ────────────────────────────────

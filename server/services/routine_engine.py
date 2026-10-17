@@ -14,12 +14,12 @@ woken at 7:30 AM with rituals scheduled at 6:15, and a Kapha adult was given
 6½ hours in bed. 23% of all days in a 600-plan sweep ran backwards.
 """
 import re
-import uuid
 
 from datetime import datetime, timezone
 
 from engine.condition_vocab import normalize_condition
 from engine.movement_risk import condition_risk_tags, medication_classes
+from services.plan_id import new_plan_id
 
 # ── Season → Ritucharya metadata ──────────────────────────────────────────────
 _SEASON_MAP = {
@@ -2064,7 +2064,7 @@ def generate_routine_plan(user_profile: dict, prefs: dict, diet_foods_db=None,
     return {
         # The id is the plan_history _id. A time edit rebuilds in milliseconds with no
         # model call, so two edits inside one second collided on a seconds-only id.
-        "plan_id":      f"routine_{user_profile.get('id','x')}_{int(datetime.now(timezone.utc).timestamp())}_{uuid.uuid4().hex[:8]}",
+        "plan_id":      new_plan_id("routine", user_profile.get('id', 'x')),
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "user_summary": {
             "name":           name,
