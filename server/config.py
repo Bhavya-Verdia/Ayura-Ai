@@ -258,6 +258,19 @@ class Settings(BaseSettings):
     TWILIO_AUTH_TOKEN: Optional[str] = None
     TWILIO_PHONE_NUMBER: Optional[str] = None
 
+    # --- WhatsApp (Meta WhatsApp Cloud API) ---
+    # Off until a Meta Business account, a WhatsApp number and the three templates
+    # in docs/whatsapp_templates.md are approved. Outside production with no token,
+    # messages are logged instead of sent (services/whatsapp_service.py).
+    WHATSAPP_ENABLED: bool = False
+    WHATSAPP_ACCESS_TOKEN: Optional[str] = None
+    WHATSAPP_PHONE_NUMBER_ID: Optional[str] = None
+    WHATSAPP_API_VERSION: str = "v21.0"
+    WHATSAPP_TEMPLATE_LANG: str = "en"
+    WHATSAPP_TEMPLATE_OTP: str = "ayura_verify_code"
+    WHATSAPP_TEMPLATE_REMINDER: str = "ayura_reminder"
+    WHATSAPP_TEMPLATE_DAILY: str = "ayura_daily_plan"
+
     # --- URLs ---
     FRONTEND_URL: str = "http://localhost:5173"
     FRONTEND_URLS: Optional[str] = None

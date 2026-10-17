@@ -79,6 +79,7 @@ async def dispatch_due_reminders(ctx):
                 title=reminder.get("title", "Reminder"),
                 body=f"Time for your {reminder.get('reminder_type', 'wellness')} activity: {reminder.get('title', '')}",
                 notif_type="reminder",
+                whatsapp=True,
             )
             await db.reminders.update_one(
                 {"_id": reminder["_id"]},
@@ -86,6 +87,20 @@ async def dispatch_due_reminders(ctx):
             )
         except Exception as e:
             logger.error(f"Failed to dispatch reminder {reminder.get('_id')}: {e}")
+
+
+async def send_daily_whatsapp(ctx):
+    """Every minute: the morning WhatsApp message for users whose chosen local time
+    it is. Does nothing unless WhatsApp is enabled (services/whatsapp_service.py)."""
+    from database.mongodb import get_mongodb
+    from services.whatsapp_service import send_daily_messages
+
+    try:
+        sent = await send_daily_messages(get_mongodb())
+        if sent:
+            logger.info(f"Daily WhatsApp messages sent: {sent}")
+    except Exception as e:
+        logger.error(f"Daily WhatsApp messages failed: {e}")
 
 
 async def notify_finished_gym_blocks(ctx):
@@ -117,9 +132,10 @@ async def notify_finished_diet_plans(ctx):
 class WorkerSettings:
     """Configuration for the ARQ worker process."""
     functions = [_run_plan_job, dispatch_due_reminders, notify_finished_gym_blocks,
-                 notify_finished_diet_plans]
+                 notify_finished_diet_plans, send_daily_whatsapp]
     cron_jobs = [
         cron(dispatch_due_reminders, minute=set(range(60))),
+        cron(send_daily_whatsapp, minute=set(range(60))),
         # 03:30 UTC is 09:00 in India, where the users are.
         cron(notify_finished_gym_blocks, hour={3}, minute={30}),
         cron(notify_finished_diet_plans, hour={3}, minute={35}),

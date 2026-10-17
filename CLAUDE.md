@@ -1190,6 +1190,24 @@ greps the catalogue for it.
   push) and one combined toast.
 - Every successful mutation invalidates the `['rewards']` query (`queryClient.js`).
 
+### WhatsApp
+`services/whatsapp_service.py` + `routes/whatsapp.py`, Meta WhatsApp Cloud API, three
+approved **templates** (text and setup in `docs/whatsapp_templates.md`). Off until
+`WHATSAPP_ENABLED=true` with a token and phone-number id; outside production with no
+token it **logs** instead of sending, so the flow runs locally.
+
+- A number is used only after its owner enters the code sent to it (hashed, 10 min,
+  5 tries, 1/min and 5/day). Without that step anyone could aim reminders at someone
+  else's phone. `UserProfileUpdate` must never accept `whatsapp` — a test holds it.
+- **Each message is billed**, so a notification reaches WhatsApp only when its caller
+  passes `whatsapp=True`. Today that is the reminder dispatcher alone (a test greps for
+  call sites); the morning message is its own per-minute cron (`send_daily_whatsapp`),
+  marked sent *before* sending so a double-fire or a failure never repeats it.
+- The morning message counts the diet plan's day the way `DietView` does (weeks from
+  `generated_at`, day by real weekday) and says nothing after day 28.
+- Template parameters may not contain newlines, tabs or 5+ spaces, or Meta rejects the
+  whole message — `clean_param`.
+
 ### Prakriti instrument
 The live quiz is **`client/src/pages/DoshaQuiz.jsx`**, its questions in
 `client/src/pages/doshaQuiz/questions.js` — 21 constitutional traits, a
