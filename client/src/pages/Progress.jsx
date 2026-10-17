@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
@@ -10,6 +10,10 @@ import {
   Laugh, Smile, Meh, Frown, Annoyed,
 } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
+import LabResults from '../components/LabResults'
+import { BadgeGrid } from '../components/RewardsBadges'
+import { useRewards } from '../hooks/useRewards'
+import { useLocation } from 'react-router-dom'
 import './Progress.css'
 
 const MOOD_OPTIONS = [
@@ -135,8 +139,25 @@ export default function Progress() {
     logMutation.mutate(payload)
   }
 
+  const { data: rewards } = useRewards({ announce: true })
+  const location = useLocation()
+  // "All badges →" on the dashboard links here with #badges; the app shell scrolls
+  // an inner container, so the browser's own hash jump does not reach it.
+  const jumpReady = location.hash === '#badges' && Boolean(rewards) && !isLoading
+  useEffect(() => {
+    if (!jumpReady) return
+    // After the summary has rendered: jumping earlier lands short, because the
+    // sections above grow when their data arrives.
+    const t = setTimeout(() => {
+      document.getElementById('badges')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 350)
+    return () => clearTimeout(t)
+  }, [jumpReady])
+
   const trend = TREND_CONFIG[summary?.trend] || TREND_CONFIG.insufficient_data
-  const streak = summary?.streak_data?.current_streak_days ?? 0
+  // Any log counts, in the user's timezone (services/rewards.py) — the same number
+  // the dashboard shows. summary.streak_data counted Progress entries only.
+  const streak = rewards?.streak?.current ?? summary?.streak_data?.current_streak_days ?? 0
   const totalEntries = summary?.streak_data?.total_entries ?? summary?.current?.total_entries ?? 0
   const weight = summary?.current?.weight_kg
   const insight = summary?.weekly_insight
@@ -280,7 +301,7 @@ export default function Progress() {
                 />
               ) : (
                 <div className="prg-stat-row">
-                  <StatCard icon={<Flame size={20} strokeWidth={2} />} label="Day Streak" value={streak > 0 ? `${streak}d` : '0d'} sub="consecutive days logged" color="var(--ayura-amber)" />
+                  <StatCard icon={<Flame size={20} strokeWidth={2} />} label="Day Streak" value={streak > 0 ? `${streak}d` : '0d'} sub="days in a row with a log" color="var(--ayura-amber)" />
                   <StatCard icon={<ClipboardList size={20} strokeWidth={2} />} label="Total Entries" value={totalEntries} sub="logs recorded" color="var(--primary-light)" />
                   <StatCard icon={<Scale size={20} strokeWidth={2} />} label="Current Weight" value={weight ? `${weight} kg` : '—'} sub={summary.current?.bmi_category || ''} color="var(--ayura-violet)" />
                   <StatCard icon={<trend.Icon size={20} strokeWidth={2} />} label="Weight Trend" value={trend.label} color={trend.color} />
@@ -328,6 +349,12 @@ export default function Progress() {
               )}
             </>
           )}
+
+          {/* Lab results load on their own, so a progress-summary failure does not
+              hide them and they do not wait on it. */}
+          <LabResults />
+
+          <BadgeGrid data={rewards} />
         </div>
       </div>
     </>

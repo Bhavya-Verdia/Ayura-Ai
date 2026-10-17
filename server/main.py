@@ -22,6 +22,9 @@ from routes import (
     chat,
     community,
     export,
+    labs,
+    rewards,
+    whatsapp,
     feedback,
     notifications,
     plans,
@@ -221,6 +224,9 @@ app.include_router(push.router, prefix="/api/push", tags=["Web Push"])
 app.include_router(practice.router, prefix="/api/practice", tags=["Practice Sessions"])
 app.include_router(workouts.router, prefix="/api/workouts", tags=["Workout Logs"])
 app.include_router(meals.router, prefix="/api/meals", tags=["Meal Logs"])
+app.include_router(labs.router, prefix="/api/labs", tags=["Lab Results"])
+app.include_router(rewards.router, prefix="/api/rewards", tags=["Streaks & Badges"])
+app.include_router(whatsapp.router, prefix="/api/whatsapp", tags=["WhatsApp"])
 
 
 

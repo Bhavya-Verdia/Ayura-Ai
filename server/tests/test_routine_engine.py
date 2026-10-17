@@ -108,3 +108,28 @@ def test_a_withheld_practice_says_that_it_was_withheld():
     notices = plan["dinacharya_protocol"]["pregnancy_notices"]
     assert notices
     assert any("Shodhana" in n for n in notices)
+
+
+# ── The season's Agni is not the person's ─────────────────────────────────────
+
+@pytest.mark.parametrize("season", ["sharad", "shishira", "hemanta", "vasanta", "grishma", "varsha"])
+def test_every_seasonal_agni_note_names_its_season(season):
+    """'Agni is strong' with no season read as a statement about the person, printed
+    beside 'Your Agni type is Vishama'."""
+    from services.routine_engine import _SEASON_MAP, _build_meal_guidance
+    note = _build_meal_guidance("vata", season, "sama")["seasonal_note"]
+    assert note.startswith("In " + _SEASON_MAP[season]["label"].split(" (")[0] + ",")
+
+
+@pytest.mark.parametrize("own", ["manda", "vishama"])
+@pytest.mark.parametrize("season", ["sharad", "hemanta"])
+def test_a_strong_season_defers_to_a_weak_or_irregular_agni(season, own):
+    from services.routine_engine import _build_meal_guidance
+    note = _build_meal_guidance("vata", season, own)["seasonal_note"]
+    assert "not you" in note and "regular and moderate" in note
+
+
+@pytest.mark.parametrize("own", ["sama", "tikshna"])
+def test_a_strong_season_says_nothing_extra_when_agni_agrees(own):
+    from services.routine_engine import _build_meal_guidance
+    assert "not you" not in _build_meal_guidance("pitta", "sharad", own)["seasonal_note"]

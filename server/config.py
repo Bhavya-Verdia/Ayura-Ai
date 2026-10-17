@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     # plan generation and chat turn is a billed LLM call.
     DAILY_PLAN_QUOTA: int = 40        # plan generations per user per UTC day
     DAILY_CHAT_QUOTA: int = 200       # chat turns per user per UTC day
+    DAILY_LAB_READ_QUOTA: int = 10       # lab report uploads read by the vision/text model
     QUOTA_ENABLED: bool = True
     LOGIN_MAX_FAILED_ATTEMPTS: int = 8
     LOGIN_LOCKOUT_MINUTES: int = 15
@@ -257,6 +258,19 @@ class Settings(BaseSettings):
     TWILIO_ACCOUNT_SID: Optional[str] = None
     TWILIO_AUTH_TOKEN: Optional[str] = None
     TWILIO_PHONE_NUMBER: Optional[str] = None
+
+    # --- WhatsApp (Meta WhatsApp Cloud API) ---
+    # Off until a Meta Business account, a WhatsApp number and the three templates
+    # in docs/whatsapp_templates.md are approved. Outside production with no token,
+    # messages are logged instead of sent (services/whatsapp_service.py).
+    WHATSAPP_ENABLED: bool = False
+    WHATSAPP_ACCESS_TOKEN: Optional[str] = None
+    WHATSAPP_PHONE_NUMBER_ID: Optional[str] = None
+    WHATSAPP_API_VERSION: str = "v21.0"
+    WHATSAPP_TEMPLATE_LANG: str = "en"
+    WHATSAPP_TEMPLATE_OTP: str = "ayura_verify_code"
+    WHATSAPP_TEMPLATE_REMINDER: str = "ayura_reminder"
+    WHATSAPP_TEMPLATE_DAILY: str = "ayura_daily_plan"
 
     # --- URLs ---
     FRONTEND_URL: str = "http://localhost:5173"

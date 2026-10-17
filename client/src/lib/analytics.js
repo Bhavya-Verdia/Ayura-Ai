@@ -126,6 +126,8 @@ export async function resetAnalytics() {
  * come back. */
 export const EVENTS = {
   SIGNED_UP: 'signed_up',
+  // A badge id names a habit (streak_7, first_meal), never a health fact.
+  BADGE_EARNED: 'badge_earned',
   LOGGED_IN: 'logged_in',
   ONBOARDING_STARTED: 'onboarding_started',
   ONBOARDING_COMPLETED: 'onboarding_completed',

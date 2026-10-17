@@ -21,6 +21,7 @@ from pydantic import BaseModel, Field
 from schemas.user_schema import UserDocument
 from routes.profile import get_current_user
 from database.mongodb import get_mongodb
+from services.rewards import record_activity
 
 router = APIRouter()
 
@@ -109,6 +110,7 @@ async def log_practice_session(
         "logged_at": now,
     }
     result = await db.practice_sessions.insert_one(doc)
+    await record_activity(db, user.id, user.timezone, "practice")
 
     await db.timeline.insert_one({
         "user_id": user.id,

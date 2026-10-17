@@ -247,9 +247,40 @@ export const progressAPI = {
   getLogs:    (limit = 30)   => API.get('/progress/logs', { params: { limit } }),
 }
 
+// ── Lab results ────────────────────────────────
+export const labsAPI = {
+  catalogue: ()     => API.get('/labs/catalogue'),
+  list:      ()     => API.get('/labs'),
+  add:       (data) => API.post('/labs', data),
+  remove:    (id)   => API.delete(`/labs/${id}`),
+  read:      (file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return API.post('/labs/read', fd, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 90000 })
+  },
+  bulk:      (data) => API.post('/labs/bulk', data),
+}
+
+// ── Streaks & badges ───────────────────────────
+export const rewardsAPI = {
+  get:      () => API.get('/rewards'),
+  markSeen: () => API.post('/rewards/seen'),
+}
+
+// ── WhatsApp ───────────────────────────────────
+export const whatsappAPI = {
+  status:   ()     => API.get('/whatsapp/status'),
+  start:    (data) => API.post('/whatsapp/start', data),
+  verify:   (code) => API.post('/whatsapp/verify', { code }),
+  settings: (data) => API.put('/whatsapp/settings', data),
+  stop:     ()     => API.delete('/whatsapp'),
+}
+
 // ── Export ─────────────────────────────────────
 export const exportAPI = {
   pdf: () => API.get('/export/pdf', { responseType: 'blob' }),
+  // day: 'all' (the week), 'today', or 0-6 (Monday-Sunday)
+  routinePdf: (day = 'all') => API.get('/export/routine-pdf', { params: { day }, responseType: 'blob' }),
   csv: () => API.get('/export/csv', { responseType: 'blob' }),
 }
 

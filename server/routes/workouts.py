@@ -19,6 +19,7 @@ from schemas.preferences_schema import GYM_INJURY_OPTIONS
 from services.gym_week_adjust import FEELINGS, RED_FLAGS, week_adjustments
 from services.workout_log import (block_history, block_summary, consecutive_progressed,
                                   level_up_offer, log_key)
+from services.rewards import record_activity
 
 router = APIRouter()
 
@@ -76,6 +77,7 @@ async def log_exercise(
     if minutes:
         doc["minutes"] = minutes
     await db.workout_logs.replace_one({"_id": key, "user_id": user.id}, doc, upsert=True)
+    await record_activity(db, user.id, user.timezone, "workout")
     return {"id": key, "deleted": False, "updated_at": now.isoformat()}
 
 
@@ -160,6 +162,7 @@ async def save_checkin(
     doc = {"_id": key, "user_id": user.id, **body.model_dump(exclude={"add_to_injuries"}),
            "updated_at": now}
     await db.gym_checkins.replace_one({"_id": key, "user_id": user.id}, doc, upsert=True)
+    await record_activity(db, user.id, user.timezone, "checkin")
 
     added: list[str] = []
     if body.add_to_injuries and body.pain_areas:

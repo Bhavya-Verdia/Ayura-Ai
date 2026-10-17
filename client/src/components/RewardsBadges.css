@@ -1,0 +1,75 @@
+/* Badges. Earned: amber icon on a tinted disc. Locked: muted, with a lock and, for
+   counted badges, a progress bar. The earned/locked difference is carried by the icon
+   (badge vs lock) as well as colour. */
+.rwd-section {
+  margin-top: 32px;
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 22px 20px;
+  scroll-margin-top: 80px;
+}
+[data-theme='light'] .rwd-section { background: rgba(255,255,255,0.7); }
+.rwd-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  display: flex; align-items: center; gap: 8px; margin: 0;
+}
+.rwd-count { font-family: var(--font-ui); font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; }
+.rwd-sub { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5; margin: 8px 0 16px; }
+.rwd-group + .rwd-group { margin-top: 18px; }
+.rwd-group-title {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-secondary); margin: 0 0 10px;
+}
+.rwd-grid {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px;
+}
+.rwd-badge {
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 4px;
+  /* No opacity on locked badges: it took their secondary text below AA contrast.
+     Locked is carried by the lock icon and the absent highlight instead. */
+}
+.rwd-badge.is-earned { opacity: 1; border-color: color-mix(in srgb, var(--ayura-amber) 45%, var(--border-subtle)); }
+.rwd-badge-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--glass-bg-subtle); color: var(--text-secondary); margin-bottom: 4px;
+}
+.rwd-badge.is-earned .rwd-badge-icon {
+  background: color-mix(in srgb, var(--ayura-amber) 18%, transparent);
+  color: var(--ayura-amber);
+}
+.rwd-badge-title { font-weight: 600; font-size: 0.86rem; color: var(--text-primary); }
+.rwd-badge-desc { font-size: 0.74rem; line-height: 1.4; color: var(--text-secondary); }
+.rwd-badge-date { font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; }
+.rwd-badge-progress {
+  display: block; height: 4px; border-radius: 2px; margin-top: 6px;
+  background: var(--border-subtle); overflow: hidden;
+}
+.rwd-badge-progress > span { display: block; height: 100%; background: var(--ayura-amber); border-radius: 2px; }
+
+/* Dashboard strip, inside the streak card */
+.rwd-strip {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--ayura-amber) 20%, transparent);
+  font-size: 0.8rem; color: var(--text-secondary);
+  width: 100%;
+}
+.rwd-strip-earned { display: inline-flex; align-items: center; gap: 6px; }
+.rwd-strip-icon {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--ayura-amber) 18%, transparent); color: var(--ayura-amber);
+}
+.rwd-strip-next { display: flex; flex-direction: column; gap: 2px; min-width: 150px; flex: 1; }
+.rwd-strip-next b { color: var(--text-primary); font-weight: 600; }
+.rwd-strip-next .rwd-badge-progress { margin-top: 2px; max-width: 220px; }
+.rwd-strip-link { color: var(--ayura-amber); text-decoration: none; font-weight: 600; margin-left: auto; }
+[data-theme='light'] .rwd-strip-link { color: #9a4a12; }

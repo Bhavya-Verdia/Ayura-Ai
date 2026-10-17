@@ -113,6 +113,8 @@ class UserDocument(BaseModel):
 
     onboarding_complete: bool = False
     timezone: Optional[str] = None      # IANA tz captured at onboarding (reminder seeding)
+    best_streak: int = 0                # longest run of active days; kept so it outlives the lookback (services/rewards.py)
+    whatsapp: Optional[dict] = None     # verified number + what it receives (routes/whatsapp.py)
     phone_only: bool = False
     consent_given: bool = False
     consent_at: Optional[datetime] = None

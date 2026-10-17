@@ -33,8 +33,11 @@ async def create_and_deliver_notification(
     notif_type: str = "info",
     background_tasks=None,
     url: str = "/notifications",
+    whatsapp: bool = False,
 ) -> dict:
-    """Insert a notification record and deliver it via email + web push."""
+    """Insert a notification record and deliver it via email + web push, and over
+    WhatsApp only when the caller asks (`whatsapp=True`) — each message is billed, so
+    it is reserved for what the user opted in to (services/whatsapp_service.py)."""
     doc = {
         "_id": str(uuid.uuid4()),
         "user_id": user_id,
@@ -53,6 +56,8 @@ async def create_and_deliver_notification(
         # Fire-and-forget when no BackgroundTasks context is available
         _spawn(_send_notification_email(db, user_id, title, body))
         _spawn(_send_push(db, user_id, title, body, url))
+    if whatsapp:
+        _spawn(_send_whatsapp(db, user_id, title, body))
 
     return doc
 
@@ -104,3 +109,11 @@ async def _send_push(db, user_id: str, title: str, body: str, url: str = "/notif
                     logger.warning(f"Push delivery failed for user {user_id}: {e}")
     except Exception as e:
         logger.error(f"Push channel failed for user {user_id}: {e}")
+
+
+async def _send_whatsapp(db, user_id: str, title: str, body: str) -> None:
+    try:
+        from services.whatsapp_service import send_reminder
+        await send_reminder(db, user_id, title, body)
+    except Exception as e:
+        logger.error(f"WhatsApp channel failed for user {user_id}: {e}")

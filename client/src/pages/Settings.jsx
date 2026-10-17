@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import React from 'react'
 import './Settings.css'
+import WhatsAppSettings from '../components/WhatsAppSettings'
 
 const LazyParticleField = React.lazy(() => import('../components/ParticleField'))
 
@@ -732,6 +733,9 @@ export default function Settings() {
             </m.button>
           </m.form>
         )}
+
+        {/* WhatsApp — renders nothing until the server has it switched on */}
+        <WhatsAppSettings variants={staggerItem} />
 
         {/* Export wellness data */}
         <m.div className="settings-card" variants={staggerItem}>

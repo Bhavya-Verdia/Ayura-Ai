@@ -1154,6 +1154,77 @@ which endpoint a user came through decided how much of the safety model applied.
 
 `routes/plans._generate_feature_via_engine` is the single entry point both the holistic and per-feature paths use — it runs the engine + enricher and applies pregnancy/safety gating. The per-feature endpoints (`POST /api/plans/{gym,yoga,diet,routine,panchakarma,remedies,medicines}`) return the plan **synchronously**. The holistic `POST /api/plans/generate` is offloaded to an **ARQ background worker** (`server/worker.py`) via Redis and returns a `job_id` to poll at `/api/plans/job/{jobId}`; if Redis/ARQ is unavailable it falls back to running the job in-process via FastAPI `BackgroundTasks`.
 
+### Lab results
+`services/lab_results.py` is the only place a test is defined: unit, plausible bounds
+(outside them is a typo and is refused — HbA1c 48 is mmol/mol typed as %), published
+bands with their source, and the values that mean "contact a doctor today" (potassium
+≥ 6.0, BP ≥ 180/110, …). Results live in `db.lab_results` (`routes/labs.py`, the
+Progress page's `LabResults.jsx`) and are read against the bands **on the way out**,
+never stored with them, so a corrected band applies to old results too.
+
+- Labels never diagnose: "in the range used to diagnose diabetes", not "you have
+  diabetes". A test asserts no band label starts with "you".
+- `other`/unanswered sex takes the **stricter** limit; pregnancy moves haemoglobin and
+  leaves TSH unclassified (trimester ranges not authored) rather than judging it
+  against the non-pregnant range.
+- They go into the Vaidya PDF (latest per test, urgent first, with sources).
+- **No plan engine reads them yet.** Letting a value change a plan (potassium in a
+  kidney diet) is a clinical rule and goes through the Vaidya packet first.
+- No analytics event: a test name alone says what someone is being checked for.
+- **Uploaded reports** (`services/lab_report_reader.py`, `POST /api/labs/read`): the model
+  only **transcribes** value and unit as printed; conversion to the catalogue unit, the
+  plausibility check and the date are done in code. Reading **saves nothing** — the user
+  checks every row (`LabReportUpload.jsx`) and confirms with `POST /api/labs/bulk`. The
+  file is never stored. A PDF's text layer is used when present (pypdf), a scan's page
+  image otherwise. Dates are copied as printed and parsed **day first**: asked for ISO,
+  the model read an Indian 03/10/2026 as 10 March. `mIU/mL` is not `mIU/L` for TSH (1000x)
+  and is left for the user. A failed read is an error, never an empty preview.
+
+### Streaks and badges
+`services/rewards.py` (`GET /api/rewards`). An active day is a day with a **log** — meal,
+workout, yoga practice, progress or check-in — in the user's own timezone. Opening the
+app is not one: a reward for visiting teaches visiting. **Nothing rewards an outcome or
+an intensity** (weight, calories, fasting, sets): those are the badges that push a
+person past what is good for them, and `test_no_badge_rewards_an_outcome_or_an_intensity`
+greps the catalogue for it.
+
+- Days are the union of `db.activity_days` (written by every logging route via
+  `record_activity`, which never raises) and the logs' own timestamps. Both are needed:
+  meal and workout logs are edited in place, so `updated_at` moves to the day of the edit.
+  A new logging route must call `record_activity` — a test lists the routes.
+- A streak stays alive until the day after a gap, so it does not read as broken at 07:00.
+- Earned badges persist in `db.user_badges` and are never taken back; `users.best_streak`
+  outlives the 400-day lookback. A new badge makes one in-app notification (no email or
+  push) and one combined toast.
+- Every successful mutation invalidates the `['rewards']` query (`queryClient.js`).
+
+### WhatsApp
+`services/whatsapp_service.py` + `routes/whatsapp.py`, Meta WhatsApp Cloud API, three
+approved **templates** (text and setup in `docs/whatsapp_templates.md`). Off until
+`WHATSAPP_ENABLED=true` with a token and phone-number id; outside production with no
+token it **logs** instead of sending, so the flow runs locally.
+
+- A number is used only after its owner enters the code sent to it (hashed, 10 min,
+  5 tries, 1/min and 5/day). Without that step anyone could aim reminders at someone
+  else's phone. `UserProfileUpdate` must never accept `whatsapp` — a test holds it.
+- **Each message is billed**, so a notification reaches WhatsApp only when its caller
+  passes `whatsapp=True`. Today that is the reminder dispatcher alone (a test greps for
+  call sites); the morning message is its own per-minute cron (`send_daily_whatsapp`),
+  marked sent *before* sending so a double-fire or a failure never repeats it.
+- The morning message counts the diet plan's day the way `DietView` does (weeks from
+  `generated_at`, day by real weekday) and says nothing after day 28.
+- Template parameters may not contain newlines, tabs or 5+ spaces, or Meta rejects the
+  whole message — `clean_param`.
+
+### Daily Routine PDF
+`services/routine_pdf.py`, `GET /api/export/routine-pdf?day=all|today|0-6`, buttons in
+`RoutinePdfButtons.jsx`. Print-first: white page, one day per sheet with a tick box per
+step. A day with many condition notes is **shrunk to fit** (`KeepInFrame`) — before that
+every day left its last row ("Sleep") alone on a second page. It prints only fields the
+screen already shows; `exercise_limits` is flags and is worded as `RoutineView` words it.
+The built-in PDF fonts are cp1252: IAST and arrows are folded (`plain`), never boxed.
+"today" is the user's weekday, in their timezone.
+
 ### Prakriti instrument
 The live quiz is **`client/src/pages/DoshaQuiz.jsx`**, its questions in
 `client/src/pages/doshaQuiz/questions.js` — 21 constitutional traits, a
