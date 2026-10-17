@@ -66,7 +66,7 @@ async def seed_all():
     # against `dosha_analyzer._TRAIT_WEIGHTS` showed 15 weighted axes apparently never
     # asked and 14 asked axes apparently unweighted. That reads exactly like a serious
     # scoring bug and is entirely an artefact of reading the dead copy. The live
-    # instrument is `client/src/pages/DoshaQuiz.jsx`; `test_dosha_instrument.py` holds
+    # instrument is `client/src/pages/doshaQuiz/questions.js`; `test_dosha_instrument.py` holds
     # the two in step.
     print("  ✅ dosha_profiles: 3 documents seeded")
 

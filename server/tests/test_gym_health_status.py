@@ -224,7 +224,7 @@ def test_the_form_offers_exactly_what_the_server_accepts():
     from services.gym_plan_engine import _INJURY_TOKENS
 
     jsx = (Path(__file__).resolve().parents[2] / "client" / "src" / "components"
-           / "PreferencesModal.jsx").read_text()
+           / "preferences" / "options.js").read_text()
     block = jsx[jsx.index("const INJURIES"):jsx.index("];", jsx.index("const INJURIES"))]
     offered = set(re.findall(r"value: '([a-z_]+)'", block))
     assert offered == GYM_INJURY_OPTIONS

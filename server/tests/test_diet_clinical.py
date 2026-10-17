@@ -122,7 +122,7 @@ def test_the_form_offers_exactly_the_allergies_and_intolerances_the_server_enfor
     from services.ahara_safety import ALLERGEN_TERMS
 
     jsx = (Path(__file__).resolve().parents[2] / "client" / "src" / "components" /
-           "PreferencesModal.jsx").read_text()
+           "preferences" / "DietFields.jsx").read_text()
 
     def chips(field):
         i = jsx.index(f"handleToggle('{field}'")

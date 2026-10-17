@@ -1155,7 +1155,8 @@ which endpoint a user came through decided how much of the safety model applied.
 `routes/plans._generate_feature_via_engine` is the single entry point both the holistic and per-feature paths use — it runs the engine + enricher and applies pregnancy/safety gating. The per-feature endpoints (`POST /api/plans/{gym,yoga,diet,routine,panchakarma,remedies,medicines}`) return the plan **synchronously**. The holistic `POST /api/plans/generate` is offloaded to an **ARQ background worker** (`server/worker.py`) via Redis and returns a `job_id` to poll at `/api/plans/job/{jobId}`; if Redis/ARQ is unavailable it falls back to running the job in-process via FastAPI `BackgroundTasks`.
 
 ### Prakriti instrument
-The live quiz is **`client/src/pages/DoshaQuiz.jsx`** — 21 constitutional traits, a
+The live quiz is **`client/src/pages/DoshaQuiz.jsx`**, its questions in
+`client/src/pages/doshaQuiz/questions.js` — 21 constitutional traits, a
 `temperature_check` consistency probe, a Manas Prakriti block and a Vikriti symptom
 list. `engine/dosha_analyzer._TRAIT_WEIGHTS` weights all 21 (0.7-2.0) and
 `_PHYSICAL_TRAITS`/`_MENTAL_TRAITS` split them for body-versus-mind dominance.
@@ -1183,7 +1184,8 @@ two different questionnaires. Clinical accuracy needs a blind Vaidya study, spec
 as Part 7 of `data/golden/vaidya_reviewer_packet.md`.
 
 ### Preferences forms
-`client/src/components/PreferencesModal.jsx` holds every feature's form; the schemas in
+`client/src/components/PreferencesModal.jsx` owns the state and save, and each feature's form
+is its own component in `components/preferences/` (option lists in `options.js`); the schemas in
 `server/schemas/preferences_schema.py` **do not forbid unknown fields**, so an answer the
 schema does not declare returns 200 and is dropped on save. Koshtha and the Ayurvedic
 medicines already being taken were both lost this way; both are safety inputs.
