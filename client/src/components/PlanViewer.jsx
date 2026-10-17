@@ -143,6 +143,10 @@ export default function PlanViewer({ plan: rawPlan, planType, onRegenerate, onPl
     (planType === 'medicines'   && (plan.primary_formulations || plan.supporting_formulations)) ||
     (planType === 'routine'     && plan.weekly_routine)
   )
+  // These four views print plan.disclaimer themselves; repeating it in the safety
+  // box below showed the same paragraph twice in a row. Warnings still render.
+  const viewOwnsDisclaimer = hasDedicatedView &&
+    ['diet', 'remedies', 'medicines', 'routine'].includes(planType)
 
   return (
     <div className="plan-viewer-container">
@@ -270,7 +274,7 @@ export default function PlanViewer({ plan: rawPlan, planType, onRegenerate, onPl
       })}
 
       {/* ── Safety & disclaimers ── */}
-      {(plan.safety_checks?.warnings?.length > 0 || plan.disclaimer || plan.medical_disclaimer) && (
+      {(plan.safety_checks?.warnings?.length > 0 || (!viewOwnsDisclaimer && (plan.disclaimer || plan.medical_disclaimer))) && (
         <m.div
           className="plan-safety-box"
           initial={{ opacity: 0, y: 16 }}
@@ -286,7 +290,7 @@ export default function PlanViewer({ plan: rawPlan, planType, onRegenerate, onPl
               {plan.safety_checks.warnings.map((w, i) => <li key={i}>{w}</li>)}
             </ul>
           )}
-          {(plan.disclaimer || plan.medical_disclaimer) && (
+          {!viewOwnsDisclaimer && (plan.disclaimer || plan.medical_disclaimer) && (
             <p className="plan-safety-disclaimer">
               {plan.disclaimer || plan.medical_disclaimer}
             </p>
