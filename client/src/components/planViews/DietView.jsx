@@ -5,7 +5,7 @@ import {
   Sun, Leaf, Droplets, ShieldCheck, Flame, Moon, Timer, Target, ChevronDown, ChevronUp, Flower2, UtensilsCrossed, Clock, CupSoda, BookOpen, Languages, Award, RefreshCw, CalendarCheck,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
-import { PathyaApathyaCard, DietSafetyBanner, EnergyPrescriptionCard, NutrientTargetsCard, ClinicalNotesCard } from './diet/DietCards'
+import { PathyaApathyaCard, DietSafetyBanner, EnergyPrescriptionCard, NutrientTargetsCard, ClinicalNotesCard, TargetsSummary } from './diet/DietCards'
 import { MacroBar, MealLogSummary, LLMMealCard } from './diet/DietMeals'
 import { DietWeekCheckin } from './diet/DietWeekCheckin'
 import { DIET_MEAL_ICONS, DIET_DAY_LABELS, SLOT_LABEL, DIET_DAY_FULL } from './diet/dietConstants'
@@ -265,11 +265,9 @@ export function DietView({ plan: incomingPlan, onRegenerate, onPlanChange }) {
         <p className="diet-description">{plan.plan_description}</p>
       )}
 
-      {/* ── Energy prescription ── the target the plan was built against, and how
-           it was arrived at. Day totals were previously shown with nothing to read
-           them against. */}
-      <EnergyPrescriptionCard plan={plan} />
-      <NutrientTargetsCard plan={plan} />
+      {/* ── Targets, in one line ── the full cards are below the meals (see there). */}
+      <TargetsSummary plan={plan} targetId="diet-targets" />
+      {/* Medicine-food interactions stay above the meals: they change what to eat. */}
       <ClinicalNotesCard plan={plan} />
 
       {/* ── Vitals bar ── */}
@@ -324,29 +322,11 @@ export function DietView({ plan: incomingPlan, onRegenerate, onPlanChange }) {
       {/* ── Deterministic Ahara safety (Viruddha + allergens, all weeks) ── */}
       <DietSafetyBanner plan={plan} />
 
-      {/* ── Pathya-Apathya (LLM only) ── */}
-      {isLLM && <PathyaApathyaCard pa={plan.pathya_apathya} />}
-
       {/* ── Condition coaching ── */}
       {plan.condition_coaching && (
         <div className="diet-coaching-card">
           <ShieldCheck size={13} className="diet-coaching-icon" />
           <p className="diet-coaching-text">{plan.condition_coaching}</p>
-        </div>
-      )}
-
-      {/* ── Therapeutic arc ── which progression this patient was given, and why.
-           The sequence used to be the same four phases for everyone. */}
-      {plan.therapeutic_arc?.arc && (
-        <div className="diet-arc-card">
-          <div className="diet-arc-head">
-            <Flower2 size={13} className="diet-vital-icon" />
-            <span className="diet-arc-name">{plan.therapeutic_arc.arc}</span>
-          </div>
-          <p className="diet-arc-basis">{plan.therapeutic_arc.basis}</p>
-          {(plan.therapeutic_arc.withheld || []).map((note, i) => (
-            <p key={i} className="diet-arc-withheld">{note}</p>
-          ))}
         </div>
       )}
 
@@ -619,6 +599,32 @@ export function DietView({ plan: incomingPlan, onRegenerate, onPlanChange }) {
           {dayData.special_drink.rationale && (
             <p className="diet-drink-rationale">{dayData.special_drink.rationale}</p>
           )}
+        </div>
+      )}
+
+      {/* ── Energy prescription and daily targets ── below the meals so the day's
+           food is the first thing on screen; TargetsSummary above counts the
+           warnings in them and links here. The day totals above read against these. */}
+      <div id="diet-targets" className="diet-targets-anchor">
+        <EnergyPrescriptionCard plan={plan} />
+        <NutrientTargetsCard plan={plan} />
+      </div>
+
+      {/* ── Pathya-Apathya (LLM only) ── */}
+      {isLLM && <PathyaApathyaCard pa={plan.pathya_apathya} />}
+
+      {/* ── Therapeutic arc ── which progression this patient was given, and why.
+           The sequence used to be the same four phases for everyone. */}
+      {plan.therapeutic_arc?.arc && (
+        <div className="diet-arc-card">
+          <div className="diet-arc-head">
+            <Flower2 size={13} className="diet-vital-icon" />
+            <span className="diet-arc-name">{plan.therapeutic_arc.arc}</span>
+          </div>
+          <p className="diet-arc-basis">{plan.therapeutic_arc.basis}</p>
+          {(plan.therapeutic_arc.withheld || []).map((note, i) => (
+            <p key={i} className="diet-arc-withheld">{note}</p>
+          ))}
         </div>
       )}
 

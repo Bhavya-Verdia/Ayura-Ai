@@ -30,6 +30,7 @@ _PLURAL_ONE = {
     "resizedLegacy": "Portions on {{count}} day were resized to meet this target — the meals and their Ayurvedic reasoning are unchanged.",
     "proteinShortDays": "Protein is below your {{floor}} g floor on {{count}} day",
     "keptEnglish": "{{count}} line that could not be verified is left in English.",
+    "targetNotes": "{{count}} note on what food alone cannot cover",
 }
 
 

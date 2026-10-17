@@ -1117,6 +1117,8 @@
     "swapLabel": "आपने इसके बदले क्या खाया",
     "swapPlaceholder": "इसके बदले आपने क्या लिया? (वैकल्पिक)",
     "targetKcal": "लक्ष्य {{kcal}} kcal",
+    "targetNotes_one": "केवल भोजन से पूरी न हो सकने वाली बात पर {{count}} नोट",
+    "targetNotes_other": "केवल भोजन से पूरी न हो सकने वाली बातों पर {{count}} नोट",
     "thisPlan": "यह योजना: ~{{avg}} {{unit}} प्रतिदिन",
     "thisWeek": "इस सप्ताह",
     "today": "आज",
