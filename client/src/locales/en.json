@@ -410,6 +410,8 @@
     "swapLabel": "What you ate instead",
     "swapPlaceholder": "What did you have instead? (optional)",
     "targetKcal": "target {{kcal}} kcal",
+    "targetNotes_one": "{{count}} note on what food alone cannot cover",
+    "targetNotes_other": "{{count}} notes on what food alone cannot cover",
     "thisPlan": "this plan: ~{{avg}} {{unit}} a day",
     "thisWeek": "this week",
     "today": "Today",

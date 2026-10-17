@@ -3840,6 +3840,41 @@
 }
 
 /* ── Energy prescription ── */
+/* One line above the meals standing in for the energy and targets cards, which
+   sit below them. Its warning count uses the same amber as .diet-energy-note.is-warn. */
+.diet-targets-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.6rem;
+  margin: 0.75rem 0 1rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--ayura-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ayura-surface, transparent) 60%, transparent);
+  color: var(--ayura-text);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+.diet-targets-summary:hover { border-color: color-mix(in srgb, var(--plan-green, #4ade80) 45%, var(--ayura-border)); }
+.diet-targets-summary-main { font-weight: 600; }
+.diet-targets-summary-notes {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--ayura-amber);
+}
+.diet-targets-summary-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+  color: var(--ayura-muted);
+  font-size: 0.78rem;
+}
+/* Clears the sticky week/day pickers when jumped to. */
+.diet-targets-anchor { scroll-margin-top: 7rem; }
+
 .diet-energy-card {
   margin: 0.75rem 0 1rem;
   padding: 0.75rem 0.9rem;

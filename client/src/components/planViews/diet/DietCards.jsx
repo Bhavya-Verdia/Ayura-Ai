@@ -1,10 +1,11 @@
-// The cards above the meals: Pathya-Apathya, the safety banner, the energy
-// prescription, the daily nutrient targets and the clinical notes.
+// The diet screen's cards: Pathya-Apathya, the safety banner, the energy
+// prescription, the daily nutrient targets, the clinical notes, and the one-line
+// targets summary that stands in for the last two above the meals.
 
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  AlertTriangle, Star, ShieldCheck, Flame, Moon, Target, ChevronDown, ChevronUp, BookOpen, TriangleAlert,
+  AlertTriangle, Star, ShieldCheck, Flame, Moon, Target, ChevronDown, ChevronUp, BookOpen, TriangleAlert, ArrowDown,
 } from 'lucide-react'
 import { SLOT_LABEL } from './dietConstants'
 
@@ -215,6 +216,42 @@ export function DietSafetyBanner({ plan }) {
   )
 }
 
+
+// The energy and nutrient cards sit below the meals: on a phone they were about two
+// and a half screens, so today's meals started on the third. Their warnings are the
+// part a patient must not miss, so this line counts them where the cards used to be
+// and jumps to them. Nothing is collapsed.
+export function TargetsSummary({ plan, targetId }) {
+  const { t } = useTranslation()
+  const rx = plan.energy_prescription
+  if (!rx?.target_calories) return null
+  const rec = plan.energy_reconciliation || {}
+  const notes = (rec.residual_notes || []).slice(0, 3).length
+    + ((rec.days_below_protein_floor || []).length > 0 ? 1 : 0)
+    + (rec.micronutrients?.notices || []).length
+  const protein = rx.protein_target_g || rx.protein_floor_g
+  return (
+    <a className={`diet-targets-summary${notes ? ' has-notes' : ''}`} href={`#${targetId}`}
+      onClick={(e) => {
+        e.preventDefault()
+        document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }}>
+      <Flame size={13} className="diet-vital-icon" />
+      <span className="diet-targets-summary-main">
+        {t('diet.kcalPerDay', '{{kcal}} kcal / day', { kcal: rx.target_calories })}
+        {protein ? ` · ${t('diet.proteinG', '{{g}} g protein', { g: protein })}` : ''}
+      </span>
+      {notes > 0 && (
+        <span className="diet-targets-summary-notes">
+          <TriangleAlert size={12} /> {t('diet.targetNotes', '{{count}} notes on what food alone cannot cover', { count: notes })}
+        </span>
+      )}
+      <span className="diet-targets-summary-link">
+        {t('diet.dailyTargets', 'Your daily targets')} <ArrowDown size={12} />
+      </span>
+    </a>
+  )
+}
 
 export function EnergyPrescriptionCard({ plan }) {
   const { t } = useTranslation()

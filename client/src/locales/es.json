@@ -410,6 +410,8 @@
     "swapLabel": "Lo que comiste en su lugar",
     "swapPlaceholder": "¿Qué comiste en su lugar? (opcional)",
     "targetKcal": "objetivo {{kcal}} kcal",
+    "targetNotes_one": "{{count}} nota sobre lo que la comida por sí sola no puede cubrir",
+    "targetNotes_other": "{{count}} notas sobre lo que la comida por sí sola no puede cubrir",
     "thisPlan": "este plan: ~{{avg}} {{unit}} al día",
     "thisWeek": "esta semana",
     "today": "Hoy",

@@ -312,8 +312,12 @@ function DoshaGauge({ dosha, doshaScores }) {
   )
 }
 
-// ── Health Score Card ─────────────────────────────────────────
-function HealthScoreCard({ completedCount, total }) {
+// ── Plans set up ──────────────────────────────────────────────
+// This counts how many of the seven areas have a plan. It was titled "Wellness
+// Score" with a percentage, which reads as a measure of the person's health; a
+// patient with five plans and a worsening condition scored 71%. It says what it
+// counts now, and the ring shows the count rather than a percentage.
+function PlanProgressCard({ completedCount, total }) {
   const score = Math.round((completedCount / total) * 100)
   const circumference = 2 * Math.PI * 38
   const offset = circumference - (circumference * score / 100)
@@ -341,14 +345,16 @@ function HealthScoreCard({ completedCount, total }) {
           </defs>
         </svg>
         <div className="dash-health-score-label">
-          <span className="dash-health-score-val">{score}%</span>
-          <span className="dash-health-score-sub">complete</span>
+          <span className="dash-health-score-val">{completedCount}/{total}</span>
+          <span className="dash-health-score-sub">plans</span>
         </div>
       </div>
       <div className="dash-health-score-info">
-        <div className="dash-health-score-title">Wellness Score</div>
+        <div className="dash-health-score-title">Plans set up</div>
         <div className="dash-health-score-desc">
-          {completedCount} of {total} plans generated. Keep building your protocol.
+          {completedCount === total
+            ? `All ${total} areas have a plan.`
+            : `${completedCount} of ${total} areas have a plan. Add another from the list below.`}
         </div>
       </div>
     </div>
@@ -816,7 +822,7 @@ const Dashboard = () => {
               the first thing a new user ever saw, which reads as a report of
               failure rather than a starting point. The first-run prompt below
               takes its place. */}
-          {completedCount > 0 && <HealthScoreCard completedCount={completedCount} total={PLAN_TYPES.length} />}
+          {completedCount > 0 && <PlanProgressCard completedCount={completedCount} total={PLAN_TYPES.length} />}
         </div>
       </m.div>
 

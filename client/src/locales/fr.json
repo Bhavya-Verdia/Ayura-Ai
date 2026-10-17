@@ -410,6 +410,8 @@
     "swapLabel": "Ce que vous avez mangé à la place",
     "swapPlaceholder": "Qu’avez-vous mangé à la place ? (facultatif)",
     "targetKcal": "objectif {{kcal}} kcal",
+    "targetNotes_one": "{{count}} note sur ce que l’alimentation seule ne peut pas couvrir",
+    "targetNotes_other": "{{count}} notes sur ce que l’alimentation seule ne peut pas couvrir",
     "thisPlan": "ce plan : ~{{avg}} {{unit}} par jour",
     "thisWeek": "cette semaine",
     "today": "Aujourd’hui",

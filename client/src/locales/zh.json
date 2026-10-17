@@ -410,6 +410,8 @@
     "swapLabel": "你改吃了什么",
     "swapPlaceholder": "你改吃了什么？（可选）",
     "targetKcal": "目标 {{kcal}} kcal",
+    "targetNotes_one": "关于仅靠食物无法满足的 {{count}} 条说明",
+    "targetNotes_other": "关于仅靠食物无法满足的 {{count}} 条说明",
     "thisPlan": "此方案：每天约 {{avg}} {{unit}}",
     "thisWeek": "本周",
     "today": "今天",
