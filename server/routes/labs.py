@@ -9,13 +9,16 @@ import uuid
 from datetime import date, datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel, Field
 
 from database.mongodb import get_mongodb
 from routes.profile import get_current_user
 from schemas.user_schema import UserDocument
+from config import settings
+from core.quota import consume_quota
+from services.lab_report_reader import ReportError, read_report
 from services.lab_results import LAB_TESTS, catalogue, classify, latest_by_test, plausible
 
 router = APIRouter()
@@ -90,6 +93,66 @@ async def add_result(
     }
     await db.lab_results.insert_one(doc)
     return _out(doc, user)
+
+
+class BulkRow(BaseModel):
+    test: str = Field(..., min_length=1, max_length=40)
+    value: float
+
+
+class BulkIn(BaseModel):
+    taken_on: date
+    results: list[BulkRow] = Field(..., min_length=1, max_length=40)
+    note: Optional[str] = Field(None, max_length=200)
+
+
+@router.post("/read")
+async def read_uploaded_report(
+    file: UploadFile = File(...),
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """Read a report into a preview. Nothing is saved and the file is not kept: the
+    user checks every row and confirms with POST /bulk."""
+    raw = await file.read()
+    if not raw:
+        raise HTTPException(status_code=422, detail="That file is empty.")
+    await consume_quota(db, user.id, "lab_read", settings.DAILY_LAB_READ_QUOTA,
+                        exempt=bool(getattr(user, "is_admin", False)))
+    try:
+        return await read_report(raw, (file.content_type or "").lower(), user.gender, _pregnant(user))
+    except ReportError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+
+@router.post("/bulk")
+async def add_results(
+    body: BulkIn,
+    user: UserDocument = Depends(get_current_user),
+    db: AsyncIOMotorDatabase = Depends(get_mongodb),
+):
+    """Save the rows the user confirmed from a report. Every row passes the same checks
+    as a single result; one bad row refuses the batch, so nothing half-saves."""
+    if body.taken_on > date.today() or body.taken_on.year < 1990:
+        raise HTTPException(status_code=422, detail="Enter the date the sample was taken.")
+    tests = [r.test for r in body.results]
+    if len(set(tests)) != len(tests):
+        raise HTTPException(status_code=422, detail="Each test can appear once per report.")
+    for r in body.results:
+        if r.test not in LAB_TESTS:
+            raise HTTPException(status_code=422, detail=f"Unknown test: {r.test}")
+        if not plausible(r.test, r.value):
+            spec = LAB_TESTS[r.test]
+            raise HTTPException(status_code=422, detail=f"{spec['label']}: {r.value:g} is outside "
+                                f"{spec['min']}–{spec['max']} {spec['unit']}. Please check it.")
+    if await db.lab_results.count_documents({"user_id": user.id}) + len(body.results) > _MAX_RESULTS:
+        raise HTTPException(status_code=422, detail="Too many results recorded; delete some old ones first.")
+    now = datetime.now(timezone.utc)
+    docs = [{"_id": str(uuid.uuid4()), "user_id": user.id, "test": r.test, "value": round(r.value, 3),
+             "taken_on": body.taken_on.isoformat(), "note": (body.note or "").strip() or None,
+             "source": "report", "created_at": now} for r in body.results]
+    await db.lab_results.insert_many(docs)
+    return {"saved": [_out(d, user) for d in docs]}
 
 
 @router.delete("/{result_id}")

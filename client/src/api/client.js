@@ -253,6 +253,12 @@ export const labsAPI = {
   list:      ()     => API.get('/labs'),
   add:       (data) => API.post('/labs', data),
   remove:    (id)   => API.delete(`/labs/${id}`),
+  read:      (file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return API.post('/labs/read', fd, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 90000 })
+  },
+  bulk:      (data) => API.post('/labs/bulk', data),
 }
 
 // ── Streaks & badges ───────────────────────────

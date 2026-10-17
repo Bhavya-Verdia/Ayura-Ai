@@ -1171,6 +1171,14 @@ never stored with them, so a corrected band applies to old results too.
 - **No plan engine reads them yet.** Letting a value change a plan (potassium in a
   kidney diet) is a clinical rule and goes through the Vaidya packet first.
 - No analytics event: a test name alone says what someone is being checked for.
+- **Uploaded reports** (`services/lab_report_reader.py`, `POST /api/labs/read`): the model
+  only **transcribes** value and unit as printed; conversion to the catalogue unit, the
+  plausibility check and the date are done in code. Reading **saves nothing** — the user
+  checks every row (`LabReportUpload.jsx`) and confirms with `POST /api/labs/bulk`. The
+  file is never stored. A PDF's text layer is used when present (pypdf), a scan's page
+  image otherwise. Dates are copied as printed and parsed **day first**: asked for ISO,
+  the model read an Indian 03/10/2026 as 10 March. `mIU/mL` is not `mIU/L` for TSH (1000x)
+  and is left for the user. A failed read is an error, never an empty preview.
 
 ### Streaks and badges
 `services/rewards.py` (`GET /api/rewards`). An active day is a day with a **log** — meal,
