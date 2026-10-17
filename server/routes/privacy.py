@@ -42,7 +42,7 @@ async def export_user_data(
     # Collections added after this export was written, and never added to it.
     extra = {}
     for name in ("user_preferences", "practice_sessions", "workout_logs", "gym_checkins", "meal_logs", "diet_checkins",
-                 "plan_reactions", "reminders", "timeline"):
+                 "plan_reactions", "reminders", "timeline", "lab_results"):
         cursor = getattr(db, name).find({"user_id": user.id}, {"_id": 0})
         extra[name] = await cursor.to_list(length=5000)
 
@@ -97,6 +97,7 @@ async def delete_account(
     await db.gym_checkins.delete_many({"user_id": user_id})
     await db.meal_logs.delete_many({"user_id": user_id})
     await db.diet_checkins.delete_many({"user_id": user_id})
+    await db.lab_results.delete_many({"user_id": user_id})
     # Feedback is free text written by the user and keyed to them.
     await db.feedback.delete_many({"user_id": user_id})
     # OTP records are keyed by phone number, not user_id

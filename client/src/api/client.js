@@ -247,6 +247,14 @@ export const progressAPI = {
   getLogs:    (limit = 30)   => API.get('/progress/logs', { params: { limit } }),
 }
 
+// ── Lab results ────────────────────────────────
+export const labsAPI = {
+  catalogue: ()     => API.get('/labs/catalogue'),
+  list:      ()     => API.get('/labs'),
+  add:       (data) => API.post('/labs', data),
+  remove:    (id)   => API.delete(`/labs/${id}`),
+}
+
 // ── Export ─────────────────────────────────────
 export const exportAPI = {
   pdf: () => API.get('/export/pdf', { responseType: 'blob' }),

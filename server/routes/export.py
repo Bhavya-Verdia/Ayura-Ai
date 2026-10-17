@@ -12,6 +12,7 @@ from fastapi.responses import StreamingResponse
 from schemas.user_schema import UserDocument
 from routes.profile import get_current_user
 from database.mongodb import get_mongodb
+from services.lab_results import LAB_TESTS
 
 router = APIRouter()
 
@@ -166,7 +167,8 @@ def diet_report_lines(plan: dict) -> list[tuple[str, str]]:
     return out
 
 
-def _build_pdf(user: UserDocument, plan_data: dict, generated_at: str) -> bytes:
+def _build_pdf(user: UserDocument, plan_data: dict, generated_at: str,
+               labs: list | None = None) -> bytes:
     """Build a proper PDF wellness report using ReportLab."""
     try:
         from reportlab.lib.pagesizes import A4
@@ -357,6 +359,35 @@ def _build_pdf(user: UserDocument, plan_data: dict, generated_at: str) -> bytes:
                     story.append(Paragraph(f"<b>{ts}</b> — {dom}: {sc}{sym_txt}", SMALL))
                 story.append(Spacer(1, 0.5 * cm))
 
+        # ── Lab results ── the newest result per test, read against the same bands
+        # the app shows. The practitioner gets the date and the source of each band,
+        # because a value without its date is not a finding.
+        if labs:
+            story.append(Paragraph("🧪  Lab Results (latest per test, as entered by the patient)", H2))
+            lab_rows = [[Paragraph("<b>Test</b>", LABEL), Paragraph("<b>Result</b>", LABEL),
+                         Paragraph("<b>Date</b>", LABEL), Paragraph("<b>Reading</b>", LABEL)]]
+            for r in labs:
+                reading = r.get("reading", "")
+                if r.get("urgent"):
+                    reading = f"<b>{reading} — urgent</b>"
+                lab_rows.append([Paragraph(r["label"], BODY),
+                                 Paragraph(f"{r['value']:g} {r['unit']}", BODY),
+                                 Paragraph(str(r["taken_on"]), BODY),
+                                 Paragraph(reading, BODY)])
+            ltbl = Table(lab_rows, colWidths=[5 * cm, 3.2 * cm, 2.6 * cm, 6.2 * cm])
+            ltbl.setStyle(TableStyle([
+                ("BACKGROUND",    (0, 0), (-1, -1), CARD_BG),
+                ("TOPPADDING",    (0, 0), (-1, -1), 3),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                ("LINEBELOW",     (0, 0), (-1, 0), 0.5, TEAL),
+                ("VALIGN",        (0, 0), (-1, -1), "TOP"),
+            ]))
+            story.append(ltbl)
+            story.append(Paragraph(
+                "Bands: " + "; ".join(sorted({f"{r['label']}: {LAB_TESTS[r['test']]['source']}" for r in labs})),
+                SMALL))
+            story.append(Spacer(1, 0.5 * cm))
+
         # ── Plan Sections ─────────────────────────────────
         PLAN_SECTIONS = [
             ("gym_plan",          "💪  Fitness & Gym Plan",       TEAL),
@@ -516,7 +547,14 @@ async def export_pdf(
         plan_data = {}
         generated_at = datetime.now(timezone.utc).strftime("%d %B %Y at %H:%M UTC")
 
-    pdf_bytes = _build_pdf(user, plan_data, generated_at)
+    from routes.labs import user_results
+    from services.lab_results import latest_by_test
+    # A lab read failing must not cost the patient the rest of the handoff.
+    try:
+        labs = latest_by_test(await user_results(db, user))
+    except Exception:
+        labs = []
+    pdf_bytes = _build_pdf(user, plan_data, generated_at, labs)
 
     if pdf_bytes:
         return StreamingResponse(
