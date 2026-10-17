@@ -9,6 +9,7 @@ from services.diet_brief_builder import (
     fasting_days_for as _fasting_days_for,
     diet_conditions as _diet_conditions,
 )
+from services.plan_id import new_plan_id
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FOODS_PATH = BASE_DIR / "data" / "knowledge_base" / "diet_foods.json"
@@ -756,7 +757,7 @@ def generate_diet_plan(user_profile: dict, diet_prefs: dict,
         })
 
     return {
-        "plan_id": f"diet_{user_id}_{int(datetime.now(timezone.utc).timestamp())}",
+        "plan_id": new_plan_id("diet", user_id),
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "user_summary": {
             "dominant_dosha": dominant_dosha,

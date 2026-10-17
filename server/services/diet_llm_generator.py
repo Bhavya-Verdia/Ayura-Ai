@@ -19,6 +19,7 @@ from services.diet_brief_builder import (
     diet_conditions,
     fasting_withheld_reason,
 )
+from services.plan_id import new_plan_id
 
 SYSTEM_PROMPT = """\
 You are a senior Vaidya (M.D. Ayurveda, BAMS+) and clinical nutritionist with mastery of \
@@ -278,7 +279,7 @@ async def generate_diet_plan_llm(
         intolerances = diet_prefs.get("food_intolerances") or []
 
         result = {
-            "plan_id": f"diet_{user_id}_{int(datetime.now(timezone.utc).timestamp())}",
+            "plan_id": new_plan_id("diet", user_id),
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "generation_method": "llm_primary",
             "nutrition_method": "computed_from_components",

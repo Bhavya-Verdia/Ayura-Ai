@@ -4,6 +4,7 @@ import random
 import re
 from datetime import datetime, timezone
 from pathlib import Path
+from services.plan_id import new_plan_id
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 POSES_PATH = BASE_DIR / "data" / "knowledge_base" / "yoga_poses.json"
@@ -3374,7 +3375,7 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
                                 "second trimester.")
 
     return {
-        "plan_id":        f"yoga_{user_id}_{int(datetime.now(timezone.utc).timestamp())}",
+        "plan_id":        new_plan_id("yoga", user_id),
         "generated_at":   datetime.now(timezone.utc).isoformat(),
         "user_summary": {
             "dominant_dosha":     dominant_dosha,

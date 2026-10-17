@@ -10,6 +10,7 @@ from engine.movement_risk import (_INJURY_RISK_TAGS, _LIMITATION_ALIASES, RISK_V
                                   medication_classes, medication_risk_tags)
 from datetime import datetime, timezone
 from pathlib import Path
+from services.plan_id import new_plan_id
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 EXERCISES_PATH = BASE_DIR / "data" / "knowledge_base" / "gym_exercises.json"
@@ -4365,7 +4366,7 @@ def generate_gym_plan(user_profile, gym_prefs, gym_exercises_db=None, extra_avoi
         )
 
     return {
-        "plan_id": f"gym_{user_id}_{int(datetime.now(timezone.utc).timestamp())}",
+        "plan_id": new_plan_id("gym", user_id),
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "user_summary": {
             "dominant_dosha": dominant_dosha,
