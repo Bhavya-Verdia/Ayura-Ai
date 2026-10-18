@@ -26,6 +26,7 @@ from services.auth_service import (
     create_access_token, create_refresh_token, decode_token,
     create_reset_token, verify_reset_token,
     create_verification_token, verify_verification_token,
+    end_other_sessions, token_predates_password_change,
 )
 from core.logger import logger
 from services.email_service import send_verification_email, send_password_reset_email
@@ -457,6 +458,9 @@ async def refresh_token(
     user_dict = await db.users.find_one({"_id": user_id})
     if not user_dict:
         raise HTTPException(status_code=401, detail="User not found")
+    # The change revokes refresh tokens; this holds even if that write was missed.
+    if token_predates_password_change(payload, user_dict):
+        raise HTTPException(status_code=401, detail="Your password was changed. Please sign in again.")
 
     user = UserDocument(**user_dict)
 
@@ -561,6 +565,9 @@ async def reset_password(req: ResetPasswordRequest, db: AsyncIOMotorDatabase = D
             "updated_at": datetime.now(timezone.utc)
         }}
     )
+    # A reset is what someone does when they think their account was taken over:
+    # every session that existed before it ends, or the intruder stays signed in.
+    await end_other_sessions(db, payload["sub"])
 
     return {"message": "Password reset successfully"}
 

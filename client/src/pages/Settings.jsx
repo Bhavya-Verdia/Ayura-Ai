@@ -306,7 +306,9 @@ export default function Settings() {
     try {
       await profileAPI.changePassword(passwords.current, passwords.new)
       setPasswords({ current: '', new: '', confirm: '' })
-      setNotice({ type: 'success', message: 'Password changed successfully!' })
+      // The change signs out every other device, which they would otherwise
+      // only find out about the next time they open the app there.
+      setNotice({ type: 'success', message: 'Password changed. Any other devices signed in to your account have been signed out.' })
     } catch (err) {
       setNotice({ type: 'error', message: err.response?.data?.detail || 'Failed to change password.' })
     }

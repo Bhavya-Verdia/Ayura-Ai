@@ -97,6 +97,39 @@ def get_current_user_id(token: str) -> str:
     return payload["sub"]
 
 
+def token_predates_password_change(claims: dict, user_dict: dict) -> bool:
+    """True for a token issued before the account's password last changed.
+
+    A password reset changed the hash and nothing else, so every session that
+    existed before it kept working — including the one belonging to whoever the
+    owner was resetting to lock out. Refresh tokens are revoked at the change
+    (end_other_sessions); access tokens cannot be revoked one by one, so this
+    refuses any issued before it. Compared at second resolution, which is what
+    a JWT's iat carries.
+    """
+    changed = user_dict.get("password_changed_at")
+    if not changed:
+        return False
+    if isinstance(changed, datetime) and changed.tzinfo is None:
+        changed = changed.replace(tzinfo=timezone.utc)
+    if not isinstance(changed, datetime):
+        return False
+    return int(claims.get("iat") or 0) < int(changed.timestamp())
+
+
+async def end_other_sessions(db, user_id: str) -> datetime:
+    """After a password reset or change: revoke every refresh token and stamp
+    the change, so tokens issued before it stop working. Returns the stamp; a
+    token issued from now on is not refused."""
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    await db.users.update_one({"_id": user_id}, {"$set": {"password_changed_at": now}})
+    await db.refresh_tokens.update_many(
+        {"user_id": user_id, "revoked_at": None},
+        {"$set": {"revoked_at": now, "revoked_reason": "password_changed"}},
+    )
+    return now
+
+
 def get_token_claims(token: str) -> dict:
     """Decode an access token and return the full claims payload.
 
