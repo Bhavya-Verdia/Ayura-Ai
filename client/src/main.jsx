@@ -9,6 +9,8 @@ import { ThemeProvider } from './providers/ThemeProvider'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { queryClient, idbPersister } from './queryClient'
 import { initAnalytics } from './lib/analytics'
+import { initErrorReporting } from './lib/errorReporting'
+import { installStaleDeployRecovery } from './lib/staleDeploy'
 // Self-hosted fonts (was Google Fonts): same-origin woff2 discovered with the
 // main CSS instead of a late 2-domain chain (googleapis CSS → gstatic font) —
 // the webfont repaint was the mobile LCP bottleneck. Latin subsets only are
@@ -32,31 +34,12 @@ if (import.meta.env.PROD) {
   console.warn = noop
 }
 
-// Lazy-load Sentry ONLY when a real DSN is configured. A top-level static import
-// would pull the whole SDK (~100KB+) into the entry chunk and block first paint
-// even for users with no Sentry. The dynamic import makes it a separate async
-// chunk that's never fetched unless a DSN is set. Replay is errors-only (no
-// always-on session recording).
-// `window.__PRERENDER__` is set by scripts/prerender.mjs before any app script
-// runs. Loading Sentry during a snapshot would bake a modulepreload for its
-// 84 kB chunk into dist/index.html — making every landing visitor eagerly fetch
-// the SDK this dynamic import exists to defer — and would report the build
-// machine as a live session. See that script for the full note.
-const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN
-if (SENTRY_DSN && !SENTRY_DSN.includes('sentry.example.com') && !window.__PRERENDER__) {
-  import('@sentry/react').then((Sentry) => {
-    Sentry.init({
-      dsn: SENTRY_DSN,
-      integrations: [
-        Sentry.browserTracingIntegration(),
-        Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),
-      ],
-      tracesSampleRate: 0.1,
-      replaysSessionSampleRate: 0,
-      replaysOnErrorSampleRate: 1.0,
-    })
-  })
-}
+// Sentry: lazy and DSN-gated, see lib/errorReporting.js.
+initErrorReporting()
+
+// A deploy replaces every hashed chunk, so a tab opened before it fails on the
+// next lazy route. Reload once into the new build; see lib/staleDeploy.js.
+installStaleDeployRecovery()
 
 // Product analytics. Also lazy + key-gated (see lib/analytics.js for the privacy
 // contract — autocapture and session recording are off because this UI displays

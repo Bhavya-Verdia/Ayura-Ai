@@ -1,6 +1,8 @@
 import React from 'react'
 import { m } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
+import { reportError } from '../lib/errorReporting'
+import { isChunkLoadError, isReloadingForDeploy, reloadForNewDeploy } from '../lib/staleDeploy'
 import './ErrorBoundary.css'
 
 class ErrorBoundaryInner extends React.Component {
@@ -21,9 +23,37 @@ class ErrorBoundaryInner extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('ErrorBoundary caught an error', error, errorInfo)
+    if (isReloadingForDeploy()) return
+    // A stale tab after a deploy: the new build is the cure, not this screen.
+    const chunk = isChunkLoadError(error)
+    if (chunk && reloadForNewDeploy()) return
+    // React renders a failed subtree twice before it gives up, and a failed
+    // lazy import throws a fresh error object each time; one report.
+    const key = `${this.props.location.pathname}|${error?.message}`
+    if (this.reportedKey === key) return
+    this.reportedKey = key
+    // console.error alone reached nobody: Sentry does not capture the console.
+    // No replay — this boundary wraps every screen, most of them health data.
+    reportError(error, {
+      flow: chunk ? 'stale_deploy' : 'error_boundary',
+      extra: { path: this.props.location.pathname },
+      noReplay: true,
+    })
+  }
+
+  handleRetry = () => {
+    // React.lazy caches a rejected import, so re-rendering a chunk failure
+    // throws it again. Only a page load fetches the chunk afresh.
+    if (isChunkLoadError(this.state.error)) {
+      window.location.reload()
+      return
+    }
+    this.setState({ hasError: false, error: null })
   }
 
   render() {
+    // The page is about to be replaced by the new build; don't flash an error.
+    if (this.state.hasError && isReloadingForDeploy()) return null
     if (this.state.hasError) {
       return (
         <div className="error-boundary-page">
@@ -39,7 +69,7 @@ class ErrorBoundaryInner extends React.Component {
             <div className="error-boundary-actions">
               <button
                 className="btn btn-primary"
-                onClick={() => this.setState({ hasError: false, error: null })}
+                onClick={this.handleRetry}
               >
                 Try Again
               </button>
