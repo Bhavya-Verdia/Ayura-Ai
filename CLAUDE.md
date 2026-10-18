@@ -1216,6 +1216,15 @@ token it **logs** instead of sending, so the flow runs locally.
 - Template parameters may not contain newlines, tabs or 5+ spaces, or Meta rejects the
   whole message — `clean_param`.
 
+### Daily Routine PDF
+`services/routine_pdf.py`, `GET /api/export/routine-pdf?day=all|today|0-6`, buttons in
+`RoutinePdfButtons.jsx`. Print-first: white page, one day per sheet with a tick box per
+step. A day with many condition notes is **shrunk to fit** (`KeepInFrame`) — before that
+every day left its last row ("Sleep") alone on a second page. It prints only fields the
+screen already shows; `exercise_limits` is flags and is worded as `RoutineView` words it.
+The built-in PDF fonts are cp1252: IAST and arrows are folded (`plain`), never boxed.
+"today" is the user's weekday, in their timezone.
+
 ### Prakriti instrument
 The live quiz is **`client/src/pages/DoshaQuiz.jsx`**, its questions in
 `client/src/pages/doshaQuiz/questions.js` — 21 constitutional traits, a

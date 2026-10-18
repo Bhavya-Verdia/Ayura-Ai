@@ -1563,14 +1563,25 @@ def _build_meal_guidance(dosha: str, season: str, agni_type: str, agni_notes: di
         # 6:30–7:30 PM" over a dinner the timeline put at 6 PM for an early bed.
         if meal_times and meal_times.get(meal):
             m["ideal_time"] = meal_times[meal]
+    # Every seasonal note names its season. "Agni is strong" alone (Sharad and Shishira)
+    # read as a statement about the person, printed beside "Your Agni type is Vishama".
+    season_name = sd["label"].split(" (")[0]
     agni_seasonal_notes = {
-        "strongest": "Winter Agni is at peak — heavier, nourishing meals are appropriate.",
-        "strong":    "Agni is strong — well-cooked moderately heavy meals work well.",
-        "mild":      "Spring Agni is mild — keep meals lighter. Avoid heavy oily food.",
-        "weak":      "Summer Agni is weak despite the heat — prefer easily digestible, cooling foods.",
-        "very_weak": "Monsoon Agni is very weak — cooked, light, easily digestible food only. No raw food.",
+        "strongest": f"In {season_name}, digestive fire is at its seasonal peak — heavier, nourishing meals generally suit the season.",
+        "strong":    f"In {season_name}, digestive fire is generally strong — well-cooked, moderately heavy meals suit the season.",
+        "mild":      f"In {season_name}, digestive fire is generally mild — keep meals lighter and avoid heavy, oily food.",
+        "weak":      f"In {season_name}, digestive fire is generally weak despite the heat — prefer easily digestible, cooling foods.",
+        "very_weak": f"In {season_name}, digestive fire is generally very weak — cooked, light, easily digestible food only. No raw food.",
     }
-    guidance["seasonal_note"] = agni_seasonal_notes.get(agni, "")
+    note = agni_seasonal_notes.get(agni, "")
+    # The season's tendency must not override the person's own Agni: a strong season
+    # does not make Manda or Vishama Agni able to take heavier meals.
+    own = (agni_type or "").lower()
+    if note and agni in ("strongest", "strong") and own in ("manda", "vishama"):
+        label = {"manda": "Manda (slow)", "vishama": "Vishama (irregular)"}[own]
+        note += (f" That is the season, not you: your own Agni is {label}, so your digestion comes first — "
+                 "keep meals regular and moderate rather than heavier.")
+    guidance["seasonal_note"] = note
     guidance["agni_note"] = agni_notes_list.get("general", "")
     guidance["withheld"] = withheld
     return guidance
