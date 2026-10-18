@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, Suspense, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useMemo, Suspense, useRef } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../providers/AuthContext'
@@ -107,6 +107,15 @@ export default function DoshaQuiz() {
   const navigate = useNavigate()
   // Holds the pending auto-advance so a second tap (to add a blend) can cancel it.
   const advanceTimerRef = useRef(null)
+  // The question on screen now. The counter above the card moves the moment the
+  // index does, while the old card is still sliding out (mode="wait", 300ms), and
+  // a tap on that outgoing card ran its stale handlers: it answered the old
+  // question again and advanced a second time, so the next question was never
+  // shown. Mind questions auto-advance 220ms after a pick, which puts the whole
+  // window inside a quick double-tap. A layout effect, so it is current before
+  // the browser can deliver the next tap.
+  const shownIndexRef = useRef(0)
+  useLayoutEffect(() => { shownIndexRef.current = traitIndex }, [traitIndex])
 
   // ── Funnel instrumentation ─────────────────────────────────────────────────
   // Mirrors of state for the unmount handler: a cleanup closure created on mount
@@ -271,6 +280,7 @@ export default function DoshaQuiz() {
   // copy of `traits` predates the answer it is reporting on. The Next button
   // passes nothing and reads state, which is current by then.
   function advanceNow(recorded) {
+    if (traitIndex !== shownIndexRef.current) return   // from the card sliding out
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current)
     const answer = recorded ?? traits[currentTraitQ.id] ?? ''
     track(EVENTS.ASSESSMENT_STEP_COMPLETED, {
@@ -297,6 +307,7 @@ export default function DoshaQuiz() {
   }
 
   function selectTrait(value) {
+    if (traitIndex !== shownIndexRef.current) return   // from the card sliding out
     // Manasa (Triguna) answers are scored by exact string count — no blending.
     if (isManasaQ) {
       setTraits((prev) => ({ ...prev, [currentTraitQ.id]: value }))
