@@ -1,9 +1,20 @@
 import json
 import logging
+import re
 from ai.llm_client import llm_client
 from ai.rag_pipeline import rag_pipeline
 
 logger = logging.getLogger(__name__)
+
+# A rationale that says its own remedy is absent ("the fatigue remedy is not
+# included in this plan"). Only a claim about the remedy or plan counts, so
+# "not included in the diet" or "avoid if not tolerated" stays.
+_DENIES_REMEDY = re.compile(
+    r"\b(remedy|plan)\b[^.]{0,60}\b(is not|isn't|was not|wasn't|not being|has not been)\s+"
+    r"(included|part of|provided|covered|addressed)"
+    r"|\bno remedy (is|has been) (included|provided|given)",
+    re.IGNORECASE,
+)
 
 # ── Deterministic gate on the narrative ───────────────────────────────────────
 # Both enrichers merged the model's text straight into the plan. The medicines one
@@ -133,6 +144,18 @@ async def enrich_remedies_plan(raw_plan: dict, user_profile: dict, remedies_pref
         docs = await rag_pipeline.query(rag_query, "remedy", n_results=4)
         rag_context = rag_pipeline.format_context(docs, max_chars=1200) or "Use classical Ayurvedic home remedy principles."
 
+        # One key per symptom, by its real id. The schema used to show a single
+        # placeholder key, and with retrieval covering only one of two symptoms the
+        # model wrote, beside the fatigue remedy, that "the fatigue remedy is not
+        # included in this plan".
+        rationale_keys = ",\n".join(
+            f'    "{s["id"]}": "Why {s["remedy_name"] or "this remedy"} works for {s["name"]} in this dosha. '
+            'Explain ONLY the ingredients and preparation given for it; never describe a different remedy, '
+            'and never say a remedy is missing — it is in the plan. Where pregnancy_alternative is true, '
+            'explain the gentle option given and say nothing about the usual remedy."'
+            for s in compressed_symptoms if s.get("id")
+        )
+
         prompt = f"""
 You are an expert Ayurvedic practitioner. A home remedies plan has been generated for a user with the following profile:
 - Age: {user_profile.get('age')}
@@ -146,14 +169,14 @@ You are an expert Ayurvedic practitioner. A home remedies plan has been generate
 CLASSICAL KNOWLEDGE BASE (ground your rationale in these references):
 {rag_context}
 
-Symptoms Addressed:
+Symptoms Addressed (every one of these HAS a remedy in the plan):
 {json.dumps(compressed_symptoms, indent=2)}
 
 Provide an enriched context in EXACTLY this JSON format:
 {{
   "personalized_intro": "2-3 sentences addressing user's specific symptom combination and dosha",
   "remedy_rationale": {{
-    "symptom_id": "Why this specific remedy works for this dosha - Ayurvedic explanation. Explain ONLY the ingredients and preparation given for it; never describe a different remedy. Where pregnancy_alternative is true, explain the gentle option given and say nothing about the usual remedy."
+{rationale_keys}
   }},
   "synergy_note": "If multiple symptoms, explain how the remedies work together. If single symptom, explain how the remedy balances the entire body.",
   "recovery_timeline": "What to expect day by day",
@@ -182,12 +205,21 @@ Provide an enriched context in EXACTLY this JSON format:
         raw_plan["prevention_tips"] = enrichment_data.get("prevention_tips", [])
         raw_plan["when_to_escalate"] = enrichment_data.get("when_to_escalate", "")
 
-        # Merge rationales
+        # Merge rationales. One that denies its own remedy is in the plan is shown
+        # beside that remedy, so it is withheld rather than contradicting the card.
         rationales = enrichment_data.get("remedy_rationale", {})
         for sym in raw_plan.get("symptoms_addressed", []):
             sym_id = sym.get("symptom_id")
-            if sym_id in rationales:
-                sym["ayurvedic_rationale"] = rationales[sym_id]
+            text = rationales.get(sym_id)
+            if not text:
+                continue
+            if _DENIES_REMEDY.search(str(text)):
+                raw_plan.setdefault("coaching_withheld", []).append({
+                    "field": f"remedy_rationale.{sym_id}", "text": text,
+                    "reason": "said this symptom's remedy is not in the plan, beside the remedy",
+                })
+                continue
+            sym["ayurvedic_rationale"] = text
 
         raw_plan["enriched"] = True
         raw_plan["enrichment_model"] = llm_client.provider
