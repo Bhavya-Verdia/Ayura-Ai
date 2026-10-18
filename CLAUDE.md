@@ -1225,6 +1225,14 @@ screen already shows; `exercise_limits` is flags and is worded as `RoutineView` 
 The built-in PDF fonts are cp1252: IAST and arrows are folded (`plain`), never boxed.
 "today" is the user's weekday, in their timezone.
 
+The routine's own lines name food: the snack's options, the Agni notes, the tea at the desk,
+Kapha's ginger-lemon water. Reading a production PDF found a diabetic's meal card leaving
+out dates while every 4 PM row still offered them. `_SLOT_FOOD_LISTS` / `_SLOT_FOOD_SWAPS`
+in `routine_engine.py` name each such phrase. Each option is screened on its own through
+the meal card's `_screen_food_list`; screening the whole sentence matched "sugar" inside
+"low-blood-sugar". A test fails if a phrase stops matching a template. A new food-naming line
+needs an entry there, or it is not checked.
+
 ### Prakriti instrument
 The live quiz is **`client/src/pages/DoshaQuiz.jsx`**, its questions in
 `client/src/pages/doshaQuiz/questions.js` — 21 constitutional traits, a
