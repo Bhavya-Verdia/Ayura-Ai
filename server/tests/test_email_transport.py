@@ -8,6 +8,8 @@ timeout, so the background task parked in connect() forever. Registration logged
 
 These cover the two decisions that failure turned on. Nothing here opens a socket.
 """
+# SMTP is mocked here. The recipient is not @example.com because email_service
+# never sends to reserved test domains, which would skip the transport under test.
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -25,7 +27,7 @@ def test_implicit_tls_ports_do_not_call_starttls(port, monkeypatch):
 
     with patch.object(es.smtplib, "SMTP_SSL") as ssl_cls, patch.object(es.smtplib, "SMTP") as plain_cls:
         ssl_cls.return_value.__enter__.return_value = MagicMock()
-        es._send_email_sync("someone@example.com", "s", "<p>b</p>")
+        es._send_email_sync("someone@ayuraai.in", "s", "<p>b</p>")
 
     assert ssl_cls.called, f"port {port} must use implicit TLS"
     assert not plain_cls.called
@@ -40,7 +42,7 @@ def test_submission_ports_negotiate_starttls(port, monkeypatch):
 
     with patch.object(es.smtplib, "SMTP") as plain_cls, patch.object(es.smtplib, "SMTP_SSL") as ssl_cls:
         server = plain_cls.return_value.__enter__.return_value
-        es._send_email_sync("someone@example.com", "s", "<p>b</p>")
+        es._send_email_sync("someone@ayuraai.in", "s", "<p>b</p>")
 
     assert plain_cls.called and not ssl_cls.called
     server.starttls.assert_called_once()
@@ -59,9 +61,9 @@ def test_a_transport_failure_is_logged_not_swallowed_silently(monkeypatch, caplo
 
     with patch.object(es.smtplib, "SMTP_SSL", side_effect=TimeoutError("timed out")):
         with caplog.at_level("ERROR"):
-            es._send_email_sync("someone@example.com", "s", "<p>b</p>")
+            es._send_email_sync("someone@ayuraai.in", "s", "<p>b</p>")
 
     logged = " ".join(r.message for r in caplog.records)
-    assert "someone@example.com" in logged
+    assert "someone@ayuraai.in" in logged
     assert "TimeoutError" in logged, "the failure type must reach the log"
     assert "2465" in logged, "the port must reach the log — it was the cause"
