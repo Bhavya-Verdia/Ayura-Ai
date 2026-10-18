@@ -3,7 +3,7 @@ import client from '../api/client';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { m, AnimatePresence } from 'framer-motion';
-import { Bot, Send, Sparkles, AlertTriangle, Loader2, Zap, Copy, Check, ChevronDown, Leaf, Soup, ClipboardList, Lightbulb, AlarmClock } from 'lucide-react';
+import { Bot, Send, Sparkles, AlertTriangle, Loader2, Zap, Copy, Check, ChevronDown, Leaf, Soup, ClipboardList, Lightbulb, AlarmClock, Plus, Trash2, MessagesSquare } from 'lucide-react';
 import './Dashboard.css';
 import './Chat.css';
 
@@ -25,6 +25,18 @@ const SUGGESTION_GROUPS = [
     prompts: ['What is my dominant dosha?', 'How do seasons affect Vata?'],
   },
 ]
+
+// "Today", "Yesterday", a weekday within the week, then the date.
+function formatSessionDate(iso) {
+  if (!iso) return ''
+  const d = new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso : `${iso}Z`)
+  if (Number.isNaN(d.getTime())) return ''
+  const days = Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(d).setHours(0, 0, 0, 0)) / 86400000)
+  if (days <= 0) return 'Today'
+  if (days === 1) return 'Yesterday'
+  if (days < 7) return d.toLocaleDateString([], { weekday: 'long' })
+  return d.toLocaleDateString([], { day: 'numeric', month: 'short' })
+}
 
 function formatMsgTime(ts) {
   if (!ts) return ''
@@ -137,6 +149,10 @@ export default function Chat() {
   const [inputValue, setInputValue]   = useState('');
   const [isLoading, setIsLoading]     = useState(false);
   const [sessionId, setSessionId]     = useState(null);
+  const [sessions, setSessions]       = useState([]);
+  const [showList, setShowList]       = useState(false);   // the chat list, on a phone
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const openTokenRef   = useRef(0);
   const [copiedIdx, setCopiedIdx]     = useState(null);
   const [showScrollFab, setShowScrollFab] = useState(false);
   const inputRef       = useRef(null);
@@ -152,22 +168,77 @@ export default function Chat() {
     }
   }, [])
 
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const { data: sessions } = await client.get('/chat/sessions');
-        if (sessions.length > 0) {
-          const sid = sessions[0].session_id;
-          setSessionId(sid);
-          const { data: history } = await client.get(`/chat/sessions/${sid}`);
-          setMessages(history);
-        }
-      } catch (error) {
-        console.error('Failed to load chat history', error);
-      }
-    };
-    fetchSession();
+  // ── Conversations ──
+  // Every chat is stored server-side (chat_sessions + chat_messages); the page
+  // used to open only the newest one, with no way back to the others and no way
+  // to start afresh.
+  const loadSessions = useCallback(async () => {
+    try {
+      const { data } = await client.get('/chat/sessions');
+      const list = Array.isArray(data) ? data : [];
+      setSessions(list);
+      return list;
+    } catch (error) {
+      console.error('Failed to load chats', error);
+      return null;
+    }
   }, []);
+
+  // A reply still streaming belongs to the chat it was asked in. Dropping the
+  // socket's identity first makes its handlers ignore the rest of it.
+  const stopStreaming = useCallback(() => {
+    const ws = wsRef.current;
+    wsRef.current = null;
+    if (ws && ws.readyState < WebSocket.CLOSING) ws.close();
+    setIsLoading(false);
+  }, []);
+
+  const openSession = useCallback(async (sid) => {
+    stopStreaming();
+    setShowList(false);
+    setConfirmDelete(null);
+    setSessionId(sid);
+    setMessages([]);
+    const token = ++openTokenRef.current;
+    try {
+      const { data: history } = await client.get(`/chat/sessions/${sid}`);
+      if (token === openTokenRef.current) setMessages(Array.isArray(history) ? history : []);
+    } catch (error) {
+      console.error('Failed to load chat', error);
+    }
+  }, [stopStreaming]);
+
+  const newChat = () => {
+    stopStreaming();
+    openTokenRef.current++;
+    setSessionId(null);
+    setMessages([]);
+    setShowList(false);
+    setConfirmDelete(null);
+    inputRef.current?.focus();
+  };
+
+  const deleteSession = async (sid) => {
+    setConfirmDelete(null);
+    try {
+      await client.delete(`/chat/sessions/${sid}`);
+    } catch (error) {
+      console.error('Failed to delete chat', error);
+      return;
+    }
+    const list = await loadSessions();
+    if (sid === sessionId) {
+      if (list && list.length > 0) openSession(list[0].session_id);
+      else newChat();
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      const list = await loadSessions();
+      if (list && list.length > 0) openSession(list[0].session_id);
+    })();
+  }, [loadSessions, openSession]);
 
   // Auto-scroll to bottom unless user has scrolled up.
   //
@@ -236,6 +307,7 @@ export default function Chat() {
     ws.onopen = () => { ws.send(content); };
 
     ws.onmessage = (event) => {
+      if (wsRef.current !== ws) return;   // the user moved to another chat
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'status') {
@@ -271,6 +343,7 @@ export default function Chat() {
           });
           setIsLoading(false);
           ws.close();
+          loadSessions();   // a new chat now has a title; this one moves to the top
         }
       } catch (err) {
         console.error('WS parse error', err);
@@ -278,6 +351,7 @@ export default function Chat() {
     };
 
     ws.onerror = (err) => {
+      if (wsRef.current !== ws) return;
       console.error('WebSocket error:', err);
       setMessages(prev => {
         const arr = [...prev];
@@ -290,6 +364,7 @@ export default function Chat() {
     };
 
     ws.onclose = () => {
+      if (wsRef.current !== ws) return;
       setMessages(prev => {
         const arr = [...prev];
         if (arr[arr.length - 1].status === 'Thinking…') {
@@ -320,11 +395,59 @@ export default function Chat() {
         <div className="chat-header-icon">
           <Zap size={24} strokeWidth={2.5} />
         </div>
-        <div>
+        <div className="chat-header-text">
           <h1 className="chat-header-title">Health AI Assistant</h1>
           <p className="chat-header-subtitle">Ask questions, report symptoms, or request personalised plan adaptations.</p>
         </div>
+        {/* On a phone the chat list is a panel; these open it and start afresh. */}
+        <div className="chat-header-actions">
+          <button type="button" className="chat-header-btn" onClick={() => setShowList(v => !v)}
+                  aria-expanded={showList} aria-controls="chat-sidebar">
+            <MessagesSquare size={18} strokeWidth={2} /> Chats
+          </button>
+          <button type="button" className="chat-header-btn" onClick={newChat} aria-label="New chat">
+            <Plus size={18} strokeWidth={2.25} />
+          </button>
+        </div>
       </header>
+
+      <div className="chat-body">
+      <aside id="chat-sidebar" className={`chat-sidebar ${showList ? 'open' : ''}`} aria-label="Your chats">
+        <button type="button" className="chat-new-btn" onClick={newChat}>
+          <Plus size={16} strokeWidth={2.25} /> New chat
+        </button>
+        <div className="chat-session-list">
+          {sessions.length === 0 && <p className="chat-session-empty">Your chats will appear here.</p>}
+          {sessions.map(s => {
+            const title = s.title || s.preview || 'New chat';
+            const active = s.session_id === sessionId;
+            return (
+              <div key={s.session_id} className={`chat-session-item${active ? ' active' : ''}`}>
+                {confirmDelete === s.session_id ? (
+                  <div className="chat-session-confirm" role="group" aria-label={`Delete chat: ${title}`}>
+                    <span>Delete this chat?</span>
+                    <button type="button" className="danger" onClick={() => deleteSession(s.session_id)}>Delete</button>
+                    <button type="button" onClick={() => setConfirmDelete(null)}>Cancel</button>
+                  </div>
+                ) : (
+                  <>
+                    <button type="button" className="chat-session-open" onClick={() => openSession(s.session_id)}
+                            aria-current={active ? 'true' : undefined}>
+                      <span className="chat-session-title">{title}</span>
+                      <span className="chat-session-date">{formatSessionDate(s.updated_at)}</span>
+                    </button>
+                    <button type="button" className="chat-session-delete" onClick={() => setConfirmDelete(s.session_id)}
+                            aria-label={`Delete chat: ${title}`} title="Delete chat">
+                      <Trash2 size={14} strokeWidth={2} />
+                    </button>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </aside>
+      {showList && <div className="chat-sidebar-scrim" onClick={() => setShowList(false)} aria-hidden="true" />}
 
       <div className="chat-canvas" style={{ position: 'relative' }}>
         <div className="chat-history" ref={historyRef}>
@@ -401,6 +524,7 @@ export default function Chat() {
             </button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

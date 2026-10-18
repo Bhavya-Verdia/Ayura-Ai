@@ -352,8 +352,97 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ─── Conversations: the chat list beside the transcript ─── */
+.chat-header-text { flex: 1; min-width: 0; }
+.chat-header-actions { display: none; gap: 8px; }
+.chat-header-btn {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px;
+  justify-content: center; padding: 0 12px; border-radius: 12px; cursor: pointer;
+  background: rgba(92,171,116,0.08); border: 1px solid var(--border-subtle);
+  color: var(--ayura-ink); font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600;
+}
+
+.chat-body { flex: 1; display: flex; gap: 16px; min-height: 0; position: relative; }
+
+.chat-sidebar {
+  width: 264px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; min-height: 0;
+  background: rgba(23,19,14,0.88); border: 1px solid var(--border-subtle); border-radius: 24px;
+  padding: 14px 10px;
+}
+[data-theme='light'] .chat-sidebar { background: rgba(255,255,255,0.88); }
+
+.chat-new-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px;
+  border-radius: 14px; border: 1px solid rgba(92,171,116,0.35); cursor: pointer;
+  background: linear-gradient(135deg, rgba(92,171,116,0.16), rgba(92,171,116,0.06));
+  color: var(--ayura-teal); font-family: var(--font-ui); font-weight: 700; font-size: 0.9rem;
+}
+.chat-new-btn:hover { background: rgba(92,171,116,0.22); }
+
+.chat-session-list {
+  flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px;
+  overscroll-behavior: contain;
+}
+.chat-session-empty { color: var(--ayura-muted); font-size: 0.82rem; text-align: center; margin: 18px 8px; }
+
+.chat-session-item {
+  display: flex; align-items: center; border-radius: 12px; border: 1px solid transparent;
+  transition: background 0.15s;
+}
+.chat-session-item:hover { background: rgba(92,171,116,0.06); }
+.chat-session-item.active { background: rgba(92,171,116,0.12); border-color: rgba(92,171,116,0.28); }
+
+.chat-session-open {
+  flex: 1; min-width: 0; text-align: left; background: none; border: none; cursor: pointer;
+  padding: 10px 6px 10px 12px; display: flex; flex-direction: column; gap: 2px; color: var(--ayura-ink);
+}
+.chat-session-title {
+  font-family: var(--font-ui); font-size: 0.86rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chat-session-date { font-size: 0.72rem; color: var(--ayura-muted); }
+
+.chat-session-delete {
+  flex-shrink: 0; width: 36px; height: 36px; margin-right: 4px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  background: none; border: none; color: var(--ayura-muted); opacity: 0; transition: opacity 0.15s, color 0.15s;
+}
+.chat-session-item:hover .chat-session-delete,
+.chat-session-item.active .chat-session-delete,
+.chat-session-delete:focus-visible { opacity: 1; }
+.chat-session-delete:hover { color: var(--ayura-rose); }
+
+.chat-session-confirm {
+  flex: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 10px;
+  font-size: 0.8rem; color: var(--ayura-ink);
+}
+.chat-session-confirm span { flex: 1 1 100%; }
+.chat-session-confirm button {
+  min-height: 32px; padding: 0 12px; border-radius: 8px; cursor: pointer; font-weight: 600;
+  font-size: 0.78rem; background: none; border: 1px solid var(--border-light); color: var(--ayura-ink);
+}
+.chat-session-confirm button.danger { border-color: rgba(251,113,133,0.4); color: var(--ayura-rose); }
+
+.chat-sidebar-scrim { display: none; }
+
 @media (max-width: 768px) {
   .chat-page-root { padding: 0 12px 12px; }
+  .chat-header-actions { display: flex; }
+  /* The list is a panel over the transcript here: side by side, 264px would
+     leave a phone ~100px of conversation. */
+  .chat-sidebar {
+    position: absolute; inset: 0 auto 0 0; width: min(320px, 86%); z-index: 20;
+    transform: translateX(-110%); transition: transform 0.22s ease; visibility: hidden;
+    box-shadow: var(--glass-shadow-strong);
+  }
+  .chat-sidebar.open { transform: none; visibility: visible; }
+  .chat-sidebar-scrim {
+    display: block; position: absolute; inset: 0; z-index: 19; border-radius: 24px;
+    background: rgba(0,0,0,0.45);
+  }
+  /* Touch has no hover: the delete control stays visible. */
+  .chat-session-delete { opacity: 1; width: 44px; height: 44px; }
+  .chat-session-open { min-height: 44px; }
   /* The panel is viewport-height here, so every pixel the header takes comes
      straight out of the transcript — it was eating ~45% of a 662px screen,
      leaving 370px of messages. The subtitle is first-run copy that a returning
