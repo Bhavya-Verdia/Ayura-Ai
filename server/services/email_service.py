@@ -23,8 +23,25 @@ IMPLICIT_TLS_PORTS = {465, 2465}
 # background task was still sitting in connect() on a port the host drops.
 SMTP_TIMEOUT_SECONDS = 20
 
+# Domains that cannot receive mail by definition (RFC 2606 / RFC 6761). Test
+# accounts and the synthetic signup monitor use them; sending there only earns
+# the sender a hard bounce, and enough bounces push real users' verification
+# emails into spam.
+_RESERVED_DOMAINS = ("example.com", "example.net", "example.org")
+_RESERVED_TLDS = (".example", ".test", ".invalid", ".localhost")
+
+
+def is_undeliverable_test_address(email: str) -> bool:
+    domain = (email or "").rsplit("@", 1)[-1].strip().lower()
+    return (domain in _RESERVED_DOMAINS or domain == "localhost"
+            or any(domain.endswith(d) for d in (*(f".{r}" for r in _RESERVED_DOMAINS), *_RESERVED_TLDS)))
+
+
 def _send_email_sync(to_email: str, subject: str, html_body: str):
     """Synchronous function to send email via SMTP."""
+    if is_undeliverable_test_address(to_email):
+        logger.info(f"Email not sent: {to_email} is a reserved test address")
+        return
     if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
         logger.warning(" Email not sent because SMTP credentials are not configured.")
         logger.info(f"       To: {to_email} | Subject: {subject}")

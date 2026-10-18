@@ -1,0 +1,81 @@
+name: Ayura AI Monitor — Uptime
+
+# Is ayuraai.in up? Every 10 minutes: the API and its databases, the served
+# frontend, and the login/profile routes (.github/scripts/monitor_uptime.py).
+#
+# The alert is this run FAILING, which GitHub emails to whoever last changed the
+# schedule. The repo is public, so an issue would announce an outage to anyone.
+# monitor_alert.py fails the run when a failure starts and then hourly, not every
+# ten minutes; the state rides between runs in the Actions cache.
+#
+# Runs are skipped while a deploy is in progress: `compose up --force-recreate`
+# takes the API down for about a minute by design.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write   # the cache that carries alert state
+
+concurrency:
+  group: monitor-uptime
+  cancel-in-progress: false
+
+jobs:
+  uptime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Skip while a deploy is running
+        id: deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh run list -R "$GITHUB_REPOSITORY" --workflow "Ayura AI Deploy" --limit 5 \
+                --json status --jq '[.[] | select(.status=="in_progress" or .status=="queued")] | length')
+          echo "running=$n" >> "$GITHUB_OUTPUT"
+          [ "$n" = "0" ] || echo "A deploy is running; skipping this check." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Restore alert state
+        if: steps.deploy.outputs.running == '0'
+        uses: actions/cache/restore@v6
+        with:
+          path: monitor-state.json
+          key: monitor-uptime-state-${{ github.run_id }}
+          restore-keys: monitor-uptime-state-
+
+      - name: Check the site
+        id: check
+        if: steps.deploy.outputs.running == '0'
+        continue-on-error: true
+        env:
+          REPORT: report.md
+        run: python3 .github/scripts/monitor_uptime.py
+
+      - name: Decide whether to alert
+        id: alert
+        if: steps.deploy.outputs.running == '0'
+        run: |
+          result=$([ "${{ steps.check.outcome }}" = "success" ] && echo ok || echo fail)
+          python3 .github/scripts/monitor_alert.py monitor-state.json "$result"
+          { cat report.md 2>/dev/null; echo; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Save alert state
+        if: steps.deploy.outputs.running == '0'
+        uses: actions/cache/save@v6
+        with:
+          path: monitor-state.json
+          key: monitor-uptime-state-${{ github.run_id }}
+
+      - name: Alert
+        if: steps.alert.outputs.alert == 'true'
+        run: |
+          echo "::error title=ayuraai.in is down::${{ steps.alert.outputs.note }} See the run summary for which check."
+          exit 1

@@ -1,0 +1,104 @@
+name: Ayura AI Monitor — Signup
+
+# Can a new user get through onboarding right now? Every 6 hours, a synthetic
+# user registers, verifies, onboards with the payload Chrome in India sends,
+# takes the Prakriti assessment, and is deleted (server/scripts/
+# synthetic_signup_check.py, run inside the API container so it can mint its own
+# verification token; no secret leaves the server).
+#
+# Nobody completed onboarding from 2026-09-22 to 2026-10-18 while every uptime
+# signal was green: the server was healthy and only that one input failed. This
+# is the check that would have caught it on the first day.
+#
+# Alerting works as in monitor-uptime.yml: the run fails, GitHub emails the owner,
+# throttled to the start of a failure and then hourly.
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: monitor-signup
+  cancel-in-progress: false
+
+env:
+  DEPLOY_HOST: 34.14.208.155
+  REMOTE_DIR: /opt/ayuraai
+
+jobs:
+  signup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Skip while a deploy is running
+        id: deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh run list -R "$GITHUB_REPOSITORY" --workflow "Ayura AI Deploy" --limit 5 \
+                --json status --jq '[.[] | select(.status=="in_progress" or .status=="queued")] | length')
+          echo "running=$n" >> "$GITHUB_OUTPUT"
+          [ "$n" = "0" ] || echo "A deploy is running; skipping this check." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Restore alert state
+        if: steps.deploy.outputs.running == '0'
+        uses: actions/cache/restore@v6
+        with:
+          path: monitor-state.json
+          key: monitor-signup-state-${{ github.run_id }}
+          restore-keys: monitor-signup-state-
+
+      - name: Run a synthetic signup on the server
+        id: check
+        if: steps.deploy.outputs.running == '0'
+        continue-on-error: true
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          set +e
+          out=$(ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=accept-new "root@$DEPLOY_HOST" \
+                  "cd $REMOTE_DIR && docker compose exec -T api python scripts/synthetic_signup_check.py" 2>&1)
+          rc=$?
+          set -e
+          result=$(printf '%s\n' "$out" | tail -n 1)
+          {
+            echo "### Synthetic signup: $([ $rc -eq 0 ] && echo passed || echo FAILED)"
+            echo
+            echo '```json'
+            printf '%s\n' "$result" | python3 -m json.tool 2>/dev/null || printf '%s\n' "$out" | tail -n 20
+            echo '```'
+          } > report.md
+          cat report.md
+          exit $rc
+
+      - name: Decide whether to alert
+        id: alert
+        if: steps.deploy.outputs.running == '0'
+        run: |
+          result=$([ "${{ steps.check.outcome }}" = "success" ] && echo ok || echo fail)
+          python3 .github/scripts/monitor_alert.py monitor-state.json "$result"
+          { cat report.md 2>/dev/null; echo; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Save alert state
+        if: steps.deploy.outputs.running == '0'
+        uses: actions/cache/save@v6
+        with:
+          path: monitor-state.json
+          key: monitor-signup-state-${{ github.run_id }}
+
+      - name: Alert
+        if: steps.alert.outputs.alert == 'true'
+        run: |
+          echo "::error title=New users cannot sign up::${{ steps.alert.outputs.note }} The run summary names the failing step."
+          exit 1
