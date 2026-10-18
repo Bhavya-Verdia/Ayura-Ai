@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { TRAIT_QUESTIONS, MANASA_TRAIT_IDS } from '../../src/pages/doshaQuiz/questions.js'
 
 /* Funnel instrumentation for the dosha assessment, driven end-to-end against a
  * mocked API.
@@ -74,12 +75,28 @@ const readEvents = async (page) =>
 const named = (events, name) => events.filter((e) => e.event === name)
 const countOf = async (page, name) => named(await readEvents(page), name).length
 
-/** Answer the visible trait question, then move on. */
+// Question order is fixed (only the options are shuffled), so the index says
+// which questions are the Manasa block.
+const isManasa = (index) => MANASA_TRAIT_IDS.includes(TRAIT_QUESTIONS[index]?.id)
+
+/** Answer the visible trait question, then wait until its card has gone.
+ *
+ * The counter above the card moves the moment the index does, while the old
+ * card is still sliding out — so "Question N of" being visible does not mean
+ * card N is. This helper used to tap "the first card" right then, which was the
+ * outgoing one, and wait for a Next that the new card never showed: about one
+ * full run in four. Waiting for the heading to change is what "card N is up"
+ * means with AnimatePresence mode="wait", and it reads in any locale. */
 async function answerCurrentQuestion(page, index) {
   await expect(page.getByText(`Question ${index + 1} of`)).toBeVisible()
+  const heading = page.locator('h2.da-question')
+  const answered = await heading.innerText()
   await page.locator('.da-trait-card').first().click()
-  // The first tap opens the blend window; "Next" skips waiting it out.
-  await page.locator('.da-next-btn').click()
+  // Mind questions move on 220ms after a pick. The rest open a 2s blend window,
+  // which "Next" skips; if a slow run outlasts it, the auto-advance has already
+  // done the job and the Next is gone, so a missed click is not a failure.
+  if (!isManasa(index)) await page.locator('.da-next-btn').click({ timeout: 1500 }).catch(() => {})
+  await expect(heading).not.toHaveText(answered)
 }
 
 test.describe('dosha assessment funnel', () => {
@@ -188,6 +205,33 @@ test.describe('dosha assessment funnel', () => {
 
     await page.goto('/dashboard')
     expect(await countOf(page, 'assessment_abandoned')).toBe(0)
+  })
+
+  test('a tap on the card that is sliding out does not skip the next question', async ({ page }) => {
+    // The counter above the card updates the moment the index moves, while the
+    // old card is still sliding out (AnimatePresence mode="wait", 300ms). A tap
+    // on that outgoing card ran its stale handler — answered the old question
+    // again and advanced a second time — so the next question was never shown.
+    // Mind (Manasa) questions auto-advance 220ms after a pick, which puts the
+    // whole window inside one quick double-tap. This is what made the funnel
+    // test above fail about one run in four, at "Question 24 of".
+    await page.goto('/dosha-quiz')
+    await expect(page.getByText('Question 1 of')).toBeVisible()
+    const total = Number((await page.getByText(/Question 1 of \d+/).innerText()).match(/of (\d+)/)[1])
+    const firstManasa = total - 5          // the last five are the Manasa block
+    for (let i = 0; i < firstManasa; i++) await answerCurrentQuestion(page, i)
+
+    await expect(page.getByText(`Question ${firstManasa + 1} of`)).toBeVisible()
+    const manasaQuestion = await page.locator('h2.da-question').innerText()
+    await page.locator('.da-trait-card').first().click()
+    await expect(page.getByText(`Question ${firstManasa + 2} of`)).toBeVisible()
+    // Tap the outgoing card in the gap, as a quick finger does: a DOM click, so
+    // Playwright does not wait for the slide to finish first.
+    await page.evaluate(() => document.querySelector('.da-trait-card')?.click())
+
+    await page.waitForTimeout(800)          // past the 220ms advance and the 300ms slide
+    await expect(page.getByText(`Question ${firstManasa + 2} of`)).toBeVisible()
+    await expect(page.locator('h2.da-question')).not.toHaveText(manasaQuestion)
   })
 
   test('never sends an answer, a dosha, or a condition', async ({ page }) => {
