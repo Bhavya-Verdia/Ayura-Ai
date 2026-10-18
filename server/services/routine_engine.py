@@ -1104,7 +1104,7 @@ _CONDITION_SLOT_NOTES: dict[str, list[tuple[str, str]]] = {
     "metabolic_syndrome": [("meals", "A 10-minute walk after this meal lowers the glucose and triglyceride rise it brings.")],
     "obesity": [("meals", "A 10-minute walk after this meal — the classical Shatapadi — is part of the plan, not optional.")],
     "hypertension": [
-        ("exercise", "Hridaya Roga: keep intensity moderate and never hold your breath. Skip exercise if a reading is 180/110 or above and call your doctor."),
+        ("exercise", "High blood pressure: keep intensity moderate and never hold your breath. Skip exercise if a reading is 180/110 or above and call your doctor."),
         ("bath", "High blood pressure: avoid very hot and very cold water — both swing blood pressure. Lukewarm is right."),
     ],
     "heart_disease": [
@@ -1333,6 +1333,67 @@ def _screen_food_list(items: list, conditions: list, allergens: list, is_pregnan
     return card["pathya_apathya"]["pathya"], withheld
 
 
+# The day's own lines name food too — the snack's options, the Agni notes, the tea at
+# the desk — and none of it passed a gate: a diabetic's meal card withheld dates
+# while every 4 PM row of the week still said "Soaked dates, warm milk, or light
+# soup". Each option is screened on its own, as a card entry would be; screening the
+# sentence whole matched "sugar" inside "low-blood-sugar".
+# (phrase, its options as written, what is said when every option is withheld)
+_SLOT_FOOD_LISTS = (
+    ("Soaked dates, warm milk, or light soup", ("Soaked dates", "warm milk", "light soup"), "Light soup"),
+    ("Coconut water, sweet fruit, or fennel-coriander tea",
+     ("Coconut water", "sweet fruit", "fennel-coriander tea"), "Fennel-coriander tea"),
+    ("Soaked dates or warm broth", ("Soaked dates", "warm broth"), "Warm broth"),
+    ("Ginger tea or light fruit", ("Ginger tea", "light fruit"), "Warm water"),
+    ("Warm spiced porridge or fruit", ("Warm spiced porridge", "fruit"), "Warm spiced porridge"),
+)
+# (phrase, the food it names, what replaces it when that food is withheld)
+_SLOT_FOOD_SWAPS = (
+    ("Sip warm ginger tea 15 min before to kindle fire.", "ginger tea",
+     "Sip CCF tea (cumin-coriander-fennel) 15 min before to kindle fire."),
+    (" or sip ginger tea", "ginger tea", ""),
+    ("Sip warm ginger tea.", "ginger tea", "Sip warm water."),
+    ("Start with hot ginger water first.", "ginger", "Start with warm water first."),
+    ("Hot ginger-lemon water", "ginger lemon water", "Hot water"),
+    ("1 glass hot water with grated ginger and lemon.", "ginger lemon water", "1 glass hot water."),
+    ("the hot ginger-lemon water", "ginger lemon water", "the hot water"),
+    ("Warm ginger tea is your daily digestive ally.", "ginger tea",
+     "Warm CCF tea (cumin-coriander-fennel) is your daily digestive ally."),
+    ("Trikatu and ginger are your daily digestive allies.", "ginger",
+     "Trikatu is your daily digestive ally."),
+)
+
+
+def _join_options(items: list) -> str:
+    return items[0] if len(items) == 1 else (
+        f"{items[0]} or {items[1]}" if len(items) == 2 else f"{', '.join(items[:-1])}, or {items[-1]}")
+
+
+def _screen_slot_text(text: str, conditions: list, allergens: list, is_pregnant: bool,
+                      withheld: list) -> str:
+    """The food a line of the day names, held to the meal card's rule. Withheld
+    options are appended to `withheld` as {item, reason}."""
+    if not text:
+        return text
+    for phrase, options, fallback in _SLOT_FOOD_LISTS:
+        if phrase not in text:
+            continue
+        kept, out = _screen_food_list(list(options), conditions, allergens, is_pregnant)
+        if not out:
+            continue
+        withheld += out
+        kept = [k.lower() if i and k[0].isupper() else k for i, k in enumerate(kept)]
+        text = text.replace(phrase, (kept[0][0].upper() + _join_options(kept)[1:]) if kept else fallback)
+    for phrase, food, replacement in _SLOT_FOOD_SWAPS:
+        if phrase not in text:
+            continue
+        _, out = _screen_food_list([food], conditions, allergens, is_pregnant)
+        if out:
+            withheld += out
+            text = text.replace(phrase, replacement)
+    return text
+
+
 # ── Build dinacharya protocol block ──────────────────────────────────────────
 def _build_dinacharya_protocol(dosha: str, secondary: str, vikriti: str, season: str,
                                 conditions: list, gender: str, age: int, agni_type: str,
@@ -1382,6 +1443,8 @@ def _build_dinacharya_protocol(dosha: str, secondary: str, vikriti: str, season:
         elif r["name"] == "Nasya" and (cset & {"sinusitis", "allergic_rhinitis"}):
             r["instruction"] += " Skip it on any day with a fever, an acute cold or a sinus infection."
         r["instruction"] = _swap_oils(r["instruction"], allergens)
+        r["instruction"] = _screen_slot_text(r["instruction"], conditions, allergens, is_pregnant,
+                                             ctx.setdefault("slot_withheld", []))
 
     evening = []
     for r in (dict(x) for x in _EVENING_RITUALS_BASE.get(dosha, _EVENING_RITUALS_BASE["vata"])):
@@ -1395,6 +1458,8 @@ def _build_dinacharya_protocol(dosha: str, secondary: str, vikriti: str, season:
         if "mishri" in r["instruction"] and cset & {"diabetes_type2", "diabetes_type1", "metabolic_syndrome"}:
             r["instruction"] = r["instruction"].replace(" + mishri", "")
         r["instruction"] = _swap_oils(r["instruction"], allergens)
+        r["instruction"] = _screen_slot_text(r["instruction"], conditions, allergens, is_pregnant,
+                                             ctx.setdefault("slot_withheld", []))
         evening.append(r)
 
     shodhana_ok = not is_pregnant and 16 <= age < 70
@@ -1799,8 +1864,14 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
                 if s.get("ex_slot") != slot_key:
                     continue
                 if info.get("is_rest"):
-                    s["activity"] = info["ex_label"]
-                    s["description"] = "Rest from structured exercise today. Focus on Abhyanga, meditation, and restorative practices."
+                    # The day's label ("Abhyanga Focus Day") is its theme, and the
+                    # Abhyanga is already its own slot. Naming it here too put two
+                    # Abhyanga rows in one morning, each with the bath notes.
+                    s["activity"] = "Rest — no structured exercise"
+                    s["description"] = ("Give the self-massage more time than usual today, then "
+                                        "meditation or restorative practice.")
+                    if "moonbathing" in info["ex_label"].lower():
+                        s["description"] += " In the evening, sit out in the moonlight for a while."
                     s["type"] = "rest"
                     s["icon"] = "rest"
                     return
@@ -1881,8 +1952,9 @@ def _build_weekly_routine(dosha: str, secondary: str, season: str, if_window: st
                     s["description"] = re.sub(r"Triphala in warm water \(1 tsp\)\.\s*", "Warm water with ginger. ", s["description"])
             if "dairy" in allergens and s.get("icon") == "milk":
                 s["activity"], s["description"] = _DAIRY_FREE_DRINK
-            if s.get("meal_type") == "snack" and "dairy" in allergens:
-                s["description"] = s["description"].replace("warm milk, ", "")
+            s["description"] = _screen_slot_text(
+                s.get("description") or "", ctx.get("food_conditions") or [], allergens,
+                is_pregnant, ctx.setdefault("slot_withheld", []))
             if "mishri" in s.get("description", "") and ctx.get("conditions", set()) & {"diabetes_type2", "diabetes_type1", "metabolic_syndrome"}:
                 s["description"] = s["description"].replace(" + mishri", "")
             s["description"] = _swap_oils(s.get("description") or "", allergens)
@@ -2032,6 +2104,9 @@ def generate_routine_plan(user_profile: dict, prefs: dict, diet_foods_db=None,
     anchors = _override_anchors(_day_anchors(dosha, season, age, rp.get("wake_preference")),
                                 custom, age, dosha)
     agni_notes = _agni_notes(agni_type, not herbs.get("Trikatu Churna"), steady_meals)
+    slot_withheld: list = []
+    agni_notes = {k: _screen_slot_text(v, conditions, allergens, is_pregnant, slot_withheld)
+                  for k, v in agni_notes.items()}
     yoga_time = None
     if yoga_plan_data:
         yoga_time = ((yoga_plan_data.get("user_summary") or {}).get("time_of_day_preference")
@@ -2045,6 +2120,7 @@ def generate_routine_plan(user_profile: dict, prefs: dict, diet_foods_db=None,
         "custom_items": clean_custom_items(rp.get("custom_items")),
         "ama": user_profile.get("ama_indicator"),
         "high_ama": str(user_profile.get("ama_indicator") or "").lower() in ("high", "severe"),
+        "food_conditions": conditions, "is_pregnant": is_pregnant, "slot_withheld": slot_withheld,
     }
 
     # Tier B: parse gym/yoga schedules
@@ -2068,6 +2144,21 @@ def generate_routine_plan(user_profile: dict, prefs: dict, diet_foods_db=None,
                                             or bool(med_classes & {"anticoagulants", "antiplatelets"}))
     meal_guide = _build_meal_guidance(dosha, season, agni_type, agni_notes, conditions, allergens,
                                       is_pregnant, meal_times)
+    # What the day's own lines left out is listed with the card's. The list is shown
+    # without its meal, so Kapha's "ginger tea" at breakfast and at the snack read as
+    # one line twice; and a day line adds nothing when the card already gives that
+    # food and that reason ("soaked dates or figs" covers the snack's "Soaked dates").
+    listed, items, reasons = [], set(), set()
+    for w in meal_guide["withheld"]:
+        if (w["item"].lower(), w["reason"]) not in items:
+            items.add((w["item"].lower(), w["reason"]))
+            reasons.add(w["reason"])
+            listed.append(w)
+    for w in slot_withheld:
+        if w["reason"] not in reasons:
+            reasons.add(w["reason"])
+            listed.append({"meal": "day", "item": w["item"], "reason": w["reason"]})
+    meal_guide["withheld"] = listed
     summary    = _weekly_summary(weekly)
 
     ab_label = {"balya": "Child (Balya)", "yuva": "Youth / Adult (Yuva)", "madhyama": "Middle Age (Madhyama)", "vriddha": "Senior (Vriddha)"}
