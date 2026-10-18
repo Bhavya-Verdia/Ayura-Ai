@@ -197,31 +197,43 @@ def build_tools(db, user, active_plans: dict, actions: dict):
             return "Failed to create the reminder due to a server error."
 
     @tool
-    async def check_my_medicine_interactions() -> str:
-        """Check whether the user's prescribed Ayurvedic medicines interact with
-        their current conventional medications. Use for any drug/herb safety
-        question."""
+    async def check_my_medicine_interactions(herbs: list[str] | None = None) -> str:
+        """Check herbs against the user's current conventional medications, using
+        the app's interaction checker. Use for ANY drug/herb safety question,
+        including "can I take X with my medicine?". Pass `herbs` = the herb(s) or
+        formulation(s) the user asked about (e.g. ["ashwagandha"]); the Ayurvedic
+        medicines already prescribed in their plan are always checked as well."""
         meds = list(getattr(user, "current_medications", None) or [])
         if not meds:
             return "The user has no conventional medications on file, so there are no drug-herb interactions to check."
+        asked = [str(h).strip() for h in (herbs or []) if str(h).strip()]
         med_plan = _section(active_plans.get("medicines") or {}, "medicines")
         forms = (med_plan.get("primary_formulations") or []) + (med_plan.get("supporting_formulations") or [])
-        herbs = []
+        # The herb in the question first. This tool used to read only the
+        # prescribed ones, so asked about ashwagandha with levothyroxine it found
+        # nothing to say about ashwagandha — while /plans/interaction-check flags
+        # the pair as a moderate interaction.
+        herbs = list(asked)
         for f in forms:
             if isinstance(f, dict):
                 herbs += [str(i) for i in (f.get("ingredients") or [])]
                 if f.get("name"):
                     herbs.append(f["name"])
         if not herbs:
-            return "The user has no prescribed Ayurvedic medicines to check."
+            return "The user has no prescribed Ayurvedic medicines to check, and did not name a herb."
         try:
             from engine.condition_filter import condition_filter
             result = condition_filter.check_drug_herb_interactions(meds, herbs)
             warnings = result.get("warnings") or []
+            checked = ", ".join(dict.fromkeys([*asked, "their prescribed herbs"] if len(herbs) > len(asked) else asked))
             if not warnings:
-                return f"No known dangerous interactions between their medicines ({', '.join(meds)}) and their prescribed herbs."
-            return "Potential interactions found:\n" + "\n".join(
-                f"- {w.get('herb')} + {w.get('medication_category') or w.get('medication')}: {w.get('effect') or w.get('recommendation') or 'caution'}"
+                return (f"The interaction checker found no known interaction between their medicines "
+                        f"({', '.join(meds)}) and {checked}. That is not a clearance: they should still "
+                        f"confirm a new herb with their doctor or Vaidya.")
+            return "The interaction checker found:\n" + "\n".join(
+                f"- {w.get('herb')} + {w.get('medication_category') or w.get('medication')} "
+                f"({w.get('severity') or 'caution'}): {w.get('effect') or 'interaction'}"
+                + (f" Advice: {w['recommendation']}" if w.get("recommendation") else "")
                 for w in warnings[:6]
             )
         except Exception as exc:
@@ -273,7 +285,8 @@ def build_system_prompt(user, active_plans: dict, knowledge: str = "", history_s
         "WHEN TO USE TOOLS (be economical — a tool call adds a round-trip and slows your reply):\n"
         "- Call a tool ONLY when the question is about THEIR specific saved data or asks you to DO "
         "something: get_plan_detail (a specific week/day/item NOT already in the summary or TODAY block "
-        "below), check_my_medicine_interactions (drug/herb safety), set_reminder / adapt_plan (take an "
+        "below), check_my_medicine_interactions (drug/herb safety — ALWAYS call it when they ask whether a "
+        "herb is safe with their medicine, passing that herb, and report what it finds), set_reminder / adapt_plan (take an "
         "action), get_health_trend (their check-in progress).\n"
         "- Do NOT call a tool for general Ayurvedic knowledge questions (e.g. 'which yoga poses help "
         "ankylosing spondylitis', 'what is Vata', 'foods for better digestion'). Answer those DIRECTLY "

@@ -15,6 +15,7 @@ from services.safety_service import detect_red_flags
 
 from core.quota import consume_chat_quota
 from services.chat_service import (
+    allergen_safety_note,
     save_message,
     fetch_active_plans,
     build_chat_context,
@@ -167,6 +168,9 @@ async def send_message(msg: ChatMessage, user: UserDocument = Depends(get_curren
             logger.error(f"LLM Chat Error: {e}")
             response_text = "I'm having trouble processing that right now."
 
+    note = allergen_safety_note(response_text, user.allergies)
+    if note:
+        response_text = f"{response_text}\n\n{note}"
     await save_message(db, user.id, session_id, "ai", response_text, sources)
     logger.info("chat.http timing user=%s ctx=%dms gen=%dms agent=%s",
                 user.id, _ctx_ms, round((time.perf_counter() - _t_gen) * 1000), used_agent)
@@ -368,6 +372,12 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
                 created = await apply_chat_side_effects(db, user.id, symptoms_to_log, [], safe_content, reminders=reminders)
                 agent_actions = {"reminders_set": created, "plans_adapting": valid_plans}
                 full_response = response_text
+
+            # Already streamed, so a recommended allergen is corrected beneath it.
+            note = allergen_safety_note(full_response, user.allergies)
+            if note:
+                await websocket.send_json({"type": "chunk", "content": f"\n\n{note}"})
+                full_response = f"{full_response}\n\n{note}"
 
             # ── Confirm actions → done → save → slow plan regen ──
             reminders_set = agent_actions.get("reminders_set", [])

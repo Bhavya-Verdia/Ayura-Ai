@@ -51,6 +51,86 @@ def _fmt_list(items, n: int = 6) -> str:
     return ", ".join(vals[:n])
 
 
+_ALLERGY_LABELS = {"nuts_tree": "tree nuts"}
+
+
+def _as_list(value) -> list:
+    # A string where a list belongs iterates into letters, and a one-letter term
+    # matches every word there is (the Ritucharya card lost every line that way).
+    if isinstance(value, str):
+        return [value]
+    return [v for v in (value or []) if v]
+
+
+def _allergy_terms(allergy: str) -> list[str]:
+    from services.ahara_safety import ALLERGEN_TERMS
+    key = str(allergy).strip().lower()
+    return ALLERGEN_TERMS.get(key) or [key.replace("_", " ")]
+
+
+def _allergy_with_foods(allergy: str) -> str:
+    key = str(allergy).strip().lower()
+    label = _ALLERGY_LABELS.get(key, key.replace("_", " "))
+    foods = [t for t in _allergy_terms(key) if t != label]
+    return f"{label} ({', '.join(foods[:14])})" if foods else label
+
+
+_BULLET = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s+")
+
+
+def _without_avoid_lists(text: str) -> str:
+    """The reply minus the lists it tells the reader to avoid.
+
+    Chat writes avoidance as a list: "Best to avoid tonight:" over bullets, or
+    "avoid: ghee, curd and fried food" on one line. The diet card's clause rule
+    splits at the colon and leaves the list a clause of its own, so correct advice
+    read as a recommendation. Lists are this format's job; the clause rule still
+    handles everything else ("skip the ghee").
+    """
+    from services.ahara_safety import _AVOID_MARKERS
+    has_avoid = lambda s: any(m in s.lower() for m in _AVOID_MARKERS)
+    kept, in_avoid_list = [], False
+    for line in text.splitlines():
+        stripped = line.strip().strip("*_ ")
+        head, colon, rest = stripped.partition(":")
+        if colon and has_avoid(head):
+            in_avoid_list = not rest.strip()     # a heading: the bullets below are the list
+            continue                             # inline: the list is on this line
+        if not stripped:
+            continue                             # a blank line does not end the list
+        if in_avoid_list and _BULLET.match(line):
+            continue
+        in_avoid_list = False
+        kept.append(line)
+    return "\n".join(kept)
+
+
+def allergen_safety_note(reply: str, allergies) -> str | None:
+    """A correction to append when a chat reply recommends a declared allergen.
+
+    The reply has already been streamed to the user by the time it can be read
+    whole, so it cannot be withheld; the correction is added beneath it and to the
+    saved message. A mention in an avoid clause ("skip the ghee") is correct advice
+    and is left alone, by the same clause rule the diet card uses.
+    """
+    from services.ahara_safety import _governed_by_avoidance, _term_in_text
+    text = _without_avoid_lists(reply or "").lower()
+    if not text.strip():
+        return None
+    found: list[tuple[str, list[str]]] = []
+    for allergy in _as_list(allergies):
+        key = str(allergy).strip().lower()
+        terms = [t for t in _allergy_terms(key)
+                 if _term_in_text(t, text) and not _governed_by_avoidance(text, t)]
+        if terms:
+            found.append((_ALLERGY_LABELS.get(key, key.replace("_", " ")), terms))
+    if not found:
+        return None
+    lines = [f"you're allergic to {label}, so leave out the {', '.join(dict.fromkeys(terms))} mentioned above"
+             for label, terms in found]
+    return "⚠️ Safety note: " + "; and ".join(lines) + "."
+
+
 def summarize_user_health(user) -> str:
     """Compact constitution + current-state profile from the user document."""
     g = lambda k: getattr(user, k, None)
@@ -85,7 +165,10 @@ def summarize_user_health(user) -> str:
     if g("medical_history"):
         parts.append(f"Medical conditions: {_fmt_list(user.medical_history, 8)}")
     if g("allergies"):
-        parts.append(f"Allergies (NEVER recommend these): {_fmt_list(user.allergies, 8)}")
+        # The foods each allergy covers, not only its name: told "dairy", the agent
+        # still offered "a small amount of ghee" to a dairy-allergic patient.
+        parts.append("Allergies (NEVER recommend these, or any food made from them): "
+                     + "; ".join(_allergy_with_foods(a) for a in _as_list(user.allergies)[:8]))
     if g("current_medications"):
         parts.append(f"Current medications: {_fmt_list(user.current_medications, 8)}")
     if g("current_symptoms"):

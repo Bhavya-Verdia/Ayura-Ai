@@ -27,6 +27,97 @@ def _sanitize_csv(val) -> str:
     return val_str
 
 
+# The sections the handoff renders, in plan_data's holistic shape.
+HANDOFF_SECTIONS = ("gym_plan", "yoga_plan", "diet_plan", "panchakarma_plan", "home_remedies", "medicines")
+
+
+def _text(value) -> str:
+    """One readable line from a dosage-like field that may be a dict or a list."""
+    if isinstance(value, dict):
+        return "; ".join(f"{k.replace('_', ' ')}: {v}" for k, v in value.items() if v)
+    if isinstance(value, list):
+        return ", ".join(str(v) for v in value if v)
+    return str(value or "")
+
+
+def _remedy_items(plan: dict) -> list[dict]:
+    """A per-feature remedies plan, as the list the handoff renders."""
+    items = []
+    for s in plan.get("symptoms_addressed") or []:
+        remedy = s.get("remedy") or {}
+        warnings = [*(s.get("caution_notes") or []), *(s.get("medication_cautions") or []),
+                    *(s.get("usage_cautions") or [])]
+        if s.get("drug_interaction_warning"):
+            warnings.append(s["drug_interaction_warning"])
+        items.append({
+            "remedy_name": remedy.get("name") or s.get("symptom_display"),
+            "symptom_addressed": s.get("symptom_display") or s.get("symptom_id"),
+            "preparation": remedy.get("preparation"),
+            "dosage": _text(remedy.get("dosage")),
+            "frequency": remedy.get("duration"),
+            "warnings": warnings,
+            "ayurvedic_rationale": s.get("ayurvedic_rationale"),
+        })
+    return items
+
+
+def _medicine_items(plan: dict) -> list[dict]:
+    """A per-feature medicines plan, as the list the handoff renders. Stored as the
+    whole plan dict, it rendered as JSON cut at 400 characters, which reads as the
+    complete list to the practitioner and is not."""
+    items = []
+    for key in ("primary_formulations", "supporting_formulations", "external_therapies"):
+        for m in plan.get(key) or []:
+            warnings = [*(m.get("usage_cautions") or []), *(m.get("red_flags") or [])]
+            if m.get("contraindications"):
+                warnings.append("Contraindicated in: " + _text(m["contraindications"]).replace("_", " "))
+            if m.get("drug_interactions"):
+                warnings.append("Interacts with: " + _text(m["drug_interactions"]).replace("_", " "))
+            # The engine picks the Anupana for this patient (warm water, not milk, for
+            # a dairy allergy) and says why; the raw catalogue value is the default.
+            anupana = m.get("selected_anupana") or m.get("anupana")
+            if m.get("anupana_note"):
+                anupana = f"{anupana} — {m['anupana_note']}"
+            items.append({
+                "medicine_name": m.get("name"),
+                "symptom_addressed": _text(m.get("primary_uses") or m.get("conditions")),
+                "dosage": _text(m.get("dosage")),
+                "frequency": _text(m.get("timing")),
+                "anupana": anupana,
+                "warnings": warnings,
+            })
+    return items
+
+
+def handoff_plan_data(docs: list[dict]) -> tuple[dict, object]:
+    """The newest plan of every feature, from plan_history docs sorted newest first.
+
+    The handoff used to read the single newest doc. Dashboard plans are saved one
+    feature per doc and every routine edit writes another, so the practitioner got
+    whichever feature was touched last — and none at all when that was the routine.
+    Returns (plan_data, generated_at of the newest doc used).
+    """
+    plan_data: dict = {}
+    newest = None
+    for doc in docs:
+        pd = doc.get("plan_data") or {}
+        found = {k: pd[k] for k in HANDOFF_SECTIONS if pd.get(k)}
+        if doc.get("plan_type") == "remedies" and "home_remedies" not in pd:
+            found["home_remedies"] = _remedy_items(pd)
+        if isinstance(found.get("medicines"), dict):
+            found["medicines"] = _medicine_items(found["medicines"])
+        used = False
+        for k, v in found.items():
+            if v and k not in plan_data:
+                plan_data[k] = v
+                used = True
+        if used and newest is None:
+            newest = doc.get("generated_at")
+        if len(plan_data) == len(HANDOFF_SECTIONS):
+            break
+    return plan_data, newest
+
+
 def diet_report_lines(plan: dict) -> list[tuple[str, str]]:
     """The nutrition plan as (style, text) pairs, ready to be rendered.
 
@@ -560,20 +651,17 @@ async def export_pdf(
     user: UserDocument = Depends(get_current_user),
     db=Depends(get_mongodb),
 ):
-    """Export the latest wellness plan as a properly formatted PDF report."""
-    cursor = db.plan_history.find({"user_id": user.id}).sort("generated_at", -1).limit(1)
-    plans = await cursor.to_list(length=1)
+    """Export the latest plan of every feature as the Vaidya handoff PDF."""
+    cursor = db.plan_history.find(
+        {"user_id": user.id}, {"plan_type": 1, "plan_data": 1, "generated_at": 1},
+    ).sort("generated_at", -1).limit(200)
+    plan_data, raw_ts = handoff_plan_data(await cursor.to_list(length=200))
 
-    if plans:
-        plan = plans[0]
-        plan_data = plan.get("plan_data", {})
-        raw_ts = plan.get("generated_at", "")
-        if isinstance(raw_ts, datetime):
-            generated_at = raw_ts.strftime("%d %B %Y at %H:%M UTC")
-        else:
-            generated_at = str(raw_ts)
+    if isinstance(raw_ts, datetime):
+        generated_at = raw_ts.strftime("%d %B %Y at %H:%M UTC")
+    elif raw_ts:
+        generated_at = str(raw_ts)
     else:
-        plan_data = {}
         generated_at = datetime.now(timezone.utc).strftime("%d %B %Y at %H:%M UTC")
 
     from routes.labs import user_results

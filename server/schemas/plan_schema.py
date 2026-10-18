@@ -33,7 +33,10 @@ class PlanResponse(BaseModel):
     diet_plan: Optional[dict] = None
     panchakarma_plan: Optional[dict] = None
     home_remedies: Optional[list[dict]] = None
-    medicines: Optional[list[dict]] = None
+    # A list on holistic plans; the whole medicines plan dict on per-feature ones
+    # (POST /plans/medicines). Typed as a list only, /plans/latest 500'd whenever
+    # the newest plan was a medicines plan.
+    medicines: Optional[list[dict] | dict] = None
     health_risks: Optional[list[dict]] = None
     seasonal_guidance: Optional[dict] = None
     daily_tip: Optional[str] = None
