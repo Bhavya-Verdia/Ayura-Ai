@@ -9,6 +9,12 @@ gunicorn==26.0.0
 python-multipart==0.0.32
 pydantic==2.10.4
 pydantic-settings==2.7.1
+# IANA zones for zoneinfo, including the legacy names. The python:3.12-slim
+# base is Debian 13, which moved those (Asia/Calcutta, US/Eastern, ...) into
+# tzdata-legacy, and Chrome in India reports Asia/Calcutta: every onboarding
+# save it sent was a 422. zoneinfo falls back to this package when the
+# system database lacks a zone. tests/test_timezones.py holds it.
+tzdata==2026.5
 
 # --- Databases ---
 
