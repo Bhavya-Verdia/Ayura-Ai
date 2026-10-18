@@ -2,7 +2,7 @@
 Ayura AI - User Profile Routes
 """
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Header, UploadFile, File
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Header, Response, UploadFile, File
 from motor.motor_asyncio import AsyncIOMotorDatabase
 import os
 import uuid as uuid_mod
@@ -19,7 +19,10 @@ from schemas.user_schema import (
     DoshaValidationRequest,
 )
 from schemas.auth_schema import ChangePasswordRequest
-from services.auth_service import get_current_user_id, hash_password, verify_password
+from services.auth_service import (
+    end_other_sessions, get_current_user_id, get_token_claims, hash_password,
+    token_predates_password_change, verify_password,
+)
 from config import settings
 
 router = APIRouter()
@@ -63,13 +66,15 @@ async def get_current_user(
     if not token:
         raise HTTPException(status_code=401, detail="Invalid authorization header")
     try:
-        user_id = get_current_user_id(token)
+        claims = get_token_claims(token)
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
 
-    user_dict = await db.users.find_one({"_id": user_id})
+    user_dict = await db.users.find_one({"_id": claims["sub"]})
     if not user_dict:
         raise HTTPException(status_code=404, detail="User not found")
+    if token_predates_password_change(claims, user_dict):
+        raise HTTPException(status_code=401, detail="Your password was changed. Please sign in again.")
 
     return UserDocument(**user_dict)
 
@@ -289,6 +294,7 @@ async def upload_avatar(
 @router.patch("/password")
 async def change_password(
     req: ChangePasswordRequest,
+    response: Response,
     user: UserDocument = Depends(get_current_user),
     db: AsyncIOMotorDatabase = Depends(get_mongodb),
 ):
@@ -307,7 +313,18 @@ async def change_password(
         {"$set": {"password_hash": user.password_hash, "updated_at": user.updated_at}}
     )
 
-    return {"message": "Password changed successfully."}
+    # Every other session ends; this device gets fresh tokens so the person
+    # changing their password is not signed out by doing it.
+    from routes.auth import _set_auth_cookies, _store_refresh_token
+    from services.auth_service import create_access_token, create_refresh_token
+    await end_other_sessions(db, user.id)
+    access = create_access_token(user.id, user.email, name=user.name or "", is_admin=user.is_admin,
+                                 onboarding_complete=user.onboarding_complete)
+    refresh = create_refresh_token(user.id)
+    await _store_refresh_token(db, refresh)
+    _set_auth_cookies(response, access, refresh)
+
+    return {"message": "Password changed successfully. Other devices have been signed out."}
 
 
 def _compute_manasa_prakriti(manasa_traits: dict) -> dict:

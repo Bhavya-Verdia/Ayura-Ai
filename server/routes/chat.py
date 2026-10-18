@@ -261,16 +261,18 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
         await websocket.close(code=1008)
         return
 
-    from services.auth_service import get_current_user_id
+    from services.auth_service import get_token_claims, token_predates_password_change
     try:
-        user_id = get_current_user_id(final_token)
+        claims = get_token_claims(final_token)
     except Exception:
         await websocket.close(code=1008)
         return
 
     db = get_mongodb()
-    user_dict = await db.users.find_one({"_id": user_id})
-    if not user_dict:
+    user_dict = await db.users.find_one({"_id": claims["sub"]})
+    # The socket authenticates outside get_current_user, so it needs the same
+    # password-change check or a pre-reset session could still chat.
+    if not user_dict or token_predates_password_change(claims, user_dict):
         await websocket.close(code=1008)
         return
 
