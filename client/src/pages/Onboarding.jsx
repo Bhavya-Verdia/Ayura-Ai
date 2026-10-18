@@ -9,6 +9,7 @@ import {
 import React from 'react'
 import { CONDITION_CATEGORIES } from '../constants/conditions'
 import { track, EVENTS } from '../lib/analytics'
+import { reportError } from '../lib/errorReporting'
 import './Onboarding.css'
 
 const LazyParticleField = React.lazy(() => import('../components/ParticleField'))
@@ -188,7 +189,20 @@ export default function Onboarding() {
       // assessed constitution (Vikriti, Agni, dosha %) — not just the quick pick.
       navigate('/dosha-quiz')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to save profile. Please try again.')
+      const detail = err.response?.data?.detail
+      // Every signup from 2026-09-22 to 2026-10-18 stalled on this form, and
+      // nothing recorded what they were shown, so the cause could not be found.
+      // Status and the server's own message only — never an answer on the form.
+      reportError(err, {
+        flow: 'onboarding',
+        extra: {
+          status: err.response?.status ?? 'network',
+          detail: typeof detail === 'string' ? detail.slice(0, 300) : null,
+          step,
+        },
+        noReplay: true,
+      })
+      setError(detail || 'Failed to save profile. Please try again.')
     } finally {
       setSaving(false)
     }

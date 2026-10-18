@@ -1291,6 +1291,16 @@ Singleton `llm_client` wraps Azure OpenAI (primary) and Google Gemini (fallback)
 - **Routing**: React Router v7, lazy-loaded pages, route guards (`PrivateRoute`, `AdminRoute`, `OnboardingRoute`, `PublicRoute`) in `client/src/App.jsx`
 - **i18n**: `i18next` + `react-i18next`, config in `client/src/i18n.js`
 - **PWA**: `vite-plugin-pwa` with `registerType: 'prompt'`
+- **Errors**: `lib/errorReporting.reportError(err, { flow, extra, noReplay })` is the only
+  way to send one to Sentry; it is lazy and DSN-gated like analytics. `extra` holds
+  statuses and server messages, never an answer; `noReplay` on any screen of health data,
+  because a masked replay still shows which chip was picked. The ErrorBoundary reports
+  everything it catches — `console.error` reached nobody.
+- **Stale tabs after a deploy**: every deploy renames the hashed chunks, so an open tab's
+  next lazy route 404s. `lib/staleDeploy` reloads once into the new build (sessionStorage
+  guard, 30 s), and the boundary's Try Again reloads too, since `React.lazy` caches a
+  rejected import. Verify with two builds that differ in one chunk, not a mocked 404:
+  Safari remembers a failed module by URL, so a reload onto the *same* name fails anyway.
 
 ### Backend Structure
 - `server/routes/` — FastAPI routers, one file per domain
