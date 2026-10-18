@@ -209,12 +209,34 @@ async def get_chat_sessions(user: UserDocument = Depends(get_current_user)):
     return [
         {
             "session_id": s["session_id"],
+            "title": _session_title(s.get("first_msg")),
             "preview": (s["first_msg"]["content"][:80] + "...") if s.get("first_msg") else "New chat",
             "message_count": s.get("message_count", 0),
             "updated_at": s["updated_at"].isoformat() if s.get("updated_at") else None,
         }
         for s in docs
     ]
+
+
+def _session_title(first_msg: dict | None) -> str:
+    """The chat list's name for a conversation: its opening question, on one line."""
+    text = " ".join(((first_msg or {}).get("content") or "").split())
+    if not text:
+        return "New chat"
+    return text if len(text) <= 60 else text[:57].rstrip() + "…"
+
+
+@router.delete("/sessions/{session_id}", status_code=204)
+async def delete_chat_session(session_id: str, user: UserDocument = Depends(get_current_user)):
+    """Delete one conversation: its messages and its session record, which also
+    holds the rolling summary. Scoped to the caller, so another user's id is a 404."""
+    db = get_mongodb()
+    if db is None:
+        raise HTTPException(status_code=503, detail="Chat storage is unavailable.")
+    gone = await db.chat_sessions.delete_one({"session_id": session_id, "user_id": user.id})
+    removed = await db.chat_messages.delete_many({"session_id": session_id, "user_id": user.id})
+    if not gone.deleted_count and not removed.deleted_count:
+        raise HTTPException(status_code=404, detail="Chat not found.")
 
 @router.get("/sessions/{session_id}")
 async def get_session_messages(session_id: str, user: UserDocument = Depends(get_current_user)):

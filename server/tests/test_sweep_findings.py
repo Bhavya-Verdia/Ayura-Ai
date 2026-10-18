@@ -194,3 +194,70 @@ def test_the_agent_is_told_to_pass_the_herb():
     user = SimpleNamespace(id="u1", name="T", allergies=[], medical_history=[], current_medications=[],
                            current_symptoms=[], dominant_dosha=None, secondary_dosha=None)
     assert "passing that herb" in build_system_prompt(user, {})
+
+
+# ── Multiple chats: the list's title, and deleting one conversation ───────────
+
+def test_a_chat_is_named_by_its_opening_question():
+    from routes.chat import _session_title
+    assert _session_title({"content": "What should I eat\n tonight?"}) == "What should I eat tonight?"
+    assert _session_title(None) == "New chat"
+    long = _session_title({"content": "x " * 80})
+    assert len(long) <= 58 and long.endswith("…")
+
+
+class _Deleted:
+    def __init__(self, n):
+        self.deleted_count = n
+
+
+class _Coll:
+    def __init__(self, docs):
+        self.docs = docs
+
+    def _match(self, d, q):
+        return all(d.get(k) == v for k, v in q.items())
+
+    async def delete_one(self, q):
+        for d in self.docs:
+            if self._match(d, q):
+                self.docs.remove(d)
+                return _Deleted(1)
+        return _Deleted(0)
+
+    async def delete_many(self, q):
+        keep = [d for d in self.docs if not self._match(d, q)]
+        n = len(self.docs) - len(keep)
+        self.docs[:] = keep
+        return _Deleted(n)
+
+
+def _chat_db():
+    return SimpleNamespace(
+        chat_sessions=_Coll([{"session_id": "s1", "user_id": "me"}, {"session_id": "s2", "user_id": "me"},
+                             {"session_id": "s3", "user_id": "someone"}]),
+        chat_messages=_Coll([{"session_id": "s1", "user_id": "me"}, {"session_id": "s1", "user_id": "me"},
+                             {"session_id": "s2", "user_id": "me"}, {"session_id": "s3", "user_id": "someone"}]),
+    )
+
+
+@pytest.mark.asyncio
+async def test_deleting_a_chat_removes_only_that_chat(monkeypatch):
+    import routes.chat as chat
+    db = _chat_db()
+    monkeypatch.setattr(chat, "get_mongodb", lambda: db)
+    await chat.delete_chat_session("s1", user=SimpleNamespace(id="me"))
+    assert [d["session_id"] for d in db.chat_sessions.docs] == ["s2", "s3"]
+    assert [d["session_id"] for d in db.chat_messages.docs] == ["s2", "s3"]
+
+
+@pytest.mark.asyncio
+async def test_another_users_chat_cannot_be_deleted(monkeypatch):
+    from fastapi import HTTPException
+    import routes.chat as chat
+    db = _chat_db()
+    monkeypatch.setattr(chat, "get_mongodb", lambda: db)
+    with pytest.raises(HTTPException) as e:
+        await chat.delete_chat_session("s3", user=SimpleNamespace(id="me"))
+    assert e.value.status_code == 404
+    assert any(d["session_id"] == "s3" for d in db.chat_messages.docs)
