@@ -197,7 +197,7 @@ def _sns_rounds_for_budget(seconds_per_step: int, target_seconds: int) -> tuple[
 
 def _build_surya_namaskar_block(user_profile: dict, yoga_prefs: dict,
                                  contra_tags: set, age_group: str,
-                                 target_seconds: int) -> dict | None:
+                                 target_seconds: int, protocol_map: dict | None = None) -> dict | None:
     """Return a Surya Namaskar flow block or None if contraindicated.
 
     `target_seconds` is the fixed slot the session reserves for it. The gates
@@ -218,6 +218,16 @@ def _build_surya_namaskar_block(user_profile: dict, yoga_prefs: dict,
     # (age-appended tags like _AGE_SENIOR_CONTRA are handled via chair modification, not by blocking)
     sns_contra_check = _build_contra_set(user_profile, "adult", yoga_prefs) if age_group == "senior" else contra_tags
     if sns_contra_check.intersection(_SNS_CONTRAINDICATION_TAGS):
+        return None
+
+    # A condition protocol's avoid list is a hard exclude everywhere else in the
+    # session, and this block is a fixed sequence of poses that never passed
+    # through `filter_poses`. An acid-reflux patient's protocol removes Downward
+    # Dog (head below the stomach) and the sweep still found it here, at step 8.
+    protocol_map = _PROTOCOL_MAP if protocol_map is None else protocol_map
+    avoid = {pid for c in (user_profile.get("medical_history") or []) if c
+             for pid in (protocol_map.get(str(c).lower()) or {}).get("avoid_pose_ids", [])}
+    if avoid.intersection(step["pose_id"] for step in _SURYA_NAMASKAR_STEPS):
         return None
 
     exp = yoga_prefs.get("yoga_experience", "beginner")
@@ -2802,11 +2812,13 @@ _DHARANA = {
 
 # ── Day builder ───────────────────────────────────────────────────────────────
 
+_UNSET = object()  # `sns` not passed: build_yoga_day was called directly
+
 def build_yoga_day(sequence: dict, pranayama: list, yoga_prefs: dict,
                    user_profile: dict, week: int, age_group: str = "adult",
                    contra_tags: set | None = None,
                    dharana_seconds: int | None = None,
-                   sns: dict | None = None,
+                   sns: dict | None | object = _UNSET,
                    pranayama_seconds: int | None = None) -> dict:
     exp = yoga_prefs.get("yoga_experience", "beginner")
     if exp == "none":
@@ -2883,8 +2895,9 @@ def build_yoga_day(sequence: dict, pranayama: list, yoga_prefs: dict,
 
     # Surya Namaskar block — morning sessions only. Built once per user by the
     # caller so its cost can be subtracted from the asana budget before the
-    # sequence is filled; rebuilt here only when called directly.
-    if sns is None:
+    # sequence is filled; rebuilt here only when called directly. None from the
+    # caller means withheld, and is never rebuilt without the caller's protocols.
+    if sns is _UNSET:
         sns = _build_surya_namaskar_block(
             user_profile, yoga_prefs, contra_tags or set(), age_group,
             session_structure(yoga_prefs.get("time_available_minutes", 30))["surya_namaskar"])
@@ -3154,7 +3167,8 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
     savasana_seconds, dharana_seconds = _closing_budget(session_minutes)
     sns_block = _build_surya_namaskar_block(user_profile, yoga_prefs,
                                            user_contra_tags, age_group,
-                                           structure["surya_namaskar"])
+                                           structure["surya_namaskar"],
+                                           protocol_map=effective_proto_map)
     sns_seconds = int((sns_block or {}).get("duration_minutes", 0) * 60)
     # Every day runs the same prescribed stack, so the budget prices it once.
     # The cleansing slot alternates for Pitta, but both options are the same

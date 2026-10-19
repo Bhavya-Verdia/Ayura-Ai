@@ -1269,6 +1269,27 @@ def _lower_end(dose: str) -> str:
                   repl, dose, count=1)
 
 
+# The catalogue dose names its own vehicle on 141 of 157 rows ("3–5g with warm
+# milk twice daily"), and the plan shows it beside `selected_anupana`, which may
+# have been changed for this patient: warm water for a dairy allergy, under a
+# dose that still said milk. The Anupana is stated once, on its own line, so the
+# vehicle is taken off the dose. Dilutions stay ("diluted with 45ml warm water",
+# "with equal water"): they are how the medicine is prepared, not a choice of
+# vehicle. So do "with guidance" and "with supervision".
+_DOSE_STOP = (r"(?=\s*(?:,\s*on\b|,\s*warm\b|;|—|\bbefore\b|\bafter\b|\bat\b|\bin the\b|\bon\b|"
+              r"\bonce\b|\btwice\b|\bthrice\b|\b\d+(?:–\d+)?\s*times\b|\bduring\b|\bunder\b|"
+              r"\bdaily\b|$))")
+_DOSE_VEHICLE = re.compile(
+    r"(?<!diluted)\s+with\s+(?!equal\b|guidance\b|supervision\b)(?:(?!\bdiluted\b).)+?" + _DOSE_STOP,
+    re.IGNORECASE)
+
+
+def _dose_without_vehicle(dose: str) -> str:
+    """'3–5g with warm milk twice daily' → '3–5g twice daily'."""
+    out = _DOSE_VEHICLE.sub("", dose or "", count=1)
+    return re.sub(r"\s{2,}", " ", out).strip(" ,")
+
+
 def _apply_patient_dosage(med: dict, age: int) -> None:
     """Put the dose this patient should actually take on `dosage`.
 
@@ -1987,6 +2008,9 @@ def generate_medicines_plan(
                     "Can cause drowsiness or unsteadiness — take it at night, rise slowly, and "
                     "stop if you feel light-headed (falls are the main risk after 65).")
             _apply_patient_dosage(m, age)
+            for key in ("dosage", "dosage_adult"):
+                if m.get(key):
+                    m[key] = _dose_without_vehicle(m[key])
             out.append(m)
         return out
 

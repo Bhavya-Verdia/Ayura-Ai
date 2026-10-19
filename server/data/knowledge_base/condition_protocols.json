@@ -1305,15 +1305,12 @@
     "duration_minimum_minutes": 20
   },
   {
-    "id": "ibs_gerd_specific_protocol",
+    "id": "ibs_specific_protocol",
     "condition": "irritable_bowel_syndrome",
     "alternate_conditions": [
       "ibs_d",
       "ibs_c",
-      "spastic_colon",
-      "gerd",
-      "acid_reflux",
-      "heartburn"
+      "spastic_colon"
     ],
     "name": "IBS / Grahani Specific Therapeutic Protocol",
     "classical_reference": "Charaka Samhita Chikitsa 15 — Grahani Roga (intestinal absorption disease); IBS classified under Grahani involving Agni dysfunction with all three dosha imbalance",
@@ -1346,6 +1343,79 @@
     ],
     "sequence_note": "Practice 30-60 minutes after a light meal. Wind-Removing Pose (both legs) bookends every session. Pavanamuktasana series (Wind-Removing → Knees to Chest → Supine Twist) is the core sequence. Avoid deep twists during active flares.",
     "lifestyle_note": "Fixed practice time aligned to your digestive rhythm reduces Vata irregularity (the primary IBS driver). Triphala (1 tsp in warm water, bedtime) plus yoga shows synergistic Grahani improvement in Ayurvedic clinical observation.",
+    "duration_minimum_minutes": 20
+  },
+  {
+    "id": "acid_reflux_protocol",
+    "condition": "acid_reflux",
+    "alternate_conditions": [
+      "gerd",
+      "heartburn",
+      "acidity",
+      "hyperacidity",
+      "amlapitta"
+    ],
+    "name": "Acid Reflux / Amlapitta Therapeutic Protocol",
+    "classical_reference": "Madhava Nidana 51 — Amlapitta (Pitta vitiated by sour, Vidahi food and irregular meals); Kashyapa Samhita Khila Sthana 16 — Amlapitta Chikitsa. Pitta-shamana: cooling, calm, never heating or straining.",
+    "research_note": "Reflux is provoked by raised intra-abdominal pressure and by positions that put the stomach above the oesophagus, which is why GERD guidance (ACG 2022) advises against lying down for 2–3 hours after a meal. Head-down poses, belly-compressing poses and forceful abdominal breathing work through exactly those mechanisms, so they are excluded rather than merely de-emphasised.",
+    "priority_pose_ids": [
+      "thunderbolt_pose",
+      "easy_pose",
+      "mountain_pose",
+      "upward_salute",
+      "standing_side_bend",
+      "triangle",
+      "warrior_two",
+      "low_lunge_pose",
+      "simple_seated_twist",
+      "supported_fish"
+    ],
+    "priority_pranayama_ids": [
+      "cooling_breath",
+      "left_nostril",
+      "alternate_nostril",
+      "humming_bee",
+      "three_part_breath"
+    ],
+    "category_emphasis": [
+      "standing",
+      "seated",
+      "restorative"
+    ],
+    "avoid_pose_ids": [
+      "dolphin_pose",
+      "forearm_stand",
+      "handstand_pose",
+      "plow",
+      "scorpion_pose",
+      "shoulder_stand",
+      "supported_headstand_pose",
+      "downward_facing_dog",
+      "puppy_pose",
+      "big_toe_pose",
+      "forward_bend_with_shoulder_opener",
+      "gorilla_pose",
+      "wide_leg_forward_fold",
+      "legs_up_wall",
+      "wind_removing_pose",
+      "knees_to_chest",
+      "bow",
+      "boat",
+      "half_boat",
+      "locust_pose",
+      "half_locust",
+      "tortoise_pose",
+      "yoga_sleep_pose",
+      "garland_pose"
+    ],
+    "avoid_pranayama_ids": [
+      "bellows_breath",
+      "skull_shining",
+      "fire_essence",
+      "breath_retention"
+    ],
+    "sequence_note": "Practise on an empty stomach, at least 2–3 hours after a meal. No head-below-heart positions and no poses that press on the belly: both push stomach contents upward. If heartburn starts during practice, come up to sit in Vajrasana and breathe slowly through the nose until it settles.",
+    "lifestyle_note": "Vajrasana for 5–10 minutes after meals is the one posture classically taken on a full stomach. Do not lie down for 2–3 hours after eating, and keep meals at regular times — irregular eating is a named cause of Amlapitta. Sheetali and Chandra Bhedana cool Pitta; heating breathwork (Bhastrika, Kapalabhati) aggravates it.",
     "duration_minimum_minutes": 20
   },
   {
