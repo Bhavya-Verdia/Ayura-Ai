@@ -62,7 +62,6 @@ async def generate_yoga_plan(
     # Injuries are asked on the gym form too; either answer reaches this plan.
     from engine.movement_risk import with_declared_injuries
     yoga_prefs = with_declared_injuries("yoga", prefs_doc.get("yoga"), prefs_doc)
-    is_prenatal = user.pregnancy_or_nursing
 
     # Inject current Ayurvedic season so engine can apply Ritucharya pose boosts
     from engine.seasonal import get_current_season
@@ -779,7 +778,6 @@ async def generate_gym_plan(
     # Injuries are asked on the yoga form too; either answer reaches this plan.
     from engine.movement_risk import with_declared_injuries
     gym_prefs = with_declared_injuries("gym", prefs_doc.get("gym"), prefs_doc)
-    is_prenatal = user.pregnancy_or_nursing
 
     # What was actually lifted. Its fingerprint joins the cache key, because a
     # plan whose loads come from the log is stale the moment a set is logged.
