@@ -1,56 +1,59 @@
+"""Startup check that the bundled knowledge base is present and readable.
+
+Every plan engine reads its own JSON file from `data/knowledge_base/` at import.
+That file is the contract. This used to load seven `kb_*` Mongo collections and
+hand them to the engines in preference to the files. Nothing in the repo ever
+wrote six of them and all seven were empty in production (issue #59), so the
+Mongo path never ran, and a hand-loaded collection would silently have outranked
+the authored, test-guarded files.
+
+What is left is the readiness signal: `/api/ready` reports 503 until `load` has
+confirmed every file the engines import parses to a non-empty list.
+"""
 import json
 import logging
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-MAX_KB_DOCS = 5000
 _DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "knowledge_base"
 
+# The files the plan engines read, keyed by the engine that reads them.
+ENGINE_FILES = {
+    "gym": ("gym_exercises.json",),
+    "yoga": ("yoga_poses.json", "pranayama.json", "condition_protocols.json"),
+    "diet": ("diet_foods.json",),
+    "panchakarma": ("panchakarma_therapies.json", "panchakarma_protocols.json"),
+    "remedies": ("home_remedies.json", "ayurvedic_medicines.json"),
+}
 
-def _load_json_file(filename: str) -> list[dict]:
-    path = _DATA_DIR / filename
-    if path.exists():
-        try:
-            return json.loads(path.read_text(encoding="utf-8"))
-        except Exception:
-            pass
-    return []
+
+def _count(filename: str) -> int:
+    data = json.loads((_DATA_DIR / filename).read_text(encoding="utf-8"))
+    return len(data)
 
 
 class KnowledgeBaseCache:
     def __init__(self):
-        self.gym_exercises: list[dict] = []
-        self.yoga_poses: list[dict] = []
-        self.pranayama: list[dict] = []
-        self.condition_protocols: list[dict] = []
-        self.diet_foods: list[dict] = []
-        self.panchakarma_protocols: list[dict] = []
-        self.ayurvedic_remedies: list[dict] = []
-        self.ayurvedic_medicines: list[dict] = []
         self.loaded: bool = False
 
-    async def load(self, db):
-        self.gym_exercises = await db.kb_gym_exercises.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
-        self.yoga_poses = await db.kb_yoga_poses.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
-        self.pranayama = await db.kb_pranayama.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
-        self.diet_foods = await db.kb_diet_foods.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
-        self.panchakarma_protocols = await db.kb_panchakarma_therapies.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
-        self.ayurvedic_remedies = await db.kb_ayurvedic_remedies.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
-        self.ayurvedic_medicines = await db.kb_ayurvedic_medicines.find({}, {"_id": 0}).limit(MAX_KB_DOCS).to_list(MAX_KB_DOCS)
-
-        # Condition protocols always come from the local JSON file (no MongoDB collection)
-        self.condition_protocols = _load_json_file("condition_protocols.json")
-
+    async def load(self, db=None):
+        counts = {}
+        for files in ENGINE_FILES.values():
+            for filename in files:
+                try:
+                    counts[filename] = _count(filename)
+                except Exception:
+                    logger.exception("Knowledge base file %s could not be read", filename)
+                    counts[filename] = 0
+        missing = [f for f, n in counts.items() if not n]
+        if missing:
+            # Not ready: the engine for this file would build plans from nothing.
+            logger.error("Knowledge base incomplete, not ready: %s", ", ".join(missing))
+            return
         self.loaded = True
-        logger.info(
-            "KB Cache loaded: %d exercises, %d poses, %d pranayama, %d foods, "
-            "%d PK protocols, %d remedies, %d medicines, %d condition protocols",
-            len(self.gym_exercises), len(self.yoga_poses), len(self.pranayama),
-            len(self.diet_foods), len(self.panchakarma_protocols),
-            len(self.ayurvedic_remedies), len(self.ayurvedic_medicines),
-            len(self.condition_protocols),
-        )
+        logger.info("Knowledge base: engines read the bundled files (%s)",
+                    ", ".join(f"{f} {n}" for f, n in counts.items()))
 
 
 kb_cache = KnowledgeBaseCache()

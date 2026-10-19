@@ -1127,11 +1127,10 @@ def _validate_karma_safety(pradhana: dict, medical_history: list[str],
 # which Karmas the capability gate can withdraw.
 #
 # Read from the bundled file by id, never from the row the schedule was built
-# from. In production the route hands the engine `kb_cache.panchakarma_protocols`
-# out of Mongo, and a Mongo collection seeded before this tag existed carries rows
-# with no `karma` at all — taking the tag off those rows would switch the whole
-# mechanism off silently, the exact failure `_therapy_contraindications` avoids by
-# reading `panchakarma_clinical.json` by id for the same reason.
+# from. Callers may hand the engine their own rows, and rows written before this
+# tag existed carry no `karma` at all — taking the tag off them would switch the
+# whole mechanism off silently, the exact failure `_therapy_contraindications`
+# avoids by reading `panchakarma_clinical.json` by id for the same reason.
 _ROW_KARMA: dict[str, tuple[str, ...]] = {
     t["id"]: tuple(t.get("karma") or ()) for t in pk_therapies
 }
@@ -1203,9 +1202,9 @@ def _validate_karma_capability(pradhana: dict, karma_setting: str, pk_prefs: dic
     made for a preference must not be able to reinstate a route safety withdrew.
 
     `therapies` is the list the rest of the plan was built from. It matters that it
-    is passed rather than read from the module: in production the route hands the
-    engine `kb_cache.panchakarma_protocols` from Mongo, and a gate reading the
-    bundled file instead would be deciding from data the schedule never saw.
+    is passed rather than read from the module: a caller may hand the engine its
+    own rows, and a gate reading the bundled file instead would be deciding from
+    data the schedule never saw.
     """
     primary = pradhana.get("primary")
     if not primary:

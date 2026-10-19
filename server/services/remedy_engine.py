@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 import json
 import re
 import os
-from core.kb_cache import kb_cache
 from engine.condition_vocab import condition_matches_term, normalize_condition
 from engine.herb_overlap import already_taking, herbs_in
 from engine.contraindication_tokens import (
@@ -92,12 +91,9 @@ except Exception:
     _MEDICINES_KB = []
 _KB_BY_NAME: dict[str, dict] = {m["name"]: m for m in _MEDICINES_KB}
 
-# ── Home-remedies fallback (loaded once at module import) ────────────────────
-# Remedies are normally served from Mongo (kb_ayurvedic_remedies, seeded by
-# scripts/seed_remedies.py). Unlike the other features, the remedy engine had no
-# offline fallback — so if that collection is unseeded, filter_remedies silently
-# returned nothing. This bundled JSON (same shape, regenerated from the seed)
-# keeps remedies working when kb_cache is empty. Mirrors the medicines KB above.
+# ── Home remedies (loaded once at module import) ─────────────────────────────
+# The bundled JSON is the only source, written by scripts/seed_remedies.py. It
+# used to be a fallback behind a Mongo collection nothing ever filled (#59).
 _REMEDIES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "knowledge_base", "home_remedies.json")
 try:
     with open(_REMEDIES_PATH, "r") as _f:
@@ -348,7 +344,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
     # was ever tried.
     secondary_dosha = (user_profile.get("secondary_dosha") or "").lower() or None
 
-    all_remedies = kb_cache.ayurvedic_remedies or _REMEDIES_FALLBACK
+    all_remedies = _REMEDIES_FALLBACK
 
     for sym_id in symptoms:
         sym_sev = severity.get(sym_id, "mild")
@@ -1273,6 +1269,27 @@ def _lower_end(dose: str) -> str:
                   repl, dose, count=1)
 
 
+# The catalogue dose names its own vehicle on 141 of 157 rows ("3–5g with warm
+# milk twice daily"), and the plan shows it beside `selected_anupana`, which may
+# have been changed for this patient: warm water for a dairy allergy, under a
+# dose that still said milk. The Anupana is stated once, on its own line, so the
+# vehicle is taken off the dose. Dilutions stay ("diluted with 45ml warm water",
+# "with equal water"): they are how the medicine is prepared, not a choice of
+# vehicle. So do "with guidance" and "with supervision".
+_DOSE_STOP = (r"(?=\s*(?:,\s*on\b|,\s*warm\b|;|—|\bbefore\b|\bafter\b|\bat\b|\bin the\b|\bon\b|"
+              r"\bonce\b|\btwice\b|\bthrice\b|\b\d+(?:–\d+)?\s*times\b|\bduring\b|\bunder\b|"
+              r"\bdaily\b|$))")
+_DOSE_VEHICLE = re.compile(
+    r"(?<!diluted)\s+with\s+(?!equal\b|guidance\b|supervision\b)(?:(?!\bdiluted\b).)+?" + _DOSE_STOP,
+    re.IGNORECASE)
+
+
+def _dose_without_vehicle(dose: str) -> str:
+    """'3–5g with warm milk twice daily' → '3–5g twice daily'."""
+    out = _DOSE_VEHICLE.sub("", dose or "", count=1)
+    return re.sub(r"\s{2,}", " ", out).strip(" ,")
+
+
 def _apply_patient_dosage(med: dict, age: int) -> None:
     """Put the dose this patient should actually take on `dosage`.
 
@@ -1991,6 +2008,9 @@ def generate_medicines_plan(
                     "Can cause drowsiness or unsteadiness — take it at night, rise slowly, and "
                     "stop if you feel light-headed (falls are the main risk after 65).")
             _apply_patient_dosage(m, age)
+            for key in ("dosage", "dosage_adult"):
+                if m.get(key):
+                    m[key] = _dose_without_vehicle(m[key])
             out.append(m)
         return out
 

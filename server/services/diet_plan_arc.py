@@ -36,6 +36,19 @@ from __future__ import annotations
 _SANTARPANA_JANYA = frozenset({
     "obesity", "diabetes", "fatty_liver", "high_cholesterol", "pcos", "hypothyroid",
 })
+# Only two of those are named in Sutrasthana 23. The others are placed with them as
+# a modern extrapolation (a Kapha-Meda, Dhatvagni-mandya picture), and the withheld
+# note says so rather than citing a chapter that does not describe them: the live
+# sweep found a hypothyroid patient told Brimhana was withheld for Prameha,
+# Medoroga and Kushtha, three diseases they did not have.
+_CLASSICAL_NAME = {"diabetes": "Prameha", "obesity": "Sthaulya (Medoroga)"}
+
+# A sharp or Pitta-provoked Agni. Deepana with warming spices is the remedy for a
+# dull Agni and the cause of Amlapitta, and every arc used to open with it whatever
+# the Agni: a Tikshna patient with acid reflux was told to kindle with warming
+# spices in week 1. For these patients the phase becomes Agni Samana (regulating),
+# and Pachana works through bitter, non-heating herbs.
+_PITTA_PROVOKED = frozenset({"acidity", "peptic_ulcer", "ulcer"})
 
 # States where a reducing phase is contraindicated regardless of Ama, because the
 # patient has no Bala to spend on it.
@@ -78,7 +91,7 @@ _CONTINUED = {
         ("Langhana", "Reducing — lighter meals, barley and millets over wheat and rice, no late eating",
          "Agni was kindled last plan, so reduction starts in the first week."),
         ("Rukshana", "Drying — astringent and bitter tastes, minimal oil",
-         "Rukshana addresses the Snigdha quality underlying Medoroga."),
+         "Rukshana addresses the Snigdha, Kapha-Meda quality these conditions share."),
         ("Langhana", "Reducing, continued — the lighter pattern held",
          "Meda comes down over months, not weeks; the reduction is sustained."),
         ("Sthairya", "Holding — a sustainable version of the reducing weeks",
@@ -135,7 +148,71 @@ def _continue(arc: dict, user_profile: dict) -> dict:
 def choose_arc(user_profile: dict, diet_prefs: dict) -> dict:
     """The four-week progression for this patient, continued from the last plan when
     that one was finished and followed (`_continue`)."""
-    return _continue(_choose_arc(user_profile, diet_prefs), user_profile)
+    arc = _continue(_choose_arc(user_profile, diet_prefs), user_profile)
+    return _pitta_safe(arc, user_profile, diet_prefs)
+
+
+def _brimhana_withheld(diseases: set[str], heavy_build: bool) -> str:
+    """Why no nourishing week, citing only what this patient has."""
+    classical = sorted(_CLASSICAL_NAME[d] for d in diseases if d in _CLASSICAL_NAME)
+    if heavy_build and "obesity" not in diseases:
+        classical.append(_CLASSICAL_NAME["obesity"])
+    modern = sorted(d.replace("_", " ") for d in diseases if d not in _CLASSICAL_NAME)
+    note = ("Brimhana — the fixed progression put a nourishing week with ghee, nuts and "
+            "root vegetables at week 3.")
+    if classical:
+        note += (f" Charaka Sutrasthana 23 names {' and '.join(classical)} among the diseases "
+                 "of over-nourishment; adding Santarpana to them is the cause, not the treatment.")
+    if modern:
+        verb = "is" if len(modern) == 1 else "are"
+        note += (f" {', '.join(modern).capitalize()} {verb} treated the same way as a modern "
+                 "extrapolation (a Kapha-Meda, Dhatvagni-mandya picture), not a classical "
+                 "citation.")
+    return note
+
+
+_SAMANA = (
+    "Agni Samana",
+    "Regulating a sharp Agni — meals on time and never skipped; sweet, bitter and astringent "
+    "tastes; coriander, fennel and cumin rather than chilli, garlic, mustard or pepper; nothing "
+    "sour or fermented",
+)
+_TIKTA_PACHANA = (
+    "Light, warm, freshly cooked; Pachana through bitter, non-heating herbs — coriander, "
+    "fennel, cumin, Guduchi — not ginger, pepper or hing; no sour or fermented food"
+)
+
+
+def _pitta_safe(arc: dict, user_profile: dict, diet_prefs: dict) -> dict:
+    """Replace heating Deepana with Agni Samana for a sharp or Pitta-provoked Agni."""
+    from services.diet_brief_builder import diet_conditions
+    agni = str(user_profile.get("agni_type") or "").lower()
+    provoked = sorted(set(diet_conditions(user_profile, diet_prefs)) & _PITTA_PROVOKED)
+    if agni != "tikshna" and not provoked:
+        return arc
+    why = " and ".join(([("Agni is Tikshna (sharp)")] if agni == "tikshna" else [])
+                       + ([f"{', '.join(provoked)} is a Pitta disease"] if provoked else []))
+    changed = False
+    weeks = []
+    for w in arc["weeks"]:
+        w = dict(w)
+        if w["phase"] == "Agni Deepana":
+            w["phase"], w["focus"] = _SAMANA
+            w["rationale"] = (f"{why}; kindling it with heating spices would feed the Pitta that "
+                              "is the problem, so this week steadies Agni instead.")
+            changed = True
+        elif w["phase"] in ("Ama Pachana", "Deepana-Pachana"):
+            w["focus"] = _TIKTA_PACHANA
+            changed = True
+        elif w["phase"] == "Snehana-Deepana":
+            w["focus"] = "Unctuous and cooling — ghee, milk, soft grains; mild spices only"
+            changed = True
+        weeks.append(w)
+    if not changed:
+        return arc
+    return {**arc, "weeks": weeks, "withheld": [*arc["withheld"], (
+        f"Heating Deepana (ginger, pepper, chilli, hing) — {why}, and warming spices "
+        "aggravate Pitta; Agni is regulated with bitter and cooling herbs instead.")]}
 
 
 def _choose_arc(user_profile: dict, diet_prefs: dict) -> dict:
@@ -248,12 +325,7 @@ def _choose_arc(user_profile: dict, diet_prefs: dict) -> dict:
 
     # ── Santarpana-caused disease: Langhana-led, no nourishing week ──────────
     if santarpana_janya and not depleted:
-        withheld.append(
-            "Brimhana — the fixed progression put a nourishing week with ghee, nuts "
-            "and root vegetables at week 3. Charaka Sutrasthana 23 names Prameha, "
-            "Medoroga and Kushtha as diseases of over-nourishment; adding Santarpana "
-            "to them is the cause, not the treatment."
-        )
+        withheld.append(_brimhana_withheld(conditions & _SANTARPANA_JANYA, heavy_build))
         first = (
             _phase(1, "Ama Pachana",
                    "Deepaniya-Pachana — light, warm, spiced; no heavy, sour or fermented food",
@@ -279,7 +351,7 @@ def _choose_arc(user_profile: dict, diet_prefs: dict) -> dict:
                        "Reduce Meda and Kapha while Agni is now able to carry it."),
                 _phase(3, "Rukshana",
                        "Drying — astringent and bitter tastes, minimal oil, honey over sugar",
-                       "Rukshana addresses the Snigdha quality underlying Medoroga."),
+                       "Rukshana addresses the Snigdha, Kapha-Meda quality these conditions share."),
                 _phase(4, "Sthairya",
                        "Holding — a sustainable version of weeks 2-3, seasonally adjusted",
                        "Consolidate rather than rebound; this is the week the plan has to outlive."),

@@ -436,6 +436,15 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0, n_cmap=0, n_hdi=0):
         "Pathya in high cholesterol while being guru, snigdha and Kapha-raising. "
         "Answering that once settles a whole condition at a time.",
         "",
+        '## Part 5b — Authored 2026-10-19 from the live sweep (unreviewed)',
+        'Three changes made by a non-clinician to remove contradictions the app was showing patients. Each is a judgement a Vaidya should confirm or overturn.',
+        '',
+        '- **Acid reflux yoga protocol** (`acid_reflux_protocol` in `condition_protocols.json`). GERD, heartburn and acidity used to share the IBS / Grahani protocol, which practised after a meal with abdominal compression first. The new protocol cites Madhava Nidana 51 and Kashyapa Khila 16. It is upright and cooling, and it **hard-excludes** inversions, head-below-heart folds (including Downward Dog, which also withholds Surya Namaskar), belly-compressing poses, Bhastrika, Kapalabhati, Agnisara and Kumbhaka. *Is the avoid list right, and is withholding Surya Namaskar from every reflux patient too strict?*',
+        '- **Agni Samana in place of Agni Deepana** (`diet_plan_arc._pitta_safe`). For Tikshna Agni, or any Amlapitta / ulcer patient, the "warming spices" kindling week becomes regulation: sweet, bitter and astringent, with coriander, fennel and cumin. Pachana for Ama uses Tikta herbs, not ginger, pepper or hing. *Is Tikta Pachana the right substitute when Ama and Amlapitta coexist?*',
+        "- **Medicine dose without its vehicle** (`remedy_engine._dose_without_vehicle`). The catalogue dose named a vehicle on 141 of 157 rows. It is now removed, so the selected Anupana is the only one stated. A child's dose used to carry its own vehicle (often honey), different from the adult Anupana the engine selects. A child now sees the adult Anupana. *Should paediatric Anupana be selected separately?*",
+        '',
+        'Still not changed: hypothyroid stays in `_SANTARPANA_JANYA` (Langhana arc). Its withheld note now says this is a modern extrapolation rather than citing Prameha, Medoroga and Kushtha. Whether it belongs on that arc at all is the open question.',
+        "",
         "## Part 6 — Clinical case sign-off",
         f"Below are {len(cases)} synthetic patient cases run through the engines (deterministic, "
         "no AI). For each, confirm the core decisions are what you would prescribe, or note the "

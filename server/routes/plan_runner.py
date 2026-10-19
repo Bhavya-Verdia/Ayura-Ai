@@ -33,7 +33,6 @@ from services.plan_diff import build_plan_diff
 from services.audit_service import log_plan_generated
 from services.notification_service import create_and_deliver_notification
 from core.cache import cache_manager
-from core.kb_cache import kb_cache
 
 # ── Pregnancy Safety Gate (single source of truth) ───────────────────────────
 # Features whose deterministic plans are contraindicated during pregnancy/nursing.
@@ -339,35 +338,24 @@ async def _generate_feature_via_engine_impl(
     is_prenatal = bool(profile.get("pregnancy_or_nursing"))
     prefs = await _load_feature_preferences(db, user_id, plan_type)
 
-    def _kb(attr):
-        try:
-            if getattr(kb_cache, "loaded", False):
-                return getattr(kb_cache, attr, None) or None
-        except Exception:
-            pass
-        return None  # engines fall back to their bundled JSON when KB is None
-
     try:
         if plan_type == "yoga":
             from services.yoga_plan_engine import generate_yoga_plan, yoga_poses as _ep
             from services.yoga_plan_enricher import enrich_yoga_plan
-            base_poses = _kb("yoga_poses") or _ep
+            base_poses = _ep
             poses = [p for p in base_poses if (not is_prenatal or p.get("pregnancy_safe"))]
-            raw = generate_yoga_plan(profile, prefs, poses or None, _kb("pranayama"))
+            raw = generate_yoga_plan(profile, prefs, poses or None, None)
             return await enrich_yoga_plan(raw, profile, prefs)
 
         if plan_type == "gym":
             from services.gym_plan_engine import generate_gym_plan
             from services.gym_plan_enricher import enrich_gym_plan
             from services.gym_condition_fallback import extra_avoid_tags_for
-            ex = _kb("gym_exercises")
-            if is_prenatal and ex:
-                ex = [e for e in ex if e.get("pregnancy_safe")] or None
             # Both paths read the log, or the holistic plan would quietly go
             # back to bodyweight estimates for someone who has been logging.
             from services.workout_log import gym_history
             history = await gym_history(db, user_id) if db is not None and user_id else {}
-            raw = generate_gym_plan(profile, prefs, ex,
+            raw = generate_gym_plan(profile, prefs, None,
                                     extra_avoid_tags=await extra_avoid_tags_for(profile),
                                     logged_lifts=history.get("logged_lifts"),
                                     previous_block=history.get("previous_block"))
@@ -386,7 +374,7 @@ async def _generate_feature_via_engine_impl(
                                           bmi_category=profile.get("bmi_category"),
                                           profile=profile)
                 profile = {**profile, "diet_log": hist["adaptation"]}
-            return await build_diet_plan(profile, prefs, _kb("diet_foods"))
+            return await build_diet_plan(profile, prefs, None)
 
         if plan_type == "panchakarma":
             if is_prenatal:
@@ -397,7 +385,7 @@ async def _generate_feature_via_engine_impl(
             # be the one that still hands an unassessed diagnosis a Vamana schedule.
             from routes.plans import _triage_unmapped_conditions
             triage = await _triage_unmapped_conditions(profile)
-            raw = generate_panchakarma_plan(profile, prefs, _kb("panchakarma_protocols"),
+            raw = generate_panchakarma_plan(profile, prefs, None,
                                             condition_triage=triage)
             return await enrich_panchakarma_plan(raw, profile, prefs)
 

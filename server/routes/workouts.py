@@ -42,9 +42,8 @@ class WorkoutLogIn(BaseModel):
 
 
 def _library_names() -> dict:
-    from core.kb_cache import kb_cache
     from services.gym_plan_engine import gym_exercises
-    return {e["id"]: e["name"] for e in (kb_cache.gym_exercises or gym_exercises)}
+    return {e["id"]: e["name"] for e in gym_exercises}
 
 
 @router.post("/logs")

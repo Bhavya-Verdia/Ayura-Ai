@@ -2,15 +2,15 @@
 Regression tests for the home-remedies engine.
 
 Locks in two demo-hardening fixes:
-  - filter_remedies has a bundled-JSON fallback, so it works even when the
-    Mongo kb_ayurvedic_remedies collection is unseeded.
+  - filter_remedies reads the bundled JSON (there is no Mongo collection
+    behind it any more; see #59).
   - every symptom the onboarding picker can emit resolves to a remedy (the
     onboarding labels didn't match the KB's clinical symptom_ids, so ~half
     silently returned nothing until the alias map was added).
 """
 import pytest
 
-from services.remedy_engine import filter_remedies, _REMEDIES_FALLBACK
+from services.remedy_engine import filter_remedies, _REMEDIES_FALLBACK, _dose_without_vehicle
 
 # Mirror of client/src/pages/Onboarding.jsx `SYMPTOMS`. Keep in sync — this test
 # fails loudly if a new onboarding symptom has no remedy mapping.
@@ -132,7 +132,8 @@ def test_a_child_is_never_served_an_adult_dose():
         for m in meds:
             paed = (m.get("dosage_pediatric") or "").strip()
             assert paed, f"{m['id']} served to a child with no paediatric dose"
-            assert m["dosage"] == paed, f"{m['id']} served the adult dose to a child"
+            # The vehicle is taken off the dose; the Anupana states it once.
+            assert m["dosage"] == _dose_without_vehicle(paed), f"{m['id']} served the adult dose to a child"
             assert m.get("dosage_basis") == "paediatric"
 
 
@@ -148,7 +149,7 @@ def test_the_schedule_a_child_follows_carries_the_paediatric_dose():
     for line in printed:
         name = line.split(" — ")[0]
         if name in served:
-            assert served[name]["dosage_pediatric"] in line, \
+            assert _dose_without_vehicle(served[name]["dosage_pediatric"]) in line, \
                 f"schedule line used a non-paediatric dose: {line}"
 
 

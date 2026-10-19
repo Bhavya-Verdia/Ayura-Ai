@@ -115,7 +115,7 @@ def audit_stale_files():
             seed_n = txt.count('"symptom_id"')
             if seed_n > n:
                 issues.append(f"data/knowledge_base/home_remedies.json has {n} entries but seed_remedies.py "
-                              f"defines ~{seed_n} — the JSON is stale/legacy; DB is seeded from the script.")
+                              f"defines ~{seed_n} — run scripts/seed_remedies.py to rewrite it.")
     return issues
 
 

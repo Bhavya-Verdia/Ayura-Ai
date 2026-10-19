@@ -13,6 +13,7 @@ from schemas.user_schema import UserDocument
 from routes.profile import get_current_user
 from database.mongodb import get_mongodb
 from services.lab_results import LAB_TESTS
+from services.remedy_engine import _dose_without_vehicle
 
 router = APIRouter()
 
@@ -81,7 +82,9 @@ def _medicine_items(plan: dict) -> list[dict]:
             items.append({
                 "medicine_name": m.get("name"),
                 "symptom_addressed": _text(m.get("primary_uses") or m.get("conditions")),
-                "dosage": _text(m.get("dosage")),
+                # Plans stored before the engine stripped it still carry the
+                # catalogue's vehicle in the dose, beside a different Anupana.
+                "dosage": _dose_without_vehicle(_text(m.get("dosage"))),
                 "frequency": _text(m.get("timing")),
                 "anupana": anupana,
                 "warnings": warnings,
