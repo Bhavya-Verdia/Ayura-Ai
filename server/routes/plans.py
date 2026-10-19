@@ -20,7 +20,6 @@ from schemas.user_schema import UserDocument, PlanHistoryDocument
 from schemas.plan_schema import PlanGenerationRequest, PlanRatingRequest, PlanResponse
 from routes.profile import get_current_user
 from services.audit_service import log_plan_generated
-from core.kb_cache import kb_cache
 from core.quota import consume_plan_quota
 
 from routes.plan_runner import (
@@ -79,11 +78,9 @@ async def generate_yoga_plan(
     # Cache miss — this run hits the LLM, so it bills the daily allowance.
     await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "yoga"):
-        if is_prenatal:
-            yoga_poses = [p for p in kb_cache.yoga_poses if p.get("pregnancy_safe") is True]
-        else:
-            yoga_poses = kb_cache.yoga_poses
-        pranayama_list = kb_cache.pranayama or None  # None triggers file-based fallback in engine
+        # None hands the engine its bundled KB, which it filters for pregnancy itself.
+        yoga_poses = None
+        pranayama_list = None
 
         # Dynamic protocol fallback: generate LLM mini-protocols for conditions not in the 30-protocol DB
         from services.yoga_plan_engine import _PROTOCOL_MAP as _engine_proto_map
@@ -221,13 +218,8 @@ async def generate_next_yoga_week(
 
     await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "yoga"):
-        if user.pregnancy_or_nursing:
-            poses = [p for p in kb_cache.yoga_poses if p.get("pregnancy_safe") is True]
-        else:
-            poses = kb_cache.yoga_poses
-
         raw_week = engine_generate(
-            user_profile, yoga_prefs, poses or None, kb_cache.pranayama or None,
+            user_profile, yoga_prefs, None, None,
             weeks=[next_week], feedback_history=feedback_history,
             recent_pose_ids=recent_pose_ids,
         )
@@ -319,7 +311,7 @@ async def generate_diet_plan(
         # on both — see `build_diet_plan`, which exists because this sequence had
         # been copied into the holistic worker and the two had drifted apart.
         enriched_plan = await build_diet_plan(
-            user_profile, diet_prefs, kb_cache.diet_foods or None)
+            user_profile, diet_prefs, None)
 
         plan_id = enriched_plan.get("plan_id")
         model_used = enriched_plan.get("enrichment_model", "services.diet_plan_engine")
@@ -805,10 +797,8 @@ async def generate_gym_plan(
     # Cache miss — this run hits the LLM, so it bills the daily allowance.
     await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "gym"):
-        if is_prenatal:
-            gym_exercises = [e for e in kb_cache.gym_exercises if e.get("pregnancy_safe") is True] or None
-        else:
-            gym_exercises = kb_cache.gym_exercises or None
+        # None hands the engine its bundled library, which it filters for pregnancy itself.
+        gym_exercises = None
         # Rare/uncovered conditions → LLM maps them to KB contraindication
         # categories (validated), giving disease-safety parity with yoga.
         from services.gym_condition_fallback import extra_avoid_tags_for
@@ -897,15 +887,12 @@ async def generate_panchakarma_plan(
     # Cache miss — this run hits the LLM, so it bills the daily allowance.
     await consume_plan_quota(db, user)
     async with _plan_guard(user.id, "panchakarma"):
-        panchakarma_therapies = kb_cache.panchakarma_protocols
-        # None triggers the engine's bundled-JSON fallback (kb_* Mongo collections
-        # have no seeder, so kb_cache is empty unless populated externally).
         # Diagnoses outside the engine's vocabulary are assessed before the plan is
         # built, not narrated after it. The enricher's `rare_disease_assessment` can
         # only annotate a finished plan, so it could state that Vamana was
         # contraindicated while the calendar still scheduled it on day four.
         triage = await _triage_unmapped_conditions(user_profile)
-        raw_plan = engine_generate(user_profile, panchakarma_prefs, panchakarma_therapies or None,
+        raw_plan = engine_generate(user_profile, panchakarma_prefs, None,
                                    condition_triage=triage)
         enriched_plan = await enrich_panchakarma_plan(raw_plan, user_profile, panchakarma_prefs)
 
@@ -949,7 +936,7 @@ async def list_remedy_symptoms(user: UserDocument = Depends(get_current_user)):
     """
     from services.remedy_engine import _REMEDIES_FALLBACK
 
-    entries = kb_cache.ayurvedic_remedies or _REMEDIES_FALLBACK
+    entries = _REMEDIES_FALLBACK
     seen: set[str] = set()
     items = []
     for e in entries:

@@ -225,9 +225,8 @@ def test_a_shamana_plan_prepares_for_nothing():
 
 
 def test_the_tag_is_read_from_the_bundled_kb_not_the_row_handed_in():
-    """In production the route hands the engine rows out of Mongo
-    (`kb_cache.panchakarma_protocols`). A collection seeded before this tag existed
-    has no `karma` on any row — and reading the tag off the row would then match
+    """The engine accepts rows from its caller. Rows written before this tag
+    existed have no `karma` on any of them — and reading the tag off the row would then match
     nothing, switch the whole mechanism off, and look exactly like a corpus where
     every therapy happened to suit every Karma.
 

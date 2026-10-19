@@ -1,6 +1,7 @@
-import asyncio
-from motor.motor_asyncio import AsyncIOMotorClient
+import json
 import logging
+import sys
+from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -1542,50 +1543,31 @@ REMEDIES_DATA = [
     },
 ]
 
-async def seed_remedies():
-    logger.info("Connecting to MongoDB to seed ayurvedic_remedies...")
-    logger.info("Connecting to MongoDB to seed ayurvedic_remedies...")
-    logger.info("Connecting to MongoDB to seed ayurvedic_remedies...")
-    client = AsyncIOMotorClient("mongodb://localhost:27017")
-    db = client.ayura
-    collection = db.kb_ayurvedic_remedies
+_OUT = Path(__file__).resolve().parent.parent / "data" / "knowledge_base" / "home_remedies.json"
 
-    logger.info("Dropping existing collection...")
-    await collection.drop()
 
-    logger.info(f"Seeding {len(REMEDIES_DATA)} comprehensive remedy entries...")
-    result = await collection.insert_many(REMEDIES_DATA)
+def render() -> str:
+    return json.dumps(REMEDIES_DATA, indent=2, ensure_ascii=False)
 
-    # Validation summary
-    total = len(result.inserted_ids)
-    categories = {}
-    pregnancy_safe = 0
-    home_safe = 0
-    sources = {}
 
-    for item in REMEDIES_DATA:
-        cat = item.get("symptom_category", "unknown")
-        categories[cat] = categories.get(cat, 0) + 1
+def main(argv: list[str]) -> int:
+    """Write `home_remedies.json`, the file the remedy engine reads.
 
-        if item.get("pregnancy_safe"):
-            pregnancy_safe += 1
+    This used to load `kb_ayurvedic_remedies` in a local Mongo instead. Nothing
+    reads that collection (it was empty in production; see issue #59), so the
+    bundled file is the contract and this script is its source. `--check` exits
+    1 when the file has drifted from REMEDIES_DATA.
+    """
+    if "--check" in argv:
+        if _OUT.read_text(encoding="utf-8") != render():
+            print(f"{_OUT.name} does not match REMEDIES_DATA — run scripts/seed_remedies.py")
+            return 1
+        print(f"{_OUT.name} matches REMEDIES_DATA ({len(REMEDIES_DATA)} entries)")
+        return 0
+    _OUT.write_text(render(), encoding="utf-8")
+    logger.info("Wrote %d remedy entries to %s", len(REMEDIES_DATA), _OUT)
+    return 0
 
-        tier = item.get("safety_tier", "unknown")
-        if tier == "home_safe":
-            home_safe += 1
-
-        src = item.get("source", "unknown")
-        sources[src] = sources.get(src, 0) + 1
-
-    print("\n═══════════════════════════════════════")
-    print(" REMEDIES SEED SUMMARY")
-    print("═══════════════════════════════════════")
-    print(f"Total remedies seeded: {total} (target: 60 — categories: pain, digestive, respiratory, skin, mental, women's health, immunity)")
-    print(f"By category: {categories}")
-    print(f"Pregnancy safe: {pregnancy_safe} / {total}")
-    print(f"Home safe: {home_safe} / {total}")
-    print(f"By source: {sources}")
-    print("═══════════════════════════════════════\n")
 
 if __name__ == "__main__":
-    asyncio.run(seed_remedies())
+    sys.exit(main(sys.argv[1:]))

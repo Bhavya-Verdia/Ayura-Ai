@@ -2,8 +2,8 @@
 Regression tests for the home-remedies engine.
 
 Locks in two demo-hardening fixes:
-  - filter_remedies has a bundled-JSON fallback, so it works even when the
-    Mongo kb_ayurvedic_remedies collection is unseeded.
+  - filter_remedies reads the bundled JSON (there is no Mongo collection
+    behind it any more; see #59).
   - every symptom the onboarding picker can emit resolves to a remedy (the
     onboarding labels didn't match the KB's clinical symptom_ids, so ~half
     silently returned nothing until the alias map was added).

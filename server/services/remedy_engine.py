@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 import json
 import re
 import os
-from core.kb_cache import kb_cache
 from engine.condition_vocab import condition_matches_term, normalize_condition
 from engine.herb_overlap import already_taking, herbs_in
 from engine.contraindication_tokens import (
@@ -92,12 +91,9 @@ except Exception:
     _MEDICINES_KB = []
 _KB_BY_NAME: dict[str, dict] = {m["name"]: m for m in _MEDICINES_KB}
 
-# ── Home-remedies fallback (loaded once at module import) ────────────────────
-# Remedies are normally served from Mongo (kb_ayurvedic_remedies, seeded by
-# scripts/seed_remedies.py). Unlike the other features, the remedy engine had no
-# offline fallback — so if that collection is unseeded, filter_remedies silently
-# returned nothing. This bundled JSON (same shape, regenerated from the seed)
-# keeps remedies working when kb_cache is empty. Mirrors the medicines KB above.
+# ── Home remedies (loaded once at module import) ─────────────────────────────
+# The bundled JSON is the only source, written by scripts/seed_remedies.py. It
+# used to be a fallback behind a Mongo collection nothing ever filled (#59).
 _REMEDIES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "knowledge_base", "home_remedies.json")
 try:
     with open(_REMEDIES_PATH, "r") as _f:
@@ -348,7 +344,7 @@ def filter_remedies(user_profile: dict, symptom_input: dict) -> list:
     # was ever tried.
     secondary_dosha = (user_profile.get("secondary_dosha") or "").lower() or None
 
-    all_remedies = kb_cache.ayurvedic_remedies or _REMEDIES_FALLBACK
+    all_remedies = _REMEDIES_FALLBACK
 
     for sym_id in symptoms:
         sym_sev = severity.get(sym_id, "mild")

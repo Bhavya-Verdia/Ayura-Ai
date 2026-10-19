@@ -33,10 +33,9 @@ async def startup(ctx):
     # Init Motor (MongoDB)
     await init_mongodb()
 
-    # Load kb_cache so plan jobs can access yoga poses, exercises, etc.
-    from database.mongodb import get_mongodb
+    # Confirm the bundled knowledge base the plan engines read is present.
     from core.kb_cache import kb_cache
-    await kb_cache.load(get_mongodb())
+    await kb_cache.load()
 
     # Init ChromaDB
     init_chromadb()
