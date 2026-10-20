@@ -31,10 +31,32 @@ if (!existsSync(resolve(root, 'dist'))) {
 // OWN file so crawlers (and no-JS clients) receive route-correct <head> tags —
 // critically a single self-referencing canonical. nginx `try_files $uri/`
 // serves dist/<route>/index.html directly for these paths.
+//
+// '/' must stay LAST. Its snapshot overwrites dist/index.html, and the preview
+// server answers every other route with dist/index.html — so a route captured
+// after it boots on top of the landing page's baked <head>. Production's
+// /dosha-test shipped that way: two <title>s and two canonicals, one pointing
+// at the home page. assertSingleHead below fails the build if it happens again.
 const ROUTES = [
-  { path: '/',           selector: '.lnd-hero-title', out: 'dist/index.html' },
   { path: '/dosha-test', selector: '.dt-hero-title',  out: 'dist/dosha-test.html' },
+  { path: '/',           selector: '.lnd-hero-title', out: 'dist/index.html' },
 ]
+
+// A snapshot with two of any of these tells a crawler two different things
+// about the page. Throwing here lands in the catch below, which skips the
+// prerender rather than shipping it.
+function assertSingleHead(html, path) {
+  const head = html.slice(0, html.indexOf('</head>'))
+  for (const [name, re] of [
+    ['<title>', /<title>/g],
+    ['canonical', /<link rel="canonical"/g],
+    ['og:url', /property="og:url"/g],
+    ['description', /<meta name="description"/g],
+  ]) {
+    const n = (head.match(re) || []).length
+    if (n > 1) throw new Error(`${path}: ${n} ${name} tags in the captured <head>`)
+  }
+}
 
 const PORT = 4174
 const PREVIEW_ORIGIN = `http://localhost:${PORT}`
@@ -141,6 +163,7 @@ try {
     // root-relative so the saved HTML doesn't ship dead http://localhost:4174/…
     // preloads to production.
     const html = (await page.content()).split(PREVIEW_ORIGIN).join('')
+    assertSingleHead(html, path)
     const outPath = resolve(root, out)
     mkdirSync(dirname(outPath), { recursive: true })
     writeFileSync(outPath, html, 'utf8')

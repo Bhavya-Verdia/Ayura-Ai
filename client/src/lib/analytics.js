@@ -25,6 +25,8 @@
  * first paint for everyone, including users with no analytics configured.
  */
 
+import { afterIdle } from './afterIdle'
+
 const KEY = import.meta.env.VITE_POSTHOG_KEY
 const HOST = import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com'
 
@@ -47,7 +49,9 @@ function enabled() {
 function load() {
   if (!enabled()) return Promise.resolve(null)
   if (!clientPromise) {
-    clientPromise = import('posthog-js')
+    // After idle, like Sentry: see lib/afterIdle.js. Events await this promise.
+    clientPromise = afterIdle()
+      .then(() => import('posthog-js'))
       .then(({ posthog }) => {
         posthog.init(KEY, {
           api_host: HOST,
