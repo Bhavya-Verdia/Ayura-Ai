@@ -196,7 +196,23 @@ try {
     // href resolves to the preview server's absolute origin. Rewrite that origin to
     // root-relative so the saved HTML doesn't ship dead http://localhost:4174/…
     // preloads to production.
-    const html = (await page.content()).split(PREVIEW_ORIGIN).join('')
+    let html = (await page.content()).split(PREVIEW_ORIGIN).join('')
+
+    // Inline the stylesheets. Each was a render-blocking request after the
+    // HTML, so on a phone the snapshot sat fully downloaded and unpainted for
+    // one more round trip (Lighthouse: ~450 ms). Together they are ~17 kB gzip.
+    //
+    // Loading the route's chunk still makes Vite add a <link> for the route's
+    // own stylesheet (~6 kB gzip), after first paint and without blocking it.
+    // Leaving a disabled <link> to satisfy Vite's check does not help: Chrome
+    // downloads disabled stylesheets too, so it fetched index.css as well.
+    html = html.replace(
+      /<link rel="stylesheet"(?: crossorigin="")? href="(\/assets\/[^"]+\.css)">/g,
+      (tag, href) => {
+        const css = readFileSync(resolve(root, 'dist' + href), 'utf8')
+        return `<style data-href="${href}">${css.replace(/<\/style/gi, '<\\/style')}</style>`
+      },
+    )
     assertSingleHead(html, path)
     const outPath = resolve(root, out)
     mkdirSync(dirname(outPath), { recursive: true })
