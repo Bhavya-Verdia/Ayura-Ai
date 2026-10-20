@@ -73,6 +73,9 @@ jobs:
         env:
           VITE_API_URL: /api
 
+      - name: nginx config test
+        run: scripts/check-nginx.sh
+
   e2e:
     name: Frontend — E2E (Playwright)
     runs-on: ubuntu-latest
