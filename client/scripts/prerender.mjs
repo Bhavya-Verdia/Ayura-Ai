@@ -253,8 +253,12 @@ try {
     console.log('✅  Hydration check: React adopts every snapshot without redrawing it')
   }
 } catch (err) {
-  console.warn('⚠  Prerender skipped (non-fatal):', err.message)
+  console.warn(`⚠  Prerender skipped${process.env.CI ? ' — fatal in CI' : ' (non-fatal)'}:`, err.message)
   console.warn('   Build is still valid — the SPA serves index.html and React renders normally.')
+  // Fatal in CI, where a skipped prerender also skips every check above (the
+  // single-<head> assertion and the hydration check). Non-fatal there meant
+  // CI had no Chromium and passed them all without running one.
+  if (process.env.CI) exitCode = 1
 } finally {
   if (browser) await browser.close().catch(() => {})
   server.httpServer.close()

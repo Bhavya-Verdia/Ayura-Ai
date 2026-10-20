@@ -64,6 +64,25 @@ jobs:
           cache-dependency-path: client/package-lock.json
       - run: npm ci
       - run: npm run lint
+      # Chromium for the prerender in `npm run build`, which also runs the
+      # snapshot checks (one <head> per page, React hydrating without a redraw).
+      # Without it the prerender is skipped, and under CI that now fails the
+      # build. Time-boxed and retried like ci.yml's E2E job install (see there).
+      - name: Install Playwright system dependencies
+        continue-on-error: true
+        timeout-minutes: 5
+        run: npx playwright install-deps chromium
+
+      - name: Install Playwright browser
+        timeout-minutes: 5
+        run: |
+          for attempt in 1 2 3; do
+            npx playwright install chromium && exit 0
+            echo "playwright install failed (attempt $attempt), retrying..."
+            sleep 10
+          done
+          exit 1
+
       - run: npm run build
       - run: scripts/check-nginx.sh
 
