@@ -17,6 +17,7 @@ import ReloadPrompt from './components/ReloadPrompt'
 import OfflineBanner from './components/OfflineBanner'
 import { trackPageview } from './lib/analytics'
 import { isReturningUser } from './lib/sessionHint'
+import { Landing, DoshaTest } from './lib/snapshotPages'
 
 // Lazy like the pages: the app shell (sidebar, command palette, feedback
 // widget + Dashboard.css) is only for authenticated users — statically
@@ -29,7 +30,6 @@ import { isReturningUser } from './lib/sessionHint'
 const importMainLayout = () => import('./layouts/MainLayout')
 const importDashboard = () => import('./pages/Dashboard')
 const MainLayout = React.lazy(importMainLayout)
-const Landing = React.lazy(() => import('./pages/Landing'))
 const Login = React.lazy(() => import('./pages/Login'))
 const Register = React.lazy(() => import('./pages/Register'))
 const GoogleCallback = React.lazy(() => import('./pages/GoogleCallback'))
@@ -55,7 +55,6 @@ const Notifications = React.lazy(() => import('./pages/Notifications'))
 const Reminders = React.lazy(() => import('./pages/Reminders'))
 const InteractionChecker = React.lazy(() => import('./pages/InteractionChecker'))
 const Progress = React.lazy(() => import('./pages/Progress'))
-const DoshaTest = React.lazy(() => import('./pages/DoshaTest'))
 
 // NO filter/blur in entrance variants — ever. An animated (or lingering
 // blur(0px)) filter puts the ENTIRE page in one giant GPU render surface,

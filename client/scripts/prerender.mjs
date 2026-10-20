@@ -77,6 +77,10 @@ const shellFallbacks = {
 // runs long after that. See that plugin for why the fallback can't be
 // index.html.
 
+// Set by the hydration check below. Everything else here is non-fatal by
+// design; that check fails CI because its failure is otherwise invisible.
+let exitCode = 0
+
 console.log('🔧  Starting Vite preview server…')
 const server = await preview({
   root,
@@ -151,12 +155,42 @@ try {
     // service worker registers during the capture and sonner shows its
     // "App is ready to work offline" toast, which would greet every first-time
     // visitor (and crawler) as frozen HTML until React hydrates and wipes it.
+    //
+    // Only the toast list goes. The <section> around it is rendered by
+    // <Toaster> whether or not a toast is showing, and main.jsx hydrates this
+    // snapshot, so removing it would make the snapshot disagree with React.
     await page.evaluate(() => {
-      document.querySelectorAll('[data-sonner-toaster]').forEach((el) => {
-        const section = el.closest('section')
-        ;(section || el).remove()
-      })
+      document.querySelectorAll('ol[data-sonner-toaster]').forEach((el) => el.remove())
     })
+
+    // main.jsx hydrates this snapshot (hydrateRoot) instead of redrawing it.
+    // Hydration expects each <Suspense> boundary's HTML to sit between
+    // <!--$--> and <!--/$-->, which a server render writes and a browser DOM
+    // never contains, so without them React gives up at the first boundary
+    // and redraws the whole page. These routes render exactly two, both
+    // around #main-content (App.jsx): App's around <Routes>, whose content is
+    // the <main> itself, and PageWrapper's inside it. A third boundary on
+    // these routes would need its markers added here.
+    //
+    // The same goes for adjacent text nodes: `{a}{b}` is two text nodes in the
+    // DOM and one in serialized HTML, so hydration finds one where it expects
+    // two. A server render separates them with <!-- -->, which hydration skips.
+    const marked = await page.evaluate(() => {
+      const main = document.getElementById('main-content')
+      if (!main) return false
+      const walker = document.createTreeWalker(document.getElementById('root'), NodeFilter.SHOW_TEXT)
+      const texts = []
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) texts.push(n)
+      texts.forEach((t) => {
+        if (t.nextSibling && t.nextSibling.nodeType === Node.TEXT_NODE) t.after(document.createComment(' '))
+      })
+      main.before(document.createComment('$'))
+      main.after(document.createComment('/$'))
+      main.prepend(document.createComment('$'))
+      main.append(document.createComment('/$'))
+      return true
+    })
+    if (!marked) throw new Error(`${path}: no #main-content to mark for hydration`)
 
     // React.lazy chunks trigger runtime-injected <link rel="modulepreload"> whose
     // href resolves to the preview server's absolute origin. Rewrite that origin to
@@ -172,11 +206,41 @@ try {
     console.log(`✅  ${out} updated (${kB} kB) — ${path} pre-rendered`)
   }
   console.log('    Crawlers now receive full HTML. React hydrates on top.')
+
+  // main.jsx hydrates these snapshots. If the first client render stops
+  // matching one, React draws that page again over it, which costs the LCP the
+  // snapshot exists for and logs nothing a visitor would report. So load each
+  // written file the way a first-time visitor does and check that the title
+  // on screen afterwards is the very node the HTML delivered.
+  const failures = []
+  for (const { path, selector } of ROUTES) {
+    const check = await browser.newPage()
+    await check.route('**/api/**', (route) => route.abort())
+    const errors = []
+    check.on('console', (m) => { if (m.type() === 'error' && m.text().includes('[hydrate]')) errors.push(m.text().slice(0, 200)) })
+    await check.addInitScript((sel) => {
+      document.addEventListener('readystatechange', () => {
+        if (document.readyState === 'interactive') window.__snapshotNode = document.querySelector(sel)
+      })
+    }, selector)
+    await check.goto(`${PREVIEW_ORIGIN}${path}`, { waitUntil: 'networkidle', timeout: 25000 })
+    await check.waitForTimeout(1000)
+    const kept = await check.evaluate((sel) => !!window.__snapshotNode && window.__snapshotNode === document.querySelector(sel), selector)
+    if (!kept || errors.length) failures.push(`${path}: snapshot ${kept ? 'kept' : 'redrawn'}${errors.length ? `, ${errors[0]}` : ''}`)
+    await check.close()
+  }
+  if (failures.length) {
+    console.error('❌  Hydration check failed — React redraws these pages instead of adopting the snapshot:')
+    failures.forEach((f) => console.error('   ', f))
+    if (process.env.CI) exitCode = 1
+  } else {
+    console.log('✅  Hydration check: React adopts every snapshot without redrawing it')
+  }
 } catch (err) {
   console.warn('⚠  Prerender skipped (non-fatal):', err.message)
   console.warn('   Build is still valid — the SPA serves index.html and React renders normally.')
 } finally {
   if (browser) await browser.close().catch(() => {})
   server.httpServer.close()
-  process.exit(0)
+  process.exit(exitCode)
 }

@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   authAPI,
   profileAPI,
@@ -8,7 +9,7 @@ import {
 } from '../api/client'
 import { resetQueryCache } from '../queryClient'
 import { identifyUser, resetAnalytics } from '../lib/analytics'
-import { markReturningUser, clearReturningUser } from '../lib/sessionHint'
+import { markReturningUser, clearReturningUser, isReturningUser } from '../lib/sessionHint'
 
 export const AuthContext = createContext(null)
 
@@ -24,10 +25,37 @@ function mapProfileToUser(data) {
   }
 }
 
+// Pages an anonymous visitor reads without a session. On these, a browser that
+// has never been signed in (lib/sessionHint.js) skips the boot /profile/me
+// check: for a first-time visitor it was two failed requests (profile 401,
+// refresh 401) on every landing page view, and its answer arriving while the
+// prerendered page was still hydrating made React redraw the page. The check
+// runs as soon as the visitor opens any other route.
+//
+// Safe because every sign-in writes the hint (fetchProfile, below) and has
+// done since 2026-08-11, while a session lasts 7 days: a browser holding a
+// live session cookie and no hint is one whose site storage was cleared. That
+// visitor sees the signed-out landing page until they open the app.
+const ANONYMOUS_PATHS = new Set([
+  '/', '/dosha-test', '/terms', '/privacy', '/login', '/register', '/forgot-password',
+])
+
 export function AuthProvider({ children }) {
+  const { pathname } = useLocation()
   const [user, setUser]       = useState(null)
   const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
+  // Null until the first check has run. Starts settled only where the check
+  // is skipped, so a guarded route never renders once with no user and no
+  // pending check (which would redirect a signed-in user to /login).
+  const [checked, setChecked] = useState(() => ANONYMOUS_PATHS.has(pathname) && !isReturningUser() ? false : null)
+  const needsCheck = checked === null || (checked === false && !ANONYMOUS_PATHS.has(pathname))
+  // needsCheck stays true until fetchProfile settles `checked`, so this is
+  // the loading state; login() calling fetchProfile leaves it alone.
+  const loading = needsCheck
+
+  useEffect(() => {
+    if (needsCheck) fetchProfile()
+  }, [needsCheck])
 
   useEffect(() => {
     const handleAuthExpired = () => {
@@ -39,7 +67,6 @@ export function AuthProvider({ children }) {
       resetQueryCache()
     }
     window.addEventListener('auth-expired', handleAuthExpired)
-    fetchProfile()
     return () => window.removeEventListener('auth-expired', handleAuthExpired)
   }, [])
 
@@ -64,7 +91,7 @@ export function AuthProvider({ children }) {
       // there is one again.
       clearReturningUser()
     } finally {
-      setLoading(false)
+      setChecked(true)
     }
   }
 

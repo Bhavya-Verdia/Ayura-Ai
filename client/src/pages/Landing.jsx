@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, Suspense } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Lenis from 'lenis'
 import { m, AnimatePresence, MotionConfig } from 'framer-motion'

@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { Landing, DoshaTest } from './lib/snapshotPages'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { LazyMotion, domAnimation, MotionConfig } from 'framer-motion'
@@ -72,7 +73,7 @@ function MotionRoot({ children }) {
   )
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+const tree = (
   <React.StrictMode>
     <HelmetProvider>
       <BrowserRouter>
@@ -89,3 +90,48 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </HelmetProvider>
   </React.StrictMode>
 )
+
+// "/" and "/dosha-test" arrive as prerendered HTML (scripts/prerender.mjs).
+// createRoot threw that DOM away and drew the page again once every chunk had
+// loaded, so the hero a visitor was already reading was painted twice and the
+// LCP was the second paint: 92% of a 5.7s mobile LCP was that redraw.
+// hydrateRoot adopts the existing DOM.
+//
+// Only for a dark-theme visitor, because the snapshot is dark. ThemeProvider
+// reads the stored theme in its first render, and React does not patch
+// attributes that differ during hydration, so a light-theme visitor would keep
+// the snapshot's dark classes (vital-bg-dark) until something re-rendered.
+// Language needs no guard: English renders first and a saved language loads
+// afterwards (i18n.js), which is an ordinary update.
+function snapshotMatchesTheme() {
+  try {
+    return (localStorage.getItem('ayura_theme') || 'dark') === 'dark'
+  } catch {
+    return true
+  }
+}
+
+// The route's chunk is loaded before hydrating. Until React.lazy has it, the
+// page is an unhydrated region, and React treats that region as reading every
+// context above it: any provider update meanwhile (the query cache finishing
+// its restore from IndexedDB) makes it give up and draw the page again. The
+// snapshot is already on screen, so waiting costs no paint, and the page was
+// not interactive before this chunk arrived anyway. See lib/snapshotPages.js.
+const SNAPSHOT_ROUTES = {
+  '/': Landing.preload,
+  '/dosha-test': DoshaTest.preload,
+}
+
+const container = document.getElementById('root')
+const route = SNAPSHOT_ROUTES[window.location.pathname]
+if (route && container.hasChildNodes() && snapshotMatchesTheme()) {
+  route()
+    .catch(() => {})
+    .then(() => {
+      ReactDOM.hydrateRoot(container, tree, {
+        onRecoverableError: (error) => console.error('[hydrate]', error),
+      })
+    })
+} else {
+  ReactDOM.createRoot(container).render(tree)
+}
