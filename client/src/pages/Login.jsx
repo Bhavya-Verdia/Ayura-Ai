@@ -1,10 +1,11 @@
 import { m, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../providers/AuthContext'
 import { Helmet } from 'react-helmet-async'
 import { Eye, EyeOff } from 'lucide-react'
 import './Auth.css'
+import { usePrefilledInputs } from '../lib/usePrefilledInputs'
 
 const GOOGLE_ENABLED = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID)
 const GITHUB_ENABLED = Boolean(import.meta.env.VITE_GITHUB_CLIENT_ID)
@@ -28,6 +29,8 @@ export default function Login() {
   const [showPw,   setShowPw]   = useState(false)
   const [error,    setError]    = useState('')
   const [loading,  setLoading]  = useState(false)
+  const formRef = useRef(null)
+  usePrefilledInputs(formRef, { '#email': setEmail, '#password': setPassword })
   const { login }  = useAuth()
   const navigate   = useNavigate()
 
@@ -100,7 +103,7 @@ export default function Login() {
           </AnimatePresence>
 
           {/* Form */}
-          <form className="auth-form" onSubmit={handleSubmit}>
+          <form className="auth-form" onSubmit={handleSubmit} ref={formRef}>
             <div className="auth-field">
               <label className="auth-label" htmlFor="email">Email address</label>
               <input id="email" className="auth-input" type="email"

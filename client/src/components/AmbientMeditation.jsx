@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import './AmbientMeditation.css'
 
@@ -8,19 +8,19 @@ import './AmbientMeditation.css'
 // a CSS mobile-hide so prerendered HTML never flashes glyphs on a phone.
 const DESKTOP_QUERY = '(min-width: 901px) and (pointer: fine)'
 
+function subscribeDesktop(onChange) {
+  if (typeof window === 'undefined' || !window.matchMedia) return () => {}
+  const mq = window.matchMedia(DESKTOP_QUERY)
+  mq.addEventListener('change', onChange)
+  return () => mq.removeEventListener('change', onChange)
+}
+const isDesktopNow = () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia(DESKTOP_QUERY).matches
+
+// False while React hydrates a prerendered page: the snapshot never contains this
+// layer (prerender.mjs strips it, since a phone renders none), so the first
+// render has to match that; the glyphs then appear in the render after.
 function useIsDesktop() {
-  const [desktop, setDesktop] = useState(
-    () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia(DESKTOP_QUERY).matches
-  )
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return
-    const mq = window.matchMedia(DESKTOP_QUERY)
-    const update = () => setDesktop(mq.matches)
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
-  }, [])
-  return desktop
+  return useSyncExternalStore(subscribeDesktop, isDesktopNow, () => false)
 }
 
 /**
@@ -90,7 +90,16 @@ function FigureIcon({ size }) {
 
 // Layout is generated ONCE at module load (not during render — keeps the
 // component pure and lint-clean, and a stable field across navigations is fine).
-const rnd = (a, b) => a + Math.random() * (b - a)
+// Seeded (mulberry32), not Math.random: the same field on every load, so the
+// layer rendered after hydrating a prerendered page matches a plain render of it.
+let seed = 0x0a17a
+const random = () => {
+  seed = (seed + 0x6d2b79f5) | 0
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+}
+const rnd = (a, b) => a + random() * (b - a)
 const SPRITES = Array.from({ length: 22 }, (_, i) => {
   const kind = PATTERN[i % PATTERN.length]
   // Auth/onboarding pages centre a form card and these glyphs float IN FRONT of

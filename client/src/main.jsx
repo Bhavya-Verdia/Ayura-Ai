@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { Landing, DoshaTest, hydration } from './lib/snapshotPages'
+import { Landing, DoshaTest, Login, Register, hydration } from './lib/snapshotPages'
+import { isReturningUser } from './lib/sessionHint'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { LazyMotion, domAnimation, MotionConfig } from 'framer-motion'
@@ -113,10 +114,17 @@ const tree = (
 const SNAPSHOT_ROUTES = {
   '/': Landing.preload,
   '/dosha-test': DoshaTest.preload,
+  '/login': Login.preload,
+  '/register': Register.preload,
 }
+// For a browser that has been signed in, PublicRoute's first render is the
+// session check's loading screen (and then, usually, a redirect), which no
+// snapshot of the form can match. Those visitors get the page drawn as before.
+const SIGNED_OUT_ONLY = new Set(['/login', '/register'])
 
 const container = document.getElementById('root')
-const route = SNAPSHOT_ROUTES[window.location.pathname]
+const path = window.location.pathname
+const route = SIGNED_OUT_ONLY.has(path) && isReturningUser() ? null : SNAPSHOT_ROUTES[path]
 if (route && container.hasChildNodes()) {
   route()
     .catch(() => {})

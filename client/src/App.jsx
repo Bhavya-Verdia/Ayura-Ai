@@ -17,7 +17,7 @@ import ReloadPrompt from './components/ReloadPrompt'
 import OfflineBanner from './components/OfflineBanner'
 import { trackPageview } from './lib/analytics'
 import { isReturningUser } from './lib/sessionHint'
-import { Landing, DoshaTest, hydration } from './lib/snapshotPages'
+import { Landing, DoshaTest, Login, Register, hydration } from './lib/snapshotPages'
 
 // Lazy like the pages: the app shell (sidebar, command palette, feedback
 // widget + Dashboard.css) is only for authenticated users — statically
@@ -30,8 +30,6 @@ import { Landing, DoshaTest, hydration } from './lib/snapshotPages'
 const importMainLayout = () => import('./layouts/MainLayout')
 const importDashboard = () => import('./pages/Dashboard')
 const MainLayout = React.lazy(importMainLayout)
-const Login = React.lazy(() => import('./pages/Login'))
-const Register = React.lazy(() => import('./pages/Register'))
 const GoogleCallback = React.lazy(() => import('./pages/GoogleCallback'))
 const GithubCallback = React.lazy(() => import('./pages/GithubCallback'))
 

@@ -1,11 +1,12 @@
 import { m, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../providers/AuthContext'
 import { Helmet } from 'react-helmet-async'
 import { Eye, EyeOff } from 'lucide-react'
 import { track, EVENTS } from '../lib/analytics'
 import './Auth.css'
+import { usePrefilledInputs } from '../lib/usePrefilledInputs'
 
 const GOOGLE_ENABLED  = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID)
 const GITHUB_ENABLED  = Boolean(import.meta.env.VITE_GITHUB_CLIENT_ID)
@@ -31,6 +32,8 @@ export default function Register() {
   const [error,        setError]        = useState('')
   const [loading,      setLoading]      = useState(false)
   const [submitted,    setSubmitted]    = useState(false)
+  const formRef = useRef(null)
+  usePrefilledInputs(formRef, { '#name': setName, '#reg-email': setEmail, '#reg-password': setPassword, 'input[type="checkbox"]': setConsentGiven })
   const { register } = useAuth()
 
   async function handleSubmit(e) {
@@ -132,7 +135,7 @@ export default function Register() {
               <div id="recaptcha-container" />
 
               {/* Form */}
-              <form className="auth-form" onSubmit={handleSubmit}>
+              <form className="auth-form" onSubmit={handleSubmit} ref={formRef}>
                 <div className="auth-field">
                   <label className="auth-label" htmlFor="name">Full name</label>
                   <input id="name" className="auth-input" type="text"

@@ -1,4 +1,4 @@
-/* The two routes served as prerendered HTML (scripts/prerender.mjs), as lazy
+/* The routes served as prerendered HTML (scripts/prerender.mjs), as lazy
  * components that main.jsx can load before it hydrates.
  *
  * React.lazy suspends at least once even when its module has already loaded,
@@ -31,3 +31,5 @@ export const hydration = { active: false }
 
 export const Landing = preloadable(() => import('../pages/Landing'))
 export const DoshaTest = preloadable(() => import('../pages/DoshaTest'))
+export const Login = preloadable(() => import('../pages/Login'))
+export const Register = preloadable(() => import('../pages/Register'))
