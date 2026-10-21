@@ -12,12 +12,18 @@
  * the SDK this dynamic import exists to defer — and would report the build
  * machine as a live session. See that script for the full note.
  *
+ * The SDK is fetched after the page is idle (lib/afterIdle.js), not at boot.
+ * Errors thrown before then are held and sent once it has loaded, because
+ * Sentry's own global handlers only see what happens after `init`.
+ *
  * PRIVACY: the same contract as lib/analytics.js. `reportError` context is
  * statuses, enums and server-written messages — never an answer the user gave.
  * A report marked `noReplay` also never attaches a session replay, because the
  * screens that send one (onboarding) are made of health answers, and a masked
  * replay still records which chip was selected.
  */
+
+import { afterIdle } from './afterIdle'
 
 const DSN = import.meta.env.VITE_SENTRY_DSN
 
@@ -29,7 +35,12 @@ function enabled() {
 
 export function initErrorReporting() {
   if (sentryPromise || !enabled()) return sentryPromise
-  sentryPromise = import('@sentry/react')
+  const early = []
+  const hold = (event) => early.push(event.reason ?? event.error ?? event.message)
+  window.addEventListener('error', hold)
+  window.addEventListener('unhandledrejection', hold)
+  sentryPromise = afterIdle()
+    .then(() => import('@sentry/react'))
     .then((Sentry) => {
       Sentry.init({
         dsn: DSN,
@@ -45,6 +56,10 @@ export function initErrorReporting() {
         replaysSessionSampleRate: 0,
         replaysOnErrorSampleRate: 1.0,
       })
+      window.removeEventListener('error', hold)
+      window.removeEventListener('unhandledrejection', hold)
+      early.forEach((error) =>
+        Sentry.captureException(error instanceof Error ? error : new Error(String(error))))
       return Sentry
     })
     .catch(() => null)
