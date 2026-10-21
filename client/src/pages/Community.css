@@ -56,8 +56,12 @@
   background: var(--avatar-color, #27272a);
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display); font-weight: 700; font-size: 0.9rem;
-  color: #fff; letter-spacing: 0.02em;
+  /* Dark, not white: white measured 2.2-4.0:1 on every DOSHA_COLORS swatch,
+     this is 4.6-8.7:1 on all of them. */
+  color: #10140f; letter-spacing: 0.02em;
 }
+/* An h2 (it follows the page's h1), kept at the h3 size it was drawn at. */
+.comm-empty-title { font-size: var(--fs-h3); }
 .comm-create-prompt { font-weight: 500; color: var(--ayura-ink); }
 .comm-textarea-wrap { background: var(--glass-shadow); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; }
 .comm-textarea {
@@ -96,7 +100,7 @@
   background: var(--avatar-color, #27272a);
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display); font-weight: 700; font-size: 1rem;
-  color: #fff; letter-spacing: 0.02em;
+  color: #10140f; letter-spacing: 0.02em; /* see .comm-create-avatar */
 }
 .comm-post-meta { display: flex; flex-direction: column; }
 .comm-post-author { font-family: var(--font-ui); font-weight: 700; font-size: 1.05rem; }

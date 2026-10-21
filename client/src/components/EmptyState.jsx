@@ -30,7 +30,7 @@ export default function EmptyState({ icon: Icon, title, description, actions, cl
           <Icon size={34} strokeWidth={1.6} />
         </div>
       )}
-      <h3 className="empty-state-title">{title}</h3>
+      <h2 className="empty-state-title">{title}</h2>
       {description && <p className="empty-state-desc">{description}</p>}
       {actions && <div className="empty-state-actions">{actions}</div>}
     </m.div>

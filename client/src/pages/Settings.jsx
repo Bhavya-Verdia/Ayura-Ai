@@ -532,10 +532,11 @@ export default function Settings() {
 
           <div className="settings-pref-row" style={{ marginTop: '16px' }}>
             <div>
-              <div className="settings-pref-label">Language</div>
+              <div className="settings-pref-label" id="settings-language-label">Language</div>
               <div className="settings-pref-help">Choose your preferred language</div>
             </div>
             <select
+              aria-labelledby="settings-language-label"
               value={i18n.language}
               onChange={(e) => setLanguage(e.target.value)}
               style={{ width: '150px' }}
@@ -583,20 +584,20 @@ export default function Settings() {
           </div>
           <div className="settings-grid">
             <div className="input-group">
-              <label>Age</label>
-              <input type="number" name="age" value={form.age} onChange={handleChange} min={10} max={120} />
+              <label htmlFor="settings-age">Age</label>
+              <input id="settings-age" type="number" name="age" value={form.age} onChange={handleChange} min={10} max={120} />
             </div>
             <div className="input-group">
-              <label>Height (cm)</label>
-              <input type="number" name="height_cm" value={form.height_cm} onChange={handleChange} step="0.1" />
+              <label htmlFor="settings-height-cm">Height (cm)</label>
+              <input id="settings-height-cm" type="number" name="height_cm" value={form.height_cm} onChange={handleChange} step="0.1" />
             </div>
             <div className="input-group">
-              <label>Weight (kg)</label>
-              <input type="number" name="weight_kg" value={form.weight_kg} onChange={handleChange} step="0.1" />
+              <label htmlFor="settings-weight-kg">Weight (kg)</label>
+              <input id="settings-weight-kg" type="number" name="weight_kg" value={form.weight_kg} onChange={handleChange} step="0.1" />
             </div>
             <div className="input-group">
-              <label>Fitness Level</label>
-              <select name="fitness_level" value={form.fitness_level} onChange={handleChange}>
+              <label htmlFor="settings-fitness-level">Fitness Level</label>
+              <select id="settings-fitness-level" name="fitness_level" value={form.fitness_level} onChange={handleChange}>
                 <option value="">Select</option>
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
@@ -604,8 +605,8 @@ export default function Settings() {
               </select>
             </div>
             <div className="input-group">
-              <label>Activity Level</label>
-              <select name="activity_level" value={form.activity_level} onChange={handleChange}>
+              <label htmlFor="settings-activity-level">Activity Level</label>
+              <select id="settings-activity-level" name="activity_level" value={form.activity_level} onChange={handleChange}>
                 <option value="">Select</option>
                 <option value="sedentary">Sedentary</option>
                 <option value="light">Light</option>
@@ -615,8 +616,8 @@ export default function Settings() {
               </select>
             </div>
             <div className="input-group">
-              <label>Goal</label>
-              <select name="goal" value={form.goal} onChange={handleChange}>
+              <label htmlFor="settings-goal">Goal</label>
+              <select id="settings-goal" name="goal" value={form.goal} onChange={handleChange}>
                 <option value="">Select</option>
                 <option value="weight_loss">Weight Loss</option>
                 <option value="muscle_gain">Muscle Gain</option>
@@ -629,8 +630,9 @@ export default function Settings() {
           </div>
 
           <div style={{ marginTop: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '10px', fontWeight: 600, fontSize: '0.9rem' }}>Medical Conditions</label>
+            <label htmlFor="settings-condition-search" style={{ display: 'block', marginBottom: '10px', fontWeight: 600, fontSize: '0.9rem' }}>Medical Conditions</label>
             <input
+              id="settings-condition-search"
               className="onb-condition-search"
               type="text"
               placeholder="Search conditions…"
@@ -674,8 +676,8 @@ export default function Settings() {
             </div>
           </div>
           <div className="input-group">
-            <label>How long have you followed your current diet &amp; lifestyle? (Satmya)</label>
-            <select name="satmya" value={form.satmya} onChange={handleChange}>
+            <label htmlFor="settings-satmya">How long have you followed your current diet &amp; lifestyle? (Satmya)</label>
+            <select id="settings-satmya" name="satmya" value={form.satmya} onChange={handleChange}>
               <option value="">Select…</option>
               <option value="less_than_1y">Less than 1 year</option>
               <option value="1_to_5y">1–5 years</option>
@@ -684,8 +686,8 @@ export default function Settings() {
           </div>
 
           <div className="input-group">
-            <label>Bowel Tendency (Koshtha) — used for Panchakarma personalisation</label>
-            <select name="koshtha" value={form.koshtha} onChange={handleChange}>
+            <label htmlFor="settings-koshtha">Bowel Tendency (Koshtha) — used for Panchakarma personalisation</label>
+            <select id="settings-koshtha" name="koshtha" value={form.koshtha} onChange={handleChange}>
               <option value="">Select…</option>
               <option value="sama">Sama — Regular once daily</option>
               <option value="krura">Krura — Hard / infrequent (tends toward constipation)</option>
@@ -694,12 +696,12 @@ export default function Settings() {
           </div>
 
           <div className="input-group">
-            <label>Current Symptoms (comma-separated)</label>
-            <input name="current_symptoms" value={form.current_symptoms} onChange={handleChange} placeholder="e.g. fatigue, bloating, insomnia" />
+            <label htmlFor="settings-current-symptoms">Current Symptoms (comma-separated)</label>
+            <input id="settings-current-symptoms" name="current_symptoms" value={form.current_symptoms} onChange={handleChange} placeholder="e.g. fatigue, bloating, insomnia" />
           </div>
           <div className="input-group">
-            <label>Current Medications (comma-separated)</label>
-            <input name="current_medications" value={form.current_medications} onChange={handleChange} placeholder="e.g. metformin, atenolol" />
+            <label htmlFor="settings-current-medications">Current Medications (comma-separated)</label>
+            <input id="settings-current-medications" name="current_medications" value={form.current_medications} onChange={handleChange} placeholder="e.g. metformin, atenolol" />
           </div>
 
           <div className="settings-action-row">
@@ -718,16 +720,16 @@ export default function Settings() {
             <h2 className="settings-section-title">Change Password</h2>
             <div className="settings-grid">
               <div className="input-group">
-                <label>Current Password</label>
-                <input type="password" value={passwords.current} onChange={e => setPasswords(p => ({ ...p, current: e.target.value }))} required />
+                <label htmlFor="settings-pw-current">Current Password</label>
+                <input id="settings-pw-current" type="password" value={passwords.current} onChange={e => setPasswords(p => ({ ...p, current: e.target.value }))} required />
               </div>
               <div className="input-group">
-                <label>New Password</label>
-                <input type="password" value={passwords.new} onChange={e => setPasswords(p => ({ ...p, new: e.target.value }))} minLength={8} required />
+                <label htmlFor="settings-pw-new">New Password</label>
+                <input id="settings-pw-new" type="password" value={passwords.new} onChange={e => setPasswords(p => ({ ...p, new: e.target.value }))} minLength={8} required />
               </div>
               <div className="input-group">
-                <label>Confirm New Password</label>
-                <input type="password" value={passwords.confirm} onChange={e => setPasswords(p => ({ ...p, confirm: e.target.value }))} required />
+                <label htmlFor="settings-pw-confirm">Confirm New Password</label>
+                <input id="settings-pw-confirm" type="password" value={passwords.confirm} onChange={e => setPasswords(p => ({ ...p, confirm: e.target.value }))} required />
               </div>
             </div>
             <m.button className="btn btn-primary" type="submit" disabled={savingPw} style={{ marginTop: '16px' }} whileTap={{ scale: 0.97 }}>

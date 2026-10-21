@@ -203,7 +203,7 @@ export default function Progress() {
                 exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
-                <h3 className="prg-log-form-title">Log Today's Progress</h3>
+                <h2 className="prg-log-form-title">Log Today's Progress</h2>
                 <div className="prg-log-grid">
                   <div className="input-group">
                     <label>Weight (kg)</label>

@@ -477,7 +477,7 @@ export default function DoshaQuiz() {
         >
           <div className="da-clarify-header">
             <span className="da-clarify-icon"><Search size={18} strokeWidth={2} /></span>
-            <h2 className="da-clarify-title">A couple of follow-up questions</h2>
+            <h1 className="da-clarify-title">A couple of follow-up questions</h1>
             <p className="da-clarify-sub">
               Your physical and mental signals show some contrast — these two questions help us resolve the pattern accurately.
             </p>
@@ -604,7 +604,7 @@ export default function DoshaQuiz() {
         >
           <div className="da-confirm-header">
             <span className="da-confirm-icon"><Leaf size={20} strokeWidth={2} /></span>
-            <h2 className="da-confirm-title">Your Vaidya Assessment</h2>
+            <h1 className="da-confirm-title">Your Vaidya Assessment</h1>
             <p className="da-confirm-sub">
               Based on your {TRAIT_QUESTIONS.length} constitutional traits (Shareera + Manas Prakriti) and current symptoms:
             </p>
@@ -974,6 +974,7 @@ export default function DoshaQuiz() {
         >
           <div className="da-phase-header">
             <button type="button" className="btn btn-secondary da-back-btn" onClick={() => { setPhase('traits'); setTraitIndex(TRAIT_QUESTIONS.length - 1) }}>← Back</button>
+            <h1 className="sr-only">Dosha quiz: current state</h1>
             <div className="da-phase-steps">
               <span className="da-step done">Physical Traits</span>
               <span className="da-step-sep">›</span>
@@ -1127,6 +1128,7 @@ export default function DoshaQuiz() {
           >
             ← Back
           </button>
+          <h1 className="sr-only">Dosha quiz: physical traits</h1>
           <div className="da-phase-steps">
             <span className="da-step active">Physical Traits</span>
             <span className="da-step-sep">›</span>

@@ -59,7 +59,7 @@ export default function VerifyEmail() {
               animate={{ opacity: 1 }}
             >
               <div className="spinner" style={{ margin: '0 auto 20px', width: '40px', height: '40px' }} />
-              <h3>Verifying your email...</h3>
+              <h1 style={{ fontSize: 'var(--fs-h3)' }}>Verifying your email...</h1>
               <p style={{ color: 'var(--auth-muted)', fontSize: '0.9rem' }}>Please wait a moment.</p>
             </m.div>
           )}
@@ -71,7 +71,7 @@ export default function VerifyEmail() {
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
               <div style={{ color: 'var(--ayura-sage, #4ade80)', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><CircleCheck size={52} strokeWidth={1.6} /></div>
-              <h3 style={{ marginBottom: '8px' }}>Email Verified!</h3>
+              <h1 style={{ fontSize: 'var(--fs-h3)', marginBottom: '8px' }}>Email Verified!</h1>
               <p style={{ color: 'var(--auth-muted)', fontSize: '0.9rem', marginBottom: '24px' }}>
                 Your account is fully activated.
               </p>
@@ -88,7 +88,7 @@ export default function VerifyEmail() {
               transition={{ duration: 0.5 }}
             >
               <div style={{ color: 'var(--ayura-rose)', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><CircleX size={52} strokeWidth={1.6} /></div>
-              <h3 style={{ marginBottom: '8px', color: 'var(--ayura-rose)' }}>Verification Failed</h3>
+              <h1 style={{ fontSize: 'var(--fs-h3)', marginBottom: '8px', color: 'var(--ayura-rose)' }}>Verification Failed</h1>
               <p style={{ color: 'var(--ayura-rose)', marginBottom: '24px', fontSize: '0.9rem' }}>{errorMsg}</p>
               <Link to="/login" className="btn btn-secondary btn-full btn-lg">
                 Back to Login

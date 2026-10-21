@@ -259,7 +259,7 @@ export default function Onboarding() {
       >
         <header className="onb-header">
           <div className="onb-brand">
-            <img src="/favicon.svg" alt="Ayura AI Logo" className="onb-brand-mark" />
+            <img src="/favicon.svg" alt="" className="onb-brand-mark" />
             <span className="onb-brand-text">Ayura AI</span>
           </div>
           <div className="onb-header-actions">
@@ -267,7 +267,7 @@ export default function Onboarding() {
               Switch Account
             </button>
           </div>
-          <h2>Set up your health profile</h2>
+          <h1>Set up your health profile</h1>
           <p className="onb-subtitle">Step {step + 1} of {STEPS.length}: {STEPS[step]}</p>
         </header>
 

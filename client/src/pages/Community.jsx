@@ -630,7 +630,7 @@ export default function Community() {
                 transition={{ duration: 0.4 }}
               >
                 <div className="comm-empty-icon"><Sprout size={30} strokeWidth={1.8} /></div>
-                <h3 className="comm-empty-title">Be the first to share your wellness journey!</h3>
+                <h2 className="comm-empty-title">Be the first to share your wellness journey!</h2>
                 <p className="comm-empty-sub">
                   The community is waiting. Share a remedy, yoga tip, or healing experience above.
                 </p>
