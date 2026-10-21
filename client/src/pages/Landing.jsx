@@ -5,7 +5,7 @@ import { m, AnimatePresence, MotionConfig } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import useLowPowerMode from '../hooks/useLowPowerMode'
 import { useAuth } from '../providers/AuthContext'
-import { useTheme } from '../providers/ThemeProvider'
+import { useTheme, useRenderedTheme } from '../providers/ThemeProvider'
 import { SUPPORTED_LANGUAGES, setLanguage } from '../i18n'
 // English source strings, used directly (not via t()) for SEO structured data
 // so the JSON-LD stays canonical-English even after a visitor switches language.
@@ -329,7 +329,8 @@ const FAQS_EN = [1, 2, 3, 4, 5, 6].map(n => ({ q: enLocale.landing[`faq${n}_q`],
 // ─── Nav controls: theme + language switchers ─────────────────
 function NavControls() {
   const { t, i18n } = useTranslation()
-  const { theme, setThemeAnimated } = useTheme()
+  const { setThemeAnimated } = useTheme()
+  const theme = useRenderedTheme()
   const [open, setOpen] = useState(false)
   const wrapRef = useRef(null)
 
@@ -357,7 +358,9 @@ function NavControls() {
         aria-label={themeLabel}
         title={themeLabel}
       >
-        {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+        {/* Both icons, one shown by CSS per data-theme: right before any script runs. */}
+        <Sun size={16} strokeWidth={2} className="lnd-theme-icon-sun" aria-hidden="true" />
+        <Moon size={16} strokeWidth={2} className="lnd-theme-icon-moon" aria-hidden="true" />
       </button>
       <div className="lnd-lang-wrap" ref={wrapRef}>
         <button

@@ -97,19 +97,12 @@ const tree = (
 // LCP was the second paint: 92% of a 5.7s mobile LCP was that redraw.
 // hydrateRoot adopts the existing DOM.
 //
-// Only for a dark-theme visitor, because the snapshot is dark. ThemeProvider
-// reads the stored theme in its first render, and React does not patch
-// attributes that differ during hydration, so a light-theme visitor would keep
-// the snapshot's dark classes (vital-bg-dark) until something re-rendered.
-// Language needs no guard: English renders first and a saved language loads
-// afterwards (i18n.js), which is an ordinary update.
-function snapshotMatchesTheme() {
-  try {
-    return (localStorage.getItem('ayura_theme') || 'dark') === 'dark'
-  } catch {
-    return true
-  }
-}
+// For either theme. The snapshot is captured dark, so nothing in it may render
+// differently by theme: VitalBackground's colours are CSS keyed on data-theme,
+// and the landing theme button reads useRenderedTheme(), which matches the
+// snapshot during hydration and then updates. Hydration does not patch
+// attributes, so a theme-dependent attribute anywhere on these two pages would
+// keep its dark value for a light-theme visitor.
 
 // The route's chunk is loaded before hydrating. Until React.lazy has it, the
 // page is an unhydrated region, and React treats that region as reading every
@@ -124,7 +117,7 @@ const SNAPSHOT_ROUTES = {
 
 const container = document.getElementById('root')
 const route = SNAPSHOT_ROUTES[window.location.pathname]
-if (route && container.hasChildNodes() && snapshotMatchesTheme()) {
+if (route && container.hasChildNodes()) {
   route()
     .catch(() => {})
     .then(() => {

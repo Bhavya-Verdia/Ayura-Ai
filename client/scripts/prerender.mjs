@@ -228,29 +228,64 @@ try {
   // snapshot exists for and logs nothing a visitor would report. So load each
   // written file the way a first-time visitor does and check that the title
   // on screen afterwards is the very node the HTML delivered.
+  //
+  // Both themes: the snapshot is captured dark and hydrated for light-theme
+  // visitors too. Hydration does not patch attributes, so a light visitor can
+  // also be left with a snapshot's dark attribute without any redraw. For light,
+  // the hydrated page's attributes are compared with a plain client render of
+  // the same page, and any difference is one hydration left stale.
+  const attributesOf = (page) => page.evaluate(() => {
+    const rows = []
+    const walk = (el, at) => {
+      const attrs = [...el.attributes].filter((a) => a.name !== 'style').map((a) => `${a.name}="${a.value}"`).join(' ')
+      rows.push(`${at} <${el.tagName.toLowerCase()} ${attrs}>`)
+      ;[...el.children].forEach((c, i) => walk(c, `${at}/${i}`))
+    }
+    walk(document.getElementById('root'), '')
+    return rows
+  })
+  const openPage = async (path, theme, { selector, clientRender = false } = {}) => {
+    const page = await browser.newPage()
+    await page.route('**/api/**', (route) => route.abort())
+    const errors = []
+    page.on('console', (m) => { if (m.type() === 'error' && m.text().includes('[hydrate]')) errors.push(m.text().slice(0, 200)) })
+    await page.addInitScript(({ sel, theme, clientRender }) => {
+      try { localStorage.setItem('ayura_theme', theme) } catch { /* private mode */ }
+      document.addEventListener('readystatechange', () => {
+        if (document.readyState !== 'interactive') return
+        window.__snapshotNode = document.querySelector(sel)
+        // Module scripts run after this, so an empty #root makes main.jsx render
+        // from scratch instead of hydrating: the reference to compare against.
+        if (clientRender) document.getElementById('root').replaceChildren()
+      })
+    }, { sel: selector, theme, clientRender })
+    await page.goto(`${PREVIEW_ORIGIN}${path}`, { waitUntil: 'networkidle', timeout: 25000 })
+    await page.waitForTimeout(1000)
+    return { page, errors }
+  }
   const failures = []
   for (const { path, selector } of ROUTES) {
-    const check = await browser.newPage()
-    await check.route('**/api/**', (route) => route.abort())
-    const errors = []
-    check.on('console', (m) => { if (m.type() === 'error' && m.text().includes('[hydrate]')) errors.push(m.text().slice(0, 200)) })
-    await check.addInitScript((sel) => {
-      document.addEventListener('readystatechange', () => {
-        if (document.readyState === 'interactive') window.__snapshotNode = document.querySelector(sel)
-      })
-    }, selector)
-    await check.goto(`${PREVIEW_ORIGIN}${path}`, { waitUntil: 'networkidle', timeout: 25000 })
-    await check.waitForTimeout(1000)
-    const kept = await check.evaluate((sel) => !!window.__snapshotNode && window.__snapshotNode === document.querySelector(sel), selector)
-    if (!kept || errors.length) failures.push(`${path}: snapshot ${kept ? 'kept' : 'redrawn'}${errors.length ? `, ${errors[0]}` : ''}`)
-    await check.close()
+    for (const theme of ['dark', 'light']) {
+      const { page, errors } = await openPage(path, theme, { selector })
+      const kept = await page.evaluate((sel) => !!window.__snapshotNode && window.__snapshotNode === document.querySelector(sel), selector)
+      if (!kept || errors.length) failures.push(`${path} (${theme}): snapshot ${kept ? 'kept' : 'redrawn'}${errors.length ? `, ${errors[0]}` : ''}`)
+      if (kept && theme === 'light') {
+        const hydrated = await attributesOf(page)
+        const reference = await openPage(path, theme, { selector, clientRender: true })
+        const expected = new Set(await attributesOf(reference.page))
+        await reference.page.close()
+        const stale = hydrated.filter((row) => !expected.has(row))
+        if (stale.length) failures.push(`${path} (light): ${stale.length} stale attribute row(s) after hydration, first: ${stale[0].slice(0, 160)}`)
+      }
+      await page.close()
+    }
   }
   if (failures.length) {
-    console.error('❌  Hydration check failed — React redraws these pages instead of adopting the snapshot:')
+    console.error('❌  Hydration check failed — a page is redrawn or left with a stale attribute:')
     failures.forEach((f) => console.error('   ', f))
     if (process.env.CI) exitCode = 1
   } else {
-    console.log('✅  Hydration check: React adopts every snapshot without redrawing it')
+    console.log('✅  Hydration check: React adopts every snapshot in both themes, with no stale attribute')
   }
 } catch (err) {
   console.warn(`⚠  Prerender skipped${process.env.CI ? ' — fatal in CI' : ' (non-fatal)'}:`, err.message)

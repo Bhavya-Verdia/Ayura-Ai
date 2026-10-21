@@ -266,6 +266,9 @@
     font-family: 'Fraunces Variable', 'Fraunces', 'Fraunces Display Fallback', Georgia, serif;
   }
 }
+.lnd-theme-icon-moon { display: none; }
+[data-theme='light'] .lnd-theme-icon-sun { display: none; }
+[data-theme='light'] .lnd-theme-icon-moon { display: inline; }
 [data-theme='light'] .lnd-hero-title {
   color: var(--ayura-ink);
 }
