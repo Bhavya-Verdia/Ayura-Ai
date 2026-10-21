@@ -124,10 +124,18 @@ jobs:
         # so a backend deploy can be verified from outside instead of being taken on
         # trust. `.git` is excluded from the rsync above, so the droplet cannot work
         # the commit out for itself — it has to be handed over.
+        #
+        # Each new GIT_SHA adds a fresh set of cache layers and nothing removed them:
+        # by 2026-10-21 the build cache was 27.5 GB of a 38 GB disk and the build
+        # failed with "no space left on device". The prune keeps the newest 5 GB, so
+        # builds stay warm, and drops the untagged images each rebuild leaves behind.
         run: |
           ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=accept-new "root@$DEPLOY_HOST" \
             "cd $REMOTE_DIR \
              && export GIT_SHA=${{ github.sha }} \
+             && docker builder prune -af --max-used-space 5gb \
+             && docker image prune -f \
+             && df -h / \
              && docker compose build api web worker \
              && docker compose up -d --force-recreate api web worker \
              && sleep 10 \
