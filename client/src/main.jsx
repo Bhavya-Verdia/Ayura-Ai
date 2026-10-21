@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { Landing, DoshaTest } from './lib/snapshotPages'
+import { Landing, DoshaTest, hydration } from './lib/snapshotPages'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { LazyMotion, domAnimation, MotionConfig } from 'framer-motion'
@@ -128,6 +128,7 @@ if (route && container.hasChildNodes() && snapshotMatchesTheme()) {
   route()
     .catch(() => {})
     .then(() => {
+      hydration.active = true
       ReactDOM.hydrateRoot(container, tree, {
         onRecoverableError: (error) => console.error('[hydrate]', error),
       })

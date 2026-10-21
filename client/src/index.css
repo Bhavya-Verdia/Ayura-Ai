@@ -23,12 +23,87 @@
   descent-override: 26.43%;
   line-gap-override: 0%;
 }
+/* Fraunces is only ever set as a heading, so its fallback is matched to the
+   headings as rendered, one face per Georgia style. Each face names the real
+   Georgia cut: a face that declares weight 600-800 over regular Georgia stops the
+   browser synthesising bold, and draws headings in the narrow regular glyphs.
+   The old single 84.98% face was measured at weight 400; headings came out ~26%
+   narrower than Fraunces, rewrapped when it arrived, and moved the /dosha-test
+   hero 38px (CLS 0.068). size-adjust is the measured Fraunces/Georgia width on
+   the real headings at 360-768px (600: ~92%, 700-800: ~96.5%, italic: ~97%).
+   The overrides are scaled by size-adjust, so they are Fraunces' ascent 0.98em
+   and descent 0.26em divided by it. */
 @font-face {
   font-family: 'Fraunces Fallback';
   src: local('Georgia');
-  size-adjust: 84.98%;
-  ascent-override: 115.32%;
-  descent-override: 30.6%;
+  font-weight: 100 549;
+  font-style: normal;
+  size-adjust: 92.5%;
+  ascent-override: 105.95%;
+  descent-override: 28.11%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia Bold'), local('Georgia-Bold');
+  font-weight: 550 650;
+  font-style: normal;
+  size-adjust: 92%;
+  ascent-override: 106.52%;
+  descent-override: 28.26%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia Bold'), local('Georgia-Bold');
+  font-weight: 651 1000;
+  font-style: normal;
+  size-adjust: 96.5%;
+  ascent-override: 101.55%;
+  descent-override: 26.94%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia Italic'), local('Georgia-Italic');
+  font-weight: 100 549;
+  font-style: italic;
+  size-adjust: 97%;
+  ascent-override: 101.03%;
+  descent-override: 26.8%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia Bold Italic'), local('Georgia-BoldItalic');
+  font-weight: 550 1000;
+  font-style: italic;
+  size-adjust: 92%;
+  ascent-override: 106.52%;
+  descent-override: 28.26%;
+  line-gap-override: 0%;
+}
+/* The landing hero at desktop size sits high on Fraunces' opsz axis, where it is
+   much narrower: at 86px Georgia Bold needs ~77% and Georgia Italic ~84%. Used by
+   .lnd-hero-title only, from 1100px. */
+@font-face {
+  font-family: 'Fraunces Display Fallback';
+  src: local('Georgia Bold'), local('Georgia-Bold');
+  font-weight: 100 1000;
+  font-style: normal;
+  size-adjust: 77%;
+  ascent-override: 127.27%;
+  descent-override: 33.77%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Display Fallback';
+  src: local('Georgia Italic'), local('Georgia-Italic');
+  font-weight: 100 1000;
+  font-style: italic;
+  size-adjust: 84%;
+  ascent-override: 116.67%;
+  descent-override: 30.95%;
   line-gap-override: 0%;
 }
 

@@ -28,7 +28,7 @@
   font-size: 1.1rem;
   line-height: 1.75;
   color: var(--ayura-muted);
-  max-width: 60ch;
+  max-width: 36.6em; /* 60ch of Manrope */
   margin: 0 auto 28px;
 }
 .dt-hero-sub strong { color: var(--ayura-ink); font-weight: 700; }
@@ -46,7 +46,7 @@
 }
 
 .dt-intro { padding-top: 60px; text-align: center; }
-.dt-intro .lnd-section-desc { margin: 0 auto; max-width: 68ch; }
+.dt-intro .lnd-section-desc { margin: 0 auto; max-width: 41.48em; /* 68ch of Manrope */ }
 
 /* ── Three doshas ── */
 .dt-dosha-grid {
@@ -214,7 +214,7 @@
   font-size: 0.8rem;
   color: var(--ayura-muted);
   opacity: 0.8;
-  max-width: 70ch;
+  max-width: 42.7em; /* 70ch of Manrope */
   line-height: 1.6;
   margin: 0;
 }

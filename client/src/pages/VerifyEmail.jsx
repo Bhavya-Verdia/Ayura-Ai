@@ -49,7 +49,7 @@ export default function VerifyEmail() {
       >
         <div className="auth-card" style={{ textAlign: 'center' }}>
           <Link to="/" className="auth-brand">
-            <img src="/favicon.svg" alt="Ayura AI Logo" className="auth-brand-logo" />
+            <img src="/favicon.svg" alt="" className="auth-brand-logo" />
             <span className="auth-brand-name">Ayura <span>AI</span></span>
           </Link>
 
