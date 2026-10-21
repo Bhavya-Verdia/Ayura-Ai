@@ -58,7 +58,7 @@ export default function Register() {
         <div className="auth-card">
           {/* Brand */}
           <Link to="/" className="auth-brand">
-            <img src="/favicon.svg" alt="Ayura AI" className="auth-brand-logo" />
+            <img src="/favicon.svg" alt="" className="auth-brand-logo" />
             <span className="auth-brand-name">Ayura <span>AI</span></span>
           </Link>
 

@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { m, useReducedMotion } from 'framer-motion'
 import { Toaster } from 'sonner'
@@ -17,7 +17,7 @@ import ReloadPrompt from './components/ReloadPrompt'
 import OfflineBanner from './components/OfflineBanner'
 import { trackPageview } from './lib/analytics'
 import { isReturningUser } from './lib/sessionHint'
-import { Landing, DoshaTest } from './lib/snapshotPages'
+import { Landing, DoshaTest, hydration } from './lib/snapshotPages'
 
 // Lazy like the pages: the app shell (sidebar, command palette, feedback
 // widget + Dashboard.css) is only for authenticated users — statically
@@ -86,6 +86,9 @@ function PageWrapper({ children, inLayout = false }) {
   // the reason the old touch downgrade existed no longer applies. Only an
   // explicit OS "reduce motion" preference falls back to the plain fade.
   const cheap = prefersReducedMotion || lowPower
+  // Over a prerendered snapshot the page is already on screen: no entrance.
+  const [adoptingSnapshot] = useState(() => hydration.active)
+  useEffect(() => { hydration.active = false }, [])
 
   // Both branches render <main>, not a div: this is the skip-link's target on
   // every route, and as a div it was a jump destination with no landmark — so
@@ -109,7 +112,7 @@ function PageWrapper({ children, inLayout = false }) {
   return (
     <m.main
       variants={cheap ? pageVariantsReduced : pageVariants}
-      initial="initial"
+      initial={adoptingSnapshot ? false : 'initial'}
       animate="animate"
       transition={cheap ? pageTransitionFast : pageTransition}
       className="fill-viewport"

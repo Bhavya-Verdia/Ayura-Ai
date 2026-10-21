@@ -6,7 +6,7 @@ export default function RemedyFields({ form, handleChange, handleToggle }) {
   return (
       <>
         <p className="pref-notice">
-          Recommendations are clinically targeted to your Vikriti (imbalance state), Agni, and conditions.
+          Recommendations are matched to your Vikriti (imbalance state), Agni, and conditions.
           Always consult a qualified Vaidya before starting Tier-2 formulations.
         </p>
 

@@ -1,8 +1,21 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback, useSyncExternalStore } from 'react'
 
 const ThemeContext = createContext()
 export const useTheme = () => useContext(ThemeContext)
+
+const noSubscription = () => () => {}
+
+// The theme for attributes that differ by theme on a prerendered page. While
+// React hydrates the snapshot this returns the theme it was captured in (dark),
+// so the markup matches; React then renders again with the stored theme and
+// updates those attributes as an ordinary change. Read with useTheme() instead,
+// they would keep the snapshot's dark values, because hydration does not patch
+// attributes.
+export function useRenderedTheme() {
+  const { theme } = useTheme()
+  return useSyncExternalStore(noSubscription, () => theme, () => 'dark')
+}
 
 export function ThemeProvider({ children }) {
   // Dark-first by design — the OS `prefers-color-scheme` is deliberately not

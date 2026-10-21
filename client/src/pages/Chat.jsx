@@ -456,7 +456,7 @@ export default function Chat() {
               <div className="chat-empty-icon-wrap">
                 <Sparkles size={40} strokeWidth={1.5} />
               </div>
-              <h3 className="chat-empty-title">Ask Ayura anything</h3>
+              <h2 className="chat-empty-title">Ask Ayura anything</h2>
               <p className="chat-empty-sub">Your personal AI wellness advisor — ask about your plans, symptoms, dosha, or daily routine.</p>
               <div className="chat-suggestion-groups">
                 {SUGGESTION_GROUPS.map(group => (

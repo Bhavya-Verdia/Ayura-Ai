@@ -62,7 +62,7 @@
 }
 .onb-switch-account:hover { background: var(--border-subtle); color: var(--ayura-ink); }
 /* Editorial display setting — see the note on .dash-hero-greeting. */
-.onb-header h2 {
+.onb-header h1 {
   font-family: var(--font-display); font-size: 1.9rem; font-weight: 600;
   font-optical-sizing: auto;
   letter-spacing: -0.02em; margin: 0 0 6px; color: var(--ayura-ink);

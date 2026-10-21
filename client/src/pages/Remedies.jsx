@@ -177,9 +177,9 @@ function EmptyState({ tab, onAction, busy }) {
       <div className="rem-empty-emoji">
         {tab === 'remedies' ? <Soup size={34} strokeWidth={1.7} /> : <Pill size={34} strokeWidth={1.7} />}
       </div>
-      <h3 className="rem-empty-title">
+      <h2 className="rem-empty-title">
         {tab === 'remedies' ? 'No home remedies yet' : 'No medicines yet'}
-      </h3>
+      </h2>
       <p className="rem-empty-sub">
         {tab === 'remedies'
           ? 'Tell us what is bothering you and we will build kitchen remedies matched to your dosha, conditions and medications.'

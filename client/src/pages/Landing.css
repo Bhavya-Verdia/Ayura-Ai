@@ -259,6 +259,16 @@
 }
 /* Light mode is already balanced — the ink is near-black and the accent is the
    darker green/rust ramp, so the hierarchy reads correctly. Keep the token. */
+/* From ~77px up the title is far enough up Fraunces' opsz axis to need its own
+   fallback metrics (see 'Fraunces Display Fallback' in index.css). */
+@media (min-width: 1100px) {
+  .lnd-hero-title {
+    font-family: 'Fraunces Variable', 'Fraunces', 'Fraunces Display Fallback', Georgia, serif;
+  }
+}
+.lnd-theme-icon-moon { display: none; }
+[data-theme='light'] .lnd-theme-icon-sun { display: none; }
+[data-theme='light'] .lnd-theme-icon-moon { display: inline; }
 [data-theme='light'] .lnd-hero-title {
   color: var(--ayura-ink);
 }
@@ -272,7 +282,9 @@
 .lnd-hero-subtitle {
   font-size: clamp(1rem, 1.6vw, 1.15rem);
   color: var(--ayura-muted);
-  max-width: 48ch;
+  max-width: 29.28em; /* 48ch of Manrope. Widths here are in em, not ch: ch is the
+     width of the font's "0", which is 5% narrower in the fallback, so every ch box
+     widened when Manrope arrived and the text in it rewrapped (CLS). */
   line-height: 1.75;
   font-weight: 400;
   margin-bottom: 40px;
@@ -756,7 +768,7 @@
   line-height: 1.06; color: var(--ayura-ink); margin-bottom: 16px;
 }
 .lnd-section-desc {
-  font-size: 1.05rem; color: var(--ayura-muted); max-width: 52ch; line-height: 1.75;
+  font-size: 1.05rem; color: var(--ayura-muted); max-width: 31.72em; /* 52ch of Manrope */ line-height: 1.75;
 }
 
 /* ─── HOW IT WORKS ────────────────────────────────────────── */
@@ -1114,7 +1126,7 @@
 }
 .lnd-cta-box-desc {
   font-size: 1.05rem; color: var(--ayura-muted);
-  margin: 0 auto 40px; max-width: 50ch; position: relative;
+  margin: 0 auto 40px; max-width: 30.5em; /* 50ch of Manrope */ position: relative;
 }
 .lnd-cta-box-actions {
   display: flex; align-items: center; justify-content: center;
@@ -1196,7 +1208,7 @@
   letter-spacing: -0.01em;
   color: var(--ayura-ink);
 }
-.lnd-footer-tagline { color: var(--ayura-muted); font-size: 0.875rem; line-height: 1.65; margin-top: 14px; max-width: 28ch; }
+.lnd-footer-tagline { color: var(--ayura-muted); font-size: 0.875rem; line-height: 1.65; margin-top: 14px; max-width: 17.08em; /* 28ch of Manrope */ }
 .lnd-footer-links-title {
   font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--ayura-muted); margin-bottom: 14px;
@@ -1211,7 +1223,7 @@
   padding-top: 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
 }
 .lnd-footer-copy { color: var(--ayura-muted); font-size: 0.8rem; opacity: 0.6; }
-.lnd-footer-disclaimer { color: var(--ayura-muted); font-size: 0.72rem; max-width: 50ch; text-align: right; line-height: 1.5; opacity: 0.5; }
+.lnd-footer-disclaimer { color: var(--ayura-muted); font-size: 0.72rem; max-width: 30.5em; /* 50ch of Manrope */ text-align: right; line-height: 1.5; opacity: 0.5; }
 
 /* ─── SCROLL REVEAL ───────────────────────────────────────── */
 .reveal {
@@ -1383,7 +1395,7 @@
      so the hero stays symmetric through the wrap. */
   .lnd-hero-cta-row { justify-content: center; }
   .lnd-trust-bar { justify-content: center; }
-  .lnd-hero-subtitle { max-width: 56ch; }
+  .lnd-hero-subtitle { max-width: 34.16em; /* 56ch of Manrope */ }
   .lnd-feature { gap: 48px; }
 }
 @media (max-width: 768px) {
@@ -1499,7 +1511,7 @@
   font-size: 0.98rem;
   line-height: 1.7;
   color: var(--ayura-muted);
-  max-width: 64ch;
+  max-width: 39.04em; /* 64ch of Manrope */
 }
 @media (max-width: 600px) {
   .lnd-faq-q { font-size: 0.95rem; }

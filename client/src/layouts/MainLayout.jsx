@@ -207,7 +207,7 @@ export default function MainLayout() {
         </div>
 
         {/* Navigation */}
-        <nav className="dash-sidebar-nav">
+        <nav className="dash-sidebar-nav" aria-label="Main">
           {NAV_ITEMS.map(item => {
             const { Icon } = item
             return (
@@ -268,18 +268,18 @@ export default function MainLayout() {
       >
         {/* Mobile topbar */}
         {isMobile && (
-          <div className="dash-mobile-bar" style={{ flexShrink: 0 }}>
+          <header className="dash-mobile-bar" style={{ flexShrink: 0 }}>
             <button className="dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
               <Menu size={22} strokeWidth={2} color="var(--ayura-ink)" />
             </button>
             <div className="dash-mobile-brand">
-              <img src="/favicon.svg" alt="Ayura AI Logo" className="dash-mobile-brand-mark" />
+              <img src="/favicon.svg" alt="" className="dash-mobile-brand-mark" />
               <span className="dash-mobile-brand-text">Ayura AI</span>
             </div>
             <Link to="/notifications" className="dash-mobile-bell" aria-label="Notifications">
               <Bell size={20} strokeWidth={2} />
             </Link>
-          </div>
+          </header>
         )}
 
         {/* NO exit animation, deliberately.
@@ -344,7 +344,7 @@ export default function MainLayout() {
 
       {/* ── MOBILE BOTTOM TAB BAR ── */}
       {isMobile && (
-        <nav className="mobile-bottom-nav">
+        <nav className="mobile-bottom-nav" aria-label="Quick links">
           {BOTTOM_NAV.map(item => {
             const { Icon } = item
             return (

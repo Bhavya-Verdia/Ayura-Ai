@@ -23,5 +23,11 @@ function preloadable(factory) {
   return Component
 }
 
+/* True while React is adopting a snapshot. The page is already on screen, so the
+ * route entrance (fade from opacity 0 and a 16px rise) must not run: it faded the
+ * whole page out and back in on every cold visit. PageWrapper reads it once and
+ * clears it, so later navigations animate as before. */
+export const hydration = { active: false }
+
 export const Landing = preloadable(() => import('../pages/Landing'))
 export const DoshaTest = preloadable(() => import('../pages/DoshaTest'))

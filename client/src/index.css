@@ -23,12 +23,87 @@
   descent-override: 26.43%;
   line-gap-override: 0%;
 }
+/* Fraunces is only ever set as a heading, so its fallback is matched to the
+   headings as rendered, one face per Georgia style. Each face names the real
+   Georgia cut: a face that declares weight 600-800 over regular Georgia stops the
+   browser synthesising bold, and draws headings in the narrow regular glyphs.
+   The old single 84.98% face was measured at weight 400; headings came out ~26%
+   narrower than Fraunces, rewrapped when it arrived, and moved the /dosha-test
+   hero 38px (CLS 0.068). size-adjust is the measured Fraunces/Georgia width on
+   the real headings at 360-768px (600: ~92%, 700-800: ~96.5%, italic: ~97%).
+   The overrides are scaled by size-adjust, so they are Fraunces' ascent 0.98em
+   and descent 0.26em divided by it. */
 @font-face {
   font-family: 'Fraunces Fallback';
   src: local('Georgia');
-  size-adjust: 84.98%;
-  ascent-override: 115.32%;
-  descent-override: 30.6%;
+  font-weight: 100 549;
+  font-style: normal;
+  size-adjust: 92.5%;
+  ascent-override: 105.95%;
+  descent-override: 28.11%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia Bold'), local('Georgia-Bold');
+  font-weight: 550 650;
+  font-style: normal;
+  size-adjust: 92%;
+  ascent-override: 106.52%;
+  descent-override: 28.26%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia Bold'), local('Georgia-Bold');
+  font-weight: 651 1000;
+  font-style: normal;
+  size-adjust: 96.5%;
+  ascent-override: 101.55%;
+  descent-override: 26.94%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia Italic'), local('Georgia-Italic');
+  font-weight: 100 549;
+  font-style: italic;
+  size-adjust: 97%;
+  ascent-override: 101.03%;
+  descent-override: 26.8%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia Bold Italic'), local('Georgia-BoldItalic');
+  font-weight: 550 1000;
+  font-style: italic;
+  size-adjust: 92%;
+  ascent-override: 106.52%;
+  descent-override: 28.26%;
+  line-gap-override: 0%;
+}
+/* The landing hero at desktop size sits high on Fraunces' opsz axis, where it is
+   much narrower: at 86px Georgia Bold needs ~77% and Georgia Italic ~84%. Used by
+   .lnd-hero-title only, from 1100px. */
+@font-face {
+  font-family: 'Fraunces Display Fallback';
+  src: local('Georgia Bold'), local('Georgia-Bold');
+  font-weight: 100 1000;
+  font-style: normal;
+  size-adjust: 77%;
+  ascent-override: 127.27%;
+  descent-override: 33.77%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Display Fallback';
+  src: local('Georgia Italic'), local('Georgia-Italic');
+  font-weight: 100 1000;
+  font-style: italic;
+  size-adjust: 84%;
+  ascent-override: 116.67%;
+  descent-override: 30.95%;
   line-gap-override: 0%;
 }
 
@@ -563,7 +638,7 @@ h4, h5, h6 {
   transition: none !important;
 }
 
-.vital-bg-light {
+[data-theme='light'] .vital-bg {
   color: rgba(47,143,91,0.75);
   background:
     radial-gradient(ellipse 120% 90% at 8% -6%, rgba(47,143,91,0.10), transparent 62%),
@@ -581,6 +656,28 @@ h4, h5, h6 {
   border-radius: 50%;
   pointer-events: none;
 }
+/* Pool colours live here, not in VitalBackground's inline styles, so the markup
+   is identical in both themes: a prerendered page can then be hydrated for a
+   light-theme visitor, and is light before any script runs. */
+.vital-pool--key {
+  background: radial-gradient(circle at 50% 50%, rgba(92,171,116,0.21) 0%, rgba(92,171,116,0.11) 30%, rgba(92,171,116,0.035) 56%, transparent 74%);
+}
+[data-theme='light'] .vital-pool--key {
+  background: radial-gradient(circle at 50% 50%, rgba(13,148,136,0.20) 0%, rgba(13,148,136,0.10) 30%, rgba(13,148,136,0.03) 56%, transparent 74%);
+}
+.vital-pool--warm {
+  background: radial-gradient(circle at 50% 50%, rgba(230,162,60,0.16) 0%, rgba(230,162,60,0.07) 34%, rgba(230,162,60,0.02) 58%, transparent 76%);
+}
+[data-theme='light'] .vital-pool--warm {
+  background: radial-gradient(circle at 50% 50%, rgba(124,58,237,0.11) 0%, rgba(124,58,237,0.05) 34%, rgba(124,58,237,0.015) 58%, transparent 76%);
+}
+.vital-pool--bounce {
+  background: radial-gradient(circle at 50% 50%, rgba(251,146,60,0.11) 0%, rgba(251,146,60,0.05) 34%, transparent 70%);
+}
+[data-theme='light'] .vital-pool--bounce {
+  background: radial-gradient(circle at 50% 50%, rgba(234,88,12,0.08) 0%, rgba(234,88,12,0.035) 34%, transparent 70%);
+}
+
 
 /* Colour swirl, frozen at its resting angle. The conic's stops span tens of
    degrees, so it is soft by construction and needs no blur. Rotated to run
@@ -593,7 +690,7 @@ h4, h5, h6 {
     conic-gradient(from 196deg at 34% 30%, transparent 0deg, rgba(92,171,116,0.13) 48deg, transparent 116deg, rgba(230,162,60,0.11) 192deg, transparent 262deg, rgba(224,138,74,0.07) 320deg, transparent 360deg);
 }
 
-.vital-bg-light .vital-gradient-field {
+[data-theme='light'] .vital-bg .vital-gradient-field {
   opacity: 0.45;
 }
 
@@ -613,7 +710,7 @@ h4, h5, h6 {
   mask-image: radial-gradient(ellipse 68% 58% at 18% 14%, black 0%, rgba(0,0,0,0.55) 34%, transparent 72%);
 }
 
-.vital-bg-light .vital-grid-field {
+[data-theme='light'] .vital-bg .vital-grid-field {
   opacity: 0.2;
   background-image:
     linear-gradient(rgba(15,23,42,0.075) 1px, transparent 1px),
@@ -659,7 +756,7 @@ h4, h5, h6 {
   opacity: 0.4;
 }
 
-.vital-bg-light .vital-pulse-lines {
+[data-theme='light'] .vital-bg .vital-pulse-lines {
   color: rgba(47,143,91,0.75);
   opacity: 0.34;
 }
@@ -673,7 +770,7 @@ h4, h5, h6 {
   background: radial-gradient(ellipse 96% 82% at 26% 20%, transparent 34%, rgba(0,0,0,0.16) 72%, rgba(0,0,0,0.42) 100%);
 }
 
-.vital-bg-light .vital-vignette {
+[data-theme='light'] .vital-bg .vital-vignette {
   background: radial-gradient(ellipse 96% 82% at 26% 20%, transparent 38%, rgba(90,72,44,0.05) 74%, rgba(90,72,44,0.13) 100%);
 }
 

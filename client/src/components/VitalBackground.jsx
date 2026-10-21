@@ -1,4 +1,3 @@
-import { useTheme } from '../providers/ThemeProvider'
 
 /* ────────────────────────────────────────────────────────────────────────────
    STATIC ambient background.
@@ -112,40 +111,19 @@ function PulseLines() {
    same soft look the old blur(90px) blobs had, at zero filter cost and with no
    evictable filtered texture. Positioned as one key light (upper left) plus two
    dimmer bounces, rather than three co-equal blobs. */
-function LightPools({ theme }) {
-  const isDark = theme === 'dark'
-  const pools = [
-    {
-      cls: 'vital-pool vital-pool--key',
-      style: {
-        top: '-22%', left: '-14%', width: '86%', height: '86%',
-        background: isDark
-          ? 'radial-gradient(circle at 50% 50%, rgba(92,171,116,0.21) 0%, rgba(92,171,116,0.11) 30%, rgba(92,171,116,0.035) 56%, transparent 74%)'
-          : 'radial-gradient(circle at 50% 50%, rgba(13,148,136,0.20) 0%, rgba(13,148,136,0.10) 30%, rgba(13,148,136,0.03) 56%, transparent 74%)',
-      },
-    },
-    {
-      cls: 'vital-pool vital-pool--warm',
-      style: {
-        top: '-8%', right: '-16%', width: '64%', height: '64%',
-        background: isDark
-          ? 'radial-gradient(circle at 50% 50%, rgba(230,162,60,0.16) 0%, rgba(230,162,60,0.07) 34%, rgba(230,162,60,0.02) 58%, transparent 76%)'
-          : 'radial-gradient(circle at 50% 50%, rgba(124,58,237,0.11) 0%, rgba(124,58,237,0.05) 34%, rgba(124,58,237,0.015) 58%, transparent 76%)',
-      },
-    },
-    {
-      cls: 'vital-pool vital-pool--bounce',
-      style: {
-        bottom: '-24%', left: '26%', width: '68%', height: '62%',
-        background: isDark
-          ? 'radial-gradient(circle at 50% 50%, rgba(251,146,60,0.11) 0%, rgba(251,146,60,0.05) 34%, transparent 70%)'
-          : 'radial-gradient(circle at 50% 50%, rgba(234,88,12,0.08) 0%, rgba(234,88,12,0.035) 34%, transparent 70%)',
-      },
-    },
-  ]
+// Colours are in index.css (.vital-pool--key/--warm/--bounce, per data-theme):
+// nothing here may depend on the theme, or a prerendered page could not be
+// hydrated for a light-theme visitor.
+const POOLS = [
+  { cls: 'vital-pool vital-pool--key', style: { top: '-22%', left: '-14%', width: '86%', height: '86%' } },
+  { cls: 'vital-pool vital-pool--warm', style: { top: '-8%', right: '-16%', width: '64%', height: '64%' } },
+  { cls: 'vital-pool vital-pool--bounce', style: { bottom: '-24%', left: '26%', width: '68%', height: '62%' } },
+]
+
+function LightPools() {
   return (
     <>
-      {pools.map((pool) => (
+      {POOLS.map((pool) => (
         <div key={pool.cls} className={pool.cls} style={pool.style} aria-hidden="true" />
       ))}
     </>
@@ -153,11 +131,9 @@ function LightPools({ theme }) {
 }
 
 export default function VitalBackground({ density = 'normal' }) {
-  const { theme } = useTheme()
-
   return (
-    <div className={`vital-bg vital-bg-static vital-bg-${theme} vital-bg-${density}`} aria-hidden="true">
-      <LightPools theme={theme} />
+    <div className={`vital-bg vital-bg-static vital-bg-${density}`} aria-hidden="true">
+      <LightPools />
       <div className="vital-gradient-field" />
       <div className="vital-grid-field" />
       <VitalPaths side={1} />
