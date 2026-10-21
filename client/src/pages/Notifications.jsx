@@ -69,21 +69,22 @@ function NotificationCard({ notif, onMarkRead, onDelete, index }) {
       viewport={{ once: true, margin: '-40px' }}
       exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0 }}
       transition={{ duration: 0.35, delay: Math.min(index, 6) * 0.04, ease: [0.16, 1, 0.3, 1] }}
+      // A click anywhere marks it read; keyboard and screen readers use the
+      // button below. The card was a role="button" whose label replaced its
+      // content (the message was never read out) and held the delete button.
       onClick={() => !notif.is_read && onMarkRead(notif.id)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={e => e.key === 'Enter' && !notif.is_read && onMarkRead(notif.id)}
-      aria-label={`${notif.title}${notif.is_read ? '' : ' — click to mark as read'}`}
+      role="article"
     >
       {/* Left border accent */}
       <div className="notif-card-accent" />
 
       {/* Icon */}
       <div className="notif-card-icon-wrap">
-        <span className="notif-card-icon" aria-label={cfg.label} style={{ color: cfg.borderColor }}>
+        {/* Decorative: the type is the badge text below. */}
+        <span className="notif-card-icon" aria-hidden="true" style={{ color: cfg.borderColor }}>
           <cfg.Icon size={18} strokeWidth={2} />
         </span>
-        {!notif.is_read && <span className="notif-unread-dot" aria-label="Unread" />}
+        {!notif.is_read && <span className="notif-unread-dot" role="img" aria-label="Unread" />}
       </div>
 
       {/* Content */}
@@ -98,14 +99,21 @@ function NotificationCard({ notif, onMarkRead, onDelete, index }) {
 
       {/* Read indicator */}
       {!notif.is_read && (
-        <div className="notif-read-hint">Tap to mark read</div>
+        <button
+          type="button"
+          className="notif-read-hint"
+          onClick={(e) => { e.stopPropagation(); onMarkRead(notif.id) }}
+          aria-label={`Mark "${notif.title}" as read`}
+        >
+          Tap to mark read
+        </button>
       )}
 
       <button
         className="notif-delete-btn"
         onClick={(e) => { e.stopPropagation(); onDelete(notif.id) }}
         title="Delete notification"
-        aria-label="Delete notification"
+        aria-label={`Delete "${notif.title}"`}
       >
         ✕
       </button>

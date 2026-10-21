@@ -1355,7 +1355,8 @@
 
 .gym-tab-theme {
   font-size: 0.75rem;
-  opacity: 0.8;
+  /* No opacity: at 0.8 it measured 3.8-4.3:1 in both themes. The bold
+     uppercase number above already makes it the secondary line. */
 }
 
 /* ── Day cards grid ── */
@@ -2161,13 +2162,21 @@
   font-size: 0.8rem;
   line-height: 1.55;
 }
-.gym-condition-guidance h4 {
+/* An h3 in the routine, where it comes before any other section heading. */
+.gym-condition-guidance h4,
+.gym-condition-guidance.din-adjustments h3 {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   margin: 0 0 0.45rem;
   font-size: 0.82rem;
   color: var(--plan-amber);
+}
+.gym-condition-guidance.din-adjustments h3 {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0;
 }
 .gym-condition-guidance ul {
   margin: 0;
@@ -2387,7 +2396,8 @@
 
 .yoga-tab-theme {
   font-size: 0.75rem;
-  opacity: 0.8;
+  /* No opacity: at 0.8 it measured 3.8-4.3:1 in both themes. The bold
+     uppercase number above already makes it the secondary line. */
 }
 
 /* ── Week banner ── */
@@ -5745,6 +5755,11 @@
   border-color: color-mix(in srgb, var(--tab-color, var(--plan-lavender)) 40%, transparent);
   color: var(--tab-color, var(--plan-lavender));
 }
+/* On its own 15% tint the dosha ink measured 4.2:1 (Vata, Kapha) and 3.7:1 (the
+   lavender default) in light mode; 20% darker, same hue, is 5.1-6.5:1. */
+[data-theme='light'] .din-day-tab.active {
+  color: color-mix(in srgb, var(--tab-color, var(--plan-lavender)) 80%, #000);
+}
 .din-day-tab.fasting { opacity: 0.8; }
 .din-fast-dot {
   position: absolute;
@@ -5867,6 +5882,10 @@
 .din-time-scope { display: inline-flex; gap: 4px; }
 .din-time-scope button.active,
 .din-time-editor .din-time-save { background: var(--plan-amber); border-color: var(--plan-amber); color: #1a1406; }
+/* --plan-amber is a text colour: dark brown in light mode, so as a fill it takes
+   white text (7.1:1). The dark ink stays for dark mode's amber (8.5:1). */
+[data-theme='light'] .din-time-scope button.active,
+[data-theme='light'] .din-time-editor .din-time-save { color: #fff; }
 .din-slot-sched-note svg { color: var(--plan-amber); }
 .din-edit-hint > span { flex: 1 1 auto; }
 .din-item-editor { margin: 0 0 12px; }
@@ -6592,7 +6611,7 @@
   border: 0;
   border-radius: 8px;
   background: var(--plan-violet);
-  color: #fff;
+  color: #1a1033;   /* dark mode's violet is pale: white was 2.7:1, this is 6.6:1 */
   font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
@@ -6725,13 +6744,16 @@
   border: 0;
   border-radius: 10px;
   background: var(--plan-violet);
-  color: #fff;
+  color: #1a1033;   /* dark mode's violet is pale: white was 2.7:1, this is 6.6:1 */
   font-size: 0.88rem;
   font-weight: 500;
   cursor: pointer;
 }
 
 .wf-submit:disabled { opacity: 0.7; cursor: default; }
+/* Light mode's violet is deep, so its buttons keep white text (7.1:1). */
+[data-theme='light'] .yoga-practice-btn,
+[data-theme='light'] .wf-submit { color: #fff; }
 
 .wf-spin { animation: wf-spin 1s linear infinite; }
 

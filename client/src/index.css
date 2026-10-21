@@ -107,6 +107,82 @@
   line-gap-override: 0%;
 }
 
+/* Android has no Georgia, so every face above fails there and the headings fell
+   through to an unadjusted serif. Android's serif is Noto Serif (Regular, Bold,
+   Italic, Bold Italic), measured against Fraunces on the same headings:
+   600: ~93.5%, italic: ~96%, desktop hero ~79% / 82.5%. 700-800 runs 97-102%
+   by size; 97% is the /dosha-test title's, the largest heavy heading above the fold. */
+@font-face {
+  font-family: 'Fraunces Fallback Android';
+  src: local('Noto Serif'), local('NotoSerif-Regular'), local('NotoSerif');
+  font-weight: 100 549;
+  font-style: normal;
+  size-adjust: 100%;
+  ascent-override: 98.0%;
+  descent-override: 26.0%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback Android';
+  src: local('Noto Serif Bold'), local('NotoSerif-Bold');
+  font-weight: 550 650;
+  font-style: normal;
+  size-adjust: 93.5%;
+  ascent-override: 104.81%;
+  descent-override: 27.81%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback Android';
+  src: local('Noto Serif Bold'), local('NotoSerif-Bold');
+  font-weight: 651 1000;
+  font-style: normal;
+  size-adjust: 97%;
+  ascent-override: 101.03%;
+  descent-override: 26.8%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback Android';
+  src: local('Noto Serif Italic'), local('NotoSerif-Italic');
+  font-weight: 100 549;
+  font-style: italic;
+  size-adjust: 96%;
+  ascent-override: 102.08%;
+  descent-override: 27.08%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Fallback Android';
+  src: local('Noto Serif Bold Italic'), local('NotoSerif-BoldItalic');
+  font-weight: 550 1000;
+  font-style: italic;
+  size-adjust: 93.5%;
+  ascent-override: 104.81%;
+  descent-override: 27.81%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Display Fallback Android';
+  src: local('Noto Serif Bold'), local('NotoSerif-Bold');
+  font-weight: 100 1000;
+  font-style: normal;
+  size-adjust: 79%;
+  ascent-override: 124.05%;
+  descent-override: 32.91%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Fraunces Display Fallback Android';
+  src: local('Noto Serif Italic'), local('NotoSerif-Italic');
+  font-weight: 100 1000;
+  font-style: italic;
+  size-adjust: 82.5%;
+  ascent-override: 118.79%;
+  descent-override: 31.52%;
+  line-gap-override: 0%;
+}
+
 /* Visually hidden, but present for screen readers and crawlers (SEO). */
 .sr-only {
   position: absolute;
@@ -349,7 +425,7 @@ body,
      Display = Fraunces (warm editorial serif, optical-size variable) for headings;
      UI/body = Manrope. The pairing gives the brand an "editorial wellness" voice
      rather than the default geometric-sans SaaS look. */
-  --font-display: 'Fraunces Variable', 'Fraunces', 'Fraunces Fallback', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-display: 'Fraunces Variable', 'Fraunces', 'Fraunces Fallback', 'Fraunces Fallback Android', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   --font-ui:      'Manrope Variable', 'Manrope', 'Manrope Fallback', 'Manrope Fallback Android', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-body:    'Manrope Variable', 'Manrope', 'Manrope Fallback', 'Manrope Fallback Android', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 

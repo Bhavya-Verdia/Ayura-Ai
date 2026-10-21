@@ -40,6 +40,10 @@ if (!existsSync(resolve(root, 'dist'))) {
 const ROUTES = [
   { path: '/dosha-test', selector: '.dt-hero-title',  out: 'dist/dosha-test.html' },
   { path: '/',           selector: '.lnd-hero-title', out: 'dist/index.html' },
+  // Served by nginx to signed-out visitors (try_files $uri.html); main.jsx
+  // adopts them only when the browser has never been signed in.
+  { path: '/login',      selector: '.auth-card-title', out: 'dist/login.html' },
+  { path: '/register',   selector: '.auth-card-title', out: 'dist/register.html' },
 ]
 
 // A snapshot with two of any of these tells a crawler two different things
@@ -159,8 +163,12 @@ try {
     // Only the toast list goes. The <section> around it is rendered by
     // <Toaster> whether or not a toast is showing, and main.jsx hydrates this
     // snapshot, so removing it would make the snapshot disagree with React.
+    //
+    // The ambient Om layer on the auth pages goes too: it renders on desktop
+    // only, so a phone's first render has none, and AmbientMeditation renders
+    // none while hydrating and appears straight after.
     await page.evaluate(() => {
-      document.querySelectorAll('ol[data-sonner-toaster]').forEach((el) => el.remove())
+      document.querySelectorAll('ol[data-sonner-toaster], .ambient-med').forEach((el) => el.remove())
     })
 
     // main.jsx hydrates this snapshot (hydrateRoot) instead of redrawing it.
