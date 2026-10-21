@@ -263,7 +263,7 @@
    fallback metrics (see 'Fraunces Display Fallback' in index.css). */
 @media (min-width: 1100px) {
   .lnd-hero-title {
-    font-family: 'Fraunces Variable', 'Fraunces', 'Fraunces Display Fallback', Georgia, serif;
+    font-family: 'Fraunces Variable', 'Fraunces', 'Fraunces Display Fallback', 'Fraunces Display Fallback Android', Georgia, serif;
   }
 }
 .lnd-theme-icon-moon { display: none; }
