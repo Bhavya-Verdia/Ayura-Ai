@@ -680,6 +680,9 @@ const Dashboard = () => {
         transition={{ type: 'spring', stiffness: 320, damping: 30, mass: 0.8 }}
         style={{ transformOrigin: 'top center' }}
       >
+        {/* The dashboard's own h1 (the greeting) is not rendered while a plan is
+            open, and every plan view's sections are h3s under this h2 title. */}
+        <h1 className="sr-only">Your wellness plans</h1>
         <div className="dash-viewer-back-bar">
           <button className="dash-back-btn" onClick={() => { setViewingPlan(null); setViewingType(null) }}>
             ← Back to Dashboard

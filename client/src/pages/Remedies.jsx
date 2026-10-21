@@ -580,6 +580,8 @@ const Remedies = () => {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 >
+                  {/* The views' sections are h3s; this is the h2 the tab stands for. */}
+                  <h2 className="sr-only">Home remedies</h2>
                   <RemedyView plan={shownRemedyPlan} />
                 </m.div>
               ) : (
@@ -595,6 +597,7 @@ const Remedies = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
+                <h2 className="sr-only">Ayurvedic medicines</h2>
                 <MedicineView plan={medicinePlan} />
               </m.div>
             ) : (

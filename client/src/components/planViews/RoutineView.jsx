@@ -233,8 +233,14 @@ function TimelineSlot({ slot, idx, dayName, onSave, onItem, busy }) {
             ? <span className="din-user-set-badge">Added by you</span>
             : slot.user_set && <span className="din-user-set-badge">Your time</span>}
           {slot.type === 'meal' && (
-            <button className="din-meal-toggle" onClick={() => setMealOpen(o => !o)}>
-              {mealOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            <button
+              type="button"
+              className="din-meal-toggle"
+              onClick={() => setMealOpen(o => !o)}
+              aria-expanded={mealOpen}
+              aria-label={`Meal details: ${slot.activity}`}
+            >
+              {mealOpen ? <ChevronUp size={12} aria-hidden="true" /> : <ChevronDown size={12} aria-hidden="true" />}
             </button>
           )}
         </div>
@@ -428,7 +434,7 @@ export function RoutineView({ plan: initialPlan }) {
           identical otherwise. */}
       {adjustments.length > 0 && (
         <div className="gym-condition-guidance din-adjustments">
-          <h4><ShieldCheck size={13} />Adjusted for you</h4>
+          <h3><ShieldCheck size={13} />Adjusted for you</h3>
           <ul>
             {adjustments.map((a, i) => (
               <li key={i}>{a.what && <strong>{a.what}: </strong>}{a.why}</li>

@@ -227,13 +227,15 @@
   position: absolute;
   bottom: 20px;
   right: 20px;
+  background: none; border: none; padding: 0; font-family: inherit; cursor: pointer;
   font-size: 0.8rem;
   color: var(--ayura-teal);
   font-weight: 600;
   opacity: 0;
   transition: opacity 0.2s;
 }
-.notif-card--unread:hover .notif-read-hint {
+.notif-card--unread:hover .notif-read-hint,
+.notif-read-hint:focus-visible {
   opacity: 1;
 }
 
@@ -305,7 +307,12 @@
   opacity: 0; transition: opacity 0.15s, color 0.15s;
   padding: 4px; line-height: 1;
 }
-.notif-card:hover .notif-delete-btn { opacity: 1; }
+.notif-card:hover .notif-delete-btn,
+.notif-delete-btn:focus-visible { opacity: 1; }
+/* Nothing hovers on a touch screen, so both controls are simply shown there. */
+@media (hover: none) {
+  .notif-delete-btn, .notif-read-hint { opacity: 1; }
+}
 .notif-delete-btn:hover { color: var(--rose, #f87171); }
 .notif-clear-all-btn { margin-left: 8px; }
 .notif-mark-all-btn, .notif-clear-all-btn { display: inline-flex; align-items: center; gap: 6px; }
