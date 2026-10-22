@@ -353,7 +353,7 @@ Respond in EXACTLY this JSON format — every field is required:
     "Specific food or habit to AVOID during this protocol — with brief Ayurvedic reason (5–8 items)"
   ],
   "viruddha_ahara_alerts": [
-    "Specific incompatible food combination to avoid WHILE ON THESE MEDICINES — state the incompatibility and the classical text (Sthana only, no verse numbers unless certain). Include 2–4 real Viruddha Ahara items relevant to these specific medicines, or empty array if none apply."
+    "Specific incompatible food combination to avoid WHILE ON THESE MEDICINES — state the incompatibility and the classical text. Viruddha Ahara is taught in Charaka Samhita Sutrasthana 26 (Atreyabhadrakapyiya); cite that chapter, never Vimanasthana, and no verse numbers unless certain. Include 2–4 real Viruddha Ahara items relevant to these specific medicines, or empty array if none apply."
   ],
   "dose_note": "Agni-specific dosing guidance — how to start, titrate, and maintain based on this patient's Agni type",
   "monitoring_signs": "What the patient should watch for — positive signs of improvement AND early warning signs that indicate the protocol needs adjustment",

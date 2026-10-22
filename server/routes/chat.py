@@ -15,7 +15,7 @@ from services.safety_service import detect_red_flags
 
 from core.quota import consume_chat_quota
 from services.chat_service import (
-    allergen_safety_note,
+    chat_safety_notes,
     save_message,
     fetch_active_plans,
     build_chat_context,
@@ -168,7 +168,7 @@ async def send_message(msg: ChatMessage, user: UserDocument = Depends(get_curren
             logger.error(f"LLM Chat Error: {e}")
             response_text = "I'm having trouble processing that right now."
 
-    note = allergen_safety_note(response_text, user.allergies)
+    note = chat_safety_notes(safe_content, response_text, user.allergies)
     if note:
         response_text = f"{response_text}\n\n{note}"
     await save_message(db, user.id, session_id, "ai", response_text, sources)
@@ -398,7 +398,7 @@ async def chat_websocket(websocket: WebSocket, session_id: str, ayura_access: st
                 full_response = response_text
 
             # Already streamed, so a recommended allergen is corrected beneath it.
-            note = allergen_safety_note(full_response, user.allergies)
+            note = chat_safety_notes(safe_content, full_response, user.allergies)
             if note:
                 await websocket.send_json({"type": "chunk", "content": f"\n\n{note}"})
                 full_response = f"{full_response}\n\n{note}"

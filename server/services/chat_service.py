@@ -131,6 +131,35 @@ def allergen_safety_note(reply: str, allergies) -> str | None:
     return "⚠️ Safety note: " + "; and ".join(lines) + "."
 
 
+def viruddha_safety_note(question: str, reply: str) -> str | None:
+    """A note when the conversation names an incompatible food pair and the reply
+    did not say so.
+
+    Asked about "a banana milkshake with ashwagandha before bed", chat answered
+    that banana with milk "is nourishing" — the pair the diet plan's own Viruddha
+    scan flags (Charaka Sutrasthana 26). The same rules, read over what was asked
+    and what was answered.
+    """
+    from services.ahara_safety import scan_meal_for_viruddha
+
+    said = (reply or "").lower()
+    if "viruddha" in said or "incompatib" in said:
+        return None
+    hits = scan_meal_for_viruddha(f"{question or ''} {reply or ''}".lower(), "chat")
+    if not hits:
+        return None
+    lines = [f"{h['combination'].split(' (')[0].lower()} is Viruddha Ahara, an incompatible "
+             f"combination ({h['reason'].split(' (')[0]})" for h in hits]
+    return "⚠️ Ayurveda note: " + "; ".join(lines) + "."
+
+
+def chat_safety_notes(question: str, reply: str, allergies) -> str | None:
+    """Every correction a reply needs, in the order they matter."""
+    notes = [n for n in (allergen_safety_note(reply, allergies),
+                         viruddha_safety_note(question, reply)) if n]
+    return "\n\n".join(notes) or None
+
+
 def summarize_user_health(user) -> str:
     """Compact constitution + current-state profile from the user document."""
     g = lambda k: getattr(user, k, None)

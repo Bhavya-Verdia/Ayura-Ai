@@ -1629,8 +1629,10 @@ def _doubling_note(med: dict, hit: dict) -> str:
     active = _active_herbs(med)
     taken = hit["already_taking"]
     if active and active <= herbs_in(taken):
-        return (f"You already take {taken}, which is the same medicine as {med['name']}. "
-                "Taking both doubles the dose. Ask a Vaidya which one to keep.")
+        # "Ask a Vaidya which one to keep" beside two names for one medicine read as
+        # a choice where there is none: there is one medicine, taken once.
+        return (f"You already take {taken}, which is {med['name']} itself. Keep taking "
+                "the one you have, at the dose below: a second supply doubles the dose.")
     return (f"You already take {taken}, which shares {', '.join(hit['herbs'])} with "
             f"{med['name']}. Taking both doubles that dose. Ask a Vaidya which one to keep.")
 

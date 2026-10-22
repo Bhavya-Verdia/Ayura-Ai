@@ -155,3 +155,12 @@ def test_compound_formulations_sharing_a_herb_are_left_alone():
     by = {m["name"]: m for m in _MEDICINES_KB}
     assert not _repeats_a_herb(by["Triphala Churna"], by["Avipattikar Churna"])
     assert _repeats_a_herb(by["Brahmi Churna"], by["Brahmi Vati"])
+
+
+def test_the_viruddha_list_is_pointed_at_the_chapter_that_teaches_it():
+    """A live medicines plan cited "Charaka Samhita, Vimanasthana" for all four of
+    its Viruddha items. The chapter is Sutrasthana 26."""
+    import services.remedy_enricher as R
+
+    src = open(R.__file__).read()
+    assert "Sutrasthana 26" in src and "never Vimanasthana" in src

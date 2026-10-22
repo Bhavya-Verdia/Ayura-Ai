@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime, timezone
@@ -14,8 +14,6 @@ from schemas.user_schema import UserDocument
 from routes.profile import get_current_user
 from database.mongodb import get_mongodb
 from ai.llm_client import llm_client
-from services.chat_service import apply_chat_side_effects
-from services.notification_service import create_and_deliver_notification
 from services.rewards import record_activity
 
 router = APIRouter()
@@ -34,7 +32,10 @@ class WeeklyCheckinRequest(BaseModel):
 
 class WeeklyCheckinResponse(BaseModel):
     insight: str
-    adapted_plans: List[str] = []
+    # Plans built for the old imbalance, offered for a rebuild. Nothing is rebuilt
+    # by the check-in itself.
+    suggested_plans: List[str] = []
+    shifted_toward: Optional[str] = None
 
 async def _grounded_insight(user, req, old_vikriti, new_vikriti, old_dom, new_dom, shifted, safe_felt_good) -> str:
     trend = f"shifted toward {new_dom}" if shifted else "held steady"
@@ -56,13 +57,12 @@ Respond ONLY with valid JSON: {{"insight": "..."}}"""
 
 
 @router.post("/weekly", response_model=WeeklyCheckinResponse)
-async def submit_weekly_checkin(req: WeeklyCheckinRequest, background_tasks: BackgroundTasks, user: UserDocument = Depends(get_current_user)):
+async def submit_weekly_checkin(req: WeeklyCheckinRequest, user: UserDocument = Depends(get_current_user)):
     db = get_mongodb()
     if db is None:
         raise HTTPException(status_code=503, detail="Database unavailable")
 
     now = datetime.now(timezone.utc)
-    safe_symptoms = [_sanitize(s, max_len=100) for s in req.symptoms]
     safe_felt_good = _sanitize(req.what_felt_good or "", max_len=500)
 
     # 1. Save the raw weekly check-in
@@ -95,28 +95,22 @@ async def submit_weekly_checkin(req: WeeklyCheckinRequest, background_tasks: Bac
     new_dom = update["vikriti_dominant"]
     shifted = vikriti_shifted(old_vikriti, new_vikriti)
 
-    # 4. GROUNDED adaptation — regenerate only when the imbalance actually moved,
-    #    and only plans the user already has. No shift → no (misleading) "adapted".
+    # 4. Suggest, never rebuild. This used to regenerate diet, yoga, medicines and
+    #    Panchakarma in the background whenever a score moved 6 points: four billed
+    #    generations from one check-in, and a diet plan built twenty minutes earlier
+    #    replaced by a new four weeks, orphaning its meal logs. The diet's own week
+    #    check-in proposes and rebuilds only on request; this one does the same. The
+    #    page offers a rebuild per plan.
     plans_to_adapt: list[str] = []
     if shifted:
         from services.chat_service import fetch_active_plans
         existing = await fetch_active_plans(db, user.id)
         plans_to_adapt = [p for p in ("diet", "yoga", "medicines", "panchakarma") if p in existing]
-        if plans_to_adapt:
-            feedback = (f"Weekly check-in — Vikriti shifted {old_dom}→{new_dom}. "
-                        f"Energy={req.energy}, Digestion={req.digestion}, Sleep={req.sleep}, Symptoms={safe_symptoms}")
-            background_tasks.add_task(apply_chat_side_effects, db, user.id, [], plans_to_adapt, feedback)
-            plan_names = ", ".join(p.title() for p in plans_to_adapt)
-            background_tasks.add_task(
-                create_and_deliver_notification, db, user.id,
-                "Your plans were refreshed",
-                f"Your imbalance moved toward {new_dom.title()}, so your {plan_names} plan(s) were updated.",
-                "adaptation",
-            )
 
     # 5. Insight grounded in the REAL trend
     insight = await _grounded_insight(user, req, old_vikriti, new_vikriti, old_dom, new_dom, shifted, safe_felt_good)
-    return WeeklyCheckinResponse(insight=insight, adapted_plans=plans_to_adapt)
+    return WeeklyCheckinResponse(insight=insight, suggested_plans=plans_to_adapt,
+                                 shifted_toward=new_dom if shifted else None)
 
 
 @router.get("/history")
