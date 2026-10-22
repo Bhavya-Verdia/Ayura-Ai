@@ -7,15 +7,15 @@ export default function DietFields({ form, handleChange, handleToggle }) {
   return (
       <>
         <div className="pref-input-group">
-          <label>Primary Goal</label>
-          <select name="diet_goal" value={form.diet_goal || ''} onChange={handleChange} required>
+          <label htmlFor="pref-diet_goal">Primary Goal</label>
+          <select id="pref-diet_goal" name="diet_goal" value={form.diet_goal || ''} onChange={handleChange} required>
             <option value="">Select your goal...</option>
             {GOALS.diet.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
           </select>
         </div>
         <div className="pref-input-group">
-          <label>Dietary Type</label>
-          <select name="dietary_type" value={form.dietary_type || ''} onChange={handleChange} required>
+          <label htmlFor="pref-dietary_type">Dietary Type</label>
+          <select id="pref-dietary_type" name="dietary_type" value={form.dietary_type || ''} onChange={handleChange} required>
             <option value="">Select your diet...</option>
             {DIETARY_TYPES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
           </select>
@@ -27,8 +27,8 @@ export default function DietFields({ form, handleChange, handleToggle }) {
         </div>
         <div className="pref-row">
           <div className="pref-input-group">
-            <label>Intermittent Fasting</label>
-            <select name="intermittent_fasting" value={form.intermittent_fasting || ''} onChange={handleChange} required>
+            <label htmlFor="pref-intermittent_fasting">Intermittent Fasting</label>
+            <select id="pref-intermittent_fasting" name="intermittent_fasting" value={form.intermittent_fasting || 'no'} onChange={handleChange} required>
               <option value="no">No Fasting</option>
               <option value="12:12">12:12 (Balanced)</option>
               <option value="14:10">14:10 (Moderate)</option>
@@ -36,8 +36,8 @@ export default function DietFields({ form, handleChange, handleToggle }) {
             </select>
           </div>
           <div className="pref-input-group">
-            <label>Daily Water Intake</label>
-            <select name="water_intake" value={form.water_intake || ''} onChange={handleChange} required>
+            <label htmlFor="pref-water_intake">Daily Water Intake</label>
+            <select id="pref-water_intake" name="water_intake" value={form.water_intake || '1-2L'} onChange={handleChange} required>
               <option value="< 1L">&lt; 1L</option>
               <option value="1-2L">1-2L</option>
               <option value="2-3L">2-3L</option>
@@ -47,8 +47,8 @@ export default function DietFields({ form, handleChange, handleToggle }) {
         </div>
         <div className="pref-row">
           <div className="pref-input-group">
-            <label>Gut Health</label>
-            <select name="gut_health_issue" value={form.gut_health_issue || ''} onChange={handleChange} required>
+            <label htmlFor="pref-gut_health_issue">Gut Health</label>
+            <select id="pref-gut_health_issue" name="gut_health_issue" value={form.gut_health_issue || 'healthy'} onChange={handleChange} required>
               <option value="healthy">Healthy</option>
               <option value="acidity">Acidity / Heartburn</option>
               <option value="constipation">Constipation</option>
@@ -57,8 +57,8 @@ export default function DietFields({ form, handleChange, handleToggle }) {
             </select>
           </div>
           <div className="pref-input-group">
-            <label>Fasting Days (Optional)</label>
-            <input type="text" name="fasting_days" placeholder="e.g. Monday, Ekadashi" value={form.fasting_days || ''} onChange={handleChange} />
+            <label htmlFor="pref-fasting_days">Fasting Days (Optional)</label>
+            <input id="pref-fasting_days" type="text" name="fasting_days" placeholder="e.g. Monday, Ekadashi" value={form.fasting_days || ''} onChange={handleChange} />
           </div>
         </div>
         <div className="pref-input-group pref-full">
@@ -112,8 +112,8 @@ export default function DietFields({ form, handleChange, handleToggle }) {
             three before writing a meal; the form asked none of them. */}
         <div className="pref-row">
           <div className="pref-input-group">
-            <label>Cuisine you grew up with</label>
-            <select name="cuisine_preference" value={form.cuisine_preference || 'any'} onChange={handleChange}>
+            <label htmlFor="pref-cuisine_preference">Cuisine you grew up with</label>
+            <select id="pref-cuisine_preference" name="cuisine_preference" value={form.cuisine_preference || 'any'} onChange={handleChange}>
               <option value="any">Any Indian</option>
               <option value="north_indian">North Indian</option>
               <option value="south_indian">South Indian</option>
@@ -122,8 +122,8 @@ export default function DietFields({ form, handleChange, handleToggle }) {
             </select>
           </div>
           <div className="pref-input-group">
-            <label>Foods you don&apos;t eat (Optional)</label>
-            <input type="text" name="food_dislikes" placeholder="e.g. karela, baingan, mushroom"
+            <label htmlFor="pref-food_dislikes">Foods you don&apos;t eat (Optional)</label>
+            <input id="pref-food_dislikes" type="text" name="food_dislikes" placeholder="e.g. karela, baingan, mushroom"
               value={form.food_dislikes || ''} onChange={handleChange} />
           </div>
         </div>

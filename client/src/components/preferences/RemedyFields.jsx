@@ -44,11 +44,11 @@ export default function RemedyFields({ form, handleChange, handleToggle }) {
 
         {/* ── Ama self-assessment ── */}
         <div className="pref-input-group">
-          <label>
+          <label htmlFor="pref-ama_self_assessment">
             Ama (Toxic Load) Self-Assessment
             <span className="pref-hint-sub"> — Do you feel heavy, foggy, or notice a coated tongue in the morning?</span>
           </label>
-          <select name="ama_self_assessment" value={form.ama_self_assessment || ''} onChange={handleChange}>
+          <select id="pref-ama_self_assessment" name="ama_self_assessment" value={form.ama_self_assessment || ''} onChange={handleChange}>
             <option value="">Let AI assess from profile</option>
             <option value="high">Yes, noticeably — heavy, foggy, coated tongue</option>
             <option value="moderate">Sometimes — mild heaviness or sluggishness</option>
@@ -59,8 +59,8 @@ export default function RemedyFields({ form, handleChange, handleToggle }) {
         <div className="pref-row">
           {/* ── Ingredient access ── */}
           <div className="pref-input-group">
-            <label>Ingredient Access</label>
-            <select name="ingredient_access" value={form.ingredient_access || ''} onChange={handleChange} required>
+            <label htmlFor="pref-ingredient_access">Ingredient Access</label>
+            <select id="pref-ingredient_access" name="ingredient_access" value={form.ingredient_access || 'kitchen_only'} onChange={handleChange} required>
               <option value="kitchen_only">Kitchen Spices Only (Tier 1)</option>
               <option value="can_buy_herbs">Can Buy Herbs from Ayurvedic Store</option>
               <option value="full_access">Full Access incl. Guggulu & Bhasma (Tier 2)</option>
@@ -71,8 +71,8 @@ export default function RemedyFields({ form, handleChange, handleToggle }) {
         {/* Asked here and on the Panchakarma form; the server unions the two,
             so either answer reaches both herb-doubling checks. */}
         <div className="pref-input-group pref-full">
-          <label>Ayurvedic Medicines You Take Now <span className="pref-hint">(optional, comma-separated)</span></label>
-          <input
+          <label htmlFor="pref-current_ayurvedic_medicines">Ayurvedic Medicines You Take Now <span className="pref-hint">(optional, comma-separated)</span></label>
+          <input id="pref-current_ayurvedic_medicines"
             type="text"
             name="current_ayurvedic_medicines"
             placeholder="e.g. Ashwagandha Churna, Triphala"
@@ -84,8 +84,8 @@ export default function RemedyFields({ form, handleChange, handleToggle }) {
         <div className="pref-row">
           {/* ── Previous medicines ── */}
           <div className="pref-input-group">
-            <label>Previously Tried Ayurvedic Medicines <span className="pref-hint">(optional, comma-separated)</span></label>
-            <input
+            <label htmlFor="pref-previous_ayurvedic_medicines">Previously Tried Ayurvedic Medicines <span className="pref-hint">(optional, comma-separated)</span></label>
+            <input id="pref-previous_ayurvedic_medicines"
               type="text"
               name="previous_ayurvedic_medicines"
               placeholder="e.g. Ashwagandha, Triphala, Chyawanprash"

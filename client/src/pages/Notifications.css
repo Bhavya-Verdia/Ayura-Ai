@@ -313,6 +313,10 @@
 @media (hover: none) {
   .notif-delete-btn, .notif-read-hint { opacity: 1; }
 }
+/* Fingers need a bigger target than the glyph: the ✕ was 18x22 and the read hint
+   18px tall, under the 24px minimum (WCAG 2.5.8). The box grows, the look does not. */
+.notif-delete-btn { min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center; top: 6px; right: 6px; }
+.notif-read-hint { min-height: 32px; padding: 0 6px; bottom: 12px; right: 14px; }
 .notif-delete-btn:hover { color: var(--rose, #f87171); }
 .notif-clear-all-btn { margin-left: 8px; }
 .notif-mark-all-btn, .notif-clear-all-btn { display: inline-flex; align-items: center; gap: 6px; }

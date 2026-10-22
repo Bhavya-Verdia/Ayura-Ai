@@ -77,6 +77,28 @@ const EVENT_CONFIG = {
     badgeClass: '',
     filterKey: 'all',
   },
+  // Written by routes/practice.py and routes/plans.py and shown until now as
+  // "Health Event" with their raw field names ("reviewed_week: 1").
+  practice_completed: {
+    Icon: CircleCheck,
+    label: 'Practice Completed',
+    colorVar: '--ayura-sage',
+    glowColor: 'rgba(110,160,120,0.4)',
+    bgColor: 'rgba(110,160,120,0.07)',
+    borderColor: 'rgba(110,160,120,0.22)',
+    badgeClass: '',
+    filterKey: 'progress',
+  },
+  yoga_week_generated: {
+    Icon: CalendarDays,
+    label: 'Yoga Week Added',
+    colorVar: '--primary',
+    glowColor: 'rgba(94,138,133,0.4)',
+    bgColor: 'rgba(94,138,133,0.07)',
+    borderColor: 'rgba(94,138,133,0.2)',
+    badgeClass: '',
+    filterKey: 'plans',
+  },
   reaction_reported: {
     Icon: Siren,
     label: 'Reaction Reported',
@@ -221,6 +243,21 @@ function renderDetails(event) {
           {data.severity && <span className="ht-detail-chip ht-chip-muted">Severity: {data.severity}</span>}
           {data.plan_type && <span className="ht-detail-chip ht-chip-muted">{data.plan_type}</span>}
           {data.reaction && <p className="ht-detail-note">"{data.reaction}"</p>}
+        </div>
+      )
+    case 'practice_completed':
+      return (
+        <div className="ht-event-details">
+          {data.feature && <span className="ht-detail-chip ht-chip-sage"><CircleCheck size={13} strokeWidth={2} /> {data.feature}</span>}
+          {data.duration_minutes != null && <span className="ht-detail-chip ht-chip-muted">{data.duration_minutes} min</span>}
+          {data.week && data.day && <span className="ht-detail-chip ht-chip-muted">Week {data.week}, {data.day}</span>}
+        </div>
+      )
+    case 'yoga_week_generated':
+      return (
+        <div className="ht-event-details">
+          {data.week && <span className="ht-detail-chip ht-chip-primary"><CalendarDays size={13} strokeWidth={2} /> Week {data.week}</span>}
+          {data.adjusted && <span className="ht-detail-chip ht-chip-muted">Adjusted from your week {data.reviewed_week} feedback</span>}
         </div>
       )
     case 'adaptation_failed':

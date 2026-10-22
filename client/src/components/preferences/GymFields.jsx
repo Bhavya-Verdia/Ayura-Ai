@@ -7,26 +7,26 @@ export default function GymFields({ form, setForm, handleChange, renderInjuryChi
   return (
       <>
         <div className="pref-input-group">
-          <label>Primary Goal</label>
-          <select name="gym_goal" value={form.gym_goal || ''} onChange={handleChange} required>
+          <label htmlFor="pref-gym_goal">Primary Goal</label>
+          <select id="pref-gym_goal" name="gym_goal" value={form.gym_goal || ''} onChange={handleChange} required>
             <option value="">Select your goal...</option>
             {GOALS.gym.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
           </select>
         </div>
         <div className="pref-row">
           <div className="pref-input-group">
-            <label>Days per Week (2-7)</label>
-            <input type="number" name="workout_days_per_week" min={2} max={7} value={form.workout_days_per_week || ''} onChange={handleChange} required />
+            <label htmlFor="pref-workout_days_per_week">Days per Week (2-7)</label>
+            <input id="pref-workout_days_per_week" type="number" name="workout_days_per_week" min={2} max={7} value={form.workout_days_per_week || ''} onChange={handleChange} required />
           </div>
           <div className="pref-input-group">
-            <label>Session Duration (mins)</label>
-            <input type="number" name="workout_duration_minutes" min={20} max={90} value={form.workout_duration_minutes || ''} onChange={handleChange} required />
+            <label htmlFor="pref-workout_duration_minutes">Session Duration (mins)</label>
+            <input id="pref-workout_duration_minutes" type="number" name="workout_duration_minutes" min={20} max={90} value={form.workout_duration_minutes || ''} onChange={handleChange} required />
           </div>
         </div>
         <div className="pref-row">
           <div className="pref-input-group">
-            <label>Training Style</label>
-            <select name="training_style" value={form.training_style ?? ''} onChange={handleChange}>
+            <label htmlFor="pref-training_style">Training Style</label>
+            <select id="pref-training_style" name="training_style" value={form.training_style ?? ''} onChange={handleChange}>
               <option value="">Balanced — follow my goal</option>
               <option value="strength">Strength</option>
               <option value="hypertrophy">Hypertrophy (Muscle Size)</option>
@@ -35,8 +35,8 @@ export default function GymFields({ form, setForm, handleChange, renderInjuryChi
             </select>
           </div>
           <div className="pref-input-group">
-            <label>Cardio</label>
-            <select name="cardio_preference" value={form.cardio_preference || ''} onChange={handleChange} required>
+            <label htmlFor="pref-cardio_preference">Cardio</label>
+            <select id="pref-cardio_preference" name="cardio_preference" value={form.cardio_preference || 'none'} onChange={handleChange} required>
               <option value="none">None</option>
               <option value="light">Light</option>
               <option value="moderate">Moderate</option>
@@ -46,8 +46,8 @@ export default function GymFields({ form, setForm, handleChange, renderInjuryChi
         </div>
         <div className="pref-row">
           <div className="pref-input-group">
-            <label>Muscle Focus</label>
-            <select name="target_muscle_focus" value={form.target_muscle_focus || ''} onChange={handleChange} required>
+            <label htmlFor="pref-target_muscle_focus">Muscle Focus</label>
+            <select id="pref-target_muscle_focus" name="target_muscle_focus" value={form.target_muscle_focus || 'full_body'} onChange={handleChange} required>
               <option value="full_body">Full Body</option>
               <option value="upper">Upper Body</option>
               <option value="lower">Lower Body</option>
@@ -56,8 +56,8 @@ export default function GymFields({ form, setForm, handleChange, renderInjuryChi
             </select>
           </div>
           <div className="pref-input-group">
-            <label>Lifting Strength Level</label>
-            <select name="strength_level" value={form.strength_level || 'beginner'} onChange={handleChange}>
+            <label htmlFor="pref-strength_level">Lifting Strength Level</label>
+            <select id="pref-strength_level" name="strength_level" value={form.strength_level || 'beginner'} onChange={handleChange}>
               <option value="untrained">Untrained — never lifted weights</option>
               <option value="beginner">Beginner — under 1 year lifting</option>
               <option value="intermediate">Intermediate — 1–3 years, consistent</option>
@@ -97,9 +97,9 @@ export default function GymFields({ form, setForm, handleChange, renderInjuryChi
           </p>
         </div>
         <div className="pref-input-group">
-          <label>Injuries or joint problems <span className="pref-hint-sub">optional</span></label>
+          <label htmlFor="pref-injury_detail">Injuries or joint problems <span className="pref-hint-sub">optional</span></label>
           {renderInjuryChips()}
-          <input
+          <input id="pref-injury_detail"
             type="text"
             name="injury_detail"
             maxLength={300}
@@ -151,8 +151,8 @@ export default function GymFields({ form, setForm, handleChange, renderInjuryChi
             typing a dislike is describing a category, not picking rows. */}
         <div className="pref-row">
           <div className="pref-input-group">
-            <label>Movements to avoid <span className="pref-hint-sub">optional</span></label>
-            <input
+            <label htmlFor="pref-dislikes">Movements to avoid <span className="pref-hint-sub">optional</span></label>
+            <input id="pref-dislikes"
               type="text"
               name="dislikes"
               placeholder="burpees, deadlift, jump rope"
@@ -161,8 +161,8 @@ export default function GymFields({ form, setForm, handleChange, renderInjuryChi
             />
           </div>
           <div className="pref-input-group">
-            <label>Movements you enjoy <span className="pref-hint-sub">optional</span></label>
-            <input
+            <label htmlFor="pref-likes">Movements you enjoy <span className="pref-hint-sub">optional</span></label>
+            <input id="pref-likes"
               type="text"
               name="likes"
               placeholder="pull-ups, kettlebell, rowing"

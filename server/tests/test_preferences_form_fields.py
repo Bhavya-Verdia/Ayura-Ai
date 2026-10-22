@@ -80,3 +80,19 @@ def test_koshtha_survives_the_round_trip_the_engine_reads_it_through():
     assert saved["koshtha"] == "mridu"
     with pytest.raises(ValueError):
         PanchakarmaPreferences(koshtha="loose")
+
+
+def test_a_select_shows_the_answer_it_saves():
+    """A select whose value falls back to '' with no '' option displays its FIRST
+    option while the modal saves a different default. The water-intake select showed
+    "< 1L" and saved "1-2L"; Panchakarma showed 15 min of self-care and the plan was
+    trimmed to 30. The fallback has to be an option the select has."""
+    folder = _MODAL.parent / "preferences"
+    bad = []
+    for jsx in sorted(folder.glob("*.jsx")):
+        src = jsx.read_text()
+        for m in re.finditer(r"<select name=\"(\w+)\" value=\{form\.\w+ (?:\|\||\?\?) ''\}(.*?)</select>",
+                             src, re.S):
+            if 'value=""' not in m.group(2):
+                bad.append(f"{jsx.name}: {m.group(1)}")
+    assert not bad, f"these selects show one answer and save another: {bad}"
