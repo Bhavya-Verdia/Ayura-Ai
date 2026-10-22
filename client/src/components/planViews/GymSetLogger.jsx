@@ -3,12 +3,14 @@ import { Check, PencilLine } from 'lucide-react'
 import { workoutsAPI } from '../../api/client'
 import { track, EVENTS } from '../../lib/analytics'
 
+import { tr } from '../../lib/tr'
+import { Trans } from 'react-i18next'
 // How hard the sets felt. "Right" is what the plan asks for — the last two reps
 // hard — and is what the next block's loads assume when nothing is said.
 const EFFORT = [
-  { value: 'easy',  label: 'Easy' },
-  { value: 'right', label: 'About right' },
-  { value: 'hard',  label: 'Very hard' },
+  { value: 'easy',  get label() { return tr('ui.gymSetLogger.easy', 'Easy') } },
+  { value: 'right', get label() { return tr('ui.gymSetLogger.aboutRight', 'About right') } },
+  { value: 'hard',  get label() { return tr('ui.gymSetLogger.veryHard', 'Very hard') } },
 ]
 
 const isRepRange = (reps) => /^\d+\s*-\s*\d+$/.test(String(reps || '').trim())
@@ -60,22 +62,22 @@ export function GymSetLogger({ planId, week, day, exercise, logged, onSaved }) {
       return (
         <div className="gym-log-row">
           {logged?.minutes > 0 && (
-            <span className="gym-log-summary"><Check size={11} /> Logged: {logged.minutes} min</span>
+            <span className="gym-log-summary"><Trans i18nKey="ui.gymSetLogger.n0LoggedMin" defaults={"<0/> Logged: {{minutes}} min"} values={{ minutes: logged.minutes }} components={[<Check size={11} />]} /></span>
           )}
           <button type="button" className="gym-log-toggle" onClick={() => setOpen(true)}>
-            <PencilLine size={11} /> {logged?.minutes ? 'Edit' : 'Log your minutes'}
+            <PencilLine size={11} /> {logged?.minutes ? tr('ui.gymSetLogger.edit', 'Edit') : tr('ui.gymSetLogger.logYourMinutes', 'Log your minutes')}
           </button>
         </div>
       )
     }
     return (
-      <div className="gym-log-editor" role="group" aria-label={`Log minutes for ${exercise.exercise_name}`}>
+      <div className="gym-log-editor" role="group" aria-label={tr('ui.gymSetLogger.logMinutesFor', 'Log minutes for {{exercise_name}}', { exercise_name: exercise.exercise_name })}>
         <div className="gym-log-set">
-          <span className="gym-log-set-label">Minutes</span>
-          <input type="number" inputMode="decimal" min="0" max="240" step="1" aria-label="Minutes"
+          <span className="gym-log-set-label">{tr('ui.gymSetLogger.minutes', 'Minutes')}</span>
+          <input type="number" inputMode="decimal" min="0" max="240" step="1" aria-label={tr('ui.gymSetLogger.minutes', 'Minutes')}
             placeholder="min" value={minutes} onChange={e => setMinutes(e.target.value)} />
         </div>
-        <div className="gym-log-effort" role="radiogroup" aria-label="How hard did it feel">
+        <div className="gym-log-effort" role="radiogroup" aria-label={tr('ui.gymSetLogger.howHardDidItFeel', 'How hard did it feel')}>
           {EFFORT.map(o => (
             <button key={o.value} type="button" role="radio" aria-checked={effort === o.value}
               className={`gym-log-chip${effort === o.value ? ' active' : ''}`}
@@ -83,12 +85,12 @@ export function GymSetLogger({ planId, week, day, exercise, logged, onSaved }) {
           ))}
         </div>
         <div className="gym-log-actions">
-          <button type="button" className="gym-log-cancel" onClick={() => setOpen(false)}>Cancel</button>
+          <button type="button" className="gym-log-cancel" onClick={() => setOpen(false)}>{tr('ui.gymSetLogger.cancel', 'Cancel')}</button>
           <button type="button" className="gym-log-save" onClick={saveMinutes} disabled={state === 'saving'}>
-            {state === 'saving' ? 'Saving…' : 'Save'}
+            {state === 'saving' ? tr('ui.gymSetLogger.saving', 'Saving…') : tr('ui.gymSetLogger.save', 'Save')}
           </button>
         </div>
-        {state === 'error' && <p className="gym-log-error">Could not save — check your connection and try again.</p>}
+        {state === 'error' && <p className="gym-log-error">{tr('ui.gymSetLogger.couldNotSaveCheckYour', 'Could not save — check your connection and try again.')}</p>}
       </div>
     )
   }
@@ -120,32 +122,32 @@ export function GymSetLogger({ planId, week, day, exercise, logged, onSaved }) {
     return (
       <div className="gym-log-row">
         {summary && (
-          <span className="gym-log-summary"><Check size={11} /> Logged: {summary}</span>
+          <span className="gym-log-summary"><Trans i18nKey="ui.gymSetLogger.n0Logged" defaults={"<0/> Logged: {{summary}}"} values={{ summary }} components={[<Check size={11} />]} /></span>
         )}
         <button type="button" className="gym-log-toggle"
           onClick={() => { setRows(initialRows()); setOpen(true) }}>
-          <PencilLine size={11} /> {summary ? 'Edit' : 'Log your sets'}
+          <PencilLine size={11} /> {summary ? tr('ui.gymSetLogger.edit', 'Edit') : tr('ui.gymSetLogger.logYourSets', 'Log your sets')}
         </button>
       </div>
     )
   }
 
   return (
-    <div className="gym-log-editor" role="group" aria-label={`Log sets for ${exercise.exercise_name}`}>
+    <div className="gym-log-editor" role="group" aria-label={tr('ui.gymSetLogger.logSetsFor', 'Log sets for {{exercise_name}}', { exercise_name: exercise.exercise_name })}>
       {rows.map((r, i) => (
         <div key={i} className="gym-log-set">
-          <span className="gym-log-set-label">Set {i + 1}</span>
+          <span className="gym-log-set-label"><Trans i18nKey="ui.gymSetLogger.set" defaults={"Set {{value}}"} values={{ value: i + 1 }} /></span>
           {!bodyweight && (
             <input type="number" inputMode="decimal" min="0" max="500" step="0.5"
-              aria-label={`Set ${i + 1} kg`} placeholder="kg" value={r.kg}
+              aria-label={tr('ui.gymSetLogger.setKg', 'Set {{value}} kg', { value: i + 1 })} placeholder="kg" value={r.kg}
               onChange={e => setRows(rs => rs.map((x, j) => j === i ? { ...x, kg: e.target.value } : x))} />
           )}
           <input type="number" inputMode="numeric" min="0" max="100" step="1"
-            aria-label={`Set ${i + 1} reps`} placeholder="reps" value={r.reps}
+            aria-label={tr('ui.gymSetLogger.setReps', 'Set {{value}} reps', { value: i + 1 })} placeholder="reps" value={r.reps}
             onChange={e => setRows(rs => rs.map((x, j) => j === i ? { ...x, reps: e.target.value } : x))} />
         </div>
       ))}
-      <div className="gym-log-effort" role="radiogroup" aria-label="How hard did it feel">
+      <div className="gym-log-effort" role="radiogroup" aria-label={tr('ui.gymSetLogger.howHardDidItFeel', 'How hard did it feel')}>
         {EFFORT.map(o => (
           <button key={o.value} type="button" role="radio" aria-checked={effort === o.value}
             className={`gym-log-chip${effort === o.value ? ' active' : ''}`}
@@ -153,12 +155,12 @@ export function GymSetLogger({ planId, week, day, exercise, logged, onSaved }) {
         ))}
       </div>
       <div className="gym-log-actions">
-        <button type="button" className="gym-log-cancel" onClick={() => setOpen(false)}>Cancel</button>
+        <button type="button" className="gym-log-cancel" onClick={() => setOpen(false)}>{tr('ui.gymSetLogger.cancel', 'Cancel')}</button>
         <button type="button" className="gym-log-save" onClick={save} disabled={state === 'saving'}>
-          {state === 'saving' ? 'Saving…' : 'Save'}
+          {state === 'saving' ? tr('ui.gymSetLogger.saving', 'Saving…') : tr('ui.gymSetLogger.save', 'Save')}
         </button>
       </div>
-      {state === 'error' && <p className="gym-log-error">Could not save — check your connection and try again.</p>}
+      {state === 'error' && <p className="gym-log-error">{tr('ui.gymSetLogger.couldNotSaveCheckYour', 'Could not save — check your connection and try again.')}</p>}
     </div>
   )
 }

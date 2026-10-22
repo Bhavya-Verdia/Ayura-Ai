@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../providers/AuthContext'
 
+import { tr } from '../lib/tr'
 export default function GoogleCallback() {
   const navigate = useNavigate()
   const { loginWithGoogle } = useAuth()
@@ -35,7 +36,7 @@ export default function GoogleCallback() {
   return (
     <div className="fill-viewport" style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px' }}>
       <div className="spinner" />
-      <p style={{ color:'var(--text-secondary)' }}>Signing you in with Google…</p>
+      <p style={{ color:'var(--text-secondary)' }}>{tr('ui.googleCallback.signingYouInWithGoogle', 'Signing you in with Google…')}</p>
     </div>
   )
 }

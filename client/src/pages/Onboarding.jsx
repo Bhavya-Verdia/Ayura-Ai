@@ -10,6 +10,8 @@ import React from 'react'
 import { CONDITION_CATEGORIES } from '../constants/conditions'
 import { track, EVENTS } from '../lib/analytics'
 import { reportError } from '../lib/errorReporting'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './Onboarding.css'
 
 const LazyParticleField = React.lazy(() => import('../components/ParticleField'))
@@ -23,46 +25,46 @@ const STEPS = ['Basics', 'Physical', 'Goals & Dosha']
 // here is enforceable everywhere rather than being a free-text string that substring
 // matching cannot see through.
 const FOOD_ALLERGIES = [
-  { id: 'dairy',      label: 'Dairy' },
-  { id: 'gluten',     label: 'Gluten / wheat' },
-  { id: 'nuts_tree',  label: 'Tree nuts' },
-  { id: 'peanuts',    label: 'Peanuts' },
-  { id: 'soy',        label: 'Soy' },
-  { id: 'eggs',       label: 'Eggs' },
-  { id: 'fish',       label: 'Fish' },
-  { id: 'shellfish',  label: 'Shellfish' },
-  { id: 'sesame',     label: 'Sesame' },
-  { id: 'mustard',    label: 'Mustard' },
+  { id: 'dairy',      get label() { return tr('ui.onboarding.dairy', 'Dairy') } },
+  { id: 'gluten',     get label() { return tr('ui.onboarding.glutenWheat', 'Gluten / wheat') } },
+  { id: 'nuts_tree',  get label() { return tr('ui.onboarding.treeNuts', 'Tree nuts') } },
+  { id: 'peanuts',    get label() { return tr('ui.onboarding.peanuts', 'Peanuts') } },
+  { id: 'soy',        get label() { return tr('ui.onboarding.soy', 'Soy') } },
+  { id: 'eggs',       get label() { return tr('ui.onboarding.eggs', 'Eggs') } },
+  { id: 'fish',       get label() { return tr('ui.onboarding.fish', 'Fish') } },
+  { id: 'shellfish',  get label() { return tr('ui.onboarding.shellfish', 'Shellfish') } },
+  { id: 'sesame',     get label() { return tr('ui.onboarding.sesame', 'Sesame') } },
+  { id: 'mustard',    get label() { return tr('ui.onboarding.mustard', 'Mustard') } },
 ]
 
 const SYMPTOMS = [
-  { id: 'anxiety_worry',          label: 'Anxiety or worry' },
-  { id: 'trouble_sleeping',       label: 'Trouble sleeping' },
-  { id: 'bloating_gas',           label: 'Bloating or gas' },
-  { id: 'dry_skin_constipation',  label: 'Dryness or constipation' },
-  { id: 'joint_stiffness',        label: 'Joint or body aches' },
-  { id: 'heartburn_acidity',      label: 'Acidity or inflammation' },
-  { id: 'irritability',           label: 'Irritability' },
-  { id: 'skin_rashes',            label: 'Skin flare-ups' },
-  { id: 'weight_gain',            label: 'Weight gain or heaviness' },
-  { id: 'low_energy',             label: 'Low energy or fatigue' },
-  { id: 'congestion',             label: 'Congestion or mucus' },
-  { id: 'brain_fog',              label: 'Brain fog' },
+  { id: 'anxiety_worry',          get label() { return tr('ui.onboarding.anxietyOrWorry', 'Anxiety or worry') } },
+  { id: 'trouble_sleeping',       get label() { return tr('ui.onboarding.troubleSleeping', 'Trouble sleeping') } },
+  { id: 'bloating_gas',           get label() { return tr('ui.onboarding.bloatingOrGas', 'Bloating or gas') } },
+  { id: 'dry_skin_constipation',  get label() { return tr('ui.onboarding.drynessOrConstipation', 'Dryness or constipation') } },
+  { id: 'joint_stiffness',        get label() { return tr('ui.onboarding.jointOrBodyAches', 'Joint or body aches') } },
+  { id: 'heartburn_acidity',      get label() { return tr('ui.onboarding.acidityOrInflammation', 'Acidity or inflammation') } },
+  { id: 'irritability',           get label() { return tr('ui.onboarding.irritability', 'Irritability') } },
+  { id: 'skin_rashes',            get label() { return tr('ui.onboarding.skinFlareUps', 'Skin flare-ups') } },
+  { id: 'weight_gain',            get label() { return tr('ui.onboarding.weightGainOrHeaviness', 'Weight gain or heaviness') } },
+  { id: 'low_energy',             get label() { return tr('ui.onboarding.lowEnergyOrFatigue', 'Low energy or fatigue') } },
+  { id: 'congestion',             get label() { return tr('ui.onboarding.congestionOrMucus', 'Congestion or mucus') } },
+  { id: 'brain_fog',              get label() { return tr('ui.onboarding.brainFog', 'Brain fog') } },
 ]
 
 const GOALS = [
-  { id: 'weight_loss',     label: 'Weight Loss',      Icon: Scale },
-  { id: 'muscle_gain',     label: 'Muscle Gain',       Icon: Dumbbell },
-  { id: 'flexibility',     label: 'Flexibility',       Icon: PersonStanding },
-  { id: 'detox',           label: 'Detox and Cleanse', Icon: FlaskConical },
-  { id: 'general_wellness',label: 'General Wellness',  Icon: Sparkles },
-  { id: 'balance',         label: 'Dosha Balance',     Icon: Orbit }
+  { id: 'weight_loss',     get label() { return tr('ui.onboarding.weightLoss', 'Weight Loss') },      Icon: Scale },
+  { id: 'muscle_gain',     get label() { return tr('ui.onboarding.muscleGain', 'Muscle Gain') },       Icon: Dumbbell },
+  { id: 'flexibility',     get label() { return tr('ui.onboarding.flexibility', 'Flexibility') },       Icon: PersonStanding },
+  { id: 'detox',           get label() { return tr('ui.onboarding.detoxAndCleanse', 'Detox and Cleanse') }, Icon: FlaskConical },
+  { id: 'general_wellness',get label() { return tr('ui.onboarding.generalWellness', 'General Wellness') },  Icon: Sparkles },
+  { id: 'balance',         get label() { return tr('ui.onboarding.doshaBalance', 'Dosha Balance') },     Icon: Orbit }
 ]
 
 const DOSHA_INFO = {
-  vata:  { Icon: Wind,  desc: 'Air & Space · Creative, energetic, variable' },
-  pitta: { Icon: Flame, desc: 'Fire & Water · Sharp, intense, goal-driven' },
-  kapha: { Icon: Waves, desc: 'Earth & Water · Calm, steady, nurturing' },
+  vata:  { Icon: Wind,  get desc() { return tr('ui.onboarding.airSpaceCreativeEnergeticVariable', 'Air & Space · Creative, energetic, variable') } },
+  pitta: { Icon: Flame, get desc() { return tr('ui.onboarding.fireWaterSharpIntenseGoal', 'Fire & Water · Sharp, intense, goal-driven') } },
+  kapha: { Icon: Waves, get desc() { return tr('ui.onboarding.earthWaterCalmSteadyNurturing', 'Earth & Water · Calm, steady, nurturing') } },
 }
 
 // NO filter/blur in step transitions — a lingering blur(0px) keeps the step
@@ -130,7 +132,7 @@ export default function Onboarding() {
   async function handleFinish() {
     setError('')
     if (!hasValidPhysicalStats || !hasValidAge) {
-      setError('Please enter valid age, height, and weight values.')
+      setError(tr('ui.onboarding.pleaseEnterValidAgeHeight', 'Please enter valid age, height, and weight values.'))
       return
     }
     // The per-step rules are enforced by "Continue" — which the LAST step never
@@ -260,15 +262,15 @@ export default function Onboarding() {
         <header className="onb-header">
           <div className="onb-brand">
             <img src="/favicon.svg" alt="" className="onb-brand-mark" />
-            <span className="onb-brand-text">Ayura AI</span>
+            <span className="onb-brand-text">{tr('ui.onboarding.ayuraAi', 'Ayura AI')}</span>
           </div>
           <div className="onb-header-actions">
             <button type="button" className="onb-switch-account" onClick={handleSwitchAccount}>
-              Switch Account
+              {tr('ui.onboarding.switchAccount', 'Switch Account')}
             </button>
           </div>
-          <h1>Set up your health profile</h1>
-          <p className="onb-subtitle">Step {step + 1} of {STEPS.length}: {STEPS[step]}</p>
+          <h1>{tr('ui.onboarding.setUpYourHealthProfile', 'Set up your health profile')}</h1>
+          <p className="onb-subtitle"><Trans i18nKey="ui.onboarding.stepOf" defaults={"Step {{value}} of {{length}}: {{step}}"} values={{ value: step + 1, length: STEPS.length, step: STEPS[step] }} /></p>
         </header>
 
         <div className="onb-steps">
@@ -319,18 +321,18 @@ export default function Onboarding() {
               {/* ── STEP 0: BASICS ── */}
               {step === 0 ? (
                 <div className="onb-stage">
-                  <h3 className="onb-title">Basic Information</h3>
+                  <h3 className="onb-title">{tr('ui.onboarding.basicInformation', 'Basic Information')}</h3>
                   <div className="input-group">
-                    <label htmlFor="onb-name">Your Name</label>
-                    <input id="onb-name" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Maya" />
+                    <label htmlFor="onb-name">{tr('ui.onboarding.yourName', 'Your Name')}</label>
+                    <input id="onb-name" value={name} onChange={e => setName(e.target.value)} placeholder={tr('ui.onboarding.eGMaya', 'e.g. Maya')} />
                   </div>
                   <div className="input-group">
-                    <label htmlFor="onb-age">Age</label>
+                    <label htmlFor="onb-age">{tr('ui.onboarding.age', 'Age')}</label>
                     <input id="onb-age" type="number" value={age} onChange={e => setAge(e.target.value)} placeholder="e.g. 28" min="10" max="120" />
                   </div>
                   <div>
-                    <label>What is your gender?</label>
-                    <p className="onb-help">This helps with baseline calorie estimation.</p>
+                    <label>{tr('ui.onboarding.whatIsYourGender', 'What is your gender?')}</label>
+                    <p className="onb-help">{tr('ui.onboarding.thisHelpsWithBaselineCalorie', 'This helps with baseline calorie estimation.')}</p>
                     <div className="onb-grid-3">
                       {['male', 'female', 'other'].map(entry => (
                         <m.button
@@ -350,8 +352,8 @@ export default function Onboarding() {
 
                   {gender === 'female' && (
                     <div className="input-group">
-                      <label>Are you currently pregnant or nursing?</label>
-                      <p className="onb-help">Important for your safety — several therapies, medicines, and poses are adjusted or excluded during this time.</p>
+                      <label>{tr('ui.onboarding.areYouCurrentlyPregnantOr', 'Are you currently pregnant or nursing?')}</label>
+                      <p className="onb-help">{tr('ui.onboarding.importantForYourSafetySeveral', 'Important for your safety — several therapies, medicines, and poses are adjusted or excluded during this time.')}</p>
                       <div className="onb-grid-2">
                         {[{ v: false, l: 'No', E: Ban }, { v: true, l: 'Yes', E: Baby }].map(opt => (
                           <m.button
@@ -377,8 +379,8 @@ export default function Onboarding() {
                       restrictive case for everyone who answered yes. */}
                   {gender === 'female' && pregnancyOrNursing && (
                     <div className="input-group">
-                      <label>Which applies to you?</label>
-                      <p className="onb-help">Nursing carries almost no restrictions on yoga. Pregnancy changes what is safe considerably, and it changes again each trimester.</p>
+                      <label>{tr('ui.onboarding.whichAppliesToYou', 'Which applies to you?')}</label>
+                      <p className="onb-help">{tr('ui.onboarding.nursingCarriesAlmostNoRestrictions', 'Nursing carries almost no restrictions on yoga. Pregnancy changes what is safe considerably, and it changes again each trimester.')}</p>
                       <div className="onb-grid-2">
                         {[{ v: 'pregnant', l: 'Pregnant' }, { v: 'nursing', l: 'Nursing' }].map(opt => (
                           <m.button
@@ -399,8 +401,8 @@ export default function Onboarding() {
 
                   {gender === 'female' && pregnancyStatus === 'pregnant' && (
                     <div className="input-group">
-                      <label>Which trimester?</label>
-                      <p className="onb-help">If you would rather not say, we will plan for the third trimester, which is the most cautious.</p>
+                      <label>{tr('ui.onboarding.whichTrimester', 'Which trimester?')}</label>
+                      <p className="onb-help">{tr('ui.onboarding.ifYouWouldRatherNot', 'If you would rather not say, we will plan for the third trimester, which is the most cautious.')}</p>
                       <div className="onb-grid-3">
                         {[{ v: '1', l: 'First' }, { v: '2', l: 'Second' }, { v: '3', l: 'Third' }].map(opt => (
                           <m.button
@@ -421,15 +423,15 @@ export default function Onboarding() {
               {/* ── STEP 1: PHYSICAL ── */}
               {step === 1 ? (
                 <div className="onb-stage">
-                  <h3 className="onb-title">Physical Stats</h3>
-                  <p className="onb-help">Used to calculate BMI and calibrate your fitness plans.</p>
+                  <h3 className="onb-title">{tr('ui.onboarding.physicalStats', 'Physical Stats')}</h3>
+                  <p className="onb-help">{tr('ui.onboarding.usedToCalculateBmiAnd', 'Used to calculate BMI and calibrate your fitness plans.')}</p>
                   <div className="onb-grid-2">
                     <div className="input-group">
-                      <label htmlFor="onb-height">Height (cm)</label>
+                      <label htmlFor="onb-height">{tr('ui.onboarding.heightCm', 'Height (cm)')}</label>
                       <input id="onb-height" type="number" value={height} onChange={e => setHeight(e.target.value)} placeholder="e.g. 168" min="50" max="300" />
                     </div>
                     <div className="input-group">
-                      <label htmlFor="onb-weight">Weight (kg)</label>
+                      <label htmlFor="onb-weight">{tr('ui.onboarding.weightKg', 'Weight (kg)')}</label>
                       <input id="onb-weight" type="number" value={weight} onChange={e => setWeight(e.target.value)} placeholder="e.g. 65" min="20" max="500" />
                     </div>
                   </div>
@@ -437,17 +439,17 @@ export default function Onboarding() {
                     <div className="onb-bmi">
                       <div className="onb-bmi-value">BMI {bmi}</div>
                       <p className="onb-bmi-note">
-                        {parseFloat(bmi) < 18.5 ? 'Underweight' : parseFloat(bmi) < 25 ? 'Healthy weight' : parseFloat(bmi) < 30 ? 'Overweight' : 'Obese'}
+                        {parseFloat(bmi) < 18.5 ? tr('ui.onboarding.underweight', 'Underweight') : parseFloat(bmi) < 25 ? tr('ui.onboarding.healthyWeight', 'Healthy weight') : parseFloat(bmi) < 30 ? tr('ui.onboarding.overweight', 'Overweight') : tr('ui.onboarding.obese', 'Obese')}
                       </p>
                     </div>
                   )}
                   <div>
-                    <label>Fitness Level</label>
+                    <label>{tr('ui.onboarding.fitnessLevel', 'Fitness Level')}</label>
                     <div className="onb-grid-3" style={{ marginTop: 8 }}>
                       {[
-                        { id: 'beginner',  label: 'Beginner',     Icon: Sprout },
-                        { id: 'intermediate', label: 'Intermediate', Icon: Dumbbell },
-                        { id: 'advanced',  label: 'Advanced',     Icon: Zap },
+                        { id: 'beginner',  label: tr('ui.onboarding.beginner', 'Beginner'),     Icon: Sprout },
+                        { id: 'intermediate', label: tr('ui.onboarding.intermediate', 'Intermediate'), Icon: Dumbbell },
+                        { id: 'advanced',  label: tr('ui.onboarding.advanced', 'Advanced'),     Icon: Zap },
                       ].map(f => (
                         <m.button
                           key={f.id} type="button"
@@ -462,18 +464,17 @@ export default function Onboarding() {
                     </div>
                   </div>
                   <div>
-                    <label>How active is your usual week?</label>
+                    <label>{tr('ui.onboarding.howActiveIsYourUsual', 'How active is your usual week?')}</label>
                     <p className="onb-field-note">
-                      Not how fit you are — how much you move. This sets your daily
-                      calorie target.
+                      {tr('ui.onboarding.notHowFitYouAre', 'Not how fit you are — how much you move. This sets your daily calorie target.')}
                     </p>
                     <div className="onb-grid-3" style={{ marginTop: 8 }}>
                       {[
-                        { id: 'sedentary',   label: 'Desk-bound',  note: 'little or no exercise' },
-                        { id: 'light',       label: 'Light',       note: '1–2 days a week' },
-                        { id: 'moderate',    label: 'Moderate',    note: '3–5 days a week' },
-                        { id: 'active',      label: 'Active',      note: '6–7 days a week' },
-                        { id: 'very_active', label: 'Very active',  note: 'physical job or twice daily' },
+                        { id: 'sedentary',   label: tr('ui.onboarding.deskBound', 'Desk-bound'),  note: tr('ui.onboarding.littleOrNoExercise', 'little or no exercise') },
+                        { id: 'light',       label: tr('ui.onboarding.light', 'Light'),       note: tr('ui.onboarding.n12DaysAWeek', '1–2 days a week') },
+                        { id: 'moderate',    label: tr('ui.onboarding.moderate', 'Moderate'),    note: tr('ui.onboarding.n35DaysAWeek', '3–5 days a week') },
+                        { id: 'active',      label: tr('ui.onboarding.active', 'Active'),      note: tr('ui.onboarding.n67DaysAWeek', '6–7 days a week') },
+                        { id: 'very_active', label: tr('ui.onboarding.veryActive', 'Very active'),  note: tr('ui.onboarding.physicalJobOrTwiceDaily', 'physical job or twice daily') },
                       ].map(a => (
                         <m.button
                           key={a.id} type="button"
@@ -488,11 +489,11 @@ export default function Onboarding() {
                     </div>
                   </div>
                   <div>
-                    <label>Medical Conditions (optional)</label>
+                    <label>{tr('ui.onboarding.medicalConditionsOptional', 'Medical Conditions (optional)')}</label>
                     <input
                       className="onb-condition-search"
                       type="text"
-                      placeholder="Search conditions…"
+                      placeholder={tr('ui.onboarding.searchConditions', 'Search conditions…')}
                       value={conditionSearch}
                       onChange={e => setConditionSearch(e.target.value)}
                     />
@@ -521,19 +522,19 @@ export default function Onboarding() {
                     })}
                     <div className="onb-other-condition">
                       <label className="onb-condition-cat-label" style={{ marginTop: 10 }}>
-                        Not listed? Add here (comma-separated)
+                        {tr('ui.onboarding.notListedAddHereComma', 'Not listed? Add here (comma-separated)')}
                       </label>
                       <input
                         className="onb-condition-search"
                         type="text"
-                        placeholder="e.g. sarcoidosis, hemophilia"
+                        placeholder={tr('ui.onboarding.eGSarcoidosisHemophilia', 'e.g. sarcoidosis, hemophilia')}
                         value={otherCondition}
                         onChange={e => setOtherCondition(e.target.value)}
                       />
                     </div>
                   </div>
                   <div>
-                    <label>Current Symptoms (optional)</label>
+                    <label>{tr('ui.onboarding.currentSymptomsOptional', 'Current Symptoms (optional)')}</label>
                     <div className="onb-chip-wrap">
                       {SYMPTOMS.map(({ id, label }) => (
                         <button
@@ -547,10 +548,9 @@ export default function Onboarding() {
                     </div>
                   </div>
                   <div>
-                    <label>Food Allergies (optional)</label>
+                    <label>{tr('ui.onboarding.foodAllergiesOptional', 'Food Allergies (optional)')}</label>
                     <p className="onb-field-note">
-                      These are withheld from every meal, remedy and recommendation we
-                      generate for you.
+                      {tr('ui.onboarding.theseAreWithheldFromEvery', 'These are withheld from every meal, remedy and recommendation we generate for you.')}
                     </p>
                     <div className="onb-chip-wrap">
                       {FOOD_ALLERGIES.map(({ id, label }) => (
@@ -565,12 +565,12 @@ export default function Onboarding() {
                     </div>
                   </div>
                   <div className="input-group">
-                    <label>How long have you followed your current diet &amp; lifestyle? (Satmya)</label>
+                    <label>{tr('ui.onboarding.howLongHaveYouFollowed', 'How long have you followed your current diet & lifestyle? (Satmya)')}</label>
                     <div className="onb-chip-wrap">
                       {[
-                        { id: 'less_than_1y', label: 'Less than 1 year' },
-                        { id: '1_to_5y', label: '1–5 years' },
-                        { id: 'over_5y', label: 'More than 5 years' },
+                        { id: 'less_than_1y', label: tr('ui.onboarding.lessThan1Year', 'Less than 1 year') },
+                        { id: '1_to_5y', label: tr('ui.onboarding.n15Years', '1–5 years') },
+                        { id: 'over_5y', label: tr('ui.onboarding.moreThan5Years', 'More than 5 years') },
                       ].map(({ id, label }) => (
                         <button key={id} type="button"
                           onClick={() => setSatmya(id)}
@@ -580,8 +580,8 @@ export default function Onboarding() {
                     </div>
                   </div>
                   <div className="input-group">
-                    <label htmlFor="onb-meds">Current Medications (comma-separated)</label>
-                    <input id="onb-meds" value={medications} onChange={e => setMedications(e.target.value)} placeholder="e.g. metformin, aspirin" />
+                    <label htmlFor="onb-meds">{tr('ui.onboarding.currentMedicationsCommaSeparated', 'Current Medications (comma-separated)')}</label>
+                    <input id="onb-meds" value={medications} onChange={e => setMedications(e.target.value)} placeholder={tr('ui.onboarding.eGMetforminAspirin', 'e.g. metformin, aspirin')} />
                   </div>
                 </div>
               ) : null}
@@ -589,9 +589,9 @@ export default function Onboarding() {
               {/* ── STEP 2: GOALS & DOSHA ── */}
               {step === 2 ? (
                 <div className="onb-stage">
-                  <h3 className="onb-title">Goals & Dosha Type</h3>
+                  <h3 className="onb-title">{tr('ui.onboarding.goalsDoshaType', 'Goals & Dosha Type')}</h3>
                   <div>
-                    <label>Primary Wellness Goal</label>
+                    <label>{tr('ui.onboarding.primaryWellnessGoal', 'Primary Wellness Goal')}</label>
                     <div className="onb-grid-2" style={{ marginTop: 10 }}>
                       {GOALS.map(g => (
                         <m.button
@@ -610,8 +610,8 @@ export default function Onboarding() {
                     </div>
                   </div>
                   <div>
-                    <label>Your Dominant Dosha — a quick start</label>
-                    <p className="onb-help">Just your best guess for now — right after this, a short Prakriti assessment confirms your true constitution, current imbalance (Vikriti), and Agni.</p>
+                    <label>{tr('ui.onboarding.yourDominantDoshaAQuick', 'Your Dominant Dosha — a quick start')}</label>
+                    <p className="onb-help">{tr('ui.onboarding.justYourBestGuessFor', 'Just your best guess for now — right after this, a short Prakriti assessment confirms your true constitution, current imbalance (Vikriti), and Agni.')}</p>
                     <div className="onb-grid-3" style={{ marginTop: 10 }}>
                       {Object.entries(DOSHA_INFO).map(([key, info]) => (
                         <m.button
@@ -631,7 +631,7 @@ export default function Onboarding() {
                     </div>
                   </div>
                   <p className="onb-help" style={{ fontSize: '0.78rem', marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    <Lock size={13} strokeWidth={2} /> We take your privacy seriously — your health data is encrypted and never sold.
+                    <Lock size={13} strokeWidth={2} />{' '}{tr('ui.onboarding.weTakeYourPrivacySeriously', 'We take your privacy seriously — your health data is encrypted and never sold.')}
                   </p>
                 </div>
               ) : null}
@@ -642,7 +642,7 @@ export default function Onboarding() {
         <div className="onb-nav">
           {step > 0 ? (
             <button type="button" className="btn btn-secondary" onClick={handleBack}>
-              Back
+              {tr('ui.onboarding.back', 'Back')}
             </button>
           ) : null}
 
@@ -652,7 +652,7 @@ export default function Onboarding() {
               className="btn btn-accent btn-full"
               onClick={handleContinue}
             >
-              Continue →
+              {tr('ui.onboarding.continue', 'Continue →')}
             </button>
           ) : (
             <button
@@ -662,17 +662,14 @@ export default function Onboarding() {
               disabled={saving}
             >
               {saving ? (
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                  <span className="spinner onb-spinner" />
-                  Building your profile…
-                </span>
-              ) : 'Complete Setup →'}
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}><Trans i18nKey="ui.onboarding.n0BuildingYourProfile" defaults={"<0/> Building your profile…"} components={[<span className="spinner onb-spinner" />]} /></span>
+              ) : tr('ui.onboarding.completeSetup', 'Complete Setup →')}
             </button>
           )}
         </div>
 
         <p className="onb-disclaimer">
-          By continuing, you agree to our Terms of Service. Ayura AI provides wellness guidance for informational purposes only and does not replace professional medical advice.
+          {tr('ui.onboarding.byContinuingYouAgreeTo', 'By continuing, you agree to our Terms of Service. Ayura AI provides wellness guidance for informational purposes only and does not replace professional medical advice.')}
         </p>
       </m.div>
     </div>

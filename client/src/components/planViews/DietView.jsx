@@ -10,6 +10,7 @@ import { MacroBar, MealLogSummary, LLMMealCard } from './diet/DietMeals'
 import { DietWeekCheckin } from './diet/DietWeekCheckin'
 import { DIET_MEAL_ICONS, DIET_DAY_LABELS, SLOT_LABEL, DIET_DAY_FULL } from './diet/dietConstants'
 
+import { tr } from '../../lib/tr'
 const PLAN_DAYS = 28
 const DAY_MS = 864e5
 
@@ -470,7 +471,7 @@ export function DietView({ plan: incomingPlan, onRegenerate, onPlanChange }) {
                         <span className="diet-ritual-k">
                           {r.slot === 'bedtime' ? t('diet.bedtimeDrink', 'Bedtime drink') : t('diet.wakeDrink', 'Wake-up drink')}
                         </span>
-                        <span>{ritualName(r)}{r.macros_approx?.calories > 0 ? ` · ${Math.round(r.macros_approx.calories)} kcal` : ''}</span>
+                        <span>{ritualName(r)}{r.macros_approx?.calories > 0 ? tr('ui.dietView.kcal', ' · {{calories}} kcal', { calories: Math.round(r.macros_approx.calories) }) : ''}</span>
                       </li>
                     ))}
                   </ul>
@@ -593,7 +594,7 @@ export function DietView({ plan: incomingPlan, onRegenerate, onPlanChange }) {
             <div className="diet-llm-portion">
               <UtensilsCrossed size={11} /> {dayData.special_drink.portion}
               {dayData.special_drink.macros_approx?.calories > 0
-                ? ` · ${Math.round(dayData.special_drink.macros_approx.calories)} kcal` : ''}
+                ? tr('ui.dietView.kcal', ' · {{calories}} kcal', { calories: Math.round(dayData.special_drink.macros_approx.calories) }) : ''}
             </div>
           )}
           {dayData.special_drink.rationale && (

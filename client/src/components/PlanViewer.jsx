@@ -13,6 +13,7 @@ import { RemedyView } from './planViews/RemedyView'
 import { MedicineView } from './planViews/MedicineView'
 import { RoutineView } from './planViews/RoutineView'
 
+import { tr } from '../lib/tr'
 const SECTION_ICONS = {
   routine_plan:     Sun,
   yoga_plan:        PersonStanding,
@@ -97,13 +98,13 @@ function ClassicalBasis({ planType }) {
       transition={{ duration: 0.4, delay: 0.35 }}
     >
       <div className="plan-classical-title">
-        <BookOpen size={14} strokeWidth={2} /> Classical basis
+        <BookOpen size={14} strokeWidth={2} />{' '}{tr('ui.planViewer.classicalBasis', 'Classical basis')}
       </div>
       <ul className="plan-classical-list">
         {refs.map((r, i) => <li key={i}>{r}</li>)}
       </ul>
       <p className="plan-classical-note">
-        Recommendations are grounded in these classical Ayurvedic texts; individual items may cite a specific shloka. Wellness guidance, not a substitute for examination by a registered Vaidya.
+        {tr('ui.planViewer.recommendationsAreGroundedInThese', 'Recommendations are grounded in these classical Ayurvedic texts; individual items may cite a specific shloka. Wellness guidance, not a substitute for examination by a registered Vaidya.')}
       </p>
     </m.div>
   )
@@ -111,7 +112,7 @@ function ClassicalBasis({ planType }) {
 
 
 export default function PlanViewer({ plan: rawPlan, planType, onRegenerate, onPlanChange }) {
-  if (!rawPlan) return <p className="plan-empty">No plan data available.</p>
+  if (!rawPlan) return <p className="plan-empty">{tr('ui.planViewer.noPlanDataAvailable', 'No plan data available.')}</p>
 
   const sectionKey = planType ? SECTION_KEY_MAP[planType] : null
 
@@ -283,7 +284,7 @@ export default function PlanViewer({ plan: rawPlan, planType, onRegenerate, onPl
         >
           <div className="plan-safety-title">
             <AlertTriangle size={16} strokeWidth={2} />
-            Important Safety & Medical Notes
+            {tr('ui.planViewer.importantSafetyMedicalNotes', 'Important Safety & Medical Notes')}
           </div>
           {plan.safety_checks?.warnings?.length > 0 && (
             <ul className="plan-safety-list">

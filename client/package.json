@@ -8,7 +8,7 @@
     "build": "vite build --configLoader native",
     "postbuild": "node scripts/prerender.mjs && node scripts/check-bundle-size.mjs",
     "check:size": "node scripts/check-bundle-size.mjs",
-    "lint": "eslint .",
+    "lint": "eslint . && node scripts/i18n-strings.mjs --check",
     "preview": "vite preview --configLoader native",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"

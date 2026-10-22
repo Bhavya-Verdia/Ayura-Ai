@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
 import { WifiOff } from 'lucide-react'
+import { tr } from '../lib/tr'
 import './OfflineBanner.css'
 
 export default function OfflineBanner() {
@@ -30,7 +31,7 @@ export default function OfflineBanner() {
           transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         >
           <WifiOff size={15} strokeWidth={2.2} />
-          <span>You&rsquo;re offline — some features may be unavailable.</span>
+          <span>{tr('ui.offlineBanner.youReOfflineSomeFeatures', 'You’re offline — some features may be unavailable.')}</span>
         </m.div>
       )}
     </AnimatePresence>

@@ -9,6 +9,8 @@ import {
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import RoutinePdfButtons from '../RoutinePdfButtons'
 
+import { tr } from '../../lib/tr'
+import { Trans } from 'react-i18next'
 // Earthy day-part palette — warm gold → herbal greens → terracotta → cool
 // evening/night tones, each hue distinct so adjacent timeline slots read apart.
 // bg/border/dot are translucent tints that work on either theme, so they stay
@@ -60,7 +62,7 @@ function RitualCard({ ritual, idx }) {
         <span className="din-ritual-name">{ritual.name}</span>
         {/* A withheld ritual carries duration 0, which `0 &&` rendered as a bare "0". */}
         {ritual.withheld
-          ? <span className="din-ritual-dur">Skipped</span>
+          ? <span className="din-ritual-dur">{tr('ui.routineView.skipped', 'Skipped')}</span>
           : ritual.duration_min > 0 && <span className="din-ritual-dur">{ritual.duration_min} min</span>}
         {open ? <ChevronUp size={13} className="din-ritual-chevron" /> : <ChevronDown size={13} className="din-ritual-chevron" />}
       </button>
@@ -87,34 +89,34 @@ function SlotTimeEditor({ slot, dayName, onSave, onCancel, busy }) {
   const [scope, setScope] = useState('every')
   const day = scope === 'day' ? dayName.toLowerCase() : null
   return (
-    <div className="din-time-editor" role="group" aria-label={`Change time for ${slot.activity}`}>
+    <div className="din-time-editor" role="group" aria-label={tr('ui.routineView.changeTimeFor', 'Change time for {{activity}}', { activity: slot.activity })}>
       <div className="din-time-editor-row">
         <input
           type="time"
           value={time}
           onChange={e => setTime(e.target.value)}
-          aria-label="New time"
+          aria-label={tr('ui.routineView.newTime', 'New time')}
           autoFocus
         />
-        <div className="din-time-scope" role="radiogroup" aria-label="Apply to">
+        <div className="din-time-scope" role="radiogroup" aria-label={tr('ui.routineView.applyTo', 'Apply to')}>
           <button type="button" role="radio" aria-checked={scope === 'every'}
-            className={scope === 'every' ? 'active' : ''} onClick={() => setScope('every')}>Every day</button>
+            className={scope === 'every' ? 'active' : ''} onClick={() => setScope('every')}>{tr('ui.routineView.everyDay', 'Every day')}</button>
           <button type="button" role="radio" aria-checked={scope === 'day'}
-            className={scope === 'day' ? 'active' : ''} onClick={() => setScope('day')}>Only {dayName}</button>
+            className={scope === 'day' ? 'active' : ''} onClick={() => setScope('day')}><Trans i18nKey="ui.routineView.only" defaults={"Only {{dayName}}"} values={{ dayName }} /></button>
         </div>
       </div>
       <div className="din-time-editor-actions">
         <button type="button" className="din-time-save" disabled={busy || !time}
-          onClick={() => onSave({ slot_id: slot.id, time, day })}>Save</button>
+          onClick={() => onSave({ slot_id: slot.id, time, day })}>{tr('ui.routineView.save', 'Save')}</button>
         {!UNSKIPPABLE.has(slot.id) && (
           <button type="button" disabled={busy}
-            onClick={() => onSave({ slot_id: slot.id, time: 'off', day })}>Leave out</button>
+            onClick={() => onSave({ slot_id: slot.id, time: 'off', day })}>{tr('ui.routineView.leaveOut', 'Leave out')}</button>
         )}
         {slot.user_set && (
           <button type="button" disabled={busy}
-            onClick={() => onSave({ slot_id: slot.id, time: null, day })}>Suggested time</button>
+            onClick={() => onSave({ slot_id: slot.id, time: null, day })}>{tr('ui.routineView.suggestedTime', 'Suggested time')}</button>
         )}
-        <button type="button" disabled={busy} onClick={onCancel}>Cancel</button>
+        <button type="button" disabled={busy} onClick={onCancel}>{tr('ui.routineView.cancel', 'Cancel')}</button>
       </div>
     </div>
   )
@@ -145,30 +147,30 @@ function ItemEditor({ item, onSubmit, onDelete, onCancel, busy }) {
       onSubmit={e => { e.preventDefault(); if (valid) onSubmit({ ...form, title: form.title.trim(), duration_minutes: Number(form.duration_minutes) }) }}
     >
       <label className="din-item-field din-item-wide">
-        <span>What</span>
+        <span>{tr('ui.routineView.what', 'What')}</span>
         <input type="text" maxLength={60} value={form.title} onChange={e => set('title', e.target.value)}
-          placeholder="e.g. Commute, School pickup, Guitar class" autoFocus />
+          placeholder={tr('ui.routineView.eGCommuteSchoolPickup', 'e.g. Commute, School pickup, Guitar class')} autoFocus />
       </label>
       <div className="din-time-editor-row">
         <label className="din-item-field">
-          <span>Start</span>
+          <span>{tr('ui.routineView.start', 'Start')}</span>
           <input type="time" value={form.time} onChange={e => set('time', e.target.value)} />
         </label>
         <label className="din-item-field">
-          <span>Minutes</span>
+          <span>{tr('ui.routineView.minutes', 'Minutes')}</span>
           <input type="number" min={5} max={600} step={5} value={form.duration_minutes}
             onChange={e => set('duration_minutes', e.target.value)} />
         </label>
         <label className="din-item-field">
-          <span>Kind</span>
+          <span>{tr('ui.routineView.kind', 'Kind')}</span>
           <select value={form.category} onChange={e => set('category', e.target.value)}>
             {ITEM_CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </label>
       </div>
-      <div className="din-item-days" role="group" aria-label="Days">
+      <div className="din-item-days" role="group" aria-label={tr('ui.routineView.days', 'Days')}>
         <button type="button" aria-pressed={form.days.length === 0}
-          className={form.days.length === 0 ? 'active' : ''} onClick={() => set('days', [])}>Every day</button>
+          className={form.days.length === 0 ? 'active' : ''} onClick={() => set('days', [])}>{tr('ui.routineView.everyDay', 'Every day')}</button>
         {WEEK.map(d => (
           <button key={d} type="button" aria-pressed={form.days.includes(d)}
             className={form.days.includes(d) ? 'active' : ''} onClick={() => toggleDay(d)}>
@@ -177,15 +179,15 @@ function ItemEditor({ item, onSubmit, onDelete, onCancel, busy }) {
         ))}
       </div>
       <label className="din-item-field din-item-wide">
-        <span>Note (optional)</span>
+        <span>{tr('ui.routineView.noteOptional', 'Note (optional)')}</span>
         <input type="text" maxLength={200} value={form.note} onChange={e => set('note', e.target.value)} />
       </label>
       <div className="din-time-editor-actions">
-        <button type="submit" className="din-time-save" disabled={busy || !valid}>{item ? 'Save' : 'Add'}</button>
+        <button type="submit" className="din-time-save" disabled={busy || !valid}>{item ? tr('ui.routineView.save', 'Save') : tr('ui.routineView.add', 'Add')}</button>
         {onDelete && (
-          <button type="button" disabled={busy} onClick={onDelete}><Trash2 size={11} aria-hidden="true" />Remove</button>
+          <button type="button" disabled={busy} onClick={onDelete}><Trash2 size={11} aria-hidden="true" />{tr('ui.routineView.remove', 'Remove')}</button>
         )}
-        <button type="button" disabled={busy} onClick={onCancel}>Cancel</button>
+        <button type="button" disabled={busy} onClick={onCancel}>{tr('ui.routineView.cancel', 'Cancel')}</button>
       </div>
     </form>
   )
@@ -230,15 +232,15 @@ function TimelineSlot({ slot, idx, dayName, onSave, onItem, busy }) {
           <span className="din-slot-activity">{slot.activity}</span>
           {slot.gym_focus && <span className="din-gym-focus-badge">{slot.gym_focus}</span>}
           {slot.custom
-            ? <span className="din-user-set-badge">Added by you</span>
-            : slot.user_set && <span className="din-user-set-badge">Your time</span>}
+            ? <span className="din-user-set-badge">{tr('ui.routineView.addedByYou', 'Added by you')}</span>
+            : slot.user_set && <span className="din-user-set-badge">{tr('ui.routineView.yourTime', 'Your time')}</span>}
           {slot.type === 'meal' && (
             <button
               type="button"
               className="din-meal-toggle"
               onClick={() => setMealOpen(o => !o)}
               aria-expanded={mealOpen}
-              aria-label={`Meal details: ${slot.activity}`}
+              aria-label={tr('ui.routineView.mealDetails', 'Meal details: {{activity}}', { activity: slot.activity })}
             >
               {mealOpen ? <ChevronUp size={12} aria-hidden="true" /> : <ChevronDown size={12} aria-hidden="true" />}
             </button>
@@ -289,7 +291,7 @@ function TimelineSlot({ slot, idx, dayName, onSave, onItem, busy }) {
         )}
         {mealOpen && slot.meal_type && (
           <div className="din-meal-expand">
-            <span className="din-meal-tag">See your Diet Plan for today's {slot.meal_type} details.</span>
+            <span className="din-meal-tag"><Trans i18nKey="ui.routineView.seeYourDietPlanFor" defaults={"See your Diet Plan for today's {{meal_type}} details."} values={{ meal_type: slot.meal_type }} /></span>
           </div>
         )}
       </div>
@@ -315,13 +317,13 @@ function MealGuidancePanel({ guidance }) {
       <div className="din-mg-cols">
         {m.favour?.length > 0 && (
           <div className="din-mg-col favour">
-            <h4 className="din-mg-col-head"><BadgeCheck size={12} />Favour</h4>
+            <h4 className="din-mg-col-head"><BadgeCheck size={12} />{tr('ui.routineView.favour', 'Favour')}</h4>
             <ul>{m.favour.map((f, i) => <li key={i}>{f}</li>)}</ul>
           </div>
         )}
         {m.avoid?.length > 0 && (
           <div className="din-mg-col avoid">
-            <h4 className="din-mg-col-head"><TriangleAlert size={12} />Avoid</h4>
+            <h4 className="din-mg-col-head"><TriangleAlert size={12} />{tr('ui.routineView.avoid', 'Avoid')}</h4>
             <ul>{m.avoid.map((f, i) => <li key={i}>{f}</li>)}</ul>
           </div>
         )}
@@ -434,7 +436,7 @@ export function RoutineView({ plan: initialPlan }) {
           identical otherwise. */}
       {adjustments.length > 0 && (
         <div className="gym-condition-guidance din-adjustments">
-          <h3><ShieldCheck size={13} />Adjusted for you</h3>
+          <h3><ShieldCheck size={13} />{tr('ui.routineView.adjustedForYou', 'Adjusted for you')}</h3>
           <ul>
             {adjustments.map((a, i) => (
               <li key={i}>{a.what && <strong>{a.what}: </strong>}{a.why}</li>
@@ -447,18 +449,18 @@ export function RoutineView({ plan: initialPlan }) {
       <m.div className="din-anchors" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
         <div className="din-anchor">
           <Sun size={14} style={{ color: '#f59e0b' }} />
-          <div><div className="din-anchor-label">Wake</div><div className="din-anchor-val">{din.wake_time}</div></div>
+          <div><div className="din-anchor-label">{tr('ui.routineView.wake', 'Wake')}</div><div className="din-anchor-val">{din.wake_time}</div></div>
         </div>
         <div className="din-anchor-sep" />
         <div className="din-anchor">
           <Moon size={14} style={{ color: '#a08cf0' }} />
-          <div><div className="din-anchor-label">Sleep</div><div className="din-anchor-val">{din.sleep_time}</div></div>
+          <div><div className="din-anchor-label">{tr('ui.routineView.sleep', 'Sleep')}</div><div className="din-anchor-val">{din.sleep_time}</div></div>
         </div>
         <div className="din-anchor-sep" />
         <div className="din-anchor">
           <Flame size={14} style={{ color: '#fb923c' }} />
           <div>
-            <div className="din-anchor-label">Agni</div>
+            <div className="din-anchor-label">{tr('ui.routineView.agni', 'Agni')}</div>
             <div className="din-anchor-val" style={{ textTransform: 'capitalize' }}>
               {(din.agni_type || din.agni_level || '').replace(/_/g, ' ')}
             </div>
@@ -472,7 +474,7 @@ export function RoutineView({ plan: initialPlan }) {
             <div className="din-anchor-sep" />
             <div className="din-anchor">
               <Star size={14} style={{ color: dcolor }} />
-              <div><div className="din-anchor-label">Avastha</div><div className="din-anchor-val" style={{ textTransform: 'capitalize' }}>{din.age_band}</div></div>
+              <div><div className="din-anchor-label">{tr('ui.routineView.avastha', 'Avastha')}</div><div className="din-anchor-val" style={{ textTransform: 'capitalize' }}>{din.age_band}</div></div>
             </div>
           </>
         )}
@@ -481,7 +483,7 @@ export function RoutineView({ plan: initialPlan }) {
             <div className="din-anchor-sep" />
             <div className="din-anchor">
               <Leaf size={14} style={{ color: '#4ade80' }} />
-              <div><div className="din-anchor-label">Season</div><div className="din-anchor-val">{seasonal.season.split(' ')[0]}</div></div>
+              <div><div className="din-anchor-label">{tr('ui.routineView.season', 'Season')}</div><div className="din-anchor-val">{seasonal.season.split(' ')[0]}</div></div>
             </div>
           </>
         )}
@@ -530,8 +532,8 @@ export function RoutineView({ plan: initialPlan }) {
             <div className="din-day-ex-label">
               <Dumbbell size={12} style={{ color: dcolor }} />
               <span>{currentDay.exercise_label}</span>
-              {currentDay.is_rest_day && <span className="din-rest-badge">Rest</span>}
-              {currentDay.is_fasting_day && <span className="din-fast-badge">Fasting</span>}
+              {currentDay.is_rest_day && <span className="din-rest-badge">{tr('ui.routineView.rest', 'Rest')}</span>}
+              {currentDay.is_fasting_day && <span className="din-fast-badge">{tr('ui.routineView.fasting', 'Fasting')}</span>}
             </div>
           )}
           {plan.weekly_theme?.[currentDay.day_name] && (
@@ -539,13 +541,13 @@ export function RoutineView({ plan: initialPlan }) {
           )}
 
           <div className="din-edit-hint">
-            <span>Tap a time to change it to fit your day.</span>
+            <span>{tr('ui.routineView.tapATimeToChange', 'Tap a time to change it to fit your day.')}</span>
             <button type="button" disabled={saving} onClick={() => setAdding(a => !a)} aria-expanded={adding}>
-              <Plus size={11} aria-hidden="true" />Add to my routine
+              <Plus size={11} aria-hidden="true" />{tr('ui.routineView.addToMyRoutine', 'Add to my routine')}
             </button>
             {hasCustomTimes && (
               <button type="button" disabled={saving} onClick={() => saveTime({ reset_all: true })}>
-                <RotateCcw size={11} aria-hidden="true" />Reset all my times
+                <RotateCcw size={11} aria-hidden="true" />{tr('ui.routineView.resetAllMyTimes', 'Reset all my times')}
               </button>
             )}
           </div>
@@ -576,7 +578,7 @@ export function RoutineView({ plan: initialPlan }) {
         <div className="din-right">
           {/* Morning rituals */}
           <div className="din-panel">
-            <h3 className="din-panel-head"><Sun size={14} style={{ color: '#f59e0b' }} />Morning Protocol</h3>
+            <h3 className="din-panel-head"><Sun size={14} style={{ color: '#f59e0b' }} />{tr('ui.routineView.morningProtocol', 'Morning Protocol')}</h3>
             <div className="din-ritual-list">
               {(din.morning_rituals || []).map((r, i) => <RitualCard key={i} ritual={r} idx={i} />)}
             </div>
@@ -585,7 +587,7 @@ export function RoutineView({ plan: initialPlan }) {
           {/* Evening rituals */}
           {(din.evening_rituals || []).length > 0 && (
             <div className="din-panel" style={{ marginTop: 16 }}>
-              <h3 className="din-panel-head"><Moon size={14} style={{ color: '#a08cf0' }} />Evening Wind-Down</h3>
+              <h3 className="din-panel-head"><Moon size={14} style={{ color: '#a08cf0' }} />{tr('ui.routineView.eveningWindDown', 'Evening Wind-Down')}</h3>
               <div className="din-ritual-list">
                 {(din.evening_rituals || []).map((r, i) => <RitualCard key={i} ritual={r} idx={i} />)}
               </div>
@@ -597,7 +599,7 @@ export function RoutineView({ plan: initialPlan }) {
       {/* ── Meal Guidance ── */}
       {Object.keys(mealGuide).length > 0 && (
         <m.div className="din-section" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <h3 className="din-section-head"><UtensilsCrossed size={14} />Dosha Meal Guidance</h3>
+          <h3 className="din-section-head"><UtensilsCrossed size={14} />{tr('ui.routineView.doshaMealGuidance', 'Dosha Meal Guidance')}</h3>
           {mealGuide.general && <p className="din-section-body">{mealGuide.general}</p>}
           {mealGuide.agni_note && <p className="din-section-body">{mealGuide.agni_note}</p>}
           <MealGuidancePanel guidance={mealGuide} />
@@ -607,24 +609,24 @@ export function RoutineView({ plan: initialPlan }) {
       {/* ── Seasonal Ritucharya ── */}
       {seasonal.season && (
         <m.div className="din-section" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <h3 className="din-section-head"><Leaf size={14} />Seasonal Ritucharya — {seasonal.season}</h3>
+          <h3 className="din-section-head"><Trans i18nKey="ui.routineView.n0SeasonalRitucharya" defaults={"<0/>Seasonal Ritucharya — {{season}}"} values={{ season: seasonal.season }} components={[<Leaf size={14} />]} /></h3>
           <div className="din-seasonal-cols">
             {seasonal.recommended_foods?.length > 0 && (
               <div className="din-seas-col">
-                <h4 className="din-seas-col-head favour"><BadgeCheck size={11} />Recommended Foods</h4>
+                <h4 className="din-seas-col-head favour"><BadgeCheck size={11} />{tr('ui.routineView.recommendedFoods', 'Recommended Foods')}</h4>
                 <ul>{seasonal.recommended_foods.map((f, i) => <li key={i}>{f}</li>)}</ul>
               </div>
             )}
             {seasonal.foods_to_avoid?.length > 0 && (
               <div className="din-seas-col">
-                <h4 className="din-seas-col-head avoid"><TriangleAlert size={11} />Avoid This Season</h4>
+                <h4 className="din-seas-col-head avoid"><TriangleAlert size={11} />{tr('ui.routineView.avoidThisSeason', 'Avoid This Season')}</h4>
                 <ul>{seasonal.foods_to_avoid.map((f, i) => <li key={i}>{f}</li>)}</ul>
               </div>
             )}
           </div>
           {seasonal.seasonal_practices?.length > 0 && (
             <div className="din-seas-practices">
-              <h4 className="din-seas-col-head" style={{ marginBottom: 8 }}><Sparkles size={11} />Seasonal Practices</h4>
+              <h4 className="din-seas-col-head" style={{ marginBottom: 8 }}><Sparkles size={11} />{tr('ui.routineView.seasonalPractices', 'Seasonal Practices')}</h4>
               <div className="din-seas-practice-grid">
                 {seasonal.seasonal_practices.map((p, i) => (
                   <div key={i} className="din-seas-practice-chip"><ArrowRight size={10} />{p}</div>
@@ -639,14 +641,12 @@ export function RoutineView({ plan: initialPlan }) {
           rendered nowhere. */}
       {coaching.length > 0 && (
         <m.div className="din-section" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <h3 className="din-section-head"><BookOpen size={14} />Why This Routine</h3>
+          <h3 className="din-section-head"><BookOpen size={14} />{tr('ui.routineView.whyThisRoutine', 'Why This Routine')}</h3>
           {coaching.map((c, i) => <p key={i} className="din-section-body">{c}</p>)}
           {plan.coaching_withheld?.length > 0 && (
-            <p className="din-coaching-withheld">
-              {plan.coaching_withheld.length === 1 ? 'One sentence' : `${plan.coaching_withheld.length} sentences`} of
-              the AI coaching {plan.coaching_withheld.length === 1 ? 'was' : 'were'} held back because {plan.coaching_withheld.length === 1 ? 'it' : 'they'} recommended
-              something this routine leaves out for you.
-            </p>
+            <p className="din-coaching-withheld">{plan.coaching_withheld.length === 1
+              ? tr('ui.routineView.coachingHeldOne', 'One sentence of the AI coaching was held back because it recommended something this routine leaves out for you.')
+              : tr('ui.routineView.coachingHeldMany', '{{count}} sentences of the AI coaching were held back because they recommended something this routine leaves out for you.', { count: plan.coaching_withheld.length })}</p>
           )}
         </m.div>
       )}

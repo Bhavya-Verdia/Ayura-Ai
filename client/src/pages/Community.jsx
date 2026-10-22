@@ -9,6 +9,8 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../providers/AuthContext'
 import { SkeletonCircle, SkeletonLine } from '../components/Skeleton'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './Community.css'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -28,14 +30,14 @@ const DOSHA_COLORS = [
 ]
 
 const WELLNESS_TAGS = [
-  { keyword: /yoga|pranayam|stretch|breath/i, label: 'Yoga', Icon: Flower2, color: 'var(--primary)' },
-  { keyword: /diet|nutrition|food|eat|meal|recipe/i, label: 'Nutrition', Icon: Salad, color: 'var(--accent)' },
-  { keyword: /meditat|mindful|calm|peace|zen/i, label: 'Mindfulness', Icon: Brain, color: '#a08cf0' },
-  { keyword: /sleep|rest|recover|insomn/i, label: 'Sleep', Icon: Moon, color: '#60A5FA' },
-  { keyword: /remedy|herb|ayurved|detox|cleanse/i, label: 'Ayurveda', Icon: Leaf, color: 'var(--sage)' },
-  { keyword: /gym|workout|exercise|fitness|run|cardio/i, label: 'Fitness', Icon: Dumbbell, color: 'var(--rose)' },
-  { keyword: /stress|anxiety|relax|mood/i, label: 'Wellness', Icon: Sparkles, color: '#e6a23c' },
-  { keyword: /water|hydrat/i, label: 'Hydration', Icon: Droplets, color: '#38BDF8' },
+  { keyword: /yoga|pranayam|stretch|breath/i, get label() { return tr('ui.community.yoga', 'Yoga') }, Icon: Flower2, color: 'var(--primary)' },
+  { keyword: /diet|nutrition|food|eat|meal|recipe/i, get label() { return tr('ui.community.nutrition', 'Nutrition') }, Icon: Salad, color: 'var(--accent)' },
+  { keyword: /meditat|mindful|calm|peace|zen/i, get label() { return tr('ui.community.mindfulness', 'Mindfulness') }, Icon: Brain, color: '#a08cf0' },
+  { keyword: /sleep|rest|recover|insomn/i, get label() { return tr('ui.community.sleep', 'Sleep') }, Icon: Moon, color: '#60A5FA' },
+  { keyword: /remedy|herb|ayurved|detox|cleanse/i, get label() { return tr('ui.community.ayurveda', 'Ayurveda') }, Icon: Leaf, color: 'var(--sage)' },
+  { keyword: /gym|workout|exercise|fitness|run|cardio/i, get label() { return tr('ui.community.fitness', 'Fitness') }, Icon: Dumbbell, color: 'var(--rose)' },
+  { keyword: /stress|anxiety|relax|mood/i, get label() { return tr('ui.community.wellness', 'Wellness') }, Icon: Sparkles, color: '#e6a23c' },
+  { keyword: /water|hydrat/i, get label() { return tr('ui.community.hydration', 'Hydration') }, Icon: Droplets, color: '#38BDF8' },
 ]
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -146,7 +148,7 @@ function CommentsSection({ postId, initialCount }) {
   return (
     <div className="comm-comments">
       <button className="comm-comments-toggle" onClick={toggle} aria-expanded={open} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-        <MessageCircle size={15} strokeWidth={2} /> {count} comment{count !== 1 ? 's' : ''}
+        <MessageCircle size={15} strokeWidth={2} /> {count === 1 ? tr('ui.community.commentsOne', '1 comment') : tr('ui.community.commentsMany', '{{count}} comments', { count })}
       </button>
       <AnimatePresence>
         {open && (
@@ -158,7 +160,7 @@ function CommentsSection({ postId, initialCount }) {
             transition={{ duration: 0.25 }}
           >
             {loading ? (
-              <div className="comm-comments-loading">Loading…</div>
+              <div className="comm-comments-loading">{tr('ui.community.loading', 'Loading…')}</div>
             ) : (
               <>
                 {(comments || []).map(c => (
@@ -166,12 +168,12 @@ function CommentsSection({ postId, initialCount }) {
                     <span className="comm-comment-author">{c.author_name}</span>
                     <span className="comm-comment-text">{c.content}</span>
                     {c.is_mine && (
-                      <button className="comm-comment-del" onClick={() => remove(c.id)} aria-label="Delete comment"><X size={13} strokeWidth={2} /></button>
+                      <button className="comm-comment-del" onClick={() => remove(c.id)} aria-label={tr('ui.community.deleteComment', 'Delete comment')}><X size={13} strokeWidth={2} /></button>
                     )}
                   </div>
                 ))}
                 {comments && comments.length === 0 && (
-                  <div className="comm-comments-empty">No comments yet — be the first.</div>
+                  <div className="comm-comments-empty">{tr('ui.community.noCommentsYetBeThe', 'No comments yet — be the first.')}</div>
                 )}
               </>
             )}
@@ -180,11 +182,11 @@ function CommentsSection({ postId, initialCount }) {
               <input
                 value={draft}
                 onChange={e => setDraft(e.target.value)}
-                placeholder="Add a supportive comment…"
+                placeholder={tr('ui.community.addASupportiveComment', 'Add a supportive comment…')}
                 maxLength={400}
               />
               <button type="submit" className="btn btn-secondary btn-sm" disabled={!draft.trim() || posting}>
-                {posting ? '…' : 'Post'}
+                {posting ? '…' : tr('ui.community.post', 'Post')}
               </button>
             </form>
           </m.div>
@@ -208,7 +210,7 @@ function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) 
   }
 
   const handleDelete = () => {
-    if (window.confirm('Delete this post? This action cannot be undone.')) {
+    if (window.confirm(tr('ui.community.deleteThisPostThisAction', 'Delete this post? This action cannot be undone.'))) {
       onDelete(post.id)
     }
   }
@@ -247,8 +249,8 @@ function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) 
           <button
             className="comm-post-delete-btn"
             onClick={handleDelete}
-            title="Delete post"
-            aria-label="Delete post"
+            title={tr('ui.community.deletePost', 'Delete post')}
+            aria-label={tr('ui.community.deletePost', 'Delete post')}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="3 6 5 6 21 6" />
@@ -262,8 +264,8 @@ function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) 
             className="comm-post-delete-btn"
             onClick={handleReport}
             disabled={post.reported_by_me}
-            title={post.reported_by_me ? 'Reported' : 'Report post'}
-            aria-label={post.reported_by_me ? 'Already reported' : 'Report post'}
+            title={post.reported_by_me ? tr('ui.community.reported', 'Reported') : tr('ui.community.reportPost', 'Report post')}
+            aria-label={post.reported_by_me ? tr('ui.community.alreadyReported', 'Already reported') : tr('ui.community.reportPost', 'Report post')}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill={post.reported_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
@@ -292,7 +294,7 @@ function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) 
         <button
           className={`comm-like-btn${post.liked_by_me ? ' liked' : ''}${likeAnimating ? ' pulse' : ''}`}
           onClick={handleLike}
-          aria-label={post.liked_by_me ? 'Unlike post' : 'Like post'}
+          aria-label={post.liked_by_me ? tr('ui.community.unlikePost', 'Unlike post') : tr('ui.community.likePost', 'Like post')}
         >
           <svg
             className="comm-heart-icon"
@@ -483,7 +485,7 @@ export default function Community() {
   })
 
   const handleReport = (postId) => {
-    if (window.confirm('Report this post to moderators? Posts flagged by several members are hidden pending review.')) {
+    if (window.confirm(tr('ui.community.reportThisPostToModerators', 'Report this post to moderators? Posts flagged by several members are hidden pending review.'))) {
       reportMutation.mutate(postId)
     }
   }
@@ -496,7 +498,7 @@ export default function Community() {
   return (
     <>
       <Helmet>
-        <title>Community — Ayura AI</title>
+        <title>{tr('ui.community.communityAyuraAi', 'Community — Ayura AI')}</title>
         <meta name="description" content="Connect with the Ayura wellness community. Share your journey, remedies, and tips." />
       </Helmet>
 
@@ -517,11 +519,9 @@ export default function Community() {
             <div className="comm-header-left">
               <div className="comm-header-icon"><Leaf size={22} strokeWidth={2} /></div>
               <div>
-                <h1 className="comm-title">
-                  Wellness <span className="gradient-text">Community</span>
-                </h1>
+                <h1 className="comm-title"><Trans i18nKey="ui.community.wellness0Community0" defaults={"Wellness <0>Community</0>"} components={[<span className="gradient-text" />]} /></h1>
                 <p className="comm-subtitle">
-                  Share your journey, remedies &amp; healing stories
+                  {tr('ui.community.shareYourJourneyRemediesHealing', 'Share your journey, remedies & healing stories')}
                 </p>
               </div>
             </div>
@@ -547,16 +547,14 @@ export default function Community() {
               >
                 {getInitials(user?.name || '')}
               </div>
-              <span className="comm-create-prompt">
-                What's on your wellness mind, <strong>{user?.name?.split(' ')[0] || 'friend'}</strong>?
-              </span>
+              <span className="comm-create-prompt"><Trans i18nKey="ui.community.whatSOnYourWellness" defaults={"What's on your wellness mind, <0>{{value}}</0>?"} values={{ value: user?.name?.split(' ')[0] || 'friend' }} components={[<strong />]} /></span>
             </div>
 
             <div className="comm-textarea-wrap">
               <textarea
                 ref={textareaRef}
                 className="comm-textarea"
-                placeholder="Share a remedy, yoga tip, mindfulness insight, or wellness win… (Ctrl+Enter to post)"
+                placeholder={tr('ui.community.shareARemedyYogaTip', 'Share a remedy, yoga tip, mindfulness insight, or wellness win… (Ctrl+Enter to post)')}
                 value={newContent}
                 onChange={(e) => {
                   setNewContent(e.target.value)
@@ -565,7 +563,7 @@ export default function Community() {
                 onKeyDown={handleKeyDown}
                 rows={4}
                 maxLength={MAX_CHARS + 50}
-                aria-label="New post content"
+                aria-label={tr('ui.community.newPostContent', 'New post content')}
               />
               <div className={`comm-char-counter${charOverLimit ? ' over' : charNearLimit ? ' warn' : ''}`}>
                 {charCount}/{MAX_CHARS}
@@ -587,9 +585,9 @@ export default function Community() {
 
             <div className="comm-create-footer">
               <div className="comm-create-tips">
-                <span className="comm-tip-pill"><Flower2 size={12} strokeWidth={2} /> Yoga</span>
-                <span className="comm-tip-pill"><Leaf size={12} strokeWidth={2} /> Remedies</span>
-                <span className="comm-tip-pill"><Lightbulb size={12} strokeWidth={2} /> Tips</span>
+                <span className="comm-tip-pill"><Flower2 size={12} strokeWidth={2} />{' '}{tr('ui.community.yoga', 'Yoga')}</span>
+                <span className="comm-tip-pill"><Leaf size={12} strokeWidth={2} />{' '}{tr('ui.community.remedies', 'Remedies')}</span>
+                <span className="comm-tip-pill"><Lightbulb size={12} strokeWidth={2} />{' '}{tr('ui.community.tips', 'Tips')}</span>
               </div>
               <button
                 className="comm-post-btn"
@@ -599,7 +597,7 @@ export default function Community() {
                 {posting ? (
                   <>
                     <span className="spinner" style={{ width: '14px', height: '14px', borderWidth: '2px', borderTopColor: '#fff' }} />
-                    Posting…
+                    {tr('ui.community.posting', 'Posting…')}
                   </>
                 ) : (
                   <>
@@ -607,7 +605,7 @@ export default function Community() {
                       <line x1="22" y1="2" x2="11" y2="13" />
                       <polygon points="22 2 15 22 11 13 2 9 22 2" />
                     </svg>
-                    Share
+                    {tr('ui.community.share', 'Share')}
                   </>
                 )}
               </button>
@@ -630,9 +628,9 @@ export default function Community() {
                 transition={{ duration: 0.4 }}
               >
                 <div className="comm-empty-icon"><Sprout size={30} strokeWidth={1.8} /></div>
-                <h2 className="comm-empty-title">Be the first to share your wellness journey!</h2>
+                <h2 className="comm-empty-title">{tr('ui.community.beTheFirstToShare', 'Be the first to share your wellness journey!')}</h2>
                 <p className="comm-empty-sub">
-                  The community is waiting. Share a remedy, yoga tip, or healing experience above.
+                  {tr('ui.community.theCommunityIsWaitingShare', 'The community is waiting. Share a remedy, yoga tip, or healing experience above.')}
                 </p>
               </m.div>
             ) : (
@@ -667,10 +665,10 @@ export default function Community() {
                   {isFetchingNextPage ? (
                     <>
                       <span className="spinner" style={{ width: '14px', height: '14px', borderWidth: '2px' }} />
-                      Loading…
+                      {tr('ui.community.loading', 'Loading…')}
                     </>
                   ) : (
-                    'Load more posts ↓'
+                    tr('ui.community.loadMorePosts', 'Load more posts ↓')
                   )}
                 </button>
               </m.div>
@@ -678,7 +676,7 @@ export default function Community() {
 
             {!loading && !hasNextPage && posts.length > 0 && (
               <div className="comm-end-of-feed">
-                <span>✦ You've reached the end of the feed ✦</span>
+                <span>{tr('ui.community.youVeReachedTheEnd', '✦ You\'ve reached the end of the feed ✦')}</span>
               </div>
             )}
           </div>

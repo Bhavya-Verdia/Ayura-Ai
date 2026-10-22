@@ -1,3 +1,5 @@
+import { tr } from '../lib/tr'
+
 export function SkeletonLine({ width = '100%', height = '14px', style = {} }) {
   return (
     <div
@@ -50,7 +52,7 @@ function SkeletonHeroCard() {
 
 export function SkeletonDashboard() {
   return (
-    <div className="dash-content" aria-busy="true" aria-label="Loading dashboard">
+    <div className="dash-content" aria-busy="true" aria-label={tr('ui.skeleton.loadingDashboard', 'Loading dashboard')}>
       <SkeletonHeroCard />
       <div style={{ height: 16 }} />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
@@ -74,7 +76,7 @@ function SkeletonChatBubble({ isUser = false }) {
 
 export function SkeletonChat() {
   return (
-    <div className="chat-canvas" aria-busy="true" aria-label="Loading chat">
+    <div className="chat-canvas" aria-busy="true" aria-label={tr('ui.skeleton.loadingChat', 'Loading chat')}>
       <div className="chat-history" style={{ gap: 20, display: 'flex', flexDirection: 'column', padding: 24 }}>
         <SkeletonChatBubble />
         <SkeletonChatBubble isUser />

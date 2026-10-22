@@ -8,13 +8,14 @@ import { Search, Leaf, Zap, TriangleAlert, ScrollText } from 'lucide-react'
 import React from 'react'
 import { CONDITION_CATEGORIES, conditionLabel } from '../constants/conditions'
 import { track, trackSync, EVENTS } from '../lib/analytics'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import './DoshaQuiz.css'
 import { TRAIT_QUESTIONS, SYMPTOM_CLUSTERS, CLARIFY_QUESTIONS, MANASA_TRAIT_IDS, localiseQuestions, localiseSymptoms } from './doshaQuiz/questions'
 import { DOSHA_COLORS, DOSHA_LABELS, DOSHA_ICONS, DOSHA_GUNAS, CHARAKA_REFS, CLASSICAL_TYPE_DISPLAY, AMA_COLORS } from './doshaQuiz/doshaDisplay'
 import { SpectrumSection, TraitBreakdown } from './doshaQuiz/ResultParts'
 import TongueUploader from './doshaQuiz/TongueUploader'
 
+import { tr } from '../lib/tr'
 const LazyParticleField = React.lazy(() => import('../components/ParticleField'))
 
 // ── Option ordering ───────────────────────────────────────────────────────────
@@ -466,7 +467,7 @@ export default function DoshaQuiz() {
     const allAnswered = clarifyQuestions.every(q => clarifyAnswers[q.id])
     return (
       <div className="da-root">
-        <Helmet><title>Clarify Your Profile | Ayura AI</title></Helmet>
+        <Helmet><title>{tr('ui.doshaQuiz.clarifyYourProfileAyuraAi', 'Clarify Your Profile | Ayura AI')}</title></Helmet>
         <div className="da-orb da-orb-a" />
         <div className="da-orb da-orb-b" />
         <m.div
@@ -477,9 +478,9 @@ export default function DoshaQuiz() {
         >
           <div className="da-clarify-header">
             <span className="da-clarify-icon"><Search size={18} strokeWidth={2} /></span>
-            <h1 className="da-clarify-title">A couple of follow-up questions</h1>
+            <h1 className="da-clarify-title">{tr('ui.doshaQuiz.aCoupleOfFollowUp', 'A couple of follow-up questions')}</h1>
             <p className="da-clarify-sub">
-              Your physical and mental signals show some contrast — these two questions help us resolve the pattern accurately.
+              {tr('ui.doshaQuiz.yourPhysicalAndMentalSignals', 'Your physical and mental signals show some contrast — these two questions help us resolve the pattern accurately.')}
             </p>
           </div>
 
@@ -540,14 +541,14 @@ export default function DoshaQuiz() {
               }}
               whileTap={{ scale: 0.97 }}
             >
-              Continue →
+              {tr('ui.doshaQuiz.continue', 'Continue →')}
             </m.button>
             <m.button
               className="btn btn-secondary"
               onClick={() => setPhase('confirm')}
               whileTap={{ scale: 0.97 }}
             >
-              Skip — use initial result
+              {tr('ui.doshaQuiz.skipUseInitialResult', 'Skip — use initial result')}
             </m.button>
           </div>
         </m.div>
@@ -559,7 +560,7 @@ export default function DoshaQuiz() {
   if (phase === 'loading') {
     return (
       <div className="da-root">
-        <Helmet><title>Analyzing Your Dosha | Ayura AI</title></Helmet>
+        <Helmet><title>{tr('ui.doshaQuiz.analyzingYourDoshaAyuraAi', 'Analyzing Your Dosha | Ayura AI')}</title></Helmet>
         <Suspense fallback={null}><LazyParticleField count={30} spread={18} style={{ opacity: 0.2 }} /></Suspense>
         <div className="da-shell da-shell-loading">
           <div className="da-loading-orb">
@@ -579,7 +580,7 @@ export default function DoshaQuiz() {
               {LOADING_STEPS[loadingStep]}
             </m.p>
           </AnimatePresence>
-          <p className="da-loading-sub">Scoring your constitution with a deterministic Ashtavidha Pareeksha engine — AI writes the explanation.</p>
+          <p className="da-loading-sub">{tr('ui.doshaQuiz.scoringYourConstitutionWithA', 'Scoring your constitution with a deterministic Ashtavidha Pareeksha engine — AI writes the explanation.')}</p>
         </div>
       </div>
     )
@@ -593,7 +594,7 @@ export default function DoshaQuiz() {
 
     return (
       <div className="da-root">
-        <Helmet><title>Confirm Your Results | Ayura AI</title></Helmet>
+        <Helmet><title>{tr('ui.doshaQuiz.confirmYourResultsAyuraAi', 'Confirm Your Results | Ayura AI')}</title></Helmet>
         <div className="da-orb da-orb-a" />
         <Suspense fallback={null}><LazyParticleField count={30} spread={18} style={{ opacity: 0.2 }} /></Suspense>
         <m.div
@@ -604,14 +605,12 @@ export default function DoshaQuiz() {
         >
           <div className="da-confirm-header">
             <span className="da-confirm-icon"><Leaf size={20} strokeWidth={2} /></span>
-            <h1 className="da-confirm-title">Your Vaidya Assessment</h1>
-            <p className="da-confirm-sub">
-              Based on your {TRAIT_QUESTIONS.length} constitutional traits (Shareera + Manas Prakriti) and current symptoms:
-            </p>
+            <h1 className="da-confirm-title">{tr('ui.doshaQuiz.yourVaidyaAssessment', 'Your Vaidya Assessment')}</h1>
+            <p className="da-confirm-sub"><Trans i18nKey="ui.doshaQuiz.basedOnYourConstitutionalTraits" defaults={"Based on your {{length}} constitutional traits (Shareera + Manas Prakriti) and current symptoms:"} values={{ length: TRAIT_QUESTIONS.length }} /></p>
           </div>
 
           <div className="da-confirm-constitution">
-            <span style={{ opacity: 0.7, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Constitution</span>
+            <span style={{ opacity: 0.7, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{tr('ui.doshaQuiz.constitution', 'Constitution')}</span>
             <strong style={{ fontSize: '1.1rem' }}>
               {constitutionType.replace(/_/g, '–').replace(/\b\w/g, (c) => c.toUpperCase())}
             </strong>
@@ -623,7 +622,7 @@ export default function DoshaQuiz() {
                 {(() => { const DI = DOSHA_ICONS[vikritiDominant]; return DI ? <DI size={22} strokeWidth={2} /> : null })()}
               </span>
               <div>
-                <span style={{ opacity: 0.7, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Primary imbalance right now</span>
+                <span style={{ opacity: 0.7, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{tr('ui.doshaQuiz.primaryImbalanceRightNow', 'Primary imbalance right now')}</span>
                 <strong style={{ display: 'block', color: DOSHA_COLORS[vikritiDominant], fontSize: '1.05rem' }}>
                   {DOSHA_LABELS[vikritiDominant]} excess
                 </strong>
@@ -633,7 +632,7 @@ export default function DoshaQuiz() {
 
           {keySignals.length > 0 && (
             <div className="da-confirm-signals">
-              <span className="da-confirm-signals-label">Tap to dismiss signals that don't apply to you</span>
+              <span className="da-confirm-signals-label">{tr('ui.doshaQuiz.tapToDismissSignalsThat', 'Tap to dismiss signals that don\'t apply to you')}</span>
               <div className="da-confirm-chips">
                 {keySignals.slice(0, 6).map((sig, i) => {
                   const rejected = rejectedSignals.includes(sig)
@@ -655,9 +654,9 @@ export default function DoshaQuiz() {
                 })}
               </div>
               {rejectedSignals.length > 0 && (
-                <p className="da-confirm-adjust-note">
-                  {rejectedSignals.length} signal{rejectedSignals.length > 1 ? 's' : ''} dismissed — scores will adjust when you confirm.
-                </p>
+                <p className="da-confirm-adjust-note">{rejectedSignals.length === 1
+                  ? tr('ui.doshaQuiz.signalsDismissedOne', '1 signal dismissed — scores will adjust when you confirm.')
+                  : tr('ui.doshaQuiz.signalsDismissedMany', '{{count}} signals dismissed — scores will adjust when you confirm.', { count: rejectedSignals.length })}</p>
               )}
             </div>
           )}
@@ -691,14 +690,14 @@ export default function DoshaQuiz() {
               }}
               whileTap={{ scale: 0.97 }}
             >
-              Yes, this looks right →
+              {tr('ui.doshaQuiz.yesThisLooksRight', 'Yes, this looks right →')}
             </m.button>
             <m.button
               className="btn btn-secondary"
               onClick={retake}
               whileTap={{ scale: 0.97 }}
             >
-              Not quite — retake
+              {tr('ui.doshaQuiz.notQuiteRetake', 'Not quite — retake')}
             </m.button>
           </div>
         </m.div>
@@ -728,7 +727,7 @@ export default function DoshaQuiz() {
 
     return (
       <div className="da-root">
-        <Helmet><title>Your Ayurvedic Profile | Ayura AI</title></Helmet>
+        <Helmet><title>{tr('ui.doshaQuiz.yourAyurvedicProfileAyuraAi', 'Your Ayurvedic Profile | Ayura AI')}</title></Helmet>
         <div className="da-orb da-orb-a" />
         <div className="da-orb da-orb-b" />
         <Suspense fallback={null}><LazyParticleField count={40} spread={18} style={{ opacity: 0.25 }} /></Suspense>
@@ -743,16 +742,12 @@ export default function DoshaQuiz() {
               so saying "set for life" here would be wrong — the retake below will
               genuinely recompute it. */}
           {user?.prakriti_recompute_available ? (
-            <div className="da-prakriti-lock-notice da-prakriti-recompute-notice">
-              <strong>We've corrected how constitutions are scored.</strong> Your Prakriti was calculated with an earlier version that could overstate a secondary dosha. Retaking the assessment will recalculate it — normally Prakriti is fixed for life, so this is a one-time update.
-            </div>
+            <div className="da-prakriti-lock-notice da-prakriti-recompute-notice"><Trans i18nKey="ui.doshaQuiz.n0WeVeCorrectedHow" defaults={"<0>We've corrected how constitutions are scored.</0> Your Prakriti was calculated with an earlier version that could overstate a secondary dosha. Retaking the assessment will recalculate it — normally Prakriti is fixed for life, so this is a one-time update."} components={[<strong />]} /></div>
           ) : user?.prakriti_locked && (
-            <div className="da-prakriti-lock-notice">
-              <strong>Prakriti already determined.</strong> Your constitutional type is set for life — only your Vikriti (current imbalance) has been updated from this session.
-            </div>
+            <div className="da-prakriti-lock-notice"><Trans i18nKey="ui.doshaQuiz.n0PrakritiAlreadyDetermined0" defaults={"<0>Prakriti already determined.</0> Your constitutional type is set for life — only your Vikriti (current imbalance) has been updated from this session."} components={[<strong />]} /></div>
           )}
           <div className="da-result-header">
-            <h1 className="da-result-title">Your Ayurvedic Profile</h1>
+            <h1 className="da-result-title">{tr('ui.doshaQuiz.yourAyurvedicProfile', 'Your Ayurvedic Profile')}</h1>
             <span className="da-constitution-badge">
               {CLASSICAL_TYPE_DISPLAY[result.prakriti_classical_type || constitutionType] ||
                constitutionType.replace(/_/g, '-').replace(/\b\w/g, c => c.toUpperCase()) + ' Prakriti'}
@@ -761,14 +756,14 @@ export default function DoshaQuiz() {
 
           <div className="da-result-dual">
             <SpectrumSection
-              title="Constitution (Prakriti)"
+              title={tr('ui.doshaQuiz.constitutionPrakriti', 'Constitution (Prakriti)')}
               scores={prakriti}
               highlightDominant={false}
               capped
               footnote="A relative weighting across the three doshas, not a percentage of you — everyone carries all three. A self-assessment can't justify a reading above 55, so that's the top of this scale."
             />
             <SpectrumSection
-              title="Current Imbalance (Vikriti)"
+              title={tr('ui.doshaQuiz.currentImbalanceVikriti', 'Current Imbalance (Vikriti)')}
               scores={vikriti}
               highlightDominant={true}
             />
@@ -784,13 +779,13 @@ export default function DoshaQuiz() {
             if (!gunas.length) return null
             return (
               <div className="da-guna-profile">
-                <span className="da-guna-title">Your Dominant Gunas (Qualities)</span>
+                <span className="da-guna-title">{tr('ui.doshaQuiz.yourDominantGunasQualities', 'Your Dominant Gunas (Qualities)')}</span>
                 <div className="da-guna-tags">
                   {gunas.map((g, i) => (
                     <span key={i} className="da-guna-tag">{g}</span>
                   ))}
                 </div>
-                <span className="da-guna-ref">Per Charaka Sutrasthana 1.59–61 (Vimshatika Guna)</span>
+                <span className="da-guna-ref">{tr('ui.doshaQuiz.perCharakaSutrasthana159', 'Per Charaka Sutrasthana 1.59–61 (Vimshatika Guna)')}</span>
               </div>
             )
           })()}
@@ -798,11 +793,9 @@ export default function DoshaQuiz() {
           {/* ── Manas Prakriti ─────────────────────────────────── */}
           {result.manasa_prakriti && typeof result.manasa_prakriti === 'object' ? (
             <div className="da-manas-box">
-              <span className="da-manas-label">Manasa Prakriti — Triguna Balance</span>
-              <span className="da-manas-ref">Charaka Samhita Shareera Sthana 4 — Triguna Prakriti</span>
-              <div className="da-manas-guna-badge" style={{ color: DOSHA_COLORS[result.manasa_prakriti.dominant_guna] }}>
-                {result.manasa_prakriti.label} ({result.manasa_prakriti.dominant_guna?.charAt(0).toUpperCase() + result.manasa_prakriti.dominant_guna?.slice(1)} dominant)
-              </div>
+              <span className="da-manas-label">{tr('ui.doshaQuiz.manasaPrakritiTrigunaBalance', 'Manasa Prakriti — Triguna Balance')}</span>
+              <span className="da-manas-ref">{tr('ui.doshaQuiz.charakaSamhitaShareeraSthana4', 'Charaka Samhita Shareera Sthana 4 — Triguna Prakriti')}</span>
+              <div className="da-manas-guna-badge" style={{ color: DOSHA_COLORS[result.manasa_prakriti.dominant_guna] }}><Trans i18nKey="ui.doshaQuiz.dominant" defaults={"{{label}} ({{value}} dominant)"} values={{ label: result.manasa_prakriti.label, value: result.manasa_prakriti.dominant_guna?.charAt(0).toUpperCase() + result.manasa_prakriti.dominant_guna?.slice(1) }} /></div>
               {['satva', 'rajas', 'tamas'].map(guna => (
                 <div key={guna} className="da-dosha-bar-row">
                   <span className="da-dosha-bar-label" style={{ color: DOSHA_COLORS[guna] }}>
@@ -824,7 +817,7 @@ export default function DoshaQuiz() {
             </div>
           ) : result.manas_prakriti ? (
             <div className="da-manas-box">
-              <span className="da-manas-label">Manas Prakriti (Mental Constitution)</span>
+              <span className="da-manas-label">{tr('ui.doshaQuiz.manasPrakritiMentalConstitution', 'Manas Prakriti (Mental Constitution)')}</span>
               <p className="da-manas-text">{result.manas_prakriti}</p>
             </div>
           ) : null}
@@ -832,7 +825,7 @@ export default function DoshaQuiz() {
           {/* ── Ama Score ─────────────────────────────────────────── */}
           {result.ama_indicator && result.ama_indicator !== 'none' && (
             <div className="da-ama-row">
-              <span className="da-ama-label">Ama Level</span>
+              <span className="da-ama-label">{tr('ui.doshaQuiz.amaLevel', 'Ama Level')}</span>
               <span
                 className="da-ama-badge"
                 style={{ color: AMA_COLORS[result.ama_indicator] || AMA_COLORS.mild }}
@@ -841,10 +834,10 @@ export default function DoshaQuiz() {
               </span>
               <span className="da-ama-hint">
                 {result.ama_indicator === 'high'
-                  ? '— Digestive toxins significantly indicated. Prioritise Agni kindling and light diet.'
+                  ? tr('ui.doshaQuiz.digestiveToxinsSignificantlyIndicatedPri', '— Digestive toxins significantly indicated. Prioritise Agni kindling and light diet.')
                   : result.ama_indicator === 'moderate'
-                  ? '— Some Ama accumulation. Support digestion and avoid heavy foods.'
-                  : '— Mild Ama present. Monitor with weekly check-ins.'}
+                  ? tr('ui.doshaQuiz.someAmaAccumulationSupportDigestion', '— Some Ama accumulation. Support digestion and avoid heavy foods.')
+                  : tr('ui.doshaQuiz.mildAmaPresentMonitorWith', '— Mild Ama present. Monitor with weekly check-ins.')}
               </span>
             </div>
           )}
@@ -853,9 +846,9 @@ export default function DoshaQuiz() {
             <div className="da-contradiction-note">
               <span className="da-contradiction-icon"><Zap size={16} strokeWidth={2} /></span>
               <div>
-                <strong>Mixed signals detected</strong>
+                <strong>{tr('ui.doshaQuiz.mixedSignalsDetected', 'Mixed signals detected')}</strong>
                 <p>{result.dosha_contradictions[0]}</p>
-                <p className="da-contradiction-hint">Weekly check-ins will resolve this over time as more data accumulates.</p>
+                <p className="da-contradiction-hint">{tr('ui.doshaQuiz.weeklyCheckInsWillResolve', 'Weekly check-ins will resolve this over time as more data accumulates.')}</p>
               </div>
             </div>
           )}
@@ -863,7 +856,7 @@ export default function DoshaQuiz() {
           {vikritiDominant && (
             <div className="da-vikriti-note" style={{ borderColor: DOSHA_COLORS[vikritiDominant] }}>
               <span className="da-vikriti-icon" style={{ color: DOSHA_COLORS[vikritiDominant], display: 'inline-flex' }}><TriangleAlert size={16} strokeWidth={2} /></span>
-              <span>Your current <strong style={{ color: DOSHA_COLORS[vikritiDominant] }}>{DOSHA_LABELS[vikritiDominant]}</strong> imbalance is the primary focus for your wellness plans.</span>
+              <span><Trans i18nKey="ui.doshaQuiz.yourCurrent00Imbalance" defaults={"Your current <0>{{vikritiDominant}}</0> imbalance is the primary focus for your wellness plans."} values={{ vikritiDominant: DOSHA_LABELS[vikritiDominant] }} components={[<strong style={{ color: DOSHA_COLORS[vikritiDominant] }} />]} /></span>
             </div>
           )}
 
@@ -875,14 +868,14 @@ export default function DoshaQuiz() {
 
           {immediateFocus && (
             <div className="da-focus-box">
-              <span className="da-focus-label">What your plans will target</span>
+              <span className="da-focus-label">{tr('ui.doshaQuiz.whatYourPlansWillTarget', 'What your plans will target')}</span>
               <p className="da-focus-text">{immediateFocus}</p>
             </div>
           )}
 
           {keySignals.length > 0 && (
             <div className="da-key-signals">
-              <span className="da-signals-label">Key signals from your assessment</span>
+              <span className="da-signals-label">{tr('ui.doshaQuiz.keySignalsFromYourAssessment', 'Key signals from your assessment')}</span>
               <ul className="da-signals-list">
                 {keySignals.map((sig, i) => (
                   <m.li
@@ -902,11 +895,10 @@ export default function DoshaQuiz() {
             <div className="da-unmapped-note">
               <span className="da-unmapped-icon" aria-hidden="true"><TriangleAlert size={16} strokeWidth={2} /></span>
               <div className="da-unmapped-body">
-                <span className="da-unmapped-label">Conditions we couldn't classify</span>
+                <span className="da-unmapped-label">{tr('ui.doshaQuiz.conditionsWeCouldnTClassify', 'Conditions we couldn\'t classify')}</span>
                 <p className="da-unmapped-list">{unmappedConditions.join(', ')}</p>
                 <p className="da-unmapped-hint">
-                  These fall outside our classical dosha mapping, so they weren't scored — but they're
-                  noted and factored into your guidance. Share them with a qualified Vaidya for a full reading.
+                  {tr('ui.doshaQuiz.theseFallOutsideOurClassical', 'These fall outside our classical dosha mapping, so they weren\'t scored — but they\'re noted and factored into your guidance. Share them with a qualified Vaidya for a full reading.')}
                 </p>
               </div>
             </div>
@@ -915,7 +907,7 @@ export default function DoshaQuiz() {
           <TongueUploader onResult={handleTongueResult} />
 
           <div className="da-confidence-row">
-            <span className="da-confidence-label">Assessment confidence</span>
+            <span className="da-confidence-label">{tr('ui.doshaQuiz.assessmentConfidence', 'Assessment confidence')}</span>
             <span className={`da-confidence-badge da-confidence-${confidence}`}>
               {confidence.charAt(0).toUpperCase() + confidence.slice(1)}
             </span>
@@ -924,7 +916,7 @@ export default function DoshaQuiz() {
           <div className="da-classical-ref">
             <span className="da-classical-ref-icon"><ScrollText size={16} strokeWidth={2} /></span>
             <span>
-              {CHARAKA_REFS[result.prakriti_classical_type] || CHARAKA_REFS[result.dominant_dosha] || 'Charaka Samhita, Vimana Sthana 8 — Prakriti Prakarana'}
+              {CHARAKA_REFS[result.prakriti_classical_type] || CHARAKA_REFS[result.dominant_dosha] || tr('ui.doshaQuiz.charakaSamhitaVimanaSthana8', 'Charaka Samhita, Vimana Sthana 8 — Prakriti Prakarana')}
             </span>
           </div>
 
@@ -934,23 +926,23 @@ export default function DoshaQuiz() {
               onClick={() => navigate('/dashboard')}
               whileTap={{ scale: 0.97 }}
             >
-              Generate My Plans →
+              {tr('ui.doshaQuiz.generateMyPlans', 'Generate My Plans →')}
             </m.button>
             <m.button
               className="btn btn-secondary"
               onClick={retake}
               whileTap={{ scale: 0.97 }}
             >
-              Retake Assessment
+              {tr('ui.doshaQuiz.retakeAssessment', 'Retake Assessment')}
             </m.button>
           </div>
 
           <div className="da-disclaimer-block">
             <p className="da-disclaimer">
-              This assessment follows the CCRAS (Central Council for Research in Ayurvedic Sciences) Prakriti evaluation framework, adapted for digital self-screening. It is a wellness guidance tool — not a clinical diagnosis or a replacement for examination by a qualified Vaidya.
+              {tr('ui.doshaQuiz.thisAssessmentFollowsTheCcras', 'This assessment follows the CCRAS (Central Council for Research in Ayurvedic Sciences) Prakriti evaluation framework, adapted for digital self-screening. It is a wellness guidance tool — not a clinical diagnosis or a replacement for examination by a qualified Vaidya.')}
             </p>
             <p className="da-disclaimer da-disclaimer-nadi">
-              Note: Classical Nadi Pareeksha (pulse examination) requires physical assessment by a qualified Ayurvedic practitioner and cannot be fully replicated through self-report. For definitive Prakriti determination, consult a trained Vaidya.
+              {tr('ui.doshaQuiz.noteClassicalNadiPareekshaPulse', 'Note: Classical Nadi Pareeksha (pulse examination) requires physical assessment by a qualified Ayurvedic practitioner and cannot be fully replicated through self-report. For definitive Prakriti determination, consult a trained Vaidya.')}
             </p>
           </div>
         </m.div>
@@ -962,7 +954,7 @@ export default function DoshaQuiz() {
   if (phase === 'symptoms') {
     return (
       <div className="da-root">
-        <Helmet><title>Current Symptoms | Ayura AI</title></Helmet>
+        <Helmet><title>{tr('ui.doshaQuiz.currentSymptomsAyuraAi', 'Current Symptoms | Ayura AI')}</title></Helmet>
         <div className="da-orb da-orb-a" />
         <Suspense fallback={null}><LazyParticleField count={25} spread={20} style={{ opacity: 0.2 }} /></Suspense>
 
@@ -973,18 +965,18 @@ export default function DoshaQuiz() {
           transition={{ duration: 0.5 }}
         >
           <div className="da-phase-header">
-            <button type="button" className="btn btn-secondary da-back-btn" onClick={() => { setPhase('traits'); setTraitIndex(TRAIT_QUESTIONS.length - 1) }}>← Back</button>
-            <h1 className="sr-only">Dosha quiz: current state</h1>
+            <button type="button" className="btn btn-secondary da-back-btn" onClick={() => { setPhase('traits'); setTraitIndex(TRAIT_QUESTIONS.length - 1) }}>{tr('ui.doshaQuiz.back', '← Back')}</button>
+            <h1 className="sr-only">{tr('ui.doshaQuiz.doshaQuizCurrentState', 'Dosha quiz: current state')}</h1>
             <div className="da-phase-steps">
-              <span className="da-step done">Physical Traits</span>
+              <span className="da-step done">{tr('ui.doshaQuiz.physicalTraits', 'Physical Traits')}</span>
               <span className="da-step-sep">›</span>
-              <span className="da-step active">Current State</span>
+              <span className="da-step active">{tr('ui.doshaQuiz.currentState', 'Current State')}</span>
             </div>
           </div>
 
           <div className="da-symptom-intro">
-            <h2 className="da-question">How are you feeling right now?</h2>
-            <p className="da-hint">Select everything that applies over the past few weeks. Pick as many as you like — or choose "Feeling balanced" if things are good.</p>
+            <h2 className="da-question">{tr('ui.doshaQuiz.howAreYouFeelingRight', 'How are you feeling right now?')}</h2>
+            <p className="da-hint">{tr('ui.doshaQuiz.selectEverythingThatAppliesOver', 'Select everything that applies over the past few weeks. Pick as many as you like — or choose "Feeling balanced" if things are good.')}</p>
           </div>
 
           <div className="da-symptom-grid">
@@ -1008,10 +1000,9 @@ export default function DoshaQuiz() {
           </div>
 
           <div className="da-cond-section">
-            <h3 className="da-cond-title">Medical conditions</h3>
+            <h3 className="da-cond-title">{tr('ui.doshaQuiz.medicalConditions', 'Medical conditions')}</h3>
             <p className="da-hint">
-              Prefilled from your profile — add or remove anything. These sharpen your current-imbalance
-              (Vikriti) reading; conditions we don't recognise are interpreted by AI, never ignored.
+              {tr('ui.doshaQuiz.prefilledFromYourProfileAdd', 'Prefilled from your profile — add or remove anything. These sharpen your current-imbalance (Vikriti) reading; conditions we don\'t recognise are interpreted by AI, never ignored.')}
             </p>
 
             {conditions.length > 0 && (
@@ -1022,7 +1013,7 @@ export default function DoshaQuiz() {
                     type="button"
                     className="da-cond-chip selected"
                     onClick={() => toggleCondition(id)}
-                    title="Remove"
+                    title={tr('ui.doshaQuiz.remove', 'Remove')}
                   >
                     {conditionLabel(id)} <span className="da-cond-x" aria-hidden="true">×</span>
                   </button>
@@ -1035,7 +1026,7 @@ export default function DoshaQuiz() {
               className="da-cond-toggle"
               onClick={() => setShowCondPicker((v) => !v)}
             >
-              {showCondPicker ? 'Done adding' : (conditions.length ? '+ Add / edit conditions' : '+ Add a condition')}
+              {showCondPicker ? tr('ui.doshaQuiz.doneAdding', 'Done adding') : (conditions.length ? tr('ui.doshaQuiz.addEditConditions', '+ Add / edit conditions') : tr('ui.doshaQuiz.addACondition', '+ Add a condition'))}
             </button>
 
             {showCondPicker && (
@@ -1043,7 +1034,7 @@ export default function DoshaQuiz() {
                 <input
                   className="da-cond-search"
                   type="text"
-                  placeholder="Search conditions…"
+                  placeholder={tr('ui.doshaQuiz.searchConditions', 'Search conditions…')}
                   value={condSearch}
                   onChange={(e) => setCondSearch(e.target.value)}
                 />
@@ -1073,12 +1064,12 @@ export default function DoshaQuiz() {
                   <input
                     className="da-cond-search"
                     type="text"
-                    placeholder="Not listed? e.g. sarcoidosis, lyme disease"
+                    placeholder={tr('ui.doshaQuiz.notListedEGSarcoidosis', 'Not listed? e.g. sarcoidosis, lyme disease')}
                     value={otherCond}
                     onChange={(e) => setOtherCond(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addOtherConditions() } }}
                   />
-                  <button type="button" className="btn btn-secondary" onClick={addOtherConditions}>Add</button>
+                  <button type="button" className="btn btn-secondary" onClick={addOtherConditions}>{tr('ui.doshaQuiz.add', 'Add')}</button>
                 </div>
               </div>
             )}
@@ -1097,9 +1088,9 @@ export default function DoshaQuiz() {
               onClick={runAssessment}
               whileTap={{ scale: 0.97 }}
             >
-              Assess My Dosha →
+              {tr('ui.doshaQuiz.assessMyDosha', 'Assess My Dosha →')}
             </m.button>
-            <p className="da-symptom-note">Your answers are scored by a deterministic classical Ayurvedic engine — AI only writes your personalised explanation.</p>
+            <p className="da-symptom-note">{tr('ui.doshaQuiz.yourAnswersAreScoredBy', 'Your answers are scored by a deterministic classical Ayurvedic engine — AI only writes your personalised explanation.')}</p>
           </div>
         </m.div>
       </div>
@@ -1109,7 +1100,7 @@ export default function DoshaQuiz() {
   // ── Traits phase ─────────────────────────────────────────────────────────────
   return (
     <div className="da-root">
-      <Helmet><title>Dosha Assessment | Ayura AI</title></Helmet>
+      <Helmet><title>{tr('ui.doshaQuiz.doshaAssessmentAyuraAi', 'Dosha Assessment | Ayura AI')}</title></Helmet>
       <div className="da-orb da-orb-a" />
       <div className="da-orb da-orb-b" />
       <Suspense fallback={null}><LazyParticleField count={25} spread={20} style={{ opacity: 0.2 }} /></Suspense>
@@ -1126,13 +1117,13 @@ export default function DoshaQuiz() {
             className="btn btn-secondary da-back-btn"
             onClick={traitIndex > 0 ? goBackTrait : () => navigate(-1)}
           >
-            ← Back
+            {tr('ui.doshaQuiz.back', '← Back')}
           </button>
-          <h1 className="sr-only">Dosha quiz: physical traits</h1>
+          <h1 className="sr-only">{tr('ui.doshaQuiz.doshaQuizPhysicalTraits', 'Dosha quiz: physical traits')}</h1>
           <div className="da-phase-steps">
-            <span className="da-step active">Physical Traits</span>
+            <span className="da-step active">{tr('ui.doshaQuiz.physicalTraits', 'Physical Traits')}</span>
             <span className="da-step-sep">›</span>
-            <span className="da-step">Current State</span>
+            <span className="da-step">{tr('ui.doshaQuiz.currentState', 'Current State')}</span>
           </div>
         </div>
 
@@ -1144,7 +1135,7 @@ export default function DoshaQuiz() {
           />
         </div>
 
-        <p className="da-progress-label">Question {traitIndex + 1} of {TRAIT_QUESTIONS.length}</p>
+        <p className="da-progress-label"><Trans i18nKey="ui.doshaQuiz.questionOf" defaults={"Question {{value}} of {{length}}"} values={{ value: traitIndex + 1, length: TRAIT_QUESTIONS.length }} /></p>
 
         <div className="da-trait-card-area">
           <AnimatePresence mode="wait" custom={direction}>
@@ -1190,19 +1181,19 @@ export default function DoshaQuiz() {
                         Explaining it only afterwards put the user under a timer to
                         read it, which meant the feature may as well not have existed. */}
                     {!isManasaQ && !selPrimary && (
-                      <p className="da-blend-hint">Pick the closest — or tap two options if you're a blend of both.</p>
+                      <p className="da-blend-hint">{tr('ui.doshaQuiz.pickTheClosestOrTap', 'Pick the closest — or tap two options if you\'re a blend of both.')}</p>
                     )}
                     {!isManasaQ && selPrimary && !selSecondary && (
-                      <p className="da-blend-hint">Mostly this — but a blend? Tap a second option (optional).</p>
+                      <p className="da-blend-hint">{tr('ui.doshaQuiz.mostlyThisButABlend', 'Mostly this — but a blend? Tap a second option (optional).')}</p>
                     )}
                     {!isManasaQ && selPrimary && selSecondary && (
-                      <p className="da-blend-hint da-blend-hint-active">Blend recorded: mostly {selPrimary}, partly {selSecondary}.</p>
+                      <p className="da-blend-hint da-blend-hint-active"><Trans i18nKey="ui.doshaQuiz.blendRecordedMostlyPartly" defaults={"Blend recorded: mostly {{selPrimary}}, partly {{selSecondary}}."} values={{ selPrimary, selSecondary }} /></p>
                     )}
                     {/* Lets anyone who doesn't want the blend pause skip it, so the
                         wait reads as deliberate rather than as a laggy interface. */}
                     {selPrimary && (
                       <button type="button" className="btn btn-primary da-next-btn" onClick={() => advanceNow()}>
-                        {traitIndex < TRAIT_QUESTIONS.length - 1 ? 'Next →' : 'Continue →'}
+                        {traitIndex < TRAIT_QUESTIONS.length - 1 ? tr('ui.doshaQuiz.next', 'Next →') : tr('ui.doshaQuiz.continue', 'Continue →')}
                       </button>
                     )}
                   </>
@@ -1213,7 +1204,7 @@ export default function DoshaQuiz() {
         </div>
 
         <p className="da-disclaimer">
-          Answer honestly based on your lifelong patterns — not what you wish were true. This helps build an accurate Ayurvedic profile.
+          {tr('ui.doshaQuiz.answerHonestlyBasedOnYour', 'Answer honestly based on your lifelong patterns — not what you wish were true. This helps build an accurate Ayurvedic profile.')}
         </p>
       </m.div>
     </div>

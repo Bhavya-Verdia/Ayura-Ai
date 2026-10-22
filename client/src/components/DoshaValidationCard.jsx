@@ -3,6 +3,7 @@ import { m } from 'framer-motion'
 import { CalendarCheck } from 'lucide-react'
 import { profileAPI } from '../api/client'
 import { DOSHA_COLOR } from '../constants/dosha'
+import { tr } from '../lib/tr'
 import './DoshaValidationCard.css'
 
 const DOSHA_QUESTIONS = {
@@ -42,7 +43,7 @@ export default function DoshaValidationCard({ vikritiDominant, onDone }) {
     >
       <div className="dvc-header">
         <span className="dvc-icon"><CalendarCheck size={18} strokeWidth={2} /></span>
-        <span className="dvc-label">2-Week Check-In</span>
+        <span className="dvc-label">{tr('ui.doshaValidationCard.n2WeekCheckIn', '2-Week Check-In')}</span>
       </div>
       <p className="dvc-question">{question}</p>
       <div className="dvc-actions">
@@ -52,7 +53,7 @@ export default function DoshaValidationCard({ vikritiDominant, onDone }) {
           disabled={status === 'submitting'}
           onClick={() => submit(true)}
         >
-          Yes, feeling better
+          {tr('ui.doshaValidationCard.yesFeelingBetter', 'Yes, feeling better')}
         </button>
         <button
           type="button"
@@ -60,7 +61,7 @@ export default function DoshaValidationCard({ vikritiDominant, onDone }) {
           disabled={status === 'submitting'}
           onClick={() => submit(false)}
         >
-          Not yet
+          {tr('ui.doshaValidationCard.notYet', 'Not yet')}
         </button>
         <button
           type="button"
@@ -68,7 +69,7 @@ export default function DoshaValidationCard({ vikritiDominant, onDone }) {
           disabled={status === 'submitting'}
           onClick={() => onDone?.()}
         >
-          Remind me later
+          {tr('ui.doshaValidationCard.remindMeLater', 'Remind me later')}
         </button>
       </div>
     </m.div>

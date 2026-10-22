@@ -3,6 +3,7 @@ import { m } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
 import { reportError } from '../lib/errorReporting'
 import { isChunkLoadError, isReloadingForDeploy, reloadForNewDeploy } from '../lib/staleDeploy'
+import { tr } from '../lib/tr'
 import './ErrorBoundary.css'
 
 class ErrorBoundaryInner extends React.Component {
@@ -62,19 +63,19 @@ class ErrorBoundaryInner extends React.Component {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="error-boundary-title">Something went wrong.</h1>
+            <h1 className="error-boundary-title">{tr('ui.errorBoundary.somethingWentWrong', 'Something went wrong.')}</h1>
             <p className="error-boundary-body">
-              An unexpected error occurred. You can try again or go back to the dashboard.
+              {tr('ui.errorBoundary.anUnexpectedErrorOccurredYou', 'An unexpected error occurred. You can try again or go back to the dashboard.')}
             </p>
             <div className="error-boundary-actions">
               <button
                 className="btn btn-primary"
                 onClick={this.handleRetry}
               >
-                Try Again
+                {tr('ui.errorBoundary.tryAgain', 'Try Again')}
               </button>
               <a className="btn btn-secondary" href="/dashboard">
-                Go to Dashboard
+                {tr('ui.errorBoundary.goToDashboard', 'Go to Dashboard')}
               </a>
             </div>
           </m.div>

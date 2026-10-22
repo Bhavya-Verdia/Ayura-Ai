@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
 
+import { tr } from '../lib/tr'
 // The app shell (MainLayout) scrolls an inner overflow container, not the
 // window — so walk up from a sentinel node to find the actual scroller.
 // Public pages (Landing etc.) scroll the window; null means "use window".
@@ -48,8 +49,8 @@ export default function ScrollToTop() {
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            aria-label="Scroll to top"
-            title="Back to top"
+            aria-label={tr('ui.scrollToTop.scrollToTop', 'Scroll to top')}
+            title={tr('ui.scrollToTop.backToTop', 'Back to top')}
           >
             ↑
           </m.button>

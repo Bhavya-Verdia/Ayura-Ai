@@ -14,21 +14,23 @@ import LabResults from '../components/LabResults'
 import { BadgeGrid } from '../components/RewardsBadges'
 import { useRewards } from '../hooks/useRewards'
 import { useLocation } from 'react-router-dom'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './Progress.css'
 
 const MOOD_OPTIONS = [
-  { value: 'great',    label: 'Great',    Icon: Laugh },
-  { value: 'good',     label: 'Good',     Icon: Smile },
-  { value: 'neutral',  label: 'Okay',     Icon: Meh },
-  { value: 'tired',    label: 'Tired',    Icon: Frown },
-  { value: 'stressed', label: 'Stressed', Icon: Annoyed },
+  { value: 'great',    get label() { return tr('ui.progress.great', 'Great') },    Icon: Laugh },
+  { value: 'good',     get label() { return tr('ui.progress.good', 'Good') },     Icon: Smile },
+  { value: 'neutral',  get label() { return tr('ui.progress.okay', 'Okay') },     Icon: Meh },
+  { value: 'tired',    get label() { return tr('ui.progress.tired', 'Tired') },    Icon: Frown },
+  { value: 'stressed', get label() { return tr('ui.progress.stressed', 'Stressed') }, Icon: Annoyed },
 ]
 
 const TREND_CONFIG = {
-  losing_weight:      { label: 'Losing Weight',  Icon: TrendingDown, color: 'var(--ayura-teal)' },
-  gaining_weight:     { label: 'Gaining Weight', Icon: TrendingUp,   color: 'var(--ayura-amber)' },
-  stable:             { label: 'Stable',         Icon: MoveRight,    color: 'var(--primary-light)' },
-  insufficient_data:  { label: 'No data yet',    Icon: ChartColumn,  color: 'var(--text-muted)' },
+  losing_weight:      { get label() { return tr('ui.progress.losingWeight', 'Losing Weight') },  Icon: TrendingDown, color: 'var(--ayura-teal)' },
+  gaining_weight:     { get label() { return tr('ui.progress.gainingWeight', 'Gaining Weight') }, Icon: TrendingUp,   color: 'var(--ayura-amber)' },
+  stable:             { get label() { return tr('ui.progress.stable', 'Stable') },         Icon: MoveRight,    color: 'var(--primary-light)' },
+  insufficient_data:  { get label() { return tr('ui.progress.noDataYet', 'No data yet') },    Icon: ChartColumn,  color: 'var(--text-muted)' },
 }
 
 function StatCard({ icon, label, value, sub, color }) {
@@ -74,20 +76,20 @@ function LogEntry({ log, index }) {
       <div className="prg-log-metrics">
         {log.weight_kg && (
           <div className="prg-log-metric">
-            <span className="prg-log-metric-label">Weight</span>
+            <span className="prg-log-metric-label">{tr('ui.progress.weight', 'Weight')}</span>
             <span className="prg-log-metric-val">{log.weight_kg} kg</span>
           </div>
         )}
         {log.adherence_percent != null && (
           <div className="prg-log-metric">
-            <span className="prg-log-metric-label">Adherence</span>
+            <span className="prg-log-metric-label">{tr('ui.progress.adherence', 'Adherence')}</span>
             <span className="prg-log-metric-val">{log.adherence_percent}%</span>
             <MiniBar value={log.adherence_percent} max={100} color="var(--primary-light)" />
           </div>
         )}
         {log.mood && (
           <div className="prg-log-metric">
-            <span className="prg-log-metric-label">Mood</span>
+            <span className="prg-log-metric-label">{tr('ui.progress.mood', 'Mood')}</span>
             <span className="prg-log-metric-val" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>{moodInfo?.Icon && <moodInfo.Icon size={14} strokeWidth={2} />} {moodInfo?.label || log.mood}</span>
           </div>
         )}
@@ -124,9 +126,9 @@ export default function Progress() {
       qc.invalidateQueries({ queryKey: ['progress-logs'] })
       setShowLogForm(false)
       setForm({ weight_kg: '', adherence_percent: '', mood: 'good', plan_feedback: '' })
-      toast.success('Progress logged!')
+      toast.success(tr('ui.progress.progressLogged', 'Progress logged!'))
     },
-    onError: () => toast.error('Failed to log progress. Try again.'),
+    onError: () => toast.error(tr('ui.progress.failedToLogProgressTry', 'Failed to log progress. Try again.')),
   })
 
   function handleLog(e) {
@@ -170,7 +172,7 @@ export default function Progress() {
   return (
     <>
       <Helmet>
-        <title>Progress — Ayura AI</title>
+        <title>{tr('ui.progress.progressAyuraAi', 'Progress — Ayura AI')}</title>
         <meta name="description" content="Track your wellness progress, weight trends, and adherence streaks." />
       </Helmet>
 
@@ -181,14 +183,14 @@ export default function Progress() {
         <div className="prg-container">
           {/* Header */}
           <m.div className="prg-header" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <h1 className="prg-title gradient-text">Progress</h1>
-            <p className="prg-sub">Track your wellness journey day by day.</p>
+            <h1 className="prg-title gradient-text">{tr('ui.progress.progress', 'Progress')}</h1>
+            <p className="prg-sub">{tr('ui.progress.trackYourWellnessJourneyDay', 'Track your wellness journey day by day.')}</p>
             <m.button
               className="btn btn-primary prg-log-btn"
               onClick={() => setShowLogForm(v => !v)}
               whileTap={{ scale: 0.97 }}
             >
-              {showLogForm ? <><X size={16} strokeWidth={2.2} /> Cancel</> : <><Plus size={16} strokeWidth={2.2} /> Log Today</>}
+              {showLogForm ? <><X size={16} strokeWidth={2.2} />{' '}{tr('ui.progress.cancel', 'Cancel')}</> : <><Plus size={16} strokeWidth={2.2} />{' '}{tr('ui.progress.logToday', 'Log Today')}</>}
             </m.button>
           </m.div>
 
@@ -203,10 +205,10 @@ export default function Progress() {
                 exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
-                <h2 className="prg-log-form-title">Log Today's Progress</h2>
+                <h2 className="prg-log-form-title">{tr('ui.progress.logTodaySProgress', 'Log Today\'s Progress')}</h2>
                 <div className="prg-log-grid">
                   <div className="input-group">
-                    <label>Weight (kg)</label>
+                    <label>{tr('ui.progress.weightKg', 'Weight (kg)')}</label>
                     <input
                       type="number" step="0.1" min="20" max="300"
                       placeholder="e.g. 72.5"
@@ -215,7 +217,7 @@ export default function Progress() {
                     />
                   </div>
                   <div className="input-group">
-                    <label>Plan Adherence (%)</label>
+                    <label>{tr('ui.progress.planAdherence', 'Plan Adherence (%)')}</label>
                     <input
                       type="number" min="0" max="100"
                       placeholder="e.g. 85"
@@ -226,7 +228,7 @@ export default function Progress() {
                 </div>
 
                 <div className="input-group">
-                  <label>Mood</label>
+                  <label>{tr('ui.progress.mood', 'Mood')}</label>
                   <div className="prg-mood-chips">
                     {MOOD_OPTIONS.map(m => (
                       <button
@@ -243,10 +245,10 @@ export default function Progress() {
                 </div>
 
                 <div className="input-group">
-                  <label>Notes (optional)</label>
+                  <label>{tr('ui.progress.notesOptional', 'Notes (optional)')}</label>
                   <textarea
                     rows={2}
-                    placeholder="How did your plan feel today?"
+                    placeholder={tr('ui.progress.howDidYourPlanFeel', 'How did your plan feel today?')}
                     value={form.plan_feedback}
                     onChange={e => setForm(f => ({ ...f, plan_feedback: e.target.value }))}
                   />
@@ -258,7 +260,7 @@ export default function Progress() {
                   disabled={logMutation.isPending}
                   whileTap={{ scale: 0.97 }}
                 >
-                  {logMutation.isPending ? 'Saving...' : 'Save Entry'}
+                  {logMutation.isPending ? tr('ui.progress.saving', 'Saving...') : tr('ui.progress.saveEntry', 'Save Entry')}
                 </m.button>
               </m.form>
             )}
@@ -277,7 +279,7 @@ export default function Progress() {
           {isError && (
             <div className="prg-empty">
               <div className="prg-empty-icon"><TriangleAlert size={28} strokeWidth={1.8} /></div>
-              <p>Failed to load progress data. Check your connection.</p>
+              <p>{tr('ui.progress.failedToLoadProgressData', 'Failed to load progress data. Check your connection.')}</p>
             </div>
           )}
 
@@ -291,20 +293,20 @@ export default function Progress() {
                 <EmptyState
                   className="empty-state--inline"
                   icon={ChartColumn}
-                  title="Start tracking your progress"
-                  description="Log your weight, energy and sleep and this page fills in — streaks, trends and a weekly AI insight built from your own entries."
+                  title={tr('ui.progress.startTrackingYourProgress', 'Start tracking your progress')}
+                  description={tr('ui.progress.logYourWeightEnergyAnd', 'Log your weight, energy and sleep and this page fills in — streaks, trends and a weekly AI insight built from your own entries.')}
                   actions={
                     <button type="button" className="btn btn-primary" onClick={() => setShowLogForm(true)}>
-                      + Log your first entry
+                      {tr('ui.progress.logYourFirstEntry', '+ Log your first entry')}
                     </button>
                   }
                 />
               ) : (
                 <div className="prg-stat-row">
-                  <StatCard icon={<Flame size={20} strokeWidth={2} />} label="Day Streak" value={streak > 0 ? `${streak}d` : '0d'} sub="days in a row with a log" color="var(--ayura-amber)" />
-                  <StatCard icon={<ClipboardList size={20} strokeWidth={2} />} label="Total Entries" value={totalEntries} sub="logs recorded" color="var(--primary-light)" />
-                  <StatCard icon={<Scale size={20} strokeWidth={2} />} label="Current Weight" value={weight ? `${weight} kg` : '—'} sub={summary.current?.bmi_category || ''} color="var(--ayura-violet)" />
-                  <StatCard icon={<trend.Icon size={20} strokeWidth={2} />} label="Weight Trend" value={trend.label} color={trend.color} />
+                  <StatCard icon={<Flame size={20} strokeWidth={2} />} label={tr('ui.progress.dayStreak', 'Day Streak')} value={streak > 0 ? `${streak}d` : '0d'} sub="days in a row with a log" color="var(--ayura-amber)" />
+                  <StatCard icon={<ClipboardList size={20} strokeWidth={2} />} label={tr('ui.progress.totalEntries', 'Total Entries')} value={totalEntries} sub="logs recorded" color="var(--primary-light)" />
+                  <StatCard icon={<Scale size={20} strokeWidth={2} />} label={tr('ui.progress.currentWeight', 'Current Weight')} value={weight ? `${weight} kg` : '—'} sub={summary.current?.bmi_category || ''} color="var(--ayura-violet)" />
+                  <StatCard icon={<trend.Icon size={20} strokeWidth={2} />} label={tr('ui.progress.weightTrend', 'Weight Trend')} value={trend.label} color={trend.color} />
                 </div>
               )}
 
@@ -318,7 +320,7 @@ export default function Progress() {
                 >
                   <div className="prg-insight-icon"><Sparkles size={20} strokeWidth={1.8} /></div>
                   <div className="prg-insight-body">
-                    <div className="prg-insight-label">AI Weekly Insight</div>
+                    <div className="prg-insight-label">{tr('ui.progress.aiWeeklyInsight', 'AI Weekly Insight')}</div>
                     <p className="prg-insight-text">{insight}</p>
                   </div>
                 </m.div>
@@ -333,13 +335,13 @@ export default function Progress() {
                 !isFirstRun && (
                   <div className="prg-empty">
                     <div className="prg-empty-icon"><ChartColumn size={28} strokeWidth={1.8} /></div>
-                    <p className="prg-empty-title">No entries yet</p>
-                    <p className="prg-empty-sub">Click "+ Log Today" to record your first progress entry.</p>
+                    <p className="prg-empty-title">{tr('ui.progress.noEntriesYet', 'No entries yet')}</p>
+                    <p className="prg-empty-sub">{tr('ui.progress.clickLogTodayToRecord', 'Click "+ Log Today" to record your first progress entry.')}</p>
                   </div>
                 )
               ) : (
                 <div className="prg-logs-section">
-                  <h2 className="prg-logs-title">Recent Entries <span className="prg-logs-count">{logs.length}</span></h2>
+                  <h2 className="prg-logs-title"><Trans i18nKey="ui.progress.recentEntries00" defaults={"Recent Entries <0>{{length}}</0>"} values={{ length: logs.length }} components={[<span className="prg-logs-count" />]} /></h2>
                   <div className="prg-logs-list">
                     {logs.map((log, i) => (
                       <LogEntry key={log.id || i} log={log} index={i} />

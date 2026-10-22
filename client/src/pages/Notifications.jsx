@@ -3,15 +3,16 @@ import { m, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { notificationsAPI } from '../api/client'
 import { Leaf, RefreshCw, AlarmClock, AlertTriangle, Bell, Sparkles, CheckCheck, Trash2 } from 'lucide-react'
+import { tr } from '../lib/tr'
 import './Notifications.css'
 
 // ── Type config ──────────────────────────────────────────────
 const TYPE_CONFIG = {
-  plan_ready:        { Icon: Leaf,          label: 'Plan Ready',      borderColor: 'var(--primary)',       glowColor: 'rgba(13,148,136,0.35)' },
-  adaptation:        { Icon: RefreshCw,     label: 'Adaptation',      borderColor: 'var(--accent)',         glowColor: 'rgba(245,158,11,0.35)' },
-  checkin_reminder:  { Icon: AlarmClock,    label: 'Check-In',        borderColor: 'var(--primary-light)',  glowColor: 'rgba(92,171,116,0.35)' },
-  safety_alert:      { Icon: AlertTriangle, label: 'Safety Alert',    borderColor: 'var(--rose)',           glowColor: 'rgba(244,63,94,0.35)'  },
-  default:           { Icon: Bell,          label: 'Notification',    borderColor: 'var(--text-muted)',     glowColor: 'rgba(94,138,133,0.25)' },
+  plan_ready:        { Icon: Leaf,          get label() { return tr('ui.notifications.planReady', 'Plan Ready') },      borderColor: 'var(--primary)',       glowColor: 'rgba(13,148,136,0.35)' },
+  adaptation:        { Icon: RefreshCw,     get label() { return tr('ui.notifications.adaptation', 'Adaptation') },      borderColor: 'var(--accent)',         glowColor: 'rgba(245,158,11,0.35)' },
+  checkin_reminder:  { Icon: AlarmClock,    get label() { return tr('ui.notifications.checkIn', 'Check-In') },        borderColor: 'var(--primary-light)',  glowColor: 'rgba(92,171,116,0.35)' },
+  safety_alert:      { Icon: AlertTriangle, get label() { return tr('ui.notifications.safetyAlert', 'Safety Alert') },    borderColor: 'var(--rose)',           glowColor: 'rgba(244,63,94,0.35)'  },
+  default:           { Icon: Bell,          get label() { return tr('ui.notifications.notification', 'Notification') },    borderColor: 'var(--text-muted)',     glowColor: 'rgba(94,138,133,0.25)' },
 }
 
 function getTypeConfig(type) {
@@ -84,7 +85,7 @@ function NotificationCard({ notif, onMarkRead, onDelete, index }) {
         <span className="notif-card-icon" aria-hidden="true" style={{ color: cfg.borderColor }}>
           <cfg.Icon size={18} strokeWidth={2} />
         </span>
-        {!notif.is_read && <span className="notif-unread-dot" role="img" aria-label="Unread" />}
+        {!notif.is_read && <span className="notif-unread-dot" role="img" aria-label={tr('ui.notifications.unread', 'Unread')} />}
       </div>
 
       {/* Content */}
@@ -103,17 +104,17 @@ function NotificationCard({ notif, onMarkRead, onDelete, index }) {
           type="button"
           className="notif-read-hint"
           onClick={(e) => { e.stopPropagation(); onMarkRead(notif.id) }}
-          aria-label={`Mark "${notif.title}" as read`}
+          aria-label={tr('ui.notifications.markAsRead', 'Mark "{{title}}" as read', { title: notif.title })}
         >
-          Tap to mark read
+          {tr('ui.notifications.tapToMarkRead', 'Tap to mark read')}
         </button>
       )}
 
       <button
         className="notif-delete-btn"
         onClick={(e) => { e.stopPropagation(); onDelete(notif.id) }}
-        title="Delete notification"
-        aria-label={`Delete "${notif.title}"`}
+        title={tr('ui.notifications.deleteNotification', 'Delete notification')}
+        aria-label={tr('ui.notifications.delete', 'Delete "{{title}}"', { title: notif.title })}
       >
         ✕
       </button>
@@ -140,7 +141,7 @@ export default function Notifications() {
       setNotifications(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)))
     } catch (err) {
       console.error('Failed to load notifications:', err)
-      setError('Could not load notifications. Please try again.')
+      setError(tr('ui.notifications.couldNotLoadNotificationsPlease', 'Could not load notifications. Please try again.'))
     } finally {
       setLoading(false)
     }
@@ -175,7 +176,7 @@ export default function Notifications() {
 
   const handleClearAll = useCallback(async () => {
     if (notifications.length === 0) return
-    if (!window.confirm('Clear all notifications? This cannot be undone.')) return
+    if (!window.confirm(tr('ui.notifications.clearAllNotificationsThisCannot', 'Clear all notifications? This cannot be undone.'))) return
     const prev = notifications
     setNotifications([])
     try {
@@ -203,7 +204,7 @@ export default function Notifications() {
   return (
     <>
       <Helmet>
-        <title>Notifications — Ayura AI</title>
+        <title>{tr('ui.notifications.notificationsAyuraAi', 'Notifications — Ayura AI')}</title>
         <meta name="description" content="View your Ayura AI health notifications, plan updates, and reminders." />
       </Helmet>
 
@@ -221,8 +222,8 @@ export default function Notifications() {
             transition={{ duration: 0.4 }}
           >
             <div className="notif-header-left">
-              <h1 className="notif-page-title gradient-text">Notifications</h1>
-              <p className="notif-page-sub">Stay on top of your wellness journey</p>
+              <h1 className="notif-page-title gradient-text">{tr('ui.notifications.notifications', 'Notifications')}</h1>
+              <p className="notif-page-sub">{tr('ui.notifications.stayOnTopOfYour', 'Stay on top of your wellness journey')}</p>
             </div>
             <div className="notif-header-right">
               {unreadCount > 0 && (
@@ -242,9 +243,9 @@ export default function Notifications() {
                 whileTap={{ scale: 0.95 }}
               >
                 {markingAll ? (
-                  <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Marking…</>
+                  <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />{' '}{tr('ui.notifications.marking', 'Marking…')}</>
                 ) : (
-                  <><CheckCheck size={14} strokeWidth={2.2} /> Mark all read</>
+                  <><CheckCheck size={14} strokeWidth={2.2} />{' '}{tr('ui.notifications.markAllRead', 'Mark all read')}</>
                 )}
               </m.button>
               {notifications.length > 0 && (
@@ -253,7 +254,7 @@ export default function Notifications() {
                   onClick={handleClearAll}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Trash2 size={14} strokeWidth={2} /> Clear all
+                  <Trash2 size={14} strokeWidth={2} />{' '}{tr('ui.notifications.clearAll', 'Clear all')}
                 </m.button>
               )}
             </div>
@@ -269,7 +270,7 @@ export default function Notifications() {
                 exit={{ opacity: 0 }}
               >
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><AlertTriangle size={15} strokeWidth={2} /> {error}</span>
-                <button onClick={fetchNotifications} className="notif-retry-btn">Retry</button>
+                <button onClick={fetchNotifications} className="notif-retry-btn">{tr('ui.notifications.retry', 'Retry')}</button>
               </m.div>
             )}
           </AnimatePresence>
@@ -285,8 +286,8 @@ export default function Notifications() {
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="notif-empty-icon"><Sparkles size={30} strokeWidth={1.6} /></div>
-              <h2 className="notif-empty-title">You're all caught up!</h2>
-              <p className="notif-empty-sub">No notifications right now. Check back later.</p>
+              <h2 className="notif-empty-title">{tr('ui.notifications.youReAllCaughtUp', 'You\'re all caught up!')}</h2>
+              <p className="notif-empty-sub">{tr('ui.notifications.noNotificationsRightNowCheck', 'No notifications right now. Check back later.')}</p>
             </m.div>
           ) : (
             <div className="notif-list">

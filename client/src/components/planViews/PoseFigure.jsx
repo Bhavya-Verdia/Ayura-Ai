@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { buildPoseFigure, GROUND_Y } from './poseSkeleton'
 
+import { tr } from '../../lib/tr'
 /**
  * Pose imagery with a guaranteed fallback.
  *
@@ -39,12 +40,12 @@ function PoseDiagram({ category, name }) {
   const path = FIGURES[category] || FIGURES.standing
   return (
     <div className="pose-figure-fallback" role="img"
-         aria-label={`${name} — ${CATEGORY_LABEL[category] || 'pose'} diagram`}>
+         aria-label={tr('ui.poseFigure.diagram', '{{name}} — {{value}} diagram', { name, value: CATEGORY_LABEL[category] || 'pose' })}>
       <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
         <line className="pose-figure-ground" x1="14" y1="92" x2="86" y2="92" />
         <path className="pose-figure-body" d={path} />
       </svg>
-      <span className="pose-figure-caption">{CATEGORY_LABEL[category] || 'Pose'}</span>
+      <span className="pose-figure-caption">{CATEGORY_LABEL[category] || tr('ui.poseFigure.pose', 'Pose')}</span>
     </div>
   )
 }

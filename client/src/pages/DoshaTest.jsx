@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useAuth } from '../providers/AuthContext'
 import { Wind, Flame, Mountain, ClipboardList, Sparkles, HeartPulse, Salad, Sun } from 'lucide-react'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './Landing.css'
 import './DoshaTest.css'
 
@@ -42,17 +44,17 @@ const DOSHAS = [
 ]
 
 const STEPS = [
-  { Icon: ClipboardList, title: 'Answer a guided assessment', desc: 'A short questionnaire rooted in the classical Ashtavidha Pariksha — covering your body, digestion, energy, sleep, and temperament.' },
-  { Icon: Sparkles, title: 'AI analyses your constitution', desc: 'Ayura AI scores your responses across Vata, Pitta, and Kapha to determine your dominant dosha — your Prakriti.' },
-  { Icon: HeartPulse, title: 'Get your dosha profile', desc: 'See your dominant dosha with a confidence reading and a clear explanation of what it means for your mind and body.' },
-  { Icon: Salad, title: 'Unlock personalised plans', desc: 'Turn your result into tailored diet, yoga, daily-routine, detox, and herbal-remedy plans built around your constitution.' },
+  { Icon: ClipboardList, get title() { return tr('ui.doshaTest.answerAGuidedAssessment', 'Answer a guided assessment') }, get desc() { return tr('ui.doshaTest.aShortQuestionnaireRootedIn', 'A short questionnaire rooted in the classical Ashtavidha Pariksha — covering your body, digestion, energy, sleep, and temperament.') } },
+  { Icon: Sparkles, get title() { return tr('ui.doshaTest.aiAnalysesYourConstitution', 'AI analyses your constitution') }, get desc() { return tr('ui.doshaTest.ayuraAiScoresYourResponses', 'Ayura AI scores your responses across Vata, Pitta, and Kapha to determine your dominant dosha — your Prakriti.') } },
+  { Icon: HeartPulse, get title() { return tr('ui.doshaTest.getYourDoshaProfile', 'Get your dosha profile') }, get desc() { return tr('ui.doshaTest.seeYourDominantDoshaWith', 'See your dominant dosha with a confidence reading and a clear explanation of what it means for your mind and body.') } },
+  { Icon: Salad, get title() { return tr('ui.doshaTest.unlockPersonalisedPlans', 'Unlock personalised plans') }, get desc() { return tr('ui.doshaTest.turnYourResultIntoTailored', 'Turn your result into tailored diet, yoga, daily-routine, detox, and herbal-remedy plans built around your constitution.') } },
 ]
 
 const BENEFITS = [
-  { Icon: Salad, title: 'Eat for your body type', desc: 'Know which foods balance your dosha and which aggravate it — no generic diets.' },
-  { Icon: Sun, title: 'Build the right daily routine', desc: 'A Dinacharya (daily rhythm) matched to your constitution and the season.' },
-  { Icon: HeartPulse, title: 'Prevent imbalance early', desc: 'Spot the signs of Vata, Pitta, or Kapha excess before they become problems.' },
-  { Icon: Sparkles, title: 'Train and rest smarter', desc: 'Yoga, pranayama, and exercise intensities suited to your energy and tendencies.' },
+  { Icon: Salad, get title() { return tr('ui.doshaTest.eatForYourBodyType', 'Eat for your body type') }, get desc() { return tr('ui.doshaTest.knowWhichFoodsBalanceYour', 'Know which foods balance your dosha and which aggravate it — no generic diets.') } },
+  { Icon: Sun, get title() { return tr('ui.doshaTest.buildTheRightDailyRoutine', 'Build the right daily routine') }, get desc() { return tr('ui.doshaTest.aDinacharyaDailyRhythmMatched', 'A Dinacharya (daily rhythm) matched to your constitution and the season.') } },
+  { Icon: HeartPulse, get title() { return tr('ui.doshaTest.preventImbalanceEarly', 'Prevent imbalance early') }, get desc() { return tr('ui.doshaTest.spotTheSignsOfVata', 'Spot the signs of Vata, Pitta, or Kapha excess before they become problems.') } },
+  { Icon: Sparkles, get title() { return tr('ui.doshaTest.trainAndRestSmarter', 'Train and rest smarter') }, get desc() { return tr('ui.doshaTest.yogaPranayamaAndExerciseIntensities', 'Yoga, pranayama, and exercise intensities suited to your energy and tendencies.') } },
 ]
 
 const FAQS = [
@@ -94,7 +96,7 @@ export default function DoshaTest() {
         '@id': 'https://ayuraai.in/dosha-test#webpage',
         url: 'https://ayuraai.in/dosha-test',
         name: 'Free Dosha Test — Discover Your Ayurvedic Body Type',
-        description: 'Take a free Ayurvedic dosha test to find your Prakriti (Vata, Pitta, or Kapha) and unlock personalised diet, yoga, and lifestyle plans from Ayura AI.',
+        description: tr('ui.doshaTest.takeAFreeAyurvedicDosha', 'Take a free Ayurvedic dosha test to find your Prakriti (Vata, Pitta, or Kapha) and unlock personalised diet, yoga, and lifestyle plans from Ayura AI.'),
         isPartOf: { '@id': 'https://ayuraai.in/#website' },
         inLanguage: 'en-IN',
       },
@@ -120,7 +122,7 @@ export default function DoshaTest() {
   return (
     <div className="landing-root">
       <Helmet>
-        <title>Free Dosha Test — Find Your Ayurvedic Body Type (Vata, Pitta, Kapha) | Ayura AI</title>
+        <title>{tr('ui.doshaTest.freeDoshaTestFindYour', 'Free Dosha Test — Find Your Ayurvedic Body Type (Vata, Pitta, Kapha) | Ayura AI')}</title>
         <meta name="description" content="Take Ayura AI's free dosha test to discover your Prakriti — Vata, Pitta, or Kapha. Get an accurate Ayurvedic body-type result and personalised diet, yoga, and lifestyle plans." />
         <link rel="canonical" href="https://ayuraai.in/dosha-test" />
         <meta name="keywords" content="dosha test, free dosha test, prakriti test, vata pitta kapha test, ayurveda body type quiz, ayurvedic constitution test, what is my dosha" />
@@ -137,57 +139,44 @@ export default function DoshaTest() {
         <nav className="lnd-nav">
           <Link to="/" className="lnd-brand">
             <div className="lnd-brand-mark-wrap">
-              <img src="/favicon.svg" alt="Ayura AI Logo" className="lnd-brand-mark" />
+              <img src="/favicon.svg" alt={tr('ui.doshaTest.ayuraAiLogo', 'Ayura AI Logo')} className="lnd-brand-mark" />
             </div>
-            <span className="lnd-brand-text">
-              Ayura <span style={{ color: 'var(--ayura-teal)', fontWeight: 800 }}>AI</span>
-            </span>
+            <span className="lnd-brand-text"><Trans i18nKey="ui.doshaTest.ayura0Ai0" defaults={"Ayura <0>AI</0>"} components={[<span style={{ color: 'var(--ayura-teal)', fontWeight: 800 }} />]} /></span>
           </Link>
           <div className="lnd-nav-actions">
             {user ? (
-              <Link to="/dashboard" className="lnd-nav-link">Dashboard</Link>
+              <Link to="/dashboard" className="lnd-nav-link">{tr('ui.doshaTest.dashboard', 'Dashboard')}</Link>
             ) : (
-              <Link to="/login" className="lnd-nav-link">Sign In</Link>
+              <Link to="/login" className="lnd-nav-link">{tr('ui.doshaTest.signIn', 'Sign In')}</Link>
             )}
-            <Link to={ctaPath} className="lnd-cta-pill">Take the test ↗</Link>
+            <Link to={ctaPath} className="lnd-cta-pill">{tr('ui.doshaTest.takeTheTest', 'Take the test ↗')}</Link>
           </div>
         </nav>
       </header>
 
       {/* ── HERO ── */}
       <section className="dt-hero">
-        <span className="lnd-section-kicker">Free Ayurvedic Assessment</span>
-        <h1 className="dt-hero-title">
-          Free Dosha Test — discover your <span className="dt-grad">Ayurvedic body type</span>
-        </h1>
-        <p className="dt-hero-sub">
-          Find out whether you are <strong>Vata</strong>, <strong>Pitta</strong>, or <strong>Kapha</strong>.
-          Ayura AI's dosha test reveals your Prakriti — your natural mind-body constitution — and turns it
-          into personalised diet, yoga, daily-routine, and herbal-remedy plans.
-        </p>
+        <span className="lnd-section-kicker">{tr('ui.doshaTest.freeAyurvedicAssessment', 'Free Ayurvedic Assessment')}</span>
+        <h1 className="dt-hero-title"><Trans i18nKey="ui.doshaTest.freeDoshaTestDiscoverYour" defaults={"Free Dosha Test — discover your <0>Ayurvedic body type</0>"} components={[<span className="dt-grad" />]} /></h1>
+        <p className="dt-hero-sub"><Trans i18nKey="ui.doshaTest.findOutWhetherYouAre" defaults={"Find out whether you are <0>Vata</0>, <1>Pitta</1>, or <2>Kapha</2>. Ayura AI's dosha test reveals your Prakriti — your natural mind-body constitution — and turns it into personalised diet, yoga, daily-routine, and herbal-remedy plans."} components={[<strong />, <strong />, <strong />]} /></p>
         <div className="dt-hero-actions">
-          <Link to={ctaPath} className="lnd-cta-main">Take the free dosha test →</Link>
-          <a href="#three-doshas" className="lnd-cta-secondary">Learn about the doshas</a>
+          <Link to={ctaPath} className="lnd-cta-main">{tr('ui.doshaTest.takeTheFreeDoshaTest', 'Take the free dosha test →')}</Link>
+          <a href="#three-doshas" className="lnd-cta-secondary">{tr('ui.doshaTest.learnAboutTheDoshas', 'Learn about the doshas')}</a>
         </div>
-        <p className="dt-hero-note">Takes a few minutes · No credit card · Results explained in plain language</p>
+        <p className="dt-hero-note">{tr('ui.doshaTest.takesAFewMinutesNo', 'Takes a few minutes · No credit card · Results explained in plain language')}</p>
       </section>
 
       {/* ── WHAT IS A DOSHA TEST ── */}
       <section className="lnd-section dt-intro">
-        <h2 className="lnd-section-title">What is a dosha test?</h2>
-        <p className="lnd-section-desc">
-          In Ayurveda, your <strong>Prakriti</strong> is your unique constitution — the balance of the three
-          doshas you were born with. A dosha test identifies your dominant dosha so you can eat, move, and live
-          in a way that keeps you balanced. Unlike a generic personality quiz, Ayura AI's test is grounded in the
-          classical <em>Ashtavidha Pariksha</em> and reports how confident the result is.
-        </p>
+        <h2 className="lnd-section-title">{tr('ui.doshaTest.whatIsADoshaTest', 'What is a dosha test?')}</h2>
+        <p className="lnd-section-desc"><Trans i18nKey="ui.doshaTest.inAyurvedaYour0Prakriti" defaults={"In Ayurveda, your <0>Prakriti</0> is your unique constitution — the balance of the three doshas you were born with. A dosha test identifies your dominant dosha so you can eat, move, and live in a way that keeps you balanced. Unlike a generic personality quiz, Ayura AI's test is grounded in the classical <1>Ashtavidha Pariksha</1> and reports how confident the result is."} components={[<strong />, <em />]} /></p>
       </section>
 
       {/* ── THE THREE DOSHAS ── */}
       <section id="three-doshas" className="lnd-section" style={{ paddingTop: 0 }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <span className="lnd-section-kicker">The Foundations</span>
-          <h2 className="lnd-section-title">Vata, Pitta & Kapha</h2>
+          <span className="lnd-section-kicker">{tr('ui.doshaTest.theFoundations', 'The Foundations')}</span>
+          <h2 className="lnd-section-title">{tr('ui.doshaTest.vataPittaKapha', 'Vata, Pitta & Kapha')}</h2>
         </div>
         <div className="dt-dosha-grid">
           {DOSHAS.map(d => {
@@ -202,8 +191,8 @@ export default function DoshaTest() {
                   </div>
                 </div>
                 <p className="dt-dosha-summary">{d.summary}</p>
-                <div className="dt-dosha-row"><span className="dt-dosha-label balanced">In balance</span><span>{d.balanced}</span></div>
-                <div className="dt-dosha-row"><span className="dt-dosha-label imbalanced">Out of balance</span><span>{d.imbalanced}</span></div>
+                <div className="dt-dosha-row"><span className="dt-dosha-label balanced">{tr('ui.doshaTest.inBalance', 'In balance')}</span><span>{d.balanced}</span></div>
+                <div className="dt-dosha-row"><span className="dt-dosha-label imbalanced">{tr('ui.doshaTest.outOfBalance', 'Out of balance')}</span><span>{d.imbalanced}</span></div>
                 <ul className="dt-dosha-traits">
                   {d.traits.map((t, i) => <li key={i}>{t}</li>)}
                 </ul>
@@ -216,8 +205,8 @@ export default function DoshaTest() {
       {/* ── HOW IT WORKS ── */}
       <section className="lnd-section" style={{ paddingTop: 0 }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <span className="lnd-section-kicker">How it works</span>
-          <h2 className="lnd-section-title">How the Ayura AI dosha test works</h2>
+          <span className="lnd-section-kicker">{tr('ui.doshaTest.howItWorks', 'How it works')}</span>
+          <h2 className="lnd-section-title">{tr('ui.doshaTest.howTheAyuraAiDosha', 'How the Ayura AI dosha test works')}</h2>
         </div>
         <div className="dt-steps-grid">
           {STEPS.map((s, i) => {
@@ -237,8 +226,8 @@ export default function DoshaTest() {
       {/* ── BENEFITS ── */}
       <section className="lnd-section" style={{ paddingTop: 0 }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <span className="lnd-section-kicker">Why it matters</span>
-          <h2 className="lnd-section-title">Why know your dosha?</h2>
+          <span className="lnd-section-kicker">{tr('ui.doshaTest.whyItMatters', 'Why it matters')}</span>
+          <h2 className="lnd-section-title">{tr('ui.doshaTest.whyKnowYourDosha', 'Why know your dosha?')}</h2>
         </div>
         <div className="dt-benefit-grid">
           {BENEFITS.map((b, i) => {
@@ -257,8 +246,8 @@ export default function DoshaTest() {
       {/* ── FAQ ── */}
       <section id="faq" className="lnd-section" style={{ paddingTop: 0 }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <span className="lnd-section-kicker">Questions</span>
-          <h2 className="lnd-section-title">Dosha test — FAQs</h2>
+          <span className="lnd-section-kicker">{tr('ui.doshaTest.questions', 'Questions')}</span>
+          <h2 className="lnd-section-title">{tr('ui.doshaTest.doshaTestFaqs', 'Dosha test — FAQs')}</h2>
         </div>
         <div className="lnd-faq-list">
           {FAQS.map((item, i) => (
@@ -276,14 +265,13 @@ export default function DoshaTest() {
       {/* ── CTA ── */}
       <section className="lnd-cta-section">
         <div className="lnd-cta-box">
-          <h2 className="lnd-cta-box-title">Discover your dosha in minutes</h2>
+          <h2 className="lnd-cta-box-title">{tr('ui.doshaTest.discoverYourDoshaInMinutes', 'Discover your dosha in minutes')}</h2>
           <p className="lnd-cta-box-desc">
-            Take the free dosha test and unlock personalised Ayurvedic plans for diet, yoga, daily routine,
-            detox, and herbal remedies — all tailored to your constitution.
+            {tr('ui.doshaTest.takeTheFreeDoshaTest2', 'Take the free dosha test and unlock personalised Ayurvedic plans for diet, yoga, daily routine, detox, and herbal remedies — all tailored to your constitution.')}
           </p>
           <div className="lnd-cta-box-actions">
-            <Link to={ctaPath} className="lnd-cta-main">{user ? 'Take the dosha test →' : 'Start free — no card needed →'}</Link>
-            {!user && <Link to="/login" className="lnd-cta-secondary">Sign In</Link>}
+            <Link to={ctaPath} className="lnd-cta-main">{user ? tr('ui.doshaTest.takeTheDoshaTest', 'Take the dosha test →') : tr('ui.doshaTest.startFreeNoCardNeeded', 'Start free — no card needed →')}</Link>
+            {!user && <Link to="/login" className="lnd-cta-secondary">{tr('ui.doshaTest.signIn', 'Sign In')}</Link>}
           </div>
         </div>
       </section>
@@ -292,18 +280,16 @@ export default function DoshaTest() {
       <footer className="dt-footer">
         <div className="dt-footer-inner">
           <Link to="/" className="lnd-brand">
-            <img src="/favicon.svg" alt="Ayura AI Logo" className="lnd-brand-mark" />
-            <span className="lnd-brand-text">Ayura AI</span>
+            <img src="/favicon.svg" alt={tr('ui.doshaTest.ayuraAiLogo', 'Ayura AI Logo')} className="lnd-brand-mark" />
+            <span className="lnd-brand-text">{tr('ui.doshaTest.ayuraAi', 'Ayura AI')}</span>
           </Link>
           <nav className="dt-footer-links">
-            <Link to="/">Home</Link>
-            <Link to="/register">Get Started</Link>
-            <Link to="/terms">Terms</Link>
-            <Link to="/privacy">Privacy</Link>
+            <Link to="/">{tr('ui.doshaTest.home', 'Home')}</Link>
+            <Link to="/register">{tr('ui.doshaTest.getStarted', 'Get Started')}</Link>
+            <Link to="/terms">{tr('ui.doshaTest.terms', 'Terms')}</Link>
+            <Link to="/privacy">{tr('ui.doshaTest.privacy', 'Privacy')}</Link>
           </nav>
-          <p className="dt-footer-copy">
-            © {new Date().getFullYear()} Ayura AI. Ayurvedic wellness guidance for informational purposes only — not a substitute for professional medical advice.
-          </p>
+          <p className="dt-footer-copy"><Trans i18nKey="ui.doshaTest.ayuraAiAyurvedicWellnessGuidance" defaults={"© {{value}} Ayura AI. Ayurvedic wellness guidance for informational purposes only — not a substitute for professional medical advice."} values={{ value: new Date().getFullYear() }} /></p>
         </div>
       </footer>
     </div>

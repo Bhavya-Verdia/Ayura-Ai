@@ -4,6 +4,8 @@ import { m, AnimatePresence } from 'framer-motion'
 import { authAPI } from '../api/client'
 import { Helmet } from 'react-helmet-async'
 import { CircleCheck } from 'lucide-react'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './Auth.css'
 
 export default function ResetPassword() {
@@ -19,19 +21,19 @@ export default function ResetPassword() {
   if (!token) {
     return (
       <div className="auth-page">
-        <Helmet><title>Set New Password · Ayura AI</title></Helmet>
+        <Helmet><title>{tr('ui.resetPassword.setNewPasswordAyuraAi', 'Set New Password · Ayura AI')}</title></Helmet>
         <div className="auth-center">
           <div className="auth-card" style={{ textAlign: 'center' }}>
             <Link to="/" className="auth-brand">
               <img src="/favicon.svg" alt="" className="auth-brand-logo" />
-              <span className="auth-brand-name">Ayura <span>AI</span></span>
+              <span className="auth-brand-name"><Trans i18nKey="ui.resetPassword.ayura0Ai0" defaults={"Ayura <0>AI</0>"} components={[<span />]} /></span>
             </Link>
             <div className="auth-card-header">
-              <h1 className="auth-card-title">Invalid <em>link</em></h1>
-              <p className="auth-card-sub">This password reset link is invalid or missing.</p>
+              <h1 className="auth-card-title"><Trans i18nKey="ui.resetPassword.invalid0Link0" defaults={"Invalid <0>link</0>"} components={[<em />]} /></h1>
+              <p className="auth-card-sub">{tr('ui.resetPassword.thisPasswordResetLinkIs', 'This password reset link is invalid or missing.')}</p>
             </div>
             <Link to="/forgot-password" className="auth-submit" style={{ textDecoration: 'none', display: 'inline-flex', width: 'auto', padding: '0 28px' }}>
-              Request new link
+              {tr('ui.resetPassword.requestNewLink', 'Request new link')}
             </Link>
           </div>
         </div>
@@ -66,13 +68,13 @@ export default function ResetPassword() {
 
   return (
     <div className="auth-page">
-      <Helmet><title>Set New Password · Ayura AI</title></Helmet>
+      <Helmet><title>{tr('ui.resetPassword.setNewPasswordAyuraAi', 'Set New Password · Ayura AI')}</title></Helmet>
 
       <div className="auth-center">
         <div className="auth-card">
           <Link to="/" className="auth-brand">
             <img src="/favicon.svg" alt="" className="auth-brand-logo" />
-            <span className="auth-brand-name">Ayura <span>AI</span></span>
+            <span className="auth-brand-name"><Trans i18nKey="ui.resetPassword.ayura0Ai0" defaults={"Ayura <0>AI</0>"} components={[<span />]} /></span>
           </Link>
 
           <AnimatePresence mode="wait">
@@ -87,19 +89,19 @@ export default function ResetPassword() {
                 <div style={{ color: 'var(--ayura-emerald)', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
                   <CircleCheck size={46} strokeWidth={1.6} />
                 </div>
-                <h3 style={{ fontSize: '1.4rem', marginBottom: '8px' }}>Password updated</h3>
+                <h3 style={{ fontSize: '1.4rem', marginBottom: '8px' }}>{tr('ui.resetPassword.passwordUpdated', 'Password updated')}</h3>
                 <p style={{ color: 'var(--ayura-muted)', fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.6 }}>
-                  Your password has been changed successfully. Redirecting to login&hellip;
+                  {tr('ui.resetPassword.yourPasswordHasBeenChanged', 'Your password has been changed successfully. Redirecting to login…')}
                 </p>
                 <Link to="/login" className="auth-submit" style={{ textDecoration: 'none', display: 'inline-flex', width: 'auto', padding: '0 28px' }}>
-                  Go to Sign In
+                  {tr('ui.resetPassword.goToSignIn', 'Go to Sign In')}
                 </Link>
               </m.div>
             ) : (
               <m.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <div className="auth-card-header">
-                  <h1 className="auth-card-title">Set new <em>password</em></h1>
-                  <p className="auth-card-sub">Make it at least 8 characters to keep your wellness data secure.</p>
+                  <h1 className="auth-card-title"><Trans i18nKey="ui.resetPassword.setNew0Password0" defaults={"Set new <0>password</0>"} components={[<em />]} /></h1>
+                  <p className="auth-card-sub">{tr('ui.resetPassword.makeItAtLeast8', 'Make it at least 8 characters to keep your wellness data secure.')}</p>
                 </div>
 
                 <AnimatePresence>
@@ -117,7 +119,7 @@ export default function ResetPassword() {
 
                 <form className="auth-form" onSubmit={handleSubmit}>
                   <div className="auth-field">
-                    <label className="auth-label" htmlFor="password">New password</label>
+                    <label className="auth-label" htmlFor="password">{tr('ui.resetPassword.newPassword', 'New password')}</label>
                     <input
                       id="password"
                       className="auth-input"
@@ -125,14 +127,14 @@ export default function ResetPassword() {
                       autoComplete="new-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="At least 8 characters"
+                      placeholder={tr('ui.resetPassword.atLeast8Characters', 'At least 8 characters')}
                       required
                       disabled={status === 'loading'}
                     />
                   </div>
 
                   <div className="auth-field">
-                    <label className="auth-label" htmlFor="confirmPassword">Confirm password</label>
+                    <label className="auth-label" htmlFor="confirmPassword">{tr('ui.resetPassword.confirmPassword', 'Confirm password')}</label>
                     <input
                       id="confirmPassword"
                       className="auth-input"
@@ -140,14 +142,14 @@ export default function ResetPassword() {
                       autoComplete="new-password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Type your new password again"
+                      placeholder={tr('ui.resetPassword.typeYourNewPasswordAgain', 'Type your new password again')}
                       required
                       disabled={status === 'loading'}
                     />
                   </div>
 
                   <m.button type="submit" className="auth-submit" disabled={status === 'loading'} whileTap={{ scale: 0.97 }}>
-                    {status === 'loading' ? <span className="auth-spinner" /> : 'Reset Password →'}
+                    {status === 'loading' ? <span className="auth-spinner" /> : tr('ui.resetPassword.resetPassword', 'Reset Password →')}
                   </m.button>
                 </form>
               </m.div>
@@ -155,9 +157,7 @@ export default function ResetPassword() {
           </AnimatePresence>
 
           <div className="auth-links">
-            <p className="auth-links-text">
-              Remember your password? <Link to="/login" className="auth-link">Sign in →</Link>
-            </p>
+            <p className="auth-links-text"><Trans i18nKey="ui.resetPassword.rememberYourPassword0Sign" defaults={"Remember your password? <0>Sign in →</0>"} components={[<Link to="/login" className="auth-link" />]} /></p>
           </div>
         </div>
       </div>

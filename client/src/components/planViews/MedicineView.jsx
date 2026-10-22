@@ -5,6 +5,8 @@ import {
 import { doshaInk } from '../../constants/dosha'
 import { RoutineView } from './RoutineView'
 
+import { tr } from '../../lib/tr'
+import { Trans } from 'react-i18next'
 const TIER_LABEL = { 1: 'OTC Safe', 2: 'Practitioner Advised' }
 
 const TIER_COLOR = { 1: '#22c55e', 2: '#f59e0b' }
@@ -70,16 +72,16 @@ function MedCard({ med, rationale }) {
         <div className="mv-card-left">
           <div className="mv-med-name">
             {med.name}
-            {med.previously_tried && <span className="mv-tried-badge">Tried before</span>}
+            {med.previously_tried && <span className="mv-tried-badge">{tr('ui.medicineView.triedBefore', 'Tried before')}</span>}
           </div>
           <div className="mv-type-chip" style={{ '--chip': color }}>{med.type}</div>
         </div>
         <div className="mv-card-right">
           {durMin && <span className="mv-duration-badge">{durMin}–{durMax || durMin} wk</span>}
           <span className="mv-tier-badge" style={{ '--chip': tierColor }}>
-            {TIER_LABEL[med.safety_tier] || 'Consult Vaidya'}
+            {TIER_LABEL[med.safety_tier] || tr('ui.medicineView.consultVaidya', 'Consult Vaidya')}
           </span>
-          {isExternal && <span className="mv-external-badge">External</span>}
+          {isExternal && <span className="mv-external-badge">{tr('ui.medicineView.external', 'External')}</span>}
           {open ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
         </div>
       </button>
@@ -101,7 +103,7 @@ function MedCard({ med, rationale }) {
         <div className="mv-pharma-strip">
           {hasRasa && (
             <div className="mv-pharma-group">
-              <span className="mv-pharma-label">Rasa</span>
+              <span className="mv-pharma-label">{tr('ui.medicineView.rasa', 'Rasa')}</span>
               <div className="mv-rasa-chips">
                 {med.rasa.map((r, i) => (
                   <span key={i} className="mv-rasa-chip" style={{ '--chip': RASA_COLOR[r] || '#94a3b8' }}>
@@ -113,15 +115,15 @@ function MedCard({ med, rationale }) {
           )}
           {med.virya && (
             <div className="mv-pharma-group">
-              <span className="mv-pharma-label">Virya</span>
+              <span className="mv-pharma-label">{tr('ui.medicineView.virya', 'Virya')}</span>
               <span className={`mv-virya-badge ${med.virya === 'ushna' ? 'ushna' : 'sheeta'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                {med.virya === 'ushna' ? <><Flame size={13} strokeWidth={2} /> Heating</> : <><Snowflake size={13} strokeWidth={2} /> Cooling</>}
+                {med.virya === 'ushna' ? <><Flame size={13} strokeWidth={2} />{' '}{tr('ui.medicineView.heating', 'Heating')}</> : <><Snowflake size={13} strokeWidth={2} />{' '}{tr('ui.medicineView.cooling', 'Cooling')}</>}
               </span>
             </div>
           )}
           {med.vipaka && (
             <div className="mv-pharma-group">
-              <span className="mv-pharma-label">Vipaka</span>
+              <span className="mv-pharma-label">{tr('ui.medicineView.vipaka', 'Vipaka')}</span>
               <span className="mv-vipaka-badge">{med.vipaka.charAt(0).toUpperCase() + med.vipaka.slice(1)}</span>
             </div>
           )}
@@ -167,7 +169,7 @@ function MedCard({ med, rationale }) {
           {/* Karma pills */}
           {hasKarma && (
             <div className="mv-section">
-              <h4 className="mv-section-label">Karma (Actions)</h4>
+              <h4 className="mv-section-label">{tr('ui.medicineView.karmaActions', 'Karma (Actions)')}</h4>
               <div className="mv-karma-row">
                 {med.karma.map((k, i) => (
                   <span key={i} className="mv-karma-pill" style={{ '--chip': KARMA_COLOR[k] || '#94a3b8' }}>{k}</span>
@@ -179,7 +181,7 @@ function MedCard({ med, rationale }) {
           {/* Dhatu affected */}
           {hasDhatu && (
             <div className="mv-section">
-              <h4 className="mv-section-label">Dhatu Affected</h4>
+              <h4 className="mv-section-label">{tr('ui.medicineView.dhatuAffected', 'Dhatu Affected')}</h4>
               <div className="mv-karma-row">
                 {med.dhatu_affected.map((d, i) => (
                   <span key={i} className="mv-dhatu-chip">{d.charAt(0).toUpperCase() + d.slice(1)}</span>
@@ -191,7 +193,7 @@ function MedCard({ med, rationale }) {
           {/* Guna */}
           {med.guna?.length > 0 && (
             <div className="mv-section">
-              <h4 className="mv-section-label">Guna (Qualities)</h4>
+              <h4 className="mv-section-label">{tr('ui.medicineView.gunaQualities', 'Guna (Qualities)')}</h4>
               <div className="mv-karma-row">
                 {med.guna.map((g, i) => (
                   <span key={i} className="mv-guna-chip">{g.charAt(0).toUpperCase() + g.slice(1)}</span>
@@ -203,7 +205,7 @@ function MedCard({ med, rationale }) {
           {/* Ingredients */}
           {med.ingredients?.length > 0 && (
             <div className="mv-section">
-              <h4 className="mv-section-label">Key Ingredients</h4>
+              <h4 className="mv-section-label">{tr('ui.medicineView.keyIngredients', 'Key Ingredients')}</h4>
               <div className="mv-ingredients">
                 {med.ingredients.map((ing, i) => (
                   <span key={i} className="mv-ing-chip">{ing}</span>
@@ -214,12 +216,12 @@ function MedCard({ med, rationale }) {
 
           {/* Dosage */}
           <div className="mv-dosage-block">
-            <h4 className="mv-section-label">Dosage & Administration</h4>
+            <h4 className="mv-section-label">{tr('ui.medicineView.dosageAdministration', 'Dosage & Administration')}</h4>
             <p className="mv-dosage-text">{med.dosage}</p>
             {(med.selected_anupana || med.anupana) && (med.selected_anupana || med.anupana) !== 'External use only' && (
               <div className="mv-anupana">
                 <Droplets size={12} />
-                <span>Anupana: <strong>{med.selected_anupana || med.anupana}</strong></span>
+                <span><Trans i18nKey="ui.medicineView.anupana00" defaults={"Anupana: <0>{{anupana}}</0>"} values={{ anupana: med.selected_anupana || med.anupana }} components={[<strong />]} /></span>
               </div>
             )}
             {med.anupana_note && <div className="mv-anupana" style={{ color: '#c2410c' }}><span>{med.anupana_note}</span></div>}
@@ -229,8 +231,8 @@ function MedCard({ med, rationale }) {
             {med.dosage_basis && (
               <div className="mv-anupana" style={{ color: '#a78bfa' }}>
                 <span>
-                  {med.dosage_basis === 'paediatric' ? "Child's dose" : `Dose set for: ${med.dosage_basis}`}
-                  {med.dosage_adult ? ` — the usual adult dose is ${med.dosage_adult}` : ''}
+                  {med.dosage_basis === 'paediatric' ? tr('ui.medicineView.childSDose', 'Child\'s dose') : tr('ui.medicineView.doseSetFor', 'Dose set for: {{dosage_basis}}', { dosage_basis: med.dosage_basis })}
+                  {med.dosage_adult ? tr('ui.medicineView.theUsualAdultDoseIs', ' — the usual adult dose is {{dosage_adult}}', { dosage_adult: med.dosage_adult }) : ''}
                 </span>
               </div>
             )}
@@ -239,7 +241,7 @@ function MedCard({ med, rationale }) {
           {/* Contraindications */}
           {med.contraindications?.length > 0 && (
             <div className="mv-section">
-              <h4 className="mv-section-label" style={{ color: '#f97316' }}>Contraindications</h4>
+              <h4 className="mv-section-label" style={{ color: '#f97316' }}>{tr('ui.medicineView.contraindications', 'Contraindications')}</h4>
               <div className="mv-contra-chips">
                 {med.contraindications.map((c, i) => (
                   <span key={i} className="mv-contra-chip">{c.replace(/_/g, ' ')}</span>
@@ -254,7 +256,7 @@ function MedCard({ med, rationale }) {
           {med.usage_cautions?.length > 0 && (
             <div className="mv-section">
               <h4 className="mv-section-label" style={{ color: '#f59e0b' }}>
-                <TriangleAlert size={11} /> Before you take this
+                <TriangleAlert size={11} />{' '}{tr('ui.medicineView.beforeYouTakeThis', 'Before you take this')}
               </h4>
               <ul className="mv-safety-list">
                 {med.usage_cautions.map((c, i) => <li key={i}>{c}</li>)}
@@ -265,7 +267,7 @@ function MedCard({ med, rationale }) {
           {med.red_flags?.length > 0 && (
             <div className="mv-section">
               <h4 className="mv-section-label" style={{ color: '#c0392b' }}>
-                <TriangleAlert size={11} /> Do not use if
+                <TriangleAlert size={11} />{' '}{tr('ui.medicineView.doNotUseIf', 'Do not use if')}
               </h4>
               <ul className="mv-safety-list mv-safety-list--danger">
                 {med.red_flags.map((c, i) => <li key={i}>{c}</li>)}
@@ -276,7 +278,7 @@ function MedCard({ med, rationale }) {
           {med.drug_interactions?.length > 0 ? (
             <div className="mv-section">
               <h4 className="mv-section-label" style={{ color: '#c0392b' }}>
-                <TriangleAlert size={11} /> Drug–herb interactions — check with your doctor
+                <TriangleAlert size={11} />{' '}{tr('ui.medicineView.drugHerbInteractionsCheckWith', 'Drug–herb interactions — check with your doctor')}
               </h4>
               <div className="mv-contra-chips">
                 {med.drug_interactions.map((d, i) => (
@@ -287,7 +289,7 @@ function MedCard({ med, rationale }) {
           ) : (
             <div className="mv-section">
               <h4 className="mv-section-label mv-no-interactions">
-                <ShieldCheck size={11} /> No interaction with your medicines found in our tables — still show it to your doctor
+                <ShieldCheck size={11} />{' '}{tr('ui.medicineView.noInteractionWithYourMedicines', 'No interaction with your medicines found in our tables — still show it to your doctor')}
               </h4>
             </div>
           )}
@@ -297,7 +299,7 @@ function MedCard({ med, rationale }) {
             <div className="mv-afi-ref">
               <BookOpen size={11} />
               <div>
-                {med.afi_reference && <div><strong>AFI:</strong> {med.afi_reference}</div>}
+                {med.afi_reference && <div><strong>{tr('ui.medicineView.afi', 'AFI:')}</strong> {med.afi_reference}</div>}
                 {med.classical_text_reference && <div>{med.classical_text_reference}</div>}
               </div>
             </div>
@@ -340,12 +342,9 @@ export function MedicineView({ plan }) {
       {/* Narrative lines the deterministic gate withheld, as a count, so a gap
           reads as a decision rather than an omission. */}
       {plan.coaching_withheld?.length > 0 && (
-        <p className="rv-info-body" style={{ opacity: 0.8 }}>
-          {plan.coaching_withheld.length} line{plan.coaching_withheld.length === 1 ? '' : 's'} of the AI guidance{' '}
-          {plan.coaching_withheld.length === 1 ? 'was' : 'were'} withheld because{' '}
-          {plan.coaching_withheld.length === 1 ? 'it' : 'they'} contradicted your plan
-          ({[...new Set(plan.coaching_withheld.map(w => w.reason.split(' — ')[0]))].slice(0, 3).join('; ')}).
-        </p>
+        <p className="rv-info-body" style={{ opacity: 0.8 }}>{plan.coaching_withheld.length === 1
+            ? tr('ui.medicineView.withheldOne', '1 line of the AI guidance was withheld because it contradicted your plan ({{reasons}}).', { reasons: [...new Set(plan.coaching_withheld.map(w => w.reason.split(' — ')[0]))].slice(0, 3).join('; ') })
+            : tr('ui.medicineView.withheldMany', '{{count}} lines of the AI guidance were withheld because they contradicted your plan ({{reasons}}).', { count: plan.coaching_withheld.length, reasons: [...new Set(plan.coaching_withheld.map(w => w.reason.split(' — ')[0]))].slice(0, 3).join('; ') })}</p>
       )}
 
       {/* ── The patient's own medicines, as this plan read them ── */}
@@ -353,9 +352,9 @@ export function MedicineView({ plan }) {
         <div className="mv-coverage-note">
           <Pill size={14} />
           <div>
-            <strong>Your medicines and this plan</strong>
+            <strong>{tr('ui.medicineView.yourMedicinesAndThisPlan', 'Your medicines and this plan')}</strong>
             {plan.medication_review.matched?.length > 0 && (
-              <p>Checked against: {plan.medication_review.matched.map(m => `${m.medication} (${m.classes.join(', ').toLowerCase()})`).join('; ')}. Formulations that interact are listed under "Medicines Excluded for Your Safety".</p>
+              <p><Trans i18nKey="ui.medicineView.checkedAgainstFormulationsThatInteract" defaults={"Checked against: {{value}}. Formulations that interact are listed under \"Medicines Excluded for Your Safety\"."} values={{ value: plan.medication_review.matched.map(m => `${m.medication} (${m.classes.join(', ').toLowerCase()})`).join('; ') }} /></p>
             )}
             {plan.medication_review.notice && <p>{plan.medication_review.notice}</p>}
           </div>
@@ -369,8 +368,8 @@ export function MedicineView({ plan }) {
           <div>
             <strong>
               {(plan.uncovered_conditions || []).length > 0
-                ? 'Limited classical coverage for your condition'
-                : 'Some of your conditions need a Vaidya to prescribe'}
+                ? tr('ui.medicineView.limitedClassicalCoverageForYour', 'Limited classical coverage for your condition')
+                : tr('ui.medicineView.someOfYourConditionsNeed', 'Some of your conditions need a Vaidya to prescribe')}
             </strong>
             <p>{plan.coverage_note}</p>
           </div>
@@ -382,13 +381,10 @@ export function MedicineView({ plan }) {
         <div className="mv-shodhana-alert">
           <TriangleAlert size={14} />
           <div>
-            <strong>{plan.shodhana_strength === 'mridu' ? 'Mild (Mridu) Purification Indicated' : 'Shodhana (Purification) Protocol Indicated'}</strong>
-            <p>
-              {plan.shodhana_strength === 'mridu'
+            <strong>{plan.shodhana_strength === 'mridu' ? tr('ui.medicineView.mildMriduPurificationIndicated', 'Mild (Mridu) Purification Indicated') : tr('ui.medicineView.shodhanaPurificationProtocolIndicated', 'Shodhana (Purification) Protocol Indicated')}</strong>
+            <p><Trans i18nKey="ui.medicineView.thisRequiresInPersonEvaluation" defaults={"{{value}} This requires in-person evaluation and supervision by a qualified Vaidya. The formulations below support this direction but do not replace clinical Panchakarma."} values={{ value: plan.shodhana_strength === 'mridu'
                 ? 'Your Ama and conditions suggest purification, but only a mild form suits you — never Vamana.'
-                : 'Your Vikriti and condition profile suggest a purification approach (Vamana/Virechana).'}
-              {' '}This requires in-person evaluation and supervision by a qualified Vaidya. The formulations below support this direction but do not replace clinical Panchakarma.
-            </p>
+                : 'Your Vikriti and condition profile suggest a purification approach (Vamana/Virechana).' }} /></p>
             {plan.shodhana_withheld && <p>{plan.shodhana_withheld}</p>}
           </div>
         </div>
@@ -398,7 +394,7 @@ export function MedicineView({ plan }) {
         <div className="mv-shodhana-alert">
           <TriangleAlert size={14} />
           <div>
-            <strong>Purification is not advised for you</strong>
+            <strong>{tr('ui.medicineView.purificationIsNotAdvisedFor', 'Purification is not advised for you')}</strong>
             <p>{plan.shodhana_withheld}</p>
           </div>
         </div>
@@ -409,9 +405,9 @@ export function MedicineView({ plan }) {
         <div className="mv-chikitsa-card">
           <div className="mv-chikitsa-label">
             <BookOpen size={14} />
-            Chikitsa Sutra
+            {tr('ui.medicineView.chikitsaSutra', 'Chikitsa Sutra')}
             <span className="mv-approach-badge" style={{ background: plan.chikitsa_approach === 'Shodhana' ? '#f9731622' : '#22c55e22', color: plan.chikitsa_approach === 'Shodhana' ? '#f97316' : '#22c55e' }}>
-              {plan.chikitsa_approach || 'Shamana'}
+              {plan.chikitsa_approach || tr('ui.medicineView.shamana', 'Shamana')}
             </span>
           </div>
           <p className="mv-chikitsa-text">{plan.chikitsa_sutra}</p>
@@ -420,7 +416,7 @@ export function MedicineView({ plan }) {
               <span className="mv-vital-chip"><Flame size={10} />{plan.vikriti_dominant} vikriti</span>
               {plan.vikriti_secondary && <span className="mv-vital-chip">{plan.vikriti_secondary} secondary</span>}
               <span className="mv-vital-chip"><Droplets size={10} />{plan.agni_type} agni</span>
-              {plan.ama_level && plan.ama_level !== 'low' && <span className="mv-vital-chip" style={{ color: '#f59e0b' }}>ama: {plan.ama_level}</span>}
+              {plan.ama_level && plan.ama_level !== 'low' && <span className="mv-vital-chip" style={{ color: '#f59e0b' }}><Trans i18nKey="ui.medicineView.ama" defaults={"ama: {{ama_level}}"} values={{ ama_level: plan.ama_level }} /></span>}
               {plan.current_season && <span className="mv-vital-chip"><Leaf size={10} />{plan.current_season}</span>}
             </div>
           )}
@@ -439,7 +435,7 @@ export function MedicineView({ plan }) {
       {/* ── Primary formulations ── */}
       {primary.length > 0 && (
         <div className="rv-section-block">
-          <h3 className="rv-block-title"><Pill size={16} />Primary Formulations</h3>
+          <h3 className="rv-block-title"><Pill size={16} />{tr('ui.medicineView.primaryFormulations', 'Primary Formulations')}</h3>
           {primary.map((med, i) => <MedCard key={i} med={med} rationale={rationale[med.name]} />)}
         </div>
       )}
@@ -447,7 +443,7 @@ export function MedicineView({ plan }) {
       {/* ── Supporting formulations ── */}
       {supporting.length > 0 && (
         <div className="rv-section-block">
-          <h3 className="rv-block-title"><Layers size={16} />Supporting Formulations</h3>
+          <h3 className="rv-block-title"><Layers size={16} />{tr('ui.medicineView.supportingFormulations', 'Supporting Formulations')}</h3>
           {supporting.map((med, i) => <MedCard key={i} med={med} rationale={rationale[med.name]} />)}
         </div>
       )}
@@ -455,7 +451,7 @@ export function MedicineView({ plan }) {
       {/* ── External therapies ── */}
       {external.length > 0 && (
         <div className="rv-section-block">
-          <h3 className="rv-block-title"><Droplets size={16} />External Therapies (Taila)</h3>
+          <h3 className="rv-block-title"><Droplets size={16} />{tr('ui.medicineView.externalTherapiesTaila', 'External Therapies (Taila)')}</h3>
           {external.map((med, i) => <MedCard key={i} med={med} rationale={rationale[med.name]} />)}
         </div>
       )}
@@ -463,7 +459,7 @@ export function MedicineView({ plan }) {
       {/* ── Daily dosage schedule ── */}
       {schedule.length > 0 && (
         <div className="rv-section-block">
-          <h3 className="rv-block-title"><Clock size={16} />Daily Dosage Schedule</h3>
+          <h3 className="rv-block-title"><Clock size={16} />{tr('ui.medicineView.dailyDosageSchedule', 'Daily Dosage Schedule')}</h3>
           {schedule.map((slot, i) => (
             <div key={i} className="mv-schedule-slot">
               <div className="mv-schedule-time">{slot.time}</div>
@@ -478,32 +474,32 @@ export function MedicineView({ plan }) {
       {/* ── Treatment protocol grid ── */}
       {(protocol.week_1_2 || protocol.week_3_4 || protocol.week_5_plus) && (
         <div className="mv-protocol-section">
-          <h3 className="rv-block-title"><Calendar size={16} />Treatment Protocol</h3>
+          <h3 className="rv-block-title"><Calendar size={16} />{tr('ui.medicineView.treatmentProtocol', 'Treatment Protocol')}</h3>
           {protocol.dose_note && (
             <div className="mv-dose-note"><Flame size={12} />{protocol.dose_note}</div>
           )}
           <div className="mv-protocol-grid">
             {protocol.week_1_2 && (
               <div className="mv-protocol-col">
-                <div className="mv-protocol-week">Week 1–2</div>
+                <div className="mv-protocol-week">{tr('ui.medicineView.week12', 'Week 1–2')}</div>
                 <p className="mv-protocol-text">{protocol.week_1_2}</p>
               </div>
             )}
             {protocol.week_3_4 && (
               <div className="mv-protocol-col">
-                <div className="mv-protocol-week">Week 3–4</div>
+                <div className="mv-protocol-week">{tr('ui.medicineView.week34', 'Week 3–4')}</div>
                 <p className="mv-protocol-text">{protocol.week_3_4}</p>
               </div>
             )}
             {protocol.week_5_plus && (
               <div className="mv-protocol-col">
-                <div className="mv-protocol-week">Week 5+</div>
+                <div className="mv-protocol-week">{tr('ui.medicineView.week5', 'Week 5+')}</div>
                 <p className="mv-protocol-text">{protocol.week_5_plus}</p>
               </div>
             )}
           </div>
           {protocol.total_duration && (
-            <div className="mv-total-duration"><Clock size={11} />Total duration: <strong>{protocol.total_duration}</strong></div>
+            <div className="mv-total-duration"><Clock size={11} />{tr('ui.medicineView.totalDuration', 'Total duration:')}{' '}<strong>{protocol.total_duration}</strong></div>
           )}
         </div>
       )}
@@ -511,23 +507,23 @@ export function MedicineView({ plan }) {
       {/* ── Expected outcomes timeline ── */}
       {(outcomes.week_2 || outcomes.week_4 || outcomes.week_8) && (
         <div className="rv-section-block">
-          <h3 className="rv-block-title"><Sparkles size={16} />Expected Outcomes</h3>
+          <h3 className="rv-block-title"><Sparkles size={16} />{tr('ui.medicineView.expectedOutcomes', 'Expected Outcomes')}</h3>
           <div className="mv-outcomes-timeline">
             {outcomes.week_2 && (
               <div className="mv-outcome-milestone">
-                <div className="mv-milestone-marker">Week 2</div>
+                <div className="mv-milestone-marker">{tr('ui.medicineView.week2', 'Week 2')}</div>
                 <p className="mv-milestone-text">{outcomes.week_2}</p>
               </div>
             )}
             {outcomes.week_4 && (
               <div className="mv-outcome-milestone">
-                <div className="mv-milestone-marker">Week 4</div>
+                <div className="mv-milestone-marker">{tr('ui.medicineView.week4', 'Week 4')}</div>
                 <p className="mv-milestone-text">{outcomes.week_4}</p>
               </div>
             )}
             {outcomes.week_8 && (
               <div className="mv-outcome-milestone">
-                <div className="mv-milestone-marker">Week 8</div>
+                <div className="mv-milestone-marker">{tr('ui.medicineView.week8', 'Week 8')}</div>
                 <p className="mv-milestone-text">{outcomes.week_8}</p>
               </div>
             )}
@@ -538,7 +534,7 @@ export function MedicineView({ plan }) {
       {/* ── Synergy note ── */}
       {plan.synergy_note && (
         <div className="rv-info-card">
-          <h3 className="rv-info-label"><Sparkles size={14} />Synergy of Formulations</h3>
+          <h3 className="rv-info-label"><Sparkles size={14} />{tr('ui.medicineView.synergyOfFormulations', 'Synergy of Formulations')}</h3>
           <p className="rv-info-body">{plan.synergy_note}</p>
         </div>
       )}
@@ -546,17 +542,17 @@ export function MedicineView({ plan }) {
       {/* ── Pathya-Apathya (structured lists) ── */}
       {(pathya.length > 0 || apathya.length > 0) && (
         <div className="mv-pathya-section">
-          <h3 className="rv-block-title"><UtensilsCrossed size={16} />Pathya & Apathya</h3>
+          <h3 className="rv-block-title"><UtensilsCrossed size={16} />{tr('ui.medicineView.pathyaApathya', 'Pathya & Apathya')}</h3>
           <div className="mv-pathya-grid">
             {pathya.length > 0 && (
               <div className="mv-pathya-col">
-                <div className="mv-pathya-col-label do">✓ Pathya (Do)</div>
+                <div className="mv-pathya-col-label do">{tr('ui.medicineView.pathyaDo', '✓ Pathya (Do)')}</div>
                 {pathya.map((p, i) => <div key={i} className="mv-pathya-row do">{p}</div>)}
               </div>
             )}
             {apathya.length > 0 && (
               <div className="mv-pathya-col">
-                <div className="mv-pathya-col-label dont">✗ Apathya (Avoid)</div>
+                <div className="mv-pathya-col-label dont">{tr('ui.medicineView.apathyaAvoid', '✗ Apathya (Avoid)')}</div>
                 {apathya.map((p, i) => <div key={i} className="mv-pathya-row dont">{p}</div>)}
               </div>
             )}
@@ -567,7 +563,7 @@ export function MedicineView({ plan }) {
       {/* ── Viruddha Ahara alerts ── */}
       {viruddha.length > 0 && (
         <div className="mv-viruddha-card">
-          <div className="mv-viruddha-label"><TriangleAlert size={13} />Viruddha Ahara — Incompatible Combinations</div>
+          <div className="mv-viruddha-label"><TriangleAlert size={13} />{tr('ui.medicineView.viruddhaAharaIncompatibleCombinations', 'Viruddha Ahara — Incompatible Combinations')}</div>
           {viruddha.map((v, i) => (
             <div key={i} className="mv-viruddha-row">{v}</div>
           ))}
@@ -577,15 +573,11 @@ export function MedicineView({ plan }) {
       {/* ── Lifestyle guidance (Dosha base) ── */}
       {(lifestyle.dietary_note || lifestyle.routine_note || lifestyle.avoid?.length > 0) && (
         <div className="rv-info-card">
-          <h3 className="rv-info-label" style={{ color: doshaText }}>
-            <Leaf size={14} />Lifestyle — {(plan.vikriti_dominant || plan.user_dosha)?.charAt(0).toUpperCase() + (plan.vikriti_dominant || plan.user_dosha)?.slice(1)} Vikriti
-          </h3>
+          <h3 className="rv-info-label" style={{ color: doshaText }}><Trans i18nKey="ui.medicineView.n0LifestyleVikriti" defaults={"<0/>Lifestyle — {{value}} Vikriti"} values={{ value: (plan.vikriti_dominant || plan.user_dosha)?.charAt(0).toUpperCase() + (plan.vikriti_dominant || plan.user_dosha)?.slice(1) }} components={[<Leaf size={14} />]} /></h3>
           {lifestyle.dietary_note && <p className="rv-info-body">{lifestyle.dietary_note}</p>}
           {lifestyle.routine_note && <p className="rv-info-body" style={{ marginTop: 6 }}>{lifestyle.routine_note}</p>}
           {lifestyle.changed_for_you?.length > 0 && (
-            <p className="rv-info-body" style={{ marginTop: 6, opacity: 0.8 }}>
-              Changed for you: {lifestyle.changed_for_you.join(' ')}
-            </p>
+            <p className="rv-info-body" style={{ marginTop: 6, opacity: 0.8 }}><Trans i18nKey="ui.medicineView.changedForYou" defaults={"Changed for you: {{value}}"} values={{ value: lifestyle.changed_for_you.join(' ') }} /></p>
           )}
           {lifestyle.avoid?.length > 0 && (
             <div className="rv-avoid-row">
@@ -598,7 +590,7 @@ export function MedicineView({ plan }) {
       {/* ── Monitoring signs ── */}
       {plan.monitoring_signs && (
         <div className="rv-info-card">
-          <h3 className="rv-info-label"><Stethoscope size={14} />Monitoring & Follow-Up</h3>
+          <h3 className="rv-info-label"><Stethoscope size={14} />{tr('ui.medicineView.monitoringFollowUp', 'Monitoring & Follow-Up')}</h3>
           <p className="rv-info-body">{plan.monitoring_signs}</p>
         </div>
       )}
@@ -606,7 +598,7 @@ export function MedicineView({ plan }) {
       {/* ── When to stop ── */}
       {plan.when_to_stop && (
         <div className="rv-info-card rv-escalate">
-          <h3 className="rv-info-label"><TriangleAlert size={14} />When to Stop & Consult Immediately</h3>
+          <h3 className="rv-info-label"><TriangleAlert size={14} />{tr('ui.medicineView.whenToStopConsultImmediately', 'When to Stop & Consult Immediately')}</h3>
           <p className="rv-info-body">{plan.when_to_stop}</p>
         </div>
       )}
@@ -614,7 +606,7 @@ export function MedicineView({ plan }) {
       {/* ── Blocked medicines ── */}
       {blocked.length > 0 && (
         <div className="mv-blocked-section">
-          <h3 className="rv-info-label"><TriangleAlert size={14} style={{ color: '#ef4444' }} />Medicines Excluded for Your Safety</h3>
+          <h3 className="rv-info-label"><TriangleAlert size={14} style={{ color: '#ef4444' }} />{tr('ui.medicineView.medicinesExcludedForYourSafety', 'Medicines Excluded for Your Safety')}</h3>
           {(showAllBlocked ? blocked : blocked.filter(b => b.for_your_conditions).slice(0, 8)).map((b, i) => (
             <div key={i} className="mv-blocked-item">
               <span className="mv-blocked-name">{b.name}</span>
@@ -625,8 +617,8 @@ export function MedicineView({ plan }) {
           {blocked.length > blocked.filter(b => b.for_your_conditions).slice(0, 8).length && (
             <button type="button" className="mv-show-all" onClick={() => setShowAllBlocked(v => !v)}>
               {showAllBlocked
-                ? 'Show only those for your conditions'
-                : `Show all ${blocked.length} excluded formulations`}
+                ? tr('ui.medicineView.showOnlyThoseForYour', 'Show only those for your conditions')
+                : tr('ui.medicineView.showAllExcludedFormulations', 'Show all {{length}} excluded formulations', { length: blocked.length })}
             </button>
           )}
         </div>
@@ -636,7 +628,7 @@ export function MedicineView({ plan }) {
           exclusion, so not listed with those: it is the same dose twice. */}
       {notDoubled.length > 0 && (
         <div className="mv-blocked-section">
-          <h3 className="rv-info-label">Left Out So a Herb Is Not Given Twice</h3>
+          <h3 className="rv-info-label">{tr('ui.medicineView.leftOutSoAHerb', 'Left Out So a Herb Is Not Given Twice')}</h3>
           {notDoubled.map((b, i) => (
             <div key={i} className="mv-blocked-item">
               <span className="mv-blocked-name">{b.name}</span>

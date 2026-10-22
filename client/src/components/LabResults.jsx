@@ -4,6 +4,8 @@ import { toast } from 'sonner'
 import { FlaskConical, Plus, X, Trash2, ChevronDown, ChevronUp, TriangleAlert } from 'lucide-react'
 import { labsAPI } from '../api/client'
 import LabReportUpload from './LabReportUpload'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './LabResults.css'
 
 // Lab results the patient enters from their report. The band each value is read
@@ -20,7 +22,7 @@ function ResultRow({ r, onDelete, deleting }) {
       <span>{r.taken_on}</span>
       <span className="lab-history-val">{r.value} {r.unit}</span>
       <span className={`lab-pill lab-pill--${r.status}`}>{STATUS_TEXT[r.status]}</span>
-      <button type="button" className="lab-icon-btn" aria-label={`Delete ${r.label} result from ${r.taken_on}`}
+      <button type="button" className="lab-icon-btn" aria-label={tr('ui.labResults.deleteResultFrom', 'Delete {{label}} result from {{taken_on}}', { label: r.label, taken_on: r.taken_on })}
         disabled={deleting} onClick={() => onDelete(r.id)}>
         <Trash2 size={14} />
       </button>
@@ -66,23 +68,23 @@ export default function LabResults() {
       setAdding(false)
       setError('')
       if (r.urgent) toast.warning(`${r.label}: ${r.advice}`, { duration: 10000 })
-      else toast.success('Result saved')
+      else toast.success(tr('ui.labResults.resultSaved', 'Result saved'))
     },
     onError: (e) => setError(e.response?.data?.detail?.toString?.() || 'Could not save that result.'),
   })
   const remove = useMutation({
     mutationFn: (id) => labsAPI.remove(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['labs'] }),
-    onError: () => toast.error('Could not delete that result.'),
+    onError: () => toast.error(tr('ui.labResults.couldNotDeleteThatResult', 'Could not delete that result.')),
   })
 
   function submit(e) {
     e.preventDefault()
     setError('')
     const value = parseFloat(form.value)
-    if (!form.test || Number.isNaN(value)) { setError('Choose a test and enter its value.'); return }
+    if (!form.test || Number.isNaN(value)) { setError(tr('ui.labResults.chooseATestAndEnter', 'Choose a test and enter its value.')); return }
     if (spec && (value < spec.min || value > spec.max)) {
-      setError(`${spec.label} is usually between ${spec.min} and ${spec.max} ${spec.unit} — please check the value and the unit on your report.`)
+      setError(tr('ui.labResults.isUsuallyBetweenAndPlease', '{{label}} is usually between {{min}} and {{max}} {{unit}} — please check the value and the unit on your report.', { label: spec.label, min: spec.min, max: spec.max, unit: spec.unit }))
       return
     }
     add.mutate({ test: form.test, value, taken_on: form.taken_on, note: form.note || undefined })
@@ -91,14 +93,13 @@ export default function LabResults() {
   return (
     <section className="lab-section" aria-labelledby="lab-title">
       <div className="lab-head">
-        <h2 id="lab-title" className="lab-title"><FlaskConical size={18} /> Lab results</h2>
+        <h2 id="lab-title" className="lab-title"><FlaskConical size={18} />{' '}{tr('ui.labResults.labResults', 'Lab results')}</h2>
         <button type="button" className="btn btn-secondary lab-add-btn" onClick={() => { setAdding(v => !v); setError('') }}>
-          {adding ? <><X size={15} /> Cancel</> : <><Plus size={15} /> Add a result</>}
+          {adding ? <><X size={15} />{' '}{tr('ui.labResults.cancel', 'Cancel')}</> : <><Plus size={15} />{' '}{tr('ui.labResults.addAResult', 'Add a result')}</>}
         </button>
       </div>
       <p className="lab-sub">
-        Upload your lab report or add results by hand. Each one is shown against its published range
-        and goes into the summary you can share with your Vaidya. They do not change your plans.
+        {tr('ui.labResults.uploadYourLabReportOr', 'Upload your lab report or add results by hand. Each one is shown against its published range and goes into the summary you can share with your Vaidya. They do not change your plans.')}
       </p>
 
       {!adding && <LabReportUpload />}
@@ -106,9 +107,9 @@ export default function LabResults() {
       {adding && (
         <form className="lab-form" onSubmit={submit}>
           <div className="input-group">
-            <label htmlFor="lab-test">Test</label>
+            <label htmlFor="lab-test">{tr('ui.labResults.test', 'Test')}</label>
             <select id="lab-test" value={form.test} onChange={e => setForm(f => ({ ...f, test: e.target.value }))} required>
-              <option value="">Choose a test…</option>
+              <option value="">{tr('ui.labResults.chooseATest', 'Choose a test…')}</option>
               {Object.entries(groups).map(([g, tests]) => (
                 <optgroup key={g} label={g}>
                   {tests.map(t => <option key={t.key} value={t.key}>{t.label}</option>)}
@@ -118,33 +119,33 @@ export default function LabResults() {
           </div>
           <div className="lab-form-row">
             <div className="input-group">
-              <label htmlFor="lab-value">Value{spec ? ` (${spec.unit})` : ''}</label>
+              <label htmlFor="lab-value"><Trans i18nKey="ui.labResults.value" defaults={"Value{{value}}"} values={{ value: spec ? ` (${spec.unit})` : '' }} /></label>
               {/* No min/max here: the browser's own range popup would block the
                   submit before the message below, which names the unit, could show. */}
               <input id="lab-value" type="number" step="any" inputMode="decimal" required
                 value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value }))} />
             </div>
             <div className="input-group">
-              <label htmlFor="lab-date">Date of the test</label>
+              <label htmlFor="lab-date">{tr('ui.labResults.dateOfTheTest', 'Date of the test')}</label>
               <input id="lab-date" type="date" required max={today()}
                 value={form.taken_on} onChange={e => setForm(f => ({ ...f, taken_on: e.target.value }))} />
             </div>
           </div>
-          {spec && <p className="lab-unit-hint">Enter it in {spec.unit}, as printed on your report.</p>}
+          {spec && <p className="lab-unit-hint"><Trans i18nKey="ui.labResults.enterItInAsPrinted" defaults={"Enter it in {{unit}}, as printed on your report."} values={{ unit: spec.unit }} /></p>}
           <div className="input-group">
-            <label htmlFor="lab-note">Note (optional)</label>
-            <input id="lab-note" type="text" maxLength={200} placeholder="e.g. fasting, after starting a new medicine"
+            <label htmlFor="lab-note">{tr('ui.labResults.noteOptional', 'Note (optional)')}</label>
+            <input id="lab-note" type="text" maxLength={200} placeholder={tr('ui.labResults.eGFastingAfterStarting', 'e.g. fasting, after starting a new medicine')}
               value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
           </div>
           {error && <p className="lab-error" role="alert">{error}</p>}
           <button type="submit" className="btn btn-primary" disabled={add.isPending}>
-            {add.isPending ? 'Saving…' : 'Save result'}
+            {add.isPending ? tr('ui.labResults.saving', 'Saving…') : tr('ui.labResults.saveResult', 'Save result')}
           </button>
         </form>
       )}
 
       {!isLoading && latest.length === 0 && !adding && (
-        <p className="lab-empty">No results yet. HbA1c, TSH, haemoglobin, cholesterol and blood pressure are good ones to start with.</p>
+        <p className="lab-empty">{tr('ui.labResults.noResultsYetHba1cTsh', 'No results yet. HbA1c, TSH, haemoglobin, cholesterol and blood pressure are good ones to start with.')}</p>
       )}
 
       {latest.length > 0 && (
@@ -173,7 +174,7 @@ export default function LabResults() {
                 {rows.length > 0 && (
                   <button type="button" className="lab-toggle" aria-expanded={isOpen}
                     onClick={() => setOpen(isOpen ? null : r.test)}>
-                    {isOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />} {rows.length === 1 ? '1 result' : `${rows.length} results`}
+                    {isOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />} {rows.length === 1 ? tr('ui.labResults.n1Result', '1 result') : `${rows.length} results`}
                   </button>
                 )}
                 {isOpen && (

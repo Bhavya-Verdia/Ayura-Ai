@@ -8,16 +8,17 @@ import {
   Pill, Flower2, Brain, Salad, ClipboardCheck, AlarmClock,
   Bell, Pencil, X, Plus, Clock, TriangleAlert,
 } from 'lucide-react'
+import { tr } from '../lib/tr'
 import './Reminders.css'
 
 // ── Constants ────────────────────────────────────────────────
 const TYPE_OPTIONS = [
-  { value: 'medication',  label: 'Medication',  Icon: Pill },
-  { value: 'yoga',        label: 'Yoga',         Icon: Flower2 },
-  { value: 'meditation',  label: 'Meditation',   Icon: Brain },
-  { value: 'diet',        label: 'Diet',         Icon: Salad },
-  { value: 'checkin',     label: 'Check-In',     Icon: ClipboardCheck },
-  { value: 'custom',      label: 'Custom',       Icon: AlarmClock },
+  { value: 'medication',  get label() { return tr('ui.reminders.medication', 'Medication') },  Icon: Pill },
+  { value: 'yoga',        get label() { return tr('ui.reminders.yoga', 'Yoga') },         Icon: Flower2 },
+  { value: 'meditation',  get label() { return tr('ui.reminders.meditation', 'Meditation') },   Icon: Brain },
+  { value: 'diet',        get label() { return tr('ui.reminders.diet', 'Diet') },         Icon: Salad },
+  { value: 'checkin',     get label() { return tr('ui.reminders.checkIn', 'Check-In') },     Icon: ClipboardCheck },
+  { value: 'custom',      get label() { return tr('ui.reminders.custom', 'Custom') },       Icon: AlarmClock },
 ]
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const DAY_VALUES = [1, 2, 3, 4, 5, 6, 0] // ISO weekday, Sun=0
@@ -150,14 +151,14 @@ function ReminderForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
       <div className="rem-form-grid">
         {/* Title */}
         <div className="input-group rem-form-full">
-          <label htmlFor="rem-title">Title *</label>
+          <label htmlFor="rem-title">{tr('ui.reminders.title', 'Title *')}</label>
           <input
             id="rem-title"
             ref={titleRef}
             type="text"
             value={form.title}
             onChange={e => set('title', e.target.value)}
-            placeholder="e.g. Morning Ashwagandha"
+            placeholder={tr('ui.reminders.eGMorningAshwagandha', 'e.g. Morning Ashwagandha')}
             required
             maxLength={80}
           />
@@ -165,7 +166,7 @@ function ReminderForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
 
         {/* Type */}
         <div className="input-group">
-          <label htmlFor="rem-type">Type</label>
+          <label htmlFor="rem-type">{tr('ui.reminders.type', 'Type')}</label>
           <select
             id="rem-type"
             value={form.type}
@@ -181,7 +182,7 @@ function ReminderForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
 
         {/* Time */}
         <div className="input-group">
-          <label htmlFor="rem-time">Time</label>
+          <label htmlFor="rem-time">{tr('ui.reminders.time', 'Time')}</label>
           <input
             id="rem-time"
             type="time"
@@ -192,7 +193,7 @@ function ReminderForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
 
         {/* Days */}
         <div className="input-group rem-form-full">
-          <label>Days of Week</label>
+          <label>{tr('ui.reminders.daysOfWeek', 'Days of Week')}</label>
           <DayChips
             selected={form.days_of_week}
             onChange={val => set('days_of_week', val)}
@@ -201,12 +202,12 @@ function ReminderForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
 
         {/* Description */}
         <div className="input-group rem-form-full">
-          <label htmlFor="rem-desc">Description (optional)</label>
+          <label htmlFor="rem-desc">{tr('ui.reminders.descriptionOptional', 'Description (optional)')}</label>
           <textarea
             id="rem-desc"
             value={form.description}
             onChange={e => set('description', e.target.value)}
-            placeholder="Add notes or dosage details…"
+            placeholder={tr('ui.reminders.addNotesOrDosageDetails', 'Add notes or dosage details…')}
             rows={3}
           />
         </div>
@@ -215,7 +216,7 @@ function ReminderForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
       {/* Actions */}
       <div className="rem-form-actions">
         <button type="button" className="btn btn-secondary btn-sm" onClick={onCancel} disabled={saving}>
-          Cancel
+          {tr('ui.reminders.cancel', 'Cancel')}
         </button>
         <m.button
           type="submit"
@@ -224,9 +225,9 @@ function ReminderForm({ initial = EMPTY_FORM, onSave, onCancel, saving }) {
           whileTap={{ scale: 0.96 }}
         >
           {saving ? (
-            <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Saving…</>
+            <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />{' '}{tr('ui.reminders.saving', 'Saving…')}</>
           ) : (
-            initial === EMPTY_FORM ? '+ Add Reminder' : '✓ Save Changes'
+            initial === EMPTY_FORM ? tr('ui.reminders.addReminder', '+ Add Reminder') : tr('ui.reminders.saveChanges', '✓ Save Changes')
           )}
         </m.button>
       </div>
@@ -244,10 +245,10 @@ function DeleteConfirm({ onConfirm, onCancel }) {
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2 }}
     >
-      <span>Delete this reminder?</span>
+      <span>{tr('ui.reminders.deleteThisReminder', 'Delete this reminder?')}</span>
       <div className="rem-delete-actions">
-        <button className="btn btn-secondary btn-sm" onClick={onCancel}>No</button>
-        <button className="btn btn-sm rem-btn-danger" onClick={onConfirm}>Yes, delete</button>
+        <button className="btn btn-secondary btn-sm" onClick={onCancel}>{tr('ui.reminders.no', 'No')}</button>
+        <button className="btn btn-sm rem-btn-danger" onClick={onConfirm}>{tr('ui.reminders.yesDelete', 'Yes, delete')}</button>
       </div>
     </m.div>
   )
@@ -311,21 +312,21 @@ function ReminderCard({ reminder, onToggle, onDelete, onEdit, index }) {
           <ToggleSwitch
             checked={reminder.is_active}
             onChange={handleToggle}
-            label={`Toggle ${reminder.title}`}
+            label={tr('ui.reminders.toggle', 'Toggle {{title}}', { title: reminder.title })}
           />
           <button
             className="rem-icon-btn rem-icon-btn--edit"
             onClick={() => { setEditing(e => !e); setConfirmDelete(false) }}
-            title="Edit"
-            aria-label="Edit reminder"
+            title={tr('ui.reminders.edit', 'Edit')}
+            aria-label={tr('ui.reminders.editReminder', 'Edit reminder')}
           >
             <Pencil size={14} strokeWidth={2} />
           </button>
           <button
             className="rem-icon-btn rem-icon-btn--delete"
             onClick={() => { setConfirmDelete(c => !c); setEditing(false) }}
-            title="Delete"
-            aria-label="Delete reminder"
+            title={tr('ui.reminders.delete', 'Delete')}
+            aria-label={tr('ui.reminders.deleteReminder', 'Delete reminder')}
           >
             <X size={15} strokeWidth={2} />
           </button>
@@ -398,7 +399,7 @@ export default function Reminders() {
       setReminders(data.map(fromApiShape))
     } catch (err) {
       console.error('Failed to load reminders:', err)
-      setError('Could not load reminders. Please try again.')
+      setError(tr('ui.reminders.couldNotLoadRemindersPlease', 'Could not load reminders. Please try again.'))
     } finally {
       setLoading(false)
     }
@@ -419,14 +420,14 @@ export default function Reminders() {
       // Only when the device has never been asked (permission 'default').
       pushStatus().then((status) => {
         if (status === 'off' && Notification.permission === 'default') {
-          toast('Want this reminder on your phone even when the app is closed?', {
+          toast(tr('ui.reminders.wantThisReminderOnYour', 'Want this reminder on your phone even when the app is closed?'), {
             id: 'push-optin',
             duration: 10000,
             action: {
-              label: 'Enable notifications',
+              label: tr('ui.reminders.enableNotifications', 'Enable notifications'),
               onClick: () =>
                 enablePush().then((r) => {
-                  if (r === 'subscribed') toast.success('Push enabled — reminders will reach this device.')
+                  if (r === 'subscribed') toast.success(tr('ui.reminders.pushEnabledRemindersWillReach', 'Push enabled — reminders will reach this device.'))
                 }),
             },
           })
@@ -477,7 +478,7 @@ export default function Reminders() {
   return (
     <>
       <Helmet>
-        <title>Reminders — Ayura AI</title>
+        <title>{tr('ui.reminders.remindersAyuraAi', 'Reminders — Ayura AI')}</title>
         <meta name="description" content="Manage your Ayura AI wellness reminders for medications, yoga, meditation, and more." />
       </Helmet>
 
@@ -494,11 +495,11 @@ export default function Reminders() {
             transition={{ duration: 0.4 }}
           >
             <div className="rem-header-left">
-              <h1 className="rem-page-title gradient-text">Reminders</h1>
+              <h1 className="rem-page-title gradient-text">{tr('ui.reminders.reminders', 'Reminders')}</h1>
               <p className="rem-page-sub">
                 {reminders.length === 0
-                  ? 'No reminders yet — add your first one'
-                  : `${activeCount} active · ${inactiveCount} paused`}
+                  ? tr('ui.reminders.noRemindersYetAddYour', 'No reminders yet — add your first one')
+                  : tr('ui.reminders.activePaused', '{{activeCount}} active · {{inactiveCount}} paused', { activeCount, inactiveCount })}
               </p>
             </div>
             <m.button
@@ -508,7 +509,7 @@ export default function Reminders() {
               aria-expanded={showForm}
             >
               <span className="rem-add-icon">{showForm ? <X size={16} strokeWidth={2.2} /> : <Plus size={16} strokeWidth={2.2} />}</span>
-              {showForm ? 'Cancel' : 'New Reminder'}
+              {showForm ? tr('ui.reminders.cancel', 'Cancel') : tr('ui.reminders.newReminder', 'New Reminder')}
             </m.button>
           </m.div>
 
@@ -522,7 +523,7 @@ export default function Reminders() {
                 exit={{ opacity: 0 }}
               >
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><TriangleAlert size={15} strokeWidth={2} /> {error}</span>
-                <button onClick={() => setError(null)} className="rem-toast-close" aria-label="Dismiss"><X size={14} strokeWidth={2} /></button>
+                <button onClick={() => setError(null)} className="rem-toast-close" aria-label={tr('ui.reminders.dismiss', 'Dismiss')}><X size={14} strokeWidth={2} /></button>
               </m.div>
             )}
             {success && (
@@ -548,7 +549,7 @@ export default function Reminders() {
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div className="rem-form-panel-inner">
-                  <h2 className="rem-form-title">New Reminder</h2>
+                  <h2 className="rem-form-title">{tr('ui.reminders.newReminder', 'New Reminder')}</h2>
                   <ReminderForm
                     initial={EMPTY_FORM}
                     onSave={handleCreate}
@@ -586,13 +587,13 @@ export default function Reminders() {
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="rem-empty-icon"><Bell size={28} strokeWidth={1.8} /></div>
-              <h2 className="rem-empty-title">No reminders yet</h2>
-              <p className="rem-empty-sub">Create your first reminder to stay on track with your wellness routine.</p>
+              <h2 className="rem-empty-title">{tr('ui.reminders.noRemindersYet', 'No reminders yet')}</h2>
+              <p className="rem-empty-sub">{tr('ui.reminders.createYourFirstReminderTo', 'Create your first reminder to stay on track with your wellness routine.')}</p>
               <button
                 className="btn btn-primary"
                 onClick={() => setShowForm(true)}
               >
-                + Add Reminder
+                {tr('ui.reminders.addReminder', '+ Add Reminder')}
               </button>
             </m.div>
           ) : (

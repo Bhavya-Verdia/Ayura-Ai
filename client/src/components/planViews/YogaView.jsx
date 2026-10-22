@@ -7,8 +7,9 @@ import { PoseFigure } from './PoseFigure'
 import { SessionPlayer } from './SessionPlayer'
 import { WeekFeedbackCard } from './WeekFeedbackCard'
 import { primaryName, secondaryName } from './poseNames'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 
+import { tr } from '../../lib/tr'
 const SNS_BREATH_COLOR = { 'Inhale': '#3b82f6', 'Exhale': '#ef4444', 'Natural': '#6b7280', 'Exhale — hold 3-5 breaths': '#ef4444' }
 
 
@@ -295,8 +296,8 @@ export function YogaView({ plan: planProp, seasonContext, onRegenerate }) {
           seizure, standing up too fast on blood-pressure tablets. The gym showed
           these; yoga had none. */}
       {Array.isArray(plan.condition_guidance) && plan.condition_guidance.length > 0 && (
-        <section className="gym-condition-guidance" aria-label="Before you practise">
-          <h4><ShieldCheck size={14} /> Before you practise</h4>
+        <section className="gym-condition-guidance" aria-label={tr('ui.yogaView.beforeYouPractise', 'Before you practise')}>
+          <h4><ShieldCheck size={14} />{' '}{tr('ui.yogaView.beforeYouPractise', 'Before you practise')}</h4>
           <ul>
             {plan.condition_guidance.map(g => (
               <li key={g.key}><strong>{g.label}.</strong> {g.note}</li>
@@ -313,11 +314,9 @@ export function YogaView({ plan: planProp, seasonContext, onRegenerate }) {
       {plan.coaching_withheld?.length > 0 && (
         <div className="yoga-pool-notice">
           <Info size={12} />
-          <span>
-            {plan.coaching_withheld.length} line{plan.coaching_withheld.length === 1 ? '' : 's'} of the AI coaching{' '}
-            {plan.coaching_withheld.length === 1 ? 'was' : 'were'} withheld because{' '}
-            {plan.coaching_withheld.length === 1 ? 'it' : 'they'} named a practice this plan leaves out for you.
-          </span>
+          <span>{plan.coaching_withheld.length === 1
+            ? tr('ui.yogaView.withheldOne', '1 line of the AI coaching was withheld because it named a practice this plan leaves out for you.')
+            : tr('ui.yogaView.withheldMany', '{{count}} lines of the AI coaching were withheld because they named a practice this plan leaves out for you.', { count: plan.coaching_withheld.length })}</span>
         </div>
       )}
 
@@ -524,7 +523,7 @@ export function YogaView({ plan: planProp, seasonContext, onRegenerate }) {
                 >
                   <div className="yoga-day-name">
                     {isRest ? <Moon size={13} /> : <Flower2 size={13} />}
-                    {day.day_name || `Day ${day.day}`}
+                    {day.day_name || tr('ui.yogaView.day', 'Day {{day}}', { day: day.day })}
                   </div>
                   <div className="yoga-day-headmeta">
                     {!dayOpen && summaryBits.length > 0 && (
@@ -664,7 +663,7 @@ export function YogaView({ plan: planProp, seasonContext, onRegenerate }) {
                                     <span className="yoga-duration-badge">{p.duration_seconds}s</span>
                                   )}
                                   {p.skip_during_period && plan.menstruation_note && (
-                                    <span className="yoga-category-chip" title="Skip on the days of your period">Skip on period days</span>
+                                    <span className="yoga-category-chip" title={tr('ui.yogaView.skipOnTheDaysOf', 'Skip on the days of your period')}>{tr('ui.yogaView.skipOnPeriodDays', 'Skip on period days')}</span>
                                   )}
                                   {p.category && (
                                     <span className="yoga-category-chip">{p.category}</span>
