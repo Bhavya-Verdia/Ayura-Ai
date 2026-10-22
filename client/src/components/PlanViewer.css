@@ -2116,6 +2116,40 @@
   color: var(--plan-amber);
 }
 
+/* The plan's season has passed or its four weeks are over. Amber like the seasonal
+   note it qualifies, with the action beside it. */
+.yoga-plan-age {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0.95rem;
+  background: var(--ayura-card-bg);
+  border: 1px solid var(--plan-amber);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--ayura-text);
+}
+.yoga-plan-age > svg { flex-shrink: 0; margin-top: 0.2rem; color: var(--plan-amber); }
+.yoga-plan-age p { margin: 0 0 0.5rem; }
+.yoga-plan-age-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ayura-text);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.yoga-plan-age-btn:hover { border-color: var(--plan-amber); }
+.yoga-plan-age-btn:focus-visible { outline: 2px solid var(--plan-amber); outline-offset: 2px; }
+
 /* ── Honesty notices ──
    Why a plan is narrower than usual (pool heavily filtered by conditions), and why
    a session runs shorter or longer than the duration that was asked for. Same

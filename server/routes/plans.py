@@ -1290,6 +1290,30 @@ async def get_latest_plan(user: UserDocument = Depends(get_current_user), db: As
     return PlanResponse(**plan_data)
 
 
+def _season_context(doc: dict) -> dict | None:
+    """The Ritu a plan was built in and the Ritu now.
+
+    A plan's seasonal note is written once, at generation. A yoga plan built on 13
+    August still read "Monsoon / Vata season" in Sharad, with nothing to say the
+    season had moved on. Plans from before the engine stamped `season` take it from
+    the date they were generated, on the same calendar.
+    """
+    from engine.seasonal import get_current_season
+
+    generated = doc.get("generated_at")
+    if isinstance(generated, str):
+        try:
+            generated = datetime.fromisoformat(generated.replace("Z", "+00:00"))
+        except ValueError:
+            generated = None
+    stamped = (doc.get("plan_data") or {}).get("season")
+    if not stamped and not isinstance(generated, datetime):
+        return None
+    built = str(stamped).lower() if stamped else get_current_season(generated.date()).name.lower()
+    now = get_current_season()
+    return {"built_for": built, "now": now.name.lower(), "now_english": now.english_name}
+
+
 @router.get("/history")
 async def get_plan_history(
     user: UserDocument = Depends(get_current_user),
@@ -1319,7 +1343,8 @@ async def get_plan_history(
             "adaptation_summary": p.get("plan_data", {}).get("adaptation_summary"),
             "version_diff": p.get("plan_data", {}).get("version_diff"),
             "ratings": p.get("plan_data", {}).get("ratings", {}),
-            "plan_data": {**p.get("plan_data", {}), "id": p["_id"]},
+            "plan_data": {**p.get("plan_data", {}), "id": p["_id"],
+                          "season_context": _season_context(p)},
         }
         for p in plans
     ]
@@ -1514,9 +1539,13 @@ async def check_interactions(
     PROPOSED HERBS: {herbs}
     DETECTED RISKS: {warnings}
 
-    MEDICAL CONTEXT: {context}
+    BACKGROUND REFERENCE (retrieved from a knowledge base for you, the writer; the user
+    has not seen it and was not given it): {context}
 
     Write a clear, professional warning about these interactions.
+    Discuss only the herbs and medications listed above. Do not mention any other
+    herb, formulation, remedy or condition, and never write as though a remedy was
+    suggested to the user: the reference above is background, not their plan.
     State explicitly that they must consult their doctor before proceeding.
     """
 

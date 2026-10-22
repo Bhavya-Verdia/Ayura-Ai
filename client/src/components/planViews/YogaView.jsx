@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import {
-  Sun, Leaf, AlertTriangle, Droplets, ShieldCheck, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain, Play, Info,
+  Sun, Leaf, AlertTriangle, Droplets, ShieldCheck, Flame, Moon, Timer, Zap, Target, Activity, ChevronDown, ChevronUp, Wind, Flower2, Brain, Play, Info, RefreshCw,
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 import { PoseFigure } from './PoseFigure'
@@ -93,12 +93,57 @@ function SuryaNamaskarCard({ sns }) {
   )
 }
 
+// ── How old the plan is ───────────────────────────────────────────────────────
+// A plan built on 13 August still read "Monsoon / Vata season" in Sharad, with
+// nothing to say so, while Gym and Diet each mark the end of their four weeks.
+// The Ritu comes from the server (`season_context` on the plan history), on the
+// same calendar as the dashboard's seasonal card.
+const PLAN_DAYS = 28
+const titleCase = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '')
+
+function yogaPlanAge(plan, seasonContext, now = Date.now()) {
+  const built = Date.parse(plan?.generated_at || '')
+  const days = Number.isNaN(built) ? null : Math.floor((now - built) / 86400000)
+  const seasonPassed = Boolean(seasonContext && seasonContext.built_for && seasonContext.now
+    && seasonContext.built_for !== seasonContext.now)
+  const over = days != null && days >= PLAN_DAYS
+  if (!seasonPassed && !over) return null
+  return { days, seasonPassed, over, builtFor: titleCase(seasonContext?.built_for),
+           now: titleCase(seasonContext?.now), nowEnglish: seasonContext?.now_english }
+}
+
+function YogaPlanAge({ age, onRegenerate }) {
+  const { t } = useTranslation()
+  const weeks = age.days != null ? Math.floor(age.days / 7) : null
+  return (
+    <div className="yoga-plan-age" role="status">
+      <Leaf size={14} />
+      <div>
+        <p>
+          {age.seasonPassed
+            ? t('yoga.seasonPassed', 'This plan was built for {{built}}. It is now {{now}} ({{english}}), so its seasonal advice no longer applies.',
+              { built: age.builtFor, now: age.now, english: age.nowEnglish })
+            : t('yoga.planOver', 'This plan was built {{weeks}} weeks ago and its four weeks are over.', { weeks })}
+        </p>
+        {onRegenerate && (
+          <button type="button" className="yoga-plan-age-btn" onClick={onRegenerate}>
+            <RefreshCw size={12} />
+            {age.seasonPassed
+              ? t('yoga.rebuildSeason', 'Rebuild for {{now}}', { now: age.now })
+              : t('yoga.buildNext', 'Build my next four weeks')}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Yoga dedicated renderer ────────────────────────────────────────────────────
 
 const YOGA_WEEK_THEMES = ['Foundation', 'Deepen', 'Challenge', 'Integration']
 
 
-export function YogaView({ plan: planProp }) {
+export function YogaView({ plan: planProp, seasonContext, onRegenerate }) {
   const { t } = useTranslation()
   // Generating the next week returns the whole updated plan; hold it locally so
   // the new week appears immediately rather than waiting on a refetch.
@@ -176,8 +221,11 @@ export function YogaView({ plan: planProp }) {
     const next = new Set(prev); next.has(dayIdx) ? next.delete(dayIdx) : next.add(dayIdx); return next
   })
 
+  const age = yogaPlanAge(plan, seasonContext)
+
   return (
     <div className="yoga-view">
+      {age && <YogaPlanAge age={age} onRegenerate={onRegenerate} />}
       {plan.plan_description && (
         <p className="yoga-description">{plan.plan_description}</p>
       )}
@@ -235,7 +283,10 @@ export function YogaView({ plan: planProp }) {
       {plan.seasonal_note && (
         <div className="yoga-seasonal-note">
           <Leaf size={12} />
-          <span>{plan.seasonal_note}</span>
+          <span>
+            {age?.seasonPassed && <strong>{t('yoga.writtenFor', 'Written for {{season}}:', { season: age.builtFor })} </strong>}
+            {plan.seasonal_note}
+          </span>
         </div>
       )}
 
