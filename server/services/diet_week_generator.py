@@ -69,7 +69,7 @@ ALLOWED FOODS for this patient (id — name [state] kcal and protein per 100 g).
 {foods}
 
 Write WEEK {week} of the plan. Therapeutic phase: "{phase}".
-This week's staples, so the four weeks differ: {staples}.{fasting}
+This week's staples, so the four weeks differ: {staples}.{fasting}{rituals}
 
 Per-meal kcal budget: breakfast ~{b} | lunch ~{l} | snack ~{s} | dinner ~{d}. \
 Protein at least {protein} g per day. Carbohydrate about {carbs} g per day. Fat about \
@@ -276,6 +276,21 @@ def _off_list(meal: dict, allowed_ids: set) -> list[str]:
     return [c["food"] for c in dn.components_of(meal) if c["food"] not in allowed_ids]
 
 
+def _ritual_line(rituals) -> str:
+    """The fixed wake-up and bedtime drinks, so the special drink is not a second one.
+
+    The week calls never saw them. A live plan's day showed "Bedtime drink: Cool milk
+    with cardamom and fennel" and, under it, the special drink "Warm Fennel Milk —
+    before bed": two bedtime milks, one cool and one warm, on the same screen."""
+    named = [f'{r.get("slot", "").replace("_", "-")}: {r.get("name")}' for r in rituals or []
+             if r.get("name")]
+    if not named:
+        return ""
+    return ("\nThe patient already has these drinks every day: " + "; ".join(named) + ". "
+            "The special_drink must be taken at another time of day (mid-morning or "
+            "afternoon), never on waking or at bedtime, and must not repeat them.")
+
+
 def _units(weeks: list[dict]):
     for w in weeks:
         for d in DAYS:
@@ -299,8 +314,16 @@ def _scan(plan: dict, allergies, intolerances, dietary_type, conditions, extra_t
     probe = apply_condition_food_safety(probe, conditions, extra_terms=extra_terms,
                                         pregnant=pregnant)
     found: dict[tuple, list[str]] = {}
+    # Viruddha is reported once per combination for the whole plan, with no week or
+    # day, so reading it from the plan-level list below never produced a key: every
+    # Viruddha meal skipped repair. A live plan served "Banana milk" in weeks 2 and 3
+    # under its own "Viruddha Ahara detected: milk with banana" banner. The scan
+    # marks each meal, and that is what is read here.
+    for w, d, slot, day in _units(probe["diet_weeks"]):
+        for combination in day[slot].get("viruddha_warnings") or []:
+            found.setdefault((w, d, slot), []).append(f"Viruddha Ahara: {combination}")
     for key in ("safety_alerts", "dietary_type_alerts", "condition_safety_alerts",
-                "viruddha_ahara_detected", "unscannable_alerts"):
+                "unscannable_alerts"):
         for a in probe.get(key) or []:
             wk = str(a.get("week", "")).replace("Week ", "")
             try:
@@ -959,7 +982,7 @@ async def generate_week_by_week(user_profile: dict, diet_prefs: dict, brief: str
             carbs=(energy.get("nutrient_targets") or {}).get("carbs_g", {}).get("target", "~55% of energy"),
             carb_rule=_carb_rule(energy),
             salt_g=_salt_budget(energy), micro_rule=_micro_rule(energy),
-            drink=_DRINK_SHAPE)
+            drink=_DRINK_SHAPE, rituals=_ritual_line(frame["rituals"]))
 
     overview_prompt = OVERVIEW_PROMPT.format(
         brief=brief, food_names=", ".join(dn._short(f.get("name") or f["id"]) for f in allowed))

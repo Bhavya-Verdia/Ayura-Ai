@@ -65,7 +65,16 @@ SYSTEM = (
     "leave Latin letters in an Indian-script translation. Keep the ' · ' separators in "
     "portion lines. "
     "'Vegan' means no animal food at all, dairy included: never translate it with the "
-    "word for vegetarian (in Hindi use वीगन, not शाकाहारी).")
+    "word for vegetarian (in Hindi use वीगन, not शाकाहारी). 'Vegetarian' includes milk "
+    "and dairy: translate it with the word for vegetarian (in Hindi शाकाहारी), never "
+    "with the word for vegan.")
+
+# The two words are the patient's dietary type, so a translation that swaps them is
+# wrong about what they eat. The prompt above warned only one way, and a live Hindi
+# plan turned "timely vegetarian meals" into "वीगन भोजन". Checked, not trusted.
+_VEGAN_WORDS = {"hi": ("वीगन", "वेगन"), "sa": ("वीगन", "वेगन"), "kn": ("ವೀಗನ್",),
+                "ta": ("வீகன்", "வேகன்"), "es": ("vegan",), "fr": ("végétalien", "vegan"),
+                "zh": ("纯素",)}
 
 PROMPT = """Translate each value into {language}. Return only JSON, exactly {{"t": {{"<same key>": "<translation>"}}}} with every key.
 {items}"""
@@ -137,10 +146,14 @@ def source_hash(strings: dict[str, str]) -> str:
 _NUM = re.compile(r"\d+(?:[.,]\d+)?")
 
 
-def faithful(english: str, translated, path: str = "") -> bool:
+def faithful(english: str, translated, path: str = "", lang: str = "") -> bool:
     """What can be verified about a translation without reading it."""
     if not isinstance(translated, str) or not translated.strip():
         return False
+    vegan_words = _VEGAN_WORDS.get(lang, ())
+    if vegan_words and "vegan" not in english.lower():
+        if any(w in translated.lower() for w in vegan_words):
+            return False
     if sorted(_NUM.findall(english)) != sorted(_NUM.findall(translated)):
         return False
     if path.endswith(".portion") and english.count("·") != translated.count("·"):
@@ -197,7 +210,7 @@ async def translate_diet_plan(plan: dict, lang: str, previous: dict | None = Non
     strings: dict[str, str] = dict(kept)
     for got in results:
         for p, text in got.items():
-            if faithful(english[p], text, p):
+            if faithful(english[p], text, p, lang):
                 strings[p] = text
     return {"lang": lang, "source_hash": source_hash(english), "strings": strings,
             "sources": {p: line_hash(english[p]) for p in strings},

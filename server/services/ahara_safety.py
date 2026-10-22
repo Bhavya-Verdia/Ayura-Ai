@@ -343,7 +343,11 @@ def _meal_text(meal) -> str:
 
 
 def _group_hit(text: str, group: list[str]) -> bool:
-    return any(term in text for term in group)
+    # The word matcher every other scan uses, not a substring: "til" was found in
+    # "lentil" and "mula" in "formula", and a plant milk read as milk, so almond milk
+    # with banana was reported as Charaka's milk-and-banana Viruddha. Those findings
+    # now send a meal to repair, so a false one costs the patient a dish.
+    return any(_term_in_text(term, text) for term in group)
 
 
 def scan_meal_for_viruddha(meal, slot: str) -> list[dict]:
