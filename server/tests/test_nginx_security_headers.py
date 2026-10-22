@@ -18,6 +18,8 @@ _HEADERS = (
     "X-Content-Type-Options",
     "Strict-Transport-Security",
     "Content-Security-Policy",
+    "Referrer-Policy",
+    "Permissions-Policy",
 )
 
 

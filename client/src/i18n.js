@@ -42,6 +42,13 @@ i18n
  * persisting the choice. All language changes should go through this (not
  * i18n.changeLanguage directly) so non-English bundles are actually loaded.
  */
+// <html lang> follows the language on screen. It stayed "en" under Hindi, so a
+// screen reader read Devanagari with an English voice and the browser offered to
+// translate a page that was already translated.
+i18n.on('languageChanged', (lng) => {
+  try { document.documentElement.lang = lng } catch { /* no DOM (prerender build) */ }
+});
+
 export async function setLanguage(lang) {
   const loader = LOCALE_LOADERS[lang];
   if (loader && !i18n.hasResourceBundle(lang, 'translation')) {

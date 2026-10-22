@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { Landing, DoshaTest, Login, Register, hydration } from './lib/snapshotPages'
+import { Landing, DoshaTest, Login, Register, Terms, Privacy, hydration } from './lib/snapshotPages'
 import { isReturningUser } from './lib/sessionHint'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
@@ -92,7 +92,7 @@ const tree = (
   </React.StrictMode>
 )
 
-// "/" and "/dosha-test" arrive as prerendered HTML (scripts/prerender.mjs).
+// "/", "/dosha-test", the auth and the legal pages arrive as prerendered HTML (scripts/prerender.mjs).
 // createRoot threw that DOM away and drew the page again once every chunk had
 // loaded, so the hero a visitor was already reading was painted twice and the
 // LCP was the second paint: 92% of a 5.7s mobile LCP was that redraw.
@@ -116,6 +116,8 @@ const SNAPSHOT_ROUTES = {
   '/dosha-test': DoshaTest.preload,
   '/login': Login.preload,
   '/register': Register.preload,
+  '/terms': Terms.preload,
+  '/privacy': Privacy.preload,
 }
 // For a browser that has been signed in, PublicRoute's first render is the
 // session check's loading screen (and then, usually, a redirect), which no
@@ -124,7 +126,13 @@ const SIGNED_OUT_ONLY = new Set(['/login', '/register'])
 
 const container = document.getElementById('root')
 const path = window.location.pathname
-const route = SIGNED_OUT_ONLY.has(path) && isReturningUser() ? null : SNAPSHOT_ROUTES[path]
+// The snapshots are English. A visitor who chose another language renders it, so
+// hydrating could only fail: on a phone set to Hindi the landing page threw React
+// #418 and was drawn a second time. They get a plain render instead.
+const nonEnglish = (() => {
+  try { const l = localStorage.getItem('ayura_lang'); return Boolean(l && l !== 'en') } catch { return false }
+})()
+const route = nonEnglish || (SIGNED_OUT_ONLY.has(path) && isReturningUser()) ? null : SNAPSHOT_ROUTES[path]
 if (route && container.hasChildNodes()) {
   route()
     .catch(() => {})

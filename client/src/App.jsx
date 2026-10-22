@@ -17,7 +17,7 @@ import ReloadPrompt from './components/ReloadPrompt'
 import OfflineBanner from './components/OfflineBanner'
 import { trackPageview } from './lib/analytics'
 import { isReturningUser } from './lib/sessionHint'
-import { Landing, DoshaTest, Login, Register, hydration } from './lib/snapshotPages'
+import { Landing, DoshaTest, Login, Register, Terms, Privacy, hydration } from './lib/snapshotPages'
 
 // Lazy like the pages: the app shell (sidebar, command palette, feedback
 // widget + Dashboard.css) is only for authenticated users — statically
@@ -41,8 +41,6 @@ const ResetPassword = React.lazy(() => import('./pages/ResetPassword'))
 const VerifyEmail = React.lazy(() => import('./pages/VerifyEmail'))
 const Admin = React.lazy(() => import('./pages/Admin'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
-const Terms = React.lazy(() => import('./pages/Terms'))
-const Privacy = React.lazy(() => import('./pages/Privacy'))
 const Remedies = React.lazy(() => import('./pages/Remedies'))
 const HealthTimeline = React.lazy(() => import('./pages/HealthTimeline'))
 const CheckIn = React.lazy(() => import('./pages/CheckIn'))

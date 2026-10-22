@@ -17,6 +17,9 @@ export default function Privacy() {
     <div className="legal-page">
       <Helmet>
         <title>Privacy Policy | Ayura AI</title>
+        <meta name="description" content="How Ayura AI collects, uses, stores and deletes your health data under India's DPDP Act 2023, and the rights you can exercise over it." />
+        <link rel="canonical" href="https://ayuraai.in/privacy" />
+        <meta property="og:url" content="https://ayuraai.in/privacy" />
       </Helmet>
 
       <Link to="/" className="legal-back">

@@ -18,6 +18,9 @@ export default function Terms() {
     <div className="legal-page">
       <Helmet>
         <title>Terms of Service | Ayura AI</title>
+        <meta name="description" content="The terms for using Ayura AI's Ayurvedic wellness plans, AI chat and community: what the service is, what it is not, and your responsibilities." />
+        <link rel="canonical" href="https://ayuraai.in/terms" />
+        <meta property="og:url" content="https://ayuraai.in/terms" />
       </Helmet>
 
       <Link to="/" className="legal-back">
