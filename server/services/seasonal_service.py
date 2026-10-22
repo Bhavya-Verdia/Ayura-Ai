@@ -76,6 +76,39 @@ async def build_seasonal_guidance(
         else season_info.accumulating_dosha
     )
 
+    profile = user_profile or {}
+    def _as_list(value):
+        """A profile field that should be a list and is sometimes a string."""
+        if isinstance(value, str):
+            return [value] if value.strip() else []
+        return [v for v in (value or []) if str(v).strip()]
+
+    conditions = _as_list(profile.get("medical_history"))
+    allergies = _as_list(profile.get("allergies"))
+    dietary_type = profile.get("dietary_type") or "vegetarian"
+    pregnant = bool(profile.get("pregnancy_or_nursing"))
+
+    # Every dashboard load used to run the weather lookup, a RAG query and an LLM
+    # call: 4-5 s and a billed request, with no server cache and no quota, and a
+    # differently worded card each time. The card depends only on the season and
+    # on the profile fields below, so everyone who shares them shares one answer
+    # for CACHE_SECONDS. Only a card the model actually wrote is cached; a
+    # fallback is a failure, not an answer, and caching it would keep the
+    # generic card on screen for hours after the model recovered.
+    cache_params = {
+        "v": 2,
+        "season": season_info.name,
+        "year": (current_date or date.today()).year,
+        "dosha": user_dosha,
+        "conditions": sorted(str(c).lower() for c in conditions),
+        "allergies": sorted(str(a).lower() for a in allergies),
+        "dietary_type": dietary_type,
+        "pregnant": pregnant,
+    }
+    cached = await _cache_get(cache_params)
+    if cached:
+        return cached
+
     # Fetch real-time weather (optional)
     weather = await fetch_weather()
 
@@ -108,18 +141,6 @@ CURRENT WEATHER (real-time):
 - Ayurvedic Impact: {weather['ayurvedic_impact']['summary']}
 """
 
-    profile = user_profile or {}
-    def _as_list(value):
-        """A profile field that should be a list and is sometimes a string."""
-        if isinstance(value, str):
-            return [value] if value.strip() else []
-        return [v for v in (value or []) if str(v).strip()]
-
-    conditions = _as_list(profile.get("medical_history"))
-    allergies = _as_list(profile.get("allergies"))
-    dietary_type = profile.get("dietary_type") or "vegetarian"
-    pregnant = bool(profile.get("pregnancy_or_nursing"))
-
     patient_block = ""
     if conditions or allergies or pregnant:
         lines = []
@@ -145,6 +166,10 @@ RISK LEVEL: {risk_level}
 AYURVEDIC KNOWLEDGE:
 {context if context else 'Provide careful, season-aware Ayurvedic guidance.'}
 
+When you mention one of the patient's conditions, say what eases or manages it
+("calm anxiety", "steady blood sugar"). Never write "support <condition>" or
+"promote <condition>": it reads as encouraging the disease.
+
 Return ONLY valid JSON in this format:
 {{
   "focus": "One sentence seasonal focus",
@@ -156,6 +181,7 @@ Return ONLY valid JSON in this format:
 """
 
     recommendations = fallback
+    answered = False
     if llm_client.provider != "none":
         try:
             response = await llm_client.generate(
@@ -173,6 +199,7 @@ Return ONLY valid JSON in this format:
                 "avoid": parsed.get("avoid") or fallback["avoid"],
                 "dosha_impact": parsed.get("dosha_impact") or fallback["dosha_impact"],
             }
+            answered = True
         except Exception:
             recommendations = fallback
 
@@ -205,7 +232,7 @@ Return ONLY valid JSON in this format:
     except Exception as gate_err:   # a safety layer must not lose the card
         logger.warning("seasonal guidance safety gate degraded: %s", gate_err)
 
-    return {
+    card = {
         "season": season_info.name,
         "english_name": season_info.english_name,
         "focus": recommendations["focus"],
@@ -227,3 +254,26 @@ Return ONLY valid JSON in this format:
             "generated_from": "calendar_ritu_and_rag",
         },
     }
+    if answered:
+        await _cache_set(cache_params, card)
+    return card
+
+
+CACHE_SECONDS = 6 * 60 * 60   # the dashboard's own staleTime for this card
+
+
+async def _cache_get(params: dict) -> dict | None:
+    from core.cache import cache_manager
+    try:
+        return await cache_manager.get_plan("seasonal", params)
+    except Exception as err:   # no cache is a slower card, never a missing one
+        logger.warning("seasonal cache read failed: %s", err)
+        return None
+
+
+async def _cache_set(params: dict, card: dict) -> None:
+    from core.cache import cache_manager
+    try:
+        await cache_manager.set_plan("seasonal", params, card, expire=CACHE_SECONDS)
+    except Exception as err:
+        logger.warning("seasonal cache write failed: %s", err)
