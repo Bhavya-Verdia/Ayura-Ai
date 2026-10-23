@@ -71,3 +71,37 @@ def test_no_english_value_is_spliced_into_a_sentence():
             for p in src.rglob("*.js*") for m in spliced.finditer(p.read_text())
             if "style={{" not in m.group(0)]
     assert not hits, hits[:5]
+
+
+def test_no_element_is_passed_as_a_translation_value():
+    """`values` are interpolated as text. An element passed there (a badge, an icon, a
+    fragment holding the gains list or the ghee ladder's last day) is dropped from the
+    screen without an error: put elements in `components`, or outside the string."""
+    src = Path(__file__).resolve().parents[2] / "client" / "src"
+    vals = re.compile(r"values=\{\{(.*?)\}\}\s*(?:components|/>)", re.S)
+    hits = [f"{p.relative_to(src)}: {m.group(1)[:80]}"
+            for p in src.rglob("*.jsx") for m in vals.finditer(p.read_text())
+            if re.search(r"<[A-Za-z>]", m.group(1))]
+    assert not hits, hits[:5]
+
+
+_OF = re.compile(r"\{\{(\w+)\}\}(?:</?\d>)?\s+of\s+(?:<\d>)?\{\{(\w+)\}\}")
+
+
+@pytest.mark.parametrize("lang", ("hi", "kn", "ta", "sa"))
+def test_a_count_of_a_total_keeps_its_order(lang):
+    """"{{done}} of {{planned}}" is translated in English word order often enough: the
+    English "of" left in place, or Hindi "{{done}} में से {{planned}}", which says
+    "{{planned}} out of {{done}}" — ten of twelve sessions read as twelve of ten."""
+    got = _flat(json.loads((LOCALES / f"{lang}.json").read_text()).get("ui") or {})
+    bad = []
+    for k, en in EN.items():
+        m, v = _OF.search(en), got.get(k, "")
+        if not m:
+            continue
+        a, b = (f"{{{{{x}}}}}" for x in m.groups())
+        if re.search(r"\}\}(?:</?\d>)?\s+of\s", v):
+            bad.append((k, v))
+        elif lang == "hi" and re.search(re.escape(a) + r"(?:</?\d>)?\s*में से\s*(?:<\d>)?" + re.escape(b), v):
+            bad.append((k, v))
+    assert not bad, bad[:5]

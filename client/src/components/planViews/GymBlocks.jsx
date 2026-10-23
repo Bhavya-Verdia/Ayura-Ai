@@ -33,18 +33,25 @@ export function GymBlockComplete({ plan, over, onRegenerate }) {
   const extraSet = block === 1 && !/PREGNANCY/.test(plan?.disclaimer || '')
   const done = summary?.sessions_logged ?? 0
   const planned = summary?.sessions_planned ?? 0
+  const gains = (summary?.progressed || []).slice(0, 3)
+    .map(p => `${p.exercise} +${p.change_percent}%`).join(', ')
   return (
     <div className={`gym-block-card${over ? ' over' : ''}`}>
       <span className="gym-checkin-title">
         <Award size={16} /> {over ? tr('ui.gymBlocks.blockComplete', 'Block {{block}} complete', { block }) : tr('ui.gymBlocks.whenYouFinishWeek4', 'When you finish week 4')}
       </span>
       {summary && (
-        <p className="gym-block-line"><Trans i18nKey="ui.gymBlocks.youLogged0Of0" defaults={"You logged <0>{{done}} of {{planned}}</0> sessions {{value}}."} values={{ done, planned, value: summary.progressed?.length > 0 && <> — {summary.progressed.slice(0, 3)
-            .map(p => `${p.exercise} +${p.change_percent}%`).join(', ')}</> }} components={[<strong />]} /></p>
+        <p className="gym-block-line">
+          {gains
+            ? <Trans i18nKey="ui.gymBlocks.youLoggedSessionsGains" defaults={"You logged <0>{{done}} of {{planned}}</0> sessions — {{gains}}."} values={{ done, planned, gains }} components={[<strong />]} />
+            : <Trans i18nKey="ui.gymBlocks.youLoggedSessions" defaults={"You logged <0>{{done}} of {{planned}}</0> sessions."} values={{ done, planned }} components={[<strong />]} />}
+        </p>
       )}
       <p className="gym-block-line gym-block-next">
         {builds
-          ? tr('ui.gymBlocks.blockBuildsOnItYour', 'Block {{value}} builds on it: your main lifts stay and start from the weights you logged{{value2}}, and one exercise a day is new.', { value: block + 1, value2: extraSet ? ', with one more set' : '' })
+          ? (extraSet
+            ? tr('ui.gymBlocks.blockBuildsOnItExtraSet', 'Block {{n}} builds on it: your main lifts stay and start from the weights you logged, with one more set, and one exercise a day is new.', { n: block + 1 })
+            : tr('ui.gymBlocks.blockBuildsOnIt', 'Block {{n}} builds on it: your main lifts stay and start from the weights you logged, and one exercise a day is new.', { n: block + 1 }))
           : tr('ui.gymBlocks.fewerThanHalfTheSessions', 'Fewer than half the sessions were logged, so the next block repeats this one\'s structure from the weights you logged. Finish more of it and the one after will build.')}
       </p>
       {onRegenerate && (
@@ -145,7 +152,7 @@ export function GymBlockHistory({ onRegenerate }) {
           <li key={b.plan_id} className="gym-history-row">
             <span className="gym-history-k">{b.finished ? tr('ui.gymBlocks.blockN', 'Block {{n}}', { n: i + 1 }) : tr('ui.gymBlocks.blockNInProgress', 'Block {{n}} · in progress', { n: i + 1 })}</span>
             <span className="gym-history-v">
-              {b.sessions_logged} of {b.sessions_planned} sessions
+              {tr('ui.gymBlocks.nOfNSessions', '{{logged}} of {{planned}} sessions', { logged: b.sessions_logged, planned: b.sessions_planned })}
               {b.cardio_minutes > 0 && tr('ui.gymBlocks.minCardio', ' · {{cardio_minutes}} min cardio', { cardio_minutes: b.cardio_minutes })}
               {b.progressed?.[0] && ` · ${b.progressed[0].exercise} +${b.progressed[0].change_percent}%`}
             </span>

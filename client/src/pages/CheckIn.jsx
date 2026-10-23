@@ -184,7 +184,7 @@ export default function CheckIn() {
 
           <div className="chk-tabs">
             <button className={`chk-tab${tab === 'checkin' ? ' active' : ''}`} onClick={() => { setTab('checkin'); setInsight(null) }}>{tr('ui.checkIn.newCheckIn', 'New Check-In')}</button>
-            <button className={`chk-tab${tab === 'history' ? ' active' : ''}`} onClick={() => setTab('history')}><Trans i18nKey="ui.checkIn.history" defaults={"History{{value}}"} values={{ value: history.length > 0 && <span className="chk-tab-badge">{history.length}</span> }} /></button>
+            <button className={`chk-tab${tab === 'history' ? ' active' : ''}`} onClick={() => setTab('history')}>{tr('ui.checkIn.historyTab', 'History')}{history.length > 0 && <span className="chk-tab-badge">{history.length}</span>}</button>
           </div>
 
           <AnimatePresence mode="wait">
@@ -236,7 +236,7 @@ export default function CheckIn() {
 
                 {isFemale && (
                   <div className="vci-menstrual-row">
-                    <button type="button" className={`vci-menstrual-btn${menstrual ? ' active' : ''}`} onClick={() => setMenstrual(p => !p)}><Trans i18nKey="ui.checkIn.n00OnOrNear" defaults={"<0>{{value}}</0> On or near my period"} values={{ value: menstrual ? <CircleDot size={15} strokeWidth={2} /> : <Circle size={15} strokeWidth={2} /> }} components={[<span style={{ display: 'inline-flex', verticalAlign: '-2px', color: menstrual ? 'var(--ayura-rose)' : 'inherit' }} />]} /></button>
+                    <button type="button" className={`vci-menstrual-btn${menstrual ? ' active' : ''}`} onClick={() => setMenstrual(p => !p)}><span style={{ display: 'inline-flex', verticalAlign: '-2px', color: menstrual ? 'var(--ayura-rose)' : 'inherit' }}>{menstrual ? <CircleDot size={15} strokeWidth={2} /> : <Circle size={15} strokeWidth={2} />}</span>{' '}{tr('ui.checkIn.onOrNearMyPeriod', 'On or near my period')}</button>
                     <span className="vci-menstrual-hint">{tr('ui.checkIn.pittaNaturallyRisesWeFactor', 'Pitta naturally rises — we factor this in')}</span>
                   </div>
                 )}

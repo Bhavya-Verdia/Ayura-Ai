@@ -269,7 +269,9 @@ test.describe('dosha assessment localisation', () => {
 
   test('renders the questions in Hindi when Hindi is selected', async ({ page }) => {
     await page.goto('/dosha-quiz')
-    await expect(page.getByText('Question 1 of')).toBeVisible()
+    // The counter is translated too: 'प्रश्न 1 / 21', never the English.
+    await expect(page.locator('.da-progress-label')).toHaveText(/[ऀ-ॿ]/)
+    await expect(page.locator('.da-progress-label')).not.toHaveText(/Question/)
     const heading = page.locator('.da-question')
     await expect(heading).toBeVisible()
     // Devanagari, and specifically not the English source string.

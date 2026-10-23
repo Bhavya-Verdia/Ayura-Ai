@@ -519,7 +519,9 @@ export function PanchakarmaView({ plan }) {
                 {sn.dose_schedule?.length > 0 && (
                   <>
                     {/* The last day is the step-down, so "first → last" hid the peak. */}
-                    <div className="pk-aus-sub"><Trans i18nKey="ui.panchakarmaView.day1MlPeakMl" defaults={"Day 1: {{dose_ml}}ml → peak {{value}}ml {{value2}}"} values={{ dose_ml: sn.dose_schedule[0]?.dose_ml, value: Math.max(...sn.dose_schedule.map(d => d.dose_ml || 0)), value2: sn.dose_schedule.length >= 3 && <> → Day {sn.dose_schedule.length}: {sn.dose_schedule[sn.dose_schedule.length - 1]?.dose_ml}ml</> }} /></div>
+                    <div className="pk-aus-sub">{sn.dose_schedule.length >= 3
+                      ? tr('ui.panchakarmaView.gheeDoseLadder', 'Day 1: {{first}}ml → peak {{peak}}ml → Day {{n}}: {{last}}ml', { first: sn.dose_schedule[0]?.dose_ml, peak: Math.max(...sn.dose_schedule.map(d => d.dose_ml || 0)), n: sn.dose_schedule.length, last: sn.dose_schedule[sn.dose_schedule.length - 1]?.dose_ml })
+                      : tr('ui.panchakarmaView.gheeDoseShort', 'Day 1: {{first}}ml → peak {{peak}}ml', { first: sn.dose_schedule[0]?.dose_ml, peak: Math.max(...sn.dose_schedule.map(d => d.dose_ml || 0)) })}</div>
                     {sn.matra?.basis && <div className="pk-aus-sub">{sn.matra.basis}</div>}
                   </>
                 )}
