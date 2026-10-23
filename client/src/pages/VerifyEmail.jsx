@@ -5,6 +5,8 @@ import { authAPI } from '../api/client'
 import { Helmet } from 'react-helmet-async'
 import { CircleCheck, CircleX } from 'lucide-react'
 import React from 'react'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './Auth.css'
 
 const LazyParticleField = React.lazy(() => import('../components/ParticleField'))
@@ -35,7 +37,7 @@ export default function VerifyEmail() {
 
   return (
     <>
-      <Helmet><title>Verify Email | Ayura AI</title></Helmet>
+      <Helmet><title>{tr('ui.verifyEmail.verifyEmailAyuraAi', 'Verify Email | Ayura AI')}</title></Helmet>
     <div className="auth-page">
       <Suspense fallback={null}>
         <LazyParticleField count={60} spread={20} style={{ opacity: 0.4 }} />
@@ -50,7 +52,7 @@ export default function VerifyEmail() {
         <div className="auth-card" style={{ textAlign: 'center' }}>
           <Link to="/" className="auth-brand">
             <img src="/favicon.svg" alt="" className="auth-brand-logo" />
-            <span className="auth-brand-name">Ayura <span>AI</span></span>
+            <span className="auth-brand-name"><Trans i18nKey="ui.verifyEmail.ayura0Ai0" defaults={"Ayura <0>AI</0>"} components={[<span />]} /></span>
           </Link>
 
           {status === 'loading' && (
@@ -59,8 +61,8 @@ export default function VerifyEmail() {
               animate={{ opacity: 1 }}
             >
               <div className="spinner" style={{ margin: '0 auto 20px', width: '40px', height: '40px' }} />
-              <h1 style={{ fontSize: 'var(--fs-h3)' }}>Verifying your email...</h1>
-              <p style={{ color: 'var(--auth-muted)', fontSize: '0.9rem' }}>Please wait a moment.</p>
+              <h1 style={{ fontSize: 'var(--fs-h3)' }}>{tr('ui.verifyEmail.verifyingYourEmail', 'Verifying your email...')}</h1>
+              <p style={{ color: 'var(--auth-muted)', fontSize: '0.9rem' }}>{tr('ui.verifyEmail.pleaseWaitAMoment', 'Please wait a moment.')}</p>
             </m.div>
           )}
 
@@ -71,12 +73,12 @@ export default function VerifyEmail() {
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
               <div style={{ color: 'var(--ayura-sage, #4ade80)', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><CircleCheck size={52} strokeWidth={1.6} /></div>
-              <h1 style={{ fontSize: 'var(--fs-h3)', marginBottom: '8px' }}>Email Verified!</h1>
+              <h1 style={{ fontSize: 'var(--fs-h3)', marginBottom: '8px' }}>{tr('ui.verifyEmail.emailVerified', 'Email Verified!')}</h1>
               <p style={{ color: 'var(--auth-muted)', fontSize: '0.9rem', marginBottom: '24px' }}>
-                Your account is fully activated.
+                {tr('ui.verifyEmail.yourAccountIsFullyActivated', 'Your account is fully activated.')}
               </p>
               <Link to="/dashboard" className="btn btn-primary btn-full btn-lg">
-                Go to Dashboard
+                {tr('ui.verifyEmail.goToDashboard', 'Go to Dashboard')}
               </Link>
             </m.div>
           )}
@@ -88,10 +90,10 @@ export default function VerifyEmail() {
               transition={{ duration: 0.5 }}
             >
               <div style={{ color: 'var(--ayura-rose)', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><CircleX size={52} strokeWidth={1.6} /></div>
-              <h1 style={{ fontSize: 'var(--fs-h3)', marginBottom: '8px', color: 'var(--ayura-rose)' }}>Verification Failed</h1>
+              <h1 style={{ fontSize: 'var(--fs-h3)', marginBottom: '8px', color: 'var(--ayura-rose)' }}>{tr('ui.verifyEmail.verificationFailed', 'Verification Failed')}</h1>
               <p style={{ color: 'var(--ayura-rose)', marginBottom: '24px', fontSize: '0.9rem' }}>{errorMsg}</p>
               <Link to="/login" className="btn btn-secondary btn-full btn-lg">
-                Back to Login
+                {tr('ui.verifyEmail.backToLogin', 'Back to Login')}
               </Link>
             </m.div>
           )}

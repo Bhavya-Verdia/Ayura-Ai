@@ -4,13 +4,15 @@ import { Helmet } from 'react-helmet-async'
 import { useAuth } from '../providers/AuthContext'
 import { plansAPI } from '../api/client'
 import { ShieldCheck, ShieldAlert, TriangleAlert, CircleCheckBig } from 'lucide-react'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './InteractionChecker.css'
 
 const SEVERITY = {
-  high:     { label: 'High',     color: '#f87171', bg: 'rgba(248,113,113,0.1)', Icon: ShieldAlert },
-  moderate: { label: 'Moderate', color: '#fb923c', bg: 'rgba(251,146,60,0.1)',  Icon: TriangleAlert },
-  medium:   { label: 'Moderate', color: '#fb923c', bg: 'rgba(251,146,60,0.1)',  Icon: TriangleAlert },
-  low:      { label: 'Low',      color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  Icon: TriangleAlert },
+  high:     { get label() { return tr('ui.interactionChecker.high', 'High') },     color: '#f87171', bg: 'rgba(248,113,113,0.1)', Icon: ShieldAlert },
+  moderate: { get label() { return tr('ui.interactionChecker.moderate', 'Moderate') }, color: '#fb923c', bg: 'rgba(251,146,60,0.1)',  Icon: TriangleAlert },
+  medium:   { get label() { return tr('ui.interactionChecker.moderate', 'Moderate') }, color: '#fb923c', bg: 'rgba(251,146,60,0.1)',  Icon: TriangleAlert },
+  low:      { get label() { return tr('ui.interactionChecker.low', 'Low') },      color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  Icon: TriangleAlert },
 }
 
 function sev(s) {
@@ -37,7 +39,7 @@ function ChipInput({ label, hint, placeholder, items, setItems }) {
         {items.map(item => (
           <span key={item} className="ic-chip">
             {item}
-            <button type="button" onClick={() => remove(item)} aria-label={`Remove ${item}`}>✕</button>
+            <button type="button" onClick={() => remove(item)} aria-label={tr('ui.interactionChecker.remove', 'Remove {{item}}', { item })}>✕</button>
           </span>
         ))}
       </div>
@@ -49,7 +51,7 @@ function ChipInput({ label, hint, placeholder, items, setItems }) {
           onChange={e => setDraft(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
         />
-        <button type="button" className="btn btn-secondary btn-sm" onClick={add}>Add</button>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={add}>{tr('ui.interactionChecker.add', 'Add')}</button>
       </div>
     </div>
   )
@@ -85,7 +87,7 @@ export default function InteractionChecker() {
   return (
     <>
       <Helmet>
-        <title>Interaction Checker — Ayura AI</title>
+        <title>{tr('ui.interactionChecker.interactionCheckerAyuraAi', 'Interaction Checker — Ayura AI')}</title>
         <meta name="description" content="Check your medications against Ayurvedic herbs and formulations for known drug–herb interactions before you take them." />
       </Helmet>
 
@@ -95,22 +97,22 @@ export default function InteractionChecker() {
 
         <div className="ic-container">
           <m.div className="ic-header" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <h1 className="ic-title gradient-text">Interaction Checker</h1>
-            <p className="ic-sub">Before you take an Ayurvedic herb or formulation, check it against your medications for known drug–herb interactions.</p>
+            <h1 className="ic-title gradient-text">{tr('ui.interactionChecker.interactionChecker', 'Interaction Checker')}</h1>
+            <p className="ic-sub">{tr('ui.interactionChecker.beforeYouTakeAnAyurvedic', 'Before you take an Ayurvedic herb or formulation, check it against your medications for known drug–herb interactions.')}</p>
           </m.div>
 
           <m.div className="ic-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 }}>
             <ChipInput
-              label="Your medications"
-              hint="Prefilled from your profile — edit as needed. Allopathic drug names work best (e.g. metformin, warfarin)."
-              placeholder="Add a medication"
+              label={tr('ui.interactionChecker.yourMedications', 'Your medications')}
+              hint={tr('ui.interactionChecker.prefilledFromYourProfileEdit', 'Prefilled from your profile — edit as needed. Allopathic drug names work best (e.g. metformin, warfarin).')}
+              placeholder={tr('ui.interactionChecker.addAMedication', 'Add a medication')}
               items={medications}
               setItems={setMedications}
             />
             <ChipInput
-              label="Herb or formulation to check"
-              hint="e.g. ashwagandha, turmeric, fenugreek, triphala"
-              placeholder="Add an herb"
+              label={tr('ui.interactionChecker.herbOrFormulationToCheck', 'Herb or formulation to check')}
+              hint={tr('ui.interactionChecker.eGAshwagandhaTurmericFenugreek', 'e.g. ashwagandha, turmeric, fenugreek, triphala')}
+              placeholder={tr('ui.interactionChecker.addAnHerb', 'Add an herb')}
               items={herbs}
               setItems={setHerbs}
             />
@@ -122,10 +124,10 @@ export default function InteractionChecker() {
               whileTap={{ scale: 0.97 }}
             >
               {loading
-                ? <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Checking…</>
-                : <><ShieldCheck size={16} strokeWidth={2} /> Check safety</>}
+                ? <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />{' '}{tr('ui.interactionChecker.checking', 'Checking…')}</>
+                : <><ShieldCheck size={16} strokeWidth={2} />{' '}{tr('ui.interactionChecker.checkSafety', 'Check safety')}</>}
             </m.button>
-            {herbs.length === 0 && <p className="ic-need-herb">Add at least one herb to check.</p>}
+            {herbs.length === 0 && <p className="ic-need-herb">{tr('ui.interactionChecker.addAtLeastOneHerb', 'Add at least one herb to check.')}</p>}
           </m.div>
 
           <AnimatePresence>
@@ -150,7 +152,7 @@ export default function InteractionChecker() {
                   <div className="ic-safe-card">
                     <span className="ic-safe-icon"><CircleCheckBig size={26} strokeWidth={2} /></span>
                     <div>
-                      <div className="ic-safe-title">No known interactions detected</div>
+                      <div className="ic-safe-title">{tr('ui.interactionChecker.noKnownInteractionsDetected', 'No known interactions detected')}</div>
                       <p className="ic-safe-text">{result.detailed_explanation}</p>
                     </div>
                   </div>
@@ -158,7 +160,9 @@ export default function InteractionChecker() {
                   <>
                     <div className="ic-warn-banner">
                       <span style={{ display: 'inline-flex' }}><TriangleAlert size={18} strokeWidth={2} /></span>
-                      <span>{warnings.length} potential interaction{warnings.length !== 1 ? 's' : ''} found — review carefully and consult your physician.</span>
+                      <span>{warnings.length === 1
+                        ? tr('ui.interactionChecker.interactionsOne', '1 potential interaction found — review carefully and consult your physician.')
+                        : tr('ui.interactionChecker.interactionsMany', '{{count}} potential interactions found — review carefully and consult your physician.', { count: warnings.length })}</span>
                     </div>
 
                     <div className="ic-warn-list">
@@ -180,8 +184,8 @@ export default function InteractionChecker() {
                               <span className="ic-sev-badge" style={{ color: s.color, borderColor: s.color + '66' }}>{s.label}</span>
                             </div>
                             {w.effect && <p className="ic-warn-effect">{w.effect}</p>}
-                            {w.recommendation && <p className="ic-warn-rec"><strong>Recommendation:</strong> {w.recommendation}</p>}
-                            {w.alternative && <p className="ic-warn-alt"><strong>Safer alternative:</strong> {w.alternative}</p>}
+                            {w.recommendation && <p className="ic-warn-rec"><strong>{tr('ui.interactionChecker.recommendation', 'Recommendation:')}</strong> {w.recommendation}</p>}
+                            {w.alternative && <p className="ic-warn-alt"><strong>{tr('ui.interactionChecker.saferAlternative', 'Safer alternative:')}</strong> {w.alternative}</p>}
                           </m.div>
                         )
                       })}
@@ -189,7 +193,7 @@ export default function InteractionChecker() {
 
                     {result.detailed_explanation && (
                       <div className="ic-explain">
-                        <div className="ic-explain-label">✦ Safety guidance</div>
+                        <div className="ic-explain-label">{tr('ui.interactionChecker.safetyGuidance', '✦ Safety guidance')}</div>
                         <p>{result.detailed_explanation}</p>
                       </div>
                     )}
@@ -198,7 +202,7 @@ export default function InteractionChecker() {
 
                 {result.general_warnings?.length > 0 && (
                   <div className="ic-general">
-                    <div className="ic-general-label">General precautions</div>
+                    <div className="ic-general-label">{tr('ui.interactionChecker.generalPrecautions', 'General precautions')}</div>
                     <ul>
                       {result.general_warnings.map((g, i) => <li key={i}>{g}</li>)}
                     </ul>
@@ -206,7 +210,7 @@ export default function InteractionChecker() {
                 )}
 
                 <p className="ic-disclaimer">
-                  This deterministic screen covers documented drug–herb interactions only — absence of a warning is not a guarantee of safety. Always consult a qualified physician or registered Vaidya before combining medications with Ayurvedic herbs.
+                  {tr('ui.interactionChecker.thisDeterministicScreenCoversDocumented', 'This deterministic screen covers documented drug–herb interactions only — absence of a warning is not a guarantee of safety. Always consult a qualified physician or registered Vaidya before combining medications with Ayurvedic herbs.')}
                 </p>
               </m.div>
             )}

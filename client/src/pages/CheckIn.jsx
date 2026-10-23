@@ -5,36 +5,38 @@ import { Helmet } from 'react-helmet-async'
 import API from '../api/client'
 import { useAuth } from '../providers/AuthContext'
 import { Zap, Moon, Flame, CircleCheck, ClipboardList, Sparkles, TriangleAlert, CircleDot, Circle } from 'lucide-react'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './CheckIn.css'
 import '../components/VikritiCheckIn.css'
 
 // 1-5 lifestyle pulse + engagement (sleep/stress/digestion feed the Vikriti engine)
 const PULSE = [
-  { id: 'energy',    label: 'Energy',         hints: ['Drained', 'Low', 'Fair', 'Good', 'High'] },
-  { id: 'sleep',     label: 'Sleep',          hints: ['Very poor', 'Poor', 'Fair', 'Good', 'Excellent'] },
-  { id: 'stress',    label: 'Stress',         hints: ['Extreme', 'High', 'Moderate', 'Low', 'None'] },
-  { id: 'digestion', label: 'Digestion',      hints: ['Very poor', 'Poor', 'Fair', 'Good', 'Strong'] },
-  { id: 'adherence', label: 'Plan Adherence', hints: ['None', 'A little', 'About half', 'Most', 'All of it'] },
+  { id: 'energy',    get label() { return tr('ui.checkIn.energy', 'Energy') },         hints: ['Drained', 'Low', 'Fair', 'Good', 'High'] },
+  { id: 'sleep',     get label() { return tr('ui.checkIn.sleep', 'Sleep') },          hints: ['Very poor', 'Poor', 'Fair', 'Good', 'Excellent'] },
+  { id: 'stress',    get label() { return tr('ui.checkIn.stress', 'Stress') },         hints: ['Extreme', 'High', 'Moderate', 'Low', 'None'] },
+  { id: 'digestion', get label() { return tr('ui.checkIn.digestion', 'Digestion') },      hints: ['Very poor', 'Poor', 'Fair', 'Good', 'Strong'] },
+  { id: 'adherence', get label() { return tr('ui.checkIn.planAdherence', 'Plan Adherence') }, hints: ['None', 'A little', 'About half', 'Most', 'All of it'] },
 ]
 
 const QUICK_SYMPTOMS = [
-  { id: 'anxiety_worry', label: 'Anxiety or worry' },
-  { id: 'dry_skin_constipation', label: 'Dryness or constipation' },
-  { id: 'trouble_sleeping', label: 'Trouble sleeping' },
-  { id: 'heartburn_acidity', label: 'Acidity or inflammation' },
-  { id: 'irritability', label: 'Irritability' },
-  { id: 'weight_gain', label: 'Weight gain or sluggishness' },
-  { id: 'low_energy', label: 'Low energy' },
-  { id: 'bloating_gas', label: 'Bloating or gas' },
-  { id: 'coated_tongue_ama', label: 'Coated tongue' },
-  { id: 'feeling_balanced', label: 'Feeling balanced' },
+  { id: 'anxiety_worry', get label() { return tr('ui.checkIn.anxietyOrWorry', 'Anxiety or worry') } },
+  { id: 'dry_skin_constipation', get label() { return tr('ui.checkIn.drynessOrConstipation', 'Dryness or constipation') } },
+  { id: 'trouble_sleeping', get label() { return tr('ui.checkIn.troubleSleeping', 'Trouble sleeping') } },
+  { id: 'heartburn_acidity', get label() { return tr('ui.checkIn.acidityOrInflammation', 'Acidity or inflammation') } },
+  { id: 'irritability', get label() { return tr('ui.checkIn.irritability', 'Irritability') } },
+  { id: 'weight_gain', get label() { return tr('ui.checkIn.weightGainOrSluggishness', 'Weight gain or sluggishness') } },
+  { id: 'low_energy', get label() { return tr('ui.checkIn.lowEnergy', 'Low energy') } },
+  { id: 'bloating_gas', get label() { return tr('ui.checkIn.bloatingOrGas', 'Bloating or gas') } },
+  { id: 'coated_tongue_ama', get label() { return tr('ui.checkIn.coatedTongue', 'Coated tongue') } },
+  { id: 'feeling_balanced', get label() { return tr('ui.checkIn.feelingBalanced', 'Feeling balanced') } },
 ]
 
 const HIST_METRICS = [
-  { id: 'energy', label: 'Energy', Icon: Zap, color: 'var(--ayura-amber)' },
-  { id: 'sleep', label: 'Sleep', Icon: Moon, color: 'var(--ayura-violet)' },
-  { id: 'digestion', label: 'Digestion', Icon: Flame, color: 'var(--ayura-teal)' },
-  { id: 'adherence', label: 'Adherence', Icon: CircleCheck, color: 'var(--primary-light)' },
+  { id: 'energy', get label() { return tr('ui.checkIn.energy', 'Energy') }, Icon: Zap, color: 'var(--ayura-amber)' },
+  { id: 'sleep', get label() { return tr('ui.checkIn.sleep', 'Sleep') }, Icon: Moon, color: 'var(--ayura-violet)' },
+  { id: 'digestion', get label() { return tr('ui.checkIn.digestion', 'Digestion') }, Icon: Flame, color: 'var(--ayura-teal)' },
+  { id: 'adherence', get label() { return tr('ui.checkIn.adherence', 'Adherence') }, Icon: CircleCheck, color: 'var(--primary-light)' },
 ]
 
 function MiniBar({ value, color }) {
@@ -70,7 +72,7 @@ function HistoryCard({ entry, index }) {
       </div>
       {entry.symptoms?.length > 0 && (
         <div className="chk-hist-symptoms">
-          <span className="chk-hist-tag-label">Symptoms:</span>
+          <span className="chk-hist-tag-label">{tr('ui.checkIn.symptoms', 'Symptoms:')}</span>
           {entry.symptoms.map(s => <span key={s} className="chk-hist-tag">{String(s).replace(/_/g, ' ')}</span>)}
         </div>
       )}
@@ -99,17 +101,17 @@ function PlanRebuildOffer({ plans, toward }) {
     <div className="chk-adapted-box">
       <span className="chk-adapted-label">
         {toward
-          ? `Your imbalance moved toward ${toward[0].toUpperCase()}${toward.slice(1)}. These plans were built for the old pattern:`
-          : 'These plans were built for your old pattern:'}
+          ? tr('ui.checkIn.yourImbalanceMovedTowardThese', 'Your imbalance moved toward {{value}}{{value2}}. These plans were built for the old pattern:', { value: toward[0].toUpperCase(), value2: toward.slice(1) })
+          : tr('ui.checkIn.thesePlansWereBuiltFor', 'These plans were built for your old pattern:')}
       </span>
       <div className="chk-adapted-tags">
         {plans.map(p => (
           <button key={p} type="button" className="chk-adapted-tag" disabled={state[p] === 'working' || state[p] === 'done'}
             onClick={() => rebuild(p)}>
-            {state[p] === 'working' ? `Rebuilding ${PLAN_LABEL[p] || p}…`
+            {state[p] === 'working' ? tr('ui.checkIn.rebuilding', 'Rebuilding {{p}}…', { p: PLAN_LABEL[p] || p })
               : state[p] === 'done' ? `${PLAN_LABEL[p] || p} rebuilt`
-              : state[p] === 'failed' ? `Retry ${PLAN_LABEL[p] || p}`
-              : `Rebuild ${PLAN_LABEL[p] || p}`}
+              : state[p] === 'failed' ? tr('ui.checkIn.retry', 'Retry {{p}}', { p: PLAN_LABEL[p] || p })
+              : tr('ui.checkIn.rebuild', 'Rebuild {{p}}', { p: PLAN_LABEL[p] || p })}
           </button>
         ))}
       </div>
@@ -166,7 +168,7 @@ export default function CheckIn() {
   return (
     <>
       <Helmet>
-        <title>Weekly Check-In — Ayura AI</title>
+        <title>{tr('ui.checkIn.weeklyCheckInAyuraAi', 'Weekly Check-In — Ayura AI')}</title>
         <meta name="description" content="Your weekly Ayurvedic check-in — refines your Vikriti and calibrates your plans." />
       </Helmet>
 
@@ -176,15 +178,13 @@ export default function CheckIn() {
 
         <div className="chk-container">
           <m.div className="chk-header" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <h1 className="chk-page-title gradient-text">Weekly Check-In</h1>
-            <p className="chk-page-sub">A quick snapshot of your week — refines your Vikriti and fine-tunes your plans.</p>
+            <h1 className="chk-page-title gradient-text">{tr('ui.checkIn.weeklyCheckIn', 'Weekly Check-In')}</h1>
+            <p className="chk-page-sub">{tr('ui.checkIn.aQuickSnapshotOfYour', 'A quick snapshot of your week — refines your Vikriti and fine-tunes your plans.')}</p>
           </m.div>
 
           <div className="chk-tabs">
-            <button className={`chk-tab${tab === 'checkin' ? ' active' : ''}`} onClick={() => { setTab('checkin'); setInsight(null) }}>New Check-In</button>
-            <button className={`chk-tab${tab === 'history' ? ' active' : ''}`} onClick={() => setTab('history')}>
-              History{history.length > 0 && <span className="chk-tab-badge">{history.length}</span>}
-            </button>
+            <button className={`chk-tab${tab === 'checkin' ? ' active' : ''}`} onClick={() => { setTab('checkin'); setInsight(null) }}>{tr('ui.checkIn.newCheckIn', 'New Check-In')}</button>
+            <button className={`chk-tab${tab === 'history' ? ' active' : ''}`} onClick={() => setTab('history')}>{tr('ui.checkIn.historyTab', 'History')}{history.length > 0 && <span className="chk-tab-badge">{history.length}</span>}</button>
           </div>
 
           <AnimatePresence mode="wait">
@@ -193,7 +193,7 @@ export default function CheckIn() {
                 {histLoading ? (
                   <div className="chk-hist-loading">{[...Array(3)].map((_, i) => <div key={i} className="chk-hist-card skeleton" style={{ height: 160 }} />)}</div>
                 ) : history.length === 0 ? (
-                  <div className="chk-hist-empty"><div style={{ display: 'flex', justifyContent: 'center', color: 'var(--ayura-teal)', marginBottom: 8 }}><ClipboardList size={34} strokeWidth={1.6} /></div><p>No check-ins yet. Submit your first one!</p></div>
+                  <div className="chk-hist-empty"><div style={{ display: 'flex', justifyContent: 'center', color: 'var(--ayura-teal)', marginBottom: 8 }}><ClipboardList size={34} strokeWidth={1.6} /></div><p>{tr('ui.checkIn.noCheckInsYetSubmit', 'No check-ins yet. Submit your first one!')}</p></div>
                 ) : (
                   history.map((entry, i) => <HistoryCard key={i} entry={entry} index={i} />)
                 )}
@@ -201,14 +201,14 @@ export default function CheckIn() {
             ) : insight ? (
               <m.div key="insight" className="chk-insight-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
                 <div className="chk-insight-icon"><Sparkles size={22} strokeWidth={1.8} /></div>
-                <h3 className="chk-insight-title">Vikriti Updated</h3>
+                <h3 className="chk-insight-title">{tr('ui.checkIn.vikritiUpdated', 'Vikriti Updated')}</h3>
                 <p className="chk-insight-text">{insight.insight}</p>
                 {insight.suggested_plans?.length > 0 && (
                   <PlanRebuildOffer plans={insight.suggested_plans} toward={insight.shifted_toward} />
                 )}
                 <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-                  <button className="btn btn-secondary chk-back-btn" onClick={() => { setInsight(null); setSymptoms([]); setStageUpdates({}); setFeltGood('') }}>New Check-In</button>
-                  <button className="btn btn-secondary chk-back-btn" onClick={() => { setInsight(null); setTab('history') }}>View History</button>
+                  <button className="btn btn-secondary chk-back-btn" onClick={() => { setInsight(null); setSymptoms([]); setStageUpdates({}); setFeltGood('') }}>{tr('ui.checkIn.newCheckIn', 'New Check-In')}</button>
+                  <button className="btn btn-secondary chk-back-btn" onClick={() => { setInsight(null); setTab('history') }}>{tr('ui.checkIn.viewHistory', 'View History')}</button>
                 </div>
               </m.div>
             ) : (
@@ -236,14 +236,12 @@ export default function CheckIn() {
 
                 {isFemale && (
                   <div className="vci-menstrual-row">
-                    <button type="button" className={`vci-menstrual-btn${menstrual ? ' active' : ''}`} onClick={() => setMenstrual(p => !p)}>
-                      <span style={{ display: 'inline-flex', verticalAlign: '-2px', color: menstrual ? 'var(--ayura-rose)' : 'inherit' }}>{menstrual ? <CircleDot size={15} strokeWidth={2} /> : <Circle size={15} strokeWidth={2} />}</span> On or near my period
-                    </button>
-                    <span className="vci-menstrual-hint">Pitta naturally rises — we factor this in</span>
+                    <button type="button" className={`vci-menstrual-btn${menstrual ? ' active' : ''}`} onClick={() => setMenstrual(p => !p)}><span style={{ display: 'inline-flex', verticalAlign: '-2px', color: menstrual ? 'var(--ayura-rose)' : 'inherit' }}>{menstrual ? <CircleDot size={15} strokeWidth={2} /> : <Circle size={15} strokeWidth={2} />}</span>{' '}{tr('ui.checkIn.onOrNearMyPeriod', 'On or near my period')}</button>
+                    <span className="vci-menstrual-hint">{tr('ui.checkIn.pittaNaturallyRisesWeFactor', 'Pitta naturally rises — we factor this in')}</span>
                   </div>
                 )}
 
-                <p className="vci-sub" style={{ marginTop: 8 }}>Any symptoms this week?</p>
+                <p className="vci-sub" style={{ marginTop: 8 }}>{tr('ui.checkIn.anySymptomsThisWeek', 'Any symptoms this week?')}</p>
                 <div className="vci-chips">
                   {QUICK_SYMPTOMS.map(s => (
                     <m.button key={s.id} type="button" whileTap={{ scale: 0.96 }}
@@ -255,28 +253,28 @@ export default function CheckIn() {
 
                 {profile?.medical_history?.length > 0 && (
                   <div className="vci-disease-stage-section">
-                    <h4 className="vci-section-title">Disease Progress Check</h4>
-                    <p className="vci-sub">How are your conditions evolving?</p>
+                    <h4 className="vci-section-title">{tr('ui.checkIn.diseaseProgressCheck', 'Disease Progress Check')}</h4>
+                    <p className="vci-sub">{tr('ui.checkIn.howAreYourConditionsEvolving', 'How are your conditions evolving?')}</p>
                     {profile.medical_history.slice(0, 5).map(cid => (
                       <div key={cid} className="vci-stage-row">
                         <span className="vci-stage-label">{cid.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
                         <div className="vci-stage-selects">
-                          <select className="vci-stage-select" aria-label={`How long you have had ${cid.replace(/_/g, ' ')}`}
+                          <select className="vci-stage-select" aria-label={tr('ui.checkIn.howLongYouHaveHad', 'How long you have had {{value}}', { value: cid.replace(/_/g, ' ') })}
                             value={stageUpdates[cid]?.duration || ''}
                             onChange={e => setStageUpdates(p => ({ ...p, [cid]: { ...p[cid], duration: e.target.value } }))}>
-                            <option value="">Duration…</option>
-                            <option value="months">Less than 1 year</option>
-                            <option value="1-3y">1–3 years</option>
-                            <option value="3-5y">3–5 years</option>
-                            <option value="5y+">5+ years</option>
+                            <option value="">{tr('ui.checkIn.duration', 'Duration…')}</option>
+                            <option value="months">{tr('ui.checkIn.lessThan1Year', 'Less than 1 year')}</option>
+                            <option value="1-3y">{tr('ui.checkIn.n13Years', '1–3 years')}</option>
+                            <option value="3-5y">{tr('ui.checkIn.n35Years', '3–5 years')}</option>
+                            <option value="5y+">{tr('ui.checkIn.n5Years', '5+ years')}</option>
                           </select>
-                          <select className="vci-stage-select" aria-label={`How ${cid.replace(/_/g, ' ')} is changing`}
+                          <select className="vci-stage-select" aria-label={tr('ui.checkIn.howIsChanging', 'How {{value}} is changing', { value: cid.replace(/_/g, ' ') })}
                             value={stageUpdates[cid]?.trajectory || ''}
                             onChange={e => setStageUpdates(p => ({ ...p, [cid]: { ...p[cid], trajectory: e.target.value } }))}>
-                            <option value="">Trend…</option>
-                            <option value="worsening">Getting worse</option>
-                            <option value="stable">Stable</option>
-                            <option value="improving">Improving</option>
+                            <option value="">{tr('ui.checkIn.trend', 'Trend…')}</option>
+                            <option value="worsening">{tr('ui.checkIn.gettingWorse', 'Getting worse')}</option>
+                            <option value="stable">{tr('ui.checkIn.stable', 'Stable')}</option>
+                            <option value="improving">{tr('ui.checkIn.improving', 'Improving')}</option>
                           </select>
                         </div>
                       </div>
@@ -286,13 +284,13 @@ export default function CheckIn() {
 
                 <div className="chk-text-inputs">
                   <div className="input-group">
-                    <label>What felt good this week?</label>
-                    <textarea placeholder="Share your wins, big or small..." rows={3} value={feltGood} onChange={e => setFeltGood(e.target.value)} />
+                    <label>{tr('ui.checkIn.whatFeltGoodThisWeek', 'What felt good this week?')}</label>
+                    <textarea placeholder={tr('ui.checkIn.shareYourWinsBigOr', 'Share your wins, big or small...')} rows={3} value={feltGood} onChange={e => setFeltGood(e.target.value)} />
                   </div>
                 </div>
 
                 <m.button type="submit" className="btn btn-primary chk-submit-btn" disabled={loading} whileTap={{ scale: 0.98 }}>
-                  {loading ? (<><span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Analyzing…</>) : 'Submit & Refine My Vikriti'}
+                  {loading ? (<><span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />{' '}{tr('ui.checkIn.analyzing', 'Analyzing…')}</>) : tr('ui.checkIn.submitRefineMyVikriti', 'Submit & Refine My Vikriti')}
                 </m.button>
               </m.form>
             )}

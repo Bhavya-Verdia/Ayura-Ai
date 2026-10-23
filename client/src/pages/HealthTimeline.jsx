@@ -12,6 +12,8 @@ import {
 } from 'lucide-react'
 import { SkeletonLine } from '../components/Skeleton'
 import EmptyState from '../components/EmptyState'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './HealthTimeline.css'
 
 
@@ -19,7 +21,7 @@ import './HealthTimeline.css'
 const EVENT_CONFIG = {
   symptom_logged: {
     Icon: Thermometer,
-    label: 'Symptom Logged',
+    get label() { return tr('ui.healthTimeline.symptomLogged', 'Symptom Logged') },
     colorVar: '--accent',
     glowColor: 'rgba(245,158,11,0.45)',
     bgColor: 'rgba(245,158,11,0.08)',
@@ -29,7 +31,7 @@ const EVENT_CONFIG = {
   },
   progress_logged: {
     Icon: ChartColumn,
-    label: 'Progress Check-In',
+    get label() { return tr('ui.healthTimeline.progressCheckIn', 'Progress Check-In') },
     colorVar: '--primary-light',
     glowColor: 'rgba(92,171,116,0.45)',
     bgColor: 'rgba(92,171,116,0.07)',
@@ -39,7 +41,7 @@ const EVENT_CONFIG = {
   },
   adaptation_failed: {
     Icon: TriangleAlert,
-    label: 'Adaptation Error',
+    get label() { return tr('ui.healthTimeline.adaptationError', 'Adaptation Error') },
     colorVar: '--rose',
     glowColor: 'rgba(244,63,94,0.45)',
     bgColor: 'rgba(244,63,94,0.07)',
@@ -49,7 +51,7 @@ const EVENT_CONFIG = {
   },
   plan_generated: {
     Icon: Sparkles,
-    label: 'Plan Generated',
+    get label() { return tr('ui.healthTimeline.planGenerated', 'Plan Generated') },
     colorVar: '--primary',
     glowColor: 'rgba(13,148,136,0.45)',
     bgColor: 'rgba(13,148,136,0.07)',
@@ -59,7 +61,7 @@ const EVENT_CONFIG = {
   },
   adaptation_triggered: {
     Icon: RefreshCw,
-    label: 'Plan Adapted',
+    get label() { return tr('ui.healthTimeline.planAdapted', 'Plan Adapted') },
     colorVar: '--sage',
     glowColor: 'rgba(16,185,129,0.45)',
     bgColor: 'rgba(16,185,129,0.07)',
@@ -69,7 +71,7 @@ const EVENT_CONFIG = {
   },
   reminder_set: {
     Icon: AlarmClock,
-    label: 'Reminder Set',
+    get label() { return tr('ui.healthTimeline.reminderSet', 'Reminder Set') },
     colorVar: '--ayura-violet',
     glowColor: 'rgba(139,92,246,0.45)',
     bgColor: 'rgba(139,92,246,0.07)',
@@ -81,7 +83,7 @@ const EVENT_CONFIG = {
   // "Health Event" with their raw field names ("reviewed_week: 1").
   practice_completed: {
     Icon: CircleCheck,
-    label: 'Practice Completed',
+    get label() { return tr('ui.healthTimeline.practiceCompleted', 'Practice Completed') },
     colorVar: '--ayura-sage',
     glowColor: 'rgba(110,160,120,0.4)',
     bgColor: 'rgba(110,160,120,0.07)',
@@ -91,7 +93,7 @@ const EVENT_CONFIG = {
   },
   yoga_week_generated: {
     Icon: CalendarDays,
-    label: 'Yoga Week Added',
+    get label() { return tr('ui.healthTimeline.yogaWeekAdded', 'Yoga Week Added') },
     colorVar: '--primary',
     glowColor: 'rgba(94,138,133,0.4)',
     bgColor: 'rgba(94,138,133,0.07)',
@@ -101,7 +103,7 @@ const EVENT_CONFIG = {
   },
   reaction_reported: {
     Icon: Siren,
-    label: 'Reaction Reported',
+    get label() { return tr('ui.healthTimeline.reactionReported', 'Reaction Reported') },
     colorVar: '--rose',
     glowColor: 'rgba(244,63,94,0.45)',
     bgColor: 'rgba(244,63,94,0.08)',
@@ -111,7 +113,7 @@ const EVENT_CONFIG = {
   },
   default: {
     Icon: FileText,
-    label: 'Health Event',
+    get label() { return tr('ui.healthTimeline.healthEvent', 'Health Event') },
     colorVar: '--text-muted',
     glowColor: 'rgba(94,138,133,0.35)',
     bgColor: 'rgba(94,138,133,0.06)',
@@ -122,11 +124,11 @@ const EVENT_CONFIG = {
 }
 
 const FILTERS = [
-  { id: 'all',         label: 'All Events',    Icon: CalendarDays },
-  { id: 'symptoms',    label: 'Symptoms',      Icon: Thermometer },
-  { id: 'progress',    label: 'Progress',      Icon: ChartColumn },
-  { id: 'plans',       label: 'Plans',         Icon: Sparkles },
-  { id: 'adaptations', label: 'Adaptations',   Icon: RefreshCw },
+  { id: 'all',         get label() { return tr('ui.healthTimeline.allEvents', 'All Events') },    Icon: CalendarDays },
+  { id: 'symptoms',    get label() { return tr('ui.healthTimeline.symptoms', 'Symptoms') },      Icon: Thermometer },
+  { id: 'progress',    get label() { return tr('ui.healthTimeline.progress', 'Progress') },      Icon: ChartColumn },
+  { id: 'plans',       get label() { return tr('ui.healthTimeline.plans', 'Plans') },         Icon: Sparkles },
+  { id: 'adaptations', get label() { return tr('ui.healthTimeline.adaptations', 'Adaptations') },   Icon: RefreshCw },
 ]
 
 const PAGE_SIZE = 10
@@ -195,7 +197,7 @@ function renderDetails(event) {
       return (
         <div className="ht-event-details">
           {data.symptom && <span className="ht-detail-chip ht-chip-amber"><Thermometer size={13} strokeWidth={2} /> {data.symptom}</span>}
-          {data.severity && <span className="ht-detail-chip ht-chip-muted">Severity: {data.severity}/10</span>}
+          {data.severity && <span className="ht-detail-chip ht-chip-muted"><Trans i18nKey="ui.healthTimeline.severity10" defaults={"Severity: {{severity}}/10"} values={{ severity: data.severity }} /></span>}
           {data.body_part && <span className="ht-detail-chip ht-chip-muted"><MapPin size={13} strokeWidth={2} /> {data.body_part}</span>}
           {data.note && <p className="ht-detail-note">"{data.note}"</p>}
         </div>
@@ -204,10 +206,10 @@ function renderDetails(event) {
       return (
         <div className="ht-event-details">
           {data.weight_kg && <span className="ht-detail-chip ht-chip-teal"><Scale size={13} strokeWidth={2} /> {data.weight_kg} kg</span>}
-          {data.mood && <span className="ht-detail-chip ht-chip-teal"><Smile size={13} strokeWidth={2} /> Mood: {data.mood}</span>}
+          {data.mood && <span className="ht-detail-chip ht-chip-teal"><Trans i18nKey="ui.healthTimeline.n0Mood" defaults={"<0/> Mood: {{mood}}"} values={{ mood: data.mood }} components={[<Smile size={13} strokeWidth={2} />]} /></span>}
           {data.adherence_percent != null && (
             <div className="ht-adherence-bar">
-              <span className="ht-adherence-label">Plan adherence</span>
+              <span className="ht-adherence-label">{tr('ui.healthTimeline.planAdherence', 'Plan adherence')}</span>
               <div className="ht-bar-track">
                 <div className="ht-bar-fill" style={{ width: `${data.adherence_percent}%` }} />
               </div>
@@ -240,7 +242,7 @@ function renderDetails(event) {
       return (
         <div className="ht-event-details">
           {data.item && <span className="ht-detail-chip ht-chip-amber"><Siren size={13} strokeWidth={2} /> {data.item}</span>}
-          {data.severity && <span className="ht-detail-chip ht-chip-muted">Severity: {data.severity}</span>}
+          {data.severity && <span className="ht-detail-chip ht-chip-muted"><Trans i18nKey="ui.healthTimeline.severity" defaults={"Severity: {{severity}}"} values={{ severity: data.severity }} /></span>}
           {data.plan_type && <span className="ht-detail-chip ht-chip-muted">{data.plan_type}</span>}
           {data.reaction && <p className="ht-detail-note">"{data.reaction}"</p>}
         </div>
@@ -250,14 +252,14 @@ function renderDetails(event) {
         <div className="ht-event-details">
           {data.feature && <span className="ht-detail-chip ht-chip-sage"><CircleCheck size={13} strokeWidth={2} /> {data.feature}</span>}
           {data.duration_minutes != null && <span className="ht-detail-chip ht-chip-muted">{data.duration_minutes} min</span>}
-          {data.week && data.day && <span className="ht-detail-chip ht-chip-muted">Week {data.week}, {data.day}</span>}
+          {data.week && data.day && <span className="ht-detail-chip ht-chip-muted"><Trans i18nKey="ui.healthTimeline.week" defaults={"Week {{week}}, {{day}}"} values={{ week: data.week, day: data.day }} /></span>}
         </div>
       )
     case 'yoga_week_generated':
       return (
         <div className="ht-event-details">
-          {data.week && <span className="ht-detail-chip ht-chip-primary"><CalendarDays size={13} strokeWidth={2} /> Week {data.week}</span>}
-          {data.adjusted && <span className="ht-detail-chip ht-chip-muted">Adjusted from your week {data.reviewed_week} feedback</span>}
+          {data.week && <span className="ht-detail-chip ht-chip-primary"><Trans i18nKey="ui.healthTimeline.n0Week" defaults={"<0/> Week {{week}}"} values={{ week: data.week }} components={[<CalendarDays size={13} strokeWidth={2} />]} /></span>}
+          {data.adjusted && <span className="ht-detail-chip ht-chip-muted"><Trans i18nKey="ui.healthTimeline.adjustedFromYourWeekFeedback" defaults={"Adjusted from your week {{reviewed_week}} feedback"} values={{ reviewed_week: data.reviewed_week }} /></span>}
         </div>
       )
     case 'adaptation_failed':
@@ -284,7 +286,7 @@ function renderDetails(event) {
 /* ─── Skeleton ───────────────────────────────────────── */
 function TimelineSkeleton() {
   return (
-    <div className="ht-skeleton-wrap" aria-busy="true" aria-label="Loading timeline">
+    <div className="ht-skeleton-wrap" aria-busy="true" aria-label={tr('ui.healthTimeline.loadingTimeline', 'Loading timeline')}>
       {Array.from({ length: 5 }).map((_, i) => (
         <div className="ht-skeleton-item" key={i}>
           <div className="ht-skeleton-dot skeleton" />
@@ -305,19 +307,19 @@ function ProgressSummary({ summary }) {
 
   const c = summary.current
   const TREND_LABELS = {
-    losing_weight:  { label: 'Losing', Icon: TrendingDown, special: 'declining' },
-    gaining_weight: { label: 'Gaining', Icon: TrendingUp, special: 'improving' },
-    stable:         { label: 'Stable', Icon: MoveRight, special: 'stable' },
+    losing_weight:  { label: tr('ui.healthTimeline.losing', 'Losing'), Icon: TrendingDown, special: 'declining' },
+    gaining_weight: { label: tr('ui.healthTimeline.gaining', 'Gaining'), Icon: TrendingUp, special: 'improving' },
+    stable:         { label: tr('ui.healthTimeline.stable', 'Stable'), Icon: MoveRight, special: 'stable' },
   }
-  const trendInfo = TREND_LABELS[summary.trend] || { label: 'Stable', Icon: MoveRight, special: 'stable' }
+  const trendInfo = TREND_LABELS[summary.trend] || { label: tr('ui.healthTimeline.stable', 'Stable'), Icon: MoveRight, special: 'stable' }
 
   const stats = [
-    { label: 'Weight', value: c.weight_kg ? `${c.weight_kg} kg` : '—', Icon: Scale },
+    { label: tr('ui.healthTimeline.weight', 'Weight'), value: c.weight_kg ? `${c.weight_kg} kg` : '—', Icon: Scale },
     { label: 'BMI', value: c.bmi ? c.bmi.toFixed(1) : '—', Icon: Ruler },
-    { label: 'Mood', value: c.mood || '—', Icon: Smile },
-    { label: 'Adherence', value: c.adherence_percent != null ? `${c.adherence_percent}%` : '—', Icon: CircleCheck },
+    { label: tr('ui.healthTimeline.mood', 'Mood'), value: c.mood || '—', Icon: Smile },
+    { label: tr('ui.healthTimeline.adherence', 'Adherence'), value: c.adherence_percent != null ? `${c.adherence_percent}%` : '—', Icon: CircleCheck },
     {
-      label: 'Trend',
+      label: tr('ui.healthTimeline.trend', 'Trend'),
       value: trendInfo.label,
       Icon: trendInfo.Icon,
       special: trendInfo.special,
@@ -333,9 +335,9 @@ function ProgressSummary({ summary }) {
     >
       <div className="ht-progress-strip-label">
         <span className="ht-strip-icon"><ChartColumn size={16} strokeWidth={2} /></span>
-        <span>Progress Snapshot</span>
+        <span>{tr('ui.healthTimeline.progressSnapshot', 'Progress Snapshot')}</span>
         {c.last_logged && (
-          <span className="ht-strip-date">Updated {formatDateTime(c.last_logged)}</span>
+          <span className="ht-strip-date"><Trans i18nKey="ui.healthTimeline.updated" defaults={"Updated {{last_logged}}"} values={{ last_logged: formatDateTime(c.last_logged) }} /></span>
         )}
       </div>
       <div className="ht-progress-stats">
@@ -422,11 +424,11 @@ function TimelineEmptyState({ filtered }) {
   return (
     <EmptyState
       icon={Sprout}
-      title={filtered ? 'No events in this category' : 'Your health story begins here'}
+      title={filtered ? tr('ui.healthTimeline.noEventsInThisCategory', 'No events in this category') : tr('ui.healthTimeline.yourHealthStoryBeginsHere', 'Your health story begins here')}
       description={
         filtered
-          ? 'Try selecting a different filter to see more events.'
-          : 'Start logging progress and chat with Ayura AI. Your health timeline will fill up as you engage with the platform.'
+          ? tr('ui.healthTimeline.trySelectingADifferentFilter', 'Try selecting a different filter to see more events.')
+          : tr('ui.healthTimeline.startLoggingProgressAndChat', 'Start logging progress and chat with Ayura AI. Your health timeline will fill up as you engage with the platform.')
       }
       actions={
         !filtered && (
@@ -434,10 +436,10 @@ function TimelineEmptyState({ filtered }) {
             {/* Link, not <a href>: the anchors these replaced did a full document
                 navigation, re-running the entire app boot to move one route. */}
             <Link to="/checkin" className="btn btn-primary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
-              <CircleCheck size={15} strokeWidth={2} /> Log Check-In
+              <CircleCheck size={15} strokeWidth={2} />{' '}{tr('ui.healthTimeline.logCheckIn', 'Log Check-In')}
             </Link>
             <Link to="/chat" className="btn btn-secondary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
-              <MessageCircle size={15} strokeWidth={2} /> Chat with Ayura
+              <MessageCircle size={15} strokeWidth={2} />{' '}{tr('ui.healthTimeline.chatWithAyura', 'Chat with Ayura')}
             </Link>
           </>
         )
@@ -517,7 +519,7 @@ export default function HealthTimeline() {
   return (
     <>
       <Helmet>
-        <title>Health Timeline | Ayura AI</title>
+        <title>{tr('ui.healthTimeline.healthTimelineAyuraAi', 'Health Timeline | Ayura AI')}</title>
         <meta
           name="description"
           content="Your complete chronological health history — symptoms, progress, plan adaptations, and more."
@@ -534,19 +536,19 @@ export default function HealthTimeline() {
         >
           <div className="ht-page-header-left">
             <h1 className="ht-page-title">
-              <span className="gradient-text">Health Timeline</span>
+              <span className="gradient-text">{tr('ui.healthTimeline.healthTimeline', 'Health Timeline')}</span>
             </h1>
             <p className="ht-page-sub">
-              Your complete chronological health story — symptoms, progress, and AI adaptations.
+              {tr('ui.healthTimeline.yourCompleteChronologicalHealthStory', 'Your complete chronological health story — symptoms, progress, and AI adaptations.')}
             </p>
           </div>
           <button
             className="btn btn-secondary btn-sm ht-refresh-btn"
             onClick={() => queryClient.invalidateQueries({ queryKey: ['timeline-events'] })}
-            title="Refresh"
-            aria-label="Refresh timeline"
+            title={tr('ui.healthTimeline.refresh', 'Refresh')}
+            aria-label={tr('ui.healthTimeline.refreshTimeline', 'Refresh timeline')}
           >
-            ↻ Refresh
+            {tr('ui.healthTimeline.refresh2', '↻ Refresh')}
           </button>
         </m.div>
 
@@ -560,7 +562,7 @@ export default function HealthTimeline() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
           role="group"
-          aria-label="Filter events"
+          aria-label={tr('ui.healthTimeline.filterEvents', 'Filter events')}
         >
           {FILTERS.map(f => (
             <button
@@ -584,7 +586,7 @@ export default function HealthTimeline() {
               exit={{ opacity: 0 }}
             >
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><TriangleAlert size={15} strokeWidth={2} /> {error}</span>
-              <button onClick={() => {}} aria-label="Dismiss error"><X size={14} strokeWidth={2} /></button>
+              <button onClick={() => {}} aria-label={tr('ui.healthTimeline.dismissError', 'Dismiss error')}><X size={14} strokeWidth={2} /></button>
             </m.div>
           )}
         </AnimatePresence>
@@ -630,9 +632,9 @@ export default function HealthTimeline() {
                 disabled={loadingMore}
               >
                 {loadingMore ? (
-                  <><span className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} /> Loading…</>
+                  <><span className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} />{' '}{tr('ui.healthTimeline.loading', 'Loading…')}</>
                 ) : (
-                  '↓ Load More'
+                  tr('ui.healthTimeline.loadMore', '↓ Load More')
                 )}
               </button>
             </m.div>
@@ -647,7 +649,7 @@ export default function HealthTimeline() {
               transition={{ delay: 0.2 }}
             >
               <div className="ht-end-dot" />
-              <span>You're all caught up ✦</span>
+              <span>{tr('ui.healthTimeline.youReAllCaughtUp', 'You\'re all caught up ✦')}</span>
             </m.div>
           )}
         </div>

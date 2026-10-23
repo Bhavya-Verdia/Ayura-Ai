@@ -4,6 +4,8 @@ import { Check, ChevronDown, ChevronUp, Pause, Play, Plus, SkipForward, Timer, X
 import client, { workoutsAPI } from '../../api/client'
 import { track, EVENTS } from '../../lib/analytics'
 
+import { tr } from '../../lib/tr'
+import { Trans } from 'react-i18next'
 /**
  * Gym workout mode.
  *
@@ -17,9 +19,9 @@ import { track, EVENTS } from '../../lib/analytics'
  */
 
 const EFFORT = [
-  { value: 'easy',  label: 'Easy' },
-  { value: 'right', label: 'About right' },
-  { value: 'hard',  label: 'Very hard' },
+  { value: 'easy',  get label() { return tr('ui.gymSessionPlayer.easy', 'Easy') } },
+  { value: 'right', get label() { return tr('ui.gymSessionPlayer.aboutRight', 'About right') } },
+  { value: 'hard',  get label() { return tr('ui.gymSessionPlayer.veryHard', 'Very hard') } },
 ]
 
 const repRange = (reps) => {
@@ -117,14 +119,14 @@ function RestTimer({ total, onFinish }) {
   const [left, setLeft] = useCountdown(total, true, finish)
   return (
     <div className="gs-rest" role="timer" aria-live="polite">
-      <span className="gs-rest-label"><Timer size={14} /> Rest</span>
+      <span className="gs-rest-label"><Timer size={14} />{' '}{tr('ui.gymSessionPlayer.rest', 'Rest')}</span>
       <span className="gs-rest-clock">{clock(left)}</span>
       <div className="gs-rest-actions">
         <button type="button" className="gym-log-toggle" onClick={() => setLeft(l => l + 30)}>
           <Plus size={12} /> 30 s
         </button>
         <button type="button" className="gym-log-save" onClick={onFinish}>
-          <SkipForward size={12} /> Skip rest
+          <SkipForward size={12} />{' '}{tr('ui.gymSessionPlayer.skipRest', 'Skip rest')}
         </button>
       </div>
     </div>
@@ -143,7 +145,7 @@ function HoldTimer({ total }) {
           if (left <= 0) setLeft(total)
           setRunning(r => !r)
         }}>
-          {running ? <><Pause size={12} /> Pause</> : <><Play size={12} /> {left < total && left > 0 ? 'Resume' : 'Start'}</>}
+          {running ? <><Pause size={12} />{' '}{tr('ui.gymSessionPlayer.pause', 'Pause')}</> : <><Play size={12} /> {left < total && left > 0 ? tr('ui.gymSessionPlayer.resume', 'Resume') : tr('ui.gymSessionPlayer.start', 'Start')}</>}
         </button>
       </div>
     </div>
@@ -175,13 +177,13 @@ function IntervalTimer({ work, easy, rounds }) {
   return (
     <div className={`gs-hold${phase.hard && running ? ' hard' : ''}`} role="timer" aria-live="polite">
       <span className="gs-rest-label">
-        {done ? 'All rounds done' : `Round ${phase.round} of ${rounds} · ${phase.hard ? 'Hard' : 'Easy'}`}
+        {done ? tr('ui.gymSessionPlayer.allRoundsDone', 'All rounds done') : tr('ui.gymSessionPlayer.roundOf', 'Round {{round}} of {{rounds}} · {{value}}', { round: phase.round, rounds, value: phase.hard ? tr('ui.gymSessionPlayer.hard', 'Hard') : tr('ui.gymSessionPlayer.easy', 'Easy') })}
       </span>
       <span className="gs-rest-clock">{clock(done ? 0 : left)}</span>
       {!done && (
         <div className="gs-rest-actions">
           <button type="button" className="gym-log-save" onClick={() => setRunning(r => !r)}>
-            {running ? <><Pause size={12} /> Pause</> : <><Play size={12} /> {phase.round > 1 || !phase.hard ? 'Resume' : 'Start'}</>}
+            {running ? <><Pause size={12} />{' '}{tr('ui.gymSessionPlayer.pause', 'Pause')}</> : <><Play size={12} /> {phase.round > 1 || !phase.hard ? tr('ui.gymSessionPlayer.resume', 'Resume') : tr('ui.gymSessionPlayer.start', 'Start')}</>}
           </button>
         </div>
       )}
@@ -267,37 +269,37 @@ function ExerciseStep({ ex, adjusted, prior, onComplete, onSkip }) {
       {ex.role_label && <span className="sp-section-tag">{ex.role_label}</span>}
       <h2 className="gs-title">{ex.exercise_name}</h2>
       <p className="gs-rx">
-        {ex.sets} × {ex.reps}{ex.rest_seconds > 0 ? ` · ${ex.rest_seconds}s rest` : ''}
+        {ex.sets} × {ex.reps}{ex.rest_seconds > 0 ? tr('ui.gymSessionPlayer.sRest', ' · {{rest_seconds}}s rest', { rest_seconds: ex.rest_seconds }) : ''}
       </p>
       {adjusted ? (
-        <p className="gs-target"><strong>This week for you: {adjusted.text}</strong><span>{adjusted.reason}</span></p>
+        <p className="gs-target"><strong><Trans i18nKey="ui.gymSessionPlayer.thisWeekForYou" defaults={"This week for you: {{text}}"} values={{ text: adjusted.text }} /></strong><span>{adjusted.reason}</span></p>
       ) : ex.weight_range && <p className="gs-target"><span>{ex.weight_range}</span></p>}
       {ex.coaching_cue && <p className="gym-ex-cue">{ex.coaching_cue}</p>}
       {ex.instructions?.length > 0 && (
         <>
           <button type="button" className="gym-instructions-toggle" onClick={() => setHowTo(v => !v)}>
-            {howTo ? <ChevronUp size={11} /> : <ChevronDown size={11} />} {howTo ? 'Hide instructions' : 'How to perform'}
+            {howTo ? <ChevronUp size={11} /> : <ChevronDown size={11} />} {howTo ? tr('ui.gymSessionPlayer.hideInstructions', 'Hide instructions') : tr('ui.gymSessionPlayer.howToPerform', 'How to perform')}
           </button>
           {howTo && <ol className="gym-instructions-panel">{ex.instructions.map((s, i) => <li key={i}>{s}</li>)}</ol>}
         </>
       )}
 
       {loggable ? (
-        <div className="gs-sets" role="group" aria-label={`Sets for ${ex.exercise_name}`}>
+        <div className="gs-sets" role="group" aria-label={tr('ui.gymSessionPlayer.setsFor', 'Sets for {{exercise_name}}', { exercise_name: ex.exercise_name })}>
           {rows.map((r, i) => (
             <div key={i} className={`gs-set${r.done ? ' done' : ''}`}>
-              <span className="gym-log-set-label">Set {i + 1}</span>
+              <span className="gym-log-set-label"><Trans i18nKey="ui.gymSessionPlayer.set" defaults={"Set {{value}}"} values={{ value: i + 1 }} /></span>
               {!bodyweight && (
                 <input type="number" inputMode="decimal" min="0" max="500" step="0.5" placeholder="kg"
-                  aria-label={`Set ${i + 1} kg`} value={r.kg}
+                  aria-label={tr('ui.gymSessionPlayer.setKg', 'Set {{value}} kg', { value: i + 1 })} value={r.kg}
                   onChange={e => setRows(rs => rs.map((x, j) => j === i ? { ...x, kg: e.target.value } : x))} />
               )}
               <input type="number" inputMode="numeric" min="0" max="100" step="1"
                 placeholder={range ? `${range[0]}-${range[1]}` : 'reps'}
-                aria-label={`Set ${i + 1} reps`} value={r.reps}
+                aria-label={tr('ui.gymSessionPlayer.setReps', 'Set {{value}} reps', { value: i + 1 })} value={r.reps}
                 onChange={e => setRows(rs => rs.map((x, j) => j === i ? { ...x, reps: e.target.value } : x))} />
               <button type="button" className={`gs-set-done${r.done ? ' on' : ''}`}
-                aria-label={r.done ? `Set ${i + 1} done` : `Mark set ${i + 1} done`}
+                aria-label={r.done ? tr('ui.gymSessionPlayer.setDone', 'Set {{value}} done', { value: i + 1 }) : tr('ui.gymSessionPlayer.markSetDone', 'Mark set {{value}} done', { value: i + 1 })}
                 aria-pressed={r.done} disabled={r.done || resting}
                 onClick={() => markDone(i)}>
                 <Check size={16} />
@@ -315,13 +317,13 @@ function ExerciseStep({ ex, adjusted, prior, onComplete, onSkip }) {
 
       {cardio && !loggable && (
         <div className="gym-log-set gs-minutes">
-          <span className="gym-log-set-label">Minutes done</span>
-          <input type="number" inputMode="decimal" min="0" max="240" step="1" aria-label="Minutes done"
+          <span className="gym-log-set-label">{tr('ui.gymSessionPlayer.minutesDone', 'Minutes done')}</span>
+          <input type="number" inputMode="decimal" min="0" max="240" step="1" aria-label={tr('ui.gymSessionPlayer.minutesDone', 'Minutes done')}
             value={minutes} onChange={e => setMinutes(e.target.value)} />
         </div>
       )}
       {((loggable && doneCount > 0) || (cardio && !loggable)) && !resting && (
-        <div className="gym-log-effort" role="radiogroup" aria-label="How hard did it feel">
+        <div className="gym-log-effort" role="radiogroup" aria-label={tr('ui.gymSessionPlayer.howHardDidItFeel', 'How hard did it feel')}>
           {EFFORT.map(o => (
             <button key={o.value} type="button" role="radio" aria-checked={effort === o.value}
               className={`gym-log-chip${effort === o.value ? ' active' : ''}`}
@@ -330,13 +332,13 @@ function ExerciseStep({ ex, adjusted, prior, onComplete, onSkip }) {
         </div>
       )}
       {ex.notes && <p className="gym-ex-notes">{ex.notes}</p>}
-      {error && <p className="gym-log-error">Could not save — check your connection and try again.</p>}
+      {error && <p className="gym-log-error">{tr('ui.gymSessionPlayer.couldNotSaveCheckYour', 'Could not save — check your connection and try again.')}</p>}
 
       <div className="gs-step-actions">
-        <button type="button" className="gym-log-cancel" onClick={onSkip}>Skip exercise</button>
+        <button type="button" className="gym-log-cancel" onClick={onSkip}>{tr('ui.gymSessionPlayer.skipExercise', 'Skip exercise')}</button>
         <button type="button" className="gym-log-save gs-next" onClick={finish}
           disabled={saving || resting || (loggable && !allDone && doneCount === 0)}>
-          {saving ? 'Saving…' : loggable && !allDone && doneCount > 0 ? `Finish with ${doneCount} set${doneCount > 1 ? 's' : ''}` : 'Next'}
+          {saving ? tr('ui.gymSessionPlayer.saving', 'Saving…') : loggable && !allDone && doneCount > 0 ? (doneCount > 1 ? tr('ui.gymSessionPlayer.finishWithSets', 'Finish with {{count}} sets', { count: doneCount }) : tr('ui.gymSessionPlayer.finishWithSet', 'Finish with 1 set')) : tr('ui.gymSessionPlayer.next', 'Next')}
         </button>
       </div>
     </div>
@@ -372,10 +374,10 @@ export function GymSessionPlayer({ planId, week, day, adjustments, logs, onLogge
   useWakeLock()
   const steps = useMemo(() => {
     const out = []
-    if (day.warmup?.length) out.push({ kind: 'list', tag: 'Warm-up', title: 'Warm up', items: day.warmup })
+    if (day.warmup?.length) out.push({ kind: 'list', tag: 'Warm-up', title: tr('ui.gymSessionPlayer.warmUp', 'Warm up'), items: day.warmup })
     ;(day.main_workout || []).forEach(ex => out.push({ kind: 'exercise', ex }))
-    if (day.balance?.length) out.push({ kind: 'list', tag: 'Balance', title: 'Balance', items: day.balance })
-    if (day.cooldown?.length) out.push({ kind: 'list', tag: 'Cool-down', title: 'Cool down', items: day.cooldown })
+    if (day.balance?.length) out.push({ kind: 'list', tag: 'Balance', title: tr('ui.gymSessionPlayer.balance', 'Balance'), items: day.balance })
+    if (day.cooldown?.length) out.push({ kind: 'list', tag: 'Cool-down', title: tr('ui.gymSessionPlayer.coolDown', 'Cool down'), items: day.cooldown })
     return out
   }, [day])
   const exerciseTotal = steps.filter(s => s.kind === 'exercise').length
@@ -455,19 +457,19 @@ export function GymSessionPlayer({ planId, week, day, adjustments, logs, onLogge
   const exerciseNo = steps.slice(0, index + 1).filter(s => s.kind === 'exercise').length
 
   const body = (
-    <div className="sp-overlay gs-overlay" role="dialog" aria-modal="true" aria-label="Workout">
+    <div className="sp-overlay gs-overlay" role="dialog" aria-modal="true" aria-label={tr('ui.gymSessionPlayer.workout', 'Workout')}>
       <div className="sp-topbar">
         <div className="sp-progress-track">
           <div className="sp-progress-fill" style={{ width: `${((finished ? steps.length : index) / Math.max(steps.length, 1)) * 100}%` }} />
         </div>
         <div className="sp-topbar-row">
           <span className="sp-step-count">
-            {finished ? 'Complete'
-              : step?.kind === 'exercise' ? `Exercise ${exerciseNo} of ${exerciseTotal}` : step?.tag}
+            {finished ? tr('ui.gymSessionPlayer.complete', 'Complete')
+              : step?.kind === 'exercise' ? tr('ui.gymSessionPlayer.exerciseOf', 'Exercise {{exerciseNo}} of {{exerciseTotal}}', { exerciseNo, exerciseTotal }) : step?.tag}
           </span>
-          <span className="sp-total-left">Week {week} · {day.day_name}</span>
+          <span className="sp-total-left"><Trans i18nKey="ui.gymSessionPlayer.week" defaults={"Week {{week}} · {{day_name}}"} values={{ week, day_name: day.day_name }} /></span>
           <div className="sp-topbar-actions">
-            <button className="sp-icon-btn" onClick={exit} aria-label="End workout"><X size={18} /></button>
+            <button className="sp-icon-btn" onClick={exit} aria-label={tr('ui.gymSessionPlayer.endWorkout', 'End workout')}><X size={18} /></button>
           </div>
         </div>
       </div>
@@ -476,16 +478,14 @@ export function GymSessionPlayer({ planId, week, day, adjustments, logs, onLogge
         {finished ? (
           <div className="sp-complete">
             <div className="sp-complete-mark"><Check size={40} strokeWidth={2.5} /></div>
-            <h2>Workout complete</h2>
-            <p className="sp-complete-sub">
-              {clock(finalSeconds)} · {logged} of {exerciseTotal} exercises logged
-            </p>
+            <h2>{tr('ui.gymSessionPlayer.workoutComplete', 'Workout complete')}</h2>
+            <p className="sp-complete-sub"><Trans i18nKey="ui.gymSessionPlayer.ofExercisesLogged" defaults={"{{finalSeconds}} · {{logged}} of {{exerciseTotal}} exercises logged"} values={{ finalSeconds: clock(finalSeconds), logged, exerciseTotal }} /></p>
             <p className="sp-save-state">
-              {saveState === 'saving' && 'Saving your session…'}
-              {saveState === 'saved' && 'Saved — next week’s weights are set from what you logged.'}
-              {saveState === 'error' && 'The session could not be saved, but every exercise you finished was logged.'}
+              {saveState === 'saving' && tr('ui.gymSessionPlayer.savingYourSession', 'Saving your session…')}
+              {saveState === 'saved' && tr('ui.gymSessionPlayer.savedNextWeekSWeights', 'Saved — next week’s weights are set from what you logged.')}
+              {saveState === 'error' && tr('ui.gymSessionPlayer.theSessionCouldNotBe', 'The session could not be saved, but every exercise you finished was logged.')}
             </p>
-            <button className="sp-primary-btn" onClick={onClose}>Back to plan</button>
+            <button className="sp-primary-btn" onClick={onClose}>{tr('ui.gymSessionPlayer.backToPlan', 'Back to plan')}</button>
           </div>
         ) : step.kind === 'exercise' ? (
           <ExerciseStep

@@ -11,6 +11,7 @@
 
 import { primaryName, secondaryName } from './poseNames'
 
+import { tr } from '../../lib/tr'
 const SECTION_LABEL = {
   surya_namaskar: 'Surya Namaskar',
   warmup: 'Warm-up',
@@ -55,8 +56,8 @@ function poseSegments(pose, section) {
   // The drawn figure is mirrored for the second side rather than needing a second
   // set of coordinates — the whole reason poses are stored as joints.
   return [
-    { ...base, seconds: hold, side: 'right', title: `${name} — right side` },
-    { ...base, seconds: hold, side: 'left', title: `${name} — left side`, mirror: true },
+    { ...base, seconds: hold, side: 'right', title: tr('ui.buildSessionTimeline.rightSide', '{{name}} — right side', { name }) },
+    { ...base, seconds: hold, side: 'left', title: tr('ui.buildSessionTimeline.leftSide', '{{name}} — left side', { name }), mirror: true },
   ]
 }
 
@@ -70,8 +71,8 @@ export function buildSessionTimeline(session) {
       kind: SEGMENT_KIND.FLOW,
       section: 'surya_namaskar',
       sectionLabel: SECTION_LABEL.surya_namaskar,
-      title: 'Surya Namaskar',
-      subtitle: `${sns.rounds} round${sns.rounds > 1 ? 's' : ''} · ${sns.pace} pace`,
+      title: tr('ui.buildSessionTimeline.suryaNamaskar', 'Surya Namaskar'),
+      subtitle: (sns.rounds > 1 ? tr('ui.buildSessionTimeline.roundsPace', '{{count}} rounds · {{pace}} pace', { count: sns.rounds, pace: sns.pace }) : tr('ui.buildSessionTimeline.roundPace', '1 round · {{pace}} pace', { pace: sns.pace })),
       seconds: Math.round((sns.duration_minutes || 0) * 60),
       steps: sns.steps || [],
       note: sns.pace_note,

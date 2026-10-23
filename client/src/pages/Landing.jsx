@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Lenis from 'lenis'
 import { m, AnimatePresence, MotionConfig } from 'framer-motion'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import useLowPowerMode from '../hooks/useLowPowerMode'
 import { useAuth } from '../providers/AuthContext'
 import { useTheme, useRenderedTheme } from '../providers/ThemeProvider'
@@ -21,6 +21,7 @@ import {
   Salad, Pill, Flower2, Soup, HeartPulse, TriangleAlert, Check,
   Sun, Moon, Languages,
 } from 'lucide-react'
+import { tr } from '../lib/tr'
 import './Landing.css'
 
 // ─── Animation variants ───────────────────────────────────────
@@ -141,7 +142,7 @@ function DoshaFeatureVisual() {
     <div className="lnd-app-preview fmv-fill">
       <div className="lnd-prev-header">
         <span className="lnd-prev-brand">{t('landing.v_constitution')}</span>
-        <span className="lnd-prev-badge" style={{ color: 'var(--vata-color)', background: 'color-mix(in srgb, var(--vata-color) 14%, transparent)', borderColor: 'color-mix(in srgb, var(--vata-color) 30%, transparent)' }}>Vata–Pitta</span>
+        <span className="lnd-prev-badge" style={{ color: 'var(--vata-color)', background: 'color-mix(in srgb, var(--vata-color) 14%, transparent)', borderColor: 'color-mix(in srgb, var(--vata-color) 30%, transparent)' }}>{tr('ui.landing.vataPitta', 'Vata–Pitta')}</span>
       </div>
       <div className="lnd-dosha-gauge">
         <div className="lnd-dosha-gauge-title">{t('landing.v_dosha_balance')}</div>
@@ -460,7 +461,7 @@ export default function Landing() {
         name: 'Ayura AI',
         alternateName: ['AyuraAI', 'Ayura', 'Ayura AI App', 'Ayur AI'],
         inLanguage: 'en-IN',
-        description: 'AI-Powered Ayurvedic Wellness Platform',
+        description: tr('ui.landing.aiPoweredAyurvedicWellnessPlatform', 'AI-Powered Ayurvedic Wellness Platform'),
         publisher: { '@id': 'https://ayuraai.in/#organization' },
         potentialAction: {
           '@type': 'SearchAction',
@@ -477,7 +478,7 @@ export default function Landing() {
         logo: { '@type': 'ImageObject', url: 'https://ayuraai.in/pwa-512x512.png', width: 512, height: 512 },
         image: 'https://ayuraai.in/og-image.png',
         slogan: 'Your wellness, finally in sync — AI + Ayurveda.',
-        description: "India's AI-powered Ayurvedic wellness platform providing personalized dosha-based plans for diet, yoga, Panchakarma, and herbal medicine.",
+        description: tr('ui.landing.indiaSAiPoweredAyurvedic', 'India\'s AI-powered Ayurvedic wellness platform providing personalized dosha-based plans for diet, yoga, Panchakarma, and herbal medicine.'),
         foundingLocation: { '@type': 'Place', name: 'India' },
         areaServed: { '@type': 'Country', name: 'India' },
         // Keep in sync with the twitter:site meta in index.html; append other
@@ -492,7 +493,7 @@ export default function Landing() {
         applicationCategory: 'HealthApplication',
         operatingSystem: 'Web, iOS, Android',
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
-        description: 'AI-powered Ayurvedic wellness platform for personalized health plans based on Prakriti analysis.',
+        description: tr('ui.landing.aiPoweredAyurvedicWellnessPlatform2', 'AI-powered Ayurvedic wellness platform for personalized health plans based on Prakriti analysis.'),
         screenshot: 'https://ayuraai.in/og-image.png',
       },
       {
@@ -511,7 +512,7 @@ export default function Landing() {
     <MotionConfig reducedMotion={lowPower ? 'always' : 'user'}>
     <div className="landing-root">
       <Helmet>
-        <title>Ayura AI — AI + Ayurveda Wellness Platform</title>
+        <title>{tr('ui.landing.ayuraAiAiAyurvedaWellness', 'Ayura AI — AI + Ayurveda Wellness Platform')}</title>
         <meta name="description" content="Ayura AI blends ancient Ayurvedic wisdom with modern AI to deliver adaptive, personalised wellness plans across fitness, nutrition, detox, and mindfulness." />
         <link rel="canonical" href="https://ayuraai.in" />
         <meta property="og:title" content="Ayura AI — AI-Powered Ayurvedic Wellness" />
@@ -527,11 +528,9 @@ export default function Landing() {
         <nav className="lnd-nav">
           <Link to="/" className="lnd-brand">
             <div className="lnd-brand-mark-wrap">
-              <img src="/favicon.svg" alt="Ayura AI Logo" className="lnd-brand-mark" />
+              <img src="/favicon.svg" alt={tr('ui.landing.ayuraAiLogo', 'Ayura AI Logo')} className="lnd-brand-mark" />
             </div>
-            <span className="lnd-brand-text">
-              Ayura <span style={{ color: 'var(--ayura-teal)', fontWeight: 800 }}>AI</span>
-            </span>
+            <span className="lnd-brand-text"><Trans i18nKey="ui.landing.ayura0Ai0" defaults={"Ayura <0>AI</0>"} components={[<span style={{ color: 'var(--ayura-teal)', fontWeight: 800 }} />]} /></span>
           </Link>
           <div className="lnd-nav-actions">
             <NavControls />
@@ -564,7 +563,7 @@ export default function Landing() {
           <div className="lnd-hero-copy">
             {/* True page H1 for SEO — keyword/brand-rich, visually hidden so the
                 animated tagline below remains the visual focus. */}
-            <h1 className="sr-only">Ayura AI — AI-Powered Ayurvedic Wellness Platform</h1>
+            <h1 className="sr-only">{tr('ui.landing.ayuraAiAiPoweredAyurvedic', 'Ayura AI — AI-Powered Ayurvedic Wellness Platform')}</h1>
 
             <m.span
               className="lnd-hero-kicker"
@@ -863,8 +862,8 @@ export default function Landing() {
           <div className="lnd-footer-top">
             <div>
               <Link to="/" className="lnd-footer-brand">
-                <img src="/favicon.svg" alt="Ayura AI Logo" className="lnd-footer-brand-mark" />
-                <span className="lnd-footer-brand-text">Ayura AI</span>
+                <img src="/favicon.svg" alt={tr('ui.landing.ayuraAiLogo', 'Ayura AI Logo')} className="lnd-footer-brand-mark" />
+                <span className="lnd-footer-brand-text">{tr('ui.landing.ayuraAi', 'Ayura AI')}</span>
               </Link>
               <p className="lnd-footer-tagline">
                 {t('landing.footer_tagline')}
@@ -897,7 +896,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="lnd-footer-bottom">
-            <p className="lnd-footer-copy">© {new Date().getFullYear()} Ayura AI — {t('landing.footer_copy')}</p>
+            <p className="lnd-footer-copy"><Trans i18nKey="ui.landing.ayuraAi2" defaults={"© {{value}} Ayura AI — {{value2}}"} values={{ value: new Date().getFullYear(), value2: t('landing.footer_copy') }} /></p>
             <p className="lnd-footer-disclaimer">
               {t('landing.footer_disclaimer')}
             </p>

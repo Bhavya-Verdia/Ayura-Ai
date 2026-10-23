@@ -4,6 +4,8 @@ import { toast } from 'sonner'
 import { MessageCircle } from 'lucide-react'
 import { whatsappAPI } from '../api/client'
 
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 // Settings › WhatsApp. Hidden entirely while the server has WhatsApp switched off, so
 // nobody is offered a channel that cannot deliver. A number is used only after the
 // code sent to it is entered (routes/whatsapp.py).
@@ -39,42 +41,42 @@ export default function WhatsAppSettings({ variants }) {
 
   return (
     <m.div className="settings-card" variants={variants}>
-      <h2 className="settings-section-title"><MessageCircle size={18} style={{ verticalAlign: '-3px', marginRight: 8 }} />WhatsApp</h2>
+      <h2 className="settings-section-title"><MessageCircle size={18} style={{ verticalAlign: '-3px', marginRight: 8 }} />{tr('ui.whatsAppSettings.whatsapp', 'WhatsApp')}</h2>
 
       {!st.verified && !sentTo && (
         <>
           <p className="settings-pref-help" style={{ marginBottom: 16 }}>
-            Get your reminders, and if you like a short morning message with today's meals, on WhatsApp.
+            {tr('ui.whatsAppSettings.getYourRemindersAndIf', 'Get your reminders, and if you like a short morning message with today\'s meals, on WhatsApp.')}
           </p>
           <div className="input-group">
-            <label htmlFor="wa-phone">WhatsApp number</label>
+            <label htmlFor="wa-phone">{tr('ui.whatsAppSettings.whatsappNumber', 'WhatsApp number')}</label>
             <input id="wa-phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="98765 43210"
               value={phone} onChange={e => setPhone(e.target.value)} />
           </div>
           <label className="settings-wa-consent" style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '12px 0 16px', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
             <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} style={{ marginTop: 3 }} />
-            <span>I agree to receive messages from Ayura AI on WhatsApp at this number. I can stop them here at any time.</span>
+            <span>{tr('ui.whatsAppSettings.iAgreeToReceiveMessages', 'I agree to receive messages from Ayura AI on WhatsApp at this number. I can stop them here at any time.')}</span>
           </label>
           <button type="button" className="btn btn-primary" disabled={busy || !phone || !consent} onClick={sendCode}>
-            {busy ? 'Sending…' : 'Send code on WhatsApp'}
+            {busy ? tr('ui.whatsAppSettings.sending', 'Sending…') : tr('ui.whatsAppSettings.sendCodeOnWhatsapp', 'Send code on WhatsApp')}
           </button>
         </>
       )}
 
       {!st.verified && sentTo && (
         <>
-          <p className="settings-pref-help" style={{ marginBottom: 16 }}>We sent a 6-digit code to {sentTo} on WhatsApp.</p>
+          <p className="settings-pref-help" style={{ marginBottom: 16 }}><Trans i18nKey="ui.whatsAppSettings.weSentA6Digit" defaults={"We sent a 6-digit code to {{sentTo}} on WhatsApp."} values={{ sentTo }} /></p>
           <div className="input-group">
-            <label htmlFor="wa-code">Code</label>
+            <label htmlFor="wa-code">{tr('ui.whatsAppSettings.code', 'Code')}</label>
             <input id="wa-code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} pattern="\d{6}"
               value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ''))} />
           </div>
           <div className="settings-action-row" style={{ marginTop: 12 }}>
             <button type="button" className="btn btn-primary" disabled={busy || code.length !== 6} onClick={verify}>
-              {busy ? 'Checking…' : 'Verify'}
+              {busy ? tr('ui.whatsAppSettings.checking', 'Checking…') : tr('ui.whatsAppSettings.verify', 'Verify')}
             </button>
             <button type="button" className="btn btn-secondary" disabled={busy} onClick={() => { setSentTo(null); setCode('') }}>
-              Change number
+              {tr('ui.whatsAppSettings.changeNumber', 'Change number')}
             </button>
           </div>
         </>
@@ -82,21 +84,21 @@ export default function WhatsAppSettings({ variants }) {
 
       {st.verified && (
         <>
-          <p className="settings-pref-help" style={{ marginBottom: 16 }}>Connected to {st.phone}.</p>
+          <p className="settings-pref-help" style={{ marginBottom: 16 }}><Trans i18nKey="ui.whatsAppSettings.connectedTo" defaults={"Connected to {{phone}}."} values={{ phone: st.phone }} /></p>
           <div className="settings-pref-row">
             <div>
-              <div className="settings-pref-label">Reminders</div>
-              <div className="settings-pref-help">The reminders you set, on WhatsApp as well</div>
+              <div className="settings-pref-label">{tr('ui.whatsAppSettings.reminders', 'Reminders')}</div>
+              <div className="settings-pref-help">{tr('ui.whatsAppSettings.theRemindersYouSetOn', 'The reminders you set, on WhatsApp as well')}</div>
             </div>
             <button type="button" className={`btn btn-sm ${st.reminders ? 'btn-secondary' : 'btn-primary'}`} style={{ whiteSpace: 'nowrap' }}
               aria-pressed={st.reminders} disabled={busy} onClick={() => save({ reminders: !st.reminders })}>
-              {st.reminders ? 'Turn off' : 'Turn on'}
+              {st.reminders ? tr('ui.whatsAppSettings.turnOff', 'Turn off') : tr('ui.whatsAppSettings.turnOn', 'Turn on')}
             </button>
           </div>
           <div className="settings-pref-row">
             <div>
-              <div className="settings-pref-label">Morning message</div>
-              <div className="settings-pref-help">Today's meals and your streak, once a day</div>
+              <div className="settings-pref-label">{tr('ui.whatsAppSettings.morningMessage', 'Morning message')}</div>
+              <div className="settings-pref-help">{tr('ui.whatsAppSettings.todaySMealsAndYour', 'Today\'s meals and your streak, once a day')}</div>
               {st.daily && (
                 <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                   at
@@ -107,11 +109,11 @@ export default function WhatsAppSettings({ variants }) {
             </div>
             <button type="button" className={`btn btn-sm ${st.daily ? 'btn-secondary' : 'btn-primary'}`} style={{ whiteSpace: 'nowrap' }}
               aria-pressed={st.daily} disabled={busy} onClick={() => save({ daily: !st.daily })}>
-              {st.daily ? 'Turn off' : 'Turn on'}
+              {st.daily ? tr('ui.whatsAppSettings.turnOff', 'Turn off') : tr('ui.whatsAppSettings.turnOn', 'Turn on')}
             </button>
           </div>
           <button type="button" className="btn btn-secondary" style={{ marginTop: 16 }} disabled={busy} onClick={stop}>
-            Stop WhatsApp messages
+            {tr('ui.whatsAppSettings.stopWhatsappMessages', 'Stop WhatsApp messages')}
           </button>
         </>
       )}

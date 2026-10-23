@@ -3,6 +3,7 @@ import { m } from 'framer-motion'
 import {
   ChevronRight,
 } from 'lucide-react'
+import { tr } from '../../lib/tr'
 import '../PlanViewer.css'
 
 const isObjectArray = (arr) =>
@@ -55,7 +56,7 @@ export function renderValue(val) {
                     else if (tierStr.includes('medium')) tierClass = 'tier-medium'
                     return (
                       <div key={k} className="plan-card-item">
-                        <span className="plan-card-label">Safety</span>
+                        <span className="plan-card-label">{tr('ui.shared.safety', 'Safety')}</span>
                         <span className={`plan-safety-tier ${tierClass}`}>{v}</span>
                       </div>
                     )

@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { Download, Printer } from 'lucide-react'
 import { exportAPI } from '../api/client'
 
+import { tr } from '../lib/tr'
 // The Daily Routine as a printable PDF (server/services/routine_pdf.py): the week, one
 // day per page, or just today's page. Print opens the PDF so the browser's own print
 // dialog prints the sheet as designed, not the screen.
@@ -58,15 +59,15 @@ export default function RoutinePdfButtons() {
   }
 
   return (
-    <div className="din-pdf-bar" role="group" aria-label="Download or print your routine">
+    <div className="din-pdf-bar" role="group" aria-label={tr('ui.routinePdfButtons.downloadOrPrintYourRoutine', 'Download or print your routine')}>
       <button type="button" className="btn btn-secondary btn-sm" disabled={!!busy} onClick={() => download('all')}>
-        <Download size={14} /> {busy === 'all' ? 'Preparing…' : 'Week as PDF'}
+        <Download size={14} /> {busy === 'all' ? tr('ui.routinePdfButtons.preparing', 'Preparing…') : tr('ui.routinePdfButtons.weekAsPdf', 'Week as PDF')}
       </button>
       <button type="button" className="btn btn-secondary btn-sm" disabled={!!busy} onClick={() => download('today')}>
-        <Download size={14} /> {busy === 'today' ? 'Preparing…' : "Today's page"}
+        <Download size={14} /> {busy === 'today' ? tr('ui.routinePdfButtons.preparing', 'Preparing…') : tr('ui.routinePdfButtons.todaySPage', 'Today\'s page')}
       </button>
       <button type="button" className="btn btn-secondary btn-sm" disabled={!!busy} onClick={print}>
-        <Printer size={14} /> {busy === 'print' ? 'Preparing…' : 'Print today'}
+        <Printer size={14} /> {busy === 'print' ? tr('ui.routinePdfButtons.preparing', 'Preparing…') : tr('ui.routinePdfButtons.printToday', 'Print today')}
       </button>
     </div>
   )

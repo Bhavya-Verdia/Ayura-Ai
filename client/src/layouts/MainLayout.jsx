@@ -15,6 +15,7 @@ import ScrollToTop from '../components/ScrollToTop'
 import FeedbackWidget from '../components/FeedbackWidget'
 import CommandPalette from '../components/CommandPalette'
 import { DOSHA_COLOR } from '../constants/dosha'
+import { tr } from '../lib/tr'
 import '../pages/Dashboard.css'
 import './MainLayout.css'
 
@@ -26,24 +27,24 @@ import './MainLayout.css'
 // both plans together — so it earns a permanent Tools entry.
 const NAV_ITEMS = [
   // Home & AI
-  { id: 'dashboard',    label: 'Dashboard',    Icon: LayoutDashboard, path: '/dashboard',     i18nKey: 'dashboard_title' },
-  { id: 'chat',         label: 'AI Assistant', Icon: MessageCircle,   path: '/chat',           i18nKey: 'chat' },
+  { id: 'dashboard',    get label() { return tr('ui.mainLayout.dashboard', 'Dashboard') },    Icon: LayoutDashboard, path: '/dashboard',     i18nKey: 'dashboard_title' },
+  { id: 'chat',         get label() { return tr('ui.mainLayout.aiAssistant', 'AI Assistant') }, Icon: MessageCircle,   path: '/chat',           i18nKey: 'chat' },
   // Track & Assess. `startsGroup` draws a hairline rule above the item — the
   // three groups below were only ever comments in this file, so the rendered
   // sidebar was 12 undifferentiated rows. A rule costs ~9px of height each,
   // where a labelled section header would have cost ~30px and overflowed.
-  { id: 'progress',     label: 'Progress',     Icon: TrendingUp,      path: '/progress',       i18nKey: 'progress', startsGroup: true },
-  { id: 'checkin',      label: 'Check-In',     Icon: CheckSquare,     path: '/checkin',        i18nKey: 'checkin' },
-  { id: 'timeline',     label: 'Timeline',     Icon: Activity,        path: '/timeline',       i18nKey: 'timeline' },
-  { id: 'dosha-quiz',   label: 'Dosha Quiz',   Icon: Brain,           path: '/dosha-quiz',     i18nKey: 'dosha_quiz' },
+  { id: 'progress',     get label() { return tr('ui.mainLayout.progress', 'Progress') },     Icon: TrendingUp,      path: '/progress',       i18nKey: 'progress', startsGroup: true },
+  { id: 'checkin',      get label() { return tr('ui.mainLayout.checkIn', 'Check-In') },     Icon: CheckSquare,     path: '/checkin',        i18nKey: 'checkin' },
+  { id: 'timeline',     get label() { return tr('ui.mainLayout.timeline', 'Timeline') },     Icon: Activity,        path: '/timeline',       i18nKey: 'timeline' },
+  { id: 'dosha-quiz',   get label() { return tr('ui.mainLayout.doshaQuiz', 'Dosha Quiz') },   Icon: Brain,           path: '/dosha-quiz',     i18nKey: 'dosha_quiz' },
   // Tools
-  { id: 'remedies',     label: 'Remedies',     Icon: Soup,            path: '/remedies',       i18nKey: 'remedies', startsGroup: true },
-  { id: 'interaction',  label: 'Herb Safety',  Icon: ShieldCheck,     path: '/interaction-check', i18nKey: 'interaction_check' },
-  { id: 'reminders',    label: 'Reminders',    Icon: AlarmClock,      path: '/reminders',      i18nKey: 'reminders' },
+  { id: 'remedies',     get label() { return tr('ui.mainLayout.remedies', 'Remedies') },     Icon: Soup,            path: '/remedies',       i18nKey: 'remedies', startsGroup: true },
+  { id: 'interaction',  get label() { return tr('ui.mainLayout.herbSafety', 'Herb Safety') },  Icon: ShieldCheck,     path: '/interaction-check', i18nKey: 'interaction_check' },
+  { id: 'reminders',    get label() { return tr('ui.mainLayout.reminders', 'Reminders') },    Icon: AlarmClock,      path: '/reminders',      i18nKey: 'reminders' },
   // Social & Account
-  { id: 'community',    label: 'Community',    Icon: Users,           path: '/community',      i18nKey: 'community', startsGroup: true },
-  { id: 'notifications',label: 'Notifications',Icon: Bell,            path: '/notifications',  i18nKey: 'notifications' },
-  { id: 'settings',     label: 'Settings',     Icon: Settings,        path: '/settings',       i18nKey: 'settings' },
+  { id: 'community',    get label() { return tr('ui.mainLayout.community', 'Community') },    Icon: Users,           path: '/community',      i18nKey: 'community', startsGroup: true },
+  { id: 'notifications',get label() { return tr('ui.mainLayout.notifications', 'Notifications') },Icon: Bell,            path: '/notifications',  i18nKey: 'notifications' },
+  { id: 'settings',     get label() { return tr('ui.mainLayout.settings', 'Settings') },     Icon: Settings,        path: '/settings',       i18nKey: 'settings' },
 ]
 
 // Route → chunk loader, for warming a route's code before the user commits to
@@ -86,11 +87,11 @@ function warmRoute(path) {
 const MOBILE_QUERY = '(max-width: 900px)'
 
 const BOTTOM_NAV = [
-  { id: 'dashboard', label: 'Home',      Icon: LayoutDashboard, path: '/dashboard' },
-  { id: 'chat',      label: 'AI Chat',   Icon: MessageCircle,   path: '/chat' },
-  { id: 'progress',  label: 'Progress',  Icon: TrendingUp,      path: '/progress' },
-  { id: 'community', label: 'Community', Icon: Users,           path: '/community' },
-  { id: 'settings',  label: 'More',      Icon: Settings,        path: '/settings' },
+  { id: 'dashboard', get label() { return tr('ui.mainLayout.home', 'Home') },      Icon: LayoutDashboard, path: '/dashboard' },
+  { id: 'chat',      get label() { return tr('ui.mainLayout.aiChat', 'AI Chat') },   Icon: MessageCircle,   path: '/chat' },
+  { id: 'progress',  get label() { return tr('ui.mainLayout.progress', 'Progress') },  Icon: TrendingUp,      path: '/progress' },
+  { id: 'community', get label() { return tr('ui.mainLayout.community', 'Community') }, Icon: Users,           path: '/community' },
+  { id: 'settings',  get label() { return tr('ui.mainLayout.more', 'More') },      Icon: Settings,        path: '/settings' },
 ]
 
 export default function MainLayout() {
@@ -157,7 +158,7 @@ export default function MainLayout() {
           <m.button
             className="dash-overlay"
             onClick={() => setSidebarOpen(false)}
-            aria-label="Close menu"
+            aria-label={tr('ui.mainLayout.closeMenu', 'Close menu')}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -175,14 +176,14 @@ export default function MainLayout() {
             page, and it costs the sidebar no extra height. (Settings still has
             the explicit Dark/Light pair; this is the quick toggle.) */}
         <div className="dash-sidebar-brand">
-          <img src="/favicon.svg" alt="Ayura AI Logo" className="dash-sidebar-brand-mark" />
-          <span className="dash-sidebar-brand-text">Ayura AI</span>
+          <img src="/favicon.svg" alt={tr('ui.mainLayout.ayuraAiLogo', 'Ayura AI Logo')} className="dash-sidebar-brand-mark" />
+          <span className="dash-sidebar-brand-text">{tr('ui.mainLayout.ayuraAi', 'Ayura AI')}</span>
           <button
             type="button"
             className="dash-sidebar-theme-toggle"
             onClick={(e) => setThemeAnimated(theme === 'dark' ? 'light' : 'dark', e)}
-            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={theme === 'dark' ? tr('ui.mainLayout.switchToLightMode', 'Switch to light mode') : tr('ui.mainLayout.switchToDarkMode', 'Switch to dark mode')}
+            aria-label={theme === 'dark' ? tr('ui.mainLayout.switchToLightMode', 'Switch to light mode') : tr('ui.mainLayout.switchToDarkMode', 'Switch to dark mode')}
           >
             {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
           </button>
@@ -197,7 +198,7 @@ export default function MainLayout() {
             {initials}
           </div>
           <div>
-            <div className="dash-sidebar-name">{user?.name || 'User'}</div>
+            <div className="dash-sidebar-name">{user?.name || tr('ui.mainLayout.user', 'User')}</div>
             {user?.dominant_dosha && (
               <div className="dash-sidebar-dosha" style={{ color: doshaBadgeColor }}>
                 {user.dominant_dosha} dosha
@@ -207,7 +208,7 @@ export default function MainLayout() {
         </div>
 
         {/* Navigation */}
-        <nav className="dash-sidebar-nav" aria-label="Main">
+        <nav className="dash-sidebar-nav" aria-label={tr('ui.mainLayout.main', 'Main')}>
           {NAV_ITEMS.map(item => {
             const { Icon } = item
             return (
@@ -247,12 +248,12 @@ export default function MainLayout() {
           onClick={() => window.dispatchEvent(new CustomEvent('ayura:open-feedback'))}
         >
           <MessageSquare size={16} strokeWidth={2} />
-          {t('send_feedback') || 'Send feedback'}
+          {t('send_feedback') || tr('ui.mainLayout.sendFeedback', 'Send feedback')}
         </button>
 
         <button className="dash-sidebar-signout" onClick={logout}>
           <LogOut size={16} strokeWidth={2} />
-          {t('logout') || 'Sign out'}
+          {t('logout') || tr('ui.mainLayout.signOut', 'Sign out')}
         </button>
       </aside>
 
@@ -269,14 +270,14 @@ export default function MainLayout() {
         {/* Mobile topbar */}
         {isMobile && (
           <header className="dash-mobile-bar" style={{ flexShrink: 0 }}>
-            <button className="dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+            <button className="dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label={tr('ui.mainLayout.openMenu', 'Open menu')}>
               <Menu size={22} strokeWidth={2} color="var(--ayura-ink)" />
             </button>
             <div className="dash-mobile-brand">
               <img src="/favicon.svg" alt="" className="dash-mobile-brand-mark" />
-              <span className="dash-mobile-brand-text">Ayura AI</span>
+              <span className="dash-mobile-brand-text">{tr('ui.mainLayout.ayuraAi', 'Ayura AI')}</span>
             </div>
-            <Link to="/notifications" className="dash-mobile-bell" aria-label="Notifications">
+            <Link to="/notifications" className="dash-mobile-bell" aria-label={tr('ui.mainLayout.notifications', 'Notifications')}>
               <Bell size={20} strokeWidth={2} />
             </Link>
           </header>
@@ -344,7 +345,7 @@ export default function MainLayout() {
 
       {/* ── MOBILE BOTTOM TAB BAR ── */}
       {isMobile && (
-        <nav className="mobile-bottom-nav" aria-label="Quick links">
+        <nav className="mobile-bottom-nav" aria-label={tr('ui.mainLayout.quickLinks', 'Quick links')}>
           {BOTTOM_NAV.map(item => {
             const { Icon } = item
             return (

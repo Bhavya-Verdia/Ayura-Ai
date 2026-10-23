@@ -12,6 +12,8 @@ import { GymBlockComplete, GymBlockHistory } from './GymBlocks'
 import { GymSessionPlayer } from './GymSessionPlayer'
 import { blockIsOver } from './gymBlock'
 
+import { tr } from '../../lib/tr'
+import { Trans } from 'react-i18next'
 const WEEK_THEMES = ['Foundation', 'Volume Build', 'Intensity Peak', 'Deload']
 
 
@@ -163,41 +165,41 @@ export function GymView({ plan, onRegenerate }) {
         {goalLabel && (
           <div className="gym-vital-chip">
             <Target size={11} className="gym-vital-icon" />
-            <span className="gym-vital-k">Goal</span>
+            <span className="gym-vital-k">{tr('ui.gymView.goal', 'Goal')}</span>
             <span className="gym-vital-v">{goalLabel}</span>
           </div>
         )}
         {us.dominant_dosha && (
           <div className="gym-vital-chip" style={{ borderColor: `${doshaColor}44`, color: doshaText }}>
-            <span className="gym-vital-k">Dosha</span>
+            <span className="gym-vital-k">{tr('ui.gymView.dosha', 'Dosha')}</span>
             <span className="gym-vital-v">{us.dominant_dosha.toUpperCase()}</span>
           </div>
         )}
         {us.fitness_level && (
           <div className="gym-vital-chip">
             <Activity size={11} className="gym-vital-icon" />
-            <span className="gym-vital-k">Level</span>
+            <span className="gym-vital-k">{tr('ui.gymView.level', 'Level')}</span>
             <span className="gym-vital-v">{us.fitness_level.replace(/\b\w/g, c => c.toUpperCase())}</span>
           </div>
         )}
         {us.strength_level && us.strength_level !== us.fitness_level && (
           <div className="gym-vital-chip">
             <Dumbbell size={11} className="gym-vital-icon" />
-            <span className="gym-vital-k">Strength</span>
+            <span className="gym-vital-k">{tr('ui.gymView.strength', 'Strength')}</span>
             <span className="gym-vital-v">{us.strength_level.replace(/\b\w/g, c => c.toUpperCase())}</span>
           </div>
         )}
         {us.workout_days && (
           <div className="gym-vital-chip">
             <Calendar size={11} className="gym-vital-icon" />
-            <span className="gym-vital-k">Days</span>
-            <span className="gym-vital-v">{us.workout_days}×/week</span>
+            <span className="gym-vital-k">{tr('ui.gymView.days', 'Days')}</span>
+            <span className="gym-vital-v"><Trans i18nKey="ui.gymView.week" defaults={"{{workout_days}}×/week"} values={{ workout_days: us.workout_days }} /></span>
           </div>
         )}
         {us.duration_per_session && (
           <div className="gym-vital-chip">
             <Timer size={11} className="gym-vital-icon" />
-            <span className="gym-vital-k">Duration</span>
+            <span className="gym-vital-k">{tr('ui.gymView.duration', 'Duration')}</span>
             <span className="gym-vital-v">{us.duration_per_session} min</span>
           </div>
         )}
@@ -211,7 +213,7 @@ export function GymView({ plan, onRegenerate }) {
             className={`gym-week-tab${activeWeek === i ? ' active' : ''}`}
             onClick={() => selectWeek(i)}
           >
-            <span className="gym-tab-num">Week {i + 1}</span>
+            <span className="gym-tab-num"><Trans i18nKey="ui.gymView.week2" defaults={"Week {{value}}"} values={{ value: i + 1 }} /></span>
             <span className="gym-tab-theme">{theme}</span>
           </button>
         ))}
@@ -225,7 +227,7 @@ export function GymView({ plan, onRegenerate }) {
         <div className="gym-week-banner">
           <span className="gym-week-banner-icon"><Lightbulb size={16} strokeWidth={2} /></span>
           <span className="gym-week-banner-text">
-            <strong>Week {activeWeek + 1} · {WEEK_THEMES[activeWeek]}:</strong> {weekPrescription.note}
+            <strong><Trans i18nKey="ui.gymView.week3" defaults={"Week {{value}} · {{activeWeek}}:"} values={{ value: activeWeek + 1, activeWeek: WEEK_THEMES[activeWeek] }} /></strong> {weekPrescription.note}
           </span>
         </div>
       )}
@@ -245,10 +247,7 @@ export function GymView({ plan, onRegenerate }) {
       {adjust && !adjust.stop && Object.keys(adjust.exercises || {}).length > 0 && (
         <div className="gym-week-banner gym-adjust-notice">
           <span className="gym-week-banner-icon"><Target size={16} strokeWidth={2} /></span>
-          <span className="gym-week-banner-text">
-            <strong>Adjusted from week {adjust.based_on_week}:</strong> {Object.keys(adjust.exercises).length} exercise
-            {Object.keys(adjust.exercises).length === 1 ? ' has' : 's have'} a weight set from what you logged — shown under each one.
-          </span>
+          <span className="gym-week-banner-text"><Trans i18nKey="ui.gymView.n0AdjustedFromWeek0" defaults={"<0>Adjusted from week {{based_on_week}}:</0> {{length}} exercise {{value}} a weight set from what you logged — shown under each one."} values={{ based_on_week: adjust.based_on_week, length: Object.keys(adjust.exercises).length, value: Object.keys(adjust.exercises).length === 1 ? ' has' : 's have' }} components={[<strong />]} /></span>
         </div>
       )}
 
@@ -266,7 +265,7 @@ export function GymView({ plan, onRegenerate }) {
               <div key={role} className={`gym-role-cell gym-role-cell-${role}`}>
                 <span className="gym-role-cell-label">{rx.label}</span>
                 <span className="gym-role-cell-rx">{rx.sets} × {rx.reps}</span>
-                <span className="gym-role-cell-rest">{rx.rest_seconds}s rest</span>
+                <span className="gym-role-cell-rest"><Trans i18nKey="ui.gymView.sRest" defaults={"{{rest_seconds}}s rest"} values={{ rest_seconds: rx.rest_seconds }} /></span>
               </div>
             )
           })}
@@ -278,8 +277,8 @@ export function GymView({ plan, onRegenerate }) {
           a longer warm-up prevents, a seizure with a bar overhead. Shown above the
           week, not under it, because they apply before the first set. */}
       {Array.isArray(plan.condition_guidance) && plan.condition_guidance.length > 0 && (
-        <section className="gym-condition-guidance" aria-label="Before you train">
-          <h4><ShieldAlert size={14} /> Before you train</h4>
+        <section className="gym-condition-guidance" aria-label={tr('ui.gymView.beforeYouTrain', 'Before you train')}>
+          <h4><ShieldAlert size={14} />{' '}{tr('ui.gymView.beforeYouTrain', 'Before you train')}</h4>
           <ul>
             {plan.condition_guidance.map(g => (
               <li key={g.key}>
@@ -392,9 +391,9 @@ export function GymView({ plan, onRegenerate }) {
       {/* ── Day-list toolbar ── */}
       {weekDays.length > 0 && (
         <div className="plan-days-toolbar">
-          <h3 className="plan-days-toolbar-title">Week {activeWeek + 1} — {weekDays.length} days</h3>
+          <h3 className="plan-days-toolbar-title"><Trans i18nKey="ui.gymView.weekDays" defaults={"Week {{value}} — {{length}} days"} values={{ value: activeWeek + 1, length: weekDays.length }} /></h3>
           <button type="button" className="plan-days-toolbar-btn" onClick={toggleAllDays}>
-            {allDaysOpen ? 'Collapse all' : 'Expand all'}
+            {allDaysOpen ? tr('ui.gymView.collapseAll', 'Collapse all') : tr('ui.gymView.expandAll', 'Expand all')}
           </button>
         </div>
       )}
@@ -426,13 +425,13 @@ export function GymView({ plan, onRegenerate }) {
                 >
                   <div className="gym-day-name">
                     {isRest ? <Moon size={13} className="gym-rest-icon" /> : <Dumbbell size={13} className="gym-work-icon" />}
-                    {day.day_name || `Day ${day.day}`}
+                    {day.day_name || tr('ui.gymView.day', 'Day {{day}}', { day: day.day })}
                   </div>
                   <div className="gym-day-headmeta">
                     {!dayOpen && summaryBits.length > 0 && (
                       <span className="gym-day-summary">{summaryBits.join(' · ')}</span>
                     )}
-                    <div className="gym-day-focus">{day.focus || 'Rest'}</div>
+                    <div className="gym-day-focus">{day.focus || tr('ui.gymView.rest', 'Rest')}</div>
                     {dayOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                   </div>
                 </button>
@@ -451,18 +450,18 @@ export function GymView({ plan, onRegenerate }) {
                     </ul>
                     {restRecovery.activities?.length > 3 && (
                       <button className="gym-show-more" onClick={() => toggleActivities(dayIdx)}>
-                        {showAllActs ? '▲ Show less' : `▼ +${restRecovery.activities.length - 3} more`}
+                        {showAllActs ? tr('ui.gymView.showLess', '▲ Show less') : tr('ui.gymView.more', '▼ +{{value}} more', { value: restRecovery.activities.length - 3 })}
                       </button>
                     )}
                     {restRecovery.nutrition_note && (
                       <div className="gym-rest-meta-row">
-                        <span className="gym-rest-meta-label">Nutrition:</span>
+                        <span className="gym-rest-meta-label">{tr('ui.gymView.nutrition', 'Nutrition:')}</span>
                         <span>{restRecovery.nutrition_note}</span>
                       </div>
                     )}
                     {restRecovery.sleep_note && (
                       <div className="gym-rest-meta-row">
-                        <span className="gym-rest-meta-label">Sleep:</span>
+                        <span className="gym-rest-meta-label">{tr('ui.gymView.sleep', 'Sleep:')}</span>
                         <span>{restRecovery.sleep_note}</span>
                       </div>
                     )}
@@ -471,7 +470,7 @@ export function GymView({ plan, onRegenerate }) {
                     )}
                   </div>
                 ) : (
-                  <p className="gym-rest-label">Rest & active recovery — let your body rebuild.</p>
+                  <p className="gym-rest-label">{tr('ui.gymView.restActiveRecoveryLetYour', 'Rest & active recovery — let your body rebuild.')}</p>
                 )
               ) : (
                 <>
@@ -505,19 +504,19 @@ export function GymView({ plan, onRegenerate }) {
                       warning sign: the advice that week is a doctor, not a session. */}
                   {planId && (adjust?.stop ? (
                     <p className="gym-checkin-stop" role="note">
-                      <ShieldAlert size={14} /> Workout mode is paused — see the note at the top of this week.
+                      <ShieldAlert size={14} />{' '}{tr('ui.gymView.workoutModeIsPausedSee', 'Workout mode is paused — see the note at the top of this week.')}
                     </p>
                   ) : (
                     <button type="button" className="gym-log-save gs-start"
                       onClick={() => setSessionDay(day)}>
-                      <Play size={13} /> Start workout
+                      <Play size={13} />{' '}{tr('ui.gymView.startWorkout', 'Start workout')}
                     </button>
                   ))}
 
                   {/* Warmup */}
                   {day.warmup?.length > 0 && (
                     <div className="gym-sub-section">
-                      <h4 className="gym-section-label">Warmup</h4>
+                      <h4 className="gym-section-label">{tr('ui.gymView.warmup', 'Warmup')}</h4>
                       <ul className="gym-sub-list">
                         {day.warmup.map((w, j) => <li key={j} className="gym-list-item">{w}</li>)}
                       </ul>
@@ -527,7 +526,7 @@ export function GymView({ plan, onRegenerate }) {
                   {/* Exercises */}
                   {day.main_workout?.length > 0 && (
                     <div className="gym-sub-section">
-                      <h4 className="gym-section-label">Exercises</h4>
+                      <h4 className="gym-section-label">{tr('ui.gymView.exercises', 'Exercises')}</h4>
                       <div className="gym-exercise-list">
                         {day.main_workout.map((ex, j) => {
                           const exId = `${dayIdx}-${j}`
@@ -549,7 +548,7 @@ export function GymView({ plan, onRegenerate }) {
                                 <div className="gym-ex-chips">
                                   <span className="gym-ex-badge">{ex.sets} × {ex.reps}</span>
                                   {/* `0 && …` renders a literal 0: every conditioning row showed one. */}
-                                  {ex.rest_seconds > 0 && <span className="gym-ex-rest">{ex.rest_seconds}s rest</span>}
+                                  {ex.rest_seconds > 0 && <span className="gym-ex-rest"><Trans i18nKey="ui.gymView.sRest" defaults={"{{rest_seconds}}s rest"} values={{ rest_seconds: ex.rest_seconds }} /></span>}
                                   {ex.equipment && ex.equipment !== 'bodyweight' && (
                                     <span className="gym-ex-equip">{ex.equipment}</span>
                                   )}
@@ -563,7 +562,7 @@ export function GymView({ plan, onRegenerate }) {
                               )}
                               {!adjust?.stop && adjust?.exercises?.[ex.exercise_id] && (
                                 <div className={`gym-adjusted gym-adjusted-${adjust.exercises[ex.exercise_id].direction}`}>
-                                  <span className="gym-adjusted-k">This week for you:</span>{' '}
+                                  <span className="gym-adjusted-k">{tr('ui.gymView.thisWeekForYou', 'This week for you:')}</span>{' '}
                                   <strong>{adjust.exercises[ex.exercise_id].text}</strong>
                                   <span className="gym-adjusted-why">{adjust.exercises[ex.exercise_id].reason}</span>
                                 </div>
@@ -589,7 +588,7 @@ export function GymView({ plan, onRegenerate }) {
                                 <>
                                   <button className="gym-instructions-toggle" onClick={() => toggleEx(exId)}>
                                     {isExpanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-                                    {isExpanded ? 'Hide instructions' : 'How to perform'}
+                                    {isExpanded ? tr('ui.gymView.hideInstructions', 'Hide instructions') : tr('ui.gymView.howToPerform', 'How to perform')}
                                   </button>
                                   {isExpanded && (
                                     <ol className="gym-instructions-panel">
@@ -612,7 +611,7 @@ export function GymView({ plan, onRegenerate }) {
                       is half of what WHO asks older adults for. */}
                   {day.balance?.length > 0 && (
                     <div className="gym-sub-section">
-                      <h4 className="gym-section-label">Balance · beside a counter or chair</h4>
+                      <h4 className="gym-section-label">{tr('ui.gymView.balanceBesideACounterOr', 'Balance · beside a counter or chair')}</h4>
                       <ul className="gym-sub-list">
                         {day.balance.map((b, j) => <li key={j} className="gym-list-item">{b}</li>)}
                       </ul>
@@ -622,7 +621,7 @@ export function GymView({ plan, onRegenerate }) {
                   {/* Cooldown */}
                   {day.cooldown?.length > 0 && (
                     <div className="gym-sub-section">
-                      <h4 className="gym-section-label">Cooldown</h4>
+                      <h4 className="gym-section-label">{tr('ui.gymView.cooldown', 'Cooldown')}</h4>
                       <ul className="gym-sub-list">
                         {day.cooldown.map((c, j) => <li key={j} className="gym-list-item">{c}</li>)}
                       </ul>
@@ -669,13 +668,13 @@ export function GymView({ plan, onRegenerate }) {
       {/* ── Ayurvedic Tips ── */}
       {Object.keys(tips).length > 0 && (
         <div className="gym-tips-section">
-          <h3 className="gym-tips-title"><Leaf size={14} /> Ayurvedic Training Tips</h3>
+          <h3 className="gym-tips-title"><Leaf size={14} />{' '}{tr('ui.gymView.ayurvedicTrainingTips', 'Ayurvedic Training Tips')}</h3>
           <div className="gym-tips-grid">
             {[
-              { key: 'best_time_to_workout', label: 'Best Time' },
-              { key: 'pre_workout', label: 'Pre-Workout' },
-              { key: 'post_workout', label: 'Post-Workout' },
-              { key: 'recovery', label: 'Recovery' },
+              { key: 'best_time_to_workout', label: tr('ui.gymView.bestTime', 'Best Time') },
+              { key: 'pre_workout', label: tr('ui.gymView.preWorkout', 'Pre-Workout') },
+              { key: 'post_workout', label: tr('ui.gymView.postWorkout', 'Post-Workout') },
+              { key: 'recovery', label: tr('ui.gymView.recovery', 'Recovery') },
             ].map(({ key, label }) => tips[key] ? (
               <div key={key} className="gym-tip-card">
                 <h4 className="gym-tip-label">{label}</h4>
@@ -689,16 +688,16 @@ export function GymView({ plan, onRegenerate }) {
       {/* ── Vyayama Shakti (classical exercise-capacity principle) ── */}
       {plan.vyayama_shakti && (
         <div className="gym-vyayama-section">
-          <h3 className="gym-tips-title"><Flame size={14} /> Vyayama Shakti — Exercise Capacity (Charaka Sutrasthana 7)</h3>
+          <h3 className="gym-tips-title"><Flame size={14} />{' '}{tr('ui.gymView.vyayamaShaktiExerciseCapacityCharaka', 'Vyayama Shakti — Exercise Capacity (Charaka Sutrasthana 7)')}</h3>
           <p className="gym-vyayama-principle">{plan.vyayama_shakti.principle}</p>
           <p className="gym-vyayama-capacity">{plan.vyayama_shakti.your_capacity}</p>
           <div className="gym-vyayama-grid">
             <div className="gym-vyayama-card adequate">
-              <div className="gym-vyayama-label">Signs of adequate exercise</div>
+              <div className="gym-vyayama-label">{tr('ui.gymView.signsOfAdequateExercise', 'Signs of adequate exercise')}</div>
               <p>{plan.vyayama_shakti.signs_adequate}</p>
             </div>
             <div className="gym-vyayama-card over">
-              <div className="gym-vyayama-label">Signs of over-exercise (Ativyayama)</div>
+              <div className="gym-vyayama-label">{tr('ui.gymView.signsOfOverExerciseAtivyayama', 'Signs of over-exercise (Ativyayama)')}</div>
               <p>{plan.vyayama_shakti.signs_overexertion}</p>
             </div>
           </div>
@@ -715,7 +714,7 @@ export function GymView({ plan, onRegenerate }) {
       {(vidhi.ardhashakti_guideline || vidhi.pre_workout_ritual || vidhi.post_workout_ritual
         || vidhi.seasonal_adjustment || vidhi.vyayama_contraindications?.length > 0) && (
         <div className="gym-vyayama-section">
-          <h3 className="gym-tips-title"><Leaf size={14} /> Vyayama Vidhi — Your Exercise Regimen</h3>
+          <h3 className="gym-tips-title"><Leaf size={14} />{' '}{tr('ui.gymView.vyayamaVidhiYourExerciseRegimen', 'Vyayama Vidhi — Your Exercise Regimen')}</h3>
           {vidhi.ardhashakti_guideline && (
             <p className="gym-vyayama-capacity">{vidhi.ardhashakti_guideline}</p>
           )}
@@ -734,7 +733,7 @@ export function GymView({ plan, onRegenerate }) {
           </div>
           {vidhi.vyayama_contraindications?.length > 0 && (
             <div className="gym-overtraining">
-              <h4 className="gym-tip-label" style={{ marginBottom: '0.4rem' }}>Skip training today if</h4>
+              <h4 className="gym-tip-label" style={{ marginBottom: '0.4rem' }}>{tr('ui.gymView.skipTrainingTodayIf', 'Skip training today if')}</h4>
               <ul className="gym-sub-list">
                 {vidhi.vyayama_contraindications.map((s, i) => <li key={i} className="gym-list-item">{s}</li>)}
               </ul>
@@ -749,12 +748,12 @@ export function GymView({ plan, onRegenerate }) {
       {/* ── Progression: the engine's four weeks, with coaching against them ── */}
       {progression && (
         <div className="gym-progression-section">
-          <h3 className="gym-tips-title"><Activity size={14} /> Four-Week Progression</h3>
+          <h3 className="gym-tips-title"><Activity size={14} />{' '}{tr('ui.gymView.fourWeekProgression', 'Four-Week Progression')}</h3>
           <ol className="gym-progression-list">
             {progression.map(week => (
               <li key={week.week} className={`gym-progression-week${week.is_deload ? ' deload' : ''}`}>
                 <div className="gym-progression-head">
-                  <span className="gym-progression-week-no">Week {week.week}</span>
+                  <span className="gym-progression-week-no"><Trans i18nKey="ui.gymView.week4" defaults={"Week {{week}}"} values={{ week: week.week }} /></span>
                   <span className="gym-progression-theme">{week.theme}</span>
                   <span className="gym-progression-rx">{week.main_lift_prescription}</span>
                 </div>
@@ -767,7 +766,7 @@ export function GymView({ plan, onRegenerate }) {
           </ol>
           {progression[0]?.main_lifts?.length > 0 && (
             <p className="gym-progression-lifts">
-              <strong>The lifts this block is about:</strong>{' '}
+              <strong>{tr('ui.gymView.theLiftsThisBlockIs', 'The lifts this block is about:')}</strong>{' '}
               {progression[0].main_lifts.map(l => l.exercise).join(' · ')}
             </p>
           )}
@@ -777,13 +776,13 @@ export function GymView({ plan, onRegenerate }) {
       {/* ── Progressive overload guide (pre-progression plans) ── */}
       {!progression && overload && (
         <div className="gym-progression-section">
-          <h3 className="gym-tips-title"><Activity size={14} /> Progressive Overload Guide</h3>
+          <h3 className="gym-tips-title"><Activity size={14} />{' '}{tr('ui.gymView.progressiveOverloadGuide', 'Progressive Overload Guide')}</h3>
           {typeof overload === 'string' ? (
             <p className="gym-progression-note">{overload}</p>
           ) : (
             <table className="gym-progression-table">
               <thead>
-                <tr><th>Week</th><th>Theme</th><th>Focus</th></tr>
+                <tr><th>{tr('ui.gymView.week5', 'Week')}</th><th>{tr('ui.gymView.theme', 'Theme')}</th><th>{tr('ui.gymView.focus', 'Focus')}</th></tr>
               </thead>
               <tbody>
                 {Object.entries(overload).map(([wk, desc], i) => (
@@ -802,12 +801,12 @@ export function GymView({ plan, onRegenerate }) {
       {/* ── Nutrition sync ── */}
       {(Object.keys(nutrition).length > 0 || plan.nutrition_withheld?.length > 0) && (
         <div className="gym-nutrition-section">
-          <h3 className="gym-tips-title"><Flame size={14} /> Nutrition Sync</h3>
+          <h3 className="gym-tips-title"><Flame size={14} />{' '}{tr('ui.gymView.nutritionSync', 'Nutrition Sync')}</h3>
           <div className="gym-nutrition-grid">
             {[
-              { key: 'pre_workout_meal', label: 'Pre-Workout Meal' },
-              { key: 'post_workout_meal', label: 'Post-Workout Meal' },
-              { key: 'hydration', label: 'Hydration' },
+              { key: 'pre_workout_meal', label: tr('ui.gymView.preWorkoutMeal', 'Pre-Workout Meal') },
+              { key: 'post_workout_meal', label: tr('ui.gymView.postWorkoutMeal', 'Post-Workout Meal') },
+              { key: 'hydration', label: tr('ui.gymView.hydration', 'Hydration') },
             ].map(({ key, label }) => nutrition[key] ? (
               <div key={key} className="gym-nutrition-card">
                 <h4 className="gym-tip-label">{label}</h4>
@@ -820,7 +819,7 @@ export function GymView({ plan, onRegenerate }) {
           {plan.nutrition_withheld?.map(w => (
             <div key={w.field} className="gym-pool-notice">
               <Info size={12} />
-              <span>A {w.field.replace(/_/g, ' ')} suggestion was withheld: it {w.reason}.</span>
+              <span><Trans i18nKey="ui.gymView.aSuggestionWasWithheldIt" defaults={"A {{value}} suggestion was withheld: it {{reason}}."} values={{ value: w.field.replace(/_/g, ' '), reason: w.reason }} /></span>
             </div>
           ))}
         </div>
@@ -829,24 +828,24 @@ export function GymView({ plan, onRegenerate }) {
       {/* ── Recovery protocol ── */}
       {(recovery.sleep || recovery.active_recovery || recovery.signs_of_overtraining?.length) && (
         <div className="gym-recovery-section">
-          <h3 className="gym-tips-title"><Moon size={14} /> Recovery Protocol</h3>
+          <h3 className="gym-tips-title"><Moon size={14} />{' '}{tr('ui.gymView.recoveryProtocol', 'Recovery Protocol')}</h3>
           <div className="gym-tips-grid">
             {recovery.sleep && (
               <div className="gym-tip-card">
-                <h4 className="gym-tip-label">Sleep</h4>
+                <h4 className="gym-tip-label">{tr('ui.gymView.sleep2', 'Sleep')}</h4>
                 <p className="gym-tip-text">{recovery.sleep}</p>
               </div>
             )}
             {recovery.active_recovery && (
               <div className="gym-tip-card">
-                <h4 className="gym-tip-label">Active Recovery</h4>
+                <h4 className="gym-tip-label">{tr('ui.gymView.activeRecovery', 'Active Recovery')}</h4>
                 <p className="gym-tip-text">{recovery.active_recovery}</p>
               </div>
             )}
           </div>
           {recovery.signs_of_overtraining?.length > 0 && (
             <div className="gym-overtraining">
-              <h4 className="gym-tip-label" style={{ marginBottom: '0.4rem' }}>Signs of Overtraining — Back Off</h4>
+              <h4 className="gym-tip-label" style={{ marginBottom: '0.4rem' }}>{tr('ui.gymView.signsOfOvertrainingBackOff', 'Signs of Overtraining — Back Off')}</h4>
               <ul className="gym-sub-list">
                 {recovery.signs_of_overtraining.map((s, i) => <li key={i} className="gym-list-item">{s}</li>)}
               </ul>

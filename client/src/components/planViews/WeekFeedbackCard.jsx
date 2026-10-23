@@ -5,6 +5,7 @@ import { ArrowRight, Loader2, Sparkles } from 'lucide-react'
 import client from '../../api/client'
 import { primaryName, secondaryName } from './poseNames'
 
+import { tr } from '../../lib/tr'
 /**
  * End-of-week feedback, and the trigger for the next week.
  *
@@ -19,19 +20,19 @@ import { primaryName, secondaryName } from './poseNames'
 
 const CHOICES = {
   difficulty: [
-    { v: 'too_easy', k: 'tooEasy', label: 'Too easy' },
-    { v: 'just_right', k: 'justRight', label: 'Just right' },
-    { v: 'too_hard', k: 'tooHard', label: 'Too hard' },
+    { v: 'too_easy', k: 'tooEasy', get label() { return tr('ui.weekFeedbackCard.tooEasy', 'Too easy') } },
+    { v: 'just_right', k: 'justRight', get label() { return tr('ui.weekFeedbackCard.justRight', 'Just right') } },
+    { v: 'too_hard', k: 'tooHard', get label() { return tr('ui.weekFeedbackCard.tooHard', 'Too hard') } },
   ],
   session_length: [
-    { v: 'too_short', k: 'tooShort', label: 'Too short' },
-    { v: 'just_right', k: 'justRight', label: 'Just right' },
-    { v: 'too_long', k: 'tooLong', label: 'Too long' },
+    { v: 'too_short', k: 'tooShort', get label() { return tr('ui.weekFeedbackCard.tooShort', 'Too short') } },
+    { v: 'just_right', k: 'justRight', get label() { return tr('ui.weekFeedbackCard.justRight', 'Just right') } },
+    { v: 'too_long', k: 'tooLong', get label() { return tr('ui.weekFeedbackCard.tooLong', 'Too long') } },
   ],
   energy_after: [
-    { v: 'drained', k: 'drained', label: 'Drained' },
-    { v: 'neutral', k: 'neutral', label: 'Neutral' },
-    { v: 'energised', k: 'energised', label: 'Energised' },
+    { v: 'drained', k: 'drained', get label() { return tr('ui.weekFeedbackCard.drained', 'Drained') } },
+    { v: 'neutral', k: 'neutral', get label() { return tr('ui.weekFeedbackCard.neutral', 'Neutral') } },
+    { v: 'energised', k: 'energised', get label() { return tr('ui.weekFeedbackCard.energised', 'Energised') } },
   ],
 }
 

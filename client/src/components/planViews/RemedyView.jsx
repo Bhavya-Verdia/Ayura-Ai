@@ -5,6 +5,8 @@ import {
 import { DOSHA_COLORS_R, doshaInk } from '../../constants/dosha'
 import { MedicineView } from './MedicineView'
 
+import { tr } from '../../lib/tr'
+import { Trans } from 'react-i18next'
 const SEV_COLOR  = { mild: '#22c55e', moderate: '#f59e0b', severe: '#ef4444' }
 
 const SEV_LABEL  = { mild: 'Mild', moderate: 'Moderate', severe: 'Severe' }
@@ -68,7 +70,7 @@ function RemedyCard({ result }) {
           {dosha_cause && (
             <div className="rv-dosha-cause">
               <Flame size={13} style={{ color: doshaColor }} />
-              <span>Dosha cause ({dosha_used}): {dosha_cause}</span>
+              <span><Trans i18nKey="ui.remedyView.doshaCause" defaults={"Dosha cause ({{dosha_used}}): {{dosha_cause}}"} values={{ dosha_used, dosha_cause }} /></span>
             </div>
           )}
           {ayurvedic_rationale && (
@@ -76,7 +78,7 @@ function RemedyCard({ result }) {
           )}
           {remedy.ingredients?.length > 0 && (
             <div className="rv-section">
-              <div className="rv-section-label">Ingredients</div>
+              <div className="rv-section-label">{tr('ui.remedyView.ingredients', 'Ingredients')}</div>
               <div className="rv-ingredients">
                 {remedy.ingredients.map((ing, i) => <RemedyIngredient key={i} item={ing} />)}
               </div>
@@ -84,18 +86,18 @@ function RemedyCard({ result }) {
           )}
           {remedy.preparation && (
             <div className="rv-section">
-              <div className="rv-section-label">Preparation</div>
+              <div className="rv-section-label">{tr('ui.remedyView.preparation', 'Preparation')}</div>
               <p className="rv-preparation">{remedy.preparation}</p>
             </div>
           )}
           <div className="rv-meta-row">
             {remedy.dosage     && <div className="rv-meta-chip"><Timer size={11} />{remedy.dosage}</div>}
             {remedy.duration   && <div className="rv-meta-chip"><Calendar size={11} />{remedy.duration}</div>}
-            {remedy.expected_relief && <div className="rv-meta-chip"><Zap size={11} />Relief in {remedy.expected_relief}</div>}
+            {remedy.expected_relief && <div className="rv-meta-chip"><Trans i18nKey="ui.remedyView.n0ReliefIn" defaults={"<0/>Relief in {{expected_relief}}"} values={{ expected_relief: remedy.expected_relief }} components={[<Zap size={11} />]} /></div>}
           </div>
           {beforeUse.length > 0 && (
             <div className="rv-section">
-              <div className="rv-section-label">Before you use this</div>
+              <div className="rv-section-label">{tr('ui.remedyView.beforeYouUseThis', 'Before you use this')}</div>
               <ul className="mv-safety-list">
                 {beforeUse.map((c, i) => <li key={i}>{c}</li>)}
               </ul>
@@ -108,7 +110,7 @@ function RemedyCard({ result }) {
               read, so it is shown rather than filtered on. */}
           {red_flags?.length > 0 && (
             <div className="rv-section">
-              <div className="rv-section-label" style={{ color: '#c0392b' }}>Stop and seek care if</div>
+              <div className="rv-section-label" style={{ color: '#c0392b' }}>{tr('ui.remedyView.stopAndSeekCareIf', 'Stop and seek care if')}</div>
               <ul className="mv-safety-list mv-safety-list--danger">
                 {red_flags.map((c, i) => <li key={i}>{c}</li>)}
               </ul>
@@ -122,7 +124,7 @@ function RemedyCard({ result }) {
               that tells someone the home remedy has stopped being the right answer. */}
           {consult_doctor_if && (
             <div className="rv-section">
-              <div className="rv-section-label" style={{ color: '#c0392b' }}>When to see a doctor</div>
+              <div className="rv-section-label" style={{ color: '#c0392b' }}>{tr('ui.remedyView.whenToSeeADoctor', 'When to see a doctor')}</div>
               <p className="rv-escalation">{consult_doctor_if}</p>
             </div>
           )}
@@ -134,7 +136,7 @@ function RemedyCard({ result }) {
           {requires_practitioner && (
             <div className="rv-practitioner-note">
               <TriangleAlert size={13} />
-              {practitioner_reason || 'Chronic/long-duration symptom — follow up with an Ayurvedic practitioner'}
+              {practitioner_reason || tr('ui.remedyView.chronicLongDurationSymptomFollow', 'Chronic/long-duration symptom — follow up with an Ayurvedic practitioner')}
             </div>
           )}
 
@@ -172,12 +174,9 @@ export function RemedyView({ plan }) {
       {/* Narrative lines the deterministic gate withheld, as a count, so a gap
           reads as a decision rather than an omission. */}
       {plan.coaching_withheld?.length > 0 && (
-        <p className="rv-info-body" style={{ opacity: 0.8 }}>
-          {plan.coaching_withheld.length} line{plan.coaching_withheld.length === 1 ? '' : 's'} of the AI guidance{' '}
-          {plan.coaching_withheld.length === 1 ? 'was' : 'were'} withheld because{' '}
-          {plan.coaching_withheld.length === 1 ? 'it' : 'they'} contradicted your plan
-          ({[...new Set(plan.coaching_withheld.map(w => w.reason.split(' — ')[0]))].slice(0, 3).join('; ')}).
-        </p>
+        <p className="rv-info-body" style={{ opacity: 0.8 }}>{plan.coaching_withheld.length === 1
+            ? tr('ui.remedyView.withheldOne', '1 line of the AI guidance was withheld because it contradicted your plan ({{reasons}}).', { reasons: [...new Set(plan.coaching_withheld.map(w => w.reason.split(' — ')[0]))].slice(0, 3).join('; ') })
+            : tr('ui.remedyView.withheldMany', '{{count}} lines of the AI guidance were withheld because they contradicted your plan ({{reasons}}).', { count: plan.coaching_withheld.length, reasons: [...new Set(plan.coaching_withheld.map(w => w.reason.split(' — ')[0]))].slice(0, 3).join('; ') })}</p>
       )}
 
       {/* Symptom remedy cards */}
@@ -185,7 +184,7 @@ export function RemedyView({ plan }) {
         <div className="rv-section-block">
           <h3 className="rv-block-title">
             <Leaf size={16} />
-            Remedies for Your Symptoms
+            {tr('ui.remedyView.remediesForYourSymptoms', 'Remedies for Your Symptoms')}
           </h3>
           {symptoms.map((res, i) => <RemedyCard key={i} result={res} />)}
         </div>
@@ -195,7 +194,7 @@ export function RemedyView({ plan }) {
           referral and not a gap: adding the home remedy would double the dose. */}
       {covered.length > 0 && (
         <div className="rv-section-block">
-          <h3 className="rv-block-title"><Pill size={16} />Already Covered by Your Medicines</h3>
+          <h3 className="rv-block-title"><Pill size={16} />{tr('ui.remedyView.alreadyCoveredByYourMedicines', 'Already Covered by Your Medicines')}</h3>
           {covered.map((r, i) => (
             <div key={i} className="rv-referral-card">
               <span className="rv-referral-sym">{r.symptom_display || r.symptom_id}</span>
@@ -209,10 +208,10 @@ export function RemedyView({ plan }) {
       {/* Doctor referrals */}
       {referrals.length > 0 && (
         <div className="rv-section-block rv-referrals">
-          <h3 className="rv-block-title"><TriangleAlert size={16} style={{ color: '#ef4444' }} />Doctor Referrals</h3>
+          <h3 className="rv-block-title"><TriangleAlert size={16} style={{ color: '#ef4444' }} />{tr('ui.remedyView.doctorReferrals', 'Doctor Referrals')}</h3>
           {referrals.map((r, i) => (
             <div key={i} className="rv-referral-card">
-              <span className="rv-referral-sym">{r.symptom_id || r.symptom_display || 'Symptom'}</span>
+              <span className="rv-referral-sym">{r.symptom_id || r.symptom_display || tr('ui.remedyView.symptom', 'Symptom')}</span>
               <span className="rv-referral-msg">{r.message}</span>
               {/* A referral is where the specific warning matters most, and the
                   generic message is the one thing that cannot carry it. */}
@@ -227,7 +226,7 @@ export function RemedyView({ plan }) {
       {/* Recovery timeline */}
       {plan.recovery_timeline && (
         <div className="rv-info-card">
-          <h3 className="rv-info-label"><Calendar size={14} />Recovery Timeline</h3>
+          <h3 className="rv-info-label"><Calendar size={14} />{tr('ui.remedyView.recoveryTimeline', 'Recovery Timeline')}</h3>
           <p className="rv-info-body">{plan.recovery_timeline}</p>
         </div>
       )}
@@ -235,7 +234,7 @@ export function RemedyView({ plan }) {
       {/* Synergy note */}
       {plan.synergy_note && (
         <div className="rv-info-card">
-          <h3 className="rv-info-label"><Sparkles size={14} />Synergy Note</h3>
+          <h3 className="rv-info-label"><Sparkles size={14} />{tr('ui.remedyView.synergyNote', 'Synergy Note')}</h3>
           <p className="rv-info-body">{plan.synergy_note}</p>
         </div>
       )}
@@ -243,7 +242,7 @@ export function RemedyView({ plan }) {
       {/* Prevention tips */}
       {prevention.length > 0 && (
         <div className="rv-info-card">
-          <h3 className="rv-info-label"><BadgeCheck size={14} />Prevention Tips</h3>
+          <h3 className="rv-info-label"><BadgeCheck size={14} />{tr('ui.remedyView.preventionTips', 'Prevention Tips')}</h3>
           <ul className="rv-tip-list">
             {prevention.map((tip, i) => <li key={i}>{tip}</li>)}
           </ul>
@@ -253,7 +252,7 @@ export function RemedyView({ plan }) {
       {/* When to escalate */}
       {plan.when_to_escalate && (
         <div className="rv-info-card rv-escalate">
-          <h3 className="rv-info-label"><TriangleAlert size={14} />When to See a Doctor</h3>
+          <h3 className="rv-info-label"><TriangleAlert size={14} />{tr('ui.remedyView.whenToSeeADoctor2', 'When to See a Doctor')}</h3>
           <p className="rv-info-body">{plan.when_to_escalate}</p>
         </div>
       )}
@@ -261,7 +260,7 @@ export function RemedyView({ plan }) {
       {/* General guidelines */}
       {(guidelines.diet_during_recovery || guidelines.lifestyle_notes || guidelines.what_to_avoid?.length > 0) && (
         <div className="rv-info-card">
-          <h3 className="rv-info-label"><Layers size={14} />Recovery Guidelines ({plan.user_dosha} dosha)</h3>
+          <h3 className="rv-info-label"><Trans i18nKey="ui.remedyView.n0RecoveryGuidelinesDosha" defaults={"<0/>Recovery Guidelines ({{user_dosha}} dosha)"} values={{ user_dosha: plan.user_dosha }} components={[<Layers size={14} />]} /></h3>
           {guidelines.diet_during_recovery && <p className="rv-info-body">{guidelines.diet_during_recovery}</p>}
           {guidelines.lifestyle_notes && <p className="rv-info-body" style={{ marginTop: 6 }}>{guidelines.lifestyle_notes}</p>}
           {guidelines.what_to_avoid?.length > 0 && (

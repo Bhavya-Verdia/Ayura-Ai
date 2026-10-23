@@ -5,6 +5,8 @@ import {
 } from 'lucide-react'
 import { DOSHA_COLOR, doshaInk } from '../../constants/dosha'
 
+import { tr } from '../../lib/tr'
+import { Trans } from 'react-i18next'
 const PHASE_ICON  = {
   purvakarma: Droplets, pradhana: Flame, paschat: Sparkles,
   deepana_pachana: Flame, shamana: Leaf, brimhana: Sparkles,
@@ -79,15 +81,15 @@ export function PanchakarmaView({ plan }) {
   const isClinic = us.setting === 'clinic'
   const sp = plan.shamana_protocol || null
   const VERDICT = isShamana
-    ? { cls: 'pk-shamana',  label: 'Shamana (Purification Withheld)' }
+    ? { cls: 'pk-shamana',  label: tr('ui.panchakarmaView.shamanaPurificationWithheld', 'Shamana (Purification Withheld)') }
     : isMridu
-      ? { cls: 'pk-mridu',  label: 'Mridu Shodhana (Mild Purification)' }
-      : { cls: 'pk-shodhana', label: 'Shodhana (Purification)' }
+      ? { cls: 'pk-mridu',  label: tr('ui.panchakarmaView.mriduShodhanaMildPurification', 'Mridu Shodhana (Mild Purification)') }
+      : { cls: 'pk-shodhana', label: tr('ui.panchakarmaView.shodhanaPurification', 'Shodhana (Purification)') }
 
   const phaseList = ph.phases?.length ? ph.phases : [
-    { key: 'purvakarma', label: 'Purvakarma', days: ph.purvakarma_days, sub: 'Snehana + Swedana (Preparation)' },
-    { key: 'pradhana',   label: 'Pradhana Karma', days: ph.pradhana_karma_days, sub: (pk.primary || '').replace(/_/g, ' ') },
-    { key: 'paschat',    label: 'Paschat Karma', days: ph.paschat_karma_days, sub: 'Samsarjana Krama + Rasayana' },
+    { key: 'purvakarma', label: tr('ui.panchakarmaView.purvakarma', 'Purvakarma'), days: ph.purvakarma_days, sub: tr('ui.panchakarmaView.snehanaSwedanaPreparation', 'Snehana + Swedana (Preparation)') },
+    { key: 'pradhana',   label: tr('ui.panchakarmaView.pradhanaKarma', 'Pradhana Karma'), days: ph.pradhana_karma_days, sub: (pk.primary || '').replace(/_/g, ' ') },
+    { key: 'paschat',    label: tr('ui.panchakarmaView.paschatKarma', 'Paschat Karma'), days: ph.paschat_karma_days, sub: tr('ui.panchakarmaView.samsarjanaKramaRasayana', 'Samsarjana Krama + Rasayana') },
   ]
 
   // `withheld_aushadha` is a list of dropped formulations, rendered separately
@@ -128,8 +130,8 @@ export function PanchakarmaView({ plan }) {
         <div className="pk-vaidya-banner">
           <ShieldCheck size={16} className="pk-vaidya-icon" />
           <div className="pk-vaidya-text">
-            <strong>Clinical Reference Plan — For Vaidya Consultation</strong>
-            <p>This plan is generated using classical Ayurvedic protocols and is designed to be reviewed with a qualified Vaidya (BAMS/MD Ayurveda) before implementation. Do not self-administer Shodhana therapies (Vamana, Virechana, Niruha Basti). Share this plan at your next consultation.</p>
+            <strong>{tr('ui.panchakarmaView.clinicalReferencePlanForVaidya', 'Clinical Reference Plan — For Vaidya Consultation')}</strong>
+            <p>{tr('ui.panchakarmaView.thisPlanIsGeneratedUsing', 'This plan is generated using classical Ayurvedic protocols and is designed to be reviewed with a qualified Vaidya (BAMS/MD Ayurveda) before implementation. Do not self-administer Shodhana therapies (Vamana, Virechana, Niruha Basti). Share this plan at your next consultation.')}</p>
           </div>
         </div>
       )}
@@ -141,9 +143,9 @@ export function PanchakarmaView({ plan }) {
         <div className="pk-deferral-banner">
           <AlertTriangle size={16} className="pk-deferral-icon" />
           <div className="pk-deferral-text">
-            <strong>Do not start yet — {cd.deferral.reason}</strong>
+            <strong><Trans i18nKey="ui.panchakarmaView.doNotStartYet" defaults={"Do not start yet — {{reason}}"} values={{ reason: cd.deferral.reason }} /></strong>
             <p>{cd.deferral.notice}</p>
-            <p className="pk-deferral-resume"><strong>Resume when:</strong> {cd.deferral.resume_when}</p>
+            <p className="pk-deferral-resume"><strong>{tr('ui.panchakarmaView.resumeWhen', 'Resume when:')}</strong> {cd.deferral.resume_when}</p>
           </div>
         </div>
       )}
@@ -151,10 +153,7 @@ export function PanchakarmaView({ plan }) {
       {/* ── Clinical Decision Header ── */}
       <div className="pk-decision-header">
         <div className="pk-header-top-row">
-          <div className="pk-dosha-pill" style={{ background: `${doshaColor}18`, borderColor: `${doshaColor}55`, color: doshaText }}>
-            Vikriti: {vikritiDom.toUpperCase()}
-            {cd.vikriti_secondary ? ` + ${cd.vikriti_secondary.toUpperCase()}` : ''}
-          </div>
+          <div className="pk-dosha-pill" style={{ background: `${doshaColor}18`, borderColor: `${doshaColor}55`, color: doshaText }}><Trans i18nKey="ui.panchakarmaView.vikriti" defaults={"Vikriti: {{value}} {{value2}}"} values={{ value: vikritiDom.toUpperCase(), value2: cd.vikriti_secondary ? ` + ${cd.vikriti_secondary.toUpperCase()}` : '' }} /></div>
           <div className={`pk-eligibility-badge ${VERDICT.cls}`}>
             <ShieldCheck size={13} />
             {VERDICT.label}
@@ -165,33 +164,33 @@ export function PanchakarmaView({ plan }) {
         <div className="pk-vitals-row">
           {us.agni_type && (
             <div className="pk-vital-chip">
-              <span className="pk-vital-k">Agni</span>
+              <span className="pk-vital-k">{tr('ui.panchakarmaView.agni', 'Agni')}</span>
               <span className="pk-vital-v">{AGNI_LABEL[us.agni_type] || us.agni_name || us.agni_type}</span>
             </div>
           )}
           {(elig.bala || us.bala) && (
             <div className="pk-vital-chip">
-              <span className="pk-vital-k">Bala</span>
+              <span className="pk-vital-k">{tr('ui.panchakarmaView.bala', 'Bala')}</span>
               <span className="pk-vital-v">{BALA_LABEL[elig.bala || us.bala] || elig.bala_note || us.bala_note}</span>
             </div>
           )}
           {us.ama_indicator && us.ama_indicator !== 'none' && (
             <div className="pk-vital-chip pk-vital-warn">
-              <span className="pk-vital-k">Ama</span>
+              <span className="pk-vital-k">{tr('ui.panchakarmaView.ama', 'Ama')}</span>
               <span className="pk-vital-v">{us.ama_indicator}</span>
             </div>
           )}
           {us.ojas_level && (
             <div className="pk-vital-chip">
-              <span className="pk-vital-k">Ojas</span>
+              <span className="pk-vital-k">{tr('ui.panchakarmaView.ojas', 'Ojas')}</span>
               <span className="pk-vital-v">{us.ojas_level}</span>
             </div>
           )}
           {us.koshtha && (
             <div className="pk-vital-chip">
-              <span className="pk-vital-k">Koshtha</span>
+              <span className="pk-vital-k">{tr('ui.panchakarmaView.koshtha', 'Koshtha')}</span>
               <span className="pk-vital-v">
-                {us.koshtha === 'krura' ? 'Krura (Hard)' : us.koshtha === 'mridu' ? 'Mridu (Loose)' : 'Sama (Regular)'}
+                {us.koshtha === 'krura' ? tr('ui.panchakarmaView.kruraHard', 'Krura (Hard)') : us.koshtha === 'mridu' ? tr('ui.panchakarmaView.mriduLoose', 'Mridu (Loose)') : tr('ui.panchakarmaView.samaRegular', 'Sama (Regular)')}
               </span>
             </div>
           )}
@@ -210,10 +209,10 @@ export function PanchakarmaView({ plan }) {
                 who cannot. */}
             <div className="pk-shamana-kind">
               {elig.clinically_ineligible !== false
-                ? 'Purification is withheld on clinical grounds. A qualified Vaidya has to clear these before Shodhana.'
+                ? tr('ui.panchakarmaView.purificationIsWithheldOnClinical', 'Purification is withheld on clinical grounds. A qualified Vaidya has to clear these before Shodhana.')
                 : elig.unassessed_condition
-                  ? 'Nobody has found you unfit for purification — a diagnosis you entered could not be assessed against the classical criteria. A Vaidya can settle it in one consultation.'
-                  : 'Purification is withheld by the preferences this plan was built from, not by a clinical bar — changing those answers may open it up.'}
+                  ? tr('ui.panchakarmaView.nobodyHasFoundYouUnfit', 'Nobody has found you unfit for purification — a diagnosis you entered could not be assessed against the classical criteria. A Vaidya can settle it in one consultation.')
+                  : tr('ui.panchakarmaView.purificationIsWithheldByThe', 'Purification is withheld by the preferences this plan was built from, not by a clinical bar — changing those answers may open it up.')}
             </div>
             <ul className="pk-shamana-reasons">
               {elig.reasons.map((r, i) => <li key={i} className="pk-shamana-reason">{r}</li>)}
@@ -224,7 +223,7 @@ export function PanchakarmaView({ plan }) {
         {elig.ama_correction_needed && (
           <div className="pk-ama-warning">
             <AlertTriangle size={13} />
-            <span>Ama correction required first: {(elig.ama_correction_herbs || []).slice(0, 3).join(', ')} — {elig.ama_correction_duration}</span>
+            <span><Trans i18nKey="ui.panchakarmaView.amaCorrectionRequiredFirst" defaults={"Ama correction required first: {{value}} — {{ama_correction_duration}}"} values={{ value: (elig.ama_correction_herbs || []).slice(0, 3).join(', '), ama_correction_duration: elig.ama_correction_duration }} /></span>
           </div>
         )}
 
@@ -240,14 +239,12 @@ export function PanchakarmaView({ plan }) {
           <div className={elig.kriya_kala.alignment === 'in_window' ? 'pk-kriyakala' : 'pk-kriyakala pk-kriyakala-off'}>
             {elig.kriya_kala.alignment !== 'in_window' && <AlertTriangle size={13} />}
             <div>
-              <span className="pk-kriyakala-stage">Disease stage: {elig.kriya_kala.governing_stage_label}</span>
+              <span className="pk-kriyakala-stage"><Trans i18nKey="ui.panchakarmaView.diseaseStage" defaults={"Disease stage: {{governing_stage_label}}"} values={{ governing_stage_label: elig.kriya_kala.governing_stage_label }} /></span>
               <p className="pk-kriyakala-note">{elig.kriya_kala.note}</p>
               {elig.kriya_kala.out_of_window_conditions?.length > 1 && (
-                <p className="pk-kriyakala-note">
-                  Also outside the window: {elig.kriya_kala.out_of_window_conditions
+                <p className="pk-kriyakala-note"><Trans i18nKey="ui.panchakarmaView.alsoOutsideTheWindow" defaults={"Also outside the window: {{value}}"} values={{ value: elig.kriya_kala.out_of_window_conditions
                     .filter(c => c.condition !== elig.kriya_kala.governing_condition)
-                    .map(c => `${c.condition} (${c.stage_label})`).join(', ')}
-                </p>
+                    .map(c => `${c.condition} (${c.stage_label})`).join(', ') }} /></p>
               )}
             </div>
           </div>
@@ -276,7 +273,7 @@ export function PanchakarmaView({ plan }) {
         {/* Medicines the patient takes, as the procedures see them. */}
         {cd.medication_review && (cd.medication_review.prescriber_notice || cd.medication_review.notice) && (
           <div className="pk-medication-review">
-            <h3 className="pk-unmapped-title"><Pill size={13} /> Your medicines and this plan</h3>
+            <h3 className="pk-unmapped-title"><Pill size={13} />{' '}{tr('ui.panchakarmaView.yourMedicinesAndThisPlan', 'Your medicines and this plan')}</h3>
             {cd.medication_review.matched?.length > 0 && (
               <ul className="pk-medication-list">
                 {cd.medication_review.matched.map(m => (
@@ -296,28 +293,25 @@ export function PanchakarmaView({ plan }) {
         {/* Narrative sentences the deterministic gate withheld. Shown as a count
             so a gap in the coaching reads as a decision, not an omission. */}
         {plan.coaching_withheld?.length > 0 && (
-          <p className="pk-unmapped-note">
-            {plan.coaching_withheld.length} line{plan.coaching_withheld.length === 1 ? '' : 's'} of the
-            AI coaching {plan.coaching_withheld.length === 1 ? 'was' : 'were'} withheld because{' '}
-            {plan.coaching_withheld.length === 1 ? 'it' : 'they'} contradicted this plan
-            ({[...new Set(plan.coaching_withheld.map(w => w.reason))].join('; ')}).
-          </p>
+          <p className="pk-unmapped-note">{plan.coaching_withheld.length === 1
+            ? tr('ui.panchakarmaView.withheldOne', '1 line of the AI coaching was withheld because it contradicted this plan ({{reasons}}).', { reasons: [...new Set(plan.coaching_withheld.map(w => w.reason))].join('; ') })
+            : tr('ui.panchakarmaView.withheldMany', '{{count}} lines of the AI coaching were withheld because they contradicted this plan ({{reasons}}).', { count: plan.coaching_withheld.length, reasons: [...new Set(plan.coaching_withheld.map(w => w.reason))].join('; ') })}</p>
         )}
 
         {/* Declared allergies, screened against every substance the plan names. */}
         {cd.allergen_review && (cd.allergen_review.findings?.length > 0 || cd.allergen_review.unrecognised_notice) && (
           <div className="pk-medication-review pk-allergen-review">
-            <h3 className="pk-unmapped-title"><AlertTriangle size={13} /> Your allergies and this plan</h3>
+            <h3 className="pk-unmapped-title"><AlertTriangle size={13} />{' '}{tr('ui.panchakarmaView.yourAllergiesAndThisPlan', 'Your allergies and this plan')}</h3>
             {cd.allergen_review.findings?.length > 0 && (
               <>
                 <p className="pk-unmapped-note">
-                  Do not use these as written. Each needs a preparation made without the allergen — ask the Vaidya before day 1.
+                  {tr('ui.panchakarmaView.doNotUseTheseAs', 'Do not use these as written. Each needs a preparation made without the allergen — ask the Vaidya before day 1.')}
                 </p>
                 <ul className="pk-medication-list">
                   {cd.allergen_review.findings.map(f => (
                     <li key={f.allergy}>
                       <strong>{f.allergy}</strong> — {f.items.join('; ')}
-                      {f.substitute && <> <em>(ask for {f.substitute})</em></>}
+                      {f.substitute && <> <em><Trans i18nKey="ui.panchakarmaView.askFor" defaults={"(ask for {{substitute}})"} values={{ substitute: f.substitute }} /></em></>}
                     </li>
                   ))}
                 </ul>
@@ -333,7 +327,7 @@ export function PanchakarmaView({ plan }) {
         {unmapped.length > 0 && (
           <div className="pk-unmapped-banner">
             <h3 className="pk-unmapped-title">
-              <AlertTriangle size={13} /> Rare / Unmapped Conditions Detected — Vaidya Review Required
+              <AlertTriangle size={13} />{' '}{tr('ui.panchakarmaView.rareUnmappedConditionsDetectedVaidya', 'Rare / Unmapped Conditions Detected — Vaidya Review Required')}
             </h3>
             <div className="pk-unmapped-chips">
               {unmapped.map(c => (
@@ -343,7 +337,7 @@ export function PanchakarmaView({ plan }) {
               ))}
             </div>
             <p className="pk-unmapped-note">
-              These conditions are not in the classical Ayurvedic disease database. The AI has reasoned about them using Nidana-Samprapti inference below. All decisions must be reviewed by a qualified Vaidya (BAMS/MD Ayurveda) before proceeding.
+              {tr('ui.panchakarmaView.theseConditionsAreNotIn', 'These conditions are not in the classical Ayurvedic disease database. The AI has reasoned about them using Nidana-Samprapti inference below. All decisions must be reviewed by a qualified Vaidya (BAMS/MD Ayurveda) before proceeding.')}
             </p>
           </div>
         )}
@@ -353,7 +347,7 @@ export function PanchakarmaView({ plan }) {
           then read by no engine code, so there was nothing to show. */}
       {cd.goal?.notes?.length > 0 && (
         <div className="pk-rationale">
-          <span className="pk-rationale-label">Goal — {cd.goal.label}</span>
+          <span className="pk-rationale-label"><Trans i18nKey="ui.panchakarmaView.goal" defaults={"Goal — {{label}}"} values={{ label: cd.goal.label }} /></span>
           {cd.goal.notes.map((n, i) => <p key={i}>{n}</p>)}
         </div>
       )}
@@ -361,28 +355,28 @@ export function PanchakarmaView({ plan }) {
       {/* ── Pradhana Karma + Ritu row ── */}
       <div className="pk-info-row">
         <div className="pk-info-card">
-          <div className="pk-info-label"><Beaker size={12} /> Selected Therapy</div>
+          <div className="pk-info-label"><Beaker size={12} />{' '}{tr('ui.panchakarmaView.selectedTherapy', 'Selected Therapy')}</div>
           <div className="pk-info-value">
             {isShamana
-              ? 'None — Shamana'
+              ? tr('ui.panchakarmaView.noneShamana', 'None — Shamana')
               : (pk.primary || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
           </div>
           {isShamana
-            ? <div className="pk-info-sub">No Pradhana Karma</div>
+            ? <div className="pk-info-sub">{tr('ui.panchakarmaView.noPradhanaKarma', 'No Pradhana Karma')}</div>
             : bs && <div className="pk-info-sub">{bs.name}</div>}
         </div>
         <div className="pk-info-card">
-          <div className="pk-info-label"><Calendar size={12} /> Season (Ritu)</div>
+          <div className="pk-info-label"><Calendar size={12} />{' '}{tr('ui.panchakarmaView.seasonRitu', 'Season (Ritu)')}</div>
           <div className="pk-info-value">{ritu.ritu_name || ritu.ritu || '—'}</div>
           {/* The season's ideal Shodhana is reference data, not a recommendation.
               Printing "Ideal: VIRECHANA" on a plan that withholds Virechana names
               the therapy this plan just refused. */}
           {!isShamana && (
-            <div className="pk-info-sub">Ideal: {(ritu.primary_shodhana || '—').toUpperCase()}</div>
+            <div className="pk-info-sub"><Trans i18nKey="ui.panchakarmaView.ideal" defaults={"Ideal: {{value}}"} values={{ value: (ritu.primary_shodhana || '—').toUpperCase() }} /></div>
           )}
         </div>
         <div className="pk-info-card">
-          <div className="pk-info-label"><Sun size={12} /> Duration</div>
+          <div className="pk-info-label"><Sun size={12} />{' '}{tr('ui.panchakarmaView.duration', 'Duration')}</div>
           <div className="pk-info-value">{ph.total_days ? `${ph.total_days} ${ph.total_days === 1 ? 'day' : 'days'}` : '—'}</div>
           <div className="pk-info-sub">{ph.purvakarma_days}P · {ph.pradhana_karma_days}M · {ph.paschat_karma_days}R</div>
         </div>
@@ -403,7 +397,7 @@ export function PanchakarmaView({ plan }) {
 
       {pk.reason && (
         <div className="pk-rationale">
-          <span className="pk-rationale-label">Clinical Rationale</span>
+          <span className="pk-rationale-label">{tr('ui.panchakarmaView.clinicalRationale', 'Clinical Rationale')}</span>
           <p>{pk.reason}</p>
         </div>
       )}
@@ -417,12 +411,8 @@ export function PanchakarmaView({ plan }) {
           first. */}
       {secondaryDeferred && (
         <div className="pk-deferred">
-          <span className="pk-deferred-label">Not part of this plan</span>
-          <p>
-            <strong>{(secondaryDeferred.karma || '').replace(/_/g, ' ')}</strong> is
-            classically indicated alongside your primary Karma for this Vikriti, and
-            this plan does <strong>not</strong> include it.
-          </p>
+          <span className="pk-deferred-label">{tr('ui.panchakarmaView.notPartOfThisPlan', 'Not part of this plan')}</span>
+          <p><Trans i18nKey="ui.panchakarmaView.n00IsClassicallyIndicated" defaults={"<0>{{value}}</0> is classically indicated alongside your primary Karma for this Vikriti, and this plan does <1>not</1> include it."} values={{ value: (secondaryDeferred.karma || '').replace(/_/g, ' ') }} components={[<strong />, <strong />]} /></p>
           <p className="pk-deferred-why">{secondaryDeferred.deferral}</p>
           {secondaryDeferred.clinical_note && (
             <p className="pk-deferred-note">{secondaryDeferred.clinical_note}</p>
@@ -454,9 +444,9 @@ export function PanchakarmaView({ plan }) {
       {/* ── Snehana Protocol ── */}
       {sectionKeys.length > 0 && (
         <div className="plan-days-toolbar">
-          <h3 className="plan-days-toolbar-title">Protocol detail — {sectionKeys.length} sections</h3>
+          <h3 className="plan-days-toolbar-title"><Trans i18nKey="ui.panchakarmaView.protocolDetailSections" defaults={"Protocol detail — {{length}} sections"} values={{ length: sectionKeys.length }} /></h3>
           <button type="button" className="plan-days-toolbar-btn" onClick={toggleAllSections}>
-            {allSectionsOpen ? 'Collapse all' : 'Expand all'}
+            {allSectionsOpen ? tr('ui.panchakarmaView.collapseAll', 'Collapse all') : tr('ui.panchakarmaView.expandAll', 'Expand all')}
           </button>
         </div>
       )}
@@ -464,7 +454,7 @@ export function PanchakarmaView({ plan }) {
       {sp && (
         <PkSection
           icon={Leaf}
-          title="Shamana Protocol — what replaces the cleanse"
+          title={tr('ui.panchakarmaView.shamanaProtocolWhatReplacesThe', 'Shamana Protocol — what replaces the cleanse')}
           summary={sp.deepana_pachana?.needed ? 'Agni · pacification · Brimhana' : 'pacification · Brimhana'}
           {...sec('shamana')}
         >
@@ -472,14 +462,12 @@ export function PanchakarmaView({ plan }) {
 
           {sp.deepana_pachana?.needed && (
             <div className="pk-aus-card">
-              <div className="pk-aus-label">Deepana-Pachana (Agni correction)</div>
+              <div className="pk-aus-label">{tr('ui.panchakarmaView.deepanaPachanaAgniCorrection', 'Deepana-Pachana (Agni correction)')}</div>
               <div className="pk-aus-name">{(sp.deepana_pachana.herbs || []).join(' · ')}</div>
               <div className="pk-aus-use">{sp.deepana_pachana.why}</div>
-              <div className="pk-aus-use">Duration: {sp.deepana_pachana.duration}</div>
+              <div className="pk-aus-use"><Trans i18nKey="ui.panchakarmaView.duration2" defaults={"Duration: {{duration}}"} values={{ duration: sp.deepana_pachana.duration }} /></div>
               {sp.deepana_pachana.signs_cleared?.length > 0 && (
-                <div className="pk-aus-use">
-                  Cleared when: {sp.deepana_pachana.signs_cleared.join('; ')}
-                </div>
+                <div className="pk-aus-use"><Trans i18nKey="ui.panchakarmaView.clearedWhen" defaults={"Cleared when: {{value}}"} values={{ value: sp.deepana_pachana.signs_cleared.join('; ') }} /></div>
               )}
               {sp.deepana_pachana.diet && <div className="pk-aus-use">{sp.deepana_pachana.diet}</div>}
             </div>
@@ -487,17 +475,17 @@ export function PanchakarmaView({ plan }) {
 
           {sp.shamana_chikitsa && (
             <div className="pk-aus-card">
-              <div className="pk-aus-label">Shamana Chikitsa</div>
+              <div className="pk-aus-label">{tr('ui.panchakarmaView.shamanaChikitsa', 'Shamana Chikitsa')}</div>
               <div className="pk-aus-name">{sp.shamana_chikitsa.principle}</div>
-              <div className="pk-aus-use"><strong>Sneha:</strong> {sp.shamana_chikitsa.sneha_matra}</div>
-              <div className="pk-aus-use"><strong>Ahara:</strong> {sp.shamana_chikitsa.ahara}</div>
-              <div className="pk-aus-use"><strong>Vihara:</strong> {sp.shamana_chikitsa.vihara}</div>
+              <div className="pk-aus-use"><strong>{tr('ui.panchakarmaView.sneha', 'Sneha:')}</strong> {sp.shamana_chikitsa.sneha_matra}</div>
+              <div className="pk-aus-use"><strong>{tr('ui.panchakarmaView.ahara', 'Ahara:')}</strong> {sp.shamana_chikitsa.ahara}</div>
+              <div className="pk-aus-use"><strong>{tr('ui.panchakarmaView.vihara', 'Vihara:')}</strong> {sp.shamana_chikitsa.vihara}</div>
             </div>
           )}
 
           {sp.brimhana && (
             <div className="pk-aus-card">
-              <div className="pk-aus-label">Brimhana Rasayana</div>
+              <div className="pk-aus-label">{tr('ui.panchakarmaView.brimhanaRasayana', 'Brimhana Rasayana')}</div>
               <div className="pk-aus-name">
                 {sp.brimhana.rasayana?.herb || '—'}
                 {sp.brimhana.rasayana?.dose ? ` — ${sp.brimhana.rasayana.dose}` : ''}
@@ -515,14 +503,14 @@ export function PanchakarmaView({ plan }) {
       {(sn.internal_ghrita || sn.abhyanga_oil) && (
         <PkSection
           icon={Droplets}
-          title="Snehana Protocol (Internal + External Oleation)"
+          title={tr('ui.panchakarmaView.snehanaProtocolInternalExternalOleation', 'Snehana Protocol (Internal + External Oleation)')}
           summary={[sn.internal_ghrita && 'internal', sn.abhyanga_oil && 'abhyanga'].filter(Boolean).join(' · ')}
           {...sec('snehana')}
         >
           <div className="pk-aus-grid">
             {sn.internal_ghrita && (
               <div className="pk-aus-card">
-                <div className="pk-aus-label">Internal Snehana</div>
+                <div className="pk-aus-label">{tr('ui.panchakarmaView.internalSnehana', 'Internal Snehana')}</div>
                 <div className="pk-aus-name">
                   {typeof sn.internal_ghrita === 'object'
                     ? (sn.internal_ghrita.primary || sn.internal_ghrita.name || JSON.stringify(sn.internal_ghrita))
@@ -531,10 +519,9 @@ export function PanchakarmaView({ plan }) {
                 {sn.dose_schedule?.length > 0 && (
                   <>
                     {/* The last day is the step-down, so "first → last" hid the peak. */}
-                    <div className="pk-aus-sub">
-                      Day 1: {sn.dose_schedule[0]?.dose_ml}ml → peak {Math.max(...sn.dose_schedule.map(d => d.dose_ml || 0))}ml
-                      {sn.dose_schedule.length >= 3 && <> → Day {sn.dose_schedule.length}: {sn.dose_schedule[sn.dose_schedule.length - 1]?.dose_ml}ml</>}
-                    </div>
+                    <div className="pk-aus-sub">{sn.dose_schedule.length >= 3
+                      ? tr('ui.panchakarmaView.gheeDoseLadder', 'Day 1: {{first}}ml → peak {{peak}}ml → Day {{n}}: {{last}}ml', { first: sn.dose_schedule[0]?.dose_ml, peak: Math.max(...sn.dose_schedule.map(d => d.dose_ml || 0)), n: sn.dose_schedule.length, last: sn.dose_schedule[sn.dose_schedule.length - 1]?.dose_ml })
+                      : tr('ui.panchakarmaView.gheeDoseShort', 'Day 1: {{first}}ml → peak {{peak}}ml', { first: sn.dose_schedule[0]?.dose_ml, peak: Math.max(...sn.dose_schedule.map(d => d.dose_ml || 0)) })}</div>
                     {sn.matra?.basis && <div className="pk-aus-sub">{sn.matra.basis}</div>}
                   </>
                 )}
@@ -542,7 +529,7 @@ export function PanchakarmaView({ plan }) {
             )}
             {sn.abhyanga_oil && (
               <div className="pk-aus-card">
-                <div className="pk-aus-label">Abhyanga Oil</div>
+                <div className="pk-aus-label">{tr('ui.panchakarmaView.abhyangaOil', 'Abhyanga Oil')}</div>
                 <div className="pk-aus-name">
                   {typeof sn.abhyanga_oil === 'object'
                     ? (sn.abhyanga_oil.primary || sn.abhyanga_oil.name || sn.abhyanga_oil.medicated || '—')
@@ -556,7 +543,7 @@ export function PanchakarmaView({ plan }) {
           </div>
           {sn.signs_adequate?.length > 0 && (
             <div className="pk-signs">
-              <div className="pk-signs-label">Signs of Adequate Snehana (Samyak Snigdha Lakshana)</div>
+              <div className="pk-signs-label">{tr('ui.panchakarmaView.signsOfAdequateSnehanaSamyak', 'Signs of Adequate Snehana (Samyak Snigdha Lakshana)')}</div>
               <ul className="pk-signs-list">
                 {sn.signs_adequate.map((s, i) => <li key={i}>{s}</li>)}
               </ul>
@@ -578,8 +565,8 @@ export function PanchakarmaView({ plan }) {
       {aushadhaRows.length > 0 && (
         <PkSection
           icon={Beaker}
-          title="Aushadha (Medicines & Oils)"
-          summary={`${aushadhaRows.length} item${aushadhaRows.length === 1 ? '' : 's'}`}
+          title={tr('ui.panchakarmaView.aushadhaMedicinesOils', 'Aushadha (Medicines & Oils)')}
+          summary={aushadhaRows.length === 1 ? tr('ui.panchakarmaView.itemsOne', '1 item') : tr('ui.panchakarmaView.itemsMany', '{{count}} items', { count: aushadhaRows.length })}
           {...sec('aushadha')}
         >
           {procurementNotice && (
@@ -601,8 +588,8 @@ export function PanchakarmaView({ plan }) {
                 if (k === 'rasayana' && v?.unavailable_reason) {
                   return (
                     <div key={k} className="pk-aus-card pk-aus-card-withheld">
-                      <div className="pk-aus-label">Rasayana</div>
-                      <div className="pk-aus-name">Not prescribed</div>
+                      <div className="pk-aus-label">{tr('ui.panchakarmaView.rasayana', 'Rasayana')}</div>
+                      <div className="pk-aus-name">{tr('ui.panchakarmaView.notPrescribed', 'Not prescribed')}</div>
                       <div className="pk-aus-sub">{v.unavailable_reason}</div>
                     </div>
                   )
@@ -623,7 +610,7 @@ export function PanchakarmaView({ plan }) {
                   {withheld.map((w, i) => (
                     <div key={`w${i}`} className="pk-aus-withheld">
                       <AlertTriangle size={11} />
-                      <span><strong>Omit {w.herb}</strong> — {w.reasons?.[0]?.mechanism}</span>
+                      <span><strong><Trans i18nKey="ui.panchakarmaView.omit" defaults={"Omit {{herb}}"} values={{ herb: w.herb }} /></strong> — {w.reasons?.[0]?.mechanism}</span>
                     </div>
                   ))}
                   {cautions.map((c, i) => (
@@ -637,13 +624,13 @@ export function PanchakarmaView({ plan }) {
                   {(v?.already_taking || []).map((d, i) => (
                     <div key={`d${i}`} className="pk-aus-note">
                       <AlertTriangle size={11} />
-                      <span><strong>Already taking {d.already_taking}</strong> — {d.note}</span>
+                      <span><strong><Trans i18nKey="ui.panchakarmaView.alreadyTaking" defaults={"Already taking {{already_taking}}"} values={{ already_taking: d.already_taking }} /></strong> — {d.note}</span>
                     </div>
                   ))}
                   {interactions.map((x, i) => (
                     <div key={`i${i}`} className="pk-aus-withheld">
                       <AlertTriangle size={11} />
-                      <span><strong>{x.herb} × your medication</strong> — {x.effect || x.recommendation}</span>
+                      <span><strong><Trans i18nKey="ui.panchakarmaView.yourMedication" defaults={"{{herb}} × your medication"} values={{ herb: x.herb }} /></strong> — {x.effect || x.recommendation}</span>
                     </div>
                   ))}
                 </div>
@@ -655,7 +642,7 @@ export function PanchakarmaView({ plan }) {
                 rather than implying a clean check. */}
             {aus.unverified_against && (
               <div className="pk-aus-card pk-aus-card-withheld">
-                <div className="pk-aus-label">Not verified against</div>
+                <div className="pk-aus-label">{tr('ui.panchakarmaView.notVerifiedAgainst', 'Not verified against')}</div>
                 <div className="pk-aus-name">
                   {aus.unverified_against.conditions.map(c => c.replace(/_/g, ' ')).join(', ')}
                 </div>
@@ -666,7 +653,7 @@ export function PanchakarmaView({ plan }) {
             {(aus.withheld_aushadha || []).map((w, i) => (
               <div key={`dropped${i}`} className="pk-aus-card pk-aus-card-withheld">
                 <div className="pk-aus-label">{w.id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</div>
-                <div className="pk-aus-name">Withheld — {w.name}</div>
+                <div className="pk-aus-name"><Trans i18nKey="ui.panchakarmaView.withheld" defaults={"Withheld — {{name}}"} values={{ name: w.name }} /></div>
                 <div className="pk-aus-sub">{w.reason}</div>
                 {(w.withheld || []).map((h, j) => (
                   <div key={j} className="pk-aus-withheld">
@@ -684,11 +671,11 @@ export function PanchakarmaView({ plan }) {
       {sk.length > 0 && (
         <PkSection
           icon={Leaf}
-          title="Samsarjana Krama (Dietary Re-entry)"
+          title={tr('ui.panchakarmaView.samsarjanaKramaDietaryReEntry', 'Samsarjana Krama (Dietary Re-entry)')}
           summary={`${sk.length} stages`}
           {...sec('samsarjana')}
         >
-          <p className="pk-sk-intro">Critical post-Shodhana re-feeding protocol. Skipping this risks Dhatu Kshaya.</p>
+          <p className="pk-sk-intro">{tr('ui.panchakarmaView.criticalPostShodhanaReFeeding', 'Critical post-Shodhana re-feeding protocol. Skipping this risks Dhatu Kshaya.')}</p>
           {samsarjanaNotice && (
             <div className="pk-ritu-warning">
               <AlertTriangle size={13} /> {samsarjanaNotice}
@@ -713,25 +700,21 @@ export function PanchakarmaView({ plan }) {
       {sch.length > 0 && (
         <PkSection
           icon={Calendar}
-          title="Daily Schedule"
+          title={tr('ui.panchakarmaView.dailySchedule', 'Daily Schedule')}
           summary={`${sch.length} ${sch.length === 1 ? 'day' : 'days'}`}
           {...sec('schedule')}
         >
           <div className="pk-schedule">
             {sch.map((day) => (
               <div key={day.day} className="pk-day-row">
-                <div className="pk-day-num">Day {day.day}</div>
+                <div className="pk-day-num"><Trans i18nKey="ui.panchakarmaView.day" defaults={"Day {{day}}"} values={{ day: day.day }} /></div>
                 <div className="pk-day-phase">{(day.phase || '').split(' (')[0]}</div>
                 <div className="pk-day-therapies">
                   {/* The Snehapana ladder escalates 30 → 60 → 90 → 120ml. It lived
                       in a summary block while every Purvakarma day read the same,
                       so the day you were on never told you the dose you were due. */}
                   {day.snehapana && (
-                    <span className="pk-day-dose">
-                      <Droplets size={11} /> Snehapana {day.snehapana.dose_ml}ml
-                      {day.snehapana.time ? ` · ${day.snehapana.time}` : ''}
-                      {day.snehapana.vehicle ? ` · ${day.snehapana.vehicle}` : ''}
-                    </span>
+                    <span className="pk-day-dose"><Trans i18nKey="ui.panchakarmaView.n0SnehapanaMl" defaults={"<0/> Snehapana {{dose_ml}}ml {{value}} {{value2}}"} values={{ dose_ml: day.snehapana.dose_ml, value: day.snehapana.time ? ` · ${day.snehapana.time}` : '', value2: day.snehapana.vehicle ? ` · ${day.snehapana.vehicle}` : '' }} components={[<Droplets size={11} />]} /></span>
                   )}
                   {/* Deepana-Pachana and Brimhana are pinned day actions just as
                       the Pradhana Karma is; rendering only the Karma variant dropped
@@ -762,7 +745,7 @@ export function PanchakarmaView({ plan }) {
                     ) : (
                       <span key={i} className="pk-therapy-chip-wrap">
                         <span className={`pk-therapy-chip${t.cautions?.length ? ' pk-therapy-chip-caution' : ''}`}>
-                          {t.name}{t.duration_minutes ? ` · ${t.duration_minutes}min` : ''}
+                          {t.name}{t.duration_minutes ? tr('ui.panchakarmaView.min', ' · {{duration_minutes}}min', { duration_minutes: t.duration_minutes }) : ''}
                         </span>
                         {/* A relative contraindication held in the engine and never
                             printed is the same defect as one never checked — the
@@ -787,15 +770,12 @@ export function PanchakarmaView({ plan }) {
       {triage.length > 0 && (
         <PkSection
           icon={AlertTriangle}
-          title="Unrecognised Diagnosis — Safety Assessment"
-          summary={`${triage.length} condition${triage.length === 1 ? '' : 's'}`}
+          title={tr('ui.panchakarmaView.unrecognisedDiagnosisSafetyAssessment', 'Unrecognised Diagnosis — Safety Assessment')}
+          summary={triage.length === 1 ? tr('ui.panchakarmaView.conditionsOne', '1 condition') : tr('ui.panchakarmaView.conditionsMany', '{{count}} conditions', { count: triage.length })}
           {...sec('triage')}
         >
           <p className="pk-sk-intro">
-            These diagnoses are outside the engine&rsquo;s classical vocabulary. Every contraindication
-            check matches on recognised conditions, so an unrecognised one would otherwise pass every
-            check by default rather than clearing it. Each was assessed before this plan was built.
-            The assessments are AI-generated and clinically unreviewed &mdash; confirm with a Vaidya.
+            {tr('ui.panchakarmaView.theseDiagnosesAreOutsideThe', 'These diagnoses are outside the engine’s classical vocabulary. Every contraindication check matches on recognised conditions, so an unrecognised one would otherwise pass every check by default rather than clearing it. Each was assessed before this plan was built. The assessments are AI-generated and clinically unreviewed — confirm with a Vaidya.')}
           </p>
           {triage.map((t) => (
             <div key={t.condition} className="pk-rare-card">
@@ -804,25 +784,25 @@ export function PanchakarmaView({ plan }) {
               </div>
               {t.outcome === 'shodhana_withheld' ? (
                 <div className="pk-rare-row">
-                  <span className="pk-rare-k">Outcome</span>
-                  <span>Could not be assessed &mdash; purification withheld rather than performed unchecked.</span>
+                  <span className="pk-rare-k">{tr('ui.panchakarmaView.outcome', 'Outcome')}</span>
+                  <span>{tr('ui.panchakarmaView.couldNotBeAssessedPurification', 'Could not be assessed — purification withheld rather than performed unchecked.')}</span>
                 </div>
               ) : (
                 <>
                   {t.classical_analogue && (
-                    <div className="pk-rare-row"><span className="pk-rare-k">Classical Analogue</span><span>{t.classical_analogue}</span></div>
+                    <div className="pk-rare-row"><span className="pk-rare-k">{tr('ui.panchakarmaView.classicalAnalogue', 'Classical Analogue')}</span><span>{t.classical_analogue}</span></div>
                   )}
                   {t.srotas && (
-                    <div className="pk-rare-row"><span className="pk-rare-k">Srotas</span><span>{t.srotas}</span></div>
+                    <div className="pk-rare-row"><span className="pk-rare-k">{tr('ui.panchakarmaView.srotas', 'Srotas')}</span><span>{t.srotas}</span></div>
                   )}
                   {doshaInfluence.filter(i => i.condition === t.condition).map((i, n) => (
                     <div key={n} className="pk-rare-row">
-                      <span className="pk-rare-k">Effect on this plan</span>
+                      <span className="pk-rare-k">{tr('ui.panchakarmaView.effectOnThisPlan', 'Effect on this plan')}</span>
                       <span>{i.effect}</span>
                     </div>
                   ))}
                   <div className="pk-rare-row">
-                    <span className="pk-rare-k">Shodhana</span>
+                    <span className="pk-rare-k">{tr('ui.panchakarmaView.shodhana', 'Shodhana')}</span>
                     <span>{String(t.outcome || '').replace(/_/g, ' ')}</span>
                   </div>
                   {Object.entries(t.karma_restrictions || {}).map(([karma, r]) => (
@@ -832,10 +812,10 @@ export function PanchakarmaView({ plan }) {
                     </div>
                   ))}
                   {t.monitoring && (
-                    <div className="pk-rare-row"><span className="pk-rare-k">Vaidya must monitor</span><span>{t.monitoring}</span></div>
+                    <div className="pk-rare-row"><span className="pk-rare-k">{tr('ui.panchakarmaView.vaidyaMustMonitor', 'Vaidya must monitor')}</span><span>{t.monitoring}</span></div>
                   )}
                   {t.confidence && (
-                    <div className="pk-rare-row"><span className="pk-rare-k">Confidence</span><span>{t.confidence}</span></div>
+                    <div className="pk-rare-row"><span className="pk-rare-k">{tr('ui.panchakarmaView.confidence', 'Confidence')}</span><span>{t.confidence}</span></div>
                   )}
                 </>
               )}
@@ -848,28 +828,28 @@ export function PanchakarmaView({ plan }) {
       {rareAssessment && Object.keys(rareAssessment).length > 0 && (
         <PkSection
           icon={Sparkles}
-          title="Rare Disease Nidana-Samprapti Assessment"
-          summary={`${Object.keys(rareAssessment).length} condition${Object.keys(rareAssessment).length === 1 ? '' : 's'}`}
+          title={tr('ui.panchakarmaView.rareDiseaseNidanaSampraptiAssessment', 'Rare Disease Nidana-Samprapti Assessment')}
+          summary={Object.keys(rareAssessment).length === 1 ? tr('ui.panchakarmaView.conditionsOne', '1 condition') : tr('ui.panchakarmaView.conditionsMany', '{{count}} conditions', { count: Object.keys(rareAssessment).length })}
           {...sec('rare')}
         >
-          <p className="pk-sk-intro">AI-inferred Ayurvedic analysis for conditions outside classical mapping. Verify with a qualified Vaidya.</p>
+          <p className="pk-sk-intro">{tr('ui.panchakarmaView.aiInferredAyurvedicAnalysisFor', 'AI-inferred Ayurvedic analysis for conditions outside classical mapping. Verify with a qualified Vaidya.')}</p>
           {Object.entries(rareAssessment).map(([condition, data]) => (
             <div key={condition} className="pk-rare-card">
               <div className="pk-rare-name">{condition.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
               {data.nidana_samprapti && (
-                <div className="pk-rare-row"><span className="pk-rare-k">Nidana-Samprapti</span><span>{data.nidana_samprapti}</span></div>
+                <div className="pk-rare-row"><span className="pk-rare-k">{tr('ui.panchakarmaView.nidanaSamprapti', 'Nidana-Samprapti')}</span><span>{data.nidana_samprapti}</span></div>
               )}
               {data.classical_analogue && (
-                <div className="pk-rare-row"><span className="pk-rare-k">Classical Analogue</span><span>{data.classical_analogue}</span></div>
+                <div className="pk-rare-row"><span className="pk-rare-k">{tr('ui.panchakarmaView.classicalAnalogue', 'Classical Analogue')}</span><span>{data.classical_analogue}</span></div>
               )}
               {data.therapy_suitability && (
-                <div className="pk-rare-row"><span className="pk-rare-k">Therapy Suitability</span><span>{data.therapy_suitability}</span></div>
+                <div className="pk-rare-row"><span className="pk-rare-k">{tr('ui.panchakarmaView.therapySuitability', 'Therapy Suitability')}</span><span>{data.therapy_suitability}</span></div>
               )}
               {data.suggested_aushadha && (
-                <div className="pk-rare-row"><span className="pk-rare-k">Aushadha</span><span>{data.suggested_aushadha}</span></div>
+                <div className="pk-rare-row"><span className="pk-rare-k">{tr('ui.panchakarmaView.aushadha', 'Aushadha')}</span><span>{data.suggested_aushadha}</span></div>
               )}
               {data.vaidya_note && (
-                <div className="pk-rare-row pk-rare-warn"><span className="pk-rare-k">Vaidya Monitor</span><span>{data.vaidya_note}</span></div>
+                <div className="pk-rare-row pk-rare-warn"><span className="pk-rare-k">{tr('ui.panchakarmaView.vaidyaMonitor', 'Vaidya Monitor')}</span><span>{data.vaidya_note}</span></div>
               )}
             </div>
           ))}

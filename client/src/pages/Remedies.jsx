@@ -12,6 +12,8 @@ import { MedicineView } from '../components/planViews/MedicineView'
 import {
   Soup, Pill, Stethoscope, TriangleAlert, X, SlidersHorizontal, Sparkles, RefreshCw, Check,
 } from 'lucide-react'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import '../components/PlanViewer.css'   // rv-* / mv-* styles for the shared plan views
 import './Remedies.css'
 
@@ -25,16 +27,16 @@ import './Remedies.css'
 // side, which a single-plan view cannot show.
 
 const SEVERITIES = [
-  { id: 'mild',     label: 'Mild' },
-  { id: 'moderate', label: 'Moderate' },
-  { id: 'severe',   label: 'Severe' },
+  { id: 'mild',     get label() { return tr('ui.remedies.mild', 'Mild') } },
+  { id: 'moderate', get label() { return tr('ui.remedies.moderate', 'Moderate') } },
+  { id: 'severe',   get label() { return tr('ui.remedies.severe', 'Severe') } },
 ]
 
 const DURATIONS = [
-  { id: 'recent', label: 'A few days' },
-  { id: 'weeks',  label: 'Weeks' },
-  { id: 'months', label: 'Months' },
-  { id: 'chronic',label: 'Chronic' },
+  { id: 'recent', get label() { return tr('ui.remedies.aFewDays', 'A few days') } },
+  { id: 'weeks',  get label() { return tr('ui.remedies.weeks', 'Weeks') } },
+  { id: 'months', get label() { return tr('ui.remedies.months', 'Months') } },
+  { id: 'chronic',get label() { return tr('ui.remedies.chronic', 'Chronic') } },
 ]
 
 // Covers every `symptom_category` in the remedy KB; anything new falls back to
@@ -79,11 +81,9 @@ function SymptomPicker({ options, selected, severity, duration, onToggle, onSeve
     >
       <div className="rem-picker-inner">
         <div className="rem-picker-head">
-          <h2 className="rem-picker-title">What would you like remedies for?</h2>
+          <h2 className="rem-picker-title">{tr('ui.remedies.whatWouldYouLikeRemedies', 'What would you like remedies for?')}</h2>
           <p className="rem-picker-sub">
-            Pick your symptoms, then set how strong and how long-standing each one is —
-            severity and duration change which remedy you get, and severe symptoms are
-            referred to a doctor instead.
+            {tr('ui.remedies.pickYourSymptomsThenSet', 'Pick your symptoms, then set how strong and how long-standing each one is — severity and duration change which remedy you get, and severe symptoms are referred to a doctor instead.')}
           </p>
         </div>
 
@@ -111,12 +111,12 @@ function SymptomPicker({ options, selected, severity, duration, onToggle, onSeve
 
         {selected.length > 0 && (
           <div className="rem-picker-detail">
-            <p className="rem-picker-group-label">Tell us about each one</p>
+            <p className="rem-picker-group-label">{tr('ui.remedies.tellUsAboutEachOne', 'Tell us about each one')}</p>
             {selected.map(id => (
               <div key={id} className="rem-picker-row">
                 <span className="rem-picker-row-name">{byId[id]?.display || id}</span>
                 <div className="rem-picker-row-controls">
-                  <div className="rem-seg" role="group" aria-label={`Severity for ${byId[id]?.display || id}`}>
+                  <div className="rem-seg" role="group" aria-label={tr('ui.remedies.severityFor', 'Severity for {{id}}', { id: byId[id]?.display || id })}>
                     {SEVERITIES.map(s => (
                       <button
                         key={s.id}
@@ -131,7 +131,7 @@ function SymptomPicker({ options, selected, severity, duration, onToggle, onSeve
                   </div>
                   <select
                     className="rem-picker-select"
-                    aria-label={`Duration for ${byId[id]?.display || id}`}
+                    aria-label={tr('ui.remedies.durationFor', 'Duration for {{id}}', { id: byId[id]?.display || id })}
                     value={duration[id] || 'recent'}
                     onChange={(e) => onDuration(id, e.target.value)}
                   >
@@ -153,8 +153,8 @@ function SymptomPicker({ options, selected, severity, duration, onToggle, onSeve
             whileTap={selected.length ? { scale: 0.98 } : undefined}
           >
             {generating
-              ? <><RefreshCw size={15} strokeWidth={2} className="rem-spin" /> Building your remedies…</>
-              : <><Sparkles size={15} strokeWidth={2} /> {hasPlan ? 'Rebuild remedies' : 'Get my remedies'}</>}
+              ? <><RefreshCw size={15} strokeWidth={2} className="rem-spin" />{' '}{tr('ui.remedies.buildingYourRemedies', 'Building your remedies…')}</>
+              : <><Sparkles size={15} strokeWidth={2} /> {hasPlan ? tr('ui.remedies.rebuildRemedies', 'Rebuild remedies') : tr('ui.remedies.getMyRemedies', 'Get my remedies')}</>}
           </m.button>
           {selected.length > 0 && (
             <span className="rem-picker-count">{selected.length} selected</span>
@@ -178,12 +178,12 @@ function EmptyState({ tab, onAction, busy }) {
         {tab === 'remedies' ? <Soup size={34} strokeWidth={1.7} /> : <Pill size={34} strokeWidth={1.7} />}
       </div>
       <h2 className="rem-empty-title">
-        {tab === 'remedies' ? 'No home remedies yet' : 'No medicines yet'}
+        {tab === 'remedies' ? tr('ui.remedies.noHomeRemediesYet', 'No home remedies yet') : tr('ui.remedies.noMedicinesYet', 'No medicines yet')}
       </h2>
       <p className="rem-empty-sub">
         {tab === 'remedies'
-          ? 'Tell us what is bothering you and we will build kitchen remedies matched to your dosha, conditions and medications.'
-          : 'Generate a classical formulation plan matched to your Vikriti, Agni and current medications.'}
+          ? tr('ui.remedies.tellUsWhatIsBothering', 'Tell us what is bothering you and we will build kitchen remedies matched to your dosha, conditions and medications.')
+          : tr('ui.remedies.generateAClassicalFormulationPlan', 'Generate a classical formulation plan matched to your Vikriti, Agni and current medications.')}
       </p>
       <m.button
         className="btn btn-primary"
@@ -193,10 +193,10 @@ function EmptyState({ tab, onAction, busy }) {
         whileTap={{ scale: 0.97 }}
       >
         {busy
-          ? <><RefreshCw size={15} strokeWidth={2} className="rem-spin" /> Working…</>
+          ? <><RefreshCw size={15} strokeWidth={2} className="rem-spin" />{' '}{tr('ui.remedies.working', 'Working…')}</>
           : tab === 'remedies'
-            ? <><SlidersHorizontal size={15} strokeWidth={2} /> Choose symptoms</>
-            : <><Sparkles size={15} strokeWidth={2} /> Generate medicines</>}
+            ? <><SlidersHorizontal size={15} strokeWidth={2} />{' '}{tr('ui.remedies.chooseSymptoms', 'Choose symptoms')}</>
+            : <><Sparkles size={15} strokeWidth={2} />{' '}{tr('ui.remedies.generateMedicines', 'Generate medicines')}</>}
       </m.button>
     </m.div>
   )
@@ -308,11 +308,11 @@ const Remedies = () => {
       invalidatePlans()
       setPickerOpen(false)
       setFilter('')
-      toast.success('Your remedies are ready ✦')
+      toast.success(tr('ui.remedies.yourRemediesAreReady', 'Your remedies are ready ✦'))
     },
     onError: (err) => {
       if (err.response?.status === 429) {
-        toast.error('Rate limit reached — wait a minute before requesting another medical plan.')
+        toast.error(tr('ui.remedies.rateLimitReachedWaitA', 'Rate limit reached — wait a minute before requesting another medical plan.'))
         return
       }
       toast.error(err.response?.data?.detail || 'Could not build your remedies. Please try again.')
@@ -333,7 +333,7 @@ const Remedies = () => {
     },
     onSuccess: () => {
       invalidatePlans()
-      toast.success('Your medicines plan is ready ✦')
+      toast.success(tr('ui.remedies.yourMedicinesPlanIsReady', 'Your medicines plan is ready ✦'))
     },
     onError: (err) => {
       if (err.prefRequired) {
@@ -341,7 +341,7 @@ const Remedies = () => {
         return
       }
       if (err.response?.status === 429) {
-        toast.error('Rate limit reached — wait a minute before requesting another medical plan.')
+        toast.error(tr('ui.remedies.rateLimitReachedWaitA', 'Rate limit reached — wait a minute before requesting another medical plan.'))
         return
       }
       toast.error(err.response?.data?.detail || 'Could not generate your medicines plan. Please try again.')
@@ -377,7 +377,7 @@ const Remedies = () => {
   return (
     <>
       <Helmet>
-        <title>Remedies &amp; Medicines | Ayura AI</title>
+        <title>{tr('ui.remedies.remediesMedicinesAyuraAi', 'Remedies & Medicines | Ayura AI')}</title>
         <meta name="description" content="Your personalized Ayurvedic home remedies and classical medicines — matched to your dosha, conditions and current medications." />
       </Helmet>
 
@@ -408,15 +408,13 @@ const Remedies = () => {
               <button
                 className="rem-back-btn"
                 onClick={() => navigate('/dashboard')}
-                aria-label="Back to dashboard"
+                aria-label={tr('ui.remedies.backToDashboard', 'Back to dashboard')}
               >
-                ← Back
+                {tr('ui.remedies.back', '← Back')}
               </button>
               <div>
-                <h1 className="rem-page-title">
-                  <span className="gradient-text">Remedies</span> &amp; Medicines
-                </h1>
-                <p className="rem-page-sub">Your personal Ayurvedic medicine cabinet</p>
+                <h1 className="rem-page-title"><Trans i18nKey="ui.remedies.n0Remedies0Medicines" defaults={"<0>Remedies</0> & Medicines"} components={[<span className="gradient-text" />]} /></h1>
+                <p className="rem-page-sub">{tr('ui.remedies.yourPersonalAyurvedicMedicineCabinet', 'Your personal Ayurvedic medicine cabinet')}</p>
               </div>
             </div>
             <div className="rem-header-right">
@@ -427,7 +425,7 @@ const Remedies = () => {
                   aria-expanded={pickerOpen}
                 >
                   <SlidersHorizontal size={14} strokeWidth={2} />
-                  {pickerOpen ? 'Hide symptoms' : remedyPlan ? 'Update symptoms' : 'Choose symptoms'}
+                  {pickerOpen ? tr('ui.remedies.hideSymptoms', 'Hide symptoms') : remedyPlan ? tr('ui.remedies.updateSymptoms', 'Update symptoms') : tr('ui.remedies.chooseSymptoms', 'Choose symptoms')}
                 </button>
               ) : (
                 <>
@@ -440,7 +438,7 @@ const Remedies = () => {
                       onClick={() => setPrefModalOpen(true)}
                       disabled={medicineMutation.isPending}
                     >
-                      <SlidersHorizontal size={14} strokeWidth={2} /> Medications &amp; access
+                      <SlidersHorizontal size={14} strokeWidth={2} />{' '}{tr('ui.remedies.medicationsAccess', 'Medications & access')}
                     </button>
                   )}
                   <button
@@ -449,8 +447,8 @@ const Remedies = () => {
                     disabled={medicineMutation.isPending}
                   >
                     {medicineMutation.isPending
-                      ? <><RefreshCw size={14} strokeWidth={2} className="rem-spin" /> Generating…</>
-                      : <><RefreshCw size={14} strokeWidth={2} /> {medicinePlan ? 'Regenerate' : 'Generate'}</>}
+                      ? <><RefreshCw size={14} strokeWidth={2} className="rem-spin" />{' '}{tr('ui.remedies.generating', 'Generating…')}</>
+                      : <><RefreshCw size={14} strokeWidth={2} /> {medicinePlan ? tr('ui.remedies.regenerate', 'Regenerate') : tr('ui.remedies.generate', 'Generate')}</>}
                   </button>
                 </>
               )}
@@ -466,8 +464,7 @@ const Remedies = () => {
           >
             <span style={{ display: 'inline-flex', flexShrink: 0 }}><Stethoscope size={16} strokeWidth={2} /></span>
             <span>
-              These recommendations are AI-generated based on Ayurvedic principles.
-              Always consult a qualified healthcare provider before starting any new treatment.
+              {tr('ui.remedies.theseRecommendationsAreAiGenerated', 'These recommendations are AI-generated based on Ayurvedic principles. Always consult a qualified healthcare provider before starting any new treatment.')}
             </span>
           </m.div>
 
@@ -483,7 +480,7 @@ const Remedies = () => {
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                   <TriangleAlert size={15} strokeWidth={2} /> {error}
                 </span>
-                <button onClick={() => setErrorDismissed(true)} aria-label="Dismiss"><X size={14} strokeWidth={2} /></button>
+                <button onClick={() => setErrorDismissed(true)} aria-label={tr('ui.remedies.dismiss', 'Dismiss')}><X size={14} strokeWidth={2} /></button>
               </m.div>
             )}
           </AnimatePresence>
@@ -502,7 +499,7 @@ const Remedies = () => {
                 role="tab"
                 aria-selected={activeTab === 'remedies'}
               >
-                <Soup size={15} strokeWidth={2} /> Home Remedies
+                <Soup size={15} strokeWidth={2} />{' '}{tr('ui.remedies.homeRemedies', 'Home Remedies')}
                 {!loading && addressed.length > 0 && <span className="rem-tab-count">{addressed.length}</span>}
               </button>
               <button
@@ -511,7 +508,7 @@ const Remedies = () => {
                 role="tab"
                 aria-selected={activeTab === 'medicines'}
               >
-                <Pill size={15} strokeWidth={2} /> Ayurvedic Medicines
+                <Pill size={15} strokeWidth={2} />{' '}{tr('ui.remedies.ayurvedicMedicines', 'Ayurvedic Medicines')}
                 {!loading && medicineCount > 0 && <span className="rem-tab-count">{medicineCount}</span>}
               </button>
             </div>
@@ -550,7 +547,7 @@ const Remedies = () => {
                   className={`rem-filter-chip${filter === '' ? ' active' : ''}`}
                   onClick={() => setFilter('')}
                 >
-                  All
+                  {tr('ui.remedies.all', 'All')}
                 </button>
                 {symptomFilters.map(s => (
                   <button
@@ -581,7 +578,7 @@ const Remedies = () => {
                   transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 >
                   {/* The views' sections are h3s; this is the h2 the tab stands for. */}
-                  <h2 className="sr-only">Home remedies</h2>
+                  <h2 className="sr-only">{tr('ui.remedies.homeRemedies2', 'Home remedies')}</h2>
                   <RemedyView plan={shownRemedyPlan} />
                 </m.div>
               ) : (
@@ -597,7 +594,7 @@ const Remedies = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
-                <h2 className="sr-only">Ayurvedic medicines</h2>
+                <h2 className="sr-only">{tr('ui.remedies.ayurvedicMedicines2', 'Ayurvedic medicines')}</h2>
                 <MedicineView plan={medicinePlan} />
               </m.div>
             ) : (

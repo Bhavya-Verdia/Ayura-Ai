@@ -5,17 +5,19 @@ import {
   LayoutDashboard, MessageCircle, Leaf, Activity,
   CheckSquare, Bell, Settings, Search, ChevronRight, ShieldCheck,
 } from 'lucide-react'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './CommandPalette.css'
 
 const COMMANDS = [
-  { id: 'dashboard',     label: 'Go to Dashboard',   Icon: LayoutDashboard, path: '/dashboard',     shortcut: 'G D' },
-  { id: 'chat',          label: 'Open AI Assistant', Icon: MessageCircle,   path: '/chat',           shortcut: 'G C' },
-  { id: 'remedies',      label: 'View Remedies',     Icon: Leaf,            path: '/remedies',       shortcut: 'G R' },
-  { id: 'timeline',      label: 'Health Timeline',   Icon: Activity,        path: '/timeline',       shortcut: 'G T' },
-  { id: 'checkin',       label: 'Weekly Check-In',   Icon: CheckSquare,     path: '/checkin',        shortcut: 'G K' },
-  { id: 'interaction',   label: 'Herb Safety Checker', Icon: ShieldCheck,   path: '/interaction-check', shortcut: 'G H' },
-  { id: 'notifications', label: 'Notifications',     Icon: Bell,            path: '/notifications',  shortcut: 'G N' },
-  { id: 'settings',      label: 'Settings',          Icon: Settings,        path: '/settings',       shortcut: 'G S' },
+  { id: 'dashboard',     get label() { return tr('ui.commandPalette.goToDashboard', 'Go to Dashboard') },   Icon: LayoutDashboard, path: '/dashboard',     shortcut: 'G D' },
+  { id: 'chat',          get label() { return tr('ui.commandPalette.openAiAssistant', 'Open AI Assistant') }, Icon: MessageCircle,   path: '/chat',           shortcut: 'G C' },
+  { id: 'remedies',      get label() { return tr('ui.commandPalette.viewRemedies', 'View Remedies') },     Icon: Leaf,            path: '/remedies',       shortcut: 'G R' },
+  { id: 'timeline',      get label() { return tr('ui.commandPalette.healthTimeline', 'Health Timeline') },   Icon: Activity,        path: '/timeline',       shortcut: 'G T' },
+  { id: 'checkin',       get label() { return tr('ui.commandPalette.weeklyCheckIn', 'Weekly Check-In') },   Icon: CheckSquare,     path: '/checkin',        shortcut: 'G K' },
+  { id: 'interaction',   get label() { return tr('ui.commandPalette.herbSafetyChecker', 'Herb Safety Checker') }, Icon: ShieldCheck,   path: '/interaction-check', shortcut: 'G H' },
+  { id: 'notifications', get label() { return tr('ui.commandPalette.notifications', 'Notifications') },     Icon: Bell,            path: '/notifications',  shortcut: 'G N' },
+  { id: 'settings',      get label() { return tr('ui.commandPalette.settings', 'Settings') },          Icon: Settings,        path: '/settings',       shortcut: 'G S' },
 ]
 
 export default function CommandPalette() {
@@ -74,7 +76,7 @@ export default function CommandPalette() {
             className="cmd-panel"
             role="dialog"
             aria-modal="true"
-            aria-label="Command palette"
+            aria-label={tr('ui.commandPalette.commandPalette', 'Command palette')}
             initial={{ opacity: 0, scale: 0.96, y: -14 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -14 }}
@@ -86,7 +88,7 @@ export default function CommandPalette() {
               <input
                 ref={inputRef}
                 className="cmd-input"
-                placeholder="Jump to a page…"
+                placeholder={tr('ui.commandPalette.jumpToAPage', 'Jump to a page…')}
                 value={query}
                 onChange={e => { setQuery(e.target.value); setActiveIdx(0) }}
                 onKeyDown={onKeyDown}
@@ -99,10 +101,10 @@ export default function CommandPalette() {
             {/* ── Results ── */}
             <div className="cmd-results">
               {filtered.length === 0 ? (
-                <div className="cmd-empty">No results for "{query}"</div>
+                <div className="cmd-empty"><Trans i18nKey="ui.commandPalette.noResultsFor" defaults={"No results for \"{{query}}\""} values={{ query }} /></div>
               ) : (
                 <>
-                  <span className="cmd-section-label">Navigate</span>
+                  <span className="cmd-section-label">{tr('ui.commandPalette.navigate', 'Navigate')}</span>
                   {filtered.map((item, i) => {
                     const { Icon } = item
                     return (

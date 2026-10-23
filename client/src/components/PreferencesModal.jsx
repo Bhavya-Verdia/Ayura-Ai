@@ -13,6 +13,8 @@ import DietFields from './preferences/DietFields';
 import PanchakarmaFields from './preferences/PanchakarmaFields';
 import RemedyFields from './preferences/RemedyFields';
 
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSuccess }) {
   // `profile`, not `user`: `user` is a trimmed identity mapping with no
   // allergies on it, so seeding from it showed nothing for every patient.
@@ -218,7 +220,7 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
 
     try {
       await preferencesAPI.saveFeature(typeId, payload);
-      toast.success('Preferences saved successfully!');
+      toast.success(tr('ui.preferencesModal.preferencesSavedSuccessfully', 'Preferences saved successfully!'));
       onSubmitSuccess(); // Trigger plan generation
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to save preferences.');
@@ -285,21 +287,21 @@ export default function PreferencesModal({ isOpen, onClose, typeId, onSubmitSucc
           transition={{ duration: 0.3 }}
         >
           <div className="pref-modal-header">
-            <h2 className="pref-modal-title">Configure {typeId.charAt(0).toUpperCase() + typeId.slice(1)} Preferences</h2>
+            <h2 className="pref-modal-title"><Trans i18nKey="ui.preferencesModal.configurePreferences" defaults={"Configure {{value}} Preferences"} values={{ value: typeId.charAt(0).toUpperCase() + typeId.slice(1) }} /></h2>
             <button className="pref-modal-close" onClick={onClose}>×</button>
           </div>
           
           <p className="pref-modal-subtitle">
-            To generate a highly personalized plan, we need a few specific details about your goals and constraints.
+            {tr('ui.preferencesModal.toGenerateAHighlyPersonalized', 'To generate a highly personalized plan, we need a few specific details about your goals and constraints.')}
           </p>
 
           <form className="pref-modal-form" onSubmit={handleSubmit}>
             {renderFormFields()}
             
             <div className="pref-modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>Cancel</button>
+              <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>{tr('ui.preferencesModal.cancel', 'Cancel')}</button>
               <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? 'Saving...' : 'Save & Generate ✦'}
+                {loading ? tr('ui.preferencesModal.saving', 'Saving...') : tr('ui.preferencesModal.saveGenerate', 'Save & Generate ✦')}
               </button>
             </div>
           </form>

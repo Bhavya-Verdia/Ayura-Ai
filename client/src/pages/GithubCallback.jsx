@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../providers/AuthContext';
 import LoadingScreen from '../components/LoadingScreen';
 
+import { tr } from '../lib/tr'
 function GithubCallback() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ function GithubCallback() {
       const state = searchParams.get('state');
 
       if (!code) {
-        setError("No authorization code found in URL.");
+        setError(tr('ui.githubCallback.noAuthorizationCodeFoundIn', 'No authorization code found in URL.'));
         setTimeout(() => navigate('/login'), 3000);
         return;
       }
@@ -44,14 +45,14 @@ function GithubCallback() {
   if (error) {
     return (
       <div className="fill-viewport-h" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-        <h2>Authentication Failed</h2>
+        <h2>{tr('ui.githubCallback.authenticationFailed', 'Authentication Failed')}</h2>
         <p style={{ color: 'red' }}>{error}</p>
-        <p>Redirecting back to login...</p>
+        <p>{tr('ui.githubCallback.redirectingBackToLogin', 'Redirecting back to login...')}</p>
       </div>
     );
   }
 
-  return <LoadingScreen message="Connecting your GitHub account..." />;
+  return <LoadingScreen message={tr('ui.githubCallback.connectingYourGithubAccount', 'Connecting your GitHub account...')} />;
 }
 
 export default GithubCallback;

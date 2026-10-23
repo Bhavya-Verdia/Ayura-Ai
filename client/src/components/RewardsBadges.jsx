@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom'
 import {
   Sparkles, ScrollText, Salad, Dumbbell, Flower2, ClipboardCheck, Flame, Sun, CalendarCheck, Lock, Award,
 } from 'lucide-react'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './RewardsBadges.css'
 
 // The badge catalogue lives on the server (services/rewards.py); this only draws it.
@@ -41,11 +43,10 @@ export function BadgeGrid({ data }) {
   return (
     <section className="rwd-section" id="badges" aria-labelledby="rwd-title">
       <h2 id="rwd-title" className="rwd-title">
-        <Award size={18} /> Badges <span className="rwd-count">{data.earned_count} of {data.badges.length}</span>
+        <Award size={18} />{' '}{tr('ui.rewardsBadges.badges', 'Badges')}{' '}<span className="rwd-count">{data.earned_count} of {data.badges.length}</span>
       </h2>
       <p className="rwd-sub">
-        Earned by logging — a meal, a workout, a practice, your progress or a check-in. Never for
-        weight, calories or how hard you trained.
+        {tr('ui.rewardsBadges.earnedByLoggingAMeal', 'Earned by logging — a meal, a workout, a practice, your progress or a check-in. Never for weight, calories or how hard you trained.')}
       </p>
       {Object.entries(groups).map(([cat, list]) => (
         <div key={cat} className="rwd-group">
@@ -73,13 +74,13 @@ export function BadgeStrip({ data }) {
       </div>
       {next && (
         <div className="rwd-strip-next">
-          <span>Next: <b>{next.title}</b>{next.progress.need > 1 ? ` · ${next.progress.have}/${next.progress.need}` : ''}</span>
+          <span><Trans i18nKey="ui.rewardsBadges.next00" defaults={"Next: <0>{{title}}</0>{{value}}"} values={{ title: next.title, value: next.progress.need > 1 ? ` · ${next.progress.have}/${next.progress.need}` : '' }} components={[<b />]} /></span>
           <span className="rwd-badge-progress" aria-hidden="true">
             <span style={{ width: `${Math.round((next.progress.have / next.progress.need) * 100)}%` }} />
           </span>
         </div>
       )}
-      <Link to="/progress#badges" className="rwd-strip-link">All badges →</Link>
+      <Link to="/progress#badges" className="rwd-strip-link">{tr('ui.rewardsBadges.allBadges', 'All badges →')}</Link>
     </div>
   )
 }

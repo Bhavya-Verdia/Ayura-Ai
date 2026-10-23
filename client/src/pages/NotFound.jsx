@@ -2,12 +2,14 @@ import { m } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { Compass, LayoutDashboard, Home } from 'lucide-react'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './NotFound.css'
 
 export default function NotFound() {
   return (
     <>
-      <Helmet><title>Page Not Found | Ayura AI</title></Helmet>
+      <Helmet><title>{tr('ui.notFound.pageNotFoundAyuraAi', 'Page Not Found | Ayura AI')}</title></Helmet>
       <div className="notfound-page">
         <div className="notfound-orb notfound-orb-a" />
         <div className="notfound-orb notfound-orb-b" />
@@ -28,18 +30,16 @@ export default function NotFound() {
 
           <h1 className="notfound-heading">404</h1>
 
-          <p className="notfound-subtext">
-            This page has wandered off the path.<br />Let's guide you back to balance.
-          </p>
+          <p className="notfound-subtext"><Trans i18nKey="ui.notFound.thisPageHasWanderedOff" defaults={"This page has wandered off the path.<0/>Let's guide you back to balance."} components={[<br />]} /></p>
 
           <div className="notfound-actions">
             <Link to="/" className="btn btn-primary notfound-btn">
               <Home size={16} strokeWidth={2} />
-              Return Home
+              {tr('ui.notFound.returnHome', 'Return Home')}
             </Link>
             <Link to="/dashboard" className="btn btn-glass notfound-btn">
               <LayoutDashboard size={16} strokeWidth={2} />
-              Dashboard
+              {tr('ui.notFound.dashboard', 'Dashboard')}
             </Link>
           </div>
         </m.div>

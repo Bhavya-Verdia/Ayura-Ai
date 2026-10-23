@@ -1,5 +1,6 @@
 import { SkeletonLine, SkeletonCircle } from './Skeleton'
 
+import { tr } from '../lib/tr'
 /* Stand-in for the authenticated app shell while /profile/me is still in flight.
  *
  * The auth gate used to render the full-screen LoadingScreen spinner here, which
@@ -22,7 +23,7 @@ import { SkeletonLine, SkeletonCircle } from './Skeleton'
  */
 export default function ShellSkeleton() {
   return (
-    <div className="shell-skel fill-viewport" role="status" aria-label="Loading your account">
+    <div className="shell-skel fill-viewport" role="status" aria-label={tr('ui.shellSkeleton.loadingYourAccount', 'Loading your account')}>
       <aside className="shell-skel-sidebar" aria-hidden="true">
         <div className="shell-skel-brand">
           <SkeletonCircle size="26px" style={{ borderRadius: '8px' }} />

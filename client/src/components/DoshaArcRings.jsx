@@ -1,12 +1,13 @@
 import { m } from 'framer-motion'
 import { DOSHA_COLOR } from '../constants/dosha'
 
+import { tr } from '../lib/tr'
 // Colors resolve through the single dosha source of truth (constants/dosha.js);
 // only the placeholder scores/labels live here.
 const DOSHA_CONFIG = {
-  vata:  { color: DOSHA_COLOR.vata,  label: 'Vata',  score: 65 },
-  pitta: { color: DOSHA_COLOR.pitta, label: 'Pitta', score: 45 },
-  kapha: { color: DOSHA_COLOR.kapha, label: 'Kapha', score: 30 },
+  vata:  { color: DOSHA_COLOR.vata,  get label() { return tr('ui.doshaArcRings.vata', 'Vata') },  score: 65 },
+  pitta: { color: DOSHA_COLOR.pitta, get label() { return tr('ui.doshaArcRings.pitta', 'Pitta') }, score: 45 },
+  kapha: { color: DOSHA_COLOR.kapha, get label() { return tr('ui.doshaArcRings.kapha', 'Kapha') }, score: 30 },
 }
 
 /**

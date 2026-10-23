@@ -26,16 +26,18 @@ import {
   Flame, Snowflake, Sun, CloudRain, Moon, Mail, RefreshCw,
   TriangleAlert, MessageCircle, TrendingUp, CircleCheck, Sparkles, SlidersHorizontal,
 } from 'lucide-react'
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './Dashboard.css'
 
 const PLAN_TYPES = [
-  { id: 'routine',     title: 'Daily Routine',       Icon: Sunrise,  desc: 'Chronological Dinacharya timeline with meal timing.', color: 'var(--ayura-amber)',  bg: 'rgba(251,146,60,0.10)' },
-  { id: 'diet',        title: 'Diet & Nutrition',    Icon: Salad,    desc: '4-week Ayurvedic meal plans with Pathya-Apathya.', color: 'var(--ayura-sage)',  bg: 'rgba(74,222,128,0.10)' },
-  { id: 'yoga',        title: 'Yoga & Pranayama',   Icon: Flower2,  desc: 'Dosha-balanced morning/evening routines.',    color: 'var(--ayura-teal)',   bg: 'rgba(92,171,116,0.10)' },
-  { id: 'gym',         title: 'Fitness & Gym',       Icon: Dumbbell, desc: 'Workout splits with progressive intensity.',  color: 'var(--vata-color)',   bg: 'rgba(160,140,240,0.10)' },
-  { id: 'panchakarma', title: 'Panchakarma Detox',   Icon: Leaf,     desc: 'Seasonal cleanses tailored to your prakriti.', color: 'var(--ayura-sage)',   bg: 'rgba(74,222,128,0.10)' },
-  { id: 'remedies',    title: 'Home Remedies',       Icon: Soup,     desc: 'Kitchen medicine for common ailments.',        color: 'var(--ayura-rose)',   bg: 'rgba(251,113,133,0.10)' },
-  { id: 'medicines',   title: 'Ayurvedic Medicines', Icon: Pill,     desc: 'Classical formulations for deep healing.',     color: 'var(--ayura-violet)', bg: 'rgba(230,162,60,0.10)' },
+  { id: 'routine',     get title() { return tr('ui.dashboard.dailyRoutine', 'Daily Routine') },       Icon: Sunrise,  get desc() { return tr('ui.dashboard.chronologicalDinacharyaTimelineWithMeal', 'Chronological Dinacharya timeline with meal timing.') }, color: 'var(--ayura-amber)',  bg: 'rgba(251,146,60,0.10)' },
+  { id: 'diet',        get title() { return tr('ui.dashboard.dietNutrition', 'Diet & Nutrition') },    Icon: Salad,    get desc() { return tr('ui.dashboard.n4WeekAyurvedicMealPlans', '4-week Ayurvedic meal plans with Pathya-Apathya.') }, color: 'var(--ayura-sage)',  bg: 'rgba(74,222,128,0.10)' },
+  { id: 'yoga',        get title() { return tr('ui.dashboard.yogaPranayama', 'Yoga & Pranayama') },   Icon: Flower2,  get desc() { return tr('ui.dashboard.doshaBalancedMorningEveningRoutines', 'Dosha-balanced morning/evening routines.') },    color: 'var(--ayura-teal)',   bg: 'rgba(92,171,116,0.10)' },
+  { id: 'gym',         get title() { return tr('ui.dashboard.fitnessGym', 'Fitness & Gym') },       Icon: Dumbbell, get desc() { return tr('ui.dashboard.workoutSplitsWithProgressiveIntensity', 'Workout splits with progressive intensity.') },  color: 'var(--vata-color)',   bg: 'rgba(160,140,240,0.10)' },
+  { id: 'panchakarma', get title() { return tr('ui.dashboard.panchakarmaDetox', 'Panchakarma Detox') },   Icon: Leaf,     get desc() { return tr('ui.dashboard.seasonalCleansesTailoredToYour', 'Seasonal cleanses tailored to your prakriti.') }, color: 'var(--ayura-sage)',   bg: 'rgba(74,222,128,0.10)' },
+  { id: 'remedies',    get title() { return tr('ui.dashboard.homeRemedies', 'Home Remedies') },       Icon: Soup,     get desc() { return tr('ui.dashboard.kitchenMedicineForCommonAilments', 'Kitchen medicine for common ailments.') },        color: 'var(--ayura-rose)',   bg: 'rgba(251,113,133,0.10)' },
+  { id: 'medicines',   get title() { return tr('ui.dashboard.ayurvedicMedicines', 'Ayurvedic Medicines') }, Icon: Pill,     get desc() { return tr('ui.dashboard.classicalFormulationsForDeepHealing', 'Classical formulations for deep healing.') },     color: 'var(--ayura-violet)', bg: 'rgba(230,162,60,0.10)' },
 ]
 
 // Remedies and medicines are owned by /remedies, not by the inline PlanViewer:
@@ -110,9 +112,9 @@ function StreakCard() {
         <div>
           <div className="dash-streak-count">
             <span className="dash-streak-num">{streak}</span>
-            <span className="dash-streak-unit">day{streak !== 1 ? 's' : ''}</span>
+            <span className="dash-streak-unit">{streak === 1 ? tr('ui.dashboard.dayOne', 'day') : tr('ui.dashboard.dayMany', 'days')}</span>
           </div>
-          <p className="dash-streak-sub">{st?.message || 'Log a meal, a workout, a practice or today\'s progress to start a streak.'}</p>
+          <p className="dash-streak-sub">{st?.message || tr('ui.dashboard.logAMealAWorkout', 'Log a meal, a workout, a practice or today\'s progress to start a streak.')}</p>
         </div>
       </div>
       <div className="dash-streak-right">
@@ -125,7 +127,7 @@ function StreakCard() {
           ))}
         </div>
         <Link to="/progress" className="dash-streak-cta">
-          {st?.today_active ? '✓ Logged today' : '↗ Log today'}
+          {st?.today_active ? tr('ui.dashboard.loggedToday', '✓ Logged today') : tr('ui.dashboard.logToday', '↗ Log today')}
         </Link>
       </div>
       <BadgeStrip data={data} />
@@ -172,7 +174,7 @@ function RitucharyaCard() {
       <div className="dash-ritu-head">
         <span className="dash-ritu-emoji"><SeasonIcon size={22} strokeWidth={2} /></span>
         <div className="dash-ritu-head-text">
-          <div className="dash-ritu-title">{data.english_name} · {data.season} Ritu</div>
+          <div className="dash-ritu-title"><Trans i18nKey="ui.dashboard.ritu" defaults={"{{english_name}} · {{season}} Ritu"} values={{ english_name: data.english_name, season: data.season }} /></div>
           {data.focus && <div className="dash-ritu-sub">{data.focus}</div>}
         </div>
         {data.risk_level && (
@@ -185,24 +187,22 @@ function RitucharyaCard() {
         <div className="dash-ritu-cols">
           {favour.length > 0 && (
             <div className="dash-ritu-col">
-              <span className="dash-ritu-col-label dash-ritu-favour">✓ Favour</span>
+              <span className="dash-ritu-col-label dash-ritu-favour">{tr('ui.dashboard.favour', '✓ Favour')}</span>
               <ul>{favour.map((f, i) => <li key={i}>{f}</li>)}</ul>
             </div>
           )}
           {avoid.length > 0 && (
             <div className="dash-ritu-col">
-              <span className="dash-ritu-col-label dash-ritu-avoid">✕ Avoid</span>
+              <span className="dash-ritu-col-label dash-ritu-avoid">{tr('ui.dashboard.avoid', '✕ Avoid')}</span>
               <ul>{avoid.map((f, i) => <li key={i}>{f}</li>)}</ul>
             </div>
           )}
         </div>
       )}
       {withheld.length > 0 && (
-        <p className="dash-ritu-withheld">
-          {withheld.length} seasonal {withheld.length === 1 ? 'suggestion' : 'suggestions'} for
-          this Ritu {withheld.length === 1 ? 'was' : 'were'} left out because
-          {withheld.length === 1 ? ' it names' : ' they name'} a food you should avoid.
-        </p>
+        <p className="dash-ritu-withheld">{withheld.length === 1
+          ? tr('ui.dashboard.rituWithheldOne', '1 seasonal suggestion for this Ritu was left out because it names a food you should avoid.')
+          : tr('ui.dashboard.rituWithheldMany', '{{count}} seasonal suggestions for this Ritu were left out because they name a food you should avoid.', { count: withheld.length })}</p>
       )}
     </m.div>
   )
@@ -247,9 +247,9 @@ function computeVikritiTrend(history, dominant) {
 function VikritiTrendBadge({ trend, confidence, checkinCount }) {
   if (!trend && !confidence) return null
   const trendConfig = {
-    improving: { label: '↓ Imbalance easing', color: '#5cab74' },
-    worsening: { label: '↑ Imbalance rising', color: '#fb923c' },
-    stable:    { label: '~ Holding steady',   color: '#94a3b8' },
+    improving: { label: tr('ui.dashboard.imbalanceEasing', '↓ Imbalance easing'), color: '#5cab74' },
+    worsening: { label: tr('ui.dashboard.imbalanceRising', '↑ Imbalance rising'), color: '#fb923c' },
+    stable:    { label: tr('ui.dashboard.holdingSteady', '~ Holding steady'),   color: '#94a3b8' },
   }
   const tc = trendConfig[trend]
   const confidenceLabel =
@@ -269,7 +269,7 @@ function VikritiTrendBadge({ trend, confidence, checkinCount }) {
       )}
       {confidence != null && (
         <span className="dash-vikriti-badge" style={{ color: confidenceColor, borderColor: confidenceColor + '44' }}
-          title={checkinCount ? `Based on ${checkinCount} check-in${checkinCount !== 1 ? 's' : ''}` : undefined}
+          title={checkinCount ? (checkinCount === 1 ? tr('ui.dashboard.basedOnCheckInOne', 'Based on 1 check-in') : tr('ui.dashboard.basedOnCheckInMany', 'Based on {{count}} check-ins', { count: checkinCount })) : undefined}
         >
           {confidenceLabel} {confidence != null ? `· ${confidence}%` : ''}
         </span>
@@ -332,11 +332,11 @@ function PlanProgressCard({ completedCount, total }) {
         </div>
       </div>
       <div className="dash-health-score-info">
-        <div className="dash-health-score-title">Plans set up</div>
+        <div className="dash-health-score-title">{tr('ui.dashboard.plansSetUp', 'Plans set up')}</div>
         <div className="dash-health-score-desc">
           {completedCount === total
-            ? `All ${total} areas have a plan.`
-            : `${completedCount} of ${total} areas have a plan. Add another from the list below.`}
+            ? tr('ui.dashboard.allAreasHaveAPlan', 'All {{total}} areas have a plan.', { total })
+            : tr('ui.dashboard.ofAreasHaveAPlan', '{{completedCount}} of {{total}} areas have a plan. Add another from the list below.', { completedCount, total })}
         </div>
       </div>
     </div>
@@ -362,12 +362,9 @@ function PrakritiRescoreBanner() {
       transition={{ duration: 0.3 }}
     >
       <span className="dash-verify-icon"><RefreshCw size={18} strokeWidth={2} /></span>
-      <div className="dash-verify-body">
-        <strong>We've improved how constitutions are scored.</strong>
-        {' '}Your Prakriti was calculated with an earlier version that could overstate a secondary dosha. Retake the 2-minute assessment to update it.
-      </div>
-      <button className="dash-verify-btn" onClick={() => navigate('/dosha-quiz')}>Retake</button>
-      <button className="dash-verify-dismiss" onClick={() => setDismissed(true)} aria-label="Dismiss">✕</button>
+      <div className="dash-verify-body"><Trans i18nKey="ui.dashboard.n0WeVeImprovedHow" defaults={"<0>We've improved how constitutions are scored.</0> Your Prakriti was calculated with an earlier version that could overstate a secondary dosha. Retake the 2-minute assessment to update it."} components={[<strong />]} /></div>
+      <button className="dash-verify-btn" onClick={() => navigate('/dosha-quiz')}>{tr('ui.dashboard.retake', 'Retake')}</button>
+      <button className="dash-verify-dismiss" onClick={() => setDismissed(true)} aria-label={tr('ui.dashboard.dismiss', 'Dismiss')}>✕</button>
     </m.div>
   )
 }
@@ -382,7 +379,7 @@ function VerifyEmailBanner({ email }) {
       await authAPI.resendVerification(email)
       setSent(true)
     } catch {
-      toast.error('Could not resend. Try again in a moment.')
+      toast.error(tr('ui.dashboard.couldNotResendTryAgain', 'Could not resend. Try again in a moment.'))
     }
   }
   return (
@@ -394,16 +391,13 @@ function VerifyEmailBanner({ email }) {
       transition={{ duration: 0.3 }}
     >
       <span className="dash-verify-icon"><Mail size={18} strokeWidth={2} /></span>
-      <div className="dash-verify-body">
-        <strong>Verify your email to unlock plan generation.</strong>
-        {' '}Check your inbox at <em>{email}</em>.
-      </div>
+      <div className="dash-verify-body"><Trans i18nKey="ui.dashboard.n0VerifyYourEmailTo" defaults={"<0>Verify your email to unlock plan generation.</0> Check your inbox at <1>{{email}}</1>."} values={{ email }} components={[<strong />, <em />]} /></div>
       {sent ? (
-        <span className="dash-verify-sent">Sent ✓</span>
+        <span className="dash-verify-sent">{tr('ui.dashboard.sent', 'Sent ✓')}</span>
       ) : (
-        <button className="dash-verify-btn" onClick={resend}>Resend</button>
+        <button className="dash-verify-btn" onClick={resend}>{tr('ui.dashboard.resend', 'Resend')}</button>
       )}
-      <button className="dash-verify-dismiss" onClick={() => setDismissed(true)} aria-label="Dismiss">✕</button>
+      <button className="dash-verify-dismiss" onClick={() => setDismissed(true)} aria-label={tr('ui.dashboard.dismiss', 'Dismiss')}>✕</button>
     </m.div>
   )
 }
@@ -430,9 +424,7 @@ function PlanFeedbackCard({ planType, onDone }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <p className="dash-feedback-q">
-        It's been 2 weeks — is your <strong>{planType}</strong> plan working for you?
-      </p>
+      <p className="dash-feedback-q"><Trans i18nKey="ui.dashboard.itSBeen2Weeks" defaults={"It's been 2 weeks — is your <0>{{planType}}</0> plan working for you?"} values={{ planType }} components={[<strong />]} /></p>
       <div className="dash-feedback-btns">
         <button
           type="button"
@@ -440,7 +432,7 @@ function PlanFeedbackCard({ planType, onDone }) {
           disabled={status === 'submitting'}
           onClick={() => submit(true)}
         >
-          Yes, improving
+          {tr('ui.dashboard.yesImproving', 'Yes, improving')}
         </button>
         <button
           type="button"
@@ -448,7 +440,7 @@ function PlanFeedbackCard({ planType, onDone }) {
           disabled={status === 'submitting'}
           onClick={() => submit(false)}
         >
-          Not yet
+          {tr('ui.dashboard.notYet', 'Not yet')}
         </button>
       </div>
     </m.div>
@@ -465,12 +457,12 @@ function ReassessmentCard({ onDismiss }) {
     >
       <div className="dash-reassess-icon"><RefreshCw size={20} strokeWidth={2} /></div>
       <div className="dash-reassess-body">
-        <strong>Your plans haven&apos;t been hitting the mark</strong>
-        <p>Your dosha profile may need updating — this happens when life circumstances, stress levels, or seasons change significantly.</p>
+        <strong>{tr('ui.dashboard.yourPlansHavenTBeen', 'Your plans haven\'t been hitting the mark')}</strong>
+        <p>{tr('ui.dashboard.yourDoshaProfileMayNeed', 'Your dosha profile may need updating — this happens when life circumstances, stress levels, or seasons change significantly.')}</p>
       </div>
       <div className="dash-reassess-actions">
-        <Link to="/dosha-quiz" className="btn btn-primary btn-sm">Reassess My Dosha →</Link>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={onDismiss}>Not now</button>
+        <Link to="/dosha-quiz" className="btn btn-primary btn-sm">{tr('ui.dashboard.reassessMyDosha', 'Reassess My Dosha →')}</Link>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={onDismiss}>{tr('ui.dashboard.notNow', 'Not now')}</button>
       </div>
     </m.div>
   )
@@ -489,10 +481,10 @@ function ReactionModal({ planType, onClose }) {
     setSubmitting(true)
     try {
       await plansAPI.reportReaction(planType, { item: item.trim(), reaction: reaction.trim(), severity })
-      toast.success('Reaction logged to your health timeline.')
+      toast.success(tr('ui.dashboard.reactionLoggedToYourHealth', 'Reaction logged to your health timeline.'))
       onClose()
     } catch {
-      toast.error('Could not log the reaction. Please try again.')
+      toast.error(tr('ui.dashboard.couldNotLogTheReaction', 'Could not log the reaction. Please try again.'))
       setSubmitting(false)
     }
   }
@@ -507,16 +499,16 @@ function ReactionModal({ planType, onClose }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.25 }}
       >
-        <h3 className="dash-reaction-title">Report a reaction — {planType}</h3>
-        <p className="dash-reaction-sub">Tell us what you took or did and what you noticed. This is logged to your health timeline; a severe reaction prompts a profile re-assessment.</p>
+        <h3 className="dash-reaction-title"><Trans i18nKey="ui.dashboard.reportAReaction" defaults={"Report a reaction — {{planType}}"} values={{ planType }} /></h3>
+        <p className="dash-reaction-sub">{tr('ui.dashboard.tellUsWhatYouTook', 'Tell us what you took or did and what you noticed. This is logged to your health timeline; a severe reaction prompts a profile re-assessment.')}</p>
 
-        <label>What did you take or do?</label>
-        <input value={item} onChange={e => setItem(e.target.value)} placeholder="e.g. Triphala at night" maxLength={200} />
+        <label>{tr('ui.dashboard.whatDidYouTakeOr', 'What did you take or do?')}</label>
+        <input value={item} onChange={e => setItem(e.target.value)} placeholder={tr('ui.dashboard.eGTriphalaAtNight', 'e.g. Triphala at night')} maxLength={200} />
 
-        <label>What reaction did you notice?</label>
-        <textarea rows={3} value={reaction} onChange={e => setReaction(e.target.value)} placeholder="e.g. mild stomach cramps the next morning" maxLength={500} />
+        <label>{tr('ui.dashboard.whatReactionDidYouNotice', 'What reaction did you notice?')}</label>
+        <textarea rows={3} value={reaction} onChange={e => setReaction(e.target.value)} placeholder={tr('ui.dashboard.eGMildStomachCramps', 'e.g. mild stomach cramps the next morning')} maxLength={500} />
 
-        <label>Severity</label>
+        <label>{tr('ui.dashboard.severity', 'Severity')}</label>
         <div className="dash-reaction-sev">
           {['mild', 'moderate', 'severe'].map(s => (
             <button type="button" key={s} className={`dash-reaction-sev-btn${severity === s ? ' active' : ''}`} onClick={() => setSeverity(s)}>
@@ -527,9 +519,9 @@ function ReactionModal({ planType, onClose }) {
 
         <div className="dash-reaction-actions">
           <button type="submit" className="btn btn-primary" disabled={submitting || !item.trim() || !reaction.trim()}>
-            {submitting ? 'Logging…' : 'Log reaction'}
+            {submitting ? tr('ui.dashboard.logging', 'Logging…') : tr('ui.dashboard.logReaction', 'Log reaction')}
           </button>
-          <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>{tr('ui.dashboard.cancel', 'Cancel')}</button>
         </div>
       </m.form>
     </div>
@@ -598,7 +590,7 @@ const Dashboard = () => {
     },
     onMutate: ({ typeId }) => {
       setGenerating(prev => ({ ...prev, [typeId]: true }))
-      toast.loading(`Generating your ${typeId} plan…`, { id: `gen-${typeId}` })
+      toast.loading(tr('ui.dashboard.generatingYourPlan', 'Generating your {{typeId}} plan…', { typeId }), { id: `gen-${typeId}` })
     },
     onSuccess: (result) => {
       const isFirstPlan = Object.keys(plans).length === 0
@@ -606,7 +598,7 @@ const Dashboard = () => {
         ...old,
         [result.typeId]: { data: result.data, created_at: new Date().toISOString() }
       }))
-      toast.success(`${result.typeId.charAt(0).toUpperCase() + result.typeId.slice(1)} plan ready! ✦`, { id: `gen-${result.typeId}` })
+      toast.success(tr('ui.dashboard.planReady', '{{value}} plan ready! ✦', { value: result.typeId.charAt(0).toUpperCase() + result.typeId.slice(1) }), { id: `gen-${result.typeId}` })
       // The activation moment. plan_type is a feature name (gym/yoga/diet), not
       // health data; the plan body itself is never sent.
       track(EVENTS.PLAN_GENERATED, { plan_type: result.typeId, is_first_plan: isFirstPlan })
@@ -620,10 +612,10 @@ const Dashboard = () => {
         return
       }
       if (err.response?.status === 429) {
-        toast.error('Rate Limit Exceeded. Please wait a minute before requesting another sensitive medical plan.', { id: `gen-${typeId}` })
+        toast.error(tr('ui.dashboard.rateLimitExceededPleaseWait', 'Rate Limit Exceeded. Please wait a minute before requesting another sensitive medical plan.'), { id: `gen-${typeId}` })
         return
       }
-      toast.error(`Failed to generate ${typeId} plan. ${err.response?.data?.detail || 'Please try again.'}`, { id: `gen-${typeId}` })
+      toast.error(tr('ui.dashboard.failedToGeneratePlan', 'Failed to generate {{typeId}} plan. {{value}}', { typeId, value: err.response?.data?.detail || 'Please try again.' }), { id: `gen-${typeId}` })
     },
     onSettled: (_data, _err, { typeId }) => {
       setGenerating(prev => ({ ...prev, [typeId]: false }))
@@ -691,10 +683,10 @@ const Dashboard = () => {
       >
         {/* The dashboard's own h1 (the greeting) is not rendered while a plan is
             open, and every plan view's sections are h3s under this h2 title. */}
-        <h1 className="sr-only">Your wellness plans</h1>
+        <h1 className="sr-only">{tr('ui.dashboard.yourWellnessPlans', 'Your wellness plans')}</h1>
         <div className="dash-viewer-back-bar">
           <button className="dash-back-btn" onClick={() => { setViewingPlan(null); setViewingType(null) }}>
-            ← Back to Dashboard
+            {tr('ui.dashboard.backToDashboard', '← Back to Dashboard')}
           </button>
           <h2 className="dash-viewer-title">
             {PLAN_TYPES.filter(t => t.id === viewingType).map(T => (
@@ -785,14 +777,23 @@ const Dashboard = () => {
             {initials}
           </div>
           <div>
-            <h1 className="dash-hero-greeting">
-              Good {getTimeOfDay()}, <span className="dash-hero-name">{user?.name?.split(' ')[0] || 'there'}</span>
-            </h1>
+            <h1 className="dash-hero-greeting">{(() => {
+              // One whole greeting per time of day: "Good {{value}}" put the English
+              // word "evening" inside every translation.
+              const name = user?.name?.split(' ')[0] || tr('ui.dashboard.there', 'there')
+              const parts = { components: [<span key="n" className="dash-hero-name" />], values: { name } }
+              const tod = getTimeOfDay()
+              return tod === 'morning'
+                ? <Trans i18nKey="ui.dashboard.goodMorning" defaults={"Good morning, <0>{{name}}</0>"} {...parts} />
+                : tod === 'afternoon'
+                  ? <Trans i18nKey="ui.dashboard.goodAfternoon" defaults={"Good afternoon, <0>{{name}}</0>"} {...parts} />
+                  : <Trans i18nKey="ui.dashboard.goodEvening" defaults={"Good evening, <0>{{name}}</0>"} {...parts} />
+            })()}</h1>
             <p className="dash-hero-sub">
               {user?.dominant_dosha ? (
-                <>Your dominant dosha is <span className="dash-dosha-tag" style={{ color: doshaBadgeColor }}>{user.dominant_dosha}</span></>
+                <>{tr('ui.dashboard.yourDominantDoshaIs', 'Your dominant dosha is')}{' '}<span className="dash-dosha-tag" style={{ color: doshaBadgeColor }}>{user.dominant_dosha}</span></>
               ) : (
-                'Your personalised wellness platform'
+                tr('ui.dashboard.yourPersonalisedWellnessPlatform', 'Your personalised wellness platform')
               )}
             </p>
             <VikritiTrendBadge
@@ -803,7 +804,7 @@ const Dashboard = () => {
             {user?.ojas_level && (
               <div className={`dash-ojas-pill ojas-${user.ojas_level}`}>
                 <span className="dash-ojas-icon">✦</span>
-                <span>Ojas: {user.ojas_level === 'high' ? 'High — Strong Immunity' : user.ojas_level === 'medium' ? 'Medium — Fair Vitality' : 'Low — Depleted'}{user.ojas_score != null ? ` (${user.ojas_score}/100)` : ''}</span>
+                <span>{tr('ui.dashboard.ojasLine', 'Ojas: {{level}}', { level: user.ojas_level === 'high' ? tr('ui.dashboard.ojasHigh', 'High — Strong Immunity') : user.ojas_level === 'medium' ? tr('ui.dashboard.ojasMedium', 'Medium — Fair Vitality') : tr('ui.dashboard.ojasLow', 'Low — Depleted') })}{user.ojas_score != null ? ` (${user.ojas_score}/100)` : ''}</span>
               </div>
             )}
           </div>
@@ -825,17 +826,17 @@ const Dashboard = () => {
         <EmptyState
           className="empty-state--inline"
           icon={Sparkles}
-          title="Let's build your first plan"
-          description={`${user?.dominant_dosha
+          title={tr('ui.dashboard.letSBuildYourFirst', 'Let\'s build your first plan')}
+          description={tr('ui.dashboard.pickAnyAreaBelowAnd', '{{value}} Pick any area below and Ayura will craft a plan around it — most people start with diet or daily routine.', { value: user?.dominant_dosha
             ? `Your ${user.dominant_dosha} constitution is on file.`
-            : 'Your profile is set up.'} Pick any area below and Ayura will craft a plan around it — most people start with diet or daily routine.`}
+            : 'Your profile is set up.' })}
           actions={
             <button
               type="button"
               className="btn btn-primary"
               onClick={() => document.getElementById('dash-plans')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
             >
-              Choose an area →
+              {tr('ui.dashboard.chooseAnArea', 'Choose an area →')}
             </button>
           }
         />
@@ -852,11 +853,11 @@ const Dashboard = () => {
         <div className="vci-card" style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
           <span className="vci-pulse" />
           <div style={{ flex: 1, minWidth: 200 }}>
-            <div className="vci-title">Time for your weekly check-in</div>
-            <p className="vci-sub" style={{ margin: '2px 0 0' }}>A quick snapshot refines your Vikriti and fine-tunes your plans.</p>
+            <div className="vci-title">{tr('ui.dashboard.timeForYourWeeklyCheck', 'Time for your weekly check-in')}</div>
+            <p className="vci-sub" style={{ margin: '2px 0 0' }}>{tr('ui.dashboard.aQuickSnapshotRefinesYour', 'A quick snapshot refines your Vikriti and fine-tunes your plans.')}</p>
           </div>
-          <Link to="/checkin" className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>Check in now →</Link>
-          <button type="button" className="vci-dismiss" onClick={() => setShowCheckin(false)} aria-label="Dismiss">✕</button>
+          <Link to="/checkin" className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>{tr('ui.dashboard.checkInNow', 'Check in now →')}</Link>
+          <button type="button" className="vci-dismiss" onClick={() => setShowCheckin(false)} aria-label={tr('ui.dashboard.dismiss', 'Dismiss')}>✕</button>
         </div>
       )}
 
@@ -881,8 +882,8 @@ const Dashboard = () => {
       {/* ── Plans section ── */}
       {/* id is the scroll target for the first-run prompt's "Choose an area" CTA. */}
       <div className="dash-plans-header" id="dash-plans">
-        <h2 className="dash-plans-title">Your Wellness Plans</h2>
-        <p className="dash-plans-sub">Generate or view your AI-crafted Ayurvedic plans</p>
+        <h2 className="dash-plans-title">{tr('ui.dashboard.yourWellnessPlans2', 'Your Wellness Plans')}</h2>
+        <p className="dash-plans-sub">{tr('ui.dashboard.generateOrViewYourAi', 'Generate or view your AI-crafted Ayurvedic plans')}</p>
       </div>
 
       {/* Staggered card grid — skeletons while history loads so a returning
@@ -917,7 +918,7 @@ const Dashboard = () => {
               <div className="dash-plan-icon-wrap" style={{ color: type.color, background: type.bg }}>
                 <type.Icon size={22} strokeWidth={1.7} />
               </div>
-              {plans[type.id] && <span className="dash-plan-ready-badge">✦ Ready</span>}
+              {plans[type.id] && <span className="dash-plan-ready-badge">{tr('ui.dashboard.ready', '✦ Ready')}</span>}
             </div>
 
             <h3 className="dash-plan-name">{type.title}</h3>
@@ -927,7 +928,7 @@ const Dashboard = () => {
               <p className="dash-plan-desc">{type.desc}</p>
             )}
             {plans[type.id]?.created_at && (
-              <span className="dash-plan-timestamp">↻ Updated {formatRelativeTime(plans[type.id].created_at)}</span>
+              <span className="dash-plan-timestamp"><Trans i18nKey="ui.dashboard.updated" defaults={"↻ Updated {{created_at}}"} values={{ created_at: formatRelativeTime(plans[type.id].created_at) }} /></span>
             )}
 
             <div className="dash-plan-actions">
@@ -939,7 +940,7 @@ const Dashboard = () => {
                       ? navigate(REMEDY_PAGE_PATH[type.id])
                       : (setViewingPlan(plans[type.id].data), setViewingType(type.id))}
                   >
-                    View Plan →
+                    {tr('ui.dashboard.viewPlan', 'View Plan →')}
                   </button>
                   <button
                     className={`dash-plan-regen-btn${confirmRegen === type.id ? ' confirming' : ''}`}
@@ -950,12 +951,12 @@ const Dashboard = () => {
                       generatePlan(type.id, true)
                     }}
                     disabled={generating[type.id]}
-                    title={confirmRegen === type.id ? 'Click again to rebuild this plan' : 'Regenerate'}
+                    title={confirmRegen === type.id ? tr('ui.dashboard.clickAgainToRebuildThis', 'Click again to rebuild this plan') : tr('ui.dashboard.regenerate', 'Regenerate')}
                     aria-label={confirmRegen === type.id
-                      ? `Confirm: rebuild your ${type.title} plan from scratch`
-                      : `Regenerate ${type.title} plan`}
+                      ? tr('ui.dashboard.confirmRebuildYourPlanFrom', 'Confirm: rebuild your {{title}} plan from scratch', { title: type.title })
+                      : tr('ui.dashboard.regeneratePlan', 'Regenerate {{title}} plan', { title: type.title })}
                   >
-                    {generating[type.id] ? '…' : confirmRegen === type.id ? 'Rebuild?' : '↻'}
+                    {generating[type.id] ? '…' : confirmRegen === type.id ? tr('ui.dashboard.rebuild', 'Rebuild?') : '↻'}
                   </button>
                   {/* The form only ever opened when nothing was saved, so once a
                       feature had preferences there was no way back to them: every
@@ -966,8 +967,8 @@ const Dashboard = () => {
                       className="dash-plan-prefs-btn"
                       onClick={() => setPrefModalConfig({ isOpen: true, typeId: type.id })}
                       disabled={generating[type.id]}
-                      title="Edit preferences"
-                      aria-label={`Edit ${type.title} preferences`}
+                      title={tr('ui.dashboard.editPreferences', 'Edit preferences')}
+                      aria-label={tr('ui.dashboard.editPreferences2', 'Edit {{title}} preferences', { title: type.title })}
                     >
                       <SlidersHorizontal size={15} strokeWidth={2} />
                     </button>
@@ -975,8 +976,8 @@ const Dashboard = () => {
                   <button
                     className="dash-plan-react-btn"
                     onClick={() => setReactionFor(type.id)}
-                    title="Report a reaction"
-                    aria-label="Report a reaction"
+                    title={tr('ui.dashboard.reportAReaction2', 'Report a reaction')}
+                    aria-label={tr('ui.dashboard.reportAReaction2', 'Report a reaction')}
                   >
                     <TriangleAlert size={15} strokeWidth={2} />
                   </button>
@@ -990,8 +991,8 @@ const Dashboard = () => {
                   disabled={generating[type.id]}
                 >
                   {generating[type.id] ? (
-                    <><span className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} /> Generating…</>
-                  ) : REMEDY_PAGE_PATH[type.id] ? `✦ Open ${type.id === 'medicines' ? 'Medicines' : 'Remedies'}` : '✦ Generate Plan'}
+                    <><span className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} />{' '}{tr('ui.dashboard.generating', 'Generating…')}</>
+                  ) : REMEDY_PAGE_PATH[type.id] ? (type.id === 'medicines' ? tr('ui.dashboard.openMedicines', '✦ Open Medicines') : tr('ui.dashboard.openRemedies', '✦ Open Remedies')) : tr('ui.dashboard.generatePlan', '✦ Generate Plan')}
                 </button>
               )}
             </div>
@@ -1003,9 +1004,9 @@ const Dashboard = () => {
       {/* ── Quick nav cards ── */}
       <div className="dash-quick-nav">
         {[
-          { label: 'AI Chat',   Icon: MessageCircle, path: '/chat',     desc: 'Ask your wellness advisor anything' },
-          { label: 'Timeline',  Icon: TrendingUp,    path: '/timeline', desc: 'Track your health progress' },
-          { label: 'Check-In',  Icon: CircleCheck,   path: '/checkin',  desc: "Log today's energy & mood" },
+          { label: tr('ui.dashboard.aiChat', 'AI Chat'),   Icon: MessageCircle, path: '/chat',     desc: tr('ui.dashboard.askYourWellnessAdvisorAnything', 'Ask your wellness advisor anything') },
+          { label: tr('ui.dashboard.timeline', 'Timeline'),  Icon: TrendingUp,    path: '/timeline', desc: tr('ui.dashboard.trackYourHealthProgress', 'Track your health progress') },
+          { label: tr('ui.dashboard.checkIn', 'Check-In'),  Icon: CircleCheck,   path: '/checkin',  desc: tr('ui.dashboard.logTodaySEnergyMood', 'Log today\'s energy & mood') },
         ].map((item, i) => (
           <m.div key={item.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.3 + i * 0.1 }}>
             <Link to={item.path} className="dash-quick-card">

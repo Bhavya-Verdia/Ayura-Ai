@@ -4,6 +4,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { m, AnimatePresence } from 'framer-motion';
 import { Bot, Send, Sparkles, AlertTriangle, Loader2, Zap, Copy, Check, ChevronDown, Leaf, Soup, ClipboardList, Lightbulb, AlarmClock, Plus, Trash2, MessagesSquare } from 'lucide-react';
+import { tr } from '../lib/tr'
+import { Trans } from 'react-i18next'
 import './Dashboard.css';
 import './Chat.css';
 
@@ -80,13 +82,13 @@ const ChatMessage = React.memo(function ChatMessage({ msg, idx, copied, onCopy }
         {isEmergency && (
           <div className="chat-bubble-alert">
             <AlertTriangle size={14} strokeWidth={2.5} />
-            Please consult a doctor immediately.
+            {tr('ui.chat.pleaseConsultADoctorImmediately', 'Please consult a doctor immediately.')}
           </div>
         )}
         {isAdapted && (
           <div className="chat-bubble-success">
             <Sparkles size={14} strokeWidth={2.5} />
-            Your daily plan has been updated!
+            {tr('ui.chat.yourDailyPlanHasBeen', 'Your daily plan has been updated!')}
           </div>
         )}
 
@@ -114,25 +116,21 @@ const ChatMessage = React.memo(function ChatMessage({ msg, idx, copied, onCopy }
           <button
             className="chat-copy-btn"
             onClick={() => onCopy(msg.content, idx)}
-            title="Copy message"
-            aria-label="Copy message"
+            title={tr('ui.chat.copyMessage', 'Copy message')}
+            aria-label={tr('ui.chat.copyMessage', 'Copy message')}
           >
             {copied
-              ? <><Check size={12} strokeWidth={2.5} /> Copied</>
-              : <><Copy size={12} strokeWidth={2} /> Copy</>}
+              ? <><Check size={12} strokeWidth={2.5} />{' '}{tr('ui.chat.copied', 'Copied')}</>
+              : <><Copy size={12} strokeWidth={2} />{' '}{tr('ui.chat.copy', 'Copy')}</>}
           </button>
         )}
         {!isUser && msg.actions && (msg.actions.reminders?.length > 0 || msg.actions.plansAdapting?.length > 0) && (
           <div className="chat-action-chips">
             {msg.actions.reminders?.map((r, i) => (
-              <span key={`rem-${i}`} className="chat-action-chip chat-action-chip--reminder">
-                <AlarmClock size={12} strokeWidth={2} /> Reminder set — {r.title} at {r.time}
-              </span>
+              <span key={`rem-${i}`} className="chat-action-chip chat-action-chip--reminder"><Trans i18nKey="ui.chat.n0ReminderSetAt" defaults={"<0/> Reminder set — {{title}} at {{time}}"} values={{ title: r.title, time: r.time }} components={[<AlarmClock size={12} strokeWidth={2} />]} /></span>
             ))}
             {msg.actions.plansAdapting?.map((p, i) => (
-              <span key={`pln-${i}`} className="chat-action-chip chat-action-chip--plan">
-                <Sparkles size={12} strokeWidth={2} /> Regenerating your {p} plan…
-              </span>
+              <span key={`pln-${i}`} className="chat-action-chip chat-action-chip--plan"><Trans i18nKey="ui.chat.n0RegeneratingYourPlan" defaults={"<0/> Regenerating your {{p}} plan…"} values={{ p }} components={[<Sparkles size={12} strokeWidth={2} />]} /></span>
             ))}
           </div>
         )}
@@ -396,38 +394,38 @@ export default function Chat() {
           <Zap size={24} strokeWidth={2.5} />
         </div>
         <div className="chat-header-text">
-          <h1 className="chat-header-title">Health AI Assistant</h1>
-          <p className="chat-header-subtitle">Ask questions, report symptoms, or request personalised plan adaptations.</p>
+          <h1 className="chat-header-title">{tr('ui.chat.healthAiAssistant', 'Health AI Assistant')}</h1>
+          <p className="chat-header-subtitle">{tr('ui.chat.askQuestionsReportSymptomsOr', 'Ask questions, report symptoms, or request personalised plan adaptations.')}</p>
         </div>
         {/* On a phone the chat list is a panel; these open it and start afresh. */}
         <div className="chat-header-actions">
           <button type="button" className="chat-header-btn" onClick={() => setShowList(v => !v)}
                   aria-expanded={showList} aria-controls="chat-sidebar">
-            <MessagesSquare size={18} strokeWidth={2} /> Chats
+            <MessagesSquare size={18} strokeWidth={2} />{' '}{tr('ui.chat.chats', 'Chats')}
           </button>
-          <button type="button" className="chat-header-btn" onClick={newChat} aria-label="New chat">
+          <button type="button" className="chat-header-btn" onClick={newChat} aria-label={tr('ui.chat.newChat', 'New chat')}>
             <Plus size={18} strokeWidth={2.25} />
           </button>
         </div>
       </header>
 
       <div className="chat-body">
-      <aside id="chat-sidebar" className={`chat-sidebar ${showList ? 'open' : ''}`} aria-label="Your chats">
+      <aside id="chat-sidebar" className={`chat-sidebar ${showList ? 'open' : ''}`} aria-label={tr('ui.chat.yourChats', 'Your chats')}>
         <button type="button" className="chat-new-btn" onClick={newChat}>
-          <Plus size={16} strokeWidth={2.25} /> New chat
+          <Plus size={16} strokeWidth={2.25} />{' '}{tr('ui.chat.newChat', 'New chat')}
         </button>
         <div className="chat-session-list">
-          {sessions.length === 0 && <p className="chat-session-empty">Your chats will appear here.</p>}
+          {sessions.length === 0 && <p className="chat-session-empty">{tr('ui.chat.yourChatsWillAppearHere', 'Your chats will appear here.')}</p>}
           {sessions.map(s => {
             const title = s.title || s.preview || 'New chat';
             const active = s.session_id === sessionId;
             return (
               <div key={s.session_id} className={`chat-session-item${active ? ' active' : ''}`}>
                 {confirmDelete === s.session_id ? (
-                  <div className="chat-session-confirm" role="group" aria-label={`Delete chat: ${title}`}>
-                    <span>Delete this chat?</span>
-                    <button type="button" className="danger" onClick={() => deleteSession(s.session_id)}>Delete</button>
-                    <button type="button" onClick={() => setConfirmDelete(null)}>Cancel</button>
+                  <div className="chat-session-confirm" role="group" aria-label={tr('ui.chat.deleteChat', 'Delete chat: {{title}}', { title })}>
+                    <span>{tr('ui.chat.deleteThisChat', 'Delete this chat?')}</span>
+                    <button type="button" className="danger" onClick={() => deleteSession(s.session_id)}>{tr('ui.chat.delete', 'Delete')}</button>
+                    <button type="button" onClick={() => setConfirmDelete(null)}>{tr('ui.chat.cancel', 'Cancel')}</button>
                   </div>
                 ) : (
                   <>
@@ -437,7 +435,7 @@ export default function Chat() {
                       <span className="chat-session-date">{formatSessionDate(s.updated_at)}</span>
                     </button>
                     <button type="button" className="chat-session-delete" onClick={() => setConfirmDelete(s.session_id)}
-                            aria-label={`Delete chat: ${title}`} title="Delete chat">
+                            aria-label={tr('ui.chat.deleteChat', 'Delete chat: {{title}}', { title })} title={tr('ui.chat.deleteChat2', 'Delete chat')}>
                       <Trash2 size={14} strokeWidth={2} />
                     </button>
                   </>
@@ -456,8 +454,8 @@ export default function Chat() {
               <div className="chat-empty-icon-wrap">
                 <Sparkles size={40} strokeWidth={1.5} />
               </div>
-              <h2 className="chat-empty-title">Ask Ayura anything</h2>
-              <p className="chat-empty-sub">Your personal AI wellness advisor — ask about your plans, symptoms, dosha, or daily routine.</p>
+              <h2 className="chat-empty-title">{tr('ui.chat.askAyuraAnything', 'Ask Ayura anything')}</h2>
+              <p className="chat-empty-sub">{tr('ui.chat.yourPersonalAiWellnessAdvisor', 'Your personal AI wellness advisor — ask about your plans, symptoms, dosha, or daily routine.')}</p>
               <div className="chat-suggestion-groups">
                 {SUGGESTION_GROUPS.map(group => (
                   <div key={group.category} className="chat-suggestion-group">
@@ -498,7 +496,7 @@ export default function Chat() {
                 setShowScrollFab(false);
                 historyRef.current?.scrollTo({ top: historyRef.current.scrollHeight, behavior: 'smooth' });
               }}
-              aria-label="Scroll to bottom"
+              aria-label={tr('ui.chat.scrollToBottom', 'Scroll to bottom')}
             >
               <ChevronDown size={18} strokeWidth={2.5} />
             </m.button>
@@ -515,11 +513,11 @@ export default function Chat() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e); }
               }}
-              placeholder="How are you feeling today? (Shift+Enter for new line)"
+              placeholder={tr('ui.chat.howAreYouFeelingToday', 'How are you feeling today? (Shift+Enter for new line)')}
               disabled={isLoading}
               rows={1}
             />
-            <button type="submit" className="chat-send-btn" disabled={isLoading || !inputValue.trim()} aria-label="Send message">
+            <button type="submit" className="chat-send-btn" disabled={isLoading || !inputValue.trim()} aria-label={tr('ui.chat.sendMessage', 'Send message')}>
               <Send size={18} strokeWidth={2.5} />
             </button>
           </div>

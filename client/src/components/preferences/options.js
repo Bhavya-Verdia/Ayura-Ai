@@ -1,45 +1,47 @@
+import { tr } from '../../lib/tr'
+
 // Option tables for the preferences forms, and `savedToForm`, which turns a
 // saved document back into each form's own shape. Several server tests read
 // these lists (INJURIES, the allergy chips) against the schemas.
 
 export const GOALS = {
   gym: [
-    { value: 'fat_loss', label: 'Fat Loss' },
-    { value: 'muscle_gain', label: 'Muscle Gain' },
-    { value: 'endurance', label: 'Endurance' },
-    { value: 'strength', label: 'Strength' },
-    { value: 'general_fitness', label: 'General Fitness' }
+    { value: 'fat_loss', get label() { return tr('ui.options.fatLoss', 'Fat Loss') } },
+    { value: 'muscle_gain', get label() { return tr('ui.options.muscleGain', 'Muscle Gain') } },
+    { value: 'endurance', get label() { return tr('ui.options.endurance', 'Endurance') } },
+    { value: 'strength', get label() { return tr('ui.options.strength', 'Strength') } },
+    { value: 'general_fitness', get label() { return tr('ui.options.generalFitness', 'General Fitness') } }
   ],
   yoga: [
-    { value: 'flexibility', label: 'Flexibility' },
-    { value: 'stress_relief', label: 'Stress Relief' },
-    { value: 'strength', label: 'Strength' },
-    { value: 'balance', label: 'Balance' },
-    { value: 'healing', label: 'Healing' },
-    { value: 'spiritual', label: 'Spiritual' }
+    { value: 'flexibility', get label() { return tr('ui.options.flexibility', 'Flexibility') } },
+    { value: 'stress_relief', get label() { return tr('ui.options.stressRelief', 'Stress Relief') } },
+    { value: 'strength', get label() { return tr('ui.options.strength', 'Strength') } },
+    { value: 'balance', get label() { return tr('ui.options.balance', 'Balance') } },
+    { value: 'healing', get label() { return tr('ui.options.healing', 'Healing') } },
+    { value: 'spiritual', get label() { return tr('ui.options.spiritual', 'Spiritual') } }
   ],
   diet: [
-    { value: 'weight_loss', label: 'Weight Loss' },
-    { value: 'muscle_support', label: 'Muscle Support' },
-    { value: 'gut_health', label: 'Gut Health' },
-    { value: 'energy', label: 'Energy' },
-    { value: 'detox', label: 'Detox' },
-    { value: 'general_wellness', label: 'General Wellness' }
+    { value: 'weight_loss', get label() { return tr('ui.options.weightLoss', 'Weight Loss') } },
+    { value: 'muscle_support', get label() { return tr('ui.options.muscleSupport', 'Muscle Support') } },
+    { value: 'gut_health', get label() { return tr('ui.options.gutHealth', 'Gut Health') } },
+    { value: 'energy', get label() { return tr('ui.options.energy', 'Energy') } },
+    { value: 'detox', get label() { return tr('ui.options.detox', 'Detox') } },
+    { value: 'general_wellness', get label() { return tr('ui.options.generalWellness', 'General Wellness') } }
   ],
   routine: [
-    { value: 'weight_loss', label: 'Weight Loss' },
-    { value: 'muscle_support', label: 'Muscle Support' },
-    { value: 'gut_health', label: 'Gut Health' },
-    { value: 'energy', label: 'Energy' },
-    { value: 'detox', label: 'Detox' },
-    { value: 'general_wellness', label: 'General Wellness' }
+    { value: 'weight_loss', get label() { return tr('ui.options.weightLoss', 'Weight Loss') } },
+    { value: 'muscle_support', get label() { return tr('ui.options.muscleSupport', 'Muscle Support') } },
+    { value: 'gut_health', get label() { return tr('ui.options.gutHealth', 'Gut Health') } },
+    { value: 'energy', get label() { return tr('ui.options.energy', 'Energy') } },
+    { value: 'detox', get label() { return tr('ui.options.detox', 'Detox') } },
+    { value: 'general_wellness', get label() { return tr('ui.options.generalWellness', 'General Wellness') } }
   ],
   panchakarma: [
-    { value: 'detox', label: 'Detox' },
-    { value: 'rejuvenation', label: 'Rejuvenation' },
-    { value: 'stress_relief', label: 'Stress Relief' },
-    { value: 'seasonal_cleanse', label: 'Seasonal Cleanse' },
-    { value: 'specific_condition', label: 'Specific Condition' }
+    { value: 'detox', get label() { return tr('ui.options.detox', 'Detox') } },
+    { value: 'rejuvenation', get label() { return tr('ui.options.rejuvenation', 'Rejuvenation') } },
+    { value: 'stress_relief', get label() { return tr('ui.options.stressRelief', 'Stress Relief') } },
+    { value: 'seasonal_cleanse', get label() { return tr('ui.options.seasonalCleanse', 'Seasonal Cleanse') } },
+    { value: 'specific_condition', get label() { return tr('ui.options.specificCondition', 'Specific Condition') } }
   ]
 };
 
@@ -56,15 +58,15 @@ export const GOALS = {
 // in production no matter what gym someone had. Values must stay in step with
 // the server's EQUIPMENT_OPTIONS.
 export const EQUIPMENT = [
-  { value: 'dumbbells',       label: 'Dumbbells' },
-  { value: 'barbell',         label: 'Barbell & plates' },
-  { value: 'machines',        label: 'Resistance machines' },
-  { value: 'cables',          label: 'Cable machine' },
-  { value: 'kettlebell',      label: 'Kettlebells' },
-  { value: 'resistance_bands', label: 'Resistance bands' },
-  { value: 'cardio_machines', label: 'Cardio machines' },
-  { value: 'jump_rope',       label: 'Jump rope' },
-  { value: 'pool',            label: 'Pool' },
+  { value: 'dumbbells',       get label() { return tr('ui.options.dumbbells', 'Dumbbells') } },
+  { value: 'barbell',         get label() { return tr('ui.options.barbellPlates', 'Barbell & plates') } },
+  { value: 'machines',        get label() { return tr('ui.options.resistanceMachines', 'Resistance machines') } },
+  { value: 'cables',          get label() { return tr('ui.options.cableMachine', 'Cable machine') } },
+  { value: 'kettlebell',      get label() { return tr('ui.options.kettlebells', 'Kettlebells') } },
+  { value: 'resistance_bands', get label() { return tr('ui.options.resistanceBands', 'Resistance bands') } },
+  { value: 'cardio_machines', get label() { return tr('ui.options.cardioMachines', 'Cardio machines') } },
+  { value: 'jump_rope',       get label() { return tr('ui.options.jumpRope', 'Jump rope') } },
+  { value: 'pool',            get label() { return tr('ui.options.pool', 'Pool') } },
 ];
 
 // The set/rep scheme each goal implies, used to preselect `training_style` the
@@ -80,29 +82,29 @@ export const EQUIPMENT = [
 // inferred from bodyweight and a self-rated level — fine on average, and well off
 // for any one lifter. Each one rescales the movements that share its pattern.
 export const KNOWN_LIFTS = [
-  { value: 'squat',          label: 'Squat' },
-  { value: 'deadlift',       label: 'Deadlift' },
-  { value: 'bench',          label: 'Bench press' },
-  { value: 'overhead_press', label: 'Overhead press' },
-  { value: 'row',            label: 'Barbell or dumbbell row' },
+  { value: 'squat',          get label() { return tr('ui.options.squat', 'Squat') } },
+  { value: 'deadlift',       get label() { return tr('ui.options.deadlift', 'Deadlift') } },
+  { value: 'bench',          get label() { return tr('ui.options.benchPress', 'Bench press') } },
+  { value: 'overhead_press', get label() { return tr('ui.options.overheadPress', 'Overhead press') } },
+  { value: 'row',            get label() { return tr('ui.options.barbellOrDumbbellRow', 'Barbell or dumbbell row') } },
 ]
 
 // Shared by the gym and yoga forms; both engines read the union of the two
 // answers, so an injury ticked once reaches both plans.
 export const INJURIES = [
-  { value: 'knee',              label: 'Knee' },
-  { value: 'knee_replacement',  label: 'Knee replacement' },
-  { value: 'lower_back',        label: 'Lower back' },
-  { value: 'disc',              label: 'Slipped / herniated disc' },
-  { value: 'shoulder',          label: 'Shoulder' },
-  { value: 'elbow',             label: 'Elbow' },
-  { value: 'wrist',             label: 'Wrist' },
-  { value: 'neck',              label: 'Neck' },
-  { value: 'hip',               label: 'Hip' },
-  { value: 'hip_replacement',   label: 'Hip replacement' },
-  { value: 'ankle',             label: 'Ankle' },
-  { value: 'hernia',            label: 'Hernia' },
-  { value: 'abdominal_surgery', label: 'Recent abdominal surgery or C-section' },
+  { value: 'knee',              get label() { return tr('ui.options.knee', 'Knee') } },
+  { value: 'knee_replacement',  get label() { return tr('ui.options.kneeReplacement', 'Knee replacement') } },
+  { value: 'lower_back',        get label() { return tr('ui.options.lowerBack', 'Lower back') } },
+  { value: 'disc',              get label() { return tr('ui.options.slippedHerniatedDisc', 'Slipped / herniated disc') } },
+  { value: 'shoulder',          get label() { return tr('ui.options.shoulder', 'Shoulder') } },
+  { value: 'elbow',             get label() { return tr('ui.options.elbow', 'Elbow') } },
+  { value: 'wrist',             get label() { return tr('ui.options.wrist', 'Wrist') } },
+  { value: 'neck',              get label() { return tr('ui.options.neck', 'Neck') } },
+  { value: 'hip',               get label() { return tr('ui.options.hip', 'Hip') } },
+  { value: 'hip_replacement',   get label() { return tr('ui.options.hipReplacement', 'Hip replacement') } },
+  { value: 'ankle',             get label() { return tr('ui.options.ankle', 'Ankle') } },
+  { value: 'hernia',            get label() { return tr('ui.options.hernia', 'Hernia') } },
+  { value: 'abdominal_surgery', get label() { return tr('ui.options.recentAbdominalSurgeryOrC', 'Recent abdominal surgery or C-section') } },
 ];
 
 export const GYM_SUGGESTED_STYLE = {
@@ -136,8 +138,8 @@ export const YOGA_PRANAYAMA_MINUTES = { none: 5, beginner: 5, intermediate: 5, a
 // offering it. Saved preferences using the withdrawn values are coerced server-side,
 // never rejected.
 export const DIETARY_TYPES = [
-  { value: 'vegetarian', label: 'Vegetarian' },
-  { value: 'vegan', label: 'Vegan' }
+  { value: 'vegetarian', get label() { return tr('ui.options.vegetarian', 'Vegetarian') } },
+  { value: 'vegan', get label() { return tr('ui.options.vegan', 'Vegan') } }
 ];
 
 // Saved preferences in the shape the form edits them. The form keeps a few

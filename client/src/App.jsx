@@ -17,6 +17,7 @@ import ReloadPrompt from './components/ReloadPrompt'
 import OfflineBanner from './components/OfflineBanner'
 import { trackPageview } from './lib/analytics'
 import { isReturningUser } from './lib/sessionHint'
+import { useTranslation } from 'react-i18next'
 import { Landing, DoshaTest, Login, Register, Terms, Privacy, hydration } from './lib/snapshotPages'
 
 // Lazy like the pages: the app shell (sidebar, command palette, feedback
@@ -183,6 +184,7 @@ const CALM_BG_ROUTES = new Set([
 ])
 
 export default function App() {
+  const { i18n } = useTranslation()
   const location = useLocation()
   const { theme } = useTheme()
   useKeyboardShortcuts()
@@ -229,7 +231,9 @@ export default function App() {
         {/* Catches the lazy MainLayout itself; pages inside it fall to nearer
             boundaries (MainLayout's skeletons / PageWrapper's spinner). */}
         <Suspense fallback={<LoadingScreen />}>
-          <Routes location={location}>
+          {/* Keyed on the language: screen strings are read through `tr` (lib/tr.js),
+              not a hook, so a language change has to re-render every screen. */}
+          <Routes location={location} key={i18n.language}>
             <Route path="/" element={<PageWrapper><Landing /></PageWrapper>} />
             <Route path="/login" element={<PublicRoute><PageWrapper><Login /></PageWrapper></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><PageWrapper><Register /></PageWrapper></PublicRoute>} />
