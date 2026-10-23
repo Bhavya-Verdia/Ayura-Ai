@@ -8,6 +8,7 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from config import settings
 import logging
 import certifi
+from datetime import timezone
 
 logger = logging.getLogger("ayura.db")
 
@@ -29,6 +30,13 @@ async def init_mongodb():
             maxPoolSize=50,       # 50 conns/worker × 4 workers = 200 total — safe for Atlas M0/M2
             minPoolSize=2,
             maxIdleTimeMS=30000,  # return idle connections after 30s
+            # Datetimes come back aware, in UTC. Naive ones were serialised with no
+            # offset ("2026-10-22T16:39:26"), every browser read them as its own
+            # local time, and an Indian user's post said "5h ago" a minute after
+            # it was written. Every reader here already normalises a naive value
+            # to UTC, so aware values pass through those guards unchanged.
+            tz_aware=True,
+            tzinfo=timezone.utc,
         )
         # TLS (with certifi's CA bundle — fixes TLSV1_ALERT_INTERNAL_ERROR on macOS
         # OpenSSL 3.x) is only needed for Atlas / explicit-TLS connections. Plain

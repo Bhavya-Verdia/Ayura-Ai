@@ -1,4 +1,4 @@
-import React, { useState, useContext, useMemo, Suspense, lazy } from 'react'
+import React, { useState, useContext, useMemo, useEffect, Suspense, lazy } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
@@ -549,6 +549,15 @@ const Dashboard = () => {
   const [viewingPlan, setViewingPlan]     = useState(null)
   const [viewingType, setViewingType]     = useState(null)
   const [generating,  setGenerating]      = useState({})
+  // Regenerate asks once. A single click replaced a four-week diet plan (and its
+  // meal logs' plan) with no way back; the first click now arms the button for a
+  // few seconds and only a second click rebuilds.
+  const [confirmRegen, setConfirmRegen]   = useState(null)
+  useEffect(() => {
+    if (!confirmRegen) return
+    const t = setTimeout(() => setConfirmRegen(null), 4000)
+    return () => clearTimeout(t)
+  }, [confirmRegen])
   const [prefModalConfig, setPrefModalConfig] = useState({ isOpen: false, typeId: null })
   const [showCheckin, setShowCheckin]     = useState(true)
   const [feedbackDone, setFeedbackDone]   = useState(false)
@@ -933,15 +942,20 @@ const Dashboard = () => {
                     View Plan →
                   </button>
                   <button
-                    className="dash-plan-regen-btn"
-                    onClick={() => REMEDY_PAGE_PATH[type.id]
-                      ? navigate(REMEDY_PAGE_PATH[type.id])
-                      : generatePlan(type.id, true)}
+                    className={`dash-plan-regen-btn${confirmRegen === type.id ? ' confirming' : ''}`}
+                    onClick={() => {
+                      if (REMEDY_PAGE_PATH[type.id]) return navigate(REMEDY_PAGE_PATH[type.id])
+                      if (confirmRegen !== type.id) return setConfirmRegen(type.id)
+                      setConfirmRegen(null)
+                      generatePlan(type.id, true)
+                    }}
                     disabled={generating[type.id]}
-                    title="Regenerate"
-                    aria-label={`Regenerate ${type.title} plan`}
+                    title={confirmRegen === type.id ? 'Click again to rebuild this plan' : 'Regenerate'}
+                    aria-label={confirmRegen === type.id
+                      ? `Confirm: rebuild your ${type.title} plan from scratch`
+                      : `Regenerate ${type.title} plan`}
                   >
-                    {generating[type.id] ? '…' : '↻'}
+                    {generating[type.id] ? '…' : confirmRegen === type.id ? 'Rebuild?' : '↻'}
                   </button>
                   {/* The form only ever opened when nothing was saved, so once a
                       feature had preferences there was no way back to them: every

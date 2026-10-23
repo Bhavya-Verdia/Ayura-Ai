@@ -85,12 +85,16 @@
 
 /* Theme Preview Card */
 .settings-theme-preview {
-  width: 180px; flex-shrink: 0;
+  /* A <button>, so the theme can be chosen from the keyboard. */
+  display: block; padding: 0; font: inherit; color: inherit; text-align: left;
+  /* Two at 180px were 376px inside a 276px card on a phone; Light was cut off. */
+  flex: 1 1 0; min-width: 0; max-width: 180px;
   border-radius: 16px; overflow: hidden;
   border: 1px solid var(--border-light);
   box-shadow: var(--glass-shadow);
   transition: all 0.3s;
 }
+.settings-theme-preview:focus-visible { outline: 2px solid var(--ayura-teal); outline-offset: 3px; }
 .settings-theme-preview-bar {
   height: 8px; display: flex;
 }

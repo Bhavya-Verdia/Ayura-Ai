@@ -170,3 +170,33 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Plans built for the old imbalance, each offered for a rebuild. */
+.chk-adapted-box {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  text-align: left;
+}
+.chk-adapted-label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+  color: var(--ayura-text-secondary);
+}
+.chk-adapted-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.chk-adapted-tag {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ayura-text);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.chk-adapted-tag:hover:not(:disabled) { border-color: var(--ayura-primary, currentColor); }
+.chk-adapted-tag:disabled { opacity: 0.6; cursor: default; }
+.chk-adapted-tag:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }

@@ -134,11 +134,52 @@ def unfalse(term) -> str:
     return re.sub(r"herniat[a-z]*", "slipped", text)
 
 
+# Typed text is matched against keys written with underscores, so "ankylosing
+# spondylitis" typed into the injury box matched `ankylosing_spondylitis` nowhere
+# and removed nothing, in either engine; a one-letter slip ("spondylytis",
+# "glacoma", "osteoporsis") did the same. Both forms of the phrase are searched,
+# and a long word that is one slip from a word the maps know is read as that word.
+_KNOWN_WORDS: frozenset | None = None
+
+
+def _known_words() -> frozenset:
+    global _KNOWN_WORDS
+    if _KNOWN_WORDS is None:
+        keys = [*_CONDITION_RISK_TAGS, *_INJURY_RISK_TAGS, *_LIMITATION_ALIASES]
+        _KNOWN_WORDS = frozenset(w for k in keys for w in re.split(r"[_\s]+", k) if len(w) >= 5)
+    return _KNOWN_WORDS
+
+
+def respell(text) -> str:
+    """`text` with each long word that is a near miss for a known word corrected."""
+    import difflib
+
+    known = _known_words()
+
+    def fix(m):
+        word = m.group(0)
+        low = word.lower()
+        if len(low) < 6 or low in known:
+            return word
+        close = difflib.get_close_matches(low, known, n=1, cutoff=0.85)
+        return close[0] if close else word
+
+    return re.sub(r"[A-Za-z]+", fix, str(text))
+
+
+def match_text(term) -> str:
+    """The form every map here is searched in: corrected, lower case, with the
+    phrase given both with spaces and with underscores."""
+    text = unfalse(respell(term))
+    joined = re.sub(r"[\s-]+", "_", text)
+    return f"{text} {joined}"
+
+
 def condition_risk_tags(conditions) -> set:
     """Mechanisms to avoid for these declared conditions."""
     risks: set = set()
     for cond in conditions or []:
-        key = unfalse(cond)
+        key = match_text(cond)
         for k, tags in _CONDITION_RISK_TAGS.items():
             if k in key:
                 risks.update(tags)
@@ -149,7 +190,7 @@ def injury_risk_tags(injuries) -> set:
     """Mechanisms to avoid for these declared injuries or limitations."""
     risks: set = set()
     for inj in injuries or []:
-        key = unfalse(inj)
+        key = match_text(inj)
         for k, tags in _INJURY_RISK_TAGS.items():
             if k in key:
                 risks.update(tags)

@@ -5,7 +5,7 @@ import random
 import re
 
 from services.gym_condition_guidance import _unfalse, guidance_for
-from engine.movement_risk import (_INJURY_RISK_TAGS, _LIMITATION_ALIASES, RISK_VOCAB,
+from engine.movement_risk import (_INJURY_RISK_TAGS, _LIMITATION_ALIASES, RISK_VOCAB, respell,
                                   condition_risk_tags, injury_risk_tags,
                                   medication_classes, medication_risk_tags)
 from datetime import datetime, timezone
@@ -1648,7 +1648,7 @@ def _resolve_injuries(user_profile, gym_prefs) -> tuple:
     `hip_replacement` reaches the impact gate."""
     resolved, unmatched = set(), []
     for phrase in _injury_phrases(user_profile, gym_prefs):
-        low = phrase.lower().replace("-", "_")
+        low = respell(phrase).lower().replace("-", "_")
         low = " ".join([low, *(v for k, v in _LIMITATION_ALIASES.items() if k in low)])
         hits = {k for k in _INJURY_TOKENS if k in low.replace(" ", "_") or k in low}
         risky = injury_risk_tags([low]) | condition_risk_tags([low])
@@ -3948,7 +3948,9 @@ def get_ayurvedic_tips(dosha, conditions=(), is_pregnant=False):
         return {
             "best_time_to_workout": "Early morning or evening (avoid midday heat)",
             "pre_workout": "Coconut water or cool water; avoid working out in anger or stress",
-            "post_workout": "Cool shower, coconut water; avoid overheating",
+            # Was "Cool shower", printed on the same page as the coaching's classical
+            # rule: rest before bathing, and no cold water on the head straight after.
+            "post_workout": "Rest 10 minutes before bathing, then lukewarm water; coconut water; avoid overheating",
             "recovery": "Moon salutation on rest days; cultivate non-competitive mindset",
         }
     elif dosha == "kapha":

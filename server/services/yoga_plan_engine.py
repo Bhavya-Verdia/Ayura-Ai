@@ -888,7 +888,7 @@ _SYMPTOM_CATEGORY_BOOST: dict[str, list[str]] = {
 # what a picked "shoulder" excludes.
 # Words people type for injuries the maps already know under a different name —
 # shared with the gym engine's free-text box, in `engine.movement_risk`.
-from engine.movement_risk import _LIMITATION_ALIASES  # noqa: E402
+from engine.movement_risk import _LIMITATION_ALIASES, match_text  # noqa: E402
 
 
 def _expand_aliases(term: str) -> str:
@@ -929,14 +929,14 @@ def unmatched_limitations(user_profile: dict, yoga_prefs: dict | None) -> list[s
     # back the same way: the gym can act on it, and the yoga plan must not imply
     # it did too.
     for chip in (yoga_prefs or {}).get("injuries") or []:
-        if not any(k in str(chip).lower() for k in known):
+        if not any(k in match_text(chip) for k in known):
             unmatched.append(str(chip).replace("_", " "))
     detail = (yoga_prefs or {}).get("physical_limitations_detail")
     if not detail:
         return unmatched
     for part in re.split(r"[,;/]|\band\b|\n", str(detail)):
         part = part.strip()
-        if part and not any(k in part.lower() for k in known):
+        if part and not any(k in match_text(part) for k in known):
             unmatched.append(part)
     return unmatched
 
@@ -3418,6 +3418,9 @@ def generate_yoga_plan(user_profile, yoga_prefs, yoga_poses_db=None, pranayama_l
         "progression_adjustment": adjustment.as_dict() if adjustment.reasons else None,
         "ayurvedic_tips":     get_ayurvedic_tips(dominant_dosha),
         "seasonal_note":      season_cfg.get("note") if season_cfg else None,
+        # The Ritu the note was written for, so a reader months later can be told it
+        # has passed (routes/plans.py `_season_context`).
+        "season":             (user_profile.get("current_season") or None),
         "practice_pool_notice": pool_notice,
         "condition_protocols": active_protocols or None,
         "pranayama_safety_exclusions": _prana_exclusions or None,

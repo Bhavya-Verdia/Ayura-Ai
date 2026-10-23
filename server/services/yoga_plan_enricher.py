@@ -53,6 +53,11 @@ read the plan. Never suggest an easier day is a shorter one, never present a day
 as a new or different practice, and never frame the repetition as a limitation.
 What changes between days is depth and effort, not the poses.
 
+The user practises at "practice_time" in the profile below. Never recommend
+practising at another time of day: the plan is built for that time (no Surya
+Namaskar in the evening, for one), and a note saying "ideally in the evening"
+beside a morning plan contradicts the plan it sits in.
+
 AYURVEDIC KNOWLEDGE BASE (use these classical references to ground your response):
 {rag_context}
 
@@ -132,6 +137,14 @@ def gate_yoga_enrichment(enrichment: dict, raw_plan: dict, user_profile: dict,
                          re.I) if names else None
     allergens = _allergen_entries(user_profile.get("allergies") or [])
     withheld: list[dict] = []
+    # The plan is built for the time the user chose. A sentence recommending the
+    # other one ("Practice at the same time daily, ideally in the evening" beside a
+    # morning plan) is withheld, the way a sentence naming a withheld pose is.
+    chosen = (yoga_prefs.get("time_of_day_preference") or "morning").lower()
+    other_time = {"morning": r"\bevening\b|\bafter (?:6|six) ?pm\b",
+                  "evening": r"\bmorning\b|\bdawn\b|\bsunrise\b|\bbefore (?:6|six) ?am\b"}.get(chosen)
+    other_re = re.compile(other_time, re.I) if other_time else None
+    practice_re = re.compile(r"\b(practi[cs]e|practi[cs]ing|session|sequence|asana)\b", re.I)
 
     def screen(text: str, field: str) -> str:
         if (script := unreadable_script(text)):
@@ -148,6 +161,8 @@ def gate_yoga_enrichment(enrichment: dict, raw_plan: dict, user_profile: dict,
                 hit = next((e for e in allergens if _contains_allergen(sent, e)), None)
                 if hit:
                     reason = f"names a {hit['label'].lower()} food — declared allergy"
+            if not reason and other_re and other_re.search(sent) and practice_re.search(sent):
+                reason = f"recommends practising at another time; this plan is for the {chosen}"
             if reason:
                 withheld.append({"field": field, "text": sent, "reason": reason})
             else:
@@ -201,6 +216,7 @@ async def enrich_yoga_plan(raw_plan: dict, user_profile: dict, yoga_prefs: dict)
                 "experience": yoga_prefs.get("yoga_experience"),
                 "style_preference": yoga_prefs.get("yoga_style_preference"),
                 "time_available": yoga_prefs.get("time_available_minutes"),
+                "practice_time": yoga_prefs.get("time_of_day_preference") or "morning",
                 "injuries": user_profile.get("injuries_or_limitations"),
                 "medical_history": user_profile.get("medical_history"),
                 "current_symptoms": user_profile.get("current_symptoms"),

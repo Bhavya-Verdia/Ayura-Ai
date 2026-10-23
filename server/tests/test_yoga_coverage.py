@@ -152,3 +152,42 @@ def test_a_pregnant_practitioner_gets_the_pregnancy_note_and_a_nursing_one_does_
     assert "left side" in notes["pregnancy"]
     nursing = Y.generate_yoga_plan(_p(pregnancy_or_nursing=True, pregnancy_status="nursing"), _PREFS)
     assert "pregnancy" not in {g["key"] for g in nursing["condition_guidance"] or []}
+
+
+@pytest.mark.parametrize("chosen,sentence", [
+    ("morning", "Practice at the same time daily, ideally in the evening, and rest well."),
+    ("morning", "A consistent evening practice at the same hour will be especially stabilizing."),
+    ("evening", "Practise at sunrise, when the mind is quiet."),
+])
+def test_coaching_never_moves_the_practice_to_another_time(chosen, sentence):
+    """A live morning plan's coaching said "ideally in the evening", and its lifestyle
+    note "a consistent evening practice", beside a header reading TIME Morning."""
+    prefs = {**_PREFS, "time_of_day_preference": chosen}
+    prof = _p(age=30)
+    plan = Y.generate_yoga_plan(prof, prefs)
+    kept = "Lengthen the exhale."
+    out, withheld = gate_yoga_enrichment({"x": f"{sentence} {kept}"}, plan, prof, prefs)
+    assert out["x"] == kept
+    assert withheld and chosen in withheld[0]["reason"]
+
+
+def test_an_evening_word_that_is_not_about_practice_stays():
+    prefs = {**_PREFS, "time_of_day_preference": "morning"}
+    prof = _p(age=30)
+    plan = Y.generate_yoga_plan(prof, prefs)
+    text = "Keep the evening meal light and sleep by ten. Practise each morning at the same hour."
+    assert gate_yoga_enrichment({"x": text}, plan, prof, prefs) == ({"x": text}, [])
+
+
+def test_the_enricher_is_told_the_practice_time():
+    import inspect
+
+    import services.yoga_plan_enricher as E
+
+    assert '"practice_time"' in inspect.getsource(E.enrich_yoga_plan)
+    assert "Never recommend\npractising at another time of day" in E.USER_PROMPT_TEMPLATE
+
+
+def test_the_plan_records_the_season_it_was_built_for():
+    plan = Y.generate_yoga_plan(_p(age=30, current_season="sharad"), _PREFS)
+    assert plan["season"] == "sharad"

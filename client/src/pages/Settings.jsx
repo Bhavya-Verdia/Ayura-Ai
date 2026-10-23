@@ -482,7 +482,9 @@ export default function Settings() {
               <div className="settings-pref-help">Choose between light and dark mode</div>
               <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
                 {/* Dark Theme Preview */}
-                <div 
+                <button
+                  type="button"
+                  aria-pressed={theme === 'dark'}
                   className="settings-theme-preview" 
                   style={{ 
                     cursor: 'pointer',
@@ -502,10 +504,12 @@ export default function Settings() {
                     <div className="settings-theme-preview-line" style={{ background: 'linear-gradient(135deg, #5cab74, #e6a23c)', width: '40%', marginTop: '8px' }} />
                   </div>
                   <div style={{ padding: '8px', textAlign: 'center', fontSize: '0.8rem', color: '#94A3B8', fontWeight: 600 }}>Dark</div>
-                </div>
+                </button>
 
                 {/* Light Theme Preview */}
-                <div 
+                <button
+                  type="button"
+                  aria-pressed={theme === 'light'}
                   className="settings-theme-preview" 
                   style={{ 
                     cursor: 'pointer',
@@ -525,7 +529,7 @@ export default function Settings() {
                     <div className="settings-theme-preview-line" style={{ background: 'linear-gradient(135deg, #5cab74, #e6a23c)', width: '40%', marginTop: '8px' }} />
                   </div>
                   <div style={{ padding: '8px', textAlign: 'center', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>Light</div>
-                </div>
+                </button>
               </div>
             </div>
           </div>

@@ -44,6 +44,9 @@ const ROUTES = [
   // adopts them only when the browser has never been signed in.
   { path: '/login',      selector: '.auth-card-title', out: 'dist/login.html' },
   { path: '/register',   selector: '.auth-card-title', out: 'dist/register.html' },
+  // In the sitemap; served as the empty shell, they read as one generic page.
+  { path: '/privacy',    selector: '.legal-header h1', out: 'dist/privacy.html' },
+  { path: '/terms',      selector: '.legal-header h1', out: 'dist/terms.html' },
 ]
 
 // A snapshot with two of any of these tells a crawler two different things

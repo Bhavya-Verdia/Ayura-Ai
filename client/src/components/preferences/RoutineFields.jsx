@@ -10,16 +10,16 @@ export default function RoutineFields({ form, setForm, handleChange }) {
         </p>
         <div className="pref-row">
           <div className="pref-input-group">
-            <label>Wake Preference</label>
-            <select name="wake_preference" value={form.wake_preference || 'natural'} onChange={handleChange} required>
+            <label htmlFor="pref-wake_preference">Wake Preference</label>
+            <select id="pref-wake_preference" name="wake_preference" value={form.wake_preference || 'natural'} onChange={handleChange} required>
               <option value="early">Early — 4:30–5:30 AM</option>
               <option value="natural">Natural — the hour your Dosha and season suggest</option>
               <option value="late">Late — 6:30–7:30 AM</option>
             </select>
           </div>
           <div className="pref-input-group">
-            <label>Occupation Type</label>
-            <select name="occupation_type" value={form.occupation_type || 'moderately_active'} onChange={handleChange} required>
+            <label htmlFor="pref-occupation_type">Occupation Type</label>
+            <select id="pref-occupation_type" name="occupation_type" value={form.occupation_type || 'moderately_active'} onChange={handleChange} required>
               <option value="sedentary">Sedentary — mostly desk / driving</option>
               <option value="moderately_active">Moderately Active — mixed</option>
               <option value="very_active">Very Active — labour / athlete</option>
@@ -28,11 +28,11 @@ export default function RoutineFields({ form, setForm, handleChange }) {
         </div>
         <div className="pref-row">
           <div className="pref-input-group">
-            <label>
+            <label htmlFor="pref-agni_type_self_report">
               Agni (Digestive Fire) Type
               <span className="pref-hint-sub"> — how would you describe your digestion?</span>
             </label>
-            <select name="agni_type_self_report" value={form.agni_type_self_report || 'assessed'} onChange={handleChange} required>
+            <select id="pref-agni_type_self_report" name="agni_type_self_report" value={form.agni_type_self_report || 'assessed'} onChange={handleChange} required>
               <option value="assessed">Use my assessment</option>
               <option value="sama">Sama — Balanced, regular digestion</option>
               <option value="manda">Manda — Slow, heavy, bloated after meals</option>
@@ -41,8 +41,8 @@ export default function RoutineFields({ form, setForm, handleChange }) {
             </select>
           </div>
           <div className="pref-input-group">
-            <label>Intermittent Fasting Window</label>
-            <select name="intermittent_fasting" value={form.intermittent_fasting || 'no'} onChange={handleChange}>
+            <label htmlFor="pref-intermittent_fasting">Intermittent Fasting Window</label>
+            <select id="pref-intermittent_fasting" name="intermittent_fasting" value={form.intermittent_fasting || 'no'} onChange={handleChange}>
               <option value="no">No Fasting</option>
               <option value="12:12">12:12 — Balanced</option>
               <option value="14:10">14:10 — Moderate</option>
@@ -51,8 +51,8 @@ export default function RoutineFields({ form, setForm, handleChange }) {
           </div>
         </div>
         <div className="pref-input-group pref-full">
-          <label>Fasting Days <span className="pref-hint">(optional, comma-separated)</span></label>
-          <input
+          <label htmlFor="pref-fasting_days">Fasting Days <span className="pref-hint">(optional, comma-separated)</span></label>
+          <input id="pref-fasting_days"
             type="text"
             name="fasting_days"
             placeholder="e.g. Monday, Ekadashi"
@@ -83,8 +83,8 @@ export default function RoutineFields({ form, setForm, handleChange }) {
         </div>
         {!form.exclude_gym_plan && (
           <div className="pref-input-group">
-            <label>Gym Time</label>
-            <select name="gym_time_of_day" value={form.gym_time_of_day || 'morning'} onChange={handleChange}>
+            <label htmlFor="pref-gym_time_of_day">Gym Time</label>
+            <select id="pref-gym_time_of_day" name="gym_time_of_day" value={form.gym_time_of_day || 'morning'} onChange={handleChange}>
               <option value="morning">Morning</option>
               <option value="evening">Evening (before dinner)</option>
             </select>

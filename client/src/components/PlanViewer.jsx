@@ -189,7 +189,7 @@ export default function PlanViewer({ plan: rawPlan, planType, onRegenerate, onPl
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         >
-          <YogaView plan={plan} />
+          <YogaView plan={plan} seasonContext={rawPlan.season_context} onRegenerate={onRegenerate} />
         </m.div>
       )}
 

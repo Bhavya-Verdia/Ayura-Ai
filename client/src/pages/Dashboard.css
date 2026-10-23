@@ -379,6 +379,11 @@
 /* Tactile press feedback on dashboard actions */
 .dash-plan-generate-btn:active,
 .dash-plan-view-btn:active,
+.dash-plan-regen-btn.confirming {
+  width: auto; min-width: 44px; padding: 0 10px;
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--plan-amber, #b7791f); border-color: currentColor;
+}
 .dash-plan-regen-btn:active { transform: scale(0.97); transition-duration: 0.07s; }
 .dash-quick-card:active { transform: translateY(0) scale(0.985); transition-duration: 0.07s; }
 

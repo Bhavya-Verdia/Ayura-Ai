@@ -79,6 +79,44 @@ function HistoryCard({ entry, index }) {
   )
 }
 
+// The check-in used to rebuild these plans itself, in the background: four billed
+// generations from one check-in, and a diet plan started that morning replaced by a
+// new four weeks. It offers them instead; each rebuild is the person's choice.
+const PLAN_LABEL = { diet: 'Diet', yoga: 'Yoga', medicines: 'Medicines', panchakarma: 'Panchakarma' }
+
+function PlanRebuildOffer({ plans, toward }) {
+  const [state, setState] = useState({})
+  const rebuild = async (p) => {
+    setState(s => ({ ...s, [p]: 'working' }))
+    try {
+      await API.post(`/plans/${p}`, { force_regenerate: true })
+      setState(s => ({ ...s, [p]: 'done' }))
+    } catch {
+      setState(s => ({ ...s, [p]: 'failed' }))
+    }
+  }
+  return (
+    <div className="chk-adapted-box">
+      <span className="chk-adapted-label">
+        {toward
+          ? `Your imbalance moved toward ${toward[0].toUpperCase()}${toward.slice(1)}. These plans were built for the old pattern:`
+          : 'These plans were built for your old pattern:'}
+      </span>
+      <div className="chk-adapted-tags">
+        {plans.map(p => (
+          <button key={p} type="button" className="chk-adapted-tag" disabled={state[p] === 'working' || state[p] === 'done'}
+            onClick={() => rebuild(p)}>
+            {state[p] === 'working' ? `Rebuilding ${PLAN_LABEL[p] || p}…`
+              : state[p] === 'done' ? `${PLAN_LABEL[p] || p} rebuilt`
+              : state[p] === 'failed' ? `Retry ${PLAN_LABEL[p] || p}`
+              : `Rebuild ${PLAN_LABEL[p] || p}`}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function CheckIn() {
   const { profile } = useAuth()
   const isFemale = profile?.gender === 'female'
@@ -165,11 +203,8 @@ export default function CheckIn() {
                 <div className="chk-insight-icon"><Sparkles size={22} strokeWidth={1.8} /></div>
                 <h3 className="chk-insight-title">Vikriti Updated</h3>
                 <p className="chk-insight-text">{insight.insight}</p>
-                {insight.adapted_plans?.length > 0 && (
-                  <div className="chk-adapted-box">
-                    <span className="chk-adapted-label">Plans refreshed (your imbalance shifted):</span>
-                    <div className="chk-adapted-tags">{insight.adapted_plans.map(p => <span key={p} className="chk-adapted-tag">{p}</span>)}</div>
-                  </div>
+                {insight.suggested_plans?.length > 0 && (
+                  <PlanRebuildOffer plans={insight.suggested_plans} toward={insight.shifted_toward} />
                 )}
                 <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
                   <button className="btn btn-secondary chk-back-btn" onClick={() => { setInsight(null); setSymptoms([]); setStageUpdates({}); setFeltGood('') }}>New Check-In</button>
@@ -226,7 +261,8 @@ export default function CheckIn() {
                       <div key={cid} className="vci-stage-row">
                         <span className="vci-stage-label">{cid.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
                         <div className="vci-stage-selects">
-                          <select className="vci-stage-select" value={stageUpdates[cid]?.duration || ''}
+                          <select className="vci-stage-select" aria-label={`How long you have had ${cid.replace(/_/g, ' ')}`}
+                            value={stageUpdates[cid]?.duration || ''}
                             onChange={e => setStageUpdates(p => ({ ...p, [cid]: { ...p[cid], duration: e.target.value } }))}>
                             <option value="">Duration…</option>
                             <option value="months">Less than 1 year</option>
@@ -234,7 +270,8 @@ export default function CheckIn() {
                             <option value="3-5y">3–5 years</option>
                             <option value="5y+">5+ years</option>
                           </select>
-                          <select className="vci-stage-select" value={stageUpdates[cid]?.trajectory || ''}
+                          <select className="vci-stage-select" aria-label={`How ${cid.replace(/_/g, ' ')} is changing`}
+                            value={stageUpdates[cid]?.trajectory || ''}
                             onChange={e => setStageUpdates(p => ({ ...p, [cid]: { ...p[cid], trajectory: e.target.value } }))}>
                             <option value="">Trend…</option>
                             <option value="worsening">Getting worse</option>
