@@ -8,7 +8,6 @@ a different profile is a different card, and a fallback card is never cached.
 
 import asyncio
 import json
-import types
 
 import pytest
 
