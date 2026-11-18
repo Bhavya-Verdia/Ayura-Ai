@@ -470,6 +470,9 @@ export function PanchakarmaView({ plan }) {
                 <div className="pk-aus-use"><Trans i18nKey="ui.panchakarmaView.clearedWhen" defaults={"Cleared when: {{value}}"} values={{ value: sp.deepana_pachana.signs_cleared.join('; ') }} /></div>
               )}
               {sp.deepana_pachana.diet && <div className="pk-aus-use">{sp.deepana_pachana.diet}</div>}
+              {sp.deepana_pachana.herbs_withheld?.length > 0 && (
+                <div className="pk-aus-use"><Trans i18nKey="ui.panchakarmaView.notSuitableForYou" defaults={"Not suitable for you: {{value}}"} values={{ value: sp.deepana_pachana.herbs_withheld.map(w => `${w.herb} (${w.reason})`).join('; ') }} /></div>
+              )}
             </div>
           )}
 

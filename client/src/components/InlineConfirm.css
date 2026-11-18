@@ -1,0 +1,25 @@
+.inline-confirm {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px dashed rgba(244, 63, 94, 0.35);
+  border-radius: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--ayura-rose);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.inline-confirm-msg { flex: 1 1 220px; min-width: 0; }
+.inline-confirm-actions { display: flex; gap: 10px; flex-shrink: 0; }
+.inline-confirm-danger {
+  background: var(--ayura-rose);
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 700;
+  min-height: 32px;
+}

@@ -566,7 +566,8 @@
       "wellness0Community0": "कल्याणम् <0>समुदायः</0>",
       "whatSOnYourWellness": "तव कल्याणचिन्तने किम् अस्ति, <0>{{value}}</0>?",
       "yoga": "योगः",
-      "youVeReachedTheEnd": "✦ भवान् फीडस्य अन्तं प्राप्तवान् ✦"
+      "youVeReachedTheEnd": "✦ भवान् फीडस्य अन्तं प्राप्तवान् ✦",
+      "cancel": "निरस्तम्"
     },
     "conditions": {
       "acidRefluxGerd": "अम्लप्रतिवाहः / GERD",
@@ -1484,7 +1485,8 @@
       "stayOnTopOfYour": "स्वास्थ्य-यात्रायाः उपरि सततम् तिष्ठतु",
       "tapToMarkRead": "पठितम् इति चिह्नयितुं स्पृश",
       "unread": "अपठितम्",
-      "youReAllCaughtUp": "त्वं सर्वं ज्ञातवान् असि!"
+      "youReAllCaughtUp": "त्वं सर्वं ज्ञातवान् असि!",
+      "cancel": "निरस्तम्"
     },
     "offlineBanner": {
       "youReOfflineSomeFeatures": "त्वं ऑफ़लाइन असि — काश्चन विशेषाः अनुपलब्धाः स्युः।"
@@ -1684,6 +1686,7 @@
       "brimhanaRasayana": "बृंहणरसायनम्",
       "classicalAnalogue": "शास्त्रीयसदृशम्",
       "clearedWhen": "शुद्धिः कदा: {{value}}",
+      "notSuitableForYou": "भवतः कृते अनुचितम्: {{value}}",
       "clinicalRationale": "चिकित्सकीययुक्तिः",
       "clinicalReferencePlanForVaidya": "चिकित्सकीयसन्दर्भयोजना — वैद्यपरामर्शाय",
       "collapseAll": "सर्वं संक्षिप्तं कुरु",
@@ -2275,7 +2278,8 @@
       "vitiligo": "श्वित्रम्",
       "weightKg": "भारः (kg)",
       "weightLoss": "भारक्षयः",
-      "wellnessReportDownloaded": "कल्याणप्रतिवेदनं अवतीर्णम्।"
+      "wellnessReportDownloaded": "कल्याणप्रतिवेदनं अवतीर्णम्।",
+      "cancel": "निरस्तम्"
     },
     "shared": {
       "safety": "सुरक्षा"

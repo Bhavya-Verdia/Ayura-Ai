@@ -566,7 +566,8 @@
       "wellness0Community0": "நலன் <0>சமூகம்</0>",
       "whatSOnYourWellness": "உங்கள் நலன் மனதில் என்ன உள்ளது, <0>{{value}}</0>?",
       "yoga": "யோகம்",
-      "youVeReachedTheEnd": "✦ நீங்கள் feed-இன் முடிவை அடைந்துவிட்டீர்கள் ✦"
+      "youVeReachedTheEnd": "✦ நீங்கள் feed-இன் முடிவை அடைந்துவிட்டீர்கள் ✦",
+      "cancel": "ரத்து செய்"
     },
     "conditions": {
       "acidRefluxGerd": "அமில மீள்வு / GERD",
@@ -1484,7 +1485,8 @@
       "stayOnTopOfYour": "உங்கள் நலப் பயணத்தில் முன்னிலையில் இருங்கள்",
       "tapToMarkRead": "படித்ததாக குறிக்கத் தட்டவும்",
       "unread": "படிக்காதது",
-      "youReAllCaughtUp": "நீங்கள் அனைத்தையும் பார்த்துவிட்டீர்கள்!"
+      "youReAllCaughtUp": "நீங்கள் அனைத்தையும் பார்த்துவிட்டீர்கள்!",
+      "cancel": "ரத்து செய்"
     },
     "offlineBanner": {
       "youReOfflineSomeFeatures": "நீங்கள் ஆஃப்லைனில் உள்ளீர்கள் — சில அம்சங்கள் கிடைக்காமல் இருக்கலாம்."
@@ -1684,6 +1686,7 @@
       "brimhanaRasayana": "பிரம்ஹண ரஸாயனம்",
       "classicalAnalogue": "கிளாசிக்கல் ஒப்பானது",
       "clearedWhen": "அனுமதி கிடைக்கும் போது: {{value}}",
+      "notSuitableForYou": "உங்களுக்கு ஏற்றதல்ல: {{value}}",
       "clinicalRationale": "மருத்துவ காரணம்",
       "clinicalReferencePlanForVaidya": "மருத்துவ குறிப்பு திட்டம் — Vaidya ஆலோசனைக்காக",
       "collapseAll": "அனைத்தையும் சுருக்கவும்",
@@ -2275,7 +2278,8 @@
       "vitiligo": "விட்டிலிகோ",
       "weightKg": "எடை (kg)",
       "weightLoss": "எடை குறைப்பு",
-      "wellnessReportDownloaded": "நல அறிக்கை பதிவிறக்கப்பட்டது."
+      "wellnessReportDownloaded": "நல அறிக்கை பதிவிறக்கப்பட்டது.",
+      "cancel": "ரத்து செய்"
     },
     "shared": {
       "safety": "பாதுகாப்பு"

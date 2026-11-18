@@ -566,7 +566,8 @@
       "wellness0Community0": "健康 <0>社区</0>",
       "whatSOnYourWellness": "你的健康在想什么，<0>{{value}}</0>？",
       "yoga": "瑜伽",
-      "youVeReachedTheEnd": "✦ 你已到达信息流底部 ✦"
+      "youVeReachedTheEnd": "✦ 你已到达信息流底部 ✦",
+      "cancel": "取消"
     },
     "conditions": {
       "acidRefluxGerd": "胃酸反流 / GERD",
@@ -1484,7 +1485,8 @@
       "stayOnTopOfYour": "随时掌握您的健康之旅",
       "tapToMarkRead": "点击标为已读",
       "unread": "未读",
-      "youReAllCaughtUp": "您已全部看完！"
+      "youReAllCaughtUp": "您已全部看完！",
+      "cancel": "取消"
     },
     "offlineBanner": {
       "youReOfflineSomeFeatures": "您已离线——部分功能可能不可用。"
@@ -1684,6 +1686,7 @@
       "brimhanaRasayana": "Brimhana Rasayana",
       "classicalAnalogue": "经典对应",
       "clearedWhen": "何时可开始：{{value}}",
+      "notSuitableForYou": "不适合您：{{value}}",
       "clinicalRationale": "临床依据",
       "clinicalReferencePlanForVaidya": "临床参考方案 — 供 वैद्य 咨询",
       "collapseAll": "全部收起",
@@ -2275,7 +2278,8 @@
       "vitiligo": "白癜风",
       "weightKg": "体重（kg）",
       "weightLoss": "减重",
-      "wellnessReportDownloaded": "健康报告已下载。"
+      "wellnessReportDownloaded": "健康报告已下载。",
+      "cancel": "取消"
     },
     "shared": {
       "safety": "安全"

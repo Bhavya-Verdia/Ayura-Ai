@@ -445,6 +445,10 @@ def build_packet_md(n_meds, n_pk=0, n_tokens=0, n_karma=0, n_cmap=0, n_hdi=0):
         '',
         'Still not changed: hypothyroid stays in `_SANTARPANA_JANYA` (Langhana arc). Its withheld note now says this is a modern extrapolation rather than citing Prameha, Medoroga and Kushtha. Whether it belongs on that arc at all is the open question.',
         "",
+        '## Part 5c — Authored 2026-11-18 (unreviewed)',
+        '- **Panchakarma Deepana-Pachana for aggravated Pitta** (`ama_correction_first.herbs_pitta` in `panchakarma_protocols.json`, `panchakarma_engine._ama_correction_herbs`). The Ama-correction herbs (Trikatu, Chitrakadi Vati, Hingvashtaka, Panchakola) are now screened through the medicines formulary. The formulary bars all of them for aggravated Pitta, hyperacidity and ulcer. Where any is withheld, **Musta Churna** and **Guduchi Churna** are offered in its place, citing Charaka Sutrasthana 25.40 (Musta as foremost Deepaniya and Pachaniya). This is the same Tikta Pachana judgement the diet arc makes in Part 5b. *Is Musta + Guduchi right for Pitta with Ama, and should Guduchi (Ushna virya) be offered to a patient with an ulcer?*',
+        "- **The diet form's gut answer is now a declared condition everywhere** (`diet_brief_builder.with_gut_condition`). Acidity, constipation, bloating and IBS chosen on the diet form are added to `medical_history` for gym, yoga, routine, Panchakarma, remedies, medicines and the seasonal card. Bloating was given a disease-to-dosha row (`Adhmana (Vata)`, Purishavaha Srotas, weight 1.5) so Panchakarma does not treat it as an unrecognised diagnosis. *Is that row right?*",
+        "",
         "## Part 6 — Clinical case sign-off",
         f"Below are {len(cases)} synthetic patient cases run through the engines (deterministic, "
         "no AI). For each, confirm the core decisions are what you would prescribe, or note the "

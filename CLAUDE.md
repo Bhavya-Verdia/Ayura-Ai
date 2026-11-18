@@ -1275,6 +1275,16 @@ Two answers are asked on two forms and unioned server-side, so both engines see 
 the Ayurvedic medicines already taken (Panchakarma + remedies; `herb_overlap.declared_ayurvedic`,
 checked by both engines through one matcher) and injuries (gym + yoga).
 
+The diet form's `gut_health_issue` (acidity, constipation, bloating, IBS) is a disease, and
+every plan route builds its profile through `plan_runner.declared_profile`, which adds it to
+`medical_history` (`diet_brief_builder.with_gut_condition`). Before that only diet read it,
+so a routine snack or gym tip could suggest curd to a patient with acidity. Never build a
+plan profile from `user.model_dump()` directly; a test greps for it.
+
+Panchakarma's Deepana-Pachana herbs go through the medicines formulary
+(`panchakarma_engine._ama_correction_herbs` → `screen_formulation`). Where it bars a Katu herb
+(aggravated Pitta, hyperacidity, ulcer), Musta and Guduchi (`herbs_pitta`) take its place.
+
 The form opens pre-filled from the saved answers (`savedToForm`), so give any new field
 that is stored as a list but edited as text a case there. Without one, saving again
 writes back the wrong shape.

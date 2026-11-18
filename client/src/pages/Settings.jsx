@@ -18,6 +18,7 @@ import './Settings.css'
 import WhatsAppSettings from '../components/WhatsAppSettings'
 
 import { tr } from '../lib/tr'
+import InlineConfirm from '../components/InlineConfirm'
 const LazyParticleField = React.lazy(() => import('../components/ParticleField'))
 
 const CONDITION_CATEGORIES = [
@@ -194,6 +195,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false)
   const [savingPw, setSavingPw] = useState(false)
   const [notice, setNotice] = useState({ type: '', message: '' })
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [autoSaveStatus, setAutoSaveStatus] = useState('')
   // 'unsupported' | 'denied' | 'subscribed' | 'off' | 'unavailable' | 'busy'
   const [pushState, setPushState] = useState('off')
@@ -393,7 +395,7 @@ export default function Settings() {
   }
 
   async function deleteAccount() {
-    if (!window.confirm(tr('ui.settings.thisPermanentlyDeletesYourAyura', 'This permanently deletes your Ayura AI account and health data. Continue?'))) return
+    setConfirmDelete(false)
     try {
       await privacyAPI.deleteAccount()
       await logout()
@@ -789,10 +791,19 @@ export default function Settings() {
             <m.button className="btn btn-secondary" onClick={() => { logout(); navigate('/login') }} whileTap={{ scale: 0.97 }}>
               <LogOut size={16} strokeWidth={2} />{' '}{tr('ui.settings.logOut', 'Log Out')}
             </m.button>
-            <m.button className="btn btn-secondary settings-btn-danger" onClick={deleteAccount} whileTap={{ scale: 0.97 }}>
+            <m.button className="btn btn-secondary settings-btn-danger" onClick={() => setConfirmDelete(true)} whileTap={{ scale: 0.97 }}>
               <Trash2 size={16} strokeWidth={2} />{' '}{tr('ui.settings.deleteAccount', 'Delete Account')}
             </m.button>
           </div>
+          {confirmDelete && (
+            <InlineConfirm
+              message={tr('ui.settings.thisPermanentlyDeletesYourAyura', 'This permanently deletes your Ayura AI account and health data. Continue?')}
+              confirmLabel={tr('ui.settings.deleteAccount', 'Delete Account')}
+              cancelLabel={tr('ui.settings.cancel', 'Cancel')}
+              onConfirm={deleteAccount}
+              onCancel={() => setConfirmDelete(false)}
+            />
+          )}
         </m.div>
       </m.div>
     </div>

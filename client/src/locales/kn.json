@@ -566,7 +566,8 @@
       "wellness0Community0": "ಪೋಷಣೆ <0>ಸಮುದಾಯ</0>",
       "whatSOnYourWellness": "ನಿಮ್ಮ ಪೋಷಣೆಯ ಮನಸ್ಸಿನಲ್ಲಿ ಏನಿದೆ, <0>{{value}}</0>?",
       "yoga": "ಯೋಗ",
-      "youVeReachedTheEnd": "✦ ನೀವು ಫೀಡ್‌ನ ಅಂತ್ಯವನ್ನು ತಲುಪಿದ್ದೀರಿ ✦"
+      "youVeReachedTheEnd": "✦ ನೀವು ಫೀಡ್‌ನ ಅಂತ್ಯವನ್ನು ತಲುಪಿದ್ದೀರಿ ✦",
+      "cancel": "ರದ್ದುಮಾಡಿ"
     },
     "conditions": {
       "acidRefluxGerd": "ಆಮ್ಲ ಹಿಮ್ಮುಖ ಹರಿವು / ಜಿಇಆರ್‌ಡಿ",
@@ -1484,7 +1485,8 @@
       "stayOnTopOfYour": "ನಿಮ್ಮ ಆರೋಗ್ಯ ಪ್ರಯಾಣದ ಮೇಲೆ ಸದಾ ಗಮನವಿರಿಸಿ",
       "tapToMarkRead": "ಓದಿದಂತೆ ಗುರುತಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ",
       "unread": "ಓದಿಲ್ಲ",
-      "youReAllCaughtUp": "ನೀವು ಎಲ್ಲವನ್ನೂ ಹಿಡಿದಿದ್ದೀರಿ!"
+      "youReAllCaughtUp": "ನೀವು ಎಲ್ಲವನ್ನೂ ಹಿಡಿದಿದ್ದೀರಿ!",
+      "cancel": "ರದ್ದುಮಾಡಿ"
     },
     "offlineBanner": {
       "youReOfflineSomeFeatures": "ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದೀರಿ — ಕೆಲವು ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿರದಿರಬಹುದು."
@@ -1684,6 +1686,7 @@
       "brimhanaRasayana": "ಬೃಹಣ ರಸಾಯನ",
       "classicalAnalogue": "ಶಾಸ್ತ್ರೀಯ ಸಮಾನತೆ",
       "clearedWhen": "ಯಾವಾಗ ತೆರವುಗೊಳ್ಳುತ್ತದೆ: {{value}}",
+      "notSuitableForYou": "ನಿಮಗೆ ಸೂಕ್ತವಲ್ಲ: {{value}}",
       "clinicalRationale": "ವೈದ್ಯಕೀಯ ಕಾರಣ",
       "clinicalReferencePlanForVaidya": "ಕ್ಲಿನಿಕಲ್ ರೆಫರೆನ್ಸ್ ಯೋಜನೆ — ವೈದ್ಯರ ಸಲಹೆಗಾಗಿ",
       "collapseAll": "ಎಲ್ಲವನ್ನೂ ಕುಗ್ಗಿಸಿ",
@@ -2275,7 +2278,8 @@
       "vitiligo": "ವಿಟಿಲಿಗೋ",
       "weightKg": "ತೂಕ (kg)",
       "weightLoss": "ತೂಕ ಇಳಿಕೆ",
-      "wellnessReportDownloaded": "ವೆಲ್‌ನೆಸ್ ವರದಿ ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ."
+      "wellnessReportDownloaded": "ವೆಲ್‌ನೆಸ್ ವರದಿ ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ.",
+      "cancel": "ರದ್ದುಮಾಡಿ"
     },
     "shared": {
       "safety": "ಸುರಕ್ಷತೆ"

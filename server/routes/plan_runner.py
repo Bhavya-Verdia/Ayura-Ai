@@ -303,6 +303,16 @@ async def _load_feature_preferences(db: AsyncIOMotorDatabase, user_id: str, plan
 
 # ─── Engine-backed feature generation (shared by holistic + agentic paths) ────
 
+async def declared_profile(db: AsyncIOMotorDatabase, user: UserDocument,
+                           prefs_doc: dict | None = None) -> dict:
+    """The user's profile as every plan path must see it: the stored document plus
+    what the preference forms declared about health (`with_gut_condition`)."""
+    from services.diet_brief_builder import with_gut_condition
+    if prefs_doc is None:
+        prefs_doc = await db.user_preferences.find_one({"user_id": user.id}) or {}
+    return with_gut_condition(user.model_dump(), prefs_doc)
+
+
 async def _generate_feature_via_engine(
     db: AsyncIOMotorDatabase,
     user_id: str,
@@ -654,6 +664,7 @@ async def _enqueue_plan(
     feature_goal = feature_prefs.get(feature_goal_key) if feature_goal_key else None
 
     # ── Build User Profile Dict ───────────────────────────────────────────────
+    declared = await declared_profile(db, user)
     user_profile = {
         "_user_id": user.id,
         "name": user.name,
@@ -675,7 +686,7 @@ async def _enqueue_plan(
         "dosha_immediate_focus": user.dosha_immediate_focus,
         "dosha_key_signals": user.dosha_key_signals or [],
         "checkin_count": user.checkin_count or 0,
-        "medical_history": user.medical_history or [],
+        "medical_history": declared["medical_history"] or [],
         # Hard-exclusion lists — applied deterministically, never passed to LLM alone
         "allergies": user.allergies or [],
         "injuries_or_limitations": user.injuries_or_limitations or [],
@@ -718,7 +729,7 @@ async def _enqueue_plan(
         # Use per-feature goal for cache key when available, fall back to global
         "goal": feature_goal or user.goal,
         "dominant_dosha": user.dominant_dosha,
-        "medical_history": user.medical_history,
+        "medical_history": user_profile["medical_history"],
         # Include key preference fields in cache key so changed prefs bust cache
         "feature_prefs_hash": str(sorted(feature_prefs.items())) if feature_prefs else "",
     }

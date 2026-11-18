@@ -126,6 +126,11 @@
       "Immediately post-surgery or severe trauma"
     ],
     "ama_correction_first": {
+      "herbs_pitta": [
+        "Musta Churna",
+        "Guduchi Churna"
+      ],
+      "herbs_pitta_basis": "Tikta rasa kindles Agni and digests Ama without the heat of Katu rasa. Musta is named foremost among the Deepaniya and Pachaniya dravyas (Charaka Sutrasthana 25.40). Offered when aggravated Pitta, hyperacidity or an ulcer bars the Katu Deepana herbs. Authored, not clinically reviewed.",
       "herbs": [
         "Trikatu (Ginger + Black Pepper + Pippali)",
         "Chitrakadi Vati",

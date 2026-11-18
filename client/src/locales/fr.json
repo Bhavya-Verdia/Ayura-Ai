@@ -566,7 +566,8 @@
       "wellness0Community0": "Bien-être <0>Communauté</0>",
       "whatSOnYourWellness": "Qu’est-ce qui occupe votre esprit bien-être, <0>{{value}}</0> ?",
       "yoga": "Yoga",
-      "youVeReachedTheEnd": "✦ Vous avez atteint la fin du fil ✦"
+      "youVeReachedTheEnd": "✦ Vous avez atteint la fin du fil ✦",
+      "cancel": "Annuler"
     },
     "conditions": {
       "acidRefluxGerd": "Reflux acide / RGO",
@@ -1484,7 +1485,8 @@
       "stayOnTopOfYour": "Gardez le cap sur votre parcours de bien-être",
       "tapToMarkRead": "Touchez pour marquer comme lu",
       "unread": "Non lu",
-      "youReAllCaughtUp": "Vous avez tout rattrapé !"
+      "youReAllCaughtUp": "Vous avez tout rattrapé !",
+      "cancel": "Annuler"
     },
     "offlineBanner": {
       "youReOfflineSomeFeatures": "Vous êtes hors ligne — certaines fonctionnalités peuvent ne pas être disponibles."
@@ -1684,6 +1686,7 @@
       "brimhanaRasayana": "Brimhana Rasayana",
       "classicalAnalogue": "Analogue classique",
       "clearedWhen": "Autorisé quand : {{value}}",
+      "notSuitableForYou": "Ne vous convient pas : {{value}}",
       "clinicalRationale": "Justification clinique",
       "clinicalReferencePlanForVaidya": "Plan de référence clinique — pour consultation avec un Vaidya",
       "collapseAll": "Tout réduire",
@@ -2275,7 +2278,8 @@
       "vitiligo": "Vitiligo",
       "weightKg": "Poids (kg)",
       "weightLoss": "Perte de poids",
-      "wellnessReportDownloaded": "Rapport de bien-être téléchargé."
+      "wellnessReportDownloaded": "Rapport de bien-être téléchargé.",
+      "cancel": "Annuler"
     },
     "shared": {
       "safety": "Sécurité"

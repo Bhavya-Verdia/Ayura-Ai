@@ -10,6 +10,7 @@ import {
 import { useAuth } from '../providers/AuthContext'
 import { SkeletonCircle, SkeletonLine } from '../components/Skeleton'
 import { tr } from '../lib/tr'
+import InlineConfirm from '../components/InlineConfirm'
 import { Trans } from 'react-i18next'
 import './Community.css'
 
@@ -209,13 +210,10 @@ function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) 
     setTimeout(() => setLikeAnimating(false), 500)
   }
 
-  const handleDelete = () => {
-    if (window.confirm(tr('ui.community.deleteThisPostThisAction', 'Delete this post? This action cannot be undone.'))) {
-      onDelete(post.id)
-    }
-  }
-
-  const handleReport = () => onReport?.(post.id)
+  // 'delete' | 'report' | null — the question shown in the card, not a browser dialog.
+  const [confirming, setConfirming] = useState(null)
+  const handleDelete = () => setConfirming('delete')
+  const handleReport = () => setConfirming('report')
 
   return (
     <m.div
@@ -274,6 +272,25 @@ function PostCard({ post, currentUserName, onLike, onDelete, onReport, index }) 
           </button>
         )}
       </div>
+
+      {confirming === 'delete' && (
+        <InlineConfirm
+          message={tr('ui.community.deleteThisPostThisAction', 'Delete this post? This action cannot be undone.')}
+          confirmLabel={tr('ui.community.deletePost', 'Delete post')}
+          cancelLabel={tr('ui.community.cancel', 'Cancel')}
+          onConfirm={() => { setConfirming(null); onDelete(post.id) }}
+          onCancel={() => setConfirming(null)}
+        />
+      )}
+      {confirming === 'report' && (
+        <InlineConfirm
+          message={tr('ui.community.reportThisPostToModerators', 'Report this post to moderators? Posts flagged by several members are hidden pending review.')}
+          confirmLabel={tr('ui.community.reportPost', 'Report post')}
+          cancelLabel={tr('ui.community.cancel', 'Cancel')}
+          onConfirm={() => { setConfirming(null); onReport?.(post.id) }}
+          onCancel={() => setConfirming(null)}
+        />
+      )}
 
       {/* Content */}
       <p className="comm-post-content">{post.content}</p>
@@ -484,11 +501,8 @@ export default function Community() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['community-posts'] }),
   })
 
-  const handleReport = (postId) => {
-    if (window.confirm(tr('ui.community.reportThisPostToModerators', 'Report this post to moderators? Posts flagged by several members are hidden pending review.'))) {
-      reportMutation.mutate(postId)
-    }
-  }
+  // Asked in the post card (`PostCard`), so this only sends it.
+  const handleReport = (postId) => reportMutation.mutate(postId)
 
   const charCount = newContent.length
   const charOverLimit = charCount > MAX_CHARS
