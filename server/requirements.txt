@@ -19,7 +19,7 @@ tzdata==2026.5
 # --- Databases ---
 
 motor==3.7.0
-pymongo==4.18.2
+pymongo==4.18.3
 
 # --- Vector Database ---
 chromadb==0.6.3
@@ -50,7 +50,7 @@ google-generativeai==0.8.4
 # --- ML / Data Science ---
 Pillow>=10.4.0
 # Reads the text layer of an uploaded lab report (services/lab_report_reader.py).
-pypdf==6.21.1
+pypdf==6.21.4
 
 # --- Utilities ---
 python-dotenv==1.2.2
