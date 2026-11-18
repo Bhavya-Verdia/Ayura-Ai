@@ -549,6 +549,7 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
     agni_correction_needed = agni == "manda"
 
     ama_info = protocols.get("shodhana_eligibility", {}).get("ama_correction_first", {})
+    ama_herbs, ama_herbs_withheld = _ama_correction_herbs(ama_info, user_profile)
 
     # Advisory only — see `_kriya_kala_assessment`. Computed before the branch and
     # attached to all three verdicts because it describes the patient, not the
@@ -575,7 +576,10 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
             # them are blocked — so the correction herbs travel with the verdict.
             "ama_correction_needed": ama != "none",
             "ama_correction_mandatory": ama_correction_mandatory,
-            "ama_correction_herbs": ama_info.get("herbs", []),
+            "ama_correction_herbs": ama_herbs,
+            "ama_correction_herbs_withheld": ama_herbs_withheld,
+            "deepana_herbs": ama_herbs,
+            "deepana_herbs_withheld": ama_herbs_withheld,
             "ama_correction_duration": ama_info.get("duration_days", "3–7 days"),
             "ama_correction_signs": ama_info.get("signs_ama_cleared", []),
             "kriya_kala": kriya_kala,
@@ -616,7 +620,12 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
             "agni_correction_needed": agni_correction_needed,
             "ama_correction_needed": needs_ama,
             "ama_correction_mandatory": ama_correction_mandatory,
-            "ama_correction_herbs": ama_info.get("herbs", []) if needs_ama else [],
+            "ama_correction_herbs": ama_herbs if needs_ama else [],
+            "ama_correction_herbs_withheld": ama_herbs_withheld if needs_ama else [],
+            # Manda Agni alone also runs Deepana-Pachana, so the screened list
+            # travels even when Ama does not.
+            "deepana_herbs": ama_herbs,
+            "deepana_herbs_withheld": ama_herbs_withheld,
             "ama_correction_duration": ama_info.get("duration_days", "3–7 days"),
             "ama_correction_signs": ama_info.get("signs_ama_cleared", []),
             "kriya_kala": kriya_kala,
@@ -651,7 +660,12 @@ def _determine_shodhana_or_shamana(user_profile: dict, pk_prefs: dict, protocols
         "agni_correction_needed": agni_correction_needed,
         "ama_correction_needed": needs_ama,
         "ama_correction_mandatory": ama_correction_mandatory,
-        "ama_correction_herbs": ama_info.get("herbs", []) if needs_ama else [],
+        "ama_correction_herbs": ama_herbs if needs_ama else [],
+        "ama_correction_herbs_withheld": ama_herbs_withheld if needs_ama else [],
+        # Manda Agni alone also runs Deepana-Pachana, so the screened list
+        # travels even when Ama does not.
+        "deepana_herbs": ama_herbs,
+        "deepana_herbs_withheld": ama_herbs_withheld,
         "ama_correction_duration": ama_info.get("duration_days", "3–7 days"),
         "ama_correction_signs": ama_info.get("signs_ama_cleared", []),
         "kriya_kala": kriya_kala,
@@ -2088,14 +2102,62 @@ def _shamana_regimen(vikriti_dom: str) -> dict:
     return regimen.get(vikriti_dom) or regimen.get("vata") or {}
 
 
+# The Ama-correction herbs are classical Katu Deepana: Trikatu, Chitraka, Hingu,
+# Panchakola. All four are Ushna and Tikshna, and the formulary bars them in
+# aggravated Pitta, hyperacidity and an ulcer, which is where a live plan gave
+# heating Deepana to a Pitta patient with acidity. Each one is screened through the
+# medicines formulary (`screen_formulation`). These names map onto its entries.
+# Panchakola has no row of its own, so it is screened as Chitraka, its strongest
+# ingredient.
+_AMA_HERB_FORMULARY = {
+    "Trikatu (Ginger + Black Pepper + Pippali)": "Trikatu Churna",
+    "Chitrakadi Vati": "Chitraka Churna",
+    "Hingashtak Churna": "Hingwashtak Churna",
+    "Panchakola Churna": "Chitraka Churna",
+}
+
+
+def _ama_correction_herbs(ama_info: dict, user_profile: dict) -> tuple[list[str], list[dict]]:
+    """(herbs to give, herbs withheld with their reason) for Deepana-Pachana.
+
+    When a Katu herb is withheld, the Tikta Deepana herbs (`herbs_pitta`, Musta and
+    Guduchi) are offered in its place, screened the same way. When everything is
+    withheld, the list is empty and the plan says a Vaidya chooses the herb.
+    """
+    from services.remedy_engine import screen_formulation
+    kept: list[str] = []
+    withheld: list[dict] = []
+
+    def _screen(name: str) -> None:
+        bar, _ = screen_formulation(_AMA_HERB_FORMULARY.get(name, name), user_profile)
+        if bar:
+            withheld.append({"herb": name, "reason": bar})
+        else:
+            kept.append(name)
+
+    for name in ama_info.get("herbs", []):
+        _screen(name)
+    if withheld:
+        alternatives, kept = kept, []
+        for name in ama_info.get("herbs_pitta", []):
+            _screen(name)
+        kept += alternatives
+    return kept, withheld
+
+
 def _deepana_pachana_action(elig: dict, protocols: dict) -> dict:
     """The pinned daily action for the Agni-correction phase."""
     ama_info = protocols.get("shodhana_eligibility", {}).get("ama_correction_first", {})
-    herbs = elig.get("ama_correction_herbs") or ama_info.get("herbs", [])
+    # The screened list only. Falling back to the KB's own list here is how a
+    # herb the formulary barred would come back.
+    herbs = elig.get("deepana_herbs")
+    if herbs is None:
+        herbs, _ = _ama_correction_herbs(ama_info, {})
     signs = elig.get("ama_correction_signs") or ama_info.get("signs_ama_cleared", [])
     action = _render_procedure("deepana_pachana", {
-        "herb_name": herbs[0] if herbs else "Trikatu (Ginger + Black Pepper + Pippali)",
-        "alternatives": ", ".join(herbs[1:3]) if len(herbs) > 1 else "Chitrakadi Vati",
+        "herb_name": herbs[0] if herbs else "a Deepana herb your Vaidya chooses",
+        "alternatives": (", ".join(herbs[1:3]) if len(herbs) > 1
+                         else "ask your Vaidya; the usual herbs are not suitable for you"),
         "diet": ama_info.get("diet_during",
                              "Light, warm, easily digestible food. Avoid heavy, cold, raw and fermented."),
         "signs": "; ".join(signs) if signs else "the tongue coating clears and appetite returns",
@@ -2613,7 +2675,8 @@ def _build_shamana_plan(
                 "why":      ("Ama present — Shodhana would drive it deeper into the Srotas"
                              if ama_needed else
                              "Manda Agni — purification cannot occur if Agni cannot process dislodged Doshas"),
-                "herbs":    elig.get("ama_correction_herbs") or ama_info.get("herbs", []),
+                "herbs":    elig.get("deepana_herbs", []),
+                "herbs_withheld": elig.get("deepana_herbs_withheld", []),
                 "duration": ama_info.get("duration_days", "3–7 days"),
                 "signs_cleared": elig.get("ama_correction_signs") or ama_info.get("signs_ama_cleared", []),
                 "diet":     ama_info.get("diet_during", ""),

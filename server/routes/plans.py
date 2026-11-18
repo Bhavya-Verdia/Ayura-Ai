@@ -23,6 +23,7 @@ from services.audit_service import log_plan_generated
 from core.quota import consume_plan_quota
 
 from routes.plan_runner import (
+    declared_profile,
     _sanitize_prompt_input,
     _check_plan_cache,
     _generate_feature_via_engine,
@@ -53,8 +54,8 @@ async def generate_yoga_plan(
     from services.yoga_plan_enricher import enrich_yoga_plan
 
     force_regenerate = req.get("force_regenerate", False)
-    user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
+    user_profile = await declared_profile(db, user, prefs_doc or {})
 
     if not prefs_doc or not prefs_doc.get("yoga"):
         raise HTTPException(status_code=422, detail="Complete yoga preferences first")
@@ -200,7 +201,7 @@ async def generate_next_yoga_week(
     from engine.movement_risk import with_declared_injuries
     yoga_prefs = with_declared_injuries("yoga", prefs_doc.get("yoga"), prefs_doc)
 
-    user_profile = user.model_dump()
+    user_profile = await declared_profile(db, user)
     from engine.seasonal import get_current_season
     user_profile["current_season"] = get_current_season().name.lower()
 
@@ -271,8 +272,8 @@ async def generate_diet_plan(
     db: AsyncIOMotorDatabase = Depends(get_mongodb)
 ):
     force_regenerate = req.get("force_regenerate", False)
-    user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
+    user_profile = await declared_profile(db, user, prefs_doc or {})
 
     if not prefs_doc or not prefs_doc.get("diet"):
         raise HTTPException(status_code=422, detail="Complete diet preferences first")
@@ -379,7 +380,7 @@ async def rebuild_diet_weeks_route(
     if not diet_prefs:
         raise HTTPException(status_code=422, detail="Complete diet preferences first")
 
-    user_profile = user.model_dump()
+    user_profile = await declared_profile(db, user)
     history = await diet_history(db, user.id, goal=diet_prefs.get("diet_goal"),
                                  bmi_category=user_profile.get("bmi_category"),
                                  profile=user_profile)
@@ -499,8 +500,8 @@ async def _build_routine(db, user, force_regenerate: bool = False, carry_coachin
     """
     from services.routine_engine import generate_routine_plan as engine_generate
 
-    user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
+    user_profile = await declared_profile(db, user, prefs_doc or {})
 
     # Routine-specific prefs (Tier C) — fall back to diet prefs for backward compat
     routine_prefs = (prefs_doc or {}).get("routine") or (prefs_doc or {}).get("diet")
@@ -769,8 +770,8 @@ async def generate_gym_plan(
     from services.gym_plan_enricher import enrich_gym_plan
 
     force_regenerate = req.get("force_regenerate", False)
-    user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
+    user_profile = await declared_profile(db, user, prefs_doc or {})
 
     if not prefs_doc or not prefs_doc.get("gym"):
         raise HTTPException(status_code=422, detail="Complete gym preferences first")
@@ -866,8 +867,8 @@ async def generate_panchakarma_plan(
     assert_not_pregnancy_blocked(user, "panchakarma")
 
     force_regenerate = req.get("force_regenerate", False)
-    user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
+    user_profile = await declared_profile(db, user, prefs_doc or {})
 
     if not prefs_doc or not prefs_doc.get("panchakarma"):
         raise HTTPException(status_code=422, detail="Complete panchakarma preferences first")
@@ -986,7 +987,7 @@ async def generate_remedies_plan(
     # Pregnancy gate — contraindicated; matches the holistic/worker paths
     assert_not_pregnancy_blocked(user, "remedies")
 
-    user_profile = user.model_dump()
+    user_profile = await declared_profile(db, user)
 
     if "symptoms" not in req:
         raise HTTPException(status_code=422, detail="Request body must contain 'symptoms' list")
@@ -1062,8 +1063,8 @@ async def generate_medicines_plan(
     assert_not_pregnancy_blocked(user, "medicines")
 
     force_regenerate = req.get("force_regenerate", False)
-    user_profile = user.model_dump()
     prefs_doc = await db.user_preferences.find_one({"user_id": user.id})
+    user_profile = await declared_profile(db, user, prefs_doc or {})
 
     if not prefs_doc or not prefs_doc.get("remedies"):
         raise HTTPException(status_code=422, detail="Complete medicines preferences first")
@@ -1164,7 +1165,7 @@ async def stream_holistic_plan(
     # Build the profile from the full user document so every safety/personalisation
     # field (ama_indicator, ojas_level, koshtha, disease_stages, satmya, ...) reaches
     # the engines — the same dict shape the per-feature routes and worker path use.
-    user_profile = user.model_dump()
+    user_profile = await declared_profile(db, user)
     user_profile["_user_id"] = user.id
     user_profile["current_season"] = season_info.name.lower()
 
@@ -1381,7 +1382,8 @@ async def rate_plan(
 
 
 @router.get("/seasonal")
-async def get_seasonal_guidance(user: UserDocument = Depends(get_current_user)):
+async def get_seasonal_guidance(user: UserDocument = Depends(get_current_user),
+                                db: AsyncIOMotorDatabase = Depends(get_mongodb)):
     """Feature 8: Ritucharya - Get seasonal Ayurvedic guidance."""
     from services.seasonal_service import build_seasonal_guidance
 
@@ -1392,7 +1394,7 @@ async def get_seasonal_guidance(user: UserDocument = Depends(get_current_user)):
     try:
         # The profile, not just the dosha: this card names specific foods and was
         # blind to the reader's diseases and allergies.
-        return await build_seasonal_guidance(dosha, user.model_dump())
+        return await build_seasonal_guidance(dosha, await declared_profile(db, user))
     except Exception as e:
         logger.error("Failed to generate seasonal guidance, returning static fallback: %s", e)
         season = get_current_season()

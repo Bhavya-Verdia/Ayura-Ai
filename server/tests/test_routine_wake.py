@@ -43,14 +43,21 @@ def _minutes(t):
     return h * 60 + m
 
 
+@pytest.mark.parametrize("season", SEASONS)
 @pytest.mark.parametrize("dosha", DOSHAS)
-def test_the_wake_preference_moves_the_wake_time(dosha):
-    early = _plan(_profile(dominant_dosha=dosha, vikriti_dominant=dosha), "early")
-    natural = _plan(_profile(dominant_dosha=dosha, vikriti_dominant=dosha), "natural")
-    late = _plan(_profile(dominant_dosha=dosha, vikriti_dominant=dosha), "late")
+def test_the_wake_preference_moves_the_wake_time(dosha, season):
+    # The season is pinned: unpinned, this test read today's date and failed every
+    # Hemanta, when a Kapha natural rise is already 4:30, the floor of the "early"
+    # band. Nobody is woken before 4:30, so there "early" keeps the natural time.
+    prof = lambda: _profile(dominant_dosha=dosha, vikriti_dominant=dosha, current_season=season)
+    early, natural, late = (_plan(prof(), w) for w in ("early", "natural", "late"))
 
     times = [_minutes(p["dinacharya_protocol"]["wake_time"]) for p in (early, natural, late)]
-    assert times[0] < times[1] < times[2], times
+    assert times[1] < times[2], times
+    if times[1] > 4 * 60 + 30:
+        assert times[0] < times[1], times
+    else:
+        assert times[0] == times[1] == 4 * 60 + 30, times
 
 
 @pytest.mark.parametrize("dosha", DOSHAS)

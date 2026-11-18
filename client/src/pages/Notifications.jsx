@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async'
 import { notificationsAPI } from '../api/client'
 import { Leaf, RefreshCw, AlarmClock, AlertTriangle, Bell, Sparkles, CheckCheck, Trash2 } from 'lucide-react'
 import { tr } from '../lib/tr'
+import InlineConfirm from '../components/InlineConfirm'
 import './Notifications.css'
 
 // ── Type config ──────────────────────────────────────────────
@@ -125,6 +126,7 @@ function NotificationCard({ notif, onMarkRead, onDelete, index }) {
 // ── Main component ───────────────────────────────────────────
 export default function Notifications() {
   const [notifications, setNotifications] = useState([])
+  const [confirmClear, setConfirmClear] = useState(false)
   const [loading, setLoading]             = useState(true)
   const [markingAll, setMarkingAll]       = useState(false)
   const [error, setError]                 = useState(null)
@@ -176,7 +178,7 @@ export default function Notifications() {
 
   const handleClearAll = useCallback(async () => {
     if (notifications.length === 0) return
-    if (!window.confirm(tr('ui.notifications.clearAllNotificationsThisCannot', 'Clear all notifications? This cannot be undone.'))) return
+    setConfirmClear(false)
     const prev = notifications
     setNotifications([])
     try {
@@ -251,7 +253,7 @@ export default function Notifications() {
               {notifications.length > 0 && (
                 <m.button
                   className="btn btn-secondary btn-sm notif-clear-all-btn"
-                  onClick={handleClearAll}
+                  onClick={() => setConfirmClear(true)}
                   whileTap={{ scale: 0.95 }}
                 >
                   <Trash2 size={14} strokeWidth={2} />{' '}{tr('ui.notifications.clearAll', 'Clear all')}
@@ -259,6 +261,16 @@ export default function Notifications() {
               )}
             </div>
           </m.div>
+
+          {confirmClear && notifications.length > 0 && (
+            <InlineConfirm
+              message={tr('ui.notifications.clearAllNotificationsThisCannot', 'Clear all notifications? This cannot be undone.')}
+              confirmLabel={tr('ui.notifications.clearAll', 'Clear all')}
+              cancelLabel={tr('ui.notifications.cancel', 'Cancel')}
+              onConfirm={handleClearAll}
+              onCancel={() => setConfirmClear(false)}
+            />
+          )}
 
           {/* Error */}
           <AnimatePresence>

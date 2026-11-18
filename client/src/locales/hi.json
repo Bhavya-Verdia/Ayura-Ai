@@ -1273,7 +1273,8 @@
       "wellness0Community0": "वेलनेस <0>समुदाय</0>",
       "whatSOnYourWellness": "आपके वेलनेस मन में क्या है, <0>{{value}}</0>?",
       "yoga": "योग",
-      "youVeReachedTheEnd": "✦ आप feed के अंत तक पहुँच गए हैं ✦"
+      "youVeReachedTheEnd": "✦ आप feed के अंत तक पहुँच गए हैं ✦",
+      "cancel": "रद्द करें"
     },
     "conditions": {
       "acidRefluxGerd": "अम्ल प्रतिवाह / जीईआरडी",
@@ -2191,7 +2192,8 @@
       "stayOnTopOfYour": "अपनी wellness यात्रा पर नज़र बनाए रखें",
       "tapToMarkRead": "पढ़ा हुआ चिह्नित करने के लिए टैप करें",
       "unread": "अपठित",
-      "youReAllCaughtUp": "आप सब अपडेट हैं!"
+      "youReAllCaughtUp": "आप सब अपडेट हैं!",
+      "cancel": "रद्द करें"
     },
     "offlineBanner": {
       "youReOfflineSomeFeatures": "आप ऑफ़लाइन हैं — कुछ सुविधाएँ उपलब्ध नहीं हो सकतीं।"
@@ -2391,6 +2393,7 @@
       "brimhanaRasayana": "बृंहण रसायन",
       "classicalAnalogue": "शास्त्रीय समकक्ष",
       "clearedWhen": "कब साफ़ होगा: {{value}}",
+      "notSuitableForYou": "आपके लिए उपयुक्त नहीं: {{value}}",
       "clinicalRationale": "चिकित्सीय तर्क",
       "clinicalReferencePlanForVaidya": "वैद्य परामर्श हेतु चिकित्सीय संदर्भ योजना",
       "collapseAll": "सभी संक्षिप्त करें",
@@ -2982,7 +2985,8 @@
       "vitiligo": "सफेद दाग",
       "weightKg": "वजन (kg)",
       "weightLoss": "वजन घटाना",
-      "wellnessReportDownloaded": "वेलनेस रिपोर्ट डाउनलोड हो गई।"
+      "wellnessReportDownloaded": "वेलनेस रिपोर्ट डाउनलोड हो गई।",
+      "cancel": "रद्द करें"
     },
     "shared": {
       "safety": "सुरक्षा"

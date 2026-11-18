@@ -681,6 +681,10 @@ _DISEASE_DOSHA_SIGNAL: dict[str, dict] = {
     "fatty_liver":             {"p": "kapha","w": 2.0, "s2": "pitta", "w2": 1.5,   "s": "Medovaha Srotas",     "c": "Medoroga with Yakrit (Kapha + Pitta)","d": "meda"},
     "gallstones":              {"p": "pitta","w": 2.5, "s2": "kapha", "w2": 1.0,   "s": "Purishavaha Srotas",  "c": "Pittashma (Pitta + Kapha)",         "d": "meda"},
     "hemorrhoids":             {"p": "vata", "w": 2.0, "s2": "pitta", "w2": 1.5,   "s": "Purishavaha Srotas",  "c": "Arsha (Vataja + Pittaja)",          "d": "rakta"},
+    # Adhmana: asked on the diet form (`gut_health_issue`) and merged into
+    # medical_history for every plan. Without a row here Panchakarma read it as an
+    # unrecognised diagnosis and sent it to LLM triage.
+    "bloating":                {"p": "vata", "w": 1.5, "s": "Purishavaha Srotas",  "c": "Adhmana (Vata)",                     "d": "rasa"},
     "constipation_chronic":    {"p": "vata", "w": 2.5, "s": "Purishavaha Srotas",  "c": "Vibandha (Vata)",                    "d": "rasa"},
     "celiac":                  {"p": "vata", "w": 1.5, "s2": "pitta", "w2": 1.5,   "s": "Annavaha Srotas",     "c": "Grahani (Vata-Pitta)",              "d": "rasa"},
     "pancreatitis":            {"p": "pitta","w": 2.5, "s": "Annavaha Srotas",     "c": "Pittaja Gulma",                      "d": "rasa"},

@@ -468,6 +468,28 @@ _GUT_ISSUE_CONDITIONS: dict[str, str] = {
 }
 
 
+def with_gut_condition(user_profile: dict, prefs_doc: dict | None) -> dict:
+    """`user_profile` with the diet form's `gut_health_issue` added to `medical_history`.
+
+    The answer is a disease (acidity, constipation, bloating, IBS) but only the diet
+    path read it, so a gym tip, a routine snack or a Panchakarma diet note could
+    still suggest curd to a patient who told the diet form they have acidity. Every
+    plan route builds its profile through this, so the condition reaches every gate
+    and the shared cache key. Stored in the onboarding vocabulary
+    (`acid_reflux`, `constipation_chronic`), like any other declared condition.
+    """
+    gut = str(((prefs_doc or {}).get("diet") or {}).get("gut_health_issue") or "healthy").strip().lower()
+    if gut not in _GUT_ISSUE_CONDITIONS:
+        return user_profile
+    from engine.condition_vocab import normalize_condition
+    key = normalize_condition(gut) or gut
+    history = list(user_profile.get("medical_history") or [])
+    target = normalize_condition_key(key)
+    if any(normalize_condition_key(h) == target for h in history):
+        return user_profile
+    return {**user_profile, "medical_history": history + [key]}
+
+
 def diet_conditions(user_profile: dict, diet_prefs: dict | None = None) -> list[str]:
     """Every disease the diet path must treat, from both places the app collects one.
 
