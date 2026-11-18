@@ -41,7 +41,8 @@ def test_both_callers_pass_the_profile():
         src = (root / rel).read_text(encoding="utf-8")
         for line in src.splitlines():
             if "build_seasonal_guidance(" in line and "import" not in line:
-                assert "user_profile" in line or "model_dump" in line, f"{rel}: {line.strip()}"
+                # `declared_profile` is the profile plus the forms' declared conditions.
+                assert "user_profile" in line or "declared_profile" in line, f"{rel}: {line.strip()}"
 
 
 @pytest.mark.parametrize("item,conditions,allergies", [
