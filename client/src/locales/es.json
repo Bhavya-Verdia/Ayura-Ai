@@ -174,6 +174,7 @@
     "footer_nutrition": "Planes de nutrición",
     "footer_detox": "Detox y remedios",
     "footer_copy": "Plataforma de bienestar adaptativa",
+    "footer_founder": "Creado por {{name}} · Udaipur, Rajastán",
     "footer_disclaimer": "Ayura AI ofrece orientación de bienestar con fines informativos únicamente y no reemplaza el consejo, diagnóstico o tratamiento médico profesional.",
     "v_constitution": "Análisis de constitución",
     "v_dosha_balance": "Equilibrio de doshas",
@@ -431,6 +432,26 @@
     "zinc": "Zinc"
   },
   "ui": {
+    "about": {
+      "back": "Volver al inicio",
+      "bio1": "Bhavya Verdia es un ingeniero de IA que trabaja en la brecha entre un modelo prometedor y un sistema en el que la gente pueda confiar: evaluación, barreras de seguridad y la ingeniería de última milla que hace que la IA sea segura para ponerla frente a usuarios reales.",
+      "bioHeading": "Acerca de Bhavya",
+      "contact": "Para comentarios, alianzas o prensa, contacta con Bhavya en LinkedIn.",
+      "contactHeading": "Ponte en contacto",
+      "education": "B.Tech en Ciencias de la Computación (IA y Analítica), MIT ADT University, Pune",
+      "location": "Udaipur, Rajasthan, India",
+      "note": "Ayura AI ofrece orientación de bienestar, no atención médica. No sustituye a un médico ni a un Vaidya cualificado. Consulta los Términos del servicio para más detalles.",
+      "noteHeading": "Una nota sobre la seguridad",
+      "point1": "Tu plan proviene de motores de reglas basados en conocimiento ayurvédico redactado a mano: alimentos, ejercicios, asanas, remedios y terapias. La IA añade explicación y acompañamiento encima; no inventa el plan.",
+      "point2": "Cada plan se comprueba frente a tus condiciones de salud, alergias, medicamentos, lesiones, edad y embarazo antes de que lo veas, y cualquier cosa retenida se muestra con el motivo.",
+      "point3": "Está hecho para India: comidas vegetarianas y veganas, cocinas regionales, nombres de marcas de medicina india y ocho idiomas.",
+      "role": "Fundador, Ayura AI · Ingeniero de IA y Analítica",
+      "subtitle": "La persona detrás de Ayura AI, y por qué está construido de la manera en que lo está.",
+      "termsLink": "Términos del servicio",
+      "title": "Conoce al fundador",
+      "why1": "Un chatbot de propósito general inventará encantado una formulación herbal o una postura de yoga que no existe. Para orientación de salud, eso no es suficiente. Ayura AI está construido al revés:",
+      "whyHeading": "Por qué Ayura AI está construido de esta manera"
+    },
     "buildSessionTimeline": {
       "leftSide": "{{name}} — lado izquierdo",
       "rightSide": "{{name}} — lado derecho",
@@ -534,6 +555,7 @@
       "alreadyReported": "Ya denunciado",
       "ayurveda": "Ayurveda",
       "beTheFirstToShare": "¡Sé la primera persona en compartir tu viaje de bienestar!",
+      "cancel": "Cancelar",
       "commentsMany": "{{count}} comentarios",
       "commentsOne": "1 comentario",
       "communityAyuraAi": "Comunidad — Ayura AI",
@@ -566,8 +588,7 @@
       "wellness0Community0": "Bienestar <0>Comunidad</0>",
       "whatSOnYourWellness": "¿Qué pasa por tu mente de bienestar, <0>{{value}}</0>?",
       "yoga": "Yoga",
-      "youVeReachedTheEnd": "✦ Has llegado al final del feed ✦",
-      "cancel": "Cancelar"
+      "youVeReachedTheEnd": "✦ Has llegado al final del feed ✦"
     },
     "conditions": {
       "acidRefluxGerd": "Reflujo ácido / ERGE",
@@ -1341,6 +1362,7 @@
       "ayuraAiAiAyurvedaWellness": "Ayura AI — Plataforma de bienestar de IA + Ayurveda",
       "ayuraAiAiPoweredAyurvedic": "Ayura AI — Plataforma de bienestar ayurvédico impulsada por IA",
       "ayuraAiLogo": "Logotipo de Ayura AI",
+      "footerAbout": "Conoce al fundador",
       "indiaSAiPoweredAyurvedic": "La plataforma de bienestar ayurvédico impulsada por IA de la India, que ofrece planes personalizados basados en dosha para dieta, yoga, Panchakarma y medicina herbal.",
       "vataPitta": "Vata–Pitta"
     },
@@ -1466,6 +1488,7 @@
     },
     "notifications": {
       "adaptation": "Adaptación",
+      "cancel": "Cancelar",
       "checkIn": "Registro",
       "clearAll": "Borrar todo",
       "clearAllNotificationsThisCannot": "¿Borrar todas las notificaciones? Esto no se puede deshacer.",
@@ -1485,8 +1508,7 @@
       "stayOnTopOfYour": "Manténgase al día con su bienestar",
       "tapToMarkRead": "Toque para marcar como leído",
       "unread": "No leído",
-      "youReAllCaughtUp": "¡Ya está al día!",
-      "cancel": "Cancelar"
+      "youReAllCaughtUp": "¡Ya está al día!"
     },
     "offlineBanner": {
       "youReOfflineSomeFeatures": "Estás sin conexión — algunas funciones pueden no estar disponibles."
@@ -1686,7 +1708,6 @@
       "brimhanaRasayana": "Brimhana Rasayana",
       "classicalAnalogue": "Análogo clásico",
       "clearedWhen": "Se autoriza cuando: {{value}}",
-      "notSuitableForYou": "No adecuado para usted: {{value}}",
       "clinicalRationale": "Fundamento clínico",
       "clinicalReferencePlanForVaidya": "Plan de referencia clínica — Para consulta con Vaidya",
       "collapseAll": "Contraer todo",
@@ -1725,6 +1746,7 @@
       "noneShamana": "Ninguno — Shamana",
       "notPartOfThisPlan": "No forma parte de este plan",
       "notPrescribed": "No prescrito",
+      "notSuitableForYou": "No adecuado para usted: {{value}}",
       "notVerifiedAgainst": "No verificado frente a",
       "ojas": "Ojas",
       "omit": "Omitir {{herb}}",
@@ -2137,6 +2159,7 @@
       "bipolarDisorder": "Trastorno bipolar",
       "blockedInYourBrowserAllow": "Bloqueado en tu navegador — permite las notificaciones de ayuraai.in para habilitarlo",
       "bowelTendencyKoshthaUsedFor": "Tendencia intestinal (Koshtha) — se usa para la personalización de Panchakarma",
+      "cancel": "Cancelar",
       "cardiovascular": "Cardiovascular",
       "celiacDisease": "Enfermedad celíaca",
       "cervicalSpondylosis": "Espondilosis cervical",
@@ -2278,8 +2301,7 @@
       "vitiligo": "Vitíligo",
       "weightKg": "Peso (kg)",
       "weightLoss": "Pérdida de peso",
-      "wellnessReportDownloaded": "Informe de bienestar descargado.",
-      "cancel": "Cancelar"
+      "wellnessReportDownloaded": "Informe de bienestar descargado."
     },
     "shared": {
       "safety": "Seguridad"

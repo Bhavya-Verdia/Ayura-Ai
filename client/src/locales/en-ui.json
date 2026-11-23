@@ -1,5 +1,25 @@
 {
   "ui": {
+    "about": {
+      "back": "Back to Home",
+      "bio1": "Bhavya Verdia is an AI engineer who works on the gap between a promising model and a system people can rely on: evaluation, guardrails, and the last-mile engineering that makes AI safe to put in front of real users.",
+      "bioHeading": "About Bhavya",
+      "contact": "For feedback, partnerships or press, reach Bhavya on LinkedIn.",
+      "contactHeading": "Get in touch",
+      "education": "B.Tech Computer Science (AI & Analytics), MIT ADT University, Pune",
+      "location": "Udaipur, Rajasthan, India",
+      "note": "Ayura AI offers wellness guidance, not medical care. It does not replace a doctor or a qualified Vaidya. See the Terms of Service for details.",
+      "noteHeading": "A note on safety",
+      "point1": "Your plan comes from rule engines over hand-authored Ayurvedic knowledge: foods, exercises, asanas, remedies and therapies. AI adds explanation and coaching on top; it does not invent the plan.",
+      "point2": "Every plan is checked against your health conditions, allergies, medicines, injuries, age and pregnancy before you see it, and anything withheld is shown with the reason.",
+      "point3": "It is made for India: vegetarian and vegan meals, regional cuisines, Indian medicine brand names, and eight languages.",
+      "role": "Founder, Ayura AI · AI & Analytics Engineer",
+      "subtitle": "The person behind Ayura AI, and why it is built the way it is.",
+      "termsLink": "Terms of Service",
+      "title": "Meet the founder",
+      "why1": "A general-purpose chatbot will happily invent a herbal formulation or a yoga pose that does not exist. For health guidance, that is not good enough. Ayura AI is built the other way round:",
+      "whyHeading": "Why Ayura AI is built this way"
+    },
     "buildSessionTimeline": {
       "leftSide": "{{name}} — left side",
       "rightSide": "{{name}} — right side",
@@ -910,6 +930,7 @@
       "ayuraAiAiAyurvedaWellness": "Ayura AI — AI + Ayurveda Wellness Platform",
       "ayuraAiAiPoweredAyurvedic": "Ayura AI — AI-Powered Ayurvedic Wellness Platform",
       "ayuraAiLogo": "Ayura AI Logo",
+      "footerAbout": "Meet the founder",
       "indiaSAiPoweredAyurvedic": "India's AI-powered Ayurvedic wellness platform providing personalized dosha-based plans for diet, yoga, Panchakarma, and herbal medicine.",
       "vataPitta": "Vata–Pitta"
     },

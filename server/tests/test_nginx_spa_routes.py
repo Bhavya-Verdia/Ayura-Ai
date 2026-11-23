@@ -15,7 +15,7 @@ _CLIENT = Path(__file__).resolve().parents[2] / "client"
 
 # Served by their own exact-match or regex locations rather than the app regex.
 _OWN_LOCATION = {"/", "/login", "/register", "/forgot-password", "/reset-password",
-                 "/dosha-test", "/privacy", "/terms"}
+                 "/dosha-test", "/privacy", "/terms", "/about"}
 
 
 def _app_routes():

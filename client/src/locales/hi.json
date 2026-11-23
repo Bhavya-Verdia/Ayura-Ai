@@ -174,6 +174,7 @@
     "footer_nutrition": "पोषण योजनाएँ",
     "footer_detox": "डिटॉक्स व नुस्खे",
     "footer_copy": "अनुकूली वेलनेस प्लेटफ़ॉर्म",
+    "footer_founder": "{{name}} द्वारा निर्मित · उदयपुर, राजस्थान",
     "footer_disclaimer": "Ayura AI केवल सूचनात्मक उद्देश्यों के लिए वेलनेस मार्गदर्शन देता है और पेशेवर चिकित्सीय सलाह, निदान या उपचार का स्थान नहीं लेता।",
     "v_constitution": "प्रकृति विश्लेषण",
     "v_dosha_balance": "दोष संतुलन",
@@ -1138,6 +1139,26 @@
     "zinc": "जिंक"
   },
   "ui": {
+    "about": {
+      "back": "होम पर वापस जाएँ",
+      "bio1": "Bhavya Verdia एक AI इंजीनियर हैं जो एक आशाजनक मॉडल और ऐसे सिस्टम के बीच की खाई पर काम करते हैं जिस पर लोग भरोसा कर सकें: मूल्यांकन, गार्डरेल्स, और वह आख़िरी-चरण इंजीनियरिंग जो AI को असली उपयोगकर्ताओं के सामने सुरक्षित बनाती है.",
+      "bioHeading": "Bhavya के बारे में",
+      "contact": "प्रतिक्रिया, साझेदारी या प्रेस के लिए, Bhavya से LinkedIn पर संपर्क करें.",
+      "contactHeading": "संपर्क करें",
+      "education": "B.Tech Computer Science (AI & Analytics), MIT ADT University, Pune",
+      "location": "उदयपुर, राजस्थान, भारत",
+      "note": "Ayura AI wellness guidance देता है, medical care नहीं। यह डॉक्टर या योग्य Vaidya का विकल्प नहीं है। विवरण के लिए Terms of Service देखें.",
+      "noteHeading": "सुरक्षा पर एक नोट",
+      "point1": "आपकी योजना हाथ से तैयार किए गए Ayurvedic ज्ञान पर बने rule engines से आती है: भोजन, व्यायाम, आसन, remedies और therapies। AI ऊपर से explanation और coaching जोड़ता है; यह योजना गढ़ता नहीं है.",
+      "point2": "आपको दिखाने से पहले हर योजना आपकी health conditions, allergies, medicines, injuries, age और pregnancy के विरुद्ध जाँची जाती है, और जो भी रोका जाता है उसे कारण सहित दिखाया जाता है.",
+      "point3": "यह भारत के लिए बनाया गया है: vegetarian और vegan meals, regional cuisines, Indian medicine brand names, और आठ भाषाएँ.",
+      "role": "Founder, Ayura AI · AI & Analytics Engineer",
+      "subtitle": "Ayura AI के पीछे कौन है, और इसे जिस तरह बनाया गया है, क्यों बनाया गया है।",
+      "termsLink": "Terms of Service",
+      "title": "संस्थापक से मिलें",
+      "why1": "एक general-purpose chatbot खुशी-खुशी कोई ऐसी herbal formulation या yoga pose गढ़ देगा जो अस्तित्व में ही नहीं है। स्वास्थ्य guidance के लिए, यह पर्याप्त नहीं है। Ayura AI उल्टी दिशा में बनाया गया है:",
+      "whyHeading": "Ayura AI इस तरह क्यों बनाया गया है"
+    },
     "buildSessionTimeline": {
       "leftSide": "{{name}} — बायाँ पक्ष",
       "rightSide": "{{name}} — दायाँ पक्ष",
@@ -1241,6 +1262,7 @@
       "alreadyReported": "पहले ही रिपोर्ट किया गया",
       "ayurveda": "आयुर्वेद",
       "beTheFirstToShare": "अपनी wellness यात्रा साझा करने वाले पहले बनें!",
+      "cancel": "रद्द करें",
       "commentsMany": "{{count}} टिप्पणियाँ",
       "commentsOne": "1 टिप्पणी",
       "communityAyuraAi": "समुदाय — Ayura AI",
@@ -1273,8 +1295,7 @@
       "wellness0Community0": "वेलनेस <0>समुदाय</0>",
       "whatSOnYourWellness": "आपके वेलनेस मन में क्या है, <0>{{value}}</0>?",
       "yoga": "योग",
-      "youVeReachedTheEnd": "✦ आप feed के अंत तक पहुँच गए हैं ✦",
-      "cancel": "रद्द करें"
+      "youVeReachedTheEnd": "✦ आप feed के अंत तक पहुँच गए हैं ✦"
     },
     "conditions": {
       "acidRefluxGerd": "अम्ल प्रतिवाह / जीईआरडी",
@@ -2048,6 +2069,7 @@
       "ayuraAiAiAyurvedaWellness": "Ayura AI — AI + आयुर्वेद वेलनेस प्लेटफ़ॉर्म",
       "ayuraAiAiPoweredAyurvedic": "Ayura AI — AI-संचालित आयुर्वेदिक वेलनेस प्लेटफ़ॉर्म",
       "ayuraAiLogo": "Ayura AI लोगो",
+      "footerAbout": "संस्थापक से मिलें",
       "indiaSAiPoweredAyurvedic": "भारत का AI-संचालित आयुर्वेदिक वेलनेस प्लेटफ़ॉर्म, जो आहार, योग, पंचकर्म और हर्बल चिकित्सा के लिए दोष-आधारित व्यक्तिगत योजनाएँ प्रदान करता है.",
       "vataPitta": "वात–पित्त"
     },
@@ -2173,6 +2195,7 @@
     },
     "notifications": {
       "adaptation": "अनुकूलन",
+      "cancel": "रद्द करें",
       "checkIn": "जाँच-इन",
       "clearAll": "सभी साफ़ करें",
       "clearAllNotificationsThisCannot": "सभी सूचनाएँ साफ़ करें? इसे वापस नहीं किया जा सकता।",
@@ -2192,8 +2215,7 @@
       "stayOnTopOfYour": "अपनी wellness यात्रा पर नज़र बनाए रखें",
       "tapToMarkRead": "पढ़ा हुआ चिह्नित करने के लिए टैप करें",
       "unread": "अपठित",
-      "youReAllCaughtUp": "आप सब अपडेट हैं!",
-      "cancel": "रद्द करें"
+      "youReAllCaughtUp": "आप सब अपडेट हैं!"
     },
     "offlineBanner": {
       "youReOfflineSomeFeatures": "आप ऑफ़लाइन हैं — कुछ सुविधाएँ उपलब्ध नहीं हो सकतीं।"
@@ -2393,7 +2415,6 @@
       "brimhanaRasayana": "बृंहण रसायन",
       "classicalAnalogue": "शास्त्रीय समकक्ष",
       "clearedWhen": "कब साफ़ होगा: {{value}}",
-      "notSuitableForYou": "आपके लिए उपयुक्त नहीं: {{value}}",
       "clinicalRationale": "चिकित्सीय तर्क",
       "clinicalReferencePlanForVaidya": "वैद्य परामर्श हेतु चिकित्सीय संदर्भ योजना",
       "collapseAll": "सभी संक्षिप्त करें",
@@ -2432,6 +2453,7 @@
       "noneShamana": "कोई नहीं — शमन",
       "notPartOfThisPlan": "इस योजना का भाग नहीं",
       "notPrescribed": "निर्धारित नहीं",
+      "notSuitableForYou": "आपके लिए उपयुक्त नहीं: {{value}}",
       "notVerifiedAgainst": "इसके विरुद्ध सत्यापित नहीं",
       "ojas": "ओजस",
       "omit": "{{herb}} छोड़ें",
@@ -2844,6 +2866,7 @@
       "bipolarDisorder": "द्विध्रुवी विकार",
       "blockedInYourBrowserAllow": "आपके ब्राउज़र में ब्लॉक है — ayuraai.in के लिए सूचनाएं अनुमति दें ताकि सक्षम हो",
       "bowelTendencyKoshthaUsedFor": "आंत्र प्रवृत्ति (कोष्ठ) — पंचकर्म वैयक्तिकरण के लिए उपयोग किया जाता है",
+      "cancel": "रद्द करें",
       "cardiovascular": "हृदय-वाहिकीय",
       "celiacDisease": "सीलिएक रोग",
       "cervicalSpondylosis": "सर्वाइकल स्पॉन्डिलोसिस",
@@ -2985,8 +3008,7 @@
       "vitiligo": "सफेद दाग",
       "weightKg": "वजन (kg)",
       "weightLoss": "वजन घटाना",
-      "wellnessReportDownloaded": "वेलनेस रिपोर्ट डाउनलोड हो गई।",
-      "cancel": "रद्द करें"
+      "wellnessReportDownloaded": "वेलनेस रिपोर्ट डाउनलोड हो गई।"
     },
     "shared": {
       "safety": "सुरक्षा"

@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { Landing, DoshaTest, Login, Register, Terms, Privacy, hydration } from './lib/snapshotPages'
+import { Landing, DoshaTest, Login, Register, Terms, Privacy, About, hydration } from './lib/snapshotPages'
 import { isReturningUser } from './lib/sessionHint'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
@@ -118,6 +118,7 @@ const SNAPSHOT_ROUTES = {
   '/register': Register.preload,
   '/terms': Terms.preload,
   '/privacy': Privacy.preload,
+  '/about': About.preload,
 }
 // For a browser that has been signed in, PublicRoute's first render is the
 // session check's loading screen (and then, usually, a redirect), which no

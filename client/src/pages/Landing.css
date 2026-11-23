@@ -1223,6 +1223,9 @@
   padding-top: 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
 }
 .lnd-footer-copy { color: var(--ayura-muted); font-size: 0.8rem; opacity: 0.6; }
+.lnd-footer-copy + .lnd-footer-copy { margin-top: 4px; }
+.lnd-footer-founder { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
+.lnd-footer-founder:hover { color: var(--ayura-ink); }
 .lnd-footer-disclaimer { color: var(--ayura-muted); font-size: 0.72rem; max-width: 30.5em; /* 50ch of Manrope */ text-align: right; line-height: 1.5; opacity: 0.5; }
 
 /* ─── SCROLL REVEAL ───────────────────────────────────────── */

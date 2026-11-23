@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { tr } from '../lib/tr'
 import './Landing.css'
+import { FOUNDER } from '../lib/founder'
 
 // ─── Animation variants ───────────────────────────────────────
 // NO filter/blur here: the per-word blur entrance left every hero word in its
@@ -479,7 +480,8 @@ export default function Landing() {
         image: 'https://ayuraai.in/og-image.png',
         slogan: 'Your wellness, finally in sync — AI + Ayurveda.',
         description: tr('ui.landing.indiaSAiPoweredAyurvedic', 'India\'s AI-powered Ayurvedic wellness platform providing personalized dosha-based plans for diet, yoga, Panchakarma, and herbal medicine.'),
-        foundingLocation: { '@type': 'Place', name: 'India' },
+        founder: { '@type': 'Person', name: FOUNDER.name, url: 'https://ayuraai.in/about', sameAs: [FOUNDER.website, FOUNDER.linkedin, FOUNDER.github] },
+        foundingLocation: { '@type': 'Place', name: 'Udaipur, Rajasthan, India' },
         areaServed: { '@type': 'Country', name: 'India' },
         // Keep in sync with the twitter:site meta in index.html; append other
         // official profiles (Instagram, LinkedIn, YouTube…) as they launch.
@@ -883,6 +885,7 @@ export default function Landing() {
               <ul className="lnd-footer-links">
                 <li><Link to="/terms">{t('landing.footer_terms')}</Link></li>
                 <li><Link to="/privacy">{t('landing.footer_privacy')}</Link></li>
+                <li><Link to="/about">{tr('ui.landing.footerAbout', 'Meet the founder')}</Link></li>
               </ul>
             </div>
             <div>
@@ -896,7 +899,10 @@ export default function Landing() {
             </div>
           </div>
           <div className="lnd-footer-bottom">
-            <p className="lnd-footer-copy"><Trans i18nKey="ui.landing.ayuraAi2" defaults={"© {{value}} Ayura AI — {{value2}}"} values={{ value: new Date().getFullYear(), value2: t('landing.footer_copy') }} /></p>
+            <div>
+              <p className="lnd-footer-copy"><Trans i18nKey="ui.landing.ayuraAi2" defaults={"© {{value}} Ayura AI — {{value2}}"} values={{ value: new Date().getFullYear(), value2: t('landing.footer_copy') }} /></p>
+              <p className="lnd-footer-copy"><Link to="/about" className="lnd-footer-founder">{t('landing.footer_founder', { name: FOUNDER.name })}</Link></p>
+            </div>
             <p className="lnd-footer-disclaimer">
               {t('landing.footer_disclaimer')}
             </p>
