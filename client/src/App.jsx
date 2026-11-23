@@ -18,7 +18,7 @@ import OfflineBanner from './components/OfflineBanner'
 import { trackPageview } from './lib/analytics'
 import { isReturningUser } from './lib/sessionHint'
 import { useTranslation } from 'react-i18next'
-import { Landing, DoshaTest, Login, Register, Terms, Privacy, hydration } from './lib/snapshotPages'
+import { Landing, DoshaTest, Login, Register, Terms, Privacy, About, hydration } from './lib/snapshotPages'
 
 // Lazy like the pages: the app shell (sidebar, command palette, feedback
 // widget + Dashboard.css) is only for authenticated users — statically
@@ -243,6 +243,7 @@ export default function App() {
             <Route path="/dosha-test" element={<PageWrapper><DoshaTest /></PageWrapper>} />
             <Route path="/terms" element={<PageWrapper><Terms /></PageWrapper>} />
             <Route path="/privacy" element={<PageWrapper><Privacy /></PageWrapper>} />
+            <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
             <Route path="/admin" element={<AdminRoute><PageWrapper><Admin /></PageWrapper></AdminRoute>} />
             <Route path="/auth/google/callback" element={<GoogleCallback />} />
             <Route path="/auth/github/callback" element={<GithubCallback />} />

@@ -47,6 +47,7 @@ const ROUTES = [
   // In the sitemap; served as the empty shell, they read as one generic page.
   { path: '/privacy',    selector: '.legal-header h1', out: 'dist/privacy.html' },
   { path: '/terms',      selector: '.legal-header h1', out: 'dist/terms.html' },
+  { path: '/about',      selector: '.legal-header h1', out: 'dist/about.html' },
 ]
 
 // A snapshot with two of any of these tells a crawler two different things

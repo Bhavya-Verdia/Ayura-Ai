@@ -174,6 +174,7 @@
     "footer_nutrition": "Plans nutritionnels",
     "footer_detox": "Détox et remèdes",
     "footer_copy": "Plateforme de bien-être adaptative",
+    "footer_founder": "Créé par {{name}} · Udaipur, Rajasthan",
     "footer_disclaimer": "Ayura AI fournit des conseils de bien-être à titre informatif uniquement et ne remplace pas un avis, un diagnostic ou un traitement médical professionnel.",
     "v_constitution": "Analyse de constitution",
     "v_dosha_balance": "Équilibre des doshas",
@@ -431,6 +432,26 @@
     "zinc": "Zinc"
   },
   "ui": {
+    "about": {
+      "back": "Retour à l’accueil",
+      "bio1": "Bhavya Verdia est ingénieur en IA et travaille sur l’écart entre un modèle prometteur et un système sur lequel les gens peuvent compter : évaluation, garde-fous et l’ingénierie de dernière étape qui rend l’IA sûre à présenter à de vrais utilisateurs.",
+      "bioHeading": "À propos de Bhavya",
+      "contact": "Pour des retours, des partenariats ou la presse, contactez Bhavya sur LinkedIn.",
+      "contactHeading": "Contactez-nous",
+      "education": "B.Tech en informatique (IA & analytique), MIT ADT University, Pune",
+      "location": "Udaipur, Rajasthan, Inde",
+      "note": "Ayura AI propose des conseils de bien-être, pas des soins médicaux. Cela ne remplace pas un médecin ni un Vaidya qualifié. Consultez les Conditions d’utilisation pour plus de détails.",
+      "noteHeading": "Une note sur la sécurité",
+      "point1": "Votre plan provient de moteurs de règles fondés sur des connaissances ayurvédiques rédigées à la main : aliments, exercices, asanas, remèdes et thérapies. L’IA ajoute des explications et du coaching par-dessus ; elle n’invente pas le plan.",
+      "point2": "Chaque plan est vérifié en fonction de vos problèmes de santé, allergies, médicaments, blessures, âge et grossesse avant que vous ne le voyiez, et tout élément retenu est affiché avec la raison.",
+      "point3": "C’est conçu pour l’Inde : repas végétariens et vegans, cuisines régionales, noms de marques de médecine indienne et huit langues.",
+      "role": "Fondateur, Ayura AI · Ingénieur IA & analytique",
+      "subtitle": "La personne derrière Ayura AI, et pourquoi il est conçu ainsi.",
+      "termsLink": "Conditions d’utilisation",
+      "title": "Rencontrez le fondateur",
+      "why1": "Un chatbot généraliste inventera volontiers une préparation à base de plantes ou une posture de yoga qui n’existe pas. Pour des conseils de santé, ce n’est pas suffisant. Ayura AI est construit à l’inverse :",
+      "whyHeading": "Pourquoi Ayura AI est conçu ainsi"
+    },
     "buildSessionTimeline": {
       "leftSide": "{{name}} — côté gauche",
       "rightSide": "{{name}} — côté droit",
@@ -534,6 +555,7 @@
       "alreadyReported": "Déjà signalé",
       "ayurveda": "Ayurveda",
       "beTheFirstToShare": "Soyez le premier à partager votre parcours de bien-être !",
+      "cancel": "Annuler",
       "commentsMany": "{{count}} commentaires",
       "commentsOne": "1 commentaire",
       "communityAyuraAi": "Communauté — Ayura AI",
@@ -566,8 +588,7 @@
       "wellness0Community0": "Bien-être <0>Communauté</0>",
       "whatSOnYourWellness": "Qu’est-ce qui occupe votre esprit bien-être, <0>{{value}}</0> ?",
       "yoga": "Yoga",
-      "youVeReachedTheEnd": "✦ Vous avez atteint la fin du fil ✦",
-      "cancel": "Annuler"
+      "youVeReachedTheEnd": "✦ Vous avez atteint la fin du fil ✦"
     },
     "conditions": {
       "acidRefluxGerd": "Reflux acide / RGO",
@@ -1341,6 +1362,7 @@
       "ayuraAiAiAyurvedaWellness": "Ayura AI — Plateforme de bien-être IA + Ayurveda",
       "ayuraAiAiPoweredAyurvedic": "Ayura AI — Plateforme de bien-être ayurvédique propulsée par l’IA",
       "ayuraAiLogo": "Logo Ayura AI",
+      "footerAbout": "Rencontrez le fondateur",
       "indiaSAiPoweredAyurvedic": "La plateforme indienne de bien-être ayurvédique propulsée par l’IA, offrant des plans personnalisés basés sur le dosha pour l’alimentation, le yoga, le Panchakarma et la phytothérapie.",
       "vataPitta": "Vata–Pitta"
     },
@@ -1466,6 +1488,7 @@
     },
     "notifications": {
       "adaptation": "Adaptation",
+      "cancel": "Annuler",
       "checkIn": "Point de suivi",
       "clearAll": "Tout effacer",
       "clearAllNotificationsThisCannot": "Effacer toutes les notifications ? Cela ne peut pas être annulé.",
@@ -1485,8 +1508,7 @@
       "stayOnTopOfYour": "Gardez le cap sur votre parcours de bien-être",
       "tapToMarkRead": "Touchez pour marquer comme lu",
       "unread": "Non lu",
-      "youReAllCaughtUp": "Vous avez tout rattrapé !",
-      "cancel": "Annuler"
+      "youReAllCaughtUp": "Vous avez tout rattrapé !"
     },
     "offlineBanner": {
       "youReOfflineSomeFeatures": "Vous êtes hors ligne — certaines fonctionnalités peuvent ne pas être disponibles."
@@ -1686,7 +1708,6 @@
       "brimhanaRasayana": "Brimhana Rasayana",
       "classicalAnalogue": "Analogue classique",
       "clearedWhen": "Autorisé quand : {{value}}",
-      "notSuitableForYou": "Ne vous convient pas : {{value}}",
       "clinicalRationale": "Justification clinique",
       "clinicalReferencePlanForVaidya": "Plan de référence clinique — pour consultation avec un Vaidya",
       "collapseAll": "Tout réduire",
@@ -1725,6 +1746,7 @@
       "noneShamana": "Aucun — Shamana",
       "notPartOfThisPlan": "Ne fait pas partie de ce plan",
       "notPrescribed": "Non prescrit",
+      "notSuitableForYou": "Ne vous convient pas : {{value}}",
       "notVerifiedAgainst": "Non vérifié par rapport à",
       "ojas": "Ojas",
       "omit": "Omettre {{herb}}",
@@ -2137,6 +2159,7 @@
       "bipolarDisorder": "Trouble bipolaire",
       "blockedInYourBrowserAllow": "Bloqué dans votre navigateur — autorisez les notifications pour ayuraai.in pour activer",
       "bowelTendencyKoshthaUsedFor": "Tendance intestinale (Koshtha) — utilisée pour la personnalisation de Panchakarma",
+      "cancel": "Annuler",
       "cardiovascular": "Cardiovasculaire",
       "celiacDisease": "Maladie cœliaque",
       "cervicalSpondylosis": "Spondylose cervicale",
@@ -2278,8 +2301,7 @@
       "vitiligo": "Vitiligo",
       "weightKg": "Poids (kg)",
       "weightLoss": "Perte de poids",
-      "wellnessReportDownloaded": "Rapport de bien-être téléchargé.",
-      "cancel": "Annuler"
+      "wellnessReportDownloaded": "Rapport de bien-être téléchargé."
     },
     "shared": {
       "safety": "Sécurité"

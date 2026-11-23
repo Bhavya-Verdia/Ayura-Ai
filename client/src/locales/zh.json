@@ -174,6 +174,7 @@
     "footer_nutrition": "营养方案",
     "footer_detox": "排毒与疗法",
     "footer_copy": "自适应健康平台",
+    "footer_founder": "由 {{name}} 打造 · 印度拉贾斯坦邦乌代浦",
     "footer_disclaimer": "Ayura AI 仅出于信息目的提供健康指导，不替代专业医疗建议、诊断或治疗。",
     "v_constitution": "体质分析",
     "v_dosha_balance": "体质平衡",
@@ -431,6 +432,26 @@
     "zinc": "锌"
   },
   "ui": {
+    "about": {
+      "back": "返回首页",
+      "bio1": "Bhavya Verdia 是一名 AI 工程师，专注于弥合有前景的模型与人们可以信赖的系统之间的差距：评估、护栏，以及让 AI 能安全面向真实用户的最后一公里工程。",
+      "bioHeading": "关于 Bhavya",
+      "contact": "如有反馈、合作或媒体采访，请在 LinkedIn 上联系 Bhavya。",
+      "contactHeading": "联系我们",
+      "education": "B.Tech 计算机科学（AI & Analytics），MIT ADT University，Pune",
+      "location": "Udaipur，Rajasthan，India",
+      "note": "Ayura AI 提供健康指导，不提供医疗护理。它不能替代医生或合格的 Vaidya。详情请参阅服务条款。",
+      "noteHeading": "安全提示",
+      "point1": "你的方案来自基于人工编写的 Ayurvedic 知识的规则引擎：食物、锻炼、asana、疗法和治疗。AI 只是在此基础上增加解释和指导；它不会凭空编造方案。",
+      "point2": "在你看到之前，每个方案都会根据你的健康状况、过敏、药物、伤病、年龄和妊娠情况进行检查，任何被保留的内容都会显示原因。",
+      "point3": "它专为 India 打造：vegetarian 和 vegan 餐食、地区菜系、印度药品品牌名，以及八种语言。",
+      "role": "创始人，Ayura AI · AI & Analytics 工程师",
+      "subtitle": "Ayura AI 背后的人，以及它为何这样构建。",
+      "termsLink": "服务条款",
+      "title": "认识创始人",
+      "why1": "通用聊天机器人会很乐意编造一个并不存在的草药配方或瑜伽体式。对于健康指导来说，这远远不够。Ayura AI 的构建方式正好相反：",
+      "whyHeading": "为什么 Ayura AI 这样构建"
+    },
     "buildSessionTimeline": {
       "leftSide": "{{name}} — 左侧",
       "rightSide": "{{name}} — 右侧",
@@ -534,6 +555,7 @@
       "alreadyReported": "已举报",
       "ayurveda": "阿育吠陀",
       "beTheFirstToShare": "成为第一个分享你的健康之旅的人！",
+      "cancel": "取消",
       "commentsMany": "{{count}} 条评论",
       "commentsOne": "1 条评论",
       "communityAyuraAi": "社区 — Ayura AI",
@@ -566,8 +588,7 @@
       "wellness0Community0": "健康 <0>社区</0>",
       "whatSOnYourWellness": "你的健康在想什么，<0>{{value}}</0>？",
       "yoga": "瑜伽",
-      "youVeReachedTheEnd": "✦ 你已到达信息流底部 ✦",
-      "cancel": "取消"
+      "youVeReachedTheEnd": "✦ 你已到达信息流底部 ✦"
     },
     "conditions": {
       "acidRefluxGerd": "胃酸反流 / GERD",
@@ -1341,6 +1362,7 @@
       "ayuraAiAiAyurvedaWellness": "Ayura AI — AI + 阿育吠陀健康平台",
       "ayuraAiAiPoweredAyurvedic": "Ayura AI — AI 驱动的阿育吠陀健康平台",
       "ayuraAiLogo": "Ayura AI 标志",
+      "footerAbout": "认识创始人",
       "indiaSAiPoweredAyurvedic": "印度的 AI 驱动阿育吠陀健康平台，提供基于 dosha 的个性化饮食、瑜伽、Panchakarma 和草药方案。",
       "vataPitta": "Vata–Pitta"
     },
@@ -1466,6 +1488,7 @@
     },
     "notifications": {
       "adaptation": "适应",
+      "cancel": "取消",
       "checkIn": "签到",
       "clearAll": "清除全部",
       "clearAllNotificationsThisCannot": "清除所有通知？此操作无法撤销。",
@@ -1485,8 +1508,7 @@
       "stayOnTopOfYour": "随时掌握您的健康之旅",
       "tapToMarkRead": "点击标为已读",
       "unread": "未读",
-      "youReAllCaughtUp": "您已全部看完！",
-      "cancel": "取消"
+      "youReAllCaughtUp": "您已全部看完！"
     },
     "offlineBanner": {
       "youReOfflineSomeFeatures": "您已离线——部分功能可能不可用。"
@@ -1686,7 +1708,6 @@
       "brimhanaRasayana": "Brimhana Rasayana",
       "classicalAnalogue": "经典对应",
       "clearedWhen": "何时可开始：{{value}}",
-      "notSuitableForYou": "不适合您：{{value}}",
       "clinicalRationale": "临床依据",
       "clinicalReferencePlanForVaidya": "临床参考方案 — 供 वैद्य 咨询",
       "collapseAll": "全部收起",
@@ -1725,6 +1746,7 @@
       "noneShamana": "无 — Shamana",
       "notPartOfThisPlan": "不属于本方案",
       "notPrescribed": "未开具",
+      "notSuitableForYou": "不适合您：{{value}}",
       "notVerifiedAgainst": "未核对",
       "ojas": "Ojas",
       "omit": "省略 {{herb}}",
@@ -2137,6 +2159,7 @@
       "bipolarDisorder": "双相情感障碍",
       "blockedInYourBrowserAllow": "已在您的浏览器中被阻止 — 请允许 ayuraai.in 的通知以启用",
       "bowelTendencyKoshthaUsedFor": "肠道倾向（Koshtha）— 用于 Panchakarma 个性化",
+      "cancel": "取消",
       "cardiovascular": "心血管",
       "celiacDisease": "乳糜泻",
       "cervicalSpondylosis": "颈椎病",
@@ -2278,8 +2301,7 @@
       "vitiligo": "白癜风",
       "weightKg": "体重（kg）",
       "weightLoss": "减重",
-      "wellnessReportDownloaded": "健康报告已下载。",
-      "cancel": "取消"
+      "wellnessReportDownloaded": "健康报告已下载。"
     },
     "shared": {
       "safety": "安全"

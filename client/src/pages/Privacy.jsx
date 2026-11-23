@@ -8,9 +8,12 @@ import './Legal.css'
 // every day, regardless of whether a word had changed. A policy's stated
 // revision date is a factual representation to users and regulators, so it has
 // to track real edits.
-const LAST_UPDATED = '4 August 2026'
+const LAST_UPDATED = '23 November 2026'
 
 const CONTACT_EMAIL = 'privacy@ayuraai.in'
+
+// The IT (Intermediary Guidelines) Rules require the Grievance Officer to be named.
+const GRIEVANCE_OFFICER = 'Bhavya Verdia'
 
 export default function Privacy() {
   return (
@@ -123,7 +126,7 @@ export default function Privacy() {
         <div className="legal-important">
           <strong>GRIEVANCE OFFICER &amp; CONTACT</strong>
           <p style={{ marginBottom: 0, color: 'inherit' }}>
-            In accordance with the Information Technology Act, 2000 and the rules made thereunder, and the DPDP Act, 2023, questions, data-rights requests, and grievances may be directed to our Grievance Officer and Data Protection contact at{' '}
+            In accordance with the Information Technology Act, 2000 and the rules made thereunder, and the DPDP Act, 2023, questions, data-rights requests, and grievances may be directed to our Grievance Officer and Data Protection contact, {GRIEVANCE_OFFICER}, at{' '}
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. We acknowledge grievances within 24 hours and aim to resolve them within 15 days.
           </p>
         </div>
